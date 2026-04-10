@@ -151,15 +151,13 @@ Because staring at markdown files in a terminal is not the same as seeing them i
 
 ## Differentiation
 
-### vs BMAD Method
+### vs generic AI development frameworks
 
-BMAD is general-purpose. Rihal Method is opinionated about:
-- Specific team roles (9 named agents)
+Most frameworks are general-purpose. Rihal Method is opinionated about:
+- Specific team roles (9 named agents with clear authority)
 - File-based context management (`.rihal/`)
 - A view-only dashboard
-- Cultural framing (Omani/Arabic)
-
-You could implement Rihal Method on top of BMAD's core tasks — that's the intent.
+- Cultural framing (Omani/Arabic identity)
 
 ### vs GSD (Get Shit Done)
 

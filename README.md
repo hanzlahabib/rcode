@@ -5,9 +5,9 @@
 > **A context-aware AI team methodology inspired by Rihal (Muscat, Oman).**
 > Agents embody real team roles. Projects stay on rails from strategy to ship.
 
-Built on the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) framework (agents and skills sourced directly from BMAD v6.2.2, rebranded with Arabic names), with context management and dashboard ideas borrowed from [Get Shit Done (GSD)](https://github.com/hanzlahabib/get-shit-done).
+A self-contained AI team methodology: nine agents, 39 skills, file-based state management, context hygiene workflows, and a live view-only dashboard. Everything you need to run a real AI-assisted team in one module.
 
-> **Skill inheritance:** Rihal Method does NOT reinvent agent capabilities. All 8 core agents (Ahmed, Sadiq, Hussain-PM, Hussain-SM, Layla, Omar, Fatima, Noor) use BMAD's battle-tested skill definitions. Rihal adds: Arabic identity layer, `.rihal/` state management, context-reset/context-build workflows, and the Majlis view-only dashboard.
+> See [NOTICE.md](NOTICE.md) for third-party attributions.
 
 ---
 
@@ -27,19 +27,20 @@ Rihal is one of Oman's fastest-growing tech companies (2,441% growth, Series A 2
 
 ## The Team
 
-| Agent | Arabic | Role | BMAD Skill Origin |
+| Agent | Arabic | Role | Authority |
 |---|---|---|---|
-| **Ahmed** | أحمد | System Architect / CTO | `bmad-agent-architect` (Winston) |
-| **Sadiq** | صادق | Business Analyst / Strategy | `bmad-agent-analyst` (Mary) |
-| **Hussain** | حسين | Product Manager + Scrum Master | `bmad-agent-pm` + `bmad-agent-sm` |
-| **Layla** | ليلى | UX Designer | `bmad-agent-ux-designer` (Sally) |
-| **Omar** | عمر | Senior Developer | `bmad-agent-dev` (Amelia) |
-| **Fatima** | فاطمة | Test Architect (QA) | `bmad-agent-qa` (Quinn) |
-| **Noor** | نور | Technical Writer | `bmad-agent-tech-writer` (Paige) |
-| **Khalid** | خالد | DevOps (Rihal-native) | *custom* |
-| **Majlis** | مجلس | The Council (dashboard) | *custom* |
+| **Ahmed** | أحمد | System Architect / CTO | Tech stack, architecture, security |
+| **Sadiq** | صادق | Business Analyst / Strategy | Business direction, prioritization |
+| **Hussain (PM)** | حسين | Product Manager | Product vision, requirements, PRDs |
+| **Hussain (SM)** | حسين | Scrum Master | Sprint ops, story flow, retros |
+| **Layla** | ليلى | UX Designer | UI/UX, design system, accessibility |
+| **Omar** | عمر | Senior Developer | Implementation, refactoring, code review |
+| **Fatima** | فاطمة | Test Architect (QA) | Testing, release gating, bug triage |
+| **Noor** | نور | Technical Writer | Docs, pitch decks, presentations |
+| **Khalid** | خالد | DevOps | CI/CD, infra, monitoring, deploys |
+| **Majlis** | مجلس | The Council (dashboard) | View-only project transparency |
 
-**Every agent comes with 2-4 real skills from BMAD** — not marketing bullet points. See [`bmad/rihal/skills/SKILLS_INDEX.md`](bmad/rihal/skills/SKILLS_INDEX.md) for the full capability map.
+**Every agent ships with 2-4 real action skills** — not marketing bullet points. See [`rihal/skills/SKILLS_INDEX.md`](rihal/skills/SKILLS_INDEX.md) for the full capability map (39 skills total).
 
 ---
 
@@ -61,7 +62,7 @@ rihal-method/
 ├── README.md
 ├── server/
 │   └── dashboard.js              # Majlis — view-only dashboard server
-├── bmad/rihal/
+├── rihal/
 │   ├── config.yaml
 │   ├── team.yaml                 # ← replace Arabic placeholders with real team
 │   ├── agents/
@@ -116,16 +117,13 @@ your-project/
 ## Quick Start
 
 ```bash
-# 1. Install BMAD method
-npm install -g bmad-method
-
-# 2. Clone this module
+# 1. Clone this module
 git clone https://github.com/hanzlahabib/rihal-method.git
 cd rihal-method
 
-# 3. Initialize a project in your work directory
+# 2. Initialize a project in your work directory
 cd ~/projects/your-app
-# (Use bmad commands to load agents — see docs/METHODOLOGY.md)
+# (See docs/METHODOLOGY.md for agent loading instructions)
 
 # 4. Start the dashboard
 node ~/rihal-method/server/dashboard.js
@@ -200,7 +198,7 @@ kill $(lsof -t -i:7717)
 
 ### Replace agent names with your real team
 
-Edit `bmad/rihal/team.yaml`:
+Edit `rihal/team.yaml`:
 
 ```yaml
 team:
@@ -215,7 +213,7 @@ Agent markdown files will reference names from this file.
 
 ### Adjust cultural elements
 
-In `bmad/rihal/config.yaml`, change:
+In `rihal/config.yaml`, change:
 - Greetings
 - Primary/secondary language
 - Server port
@@ -227,11 +225,10 @@ In `bmad/rihal/config.yaml`, change:
 
 MIT — free to use, fork, and adapt.
 
-## Attribution
+## Author
 
-- **Inspired by** the team structure and growth story of [Rihal Oman](https://rihal.om)
-- **Built on** the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) framework
-- **Context management** ideas from [Get Shit Done (GSD)](https://github.com/hanzlahabib/get-shit-done)
-- **Authored by** Hanzla Habib
+**Hanzla Habib** — 2026.
+
+See [NOTICE.md](NOTICE.md) for third-party attributions.
 
 <div dir="rtl">صُنع بحب في مسقط — Made with love in Muscat (in spirit)</div>
