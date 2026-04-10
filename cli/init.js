@@ -305,6 +305,376 @@ Read \`.rihal/state.json\` and \`.rihal/context/active.md\` and show a concise p
 Keep under 300 words. Do not load full file contents — just headers and summaries.
 `,
 
+    'progress.md': `---
+name: rihal:progress
+description: Check project progress, show situational awareness, and route to the next action
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+---
+
+<objective>
+Provide situational awareness: where the project stands, what's been done, what's next. Then route to the right action (execute, convene, kickoff, or stop for user input).
+</objective>
+
+<process>
+
+1. **Load state** — Read \`.rihal/state.json\` for current phase, active agents, and counters.
+
+2. **Scan progress/** — List latest 10 files in \`.rihal/progress/\` (dispatch plans, Majlis sessions, status reports, retros).
+
+3. **Scan decisions/** — List latest 5 ADRs in \`.rihal/decisions/\`.
+
+4. **Scan current phase** — Read \`.rihal/phases/{current_phase}/brief.md\` and \`sprints.md\` if present.
+
+5. **Check active context** — Read \`.rihal/context/active.md\`.
+
+6. **Summarize in this exact structure:**
+
+   \`\`\`
+   # Rihal Code — Progress Report ({date})
+
+   ## Where we are
+   - Project: {name}
+   - Current phase: {phase}
+   - Active agents: {list}
+
+   ## Recent work (last 5 days)
+   - {date}: {entry}
+
+   ## Decisions made
+   - {ADR title} ({date})
+
+   ## What's next
+   - {suggested next action}
+
+   ## Recommended command
+   → /rihal:{command} {args}
+   \`\`\`
+
+7. **Route to next action** based on state:
+   - No current phase → suggest \`/rihal:kickoff\`
+   - Phase but no sprint plan → suggest \`/rihal:dispatch "plan the first sprint"\`
+   - Sprint has unstarted stories → suggest \`/rihal:next\`
+   - Stories in progress but blockers → suggest \`/rihal:convene "how to unblock X"\`
+   - Sprint complete → suggest \`/rihal:discuss "retro"\`
+
+Keep the report under 500 words. This is a quick check-in, not a full audit.
+
+</process>
+`,
+
+    'next.md': `---
+name: rihal:next
+description: Automatically advance to the next logical step in the Rihal workflow
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+  - SlashCommand
+---
+
+<objective>
+Detect the current project state and automatically invoke the next logical step. No arguments needed — reads \`.rihal/state.json\`, the current phase, and recent progress to determine what comes next.
+
+Designed for rapid workflow — remembering which phase/step you're on is overhead.
+</objective>
+
+<process>
+
+1. **Read state**:
+   - \`.rihal/state.json\` — current phase, active agents
+   - \`.rihal/phases/{current}/sprints.md\` — sprint status
+   - \`.rihal/phases/{current}/stories/\` — story files and their statuses
+   - \`.rihal/progress/\` — latest entries
+
+2. **Decision tree:**
+
+   - **No \`.rihal/\` state** → run \`/rihal:kickoff\`
+   - **No current phase** → ask user which phase, or run \`/rihal:kickoff\`
+   - **Phase has no sprints.md** → invoke Hussain-SM via \`rihal-sprint-planning\` skill
+   - **Sprint has unstarted story** → invoke Omar/Haitham via \`rihal-dev-story\` on the next story
+   - **All stories in progress** → ask user which to pick up, or run \`/rihal:convene "unblock the sprint"\`
+   - **Stories marked ready-for-review** → invoke Omar via \`rihal-code-review\`
+   - **Review done, release pending** → invoke Fatima via \`rihal-qa-generate-e2e-tests\` + release gate
+   - **Release gate GO** → invoke Khalid via \`rihal-ship-it\`
+   - **Sprint complete** → invoke Hussain-SM via \`rihal-retrospective\`
+   - **Phase complete (all sprints done)** → prompt user: mark phase complete + \`/rihal:kickoff\` next phase
+
+3. **Report the decision to the user BEFORE executing:**
+
+   \`\`\`
+   Current state: {state summary}
+   Next action:   {what I'm about to do}
+   Will invoke:   {skill or command}
+
+   Proceed? (yes / different action / stop)
+   \`\`\`
+
+4. **Wait for confirmation.** Do NOT auto-execute destructive or scope-expanding actions.
+
+5. **Execute the chosen action** by invoking the appropriate skill or slash command.
+
+</process>
+`,
+
+    'quick.md': `---
+name: rihal:quick
+description: Execute a quick task with Rihal Code guarantees (atomic commits, state tracking) but skip optional agents
+argument-hint: <task description>
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
+  - SlashCommand
+---
+
+<objective>
+Execute a small task end-to-end with minimal ceremony. Skip Majlis consultation, skip full sprint planning, skip retrospectives. Just do the work, commit atomically, and update \`.rihal/progress/\`.
+
+For bigger tasks, use \`/rihal:dispatch\` or \`/rihal:convene\` instead.
+</objective>
+
+<when_to_use>
+
+- ✅ Small bug fix (under 50 lines)
+- ✅ Copy change, config tweak, single dependency update
+- ✅ Rename or refactor that's obviously safe
+- ✅ Documentation update
+- ✅ Test fix
+
+Do NOT use for:
+
+- ❌ Architecture changes (use \`/rihal:convene\` + ADR)
+- ❌ New features (use \`/rihal:dispatch\`)
+- ❌ Breaking changes (use \`/rihal:convene\`)
+- ❌ Cross-team coordination (use Raees via \`/rihal:dispatch\`)
+
+</when_to_use>
+
+<process>
+
+1. **Parse the task** from $ARGUMENTS. If unclear, ask ONE clarifying question.
+
+2. **Pre-flight:**
+   - \`git status\` — any uncommitted changes? If yes, ask user to stash/commit first.
+   - Identify the exact files that will change (glob before editing)
+
+3. **Load minimal context:**
+   - Only the files being modified + their direct importers
+   - Do NOT load \`.rihal/\` state or agent files
+   - Do NOT invoke any Rihal agent unless the task explicitly needs one
+
+4. **Make the change.** One atomic edit. No "while I'm here" improvements.
+
+5. **Verify:**
+   - Run tests if the project has them
+   - \`git diff\` — confirm the change matches the task
+   - Check for unintended side effects
+
+6. **Commit atomically:**
+   \`\`\`bash
+   git add {specific files}
+   git commit -m "{type}({scope}): {subject}"
+   \`\`\`
+   Follow Conventional Commits. No AI attribution in messages.
+
+7. **Log to progress:**
+   - Append one line to \`.rihal/progress/quick-tasks.md\` with date, task, and commit hash
+
+8. **Report:**
+   \`\`\`
+   ✅ Quick task complete
+   Files changed: {list}
+   Commit: {sha} {message}
+   Tests: {PASS / SKIPPED / FAIL}
+   \`\`\`
+
+9. **Do NOT push.** Per AGENTS.md rules, pushes require explicit per-action approval.
+
+</process>
+`,
+
+    'fix.md': `---
+name: rihal:fix
+description: Systematic debugging with the Rihal team — gather symptoms, form hypothesis, test, fix
+argument-hint: <issue description>
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+  - Edit
+  - SlashCommand
+---
+
+<objective>
+Debug an issue using the scientific method. Gather symptoms, form a hypothesis, design a falsifying test, run it, and iterate. Use Fatima for test design and Omar/Haitham/Yousef for the actual fix, depending on the layer.
+</objective>
+
+<process>
+
+1. **Capture the issue** from $ARGUMENTS. Ask for:
+   - Reproduction steps (exact)
+   - Expected behavior
+   - Actual behavior
+   - Environment (OS, browser, version)
+   - Recent changes that might be related
+   - Error messages or logs (paste verbatim)
+
+   If the user has not provided enough, ask for it before proceeding.
+
+2. **Classify the severity:**
+   - **Critical:** blocks users, data loss risk, security issue → escalate to Fatima (release gate)
+   - **High:** significant user impact → proceed with fix
+   - **Medium:** minor impact, workaround exists → schedule via \`/rihal:dispatch\`
+   - **Low:** cosmetic or edge case → consider logging and deferring
+
+3. **Reproduce the bug FIRST.** If you cannot reproduce it reliably, debugging is guesswork. Document the exact reproduction sequence.
+
+4. **Form ONE hypothesis at a time.** Write it down:
+   > "I hypothesize that [cause], which would explain [symptoms]."
+
+5. **Design a test that could falsify the hypothesis.** A good test is one where both outcomes (pass/fail) give you information.
+
+6. **Run the test. Observe.** Update the hypothesis or proceed.
+
+7. **Once the root cause is identified:**
+   - Pick the right agent for the fix:
+     - Frontend bug → Haitham
+     - Backend bug → Yousef
+     - ML/data bug → Zayd
+     - Infra/deploy bug → Khalid
+     - Cross-layer → Omar
+   - Load that agent's skill
+   - Apply the minimum fix that addresses the root cause
+
+8. **Verify the fix:**
+   - Run the original reproduction — should no longer reproduce
+   - Run related tests
+   - Consider adding a regression test (Fatima)
+
+9. **Commit atomically** with a \`fix(scope): subject\` conventional commit message.
+
+10. **Log the debug session** to \`.rihal/progress/debug-$(date +%Y-%m-%d)-{slug}.md\` with:
+    - Symptoms
+    - Root cause
+    - Fix summary
+    - Regression test added
+    - Time spent
+
+11. **If the bug was caused by a missing process** (no test, no gate, no review), flag it for discussion in next retro.
+
+</process>
+`,
+
+    'discuss.md': `---
+name: rihal:discuss
+description: Structured discussion on a topic — adaptive questioning before taking action
+argument-hint: <topic>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - Grep
+---
+
+<objective>
+Gather context through adaptive questioning before committing to a decision or plan. Use this when you have a half-formed idea and need the Rihal team to help clarify it BEFORE Majlis convenes or Raees dispatches.
+
+Think of this as "pre-Majlis" — get your thinking straight first.
+</objective>
+
+<when_to_use>
+
+- You have an idea but are not sure if it's worth building
+- You need to frame a decision before asking the council
+- You want to surface assumptions before committing
+- The problem is fuzzy and needs to be sharpened
+- Multiple competing ideas and you want to compare them
+
+For structured multi-agent synthesis, use \`/rihal:convene\` instead.
+For routing a clear request, use \`/rihal:dispatch\` instead.
+
+</when_to_use>
+
+<process>
+
+1. **Read the topic** from $ARGUMENTS. If no topic, ask what we are discussing.
+
+2. **Frame the discussion:**
+   - What kind of question is this? (strategy / architecture / product / design / process)
+   - What decision are we trying to make?
+   - What is the reversibility? (one-way door vs two-way door)
+   - What are the constraints (time, budget, team capacity)?
+
+3. **Ask 3-5 adaptive questions** to surface context. Examples depending on topic type:
+
+   **Strategy topic:**
+   - Who specifically would use this?
+   - What do they do today without it?
+   - What would make us kill this in 3 months?
+
+   **Architecture topic:**
+   - Expected scale and lifetime?
+   - Team experience with the candidate stacks?
+   - Integration with existing systems?
+
+   **Product topic:**
+   - What user outcome are we trying to create?
+   - How will we measure success?
+   - What's the smallest thing that validates the assumption?
+
+   **Process topic:**
+   - What is the current process?
+   - Where does it break?
+   - What would "better" look like concretely?
+
+4. **Listen.** Do not skip this step. The user's answers are data.
+
+5. **Synthesize what you heard:**
+   - Restate the problem in your own words
+   - List the constraints
+   - List the open questions
+
+6. **Recommend a next action:**
+   - **Clear enough to plan?** → \`/rihal:dispatch "{framed request}"\`
+   - **Needs multi-agent synthesis?** → \`/rihal:convene "{framed question}"\`
+   - **Still fuzzy?** → another round of \`/rihal:discuss\`
+   - **Actually two problems?** → split and discuss each separately
+   - **Not worth pursuing?** → document why and archive
+
+7. **Save the discussion** to \`.rihal/progress/discuss-$(date +%Y-%m-%d)-{slug}.md\`:
+
+   \`\`\`markdown
+   # Discussion — {topic}
+
+   **Date:** {date}
+   **Reversibility:** {one-way / two-way}
+
+   ## Framing
+   {restated problem}
+
+   ## Constraints
+   - {constraint 1}
+
+   ## Open questions
+   - {question 1}
+
+   ## Recommended next action
+   {command to run next}
+   \`\`\`
+
+</process>
+`,
+
     'help.md': `---
 name: rihal:help
 description: Show available Rihal Code commands and workflows
@@ -313,18 +683,25 @@ allowed-tools:
   - Glob
 ---
 
-Show all available Rihal Code slash commands, agent skills, and workflows. Group them by category:
+Show all available Rihal Code slash commands, agent skills, and workflows.
 
-**Slash Commands:**
-- \`/rihal:team\` — list roster
-- \`/rihal:convene <question>\` — multi-agent Majlis
-- \`/rihal:dispatch <request>\` — route via Raees
-- \`/rihal:kickoff\` — start new phase
-- \`/rihal:dashboard\` — view-only dashboard
-- \`/rihal:status\` — current project status
-- \`/rihal:help\` — this
+**Workflow Commands:**
+- \`/rihal:kickoff\` — start a new phase
+- \`/rihal:progress\` — situational awareness + route to next action
+- \`/rihal:next\` — automatically advance to the next logical step
+- \`/rihal:status\` — concise project status
+- \`/rihal:discuss <topic>\` — structured discussion before committing
+- \`/rihal:convene <question>\` — multi-agent Majlis consultation
+- \`/rihal:dispatch <request>\` — route via Raees to the right specialist
+- \`/rihal:quick <task>\` — execute a small task with atomic commit
+- \`/rihal:fix <issue>\` — systematic debugging
 
-**Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\`):
+**Utility Commands:**
+- \`/rihal:team\` — list the team roster
+- \`/rihal:dashboard\` — start the Diwan view-only dashboard
+- \`/rihal:help\` — this message
+
+**Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\` or invoke by name):
 - Strategy: Sadiq
 - Leadership: Waleed (CTO), Ahmed Al Hassani (Tech Director), Nasser (Eng Manager)
 - Product: Hussain (PM + SM)
@@ -334,7 +711,14 @@ Show all available Rihal Code slash commands, agent skills, and workflows. Group
 - Content: Noor (writer), Mariam (marketing)
 - Meta: Raees (orchestrator), Majlis (council), Diwan (dashboard)
 
-For full agent details: \`cat rihal/digests/<agent>.md\`
+**Common patterns:**
+- Just started? → \`/rihal:kickoff\`
+- Coming back after a break? → \`/rihal:progress\`
+- Unsure what to do next? → \`/rihal:next\`
+- Have a quick task? → \`/rihal:quick "description"\`
+- Have a bug? → \`/rihal:fix "description"\`
+- Stuck on a decision? → \`/rihal:discuss "topic"\` then \`/rihal:convene\`
+- Need multi-agent perspective? → \`/rihal:convene "question"\`
 `,
   };
 
