@@ -1,0 +1,39 @@
+module:
+  code: rihal
+  name: Rihal Method
+  arabic_name: طريقة رحال
+  version: 0.1.0
+  category: team-methodology
+  description: Context-aware AI team methodology inspired by Rihal (Muscat, Oman). Agents embody real team roles to guide projects from strategy to ship.
+  author: Hanzla Habib
+  organization: Rihal (inspired)
+  tagline: "رحلة البناء — The journey of building"
+  license: MIT
+
+cultural:
+  origin: Muscat, Oman
+  language_primary: English
+  language_secondary: Arabic
+  greetings:
+    - "مرحباً (Marhaban) — Welcome"
+    - "السلام عليكم (Assalamu Alaikum) — Peace be upon you"
+  team_inspired_by: Rihal Oman
+  note: |
+    Agent names are Arabic/Omani placeholders. Replace with real team
+    members in your .rihal/team.yaml file to personalize.
+
+state_directory: .rihal
+context_management:
+  max_context_tokens: 120000
+  compact_threshold: 0.70
+  reset_threshold: 0.85
+  artifacts_enabled: true
+  progress_tracking: true
+
+server:
+  port: 7717
+  mode: view-only
+  auto_refresh_seconds: 5
+
+communication_language: English
+output_folder: ./output
