@@ -22,6 +22,8 @@ const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package
 const COMMANDS = {
   install: require('./init'),  // primary command (BMAD-style)
   init: require('./init'),     // backward-compat alias
+  uninstall: require('./uninstall'),
+  remove: require('./uninstall'),  // alias
   dashboard: require('./dashboard'),
   serve: require('./dashboard'),
   digest: require('./digest'),
@@ -47,6 +49,9 @@ Commands:
                  (sets up .rihal/, .claude/skills/, .claude/commands/rihal/,
                  .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
   init           Alias for install (backward compatibility)
+  uninstall      Remove Rihal Code from the current project
+                 (asks before deleting .rihal/ state — your project data)
+  remove         Alias for uninstall
   dashboard      Start the Diwan view-only dashboard (port 7717)
   serve          Alias for dashboard
   digest         Print compact digests for all agents
