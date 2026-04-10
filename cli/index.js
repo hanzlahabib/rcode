@@ -20,7 +20,8 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
 
 const COMMANDS = {
-  init: require('./init'),
+  install: require('./init'),  // primary command (BMAD-style)
+  init: require('./init'),     // backward-compat alias
   dashboard: require('./dashboard'),
   serve: require('./dashboard'),
   digest: require('./digest'),
@@ -42,7 +43,10 @@ Usage:
   npx @hanzlahabib/rihal-code <command>
 
 Commands:
-  init           Scaffold .rihal/ directory in your current project
+  install        Install Rihal Code into the current project
+                 (sets up .rihal/, .claude/skills/, .claude/commands/rihal/,
+                 .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
+  init           Alias for install (backward compatibility)
   dashboard      Start the Diwan view-only dashboard (port 7717)
   serve          Alias for dashboard
   digest         Print compact digests for all agents
@@ -56,8 +60,8 @@ Commands:
 
 Examples:
   cd my-project
-  npx @hanzlahabib/rihal-code init         # sets up .rihal/ with templates
-  npx @hanzlahabib/rihal-code dashboard    # view project state in browser
+  npx @hanzlahabib/rihal-code install       # sets up agents + slash commands
+  npx @hanzlahabib/rihal-code dashboard     # view project state in browser
 
 Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
