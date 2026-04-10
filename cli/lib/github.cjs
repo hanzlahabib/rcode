@@ -130,6 +130,20 @@ function createMilestone(title, description, dueDate, { execute = false, dryRun 
 
 // ---------- Issues (epics and stories) ----------
 
+/**
+ * Fetch an existing issue by number.
+ * Always read-only — no execute guard needed.
+ */
+function getIssue(number, { repo = null } = {}) {
+  const args = ['issue', 'view', String(number), '--json', 'number,title,body,labels,milestone,state,url'];
+  if (repo) args.push('--repo', repo);
+  const result = runGh(args, { allowFailure: true });
+  if (result.status !== 0) {
+    return { error: result.stderr };
+  }
+  return JSON.parse(result.stdout);
+}
+
 function createIssue(
   { title, body, labels = [], milestone = null, assignees = [] },
   { execute = false, dryRun = true, repo = null } = {}
@@ -162,6 +176,110 @@ function createIssue(
     url,
     number: numberMatch ? parseInt(numberMatch[1], 10) : null,
   };
+}
+
+/**
+ * Update an existing issue (title, body, labels, milestone, state).
+ *
+ * IMPORTANT: This mutates shared state. Gated by execute flag.
+ * Only called from github-sync when --update is passed.
+ *
+ * Unlike createIssue which uses `gh issue create`, this uses individual
+ * `gh issue edit` calls because gh separates the operations.
+ */
+function updateIssue(
+  number,
+  { title, body, addLabels, removeLabels, milestone, state },
+  { execute = false, dryRun = true, repo = null } = {}
+) {
+  if (dryRun || !execute) {
+    const changes = [];
+    if (title !== undefined) changes.push(`title`);
+    if (body !== undefined) changes.push(`body`);
+    if (addLabels && addLabels.length) changes.push(`+labels:${addLabels.join(',')}`);
+    if (removeLabels && removeLabels.length) changes.push(`-labels:${removeLabels.join(',')}`);
+    if (milestone !== undefined) changes.push(`milestone`);
+    if (state !== undefined) changes.push(`state:${state}`);
+    console.log(`   [dry-run] would update issue #${number} (${changes.join(', ')})`);
+    return { dryRun: true, number };
+  }
+
+  const errors = [];
+
+  // Build the edit args
+  const args = ['issue', 'edit', String(number)];
+  if (repo) args.push('--repo', repo);
+  if (title !== undefined) args.push('--title', title);
+  if (body !== undefined) args.push('--body', body);
+  if (milestone !== undefined) {
+    if (milestone === null) {
+      args.push('--remove-milestone');
+    } else {
+      args.push('--milestone', String(milestone));
+    }
+  }
+  if (addLabels && addLabels.length) {
+    for (const label of addLabels) args.push('--add-label', label);
+  }
+  if (removeLabels && removeLabels.length) {
+    for (const label of removeLabels) args.push('--remove-label', label);
+  }
+
+  if (args.length > 3 + (repo ? 2 : 0)) {
+    const result = runGh(args, { allowFailure: true });
+    if (result.status !== 0) errors.push(`edit: ${result.stderr}`);
+  }
+
+  // State change is a separate command (close/reopen)
+  if (state === 'closed') {
+    const closeArgs = ['issue', 'close', String(number)];
+    if (repo) closeArgs.push('--repo', repo);
+    const result = runGh(closeArgs, { allowFailure: true });
+    if (result.status !== 0) errors.push(`close: ${result.stderr}`);
+  } else if (state === 'open') {
+    const openArgs = ['issue', 'reopen', String(number)];
+    if (repo) openArgs.push('--repo', repo);
+    const result = runGh(openArgs, { allowFailure: true });
+    if (result.status !== 0) errors.push(`reopen: ${result.stderr}`);
+  }
+
+  if (errors.length > 0) {
+    return { error: errors.join('; ') };
+  }
+  return { updated: true, number };
+}
+
+/**
+ * Update an existing milestone (title, description, state).
+ */
+function updateMilestone(
+  number,
+  { title, description, state, dueDate },
+  { execute = false, dryRun = true, repo = null } = {}
+) {
+  if (dryRun || !execute) {
+    console.log(`   [dry-run] would update milestone #${number}`);
+    return { dryRun: true, number };
+  }
+
+  const repoFlag = repo ? `/repos/${repo}` : '/repos/{owner}/{repo}';
+  const args = ['api', '--method', 'PATCH', `${repoFlag}/milestones/${number}`];
+  if (title !== undefined) args.push('-f', `title=${title}`);
+  if (description !== undefined) args.push('-f', `description=${description}`);
+  if (state !== undefined) args.push('-f', `state=${state}`);
+  if (dueDate !== undefined) {
+    if (dueDate === null) {
+      args.push('-f', 'due_on=');
+    } else {
+      args.push('-f', `due_on=${dueDate}`);
+    }
+  }
+
+  const result = runGh(args, { allowFailure: true });
+  if (result.status !== 0) {
+    return { error: result.stderr };
+  }
+  return { updated: true, number };
 }
 
 // ---------- Projects v2 (optional — for advanced users) ----------
@@ -236,7 +354,10 @@ module.exports = {
   detectRepo,
   ensureLabel,
   createMilestone,
+  updateMilestone,
+  getIssue,
   createIssue,
+  updateIssue,
   listProjects,
   createProject,
   addIssueToProject,

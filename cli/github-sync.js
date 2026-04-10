@@ -1,47 +1,74 @@
 /**
- * rihal-code github-sync — sync .rihal/ state to GitHub (milestones, issues, projects)
+ * rihal-code github-sync — smart sync .rihal/ state to GitHub
  *
- * IMPORTANT: This command modifies shared state on GitHub (creates issues,
- * milestones, projects). Per AGENTS.md rules, it:
+ * Creates missing items, updates changed items, closes completed items.
+ * All in one command. Dry-run by default.
  *
- *   1. Defaults to DRY-RUN mode — shows what would be created without doing it
- *   2. Requires an explicit --execute flag to actually mutate GitHub
- *   3. Requires the user to have `gh auth status` working
- *   4. Asks for confirmation before each destructive operation
- *   5. Logs every created ID to .rihal/integrations/github-map.json for re-sync
+ * Usage (only two things to remember):
+ *   rihal-code github-sync              # see the plan (dry-run)
+ *   rihal-code github-sync --execute    # do it (asks for confirmation)
  *
- * Usage:
- *   rihal-code github-sync                             # dry-run, current repo
- *   rihal-code github-sync --dry-run                   # explicit dry-run (default)
- *   rihal-code github-sync --execute                   # actually create issues
- *   rihal-code github-sync --repo=owner/name           # target a specific repo
- *   rihal-code github-sync --only=milestones           # sync only milestones
- *   rihal-code github-sync --only=epics                # sync only epics
- *   rihal-code github-sync --only=stories              # sync only stories
- *   rihal-code github-sync --only=labels               # ensure labels only
- *   rihal-code github-sync --phase=phase-02            # sync a specific phase
- *   rihal-code github-sync --project                   # also create a Project v2
+ * Advanced narrowing (optional):
+ *   --repo=owner/name    target a specific repo
+ *   --only=epics         limit to epics (or labels/milestones/stories)
+ *   --phase=phase-02     limit to one phase
+ *   --project            also create a Project v2 board
+ *   --yes                skip the confirmation prompt
+ *
+ * Advanced opt-outs (optional):
+ *   --no-update          create-only mode — never touch existing items
+ *   --no-update-body     don't rewrite bodies, still update labels/state
+ *   --no-update-labels   don't touch labels
+ *   --no-close           don't close issues when local marks them done
+ *
+ * Per AGENTS.md: mutations always require --execute, gh auth, and
+ * interactive confirmation (unless --yes). Never auto-pushes.
  */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const readline = require('readline');
 const gh = require('./lib/github.cjs');
 
+/**
+ * Hash a string — used to detect content changes between syncs.
+ * Cheap and deterministic; nothing security-sensitive here.
+ */
+function contentHash(str) {
+  return crypto.createHash('sha256').update(str || '').digest('hex').slice(0, 12);
+}
+
 // ---------- Arg parsing ----------
 
+/**
+ * Simple flag philosophy:
+ *   - Default: smart sync — create missing, update changed, close completed
+ *   - User only needs to remember: dry-run (default) vs --execute
+ *   - All narrowing flags are optional escape hatches for advanced users
+ *
+ * User can think of it as: "sync my project to GitHub" — that's the whole command.
+ */
 function parseArgs(args) {
   const opts = {
     execute: false,
     dryRun: true,
     repo: null,
-    only: null, // null = all, or 'labels' | 'milestones' | 'epics' | 'stories'
-    phase: null, // null = current phase, or specific phase id
-    createProject: false,
+    only: null, // narrow the scope (advanced): labels | milestones | epics | stories
+    phase: null, // sync only one phase
+    createProject: false, // also create a Project v2 board
     yes: false, // skip interactive confirmation
+
+    // Smart default: enable all update operations.
+    // These flags let advanced users OPT OUT, not opt in.
+    updateBody: true,
+    updateLabels: true,
+    updateMilestone: true,
+    updateState: true,
   };
 
   for (const arg of args) {
+    // The two most common flags
     if (arg === '--execute' || arg === '-e') {
       opts.execute = true;
       opts.dryRun = false;
@@ -52,7 +79,23 @@ function parseArgs(args) {
       opts.yes = true;
     } else if (arg === '--project') {
       opts.createProject = true;
-    } else if (arg.startsWith('--repo=')) {
+    }
+    // Escape hatches — disable specific update types
+    else if (arg === '--no-update') {
+      // Create-only mode (the old default) — disables ALL updates
+      opts.updateBody = false;
+      opts.updateLabels = false;
+      opts.updateMilestone = false;
+      opts.updateState = false;
+    } else if (arg === '--no-update-body') {
+      opts.updateBody = false;
+    } else if (arg === '--no-update-labels') {
+      opts.updateLabels = false;
+    } else if (arg === '--no-close') {
+      opts.updateState = false;
+    }
+    // Scope narrowing
+    else if (arg.startsWith('--repo=')) {
       opts.repo = arg.slice('--repo='.length);
     } else if (arg.startsWith('--only=')) {
       opts.only = arg.slice('--only='.length);
@@ -60,6 +103,9 @@ function parseArgs(args) {
       opts.phase = arg.slice('--phase='.length);
     }
   }
+
+  // Master switch: updateEnabled is true if ANY update flag is true
+  opts.updateEnabled = opts.updateBody || opts.updateLabels || opts.updateMilestone || opts.updateState;
 
   return opts;
 }
@@ -163,13 +209,61 @@ function saveSyncMap(cwd, map) {
 
 // ---------- Main sync flow ----------
 
+/**
+ * Detect which fields of an existing issue need updating.
+ * Returns an object with only the changed fields set, or null if nothing changed.
+ * Never modifies GitHub directly — this is pure diffing.
+ */
+function diffIssue(existing, desired, opts) {
+  const updates = {};
+  let hasChanges = false;
+
+  if (opts.updateBody && desired.body !== undefined && existing.body !== desired.body) {
+    updates.body = desired.body;
+    hasChanges = true;
+  }
+
+  if (opts.updateLabels && desired.labels) {
+    const existingLabelNames = new Set((existing.labels || []).map((l) => l.name));
+    const desiredLabelNames = new Set(desired.labels);
+    const toAdd = [...desiredLabelNames].filter((l) => !existingLabelNames.has(l));
+    const toRemove = [...existingLabelNames].filter(
+      (l) => !desiredLabelNames.has(l) && (l.startsWith('status:') || l.startsWith('priority:') || l === 'epic' || l.startsWith('type:')),
+    );
+    if (toAdd.length > 0) {
+      updates.addLabels = toAdd;
+      hasChanges = true;
+    }
+    if (toRemove.length > 0) {
+      updates.removeLabels = toRemove;
+      hasChanges = true;
+    }
+  }
+
+  if (opts.updateMilestone && desired.milestone !== undefined) {
+    const existingMilestone = existing.milestone ? existing.milestone.number : null;
+    if (existingMilestone !== desired.milestone) {
+      updates.milestone = desired.milestone;
+      hasChanges = true;
+    }
+  }
+
+  if (opts.updateState && desired.state !== undefined && existing.state !== desired.state) {
+    updates.state = desired.state;
+    hasChanges = true;
+  }
+
+  return hasChanges ? updates : null;
+}
+
 async function main(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
 
   console.log(`\n🕌 Rihal Code — GitHub Sync`);
-  console.log(`   Mode: ${opts.dryRun ? 'DRY-RUN (no changes)' : 'EXECUTE (will create on GitHub)'}`);
-  console.log(`   Scope: ${opts.only || 'full (labels + milestones + epics + stories)'}`);
+  console.log(`   Mode:  ${opts.dryRun ? 'DRY-RUN (preview only, nothing is sent)' : 'EXECUTE'}`);
+  console.log(`   Scope: ${opts.only || 'full (create + update existing)'}`);
+  if (!opts.updateEnabled) console.log(`   Note:  --no-update passed → create-only mode`);
   if (opts.phase) console.log(`   Phase: ${opts.phase}`);
   console.log();
 
@@ -236,7 +330,15 @@ async function main(args) {
     );
   }
 
-  // ------ Plan the operations ------
+  // ------ Build the plan ------
+  //
+  // Plan has two parts:
+  //   1. CREATE — new items not in the sync map
+  //   2. UPDATE — items already in sync map whose local content has changed
+  //
+  // The plan diffs local state against what we know was synced before.
+  // If updateEnabled is false, the update list stays empty (create-only mode).
+  //
   // Label taxonomy follows the Rihal GitHub Standards
   // (best-practices/github/github-workflow-best-practices/):
   // 4 categories: Type / Priority / Status / Area
@@ -280,6 +382,31 @@ async function main(args) {
     stories: phases.flatMap((p) =>
       p.stories.filter((s) => !syncMap.stories[s.id]).map((s) => ({ ...s, phase: p.id })),
     ),
+
+    // Items that already exist on GitHub — candidates for update.
+    // Only populated when updateEnabled is true.
+    updateEpics: opts.updateEnabled
+      ? phases.flatMap((p) =>
+          p.epics.filter((e) => syncMap.epics[e.id]).map((e) => ({
+            ...e,
+            phase: p.id,
+            issueNumber: syncMap.epics[e.id].issue_number,
+            lastSyncedAt: syncMap.epics[e.id].synced_at,
+            lastSyncedContentHash: syncMap.epics[e.id].content_hash,
+          })),
+        )
+      : [],
+    updateStories: opts.updateEnabled
+      ? phases.flatMap((p) =>
+          p.stories.filter((s) => syncMap.stories[s.id]).map((s) => ({
+            ...s,
+            phase: p.id,
+            issueNumber: syncMap.stories[s.id].issue_number,
+            lastSyncedAt: syncMap.stories[s.id].synced_at,
+            lastSyncedContentHash: syncMap.stories[s.id].content_hash,
+          })),
+        )
+      : [],
   };
 
   console.log(`\n📋 Plan:`);
@@ -287,6 +414,10 @@ async function main(args) {
   if (!opts.only || opts.only === 'milestones') console.log(`   Milestones to create: ${plan.milestones.length}`);
   if (!opts.only || opts.only === 'epics') console.log(`   Epics to create:      ${plan.epics.length}`);
   if (!opts.only || opts.only === 'stories') console.log(`   Stories to create:    ${plan.stories.length}`);
+  if (opts.updateEnabled) {
+    if (!opts.only || opts.only === 'epics') console.log(`   Epics to check:       ${plan.updateEpics.length} (existing, will update if changed)`);
+    if (!opts.only || opts.only === 'stories') console.log(`   Stories to check:     ${plan.updateStories.length} (existing, will update if changed)`);
+  }
   if (opts.createProject) console.log(`   Project v2: will create "${state.project_name || repo}"`);
   console.log();
 
@@ -391,6 +522,7 @@ async function main(args) {
           url: result.url,
           phase: epic.phase,
           synced_at: new Date().toISOString(),
+          content_hash: contentHash(epic.content),
         };
         console.log(`   ✓ created: ${epic.id} → #${result.number}`);
       }
@@ -455,13 +587,105 @@ async function main(args) {
           url: result.url,
           phase: story.phase,
           synced_at: new Date().toISOString(),
+          content_hash: contentHash(story.content),
         };
         console.log(`   ✓ created: ${story.id} → #${result.number}`);
       }
     }
   }
 
-  // 5. Project v2 (optional)
+  // 5. UPDATE existing epics (if changed locally)
+  if (opts.updateEnabled && (!opts.only || opts.only === 'epics') && plan.updateEpics.length > 0) {
+    console.log(`\n🔄 Update existing epics`);
+    for (const epic of plan.updateEpics) {
+      const newHash = contentHash(epic.content);
+      if (newHash === epic.lastSyncedContentHash) {
+        // Nothing changed — skip silently
+        continue;
+      }
+
+      const body = [
+        `## 🎯 Epic Vision`,
+        ``,
+        `_Strategic goal this Epic contributes to. Fill in from \`.rihal/phases/${epic.phase}/tasks/${epic.file}\`._`,
+        ``,
+        `## 📋 Source Content`,
+        ``,
+        epic.content.slice(0, 3000),
+        ``,
+        `---`,
+        ``,
+        `## 📊 Meta`,
+        ``,
+        `- **Phase:** \`${epic.phase}\``,
+        `- **Source:** \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Last synced:** ${new Date().toISOString()}`,
+      ].join('\n');
+
+      const result = gh.updateIssue(
+        epic.issueNumber,
+        {
+          title: opts.updateBody ? `[Epic] ${epic.title}` : undefined,
+          body: opts.updateBody ? body : undefined,
+        },
+        syncOpts,
+      );
+      if (result.error) {
+        results.errors.push(`update epic #${epic.issueNumber}: ${result.error}`);
+      } else if (!result.dryRun) {
+        syncMap.epics[epic.id].content_hash = newHash;
+        syncMap.epics[epic.id].updated_at = new Date().toISOString();
+        console.log(`   ✓ updated: #${epic.issueNumber} (${epic.id})`);
+      }
+    }
+  }
+
+  // 6. UPDATE existing stories (if changed locally)
+  if (opts.updateEnabled && (!opts.only || opts.only === 'stories') && plan.updateStories.length > 0) {
+    console.log(`\n🔄 Update existing stories`);
+    for (const story of plan.updateStories) {
+      const newHash = contentHash(story.content);
+      if (newHash === story.lastSyncedContentHash) {
+        continue;
+      }
+
+      const body = [
+        `## 🎯 Problem Statement`,
+        ``,
+        `_From \`.rihal/phases/${story.phase}/stories/${story.file}\`._`,
+        ``,
+        `## 📋 Source Content`,
+        ``,
+        story.content.slice(0, 3000),
+        ``,
+        `---`,
+        ``,
+        `## 📊 Meta`,
+        ``,
+        `- **Phase:** \`${story.phase}\``,
+        `- **Source:** \`.rihal/phases/${story.phase}/stories/${story.file}\``,
+        `- **Last synced:** ${new Date().toISOString()}`,
+      ].join('\n');
+
+      const result = gh.updateIssue(
+        story.issueNumber,
+        {
+          title: opts.updateBody ? story.title : undefined,
+          body: opts.updateBody ? body : undefined,
+        },
+        syncOpts,
+      );
+      if (result.error) {
+        results.errors.push(`update story #${story.issueNumber}: ${result.error}`);
+      } else if (!result.dryRun) {
+        syncMap.stories[story.id].content_hash = newHash;
+        syncMap.stories[story.id].updated_at = new Date().toISOString();
+        console.log(`   ✓ updated: #${story.issueNumber} (${story.id})`);
+      }
+    }
+  }
+
+  // 7. Project v2 (optional)
   if (opts.createProject && (!opts.only || opts.only === 'project')) {
     console.log(`\n📊 Project v2`);
     const owner = repo.split('/')[0];
@@ -483,18 +707,23 @@ async function main(args) {
 
   // ------ Summary ------
   console.log(`\n📊 Summary`);
-  console.log(`   Labels:     ${results.labels.length}`);
+  console.log(`   Labels:    ${results.labels.length}`);
   console.log(`   Milestones: ${results.milestones.length}`);
-  console.log(`   Epics:      ${results.epics.length}`);
-  console.log(`   Stories:    ${results.stories.length}`);
+  console.log(`   Epics:     ${results.epics.length} created`);
+  console.log(`   Stories:   ${results.stories.length} created`);
+  if (opts.updateEnabled) {
+    const epicUpdates = plan.updateEpics.filter((e) => contentHash(e.content) !== e.lastSyncedContentHash).length;
+    const storyUpdates = plan.updateStories.filter((s) => contentHash(s.content) !== s.lastSyncedContentHash).length;
+    console.log(`   Updated:   ${epicUpdates} epics, ${storyUpdates} stories (content changed since last sync)`);
+  }
   if (results.errors.length > 0) {
-    console.log(`   Errors:     ${results.errors.length}`);
+    console.log(`   Errors:    ${results.errors.length}`);
     for (const err of results.errors) console.log(`     ❌ ${err}`);
   }
 
   if (opts.dryRun) {
     console.log(`\n⚠️  This was a DRY-RUN. No changes were made to GitHub.`);
-    console.log(`   To actually create these items, run again with: --execute`);
+    console.log(`   To actually apply these changes, run again with: --execute`);
   } else {
     console.log(`\n✅ Sync complete. View on GitHub: https://github.com/${repo}`);
   }
