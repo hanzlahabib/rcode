@@ -18,6 +18,7 @@ const {
   formatMapAsTable,
   getProjectProfile,
 } = require('./lib/model-profiles.cjs');
+const { writeJsonAtomic } = require('./lib/fsutil.cjs');
 
 module.exports = function setProfile(args) {
   const cwd = process.cwd();
@@ -73,7 +74,7 @@ module.exports = function setProfile(args) {
 
   const previous = config.model_profile || '(default)';
   config.model_profile = requested;
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+  writeJsonAtomic(configPath, config);
 
   console.log(`\n✅ Profile changed: ${previous} → ${requested}\n`);
 

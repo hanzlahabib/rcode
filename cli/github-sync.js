@@ -30,6 +30,7 @@ const path = require('path');
 const crypto = require('crypto');
 const gh = require('./lib/github.cjs');
 const { askText, PromptAbortError } = require('./lib/prompts.cjs');
+const { writeJsonAtomic } = require('./lib/fsutil.cjs');
 
 /**
  * Hash a string — used to detect content changes between syncs.
@@ -189,10 +190,10 @@ function loadSyncMap(cwd) {
 }
 
 function saveSyncMap(cwd, map) {
-  const integrationsDir = path.join(cwd, '.rihal/integrations');
-  fs.mkdirSync(integrationsDir, { recursive: true });
-  const mapPath = path.join(integrationsDir, 'github-map.json');
-  fs.writeFileSync(mapPath, JSON.stringify(map, null, 2) + '\n');
+  const mapPath = path.join(cwd, '.rihal/integrations/github-map.json');
+  // Atomic: partial writes on Ctrl+C would desync our local↔remote mapping
+  // and orphan issues. writeJsonAtomic ensures the file is either old or new.
+  writeJsonAtomic(mapPath, map);
 }
 
 // ---------- Main sync flow ----------
