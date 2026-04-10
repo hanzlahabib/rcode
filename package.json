@@ -1,0 +1,60 @@
+{
+  "name": "@hanzlahabib/rihal-method",
+  "version": "0.1.0",
+  "description": "Rihal Method — context-aware AI team methodology with 18 specialized agents, multi-agent Majlis consultation, and view-only Diwan dashboard. Inspired by Rihal Oman. Works with Claude Code and compatible AI harnesses.",
+  "main": "cli/index.js",
+  "bin": {
+    "rihal-method": "cli/index.js"
+  },
+  "scripts": {
+    "dashboard": "node server/dashboard.js",
+    "test": "node cli/test-compliance.js",
+    "postinstall": "node cli/postinstall.js"
+  },
+  "files": [
+    "cli/",
+    "rihal/",
+    "server/",
+    ".rihal-template/",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md"
+  ],
+  "keywords": [
+    "claude-code",
+    "claude",
+    "ai-agents",
+    "multi-agent",
+    "agentic-engineering",
+    "skills",
+    "rihal",
+    "oman",
+    "arabic",
+    "ai-methodology",
+    "team-simulation",
+    "orchestration"
+  ],
+  "author": {
+    "name": "Hanzla Habib",
+    "url": "https://github.com/hanzlahabib"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hanzlahabib/rihal-method.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hanzlahabib/rihal-method/issues"
+  },
+  "homepage": "https://github.com/hanzlahabib/rihal-method#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
+}
