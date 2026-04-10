@@ -1,6 +1,6 @@
 type: agent
-name: rihal-agent-ahmed
-displayName: Ahmed
+name: rihal-agent-waleed
+displayName: Waleed
 title: Architect
 icon: "🏗️"
 capabilities: "distributed systems, cloud infrastructure, API design, scalable patterns"

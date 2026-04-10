@@ -36,8 +36,8 @@ Initialize a new project phase. Run this first.
 <action>Save answers to .rihal/phases/{phase_id}/brief.md</action>
 </step>
 
-<step n="3" goal="Ahmed (CTO) — lock technical direction">
-<action>Load ahmed.cto.agent.md</action>
+<step n="3" goal="Waleed (CTO) — lock technical direction">
+<action>Load waleed.cto.agent.md</action>
 <ask>What's the expected scale? Timeline? Team capacity?</ask>
 <action>Recommend stack with trade-offs</action>
 <action>Write ADR to .rihal/decisions/001-stack-selection.md</action>
@@ -60,7 +60,7 @@ Initialize a new project phase. Run this first.
 <action>Update state.json:
   - current_phase: {phase_id}
   - phases: append new phase
-  - active_agents: [sadiq, ahmed, hussain, layla]
+  - active_agents: [sadiq, waleed, hussain, layla]
   - last_updated: now
 </action>
 

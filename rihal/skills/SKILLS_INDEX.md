@@ -8,7 +8,7 @@ Each agent has a persona, principles, and a capabilities table that lists which 
 
 | Rihal Name | Arabic | Role | Skill Path |
 |---|---|---|---|
-| **Ahmed** | أحمد | System Architect / CTO | `agents/ahmed-architect/` |
+| **Waleed** | وليد | System Architect / CTO | `agents/waleed-architect/` |
 | **Sadiq** | صادق | Business Analyst / Strategy | `agents/sadiq-analyst/` |
 | **Hussain (PM)** | حسين | Product Manager | `agents/hussain-pm/` |
 | **Hussain (SM)** | حسين | Scrum Master | `agents/hussain-sm/` |

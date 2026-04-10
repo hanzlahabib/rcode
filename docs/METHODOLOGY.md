@@ -32,7 +32,7 @@ Because a real software team has nine distinct roles. Fewer and you lose special
                           |
                   +-------+-------+
                   |               |
-             Ahmed (CTO)    Hussain (PM)
+             Waleed (CTO)    Hussain (PM)
                   |               |
              [the how]      [the what & when]
                   |               |
@@ -196,21 +196,21 @@ If your project is under 10 files or will be thrown away in a week, Rihal Method
 ## The Core Loop
 
 ```
-1. Kickoff (Sadiq + Ahmed + Hussain + Layla)
+1. Kickoff (Sadiq + Waleed + Hussain + Layla)
    → .rihal/phases/{phase}/brief.md
    → .rihal/decisions/001-stack.md
 
 2. Sprint Plan (Hussain)
    → .rihal/phases/{phase}/sprints.md
 
-3. Build Feature (Hussain → Ahmed → Layla → Omar → Fatima)
+3. Build Feature (Hussain → Waleed → Layla → Omar → Fatima)
    → Code committed
    → .rihal/progress/session-{date}.md
 
 4. Context Reset (as needed)
    → .rihal/context/active.md
 
-5. Code Review (Omar + Ahmed + Fatima)
+5. Code Review (Omar + Waleed + Fatima)
    → .rihal/artifacts/reviews/
 
 6. Ship It (Fatima → Khalid → Noor)
@@ -223,7 +223,7 @@ If your project is under 10 files or will be thrown away in a week, Rihal Method
 8. Strategy Session (as needed, Sadiq)
    → .rihal/decisions/strat-{date}.md
 
-9. Pitch Deck (Sadiq + Ahmed + Noor + Layla)
+9. Pitch Deck (Sadiq + Waleed + Noor + Layla)
    → .rihal/artifacts/pitch/
 ```
 

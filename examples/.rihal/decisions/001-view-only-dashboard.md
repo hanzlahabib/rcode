@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-04-10
-**Decider:** Ahmed (CTO)
+**Decider:** Waleed (CTO)
 
 ## Context
 

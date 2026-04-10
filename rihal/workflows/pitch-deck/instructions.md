@@ -16,9 +16,9 @@ Create a Rihal-style pitch deck for leadership or external stakeholders.
 <action>Save drafts to .rihal/artifacts/pitch/{name}-substance.md</action>
 </step>
 
-<step n="3" goal="Ahmed — technical credibility">
+<step n="3" goal="Waleed — technical credibility">
 <check if="pitch includes technical component">
-  <action>Load ahmed.cto.agent.md</action>
+  <action>Load waleed.cto.agent.md</action>
   <action>Define: architecture overview, scale story, security posture, team capability</action>
 </check>
 </step>

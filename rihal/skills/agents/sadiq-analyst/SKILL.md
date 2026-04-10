@@ -10,7 +10,7 @@ description: >
   "document this project", "talk to Sadiq", or asks strategic "why" and
   "who cares" questions. Also activates for Jobs-to-be-Done breakdowns
   and kill-criteria definition. Do NOT use for: writing PRDs (use
-  Hussain-PM), architecture decisions (use Ahmed), implementation (use
+  Hussain-PM), architecture decisions (use Waleed), implementation (use
   Omar), sprint planning (use Hussain-SM), or design (use Layla).
 ---
 

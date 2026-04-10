@@ -21,8 +21,8 @@ Check:
 - Test coverage
 </step>
 
-<step n="4" goal="Ahmed — architectural review">
-<action>Load ahmed.cto.agent.md (only if non-trivial change)</action>
+<step n="4" goal="Waleed — architectural review">
+<action>Load waleed.cto.agent.md (only if non-trivial change)</action>
 Check:
 - Respects existing architecture
 - No new dependencies added silently

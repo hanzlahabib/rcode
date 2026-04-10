@@ -1,85 +1,247 @@
 # Rihal Method — Team Roster
-# Replace these Arabic placeholders with your actual team members.
-# The agent files will reference names from this file at runtime.
+#
+# Real Rihal team members are marked `real: true`. Placeholders are
+# marked with `real: false` and a note — replace with your actual
+# colleagues.
+#
+# Author Hanzla Habib uses this module as a personal assistant for his
+# Rihal work, so the agent names reflect (or approximate) real Rihal
+# colleagues where known.
 
 team:
-  - id: architect
-    name: Ahmed
-    arabic_name: أحمد
-    role: CTO
-    agent_file: agents/ahmed.cto.agent.md
-    personality: pragmatic, security-conscious, architecture-first
-    decision_style: data-driven with final technical authority
-    focus: technical architecture, scalability, team capability
+  # ============================================================
+  # Strategy & Leadership
+  # ============================================================
 
   - id: strategist
-    name: Sadiq
+    name: Sadiq Damani
     arabic_name: صادق
     role: Director of Strategy
+    real: true
+    source: Rihal company research doc
+    authority: Strategic direction, market prioritization, go/no-go decisions
     agent_file: agents/sadiq.strategy.agent.md
-    personality: big-picture, market-aware, outcomes over outputs
-    decision_style: market-driven, ROI-focused
+    skill_path: skills/agents/sadiq-analyst/
     focus: business strategy, market fit, initiative prioritization
+
+  # ============================================================
+  # Technology Leadership Chain
+  # CTO → Tech & Development Director → Engineering Manager
+  # ============================================================
+
+  - id: cto
+    name: Waleed Al Harthi
+    arabic_name: وليد
+    role: Chief Technology Officer
+    real: true
+    authority: Final say on tech stack, architecture, security posture, technical direction
+    agent_file: agents/waleed.cto.agent.md
+    skill_path: skills/agents/waleed-architect/
+    focus: tech stack, architecture, scalability, security, team capability
+
+  - id: tech_director
+    name: Ahmed Al Hassani
+    arabic_name: أحمد الحسني
+    role: Technology & Development Director
+    real: true
+    authority: Engineering standards, delivery timelines, cross-team coordination, tech debt backlog
+    agent_file: agents/ahmed-hassani.tech-director.agent.md
+    skill_path: skills/agents/ahmed-hassani-director/
+    focus: delivery discipline, DORA metrics, engineering culture, cross-team coordination
+
+  - id: eng_manager
+    name: Nasser
+    arabic_name: ناصر
+    role: Software Engineering Manager
+    real: true
+    authority: Individual performance, 1:1s, hiring, onboarding, squad composition, burnout prevention
+    agent_file: agents/nasser.eng-manager.agent.md
+    skill_path: skills/agents/nasser-eng-manager/
+    focus: 1:1s, hiring pipelines, growth plans, team health
+
+  # ============================================================
+  # Product Management
+  # ============================================================
 
   - id: product_manager
     name: Hussain
     arabic_name: حسين
     role: Product Manager
+    real: false
+    note: placeholder — replace with your real PM
+    authority: Product scope, requirements, PRD ownership
     agent_file: agents/hussain.pm.agent.md
-    personality: user-obsessed, ruthless prioritizer, stakeholder diplomat
-    decision_style: user research + data
+    skill_path: skills/agents/hussain-pm/
     focus: sprint planning, requirements, stakeholder management
+
+  - id: scrum_master
+    name: Hussain
+    arabic_name: حسين
+    role: Scrum Master
+    real: false
+    note: Same person as PM, wearing SM hat
+    authority: Sprint operations, story flow, retros
+    agent_file: agents/hussain.pm.agent.md
+    skill_path: skills/agents/hussain-sm/
+    focus: sprint ceremonies, story preparation, course correction
+
+  # ============================================================
+  # Design
+  # ============================================================
 
   - id: designer
     name: Layla
     arabic_name: ليلى
     role: Lead Designer
+    real: false
+    note: placeholder — replace with your real designer
+    authority: UI/UX decisions, design system, accessibility standards
     agent_file: agents/layla.design.agent.md
-    personality: craft-obsessed, accessibility advocate, system thinker
-    decision_style: user testing + design principles
-    focus: UI/UX, design system, usability
+    skill_path: skills/agents/layla-designer/
+    focus: UX design, design system, WCAG compliance
 
-  - id: engineer
+  # ============================================================
+  # Engineering — Full-Stack + Specialists
+  # ============================================================
+
+  - id: engineer_fullstack
     name: Omar
     arabic_name: عمر
     role: Senior Full-Stack Engineer
+    real: false
+    note: placeholder — generalist engineer
+    authority: Implementation, refactoring, code review
     agent_file: agents/omar.engineer.agent.md
-    personality: pragmatic, test-driven, refactor-friendly
-    decision_style: "simplest thing that works"
-    focus: implementation, code review, mentorship
+    skill_path: skills/agents/omar-engineer/
+    focus: full-stack implementation, code review, mentorship
+
+  - id: frontend
+    name: Haitham Al Khamiyasi
+    arabic_name: هيثم
+    role: Senior Frontend Engineer
+    real: true
+    source: provided by Hanzla (author)
+    authority: Frontend implementation, Arabic RTL, pixel-perfect UIs, website clones
+    skill_path: skills/agents/haitham-frontend/
+    focus: Next.js, TypeScript, Tailwind, shadcn/ui, bilingual UIs, clone-website
+    stack:
+      - React 18
+      - Next.js 15 App Router
+      - TypeScript strict
+      - Tailwind v4
+      - shadcn/ui
+      - next-intl
+      - Framer Motion
+    note: |
+      Hanzla Habib (module author) is also a frontend engineer at Rihal.
+      Haitham is a real Rihal frontend colleague.
+
+  - id: backend
+    name: Yousef
+    arabic_name: يوسف
+    role: Senior Backend Engineer
+    real: false
+    note: placeholder — replace with your real backend engineer
+    authority: APIs, database schemas, data pipelines, integrations
+    skill_path: skills/agents/yousef-backend/
+    focus: REST/GraphQL APIs, PostgreSQL, RPA, enterprise integrations
+
+  - id: ml_engineer
+    name: Zayd
+    arabic_name: زيد
+    role: Senior ML Engineer
+    real: false
+    note: placeholder — replace with your real ML engineer
+    authority: ML model selection, training, evaluation, LLM integration
+    skill_path: skills/agents/zayd-ml/
+    focus: NLP (incl. Arabic), RAG, LLM integration, model eval rigor
+
+  # ============================================================
+  # Quality
+  # ============================================================
 
   - id: quality
     name: Fatima
     arabic_name: فاطمة
     role: QA Lead
+    real: false
+    note: placeholder — replace with your real QA lead
+    authority: Test strategy, release gating, bug triage
     agent_file: agents/fatima.qa.agent.md
-    personality: detail-obsessed, edge-case hunter, process-oriented
-    decision_style: risk-based, evidence-first
-    focus: testing strategy, quality gates, bug triage
+    skill_path: skills/agents/fatima-qa/
+    focus: testing strategy, quality gates, edge case hunting
+
+  # ============================================================
+  # Operations
+  # ============================================================
 
   - id: devops
     name: Khalid
     arabic_name: خالد
     role: DevOps Engineer
+    real: false
+    note: placeholder — replace with your real DevOps engineer
+    authority: CI/CD, infrastructure, monitoring, deployment
     agent_file: agents/khalid.devops.agent.md
-    personality: reliability-focused, automation-lover, paranoid about production
-    decision_style: "if it's not monitored, it's broken"
-    focus: CI/CD, infrastructure, monitoring, deployment
+    focus: CI/CD, infra, monitoring, incident response
+
+  # ============================================================
+  # Content & Marketing
+  # ============================================================
 
   - id: scribe
     name: Noor
     arabic_name: نور
     role: Technical Writer & Presentation Lead
+    real: false
+    note: placeholder — replace with your real tech writer
+    authority: Documentation, pitch decks, presentations
     agent_file: agents/noor.scribe.agent.md
-    personality: clarity-obsessed, storyteller, audience-aware
-    decision_style: "if the reader doesn't get it, it doesn't exist"
-    focus: documentation, pitch decks, presentations, communication
+    skill_path: skills/agents/noor-writer/
+    focus: technical writing, pitch decks, audience-aware communication
+
+  - id: marketing
+    name: Mariam
+    arabic_name: مريم
+    role: Marketing Lead
+    real: false
+    note: placeholder — replace with your real marketing lead
+    authority: Go-to-market, positioning, client-facing messaging, case studies
+    skill_path: skills/agents/mariam-marketing/
+    focus: B2B enterprise marketing, gov procurement, Arabic-English messaging
+
+  # ============================================================
+  # Meta Agents — Orchestration and Council
+  # ============================================================
+
+  - id: orchestrator
+    name: Raees
+    arabic_name: رئيس
+    role: Project Orchestration Director
+    real: false
+    note: meta-agent — dispatches work to specialists
+    authority: Work dispatch, phase sequencing, handoff coordination
+    agent_file: agents/raees.orchestrator.agent.md
+    skill_path: skills/agents/raees-orchestrator/
+    focus: routing requests, execution sequences, parallelizing work
 
   - id: council
     name: Majlis
     arabic_name: مجلس
-    role: The Council (Dashboard Server)
+    role: Consulting Council
+    real: false
+    note: meta-agent — convenes full team for cross-domain discussions
+    authority: Multi-agent consultation, synthesis with dissent
     agent_file: agents/majlis.council.agent.md
-    personality: observer, transparency-provider
-    decision_style: read-only
-    focus: shows all project state in a view-only dashboard
+    skill_path: skills/agents/majlis-council/
+    focus: cross-domain discussions, strategic decisions, crisis response
+
+  - id: registry
+    name: Diwan
+    arabic_name: ديوان
+    role: Dashboard Registry (view-only)
+    real: false
+    note: renamed from old Majlis dashboard — now the ديوان (registry)
+    authority: None (read-only)
+    agent_file: agents/diwan.dashboard.agent.md
+    focus: runs the view-only dashboard server on localhost

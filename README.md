@@ -29,7 +29,7 @@ Rihal is one of Oman's fastest-growing tech companies (2,441% growth, Series A 2
 
 | Agent | Arabic | Role | Authority |
 |---|---|---|---|
-| **Ahmed** | أحمد | System Architect / CTO | Tech stack, architecture, security |
+| **Waleed** | وليد | System Architect / CTO | Tech stack, architecture, security |
 | **Sadiq** | صادق | Business Analyst / Strategy | Business direction, prioritization |
 | **Hussain (PM)** | حسين | Product Manager | Product vision, requirements, PRDs |
 | **Hussain (SM)** | حسين | Scrum Master | Sprint ops, story flow, retros |
@@ -66,7 +66,7 @@ rihal-method/
 │   ├── config.yaml
 │   ├── team.yaml                 # ← replace Arabic placeholders with real team
 │   ├── agents/
-│   │   ├── ahmed.cto.agent.md
+│   │   ├── waleed.cto.agent.md
 │   │   ├── sadiq.strategy.agent.md
 │   │   ├── hussain.pm.agent.md
 │   │   ├── layla.design.agent.md
@@ -184,8 +184,8 @@ kill $(lsof -t -i:7717)
 
 > **Strategy without execution is hallucination. Execution without strategy is drift. Rihal Method forces both.**
 
-- **Sadiq asks "why?"** before Ahmed asks "how?"
-- **Ahmed locks the stack** before Omar writes code
+- **Sadiq asks "why?"** before Waleed asks "how?"
+- **Waleed locks the stack** before Omar writes code
 - **Hussain breaks features** before anyone commits
 - **Layla designs states** before engineering wires them
 - **Fatima gates releases** before Khalid deploys

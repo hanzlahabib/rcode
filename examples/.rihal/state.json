@@ -3,7 +3,7 @@
   "created": "2026-04-10T00:00:00Z",
   "current_phase": "phase-01-foundation",
   "phases": ["phase-01-foundation"],
-  "active_agents": ["ahmed", "hussain", "omar"],
+  "active_agents": ["waleed", "hussain", "omar"],
   "context_version": 1,
   "last_updated": "2026-04-10T11:40:00Z"
 }

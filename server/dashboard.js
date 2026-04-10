@@ -309,6 +309,18 @@ function renderHtml(state) {
     background: rgba(16, 185, 129, 0.1);
     border-color: #10b981;
   }
+  .real-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
   .phase-list, .decision-list, .progress-list {
     display: flex;
     flex-direction: column;
@@ -448,18 +460,26 @@ ${!state.exists ? `
     <div class="body">
       <div class="agents">
         ${[
-          { name: 'Ahmed', arabic: 'أحمد', role: 'CTO' },
-          { name: 'Sadiq', arabic: 'صادق', role: 'Strategy' },
-          { name: 'Hussain', arabic: 'حسين', role: 'Product Manager' },
+          { name: 'Sadiq Damani', arabic: 'صادق', role: 'Director of Strategy', real: true },
+          { name: 'Waleed Al Harthi', arabic: 'وليد', role: 'CTO', real: true },
+          { name: 'Ahmed Al Hassani', arabic: 'أحمد الحسني', role: 'Technology & Development Director', real: true },
+          { name: 'Nasser', arabic: 'ناصر', role: 'Engineering Manager', real: true },
+          { name: 'Hussain', arabic: 'حسين', role: 'PM + Scrum Master' },
           { name: 'Layla', arabic: 'ليلى', role: 'Lead Designer' },
-          { name: 'Omar', arabic: 'عمر', role: 'Senior Engineer' },
+          { name: 'Omar', arabic: 'عمر', role: 'Full-Stack Engineer' },
+          { name: 'Haitham Al Khamiyasi', arabic: 'هيثم', role: 'Senior Frontend', real: true },
+          { name: 'Yousef', arabic: 'يوسف', role: 'Senior Backend' },
+          { name: 'Zayd', arabic: 'زيد', role: 'ML Engineer' },
           { name: 'Fatima', arabic: 'فاطمة', role: 'QA Lead' },
           { name: 'Khalid', arabic: 'خالد', role: 'DevOps' },
           { name: 'Noor', arabic: 'نور', role: 'Scribe' },
-          { name: 'Majlis', arabic: 'مجلس', role: 'Dashboard' },
+          { name: 'Mariam', arabic: 'مريم', role: 'Marketing Lead' },
+          { name: 'Raees', arabic: 'رئيس', role: 'Orchestration Director' },
+          { name: 'Majlis', arabic: 'مجلس', role: 'Consulting Council' },
+          { name: 'Diwan', arabic: 'ديوان', role: 'Dashboard Registry' },
         ].map(a => `
-          <div class="agent-card ${activeAgents.includes(a.name.toLowerCase()) ? 'active' : ''}">
-            <div class="name">${a.name}</div>
+          <div class="agent-card ${activeAgents.includes(a.name.split(' ')[0].toLowerCase()) ? 'active' : ''}">
+            <div class="name">${a.name}${a.real ? ' <span class="real-badge">real</span>' : ''}</div>
             <div class="arabic">${a.arabic}</div>
             <div class="role">${a.role}</div>
           </div>

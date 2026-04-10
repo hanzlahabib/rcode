@@ -9,7 +9,7 @@ description: >
   sprint goal", "course correct", "change the sprint mid-way", or
   "scrum master". Also activates for epic reviews and agile ceremony
   facilitation. Do NOT use for: writing PRDs or defining product vision
-  (use Hussain-PM), market research (use Sadiq), architecture (use Ahmed),
+  (use Hussain-PM), market research (use Sadiq), architecture (use Waleed),
   implementation (use Omar), or testing (use Fatima).
 ---
 

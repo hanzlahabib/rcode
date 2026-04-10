@@ -10,7 +10,7 @@ Rihal Method — self-contained AI team methodology with 9 agents, 39 skills, an
 Ship v0.1.0 with 9 agents, 11 workflows, view-only dashboard, and complete methodology docs.
 
 ## Last completed
-- Agent definitions for all 9 roles (Ahmed, Sadiq, Hussain, Layla, Omar, Fatima, Khalid, Noor, Majlis)
+- Agent definitions for all 9 roles (Waleed, Sadiq, Hussain, Layla, Omar, Fatima, Khalid, Noor, Majlis)
 - 11 workflows including context-reset and context-build
 - Majlis dashboard server (single Node.js file, no dependencies)
 - README and METHODOLOGY.md

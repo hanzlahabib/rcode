@@ -23,9 +23,9 @@ The main loop for implementing a feature. Run per feature, not per project.
 <action>Save to .rihal/phases/{current_phase}/stories/{story-id}.md</action>
 </step>
 
-<step n="4" goal="Ahmed — architectural decision (if non-trivial)">
+<step n="4" goal="Waleed — architectural decision (if non-trivial)">
 <check if="feature touches multiple services OR introduces new pattern">
-  <action>Load ahmed.cto.agent.md</action>
+  <action>Load waleed.cto.agent.md</action>
   <action>Invoke *adr to write decision record</action>
 </check>
 </step>

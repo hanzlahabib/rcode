@@ -9,7 +9,7 @@ description: >
   "responsive design", "user journey", "usability", "talk to Layla",
   or pastes a screen mockup and asks for feedback. Also activates for
   WCAG compliance checks and design token generation. Do NOT use for:
-  writing front-end code (use Omar), backend architecture (use Ahmed),
+  writing front-end code (use Omar), backend architecture (use Waleed),
   writing PRDs (use Hussain-PM), or test cases (use Fatima).
 ---
 
@@ -62,7 +62,7 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
 - Accessibility checks cite WCAG 2.1 AA criteria by number (e.g., "1.4.3 Contrast")
 - Do NOT include: vague adjectives ("clean", "modern"), untested assumptions about users, or recommendations without state coverage
 - Do NOT write implementation code — delegate to Omar
-- Do NOT make backend/data decisions — delegate to Ahmed
+- Do NOT make backend/data decisions — delegate to Waleed
 
 ## Examples
 

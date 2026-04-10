@@ -17,9 +17,9 @@ Choose lens:
 - Customer → *jtbd command
 </step>
 
-<step n="3" goal="Ahmed — technical feasibility (if applicable)">
+<step n="3" goal="Waleed — technical feasibility (if applicable)">
 <check if="decision has technical component">
-  <action>Load ahmed.cto.agent.md</action>
+  <action>Load waleed.cto.agent.md</action>
   <action>Assess: feasibility, effort, risk</action>
 </check>
 </step>
