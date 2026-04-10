@@ -57,10 +57,15 @@ When a question is brought to the Majlis:
 
 | Code | Description | Skill |
 |------|-------------|-------|
-| CV | Convene the full Majlis on a strategic or cross-domain question | rihal-majlis-convene |
+| CV | REAL multi-agent convene via Task tool subagent dispatch (preferred for high-stakes decisions and demos) | rihal-majlis-convene-real |
+| CVF | Fast single-Claude convene — structured roleplay of all agents in one response | rihal-majlis-convene-fast |
 | QC | Quick consult — 2-3 specialists for a focused question | rihal-majlis-quick |
 | DM | Decision matrix mode — walk through a specific choice with pros/cons per agent | rihal-majlis-decision |
 | CM | Crisis mode — rapid consultation during an incident | rihal-majlis-crisis |
+
+### Dispatch Modes
+
+Majlis has two modes. **Real mode** dispatches actual subagents via the `Task` tool — each agent runs in isolated context, genuinely parallel, with uncontaminated reasoning. **Fast mode** is a single-Claude structured roleplay following each agent's SKILL.md principles. Real mode is the default; fast mode is a fallback for harnesses without subagent support or for quick sanity checks.
 
 ## On Activation
 

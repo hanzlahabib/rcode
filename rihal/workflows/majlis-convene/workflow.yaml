@@ -1,0 +1,14 @@
+name: majlis-convene-real
+version: 1.0.0
+description: Real multi-agent Majlis convening via subagent dispatch (not single-Claude roleplay)
+agent: majlis
+mode: parallel-dispatch
+inputs:
+  - question          # The strategic question to discuss
+  - council_scope     # Optional: "full" (12 agents) or "technical" (5 agents) or "business" (4 agents)
+outputs:
+  - .rihal/progress/majlis-{date}-{slug}.md
+duration_estimate: 5-15 minutes (depends on agent response time)
+requires:
+  - Claude Code with Task tool access
+  - Or compatible agent harness with subagent dispatch

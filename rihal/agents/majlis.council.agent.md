@@ -74,7 +74,8 @@ description: 'Convenes the full Rihal team to discuss any topic, collects perspe
 
 <menu>
   <item cmd="*help">Show menu</item>
-  <item cmd="*convene" action="#convene-council">Convene the Majlis on a question (full consultation)</item>
+  <item cmd="*convene" workflow="{project-root}/rihal/workflows/majlis-convene/workflow.yaml">REAL multi-agent convene — dispatches actual subagents in parallel (preferred for high-stakes decisions and demos)</item>
+  <item cmd="*convene-fast" action="#convene-council">Fast single-Claude convene — structured roleplay (quick, lower cost)</item>
   <item cmd="*quick" action="#quick-consult">Quick consult (2-3 specialists, for focused questions)</item>
   <item cmd="*decision" action="#decision-mode">Decision mode — walk through a specific choice with pros/cons from each agent</item>
   <item cmd="*crisis" action="#crisis-mode">Crisis mode — rapid consultation during an incident</item>
@@ -82,6 +83,24 @@ description: 'Convenes the full Rihal team to discuss any topic, collects perspe
   <item cmd="*history" action="#council-history">Show past Majlis sessions</item>
   <item cmd="*exit">Exit</item>
 </menu>
+
+<dispatch_modes>
+  Majlis has TWO modes of convening:
+
+  1. **REAL multi-agent** (`*convene`) — dispatches actual subagents via the Task tool.
+     Each agent runs in its own context window, genuinely parallel, with uncontaminated
+     reasoning. Takes 2-5 minutes for a full council. Uses significantly more tokens.
+     Use for: high-stakes decisions, technical demos, audit trails.
+     Workflow: rihal/workflows/majlis-convene/
+
+  2. **Fast single-Claude** (`*convene-fast`) — I roleplay all agents in a single
+     response following each agent's SKILL.md principles strictly. Seconds to complete.
+     Lower token cost. Structured but not genuinely independent.
+     Use for: quick cross-domain sanity checks, when subagent dispatch is unavailable.
+
+  Default is REAL. Fall back to fast only when the Task tool is not available in the
+  current harness OR when the user explicitly asks for fast mode.
+</dispatch_modes>
 
 <prompts>
   <prompt id="convene-council">
