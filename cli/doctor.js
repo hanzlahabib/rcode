@@ -1,9 +1,23 @@
 /**
- * rihal-code doctor — run compliance check on skills
+ * rihal-code doctor — preflight + compliance checks
+ *
+ * Two sections:
+ *   1. Preflight — environment checks that affect whether install/sync will work
+ *      (node version, writable .rihal/, model-profiles.json validity, optional
+ *      git/gh availability, agent manifest drift)
+ *   2. Package compliance — 5-component skill standard on the package source
+ *
+ * Exit codes:
+ *   0 — everything green (some warn-only items may still have printed ⚠)
+ *   1 — any hard failure (preflight BLOCK or compliance failures)
  */
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
+const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
+
+// ---------- Shared helpers ----------
 
 function findSkillFiles(dir) {
   const results = [];
@@ -29,12 +43,159 @@ function checkCompliance(filePath) {
   return missing;
 }
 
-module.exports = function doctor(args, { packageRoot }) {
-  console.log(`\n🕌 Rihal Code — Compliance Doctor\n`);
+function isWritable(dir) {
+  try {
+    fs.accessSync(dir, fs.constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  // Core skills (init, help, brainstorming, etc.) are utility skills with their
-  // own conventions — they don't follow the 5-component standard used by agents
-  // and actions. Skip them in the compliance check.
+function commandAvailable(cmd) {
+  const result = spawnSync('which', [cmd], { stdio: 'ignore' });
+  return result.status === 0;
+}
+
+// ---------- Preflight checks ----------
+
+/**
+ * Each check returns { label, status, message }.
+ * status ∈ 'ok' | 'warn' | 'fail'.
+ *
+ * ok   — no output beyond the ✓
+ * warn — optional capability missing; non-fatal
+ * fail — hard problem; exits non-zero
+ */
+function runPreflight(cwd, packageRoot) {
+  const checks = [];
+
+  // 1. Node version ≥ 18 (from package.json engines)
+  const nodeVersion = process.versions.node;
+  const major = parseInt(nodeVersion.split('.')[0], 10);
+  checks.push({
+    label: 'Node.js ≥ 18',
+    status: major >= 18 ? 'ok' : 'fail',
+    message: `v${nodeVersion}${major < 18 ? ' — upgrade to 18 LTS or newer' : ''}`,
+  });
+
+  // 2. .rihal/ state directory — only check if project is initialized
+  const rihalDir = path.join(cwd, '.rihal');
+  if (fs.existsSync(rihalDir)) {
+    checks.push({
+      label: '.rihal/ writable',
+      status: isWritable(rihalDir) ? 'ok' : 'fail',
+      message: rihalDir,
+    });
+  } else {
+    checks.push({
+      label: '.rihal/ state',
+      status: 'warn',
+      message: 'not initialized in this directory (run `rihal-code install`)',
+    });
+  }
+
+  // 3. Package model-profiles.json parses and has expected profiles
+  const profilesPath = path.join(packageRoot, 'rihal/config/model-profiles.json');
+  if (fs.existsSync(profilesPath)) {
+    try {
+      const profiles = JSON.parse(fs.readFileSync(profilesPath, 'utf8'));
+      const expected = ['quality', 'balanced', 'budget', 'inherit'];
+      const names = Object.keys(profiles.profiles || profiles);
+      const missing = expected.filter((p) => !names.includes(p));
+      if (missing.length === 0) {
+        checks.push({
+          label: 'model-profiles.json',
+          status: 'ok',
+          message: `${names.length} profiles (${names.join(', ')})`,
+        });
+      } else {
+        checks.push({
+          label: 'model-profiles.json',
+          status: 'fail',
+          message: `missing expected profiles: ${missing.join(', ')}`,
+        });
+      }
+    } catch (e) {
+      checks.push({
+        label: 'model-profiles.json',
+        status: 'fail',
+        message: `invalid JSON: ${e.message}`,
+      });
+    }
+  } else {
+    checks.push({
+      label: 'model-profiles.json',
+      status: 'fail',
+      message: 'missing from package',
+    });
+  }
+
+  // 4. git availability — warn-only (many features don't need it)
+  checks.push({
+    label: 'git CLI',
+    status: commandAvailable('git') ? 'ok' : 'warn',
+    message: commandAvailable('git') ? 'available' : 'not found (some features disabled)',
+  });
+
+  // 5. gh availability — warn-only (only github-sync needs it)
+  checks.push({
+    label: 'gh CLI',
+    status: commandAvailable('gh') ? 'ok' : 'warn',
+    message: commandAvailable('gh')
+      ? 'available (github-sync ready)'
+      : 'not found (github-sync unavailable)',
+  });
+
+  // 6. Agent manifest drift (only if .rihal/ is initialized — indicates installed editors)
+  if (fs.existsSync(rihalDir)) {
+    const editors = [];
+    if (fs.existsSync(path.join(cwd, '.claude/skills'))) editors.push('claude');
+    if (fs.existsSync(path.join(cwd, '.cursor/rules'))) editors.push('cursor');
+    if (fs.existsSync(path.join(cwd, '.windsurf/rules'))) editors.push('windsurf');
+    if (fs.existsSync(path.join(cwd, '.antigravity/agents'))) editors.push('antigravity');
+
+    if (editors.length > 0) {
+      const { reports, hasDrift } = verifyInstall(cwd, packageRoot, editors);
+      if (hasDrift) {
+        checks.push({
+          label: 'Agent manifest',
+          status: 'fail',
+          message: `drift detected across ${editors.join(', ')}`,
+          detail: formatReport(reports),
+        });
+      } else {
+        const totals = reports
+          .map((r) => `${r.editor}:${r.installedCount}`)
+          .join(' ');
+        checks.push({
+          label: 'Agent manifest',
+          status: 'ok',
+          message: totals,
+        });
+      }
+    }
+  }
+
+  return checks;
+}
+
+function printChecks(checks) {
+  let failures = 0;
+  for (const c of checks) {
+    const symbol = c.status === 'ok' ? '✓' : c.status === 'warn' ? '⚠' : '✗';
+    console.log(`   ${symbol} ${c.label.padEnd(22)} ${c.message}`);
+    if (c.detail) {
+      console.log(c.detail);
+    }
+    if (c.status === 'fail') failures++;
+  }
+  return failures;
+}
+
+// ---------- Package compliance ----------
+
+function runCompliance(packageRoot) {
   const skillDirs = [
     path.join(packageRoot, 'rihal/skills/agents'),
     path.join(packageRoot, 'rihal/skills/actions'),
@@ -58,41 +219,41 @@ module.exports = function doctor(args, { packageRoot }) {
   }
 
   if (problems.length > 0) {
-    console.log(`❌ ${failing} / ${totalSkills} skills are non-compliant:\n`);
+    console.log(`   ✗ ${failing} / ${totalSkills} skills are non-compliant:\n`);
     for (const p of problems) {
-      console.log(`   ${p.file}`);
-      console.log(`     missing: ${p.missing.join(', ')}`);
+      console.log(`     ${p.file}`);
+      console.log(`       missing: ${p.missing.join(', ')}`);
     }
   } else {
-    console.log(`✅ All ${totalSkills} skills are compliant with the 5-component standard.`);
+    console.log(
+      `   ✓ All ${totalSkills} skills compliant with 5-component standard`
+    );
   }
 
-  // Check digest count
-  const digestDir = path.join(packageRoot, 'rihal/digests');
-  if (fs.existsSync(digestDir)) {
-    const digestCount = fs.readdirSync(digestDir).filter(f => f.endsWith('.md') && f !== 'README.md').length;
-    console.log(`\n📋 Agent digests: ${digestCount}`);
-  }
+  return failing;
+}
 
-  // Check dashboard server
-  const dashboardPath = path.join(packageRoot, 'server/dashboard.js');
-  if (fs.existsSync(dashboardPath)) {
-    console.log(`📊 Dashboard server: present`);
-  }
+// ---------- Entrypoint ----------
 
-  // Check models config
-  const modelsPath = path.join(packageRoot, 'rihal/config/models.json');
-  if (fs.existsSync(modelsPath)) {
-    try {
-      const models = JSON.parse(fs.readFileSync(modelsPath, 'utf8'));
-      const agentCount = Object.keys(models.agents || {}).length;
-      const tierCount = Object.keys(models.tiers || {}).length;
-      console.log(`⚙️  Model config: ${tierCount} tiers, ${agentCount} agents mapped`);
-    } catch (e) {
-      console.log(`⚠️  Model config: exists but invalid JSON`);
-    }
-  }
+module.exports = function doctor(args, { packageRoot }) {
+  const cwd = process.cwd();
 
+  console.log(`\n🕌 Rihal Code — Doctor\n`);
+
+  console.log(`Preflight:`);
+  const checks = runPreflight(cwd, packageRoot);
+  const preflightFailures = printChecks(checks);
+
+  console.log(`\nPackage compliance:`);
+  const complianceFailures = runCompliance(packageRoot);
+
+  const totalFailures = preflightFailures + complianceFailures;
   console.log();
-  process.exit(failing > 0 ? 1 : 0);
+  if (totalFailures === 0) {
+    console.log(`✅ All checks passed.`);
+  } else {
+    console.log(`❌ ${totalFailures} check(s) failed — see above.`);
+  }
+  console.log();
+  process.exit(totalFailures > 0 ? 1 : 0);
 };
