@@ -28,8 +28,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const readline = require('readline');
 const gh = require('./lib/github.cjs');
+const { askText, PromptAbortError } = require('./lib/prompts.cjs');
 
 /**
  * Hash a string — used to detect content changes between syncs.
@@ -108,18 +108,6 @@ function parseArgs(args) {
   opts.updateEnabled = opts.updateBody || opts.updateLabels || opts.updateMilestone || opts.updateState;
 
   return opts;
-}
-
-// ---------- Interactive prompt ----------
-
-function prompt(question) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.trim().toLowerCase());
-    });
-  });
 }
 
 // ---------- Discover .rihal/ content ----------
@@ -428,8 +416,16 @@ async function main(args) {
       plan.labels.length + plan.milestones.length + plan.epics.length + plan.stories.length
     }`);
     console.log();
-    const answer = await prompt(`   Proceed? Type 'yes' to continue: `);
-    if (answer !== 'yes' && answer !== 'y') {
+    // Require literal "yes" (not just y) because this mutates remote state.
+    const answer = await askText(`   Proceed? Type 'yes' to continue: `, {
+      default: 'no',
+      validate: (v) => {
+        const lower = v.toLowerCase();
+        if (['yes', 'y', 'no', 'n'].includes(lower)) return true;
+        return `Please type 'yes' to confirm, or 'no' to abort.`;
+      },
+    });
+    if (!['yes', 'y'].includes(answer.toLowerCase())) {
       console.log(`\n❌ Aborted by user. No changes made.`);
       process.exit(0);
     }
@@ -731,6 +727,10 @@ async function main(args) {
 
 module.exports = function githubSync(args) {
   main(args).catch((err) => {
+    if (err instanceof PromptAbortError) {
+      console.log(`\n❌ GitHub sync cancelled — ${err.message}.`);
+      process.exit(0);
+    }
     console.error(`\n❌ GitHub sync failed:`, err.message);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
