@@ -63,6 +63,37 @@ function removeMatching(dir, predicate) {
 }
 
 /**
+ * Remove a directory only if it is completely empty. Safe — will never
+ * delete user content. Returns true if removed.
+ */
+function rmdirIfEmpty(dir) {
+  if (!fs.existsSync(dir)) return false;
+  try {
+    if (fs.readdirSync(dir).length === 0) {
+      fs.rmdirSync(dir);
+      return true;
+    }
+  } catch {
+    // ignore — could be a file, permission error, etc.
+  }
+  return false;
+}
+
+/**
+ * Cascade `rmdirIfEmpty` upward through a list of paths.
+ * Order matters: pass innermost first so each parent has a chance to
+ * become empty after its child is removed.
+ *
+ * Never touches `.rihal/` — that's managed separately by the state
+ * preservation flow.
+ */
+function cleanupEmptyDirs(cwd, relPaths) {
+  for (const rel of relPaths) {
+    rmdirIfEmpty(path.join(cwd, rel));
+  }
+}
+
+/**
  * Build the plan of what would be removed, without actually removing anything.
  * Returns an object with per-editor counts and a list of absolute paths.
  */
@@ -411,12 +442,6 @@ async function runUninstall(args) {
       removed += plan.claude.commands.length;
       console.log(`   ✓ removed .claude/commands/rihal/ (${plan.claude.commands.length} slash commands)`);
     }
-
-    // If .claude/commands/ is now empty, clean it up too
-    const commandsRoot = path.join(cwd, '.claude/commands');
-    if (fs.existsSync(commandsRoot) && fs.readdirSync(commandsRoot).length === 0) {
-      fs.rmSync(commandsRoot, { recursive: true, force: true });
-    }
   }
 
   if (editors.includes('cursor')) {
@@ -452,6 +477,23 @@ async function runUninstall(args) {
       console.log(`   ✓ stripped Rihal Code section from AGENTS.md`);
     }
   }
+
+  // Cleanup empty editor directories left behind after removing rihal-*
+  // entries. Only removes dirs that are COMPLETELY empty — never touches
+  // user content. Order matters: innermost first so each parent gets a
+  // chance to become empty after its child is removed.
+  // Not touching .rihal/ — that's handled by the state preservation flow.
+  cleanupEmptyDirs(cwd, [
+    '.claude/skills',
+    '.claude/commands',
+    '.claude',
+    '.cursor/rules',
+    '.cursor',
+    '.windsurf/rules',
+    '.windsurf',
+    '.antigravity/agents',
+    '.antigravity',
+  ]);
 
   // Handle .rihal/ state directory
   if (plan.stateDir) {
