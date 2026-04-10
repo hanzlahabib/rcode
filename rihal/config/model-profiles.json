@@ -1,0 +1,162 @@
+{
+  "$schema": "./model-profiles.schema.json",
+  "version": "1.0.0",
+  "description": "Model profiles for Rihal Method agents. Follows GSD (Get Shit Done) model profile architecture. Each profile maps every agent to a specific model tier. Switch profiles at runtime to balance quality vs cost vs runtime compatibility.",
+
+  "profiles": {
+    "quality": {
+      "description": "Maximum reasoning power. Opus for all decision-making agents, Sonnet for read-only verification. Use when: quota available, critical architecture work, strategic demos.",
+      "agents": {
+        "sadiq": "opus",
+        "waleed": "opus",
+        "ahmed-hassani": "opus",
+        "nasser": "opus",
+        "hussain-pm": "opus",
+        "hussain-sm": "sonnet",
+        "layla": "opus",
+        "zahra": "opus",
+        "omar": "opus",
+        "haitham": "opus",
+        "yousef": "opus",
+        "zayd": "opus",
+        "fatima": "sonnet",
+        "khalid": "sonnet",
+        "noor": "sonnet",
+        "mariam": "opus",
+        "raees": "opus",
+        "majlis": "opus",
+        "diwan": "haiku"
+      }
+    },
+
+    "balanced": {
+      "description": "Smart allocation (default). Opus only for deep-reasoning agents — strategists, CTO, branding, ML. Sonnet for execution and structured work. Haiku for high-volume summaries. Use when: normal day-to-day development.",
+      "agents": {
+        "sadiq": "opus",
+        "waleed": "opus",
+        "ahmed-hassani": "opus",
+        "nasser": "sonnet",
+        "hussain-pm": "opus",
+        "hussain-sm": "sonnet",
+        "layla": "sonnet",
+        "zahra": "opus",
+        "omar": "sonnet",
+        "haitham": "sonnet",
+        "yousef": "sonnet",
+        "zayd": "opus",
+        "fatima": "sonnet",
+        "khalid": "sonnet",
+        "noor": "haiku",
+        "mariam": "sonnet",
+        "raees": "sonnet",
+        "majlis": "opus",
+        "diwan": "haiku"
+      }
+    },
+
+    "budget": {
+      "description": "Minimal Opus usage. Sonnet for anything that writes code or synthesizes. Haiku for research, verification, and routing. Use when: conserving quota, high-volume work, less critical phases.",
+      "agents": {
+        "sadiq": "sonnet",
+        "waleed": "sonnet",
+        "ahmed-hassani": "sonnet",
+        "nasser": "haiku",
+        "hussain-pm": "sonnet",
+        "hussain-sm": "haiku",
+        "layla": "sonnet",
+        "zahra": "sonnet",
+        "omar": "sonnet",
+        "haitham": "sonnet",
+        "yousef": "sonnet",
+        "zayd": "sonnet",
+        "fatima": "sonnet",
+        "khalid": "haiku",
+        "noor": "haiku",
+        "mariam": "haiku",
+        "raees": "haiku",
+        "majlis": "sonnet",
+        "diwan": "haiku"
+      }
+    },
+
+    "inherit": {
+      "description": "Follow the current session model. All agents resolve to 'inherit'. Best when you switch models interactively (e.g., OpenCode /model command) or when using non-Anthropic providers (OpenRouter, local models) — otherwise Rihal Method may call Anthropic models directly, incurring unexpected costs.",
+      "agents": {
+        "sadiq": "inherit",
+        "waleed": "inherit",
+        "ahmed-hassani": "inherit",
+        "nasser": "inherit",
+        "hussain-pm": "inherit",
+        "hussain-sm": "inherit",
+        "layla": "inherit",
+        "zahra": "inherit",
+        "omar": "inherit",
+        "haitham": "inherit",
+        "yousef": "inherit",
+        "zayd": "inherit",
+        "fatima": "inherit",
+        "khalid": "inherit",
+        "noor": "inherit",
+        "mariam": "inherit",
+        "raees": "inherit",
+        "majlis": "inherit",
+        "diwan": "inherit"
+      }
+    }
+  },
+
+  "default_profile": "balanced",
+
+  "model_aliases": {
+    "description": "Short names for the common Claude models in 2026. These are used throughout the profiles table.",
+    "opus": "claude-opus-4-6",
+    "sonnet": "claude-sonnet-4-6",
+    "haiku": "claude-haiku-4-5-20251001",
+    "inherit": null
+  },
+
+  "resolution_rules": {
+    "description": "How to resolve which model an agent should use at dispatch time",
+    "steps": [
+      "1. Read .rihal/config.json (project-level config). If `model_overrides.{agent}` is set, use that.",
+      "2. If no override, look up the agent in the current profile's `agents` map.",
+      "3. If the result is 'inherit', return null/empty to let the runtime pick.",
+      "4. If the result is a tier name (opus/sonnet/haiku), resolve via model_aliases.",
+      "5. If it's a fully-qualified model ID, pass it through unchanged."
+    ]
+  },
+
+  "per_project_config_example": {
+    "description": "Example .rihal/config.json for per-project model profile + overrides",
+    "example": {
+      "model_profile": "balanced",
+      "model_overrides": {
+        "waleed": "opus",
+        "noor": "sonnet",
+        "hussain-pm": "inherit"
+      }
+    }
+  },
+
+  "runtime_compatibility": {
+    "description": "Different runtimes need different model ID formats",
+    "claude_code": "Use short aliases (opus/sonnet/haiku) or full Anthropic model IDs",
+    "codex": "Set profile to 'inherit' OR use model_overrides with OpenAI IDs (o3, o4-mini)",
+    "opencode": "Use 'inherit' profile to follow the live /model selection",
+    "gemini_cli": "Use 'inherit' profile and model_overrides with Gemini IDs (google/gemini-2.5-pro)",
+    "openrouter": "Use 'inherit' profile and model_overrides with OpenRouter IDs (anthropic/claude-opus-4-6)",
+    "local": "Use 'inherit' profile — runtime picks based on loaded model"
+  },
+
+  "design_rationale": {
+    "why_opus_for_sadiq": "Strategic framing affects months of work. Opus handles multi-variable optimization better.",
+    "why_opus_for_waleed": "Architecture decisions have year-2 change cost. Opus reasons about trade-offs more reliably.",
+    "why_opus_for_zahra": "Brand identity is deep creative work with long-term consequences.",
+    "why_opus_for_zayd": "ML architecture and Arabic NLP require careful model selection reasoning.",
+    "why_opus_for_majlis": "Synthesizing 12 agent voices into a coherent decision needs deep reasoning.",
+    "why_sonnet_for_executors": "Omar, Haitham, Yousef follow explicit story instructions. Sonnet handles this well.",
+    "why_haiku_for_noor": "Most writing tasks are high-volume and structured. Haiku is fast and cheap.",
+    "why_haiku_for_diwan": "Dashboard is deterministic — any model works. Save the quota.",
+    "why_inherit_profile": "Some runtimes let users switch models at runtime. Inherit keeps all agents aligned to that live selection. Also required for non-Anthropic providers."
+  }
+}
