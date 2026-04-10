@@ -237,12 +237,41 @@ async function main(args) {
   }
 
   // ------ Plan the operations ------
+  // Label taxonomy follows the Rihal GitHub Standards
+  // (best-practices/github/github-workflow-best-practices/):
+  // 4 categories: Type / Priority / Status / Area
   const plan = {
     labels: [
-      { name: 'rihal:phase', color: '1e3a8a', description: 'Rihal Code phase milestone' },
-      { name: 'rihal:epic', color: 'f59e0b', description: 'Rihal Code epic — parent of stories' },
-      { name: 'rihal:story', color: '059669', description: 'Rihal Code story — dev-ready unit of work' },
-      { name: 'rihal:backlog', color: '6b7280', description: 'Rihal Code backlog item — not yet scheduled' },
+      // Type (what kind of work)
+      { name: 'epic', color: '6f42c1', description: 'Strategic initiative spanning multiple sprints' },
+      { name: 'type:feature', color: '0e8a16', description: 'New functionality' },
+      { name: 'type:task', color: 'c5def5', description: 'Development work' },
+      { name: 'type:bug', color: 'd73a4a', description: 'Something is broken' },
+      { name: 'type:docs', color: '0075ca', description: 'Documentation' },
+
+      // Priority
+      { name: 'priority:critical', color: 'b60205', description: 'Drop everything' },
+      { name: 'priority:high', color: 'd93f0b', description: 'Important for sprint' },
+      { name: 'priority:medium', color: 'fbca04', description: 'Standard priority' },
+      { name: 'priority:low', color: '0e8a16', description: 'Nice to have' },
+
+      // Status (flow state)
+      { name: 'status:backlog', color: 'c5def5', description: 'Not started' },
+      { name: 'status:todo', color: '0075ca', description: 'Ready to start' },
+      { name: 'status:in-progress', color: 'fbca04', description: 'Currently working' },
+      { name: 'status:blocked', color: 'd73a4a', description: 'Cannot progress' },
+      { name: 'status:review', color: '6f42c1', description: 'Code review needed' },
+      { name: 'status:done', color: '0e8a16', description: 'Completed' },
+
+      // Area (team/layer)
+      { name: 'FE', color: '1e3a8a', description: 'Frontend' },
+      { name: 'BE', color: '0e8a16', description: 'Backend' },
+      { name: 'ML', color: '6f42c1', description: 'Machine Learning' },
+      { name: 'API', color: '0075ca', description: 'API / Backend services' },
+      { name: 'Design', color: 'f59e0b', description: 'UI/UX design work' },
+      { name: 'DevOps', color: 'fbca04', description: 'Infrastructure and deployment' },
+      { name: 'QA', color: 'd73a4a', description: 'Quality assurance' },
+      { name: 'Docs', color: 'c5def5', description: 'Documentation' },
     ],
     milestones: phases.filter((p) => !syncMap.phases[p.id]),
     epics: phases.flatMap((p) =>
@@ -316,18 +345,29 @@ async function main(args) {
     }
   }
 
-  // 3. Epics
+  // 3. Epics — use Rihal standard epic template structure
   if (!opts.only || opts.only === 'epics') {
     console.log(`\n📦 Epics`);
     for (const epic of plan.epics) {
       const body = [
-        `**Rihal Code epic** from phase \`${epic.phase}\`.`,
+        `## 🎯 Epic Vision`,
         ``,
-        `Source: \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
+        `_Strategic goal this Epic contributes to. Fill in from \`.rihal/phases/${epic.phase}/tasks/${epic.file}\`._`,
+        ``,
+        `## 📋 Source Content`,
+        ``,
+        epic.content.slice(0, 3000),
         ``,
         `---`,
         ``,
-        epic.content.slice(0, 3000),
+        `## 📊 Meta`,
+        ``,
+        `- **Phase:** \`${epic.phase}\``,
+        `- **Source:** \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Synced by:** Rihal Code github-sync`,
+        ``,
+        `> **Note:** This epic follows the Rihal GitHub standards (type: epic).`,
+        `> Add related stories as sub-issues or link them in comments with \`refs #${'{issue}'}\`.`,
       ].join('\n');
 
       const milestoneNumber =
@@ -337,7 +377,7 @@ async function main(args) {
         {
           title: `[Epic] ${epic.title}`,
           body,
-          labels: ['rihal:epic'],
+          labels: ['epic', 'priority:medium', 'status:backlog'],
           milestone: milestoneNumber,
         },
         syncOpts,
@@ -357,18 +397,41 @@ async function main(args) {
     }
   }
 
-  // 4. Stories
+  // 4. Stories — use Rihal standard feature template structure
   if (!opts.only || opts.only === 'stories') {
     console.log(`\n📄 Stories`);
     for (const story of plan.stories) {
+      const parentEpicRef = Object.values(syncMap.epics).find((e) => e.phase === story.phase);
+      const parentRef = parentEpicRef
+        ? `- **Parent Epic:** #${parentEpicRef.issue_number}`
+        : `- **Parent Epic:** (none — standalone story)`;
+
       const body = [
-        `**Rihal Code story** from phase \`${story.phase}\`.`,
+        `## 🎯 Problem Statement`,
         ``,
-        `Source: \`.rihal/phases/${story.phase}/stories/${story.file}\``,
+        `_Clear explanation of what this story solves. Fill in from \`.rihal/phases/${story.phase}/stories/${story.file}\`._`,
+        ``,
+        `## ✅ Acceptance Criteria`,
+        ``,
+        `- [ ] Given/When/Then flows documented in source`,
+        `- [ ] Tests written and passing`,
+        `- [ ] Code review complete`,
+        ``,
+        `## 📋 Source Content`,
+        ``,
+        story.content.slice(0, 3000),
         ``,
         `---`,
         ``,
-        story.content.slice(0, 3000),
+        `## 📊 Meta`,
+        ``,
+        parentRef,
+        `- **Phase:** \`${story.phase}\``,
+        `- **Source:** \`.rihal/phases/${story.phase}/stories/${story.file}\``,
+        `- **Synced by:** Rihal Code github-sync`,
+        ``,
+        `> **Note:** This story follows the Rihal GitHub standards (type: feature).`,
+        `> Link commits with \`(refs #${'{issue}'})\` and close via PR with \`Closes #${'{issue}'}\`.`,
       ].join('\n');
 
       const milestoneNumber =
@@ -378,7 +441,7 @@ async function main(args) {
         {
           title: story.title,
           body,
-          labels: ['rihal:story'],
+          labels: ['type:feature', 'priority:medium', 'status:backlog'],
           milestone: milestoneNumber,
         },
         syncOpts,
