@@ -574,6 +574,73 @@ Debug an issue using the scientific method. Gather symptoms, form a hypothesis, 
 </process>
 `,
 
+    'github-sync.md': `---
+name: rihal:github-sync
+description: Sync .rihal/ state (phases, epics, stories) to GitHub — creates milestones, issues, and optionally a Project v2. Dry-run by default.
+argument-hint: "[--execute] [--only=labels|milestones|epics|stories] [--phase=phase-01] [--project] [--repo=owner/name]"
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+<objective>
+Sync Rihal Code project state from \`.rihal/\` to the connected GitHub repository. Creates labels, milestones (per phase), issues for epics and stories, and optionally a Project v2 board.
+
+This command mutates shared state on GitHub. Per AGENTS.md rules, it requires explicit per-invocation permission and defaults to DRY-RUN mode.
+</objective>
+
+<precondition>
+
+1. **Check gh auth:** \`gh auth status\`. If not authenticated, stop and tell the user to run \`gh auth login\`.
+2. **Check .rihal/ state exists.** If missing, suggest \`/rihal:kickoff\` first.
+3. **Detect target repo** via \`gh repo view --json nameWithOwner\` in the current directory. If not in a git repo, ask for \`--repo=owner/name\`.
+
+</precondition>
+
+<process>
+
+1. **Show the plan first (dry-run, always):**
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync
+   \`\`\`
+   This lists labels, milestones, epics, stories that would be created.
+
+2. **Review the plan with the user.** Confirm scope, narrow if needed (\`--only=epics\` or \`--phase=phase-02\`), ask if they want a Project v2 (add \`--project\`).
+
+3. **Wait for explicit permission before executing.** Do NOT run \`--execute\` without the user confirming.
+
+4. **Execute with confirmed scope:**
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --execute [flags]
+   \`\`\`
+
+5. **Report results.** Link to GitHub repo. Confirm sync map saved to \`.rihal/integrations/github-map.json\`.
+
+6. **Subsequent syncs** use the sync map for idempotency — only new items get created.
+
+</process>
+
+<guardrails>
+
+- Default is dry-run. \`--execute\` required to mutate.
+- Interactive confirmation even in \`--execute\` mode (unless \`--yes\`).
+- Sync map tracks IDs — no duplicate issues on re-run.
+- Never deletes or updates existing GitHub items, only creates.
+- GitHub mutations are treated the same as git pushes per AGENTS.md.
+
+</guardrails>
+
+<flags>
+- \`--execute\` — actually create items (default: dry-run)
+- \`--repo=owner/name\` — target a specific repo
+- \`--only=labels|milestones|epics|stories\` — narrow the scope
+- \`--phase=phase-id\` — sync only a specific phase
+- \`--project\` — also create a Project v2 board
+- \`--yes\` — skip interactive confirmation
+</flags>
+`,
+
     'discuss.md': `---
 name: rihal:discuss
 description: Structured discussion on a topic — adaptive questioning before taking action
@@ -699,6 +766,7 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 **Utility Commands:**
 - \`/rihal:team\` — list the team roster
 - \`/rihal:dashboard\` — start the Diwan view-only dashboard
+- \`/rihal:github-sync\` — sync phases/epics/stories to GitHub (dry-run default)
 - \`/rihal:help\` — this message
 
 **Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\` or invoke by name):
