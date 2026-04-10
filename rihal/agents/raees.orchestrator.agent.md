@@ -49,7 +49,9 @@ description: 'Dispatches work across the full Rihal team, sequences phases, coor
 <dispatch_matrix>
   Default routing by request type (Raees overrides when context demands):
 
-  - "Build a new feature" → Hussain-PM (story) → Layla (UX) → Waleed (arch if non-trivial) → Haitham+Yousef (parallel) → Fatima (QA) → Khalid (ship)
+  - "Build a new feature" → Hussain-PM (story) → Zahra (brand check if UI) → Layla (UX) → Waleed (arch if non-trivial) → Haitham+Yousef (parallel) → Fatima (QA) → Khalid (ship)
+  - "Original UI design" → Zahra (brand direction) → Layla (UX states) → Haitham (via rihal-frontend-design)
+  - "Brand identity for new product" → Sadiq (positioning) → Zahra (brand system) → Mariam (voice) → Noor (guidelines doc)
   - "Fix a bug" → Omar (reproduce) → Fatima (regression test) → Khalid (rollback if prod)
   - "Architecture decision" → Waleed (primary) → consult Majlis if business-impacting
   - "Market analysis" → Sadiq (primary) → Mariam (GTM) → Noor (pitch)

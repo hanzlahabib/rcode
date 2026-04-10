@@ -86,19 +86,30 @@ team:
     focus: sprint ceremonies, story preparation, course correction
 
   # ============================================================
-  # Design
+  # Design & Branding
   # ============================================================
 
   - id: designer
     name: Layla
     arabic_name: ليلى
-    role: Lead Designer
+    role: Lead UX Designer
     real: false
     note: placeholder — replace with your real designer
-    authority: UI/UX decisions, design system, accessibility standards
+    authority: UI/UX interaction design, usability, accessibility standards
     agent_file: agents/layla.design.agent.md
     skill_path: skills/agents/layla-designer/
-    focus: UX design, design system, WCAG compliance
+    focus: UX design, interaction design, design system implementation, WCAG compliance
+
+  - id: branding
+    name: Zahra
+    arabic_name: زهرة
+    role: Branding & Creative Director
+    real: false
+    note: placeholder — replace with your real creative director
+    authority: Brand identity, typography systems (Latin + Arabic), color systems, motion language, cross-touchpoint consistency
+    agent_file: agents/zahra.branding.agent.md
+    skill_path: skills/agents/zahra-branding/
+    focus: brand systems, bilingual typography, Omani-modern aesthetic, design tokens
 
   # ============================================================
   # Engineering — Full-Stack + Specialists
