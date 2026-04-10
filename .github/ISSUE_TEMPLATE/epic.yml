@@ -1,0 +1,169 @@
+name: "🎯 Epic"
+description: Create a large-scale initiative that contains multiple features and tasks
+labels: ["type: epic", "status: triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for creating an epic! Epics represent large initiatives that encompass multiple features and tasks.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-submission Checklist
+      description: By submitting this epic, you agree to the following
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: This epic aligns with project goals and roadmap
+          required: true
+        - label: This epic is large enough to warrant breaking into features/tasks
+          required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Business Priority
+      description: How critical is this epic to business objectives?
+      options:
+        - Critical (Must have this quarter)
+        - High (Important for business growth)
+        - Medium (Valuable but not urgent)
+        - Low (Future consideration)
+    validations:
+      required: true
+
+  - type: textarea
+    id: vision
+    attributes:
+      label: "🌟 Epic Vision"
+      description: High-level vision and business value of this epic
+      placeholder: Describe the overall vision, business impact, and strategic importance of this epic
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: "🎯 Problem Statement"
+      description: What major problem or opportunity does this epic address?
+      placeholder: Describe the current state, pain points, and market opportunity this epic will solve
+    validations:
+      required: true
+
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: "📊 Success Criteria"
+      description: How will we know this epic is successful?
+      placeholder: |
+        - Business goal achieved
+        - User problem solved
+        - System improvement delivered
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_personas
+    attributes:
+      label: "👥 Target Users/Personas"
+      description: Who are the primary beneficiaries?
+      placeholder: |
+        - Persona 1: How they benefit
+        - Persona 2: How they benefit
+        - Internal team: How they benefit
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: "🔍 Scope"
+      description: What's included and what's not in this epic
+      placeholder: |
+        **In Scope:**
+        - Major area 1
+        - Major area 2
+
+        **Out of Scope:**
+        - Future considerations
+    validations:
+      required: true
+
+  - type: textarea
+    id: features_breakdown
+    attributes:
+      label: "✨ Expected Features"
+      description: List of major features this epic will contain
+      placeholder: |
+        - Feature 1: Brief description
+        - Feature 2: Brief description
+        - Feature 3: Brief description
+
+        Note: Create separate feature request issues for each
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timeline
+    attributes:
+      label: "⏰ Estimated Timeline"
+      description: Overall timeline for epic completion
+      options:
+        - 1 month
+        - 1 quarter (3 months)
+        - 2 quarters (6 months)
+        - 1 year
+        - Multi-year
+    validations:
+      required: true
+
+  - type: dropdown
+    id: team_size
+    attributes:
+      label: "👥 Team Size Required"
+      description: Estimated team size needed
+      options:
+        - Small (1-2 developers)
+        - Medium (3-5 developers)
+        - Large (6-10 developers)
+        - Enterprise (10+ developers)
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "🔗 Dependencies & Blockers"
+      description: External dependencies, integrations, or potential blockers
+      placeholder: |
+        - External API integration
+        - Third-party service dependency
+        - Team/resource dependencies
+        - Technical prerequisites
+    validations:
+      required: false
+
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: "⚠️ Key Assumptions"
+      description: Important assumptions for this epic
+      placeholder: |
+        - Business assumption 1
+        - User behavior assumption 2
+        - Resource availability assumption 3
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "📋 Additional Context"
+      description: Links, research, mockups, or other relevant information
+      placeholder: |
+        - Market research links
+        - Competitor analysis
+        - Design mockups
+        - Previous discussions

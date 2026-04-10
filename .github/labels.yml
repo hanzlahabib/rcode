@@ -1,0 +1,178 @@
+# GitHub Labels Configuration
+# This file defines a streamlined label taxonomy for repository management
+
+# # Priority Labels
+# - name: "priority: critical"
+#   color: "d73a4a"
+#   description: "Critical issues requiring immediate attention"
+
+# - name: "priority: high"
+#   color: "ff6b35"
+#   description: "High priority issues"
+
+# - name: "priority: medium"
+#   color: "fbca04"
+#   description: "Medium priority issues"
+
+# - name: "priority: low"
+#   color: "0e8a16"
+#   description: "Low priority issues"
+
+# # Status Labels
+# - name: "status: triage"
+#   color: "ededed"
+#   description: "Needs initial assessment"
+
+# - name: "status: backlog"
+#   color: "c5def5"
+#   description: "Approved and ready for development"
+
+# - name: "status: in-progress"
+#   color: "ff9500"
+#   description: "Currently being worked on"
+
+# - name: "status: blocked"
+#   color: "b60205"
+#   description: "Blocked by dependencies"
+
+# - name: "status: ready-for-review"
+#   color: "0052cc"
+#   description: "Ready for code review"
+
+# - name: "status: approved"
+#   color: "0e8a16"
+#   description: "Approved and ready for QA"
+
+# - name: "status: qa"
+#   color: "1d76db"
+#   description: "In quality assurance testing"
+
+# - name: "status: done"
+#   color: "28a745"
+#   description: "Completed and verified"
+
+# # Type Labels - Issue types
+# - name: "type: epic"
+#   color: "8B008B"
+#   description: "Contains high level features and should be created from the beginning of the project"
+
+# - name: "type: feature"
+#   color: "0052cc"
+#   description: "A functionality of an application regardless of the domain"
+
+# - name: "type: task"
+#   color: "9932CC"
+#   description: "A specific work to be done and is part of a feature in general"
+
+# - name: "type: bug"
+#   color: "d73a4a"
+#   description: "Something isn't working"
+
+# Development Area Labels
+- name: "area: fe"
+  color: "1d76db"
+  description: "Frontend (UI, components, client-side logic)"
+
+- name: "area: be"
+  color: "0e8a16"
+  description: "Backend (Server, APIs, database)"
+
+- name: "area: ml"
+  color: "5319e7"
+  description: "Machine Learning (Modeling, feature engineering, evaluation)"
+
+- name: "area: mobile/android"
+  color: "ff7f50"
+  description: "Work related only to Android applications"
+
+- name: "area: mobile/ios"
+  color: "ff69b4"
+  description: "Work related only to iOS applications"
+
+- name: "area: mobile/both"
+  color: "ffa500"
+  description: "Work related to both Android and iOS applications"
+
+- name: "area: security"
+  color: "b60205"
+  description: "Vulnerabilities, audits, fixes"
+
+# Category Labels
+- name: "category: design"
+  color: "f1c40f"
+  description: "Design, wireframes, mockups"
+
+- name: "category: ci/cd"
+  color: "0052cc"
+  description: "Deployment scripts, CI/CD, infrastructure"
+
+- name: "category: documentation"
+  color: "0075ca"
+  description: "Writing or updating documentation, guides, READMEs"
+
+- name: "category: chores"
+  color: "8c8c8c"
+  description: "Maintenance, housekeeping, or non-feature work"
+
+- name: "category: refactor"
+  color: "9932CC"
+  description: "Code restructuring or improvements without adding new functionality"
+
+# Module/Domain Labels (examples - customize based on your project)
+- name: "module: search"
+  color: "FF6347"
+  description: "Search module"
+
+- name: "module: chat"
+  color: "32CD32"
+  description: "Chat module"
+
+- name: "module: agents"
+  color: "4169E1"
+  description: "Agents module"
+
+- name: "module: ai-meet"
+  color: "FF8C00"
+  description: "AI Meet module"
+
+# Effort Size Labels
+# - name: "size: xs"
+#   color: "c2e0c6"
+#   description: "Extra small effort (< 1 day)"
+
+# - name: "size: s"
+#   color: "c2e0c6"
+#   description: "Small effort (1-2 days)"
+
+# - name: "size: m"
+#   color: "fef2c0"
+#   description: "Medium effort (3-5 days)"
+
+# - name: "size: l"
+#   color: "ff9500"
+#   description: "Large effort (1-2 weeks)"
+
+# - name: "size: xl"
+#   color: "d73a4a"
+#   description: "Extra large effort (> 2 weeks)"
+
+# Special Labels
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: "breaking change"
+  color: "b60205"
+  description: "Introduces breaking changes"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or pull request already exists"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "This will not be worked on"

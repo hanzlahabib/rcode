@@ -1,0 +1,117 @@
+name: "📝 Task"
+description: Create a task for work that needs to be done
+labels: ["type: task", "status: triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for creating a task! Please provide clear details about what needs to be accomplished.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-submission Checklist
+      description: By submitting this issue, you agree we have no duplications
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have checked the project roadmap
+          required: true
+        - label: This task is well-defined and actionable
+          required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this task?
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Development Area
+      description: Which development area does this task belong to?
+      options:
+        - FE
+        - BE
+        - ML
+        - Design
+        - Documentation
+        - Testing
+        - DevOps
+        - Security
+        - Chores
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: Provide a clear description of what needs to be done
+      placeholder: Describe the task in detail
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: List the specific requirements for this task
+      placeholder: |
+        - Requirement 1
+        - Requirement 2
+        - Requirement 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define what "done" looks like for this task
+      placeholder: |
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+        - [ ] Criteria 3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: What's your estimate of the effort required?
+      options:
+        - Extra Small (< 1 day)
+        - Small (1-2 days)
+        - Medium (3-5 days)
+        - Large (1-2 weeks)
+        - Extra Large (> 2 weeks)
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any dependencies or blockers for this task
+      placeholder: |
+        - Task/Issue #123
+        - External dependency
+        - Waiting for approval from team X
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, links, or resources relevant to this task
