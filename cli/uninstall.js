@@ -22,6 +22,7 @@
 const fs = require('fs');
 const path = require('path');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
+const { writeFileAtomic } = require('./lib/fsutil.cjs');
 
 function parseArgs(args) {
   const opts = {
@@ -204,7 +205,8 @@ function stripRihalFromAgentsMd(agentsMdPath) {
   if (changed) {
     // Clean up any trailing `---` that's now alone
     content = content.replace(/\n---\n+$/, '\n');
-    fs.writeFileSync(agentsMdPath, content);
+    // Atomic so a Ctrl+C mid-strip can't truncate the user's AGENTS.md.
+    writeFileAtomic(agentsMdPath, content);
   }
   return changed;
 }

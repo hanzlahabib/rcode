@@ -18,6 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeFileAtomic } = require('./lib/fsutil.cjs');
 
 const RIHAL_DIRS = [
   '.rihal/phases',
@@ -1157,10 +1158,12 @@ State directory: \`.rihal/\` — phases, decisions, progress, artifacts, context
     if (current.includes('## Rihal Code Agents (installed)')) {
       return 'updated';
     }
-    fs.writeFileSync(agentsMdPath, current + rihalSection);
+    // Atomic: AGENTS.md is user-owned project doc; partial write on Ctrl+C
+    // would corrupt it.
+    writeFileAtomic(agentsMdPath, current + rihalSection);
     return 'appended';
   } else {
-    fs.writeFileSync(
+    writeFileAtomic(
       agentsMdPath,
       `# AGENTS.md\n\nThis file provides context for AI coding agents working on this project.\n${rihalSection}`,
     );
@@ -1296,7 +1299,7 @@ async function runInstall(args, { packageRoot }) {
       fs.mkdirSync(path.join(cwd, dir), { recursive: true });
     }
     for (const [file, content] of Object.entries(STATE_FILES)) {
-      fs.writeFileSync(path.join(cwd, file), content);
+      writeFileAtomic(path.join(cwd, file), content);
     }
     console.log(`   ✓ .rihal/ state directory created`);
   }
