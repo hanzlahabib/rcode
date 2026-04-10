@@ -5,7 +5,9 @@
 > **A context-aware AI team methodology inspired by Rihal (Muscat, Oman).**
 > Agents embody real team roles. Projects stay on rails from strategy to ship.
 
-Built on the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) framework, with ideas borrowed from [Get Shit Done (GSD)](https://github.com/hanzlahabib/get-shit-done) for progress tracking and artifact management.
+Built on the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) framework (agents and skills sourced directly from BMAD v6.2.2, rebranded with Arabic names), with context management and dashboard ideas borrowed from [Get Shit Done (GSD)](https://github.com/hanzlahabib/get-shit-done).
+
+> **Skill inheritance:** Rihal Method does NOT reinvent agent capabilities. All 8 core agents (Ahmed, Sadiq, Hussain-PM, Hussain-SM, Layla, Omar, Fatima, Noor) use BMAD's battle-tested skill definitions. Rihal adds: Arabic identity layer, `.rihal/` state management, context-reset/context-build workflows, and the Majlis view-only dashboard.
 
 ---
 
@@ -25,17 +27,19 @@ Rihal is one of Oman's fastest-growing tech companies (2,441% growth, Series A 2
 
 ## The Team
 
-| Agent | Arabic | Role | Authority |
+| Agent | Arabic | Role | BMAD Skill Origin |
 |---|---|---|---|
-| **Ahmed** | أحمد | CTO | Tech stack, architecture, security |
-| **Sadiq** | صادق | Director of Strategy | Business direction, prioritization |
-| **Hussain** | حسين | Product Manager | Sprint planning, scope, delivery |
-| **Layla** | ليلى | Lead Designer | UI/UX, design system, accessibility |
-| **Omar** | عمر | Senior Engineer | Implementation, refactoring, code review |
-| **Fatima** | فاطمة | QA Lead | Testing, release gating, bug triage |
-| **Khalid** | خالد | DevOps | CI/CD, infra, monitoring, deploys |
-| **Noor** | نور | Scribe | Docs, pitch decks, presentations |
-| **Majlis** | مجلس | The Council | View-only dashboard server |
+| **Ahmed** | أحمد | System Architect / CTO | `bmad-agent-architect` (Winston) |
+| **Sadiq** | صادق | Business Analyst / Strategy | `bmad-agent-analyst` (Mary) |
+| **Hussain** | حسين | Product Manager + Scrum Master | `bmad-agent-pm` + `bmad-agent-sm` |
+| **Layla** | ليلى | UX Designer | `bmad-agent-ux-designer` (Sally) |
+| **Omar** | عمر | Senior Developer | `bmad-agent-dev` (Amelia) |
+| **Fatima** | فاطمة | Test Architect (QA) | `bmad-agent-qa` (Quinn) |
+| **Noor** | نور | Technical Writer | `bmad-agent-tech-writer` (Paige) |
+| **Khalid** | خالد | DevOps (Rihal-native) | *custom* |
+| **Majlis** | مجلس | The Council (dashboard) | *custom* |
+
+**Every agent comes with 2-4 real skills from BMAD** — not marketing bullet points. See [`bmad/rihal/skills/SKILLS_INDEX.md`](bmad/rihal/skills/SKILLS_INDEX.md) for the full capability map.
 
 ---
 
