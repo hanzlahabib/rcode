@@ -21,7 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
+const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
 
 function parseArgs(args) {
   const opts = {
@@ -42,16 +42,6 @@ function parseArgs(args) {
     }
   }
   return opts;
-}
-
-function prompt(question) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.trim().toLowerCase());
-    });
-  });
 }
 
 /**
@@ -220,6 +210,18 @@ function stripRihalFromAgentsMd(agentsMdPath) {
 }
 
 module.exports = async function uninstall(args) {
+  try {
+    return await runUninstall(args);
+  } catch (err) {
+    if (err instanceof PromptAbortError) {
+      console.log(`\n❌ Uninstall cancelled — ${err.message}.`);
+      process.exit(0);
+    }
+    throw err;
+  }
+};
+
+async function runUninstall(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
 
@@ -286,8 +288,11 @@ module.exports = async function uninstall(args) {
 
   // Main confirmation (skills + commands + rules + AGENTS.md section)
   if (!opts.yes) {
-    const answer = await prompt(`Proceed with removing ${totalItems} skill/command files${plan.agentsMd ? ' + AGENTS.md section' : ''}? [y/N] `);
-    if (answer !== 'y' && answer !== 'yes') {
+    const proceed = await askConfirm(
+      `Proceed with removing ${totalItems} skill/command files${plan.agentsMd ? ' + AGENTS.md section' : ''}? [y/N] `,
+      { default: 'n' },
+    );
+    if (!proceed) {
       console.log(`\n❌ Aborted. Nothing was removed.`);
       return;
     }
@@ -362,8 +367,10 @@ module.exports = async function uninstall(args) {
       console.log(`   - phases, decisions, progress, artifacts, context`);
       console.log(`   - ${plan.stateDir.files} files total`);
       console.log();
-      const answer = await prompt(`Also delete .rihal/ state? This is destructive and cannot be undone. [y/N] `);
-      shouldDeleteState = (answer === 'y' || answer === 'yes');
+      shouldDeleteState = await askConfirm(
+        `Also delete .rihal/ state? This is destructive and cannot be undone. [y/N] `,
+        { default: 'n' },
+      );
     }
 
     if (shouldDeleteState) {
@@ -379,4 +386,4 @@ module.exports = async function uninstall(args) {
   // Hint about reinstalling
   console.log(`\nTo reinstall later:`);
   console.log(`   npx --yes github:hanzlahabib/rihal-code install`);
-};
+}

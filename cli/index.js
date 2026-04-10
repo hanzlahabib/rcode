@@ -88,6 +88,12 @@ async function main() {
     console.error(`Error running '${command}':`, err.message);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
+  } finally {
+    // Release any readline session a prompt helper may have opened so the
+    // process can exit naturally instead of hanging on stdin.
+    try {
+      require('./lib/prompts.cjs').closeSession();
+    } catch { /* prompts module may not be loaded */ }
   }
 }
 

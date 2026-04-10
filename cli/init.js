@@ -1187,7 +1187,7 @@ function parseArgs(args) {
  * them. Users can accept defaults (Enter) or pick a custom combination.
  */
 async function pickEditorsInteractive(cwd) {
-  const readline = require('readline');
+  const { askChoice } = require('./lib/prompts.cjs');
 
   // Auto-detect editors that are already set up in this project
   const detected = {
@@ -1228,38 +1228,19 @@ async function pickEditorsInteractive(cwd) {
     ? detectedList.map((id) => choices.find((c) => c.id === id).key).join(',')
     : '5';
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await new Promise((resolve) => {
-    rl.question(`Your choice [${defaultChoice}]: `, (a) => {
-      rl.close();
-      resolve(a.trim());
-    });
+  // askChoice handles validation, re-prompting, empty=>default, SIGINT, EOF.
+  // Invalid tokens like "a" or "6" trigger a friendly re-prompt instead of crashing.
+  const picks = await askChoice(`Your choice [${defaultChoice}]: `, {
+    choices,
+    default: defaultChoice,
+    allowMulti: true,
+    expand: (id) =>
+      id === 'all'
+        ? ['claude', 'cursor', 'windsurf', 'antigravity']
+        : [id],
   });
 
-  const picked = (answer || defaultChoice)
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  // Resolve picks to editor IDs
-  const editorIds = new Set();
-  for (const p of picked) {
-    const choice = choices.find((c) => c.key === p || c.id === p);
-    if (!choice) {
-      console.log(`   ⚠ Unknown choice "${p}" — skipping`);
-      continue;
-    }
-    if (choice.id === 'all') {
-      ['claude', 'cursor', 'windsurf', 'antigravity'].forEach((id) => editorIds.add(id));
-    } else {
-      editorIds.add(choice.id);
-    }
-  }
-
-  if (editorIds.size === 0) {
-    console.log(`\n❌ No editors selected. Aborting.`);
-    process.exit(1);
-  }
+  const editorIds = new Set(picks);
 
   // Always include universal AGENTS.md regardless of editor picks
   editorIds.add('universal');
@@ -1268,6 +1249,19 @@ async function pickEditorsInteractive(cwd) {
 }
 
 module.exports = async function init(args, { packageRoot }) {
+  const { PromptAbortError } = require('./lib/prompts.cjs');
+  try {
+    return await runInstall(args, { packageRoot });
+  } catch (err) {
+    if (err instanceof PromptAbortError) {
+      console.log(`\n❌ Install cancelled — ${err.message}.`);
+      process.exit(0);
+    }
+    throw err;
+  }
+};
+
+async function runInstall(args, { packageRoot }) {
   const cwd = process.cwd();
   const rihalDir = path.join(cwd, '.rihal');
   const opts = parseArgs(args);
@@ -1394,4 +1388,4 @@ Model profiles: .rihal/model-profiles.json (quality / balanced / budget / inheri
 Change profile: npx github:hanzlahabib/rihal-code set-profile balanced
 Show models:    npx github:hanzlahabib/rihal-code show-model
 `);
-};
+}
