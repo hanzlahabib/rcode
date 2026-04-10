@@ -965,25 +965,130 @@ State directory: \`.rihal/\` — phases, decisions, progress, artifacts, context
 }
 
 function parseArgs(args) {
-  const result = { editor: 'all' };
+  const result = { editor: null, yes: false };
   for (const arg of args) {
     if (arg.startsWith('--editor=')) {
       result.editor = arg.slice('--editor='.length);
+    } else if (arg === '--yes' || arg === '-y' || arg === '--all') {
+      result.yes = true;
     }
   }
   return result;
 }
 
-module.exports = function init(args, { packageRoot }) {
+/**
+ * Interactive prompt to let the user pick which editor(s) to install for.
+ *
+ * Auto-detects existing editor directories in the project and pre-selects
+ * them. Users can accept defaults (Enter) or pick a custom combination.
+ */
+async function pickEditorsInteractive(cwd) {
+  const readline = require('readline');
+
+  // Auto-detect editors that are already set up in this project
+  const detected = {
+    claude: fs.existsSync(path.join(cwd, '.claude')),
+    cursor: fs.existsSync(path.join(cwd, '.cursor')),
+    windsurf: fs.existsSync(path.join(cwd, '.windsurf')),
+    antigravity: fs.existsSync(path.join(cwd, '.antigravity')),
+  };
+
+  const detectedList = Object.entries(detected)
+    .filter(([, v]) => v)
+    .map(([k]) => k);
+
+  const choices = [
+    { key: '1', id: 'claude',      label: 'Claude Code' },
+    { key: '2', id: 'cursor',      label: 'Cursor' },
+    { key: '3', id: 'windsurf',    label: 'Windsurf' },
+    { key: '4', id: 'antigravity', label: 'Antigravity' },
+    { key: '5', id: 'all',         label: 'All of the above (recommended)' },
+  ];
+
+  console.log(`\n🕌 Rihal Code Install\n`);
+  console.log(`Which AI editor(s) do you want to install for?\n`);
+  for (const c of choices) {
+    const mark = detectedList.includes(c.id) ? ' (detected)' : '';
+    const star = c.id === 'all' && detectedList.length === 0 ? ' ←' : '';
+    console.log(`  ${c.key}) ${c.label}${mark}${star}`);
+  }
+  console.log();
+  console.log(`You can pick:`);
+  console.log(`  - A single number (e.g. "1" for Claude Code only)`);
+  console.log(`  - Multiple numbers comma-separated (e.g. "1,2" for Claude + Cursor)`);
+  console.log(`  - "5" or just Enter for all editors`);
+  console.log();
+
+  // Default selection: detected editors, or "all" if none detected
+  const defaultChoice = detectedList.length > 0
+    ? detectedList.map((id) => choices.find((c) => c.id === id).key).join(',')
+    : '5';
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise((resolve) => {
+    rl.question(`Your choice [${defaultChoice}]: `, (a) => {
+      rl.close();
+      resolve(a.trim());
+    });
+  });
+
+  const picked = (answer || defaultChoice)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  // Resolve picks to editor IDs
+  const editorIds = new Set();
+  for (const p of picked) {
+    const choice = choices.find((c) => c.key === p || c.id === p);
+    if (!choice) {
+      console.log(`   ⚠ Unknown choice "${p}" — skipping`);
+      continue;
+    }
+    if (choice.id === 'all') {
+      ['claude', 'cursor', 'windsurf', 'antigravity'].forEach((id) => editorIds.add(id));
+    } else {
+      editorIds.add(choice.id);
+    }
+  }
+
+  if (editorIds.size === 0) {
+    console.log(`\n❌ No editors selected. Aborting.`);
+    process.exit(1);
+  }
+
+  // Always include universal AGENTS.md regardless of editor picks
+  editorIds.add('universal');
+
+  return [...editorIds];
+}
+
+module.exports = async function init(args, { packageRoot }) {
   const cwd = process.cwd();
   const rihalDir = path.join(cwd, '.rihal');
   const opts = parseArgs(args);
-  const editors = opts.editor === 'all'
-    ? ['claude', 'cursor', 'windsurf', 'antigravity', 'universal']
-    : [opts.editor];
 
-  console.log(`\n🕌 Rihal Code — initializing in ${cwd}`);
-  console.log(`   Target editors: ${editors.join(', ')}\n`);
+  // Determine which editors to install for:
+  //   1. --editor=X explicit flag wins
+  //   2. --yes / --all flag installs everything
+  //   3. Otherwise: interactive prompt
+  let editors;
+  if (opts.editor) {
+    // Explicit editor flag
+    editors = opts.editor === 'all'
+      ? ['claude', 'cursor', 'windsurf', 'antigravity', 'universal']
+      : [opts.editor, 'universal'];
+  } else if (opts.yes) {
+    editors = ['claude', 'cursor', 'windsurf', 'antigravity', 'universal'];
+  } else {
+    // Interactive mode
+    editors = await pickEditorsInteractive(cwd);
+  }
+
+  console.log(`\n🕌 Rihal Code — installing in ${cwd}`);
+  console.log(`   Target editors: ${editors.filter((e) => e !== 'universal').join(', ')}${
+    editors.includes('universal') ? ' (+ AGENTS.md)' : ''
+  }\n`);
 
   // ------ Stage 1: .rihal/ state directory ------
   if (fs.existsSync(rihalDir)) {

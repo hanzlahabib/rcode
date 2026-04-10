@@ -67,7 +67,7 @@ Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
 }
 
-function main() {
+async function main() {
   const [, , command = 'help', ...args] = process.argv;
 
   const handler = COMMANDS[command];
@@ -78,7 +78,7 @@ function main() {
   }
 
   try {
-    handler(args, { packageRoot: PACKAGE_ROOT, packageJson: PACKAGE_JSON });
+    await handler(args, { packageRoot: PACKAGE_ROOT, packageJson: PACKAGE_JSON });
   } catch (err) {
     console.error(`Error running '${command}':`, err.message);
     if (process.env.DEBUG) console.error(err.stack);
