@@ -1,6 +1,11 @@
 ---
 name: rihal-product-brief
-description: Create or update product briefs through guided or autonomous discovery. Use when the user requests to create or update a Product Brief.
+description: >
+  Create a product brief through guided discovery or autonomous research.
+  Activates when the user says "create a product brief", "write a product
+  brief", "draft a brief for", "product briefing", or "create the brief". Do
+  NOT use for full PRD (use rihal-create-prd) or market analysis alone (use
+  rihal-market-research).
 ---
 
 # Create Product Brief
@@ -85,3 +90,20 @@ Check activation context immediately:
 
 This workflow uses:
 - `rihal-init` — Configuration loading (module: rihal)
+
+## Output Format
+
+- Brief file with structure: Executive Summary | Problem | User | Opportunity | Proposed Solution | Success Metrics | Risks
+- Max 2 pages — briefs are briefs, not novels
+- Do NOT include implementation details
+- Do NOT expand into a PRD
+
+## Examples
+
+### Happy Path
+**Input:** "Create a product brief for an AI-powered CRM"
+**Expected behavior:** Interview or research, produce a focused 2-page brief, save.
+
+### Edge Case: Brief Bloat
+**Input:** (user wants to add a 10-page appendix)
+**Expected behavior:** Decline. "A brief over 2 pages becomes a PRD. Let me save the appendix content separately and link it, or escalate to rihal-create-prd."
