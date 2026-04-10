@@ -21,6 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
 const { writeFileAtomic } = require('./lib/fsutil.cjs');
 
@@ -177,6 +178,90 @@ function isKnownSkillName(name) {
 }
 
 /**
+ * Build the list of files/dirs (relative to cwd) that the uninstall plan
+ * will delete or mutate. Used to feed `tar --files-from=-`.
+ */
+function planToPathList(plan, cwd) {
+  const paths = [];
+
+  for (const name of plan.claude.skills) {
+    paths.push(path.join('.claude/skills', name));
+  }
+  if (plan.claude.commands.length > 0) {
+    paths.push('.claude/commands/rihal');
+  }
+  for (const name of plan.cursor) {
+    paths.push(path.join('.cursor/rules', name));
+  }
+  for (const name of plan.windsurf) {
+    paths.push(path.join('.windsurf/rules', name));
+  }
+  for (const name of plan.antigravity) {
+    paths.push(path.join('.antigravity/agents', name));
+  }
+  // AGENTS.md is mutated (stripped), not deleted — but we back it up so the
+  // user can restore the stripped content.
+  if (plan.agentsMd && fs.existsSync(path.join(cwd, 'AGENTS.md'))) {
+    paths.push('AGENTS.md');
+  }
+
+  return paths;
+}
+
+/**
+ * Create a timestamped tar.gz backup of all files the uninstall will touch.
+ *
+ * Returns { ok, path, warning } — ok=false means we couldn't write a backup
+ * (tar missing, no paths, etc.); the caller should warn the user but may
+ * still proceed since the user already confirmed the destructive action.
+ */
+function createBackup(cwd, plan) {
+  const paths = planToPathList(plan, cwd);
+  if (paths.length === 0) {
+    return { ok: false, warning: 'nothing to back up' };
+  }
+
+  // tar must exist. On Linux/macOS it's always available; Windows without
+  // WSL may not have it — warn and skip there.
+  const tarCheck = spawnSync('tar', ['--version'], { stdio: 'ignore' });
+  if (tarCheck.status !== 0) {
+    return { ok: false, warning: 'tar not available on this system' };
+  }
+
+  const backupsDir = path.join(cwd, '.rihal/backups');
+  try {
+    fs.mkdirSync(backupsDir, { recursive: true });
+  } catch (err) {
+    return { ok: false, warning: `could not create .rihal/backups/: ${err.message}` };
+  }
+
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const backupFile = path.join(backupsDir, `uninstall-${ts}.tgz`);
+  const backupRel = path.relative(cwd, backupFile);
+
+  // Feed file list via stdin; tar -T - reads NUL or newline-separated paths.
+  // We pass them newline-separated and use --files-from=- (GNU tar) which is
+  // equivalent to -T -.
+  const result = spawnSync(
+    'tar',
+    ['-czf', backupFile, '-C', cwd, '--files-from=-'],
+    {
+      input: paths.join('\n') + '\n',
+      encoding: 'utf8',
+    }
+  );
+
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      warning: `tar exited ${result.status}: ${(result.stderr || '').trim()}`,
+    };
+  }
+
+  return { ok: true, path: backupRel };
+}
+
+/**
  * Remove the Rihal Code section from AGENTS.md without deleting the whole file.
  * The section starts with `## Rihal Code Agents (installed)` or the older
  * `## Rihal Method Agents (installed)` header and ends at either EOF or the
@@ -300,6 +385,16 @@ async function runUninstall(args) {
     }
   }
 
+  // Create a timestamped backup before doing anything destructive.
+  // Non-fatal on failure — the user already confirmed, we just warn.
+  console.log();
+  const backup = createBackup(cwd, plan);
+  if (backup.ok) {
+    console.log(`   💾 backup created: ${backup.path}`);
+  } else {
+    console.log(`   ⚠ no backup created (${backup.warning}) — continuing anyway`);
+  }
+
   // Execute removal
   console.log();
   let removed = 0;
@@ -384,6 +479,9 @@ async function runUninstall(args) {
   }
 
   console.log(`\n✅ Uninstall complete. Removed ${removed} files.`);
+  if (backup.ok) {
+    console.log(`   Backup: ${backup.path} (restore with: tar -xzf ${backup.path})`);
+  }
 
   // Hint about reinstalling
   console.log(`\nTo reinstall later:`);
