@@ -175,6 +175,149 @@ function installSkills(packageRoot, cwd) {
 }
 
 /**
+ * Build a pipeline slash command with streaming discussion instructions.
+ *
+ * Each pipeline command dispatches a PREDEFINED chain of agents in sequence,
+ * printing each agent's response live as they speak (with handoff lines between
+ * them), then synthesizes at the end. Same protocol, different chains:
+ *
+ *   - rihal:council   — full 13-agent Majlis for cross-domain strategic Qs
+ *   - rihal:ui        — Zahra → Layla → Haitham → Fatima (design pipeline)
+ *   - rihal:feature   — PM → CTO → UX → FE+BE → QA → DevOps (feature pipeline)
+ *   - rihal:project   — Sadiq → Waleed → Ahmed Al Hassani → PM → Zahra → Layla → Nasser (kickoff)
+ *
+ * Using one builder keeps the instruction protocol DRY and consistent. The
+ * chain is injected per command so each file only contains its specific
+ * sequence — no 4x duplication of boilerplate.
+ */
+function buildPipelineCommand({ name, title, icon, purpose, whenToUse, chain, intro, sessionFile }) {
+  const chainList = chain.map((a, i) => `${i + 1}. **${a}**`).join('\n');
+  return `---
+name: ${name}
+description: ${purpose}. Runs a predefined pipeline of agents sequentially with live responses shown as each one speaks.
+argument-hint: <task or question>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - Grep
+---
+
+${icon} **${title}** — ${intro}
+
+**Request:** $ARGUMENTS
+
+## When to use this pipeline
+
+${whenToUse}
+
+## Pipeline chain (fixed order)
+
+${chainList}
+
+Each agent's full persona and principles live in:
+- \`.claude/skills/rihal-<agent>-*/SKILL.md\` (full skill if loaded)
+- \`rihal/digests/<agent>.md\` (lean digest — prefer this for lower context cost)
+
+## How the discussion runs (streaming protocol)
+
+This is a **live consultation**. Do NOT batch all responses into one final
+answer. The user should see each agent speak as the discussion unfolds.
+
+### Step 1 — Announce session start
+
+Print this header immediately:
+
+\`\`\`
+${icon} ${title} — starting
+Request: {restated request}
+Pipeline: {N} agents — {chain as "A → B → C"}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\`\`\`
+
+### Step 2 — For EACH agent in the chain (one at a time)
+
+**a) Handoff line** (before invoking the agent):
+
+\`\`\`
+→ Consulting {agent name} ({role})...
+\`\`\`
+
+**b) Load the agent's digest** from \`rihal/digests/{agent}.md\` (lean 20-line
+summary — do NOT load the full SKILL.md unless strictly needed for this task).
+
+**c) Adopt the persona and respond in first person** with this structure:
+
+\`\`\`
+**{Agent name} ({role})**
+
+Position: {SUPPORT / CONDITIONAL / NEUTRAL / OPPOSE}
+Confidence: {Critical / High / Medium / Low}
+
+{2-3 sentences — the agent's take, in their voice. If agreeing with a
+previous agent, name them explicitly. If disagreeing, name them and
+explain why.}
+
+{If this agent raises a condition or rejects a path, state it clearly.}
+{If this agent produces a concrete artifact — a story, ADR, design spec,
+test plan — reference where it was saved.}
+\`\`\`
+
+**d) Transition to next agent** (after the response):
+
+\`\`\`
+──────────────────────────────────────────────────
+Handing over to {next agent name}...
+\`\`\`
+
+**Critical:** print each agent's block before moving to the next. The
+user should feel the pipeline progressing live.
+
+### Step 3 — Final synthesis (after all agents speak)
+
+Print:
+
+\`\`\`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${icon} ${title} — Verdict
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\`\`\`
+
+Then give:
+
+1. **Alignment** — who agreed on what (name them, count them)
+2. **Dissent** — who disagreed, quoted verbatim. Never bury dissent.
+3. **Synthesis** — 1-2 paragraphs respecting specialist authority.
+4. **Concrete next step** — ONE clear action (not a menu of options).
+5. **Decision owner** — which agent has final authority. The pipeline
+   synthesizes; the specialist decides.
+
+### Step 4 — Save the session
+
+Save the full discussion to:
+
+\`\`\`
+.rihal/progress/${sessionFile}-{YYYY-MM-DD}-{short-slug}.md
+\`\`\`
+
+Use the current date. The slug is a 3-4 word summary of the request.
+Format it as a markdown file with the same structure the user saw live.
+
+## Rules
+
+- Print agent responses live, one at a time, with handoff lines.
+- Stay in character strictly for each agent.
+- Never skip dissent or bury minority views.
+- Never synthesize before all agents have spoken.
+- The model profile from \`.rihal/config.json\` tells which model
+  to use per agent (strategists → opus, executors → sonnet).
+- If the request is outside this pipeline's scope, suggest a different
+  pipeline (e.g., UI question → \`/rihal:ui\`, strategic → \`/rihal:council\`).
+`;
+}
+
+/**
  * Create slash commands in .claude/commands/rihal/ that Claude Code auto-discovers.
  * Each command is a markdown file with frontmatter defining the command entry point.
  */
@@ -196,34 +339,82 @@ Read \`.claude/skills/rihal-*-*/SKILL.md\` (all installed agent skills) and prod
 Do NOT load full SKILL.md content — just the YAML frontmatter for each.
 `,
 
-    'convene.md': `---
-name: rihal:convene
-description: Convene the Majlis on a cross-domain question — sequential multi-agent consultation
-argument-hint: <strategic question>
-allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
----
+    // One canonical council command. No aliases — aliasing multiplies context
+    // on every Claude Code session, since all slash-command files get indexed.
+    // Users remember ONE word: 'council' (the team gathering).
+    'council.md': buildPipelineCommand({
+      name: 'rihal:council',
+      title: 'Majlis Council',
+      icon: '🕌',
+      purpose: 'Full multi-agent consultation for cross-domain strategic questions',
+      whenToUse: 'Strategic decisions that touch 4+ domains; crisis response; questions nobody can own alone',
+      chain: [
+        'sadiq',
+        'hussain-pm',
+        'waleed',
+        'ahmed-hassani',
+        'zayd',
+        'haitham',
+        'yousef',
+        'fatima',
+        'khalid',
+        'zahra',
+        'mariam',
+        'nasser',
+        'noor',
+      ],
+      intro: 'For cross-domain strategic questions where every perspective matters',
+      sessionFile: 'majlis',
+    }),
 
-Convene the Rihal Majlis on this question: **$ARGUMENTS**
+    'ui.md': buildPipelineCommand({
+      name: 'rihal:ui',
+      title: 'UI/UX Pipeline',
+      icon: '🎨',
+      purpose: 'Design and ship a user-facing interface change',
+      whenToUse: 'New component, screen redesign, brand alignment, accessibility audit, Arabic RTL work, motion/interaction design',
+      chain: ['zahra', 'layla', 'haitham', 'fatima'],
+      intro: 'Design direction → UX states → implementation → quality gate',
+      sessionFile: 'ui',
+    }),
 
-Follow the sequential chain protocol in \`.claude/skills/rihal-majlis-council/SKILL.md\` (the Majlis agent skill) and the detailed workflow in the package's \`rihal/workflows/majlis-sequential/instructions.md\`.
+    'feature.md': buildPipelineCommand({
+      name: 'rihal:feature',
+      title: 'Feature Pipeline',
+      icon: '⚡',
+      purpose: 'Build a new feature end-to-end',
+      whenToUse: 'Adding a new capability to an existing product. Requirements exist but need breakdown, build, test, and ship',
+      chain: [
+        'hussain-pm',   // scope + PRD
+        'waleed',       // arch decision if non-trivial
+        'layla',        // UX states
+        'haitham',      // frontend
+        'yousef',       // backend
+        'fatima',       // tests + release gate
+        'khalid',       // ship + monitor
+      ],
+      intro: 'Scope → arch → UX → FE + BE → tests → ship. End-to-end feature flow',
+      sessionFile: 'feature',
+    }),
 
-Steps:
-1. Frame the question clearly
-2. Determine council scope (full 13-agent or narrowed technical/business/design)
-3. Load agent digests from \`rihal/digests/\` (lean summaries, not full SKILL.md)
-4. Dispatch agents SEQUENTIALLY — each agent reads previous agent responses before adding their own
-5. Collect structured positions (position / confidence / key reason / conditions)
-6. Synthesize with explicit dissent surfaced (never buried)
-7. Save full session to \`.rihal/progress/majlis-$(date +%Y-%m-%d)-<slug>.md\`
-8. Present synthesis inline with decision owner named
-
-Use the model profile from \`.rihal/config.json\` or default to \`balanced\`. Strategic agents (Sadiq, Waleed, Majlis) use opus; executors use sonnet.
-`,
+    'project.md': buildPipelineCommand({
+      name: 'rihal:project',
+      title: 'Project Kickoff Pipeline',
+      icon: '🚀',
+      purpose: 'Start a new project from zero with full team alignment',
+      whenToUse: 'A new engagement, product, or initiative. Nothing exists yet — you need strategy, architecture, scope, design system, and a squad',
+      chain: [
+        'sadiq',         // strategic positioning + kill criteria
+        'waleed',        // stack + ADR
+        'ahmed-hassani', // delivery plan + DORA targets
+        'hussain-pm',    // phases + sprints
+        'zahra',         // brand identity
+        'layla',         // design system baseline
+        'nasser',        // squad composition
+      ],
+      intro: 'Strategy → arch → delivery → scope → brand → design system → team. Full kickoff',
+      sessionFile: 'kickoff',
+    }),
 
     'dispatch.md': `---
 name: rihal:dispatch
@@ -752,14 +943,22 @@ allowed-tools:
 
 Show all available Rihal Code slash commands, agent skills, and workflows.
 
-**Workflow Commands:**
-- \`/rihal:kickoff\` — start a new phase
+**Pipeline Commands (predefined agent chains — pick by work type):**
+- \`/rihal:project <name>\` — new project kickoff pipeline
+  (Sadiq → Waleed → Ahmed Al Hassani → Hussain-PM → Zahra → Layla → Nasser)
+- \`/rihal:feature <description>\` — feature build pipeline
+  (Hussain-PM → Waleed → Layla → Haitham + Yousef → Fatima → Khalid)
+- \`/rihal:ui <task>\` — UI/UX/design pipeline
+  (Zahra → Layla → Haitham → Fatima)
+- \`/rihal:council <question>\` — full 13-agent Majlis for strategic cross-domain questions
+
+**Workflow Commands (single steps):**
+- \`/rihal:kickoff\` — start a new phase (inside an existing project)
 - \`/rihal:progress\` — situational awareness + route to next action
 - \`/rihal:next\` — automatically advance to the next logical step
 - \`/rihal:status\` — concise project status
 - \`/rihal:discuss <topic>\` — structured discussion before committing
-- \`/rihal:convene <question>\` — multi-agent Majlis consultation
-- \`/rihal:dispatch <request>\` — route via Raees to the right specialist
+- \`/rihal:dispatch <request>\` — generic routing via Raees
 - \`/rihal:quick <task>\` — execute a small task with atomic commit
 - \`/rihal:fix <issue>\` — systematic debugging
 
@@ -779,14 +978,19 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - Content: Noor (writer), Mariam (marketing)
 - Meta: Raees (orchestrator), Majlis (council), Diwan (dashboard)
 
-**Common patterns:**
-- Just started? → \`/rihal:kickoff\`
+**Pick the right pipeline for your work:**
+- New project from zero? → \`/rihal:project "project name"\`
+- Building a feature? → \`/rihal:feature "description"\`
+- UI/UX/design work? → \`/rihal:ui "task"\`
+- Big strategic question? → \`/rihal:council "question"\`
+
+**Quick helpers:**
+- Just started? → \`/rihal:kickoff\` (phase-level, smaller than /rihal:project)
 - Coming back after a break? → \`/rihal:progress\`
 - Unsure what to do next? → \`/rihal:next\`
-- Have a quick task? → \`/rihal:quick "description"\`
+- Have a small task? → \`/rihal:quick "description"\`
 - Have a bug? → \`/rihal:fix "description"\`
-- Stuck on a decision? → \`/rihal:discuss "topic"\` then \`/rihal:convene\`
-- Need multi-agent perspective? → \`/rihal:convene "question"\`
+- Stuck on a decision? → \`/rihal:discuss "topic"\` then \`/rihal:council "question"\`
 `,
   };
 
