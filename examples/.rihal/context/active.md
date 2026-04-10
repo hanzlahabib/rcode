@@ -1,7 +1,7 @@
 # Active Context
 
 ## Project
-Rihal Method — self-contained AI team methodology with 9 agents, 39 skills, and a view-only dashboard.
+Rihal Code — self-contained AI team methodology with 9 agents, 39 skills, and a view-only dashboard.
 
 ## Phase
 `phase-01-foundation` — build initial agents, workflows, and dashboard

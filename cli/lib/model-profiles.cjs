@@ -1,7 +1,7 @@
 /**
- * Rihal Method — Model Profile Resolution Library
+ * Rihal Code — Model Profile Resolution Library
  *
- * Inspired by GSD's model-profiles.cjs. Reads model profiles from
+ * Reads model profiles from
  * rihal/config/model-profiles.json and resolves the right model for
  * each agent at dispatch time.
  *

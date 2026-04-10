@@ -14,7 +14,7 @@ description: >
   and rihal-agent-zahra (branding expert) for brand alignment. Do
   NOT use for: cloning existing sites (use rihal-clone-website
   instead), pure backend work, or documentation.
-license: Adapted from Anthropic's frontend-design skill (MIT-compatible)
+license: Adapted from Anthropic's frontend-design skill
 ---
 
 # Rihal Frontend Design

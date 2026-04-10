@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Majlis — Rihal Method Dashboard Server
+ * Majlis — Rihal Code Dashboard Server
  *
  * View-only Node server that scans .rihal/ directory and renders
  * a live HTML dashboard showing project state, phases, progress,
@@ -562,7 +562,7 @@ ${!state.exists ? `
 
 <footer>
   <div class="arabic">رحلة البناء · The Journey of Building</div>
-  <div>Rihal Method · View-Only Dashboard · Read from files, no database.</div>
+  <div>Rihal Code · View-Only Dashboard · Read from files, no database.</div>
 </footer>
 
 <script>
@@ -604,7 +604,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🕌 Majlis (مجلس) — Rihal Method Dashboard`);
+  console.log(`\n🕌 Majlis (مجلس) — Rihal Code Dashboard`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`   Mode:       view-only`);
   console.log(`   URL:        http://localhost:${PORT}`);

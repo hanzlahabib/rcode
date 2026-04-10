@@ -1,5 +1,5 @@
 /**
- * rihal-method doctor — run compliance check on skills
+ * rihal-code doctor — run compliance check on skills
  */
 
 const fs = require('fs');
@@ -30,7 +30,7 @@ function checkCompliance(filePath) {
 }
 
 module.exports = function doctor(args, { packageRoot }) {
-  console.log(`\n🕌 Rihal Method — Compliance Doctor\n`);
+  console.log(`\n🕌 Rihal Code — Compliance Doctor\n`);
 
   // Core skills (init, help, brainstorming, etc.) are utility skills with their
   // own conventions — they don't follow the 5-component standard used by agents

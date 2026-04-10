@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Rihal Method CLI
+ * Rihal Code CLI
  *
  * Usage:
- *   npx @hanzlahabib/rihal-method init          → scaffold .rihal/ in current project
- *   npx @hanzlahabib/rihal-method dashboard     → start the Diwan view-only dashboard
- *   npx @hanzlahabib/rihal-method serve         → alias for dashboard
- *   npx @hanzlahabib/rihal-method digest        → print compact agent digests
- *   npx @hanzlahabib/rihal-method team          → list the team roster
- *   npx @hanzlahabib/rihal-method doctor        → compliance check
- *   npx @hanzlahabib/rihal-method version       → print version
- *   npx @hanzlahabib/rihal-method help          → this message
+ *   npx @hanzlahabib/rihal-code init          → scaffold .rihal/ in current project
+ *   npx @hanzlahabib/rihal-code dashboard     → start the Diwan view-only dashboard
+ *   npx @hanzlahabib/rihal-code serve         → alias for dashboard
+ *   npx @hanzlahabib/rihal-code digest        → print compact agent digests
+ *   npx @hanzlahabib/rihal-code team          → list the team roster
+ *   npx @hanzlahabib/rihal-code doctor        → compliance check
+ *   npx @hanzlahabib/rihal-code version       → print version
+ *   npx @hanzlahabib/rihal-code help          → this message
  */
 
 const path = require('path');
@@ -34,11 +34,11 @@ const COMMANDS = {
 
 function printHelp() {
   console.log(`
-🕌 Rihal Method v${PACKAGE_JSON.version}
+🕌 Rihal Code v${PACKAGE_JSON.version}
     Context-aware AI team methodology with 18 specialized agents.
 
 Usage:
-  npx @hanzlahabib/rihal-method <command>
+  npx @hanzlahabib/rihal-code <command>
 
 Commands:
   init           Scaffold .rihal/ directory in your current project
@@ -54,10 +54,10 @@ Commands:
 
 Examples:
   cd my-project
-  npx @hanzlahabib/rihal-method init         # sets up .rihal/ with templates
-  npx @hanzlahabib/rihal-method dashboard    # view project state in browser
+  npx @hanzlahabib/rihal-code init         # sets up .rihal/ with templates
+  npx @hanzlahabib/rihal-code dashboard    # view project state in browser
 
-Documentation: https://github.com/hanzlahabib/rihal-method
+Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
 }
 

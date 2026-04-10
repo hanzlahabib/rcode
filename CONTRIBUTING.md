@@ -1,4 +1,4 @@
-# Contributing to Rihal Method
+# Contributing to Rihal Code
 
 Thank you for contributing. These guidelines exist to keep the module maintainable and impressive when demoed.
 
@@ -49,7 +49,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `perf` — performance improvement
 - `revert` — reverting a previous commit
 
-### Allowed scopes (for Rihal Method)
+### Allowed scopes (for Rihal Code)
 - `agents` — agent persona files
 - `skills` — action or agent skills
 - `workflows` — multi-step workflows
@@ -96,7 +96,7 @@ chore(github): import Siraaj commit and PR rules
    ```
 4. **Grep for regressions:**
    ```bash
-   grep -rn -i "bmad" rihal docs examples README.md server   # should be empty
+   grep -rn -i "TODO" rihal docs examples README.md server   # should be empty
    grep -rn "ahmed" rihal docs README.md server | grep -v "ahmed-hassani\|Ahmed Al Hassani"   # should be empty
    ```
 
@@ -184,6 +184,6 @@ When filing an issue, use the appropriate template in `.github/ISSUE_TEMPLATE/`:
 
 Open an issue with the `question` label, or discuss in the Rihal team Slack if you're internal.
 
-Thank you for making Rihal Method better. Every improvement compounds across every project that uses it.
+Thank you for making Rihal Code better. Every improvement compounds across every project that uses it.
 
 — Hanzla Habib

@@ -1,5 +1,5 @@
 /**
- * rihal-method team — list the team roster
+ * rihal-code team — list the team roster
  */
 
 const fs = require('fs');
@@ -15,7 +15,7 @@ module.exports = function team(args, { packageRoot }) {
 
   const files = fs.readdirSync(digestDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
 
-  console.log(`\n🕌 Rihal Method Team Roster (${files.length} agents)\n`);
+  console.log(`\n🕌 Rihal Code Team Roster (${files.length} agents)\n`);
   console.log('─'.repeat(80));
 
   for (const file of files.sort()) {

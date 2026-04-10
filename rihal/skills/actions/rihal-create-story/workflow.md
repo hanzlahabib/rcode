@@ -359,7 +359,7 @@ Load config from `{project-root}/_rihal/config.yaml` and resolve:
   </check>
 
   <action>Report completion</action>
-  <output>**🎯 ULTIMATE Rihal Method STORY CONTEXT CREATED, {user_name}!**
+  <output>**🎯 ULTIMATE Rihal Code STORY CONTEXT CREATED, {user_name}!**
 
     **Story Details:**
     - Story ID: {{story_id}}

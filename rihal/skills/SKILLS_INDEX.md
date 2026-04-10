@@ -1,6 +1,6 @@
-# Rihal Method — Skills Index
+# Rihal Code — Skills Index
 
-All 39 skills in Rihal Method, organized by category.
+All 39 skills in Rihal Code, organized by category.
 
 ## Agent Skills (8)
 
@@ -96,4 +96,4 @@ When a user picks capability `DS`, Claude invokes the `rihal-dev-story` skill.
 
 ## Licensing
 
-Rihal Method is MIT licensed. See [LICENSE](../../LICENSE) and [NOTICE.md](../../NOTICE.md) for attribution of prior art.
+Free to use and adapt.

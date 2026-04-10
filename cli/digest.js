@@ -1,5 +1,5 @@
 /**
- * rihal-method digest — print compact agent digests
+ * rihal-code digest — print compact agent digests
  */
 
 const fs = require('fs');
@@ -23,7 +23,7 @@ module.exports = function digest(args, { packageRoot }) {
   // Print all digests
   const files = fs.readdirSync(digestDir).filter((f) => f.endsWith('.md') && f !== 'README.md').sort();
 
-  console.log(`\n🕌 All Rihal Method Agent Digests\n`);
+  console.log(`\n🕌 All Rihal Code Agent Digests\n`);
   for (const file of files) {
     const content = fs.readFileSync(path.join(digestDir, file), 'utf8');
     console.log(content);

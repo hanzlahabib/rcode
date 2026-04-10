@@ -1,5 +1,5 @@
 /**
- * rihal-method dashboard — start the Diwan view-only dashboard
+ * rihal-code dashboard — start the Diwan view-only dashboard
  */
 
 const path = require('path');

@@ -127,7 +127,7 @@ If the project needs:
 - Comprehensive coverage analysis
 - Advanced testing patterns and utilities
 
-> **Install Test Architect (TEA) module**: <https://rihal-code-org.github.io/rihal-method-test-architecture-enterprise/>
+> **Install Test Architect (TEA) module**: <https://rihal-code-org.github.io/rihal-code-test-architecture-enterprise/>
 
 ## Output
 

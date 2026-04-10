@@ -1,12 +1,12 @@
 /**
- * rihal-method set-profile — change the model profile for the current project
+ * rihal-code set-profile — change the model profile for the current project
  *
  * Usage:
- *   npx @hanzlahabib/rihal-method set-profile balanced
- *   npx @hanzlahabib/rihal-method set-profile quality
- *   npx @hanzlahabib/rihal-method set-profile budget
- *   npx @hanzlahabib/rihal-method set-profile inherit
- *   npx @hanzlahabib/rihal-method set-profile                  # interactive
+ *   npx @hanzlahabib/rihal-code set-profile balanced
+ *   npx @hanzlahabib/rihal-code set-profile quality
+ *   npx @hanzlahabib/rihal-code set-profile budget
+ *   npx @hanzlahabib/rihal-code set-profile inherit
+ *   npx @hanzlahabib/rihal-code set-profile                  # interactive
  */
 
 const fs = require('fs');
@@ -26,7 +26,7 @@ module.exports = function setProfile(args) {
 
   if (!fs.existsSync(rihalDir)) {
     console.error(`❌ No .rihal/ directory found in ${cwd}`);
-    console.error(`   Run 'npx @hanzlahabib/rihal-method init' first.`);
+    console.error(`   Run 'npx @hanzlahabib/rihal-code init' first.`);
     process.exit(1);
   }
 
@@ -51,7 +51,7 @@ module.exports = function setProfile(args) {
       console.log(`  • ${name}${marker}`);
       console.log(`    ${p.description}`);
     }
-    console.log(`\nUsage: npx @hanzlahabib/rihal-method set-profile <name>`);
+    console.log(`\nUsage: npx @hanzlahabib/rihal-code set-profile <name>`);
     return;
   }
 

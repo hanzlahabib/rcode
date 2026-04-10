@@ -1,4 +1,4 @@
-# Rihal Method
+# Rihal Code
 
 <div dir="rtl">طريقة رحال</div>
 
@@ -7,13 +7,12 @@
 
 A self-contained AI team methodology: nine agents, 39 skills, file-based state management, context hygiene workflows, and a live view-only dashboard. Everything you need to run a real AI-assisted team in one module.
 
-> See [NOTICE.md](NOTICE.md) for third-party attributions.
 
 ---
 
 ## What This Is
 
-Most AI coding frameworks give you one helpful assistant. **Rihal Method gives you a full team.**
+Most AI coding frameworks give you one helpful assistant. **Rihal Code gives you a full team.**
 
 Nine agents — each with a real role, personality, and authority — guide projects through every stage: strategy, architecture, product, design, engineering, QA, DevOps, documentation, and transparency.
 
@@ -58,7 +57,7 @@ Rihal is one of Oman's fastest-growing tech companies (2,441% growth, Series A 2
 ## Directory Structure
 
 ```
-rihal-method/
+rihal-code/
 ├── README.md
 ├── server/
 │   └── dashboard.js              # Majlis — view-only dashboard server
@@ -118,24 +117,24 @@ your-project/
 
 ```bash
 # 1. Clone this module
-git clone https://github.com/hanzlahabib/rihal-method.git
-cd rihal-method
+git clone https://github.com/hanzlahabib/rihal-code.git
+cd rihal-code
 
 # 2. Initialize a project in your work directory
 cd ~/projects/your-app
 # (See docs/METHODOLOGY.md for agent loading instructions)
 
 # 4. Start the dashboard
-node ~/rihal-method/server/dashboard.js
+node ~/rihal-code/server/dashboard.js
 
 # Visit http://localhost:7717
 ```
 
 ---
 
-## Context Management (inspired by GSD)
+## Context Management
 
-AI performs badly when context is stale or overloaded. Rihal Method includes two critical workflows:
+AI performs badly when context is stale or overloaded. Rihal Code includes two critical workflows:
 
 ### `context-reset`
 Clears Claude's context, saves current state, and reloads only `active.md` (under 2k tokens).
@@ -182,7 +181,7 @@ kill $(lsof -t -i:7717)
 
 ## Philosophy
 
-> **Strategy without execution is hallucination. Execution without strategy is drift. Rihal Method forces both.**
+> **Strategy without execution is hallucination. Execution without strategy is drift. Rihal Code forces both.**
 
 - **Sadiq asks "why?"** before Waleed asks "how?"
 - **Waleed locks the stack** before Omar writes code
@@ -221,14 +220,11 @@ In `rihal/config.yaml`, change:
 
 ---
 
-## License
-
-MIT — free to use, fork, and adapt.
+Free to use, fork, and adapt.
 
 ## Author
 
 **Hanzla Habib** — 2026.
 
-See [NOTICE.md](NOTICE.md) for third-party attributions.
 
 <div dir="rtl">صُنع بحب في مسقط — Made with love in Muscat (in spirit)</div>

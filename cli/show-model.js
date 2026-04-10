@@ -1,10 +1,10 @@
 /**
- * rihal-method show-model — print the resolved model for an agent (or all agents)
+ * rihal-code show-model — print the resolved model for an agent (or all agents)
  *
  * Usage:
- *   npx @hanzlahabib/rihal-method show-model              # all agents in current profile
- *   npx @hanzlahabib/rihal-method show-model waleed       # single agent
- *   npx @hanzlahabib/rihal-method show-model --profile=quality   # different profile
+ *   npx @hanzlahabib/rihal-code show-model              # all agents in current profile
+ *   npx @hanzlahabib/rihal-code show-model waleed       # single agent
+ *   npx @hanzlahabib/rihal-code show-model --profile=quality   # different profile
  */
 
 const {

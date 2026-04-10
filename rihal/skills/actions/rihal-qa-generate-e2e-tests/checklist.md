@@ -30,4 +30,4 @@ Run the tests using your project's test command.
 
 ---
 
-**Need more comprehensive testing?** Install [Test Architect (TEA)](https://rihal-code-org.github.io/rihal-method-test-architecture-enterprise/) for advanced workflows.
+**Need more comprehensive testing?** Install [Test Architect (TEA)](https://rihal-code-org.github.io/rihal-code-test-architecture-enterprise/) for advanced workflows.

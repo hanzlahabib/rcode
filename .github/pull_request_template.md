@@ -11,7 +11,7 @@ Closes #ISSUE_ID
 - [ ] Documentation
 - [ ] Breaking change (skill ID rename, agent authority change, config schema change)
 
-## Rihal Method Compliance
+## Rihal Code Compliance
 If this PR adds or modifies a skill, verify the 5-component standard:
 - [ ] YAML header has explicit trigger phrases (5-12)
 - [ ] YAML header has negative boundaries ("Do NOT use for...")
@@ -28,7 +28,7 @@ If this PR adds or modifies a skill, verify the 5-component standard:
 
 ## Testing
 - [ ] Dashboard server still runs (`node server/dashboard.js`)
-- [ ] No stray BMAD references (`grep -rn -i bmad rihal docs examples README.md server`)
+- [ ] No stray third-party references or TODOs
 - [ ] All 5-component compliance checks pass
 - [ ] Manually verified the change works end-to-end
 

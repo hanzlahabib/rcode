@@ -1,4 +1,4 @@
-# Rihal Method — Deep Dive
+# Rihal Code — Deep Dive
 
 ## The Problem
 
@@ -11,7 +11,7 @@ And most AI workflows give you **one assistant** — a generalist who has to be 
 
 ## The Solution
 
-Rihal Method applies three ideas:
+Rihal Code applies three ideas:
 
 1. **Specialized agents with real authority boundaries** (like a real team)
 2. **File-based state** that survives between sessions (`.rihal/`)
@@ -153,29 +153,22 @@ Because staring at markdown files in a terminal is not the same as seeing them i
 
 ### vs generic AI development frameworks
 
-Most frameworks are general-purpose. Rihal Method is opinionated about:
+Most frameworks are general-purpose. Rihal Code is opinionated about:
 - Specific team roles (9 named agents with clear authority)
 - File-based context management (`.rihal/`)
 - A view-only dashboard
 - Cultural framing (Omani/Arabic identity)
 
-### vs GSD (Get Shit Done)
+### What Makes Rihal Code Different
 
-GSD focuses on planning and execution rigor. Rihal Method borrows:
-- Phase-based tracking
-- Artifact management
-- Progress logging
+- **Multi-agent role specialization** — 19 distinct agents, each with authority boundaries and a domain
+- **Cultural identity** — bilingual Arabic-English from day one, Omani-modern aesthetic, government-client aware
+- **File-based state** — `.rihal/` directory is the single source of truth, git-friendly, editor-inspectable
+- **Live dashboard** — Diwan view-only server for project transparency
+- **Model profiles** — four named profiles (quality/balanced/budget/inherit) that let you balance quality vs cost
+- **Runtime-compatible** — works with Claude Code, OpenCode, Codex, Gemini CLI, or any compatible harness via the `inherit` profile
 
-And adds:
-- Multi-agent role specialization
-- Cultural identity
-- Live dashboard
-
-### vs Addy Osmani's AI Engineering Guide
-
-Addy's work is a book — you read it once. Rihal Method is a runtime — you load agents and run workflows daily.
-
-## When to Use Rihal Method
+## When to Use Rihal Code
 
 **Good fit:**
 - Team projects with multiple roles
@@ -189,9 +182,9 @@ Addy's work is a book — you read it once. Rihal Method is a runtime — you lo
 - One-off prototypes
 - Projects that fit in your head (no state needed)
 
-## When NOT to Use Rihal Method
+## When NOT to Use Rihal Code
 
-If your project is under 10 files or will be thrown away in a week, Rihal Method is overkill. Use it for real work that ships and lasts.
+If your project is under 10 files or will be thrown away in a week, Rihal Code is overkill. Use it for real work that ships and lasts.
 
 ## The Core Loop
 
@@ -235,7 +228,7 @@ And at any time:
 
 ## Final Note
 
-This methodology is opinionated. That's on purpose. If you disagree with the opinions, the module is MIT-licensed — fork it and make it yours. But don't water it down; that's how methodologies become useless.
+This methodology is opinionated. That's on purpose. If you disagree with the opinions, fork it and make it yours. But don't water it down; that's how methodologies become useless.
 
 <div dir="rtl" style="text-align:center;margin-top:40px;font-size:18px;">
 رحلة البناء

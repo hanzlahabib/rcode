@@ -1,7 +1,7 @@
 # Phase 01 — Foundation
 
 ## Goal
-Build the initial Rihal Method module with all 9 agents, core workflows, context management, and a working dashboard.
+Build the initial Rihal Code module with all 9 agents, core workflows, context management, and a working dashboard.
 
 ## Duration
 1 week
@@ -11,7 +11,7 @@ Build the initial Rihal Method module with all 9 agents, core workflows, context
 - [ ] 11 workflows documented with instructions
 - [ ] Majlis dashboard runs and displays state
 - [ ] README explains the module clearly
-- [ ] MIT licensed
+
 - [ ] Ready for GitHub publish
 
 ## Out of Scope

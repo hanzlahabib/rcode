@@ -76,7 +76,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
   ```
 - Run grep checks before committing renames or refactors:
   ```bash
-  grep -rn -i "bmad" rihal docs examples README.md server   # should be empty
+  grep -rn -i "TODO" rihal docs examples README.md server   # should be empty
   ```
 - Test the dashboard server boots without errors before committing dashboard changes
 

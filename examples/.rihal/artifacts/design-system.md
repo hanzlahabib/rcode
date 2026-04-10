@@ -1,4 +1,4 @@
-# Design System — Rihal Method Dashboard
+# Design System — Rihal Code Dashboard
 
 ## Colors (Omani-inspired)
 

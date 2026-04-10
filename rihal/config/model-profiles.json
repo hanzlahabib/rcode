@@ -1,7 +1,7 @@
 {
   "$schema": "./model-profiles.schema.json",
   "version": "1.0.0",
-  "description": "Model profiles for Rihal Method agents. Follows GSD (Get Shit Done) model profile architecture. Each profile maps every agent to a specific model tier. Switch profiles at runtime to balance quality vs cost vs runtime compatibility.",
+  "description": "Model profiles for Rihal Code agents. Each profile maps every agent to a specific model tier. Switch profiles at runtime to balance quality vs cost vs runtime compatibility.",
 
   "profiles": {
     "quality": {
@@ -80,7 +80,7 @@
     },
 
     "inherit": {
-      "description": "Follow the current session model. All agents resolve to 'inherit'. Best when you switch models interactively (e.g., OpenCode /model command) or when using non-Anthropic providers (OpenRouter, local models) — otherwise Rihal Method may call Anthropic models directly, incurring unexpected costs.",
+      "description": "Follow the current session model. All agents resolve to 'inherit'. Best when you switch models interactively (e.g., OpenCode /model command) or when using non-Anthropic providers (OpenRouter, local models) — otherwise Rihal Code may call Anthropic models directly, incurring unexpected costs.",
       "agents": {
         "sadiq": "inherit",
         "waleed": "inherit",

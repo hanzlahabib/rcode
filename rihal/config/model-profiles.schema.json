@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/hanzlahabib/rihal-method/blob/main/rihal/config/model-profiles.schema.json",
-  "title": "Rihal Method Model Profiles",
-  "description": "Schema for model profiles (GSD-style). Each profile is a complete mapping of every agent to a model tier.",
+  "$id": "https://github.com/hanzlahabib/rihal-code/blob/main/rihal/config/model-profiles.schema.json",
+  "title": "Rihal Code Model Profiles",
+  "description": "Schema for model profiles. Each profile is a complete mapping of every agent to a model tier.",
   "type": "object",
   "required": ["version", "profiles", "default_profile", "model_aliases"],
   "properties": {
