@@ -1347,6 +1347,20 @@ async function runInstall(args, { packageRoot }) {
     console.log(`   ✓ universal → AGENTS.md ${result}`);
   }
 
+  // ------ Stage 2b: Verify manifest — catch partial installs ------
+  // Non-fatal: warns about drift but doesn't abort. A Ctrl+C mid-install or
+  // disk-full mid-copy would leave missing agents, and users would never know
+  // without this check.
+  const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
+  const { reports, hasDrift } = verifyInstall(cwd, packageRoot, editors);
+  if (hasDrift) {
+    console.log(`\n⚠ Install verification found drift:`);
+    console.log(formatReport(reports));
+    console.log(`\n   Re-run install to repair, or run 'rihal-code doctor' for details.`);
+  } else {
+    console.log(`\n   ✓ Install verified — all expected agents and skills present.`);
+  }
+
   // ------ Stage 3: CLAUDE.md (only if Claude being installed and user doesn't have one) ------
   if (editors.includes('claude')) {
     const claudeMdDest = path.join(cwd, 'CLAUDE.md');
