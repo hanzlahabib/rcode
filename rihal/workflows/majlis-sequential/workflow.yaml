@@ -1,0 +1,14 @@
+name: majlis-sequential
+version: 1.0.0
+description: Sequential chain-of-thought multi-agent Majlis — each agent reads previous responses before adding theirs
+agent: majlis
+mode: sequential-chain
+inputs:
+  - question
+  - council_order      # Optional: explicit order, otherwise uses default chain
+outputs:
+  - .rihal/progress/majlis-{date}-{slug}.md
+duration_estimate: 3-8 minutes
+requires:
+  - Works with any Claude harness (no Task tool requirement)
+  - Each agent dispatch can use a different model via models.json
