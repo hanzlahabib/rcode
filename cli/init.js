@@ -440,23 +440,262 @@ Route this request through Raees (orchestration director): **$ARGUMENTS**
 
     'kickoff.md': `---
 name: rihal:kickoff
-description: Start a new project phase — Memory Bank setup with Sadiq, Waleed, Hussain-PM, Layla
+description: Start a new project phase — strategy + stack + sprint plan + design baseline
 allowed-tools:
   - Read
   - Write
   - Bash
 ---
 
-Start a new Rihal Code phase. Follow the workflow in \`rihal/workflows/kickoff/instructions.md\`.
+🚀 **Rihal Kickoff — new phase setup**
 
-Steps:
-1. Initialize \`.rihal/\` directories if missing
-2. Load Sadiq (strategist) — ask: what problem, who for, kill criteria
-3. Load Waleed (CTO) — lock tech stack, write ADR
-4. Load Hussain-PM — break into 3-5 sprints
-5. Load Layla — define design system baseline
-6. Update \`.rihal/state.json\` with new phase
-7. Create \`.rihal/context/active.md\` with phase summary
+Run when starting a new phase of work inside an existing project. This is a **context-heavy** workflow that loads 4 agents sequentially and writes multiple artifacts. It intentionally STOPS after sprint planning so you can choose how to proceed with epic/story generation — keeping the context budget lean for downstream work.
+
+## Prerequisites
+
+- \`.rihal/\` exists (run \`rihal-code install\` if not)
+- Project is initialized (\`.rihal/state.json\` present)
+
+## Steps
+
+1. **Initialize \`.rihal/\` directories** if any are missing (phases, plans, decisions, artifacts, progress, context).
+
+2. **Load Sadiq** (strategist) — ask:
+   - What problem are we solving?
+   - Who is it for?
+   - What are the kill criteria (when do we stop)?
+   Write findings to \`.rihal/phases/{phase}/brief.md\`.
+
+3. **Load Waleed** (CTO) — lock the tech stack and write an ADR to \`.rihal/decisions/001-stack-{phase}.md\`.
+
+4. **Load Hussain-PM** — break the phase into 3-5 sprints. Write goals, duration, and capacity notes to \`.rihal/phases/{phase}/sprints.md\`.
+
+5. **Load Layla** — define the design system baseline. Write token decisions to \`.rihal/artifacts/brand/design-system.md\`.
+
+6. **Update state:**
+   - \`.rihal/state.json\` → record current phase
+   - \`.rihal/context/active.md\` → 2k-token phase summary that downstream commands will read
+
+7. **🛑 STOP and present the next-step menu below.** Do NOT auto-continue into epic/story generation — let the user decide so the context budget stays lean for the next step.
+
+## Output summary
+
+After steps 1-6 complete, print a concise summary:
+
+\`\`\`
+✅ Kickoff complete — {phase}
+   Strategy:      .rihal/phases/{phase}/brief.md
+   Stack decision: .rihal/decisions/001-stack-{phase}.md
+   Sprint plan:    .rihal/phases/{phase}/sprints.md  ({N} sprints)
+   Design tokens:  .rihal/artifacts/brand/design-system.md
+   Active context: .rihal/context/active.md ({token count} tokens)
+\`\`\`
+
+## 🎯 Next step — choose one
+
+**Option A — Continue in this session (fast, heavier context):**
+  Generate epics and stories for **Sprint 1 only** inline. Adds ~3k tokens.
+  Say: \`generate sprint 1 epics and stories\` and I'll run rihal-create-epics-and-stories scoped to sprint-01.
+
+**Option B — Fresh context (recommended if context > 40%):**
+  1. Run \`/clear\` to reset
+  2. Run \`/rihal:generate-sprint sprint-01\` to regenerate epics/stories with a clean slate
+     (The command re-reads \`.rihal/phases/{phase}/brief.md\` + sprints.md — nothing is lost.)
+
+**Option C — Review first:**
+  Run \`/rihal:progress\` or open \`.rihal/context/active.md\` to review what was written.
+
+Ask the user which option, then proceed accordingly. Do NOT pick for them unless \`communication_mode\` is \`yolo\` AND they have explicitly said "just go".
+`,
+
+    'continue.md': `---
+name: rihal:continue
+description: Read .rihal/ state and suggest the most efficient next action (context-lean)
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+🧭 **Rihal Continue — where should I go next?**
+
+A stateful helper. Reads \`.rihal/\` to figure out where the project is, what the last completed step was, and what the next logical step should be. Then presents you with two options: continue in this session, or clear context and run a specific fresh command.
+
+Runs in **under 2k tokens** — reads only state files, never source code or full artifacts.
+
+## When to run this
+
+- You just re-opened your editor and forgot where you left off
+- You finished a major step and want the lean next action, not a full kickoff flow
+- Your context is heavy and you want to know the cheapest way to proceed
+- You want to know "what's actually blocked right now?"
+
+## Process
+
+1. **Read state files only — no source code:**
+   - \`.rihal/config.json\` (project name + communication_mode)
+   - \`.rihal/state.json\` (current phase + any init markers)
+   - \`.rihal/context/active.md\` (last compacted session summary)
+   - \`ls .rihal/phases/\` (list of phases, no content)
+   - For the current phase, \`ls\` its \`tasks/\`, \`stories/\`, and check for \`brief.md\`, \`sprints.md\`
+
+2. **Check for a pending HANDOFF.json** at \`.rihal/HANDOFF.json\`. If present, the user paused mid-work. Recommend \`/rihal:resume\` as the top option.
+
+3. **Compute the furthest-complete artifact** for the current phase:
+   - Has \`brief.md\`? ✓
+   - Has \`sprints.md\`? ✓
+   - Has epics (files in \`tasks/\`)? ✓
+   - Has stories (files in \`stories/\`)? ✓
+   - Any story has a commit reference? ✓
+
+   The highest ✓ tells you the last completed step. The next step is what comes after it.
+
+4. **Check GitHub sync state** at \`.rihal/integrations/github-map.json\`:
+   - If it exists and has entries, some work is already on GitHub
+   - Compare local story count to synced count — flag the gap
+
+5. **Check memory bank freshness** via \`rihal-code context --check 2>&1\` (returns exit 1 if stale). If stale, add a warning.
+
+6. **Present the state report + next-action menu** (format below).
+
+## Output format (strict — keep terse)
+
+\`\`\`
+🧭 Rihal state — {project_name}
+
+   Phase:     {current-phase}
+   Comms:     {guided|yolo}
+   Memory:    {fresh|stale|never}
+   HANDOFF:   {none|pending from {date}}
+
+   Furthest:  {brief|sprints|epics|stories|committed}
+   GitHub:    {N/M stories synced}
+
+🎯 Recommended next step:
+
+   A) {most efficient continuation}
+      {one-line reason}
+
+   B) Fresh context (if your session is heavy):
+      /clear
+      {exact command to run after clearing}
+
+Which? [A/B/other]
+\`\`\`
+
+## Examples of next-step recommendations by state
+
+| Last completed | Recommended A (in context) | Recommended B (fresh) |
+|---|---|---|
+| brief.md only | \`Load Hussain-PM and plan sprints\` | \`/clear\` + \`/rihal:sprint-planning\` |
+| sprints.md done, no epics | \`Generate epics for sprint 1 inline\` | \`/clear\` + \`/rihal:generate-sprint sprint-01\` |
+| epics + stories done, not pushed | \`Dry-run github-sync here\` | \`/clear\` + \`/rihal:push-sprint sprint-01\` |
+| stories pushed, ready to code | \`Start story 1 inline\` | \`/clear\` + \`/rihal:dev-story\` |
+| All sprints done | \`Run retrospective in context\` | \`/clear\` + \`/rihal:retrospective\` |
+| Pending HANDOFF | \`Resume pending handoff\` | \`/clear\` + \`/rihal:resume\` |
+
+## Rules
+
+- Never pick the option for the user. Always present A + B and wait.
+- Unless \`communication_mode=yolo\` AND the user explicitly said "just do it", then pick A and proceed.
+- Output must fit on one screen. If the state is complex, pick the top 2 signals only.
+- Do NOT read source files during this command. State files only.
+`,
+
+    'generate-sprint.md': `---
+name: rihal:generate-sprint
+description: Generate epics and stories for a specific sprint, re-reading state from disk (context-lean)
+argument-hint: <sprint-id>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+---
+
+📝 **Rihal Generate Sprint — per-sprint epic/story creation**
+
+Designed to run in a **fresh context** (right after \`/clear\`) so the session budget stays lean. Re-reads everything it needs from \`.rihal/\` state files — no assumption of prior session memory.
+
+## When to run this
+
+- Right after \`/rihal:kickoff\` finishes planning sprints, to generate stories for sprint 1
+- Between sprints, to generate stories for the next sprint without carrying old context forward
+- As part of a phased rollout where each sprint gets fleshed out just before execution
+
+**Do NOT use this to plan the sprints themselves** — that's \`/rihal:kickoff\` or \`/rihal:sprint-planning\`. This command assumes sprints already exist in \`.rihal/phases/{phase}/sprints.md\`.
+
+## Prerequisites
+
+- \`.rihal/config.json\` exists
+- \`.rihal/phases/{current-phase}/brief.md\` exists
+- \`.rihal/phases/{current-phase}/sprints.md\` exists and contains a section for the requested sprint
+
+If any are missing, stop and tell the user what to run first.
+
+## Context load (deliberately minimal)
+
+Do NOT read the full codebase. Read **only**:
+
+1. \`.rihal/config.json\` → project name, languages
+2. \`.rihal/state.json\` → current phase
+3. \`.rihal/phases/{phase}/brief.md\` → problem, audience, kill criteria
+4. \`.rihal/phases/{phase}/sprints.md\` → the ONE section for the requested sprint
+5. \`.rihal/decisions/001-stack-{phase}.md\` if present → stack constraints
+
+Target context load: ~5k tokens max. If you find yourself reading more than this, stop and ask the user whether to proceed.
+
+## Process
+
+1. **Parse the sprint id from \$ARGUMENTS.** If missing, read sprints.md and list available sprints, then ask.
+
+2. **Extract the sprint's goal and scope** from its section in sprints.md. Example:
+   \`\`\`
+   ## Sprint 01 — Auth basics
+   Goal: User can sign up and log in
+   Scope: email/password auth, session management, password reset
+   \`\`\`
+
+3. **Generate 2-5 epics** scoped to this sprint's goal. Each epic has:
+   - Title (one line)
+   - Vision (why this epic)
+   - 3-6 stories underneath
+
+4. **Generate stories** for each epic. Each story has:
+   - Frontmatter with \`epic: epic-N-slug\` and \`sprint: {sprint-id}\`
+   - Problem statement
+   - Acceptance criteria (Given/When/Then or bullet checklist)
+   - Test hints
+   - Rough size (points or t-shirt)
+
+5. **Write files:**
+   - \`.rihal/phases/{phase}/tasks/epic-{N}-{slug}.md\` — one per epic
+   - \`.rihal/phases/{phase}/stories/story-{epic-N}-{story-M}-{slug}.md\` — one per story
+   - Update \`.rihal/phases/{phase}/sprints.md\` to mark checkboxes with the actual story ids
+
+6. **Do NOT push to GitHub in this command.** That's what \`/rihal:push-sprint {sprint-id}\` is for (separate, explicit, with \`gh\` under the hood).
+
+## Output summary
+
+\`\`\`
+📝 Sprint {sprint-id} epics + stories generated
+   Epics:   {N} at .rihal/phases/{phase}/tasks/
+   Stories: {M} at .rihal/phases/{phase}/stories/
+   Linked:  every story has epic: + sprint: frontmatter
+
+Next:
+  /rihal:push-sprint {sprint-id}     # create GitHub issues (dry-run first, then --execute)
+  /rihal:dev-story                   # start implementing the first story
+  /clear && /rihal:generate-sprint {next-sprint-id}   # next sprint in fresh context
+\`\`\`
+
+## Rules
+
+- Never invent content not grounded in brief.md. If a sprint's scope is vague, ask the user to clarify before writing stories — don't hallucinate.
+- Every story MUST have the \`epic:\` and \`sprint:\` frontmatter so \`/rihal:push-sprint\` can filter correctly.
+- In \`guided\` communication mode: present the epic breakdown to the user before writing story files, wait for confirmation.
+- In \`yolo\` mode: proceed through writing without confirmation.
+- Stay under 5k tokens of context load. If you need more, it's a sign the work should be decomposed further.
 `,
 
     'init.md': `---
@@ -1288,7 +1527,9 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 
 **Workflow Commands (single steps):**
 - \`/rihal:init\` — scan existing codebase, write brief, populate memory bank
-- \`/rihal:kickoff\` — start a new phase (inside an existing project)
+- \`/rihal:kickoff\` — start a new phase (strategy + stack + sprint plan + design baseline)
+- \`/rihal:continue\` — read state, suggest the most efficient next step (context-lean)
+- \`/rihal:generate-sprint <id>\` — generate epics + stories for one sprint (fresh-context safe)
 - \`/rihal:progress\` — situational awareness + route to next action
 - \`/rihal:next\` — automatically advance to the next logical step
 - \`/rihal:status\` — concise project status
