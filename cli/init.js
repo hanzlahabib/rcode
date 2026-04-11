@@ -508,6 +508,221 @@ After steps 1-6 complete, print a concise summary:
 Ask the user which option, then proceed accordingly. Do NOT pick for them unless \`communication_mode\` is \`yolo\` AND they have explicitly said "just go".
 `,
 
+    'bug.md': `---
+name: rihal:bug
+description: Capture a bug mid-sprint without derailing current work — links to active sprint and in-progress story
+argument-hint: <bug description>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+---
+
+🐛 **Rihal Bug — non-blocking intake for mid-sprint bugs**
+
+Captures a bug as a structured markdown file under \`.rihal/artifacts/bugs/pending/\` and registers it in the active sprint's \`state.json\`. Does NOT interrupt current work unless the severity is critical (then it asks whether to pause).
+
+## When to run this
+
+- You hit a bug mid-sprint and want to remember it without losing context
+- Code review surfaced something broken that isn't your current story
+- User-reported issue came in while you're deep in another task
+- Anything you'd otherwise write on a sticky note and lose
+
+## Process
+
+### Step 1 — Parse \$ARGUMENTS as the bug title
+
+If \$ARGUMENTS is empty, ask: "What's the bug? Short title (one line)."
+
+### Step 2 — Gather metadata
+
+In **guided** communication_mode, ask briefly:
+
+\`\`\`
+Severity: critical / high / medium / low  [default: medium]
+Area:     frontend / backend / ml / infra / devops / docs / qa / design  [default: unknown]
+\`\`\`
+
+Also offer to fill the description (1-3 sentences) and steps to reproduce.
+
+In **yolo** mode, infer from keywords:
+- "crash", "broken", "blocker", "data loss" → high (or critical if explicit)
+- "typo", "minor", "cosmetic" → low
+- Everything else → medium
+- Area inferred from current in-progress story's files (frontend if .tsx, backend if .ts server files, etc.)
+
+### Step 3 — Call the CLI helper
+
+Run \`rihal-code bug\` with the collected flags:
+
+\`\`\`bash
+rihal-code bug "TITLE" --severity=SEVERITY --area=AREA [--story=STORY-ID] [--description='DESCRIPTION']
+\`\`\`
+
+The CLI handles:
+- File creation at \`.rihal/artifacts/bugs/pending/bug-{date}-{slug}.md\` with YAML frontmatter
+- Auto-linking to active sprint + in-progress story (if unambiguous)
+- Registration in sprint state.json via \`addBugToSprint()\`
+- Atomic writes via \`writeFileAtomic\` — Ctrl+C cannot corrupt state
+
+### Step 4 — Handle critical severity
+
+If severity is critical, the CLI prints a recommendation to pause current work. Relay it to the user and ASK:
+
+\`\`\`
+⚠ This is a CRITICAL bug. Pause your current story and fix this now? [Y/n]
+\`\`\`
+
+If yes:
+1. Block the current in-progress story: \`rihal-code sprint story <current-id> blocked\`
+2. Write a pause handoff: \`/rihal:pause "critical bug {bug-id} — paused for immediate fix"\`
+3. Suggest switching to the bug fix flow
+
+If no, the bug stays in pending/ for later triage.
+
+### Step 5 — Report
+
+Show the CLI output verbatim (it already formats it well):
+
+\`\`\`
+🐛 Bug captured: bug-2026-04-11-login-button-mobile
+   Severity: high
+   Area:     frontend
+   Sprint:   sprint-01 (linked to sprint state)
+   Story:    story-1-2-signup
+   File:     .rihal/artifacts/bugs/pending/bug-2026-04-11-login-button-mobile.md
+\`\`\`
+
+Then suggest the follow-up:
+- To view all pending bugs: \`/rihal:bugs\`
+- To edit the bug file (add repro steps, etc.): open the file directly
+- To resolve later: \`/rihal:bug-resolve bug-2026-04-11-login-button-mobile\`
+
+## Rules
+
+- Do NOT automatically pause current work for non-critical bugs. That derails flow.
+- Do NOT invent repro steps you don't know. If the user didn't provide them, leave the template placeholders.
+- ALWAYS prefer explicit \`--story=\` over auto-detection if there are multiple in-progress stories (ambiguity → no auto-link).
+- Never write secrets into bug descriptions. If the user pastes a stack trace with a token, redact it.
+`,
+
+    'bugs.md': `---
+name: rihal:bugs
+description: List pending bugs with optional severity/area/sprint filters
+argument-hint: [--severity=high] [--area=frontend] [--sprint=sprint-01]
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+📋 **Rihal Bugs — list pending bugs**
+
+Reads \`.rihal/artifacts/bugs/pending/\` and renders the bug queue grouped by severity. Fast — reads only frontmatter from each file.
+
+## Process
+
+Run:
+
+\`\`\`bash
+rihal-code bug list \$ARGUMENTS
+\`\`\`
+
+Pass through any filters the user provided: \`--severity=\`, \`--area=\`, \`--sprint=\`.
+
+The CLI returns a grouped list like:
+
+\`\`\`
+🐛 Pending bugs (5)
+
+🔴 CRITICAL (1)
+   • bug-2026-04-11-oauth-redirect-loop  [backend · sprint-01 · → story-1-2-signup]
+
+🟠 HIGH (2)
+   • bug-2026-04-11-login-button-mobile  [frontend · sprint-01]
+     Login button off-screen on iPhone SE
+
+🟡 MEDIUM (2)
+   • bug-2026-04-10-signup-validation  [frontend]
+   • bug-2026-04-09-stripe-webhook-retry  [backend]
+\`\`\`
+
+## When to run
+
+- Start of day to review what's outstanding
+- Before sprint wrap to decide what rolls over
+- When a user reports a bug and you want to check if it's already tracked
+
+Print the CLI output verbatim. After printing, summarize in one line:
+
+\`\`\`
+{N} pending bugs total — {critical+high} need attention, {medium+low} can wait.
+
+To resolve: /rihal:bug-resolve <bug-id>
+To filter further: /rihal:bugs --severity=high
+\`\`\`
+`,
+
+    'bug-resolve.md': `---
+name: rihal:bug-resolve
+description: Mark a bug as resolved — moves the file to done/ and updates sprint state
+argument-hint: <bug-id>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+---
+
+✅ **Rihal Bug Resolve — close out a tracked bug**
+
+Moves the bug file from \`.rihal/artifacts/bugs/pending/\` to \`.rihal/artifacts/bugs/done/\`, rewrites the \`status:\` frontmatter field to \`resolved\`, and marks the bug resolved in the active sprint's \`state.json\` (if it was registered there).
+
+## Process
+
+### Step 1 — Parse bug id
+
+\$ARGUMENTS must be a bug id like \`bug-2026-04-11-login-button-mobile\`. If missing:
+
+\`\`\`bash
+rihal-code bug list
+\`\`\`
+
+Show the list and ask which one.
+
+### Step 2 — Call the CLI helper
+
+\`\`\`bash
+rihal-code bug resolve \$ARGUMENTS
+\`\`\`
+
+Atomic: the file move uses \`writeFileAtomic\` + \`unlinkSync\`, the sprint state update uses \`resolveBugInSprint()\`. Both or neither.
+
+### Step 3 — Offer follow-up
+
+If this was the LAST pending bug:
+\`\`\`
+🎉 All pending bugs resolved.
+\`\`\`
+
+If there are more:
+\`\`\`
+{N} pending bugs remaining. Run /rihal:bugs to see them.
+\`\`\`
+
+If the resolved bug was linked to a story that's now clear of bugs:
+\`\`\`
+Consider resuming the story: /rihal:sprint story <story-id> in_progress
+\`\`\`
+
+## Rules
+
+- Do NOT delete bug files — always move to done/ so the history is preserved.
+- If the bug id doesn't exist in pending/, stop and show the user what's available via \`rihal-code bug list\`. Don't guess.
+- Never change a bug's severity or area on resolve — if the metadata was wrong, it's wrong in the history too.
+`,
+
     'preserve.md': `---
 name: rihal:preserve
 description: Add a durable learning or decision to the project's permanent memory file (with auto-archive)
@@ -1961,6 +2176,9 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:dispatch <request>\` — generic routing via Raees
 - \`/rihal:quick <task>\` — execute a small task with atomic commit
 - \`/rihal:fix <issue>\` — systematic debugging
+- \`/rihal:bug <description>\` — capture a mid-sprint bug without derailing current work
+- \`/rihal:bugs\` — list pending bugs (filters: --severity, --area, --sprint)
+- \`/rihal:bug-resolve <bug-id>\` — mark a bug resolved and move to done/
 
 **GitHub Integration:**
 - \`/rihal:push-sprint <sprint-id>\` — push one sprint's stories to GitHub (linked to parent epics)
