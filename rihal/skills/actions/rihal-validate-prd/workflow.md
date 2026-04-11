@@ -1,5 +1,5 @@
 ---
-main_config: '{project-root}/_rihal/config.yaml'
+main_config: '{project-root}/.rihal/config.json'
 validateWorkflow: './steps-v/step-v-01-discovery.md'
 ---
 

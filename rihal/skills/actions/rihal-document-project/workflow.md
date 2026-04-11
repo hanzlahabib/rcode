@@ -11,7 +11,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/_rihal/config.yaml` and resolve:
+Load config from `{project-root}/.rihal/config.json` and resolve:
 
 - `project_knowledge`
 - `user_name`
