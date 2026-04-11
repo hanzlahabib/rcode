@@ -1,28 +1,41 @@
 /**
- * rihal-code github-sync — smart sync .rihal/ state to GitHub
+ * rihal-code github-sync — sync .rihal/ state to GitHub as issues
  *
- * Creates missing items, updates changed items, closes completed items.
- * All in one command. Dry-run by default.
+ * Creates milestones (phases), epics (issues), and stories (issues) with
+ * proper parent-child linking via GitHub's native issue references.
+ * Labels are NOT created by default — opt in with --with-labels.
+ * Dry-run by default. Mutations always require --execute.
  *
- * Usage (only two things to remember):
- *   rihal-code github-sync              # see the plan (dry-run)
- *   rihal-code github-sync --execute    # do it (asks for confirmation)
+ * Usage:
+ *   rihal-code github-sync                 # dry-run preview
+ *   rihal-code github-sync --execute       # actually create issues
  *
- * Advanced narrowing (optional):
- *   --repo=owner/name    target a specific repo
- *   --only=epics         limit to epics (or labels/milestones/stories)
- *   --phase=phase-02     limit to one phase
- *   --project            also create a Project v2 board
- *   --yes                skip the confirmation prompt
+ * Granular targeting (push specific items):
+ *   --phase=phase-02          push one phase (all its epics + stories)
+ *   --sprint=sprint-01        push stories belonging to one sprint
+ *   --epic=epic-1-auth        push one epic and its child stories
+ *   --story=story-1-1-login   push one story
  *
- * Advanced opt-outs (optional):
- *   --no-update          create-only mode — never touch existing items
- *   --no-update-body     don't rewrite bodies, still update labels/state
- *   --no-update-labels   don't touch labels
- *   --no-close           don't close issues when local marks them done
+ * Options:
+ *   --repo=owner/name     target a specific repo (otherwise auto-detect)
+ *   --with-labels         also create/ensure the Rihal label taxonomy
+ *   --project             also create a Project v2 board
+ *   --yes                 skip the confirmation prompt (denied in yolo mode)
+ *   --force-yolo          allow --yes to apply in yolo mode (explicit opt-in)
  *
- * Per AGENTS.md: mutations always require --execute, gh auth, and
- * interactive confirmation (unless --yes). Never auto-pushes.
+ * Update opt-outs:
+ *   --no-update           create-only mode — never touch existing items
+ *   --no-update-body      don't rewrite bodies
+ *   --no-update-labels    don't touch labels
+ *   --no-close            don't close issues when local marks them done
+ *
+ * Safety:
+ *   - Mutations always require --execute AND gh auth
+ *   - In communication_mode=guided: asks to confirm before mutations
+ *     (skippable with --yes)
+ *   - In communication_mode=yolo: STILL asks to confirm before GitHub
+ *     mutations unless BOTH --yes AND --force-yolo are passed
+ *   - Per AGENTS.md: never auto-pushes, every mutation is explicit
  */
 
 const fs = require('fs');
@@ -31,6 +44,7 @@ const crypto = require('crypto');
 const gh = require('./lib/github.cjs');
 const { askText, PromptAbortError } = require('./lib/prompts.cjs');
 const { writeJsonAtomic } = require('./lib/fsutil.cjs');
+const { loadConfig } = require('./lib/config.cjs');
 
 /**
  * Hash a string — used to detect content changes between syncs.
@@ -57,8 +71,13 @@ function parseArgs(args) {
     repo: null,
     only: null, // narrow the scope (advanced): labels | milestones | epics | stories
     phase: null, // sync only one phase
+    sprint: null, // sync only one sprint (filters stories)
+    epic: null, // sync only one epic + its child stories
+    story: null, // sync only one story
+    withLabels: false, // opt-in to label creation (default off per user)
     createProject: false, // also create a Project v2 board
     yes: false, // skip interactive confirmation
+    forceYolo: false, // allow --yes to apply in yolo mode
 
     // Smart default: enable all update operations.
     // These flags let advanced users OPT OUT, not opt in.
@@ -78,6 +97,10 @@ function parseArgs(args) {
       opts.execute = false;
     } else if (arg === '--yes' || arg === '-y') {
       opts.yes = true;
+    } else if (arg === '--force-yolo') {
+      opts.forceYolo = true;
+    } else if (arg === '--with-labels') {
+      opts.withLabels = true;
     } else if (arg === '--project') {
       opts.createProject = true;
     }
@@ -102,6 +125,12 @@ function parseArgs(args) {
       opts.only = arg.slice('--only='.length);
     } else if (arg.startsWith('--phase=')) {
       opts.phase = arg.slice('--phase='.length);
+    } else if (arg.startsWith('--sprint=')) {
+      opts.sprint = arg.slice('--sprint='.length);
+    } else if (arg.startsWith('--epic=')) {
+      opts.epic = arg.slice('--epic='.length);
+    } else if (arg.startsWith('--story=')) {
+      opts.story = arg.slice('--story='.length);
     }
   }
 
@@ -109,6 +138,51 @@ function parseArgs(args) {
   opts.updateEnabled = opts.updateBody || opts.updateLabels || opts.updateMilestone || opts.updateState;
 
   return opts;
+}
+
+/**
+ * Parse YAML-ish frontmatter from the top of a markdown file.
+ * Used to extract explicit epic/sprint linking from story files.
+ * Returns an object of key/value strings, or {} if no frontmatter block.
+ */
+function extractFrontmatter(content) {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return {};
+  const fm = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const m = line.match(/^([\w_-]+)\s*:\s*(.*)$/);
+    if (m) fm[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '');
+  }
+  return fm;
+}
+
+/**
+ * Parse .rihal/phases/{phase}/sprints.md if present and return a map of
+ * sprint-id → story-ids (based on "- [ ] story-X-Y" list entries under
+ * each sprint section). Used by --sprint=ID filtering.
+ *
+ * Sprint section convention:
+ *   ## Sprint 1 — {goal}
+ *   - [ ] story-1-1-login
+ *   - [ ] story-1-2-signup
+ */
+function parseSprintsFile(sprintsContent) {
+  if (!sprintsContent) return {};
+  const sprintMap = {};
+  let currentSprint = null;
+  for (const line of sprintsContent.split(/\r?\n/)) {
+    const header = line.match(/^##\s+Sprint\s+(\S+)/i);
+    if (header) {
+      currentSprint = `sprint-${header[1].replace(/[^\w-]/g, '')}`;
+      sprintMap[currentSprint] = [];
+      continue;
+    }
+    if (currentSprint) {
+      const item = line.match(/^\s*-\s*\[[ xX]\]\s+(\S+)/);
+      if (item) sprintMap[currentSprint].push(item[1]);
+    }
+  }
+  return sprintMap;
 }
 
 // ---------- Discover .rihal/ content ----------
@@ -134,10 +208,15 @@ function discoverPhases(cwd) {
     const storiesDir = path.join(phaseDir, 'stories');
     const tasksDir = path.join(phaseDir, 'tasks');
 
+    const sprintsContent = fs.existsSync(sprintsPath)
+      ? fs.readFileSync(sprintsPath, 'utf8')
+      : null;
+
     const phase = {
       id: entry.name,
       brief: fs.existsSync(briefPath) ? fs.readFileSync(briefPath, 'utf8') : null,
-      sprints: fs.existsSync(sprintsPath) ? fs.readFileSync(sprintsPath, 'utf8') : null,
+      sprints: sprintsContent,
+      sprintMap: parseSprintsFile(sprintsContent),
       stories: [],
       epics: [],
     };
@@ -146,11 +225,35 @@ function discoverPhases(cwd) {
       for (const file of fs.readdirSync(storiesDir)) {
         if (!file.endsWith('.md')) continue;
         const content = fs.readFileSync(path.join(storiesDir, file), 'utf8');
+        const fm = extractFrontmatter(content);
+        const id = file.replace('.md', '');
+        // Figure out which epic this story belongs to: prefer explicit
+        // frontmatter, fall back to "story-X-..." → "epic-X-..." naming
+        // convention so existing projects without frontmatter still link.
+        let parentEpic = fm.epic || null;
+        if (!parentEpic) {
+          const m = id.match(/^story-(\d+)/);
+          if (m) parentEpic = `epic-${m[1]}`;
+        }
+        // Figure out which sprint this story belongs to: explicit
+        // frontmatter wins, else look it up in the sprint map.
+        let sprintId = fm.sprint || null;
+        if (!sprintId) {
+          for (const [sid, storyList] of Object.entries(phase.sprintMap)) {
+            if (storyList.some((s) => s === id || id.startsWith(s))) {
+              sprintId = sid;
+              break;
+            }
+          }
+        }
         phase.stories.push({
-          id: file.replace('.md', ''),
+          id,
           file,
           content,
-          title: extractTitle(content) || file.replace('.md', ''),
+          title: extractTitle(content) || id,
+          parentEpic,
+          sprintId,
+          frontmatter: fm,
         });
       }
     }
@@ -159,11 +262,13 @@ function discoverPhases(cwd) {
       for (const file of fs.readdirSync(tasksDir)) {
         if (!file.endsWith('.md')) continue;
         const content = fs.readFileSync(path.join(tasksDir, file), 'utf8');
+        const fm = extractFrontmatter(content);
         phase.epics.push({
           id: file.replace('.md', ''),
           file,
           content,
           title: extractTitle(content) || file.replace('.md', ''),
+          frontmatter: fm,
         });
       }
     }
@@ -172,6 +277,59 @@ function discoverPhases(cwd) {
   }
 
   return phases;
+}
+
+/**
+ * Apply granular --sprint/--epic/--story filters to the discovered phases.
+ * Mutates a shallow copy — original discovery result is not touched.
+ * Returns a new phases array where only the requested items remain.
+ */
+function applyGranularFilters(phases, opts) {
+  // No filters → return as-is
+  if (!opts.sprint && !opts.epic && !opts.story) return phases;
+
+  const filtered = phases.map((p) => ({
+    ...p,
+    epics: [...p.epics],
+    stories: [...p.stories],
+  }));
+
+  if (opts.sprint) {
+    for (const p of filtered) {
+      // Keep only stories whose sprintId matches
+      p.stories = p.stories.filter((s) => s.sprintId === opts.sprint);
+      // Keep only epics that have at least one remaining story or whose id
+      // the user might also be interested in (conservative: keep all epics
+      // in this phase so child stories have a visible parent reference)
+      // Actually: if filtering by sprint, user wants the sprint's work —
+      // stories only. Drop epics unless they're referenced by a remaining
+      // story.
+      const liveEpicIds = new Set(p.stories.map((s) => s.parentEpic).filter(Boolean));
+      p.epics = p.epics.filter((e) => liveEpicIds.has(e.id));
+    }
+  }
+
+  if (opts.epic) {
+    for (const p of filtered) {
+      p.epics = p.epics.filter((e) => e.id === opts.epic);
+      // Keep stories whose parentEpic matches
+      p.stories = p.stories.filter((s) => s.parentEpic === opts.epic);
+    }
+  }
+
+  if (opts.story) {
+    for (const p of filtered) {
+      p.stories = p.stories.filter((s) => s.id === opts.story);
+      // Keep any epic a surviving story points at (so link target exists)
+      const parents = new Set(p.stories.map((s) => s.parentEpic).filter(Boolean));
+      p.epics = p.epics.filter((e) => parents.has(e.id));
+    }
+  }
+
+  // Drop phases that ended up completely empty after filtering
+  return filtered.filter(
+    (p) => p.epics.length > 0 || p.stories.length > 0,
+  );
 }
 
 function extractTitle(markdown) {
@@ -248,12 +406,19 @@ function diffIssue(existing, desired, opts) {
 async function main(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
+  const config = loadConfig(cwd);
+  const communicationMode = config.communication_mode || 'guided';
 
   console.log(`\n🕌 Rihal Code — GitHub Sync`);
-  console.log(`   Mode:  ${opts.dryRun ? 'DRY-RUN (preview only, nothing is sent)' : 'EXECUTE'}`);
-  console.log(`   Scope: ${opts.only || 'full (create + update existing)'}`);
-  if (!opts.updateEnabled) console.log(`   Note:  --no-update passed → create-only mode`);
-  if (opts.phase) console.log(`   Phase: ${opts.phase}`);
+  console.log(`   Mode:          ${opts.dryRun ? 'DRY-RUN (preview only, nothing is sent)' : 'EXECUTE'}`);
+  console.log(`   Comms mode:    ${communicationMode}`);
+  console.log(`   Scope:         ${opts.only || 'full (create + update existing)'}`);
+  console.log(`   Labels:        ${opts.withLabels ? 'will create/ensure taxonomy' : 'skipped (pass --with-labels to enable)'}`);
+  if (!opts.updateEnabled) console.log(`   Note:          --no-update passed → create-only mode`);
+  if (opts.phase) console.log(`   Phase filter:  ${opts.phase}`);
+  if (opts.sprint) console.log(`   Sprint filter: ${opts.sprint}`);
+  if (opts.epic) console.log(`   Epic filter:   ${opts.epic}`);
+  if (opts.story) console.log(`   Story filter:  ${opts.story}`);
   console.log();
 
   // ------ Precondition: gh auth ------
@@ -296,7 +461,20 @@ async function main(args) {
     }
   }
 
+  // Apply granular filters (sprint/epic/story) AFTER phase filter
+  phases = applyGranularFilters(phases, opts);
+
   if (phases.length === 0) {
+    if (opts.sprint || opts.epic || opts.story) {
+      const filter = opts.sprint
+        ? `sprint '${opts.sprint}'`
+        : opts.epic
+        ? `epic '${opts.epic}'`
+        : `story '${opts.story}'`;
+      console.error(`❌ No items matched ${filter}.`);
+      console.error(`   Check the filter value or run without filters to see available ids.`);
+      process.exit(1);
+    }
     console.error(`❌ No phases found in .rihal/phases/.`);
     process.exit(1);
   }
@@ -328,11 +506,13 @@ async function main(args) {
   // The plan diffs local state against what we know was synced before.
   // If updateEnabled is false, the update list stays empty (create-only mode).
   //
-  // Label taxonomy follows the Rihal GitHub Standards
-  // (best-practices/github/github-workflow-best-practices/):
-  // 4 categories: Type / Priority / Status / Area
+  // Label taxonomy follows the Rihal GitHub Standards (4 categories:
+  // Type / Priority / Status / Area). It is NOT created or assigned by
+  // default — pass --with-labels to opt in. Without the flag, we focus
+  // on clean issue creation with proper parent-child linking and leave
+  // labeling to the user or a later explicit run.
   const plan = {
-    labels: [
+    labels: opts.withLabels ? [
       // Type (what kind of work)
       { name: 'epic', color: '6f42c1', description: 'Strategic initiative spanning multiple sprints' },
       { name: 'type:feature', color: '0e8a16', description: 'New functionality' },
@@ -363,7 +543,7 @@ async function main(args) {
       { name: 'DevOps', color: 'fbca04', description: 'Infrastructure and deployment' },
       { name: 'QA', color: 'd73a4a', description: 'Quality assurance' },
       { name: 'Docs', color: 'c5def5', description: 'Documentation' },
-    ],
+    ] : [],
     milestones: phases.filter((p) => !syncMap.phases[p.id]),
     epics: phases.flatMap((p) =>
       p.epics.filter((e) => !syncMap.epics[e.id]).map((e) => ({ ...e, phase: p.id })),
@@ -399,7 +579,9 @@ async function main(args) {
   };
 
   console.log(`\n📋 Plan:`);
-  if (!opts.only || opts.only === 'labels') console.log(`   Labels to ensure:     ${plan.labels.length}`);
+  if (opts.withLabels && (!opts.only || opts.only === 'labels')) {
+    console.log(`   Labels to ensure:     ${plan.labels.length}`);
+  }
   if (!opts.only || opts.only === 'milestones') console.log(`   Milestones to create: ${plan.milestones.length}`);
   if (!opts.only || opts.only === 'epics') console.log(`   Epics to create:      ${plan.epics.length}`);
   if (!opts.only || opts.only === 'stories') console.log(`   Stories to create:    ${plan.stories.length}`);
@@ -411,11 +593,31 @@ async function main(args) {
   console.log();
 
   // ------ Permission gate ------
-  if (opts.execute && !opts.yes) {
+  //
+  // Rules:
+  //   - Execute without --yes → always prompt (guided behavior)
+  //   - Execute with --yes in guided mode → skip prompt (user opted out)
+  //   - Execute with --yes in yolo mode → STILL prompt unless --force-yolo
+  //     is also passed. This is deliberate: github mutations are visible to
+  //     colleagues and cost rate-limit budget, so YOLO mode does not
+  //     automatically apply to them. The user has to explicitly opt in.
+  //
+  const yoloBypassBlocked = communicationMode === 'yolo' && opts.yes && !opts.forceYolo;
+  const needsConfirmation = opts.execute && (!opts.yes || yoloBypassBlocked);
+
+  if (needsConfirmation) {
+    if (yoloBypassBlocked) {
+      console.log(`⚠️  communication_mode=yolo does not auto-confirm GitHub mutations.`);
+      console.log(`   Pass --force-yolo to skip this prompt, or answer interactively below.`);
+      console.log();
+    }
     console.log(`⚠️  This will modify ${repo} on GitHub.`);
-    console.log(`   Items to create: ${
-      plan.labels.length + plan.milestones.length + plan.epics.length + plan.stories.length
-    }`);
+    const totalCreate =
+      plan.labels.length + plan.milestones.length + plan.epics.length + plan.stories.length;
+    console.log(`   Items to create: ${totalCreate}`);
+    if (opts.sprint || opts.epic || opts.story) {
+      console.log(`   Granular filter: ${opts.sprint || opts.epic || opts.story}`);
+    }
     console.log();
     // Require literal "yes" (not just y) because this mutates remote state.
     const answer = await askText(`   Proceed? Type 'yes' to continue: `, {
@@ -437,8 +639,8 @@ async function main(args) {
   const results = { labels: [], milestones: [], epics: [], stories: [], errors: [] };
   const syncOpts = { execute: opts.execute, dryRun: opts.dryRun, repo };
 
-  // 1. Labels
-  if (!opts.only || opts.only === 'labels') {
+  // 1. Labels — only when explicitly opted in via --with-labels
+  if (opts.withLabels && (!opts.only || opts.only === 'labels')) {
     console.log(`\n🏷️  Labels`);
     for (const label of plan.labels) {
       const result = gh.ensureLabel(label.name, label.color, label.description, syncOpts);
@@ -473,14 +675,14 @@ async function main(args) {
     }
   }
 
-  // 3. Epics — use Rihal standard epic template structure
+  // 3. Epics — create first so stories can reference their issue numbers
   if (!opts.only || opts.only === 'epics') {
     console.log(`\n📦 Epics`);
     for (const epic of plan.epics) {
       const body = [
         `## 🎯 Epic Vision`,
         ``,
-        `_Strategic goal this Epic contributes to. Fill in from \`.rihal/phases/${epic.phase}/tasks/${epic.file}\`._`,
+        `_Strategic goal this Epic contributes to._`,
         ``,
         `## 📋 Source Content`,
         ``,
@@ -494,8 +696,9 @@ async function main(args) {
         `- **Source:** \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
         `- **Synced by:** Rihal Code github-sync`,
         ``,
-        `> **Note:** This epic follows the Rihal GitHub standards (type: epic).`,
-        `> Add related stories as sub-issues or link them in comments with \`refs #${'{issue}'}\`.`,
+        `## 📝 Child Stories`,
+        ``,
+        `_Child story issues will be appended here after they are created._`,
       ].join('\n');
 
       const milestoneNumber =
@@ -505,7 +708,9 @@ async function main(args) {
         {
           title: `[Epic] ${epic.title}`,
           body,
-          labels: ['epic', 'priority:medium', 'status:backlog'],
+          // Only assign labels if the user opted in — otherwise GitHub
+          // would reject the issue creation on labels that don't exist.
+          labels: opts.withLabels ? ['epic', 'priority:medium', 'status:backlog'] : [],
           milestone: milestoneNumber,
         },
         syncOpts,
@@ -520,25 +725,38 @@ async function main(args) {
           phase: epic.phase,
           synced_at: new Date().toISOString(),
           content_hash: contentHash(epic.content),
+          child_story_issues: [],
         };
         console.log(`   ✓ created: ${epic.id} → #${result.number}`);
       }
     }
   }
 
-  // 4. Stories — use Rihal standard feature template structure
+  // 4. Stories — reference actual parent epic via discovered mapping.
+  // Also record child story issue numbers on their parent epic so we can
+  // update the epic body with a task list in a second pass below.
   if (!opts.only || opts.only === 'stories') {
     console.log(`\n📄 Stories`);
     for (const story of plan.stories) {
-      const parentEpicRef = Object.values(syncMap.epics).find((e) => e.phase === story.phase);
-      const parentRef = parentEpicRef
-        ? `- **Parent Epic:** #${parentEpicRef.issue_number}`
-        : `- **Parent Epic:** (none — standalone story)`;
+      // Look up the ACTUAL parent epic by id (from frontmatter or naming
+      // convention), not "any epic in this phase" — that bug led to all
+      // stories pointing at the same epic previously.
+      const parentEpicEntry = story.parentEpic
+        ? syncMap.epics[story.parentEpic]
+        : null;
+      const parentRefLine = parentEpicEntry
+        ? `- **Parent Epic:** #${parentEpicEntry.issue_number} (Part of this epic)`
+        : story.parentEpic
+        ? `- **Parent Epic:** \`${story.parentEpic}\` (not yet synced to GitHub)`
+        : `- **Parent Epic:** (standalone — no parent epic)`;
+      const sprintRefLine = story.sprintId
+        ? `- **Sprint:** \`${story.sprintId}\``
+        : `- **Sprint:** (not assigned to a sprint)`;
 
       const body = [
         `## 🎯 Problem Statement`,
         ``,
-        `_Clear explanation of what this story solves. Fill in from \`.rihal/phases/${story.phase}/stories/${story.file}\`._`,
+        `_Clear explanation of what this story solves._`,
         ``,
         `## ✅ Acceptance Criteria`,
         ``,
@@ -554,13 +772,14 @@ async function main(args) {
         ``,
         `## 📊 Meta`,
         ``,
-        parentRef,
+        parentRefLine,
+        sprintRefLine,
         `- **Phase:** \`${story.phase}\``,
         `- **Source:** \`.rihal/phases/${story.phase}/stories/${story.file}\``,
         `- **Synced by:** Rihal Code github-sync`,
         ``,
-        `> **Note:** This story follows the Rihal GitHub standards (type: feature).`,
-        `> Link commits with \`(refs #${'{issue}'})\` and close via PR with \`Closes #${'{issue}'}\`.`,
+        `> **Linking:** Reference this story in commits with \`refs #${'{issue}'}\``,
+        `> or close it via PR with \`Closes #${'{issue}'}\`.`,
       ].join('\n');
 
       const milestoneNumber =
@@ -570,7 +789,7 @@ async function main(args) {
         {
           title: story.title,
           body,
-          labels: ['type:feature', 'priority:medium', 'status:backlog'],
+          labels: opts.withLabels ? ['type:feature', 'priority:medium', 'status:backlog'] : [],
           milestone: milestoneNumber,
         },
         syncOpts,
@@ -583,10 +802,68 @@ async function main(args) {
           issue_number: result.number,
           url: result.url,
           phase: story.phase,
+          parent_epic: story.parentEpic || null,
+          sprint_id: story.sprintId || null,
           synced_at: new Date().toISOString(),
           content_hash: contentHash(story.content),
         };
+        // Remember this child on the parent epic so we can update the
+        // epic body with a task list after all stories have been created.
+        if (parentEpicEntry) {
+          parentEpicEntry.child_story_issues = parentEpicEntry.child_story_issues || [];
+          if (!parentEpicEntry.child_story_issues.includes(result.number)) {
+            parentEpicEntry.child_story_issues.push(result.number);
+          }
+        }
         console.log(`   ✓ created: ${story.id} → #${result.number}`);
+      }
+    }
+  }
+
+  // 4b. Back-fill epic bodies with a task list of child stories.
+  // GitHub renders `- [ ] #N` as a clickable task-list link and shows a
+  // progress counter in the parent epic. Only runs if we just created
+  // any stories AND their parent epics were also touched in this run.
+  if (opts.execute && (!opts.only || opts.only === 'epics' || opts.only === 'stories')) {
+    const epicsToBackfill = Object.entries(syncMap.epics).filter(
+      ([, e]) => e.child_story_issues && e.child_story_issues.length > 0,
+    );
+    if (epicsToBackfill.length > 0) {
+      console.log(`\n🔗 Linking stories → epics (task lists)`);
+      for (const [epicId, epicEntry] of epicsToBackfill) {
+        const taskList = epicEntry.child_story_issues
+          .sort((a, b) => a - b)
+          .map((n) => `- [ ] #${n}`)
+          .join('\n');
+
+        // Fetch current body and append / replace the Child Stories block
+        const issue = gh.getIssue(epicEntry.issue_number, { repo });
+        if (issue.error) {
+          results.errors.push(`link epic #${epicEntry.issue_number}: ${issue.error}`);
+          continue;
+        }
+        const currentBody = issue.body || '';
+        // Replace the placeholder block or append one at the end
+        let newBody;
+        const blockRegex = /## 📝 Child Stories[\s\S]*?(?=\n## |$)/;
+        const newBlock = `## 📝 Child Stories\n\n${taskList}\n`;
+        if (blockRegex.test(currentBody)) {
+          newBody = currentBody.replace(blockRegex, newBlock);
+        } else {
+          newBody = currentBody.trimEnd() + '\n\n' + newBlock;
+        }
+        const updateResult = gh.updateIssue(
+          epicEntry.issue_number,
+          { body: newBody },
+          syncOpts,
+        );
+        if (updateResult.error) {
+          results.errors.push(`update epic #${epicEntry.issue_number}: ${updateResult.error}`);
+        } else {
+          console.log(
+            `   ✓ linked ${epicEntry.child_story_issues.length} stories → epic #${epicEntry.issue_number}`,
+          );
+        }
       }
     }
   }
