@@ -1033,9 +1033,137 @@ This command mutates shared state on GitHub. Per AGENTS.md rules, it requires ex
 - \`--repo=owner/name\` — target a specific repo
 - \`--only=labels|milestones|epics|stories\` — narrow the scope
 - \`--phase=phase-id\` — sync only a specific phase
+- \`--sprint=sprint-id\` — sync only stories belonging to one sprint
+- \`--epic=epic-id\` — sync only one epic + its child stories
+- \`--story=story-id\` — sync only one story
+- \`--with-labels\` — also create/ensure the Rihal label taxonomy (off by default)
 - \`--project\` — also create a Project v2 board
 - \`--yes\` — skip interactive confirmation
+- \`--force-yolo\` — allow \`--yes\` to bypass confirmation in yolo mode
 </flags>
+`,
+
+    'push-sprint.md': `---
+name: rihal:push-sprint
+description: Push one sprint's stories to GitHub as issues (linked to their parent epics)
+argument-hint: <sprint-id>
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+<objective>
+Push a specific sprint's stories to GitHub as issues. Creates/reuses the phase milestone, creates any missing parent epic issues first, then creates the sprint's stories with parent-epic links in the body. Dry-run first, then confirmed execute.
+</objective>
+
+<process>
+
+1. **Read sprint id from \$ARGUMENTS.** If missing, ask: "Which sprint? Format: sprint-01"
+
+2. **Dry-run preview:**
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --sprint=\$ARGUMENTS
+   \`\`\`
+   Show the plan. Warn if any parent epic is missing from the sprint scope.
+
+3. **Confirm with user.** If they say go, execute:
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --sprint=\$ARGUMENTS --execute
+   \`\`\`
+   Answer interactively at the "Proceed? Type 'yes' to continue" prompt.
+
+4. **After execution:** report created issues and the phase milestone URL.
+
+</process>
+
+<guardrails>
+- Default is dry-run. Execute only with explicit user confirmation.
+- Labels are NOT created unless the user explicitly asks for them (add \`--with-labels\`).
+- In yolo communication mode, STILL requires interactive confirmation for GitHub mutations unless the user adds \`--force-yolo\`.
+- Never creates duplicate issues — the sync map at \`.rihal/integrations/github-map.json\` tracks what's already on GitHub.
+</guardrails>
+`,
+
+    'push-epic.md': `---
+name: rihal:push-epic
+description: Push one epic (and its child stories) to GitHub as linked issues
+argument-hint: <epic-id>
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+<objective>
+Push a specific epic to GitHub as an issue, along with all its child stories. Stories are linked back to the parent epic via both the story body ("Parent Epic: #N") and a task list in the epic body ("- [ ] #N"), so GitHub renders the progress counter.
+</objective>
+
+<process>
+
+1. **Read epic id from \$ARGUMENTS.** If missing, ask: "Which epic? Format: epic-1-auth"
+
+2. **Dry-run preview:**
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --epic=\$ARGUMENTS
+   \`\`\`
+   Shows the epic + its discovered child stories.
+
+3. **Confirm with user.** On go:
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --epic=\$ARGUMENTS --execute
+   \`\`\`
+
+4. **After execution:** show the epic issue URL and the count of linked stories. Remind user that the task-list block in the epic body auto-updates as stories are closed.
+
+</process>
+
+<guardrails>
+- Default is dry-run.
+- Child stories are discovered by parsing story frontmatter (\`epic: epic-id\`) or by naming convention (\`story-N-...\` → \`epic-N-...\`).
+- Labels off by default. Add \`--with-labels\` to opt in.
+- In yolo mode, mutation still requires explicit confirmation unless \`--force-yolo\`.
+</guardrails>
+`,
+
+    'push-story.md': `---
+name: rihal:push-story
+description: Push a single story to GitHub as an issue linked to its parent epic
+argument-hint: <story-id>
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
+---
+
+<objective>
+Push exactly one story to GitHub as an issue. If its parent epic hasn't been synced yet, creates the parent epic first so the link is valid. Otherwise reuses the existing parent epic issue number from the sync map.
+</objective>
+
+<process>
+
+1. **Read story id from \$ARGUMENTS.** If missing, ask: "Which story? Format: story-1-1-login"
+
+2. **Dry-run preview:**
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --story=\$ARGUMENTS
+   \`\`\`
+
+3. **Confirm with user.** On go:
+   \`\`\`bash
+   npx --yes github:hanzlahabib/rihal-code github-sync --story=\$ARGUMENTS --execute
+   \`\`\`
+
+4. **After execution:** show the story issue URL and confirm the parent epic link.
+
+</process>
+
+<guardrails>
+- Default is dry-run.
+- If the parent epic is not yet on GitHub, it's created first (and shows up in the plan preview).
+- Labels off by default.
+- In yolo mode, explicit confirmation still required for GitHub mutations.
+</guardrails>
 `,
 
     'discuss.md': `---
@@ -1169,10 +1297,15 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:quick <task>\` — execute a small task with atomic commit
 - \`/rihal:fix <issue>\` — systematic debugging
 
+**GitHub Integration:**
+- \`/rihal:push-sprint <sprint-id>\` — push one sprint's stories to GitHub (linked to parent epics)
+- \`/rihal:push-epic <epic-id>\` — push one epic + child stories (with task-list linking)
+- \`/rihal:push-story <story-id>\` — push a single story (creates parent epic if missing)
+- \`/rihal:github-sync\` — full sync with granular \`--sprint\` / \`--epic\` / \`--story\` flags
+
 **Utility Commands:**
 - \`/rihal:team\` — list the team roster
 - \`/rihal:dashboard\` — start the Diwan view-only dashboard
-- \`/rihal:github-sync\` — sync phases/epics/stories to GitHub (dry-run default)
 - \`/rihal:help\` — this message
 
 **Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\` or invoke by name):

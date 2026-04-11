@@ -52,6 +52,12 @@ const HARDCODED_DEFAULTS = {
 
   // Model profile — matches model-profiles.json names
   model_profile: 'balanced',
+
+  // Communication mode — 'guided' (default, ask questions, confirm at gates)
+  // or 'yolo' (skip menus, use sensible defaults, report at end).
+  // Even in yolo mode, destructive remote operations (github mutations)
+  // still require explicit confirmation unless --force-yolo is passed.
+  communication_mode: 'guided',
 };
 
 /**
@@ -70,6 +76,7 @@ const VALID_CONFIG_KEYS = new Set([
   'planning_artifacts',
   'project_knowledge',
   'model_profile',
+  'communication_mode',
 ]);
 
 /**
@@ -90,6 +97,7 @@ const CONFIG_KEY_SUGGESTIONS = {
  * Valid values for enum-ish fields. Used for validation on set().
  */
 const VALID_MODEL_PROFILES = new Set(['quality', 'balanced', 'budget', 'inherit']);
+const VALID_COMMUNICATION_MODES = new Set(['guided', 'yolo']);
 
 // ---------- Paths ----------
 
@@ -233,6 +241,13 @@ function setConfigValue(cwd, key, value, { scope = 'project' } = {}) {
       suggestion: suggestClosest(value, [...VALID_MODEL_PROFILES]),
     };
   }
+  if (key === 'communication_mode' && !VALID_COMMUNICATION_MODES.has(value)) {
+    return {
+      ok: false,
+      error: `Invalid communication_mode '${value}' (valid: ${[...VALID_COMMUNICATION_MODES].join(', ')})`,
+      suggestion: suggestClosest(value, [...VALID_COMMUNICATION_MODES]),
+    };
+  }
 
   // Coerce schema_version to number
   if (key === 'schema_version') {
@@ -305,6 +320,7 @@ module.exports = {
   HARDCODED_DEFAULTS,
   VALID_CONFIG_KEYS,
   VALID_MODEL_PROFILES,
+  VALID_COMMUNICATION_MODES,
   loadConfig,
   getConfigValue,
   setConfigValue,
