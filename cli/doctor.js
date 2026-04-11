@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
+const { checkStaleness } = require('./lib/memory-bank.cjs');
 
 // ---------- Shared helpers ----------
 
@@ -174,6 +175,29 @@ function runPreflight(cwd, packageRoot) {
           message: totals,
         });
       }
+    }
+
+    // 7. Memory bank freshness (warn-only — stale memory bank doesn't
+    // break anything, it just degrades answer quality over time).
+    const staleness = checkStaleness(cwd);
+    if (staleness.status === 'fresh') {
+      checks.push({
+        label: 'Memory bank',
+        status: 'ok',
+        message: 'fresh',
+      });
+    } else if (staleness.status === 'never') {
+      checks.push({
+        label: 'Memory bank',
+        status: 'warn',
+        message: 'never initialized (run /rihal:init to populate)',
+      });
+    } else {
+      checks.push({
+        label: 'Memory bank',
+        status: 'warn',
+        message: `STALE — ${staleness.reasons[0]}${staleness.reasons.length > 1 ? ` (+${staleness.reasons.length - 1} more)` : ''} — run /rihal:init`,
+      });
     }
   }
 

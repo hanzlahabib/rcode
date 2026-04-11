@@ -31,6 +31,7 @@ const COMMANDS = {
   doctor: require('./doctor'),
   'set-profile': require('./set-profile'),
   config: require('./config'),
+  context: require('./context'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
   version: () => console.log(PACKAGE_JSON.version),
@@ -60,6 +61,7 @@ Commands:
   doctor         Run compliance check on skills
   set-profile    Change the model profile (quality | balanced | budget | inherit)
   config         Get/set project configuration (project_name, user_name, etc.)
+  context        Check memory bank freshness (--check | --refresh | --install-hook)
   show-model     Show which model each agent uses in the current profile
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
   version        Print version
