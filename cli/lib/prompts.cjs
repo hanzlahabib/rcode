@@ -68,45 +68,95 @@ function getSession() {
 
 function openSession() {
   installSigintHandler();
+  const isTTY = !!process.stdin.isTTY;
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    terminal: process.stdin.isTTY,
+    terminal: isTTY,
   });
 
-  const lineQueue = [];
-  const waiters = [];
   let closedByUs = false;
   let streamClosed = false;
 
-  rl.on('line', (line) => {
-    if (waiters.length > 0) {
-      const { resolve } = waiters.shift();
-      resolve(line);
-    } else {
-      lineQueue.push(line);
-    }
-  });
-
   rl.on('close', () => {
     streamClosed = true;
-    // Reject every pending waiter so askers don't hang forever.
-    while (waiters.length > 0) {
-      const { reject } = waiters.shift();
-      if (!closedByUs) {
-        reject(new PromptAbortError('Input stream closed'));
-      } else {
-        // Caller closed us intentionally — resolve with empty string so any
-        // in-flight ask unwinds cleanly (should be none in practice).
-        waiters.shift();
-      }
-    }
   });
 
+  // Two code paths:
+  //
+  // 1. TTY mode — hand the whole ask off to rl.question(). Readline
+  //    owns printing the prompt, tracking cursor position, handling
+  //    backspace / arrow keys / history. If we printed the prompt
+  //    ourselves, readline's internal cursor tracking walks past the
+  //    prompt on backspace and erases it — that was the bug in #16.
+  //
+  // 2. Piped mode (CI, test harness, rihal-code install | tee ...) —
+  //    rl.question() has a quirk where the second call in a sequence
+  //    can miss the next buffered line. The line-event queue pattern
+  //    below avoids it: we listen for `line` events ourselves and
+  //    match them to pending waiters.
+  //
+  // Both paths share the same closed-stream handling and abort semantics.
+
+  const lineQueue = [];
+  const waiters = [];
+
+  if (!isTTY) {
+    rl.on('line', (line) => {
+      if (waiters.length > 0) {
+        const { resolve } = waiters.shift();
+        resolve(line);
+      } else {
+        lineQueue.push(line);
+      }
+    });
+    rl.on('close', () => {
+      // Reject every pending waiter so askers don't hang forever.
+      while (waiters.length > 0) {
+        const { reject } = waiters.shift();
+        if (!closedByUs) {
+          reject(new PromptAbortError('Input stream closed'));
+        }
+      }
+    });
+  }
+
   function ask(question) {
-    // Print the prompt ourselves since we're not using rl.question.
+    if (isTTY) {
+      if (streamClosed) {
+        return Promise.reject(new PromptAbortError('Input stream closed'));
+      }
+      // Readline handles the whole prompt lifecycle: print, cursor,
+      // backspace, submit. No manual process.stdout.write here — that
+      // was the source of the backspace-erases-prompt bug (#16).
+      return new Promise((resolve, reject) => {
+        // readline docs: on close while a question is pending, resolve
+        // is invoked with undefined. We treat that as abort.
+        let settled = false;
+        const onClose = () => {
+          if (!settled && !closedByUs) {
+            settled = true;
+            reject(new PromptAbortError('Input stream closed'));
+          }
+        };
+        rl.once('close', onClose);
+        rl.question(question, (answer) => {
+          if (settled) return;
+          settled = true;
+          rl.removeListener('close', onClose);
+          resolve((answer || '').trim());
+        });
+      });
+    }
+
+    // Piped path — print prompt manually, drain queue before giving up.
     process.stdout.write(question);
 
+    // CRITICAL: check the queue FIRST, even if the stream has closed.
+    // Lines that were already read but not yet consumed must still be
+    // returned. Only reject when both the queue is empty AND the stream
+    // is closed — nothing more is coming.
     if (lineQueue.length > 0) {
       return Promise.resolve((lineQueue.shift() || '').trim());
     }
