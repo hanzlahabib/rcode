@@ -37,6 +37,7 @@ const COMMANDS = {
   sprint: require('./sprint'),
   milestone: require('./milestone'),
   bug: require('./bug'),
+  'story-commit': require('./story-commit'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
   version: () => console.log(PACKAGE_JSON.version),
@@ -73,6 +74,7 @@ Commands:
   sprint         List sprints, show active, activate, or update story status
   milestone      Top-level organizing concept — group phases under shippable units
   bug            Capture/list/resolve mid-sprint bugs (links to active sprint)
+  story-commit   Commit files against a story with structured GitHub label trailers
   show-model     Show which model each agent uses in the current profile
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
   version        Print version
