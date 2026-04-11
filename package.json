@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dashboard": "node server/dashboard.js",
-    "test": "node cli/test-compliance.js",
+    "test": "node --test",
+    "test:ci": "node --test --test-reporter=spec",
     "postinstall": "node cli/postinstall.js"
   },
   "files": [
@@ -17,7 +18,6 @@
     "server/",
     ".rihal-template/",
     "README.md",
-    "LICENSE",
     "AGENTS.md",
     "CLAUDE.md",
     "CONTRIBUTING.md"
