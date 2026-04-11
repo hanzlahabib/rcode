@@ -21,10 +21,23 @@ const PORT = 7717;
 const RIHAL_DIR = process.env.RIHAL_DIR || path.join(process.cwd(), '.rihal');
 
 // ---------- State scanner ----------
+// All reads go through safe wrappers that return null on any failure —
+// the dashboard is view-only and must never crash on malformed project
+// state. Since rihal-code v0.2.0 ("BMAD-style pivot"), state files are
+// written by Claude directly via the Write tool, not by the CLI, so we
+// can no longer rely on CLI-level schema validation. The wrappers log a
+// single-line warning when parsing fails so broken files are visible.
 function safeReadJson(filepath) {
+  let raw;
   try {
-    return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+    raw = fs.readFileSync(filepath, 'utf8');
   } catch {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.warn(`[dashboard] malformed JSON at ${filepath}: ${err.message}`);
     return null;
   }
 }

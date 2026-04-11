@@ -120,6 +120,45 @@ function copyDirRecursive(source, dest) {
 }
 
 /**
+ * Snapshot the package's `rihal/` core (digests, templates, workflows, agents,
+ * tasks, team.yaml, config.yaml) into `.rihal/lib/` inside the project.
+ *
+ * Why: bmad-style "everything in the project". After this snapshot the project
+ * is fully self-contained — agent digests, templates, workflows, and team
+ * config travel with the repo and survive even if the global rihal-code
+ * package or its source checkout is removed. The `rihal-code digest <agent>`
+ * CLI still works as the primary path; `.rihal/lib/digests/` is the durable
+ * fallback that any tool (or another LLM) can read directly.
+ */
+function snapshotCoreIntoProject(packageRoot, cwd) {
+  const sourceRoot = path.join(packageRoot, 'rihal');
+  const libDest = path.join(cwd, '.rihal/lib');
+  if (!fs.existsSync(sourceRoot)) return 0;
+
+  fs.mkdirSync(libDest, { recursive: true });
+  let copied = 0;
+
+  const dirsToCopy = ['digests', 'templates', 'workflows', 'agents', 'tasks'];
+  for (const sub of dirsToCopy) {
+    const src = path.join(sourceRoot, sub);
+    if (!fs.existsSync(src)) continue;
+    const dest = path.join(libDest, sub);
+    copyDirRecursive(src, dest);
+    copied++;
+  }
+
+  const filesToCopy = ['team.yaml', 'config.yaml'];
+  for (const file of filesToCopy) {
+    const src = path.join(sourceRoot, file);
+    if (!fs.existsSync(src)) continue;
+    fs.copyFileSync(src, path.join(libDest, file));
+    copied++;
+  }
+
+  return copied;
+}
+
+/**
  * Install skills into .claude/skills/ so Claude Code can auto-discover them.
  * We install BOTH agent skills and action skills with namespaced prefixes so
  * they don't clash with other installed skills.
@@ -463,20 +502,26 @@ Run when starting a new phase of work inside an existing project. This is a **co
 
 ## Steps
 
-0. **Ensure a milestone exists.** Run:
+0. **Ensure a milestone exists.** Use **Glob** on \`.rihal/milestones/*.md\` to find milestone files. **Read** each one's frontmatter and look for \`status: active\`.
 
-   \`\`\`bash
-   rihal-code milestone current --json
+   If none is active, create a default one: **Write** \`.rihal/milestones/m-0.1.0.md\` with:
+
+   \`\`\`markdown
+   ---
+   id: m-0.1.0
+   name: Initial milestone
+   goal: First shippable unit
+   status: active
+   created: {YYYY-MM-DD}
+   phases: []
+   ---
+
+   # Initial milestone
+
+   First shippable unit.
    \`\`\`
 
-   If the result is \`null\`, no milestone is active. Create and activate a default one so this phase has a top-level parent to belong to:
-
-   \`\`\`bash
-   rihal-code milestone create m-0.1.0 --name="Initial milestone" --goal="First shippable unit"
-   rihal-code milestone activate m-0.1.0
-   \`\`\`
-
-   If a milestone already exists, skip this step. New phases inherit the active milestone automatically via their frontmatter — no extra work needed.
+   If a milestone already exists and is active, skip this step. New phases inherit the active milestone via their frontmatter — you'll link them manually in step 2.
 
 1. **Initialize \`.rihal/\` directories** if any are missing (phases, plans, decisions, artifacts, progress, context).
 
@@ -484,15 +529,9 @@ Run when starting a new phase of work inside an existing project. This is a **co
    - What problem are we solving?
    - Who is it for?
    - What are the kill criteria (when do we stop)?
-   Write findings to \`.rihal/phases/{phase}/brief.md\`.
+   Write findings to \`.rihal/phases/{phase}/brief.md\` — include \`milestone: {active-milestone-id}\` in the frontmatter so the phase is linked to the active milestone. Also update the milestone file's frontmatter \`phases:\` array to include this phase id (Read → modify → Write).
 
-   Then link the new phase to the active milestone:
-
-   \`\`\`bash
-   rihal-code milestone link {phase}
-   \`\`\`
-
-   This writes \`milestone: <active-id>\` into the phase brief's frontmatter. Sprints and stories created under this phase will inherit automatically unless they override.
+   Sprints and stories created under this phase will read the milestone from the phase's brief frontmatter.
 
 3. **Load Waleed** (CTO) — lock the tech stack and write an ADR to \`.rihal/decisions/001-stack-{phase}.md\`.
 
@@ -511,19 +550,30 @@ Run when starting a new phase of work inside an existing project. This is a **co
    ...
    \`\`\`
 
-5. **Initialize per-sprint state** — for each sprint parsed from sprints.md, run:
+5. **Initialize per-sprint state** — for each sprint parsed from sprints.md, **Write** \`.rihal/phases/{phase}/sprints/sprint-{N}/state.json\` with the following schema:
 
-   \`\`\`bash
-   rihal-code sprint init sprint-{N}
+   \`\`\`json
+   {
+     "id": "sprint-{N}",
+     "phase": "{phase}",
+     "milestone": "{active-milestone-id}",
+     "goal": "{sprint goal from sprints.md}",
+     "capacity": { "devs": N, "days": N, "points": N },
+     "dod": ["tests pass", "a11y audit", "deployed to staging"],
+     "status": "ready",
+     "stories": [],
+     "bugs": [],
+     "created": "{YYYY-MM-DD}"
+   }
    \`\`\`
 
-   This creates \`.rihal/phases/{phase}/sprints/sprint-{N}/state.json\` with the goal, capacity, and DoD extracted from sprints.md. Then activate the first sprint:
+   Then activate the first sprint by **Writing** its id as plain text to \`.rihal/phases/{phase}/sprints/active-sprint\`:
 
-   \`\`\`bash
-   rihal-code sprint activate sprint-01
+   \`\`\`
+   sprint-01
    \`\`\`
 
-   The CLI is atomic and idempotent — re-running init on an existing sprint is a no-op.
+   All Writes are atomic and idempotent — re-running on an existing sprint just overwrites with the same content.
 
 6. **Load Layla** — define the design system baseline. Write token decisions to \`.rihal/artifacts/brand/design-system.md\`.
 
@@ -549,12 +599,7 @@ After steps 1-6 complete, print a concise summary:
    ★ Active sprint: sprint-01
 \`\`\`
 
-Verify the state is queryable:
-
-\`\`\`bash
-rihal-code sprint                  # list all sprints with status
-rihal-code sprint current          # show active sprint detail
-\`\`\`
+Verify the state is queryable — use Bash \`ls .rihal/phases/{phase}/sprints/\` to see all sprint directories, and \`cat .rihal/phases/{phase}/sprints/active-sprint\` to see which one is active.
 
 ## 🎯 Next step — choose one
 
@@ -618,31 +663,53 @@ In **yolo** mode, infer from keywords:
 - Everything else → medium
 - Area inferred from current in-progress story's files (frontend if .tsx, backend if .ts server files, etc.)
 
-### Step 3 — Call the CLI helper
+### Step 3 — Write the bug file yourself
 
-Run \`rihal-code bug\` with the collected flags:
+**Filename:** \`.rihal/artifacts/bugs/pending/bug-{YYYY-MM-DD}-{slug}.md\` where slug is 2-5 lowercase hyphen-joined words from the title. Use Glob to check for collisions; append \`-2\`, \`-3\` if needed.
 
-\`\`\`bash
-rihal-code bug "TITLE" --severity=SEVERITY --area=AREA [--story=STORY-ID] [--description='DESCRIPTION']
+**Schema** — write this with the Write tool:
+
+\`\`\`markdown
+---
+id: bug-{YYYY-MM-DD}-{slug}
+title: {title}
+status: pending
+severity: {critical|high|medium|low}
+area: {frontend|backend|ml|infra|devops|docs|qa|design|unknown}
+created: {YYYY-MM-DD}
+sprint: {active sprint id or null}
+story: {in-progress story id or null}
+---
+
+# {title}
+
+## Description
+{description, 1-3 sentences}
+
+## Steps to Reproduce
+1. {step}
+2. {step}
+
+## Expected
+{expected behavior}
+
+## Actual
+{actual behavior}
 \`\`\`
 
-The CLI handles:
-- File creation at \`.rihal/artifacts/bugs/pending/bug-{date}-{slug}.md\` with YAML frontmatter
-- Auto-linking to active sprint + in-progress story (if unambiguous)
-- Registration in sprint state.json via \`addBugToSprint()\`
-- Atomic writes via \`writeFileAtomic\` — Ctrl+C cannot corrupt state
+**Register in active sprint** (if one is active): Read \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\`, add the bug id to its \`bugs\` array, Write it back via the Write tool (atomic).
 
 ### Step 4 — Handle critical severity
 
-If severity is critical, the CLI prints a recommendation to pause current work. Relay it to the user and ASK:
+If severity is critical, tell the user:
 
 \`\`\`
 ⚠ This is a CRITICAL bug. Pause your current story and fix this now? [Y/n]
 \`\`\`
 
 If yes:
-1. Block the current in-progress story: \`rihal-code sprint story <current-id> blocked\`
-2. Write a pause handoff: \`/rihal:pause "critical bug {bug-id} — paused for immediate fix"\`
+1. Block the current in-progress story by setting \`status: blocked\` in its frontmatter (Read → Edit → Write)
+2. Run \`/rihal:pause "critical bug {bug-id} — paused for immediate fix"\`
 3. Suggest switching to the bug fix flow
 
 If no, the bug stays in pending/ for later triage.
@@ -689,15 +756,10 @@ Reads \`.rihal/artifacts/bugs/pending/\` and renders the bug queue grouped by se
 
 ## Process
 
-Run:
-
-\`\`\`bash
-rihal-code bug list \$ARGUMENTS
-\`\`\`
-
-Pass through any filters the user provided: \`--severity=\`, \`--area=\`, \`--sprint=\`.
-
-The CLI returns a grouped list like:
+1. Use **Glob** on \`.rihal/artifacts/bugs/pending/*.md\` to list all pending bugs.
+2. For each file, use **Read** to extract frontmatter (\`severity\`, \`area\`, \`sprint\`, \`story\`, \`title\`). Skip the file body.
+3. Parse \$ARGUMENTS for filters: \`--severity=\`, \`--area=\`, \`--sprint=\`. Keep only matches.
+4. Group by severity (critical → high → medium → low) and render like:
 
 \`\`\`
 🐛 Pending bugs (5)
@@ -720,7 +782,7 @@ The CLI returns a grouped list like:
 - Before sprint wrap to decide what rolls over
 - When a user reports a bug and you want to check if it's already tracked
 
-Print the CLI output verbatim. After printing, summarize in one line:
+After rendering, summarize in one line:
 
 \`\`\`
 {N} pending bugs total — {critical+high} need attention, {medium+low} can wait.
@@ -748,21 +810,17 @@ Moves the bug file from \`.rihal/artifacts/bugs/pending/\` to \`.rihal/artifacts
 
 ### Step 1 — Parse bug id
 
-\$ARGUMENTS must be a bug id like \`bug-2026-04-11-login-button-mobile\`. If missing:
+\$ARGUMENTS must be a bug id like \`bug-2026-04-11-login-button-mobile\`. If missing, run \`/rihal:bugs\` inline to list the pending queue and ask which one.
 
-\`\`\`bash
-rihal-code bug list
-\`\`\`
+### Step 2 — Move and update the bug file
 
-Show the list and ask which one.
+1. **Read** \`.rihal/artifacts/bugs/pending/{bug-id}.md\`. If not found, stop and show the user the list of pending ids. Don't guess.
+2. In the loaded content, rewrite the frontmatter \`status:\` field from \`pending\` to \`resolved\` and append \`resolved: {YYYY-MM-DD}\`.
+3. **Write** the modified content to \`.rihal/artifacts/bugs/done/{bug-id}.md\`.
+4. **Delete** the pending file via Bash: \`rm .rihal/artifacts/bugs/pending/{bug-id}.md\`.
+5. If the bug was linked to an active sprint, **Read** that sprint's \`state.json\`, remove the bug id from its \`bugs\` array, and **Write** it back.
 
-### Step 2 — Call the CLI helper
-
-\`\`\`bash
-rihal-code bug resolve \$ARGUMENTS
-\`\`\`
-
-Atomic: the file move uses \`writeFileAtomic\` + \`unlinkSync\`, the sprint state update uses \`resolveBugInSprint()\`. Both or neither.
+All Write calls are atomic — Ctrl+C cannot corrupt state.
 
 ### Step 3 — Offer follow-up
 
@@ -778,13 +836,13 @@ If there are more:
 
 If the resolved bug was linked to a story that's now clear of bugs:
 \`\`\`
-Consider resuming the story: /rihal:sprint story <story-id> in_progress
+Consider resuming the story — edit its frontmatter status back to in_progress.
 \`\`\`
 
 ## Rules
 
-- Do NOT delete bug files — always move to done/ so the history is preserved.
-- If the bug id doesn't exist in pending/, stop and show the user what's available via \`rihal-code bug list\`. Don't guess.
+- Always move bug files to \`done/\` (copy + delete) — never hard-delete, so the history is preserved.
+- If the bug id doesn't exist in pending/, stop and show the user what's available. Don't guess.
 - Never change a bug's severity or area on resolve — if the metadata was wrong, it's wrong in the history too.
 `,
 
@@ -838,32 +896,38 @@ Fixed categories the entry routes to. Pick the best fit — if nothing matches e
 
 If the first word is not a recognized section, assume the whole \$ARGUMENTS is the entry and route to \`Misc\` (or ask in guided mode which section).
 
-If \$ARGUMENTS is empty in guided mode, show the current stats and ask:
+If \$ARGUMENTS is empty in guided mode, **Read** \`.rihal/context/permanent.md\` yourself, count entries per section by scanning \`## \` headers, and show stats before asking:
 
 \`\`\`
 🧠 Permanent memory stats:
    Location:        .rihal/context/permanent.md
-   Entries:         {total}  ({percent_full}% full)
+   Entries:         {total}  ({percent_full}% full — 200 lines = 100%)
    Per section:     {breakdown}
-   Archive:         {archive_lines} lines archived
 
 What do you want to preserve, and under which section?
 \`\`\`
 
-### Step 2 — Call the CLI
+### Step 2 — Read the current file
 
-\`\`\`bash
-rihal-code preserve '{section}' '{entry_text}'
-\`\`\`
+Use the **Read** tool on \`.rihal/context/permanent.md\`. If it doesn't exist, start with a blank document that has all fixed section headers (\`## Conventions\`, \`## Architecture Decisions\`, \`## Key File Paths\`, \`## Common Workflows\`, \`## Gotchas\`, \`## Misc\`).
 
-The CLI is project-isolated — it resolves the permanent-memory library from its own installed package root, never from the user's filesystem. You never need to know where the library lives. It:
-- Prefixes the entry with today's date (\`[YYYY-MM-DD]\`)
-- Adds it to the right section
-- Writes atomically via writeFileAtomic
-- If the file exceeds 200 lines, triggers auto-archive (moves oldest dated entries to permanent-archive.md until back under 150 lines)
-- Reports the result to stdout with entry count + archived count
+### Step 3 — Check for duplicates
 
-Use \`rihal-code preserve --stats\` to see current usage without writing anything.
+Scan the target section for an entry that says the same thing in different words. If you find one, **stop** — tell the user "already preserved: {existing entry}" and do not write.
+
+### Step 4 — Append the entry and write back
+
+Prefix the entry with today's date: \`- [$(date +%Y-%m-%d)] {entry text}\`. Insert it at the **end** of the target section (just before the next \`## \` header or end of file).
+
+Then use the **Write** tool to replace \`.rihal/context/permanent.md\` with the new content. Write is atomic — Ctrl+C cannot corrupt state.
+
+### Step 5 — Auto-archive if over budget
+
+Count the lines in the new file. If it exceeds **200 lines**, perform auto-archive:
+1. Read \`.rihal/context/permanent-archive.md\` if it exists (else start blank)
+2. Move the oldest dated entries from permanent.md (by scanning for \`- [YYYY-MM-DD]\` prefixes and sorting) until permanent.md is back under **150 lines**
+3. Prepend the moved entries to permanent-archive.md under an \`## Archived {date}\` header
+4. Write both files (two Write tool calls)
 
 ### Step 3 — Report
 
@@ -962,27 +1026,54 @@ In **yolo** communication_mode, skip the prompt and auto-capture:
 - files modified: from git status
 - decisions/learnings/pending: blank unless clearly inferable
 
-### Step 3 — Write the log via the CLI
+### Step 3 — Build the log file yourself
 
-\`\`\`bash
-rihal-code session save \\
-  --title='{title}' \\
-  --topics='{topic1,topic2,topic3}' \\
-  --sprint='{sprint_id}' \\
-  --story='{story_id}' \\
-  --phase='{phase}' \\
-  --outcome='{outcome}' \\
-  --decision='{decision 1}' --decision='{decision 2}' \\
-  --learning='{learning 1}' --learning='{learning 2}' \\
-  --pending='{pending 1}' --pending='{pending 2}' \\
-  --file='{file 1}' --file='{file 2}' \\
-  --error='{error + workaround 1}' \\
-  --notes='{free-form notes}'
+**Filename:** \`session-{YYYY-MM-DD}-{slug}.md\` where slug is 2-4 lowercase hyphen-joined words from the title (e.g. \`session-2026-04-11-auth-refactor.md\`).
+
+**Collision handling:** Use Glob to check if the filename already exists in \`.rihal/progress/\`. If it does, append \`-2\`, \`-3\`, … until unique.
+
+**Schema** — write this exact structure with the Write tool:
+
+\`\`\`markdown
+---
+title: {title}
+date: {YYYY-MM-DD}
+topics: [{topic1}, {topic2}, {topic3}]
+phase: {phase}
+sprint: {sprint_id}
+story: {story_id}
+outcome: {one-line outcome}
+---
+
+# {title}
+
+## Quick Reference
+{one paragraph — what this session was about}
+
+## Decisions Made
+- {decision 1}
+- {decision 2}
+
+## Key Learnings
+- {learning 1}
+- {learning 2}
+
+## Pending
+- {pending 1}
+- {pending 2}
+
+## Files Modified
+- {file 1}
+- {file 2}
+
+## Errors + Workarounds
+- {error 1}: {workaround 1}
+
+## Notes
+{free-form notes}
 \`\`\`
 
-Only pass the flags you actually have content for — every field is optional. Repeatable flags (\`--decision\`, \`--learning\`, \`--pending\`, \`--file\`, \`--error\`) can appear as many times as needed; \`--topics\` is comma-separated in a single flag.
-
-The CLI is project-isolated: it resolves the session-log library from its own installed package root, never from the user's filesystem. It also auto-picks a unique filename (\`session-{date}-{slug}.md\`, with \`-2\`, \`-3\` suffix on collision) and writes atomically.
+**Omit any section that has no content.** Omit any frontmatter field that's empty. Write via the **Write** tool — it is atomic.
 
 ### Step 4 — Report
 
@@ -1051,25 +1142,30 @@ Writes a structured handoff file capturing exactly what you're working on right 
    - Ask "any blockers you want to record?" — capture as a list
    - Ask "one-line description of your next action?" — capture for next_action
 
-3. **Write the handoff via the CLI:**
-   \`\`\`bash
-   rihal-code handoff write \\
-     --phase='{phase}' \\
-     --sprint-id='{sprint_id}' \\
-     --story-id='{story_id}' \\
-     --current-task={current_task} \\
-     --total-tasks={total_tasks} \\
-     --last-command='{last_command}' \\
-     --next-action='{next_action_string}' \\
-     --blocker='{blocker 1}' --blocker='{blocker 2}' \\
-     --file='{uncommitted file 1}' --file='{uncommitted file 2}'
+3. **Check for an existing handoff first.** Use the **Read** tool on \`.rihal/HANDOFF.json\`. If it exists and is non-empty, surface its \`paused_at\` + \`next_action\` to the user and ask whether to overwrite. Only proceed if they confirm.
+
+4. **Write the handoff via the Write tool.** Target: \`.rihal/HANDOFF.json\`. Schema (omit any field that is null/empty):
+
+   \`\`\`json
+   {
+     "paused_at": "{ISO-8601 timestamp}",
+     "phase": "{phase}",
+     "sprint_id": "{sprint_id}",
+     "story_id": "{story_id}",
+     "current_task": {current_task},
+     "total_tasks": {total_tasks},
+     "last_command": "{last_command}",
+     "next_action": "{next_action_string}",
+     "blockers": ["{blocker 1}", "{blocker 2}"],
+     "uncommitted_files": ["{file 1}", "{file 2}"]
+   }
    \`\`\`
 
-   Repeatable flags: \`--blocker\`, \`--file\` (use each one multiple times for multiple entries). The CLI resolves the handoff library internally — you never need to know where it lives on disk.
+   The Write tool is atomic — Ctrl+C cannot corrupt state.
 
-   If the CLI reports a pending handoff already exists (\`--force\` not passed), tell the user there's an existing pause state and ask whether to overwrite. Re-run with \`--force\` if they confirm.
+5. **Also write a human-readable trail** to \`.rihal/phases/{phase}/sprints/{sprint_id}/.continue-here.md\` (same fields as bullet list). This file is append-only history across pauses — if one exists, prepend today's entry rather than overwrite.
 
-4. **Summarize what was saved:**
+6. **Summarize what was saved:**
    \`\`\`
    ⏸  Paused at sprint-01 / story-1-2-signup (task 3/7)
       Blockers:   1 recorded
@@ -1079,9 +1175,9 @@ Writes a structured handoff file capturing exactly what you're working on right 
                   .rihal/phases/phase-01/sprints/sprint-01/.continue-here.md
    \`\`\`
 
-5. **Suggest next steps:**
+7. **Suggest next steps:**
    - If they want to clear context: \`/clear\` then later \`/rihal:resume\`
-   - If they want to switch sprints: \`rihal-code sprint activate <other-id>\`, then continue
+   - If they want to switch sprints: Write tool to \`.rihal/phases/{phase}/sprints/active-sprint\` with the new sprint id
    - If they want to commit uncommitted work as WIP: offer the command
 
 ## Rules
@@ -1118,20 +1214,11 @@ Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the s
 
 ## Process
 
-1. **Read the handoff via the CLI:**
-   \`\`\`bash
-   rihal-code handoff read
-   \`\`\`
-   Prints the HANDOFF.json as JSON, or the literal string \`null\` if none pending. Exit with "no pending handoff" if the CLI reports null.
-
-   For a one-line summary instead of the full JSON, use \`rihal-code handoff read --summary\`.
+1. **Read the handoff** using the **Read** tool on \`.rihal/HANDOFF.json\`. If the file does not exist, print "no pending handoff — try \`/rihal:continue\` to see current state" and stop. Parse the JSON to get \`phase\`, \`sprint_id\`, \`story_id\`, etc.
 
 2. **Verify the referenced sprint still exists.** Read \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\`. If missing, warn the user the sprint was deleted or moved — ask before proceeding.
 
-3. **Re-activate the sprint** if it's not already active:
-   \`\`\`bash
-   rihal-code sprint activate {sprint_id} --phase={phase}
-   \`\`\`
+3. **Re-activate the sprint** if it's not already the active one. Use the **Write** tool to write the sprint id to \`.rihal/phases/{phase}/sprints/active-sprint\` (a plain text file containing just the id). If the active-sprint file already matches, skip this step.
 
 4. **Present the resume summary to the user:**
    \`\`\`
@@ -1157,9 +1244,9 @@ Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the s
    - \`.rihal/phases/{phase}/stories/{story_id}.md\` (if story_id present)
    - \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\` (already read in step 2)
 
-7. **Clear the handoff** (one-shot — we've consumed it):
+7. **Clear the handoff** (one-shot — we've consumed it). Delete \`.rihal/HANDOFF.json\` via Bash:
    \`\`\`bash
-   rihal-code handoff clear
+   rm -f .rihal/HANDOFF.json
    \`\`\`
    Note: the .continue-here.md file is KEPT as history. Only HANDOFF.json is deleted.
 
@@ -1209,18 +1296,18 @@ Runs in **under 2k tokens** — reads only state files and frontmatter, never so
    - \`.rihal/config.json\` (project name + communication_mode)
    - \`.rihal/state.json\` (current phase + any init markers)
    - \`.rihal/context/active.md\` (last compacted session summary)
-   - Active milestone via \`rihal-code milestone current --json 2>/dev/null\` (returns \`null\` if none — that's fine, milestones are optional)
-   - Active sprint via \`rihal-code sprint current --json 2>/dev/null\`
-   - \`ls .rihal/phases/\` (list of phases, no content)
-   - For the current phase, \`ls\` its \`tasks/\`, \`stories/\`, and check for \`brief.md\`, \`sprints.md\`
+   - **Active milestone** — use Glob on \`.rihal/milestones/*.md\`, Read each and check frontmatter \`status:\`. The one with \`status: active\` is the active milestone. None? That's fine — milestones are optional.
+   - **Active sprint** — Read \`.rihal/phases/{current_phase}/sprints/active-sprint\` (a plain text file with the sprint id), then Read \`.rihal/phases/{current_phase}/sprints/{sprint_id}/state.json\` for details.
+   - \`ls .rihal/phases/\` via Bash (list of phases, no content)
+   - For the current phase, Bash-\`ls\` its \`tasks/\`, \`stories/\`, and Read frontmatter of \`brief.md\`, \`sprints.md\`
 
-2. **If \$ARGUMENTS is non-empty, do a topic search** on session logs via the CLI:
+2. **If \$ARGUMENTS is non-empty, do a topic search** on session logs directly:
 
    \`\`\`bash
-   rihal-code session search '\$ARGUMENTS' --limit=3 --json
+   grep -l -i '\$ARGUMENTS' .rihal/progress/session-*.md 2>/dev/null | head -3
    \`\`\`
 
-   Returns a JSON array of matching session metadata (date, slug, topics, outcome). For the top hits, read the full file via \`rihal-code session show <filename>\` — but only the frontmatter + "Quick Reference" + "Decisions Made" sections (keep under 500 tokens per log). Summarize what you found so the user sees: "Found 2 past sessions on 'auth': {slug} (date) — {outcome}".
+   For each matching file, use the **Read** tool and extract only the frontmatter + "## Quick Reference" + "## Decisions Made" sections (cap each log at 500 tokens). Summarize: "Found 2 past sessions on 'auth': {slug} (date) — {outcome}".
 
    This is how you re-enter specific historical context without loading 30+ session logs.
 
@@ -1708,14 +1795,11 @@ Designed for rapid workflow — remembering which phase/step you're on is overhe
 
 <process>
 
-1. **Read milestone and sprint state FIRST** (one query each, cheap):
+1. **Read milestone and sprint state FIRST** (cheap, file-only):
+   - **Active milestone** — Glob \`.rihal/milestones/*.md\`, Read each frontmatter, find the one with \`status: active\`. None? That's fine, fall back to phase-level state.
+   - **Active sprint** — Read \`.rihal/phases/{current_phase}/sprints/active-sprint\` for the sprint id, then Read that sprint's \`state.json\`.
 
-   \`\`\`bash
-   rihal-code milestone current --json 2>/dev/null
-   rihal-code sprint current --json 2>/dev/null
-   \`\`\`
-
-   The milestone is the top-level organizing unit. If one is active, it scopes everything that follows. If none exists, fall back to the phase-level state.
+   The milestone is the top-level organizing unit. If one is active, it scopes everything that follows.
 
 2. **Read state**:
    - \`.rihal/state.json\` — current phase, active agents
@@ -1726,9 +1810,9 @@ Designed for rapid workflow — remembering which phase/step you're on is overhe
 3. **Decision tree:**
 
    - **No \`.rihal/\` state** → run \`/rihal:kickoff\`
-   - **Active milestone is \`completed\`** → suggest \`rihal-code milestone activate <next-id>\` or close out this phase
+   - **Active milestone is \`completed\`** → suggest editing another milestone's frontmatter \`status:\` to \`active\`, or close out this phase
    - **No current phase** → ask user which phase, or run \`/rihal:kickoff\`
-   - **Active sprint has a \`ready\` story** → call \`rihal-code sprint current\` to see it, invoke \`rihal-dev-story\` on the next ready one
+   - **Active sprint has a \`ready\` story** → read the sprint's \`state.json\`, find the next story with \`status: ready\`, invoke \`rihal-dev-story\` on it
    - **Active sprint has an \`in_progress\` story** → resume it directly via dev-story
    - **Phase has no sprints.md** → invoke Hussain-SM via \`rihal-sprint-planning\` skill
    - **Sprint has unstarted story** → invoke Omar/Haitham via \`rihal-dev-story\` on the next story
@@ -2255,11 +2339,11 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:dashboard\` — start the Diwan view-only dashboard
 - \`/rihal:help\` — this message
 
-**Milestones and state** (CLI-only, invoke from your terminal):
-- \`rihal-code milestone\` — list/show/create/activate/close/link milestones (shippable groupings)
-- \`rihal-code sprint\` — per-sprint story queue, status mutations
-- \`rihal-code bug\` — mid-sprint bug intake linked to active sprint
-- \`rihal-code context\` — memory bank freshness check
+**Milestones and state** (BMAD-style — Claude reads/writes \`.rihal/**\` files directly via slash commands):
+- Milestones live at \`.rihal/milestones/*.md\` with frontmatter \`status:\` — use \`/rihal:kickoff\` or edit directly
+- Sprints live at \`.rihal/phases/{phase}/sprints/{id}/state.json\` — use \`/rihal:progress\` or \`/rihal:next\`
+- Bugs via \`/rihal:bug\` / \`/rihal:bugs\` / \`/rihal:bug-resolve\`
+- \`rihal-code context\` — memory bank freshness check (remains a CLI command)
 
 **Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\` or invoke by name):
 - Strategy: Sadiq
@@ -2706,6 +2790,17 @@ async function runInstall(args, { packageRoot, packageJson }) {
     console.log(`   ✓ model-profiles.json copied`);
   }
 
+  // Snapshot the package core (digests/templates/workflows/agents/tasks +
+  // team.yaml/config.yaml) into .rihal/lib/. After this snapshot the project
+  // is fully self-contained — agent digests and templates travel with the
+  // repo and survive even if the global rihal-code package or its source
+  // checkout is removed. The CLI (`rihal-code digest <agent>`) is the
+  // primary path; .rihal/lib/digests/ is the durable fallback.
+  const libCount = snapshotCoreIntoProject(packageRoot, cwd);
+  if (libCount > 0) {
+    console.log(`   ✓ .rihal/lib/ snapshot — ${libCount} core dirs/files copied`);
+  }
+
   // Project config — canonical source for project_name, user_name, paths,
   // model_profile. Workflows read this at runtime. Values cascade:
   // hardcoded → ~/.rihal-code/defaults.json → wizard answers → installed_version.
@@ -2815,6 +2910,7 @@ Show models:    npx github:hanzlahabib/rihal-code show-model
 
 // Exports for internal reuse (cli/update.js)
 module.exports.installSkills = installSkills;
+module.exports.snapshotCoreIntoProject = snapshotCoreIntoProject;
 module.exports.installSlashCommands = installSlashCommands;
 module.exports.installCursorRules = installCursorRules;
 module.exports.installWindsurfRules = installWindsurfRules;

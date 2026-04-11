@@ -321,6 +321,14 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   const result = init.installUniversalAgentsMd(packageRoot, cwd);
   console.log(`   ✓ universal → AGENTS.md ${result}`);
 
+  // Refresh the .rihal/lib/ self-contained snapshot of digests, templates,
+  // workflows, agents, and tasks. Keeps the project independent of the
+  // global package source.
+  const libCount = init.snapshotCoreIntoProject(packageRoot, cwd);
+  if (libCount > 0) {
+    console.log(`   ✓ .rihal/lib/ snapshot refreshed — ${libCount} core dirs/files`);
+  }
+
   // ------ Update installed_version in config.json (atomic) ------
   config.installed_version = packageVersion;
   writeJsonAtomic(configPath, config);
