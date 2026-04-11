@@ -31,6 +31,7 @@ const COMMANDS = {
   team: require('./team'),
   doctor: require('./doctor'),
   'set-profile': require('./set-profile'),
+  'set-mode': require('./set-mode'),
   config: require('./config'),
   context: require('./context'),
   sprint: require('./sprint'),
@@ -64,6 +65,7 @@ Commands:
   team           List the team roster
   doctor         Run compliance check on skills
   set-profile    Change the model profile (quality | balanced | budget | inherit)
+  set-mode       Toggle communication mode (guided | yolo)
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Check memory bank freshness (--check | --refresh | --install-hook)
   sprint         List sprints, show active, activate, or update story status
