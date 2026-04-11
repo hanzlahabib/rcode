@@ -2557,28 +2557,29 @@ async function pickEditorsInteractive(cwd) {
 
 /**
  * Interactive identity wizard — collect user_name and language
- * preferences once per fresh install. All questions are skippable
- * (Enter → default), so the old non-interactive behavior is preserved
- * for users who just want to get going.
+ * preferences for THIS project. All three questions are skippable
+ * (Enter → keeps the shown default).
+ *
+ * The wizard is project-scoped by design. Answers are written to
+ * {cwd}/.rihal/config.json only. If the user wants global defaults,
+ * they set them explicitly with `rihal-code config --global <key> <value>`.
  *
  * Defaults cascade: user-level ~/.rihal-code/defaults.json → hardcoded.
- * If the user changes any answer from the effective default, offer to
- * save as global defaults so future projects inherit them.
+ * If the user has previously set globals, those show as the default
+ * values in the prompt and they can accept them by hitting Enter.
  */
 async function runIdentityWizard(cwd) {
-  const { askText, askConfirm } = require('./lib/prompts.cjs');
-  const {
-    loadUserDefaults,
-    writeUserDefaults,
-    HARDCODED_DEFAULTS,
-  } = require('./lib/config.cjs');
+  const { askText } = require('./lib/prompts.cjs');
+  const { loadUserDefaults, HARDCODED_DEFAULTS } = require('./lib/config.cjs');
 
   const user = loadUserDefaults();
   const currentUserName = user.user_name || HARDCODED_DEFAULTS.user_name;
-  const currentLang = user.communication_language || HARDCODED_DEFAULTS.communication_language;
-  const currentDocLang = user.document_output_language || HARDCODED_DEFAULTS.document_output_language;
+  const currentLang =
+    user.communication_language || HARDCODED_DEFAULTS.communication_language;
+  const currentDocLang =
+    user.document_output_language || HARDCODED_DEFAULTS.document_output_language;
 
-  console.log(`\n📝 Quick setup (press Enter to keep defaults)\n`);
+  console.log(`\n📝 Quick setup for this project (press Enter to keep defaults)\n`);
 
   const user_name = await askText(
     `   Your name or team name [${currentUserName}]: `,
@@ -2593,40 +2594,16 @@ async function runIdentityWizard(cwd) {
     { default: currentDocLang },
   );
 
-  const answers = { user_name, communication_language, document_output_language };
+  console.log();
+  console.log(
+    `   ℹ These answers are saved to .rihal/config.json for THIS project only.`,
+  );
+  console.log(
+    `     To set global defaults once, use: rihal-code config --global user_name "Name"`,
+  );
+  console.log();
 
-  // Offer to save as global defaults — but only if at least one answer
-  // differs from the effective user-level default. No point asking if
-  // everything already matches.
-  const changed =
-    user_name !== currentUserName ||
-    communication_language !== currentLang ||
-    document_output_language !== currentDocLang;
-  const alreadySaved =
-    user.user_name === user_name &&
-    user.communication_language === communication_language &&
-    user.document_output_language === document_output_language;
-
-  if (changed && !alreadySaved) {
-    const save = await askConfirm(
-      `\n   Save these as global defaults for future projects? [y/N] `,
-      { default: 'n' },
-    );
-    if (save) {
-      writeUserDefaults({
-        user_name,
-        communication_language,
-        document_output_language,
-      });
-      console.log(`   ✓ saved to ~/.rihal-code/defaults.json\n`);
-    } else {
-      console.log();
-    }
-  } else {
-    console.log();
-  }
-
-  return answers;
+  return { user_name, communication_language, document_output_language };
 }
 
 module.exports = async function init(args, { packageRoot, packageJson }) {
