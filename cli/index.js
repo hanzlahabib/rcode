@@ -22,6 +22,7 @@ const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package
 const COMMANDS = {
   install: require('./init'),  // primary command (BMAD-style)
   init: require('./init'),     // backward-compat alias
+  update: require('./update'),
   uninstall: require('./uninstall'),
   remove: require('./uninstall'),  // alias
   dashboard: require('./dashboard'),
@@ -51,6 +52,8 @@ Commands:
                  (sets up .rihal/, .claude/skills/, .claude/commands/rihal/,
                  .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
   init           Alias for install (backward compatibility)
+  update         Refresh skill files while preserving .rihal/ state
+                 (backs up to .rihal/backups/update-{ts}.tgz first)
   uninstall      Remove Rihal Code from the current project
                  (asks before deleting .rihal/ state — your project data)
   remove         Alias for uninstall

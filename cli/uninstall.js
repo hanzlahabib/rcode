@@ -352,6 +352,24 @@ async function runUninstall(args) {
   console.log(`   Scope:   ${editors.join(', ')}`);
   console.log();
 
+  // Fast path: is Rihal Code installed here at all? Check our own marker
+  // (.rihal/config.json) + any editor install trace. If nothing, exit cleanly
+  // with a clear message so users don't wonder "did it work?"
+  const hasConfig = fs.existsSync(path.join(cwd, '.rihal/config.json'));
+  const hasAnyEditorFiles =
+    fs.existsSync(path.join(cwd, '.claude/skills')) ||
+    fs.existsSync(path.join(cwd, '.cursor/rules')) ||
+    fs.existsSync(path.join(cwd, '.windsurf/rules')) ||
+    fs.existsSync(path.join(cwd, '.antigravity/agents'));
+  if (!hasConfig && !hasAnyEditorFiles) {
+    console.log(`\n❌ Rihal Code is not installed in this directory.`);
+    console.log(`   Nothing to uninstall.`);
+    console.log();
+    console.log(`   To install: npx --yes github:hanzlahabib/rihal-code install`);
+    console.log();
+    return;
+  }
+
   // Build the plan
   const plan = buildPlan(cwd, editors);
 
@@ -362,8 +380,12 @@ async function runUninstall(args) {
   const totalAG = plan.antigravity.length;
   const totalItems = totalSkills + totalCommands + totalCursor + totalWindsurf + totalAG;
 
+  // Edge case: install traces exist but no actual files match our patterns
+  // (e.g. user manually deleted Rihal files but left dirs). Exit clean.
   if (totalItems === 0 && !plan.agentsMd && !plan.stateDir) {
-    console.log(`   ℹ Nothing to uninstall — no Rihal Code files found in this project.`);
+    console.log(`\n❌ No Rihal Code files found to remove.`);
+    console.log(`   The install markers are present but all files have already been deleted.`);
+    console.log();
     return;
   }
 

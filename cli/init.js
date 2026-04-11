@@ -1531,10 +1531,10 @@ async function runIdentityWizard(cwd) {
   return answers;
 }
 
-module.exports = async function init(args, { packageRoot }) {
+module.exports = async function init(args, { packageRoot, packageJson }) {
   const { PromptAbortError } = require('./lib/prompts.cjs');
   try {
-    return await runInstall(args, { packageRoot });
+    return await runInstall(args, { packageRoot, packageJson });
   } catch (err) {
     if (err instanceof PromptAbortError) {
       console.log(`\n❌ Install cancelled — ${err.message}.`);
@@ -1544,10 +1544,49 @@ module.exports = async function init(args, { packageRoot }) {
   }
 };
 
-async function runInstall(args, { packageRoot }) {
+async function runInstall(args, { packageRoot, packageJson }) {
   const cwd = process.cwd();
   const rihalDir = path.join(cwd, '.rihal');
   const opts = parseArgs(args);
+  const packageVersion = packageJson?.version || '0.0.0';
+
+  // ------ Existing-install detection ------
+  // If .rihal/config.json exists with an installed_version, compare against
+  // the current package version and branch: same → already installed,
+  // different → offer update, missing → fresh install.
+  const existingConfigPath = path.join(cwd, '.rihal/config.json');
+  if (fs.existsSync(existingConfigPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(existingConfigPath, 'utf8'));
+      const installedVersion = existing.installed_version;
+
+      if (installedVersion === packageVersion) {
+        console.log(`\n✓ Rihal Code ${packageVersion} is already installed in this directory.`);
+        console.log(`\n   To refresh files anyway: rihal-code update`);
+        console.log(`   To reconfigure:         rihal-code config`);
+        console.log(`   To uninstall:           rihal-code uninstall`);
+        console.log();
+        return;
+      }
+
+      if (installedVersion && installedVersion !== packageVersion) {
+        console.log(`\n📦 Rihal Code ${installedVersion} is already installed in this directory.`);
+        console.log(`   Current package version: ${packageVersion}`);
+        console.log();
+        console.log(`   ➡ To update: rihal-code update`);
+        console.log(`   ➡ To force reinstall: rihal-code uninstall && rihal-code install`);
+        console.log();
+        return;
+      }
+
+      // Config exists but no installed_version recorded — older install
+      // from before this tracking was added. Fall through to normal install
+      // and we'll write installed_version at the end.
+      console.log(`\n⚠ Existing install detected without version info — proceeding to refresh.\n`);
+    } catch {
+      // Corrupted config — fall through to fresh install
+    }
+  }
 
   // Determine which editors to install for:
   //   1. --editor=X explicit flag wins
@@ -1606,9 +1645,12 @@ async function runInstall(args, { packageRoot }) {
 
   // Project config — canonical source for project_name, user_name, paths,
   // model_profile. Workflows read this at runtime. Values cascade:
-  // hardcoded → ~/.rihal-code/defaults.json → wizard answers.
+  // hardcoded → ~/.rihal-code/defaults.json → wizard answers → installed_version.
   const { initProjectConfig } = require('./lib/config.cjs');
-  const configCreated = initProjectConfig(cwd, wizardAnswers);
+  const configCreated = initProjectConfig(cwd, {
+    ...wizardAnswers,
+    installed_version: packageVersion,
+  });
   if (configCreated) {
     console.log(`   ✓ .rihal/config.json created`);
   }
@@ -1707,3 +1749,11 @@ Change profile: npx github:hanzlahabib/rihal-code set-profile balanced
 Show models:    npx github:hanzlahabib/rihal-code show-model
 `);
 }
+
+// Exports for internal reuse (cli/update.js)
+module.exports.installSkills = installSkills;
+module.exports.installSlashCommands = installSlashCommands;
+module.exports.installCursorRules = installCursorRules;
+module.exports.installWindsurfRules = installWindsurfRules;
+module.exports.installAntigravityAgents = installAntigravityAgents;
+module.exports.installUniversalAgentsMd = installUniversalAgentsMd;
