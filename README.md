@@ -513,17 +513,55 @@ Systematic debugging workflow — reproduces, isolates, fixes, adds regression t
 
 One-shot, one commit, done.
 
-### Scenario 9: Sync planning to GitHub
+### Scenario 9: Push to GitHub
+
+Three targeted commands for pushing specific work, plus the bulk `github-sync` if you want everything at once.
 
 ```bash
-# Dry run (default — shows the plan, no mutations)
+# Push ONE sprint's stories (with parent epic links)
+rihal-code github-sync --sprint=sprint-01 --execute
+
+# Push ONE epic + its child stories (task list gets rendered on the epic issue)
+rihal-code github-sync --epic=epic-1-auth --execute
+
+# Push ONE story (creates parent epic issue first if needed)
+rihal-code github-sync --story=story-1-1-login --execute
+
+# Or from inside the editor:
+/rihal:push-sprint sprint-01
+/rihal:push-epic epic-1-auth
+/rihal:push-story story-1-1-login
+
+# Full bulk sync (dry-run by default, shows plan only)
 rihal-code github-sync
 
-# Actually push
+# Actually execute the bulk sync
 rihal-code github-sync --execute
 ```
 
-This creates/updates GitHub milestones (phases), epics (issues with `type:epic` label), and stories (issues with `type:story` label) following the Rihal GitHub standards taxonomy (23 labels). Idempotent — re-runs only touch changed content (tracked via SHA-256 content hash in `.rihal/integrations/github-map.json`).
+**What gets created on GitHub:**
+- **Milestones** — one per phase (`phase-01`, `phase-02`, …)
+- **Epic issues** — titled `[Epic] {Title}`, assigned to the phase milestone, with a `## 📝 Child Stories` task list that GitHub renders as a progress counter
+- **Story issues** — titled with the story name, body contains `Parent Epic: #N` reference for auto-linking, assigned to the phase milestone
+- **Labels** — **off by default**. Pass `--with-labels` to create/assign the full Rihal taxonomy (type / priority / status / area)
+
+**Linking conventions used:**
+- Story → Epic: body field `- **Parent Epic:** #N` (GitHub auto-links + renders under the epic)
+- Epic → Stories: task list `- [ ] #N` inside the epic body (renders progress counter)
+- Story frontmatter `epic: epic-1-auth` wins; falls back to naming convention (`story-N-...` → `epic-N-...`)
+- Everything is grouped under the phase milestone
+
+**Idempotency:**
+Every sync writes a map at `.rihal/integrations/github-map.json` with SHA-256 content hashes. Re-running a sync creates zero duplicates — only new or changed items touch GitHub.
+
+**Safety:**
+- Default is always dry-run. You have to pass `--execute` to mutate.
+- Even with `--execute`, an interactive prompt asks `Proceed? Type 'yes' to continue:` unless you pass `--yes`.
+- In `communication_mode=yolo`, `--yes` does NOT bypass the prompt for GitHub mutations. You must also pass `--force-yolo` to opt in explicitly. This is deliberate — YOLO mode should not silently push dozens of issues to a shared repo.
+- `gh` auth is checked first; if not authenticated the command exits before any work.
+
+**Why a CLI and not Claude calling `gh` directly?**
+The CLI handles the plumbing (gh calls, retries, rate limits, idempotency via sync map, atomic state updates). Claude handles the judgment (writing good story content, deciding if an epic should be split, enhancing briefs). The slash commands `/rihal:push-*` bridge the two — Claude reviews and optionally enhances the artifacts on disk, then invokes the CLI for the actual posting. See [ADR 0001](docs/adr/0001-github-sync-as-cli.md) for the full rationale.
 
 ---
 
@@ -551,9 +589,16 @@ rihal-code team                                # list team roster
 rihal-code digest                              # compact agent digests
 
 # GitHub integration
-rihal-code github-sync                         # dry-run sync (default)
-rihal-code github-sync --execute               # actually mutate GitHub
+rihal-code github-sync                         # dry-run sync (default, labels off)
+rihal-code github-sync --execute               # mutate GitHub
+rihal-code github-sync --sprint=sprint-01      # only one sprint
+rihal-code github-sync --epic=epic-1-auth      # only one epic + its stories
+rihal-code github-sync --story=story-1-1-login # only one story
+rihal-code github-sync --with-labels           # also create the 23-label taxonomy
+rihal-code github-sync --force-yolo            # allow --yes to bypass prompt in yolo mode
 ```
+
+See [ADR 0001 — github-sync as CLI](docs/adr/0001-github-sync-as-cli.md) for the architectural rationale of why push-to-github is a CLI command instead of a pure Claude workflow.
 
 ---
 
