@@ -34,13 +34,6 @@ const COMMANDS = {
   'set-mode': require('./set-mode'),
   config: require('./config'),
   context: require('./context'),
-  sprint: require('./sprint'),
-  milestone: require('./milestone'),
-  bug: require('./bug'),
-  handoff: require('./handoff'),
-  preserve: require('./preserve'),
-  session: require('./session'),
-  'story-commit': require('./story-commit'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
   version: () => console.log(PACKAGE_JSON.version),
@@ -74,13 +67,6 @@ Commands:
   set-mode       Toggle communication mode (guided | yolo)
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Check memory bank freshness (--check | --refresh | --install-hook)
-  sprint         List sprints, show active, activate, or update story status
-  milestone      Top-level organizing concept — group phases under shippable units
-  bug            Capture/list/resolve mid-sprint bugs (links to active sprint)
-  handoff        Read/write/clear the pause-state HANDOFF.json (for slash commands)
-  preserve       Add a durable learning to .rihal/context/permanent.md
-  session        Save/list/search permanent session logs in .rihal/progress/
-  story-commit   Commit files against a story with structured GitHub label trailers
   show-model     Show which model each agent uses in the current profile
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
   version        Print version

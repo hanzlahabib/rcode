@@ -68,6 +68,13 @@ const FORBIDDEN_PATTERNS = [
     regex: /(?:Load|Read|Open|require\()\s*[^\n]*\brihal\/digests\//,
     description: '`rihal/digests/...` — package-internal digest path. Use `rihal-code digest <agent>` instead.',
   },
+  // BMAD-style pivot (v0.2.0) — these CLI subcommands were deleted and
+  // replaced with direct Claude Read/Write/Bash file I/O. Any template
+  // that still references them is a regression.
+  {
+    regex: /\brihal-code\s+(?:sprint|milestone|bug|handoff|preserve|session|story-commit)\b/,
+    description: '`rihal-code {sprint|milestone|bug|handoff|preserve|session|story-commit}` — these CLI subcommands were removed in the BMAD-style pivot. Slash command templates must instruct Claude to read/write `.rihal/**` files directly via the Read/Write/Bash tools.',
+  },
 ];
 
 // List of rihal-slash-command files we expect after a fresh install.
@@ -188,7 +195,14 @@ test('every known slash command installs and is non-empty', async (t) => {
   }
 });
 
-test('slash commands that need lib access shell out to rihal-code subcommands', async (t) => {
+test('state-mutating slash commands use direct file I/O, not deleted CLI subcommands', async (t) => {
+  // BMAD-style pivot (v0.2.0): slash commands that used to shell out to
+  // `rihal-code handoff|preserve|session|sprint|milestone|bug|story-commit`
+  // must now instruct Claude to read/write `.rihal/**` files directly
+  // using the Read/Write tools. This test locks in that migration — every
+  // template that historically touched state must mention the Write tool
+  // (or explicit .rihal/ path writes) so we don't regress to CLI-driven
+  // state mutation.
   const cwd = makeTempDir('rihal-noleaks-');
   t.after(() => cleanup(cwd));
 
@@ -196,15 +210,17 @@ test('slash commands that need lib access shell out to rihal-code subcommands', 
 
   const commands = listSlashCommands(cwd);
 
-  // These specific commands historically had $HOME leaks and should now
-  // contain `rihal-code <subcommand>` invocations instead.
+  // Each template is expected to contain ONE of the patterns in `expect`
+  // (a post-pivot marker) and NONE of the forbidden deleted-command
+  // shell-outs (already covered by test #1, but checked here too for
+  // clarity in failure reports).
   const expectations = [
-    { file: 'preserve.md', expect: /rihal-code preserve/ },
-    { file: 'save-session.md', expect: /rihal-code session save/ },
-    { file: 'pause.md', expect: /rihal-code handoff write/ },
-    { file: 'resume.md', expect: /rihal-code handoff (?:read|clear)/ },
-    { file: 'continue.md', expect: /rihal-code session search/ },
-    { file: 'council.md', expect: /rihal-code digest/ },
+    { file: 'preserve.md',    expect: /Write tool|\.rihal\/context\/permanent\.md/ },
+    { file: 'save-session.md', expect: /Write tool|\.rihal\/progress\/session-/ },
+    { file: 'pause.md',       expect: /Write tool|\.rihal\/HANDOFF\.json/ },
+    { file: 'resume.md',      expect: /Read tool|\.rihal\/HANDOFF\.json/ },
+    { file: 'continue.md',    expect: /grep.*\.rihal\/progress|Glob.*milestones/ },
+    { file: 'bug.md',         expect: /Write tool|\.rihal\/artifacts\/bugs/ },
   ];
 
   for (const { file, expect } of expectations) {
@@ -218,7 +234,7 @@ test('slash commands that need lib access shell out to rihal-code subcommands', 
     assert.match(
       content,
       expect,
-      `${file} should shell out via ${expect} instead of requiring a library directly`,
+      `${file} should use direct file I/O (Read/Write tool + .rihal/** path) instead of shelling out to a deleted CLI subcommand`,
     );
   }
 });
