@@ -1,234 +1,448 @@
 # Rihal Code — Deep Dive
 
+This is the **why** behind Rihal Code. For the **how** (installation, CLI commands, pipeline syntax), see the [README](../README.md).
+
+---
+
 ## The Problem
 
 AI coding assistants have a context problem. They either:
+
 1. **Remember too much** — stale information contaminates new decisions
 2. **Remember too little** — every session starts from scratch
 3. **Remember the wrong things** — irrelevant code blocks eat the context budget
 
-And most AI workflows give you **one assistant** — a generalist who has to be strategy, PM, engineer, and designer simultaneously. No real team works that way.
+And most AI workflows give you **one assistant** — a generalist who has to be strategy, PM, engineer, designer, QA, and DevOps simultaneously. No real team works that way. One generalist collapses into mush: vague advice, hedged opinions, no sharp edges.
 
 ## The Solution
 
-Rihal Code applies three ideas:
+Rihal Code applies five ideas:
 
-1. **Specialized agents with real authority boundaries** (like a real team)
+1. **Specialized agents with real authority boundaries** — each agent owns a domain and defers outside it
 2. **File-based state** that survives between sessions (`.rihal/`)
-3. **Context management workflows** that keep AI's working memory lean
+3. **Upstream-grounded workflows** — creation skills refuse to run without their upstream artifacts (no hallucinated requirements)
+4. **Pipeline contracts** — predefined agent chains for common work types (project/feature/UI/council)
+5. **Context cascading config** — hardcoded → user → project, so you configure once and inherit everywhere
 
-## The Nine Agents
+---
 
-### Why Nine?
+## 19 agents, not 9
 
-Because a real software team has nine distinct roles. Fewer and you lose specialization. More and you create coordination overhead.
+The original design had 9 agents. Real team work surfaced gaps. The current shape:
 
-### Authority Map
+### Strategy (4)
+**Sadiq** (strategy), **Waleed** (CTO), **Ahmed Al Hassani** (tech director), **Nasser** (eng manager)
+
+### Product & design (4)
+**Hussain-PM** (product), **Hussain-SM** (scrum), **Layla** (UX), **Zahra** (brand)
+
+### Engineering (4)
+**Omar** (full-stack generalist), **Haitham** (frontend), **Yousef** (backend), **Zayd** (ML)
+
+### Quality & ops (2)
+**Fatima** (QA), **Khalid** (DevOps)
+
+### Content & comms (2)
+**Noor** (writer), **Mariam** (marketing)
+
+### Meta (3)
+**Raees** (orchestrator/router), **Majlis** (council synthesis), **Diwan** (dashboard)
+
+**Why this split?** Because specialization produces sharper outputs than generality. Haitham writing frontend differs from Yousef writing backend differs from Zayd writing evals. Asking one agent to do all three dilutes each.
+
+### Authority map
+
+Authority flows down from strategy. Each agent **defers** to others on their domain, and **has final say** within theirs.
 
 ```
-                    Sadiq (Strategy)
-                          |
-                     [the why]
-                          |
-                  +-------+-------+
-                  |               |
-             Waleed (CTO)    Hussain (PM)
-                  |               |
-             [the how]      [the what & when]
-                  |               |
-          +-------+-------+       |
-          |               |       |
-    Omar (Eng)       Layla (Design)
-          |               |       |
-          +-------+-------+-------+
-                  |
-           Fatima (QA)
-                  |
-             [the gate]
-                  |
-          Khalid (DevOps)
-                  |
-             [the ship]
+                     Sadiq (why)
+                         │
+                    ┌────┴────┐
+                    │         │
+               Waleed (how)  Hussain-PM (what/when)
+                    │              │
+              ┌─────┼─────┐    Layla ◀── Zahra
+              │     │     │         │
+           Omar  Haitham  Yousef ◀── │
+              │     │     │         │
+              └─────┼─────┘
+                    │
+               Fatima (gate)
+                    │
+               Khalid (ship)
+                    │
+               Noor (document)
 
-        Noor (Scribe) — writes it all down
-        Majlis (Council) — shows it all
+Meta: Raees routes, Majlis synthesizes, Diwan shows
 ```
 
-Each agent **defers** to others on decisions outside their domain, and **has authority** within theirs.
+No agent overrides another on their home turf. When a decision spans domains, it escalates to **Majlis** (the council) where everyone weighs in sequentially.
 
-## The `.rihal/` State Directory
+---
 
-This is the project's **persistent brain**. Everything lives here:
+## The `.rihal/` state directory
+
+This is the project's **persistent brain**. Everything lives here — git-friendly, editor-inspectable, offline-ready.
 
 ```
 .rihal/
-├── state.json           # Current state (project, phase, agents active)
-├── phases/              # Phase briefs, sprints, stories, tasks
+├── config.json             # canonical project config (read by every workflow)
+├── model-profiles.json     # model assignments (quality / balanced / budget / inherit)
+├── state.json              # current project phase + active agents
+├── phases/                 # phase briefs, epics, stories
 │   └── phase-01/
 │       ├── brief.md
+│       ├── epics.md        # output of rihal-create-epics-and-stories
 │       ├── sprints.md
-│       ├── stories/
-│       └── tasks/
-├── plans/               # Implementation plans
-├── decisions/           # Architecture Decision Records (ADRs)
-├── artifacts/           # Design system, pitch decks, research, reviews
-├── progress/            # Daily logs, retros, status reports
+│       └── stories/
+├── plans/                  # implementation plans per feature
+├── decisions/              # ADRs (chronological, numbered)
+├── artifacts/
+│   ├── brand/              # design system, brand assets
+│   ├── reviews/            # code review outputs
+│   ├── research/           # domain/market/technical research
+│   └── bugs/               # bug reports
+├── progress/               # daily logs, retros, status reports
+├── integrations/
+│   └── github-map.json     # local ↔ GitHub sync state (idempotent)
+├── backups/                # auto-created by uninstall (tar.gz)
 └── context/
-    └── active.md        # Compacted context (under 2k tokens)
+    └── active.md           # compacted context under 2k tokens
 ```
 
-### Why File-Based?
+### Why file-based?
 
 1. **Git-native** — state is versioned with code
-2. **Inspectable** — any editor can read it
-3. **Portable** — no database to migrate
+2. **Inspectable** — any editor can read it, `cat` works
+3. **Portable** — no database to migrate, no vendor lock-in
 4. **Offline-first** — works on a plane
 5. **AI-friendly** — markdown is the universal AI format
+6. **Forensic** — you can go back and see exactly what the team decided on any date
+7. **Diffable** — PR reviews show config changes alongside code changes
 
-## Context Management Workflows
+---
 
-This is the core innovation. Two workflows keep AI focused:
+## Grounded creation — no hallucinated requirements
 
-### `context-reset`
+The biggest failure mode of AI planning is the generalist confidently emitting epics and stories from nothing. Rihal Code forbids this structurally.
 
-When context is stale or overloaded:
-1. Save current state to `progress/`
-2. Compact everything into a new `context/active.md` (under 2k tokens)
-3. Clear AI context (`/clear`)
-4. Tell AI: *"Read context/active.md ONLY."*
+```mermaid
+graph TD
+    Start([User: create epics]) --> Check{PRD exists<br/>in .rihal/phases/?}
+    Check -->|no| Refuse([❌ Refuse<br/>'Run rihal-create-prd first.<br/>I cannot invent requirements.'])
+    Check -->|yes| Extract[Read PRD<br/>extract FRs, NFRs]
+    Extract --> ArchCheck{Architecture<br/>exists?}
+    ArchCheck -->|yes| ReadArch[Merge architecture<br/>requirements]
+    ArchCheck -->|no| SkipArch[Continue without<br/>architecture constraints]
+    ReadArch --> UXCheck{UX spec<br/>exists?}
+    SkipArch --> UXCheck
+    UXCheck -->|yes| ReadUX[Merge UX-DR<br/>requirements]
+    UXCheck -->|no| Confirm
+    ReadUX --> Confirm[Present extracted<br/>requirements to user]
+    Confirm --> Decompose[Decompose into<br/>3-6 epics × 3-8 stories]
+    Decompose --> Write[Write .rihal/phases/{n}/epics.md<br/>with frontmatter citing<br/>inputDocuments]
+    Write --> Done([✅ Done — every story<br/>cites its upstream FR])
 
-**Result:** AI starts fresh with just the essentials.
+    style Refuse fill:#ffcdd2
+    style Done fill:#c8e6c9
+```
 
-### `context-build`
+The chain is enforced at every step. You can't run epics before PRD. You can't run sprint-planning before epics. You can't run dev-story before sprint-planning. If an agent tries to invent content upstream of its authority, it refuses and points to the correct command.
 
-Before starting any task, decide the context need:
+---
 
-| Task Type | Load | Don't Load |
+## Context management
+
+Context quality beats context quantity. A 2k-token brief of *the right things* outperforms a 50k-token dump of everything.
+
+### Context budget per task type
+
+| Task type | Load | Don't load |
 |---|---|---|
-| Feature | active.md + brief + similar pattern | Unrelated modules |
-| Bug | active.md + bug report + failing path | Entire codebase |
-| Refactor | active.md + target file + importers | Unrelated features |
-| Review | active.md + diff + related ADRs | Unchanged code |
-| Docs | active.md + feature + audience notes | Implementation |
-| Strategy | active.md + market docs + OKRs | Code |
+| Feature build | `active.md` + feature brief + similar pattern | Unrelated modules |
+| Bug fix | `active.md` + bug report + failing path + related ADR | Entire codebase |
+| Refactor | `active.md` + target file + importers | Unrelated features |
+| Code review | `active.md` + diff + related ADRs | Unchanged code |
+| Docs | `active.md` + feature + audience notes | Implementation details |
+| Strategy | `active.md` + market research + OKRs | Code |
 
-**Rule:** Task-specific context beats universal context.
+### The `active.md` compaction rule
 
-## The Majlis Dashboard (مجلس)
+Every time context drifts, the previous session gets compacted into `context/active.md`. Rules:
 
-### Why View-Only?
+1. **Under 2k tokens** — strict budget
+2. **Append-only** for decisions (you can always scroll back)
+3. **Phase-scoped** — old phases archive, current phase stays live
+4. **Machine-readable** — structured so agents can extract specific sections without reading the whole thing
+
+### Context reset workflow
+
+```
+1. Save current session state → .rihal/progress/session-{date}.md
+2. Compact everything → .rihal/context/active.md (under 2k tokens)
+3. /clear the AI context
+4. Tell AI: "Read .rihal/context/active.md ONLY"
+5. Resume work with a lean brain
+```
+
+---
+
+## The pipeline contract
+
+Pipelines aren't just "call a bunch of agents in order." They're **contracts** — each agent reads prior responses before adding their own, and the handoff is visible to the user.
+
+```mermaid
+graph TD
+    Start([User: /rihal:feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
+    Load --> A1["→ Consulting Hussain-PM..."]
+    A1 --> R1[PM response:<br/>scope, PRD, success metrics]
+    R1 --> A2["→ Handing to Waleed..."]
+    A2 --> R2[Waleed response:<br/>reads PM's scope,<br/>decides architectural impact]
+    R2 --> A3["→ Handing to Layla..."]
+    A3 --> R3[Layla response:<br/>reads PM + Waleed,<br/>designs states]
+    R3 --> Branch{Parallel<br/>handoff}
+    Branch --> H[Haitham<br/>frontend impl]
+    Branch --> Y[Yousef<br/>backend impl]
+    H --> Merge[Merge implementations]
+    Y --> Merge
+    Merge --> A5["→ Handing to Fatima..."]
+    A5 --> R5[Fatima response:<br/>reads all prior,<br/>gates with tests]
+    R5 --> A6["→ Handing to Khalid..."]
+    A6 --> R6[Khalid response:<br/>ship plan + monitoring]
+    R6 --> Done([✅ Feature shipped<br/>.rihal/phases/.../stories/])
+
+    style Done fill:#c8e6c9
+```
+
+**Live streaming:** each agent's response is printed as it's generated, with `→ Consulting {agent}...` handoff lines between them. You see the flow, not a batched wall of text at the end.
+
+**Sequential, not parallel:** this is deliberate. Parallel multi-agent calls trigger content policy issues and produce incoherent synthesis. Sequential with visible handoffs gives each agent a chance to read prior responses and build on them.
+
+---
+
+## Configuration cascade — configure once, inherit everywhere
+
+Real teams work on many projects. Retyping `user_name` and `communication_language` for every project is friction. The config cascade fixes this:
+
+```mermaid
+graph LR
+    A[Hardcoded defaults<br/>cli/lib/config.cjs] -->|merged| B[~/.rihal-code/defaults.json<br/>user-level<br/>set once per machine]
+    B -->|merged| C[.rihal/config.json<br/>project-level<br/>wins over both]
+    C --> D[Effective config<br/>seen by workflows]
+
+    style A fill:#f3e5f5
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#e1f5ff
+```
+
+First install offers a wizard. If you say "save as global defaults," your answers land in `~/.rihal-code/defaults.json`. Every future project inherits them as the defaults in the wizard, so you just hit Enter through and get your preferences automatically.
+
+Project-level config always wins — so a specific project can say "this one is in Arabic" without changing your global.
+
+---
+
+## Model profiles — balance quality vs cost
+
+Different agents deserve different models. Sadiq asking "should we do this at all?" benefits from Opus. Noor writing release notes does fine with Sonnet. Utility agents like Diwan can run on Haiku.
+
+```mermaid
+graph TD
+    subgraph Quality["Profile: quality"]
+        Q1[All strategic agents: opus]
+        Q2[All engineering agents: opus]
+        Q3[All others: opus]
+    end
+    subgraph Balanced["Profile: balanced (default)"]
+        B1[Strategy: opus]
+        B2[Engineering: sonnet]
+        B3[Scribes: haiku]
+    end
+    subgraph Budget["Profile: budget"]
+        Bu1[Strategy: sonnet]
+        Bu2[Engineering: haiku]
+        Bu3[Others: haiku]
+    end
+    subgraph Inherit["Profile: inherit"]
+        I1[Use whatever the host<br/>Claude Code / Cursor /<br/>Antigravity picks]
+    end
+
+    style Quality fill:#fff4e1
+    style Balanced fill:#e8f5e9
+    style Budget fill:#e1f5ff
+    style Inherit fill:#f3e5f5
+```
+
+Switch at any time: `rihal-code set-profile budget`. Override per-agent by editing `.rihal/model-profiles.json`.
+
+---
+
+## Multi-editor — one install, every tool
+
+The same install populates every compatible editor's discovery path:
+
+```mermaid
+graph TD
+    Source[rihal/ package source<br/>19 agents × digests<br/>40 skills] --> Install([rihal-code install])
+    Install --> C[.claude/skills/rihal-*<br/>17 agents + 23 actions]
+    Install --> Cu[.cursor/rules/rihal-*.mdc<br/>19 digest-based rules]
+    Install --> W[.windsurf/rules/rihal-*.mdc<br/>19 digest-based rules]
+    Install --> AG[.antigravity/agents/rihal-*.md<br/>19 agent files]
+    Install --> U[AGENTS.md<br/>universal spec]
+
+    C --> CC[Claude Code]
+    Cu --> Cur[Cursor]
+    W --> Win[Windsurf]
+    AG --> Ant[Antigravity]
+    U --> Any[Any AGENTS.md tool]
+
+    style Source fill:#fff4e1
+    style Install fill:#e1f5ff
+    style CC fill:#c8e6c9
+    style Cur fill:#c8e6c9
+    style Win fill:#c8e6c9
+    style Ant fill:#c8e6c9
+    style Any fill:#c8e6c9
+```
+
+The interactive picker auto-detects which editor directories already exist and preselects them, so you almost never type anything.
+
+---
+
+## The Diwan dashboard (ديوان)
+
+### Why view-only?
 
 Because CRUD is where projects break:
-- Someone edits state, another agent's state is stale
-- Database migrations lag the code
-- Multi-user writes need locking, locking needs coordination
+
+- Someone edits state, another agent's state becomes stale
+- Schema migrations lag the code
+- Multi-writer scenarios need locks; locks need coordination
 - Bugs in write logic corrupt state permanently
 
-**The dashboard never writes.** It reads `.rihal/` files. If you want to change something, you run a workflow — which updates files — and the dashboard reflects the new state on next refresh.
+**The dashboard never writes.** It reads `.rihal/` files on a 5-second interval. If you want to change something, you run a workflow — which updates files — and the dashboard reflects the new state on the next tick.
 
-### Why a Server at All?
+### What it shows
 
-Because staring at markdown files in a terminal is not the same as seeing them in a dashboard. Humans process visual hierarchies better than file trees.
+- Current phase + active agents (top stats)
+- Active context (what AI currently knows — renders `active.md`)
+- Full team roster (19 agents, active ones highlighted)
+- Phases (briefs, epics, stories, sprints)
+- Decisions (ADRs chronologically)
+- Progress (latest 10 entries)
+- Artifacts (design system, pitches, research, reviews)
 
-### What It Shows
+### Design choices
 
-- **Current phase and active agents** (top stats)
-- **Active context** (what AI currently knows)
-- **Team roster** (all 9 agents, active ones highlighted)
-- **Phases** (briefs, stories, tasks)
-- **Decisions** (ADRs chronologically)
-- **Progress** (latest 10 entries)
-- **Artifacts** (design system, pitches, reviews)
-
-### Design Choices
-
-- **Omani colors**: Rihal blue `#1e3a8a` + gold `#f59e0b`
+- **Omani palette** — Rihal blue `#1e3a8a` + gold `#f59e0b`
 - **Dark mode only** — because terminals
-- **Arabic + English** — cultural touchstone
-- **No JavaScript frameworks** — single Node file, no build
-- **5-second refresh** — fast enough to feel live, slow enough to not thrash
-- **No dependencies** — pure Node.js stdlib
+- **Bilingual** — Arabic + English signage
+- **No JS framework** — single Node.js file, no build step, no deps
+- **5-second polling** — fast enough to feel live, slow enough to not thrash disk
+- **Zero runtime dependencies** — pure Node stdlib
+
+---
 
 ## Differentiation
 
-### vs generic AI development frameworks
+### vs single-agent frameworks (Cursor rules, Continue, Aider)
 
-Most frameworks are general-purpose. Rihal Code is opinionated about:
-- Specific team roles (9 named agents with clear authority)
-- File-based context management (`.rihal/`)
-- A view-only dashboard
-- Cultural framing (Omani/Arabic identity)
+These give you one assistant. Rihal Code gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want Rihal Code.
 
-### What Makes Rihal Code Different
+### vs BMAD-method
 
-- **Multi-agent role specialization** — 19 distinct agents, each with authority boundaries and a domain
-- **Cultural identity** — bilingual Arabic-English from day one, Omani-modern aesthetic, government-client aware
-- **File-based state** — `.rihal/` directory is the single source of truth, git-friendly, editor-inspectable
-- **Live dashboard** — Diwan view-only server for project transparency
-- **Model profiles** — four named profiles (quality/balanced/budget/inherit) that let you balance quality vs cost
-- **Runtime-compatible** — works with Claude Code, OpenCode, Codex, Gemini CLI, or any compatible harness via the `inherit` profile
+BMAD is the inspiration. What's different in Rihal Code:
 
-## When to Use Rihal Code
+- **Zero npm dependencies** — BMAD pulls `@clack/prompts` and friends; Rihal's installer is pure Node stdlib
+- **Multi-editor native** — BMAD is Claude-focused; Rihal installs to Claude, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously
+- **Atomic writes + verification** — Rihal writes state files atomically (tempfile + fsync + rename) and verifies the manifest after install to catch partial installs
+- **Timestamped uninstall backup** — Rihal creates a tar.gz before any destructive operation
+- **Config cascade with user-level** — Rihal has `~/.rihal-code/defaults.json` so you configure identity once per machine
+- **Cultural framing** — Rihal is bilingual Arabic-English from day one
+- **Pipeline streaming protocol** — Rihal shows each agent's response live with handoff lines; no batched wall of text
+
+### vs generic AI agent frameworks (LangGraph, CrewAI, AutoGen)
+
+Those are toolkits. You build your team. Rihal Code is **the team, already built**, opinionated about roles, authorities, and the `.rihal/` state layout. Less flexible, more out-of-the-box value.
+
+---
+
+## When to use Rihal Code
 
 **Good fit:**
-- Team projects with multiple roles
+
+- Team projects with multiple roles that need coordination
 - Long-running initiatives (weeks to months)
-- Mix of strategic + technical + design work
-- Projects where decisions need to be traceable (ADRs)
+- Projects mixing strategy + technical + design work
+- Projects where decisions need to be traceable (ADRs, audit trails)
 - Teams where "who decides what" needs clarity
+- Multi-project developers who want consistency across repos
 
 **Bad fit:**
-- Single-file scripts
-- One-off prototypes
-- Projects that fit in your head (no state needed)
 
-## When NOT to Use Rihal Code
+- Single-file scripts
+- One-off prototypes you'll throw away next week
+- Projects that fit entirely in your head
+- Pure ML research where the output is a notebook
 
 If your project is under 10 files or will be thrown away in a week, Rihal Code is overkill. Use it for real work that ships and lasts.
 
-## The Core Loop
+---
+
+## The core loop
 
 ```
-1. Kickoff (Sadiq + Waleed + Hussain + Layla)
-   → .rihal/phases/{phase}/brief.md
+1. Kickoff
+   /rihal:project "name"
+   → Sadiq → Waleed → Ahmed → PM → Zahra → Layla → Nasser
+   → .rihal/phases/phase-01/brief.md
    → .rihal/decisions/001-stack.md
+   → .rihal/artifacts/brand/
+   → .rihal/artifacts/design-system/
 
-2. Sprint Plan (Hussain)
-   → .rihal/phases/{phase}/sprints.md
+2. Plan a sprint
+   /rihal:kickoff (for a new phase inside an existing project)
+   → .rihal/phases/phase-{n}/sprints.md
 
-3. Build Feature (Hussain → Waleed → Layla → Omar → Fatima)
-   → Code committed
-   → .rihal/progress/session-{date}.md
+3. Build features
+   /rihal:feature "description"
+   → Hussain-PM → Waleed → Layla → Haitham + Yousef → Fatima → Khalid
+   → Code committed, tests passing, deployed
 
-4. Context Reset (as needed)
+4. UI work
+   /rihal:ui "task"
+   → Zahra → Layla → Haitham → Fatima
+
+5. Strategic questions
+   /rihal:council "question"
+   → 13 agents sequential, Noor synthesizes
+
+6. Context reset (as needed)
+   /rihal:progress then manually compact active.md
    → .rihal/context/active.md
 
-5. Code Review (Omar + Waleed + Fatima)
-   → .rihal/artifacts/reviews/
+7. Bug hunting
+   /rihal:fix "issue"
+   → Systematic debug, root cause, fix, regression test
 
-6. Ship It (Fatima → Khalid → Noor)
-   → Production
-   → .rihal/progress/deploys.md
+8. Quick tasks
+   /rihal:quick "task"
+   → One-shot atomic commit
 
-7. Progress Check (weekly, Hussain + Fatima + Khalid)
-   → .rihal/progress/report-{date}.md
+9. GitHub sync
+   rihal-code github-sync --execute
+   → Creates/updates milestones, epics, stories from .rihal/phases/
 
-8. Strategy Session (as needed, Sadiq)
-   → .rihal/decisions/strat-{date}.md
-
-9. Pitch Deck (Sadiq + Waleed + Noor + Layla)
-   → .rihal/artifacts/pitch/
+10. Dashboard (anytime)
+    rihal-code dashboard
+    → http://localhost:7717
 ```
 
-And at any time:
+---
 
-```
-*serve → Majlis shows everything in the dashboard
-```
+## Final note
 
-## Final Note
-
-This methodology is opinionated. That's on purpose. If you disagree with the opinions, fork it and make it yours. But don't water it down; that's how methodologies become useless.
+This methodology is opinionated. That's on purpose. If you disagree with the opinions, fork it and make it yours — but don't water it down. Methodologies become useless when they try to please everyone. Rihal Code trades flexibility for sharp edges, and that's the point.
 
 <div dir="rtl" style="text-align:center;margin-top:40px;font-size:18px;">
 رحلة البناء
