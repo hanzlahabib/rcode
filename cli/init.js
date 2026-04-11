@@ -508,6 +508,235 @@ After steps 1-6 complete, print a concise summary:
 Ask the user which option, then proceed accordingly. Do NOT pick for them unless \`communication_mode\` is \`yolo\` AND they have explicitly said "just go".
 `,
 
+    'preserve.md': `---
+name: rihal:preserve
+description: Add a durable learning or decision to the project's permanent memory file (with auto-archive)
+argument-hint: <section> <learning>
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+---
+
+🧠 **Rihal Preserve — add to the project's permanent brain**
+
+Writes a single learning, decision, or pattern to \`.rihal/context/permanent.md\` under the right section. When the file grows past 200 lines (roughly 3k tokens), it auto-archives the oldest entries to \`.rihal/context/permanent-archive.md\` so the active memory stays lean.
+
+## When to run this
+
+- You just figured out a non-obvious convention the team uses (e.g. "tests live in \`__tests__/\`, not \`test/\`")
+- An architecture decision was made that future-you will forget the reason for
+- You hit a gotcha that burned an hour and want to never hit it again
+- You want to remember a key file path without grepping the repo
+- A common workflow has 3+ steps and nobody has written them down
+
+**Don't use this for:**
+- Session-specific details (use \`/rihal:save-session\` instead — those are searchable history, not permanent)
+- Project strategy or kill criteria (that belongs in \`.rihal/phases/{phase}/brief.md\`)
+- Formal architecture decisions with tradeoff analysis (use \`.rihal/decisions/NNN-*.md\` ADR files)
+
+The difference from save-session: save-session is *"this happened today"*, preserve is *"agents should ALWAYS know this about this project"*.
+
+## Sections
+
+Fixed categories the entry routes to. Pick the best fit — if nothing matches exactly, the helper creates a new section.
+
+- **Conventions** — "Use pnpm not npm", "Tests live in X", "Config is YAML not JSON"
+- **Architecture Decisions** — "Store state in .rihal/config.json", "Use writeJsonAtomic for all state writes"
+- **Key File Paths** — "cli/index.js — CLI entry", "server/dashboard.js — Diwan server"
+- **Common Workflows** — "To publish: pnpm test → pnpm build → pnpm publish"
+- **Gotchas** — "readline with piped stdin hangs on second question() call"
+- **Misc** — anything that doesn't fit the above
+
+## Process
+
+### Step 1 — Parse arguments
+
+\$ARGUMENTS format: \`<section> <entry text>\` where section is one of the fixed names (case-insensitive). Example:
+
+    /rihal:preserve Gotchas readline with piped stdin hangs on second question call
+
+If the first word is not a recognized section, assume the whole \$ARGUMENTS is the entry and route to \`Misc\` (or ask in guided mode which section).
+
+If \$ARGUMENTS is empty in guided mode, show the current stats and ask:
+
+\`\`\`
+🧠 Permanent memory stats:
+   Location:        .rihal/context/permanent.md
+   Entries:         {total}  ({percent_full}% full)
+   Per section:     {breakdown}
+   Archive:         {archive_lines} lines archived
+
+What do you want to preserve, and under which section?
+\`\`\`
+
+### Step 2 — Call the helper
+
+\`\`\`bash
+node -e "
+  const pm = require('$HOME/.../cli/lib/permanent-memory.cjs');
+  const r = pm.addEntry(process.cwd(), '{section}', '{entry_text}', {
+    projectName: '{project_name_from_config}',
+  });
+  console.log(JSON.stringify(r, null, 2));
+"
+\`\`\`
+
+The helper:
+- Prefixes the entry with today's date (\`[YYYY-MM-DD]\`)
+- Adds it to the right section
+- Writes atomically via writeFileAtomic
+- If the file exceeds 200 lines, triggers auto-archive (moves oldest dated entries to permanent-archive.md until back under 150 lines)
+- Returns \`{ path, section, entry, archived }\` with archived count
+
+### Step 3 — Report
+
+\`\`\`
+🧠 Preserved: {section}
+   → [2026-04-11] {entry text}
+
+   File:    .rihal/context/permanent.md ({line_count} lines, {percent_full}% full)
+   Section: {entries_in_section} entries
+\`\`\`
+
+If \`archived > 0\`, add:
+
+\`\`\`
+   📦 Auto-archived {archived} oldest entries to .rihal/context/permanent-archive.md
+      to keep active memory lean.
+\`\`\`
+
+## Rules
+
+- Entries should be **short, declarative, atomic** — one fact per entry. Avoid long paragraphs.
+- No duplicate entries — check existing entries in the target section first, skip if it already says the same thing (even in different words).
+- In yolo mode, still confirm the section choice before writing if it's ambiguous. Routing to the wrong section is annoying to fix.
+- Never preserve anything secret (API keys, credentials, personal data).
+- Never preserve anything that belongs in other state files (phase briefs, sprint state, ADRs, story content).
+`,
+
+    'save-session.md': `---
+name: rihal:save-session
+description: Write a searchable session log to .rihal/progress/ capturing decisions, learnings, pending tasks
+argument-hint: [optional title]
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+---
+
+💾 **Rihal Save Session — permanent searchable session log**
+
+Writes a timestamped markdown file to \`.rihal/progress/session-{date}-{slug}.md\` with structured YAML frontmatter. Unlike \`/rihal:pause\` (which is transient — one HANDOFF.json, auto-deleted on resume), session logs are **permanent history**. They pile up in \`.rihal/progress/\` and form a searchable trail of every work session on the project.
+
+## When to run this
+
+- End of a productive work session before \`/clear\`
+- After solving a tricky bug you want to remember
+- After making a meaningful decision you don't want to lose
+- Before switching to an unrelated task so future-you can come back
+
+## Difference from /rihal:pause
+
+| | /rihal:pause | /rihal:save-session |
+|---|---|---|
+| Purpose | "pick me up later" | "remember this forever" |
+| File count | 1 (HANDOFF.json, singleton) | many (session-*.md, append-only) |
+| Auto-deleted on resume? | Yes | No |
+| Searchable by topic? | No | Yes (frontmatter) |
+| Overwrites existing? | Refuses w/o force | Never (unique filename) |
+
+Run BOTH if you want both: /rihal:pause for immediate resume + /rihal:save-session for permanent history.
+
+## Process
+
+### Step 1 — Detect context
+
+Read these state files (nothing from source code):
+- \`.rihal/config.json\` → project_name, communication_mode
+- \`.rihal/state.json\` → current_phase
+- \`.rihal/phases/{phase}/sprints/active-sprint\` → active sprint id
+- Active sprint's state.json → in_progress stories
+
+Run \`git status --short\` and \`git diff --stat\` to list files modified in this session.
+
+### Step 2 — Gather fields (guided mode)
+
+In **guided** communication_mode, present a multi-select to the user:
+
+\`\`\`
+💾 What do you want to save from this session?
+
+[x] Title + outcome (auto-detected from context)
+[x] Topics (keywords for search)
+[ ] Decisions made
+[ ] Key learnings
+[ ] Pending tasks
+[x] Files modified (auto-detected from git)
+[ ] Errors + workarounds
+[ ] Free-form notes
+\`\`\`
+
+Ask for each checked field. Keep answers concise — bullet lists not paragraphs.
+
+In **yolo** communication_mode, skip the prompt and auto-capture:
+- outcome: last significant action inferred from conversation
+- topics: keywords from recent messages
+- files modified: from git status
+- decisions/learnings/pending: blank unless clearly inferable
+
+### Step 3 — Write the file
+
+Use the node helper (reads env for $HOME):
+
+\`\`\`bash
+node -e "
+  const sl = require('$HOME/.../cli/lib/session-log.cjs');
+  const r = sl.writeSessionLog(process.cwd(), {
+    title: '{title}',
+    topics: {topics_json_array},
+    sprint: '{sprint_id}',
+    story: '{story_id}',
+    phase: '{phase}',
+    outcome: '{outcome}',
+    decisions: {decisions_json_array},
+    learnings: {learnings_json_array},
+    pending: {pending_json_array},
+    filesModified: {files_json_array},
+    errors: {errors_json_array},
+    notes: '{notes_or_empty}',
+  });
+  console.log(r.path);
+"
+\`\`\`
+
+The helper auto-picks a unique filename (\`session-{date}-{slug}.md\`, with \`-2\`, \`-3\` suffix on collision).
+
+### Step 4 — Report
+
+\`\`\`
+💾 Session saved: .rihal/progress/session-2026-04-11-{slug}.md
+
+   Topics:    {topics joined}
+   Sprint:    {sprint_id}
+   Decisions: {N recorded}
+   Learnings: {N recorded}
+   Pending:   {N recorded}
+   Files:     {N modified}
+
+   Searchable later with: /rihal:continue {topic}
+\`\`\`
+
+## Rules
+
+- Never overwrite an existing log — the helper auto-numbers collisions (\`-2\`, \`-3\`, …).
+- Keep the log under 500 words total. If it needs more, the session was probably too broad.
+- Topics must be concrete nouns ("jwt", "stripe", "rtl-layout") — NOT adjectives or phases.
+- Do NOT dump the entire conversation into the log. Save decisions, learnings, and pointers. The live conversation is ephemeral; the log is the distilled value.
+- If the user runs this in yolo mode, infer as much as you can but don't hallucinate fields. Empty sections are fine.
+`,
+
     'pause.md': `---
 name: rihal:pause
 description: Save current work state to a HANDOFF file so you can resume exactly where you left off
@@ -682,18 +911,22 @@ Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the s
 
     'continue.md': `---
 name: rihal:continue
-description: Read .rihal/ state and suggest the most efficient next action (context-lean)
+description: Read state and suggest next action, optionally search past session logs by topic
+argument-hint: [optional topic like "auth" or "payment"]
 allowed-tools:
   - Read
   - Bash
   - Glob
+  - Grep
 ---
 
 🧭 **Rihal Continue — where should I go next?**
 
 A stateful helper. Reads \`.rihal/\` to figure out where the project is, what the last completed step was, and what the next logical step should be. Then presents you with two options: continue in this session, or clear context and run a specific fresh command.
 
-Runs in **under 2k tokens** — reads only state files, never source code or full artifacts.
+If you pass a **topic argument** (e.g. \`/rihal:continue auth\`), it also searches past session logs in \`.rihal/progress/\` for matching entries and loads the most recent 3 so you get back relevant historical context without loading everything.
+
+Runs in **under 2k tokens** — reads only state files and frontmatter, never source code or full artifacts.
 
 ## When to run this
 
@@ -701,6 +934,7 @@ Runs in **under 2k tokens** — reads only state files, never source code or ful
 - You finished a major step and want the lean next action, not a full kickoff flow
 - Your context is heavy and you want to know the cheapest way to proceed
 - You want to know "what's actually blocked right now?"
+- You remember solving something similar weeks ago and want to find that session log (\`/rihal:continue auth\`)
 
 ## Process
 
@@ -711,9 +945,23 @@ Runs in **under 2k tokens** — reads only state files, never source code or ful
    - \`ls .rihal/phases/\` (list of phases, no content)
    - For the current phase, \`ls\` its \`tasks/\`, \`stories/\`, and check for \`brief.md\`, \`sprints.md\`
 
-2. **Check for a pending HANDOFF.json** at \`.rihal/HANDOFF.json\`. If present, the user paused mid-work. Recommend \`/rihal:resume\` as the top option.
+2. **If \$ARGUMENTS is non-empty, do a topic search** on session logs:
 
-3. **Compute the furthest-complete artifact** for the current phase:
+   \`\`\`bash
+   node -e "
+     const sl = require('$HOME/.../cli/lib/session-log.cjs');
+     const hits = sl.searchSessionLogs(process.cwd(), '\$ARGUMENTS', { limit: 3 });
+     console.log(JSON.stringify(hits, null, 2));
+   "
+   \`\`\`
+
+   For each hit, read just the frontmatter + "Quick Reference" + "Decisions Made" sections (not the full log — keep under 500 tokens per log). Summarize what you found so the user sees: "Found 2 past sessions on 'auth': {slug} (date) — {outcome}".
+
+   This is how you re-enter specific historical context without loading 30+ session logs.
+
+3. **Check for a pending HANDOFF.json** at \`.rihal/HANDOFF.json\`. If present, the user paused mid-work. Recommend \`/rihal:resume\` as the top option.
+
+4. **Compute the furthest-complete artifact** for the current phase:
    - Has \`brief.md\`? ✓
    - Has \`sprints.md\`? ✓
    - Has epics (files in \`tasks/\`)? ✓
@@ -722,13 +970,13 @@ Runs in **under 2k tokens** — reads only state files, never source code or ful
 
    The highest ✓ tells you the last completed step. The next step is what comes after it.
 
-4. **Check GitHub sync state** at \`.rihal/integrations/github-map.json\`:
+5. **Check GitHub sync state** at \`.rihal/integrations/github-map.json\`:
    - If it exists and has entries, some work is already on GitHub
    - Compare local story count to synced count — flag the gap
 
-5. **Check memory bank freshness** via \`rihal-code context --check 2>&1\` (returns exit 1 if stale). If stale, add a warning.
+6. **Check memory bank freshness** via \`rihal-code context --check 2>&1\` (returns exit 1 if stale). If stale, add a warning.
 
-6. **Present the state report + next-action menu** (format below).
+7. **Present the state report + next-action menu** (format below). If topic search in step 2 found matches, include a section above the menu: "Relevant past sessions: …"
 
 ## Output format (strict — keep terse)
 
@@ -1704,6 +1952,8 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:generate-sprint <id>\` — generate epics + stories for one sprint (fresh-context safe)
 - \`/rihal:pause\` — snapshot current work to HANDOFF.json for later resume
 - \`/rihal:resume\` — read HANDOFF.json and re-enter the same context
+- \`/rihal:save-session\` — write permanent searchable session log (decisions, learnings, pending)
+- \`/rihal:preserve <section> <learning>\` — add to permanent memory with auto-archive
 - \`/rihal:progress\` — situational awareness + route to next action
 - \`/rihal:next\` — automatically advance to the next logical step
 - \`/rihal:status\` — concise project status
