@@ -36,6 +36,9 @@ const SCHEMA_VERSION = 1;
 const HARDCODED_DEFAULTS = {
   schema_version: SCHEMA_VERSION,
 
+  // Installed package version — set at install time, used by update detection
+  installed_version: null,
+
   // Identity — overridable at user-level for multi-project convenience
   project_name: null, // set at write-time to cwd basename
   user_name: 'Team',
@@ -58,6 +61,7 @@ const HARDCODED_DEFAULTS = {
  */
 const VALID_CONFIG_KEYS = new Set([
   'schema_version',
+  'installed_version',
   'project_name',
   'user_name',
   'communication_language',
@@ -177,6 +181,7 @@ function initProjectConfig(cwd, overrides = {}) {
 
   const initial = {
     schema_version: SCHEMA_VERSION,
+    installed_version: overrides.installed_version || null,
     project_name: overrides.project_name || path.basename(cwd),
     user_name: pick('user_name'),
     communication_language: pick('communication_language'),
