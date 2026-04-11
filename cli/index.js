@@ -35,6 +35,7 @@ const COMMANDS = {
   config: require('./config'),
   context: require('./context'),
   sprint: require('./sprint'),
+  milestone: require('./milestone'),
   bug: require('./bug'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
@@ -70,6 +71,7 @@ Commands:
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Check memory bank freshness (--check | --refresh | --install-hook)
   sprint         List sprints, show active, activate, or update story status
+  milestone      Top-level organizing concept — group phases under shippable units
   bug            Capture/list/resolve mid-sprint bugs (links to active sprint)
   show-model     Show which model each agent uses in the current profile
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)

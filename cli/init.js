@@ -458,6 +458,21 @@ Run when starting a new phase of work inside an existing project. This is a **co
 
 ## Steps
 
+0. **Ensure a milestone exists.** Run:
+
+   \`\`\`bash
+   rihal-code milestone current --json
+   \`\`\`
+
+   If the result is \`null\`, no milestone is active. Create and activate a default one so this phase has a top-level parent to belong to:
+
+   \`\`\`bash
+   rihal-code milestone create m-0.1.0 --name="Initial milestone" --goal="First shippable unit"
+   rihal-code milestone activate m-0.1.0
+   \`\`\`
+
+   If a milestone already exists, skip this step. New phases inherit the active milestone automatically via their frontmatter — no extra work needed.
+
 1. **Initialize \`.rihal/\` directories** if any are missing (phases, plans, decisions, artifacts, progress, context).
 
 2. **Load Sadiq** (strategist) — ask:
@@ -466,17 +481,52 @@ Run when starting a new phase of work inside an existing project. This is a **co
    - What are the kill criteria (when do we stop)?
    Write findings to \`.rihal/phases/{phase}/brief.md\`.
 
+   Then link the new phase to the active milestone:
+
+   \`\`\`bash
+   rihal-code milestone link {phase}
+   \`\`\`
+
+   This writes \`milestone: <active-id>\` into the phase brief's frontmatter. Sprints and stories created under this phase will inherit automatically unless they override.
+
 3. **Load Waleed** (CTO) — lock the tech stack and write an ADR to \`.rihal/decisions/001-stack-{phase}.md\`.
 
-4. **Load Hussain-PM** — break the phase into 3-5 sprints. Write goals, duration, and capacity notes to \`.rihal/phases/{phase}/sprints.md\`.
+4. **Load Hussain-PM** — break the phase into 3-5 sprints. Write goals, duration, and capacity notes to \`.rihal/phases/{phase}/sprints.md\` using the standard header convention:
 
-5. **Load Layla** — define the design system baseline. Write token decisions to \`.rihal/artifacts/brand/design-system.md\`.
+   \`\`\`markdown
+   ## Sprint 01 — {sprint goal}
+   Duration: {N weeks}
+   Capacity: {devs} devs, {days} days, {points} points
+   DoD:
+     - tests pass
+     - a11y audit
+     - deployed to staging
 
-6. **Update state:**
+   ## Sprint 02 — {sprint goal}
+   ...
+   \`\`\`
+
+5. **Initialize per-sprint state** — for each sprint parsed from sprints.md, run:
+
+   \`\`\`bash
+   rihal-code sprint init sprint-{N}
+   \`\`\`
+
+   This creates \`.rihal/phases/{phase}/sprints/sprint-{N}/state.json\` with the goal, capacity, and DoD extracted from sprints.md. Then activate the first sprint:
+
+   \`\`\`bash
+   rihal-code sprint activate sprint-01
+   \`\`\`
+
+   The CLI is atomic and idempotent — re-running init on an existing sprint is a no-op.
+
+6. **Load Layla** — define the design system baseline. Write token decisions to \`.rihal/artifacts/brand/design-system.md\`.
+
+7. **Update state:**
    - \`.rihal/state.json\` → record current phase
    - \`.rihal/context/active.md\` → 2k-token phase summary that downstream commands will read
 
-7. **🛑 STOP and present the next-step menu below.** Do NOT auto-continue into epic/story generation — let the user decide so the context budget stays lean for the next step.
+8. **🛑 STOP and present the next-step menu below.** Do NOT auto-continue into epic/story generation — let the user decide so the context budget stays lean for the next step.
 
 ## Output summary
 
@@ -487,8 +537,18 @@ After steps 1-6 complete, print a concise summary:
    Strategy:      .rihal/phases/{phase}/brief.md
    Stack decision: .rihal/decisions/001-stack-{phase}.md
    Sprint plan:    .rihal/phases/{phase}/sprints.md  ({N} sprints)
+   Sprint state:   .rihal/phases/{phase}/sprints/    ({N} × state.json + active-sprint marker)
    Design tokens:  .rihal/artifacts/brand/design-system.md
    Active context: .rihal/context/active.md ({token count} tokens)
+
+   ★ Active sprint: sprint-01
+\`\`\`
+
+Verify the state is queryable:
+
+\`\`\`bash
+rihal-code sprint                  # list all sprints with status
+rihal-code sprint current          # show active sprint detail
 \`\`\`
 
 ## 🎯 Next step — choose one
@@ -1157,6 +1217,8 @@ Runs in **under 2k tokens** — reads only state files and frontmatter, never so
    - \`.rihal/config.json\` (project name + communication_mode)
    - \`.rihal/state.json\` (current phase + any init markers)
    - \`.rihal/context/active.md\` (last compacted session summary)
+   - Active milestone via \`rihal-code milestone current --json 2>/dev/null\` (returns \`null\` if none — that's fine, milestones are optional)
+   - Active sprint via \`rihal-code sprint current --json 2>/dev/null\`
    - \`ls .rihal/phases/\` (list of phases, no content)
    - For the current phase, \`ls\` its \`tasks/\`, \`stories/\`, and check for \`brief.md\`, \`sprints.md\`
 
@@ -1198,7 +1260,9 @@ Runs in **under 2k tokens** — reads only state files and frontmatter, never so
 \`\`\`
 🧭 Rihal state — {project_name}
 
+   Milestone: {m-id}  ({status}, target: {date})   ← omit line if no active milestone
    Phase:     {current-phase}
+   Sprint:    {sprint-id}  ({status})              ← omit line if no active sprint
    Comms:     {guided|yolo}
    Memory:    {fresh|stale|never}
    HANDOFF:   {none|pending from {date}}
@@ -1656,16 +1720,28 @@ Designed for rapid workflow — remembering which phase/step you're on is overhe
 
 <process>
 
-1. **Read state**:
+1. **Read milestone and sprint state FIRST** (one query each, cheap):
+
+   \`\`\`bash
+   rihal-code milestone current --json 2>/dev/null
+   rihal-code sprint current --json 2>/dev/null
+   \`\`\`
+
+   The milestone is the top-level organizing unit. If one is active, it scopes everything that follows. If none exists, fall back to the phase-level state.
+
+2. **Read state**:
    - \`.rihal/state.json\` — current phase, active agents
    - \`.rihal/phases/{current}/sprints.md\` — sprint status
    - \`.rihal/phases/{current}/stories/\` — story files and their statuses
    - \`.rihal/progress/\` — latest entries
 
-2. **Decision tree:**
+3. **Decision tree:**
 
    - **No \`.rihal/\` state** → run \`/rihal:kickoff\`
+   - **Active milestone is \`completed\`** → suggest \`rihal-code milestone activate <next-id>\` or close out this phase
    - **No current phase** → ask user which phase, or run \`/rihal:kickoff\`
+   - **Active sprint has a \`ready\` story** → call \`rihal-code sprint current\` to see it, invoke \`rihal-dev-story\` on the next ready one
+   - **Active sprint has an \`in_progress\` story** → resume it directly via dev-story
    - **Phase has no sprints.md** → invoke Hussain-SM via \`rihal-sprint-planning\` skill
    - **Sprint has unstarted story** → invoke Omar/Haitham via \`rihal-dev-story\` on the next story
    - **All stories in progress** → ask user which to pick up, or run \`/rihal:convene "unblock the sprint"\`
@@ -2190,6 +2266,12 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:team\` — list the team roster
 - \`/rihal:dashboard\` — start the Diwan view-only dashboard
 - \`/rihal:help\` — this message
+
+**Milestones and state** (CLI-only, invoke from your terminal):
+- \`rihal-code milestone\` — list/show/create/activate/close/link milestones (shippable groupings)
+- \`rihal-code sprint\` — per-sprint story queue, status mutations
+- \`rihal-code bug\` — mid-sprint bug intake linked to active sprint
+- \`rihal-code context\` — memory bank freshness check
 
 **Agents** (load via \`.claude/skills/rihal-<agent>/SKILL.md\` or invoke by name):
 - Strategy: Sadiq
