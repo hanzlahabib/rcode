@@ -1251,6 +1251,80 @@ async function pickEditorsInteractive(cwd) {
   return [...editorIds];
 }
 
+/**
+ * Interactive identity wizard — collect user_name and language
+ * preferences once per fresh install. All questions are skippable
+ * (Enter → default), so the old non-interactive behavior is preserved
+ * for users who just want to get going.
+ *
+ * Defaults cascade: user-level ~/.rihal-code/defaults.json → hardcoded.
+ * If the user changes any answer from the effective default, offer to
+ * save as global defaults so future projects inherit them.
+ */
+async function runIdentityWizard(cwd) {
+  const { askText, askConfirm } = require('./lib/prompts.cjs');
+  const {
+    loadUserDefaults,
+    writeUserDefaults,
+    HARDCODED_DEFAULTS,
+  } = require('./lib/config.cjs');
+
+  const user = loadUserDefaults();
+  const currentUserName = user.user_name || HARDCODED_DEFAULTS.user_name;
+  const currentLang = user.communication_language || HARDCODED_DEFAULTS.communication_language;
+  const currentDocLang = user.document_output_language || HARDCODED_DEFAULTS.document_output_language;
+
+  console.log(`\n📝 Quick setup (press Enter to keep defaults)\n`);
+
+  const user_name = await askText(
+    `   Your name or team name [${currentUserName}]: `,
+    { default: currentUserName },
+  );
+  const communication_language = await askText(
+    `   Communication language [${currentLang}]: `,
+    { default: currentLang },
+  );
+  const document_output_language = await askText(
+    `   Document output language [${currentDocLang}]: `,
+    { default: currentDocLang },
+  );
+
+  const answers = { user_name, communication_language, document_output_language };
+
+  // Offer to save as global defaults — but only if at least one answer
+  // differs from the effective user-level default. No point asking if
+  // everything already matches.
+  const changed =
+    user_name !== currentUserName ||
+    communication_language !== currentLang ||
+    document_output_language !== currentDocLang;
+  const alreadySaved =
+    user.user_name === user_name &&
+    user.communication_language === communication_language &&
+    user.document_output_language === document_output_language;
+
+  if (changed && !alreadySaved) {
+    const save = await askConfirm(
+      `\n   Save these as global defaults for future projects? [y/N] `,
+      { default: 'n' },
+    );
+    if (save) {
+      writeUserDefaults({
+        user_name,
+        communication_language,
+        document_output_language,
+      });
+      console.log(`   ✓ saved to ~/.rihal-code/defaults.json\n`);
+    } else {
+      console.log();
+    }
+  } else {
+    console.log();
+  }
+
+  return answers;
+}
+
 module.exports = async function init(args, { packageRoot }) {
   const { PromptAbortError } = require('./lib/prompts.cjs');
   try {
@@ -1274,6 +1348,7 @@ async function runInstall(args, { packageRoot }) {
   //   2. --yes / --all flag installs everything
   //   3. Otherwise: interactive prompt
   let editors;
+  const nonInteractive = !!(opts.editor || opts.yes);
   if (opts.editor) {
     // Explicit editor flag
     editors = opts.editor === 'all'
@@ -1284,6 +1359,17 @@ async function runInstall(args, { packageRoot }) {
   } else {
     // Interactive mode
     editors = await pickEditorsInteractive(cwd);
+  }
+
+  // Interactive identity wizard — skippable, only runs when:
+  //   - Not in --yes / --editor non-interactive mode
+  //   - .rihal/config.json doesn't already exist (fresh install only)
+  // If user just hits Enter on every question, defaults apply and the
+  // flow is identical to the old behavior.
+  let wizardAnswers = {};
+  const configPath = path.join(cwd, '.rihal/config.json');
+  if (!nonInteractive && !fs.existsSync(configPath)) {
+    wizardAnswers = await runIdentityWizard(cwd);
   }
 
   console.log(`\n🕌 Rihal Code — installing in ${cwd}`);
@@ -1313,10 +1399,10 @@ async function runInstall(args, { packageRoot }) {
   }
 
   // Project config — canonical source for project_name, user_name, paths,
-  // model_profile. Workflows read this at runtime. Smart defaults: user_name
-  // etc. are inherited from ~/.rihal-code/defaults.json if present.
+  // model_profile. Workflows read this at runtime. Values cascade:
+  // hardcoded → ~/.rihal-code/defaults.json → wizard answers.
   const { initProjectConfig } = require('./lib/config.cjs');
-  const configCreated = initProjectConfig(cwd);
+  const configCreated = initProjectConfig(cwd, wizardAnswers);
   if (configCreated) {
     console.log(`   ✓ .rihal/config.json created`);
   }

@@ -156,32 +156,50 @@ function getConfigValue(cwd, key) {
  * init.js on fresh installs. If the file already exists, this is a
  * no-op — respect the user's prior choices.
  *
- * Uses smart defaults: project_name from cwd basename, user_name from
- * user-level defaults if present, paths from HARDCODED_DEFAULTS.
+ * Cascade (highest priority last): HARDCODED_DEFAULTS → user-level
+ * defaults → explicit `overrides` (e.g. from install-time wizard).
  *
+ * @param {string} cwd
+ * @param {object} [overrides] optional key/value map to win over user-level
  * @returns {boolean} true if a new file was written, false if it already existed
  */
-function initProjectConfig(cwd) {
+function initProjectConfig(cwd, overrides = {}) {
   const target = projectLevelPath(cwd);
   if (fs.existsSync(target)) return false;
 
   const user = loadUserDefaults();
+  const pick = (key) =>
+    overrides[key] !== undefined
+      ? overrides[key]
+      : user[key] !== undefined
+      ? user[key]
+      : HARDCODED_DEFAULTS[key];
+
   const initial = {
     schema_version: SCHEMA_VERSION,
-    project_name: path.basename(cwd),
-    user_name: user.user_name || HARDCODED_DEFAULTS.user_name,
-    communication_language:
-      user.communication_language || HARDCODED_DEFAULTS.communication_language,
-    document_output_language:
-      user.document_output_language || HARDCODED_DEFAULTS.document_output_language,
-    output_folder: HARDCODED_DEFAULTS.output_folder,
-    planning_artifacts: HARDCODED_DEFAULTS.planning_artifacts,
-    project_knowledge: HARDCODED_DEFAULTS.project_knowledge,
-    model_profile: user.model_profile || HARDCODED_DEFAULTS.model_profile,
+    project_name: overrides.project_name || path.basename(cwd),
+    user_name: pick('user_name'),
+    communication_language: pick('communication_language'),
+    document_output_language: pick('document_output_language'),
+    output_folder: pick('output_folder'),
+    planning_artifacts: pick('planning_artifacts'),
+    project_knowledge: pick('project_knowledge'),
+    model_profile: pick('model_profile'),
   };
 
   writeJsonAtomic(target, initial);
   return true;
+}
+
+/**
+ * Write a full object to the user-level defaults file. Used by the
+ * install-time wizard when the user answers "save as global defaults".
+ * Merges with existing defaults so unrelated keys aren't clobbered.
+ */
+function writeUserDefaults(updates) {
+  const current = loadUserDefaults();
+  const next = { ...current, ...updates };
+  writeJsonAtomic(userLevelPath(), next);
 }
 
 /**
@@ -286,6 +304,7 @@ module.exports = {
   getConfigValue,
   setConfigValue,
   initProjectConfig,
+  writeUserDefaults,
   loadUserDefaults,
   loadProjectConfig,
   userLevelPath,
