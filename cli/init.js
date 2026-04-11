@@ -217,9 +217,9 @@ ${whenToUse}
 
 ${chainList}
 
-Each agent's full persona and principles live in:
-- \`.claude/skills/rihal-<agent>-*/SKILL.md\` (full skill if loaded)
-- \`rihal/digests/<agent>.md\` (lean digest — prefer this for lower context cost)
+Each agent's full persona and principles are available via:
+- \`.claude/skills/rihal-<agent>-*/SKILL.md\` (full skill, installed in this project)
+- \`rihal-code digest <agent>\` (lean digest CLI command — prefer this for lower context cost; the CLI resolves the digest internally, no project-relative file paths)
 
 ## How the discussion runs (streaming protocol)
 
@@ -245,8 +245,13 @@ Pipeline: {N} agents — {chain as "A → B → C"}
 → Consulting {agent name} ({role})...
 \`\`\`
 
-**b) Load the agent's digest** from \`rihal/digests/{agent}.md\` (lean 20-line
-summary — do NOT load the full SKILL.md unless strictly needed for this task).
+**b) Load the agent's digest** by shelling out to the rihal-code CLI:
+
+\`\`\`bash
+rihal-code digest {agent}
+\`\`\`
+
+The CLI knows where digests live internally — it prints the digest content to stdout. Never read \`rihal/digests/...\` directly; that path only exists inside the rihal-code package itself and would cross project boundaries on a user's machine. The digest is a lean 20-line summary — do NOT load the full SKILL.md unless strictly needed for this task.
 
 **c) Adopt the persona and respond in first person** with this structure:
 
@@ -845,24 +850,20 @@ If \$ARGUMENTS is empty in guided mode, show the current stats and ask:
 What do you want to preserve, and under which section?
 \`\`\`
 
-### Step 2 — Call the helper
+### Step 2 — Call the CLI
 
 \`\`\`bash
-node -e "
-  const pm = require('$HOME/.../cli/lib/permanent-memory.cjs');
-  const r = pm.addEntry(process.cwd(), '{section}', '{entry_text}', {
-    projectName: '{project_name_from_config}',
-  });
-  console.log(JSON.stringify(r, null, 2));
-"
+rihal-code preserve '{section}' '{entry_text}'
 \`\`\`
 
-The helper:
+The CLI is project-isolated — it resolves the permanent-memory library from its own installed package root, never from the user's filesystem. You never need to know where the library lives. It:
 - Prefixes the entry with today's date (\`[YYYY-MM-DD]\`)
 - Adds it to the right section
 - Writes atomically via writeFileAtomic
 - If the file exceeds 200 lines, triggers auto-archive (moves oldest dated entries to permanent-archive.md until back under 150 lines)
-- Returns \`{ path, section, entry, archived }\` with archived count
+- Reports the result to stdout with entry count + archived count
+
+Use \`rihal-code preserve --stats\` to see current usage without writing anything.
 
 ### Step 3 — Report
 
@@ -961,32 +962,27 @@ In **yolo** communication_mode, skip the prompt and auto-capture:
 - files modified: from git status
 - decisions/learnings/pending: blank unless clearly inferable
 
-### Step 3 — Write the file
-
-Use the node helper (reads env for $HOME):
+### Step 3 — Write the log via the CLI
 
 \`\`\`bash
-node -e "
-  const sl = require('$HOME/.../cli/lib/session-log.cjs');
-  const r = sl.writeSessionLog(process.cwd(), {
-    title: '{title}',
-    topics: {topics_json_array},
-    sprint: '{sprint_id}',
-    story: '{story_id}',
-    phase: '{phase}',
-    outcome: '{outcome}',
-    decisions: {decisions_json_array},
-    learnings: {learnings_json_array},
-    pending: {pending_json_array},
-    filesModified: {files_json_array},
-    errors: {errors_json_array},
-    notes: '{notes_or_empty}',
-  });
-  console.log(r.path);
-"
+rihal-code session save \\
+  --title='{title}' \\
+  --topics='{topic1,topic2,topic3}' \\
+  --sprint='{sprint_id}' \\
+  --story='{story_id}' \\
+  --phase='{phase}' \\
+  --outcome='{outcome}' \\
+  --decision='{decision 1}' --decision='{decision 2}' \\
+  --learning='{learning 1}' --learning='{learning 2}' \\
+  --pending='{pending 1}' --pending='{pending 2}' \\
+  --file='{file 1}' --file='{file 2}' \\
+  --error='{error + workaround 1}' \\
+  --notes='{free-form notes}'
 \`\`\`
 
-The helper auto-picks a unique filename (\`session-{date}-{slug}.md\`, with \`-2\`, \`-3\` suffix on collision).
+Only pass the flags you actually have content for — every field is optional. Repeatable flags (\`--decision\`, \`--learning\`, \`--pending\`, \`--file\`, \`--error\`) can appear as many times as needed; \`--topics\` is comma-separated in a single flag.
+
+The CLI is project-isolated: it resolves the session-log library from its own installed package root, never from the user's filesystem. It also auto-picks a unique filename (\`session-{date}-{slug}.md\`, with \`-2\`, \`-3\` suffix on collision) and writes atomically.
 
 ### Step 4 — Report
 
@@ -1055,25 +1051,23 @@ Writes a structured handoff file capturing exactly what you're working on right 
    - Ask "any blockers you want to record?" — capture as a list
    - Ask "one-line description of your next action?" — capture for next_action
 
-3. **Write the handoff** using the helper library:
+3. **Write the handoff via the CLI:**
    \`\`\`bash
-   node -e "
-     const h = require('$HOME/.../cli/lib/handoff.cjs');
-     const r = h.writeHandoff(process.cwd(), {
-       phase: '{phase}',
-       sprint_id: '{sprint_id}',
-       story_id: '{story_id}',
-       current_task: {current_task},
-       total_tasks: {total_tasks},
-       last_command: '{last_command}',
-       blockers: {blockers_array_json},
-       uncommitted_files: {files_array_json},
-       next_action: '{next_action_string}',
-     });
-     console.log(r);
-   "
+   rihal-code handoff write \\
+     --phase='{phase}' \\
+     --sprint-id='{sprint_id}' \\
+     --story-id='{story_id}' \\
+     --current-task={current_task} \\
+     --total-tasks={total_tasks} \\
+     --last-command='{last_command}' \\
+     --next-action='{next_action_string}' \\
+     --blocker='{blocker 1}' --blocker='{blocker 2}' \\
+     --file='{uncommitted file 1}' --file='{uncommitted file 2}'
    \`\`\`
-   If the helper reports \`exists\`, tell the user there's already a pending handoff and ask whether to overwrite (force).
+
+   Repeatable flags: \`--blocker\`, \`--file\` (use each one multiple times for multiple entries). The CLI resolves the handoff library internally — you never need to know where it lives on disk.
+
+   If the CLI reports a pending handoff already exists (\`--force\` not passed), tell the user there's an existing pause state and ask whether to overwrite. Re-run with \`--force\` if they confirm.
 
 4. **Summarize what was saved:**
    \`\`\`
@@ -1124,15 +1118,13 @@ Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the s
 
 ## Process
 
-1. **Read the handoff:**
+1. **Read the handoff via the CLI:**
    \`\`\`bash
-   node -e "
-     const h = require('$HOME/.../cli/lib/handoff.cjs');
-     const data = h.readHandoff(process.cwd());
-     console.log(JSON.stringify(data, null, 2));
-   "
+   rihal-code handoff read
    \`\`\`
-   If null, exit with "no pending handoff".
+   Prints the HANDOFF.json as JSON, or the literal string \`null\` if none pending. Exit with "no pending handoff" if the CLI reports null.
+
+   For a one-line summary instead of the full JSON, use \`rihal-code handoff read --summary\`.
 
 2. **Verify the referenced sprint still exists.** Read \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\`. If missing, warn the user the sprint was deleted or moved — ask before proceeding.
 
@@ -1167,7 +1159,7 @@ Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the s
 
 7. **Clear the handoff** (one-shot — we've consumed it):
    \`\`\`bash
-   node -e "require('$HOME/.../cli/lib/handoff.cjs').clearHandoff(process.cwd())"
+   rihal-code handoff clear
    \`\`\`
    Note: the .continue-here.md file is KEPT as history. Only HANDOFF.json is deleted.
 
@@ -1222,17 +1214,13 @@ Runs in **under 2k tokens** — reads only state files and frontmatter, never so
    - \`ls .rihal/phases/\` (list of phases, no content)
    - For the current phase, \`ls\` its \`tasks/\`, \`stories/\`, and check for \`brief.md\`, \`sprints.md\`
 
-2. **If \$ARGUMENTS is non-empty, do a topic search** on session logs:
+2. **If \$ARGUMENTS is non-empty, do a topic search** on session logs via the CLI:
 
    \`\`\`bash
-   node -e "
-     const sl = require('$HOME/.../cli/lib/session-log.cjs');
-     const hits = sl.searchSessionLogs(process.cwd(), '\$ARGUMENTS', { limit: 3 });
-     console.log(JSON.stringify(hits, null, 2));
-   "
+   rihal-code session search '\$ARGUMENTS' --limit=3 --json
    \`\`\`
 
-   For each hit, read just the frontmatter + "Quick Reference" + "Decisions Made" sections (not the full log — keep under 500 tokens per log). Summarize what you found so the user sees: "Found 2 past sessions on 'auth': {slug} (date) — {outcome}".
+   Returns a JSON array of matching session metadata (date, slug, topics, outcome). For the top hits, read the full file via \`rihal-code session show <filename>\` — but only the frontmatter + "Quick Reference" + "Decisions Made" sections (keep under 500 tokens per log). Summarize what you found so the user sees: "Found 2 past sessions on 'auth': {slug} (date) — {outcome}".
 
    This is how you re-enter specific historical context without loading 30+ session logs.
 
