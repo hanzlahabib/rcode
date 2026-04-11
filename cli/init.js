@@ -508,6 +508,178 @@ After steps 1-6 complete, print a concise summary:
 Ask the user which option, then proceed accordingly. Do NOT pick for them unless \`communication_mode\` is \`yolo\` AND they have explicitly said "just go".
 `,
 
+    'pause.md': `---
+name: rihal:pause
+description: Save current work state to a HANDOFF file so you can resume exactly where you left off
+argument-hint: [optional note]
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+---
+
+⏸  **Rihal Pause — snapshot current state for later resume**
+
+Writes a structured handoff file capturing exactly what you're working on right now, so when you come back (in 2 hours or 2 days) \`/rihal:resume\` can take you right back to the same story, the same task, the same blockers.
+
+## When to run this
+
+- You need to stop mid-sprint and switch to something else
+- End of day and you want tomorrow-you to know where to continue
+- Context window is filling up and you need to \`/clear\` but preserve state
+- You have uncommitted work and want a persistent note about why
+
+## What gets written
+
+1. **\`.rihal/HANDOFF.json\`** — machine-readable state, one per project. Auto-detected by \`/rihal:resume\` and by entry of feature/ui/fix/quick commands.
+
+2. **\`.rihal/phases/{phase}/sprints/{sprint-id}/.continue-here.md\`** — human-readable markdown for eyes, never auto-deleted (kept as a trail).
+
+## Process
+
+1. **Detect current work:**
+   - Read \`.rihal/config.json\` for \`current_phase\`
+   - Read \`.rihal/state.json\` to confirm phase
+   - Read active sprint from \`.rihal/phases/{phase}/sprints/active-sprint\`
+   - Read the sprint's \`state.json\` and find any story with \`status: in_progress\` — that's what you were doing
+   - Run \`git status --short\` to list uncommitted files
+   - Read \$ARGUMENTS as the next_action hint (if provided)
+
+2. **Ask the user** (in guided mode; skip in yolo):
+   - Confirm the inferred story is correct
+   - Ask "any blockers you want to record?" — capture as a list
+   - Ask "one-line description of your next action?" — capture for next_action
+
+3. **Write the handoff** using the helper library:
+   \`\`\`bash
+   node -e "
+     const h = require('$HOME/.../cli/lib/handoff.cjs');
+     const r = h.writeHandoff(process.cwd(), {
+       phase: '{phase}',
+       sprint_id: '{sprint_id}',
+       story_id: '{story_id}',
+       current_task: {current_task},
+       total_tasks: {total_tasks},
+       last_command: '{last_command}',
+       blockers: {blockers_array_json},
+       uncommitted_files: {files_array_json},
+       next_action: '{next_action_string}',
+     });
+     console.log(r);
+   "
+   \`\`\`
+   If the helper reports \`exists\`, tell the user there's already a pending handoff and ask whether to overwrite (force).
+
+4. **Summarize what was saved:**
+   \`\`\`
+   ⏸  Paused at sprint-01 / story-1-2-signup (task 3/7)
+      Blockers:   1 recorded
+      Uncommitted: 3 files
+      Next:       finish form validation then run tests
+      Saved:      .rihal/HANDOFF.json
+                  .rihal/phases/phase-01/sprints/sprint-01/.continue-here.md
+   \`\`\`
+
+5. **Suggest next steps:**
+   - If they want to clear context: \`/clear\` then later \`/rihal:resume\`
+   - If they want to switch sprints: \`rihal-code sprint activate <other-id>\`, then continue
+   - If they want to commit uncommitted work as WIP: offer the command
+
+## Rules
+
+- Never overwrite an existing handoff without explicit confirmation. If one exists, show its summary first.
+- Do NOT delete the .continue-here.md files — those are history across pauses.
+- Blockers and next_action are the most valuable fields — spend time getting them right.
+- In yolo mode, skip the asking and just snapshot whatever you can infer.
+`,
+
+    'resume.md': `---
+name: rihal:resume
+description: Read the pending HANDOFF and take you back to exactly where you left off
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+---
+
+▶  **Rihal Resume — pick up where you paused**
+
+Reads \`.rihal/HANDOFF.json\` and restores the working context: the phase, the sprint, the story, the task, the blockers, the uncommitted files. After successful resume, auto-deletes the handoff file so it doesn't get re-applied on the next command.
+
+## When to run this
+
+- Re-opened your editor after a break and \`/rihal:continue\` flagged a pending handoff
+- You just ran \`/clear\` to free up context and want to re-enter the same work
+- You're switching back after working on a different project
+
+## Prerequisites
+
+- \`.rihal/HANDOFF.json\` exists. If not, tell the user "no pending handoff — try \`/rihal:continue\` to see current state."
+
+## Process
+
+1. **Read the handoff:**
+   \`\`\`bash
+   node -e "
+     const h = require('$HOME/.../cli/lib/handoff.cjs');
+     const data = h.readHandoff(process.cwd());
+     console.log(JSON.stringify(data, null, 2));
+   "
+   \`\`\`
+   If null, exit with "no pending handoff".
+
+2. **Verify the referenced sprint still exists.** Read \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\`. If missing, warn the user the sprint was deleted or moved — ask before proceeding.
+
+3. **Re-activate the sprint** if it's not already active:
+   \`\`\`bash
+   rihal-code sprint activate {sprint_id} --phase={phase}
+   \`\`\`
+
+4. **Present the resume summary to the user:**
+   \`\`\`
+   ▶  Resuming from handoff written {paused_at}
+
+      Phase:       {phase}
+      Sprint:      {sprint_id}
+      Story:       {story_id}
+      Task:        {current_task}/{total_tasks}
+      Last cmd:    {last_command}
+      Blockers:    {blockers joined}
+      Uncommitted: {uncommitted_files joined}
+
+      Next action: {next_action}
+
+      Proceed with this plan? [Y/n]
+   \`\`\`
+
+5. **Wait for confirmation** (unless communication_mode=yolo). If the user says yes:
+
+6. **Load the relevant artifacts** to rebuild working context:
+   - \`.rihal/context/active.md\` (always)
+   - \`.rihal/phases/{phase}/stories/{story_id}.md\` (if story_id present)
+   - \`.rihal/phases/{phase}/sprints/{sprint_id}/state.json\` (already read in step 2)
+
+7. **Clear the handoff** (one-shot — we've consumed it):
+   \`\`\`bash
+   node -e "require('$HOME/.../cli/lib/handoff.cjs').clearHandoff(process.cwd())"
+   \`\`\`
+   Note: the .continue-here.md file is KEPT as history. Only HANDOFF.json is deleted.
+
+8. **Pick the right follow-on command** based on what was paused:
+   - If a story was in_progress → suggest \`/rihal:dev-story\` to continue it
+   - If just a sprint activation → suggest \`/rihal:next\` to pick the next ready story
+   - If blockers exist → surface them prominently and ask if they're resolved
+
+## Rules
+
+- Never assume the resume is safe. Always show the summary and get user confirmation before re-entering the workflow (unless yolo).
+- If the referenced sprint/story no longer exists (e.g. file deleted), STOP and ask the user what to do. Do not auto-recover silently.
+- After successful resume, delete HANDOFF.json so it doesn't re-trigger.
+- The .continue-here.md files are never deleted — they're a history trail.
+`,
+
     'continue.md': `---
 name: rihal:continue
 description: Read .rihal/ state and suggest the most efficient next action (context-lean)
@@ -1530,6 +1702,8 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:kickoff\` — start a new phase (strategy + stack + sprint plan + design baseline)
 - \`/rihal:continue\` — read state, suggest the most efficient next step (context-lean)
 - \`/rihal:generate-sprint <id>\` — generate epics + stories for one sprint (fresh-context safe)
+- \`/rihal:pause\` — snapshot current work to HANDOFF.json for later resume
+- \`/rihal:resume\` — read HANDOFF.json and re-enter the same context
 - \`/rihal:progress\` — situational awareness + route to next action
 - \`/rihal:next\` — automatically advance to the next logical step
 - \`/rihal:status\` — concise project status
