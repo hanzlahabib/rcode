@@ -1312,6 +1312,15 @@ async function runInstall(args, { packageRoot }) {
     console.log(`   ✓ model-profiles.json copied`);
   }
 
+  // Project config — canonical source for project_name, user_name, paths,
+  // model_profile. Workflows read this at runtime. Smart defaults: user_name
+  // etc. are inherited from ~/.rihal-code/defaults.json if present.
+  const { initProjectConfig } = require('./lib/config.cjs');
+  const configCreated = initProjectConfig(cwd);
+  if (configCreated) {
+    console.log(`   ✓ .rihal/config.json created`);
+  }
+
   // ------ Stage 2: Editor-specific installs ------
 
   if (editors.includes('claude')) {
