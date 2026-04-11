@@ -33,6 +33,7 @@ const COMMANDS = {
   'set-profile': require('./set-profile'),
   config: require('./config'),
   context: require('./context'),
+  sprint: require('./sprint'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
   version: () => console.log(PACKAGE_JSON.version),
@@ -65,6 +66,7 @@ Commands:
   set-profile    Change the model profile (quality | balanced | budget | inherit)
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Check memory bank freshness (--check | --refresh | --install-hook)
+  sprint         List sprints, show active, activate, or update story status
   show-model     Show which model each agent uses in the current profile
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
   version        Print version
