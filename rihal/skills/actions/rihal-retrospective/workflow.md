@@ -26,7 +26,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/_rihal/config.yaml` and resolve:
+Load config from `{project-root}/.rihal/config.json` and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`
@@ -51,7 +51,7 @@ Load config from `{project-root}/_rihal/config.yaml` and resolve:
 
 ### Required Inputs
 
-- `agent_manifest` = `{project-root}/__rihal/_config/agent-manifest.csv`
+- `agent_manifest` = `{project-root}/.rihal/team.yaml`
 
 ### Context
 

@@ -10,7 +10,7 @@
 
 ## CONFIGURATION
 
-Load config from `{project-root}/_rihal/config.yaml` and resolve:
+Load config from `{project-root}/.rihal/config.json` and resolve:
 - `project_name`, `output_folder`, `planning_artifacts`, `user_name`
 - `communication_language`, `document_output_language`, `user_skill_level`
 - `date` as a system-generated value
