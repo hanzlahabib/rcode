@@ -1,0 +1,87 @@
+name: test
+
+# Runs the zero-dep test suite on every push + pull request.
+# No secrets, no external services, no network — every test runs in
+# a fresh tempdir using only Node.js built-ins. A fork PR from a new
+# contributor gets the same result as a push from the maintainer.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: test on Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Match the package.json engines.node minimum and the current LTS
+        node-version: ['18.x', '20.x', '22.x', '24.x']
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # No `npm install` — the project has zero runtime dependencies and
+      # the tests only use Node's built-in test runner. If a contributor
+      # accidentally adds a dep, this step would still pass because node
+      # --test doesn't need it, but the next job catches that.
+
+      - name: run tests
+        run: node --test
+
+  no-new-deps:
+    name: zero-dep invariant
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: verify package.json has no runtime dependencies
+        run: |
+          DEPS=$(jq '.dependencies // {} | length' package.json)
+          if [ "$DEPS" -ne 0 ]; then
+            echo "❌ package.json has $DEPS runtime dependencies."
+            echo "   This project is intentionally zero-dep — see ADR 0001."
+            jq '.dependencies' package.json
+            exit 1
+          fi
+          echo "✓ zero runtime dependencies"
+
+      - name: verify package.json has no dev dependencies
+        run: |
+          DEVDEPS=$(jq '.devDependencies // {} | length' package.json)
+          if [ "$DEVDEPS" -ne 0 ]; then
+            echo "❌ package.json has $DEVDEPS dev dependencies."
+            echo "   Tests use only node:test (built-in). No dev deps either."
+            jq '.devDependencies' package.json
+            exit 1
+          fi
+          echo "✓ zero dev dependencies"
+
+  syntax-check:
+    name: syntax check all cli files
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: verify every cli source file parses
+        run: |
+          find cli -name '*.js' -o -name '*.cjs' | while read -r f; do
+            node -c "$f" || exit 1
+          done
+          echo "✓ all cli/ files parse cleanly"

@@ -140,6 +140,80 @@ Use the template in `.github/pull_request_template.md`. Fill every applicable se
 
 ---
 
+## Running the test suite
+
+The project ships with a `node:test`-based test suite for every critical library
+in `cli/lib/`. Zero dependencies, zero secrets, no network, no `gh` CLI.
+A fresh clone can run the full suite with nothing but Node.js installed.
+
+```bash
+# From the repo root
+node --test                 # runs every test/lib/*.test.cjs file
+# or via npm / pnpm
+pnpm test                    # equivalent to `node --test`
+pnpm run test:ci             # spec reporter, friendlier in CI logs
+```
+
+Expected output on a clean main:
+
+```
+ℹ tests 139
+ℹ pass 139
+ℹ fail 0
+```
+
+If a test fails on your fork but passes on main, rebase first — it's almost
+always a stale fixture. If it still fails, that's a real regression; include
+the failing output in your PR description so reviewers can reproduce.
+
+### What the test suite covers
+
+Every library in `cli/lib/` has a dedicated test file in `test/lib/`:
+
+| Library | Test file | Coverage |
+|---|---|---|
+| `fsutil.cjs` (atomic writes) | `fsutil.test.cjs` | Idempotency, cleanup on failure, custom modes |
+| `config.cjs` (3-level cascade) | `config.test.cjs` | Merge order, validation, typo suggestions |
+| `memory-bank.cjs` (staleness) | `memory-bank.test.cjs` | Fingerprinting, manifest drift, structure drift |
+| `manifest.cjs` (install verification) | `manifest.test.cjs` | Drift detection against real package source |
+| `sprint-state.cjs` (per-sprint state machine) | `sprint-state.test.cjs` | CRUD, status transitions, cross-sprint queries |
+| `handoff.cjs` (pause/resume) | `handoff.test.cjs` | Singleton semantics, force overwrite, clear |
+| `milestones.cjs` (top-level organizing) | `milestones.test.cjs` | Frontmatter linkage, resolution walk, history |
+| `session-log.cjs` (searchable logs) | `session-log.test.cjs` | Write, list, topic search, frontmatter parse |
+| `permanent-memory.cjs` (auto-archive) | `permanent-memory.test.cjs` | Section routing, archive trigger, ordering |
+| `story-commit.cjs` (commit formatter) | `story-commit.test.cjs` | Trailer emission, label validation, suggestions |
+
+### Adding a new test
+
+1. Pick the matching library file in `cli/lib/`
+2. Open (or create) `test/lib/<name>.test.cjs`
+3. Require the library and `test/helpers.cjs`
+4. Use `makeTempDir()` and `t.after(() => cleanup(dir))` so every test gets its own sandbox
+5. Follow `node:test` conventions — `test('...', (t) => { ... })`
+
+Every test **must**:
+- Run offline (no network, no `gh` CLI, no real git remotes)
+- Use `os.tmpdir()` via `helpers.makeTempDir()` — never touch the contributor's real filesystem
+- Clean up after itself (register `t.after`)
+- Finish in under 100ms ideally (libraries are pure; I/O should be tempfile-only)
+
+Every test **must not**:
+- Depend on the contributor's real `~/.rihal-code/defaults.json` — use `withStubbedHome` from `test/lib/config.test.cjs` as the pattern
+- Call `process.exit()` from test code (tests run in the same process; this would kill the runner)
+- Write to `console.log` for assertions — use `node:assert` functions instead
+- Add a new npm dependency (runtime or dev) — see the "Zero-dep invariant" CI job below
+
+### CI
+
+GitHub Actions runs the suite on every push and pull request across Node 18, 20, 22, and 24.
+See `.github/workflows/test.yml`. A separate job enforces the zero-dep invariant — the PR is
+blocked if `package.json` gains any `dependencies` or `devDependencies`.
+
+A third job runs `node -c` against every file in `cli/` to catch syntax errors that would
+only surface at install time.
+
+---
+
 ## Testing Your Changes
 
 ### For agents/skills
