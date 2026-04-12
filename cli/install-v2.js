@@ -329,6 +329,20 @@ function install(opts) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
   }
 
+  // Seed .rihal/state.json (skip if already exists — don't overwrite on re-install)
+  const stateDest = path.join(opts.target, '.rihal', 'state.json');
+  if (!fs.existsSync(stateDest)) {
+    const stateSrc = path.join(SOURCE_ROOT, 'state.json');
+    if (fs.existsSync(stateSrc)) {
+      const now = new Date().toISOString();
+      const stateContent = fs.readFileSync(stateSrc, 'utf8')
+        .replace(/__PROJECT_NAME__/g, opts.projectName)
+        .replace(/__INSTALL_DATE__/g, now);
+      ensureDir(path.dirname(stateDest));
+      fs.writeFileSync(stateDest, stateContent);
+    }
+  }
+
   // .planning/council-sessions/ empty dir
   ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
 
