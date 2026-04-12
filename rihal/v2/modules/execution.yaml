@@ -1,0 +1,16 @@
+name: execution
+version: "1.0"
+description: "Plan execution — write and run PLAN.md files with rihal-executor and rihal-planner"
+requires:
+  - core
+agents:
+  - rihal-executor.md
+  - rihal-planner.md
+workflows:
+  - execute.md
+  - plan.md
+commands:
+  - execute.md
+  - plan.md
+references:
+  - execution-protocol.md
