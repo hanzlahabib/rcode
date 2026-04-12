@@ -299,6 +299,22 @@ function generateAgentManifest(plan, target) {
       frontmatter.color || '',
     ]);
   }
+  // Also include agents already on disk but not in current plan
+  const agentDir = path.join(target, '.claude', 'agents');
+  if (fs.existsSync(agentDir)) {
+    const existingFiles = fs.readdirSync(agentDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    const alreadyIncluded = new Set(plan.filter(e => e.rel.startsWith(path.join('.claude', 'agents'))).map(e => path.basename(e.rel)));
+    for (const file of existingFiles) {
+      if (alreadyIncluded.has(file)) continue;
+      const filePath = path.join(agentDir, file);
+      const text = fs.readFileSync(filePath, 'utf8');
+      const { frontmatter } = parseFrontmatter(text);
+      const name = frontmatter.name || path.basename(file, '.md');
+      const bareId = name.replace(/^rihal-/, '');
+      const desc = (frontmatter.description || '').replace(/"/g, '""');
+      rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
+    }
+  }
   return rows.map((r) => r.join(',')).join('\n') + '\n';
 }
 
@@ -328,8 +344,21 @@ function readPackageVersion() {
 
 function generateInstallManifest(opts) {
   const version = readPackageVersion();
-  const modules = opts.modules.length > 0 ? opts.modules : listAvailableModules();
-  const moduleLines = modules.map((m) => `  - ${m}`).join('\n');
+  const newModules = opts.modules.length > 0 ? opts.modules : listAvailableModules();
+  // Merge with existing manifest if present
+  let existingModules = [];
+  const existingPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
+  if (fs.existsSync(existingPath)) {
+    const text = fs.readFileSync(existingPath, 'utf8');
+    let inModules = false;
+    for (const line of text.split('\n')) {
+      if (line.startsWith('modules:')) { inModules = true; continue; }
+      if (inModules && line.trim().startsWith('-')) { existingModules.push(line.trim().slice(1).trim()); }
+      else if (inModules && !line.startsWith(' ')) { inModules = false; }
+    }
+  }
+  const allModules = [...new Set([...existingModules, ...newModules])];
+  const moduleLines = allModules.map((m) => `  - ${m}`).join('\n');
   return [
     '# Rihal v2 install manifest',
     `version: ${version}`,

@@ -5,4 +5,6 @@ argument-hint: "<module-name> [--force]"
 allowed-tools: Read, Bash
 ---
 
+<execution_context>
 @.rihal/workflows/install.md
+</execution_context>

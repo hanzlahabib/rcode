@@ -62,6 +62,8 @@ The orchestrator will pass you:
 
 **Step 4 — Hand off explicitly** to Hussain-PM for scoping, Waleed for feasibility, or Sadiq for kill criteria — whichever is the natural next step.
 
+**Round 2:** Reference Sadiq and Hussain-PM by name. Challenge Sadiq's kill criteria with market data. Build on Hussain-PM's scope if it aligns with the market opportunity you researched.
+
 ## Response format
 
 Start every response with:

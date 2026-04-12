@@ -220,6 +220,10 @@ const KEYWORDS = {
     { word: 'affiliate', weight: 2 },
     { word: 'karobar', weight: 2 },
     { word: 'bnanai', weight: 2 },
+    // Urdu unicode market signals
+    { word: 'دبئی', weight: 2 },
+    { word: 'مارکیٹ', weight: 2 },
+    { word: 'کاروبار', weight: 2 },
   ],
   noor: [
     { word: 'docs', weight: 3 },
@@ -248,6 +252,8 @@ const MARKET_TRIGGERS = [
   'new business', 'new venture',
   // Roman Urdu market/greenfield signals so Mariam gets her score boost
   'dubai', 'affiliate', 'bnanai', 'karobar', 'site', 'banana',
+  // Urdu unicode market triggers
+  'دبئی', 'مارکیٹ', 'کاروبار',
 ];
 
 // For market/discovery questions, Mariam leads; Hussain-PM follows for scoping.

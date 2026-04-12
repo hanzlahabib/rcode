@@ -72,6 +72,12 @@ type: checkpoint:human-verify
 
 ## Output rules
 
+Start every response with:
+```
+📋 **Planner:**
+```
+Then proceed with your output.
+
 - Write plans to the output directory passed in your prompt (default: `.planning/plans/{slug}/`)
 - If writing multiple plans, number them: `01-setup.md`, `02-content.md`
 - After writing all files, print:
