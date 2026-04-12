@@ -215,6 +215,11 @@ const KEYWORDS = {
     { word: 'target audience', weight: 3 },
     { word: 'buyer', weight: 2 },
     { word: 'sector', weight: 2 },
+    // Roman Urdu market signals
+    { word: 'dubai', weight: 2 },
+    { word: 'affiliate', weight: 2 },
+    { word: 'karobar', weight: 2 },
+    { word: 'bnanai', weight: 2 },
   ],
   noor: [
     { word: 'docs', weight: 3 },
@@ -241,6 +246,8 @@ const MARKET_TRIGGERS = [
   '2040', '2030', 'market research', 'go to market', 'gtm', 'positioning',
   'launch', 'what to build', 'which market', 'market opportunity',
   'new business', 'new venture',
+  // Roman Urdu market/greenfield signals so Mariam gets her score boost
+  'dubai', 'affiliate', 'bnanai', 'karobar', 'site', 'banana',
 ];
 
 // For market/discovery questions, Mariam leads; Hussain-PM follows for scoping.
