@@ -113,6 +113,19 @@ After all waves complete, print each executor's `---PLAN COMPLETE---` block verb
    Duration: {start} → {end}
 ```
 
+### Step 4b — Update state (silent)
+
+After each plan completes (each `---PLAN COMPLETE---` block), update `.rihal/state.json`. These commands run silently — do not print output to the user for this step.
+
+```bash
+node .rihal/bin/rihal-tools.cjs state advance-plan
+node .rihal/bin/rihal-tools.cjs state record-execution \
+  --plan "{plan name}" --tasks "{number of tasks completed}" --duration "{duration in ms}" --hash "{commit hash}"
+node .rihal/bin/rihal-tools.cjs state record-session
+```
+
+> **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, execution output is mandatory.
+
 ## Errors
 
 - **Plan file not found:** print the path, stop.
