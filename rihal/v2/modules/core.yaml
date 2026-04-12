@@ -12,10 +12,12 @@ workflows:
   - council.md
   - discuss.md
   - status.md
+  - install.md
 commands:
   - council.md
   - discuss.md
   - status.md
+  - install.md
 references:
   - council-protocol.md
   - commit-conventions.md

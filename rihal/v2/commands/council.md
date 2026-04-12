@@ -29,8 +29,8 @@ The following Rihal subagents are valid targets for the Task tool. Use these exa
 - `rihal-sadiq` — Director of Strategy (strategic priorities, kill criteria, market timing)
 - `rihal-waleed` — CTO (architecture, stack, feasibility, security, scale)
 - `rihal-fatima` — QA Lead (test strategy, release readiness, regression risk)
-
-**v2 prototype scope:** only the three subagents above are installed. Additional personas (Hussain-PM, Layla, Haitham, etc.) will be added in later phases of the migration.
+- `rihal-hussain-pm` — Product Manager (scope, roadmap, feature definition, user stories)
+- `rihal-mariam` — Marketing & Growth Lead (market research, GTM strategy, positioning, launch)
 </available_agent_types>
 
 <process>
