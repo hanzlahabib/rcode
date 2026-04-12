@@ -89,6 +89,7 @@ After every completed `auto` task:
 
 **Never add:** `Co-Authored-By: Claude`, `Generated with Claude Code`, or any AI attribution.
 **Never use:** `--no-verify`.
+**Never run:** `git push` — pushing requires explicit human authorization outside the executor's scope. Commits only.
 
 ## SUMMARY format
 

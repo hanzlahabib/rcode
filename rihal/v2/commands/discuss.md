@@ -23,11 +23,11 @@ Use this when Hanzla wants to think something through with one colleague, not ca
 <available_agent_types>
 The following Rihal subagents are valid targets for the Agent tool:
 
-- `rihal-sadiq` — Director of Strategy (strategic priorities, kill criteria, market timing)
-- `rihal-waleed` — CTO (architecture, stack, feasibility, security, scale)
-- `rihal-fatima` — QA Lead (test strategy, release readiness, regression risk)
-
-**v2 prototype scope:** only the three subagents above are installed.
+- `rihal-sadiq` — 🧭 Sadiq (Strategy) — strategic priorities, kill criteria, market timing
+- `rihal-waleed` — 🏗️ Waleed (CTO) — architecture, stack, feasibility, security, scale
+- `rihal-fatima` — 🛡️ Fatima (QA) — test strategy, release readiness, regression risk
+- `rihal-mariam` — 📣 Mariam (Marketing) — go-to-market, positioning, launch, growth
+- `rihal-hussain-pm` — 📋 Hussain-PM (Product) — scope, features, roadmap, requirements
 </available_agent_types>
 
 <process>

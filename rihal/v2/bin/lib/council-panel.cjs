@@ -302,7 +302,8 @@ function scoreAgent(agentId, normalizedQuestion) {
   }
   const names = AGENT_NAMES[agentId] || [];
   for (const name of names) {
-    if (normalizedQuestion.includes(name)) { score += 20; break; }
+    const re = new RegExp('\\b' + name.replace(/[-]/g, '[-\\s]') + '\\b');
+    if (re.test(normalizedQuestion)) { score += 20; break; }
   }
   return score;
 }
