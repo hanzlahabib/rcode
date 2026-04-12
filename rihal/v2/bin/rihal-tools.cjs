@@ -134,18 +134,24 @@ function loadPanelScorer() {
  *   --full                        → flags.full = true
  *   --agents=a,b,c                → flags.agents = ['a','b','c']
  *   --explain                     → flags.explain = true
+ *   --top N  or  --top=N          → flags.top = N (integer)
  *
  * Everything else becomes part of the question.
  */
 function parseArgs(raw) {
-  const flags = { full: false, agents: [], explain: false };
+  const flags = { full: false, agents: [], explain: false, top: null };
   const words = [];
   const tokens = (raw || '').trim().split(/\s+/).filter(Boolean);
-  for (const tok of tokens) {
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
     if (tok === '--full') flags.full = true;
     else if (tok === '--explain') flags.explain = true;
     else if (tok.startsWith('--agents=')) {
       flags.agents = tok.slice('--agents='.length).split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (tok.startsWith('--top=')) {
+      flags.top = parseInt(tok.slice('--top='.length), 10) || null;
+    } else if (tok === '--top' && i + 1 < tokens.length && /^\d+$/.test(tokens[i + 1])) {
+      flags.top = parseInt(tokens[++i], 10);
     } else {
       words.push(tok);
     }
@@ -191,6 +197,8 @@ function cmdInit(workflowName, rawArgs) {
   let panel = [];
   let scores = {};
 
+  let agent_id = null;
+
   if (workflowName === 'council') {
     const scorer = loadPanelScorer();
     const opts = {};
@@ -206,11 +214,28 @@ function cmdInit(workflowName, rawArgs) {
     }
   }
 
-  const questionClassification = cmdClassifyQuestion(question);
+  if (workflowName === 'discuss') {
+    // Check if the first token of the question is a known agent id.
+    // If so, extract it and shorten the question.
+    const qWords = question.split(/\s+/).filter(Boolean);
+    if (qWords.length > 0 && installedAgents.includes(qWords[0])) {
+      agent_id = qWords[0];
+    }
+  }
+
+  const questionClassification = cmdClassifyQuestion(
+    agent_id ? question.slice(agent_id.length).trim() : question
+  );
+
+  // For discuss, strip agent_id from the question in the output
+  const outputQuestion = (workflowName === 'discuss' && agent_id)
+    ? question.slice(agent_id.length).trim()
+    : question;
 
   const out = {
     workflow: workflowName,
-    question,
+    question: outputQuestion,
+    agent_id,
     flags,
     panel,
     scores,
@@ -243,10 +268,19 @@ function cmdSelectPanel(rawArgs) {
   const ideal = scorer.selectPanel(question, opts);
   const explained = scorer.explainSelection(question, opts);
   const installed = listInstalledAgents();
+  let panel = filterPanelToInstalled(ideal, installed, { pad: flags.agents.length === 0 });
+
+  // --top N: return only the top N agents by score
+  if (flags.top && flags.top > 0) {
+    // Sort panel by score descending, then slice
+    const scoreMap = explained.scores || {};
+    panel = [...panel].sort((a, b) => (scoreMap[b] || 0) - (scoreMap[a] || 0)).slice(0, flags.top);
+  }
+
   return {
     question,
     flags,
-    panel: filterPanelToInstalled(ideal, installed, { pad: flags.agents.length === 0 }),
+    panel,
     scores: explained.scores,
     installed,
   };
@@ -645,6 +679,86 @@ function cmdState(subArgs) {
   }
 
   throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council`);
+}
+
+/** init plan — context blob for /rihal:plan workflow. */
+function cmdInitPlan(rawArgs) {
+  const config = readConfig();
+  const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
+  const flags = { phase: null, output: null };
+  const positional = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === '--phase' && tokens[i + 1]) { flags.phase = tokens[++i]; }
+    else if (t.startsWith('--phase=')) { flags.phase = t.slice('--phase='.length); }
+    else if (t === '--output' && tokens[i + 1]) { flags.output = tokens[++i]; }
+    else if (t.startsWith('--output=')) { flags.output = t.slice('--output='.length); }
+    else positional.push(t);
+  }
+  const arg = positional.join(' ').trim();
+  let inputType = 'description';
+  let resolvedPath = null;
+  let description = arg;
+  if (arg) {
+    const asAbs = path.isAbsolute(arg) ? arg : path.join(PROJECT_ROOT, arg);
+    if (arg.endsWith('.md') && fs.existsSync(asAbs)) {
+      resolvedPath = asAbs;
+      inputType = path.basename(asAbs).startsWith('council-') ? 'session' : 'file';
+      description = null;
+    } else if (fs.existsSync(asAbs) && fs.statSync(asAbs).isDirectory()) {
+      const sessions = walkFiles(asAbs).filter((f) => f.endsWith('.md')).sort().reverse();
+      if (sessions.length > 0) { resolvedPath = sessions[0]; inputType = 'session'; description = null; }
+    }
+  }
+  const phaseSlug = flags.phase || (resolvedPath
+    ? path.basename(resolvedPath, '.md').replace(/^council-\d{4}-\d{2}-\d{2}-/, '').slice(0, 40)
+    : (arg || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40));
+  const outputDir = flags.output || path.join(PLANNING_DIR, 'plans', phaseSlug);
+  return {
+    workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
+    phase_slug: phaseSlug, output_dir: outputDir, config,
+    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+  };
+}
+
+/** plan list — glob .planning/plans/ for plan files. */
+function cmdPlanList() {
+  const plansDir = path.join(PLANNING_DIR, 'plans');
+  if (!fs.existsSync(plansDir)) return { plans: [] };
+  const files = walkFiles(plansDir).filter((f) => f.endsWith('.md'));
+  return {
+    plans: files.map((f) => {
+      const text = fs.readFileSync(f, 'utf8');
+      const { frontmatter, body } = parseFrontmatter(text);
+      const objMatch = body.match(/^## Objective\s*\n(.+)/m);
+      return {
+        path: path.relative(PROJECT_ROOT, f), phase: frontmatter.phase || '',
+        plan: frontmatter.plan || '', type: frontmatter.type || 'auto',
+        depends_on: frontmatter.depends_on ? frontmatter.depends_on.split(',').map((s) => s.trim()) : [],
+        objective: objMatch ? objMatch[1].trim() : '',
+      };
+    }),
+  };
+}
+
+/** init discuss — context blob for /rihal:discuss workflow. */
+function cmdInitDiscuss(rawArgs) {
+  const config = readConfig();
+  const installedAgents = listInstalledAgents();
+  const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
+  let agentId = null;
+  let question = rawArgs || '';
+  if (tokens.length > 0 && installedAgents.includes(tokens[0])) {
+    agentId = tokens[0];
+    question = tokens.slice(1).join(' ');
+  }
+  const questionClassification = cmdClassifyQuestion(question);
+  return {
+    workflow: 'discuss', agent_id: agentId, question,
+    question_type: questionClassification.type, question_signals: questionClassification.signals,
+    config, installed_agents: installedAgents,
+    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+  };
 }
 
 function readPackageVersion() {
