@@ -67,6 +67,7 @@ function parseArgs(argv) {
     language: 'English',
     mode: 'guided',
     help: false,
+    modules: [],  // --module core --module execution or empty = all
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -78,6 +79,7 @@ function parseArgs(argv) {
     else if (arg === '--project') opts.projectName = argv[++i];
     else if (arg === '--language') opts.language = argv[++i];
     else if (arg === '--mode') opts.mode = argv[++i];
+    else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) opts.target = path.resolve(positional[0]);
@@ -201,6 +203,78 @@ function buildInstallPlan() {
 }
 
 /**
+ * Parse a module YAML manifest (rihal/v2/modules/{name}.yaml).
+ * Returns { name, requires[], agents[], workflows[], commands[], references[] }.
+ */
+function readModuleManifest(moduleName) {
+  const modPath = path.join(SOURCE_ROOT, 'modules', `${moduleName}.yaml`);
+  if (!fs.existsSync(modPath)) return null;
+  const text = fs.readFileSync(modPath, 'utf8');
+  const mod = { name: moduleName, requires: [], agents: [], workflows: [], commands: [], references: [] };
+  let currentKey = null;
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/#.*$/, '').trimEnd();
+    if (!line.trim()) continue;
+    // Top-level key detection
+    const keyMatch = line.match(/^(\w+):/);
+    if (keyMatch && !line.startsWith('  ') && !line.startsWith('-')) {
+      const key = keyMatch[1];
+      const val = line.slice(line.indexOf(':') + 1).trim();
+      if (['agents', 'workflows', 'commands', 'references', 'requires'].includes(key)) {
+        currentKey = key;
+        if (val && val !== '[]') {
+          // inline single value
+          mod[key] = val.replace(/^\[|\]$/g, '').split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+        }
+      } else {
+        currentKey = null;
+        if (key === 'name') mod.name = val.replace(/^["']|["']$/g, '');
+      }
+      continue;
+    }
+    // List item under current key
+    if (currentKey && line.trim().startsWith('-')) {
+      const item = line.trim().slice(1).trim().replace(/^["']|["']$/g, '');
+      if (item) mod[currentKey].push(item);
+    }
+  }
+  return mod;
+}
+
+/**
+ * List available module names by scanning rihal/v2/modules/*.yaml
+ */
+function listAvailableModules() {
+  const modulesDir = path.join(SOURCE_ROOT, 'modules');
+  if (!fs.existsSync(modulesDir)) return [];
+  return fs.readdirSync(modulesDir)
+    .filter((f) => f.endsWith('.yaml'))
+    .map((f) => f.replace('.yaml', ''));
+}
+
+/**
+ * Filter an install plan to only files belonging to specified modules.
+ * If moduleNames is empty, returns the full plan (backward compatible).
+ */
+function filterPlanByModules(plan, moduleNames) {
+  if (moduleNames.length === 0) return plan; // no filter = install everything
+  const allowed = new Set();
+  for (const modName of moduleNames) {
+    const mod = readModuleManifest(modName);
+    if (!mod) { console.warn(`  ⚠ Unknown module: ${modName}`); continue; }
+    for (const a of mod.agents) allowed.add(path.join('.claude', 'agents', a));
+    for (const w of mod.workflows) allowed.add(path.join('.rihal', 'workflows', w));
+    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', 'rihal', c));
+    for (const r of mod.references) allowed.add(path.join('.rihal', 'references', r));
+  }
+  // Always include bin/ (shared infrastructure, not module-specific)
+  return plan.filter((entry) => {
+    if (entry.rel.startsWith(path.join('.rihal', 'bin'))) return true;
+    return allowed.has(entry.rel);
+  });
+}
+
+/**
  * Auto-generate agent-manifest.csv from the installed agent files'
  * frontmatter. Columns: id, file, name, description, color.
  *
@@ -254,12 +328,14 @@ function readPackageVersion() {
 
 function generateInstallManifest(opts) {
   const version = readPackageVersion();
+  const modules = opts.modules.length > 0 ? opts.modules : listAvailableModules();
+  const moduleLines = modules.map((m) => `  - ${m}`).join('\n');
   return [
     '# Rihal v2 install manifest',
     `version: ${version}`,
     `installDate: ${new Date().toISOString()}`,
     'modules:',
-    '  - core',
+    moduleLines,
     'ides:',
     '  - claude-code',
     '',
@@ -290,10 +366,15 @@ function install(opts) {
     return 1;
   }
 
-  const plan = buildInstallPlan();
+  const fullPlan = buildInstallPlan();
+  const plan = filterPlanByModules(fullPlan, opts.modules);
   if (plan.length === 0) {
     console.error('✖ Nothing to install — install plan is empty.');
+    if (opts.modules.length > 0) console.error(`  Modules requested: ${opts.modules.join(', ')}`);
     return 1;
+  }
+  if (opts.modules.length > 0) {
+    console.log(`  Modules: ${opts.modules.join(', ')}`);
   }
 
   // Copy files

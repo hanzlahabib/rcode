@@ -1,0 +1,21 @@
+name: core
+version: "1.0"
+description: "Council agents, /rihal:council, /rihal:discuss, /rihal:status, and state management"
+requires: []
+agents:
+  - rihal-sadiq.md
+  - rihal-waleed.md
+  - rihal-fatima.md
+  - rihal-mariam.md
+  - rihal-hussain-pm.md
+workflows:
+  - council.md
+  - discuss.md
+  - status.md
+commands:
+  - council.md
+  - discuss.md
+  - status.md
+references:
+  - council-protocol.md
+  - commit-conventions.md

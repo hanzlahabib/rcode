@@ -761,6 +761,88 @@ function cmdInitDiscuss(rawArgs) {
   };
 }
 
+/**
+ * module <subcommand> — module system helpers.
+ *   list           → available modules from package
+ *   installed      → modules listed in .rihal/_config/manifest.yaml
+ *   check-requires → verify a module's dependencies are installed
+ */
+function cmdModule(subArgs) {
+  const sub = subArgs[0];
+
+  if (sub === 'list') {
+    const modulesDir = path.join(__dirname, '..', '..', 'rihal', 'v2', 'modules');
+    // If running from installed project, modules dir is in the package
+    // Try local first, then relative to this binary
+    const candidates = [
+      modulesDir,
+      path.join(__dirname, '..', '..', 'modules'),
+    ];
+    for (const dir of candidates) {
+      if (fs.existsSync(dir)) {
+        const modules = fs.readdirSync(dir)
+          .filter((f) => f.endsWith('.yaml'))
+          .map((f) => {
+            const text = fs.readFileSync(path.join(dir, f), 'utf8');
+            const parsed = parseSimpleYaml(text);
+            return { name: f.replace('.yaml', ''), description: parsed.description || '' };
+          });
+        return { modules };
+      }
+    }
+    return { modules: [] };
+  }
+
+  if (sub === 'installed') {
+    const manifestPath = path.join(CONFIG_DIR, 'manifest.yaml');
+    if (!fs.existsSync(manifestPath)) return { installed: [] };
+    const text = fs.readFileSync(manifestPath, 'utf8');
+    const modules = [];
+    let inModules = false;
+    for (const line of text.split('\n')) {
+      if (line.startsWith('modules:')) { inModules = true; continue; }
+      if (inModules && line.trim().startsWith('-')) {
+        modules.push(line.trim().slice(1).trim());
+      } else if (inModules && !line.startsWith(' ')) {
+        inModules = false;
+      }
+    }
+    return { installed: modules };
+  }
+
+  if (sub === 'check-requires') {
+    const modName = subArgs[1];
+    if (!modName) throw new Error('Usage: module check-requires <name>');
+    // Read the module manifest from package
+    const candidates = [
+      path.join(__dirname, '..', '..', 'rihal', 'v2', 'modules', `${modName}.yaml`),
+      path.join(__dirname, '..', '..', 'modules', `${modName}.yaml`),
+    ];
+    let modText = null;
+    for (const c of candidates) {
+      if (fs.existsSync(c)) { modText = fs.readFileSync(c, 'utf8'); break; }
+    }
+    if (!modText) return { ok: false, error: `Unknown module: ${modName}` };
+    // Parse requires list
+    const requires = [];
+    let inRequires = false;
+    for (const line of modText.split('\n')) {
+      if (line.startsWith('requires:')) { inRequires = true; continue; }
+      if (inRequires && line.trim().startsWith('-')) {
+        requires.push(line.trim().slice(1).trim());
+      } else if (inRequires && !line.startsWith(' ')) {
+        inRequires = false;
+      }
+    }
+    if (requires.length === 0) return { ok: true, requires: [], missing: [] };
+    const { installed } = cmdModule(['installed']);
+    const missing = requires.filter((r) => !installed.includes(r));
+    return { ok: missing.length === 0, requires, missing };
+  }
+
+  throw new Error(`Unknown module subcommand: ${sub}. Valid: list, installed, check-requires`);
+}
+
 function readPackageVersion() {
   try {
     const manifestPath = path.join(CONFIG_DIR, 'manifest.yaml');
@@ -806,6 +888,9 @@ function main() {
         break;
       case 'state':
         result = cmdState(args);
+        break;
+      case 'module':
+        result = cmdModule(args);
         break;
       case 'version':
         console.log(readPackageVersion());
