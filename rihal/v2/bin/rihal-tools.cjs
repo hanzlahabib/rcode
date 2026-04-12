@@ -780,9 +780,17 @@ function main() {
       case 'init':
         if (args[0] === 'execute') {
           result = cmdInitExecute(args.slice(1).join(' '));
+        } else if (args[0] === 'plan') {
+          result = cmdInitPlan(args.slice(1).join(' '));
+        } else if (args[0] === 'discuss') {
+          result = cmdInitDiscuss(args.slice(1).join(' '));
         } else {
           result = cmdInit(args[0] || '', args.slice(1).join(' '));
         }
+        break;
+      case 'plan':
+        if (args[0] === 'list') { result = cmdPlanList(); }
+        else { console.error('Unknown plan subcommand. Valid: list'); process.exit(1); }
         break;
       case 'select-panel':
         result = cmdSelectPanel(args.join(' '));
