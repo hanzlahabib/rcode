@@ -16,9 +16,11 @@ These are `@`-included in the slash command's `<execution_context>` block.
 <available_agent_types>
 Use these exact `subagent_type` values when calling the Agent tool:
 
-- `rihal-sadiq` — Director of Strategy
-- `rihal-waleed` — CTO
-- `rihal-fatima` — QA Lead
+- `rihal-sadiq` — 🧭 Sadiq (Strategy)
+- `rihal-waleed` — 🏗️ Waleed (CTO)
+- `rihal-fatima` — 🛡️ Fatima (QA)
+- `rihal-mariam` — 📣 Mariam (Marketing)
+- `rihal-hussain-pm` — 📋 Hussain-PM (Product)
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -53,9 +55,11 @@ Use the first (and only) agent in the returned `panel` array.
 Print: `💬 Discussing with {agent display name}...`
 
 Display name mapping:
-- `sadiq` → `Sadiq (Strategy)`
-- `waleed` → `Waleed (CTO)`
-- `fatima` → `Fatima (QA)`
+- `sadiq` → `🧭 Sadiq (Strategy)`
+- `waleed` → `🏗️ Waleed (CTO)`
+- `fatima` → `🛡️ Fatima (QA)`
+- `mariam` → `📣 Mariam (Marketing)`
+- `hussain-pm` → `📋 Hussain-PM (Product)`
 
 ## Step 2 — Optional codebase scan
 

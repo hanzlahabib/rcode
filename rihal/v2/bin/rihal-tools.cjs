@@ -105,6 +105,47 @@ function parseCsv(text) {
   });
 }
 
+/**
+ * Recursively walk a directory and return absolute file paths.
+ */
+function walkFiles(dir) {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkFiles(full));
+    else if (entry.isFile()) out.push(full);
+  }
+  return out;
+}
+
+/**
+ * Parse YAML frontmatter from a markdown file. Returns { frontmatter, body }.
+ * Minimal subset — supports `key: value` and quoted strings only. Good
+ * enough for our agent and command files.
+ */
+function parseFrontmatter(text) {
+  if (!text.startsWith('---\n')) return { frontmatter: {}, body: text };
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) return { frontmatter: {}, body: text };
+  const block = text.slice(4, end);
+  const body = text.slice(end + 5);
+  const fm = {};
+  for (const raw of block.split('\n')) {
+    const line = raw.replace(/^#.*$/, '').trimEnd();
+    if (!line) continue;
+    const colonAt = line.indexOf(':');
+    if (colonAt === -1) continue;
+    const key = line.slice(0, colonAt).trim();
+    let val = line.slice(colonAt + 1).trim();
+    if (!key || !val) continue;
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+    if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+    fm[key] = val;
+  }
+  return { frontmatter: fm, body };
+}
+
 function readAgentManifest() {
   const manifestPath = path.join(CONFIG_DIR, 'agent-manifest.csv');
   if (!fs.existsSync(manifestPath)) return [];
@@ -200,6 +241,8 @@ function cmdInit(workflowName, rawArgs) {
   let agent_id = null;
 
   if (workflowName === 'council') {
+    const COUNCIL_EXCLUDED = ['executor', 'planner'];
+    const councilAgents = installedAgents.filter((id) => !COUNCIL_EXCLUDED.includes(id));
     const scorer = loadPanelScorer();
     const opts = {};
     if (flags.full) opts.full = true;
@@ -207,7 +250,7 @@ function cmdInit(workflowName, rawArgs) {
     const ideal = scorer.selectPanel(question, opts);
     // Don't pad when user explicitly specified the agent list — their
     // choice is the final word.
-    panel = filterPanelToInstalled(ideal, installedAgents, { pad: flags.agents.length === 0 });
+    panel = filterPanelToInstalled(ideal, councilAgents, { pad: flags.agents.length === 0 });
     if (flags.explain) {
       const explained = scorer.explainSelection(question, opts);
       scores = explained.scores || {};
@@ -328,7 +371,7 @@ function cmdClassifyQuestion(raw) {
       // Roman Urdu strategic signals (what-should-I-do questions)
       'kya karna', 'worth hai', 'sahi hai', 'kya sochte', 'kya lagta',
       // Urdu unicode discovery signals
-      'ریسرچ', 'بتاؤ',
+      'ریسرچ', 'بتاؤ', 'ماذا', 'أفضل', 'کیف',
     ],
     market: [
       '2040', '2030', '2050', 'vision plan', 'national plan', 'government plan',
@@ -339,7 +382,7 @@ function cmdClassifyQuestion(raw) {
       // Roman Urdu market signals
       'dubai', 'affiliate', 'karobar', 'business karna', 'market research kar',
       // Urdu unicode market signals
-      'دبئی', 'مارکیٹ', 'کاروبار', 'خلیج',
+      'دبئی', 'مارکیٹ', 'کاروبار', 'خلیج', 'ہل', 'سوق', 'مشروع',
     ],
     greenfield: [
       'start fresh', 'from scratch', 'new project', 'blank slate', 'greenfield',
@@ -359,7 +402,7 @@ function cmdClassifyQuestion(raw) {
     release: [
       'deploy', 'deployment', 'ship', 'rollback', 'incident', 'production issue',
       'hotfix', 'feature flag', 'canary', 'blue green', 'downtime', 'outage',
-      'monitoring', 'alert', 'on call', 'oncall',
+      'monitoring', 'alert', 'on call', 'oncall', 'launch',
     ],
     design: [
       'ux', 'user experience', 'user journey', 'wireframe', 'prototype', 'figma',
@@ -374,6 +417,8 @@ function cmdClassifyQuestion(raw) {
       'production ready', 'ready to ship', 'test coverage', 'bug', 'error',
       'performance', 'should i rewrite', 'auth layer', 'db migration',
       'pull request', 'code review', 'technical debt', 'tech debt',
+      'feature', 'ci/cd', 'cicd', 'pipeline', 'documentation', 'docs',
+      'إعادة', 'کود',
     ],
   };
 
@@ -429,6 +474,9 @@ function cmdInitExecute(rawArgs) {
 
   // Resolve target: could be a .md file or a phase dir/name
   const asAbsolute = path.isAbsolute(target) ? target : path.join(PROJECT_ROOT, target);
+  if (!asAbsolute.startsWith(PROJECT_ROOT)) {
+    throw new Error(`Path outside project root: ${target}`);
+  }
   if (target.endsWith('.md') && fs.existsSync(asAbsolute)) {
     planPath = asAbsolute;
     plans = [{ path: planPath, depends_on: [], wave: 0 }];
@@ -527,6 +575,10 @@ function cmdState(subArgs) {
   /** Read state or return default skeleton. */
   function readState() {
     if (!fs.existsSync(statePath)) return null;
+    const stats = fs.statSync(statePath);
+    if (stats.size > 10 * 1024 * 1024) {
+      throw new Error('state.json exceeds 10 MB limit — possible corruption');
+    }
     return JSON.parse(fs.readFileSync(statePath, 'utf8'));
   }
 
@@ -668,6 +720,7 @@ function cmdState(subArgs) {
   // --- record-council ---
   if (sub === 'record-council') {
     const flags = parseFlags(1);
+    if (!flags.slug) throw new Error('record-council requires --slug <value>');
     const state = readState() || defaultState();
     if (!state.council_sessions) state.council_sessions = [];
     state.council_sessions.push({
@@ -702,6 +755,9 @@ function cmdInitPlan(rawArgs) {
   let description = arg;
   if (arg) {
     const asAbs = path.isAbsolute(arg) ? arg : path.join(PROJECT_ROOT, arg);
+    if (!asAbs.startsWith(PROJECT_ROOT)) {
+      throw new Error(`Path outside project root: ${arg}`);
+    }
     if (arg.endsWith('.md') && fs.existsSync(asAbs)) {
       resolvedPath = asAbs;
       inputType = path.basename(asAbs).startsWith('council-') ? 'session' : 'file';
@@ -715,6 +771,12 @@ function cmdInitPlan(rawArgs) {
     ? path.basename(resolvedPath, '.md').replace(/^council-\d{4}-\d{2}-\d{2}-/, '').slice(0, 40)
     : (arg || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40));
   const outputDir = flags.output || path.join(PLANNING_DIR, 'plans', phaseSlug);
+  if (flags.output) {
+    const absOutput = path.isAbsolute(flags.output) ? flags.output : path.join(PROJECT_ROOT, flags.output);
+    if (!absOutput.startsWith(PROJECT_ROOT)) {
+      throw new Error(`Output path outside project root: ${flags.output}`);
+    }
+  }
   return {
     workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
     phase_slug: phaseSlug, output_dir: outputDir, config,
@@ -758,7 +820,7 @@ function cmdInitDiscuss(rawArgs) {
     workflow: 'discuss', agent_id: agentId, question,
     question_type: questionClassification.type, question_signals: questionClassification.signals,
     config, installed_agents: installedAgents,
-    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RIHAL_DIR, 'state.json') },
   };
 }
 
