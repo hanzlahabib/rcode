@@ -289,6 +289,12 @@ function cmdClassifyQuestion(raw) {
       'which market', 'what market', 'where should we start', 'what business',
       'which idea', 'what idea', 'start a company', 'start a business',
       'new venture', 'new startup', 'what opportunity',
+      // Roman Urdu discovery signals
+      'research kar', 'pata karo', 'batao', 'kaisa', 'kya karo', 'suggest karo',
+      // Roman Urdu strategic signals (what-should-I-do questions)
+      'kya karna', 'worth hai', 'sahi hai', 'kya sochte', 'kya lagta',
+      // Urdu unicode discovery signals
+      'ریسرچ', 'بتاؤ',
     ],
     market: [
       '2040', '2030', '2050', 'vision plan', 'national plan', 'government plan',
@@ -296,11 +302,19 @@ function cmdClassifyQuestion(raw) {
       'oman', 'saudi', 'uae', 'gulf', 'gcc', 'mena', 'bahrain', 'qatar', 'kuwait',
       'market opportunity', 'market size', 'competitor', 'industry trend',
       'regulation', 'compliance', 'sector', 'economy',
+      // Roman Urdu market signals
+      'dubai', 'affiliate', 'karobar', 'business karna', 'market research kar',
+      // Urdu unicode market signals
+      'دبئی', 'مارکیٹ', 'کاروبار', 'خلیج',
     ],
     greenfield: [
       'start fresh', 'from scratch', 'new project', 'blank slate', 'greenfield',
       'build something new', 'start building', 'no existing', 'haven\'t started',
       'bootstrap', 'kickoff',
+      // Roman Urdu greenfield signals
+      'bnanai', 'banana', 'app banana', 'shuru', 'start karna', 'naya project', 'project banana', 'build karna',
+      // Urdu unicode greenfield signals
+      'سائٹ بنانا', 'ایپ بنانا',
     ],
     team: [
       'hiring', 'hire', 'fire', 'team size', 'squad', 'org structure', 'burnout',
@@ -461,6 +475,17 @@ function cmdState(subArgs) {
     return JSON.parse(fs.readFileSync(statePath, 'utf8'));
   }
 
+  if (sub === 'advance-plan') {
+    const state = fs.existsSync(statePath)
+      ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
+      : { current_plan: 0, executions: [] };
+    if (typeof state.current_plan !== 'number') state.current_plan = 0;
+    state.current_plan += 1;
+    fs.mkdirSync(RIHAL_DIR, { recursive: true });
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+    return { ok: true, current_plan: state.current_plan, state_path: statePath };
+  }
+
   if (sub === 'record-execution') {
     const flags = {};
     for (let i = 1; i < subArgs.length; i++) {
@@ -476,8 +501,9 @@ function cmdState(subArgs) {
     if (!state.executions) state.executions = [];
     state.executions.push({
       plan: flags.plan || '',
-      tasks_completed: parseInt(flags['tasks-completed'] || '0', 10),
+      tasks_completed: parseInt(flags['tasks-completed'] || flags.tasks || '0', 10),
       commits: (flags.commits || '').split(',').filter(Boolean),
+      duration_ms: flags.duration ? parseInt(flags.duration, 10) : null,
       timestamp: new Date().toISOString(),
     });
     state.last_execution = state.executions[state.executions.length - 1];
@@ -486,7 +512,7 @@ function cmdState(subArgs) {
     return { ok: true, state_path: statePath };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: get, record-execution`);
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: get, advance-plan, record-execution`);
 }
 
 function readPackageVersion() {
@@ -535,6 +561,9 @@ function main() {
       case '-h':
       case undefined:
         console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|version> [args]');
+        console.log('  state get                                    → print state.json');
+        console.log('  state advance-plan                           → increment current_plan counter');
+        console.log('  state record-execution --plan <p> --tasks <n> --duration <ms>  → append execution');
         return;
       default:
         console.error(`Unknown subcommand: ${subcommand}`);
