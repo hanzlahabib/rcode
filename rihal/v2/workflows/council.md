@@ -319,6 +319,20 @@ Print the artifact path to the user at the end:
 💾 Session saved: .planning/council-sessions/council-2026-04-12-should-i-start-new-project.md
 ```
 
+### Step 5b — Update state (silent)
+
+After the artifact is written, update `.rihal/state.json` with the council session record and session timestamp. These commands run silently — do not print output to the user for this step.
+
+```bash
+node .rihal/bin/rihal-tools.cjs state record-council \
+  --slug "{slug}" \
+  --panel "{comma-separated panel names}" \
+  --artifact "{artifact path}"
+node .rihal/bin/rihal-tools.cjs state record-session
+```
+
+> **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
+
 ## Errors
 
 - **`rihal-tools.cjs` not found at `.rihal/bin/rihal-tools.cjs`:** user has v1 installed or the package is broken. Tell the user to run `rihal-code install-v2`.
