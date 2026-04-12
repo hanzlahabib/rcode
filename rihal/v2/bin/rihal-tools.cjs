@@ -353,6 +353,142 @@ function cmdClassifyQuestion(raw) {
   return { type, signals: allSignals, scores };
 }
 
+/**
+ * init execute — returns context blob for the /rihal:execute workflow.
+ * Resolves plan_path (single file or phase directory), reads the plan
+ * frontmatter, and returns dependency wave groupings.
+ */
+function cmdInitExecute(rawArgs) {
+  const config = readConfig();
+  const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
+  const flags = { wave: null, interactive: false, continue: false, option: null };
+  const positional = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === '--interactive') flags.interactive = true;
+    else if (t === '--continue') flags.continue = true;
+    else if (t.startsWith('--wave=')) flags.wave = t.slice('--wave='.length);
+    else if (t.startsWith('--option=')) flags.option = t.slice('--option='.length);
+    else positional.push(t);
+  }
+
+  const target = positional[0] || '';
+  let planPath = null;
+  let phaseDir = null;
+  let plans = [];
+
+  // Resolve target: could be a .md file or a phase dir/name
+  const asAbsolute = path.isAbsolute(target) ? target : path.join(PROJECT_ROOT, target);
+  if (target.endsWith('.md') && fs.existsSync(asAbsolute)) {
+    planPath = asAbsolute;
+    plans = [{ path: planPath, depends_on: [], wave: 0 }];
+  } else {
+    // Look for a phase directory
+    const candidates = [
+      asAbsolute,
+      path.join(PLANNING_DIR, target),
+      path.join(PLANNING_DIR, 'phases', target),
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c) && fs.statSync(c).isDirectory()) {
+        phaseDir = c;
+        break;
+      }
+    }
+    if (phaseDir) {
+      const planFiles = walkFiles(phaseDir).filter((f) => path.basename(f) === 'PLAN.md');
+      plans = planFiles.map((f) => {
+        const text = fs.readFileSync(f, 'utf8');
+        const { frontmatter } = parseFrontmatter(text);
+        const depends = frontmatter.depends_on
+          ? frontmatter.depends_on.split(',').map((s) => s.trim()).filter(Boolean)
+          : [];
+        return { path: f, depends_on: depends, wave: 0, plan: frontmatter.plan || path.basename(path.dirname(f)) };
+      });
+      // Simple wave assignment: wave 0 = no deps, wave 1 = depends on wave 0, etc.
+      const assigned = new Set();
+      let wave = 0;
+      while (assigned.size < plans.length) {
+        const prev = assigned.size;
+        for (const p of plans) {
+          if (assigned.has(p.path)) continue;
+          const depsResolved = p.depends_on.every((dep) =>
+            plans.some((q) => q.plan === dep && assigned.has(q.path))
+          );
+          if (depsResolved) { p.wave = wave; assigned.add(p.path); }
+        }
+        if (assigned.size === prev) break; // circular or missing dep — break
+        wave++;
+      }
+    }
+  }
+
+  return {
+    workflow: 'execute',
+    target,
+    flags,
+    plan_path: planPath,
+    phase_dir: phaseDir,
+    plans,
+    config,
+    paths: {
+      project_root: PROJECT_ROOT,
+      rihal: RIHAL_DIR,
+      planning_root: PLANNING_DIR,
+      state: path.join(RIHAL_DIR, 'state.json'),
+    },
+    state_exists: fs.existsSync(path.join(RIHAL_DIR, 'state.json')),
+  };
+}
+
+/**
+ * state <subcommand> — read/write .rihal/state.json for execution tracking.
+ *
+ * Subcommands:
+ *   get                      → print current state
+ *   record-execution         → append execution metrics
+ *     --plan <path>
+ *     --tasks-completed <n>
+ *     --commits <sha1,sha2,...>
+ */
+function cmdState(subArgs) {
+  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const sub = subArgs[0];
+
+  if (sub === 'get') {
+    if (!fs.existsSync(statePath)) return { state: null };
+    return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  }
+
+  if (sub === 'record-execution') {
+    const flags = {};
+    for (let i = 1; i < subArgs.length; i++) {
+      if (subArgs[i].startsWith('--')) {
+        const key = subArgs[i].slice(2);
+        flags[key] = subArgs[i + 1];
+        i++;
+      }
+    }
+    const state = fs.existsSync(statePath)
+      ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
+      : {};
+    if (!state.executions) state.executions = [];
+    state.executions.push({
+      plan: flags.plan || '',
+      tasks_completed: parseInt(flags['tasks-completed'] || '0', 10),
+      commits: (flags.commits || '').split(',').filter(Boolean),
+      timestamp: new Date().toISOString(),
+    });
+    state.last_execution = state.executions[state.executions.length - 1];
+    fs.mkdirSync(RIHAL_DIR, { recursive: true });
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+    return { ok: true, state_path: statePath };
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: get, record-execution`);
+}
+
 function readPackageVersion() {
   try {
     const manifestPath = path.join(CONFIG_DIR, 'manifest.yaml');
@@ -370,7 +506,11 @@ function main() {
     let result;
     switch (subcommand) {
       case 'init':
-        result = cmdInit(args[0] || '', args.slice(1).join(' '));
+        if (args[0] === 'execute') {
+          result = cmdInitExecute(args.slice(1).join(' '));
+        } else {
+          result = cmdInit(args[0] || '', args.slice(1).join(' '));
+        }
         break;
       case 'select-panel':
         result = cmdSelectPanel(args.join(' '));
@@ -384,6 +524,9 @@ function main() {
       case 'classify-question':
         result = cmdClassifyQuestion(args.join(' '));
         break;
+      case 'state':
+        result = cmdState(args);
+        break;
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -391,7 +534,7 @@ function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|version> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|version> [args]');
         return;
       default:
         console.error(`Unknown subcommand: ${subcommand}`);
