@@ -21,10 +21,17 @@ Use these exact `subagent_type` values when calling the Task tool:
 - `rihal-waleed` — CTO
 - `rihal-fatima` — QA Lead
 - `rihal-mariam` — Marketing & Growth Lead
+- `rihal-hussain-pm` — Product Manager
 
 Do not invoke `general-purpose` or any other agent type. If `rihal-tools.cjs select-panel` returns an agent id not in this list, error and ask the user to re-run with `--agents=...` explicitly.
 
-**Mariam is the primary panelist for `question_type === "market"` or `"discovery"`.** When the question is externally-anchored (sectors, geography, GTM, launch), include Mariam in the panel. Fatima defers these questions — Mariam does not.
+**Routing rules by question_type:**
+- `market` or `discovery` → Mariam leads (she researches first), Hussain-PM follows (he scopes), Sadiq closes (kill criteria). Fatima is not in this panel — she defers market questions by design.
+- `codebase` → Waleed leads, Sadiq weighs strategy, Fatima gates release.
+- `team` → Sadiq leads, Nasser if installed.
+- `release` → Fatima leads, Waleed for architecture.
+- `design` → Layla if installed, else Waleed for technical feasibility.
+- `greenfield` → Mariam (market), Hussain-PM (scope), Waleed (feasibility).
 </available_agent_types>
 
 ## Step 0 — Initialize
