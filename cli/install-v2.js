@@ -366,6 +366,7 @@ function install(opts) {
   console.log('');
   console.log('  Slash commands installed:');
   console.log('    /rihal:council  — parallel multi-agent council');
+  console.log('    /rihal:status   — project state dashboard');
   console.log('');
   console.log('  Next:');
   console.log(`    cd ${opts.target}`);
