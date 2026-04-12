@@ -460,59 +460,191 @@ function cmdInitExecute(rawArgs) {
  * state <subcommand> — read/write .rihal/state.json for execution tracking.
  *
  * Subcommands:
- *   get                      → print current state
- *   record-execution         → append execution metrics
- *     --plan <path>
- *     --tasks-completed <n>
- *     --commits <sha1,sha2,...>
+ *   read                           → print full state.json as formatted JSON
+ *   get                            → alias for read
+ *   init --project <name>          → create state.json if missing
+ *   set-phase <name>               → set current_phase, reset current_plan, append to phases[]
+ *   advance-plan                   → increment current_plan
+ *   record-execution --plan <name> --tasks <n> --duration <ms> --hash <git-hash>
+ *   add-decision "<summary>"       → append to decisions[]
+ *   add-blocker "<description>"    → append to blockers[]
+ *   resolve-blocker <index>        → set blockers[index].resolved = true
+ *   record-session                 → update last_session timestamp
+ *   record-council --slug <s> --panel <csv> --artifact <path>
  */
 function cmdState(subArgs) {
   const statePath = path.join(RIHAL_DIR, 'state.json');
   const sub = subArgs[0];
 
-  if (sub === 'get') {
-    if (!fs.existsSync(statePath)) return { state: null };
-    return JSON.parse(fs.readFileSync(statePath, 'utf8'));
-  }
-
-  if (sub === 'advance-plan') {
-    const state = fs.existsSync(statePath)
-      ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
-      : { current_plan: 0, executions: [] };
-    if (typeof state.current_plan !== 'number') state.current_plan = 0;
-    state.current_plan += 1;
-    fs.mkdirSync(RIHAL_DIR, { recursive: true });
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
-    return { ok: true, current_plan: state.current_plan, state_path: statePath };
-  }
-
-  if (sub === 'record-execution') {
+  /** Parse --key value flags from subArgs starting at index. */
+  function parseFlags(startIdx) {
     const flags = {};
-    for (let i = 1; i < subArgs.length; i++) {
+    for (let i = startIdx; i < subArgs.length; i++) {
       if (subArgs[i].startsWith('--')) {
         const key = subArgs[i].slice(2);
-        flags[key] = subArgs[i + 1];
+        flags[key] = subArgs[i + 1] || '';
         i++;
       }
     }
-    const state = fs.existsSync(statePath)
-      ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
-      : {};
+    return flags;
+  }
+
+  /** Read state or return default skeleton. */
+  function readState() {
+    if (!fs.existsSync(statePath)) return null;
+    return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  }
+
+  /** Atomic write: write to temp file then rename. */
+  function writeState(state) {
+    state.updated = new Date().toISOString();
+    fs.mkdirSync(RIHAL_DIR, { recursive: true });
+    const tmp = statePath + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
+    fs.renameSync(tmp, statePath);
+    return { ok: true, state };
+  }
+
+  function defaultState(projectName) {
+    const now = new Date().toISOString();
+    return {
+      version: '1',
+      project: projectName || path.basename(PROJECT_ROOT),
+      created: now,
+      updated: now,
+      current_phase: null,
+      current_plan: 0,
+      phases: [],
+      executions: [],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      last_session: null,
+    };
+  }
+
+  // --- read / get ---
+  if (sub === 'read' || sub === 'get') {
+    const state = readState();
+    if (!state) return { state: null };
+    return state;
+  }
+
+  // --- init ---
+  if (sub === 'init') {
+    if (fs.existsSync(statePath)) {
+      return { ok: true, state: readState(), message: 'state.json already exists' };
+    }
+    const flags = parseFlags(1);
+    const state = defaultState(flags.project);
+    return writeState(state);
+  }
+
+  // --- set-phase ---
+  if (sub === 'set-phase') {
+    const name = subArgs[1];
+    if (!name) throw new Error('set-phase requires a phase name argument');
+    const state = readState() || defaultState();
+    state.current_phase = name;
+    state.current_plan = 0;
+    if (!state.phases) state.phases = [];
+    state.phases.push({ name, started: new Date().toISOString(), completed: null, plan_count: 0 });
+    return writeState(state);
+  }
+
+  // --- advance-plan ---
+  if (sub === 'advance-plan') {
+    const state = readState() || defaultState();
+    if (typeof state.current_plan !== 'number') state.current_plan = 0;
+    state.current_plan += 1;
+    // Update plan_count on current phase if tracked
+    if (state.phases && state.phases.length > 0) {
+      const current = state.phases[state.phases.length - 1];
+      current.plan_count = state.current_plan;
+    }
+    return writeState(state);
+  }
+
+  // --- record-execution ---
+  if (sub === 'record-execution') {
+    const flags = parseFlags(1);
+    const state = readState() || defaultState();
     if (!state.executions) state.executions = [];
     state.executions.push({
       plan: flags.plan || '',
-      tasks_completed: parseInt(flags['tasks-completed'] || flags.tasks || '0', 10),
-      commits: (flags.commits || '').split(',').filter(Boolean),
+      tasks: parseInt(flags.tasks || '0', 10),
       duration_ms: flags.duration ? parseInt(flags.duration, 10) : null,
-      timestamp: new Date().toISOString(),
+      commit_hash: flags.hash || null,
+      committed_at: new Date().toISOString(),
     });
-    state.last_execution = state.executions[state.executions.length - 1];
-    fs.mkdirSync(RIHAL_DIR, { recursive: true });
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
-    return { ok: true, state_path: statePath };
+    return writeState(state);
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: get, advance-plan, record-execution`);
+  // --- add-decision ---
+  if (sub === 'add-decision') {
+    const summary = subArgs.slice(1).join(' ');
+    if (!summary) throw new Error('add-decision requires a summary argument');
+    const state = readState() || defaultState();
+    if (!state.decisions) state.decisions = [];
+    state.decisions.push({
+      summary,
+      phase: state.current_phase,
+      plan: state.current_plan,
+      date: new Date().toISOString(),
+    });
+    return writeState(state);
+  }
+
+  // --- add-blocker ---
+  if (sub === 'add-blocker') {
+    const description = subArgs.slice(1).join(' ');
+    if (!description) throw new Error('add-blocker requires a description argument');
+    const state = readState() || defaultState();
+    if (!state.blockers) state.blockers = [];
+    state.blockers.push({
+      description,
+      phase: state.current_phase,
+      plan: state.current_plan,
+      date: new Date().toISOString(),
+      resolved: false,
+    });
+    return writeState(state);
+  }
+
+  // --- resolve-blocker ---
+  if (sub === 'resolve-blocker') {
+    const index = parseInt(subArgs[1], 10);
+    const state = readState();
+    if (!state) throw new Error('No state.json found');
+    if (!state.blockers || index < 0 || index >= state.blockers.length) {
+      throw new Error(`Invalid blocker index: ${subArgs[1]}. Valid range: 0-${(state.blockers || []).length - 1}`);
+    }
+    state.blockers[index].resolved = true;
+    return writeState(state);
+  }
+
+  // --- record-session ---
+  if (sub === 'record-session') {
+    const state = readState() || defaultState();
+    state.last_session = new Date().toISOString();
+    return writeState(state);
+  }
+
+  // --- record-council ---
+  if (sub === 'record-council') {
+    const flags = parseFlags(1);
+    const state = readState() || defaultState();
+    if (!state.council_sessions) state.council_sessions = [];
+    state.council_sessions.push({
+      date: new Date().toISOString(),
+      question_slug: flags.slug || '',
+      panel: (flags.panel || '').split(',').map((s) => s.trim()).filter(Boolean),
+      artifact_path: flags.artifact || '',
+    });
+    return writeState(state);
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council`);
 }
 
 function readPackageVersion() {
@@ -561,9 +693,16 @@ function main() {
       case '-h':
       case undefined:
         console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|version> [args]');
-        console.log('  state get                                    → print state.json');
+        console.log('  state read                                   → print full state.json');
+        console.log('  state init --project <name>                  → create state.json if missing');
+        console.log('  state set-phase <name>                       → set current phase, reset plan counter');
         console.log('  state advance-plan                           → increment current_plan counter');
-        console.log('  state record-execution --plan <p> --tasks <n> --duration <ms>  → append execution');
+        console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>  → append execution');
+        console.log('  state add-decision "<summary>"               → append to decisions[]');
+        console.log('  state add-blocker "<description>"            → append to blockers[]');
+        console.log('  state resolve-blocker <index>                → mark blocker as resolved');
+        console.log('  state record-session                         → update last_session timestamp');
+        console.log('  state record-council --slug <s> --panel <csv> --artifact <path>  → append council session');
         return;
       default:
         console.error(`Unknown subcommand: ${subcommand}`);
