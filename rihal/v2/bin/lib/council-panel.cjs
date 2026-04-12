@@ -235,6 +235,21 @@ const SADIQ_TRIGGERS = [
 
 const PM_TRIGGERS = ['scope', 'feature', 'requirement', 'roadmap', 'prd'];
 
+// Market/discovery questions: Mariam leads, Hussain-PM follows for scoping
+const MARKET_TRIGGERS = [
+  'what project', 'which project', 'oman', 'saudi', 'uae', 'gcc', 'mena',
+  '2040', '2030', 'market research', 'go to market', 'gtm', 'positioning',
+  'launch', 'what to build', 'which market', 'market opportunity',
+  'new business', 'new venture',
+];
+
+// For market/discovery questions, Mariam leads; Hussain-PM follows for scoping.
+const MARKET_PADDING_ORDER = [
+  'mariam', 'hussain-pm', 'sadiq', 'waleed', 'fatima',
+  'nasser', 'ahmed-hassani', 'khalid', 'yousef', 'haitham',
+  'layla', 'zahra', 'zayd', 'noor',
+];
+
 const STRATEGIC_PADDING_ORDER = [
   'sadiq', 'hussain-pm', 'waleed', 'fatima', 'nasser',
   'ahmed-hassani', 'khalid', 'yousef', 'haitham', 'layla',
@@ -286,6 +301,10 @@ function applyPriorityBoosts(scores, normalizedQuestion) {
   if (PM_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
     scores['hussain-pm'] = (scores['hussain-pm'] || 0) + 3;
   }
+  if (MARKET_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.mariam = (scores.mariam || 0) + 6; // Mariam leads market questions
+    scores['hussain-pm'] = (scores['hussain-pm'] || 0) + 3; // PM follows for scoping
+  }
   return scores;
 }
 
@@ -311,7 +330,8 @@ function selectPanel(question, opts = {}) {
   applyPriorityBoosts(scores, normalized);
 
   const isStrategic = SADIQ_TRIGGERS.some((t) => normalized.includes(t));
-  const tiebreakOrder = isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
+  const isMarket = MARKET_TRIGGERS.some((t) => normalized.includes(t));
+  const tiebreakOrder = isMarket ? MARKET_PADDING_ORDER : isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
   const ranked = [...AGENT_IDS]
     .map((id) => ({ id, score: scores[id] }))
     .sort((a, b) => {
@@ -323,7 +343,7 @@ function selectPanel(question, opts = {}) {
   if (scored.length >= minPanel) return scored.map((a) => a.id);
 
   const alreadyPicked = new Set(scored.map((a) => a.id));
-  const paddingPool = isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
+  const paddingPool = isMarket ? MARKET_PADDING_ORDER : isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
   const padding = [];
   for (const id of paddingPool) {
     if (alreadyPicked.has(id)) continue;
@@ -347,6 +367,7 @@ function explainSelection(question, opts = {}) {
 }
 
 module.exports = {
-  AGENT_IDS, KEYWORDS, SADIQ_TRIGGERS, PM_TRIGGERS, AGENT_NAMES,
+  AGENT_IDS, KEYWORDS, SADIQ_TRIGGERS, PM_TRIGGERS, MARKET_TRIGGERS, AGENT_NAMES,
+  STRATEGIC_PADDING_ORDER, MARKET_PADDING_ORDER,
   normalize, scoreAgent, applyPriorityBoosts, selectPanel, explainSelection,
 };
