@@ -4,14 +4,27 @@
 Orchestrate a single-agent quick sync session. This is the lightweight alternative to council — one agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague, not calling a board meeting.
 </purpose>
 
-<required_reading>
-Before executing this workflow, the orchestrator must have loaded:
+## Step 0 — Usage check
 
-- `.rihal/references/council-protocol.md` — agent conventions and response format
-- This file
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed to Step 1, do not read any reference files
 
-These are `@`-included in the slash command's `<execution_context>` block.
-</required_reading>
+**Usage:**
+```
+/rihal:discuss [agent-name] <question>
+```
+
+**Examples:**
+```
+/rihal:discuss sadiq should I pivot this idea?
+/rihal:discuss waleed what stack should I use for a multi-tenant SaaS?
+/rihal:discuss what's the kill criterion for this project?
+/rihal:discuss fatima is this release ready to ship?
+```
+
+Only after the user provides arguments, proceed to load references by Reading:
+- `.rihal/references/council-protocol.md` (agent conventions and response format)
 
 <available_agent_types>
 Use these exact `subagent_type` values when calling the Agent tool:
@@ -23,7 +36,7 @@ Use these exact `subagent_type` values when calling the Agent tool:
 - `rihal-hussain-pm` — 📋 Hussain-PM (Product)
 </available_agent_types>
 
-## Step 0 — Initialize
+## Step 1 — Initialize
 
 Call the helper binary to parse arguments and resolve the agent:
 
@@ -40,7 +53,7 @@ Parse the JSON for:
 - `question_type` — classification result
 - `installed_agents` — list of installed agent ids
 
-## Step 1 — Resolve agent
+## Step 2 — Resolve agent
 
 **If `agent_id` is not null:** use it directly. The init command already identified the first token as a known agent.
 
@@ -61,7 +74,7 @@ Display name mapping:
 - `mariam` → `📣 Mariam (Marketing)`
 - `hussain-pm` → `📋 Hussain-PM (Product)`
 
-## Step 2 — Optional codebase scan
+## Step 3 — Optional codebase scan
 
 **Only run this if `question_type` is `codebase`, `team`, or `release`.**
 
@@ -75,7 +88,7 @@ Produce a 3-5 line "Context" summary from the output.
 
 **Skip this step entirely** for `market`, `discovery`, `greenfield`, and `design` question types — they don't need codebase context for a quick discuss.
 
-## Step 3 — Spawn single agent
+## Step 4 — Spawn single agent
 
 Spawn the resolved agent via the Agent tool with this prompt:
 
@@ -101,11 +114,11 @@ Start your reply with your icon + name header.
 
 Use `subagent_type` = `rihal-{agent_id}` (e.g., `rihal-sadiq`).
 
-## Step 4 — Print response verbatim
+## Step 5 — Print response verbatim
 
 Print the agent's response exactly as returned. No orchestrator note, no round labeling, no summarization. This is a conversation, not a formal session.
 
-## Step 5 — Offer to save (guided mode only)
+## Step 6 — Offer to save (guided mode only)
 
 **If `config.mode === 'guided'`:** ask the user via AskUserQuestion:
 
@@ -135,7 +148,7 @@ Print: `💾 Discussion saved: .planning/council-sessions/discuss-{date}-{slug}.
 
 **If no, or `config.mode === 'yolo'`:** skip saving entirely.
 
-## Step 6 — Update state
+## Step 7 — Update state
 
 ```bash
 node .rihal/bin/rihal-tools.cjs state record-session

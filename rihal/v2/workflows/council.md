@@ -4,15 +4,28 @@
 Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rihal-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
 </purpose>
 
-<required_reading>
-Before executing this workflow, the orchestrator must have loaded:
+## Step 0 — Usage check
 
-- `.rihal/references/council-protocol.md` — the 5-step majlis protocol and cross-talk conventions
-- `.rihal/references/commit-conventions.md` — commit format rules (for the session-save artifact)
-- This file
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed to Step 1, do not read any reference files
 
-These are `@`-included in the slash command's `<execution_context>` block.
-</required_reading>
+**Usage:**
+```
+/rihal:council <question> [--full] [--agents=a,b,c] [--explain]
+```
+
+**Examples:**
+```
+/rihal:council should I start a new project or continue this one?
+/rihal:council --agents=sadiq,waleed,fatima is this plan ready to ship?
+/rihal:council --explain what stack should I use for a multi-tenant SaaS?
+/rihal:council --full should we rewrite the auth layer?
+```
+
+Only after the user provides arguments, proceed to load references by Reading:
+- `.rihal/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
+- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
 
 <available_agent_types>
 Use these exact `subagent_type` values when calling the Task tool:
@@ -34,7 +47,7 @@ Do not invoke `general-purpose` or any other agent type. If `rihal-tools.cjs sel
 - `greenfield` → Mariam (market), Hussain-PM (scope), Waleed (feasibility).
 </available_agent_types>
 
-## Step 0 — Initialize
+## Step 1 — Initialize
 
 Call the helper binary once to load all context:
 
@@ -59,7 +72,7 @@ Parse the JSON for:
 
 **If the panel contains any id not in `installed_agents`:** stop, print `Unknown agent: {id}. Installed: {installed_agents.join(', ')}`, exit.
 
-## Step 1 — Pre-consultation context gathering
+## Step 2 — Pre-consultation context gathering
 
 **Branch on `question_type`** (returned by `rihal-tools.cjs init` as `question_type`):
 
@@ -122,7 +135,7 @@ test -f README.md && head -40 README.md
 
 This is the factual baseline every subagent will be briefed on. It replaces the v1 "vibes-based council" problem.
 
-## Step 2 — Panel selection
+## Step 3 — Panel selection
 
 **If `flags.explain` is true:** print the panel scoring table before proceeding:
 
@@ -146,7 +159,7 @@ Use the AskUserQuestion tool (not raw stdin) for the confirmation.
 
 **If `config.mode === 'yolo'`:** print the panel one-liner and proceed without confirmation.
 
-## Step 3 — Spawn the panel in parallel (two rounds)
+## Step 4 — Spawn the panel in parallel (two rounds)
 
 ### Round 1 — Independent perspectives
 
@@ -220,7 +233,7 @@ Spawn all at once (same pattern as Round 1).
 - All three panelists in Round 1 gave the same recommendation (genuine consensus), OR
 - One or more panelists explicitly said they had nothing to add
 
-## Step 4 — Present responses
+## Step 5 — Present responses
 
 Present Round 1 then Round 2 **verbatim and in panel order**. Do NOT summarize. Do NOT paraphrase.
 
@@ -257,7 +270,7 @@ After all responses, add an **Orchestrator Note** (max 3 sentences) flagging the
 
 The Orchestrator Note is **your own voice**, not an agent voice. Label it clearly.
 
-## Step 5 — Save the session
+## Step 6 — Save the session
 
 Write the session artifact to `{paths.sessions_dir}/council-{YYYY-MM-DD}-{slug}.md`:
 
@@ -319,7 +332,7 @@ Print the artifact path to the user at the end:
 💾 Session saved: .planning/council-sessions/council-2026-04-12-should-i-start-new-project.md
 ```
 
-### Step 5b — Update state (silent)
+### Step 6b — Update state (silent)
 
 After the artifact is written, update `.rihal/state.json` with the council session record and session timestamp. These commands run silently — do not print output to the user for this step.
 

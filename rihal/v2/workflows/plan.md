@@ -4,11 +4,9 @@
 Convert council session follow-ups or freeform task descriptions into executable PLAN.md files. Spawns rihal-planner as a single subagent that writes structured plans to `.planning/plans/`.
 </purpose>
 
-<required_reading>
-- `.rihal/references/execution-protocol.md` — PLAN.md schema
-- `.rihal/references/commit-conventions.md` — commit format
-- This file
-</required_reading>
+## Note on reference loading
+
+References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
 
 <available_agent_types>
 - `rihal-planner` — plan writer subagent

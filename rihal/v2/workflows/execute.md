@@ -4,11 +4,9 @@
 Orchestrate one or more PLAN.md files by spawning rihal-executor subagents. Supports single-plan mode, phase mode (multiple plans in dependency waves), and interactive mode (sequential, no subagents).
 </purpose>
 
-<required_reading>
-- `.rihal/references/execution-protocol.md` — PLAN.md schema, deviation rules, commit protocol, checkpoint format
-- `.rihal/references/commit-conventions.md` — commit format rules
-- This file
-</required_reading>
+## Note on reference loading
+
+References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
 
 <available_agent_types>
 - `rihal-executor` — plan executor subagent (one instance per plan file)
