@@ -33,3 +33,4 @@ commands:
 references:
   - council-protocol.md
   - commit-conventions.md
+  - command-redirect-format.md
