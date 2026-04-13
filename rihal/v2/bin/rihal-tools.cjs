@@ -837,8 +837,9 @@ function cmdModule(subArgs) {
     // Hardcoded available modules (known at build time)
     return {
       modules: [
-        { name: 'core', description: 'Council agents, /rihal:council, /rihal:discuss, /rihal:status, and state management' },
-        { name: 'execution', description: 'Plan execution — write and run PLAN.md files with rihal-executor and rihal-planner' },
+        { name: 'core', description: 'Council agents, /rihal:council, /rihal:discuss, /rihal:status, /rihal:do router, /rihal:help, and state management' },
+        { name: 'execution', description: 'Plan execution — /rihal:execute, /rihal:plan, /rihal:quick, /rihal:debug, /rihal:audit-fix, /rihal:undo' },
+        { name: 'discovery', description: 'Project discovery — /rihal:new-project, /rihal:map-codebase, /rihal:scan, /rihal:explore, /rihal:code-review, /rihal:docs-update' },
       ]
     };
   }
@@ -861,7 +862,7 @@ function cmdModule(subArgs) {
   }
 
   if (sub === 'check-requires') {
-    const REQUIRES = { core: [], execution: ['core'] };
+    const REQUIRES = { core: [], execution: ['core'], discovery: ['core'] };
     const modName = subArgs[1];
     if (!modName || !REQUIRES[modName]) return { ok: false, error: `Unknown module: ${modName}` };
     const requires = REQUIRES[modName];

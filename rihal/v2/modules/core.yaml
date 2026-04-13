@@ -1,6 +1,6 @@
 name: core
 version: "1.0"
-description: "Council agents, /rihal:council, /rihal:discuss, /rihal:status, and state management"
+description: "Council agents, /rihal:council, /rihal:discuss, /rihal:status, /rihal:do router, and state management"
 requires: []
 agents:
   - rihal-sadiq.md
@@ -13,11 +13,23 @@ workflows:
   - discuss.md
   - status.md
   - install.md
+  - do.md
+  - help.md
+  - add-todo.md
+  - next.md
+  - progress.md
+  - resume-work.md
 commands:
   - council.md
   - discuss.md
   - status.md
   - install.md
+  - do.md
+  - help.md
+  - add-todo.md
+  - next.md
+  - progress.md
+  - resume-work.md
 references:
   - council-protocol.md
   - commit-conventions.md
