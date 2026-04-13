@@ -1106,18 +1106,18 @@ Use AskUserQuestion:
 
 **If "Review full file":** Display raw `cat .planning/ROADMAP.md`, then re-ask.
 
-**Generate or refresh project GEMINI.md before final commit:**
+**Generate or refresh project CLAUDE.md before final commit:**
 
 ```bash
 node .rihal/bin/rihal-tools.cjs generate-claude-md
 ```
 
-This ensures new projects get the default Rihal workflow-enforcement guidance and current project context in `GEMINI.md`.
+This ensures new projects get the default Rihal workflow-enforcement guidance and current project context in `CLAUDE.md`.
 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-node .rihal/bin/rihal-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md GEMINI.md
+node .rihal/bin/rihal-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
 ```
 
 ## 9. Done
@@ -1138,7 +1138,7 @@ Present completion summary:
 | Research       | `.planning/research/`       |
 | Requirements   | `.planning/REQUIREMENTS.md` |
 | Roadmap        | `.planning/ROADMAP.md`      |
-| Project guide  | `GEMINI.md`                 |
+| Project guide  | `CLAUDE.md`                 |
 
 **[N] phases** | **[X] requirements** | Ready to build ✓
 ```
@@ -1220,7 +1220,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - `.planning/REQUIREMENTS.md`
 - `.planning/ROADMAP.md`
 - `.planning/STATE.md`
-- `GEMINI.md`
+- `CLAUDE.md`
 
 </output>
 
@@ -1242,7 +1242,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
-- [ ] GEMINI.md generated with Rihal workflow guidance
+- [ ] CLAUDE.md generated with Rihal workflow guidance
 - [ ] User knows next step is `/rihal:discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.

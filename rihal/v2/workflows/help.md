@@ -18,7 +18,7 @@ Display the complete Rihal command reference. Output ONLY the reference content.
 Rihal evolves fast. Update periodically:
 
 ```bash
-npx get-shit-done-cc@latest
+npx -y rihal-code
 ```
 
 ## Core Workflow
@@ -451,7 +451,7 @@ Update Rihal to latest version with changelog preview.
 - Displays changelog entries for versions you've missed
 - Highlights breaking changes
 - Confirms before running install
-- Better than raw `npx get-shit-done-cc`
+- Better than raw `npx -y rihal-code`
 
 Usage: `/rihal:update`
 

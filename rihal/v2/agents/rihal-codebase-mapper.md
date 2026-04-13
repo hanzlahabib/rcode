@@ -24,7 +24,7 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 <why_this_matters>
 **These documents are consumed by other rihal commands:**
 
-**`/rihal:plan-phase`** loads relevant codebase docs when creating implementation plans:
+**`/rihal:plan`** loads relevant codebase docs when creating implementation plans:
 | Phase Type | Documents Loaded |
 |------------|------------------|
 | UI, frontend, components | CONVENTIONS.md, STRUCTURE.md |
@@ -35,7 +35,7 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 | refactor, cleanup | CONCERNS.md, ARCHITECTURE.md |
 | setup, config | STACK.md, STRUCTURE.md |
 
-**`/rihal:execute-phase`** references codebase docs to:
+**`/rihal:execute`** references codebase docs to:
 - Follow existing conventions when writing code
 - Know where to place new files (STRUCTURE.md)
 - Match testing patterns (TESTING.md)
