@@ -18,6 +18,34 @@ References (execution-protocol.md, commit-conventions.md) are loaded ONLY when S
 INIT=$(node .rihal/bin/rihal-tools.cjs init plan "$ARGUMENTS")
 ```
 
+### Step 0.5 — Detect decision questions (STOP and redirect)
+
+`/rihal:plan` converts CONCRETE TASKS into PLAN.md files. It does NOT answer strategic questions or weigh options.
+
+**If the input is a question (contains "should we", "should I", "which is better", "A or B", "vs", "worth it", "kya karna", or ends with "?"), STOP immediately and redirect to `/rihal:council`.**
+
+Classify the input by running:
+```bash
+node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS"
+```
+
+If `question_type` is `market`, `discovery`, `greenfield`, or the input matches a decision pattern, print EXACTLY this block and STOP (do not spawn planner):
+
+```
+⚠ That's a decision question, not a planning input.
+
+/rihal:plan turns concrete tasks into executable PLAN.md files.
+/rihal:council answers "should we do X?" questions with a panel of experts.
+
+Copy-paste this to ask the council instead:
+
+/rihal:council $ARGUMENTS
+```
+
+**Important formatting:** the suggested `/rihal:council` command MUST be on a single line with no line breaks, so the user can copy it verbatim. Do not split, wrap, or bullet it.
+
+Only proceed past this step if the input is a concrete task description (e.g., "set up Next.js 16 project") or a council session file path.
+
 Parse:
 - `input_type` — `"session"`, `"file"`, or `"description"`
 - `resolved_path` — absolute path to the input file (if session/file type)
