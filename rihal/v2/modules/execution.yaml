@@ -1,16 +1,35 @@
 name: execution
 version: "1.0"
-description: "Plan execution — write and run PLAN.md files with rihal-executor and rihal-planner"
+description: "Plan execution — write and run PLAN.md files, quick tasks, debug, audit-fix"
 requires:
   - core
 agents:
   - rihal-executor.md
   - rihal-planner.md
+  - rihal-verifier.md
 workflows:
   - execute.md
   - plan.md
+  - quick.md
+  - debug.md
+  - audit-fix.md
+  - undo.md
+  - analyze-dependencies.md
+  - import.md
+  - inbox.md
 commands:
   - execute.md
   - plan.md
+  - quick.md
+  - debug.md
+  - audit-fix.md
+  - undo.md
+  - analyze-dependencies.md
+  - import.md
+  - inbox.md
 references:
   - execution-protocol.md
+  - checkpoints.md
+  - continuation-format.md
+  - verification-patterns.md
+  - tdd.md
