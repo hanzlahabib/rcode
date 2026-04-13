@@ -26,6 +26,19 @@ Without diagnosis: "Feature doesn't work" → guess at fix → maybe wrong
 With diagnosis: "Feature doesn't work" → "missing error handler" → precise fix
 </core_principle>
 
+## Step 0.5 — Detect non-bug questions (redirect)
+
+If input contains "should we", "what is the best way to", "how do I implement" — these are not bugs, they are how-to or strategy questions.
+
+```
+⚠ /rihal:debug investigates broken behavior, not how-to questions.
+
+For implementation guidance: /rihal:discuss waleed $ARGUMENTS
+For a strategic decision: /rihal:council $ARGUMENTS
+```
+
+Only proceed past this step if the input describes broken or unexpected behavior (e.g., "error X occurs", "feature Y doesn't work", "API returns wrong data").
+
 <process>
 
 <step name="parse_issues">

@@ -23,7 +23,29 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:discuss fatima is this release ready to ship?
 ```
 
-Only after the user provides arguments, proceed to load references by Reading:
+Only after the user provides arguments, proceed to Step 0.5.
+
+## Step 0.5 — Detect strategic decisions (redirect to council)
+
+Run classify-question to determine question type:
+
+```bash
+node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS"
+```
+
+If `question_type` is `market`, `discovery`, or `greenfield` — these benefit from multiple perspectives:
+
+```
+⚠ Strategic decisions benefit from multiple perspectives.
+
+/rihal:discuss is single-agent. For "should we" questions across domains, use:
+
+/rihal:council $ARGUMENTS
+```
+
+Only proceed past this step if the question is tactical or single-domain (codebase, team, release, design).
+
+After Step 0.5 confirmation, proceed to load references by Reading:
 - `.rihal/references/council-protocol.md` (agent conventions and response format)
 
 <available_agent_types>

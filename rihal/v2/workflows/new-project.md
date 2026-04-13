@@ -13,6 +13,26 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
+## Step 0.5 — Detect existing project (redirect)
+
+Before any processing, check if a project already exists in this directory:
+
+```bash
+EXISTING=$(node .rihal/bin/rihal-tools.cjs state get 2>/dev/null | grep '"project"' | head -1)
+```
+
+If `$EXISTING` is non-empty (project already initialized):
+
+```
+⚠ A rihal project already exists here.
+
+To check current state: /rihal:status
+To find next action: /rihal:next
+To start a fresh phase instead: /rihal:add-phase
+```
+
+Only proceed past this step if no project exists (`$EXISTING` is empty).
+
 <auto_mode>
 
 ## Auto Mode Detection
