@@ -23,7 +23,23 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:council --full should we rewrite the auth layer?
 ```
 
-Only after the user provides arguments, proceed to load references by Reading:
+Only after the user provides arguments, proceed to Step 0.5.
+
+## Step 0.5 — Detect single-agent questions (STOP and redirect)
+
+If `$ARGUMENTS` starts with an agent name (sadiq/waleed/fatima/mariam/hussain-pm) and looks like a question directed at one person (e.g., "ask waleed about X", "what does fatima think"):
+
+```
+⚠ That looks like a single-agent question — /rihal:discuss is faster.
+
+Council spawns 3-5 agents in parallel for debate. For one expert, use:
+
+/rihal:discuss $ARGUMENTS
+```
+
+Only proceed past this step if the input is a true multi-perspective question (e.g., "should we...?", "is X a good idea?", "which approach is best?").
+
+After Step 0.5 confirmation, proceed to load references by Reading:
 - `.rihal/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
 - `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
 

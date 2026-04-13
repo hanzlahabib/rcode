@@ -41,6 +41,44 @@ Examples:
   /rihal:undo --phase 03
   /rihal:undo --plan 03-02
 ```
+
+</step>
+
+<step name="confirmation_gate" priority="safety">
+**SAFETY GATE — This is a destructive operation. Confirmation is mandatory.**
+
+Before gathering any commits, display:
+
+```
+⚠  UNDO is destructive — commits will be reverted via git revert --no-commit.
+
+Unsure what will be reverted? Run first:
+
+/rihal:undo --last 5
+
+to preview the last 5 Rihal commits before choosing.
+```
+
+Use AskUserQuestion with explicit confirmation:
+
+```
+AskUserQuestion(
+  header: "Confirm Undo",
+  question: "Proceed with undo operation?",
+  options: [
+    { label: "Preview first", description: "Show what will be reverted" },
+    { label: "Proceed", description: "Continue with undo" },
+    { label: "Cancel", description: "Abort" }
+  ]
+)
+```
+
+**If "Cancel":** display "Undo cancelled. No changes made." and exit.
+
+**If "Preview first":** temporarily switch MODE to `last` with COUNT=5, gather and display commits (do NOT confirm-revert yet), then re-ask this gate.
+
+**If "Proceed":** continue to gather_commits.
+
 </step>
 
 <step name="gather_commits">

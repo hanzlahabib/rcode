@@ -28,6 +28,20 @@ Examples:
 
 STOP here if no arguments.
 
+## Step 0.5 — Detect pure decision questions (redirect to council)
+
+If `$ARGUMENTS` is a pure decision question with no topic to work on (patterns like "should we", "A or B", "is X better than Y", "worth it") and does NOT contain a preset name or agent list:
+
+```
+⚠ /rihal:chain produces deliverables (RESEARCH.md, SCOPE.md, PLAN.md).
+For decisions only, /rihal:council is the right tool.
+
+For a debate: /rihal:council $ARGUMENTS
+For a research-to-plan pipeline: /rihal:chain research-plan $ARGUMENTS
+```
+
+Only proceed past this step if the input is a topic or deliverable request (e.g., "research affiliate site", "scope mobile app migration", "plan e-commerce platform").
+
 ## Step 1 — Resolve the chain
 
 ```bash

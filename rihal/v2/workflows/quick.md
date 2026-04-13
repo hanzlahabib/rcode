@@ -24,6 +24,23 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 </available_agent_types>
 
 <process>
+
+## Step 0.5 — Detect oversized tasks (redirect to full pipeline)
+
+If `$ARGUMENTS` length > 200 characters OR contains keywords like "system", "architecture", "redesign", "migrate", "rewrite", or mentions multiple files:
+
+```
+⚠ /rihal:quick is for small, single-file tasks.
+
+This looks bigger. For multi-step work, use the pipeline:
+
+/rihal:plan $ARGUMENTS
+
+Then: /rihal:execute <generated-plan>
+```
+
+Only proceed past this step if the task is small, atomic, and self-contained (e.g., "add a button to dashboard", "fix typo in docs", "update package version").
+
 **Step 1: Parse arguments and get task description**
 
 Parse `$ARGUMENTS` for:

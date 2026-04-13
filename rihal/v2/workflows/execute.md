@@ -33,6 +33,22 @@ Parse:
 Usage: /rihal:execute <plan-file.md | phase-dir> [--wave N] [--interactive] [--continue]
 ```
 
+## Step 0.5 — Detect non-plan arguments (redirect to plan)
+
+If `$ARGUMENTS` doesn't end in `.md`, doesn't reference an existing directory, and looks like a question (contains "?", "should", "how", "what", or is a freeform topic):
+
+```
+⚠ /rihal:execute runs existing PLAN.md files — it doesn't create them.
+
+To turn an idea or question into a plan first, use:
+
+/rihal:plan $ARGUMENTS
+
+Then run /rihal:execute on the resulting plan file.
+```
+
+Only proceed past this step if the argument points to an actual PLAN.md file or phase directory.
+
 ## Step 1 — Read the plan(s)
 
 For each plan in `plans`, read the file. Print a summary:
