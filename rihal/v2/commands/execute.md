@@ -5,8 +5,4 @@ argument-hint: "<plan-file.md | phase-dir> [--wave N] [--interactive] [--continu
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 ---
 
-<execution_context>
-@.rihal/references/execution-protocol.md
-@.rihal/references/commit-conventions.md
 @.rihal/workflows/execute.md
-</execution_context>

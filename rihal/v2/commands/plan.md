@@ -5,8 +5,4 @@ argument-hint: "<council-session-path|task-description> [--phase <name>] [--outp
 allowed-tools: Read, Write, Glob, Grep, Bash, Agent
 ---
 
-<execution_context>
-@.rihal/references/execution-protocol.md
-@.rihal/references/commit-conventions.md
 @.rihal/workflows/plan.md
-</execution_context>
