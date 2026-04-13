@@ -732,7 +732,22 @@ function cmdState(subArgs) {
     return writeState(state);
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council`);
+  // --- record-chain ---
+  if (sub === 'record-chain') {
+    const flags = parseFlags(1);
+    if (!flags.slug) throw new Error('record-chain requires --slug <value>');
+    const state = readState() || defaultState();
+    if (!state.chains) state.chains = [];
+    state.chains.push({
+      date: new Date().toISOString(),
+      slug: flags.slug || '',
+      agents: (flags.agents || '').split(',').map((s) => s.trim()).filter(Boolean),
+      artifacts_dir: flags.artifacts || '',
+    });
+    return writeState(state);
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain`);
 }
 
 /** init plan — context blob for /rihal:plan workflow. */
@@ -801,6 +816,64 @@ function cmdPlanList() {
         objective: objMatch ? objMatch[1].trim() : '',
       };
     }),
+  };
+}
+
+/** init chain — context blob for /rihal:chain workflow. */
+function cmdInitChain(rawArgs) {
+  const config = readConfig();
+  const installedAgents = listInstalledAgents();
+  const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
+
+  const PRESETS = {
+    'research-plan': ['mariam', 'hussain-pm', 'planner'],
+    'feasibility': ['waleed', 'fatima'],
+    'gtm-to-build': ['mariam', 'hussain-pm', 'waleed'],
+    'full-discovery': ['mariam', 'sadiq', 'hussain-pm', 'waleed', 'planner'],
+  };
+
+  let chain = [];
+  let preset = null;
+  let topicTokens = [];
+
+  if (tokens.length > 0) {
+    const first = tokens[0];
+    if (PRESETS[first]) {
+      preset = first;
+      chain = PRESETS[first];
+      topicTokens = tokens.slice(1);
+    } else if (first.includes(',')) {
+      // Custom comma-separated agent list
+      chain = first.split(',').map((s) => s.trim()).filter(Boolean);
+      topicTokens = tokens.slice(1);
+    } else {
+      // Treat as topic with default research-plan preset
+      preset = 'research-plan';
+      chain = PRESETS['research-plan'];
+      topicTokens = tokens;
+    }
+  }
+
+  const topic = topicTokens.join(' ').trim();
+  const slug = (topic || preset || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  const date = new Date().toISOString().slice(0, 10);
+  const chainDir = path.join(PLANNING_DIR, 'chains', `${date}-${slug}`);
+
+  // Validate agents are installed
+  const unknownAgents = chain.filter((id) => !installedAgents.includes(id));
+
+  return {
+    workflow: 'chain',
+    preset,
+    chain,
+    topic,
+    slug,
+    chain_dir: chainDir,
+    config,
+    installed_agents: installedAgents,
+    unknown_agents: unknownAgents,
+    presets: PRESETS,
+    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RIHAL_DIR, 'state.json') },
   };
 }
 
@@ -898,6 +971,8 @@ function main() {
           result = cmdInitPlan(args.slice(1).join(' '));
         } else if (args[0] === 'discuss') {
           result = cmdInitDiscuss(args.slice(1).join(' '));
+        } else if (args[0] === 'chain') {
+          result = cmdInitChain(args.slice(1).join(' '));
         } else {
           result = cmdInit(args[0] || '', args.slice(1).join(' '));
         }

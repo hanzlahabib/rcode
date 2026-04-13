@@ -327,7 +327,7 @@ Task(
 <files_to_read>
 - .planning/STATE.md (Project state — what's already built)
 - .planning/PROJECT.md (Project context)
-- ./GEMINI.md (if exists — project-specific guidelines)
+- ./CLAUDE.md (if exists — project-specific guidelines)
 ${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decisions — research should align with these)' : ''}
 </files_to_read>
 
@@ -382,7 +382,7 @@ Task(
 
 <files_to_read>
 - .planning/STATE.md (Project State)
-- ./GEMINI.md (if exists — follow project-specific guidelines)
+- ./CLAUDE.md (if exists — follow project-specific guidelines)
 ${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decisions — locked, do not revisit)' : ''}
 ${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md (Research findings — use to inform implementation choices)' : ''}
 </files_to_read>
@@ -544,7 +544,7 @@ Execute quick task ${quick_id}.
 <files_to_read>
 - ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
 - .planning/STATE.md (Project state)
-- ./GEMINI.md (Project instructions, if exists)
+- ./CLAUDE.md (Project instructions, if exists)
 - .agent/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
 </files_to_read>
 

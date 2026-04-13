@@ -7,6 +7,10 @@ agents:
   - rihal-codebase-mapper.md
   - rihal-project-researcher.md
   - rihal-roadmapper.md
+  - rihal-phase-researcher.md
+  - rihal-advisor-researcher.md
+  - rihal-assumptions-analyzer.md
+  - rihal-research-synthesizer.md
 workflows:
   - new-project.md
   - map-codebase.md
