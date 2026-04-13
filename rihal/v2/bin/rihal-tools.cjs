@@ -388,6 +388,14 @@ function cmdClassifyQuestion(raw) {
       'start fresh', 'from scratch', 'new project', 'blank slate', 'greenfield',
       'build something new', 'start building', 'no existing', 'haven\'t started',
       'bootstrap', 'kickoff',
+      // Business-launch patterns (overloaded "launch" word — these disambiguate to business intent, not release)
+      'launch a website', 'launch a site', 'launch a business', 'launch a startup',
+      'launch an app', 'launch a product', 'launch a service', 'launch the website',
+      'launch the site', 'launch the business', 'website launch', 'site launch',
+      'business launch', 'product launch', 'startup launch',
+      'launch karna', 'launch karo', 'website launch karna', 'site launch karna',
+      'rent website', 'rental site', 'rental marketplace', 'rental platform',
+      'quick bucks', 'side hustle', 'make money',
       // Roman Urdu greenfield signals
       'bnanai', 'banana', 'app banana', 'shuru', 'start karna', 'naya project', 'project banana', 'build karna',
       // Urdu unicode greenfield signals
@@ -400,9 +408,10 @@ function cmdClassifyQuestion(raw) {
       'overwork', 'overworked', 'retention', 'turnover',
     ],
     release: [
-      'deploy', 'deployment', 'ship', 'rollback', 'incident', 'production issue',
+      'deploy', 'deployment', 'ship to prod', 'shipping', 'rollback', 'incident', 'production issue',
       'hotfix', 'feature flag', 'canary', 'blue green', 'downtime', 'outage',
-      'monitoring', 'alert', 'on call', 'oncall', 'launch',
+      'monitoring', 'alert', 'on call', 'oncall',
+      'production launch', 'release launch',
     ],
     design: [
       'ux', 'user experience', 'user journey', 'wireframe', 'prototype', 'figma',

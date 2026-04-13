@@ -27,23 +27,31 @@ Only after the user provides arguments, proceed to Step 0.5.
 
 ## Step 0.5 — Detect strategic decisions (redirect to council)
 
-Run classify-question to determine question type:
+Run two checks in parallel — classifier AND panel scorer top-1. Either signal triggers the redirect.
 
 ```bash
-node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS"
+TYPE=$(node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS" 2>/dev/null | grep -o '"type": *"[^"]*"' | cut -d'"' -f4)
+TOP_AGENT=$(node .rihal/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --top 1 2>/dev/null | grep -o '"panel": *\["[^"]*"' | cut -d'"' -f4)
 ```
 
-If `question_type` is `market`, `discovery`, or `greenfield` — these benefit from multiple perspectives:
+**Redirect to council if EITHER condition holds:**
+
+1. `question_type` is `market`, `discovery`, or `greenfield`
+2. Top-scoring agent is `mariam` or `hussain-pm` (these signal market/scope intent — better answered by a council)
+
+The classifier can mistype overloaded words like "launch", but the panel scorer uses richer keyword tables (Mariam owns dubai/uae/affiliate/launch/business). Combining both signals catches more cases.
+
+If either condition holds:
 
 ```
-⚠ Strategic decisions benefit from multiple perspectives.
+⚠ Strategic / market decisions benefit from multiple perspectives.
 
 /rihal:discuss is single-agent. For "should we" questions across domains, use:
 
 /rihal:council $ARGUMENTS
 ```
 
-Only proceed past this step if the question is tactical or single-domain (codebase, team, release, design).
+Only proceed past this step if both checks pass — question is tactical or single-domain (codebase, team, release, design) AND top agent is sadiq/waleed/fatima.
 
 After Step 0.5 confirmation, proceed to load references by Reading:
 - `.rihal/references/council-protocol.md` (agent conventions and response format)
