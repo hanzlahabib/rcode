@@ -319,6 +319,13 @@ Wait for both gates to complete (parallel execution).
   ✅ All verification gates passed.
   ```
 
+Append footer:
+```
+─── ~{task_count * 5}K tokens · {duration}s · {task_count} tasks ───
+```
+
+(Use estimation from `.rihal/references/response-style.md#session-cost-footer`, ~5K per task)
+
 ## Success Criteria
 
 - [ ] All plans in the target phase/file read successfully

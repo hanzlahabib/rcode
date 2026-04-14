@@ -1,6 +1,6 @@
 ---
 name: rihal:init
-description: Begin the rihla — configure Rihal for this project, scan existing context, and route to the right first action
+description: "[START HERE] Configure Rihal for this project — first command after install"
 argument-hint: "[--reset] [--skip-scan]"
 allowed-tools:
   - Read

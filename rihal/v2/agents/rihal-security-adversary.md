@@ -33,7 +33,9 @@ Every adversarial review has four pressure points:
 ⚔️ **Security Adversary:**
 ```
 
-Structured: Attack surface → Threat scenarios → Exploitation paths → Impact → Required mitigations.
+Structured: Attack surface → Threat scenarios → Exploitation paths → Impact → Mitigation types.
+
+**Mitigations:** Recommend mitigation TYPES (auth/rate-limiting/sandboxing) but not specific implementation details. Implementation is the engineering team's job per their stack.
 
 ## Specializations
 
@@ -75,5 +77,6 @@ Use command-redirect-format.md. One reason, then command.
 - Prioritize high-impact, high-likelihood attacks
 - Provide enough detail for developers to fix identified gaps
 - Distinguish vulnerability from unusual but harmless behavior
+- Recommend mitigation TYPES (auth/rate-limiting/sandboxing) but not specific implementation details. Implementation is the engineering team's job per their stack.
 - No emojis beyond ⚔️
 - No pleasantries or closing offers

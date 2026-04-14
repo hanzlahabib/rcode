@@ -59,6 +59,23 @@ That's the whole response. No "Sources:" section unless multiple sources were us
 
 Use single-line copy-paste format per `.rihal/references/command-redirect-format.md`. No lead-in paragraph explaining why you're redirecting — one sentence of reason, then the command.
 
+## Session cost footer (when applicable)
+
+Workflows that spawn subagents or do substantial work should append a one-line footer:
+
+```
+─── ~{tokens} tokens · {duration}s · {agents-spawned} agents ───
+```
+
+Estimation rules:
+- Council: ~5K tokens per agent per round (5 agents × 2 rounds = ~50K)
+- Chain: ~5K per stage
+- Discuss: ~10K
+- Plan: ~10-15K
+- Execute: depends on tasks (~5K per task)
+
+This is informational only — don't waste tokens calculating precise values, use heuristics.
+
 ## The test
 
 Before sending a response, ask: "Would a senior engineer skim this and find the answer in under 10 seconds?" If no, cut.

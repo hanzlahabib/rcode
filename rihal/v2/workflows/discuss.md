@@ -183,6 +183,13 @@ Create `{paths.sessions_dir}` with `mkdir -p` if needed. The `{slug}` is a lower
 
 Print: `💾 Discussion saved: .planning/council-sessions/discuss-{date}-{slug}.md`
 
+Append footer:
+```
+─── ~10K tokens · {duration}s · 1 agent ───
+```
+
+(Use estimation from `.rihal/references/response-style.md#session-cost-footer`)
+
 **If no, or `config.mode === 'yolo'`:** skip saving entirely.
 
 ## Step 7 — Update state

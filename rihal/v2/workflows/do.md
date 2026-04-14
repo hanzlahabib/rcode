@@ -18,6 +18,17 @@ if [[ "$ARGUMENTS" == *"--auto"* ]]; then
 fi
 ```
 
+## Step 0.5 — Check installed modules
+
+Before routing to execution-only commands, verify which modules are installed:
+
+```bash
+INSTALLED_MODULES=$(node .rihal/bin/rihal-tools.cjs module installed 2>/dev/null || echo '{}')
+HAS_EXECUTION=$(echo "$INSTALLED_MODULES" | jq -r '.installed | map(select(. == "execution")) | length > 0' 2>/dev/null || echo 'false')
+```
+
+If HAS_EXECUTION is false, note that plan/execute/debug commands require the execution module.
+
 ## Step 1 — If $QUESTION is non-empty
 
 Call the classify helper to determine the best command:
@@ -32,12 +43,12 @@ Map the question type and keywords to a suggested command:
 
 - `codebase`, `team`, `release` → suggest `/rihal:discuss`
 - `market`, `discovery`, `greenfield` → suggest `/rihal:council`
-- Keywords: "debug", "error", "broken", "bug", "issue" → suggest `/rihal:debug`
+- Keywords: "debug", "error", "broken", "bug", "issue" → if HAS_EXECUTION then suggest `/rihal:debug`, else suggest `/rihal:discuss` + note execution module needed
 - Keywords: "progress", "status", "where am I", "state" → suggest `/rihal:progress`
 - Keywords: "next", "what should I do", "what's next" → suggest `/rihal:next`
 - Keywords: "continue", "resume", "pick up", "where were we" → suggest `/rihal:resume-work`
 - Keywords: "note", "remember", "todo", "capture" → suggest `/rihal:note`
-- Keywords: "plan" or "execute" → suggest `/rihal:plan` or `/rihal:execute`
+- Keywords: "plan" or "execute" → if HAS_EXECUTION then suggest `/rihal:plan` or `/rihal:execute`, else print: "Plan/execute requires the execution module. Run: /rihal:install execution to add it." and suggest `/rihal:council` as alternative
 
 If no clear keyword match, default to `/rihal:discuss` for quick single-agent sync.
 

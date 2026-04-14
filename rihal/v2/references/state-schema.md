@@ -275,3 +275,26 @@ print(f"Decisions made in {current_phase}:")
 for d in phase_decisions:
     print(f"  - {d['summary']}")
 ```
+
+---
+
+## ID Formats Accepted by resolve-id
+
+The `state resolve-id <id>` command accepts the following formats:
+
+| Format | Example | Resolves To | Notes |
+|--------|---------|-------------|-------|
+| `M{N}` | `M1`, `M2` | Milestone N | Lowercase or uppercase M |
+| `{NN}` | `01`, `02`, `10` | Phase with number NN | Zero-padded two-digit phase number |
+| `{NN.M}` | `02.1`, `03.2` | Decimal phase (decimal phase) OR plan NN.M | Interpreted based on context—if decimal phase exists, refers to that; otherwise plan ID |
+| `{NN.M.T}` | `01.02.03`, `02.01.05` | Task T in plan NN.M | Three-part hierarchical task ID |
+
+**Examples:**
+```bash
+node .rihal/bin/rihal-tools.cjs state resolve-id M1          # → Milestone 1
+node .rihal/bin/rihal-tools.cjs state resolve-id 02          # → Phase 02
+node .rihal/bin/rihal-tools.cjs state resolve-id 02.1        # → Phase 02.1 (decimal) or Plan 02.01
+node .rihal/bin/rihal-tools.cjs state resolve-id 02.01.03    # → Task 3 in Plan 02.01
+```
+
+Use these IDs in `/rihal:plan show <id>` or `/rihal:execute <id>` commands.

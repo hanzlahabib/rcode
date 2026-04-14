@@ -21,6 +21,18 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 STOP — do not proceed.
 
+## Step 0.3 — Subcommand routing
+
+If first argument is `list`:
+  Run: `node .rihal/bin/rihal-tools.cjs plan list`
+  Print results in table format
+  STOP — do not proceed to plan creation.
+
+If first argument is `show <id>`:
+  Run: `node .rihal/bin/rihal-tools.cjs state resolve-id $id`
+  Read the resolved PLAN.md and print contents
+  STOP.
+
 ## Note on reference loading
 
 References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
@@ -377,6 +389,13 @@ Agent tool call:
 ## Step 4 — Print planner output
 
 Print the rihal-planner's output **verbatim**. Do not summarize.
+
+Append footer:
+```
+─── ~10-15K tokens · {duration}s · 1-2 agents ───
+```
+
+(Use estimation from `.rihal/references/response-style.md#session-cost-footer`)
 
 ## Step 5 — Update state
 

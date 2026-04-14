@@ -12,7 +12,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:council <question> [--full] [--agents=a,b,c] [--explain]
+/rihal:council <question> [--full] [--agents=a,b,c] [--explain] [--resume <session-path>]
 ```
 
 **Examples:**
@@ -21,11 +21,25 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:council --agents=sadiq,waleed,fatima is this plan ready to ship?
 /rihal:council --explain what stack should I use for a multi-tenant SaaS?
 /rihal:council --full should we rewrite the auth layer?
+/rihal:council --resume .planning/council-sessions/council-2026-04-12-should-i-start.md
 ```
+
+**With --resume:** continue a prior council session with a new question. The prior session context is surfaced to the panel.
 
 Only after the user provides arguments, proceed to Step 0.5.
 
-## Step 0.5 — Detect single-agent questions (STOP and redirect)
+## Step 0.5 — Detect --resume flag (continuation mode)
+
+If `$ARGUMENTS` contains `--resume <session-path>`:
+
+1. Read the session artifact at `<session-path>`
+2. Extract the prior "Panel Responses" section
+3. Set `INPUT_TYPE='resume'` and load the prior session content into the observation block (Step 1 will use this as context)
+4. Continue with the NEW question provided (if any) or ask user for a follow-up question
+
+Proceed to Step 1 with the prior session context pre-loaded.
+
+## Step 0.6 — Detect single-agent questions (STOP and redirect)
 
 If `$ARGUMENTS` starts with an agent name (sadiq/waleed/fatima/mariam/hussain-pm) and looks like a question directed at one person (e.g., "ask waleed about X", "what does fatima think"):
 
@@ -39,7 +53,7 @@ Council spawns 3-5 agents in parallel for debate. For one expert, use:
 
 Only proceed past this step if the input is a true multi-perspective question (e.g., "should we...?", "is X a good idea?", "which approach is best?").
 
-After Step 0.5 confirmation, proceed to load references by Reading:
+After Step 0.6 confirmation, proceed to load references by Reading:
 - `.rihal/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
 
 <available_agent_types>
@@ -59,6 +73,37 @@ Do not invoke `general-purpose` or any agent type not present in
 `installed_agents`. If the scorer surfaces an unknown agent, drop it
 from the panel silently.
 </available_agent_types>
+
+## Step 1 — Observe
+
+Before initialization, gather initial context signals:
+
+```bash
+# Check for fresh project indicators
+test -f README.md && echo "has_readme=1" || echo "has_readme=0"
+test -f .rihal/config.yaml && grep -q "user_name:" .rihal/config.yaml && echo "has_config=1" || echo "has_config=0"
+test -f .rihal/state.json && grep -q "phases\|decisions" .rihal/state.json && echo "has_state=1" || echo "has_state=0"
+test -f package.json -o -f Cargo.toml -o -f go.mod -o -f pyproject.toml && echo "has_build=1" || echo "has_build=0"
+```
+
+Count the signals. If 0 of 4 are true (fresh project), continue to Step 1.5.
+
+## Step 1.5 — Fresh project guard
+
+If the project appears fresh (no README, default config, no state, no build manifest):
+
+Print warning and use AskUserQuestion to confirm:
+
+```
+⚠ This appears to be a fresh project with no context.
+Council answers may be generic without project-specific signal.
+
+Run /rihal:init first for richer context, or proceed anyway?
+```
+
+Options:
+- "Run /rihal:init first" → Print: `Copy-paste this: /rihal:init` and STOP
+- "Proceed anyway" → Continue to Step 2
 
 ## Step 1 — Initialize
 
@@ -86,6 +131,8 @@ Parse the JSON for:
 **If the panel contains any id not in `installed_agents`:** stop, print `Unknown agent: {id}. Installed: {installed_agents.join(', ')}`, exit.
 
 ## Step 2 — Pre-consultation context gathering
+
+📁 Session artifact will be saved to: `.planning/council-sessions/council-{date}-{slug}.md`
 
 **Branch on `question_type`** (returned by `rihal-tools.cjs init` as `question_type`):
 
@@ -351,7 +398,11 @@ Print the artifact path to the user at the end:
 
 ```
 💾 Session saved: .planning/council-sessions/council-2026-04-12-should-i-start-new-project.md
+
+─── ~50K tokens · {duration}s · {5-agents} agents ───
 ```
+
+(Use the footer format from `.rihal/references/response-style.md#session-cost-footer`)
 
 ### Step 6b — Update state (silent)
 
