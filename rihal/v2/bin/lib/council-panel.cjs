@@ -16,21 +16,25 @@
  *   - Auditable: `explainSelection()` returns per-agent scores so users
  *     running with `--explain` can see why each agent was picked.
  *   - Cheap: zero LLM calls before the council starts.
+ *   - Optional team.yaml: If team.yaml exists at project root, reads
+ *     domain_keywords from it. Fallback: hardcoded keywords below.
  *
  * Scoring algorithm:
  *
- *   1. Normalize the question (lowercase, strip punctuation).
- *   2. For each agent, sum the weight of every keyword that appears.
- *   3. Apply priority boosts (Sadiq for strategic triggers, Hussain-PM
+ *   1. Load keywords from team.yaml if present (via loadTeamConfig),
+ *      else use hardcoded KEYWORDS below.
+ *   2. Normalize the question (lowercase, strip punctuation).
+ *   3. For each agent, sum the weight of every keyword that appears.
+ *   4. Apply priority boosts (Sadiq for strategic triggers, Hussain-PM
  *      for scope triggers).
- *   4. Named-agent mentions get +20 (overrides topic score).
- *   5. Sort by score desc. Tiebreaker: STRATEGIC_PADDING_ORDER for
+ *   5. Named-agent mentions get +20 (overrides topic score).
+ *   6. Sort by score desc. Tiebreaker: STRATEGIC_PADDING_ORDER for
  *      strategic questions, AGENT_IDS for others.
- *   6. Take top K (default maxPanel = 5). Pad to minPanel (default 3) if
+ *   7. Take top K (default maxPanel = 5). Pad to minPanel (default 3) if
  *      fewer agents scored non-zero, using STRATEGIC_PADDING_ORDER (or
  *      AGENT_IDS for non-strategic) as the fill pool.
- *   7. If opts.full, return AGENT_IDS (canonical order).
- *   8. If opts.agents, return that exact list (validated).
+ *   8. If opts.full, return AGENT_IDS (canonical order).
+ *   9. If opts.agents, return that exact list (validated).
  *
  * The orchestrator is responsible for filtering the result to installed
  * agents. This module returns the "ideal" panel; the workflow validates
@@ -380,8 +384,84 @@ function explainSelection(question, opts = {}) {
   };
 }
 
+/**
+ * Load team configuration from team.yaml if present.
+ * Returns { keywords_map, agent_ids } on success.
+ * Falls back to hardcoded KEYWORDS and AGENT_IDS if file missing or parse fails.
+ */
+function loadTeamConfig(projectRoot) {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const teamYamlPath = path.join(projectRoot, 'rihal', 'v2', 'team.yaml');
+
+    if (!fs.existsSync(teamYamlPath)) {
+      return null; // Use hardcoded fallback
+    }
+
+    const teamYamlContent = fs.readFileSync(teamYamlPath, 'utf8');
+    const yamlLines = teamYamlContent.split('\n');
+    const keywordMap = {};
+    const agentIds = [];
+
+    let currentAgentId = null;
+    let parsingAgents = false;
+
+    for (const line of yamlLines) {
+      const trimmed = line.trim();
+
+      // Detect agents section
+      if (trimmed.startsWith('agents:')) {
+        parsingAgents = true;
+        continue;
+      }
+
+      // Detect end of agents section
+      if (parsingAgents && trimmed === 'utility_agents:') {
+        parsingAgents = false;
+        continue;
+      }
+
+      // Parse agent entry
+      if (parsingAgents && trimmed.startsWith('- id:')) {
+        currentAgentId = trimmed.replace('- id:', '').trim();
+        agentIds.push(currentAgentId);
+        keywordMap[currentAgentId] = [];
+      }
+
+      // Parse domain_keywords list
+      if (currentAgentId && trimmed.startsWith('domain_keywords:')) {
+        // Keywords follow as a list under this key
+        let nextLineIdx = yamlLines.indexOf(line) + 1;
+        while (nextLineIdx < yamlLines.length) {
+          const nextLine = yamlLines[nextLineIdx];
+          const nextTrimmed = nextLine.trim();
+
+          // Stop at next key or end of agent block
+          if (nextTrimmed === '' || (nextTrimmed.startsWith('-') && !nextTrimmed.startsWith('- '))) {
+            break;
+          }
+
+          // Parse keyword line (format: "      - keyword")
+          if (nextTrimmed.startsWith('- ')) {
+            const keyword = nextTrimmed.slice(2).trim();
+            keywordMap[currentAgentId].push({ word: keyword, weight: 2 });
+          }
+
+          nextLineIdx++;
+        }
+      }
+    }
+
+    return { keywords: keywordMap, agents: agentIds, source: 'team.yaml' };
+  } catch (e) {
+    return null; // Silently fall back to hardcoded
+  }
+}
+
 module.exports = {
   AGENT_IDS, KEYWORDS, SADIQ_TRIGGERS, PM_TRIGGERS, MARKET_TRIGGERS, AGENT_NAMES,
   STRATEGIC_PADDING_ORDER, MARKET_PADDING_ORDER,
   normalize, scoreAgent, applyPriorityBoosts, selectPanel, explainSelection,
+  loadTeamConfig,
 };

@@ -983,7 +983,21 @@ function cmdState(subArgs) {
     return writeState(state);
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
+  // --- set-user-profile / write-profile ---
+  if (sub === 'set-user-profile' || sub === 'write-profile') {
+    const flags = parseFlags(1);
+    if (!flags.json) throw new Error('write-profile requires --json <json-blob>');
+    const state = readState() || defaultState();
+    if (!state.user_profile) state.user_profile = {};
+    try {
+      state.user_profile = JSON.parse(flags.json);
+    } catch (e) {
+      throw new Error(`Invalid JSON in --json flag: ${e.message}`);
+    }
+    return writeState(state);
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, set-user-profile, write-profile, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
 }
 
 /** init plan — context blob for /rihal:plan workflow. */
@@ -1431,17 +1445,43 @@ function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|resolve-model|config|plan|version> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|resolve-model|version|help> [args]');
+        console.log('');
+        console.log('Top-level subcommands:');
+        console.log('  init                                         → initialize .rihal directory structure');
+        console.log('  select-panel                                 → choose council panel members');
+        console.log('  classify-question                            → categorize user questions');
+        console.log('  agent-info <name>                            → show agent metadata and skills');
+        console.log('  list-agents                                  → list all available Rihal agents');
+        console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
+        console.log('  module <subcommand> [args]                   → module system helpers');
+        console.log('  plan <subcommand> [args]                     → phase/plan operations');
+        console.log('  notes <subcommand> [args]                    → manage project notes');
+        console.log('  config <subcommand> [args]                   → read/write project config');
+        console.log('  resolve-model <profile>                      → resolve model name from profile');
+        console.log('  version                                      → print rihal-tools version');
+        console.log('  help                                         → print this help text');
+        console.log('');
+        console.log('State subcommands:');
         console.log('  state read                                   → print full state.json');
+        console.log('  state get                                    → alias for state read');
         console.log('  state init --project <name>                  → create state.json if missing');
         console.log('  state set-phase <name>                       → set current phase, reset plan counter');
         console.log('  state advance-plan                           → increment current_plan counter');
-        console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>  → append execution');
+        console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>');
         console.log('  state add-decision "<summary>"               → append to decisions[]');
         console.log('  state add-blocker "<description>"            → append to blockers[]');
         console.log('  state resolve-blocker <index>                → mark blocker as resolved');
         console.log('  state record-session                         → update last_session timestamp');
-        console.log('  state record-council --slug <s> --panel <csv> --artifact <path>  → append council session');
+        console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
+        console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
+        console.log('  state insert-phase --number <N.M> --name <slug>');
+        console.log('  state workstream-create --name <name>        → create a new workstream');
+        console.log('  state workstream-switch --name <name>        → switch active workstream');
+        console.log('  state workstream-list                        → list all workstreams');
+        console.log('  state workstream-status                      → show active workstream');
+        console.log('  state workstream-complete --name <name>      → mark workstream done');
+        console.log('  state workstream-validate                    → validate workstream schema');
         return;
       default:
         console.error(`Unknown subcommand: ${subcommand}`);

@@ -10,6 +10,24 @@ Read all files referenced by the invoking prompt's execution_context before star
 - rihal-code-reviewer: Reviews source files for bugs and quality issues
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2]
+```
+
+**Examples:**
+```
+/rihal:code-review 01
+/rihal:code-review 02.1 --depth=deep
+/rihal:code-review 03 --files=src/auth.js,src/db.js
+```
+
 <process>
 
 <step name="initialize">
@@ -361,6 +379,51 @@ No REVIEW.md created. You can retry with /rihal:code-review ${PHASE_ARG} or chec
 ```
 
 Do NOT proceed to commit_review step. Do NOT create a partial or empty REVIEW.md. Exit workflow.
+</step>
+
+<step name="karpathy_audit_pass">
+After spawning the code reviewer agent, perform a Karpathy principles audit on the review findings:
+
+**Check the 4 principles against REVIEW.md findings:**
+
+1. **Think Before Coding** — Are there issues about hidden assumptions or unclear requirements?
+   - Look for findings mentioning "unclear intent", "ambiguous", "multiple interpretations"
+   - Flag if code makes assumptions without documenting them
+
+2. **Simplicity First** — Are there overengineered, speculative, or unnecessary features?
+   - Look for findings mentioning "overcomplicated", "unnecessary abstraction", "unused code", "feature not requested"
+   - Flag if code adds features beyond what was asked
+
+3. **Surgical Changes** — Are there unnecessary style changes, refactorings of unrelated code, or unclean cleanup?
+   - Look for findings mentioning "reformatted", "improved adjacent code", "style cleanup"
+   - Flag if changes touch more than required
+
+4. **Goal-Driven Execution** — Are success criteria clear? Are there stubs or incomplete implementations?
+   - Look for findings mentioning "stub", "TODO", "incomplete", "mock", "placeholder"
+   - Flag if code has weak or missing verification criteria
+
+**Output:** If Karpathy violations found, append to REVIEW.md:
+
+```markdown
+## Karpathy Principles Audit
+
+Violations of Andrej Karpathy's coding guidelines detected:
+
+- **Principle 2 (Simplicity):** Found 3 instances of speculative code (unused error handlers, mock data patterns)
+- **Principle 3 (Surgical):** Found style reformatting in 2 unrelated files not part of the requested change
+
+Recommend reviewing these violations before merging.
+```
+
+If no violations, add to REVIEW.md:
+
+```markdown
+## Karpathy Principles Audit
+
+✓ Code adheres to all 4 Karpathy principles. No violations detected.
+```
+
+This audit does NOT block the workflow — it surfaces principles violations for the user's awareness.
 </step>
 
 <step name="commit_review">

@@ -94,11 +94,29 @@ Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `co
 git init
 ```
 
-## 2. Brownfield Offer
+## 2. Project Type Classification
 
-**If auto mode:** Skip to Step 4 (assume greenfield, synthesize PROJECT.md from provided document).
+**If auto mode:** Detect project type from provided document context (look for "existing codebase", "migration", "enhancement", or assume greenfield). Skip to Step 4.
 
-**If `needs_codebase_map` is true** (from init — existing code detected but no codebase map):
+**Otherwise:** Ask user to classify the project:
+
+Use AskUserQuestion:
+
+- header: "Project Type"
+- question: "Is this a greenfield project or brownfield (existing codebase)?"
+- multiSelect: false
+- options:
+  - "Greenfield" — New project from scratch (default flow)
+  - "Brownfield" — Enhancing/modifying existing codebase (narrow discovery to delta questions)
+
+**Store choice:**
+```bash
+node .rihal/bin/rihal-tools.cjs state set --project-type greenfield|brownfield
+```
+
+## 2.1. Brownfield Path (if brownfield selected)
+
+**If `needs_codebase_map` is true** (existing code detected but no codebase map):
 
 Use AskUserQuestion:
 
@@ -106,7 +124,7 @@ Use AskUserQuestion:
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
   - "Map codebase first" — Run /rihal:map-codebase to understand existing architecture (Recommended)
-  - "Skip mapping" — Proceed with project initialization
+  - "Skip mapping" — Proceed with targeted discovery
 
 **If "Map codebase first":**
 
@@ -116,7 +134,100 @@ Run `/rihal:map-codebase` first, then return to `/rihal:new-project`
 
 Exit command.
 
-**If "Skip mapping" OR `needs_codebase_map` is false:** Continue to Step 3.
+**Otherwise:** Continue with narrowed discovery (Step 3b).
+
+## 2.2. Greenfield Path (if greenfield selected)
+
+Continue to Step 3 (standard deep discovery flow).
+
+### Step 3b. Brownfield Discovery (instead of deep questioning)
+
+For brownfield projects, narrow discovery to delta questions:
+
+Instead of full deep questioning (Step 3), use focused questions:
+
+```
+AskUserQuestion([
+  {
+    header: "Change Scope",
+    question: "What's changing in this project?",
+    multiSelect: false,
+    options: [
+      "New feature on existing architecture",
+      "Refactoring existing feature",
+      "Migration to new tech stack",
+      "Bug fixes and tech debt",
+      "Performance optimization"
+    ]
+  },
+  {
+    header: "Change Impact",
+    question: "Scope of impact?",
+    multiSelect: false,
+    options: [
+      "Single component/module",
+      "Multiple components",
+      "Entire system (breaking changes)"
+    ]
+  },
+  {
+    header: "Rollback Risk",
+    question: "Can this be rolled back easily?",
+    multiSelect: false,
+    options: [
+      "Yes — change is isolated",
+      "Partially — some migration needed",
+      "No — breaking change"
+    ]
+  }
+])
+```
+
+Then adapt PRD template:
+
+- Focus on delta: what's NEW or CHANGED
+- Reference existing architecture/patterns
+- Highlight breaking changes if any
+- Identify rollback/migration strategy
+
+**Brownfield PRD Template:**
+
+```markdown
+# PRD — {project_name}
+
+## Existing Context
+
+- Current architecture: {from codebase map}
+- Tech stack: {from codebase analysis}
+- What exists today: {brief}
+
+## What's Changing
+
+- New features: {list}
+- Refactored components: {list}
+- Removed features: {list}
+- Tech debt addressed: {list}
+
+## Change Impact
+
+- Breaking changes: {yes/no, list if yes}
+- Rollback strategy: {how to back out}
+- Migration path: {if moving data/state}
+
+## Success Criteria
+
+- {delta-focused acceptance criteria}
+
+## Non-functional Requirements
+
+- Backward compatibility: {required version range}
+- Data migration: {strategy}
+- Performance impact: {acceptable degradation}
+```
+
+## Continue from Step 5 (shared with greenfield)
+
+After delta discovery, continue with Step 5 (research, requirements approval, roadmap). Roadmap will be more focused on change scope.
 
 ## 2a. Auto Mode Config (auto mode only)
 

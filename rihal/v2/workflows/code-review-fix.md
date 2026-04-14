@@ -11,6 +11,23 @@ Read all files referenced by the invoking prompt's execution_context before star
 - rihal-code-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:code-review-fix <phase> [--auto]
+```
+
+**Examples:**
+```
+/rihal:code-review-fix 01
+/rihal:code-review-fix 02.1 --auto
+```
+
 <process>
 
 <step name="initialize">
