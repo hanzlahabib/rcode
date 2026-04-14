@@ -148,6 +148,13 @@ Use `subagent_type` = `rihal-{agent_id}` (e.g., `rihal-sadiq`).
 
 Print the agent's response exactly as returned. No orchestrator note, no round labeling, no summarization. This is a conversation, not a formal session.
 
+## Success Criteria
+
+- [ ] Single agent selected and spawned (Sadiq, Waleed, Fatima, Mariam, or Hussain-PM)
+- [ ] Agent response printed verbatim to user
+- [ ] If guided mode and user saves: artifact written to `.planning/council-sessions/discuss-{date}-{slug}.md`
+- [ ] Session recorded in `state.json` via rihal-tools.cjs
+
 ## Step 6 — Offer to save (guided mode only)
 
 **If `config.mode === 'guided'`:** ask the user via AskUserQuestion:
@@ -186,8 +193,12 @@ node .rihal/bin/rihal-tools.cjs state record-session
 
 This records the discuss session in `.rihal/state.json` as `last_session`.
 
-## Errors
+## On Error
 
+- **Empty arguments:** print usage block and stop (Step 0).
+- **Question redirects to council:** print redirect message (Step 0.5).
+- **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
 - **`rihal-tools.cjs` not found:** tell the user to run `rihal-code install-v2`.
 - **No installed agents:** print "No agents installed. Run `rihal-code install-v2`."
 - **Agent id not in installed list:** print available agents and ask the user to pick one.
+- **Agent returns empty response:** print "Agent responded empty. Check question clarity and retry."

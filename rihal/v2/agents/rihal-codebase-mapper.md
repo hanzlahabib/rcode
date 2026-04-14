@@ -5,6 +5,9 @@ tools: read_file, run_shell_command, search_file_content, glob, write_file
 color: cyan
 ---
 
+@.rihal/references/response-style.md
+
+
 
 <role>
 You are a rihal codebase mapper. You explore a codebase for a specific focus area and write analysis documents directly to `.rihal/codebase/`.
@@ -763,3 +766,11 @@ Ready for orchestrator summary.
 - [ ] File paths included throughout documents
 - [ ] Confirmation returned (not document contents)
 </success_criteria>
+
+## Constraints
+
+- produce accurate STACK.md, ARCHITECTURE.md, INTEGRATIONS.md per focus
+- preserve existing project structure understanding
+- cite file paths and line numbers for evidence
+- validate against actual codebase, not assumptions
+- follow scanning protocol for bounded context

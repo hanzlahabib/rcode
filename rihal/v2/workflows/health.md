@@ -4,9 +4,9 @@
 Run 6-point compliance check on rihal installation. Each check is pass/fail. Summary at the end.
 </purpose>
 
-## Check 1 — Directory exists and is writable
+## Step 0 — Verify .rihal/ directory exists and is writable
 
-Verify `.rihal/` directory:
+**Action:** Check if `.rihal/` directory exists and current user can write to it.
 
 ```bash
 test -d .rihal && test -w .rihal
@@ -16,7 +16,7 @@ test -d .rihal && test -w .rihal
 - `.rihal/` exists
 - Current user can write to it
 
-**Output:**
+**Output on pass:**
 ```
 ✅ PASS — .rihal/ directory exists and is writable
 ```
@@ -26,25 +26,21 @@ test -d .rihal && test -w .rihal
 ❌ FAIL — .rihal/ does not exist or is not writable. Run: /rihal:update to repair
 ```
 
-## Check 2 — File manifest exists and is valid CSV
+## Step 1 — Verify file manifest exists and is valid CSV
 
-Verify `.rihal/_config/files-manifest.csv`:
+**Action:** Check `.rihal/_config/files-manifest.csv` and parse as CSV.
 
 ```bash
 test -f .rihal/_config/files-manifest.csv
 ```
 
-Read the file and parse as CSV:
-- Must have header row: `rel,sha256,size`
-- Must have at least 1 data row
-- All rows must have exactly 3 columns
-
-**PASS if:**
+Verify:
 - File exists
-- Header is valid
+- Header row: `rel,sha256,size`
 - At least 1 data row
+- All rows have exactly 3 columns
 
-**Output:**
+**Output on pass:**
 ```
 ✅ PASS — files-manifest.csv is valid (N files tracked)
 ```
@@ -54,19 +50,17 @@ Read the file and parse as CSV:
 ❌ FAIL — files-manifest.csv is missing or corrupted. Run: /rihal:update to repair
 ```
 
-## Check 3 — All manifest files exist and hash matches
+## Step 2 — Verify all manifest files exist and hashes match
 
-For each row in files-manifest.csv (skip header):
+**Action:** For each row in files-manifest.csv, check file exists and hash matches.
+
+For each file:
 - Extract: `rel`, `sha256`, `size`
-- Check if file at `./{rel}` exists
-- Compute SHA256 of actual file
+- Verify file at `./{rel}` exists
+- Compute SHA256 hash of actual file
 - Compare against manifest entry
 
-**PASS if:**
-- All listed files exist
-- All hashes match exactly
-
-**Count drift:** files that exist but hash doesn't match.
+Detect drift: files that exist but hash doesn't match.
 
 **Output on pass:**
 ```
@@ -81,15 +75,15 @@ For each row in files-manifest.csv (skip header):
 Run: /rihal:update to repair
 ```
 
-## Check 4 — state.json exists and is valid JSON
+## Step 3 — Verify state.json exists and is valid
 
-Verify `.rihal/state.json`:
+**Action:** Check `.rihal/state.json` and validate JSON structure.
 
 ```bash
 test -f .rihal/state.json
 ```
 
-Read and parse as JSON. Verify it contains these top-level keys:
+Parse as JSON. Verify top-level keys present:
 - `version`
 - `project`
 - `created`
@@ -100,12 +94,7 @@ Read and parse as JSON. Verify it contains these top-level keys:
 - `blockers` (array)
 - `council_sessions` (array)
 
-**PASS if:**
-- File exists
-- Parses as valid JSON
-- Has all required keys
-
-**Output:**
+**Output on pass:**
 ```
 ✅ PASS — state.json is valid and initialized
 ```
@@ -115,24 +104,20 @@ Read and parse as JSON. Verify it contains these top-level keys:
 ❌ FAIL — state.json is missing or invalid. Run: /rihal:update to repair
 ```
 
-## Check 5 — agent-manifest.csv has header and data rows
+## Step 4 — Verify agent-manifest.csv is present and populated
 
-Verify `.rihal/_config/agent-manifest.csv`:
+**Action:** Check `.rihal/_config/agent-manifest.csv` for header and at least one agent.
 
 ```bash
 test -f .rihal/_config/agent-manifest.csv
 ```
 
-Read and parse as CSV:
-- Must have header row
-- Must have at least 1 data row (at least one agent installed)
-
-**PASS if:**
+Verify:
 - File exists
-- Header is present
-- At least 1 data row
+- Header row present
+- At least 1 data row (one agent installed)
 
-**Output:**
+**Output on pass:**
 ```
 ✅ PASS — agent-manifest.csv is valid (N agents installed)
 ```
@@ -142,21 +127,16 @@ Read and parse as CSV:
 ❌ FAIL — agent-manifest.csv is missing or empty. Run: /rihal:update to repair
 ```
 
-## Check 6 — rihal-tools.cjs is executable and responsive
+## Step 5 — Verify rihal-tools.cjs is executable and responsive
 
-Verify `.rihal/bin/rihal-tools.cjs`:
+**Action:** Check rihal-tools.cjs exists, is executable, and responds to version command.
 
 ```bash
 test -f .rihal/bin/rihal-tools.cjs && test -x .rihal/bin/rihal-tools.cjs
 node .rihal/bin/rihal-tools.cjs version
 ```
 
-**PASS if:**
-- File exists
-- Is executable (or runs via node anyway)
-- `version` subcommand returns output without error
-
-**Output:**
+**Output on pass:**
 ```
 ✅ PASS — rihal-tools.cjs is executable and responsive
 ```
@@ -166,17 +146,32 @@ node .rihal/bin/rihal-tools.cjs version
 ❌ FAIL — rihal-tools.cjs is missing or broken. Run: /rihal:update to repair
 ```
 
-## Final Summary
+## Step 6 — Count results and print final summary
 
-Count total passes and failures: `{N}/6 checks passed`
+**Action:** Count all pass/fail results and display overall status.
+
+Total: `{N}/6 checks passed`
 
 If all 6 pass:
 ```
 ✅ All systems nominal — rihal is healthy
 ```
 
-If < 6 pass:
+If fewer than 6 pass:
 ```
 ⚠️ {N}/6 checks passed — {M} issue(s) found
 Run: /rihal:update to repair
 ```
+
+## Success Criteria
+
+- [ ] All 6 checks executed
+- [ ] Each check result printed clearly
+- [ ] Final summary shows pass/fail count
+- [ ] Repair instructions shown if any checks fail
+
+## On Error
+
+- **Directory not readable:** Print error and suggest filesystem check
+- **CSV parsing fails:** Print error and suggest re-running update
+- **JSON corruption:** Print error and suggest state.json reset

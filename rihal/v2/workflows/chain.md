@@ -149,6 +149,13 @@ node .rihal/bin/rihal-tools.cjs state record-session
 
 Silent on failure — state tracking is optional.
 
+## Success Criteria
+
+- [ ] All agents in the chain spawned and executed sequentially
+- [ ] Each stage produces an artifact file in chain_dir
+- [ ] Artifact filenames follow naming convention: `{stage}-{agent_id}-{artifact_name}.md`
+- [ ] State updated with chain record and session timestamp
+
 ## Presets reference
 
 | Preset | Chain | Use when |
@@ -167,9 +174,13 @@ Silent on failure — state tracking is optional.
 | Best for | Debate, disagreement, multiple perspectives | Pipelines where each stage builds on the last |
 | Subsequent use | `/rihal:plan {session}` converts follow-ups to plans | Last stage often IS a PLAN.md already |
 
-## Errors
+## On Error
 
+- **No arguments:** print usage block, stop.
+- **Pure decision question detected:** redirect to council (Step 0.5).
 - **Unknown preset:** list valid presets, stop.
 - **Agent not installed:** print installed agents, suggest closest match.
+- **state.json missing or corrupted:** continue without error — chain artifacts are mandatory, state tracking is optional.
 - **Stage fails to produce artifact:** print stage number, allow `/rihal:chain --continue` to resume.
+- **Agent returns empty output:** print "Agent produced no output. Check input and retry."
 - **`rihal-tools.cjs` missing:** tell user to run `rihal-code install-v2`.

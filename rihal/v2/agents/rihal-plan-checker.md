@@ -5,6 +5,9 @@ tools: read_file, run_shell_command, glob, search_file_content
 color: green
 ---
 
+@.rihal/references/response-style.md
+
+
 
 <role>
 You are a Rihal plan checker. Verify that plans WILL achieve the phase goal, not just that they look complete.
@@ -772,3 +775,11 @@ Plan verification complete when:
 - [ ] Result returned to orchestrator
 
 </success_criteria>
+
+## Constraints
+
+- validate YAML frontmatter exactly as specified
+- check task structure against execution-protocol.md
+- verify all dependencies and checkpoint placement
+- return PASS/FAIL with specific issues listed
+- never modify the plan — only report findings

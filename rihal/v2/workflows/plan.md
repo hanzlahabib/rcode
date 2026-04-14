@@ -82,7 +82,38 @@ Print:
 📖 Planning from description: "{first 80 chars}..."
 ```
 
-## Step 2 — Spawn rihal-planner
+## Step 2 — Research phase (conditional)
+
+**If `flags.research === true`:**
+
+Spawn `rihal-phase-researcher` subagent:
+
+```
+Agent tool call:
+  subagent_type: "rihal-phase-researcher"
+  description: "Research topic and generate context"
+  prompt: |
+    Research the following topic and generate context:
+    
+    Topic: {description or follow-ups summary}
+    Project: {config.project_name}
+    Output directory: {output_dir}
+    
+    Write findings to: {output_dir}/RESEARCH.md
+    
+    Include:
+    - Background and context
+    - Technical considerations
+    - Best practices and patterns
+    - Relevant tools and libraries
+    - Known pitfalls to avoid
+```
+
+After researcher completes, read the generated `{output_dir}/RESEARCH.md` file. Include its full contents in the planner prompt (Step 2.5).
+
+**If `flags.research === false`:** Skip to Step 2.5 (spawn planner).
+
+## Step 2.5 — Spawn rihal-planner
 
 Spawn a single `rihal-planner` subagent:
 
@@ -95,6 +126,9 @@ Agent tool call:
 
     ## Input
     {the follow-ups text or description}
+
+    ## Research context (if available)
+    {If RESEARCH.md was generated in Step 2, include its full contents here}
 
     ## Output directory
     {output_dir}
@@ -115,11 +149,59 @@ Agent tool call:
     Write the plans. Print your summary at the end.
 ```
 
-## Step 3 — Print planner output
+## Step 3 — Verify plan
+
+After planner completes, spawn `rihal-plan-checker` subagent to validate the PLAN.md:
+
+```
+Agent tool call:
+  subagent_type: "rihal-plan-checker"
+  description: "Verify PLAN.md structure and completeness"
+  prompt: |
+    Verify the PLAN.md files in this directory: {output_dir}
+    
+    Check for:
+    - Valid YAML frontmatter (phase, objective, depends_on)
+    - All tasks present and properly formatted
+    - Checkpoints correctly placed
+    - References to execution-protocol.md standards
+    
+    Return PASS or a list of issues found.
+```
+
+### Step 3.5 — Handle verification results
+
+**Initialize retry counter:** `retries = 0`
+
+**If plan-checker returns PASS:**
+- Proceed to Step 4 (print output)
+
+**If plan-checker returns issues:**
+- If `retries < 2`:
+  1. Increment `retries`
+  2. Spawn `rihal-planner` again with prompt:
+     ```
+     The plan had these issues:
+     {issues list from plan-checker}
+     
+     Fix them and regenerate the PLAN.md file(s) at: {output_dir}
+     ```
+  3. After planner completes, loop back to Step 3.5 (verify again)
+
+- If `retries = 2`:
+  1. Print warning:
+     ```
+     ⚠ Plan verification failed after 2 retries. Saving anyway.
+     Issues:
+     {issues list}
+     ```
+  2. Proceed to Step 4 (print output)
+
+## Step 4 — Print planner output
 
 Print the rihal-planner's output **verbatim**. Do not summarize.
 
-## Step 4 — Update state
+## Step 5 — Update state
 
 ```bash
 node .rihal/bin/rihal-tools.cjs state record-session 2>/dev/null || true
@@ -127,9 +209,20 @@ node .rihal/bin/rihal-tools.cjs state record-session 2>/dev/null || true
 
 Silent — if state.json missing, ignore.
 
-## Errors
+## Success Criteria
 
+- [ ] Plan file(s) written to output_dir with correct naming and YAML frontmatter
+- [ ] Plan-checker validation passes (or user proceeds with warnings if retries exhausted)
+- [ ] Planner output printed verbatim to user
+- [ ] State updated with session record
+
+## On Error
+
+- **No arguments:** print usage block, stop.
+- **Decision question detected:** redirect to `/rihal:council` (Step 0.5).
 - **Input file not found:** print the path, stop.
+- **state.json missing or corrupted:** continue without error — plan artifact is mandatory, state tracking is optional.
 - **No follow-ups in session artifact:** fall back to reading full Panel Responses as input.
 - **rihal-planner returns empty output:** print "Planner produced no plans. Check input."
+- **rihal-plan-checker fails to load:** print the error, proceed to Step 4 anyway (skip verification).
 - **rihal-tools.cjs missing:** tell user to run `rihal-code install-v2`.

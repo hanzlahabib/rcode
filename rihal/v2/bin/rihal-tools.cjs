@@ -464,13 +464,14 @@ function cmdClassifyQuestion(raw) {
 function cmdInitExecute(rawArgs) {
   const config = readConfig();
   const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
-  const flags = { wave: null, interactive: false, continue: false, option: null };
+  const flags = { wave: null, interactive: false, continue: false, option: null, 'skip-gates': false };
   const positional = [];
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t === '--interactive') flags.interactive = true;
     else if (t === '--continue') flags.continue = true;
+    else if (t === '--skip-gates') flags['skip-gates'] = true;
     else if (t.startsWith('--wave=')) flags.wave = t.slice('--wave='.length);
     else if (t.startsWith('--option=')) flags.option = t.slice('--option='.length);
     else positional.push(t);
@@ -989,7 +990,7 @@ function cmdState(subArgs) {
 function cmdInitPlan(rawArgs) {
   const config = readConfig();
   const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
-  const flags = { phase: null, output: null };
+  const flags = { phase: null, output: null, research: false };
   const positional = [];
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
@@ -997,6 +998,7 @@ function cmdInitPlan(rawArgs) {
     else if (t.startsWith('--phase=')) { flags.phase = t.slice('--phase='.length); }
     else if (t === '--output' && tokens[i + 1]) { flags.output = tokens[++i]; }
     else if (t.startsWith('--output=')) { flags.output = t.slice('--output='.length); }
+    else if (t === '--research') { flags.research = true; }
     else positional.push(t);
   }
   const arg = positional.join(' ').trim();
@@ -1029,7 +1031,7 @@ function cmdInitPlan(rawArgs) {
   }
   return {
     workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
-    phase_slug: phaseSlug, output_dir: outputDir, config,
+    phase_slug: phaseSlug, output_dir: outputDir, flags, config,
     paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
   };
 }
@@ -1194,6 +1196,178 @@ function readPackageVersion() {
   return 'unknown';
 }
 
+/**
+ * resolve-model <agent-id> — return the model string for the given agent
+ * under the current model profile in config.yaml.
+ *
+ * Model profiles (defined in references/model-profiles.md):
+ *   - quality: opus for reasoning agents, sonnet for executor, haiku for utilities
+ *   - balanced: sonnet for all agents
+ *   - budget: haiku for all agents
+ *   - inherit: no override, return null
+ *
+ * If the agent id is unknown, exit with error.
+ */
+function cmdResolveModel(agentId) {
+  if (!agentId || agentId.trim() === '') {
+    throw new Error('resolve-model requires an agent-id argument');
+  }
+
+  const config = readConfig();
+  const profile = config.model_profile || 'balanced';
+  const installedAgents = listInstalledAgents();
+
+  if (!installedAgents.includes(agentId)) {
+    throw new Error(`Unknown agent: ${agentId}. Valid agents: ${installedAgents.join(', ')}`);
+  }
+
+  // Model assignments per profile
+  const QUALITY_AGENTS = {
+    'rihal-sadiq': 'claude-3-5-opus-20241022',
+    'rihal-waleed': 'claude-3-5-opus-20241022',
+    'rihal-planner': 'claude-3-5-opus-20241022',
+    'rihal-plan-checker': 'claude-3-5-opus-20241022',
+    'rihal-fatima': 'claude-3-5-sonnet-20241022',
+    'rihal-executor': 'claude-3-5-sonnet-20241022',
+    'rihal-verifier': 'claude-3-5-sonnet-20241022',
+  };
+
+  if (profile === 'inherit') {
+    return { model: null, profile: 'inherit', note: 'No override; use parent session model' };
+  }
+
+  if (profile === 'budget') {
+    return { model: 'claude-3-5-haiku-20241022', profile: 'budget', agent: agentId };
+  }
+
+  if (profile === 'balanced') {
+    return { model: 'claude-3-5-sonnet-20241022', profile: 'balanced', agent: agentId };
+  }
+
+  if (profile === 'quality') {
+    const model = QUALITY_AGENTS[agentId] || 'claude-3-5-haiku-20241022';
+    return { model, profile: 'quality', agent: agentId };
+  }
+
+  // Unknown profile, default to balanced
+  return { model: 'claude-3-5-sonnet-20241022', profile: 'balanced', agent: agentId, warning: `Unknown profile '${profile}'; using balanced` };
+}
+
+/**
+ * config set --key <k> --value <v> — update a key in .rihal/config.yaml
+ * Writes YAML-style `key: value` (quotes strings with spaces).
+ */
+function cmdConfigSet(subArgs) {
+  const flags = {};
+  for (let i = 0; i < subArgs.length; i++) {
+    if (subArgs[i].startsWith('--')) {
+      const key = subArgs[i].slice(2);
+      flags[key] = subArgs[i + 1] || '';
+      i++;
+    }
+  }
+
+  const key = flags.key || '';
+  const value = flags.value || '';
+
+  if (!key) throw new Error('config set requires --key <key>');
+  if (!value) throw new Error('config set requires --value <value>');
+
+  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  fs.mkdirSync(RIHAL_DIR, { recursive: true });
+
+  let content = '';
+  if (fs.existsSync(configPath)) {
+    content = fs.readFileSync(configPath, 'utf8');
+  }
+
+  // Parse current config
+  const config = parseSimpleYaml(content);
+
+  // Update the key
+  config[key] = value;
+
+  // Serialize back to YAML
+  const lines = [];
+  for (const [k, v] of Object.entries(config)) {
+    const needsQuotes = /\s/.test(v);
+    const yamlValue = needsQuotes ? `"${v.replace(/"/g, '\\"')}"` : v;
+    lines.push(`${k}: ${yamlValue}`);
+  }
+
+  const newContent = lines.join('\n') + '\n';
+  fs.writeFileSync(configPath, newContent, 'utf8');
+
+  return { ok: true, key, value, path: configPath };
+}
+
+/**
+ * notes list — glob .rihal/notes/*.md and ~/.rihal-notes/*.md,
+ * parse frontmatter, return sorted array of {path, date, slug, summary}
+ * (10 most recent).
+ */
+function cmdNotesList() {
+  const noteDirs = [
+    path.join(RIHAL_DIR, 'notes'),
+    path.expandUser('~/.rihal-notes'),
+  ];
+
+  const notes = [];
+  for (const dir of noteDirs) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+      for (const file of files) {
+        const filePath = path.join(dir, file);
+        const content = fs.readFileSync(filePath, 'utf8');
+        const { frontmatter, body } = parseFrontmatter(content);
+        const summary = body.trim().split('\n')[0].slice(0, 50);
+        notes.push({
+          path: filePath,
+          date: frontmatter.date || file.slice(0, 10),
+          slug: frontmatter.slug || file.replace(/^[\d-]+/, '').replace(/\.md$/, ''),
+          summary,
+        });
+      }
+    } catch (err) {
+      // Silently skip if directory cannot be read
+    }
+  }
+
+  // Sort by date descending, take 10 most recent
+  notes.sort((a, b) => b.date.localeCompare(a.date));
+  return notes.slice(0, 10);
+}
+
+/**
+ * notes count — return count of unpromoted notes in both .rihal/notes
+ * and ~/.rihal-notes.
+ */
+function cmdNotesCount() {
+  const noteDirs = [
+    path.join(RIHAL_DIR, 'notes'),
+    path.expandUser('~/.rihal-notes'),
+  ];
+
+  let count = 0;
+  for (const dir of noteDirs) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+      for (const file of files) {
+        const filePath = path.join(dir, file);
+        const content = fs.readFileSync(filePath, 'utf8');
+        const { frontmatter } = parseFrontmatter(content);
+        if (frontmatter.promoted !== 'true') count++;
+      }
+    } catch (err) {
+      // Silently skip if directory cannot be read
+    }
+  }
+
+  return { count };
+}
+
 function main() {
   const [, , subcommand, ...args] = process.argv;
   try {
@@ -1216,6 +1390,11 @@ function main() {
         if (args[0] === 'list') { result = cmdPlanList(); }
         else { console.error('Unknown plan subcommand. Valid: list'); process.exit(1); }
         break;
+      case 'notes':
+        if (args[0] === 'list') { result = cmdNotesList(); }
+        else if (args[0] === 'count') { result = cmdNotesCount(); }
+        else { console.error('Unknown notes subcommand. Valid: list, count'); process.exit(1); }
+        break;
       case 'select-panel':
         result = cmdSelectPanel(args.join(' '));
         break;
@@ -1234,6 +1413,17 @@ function main() {
       case 'module':
         result = cmdModule(args);
         break;
+      case 'resolve-model':
+        result = cmdResolveModel(args[0]);
+        break;
+      case 'config':
+        if (args[0] === 'set') {
+          result = cmdConfigSet(args.slice(1));
+        } else {
+          console.error('Unknown config subcommand. Valid: set');
+          process.exit(1);
+        }
+        break;
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -1241,7 +1431,7 @@ function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|version> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|resolve-model|config|plan|version> [args]');
         console.log('  state read                                   → print full state.json');
         console.log('  state init --project <name>                  → create state.json if missing');
         console.log('  state set-phase <name>                       → set current phase, reset plan counter');

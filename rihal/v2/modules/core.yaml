@@ -16,6 +16,7 @@ workflows:
   - do.md
   - help.md
   - add-todo.md
+  - note.md
   - next.md
   - progress.md
   - resume-work.md
@@ -27,6 +28,7 @@ workflows:
   - health.md
   - forensics.md
   - workstream.md
+  - chain.md
 commands:
   - council.md
   - discuss.md
@@ -35,6 +37,7 @@ commands:
   - do.md
   - help.md
   - add-todo.md
+  - note.md
   - next.md
   - progress.md
   - resume-work.md
@@ -46,8 +49,16 @@ commands:
   - health.md
   - forensics.md
   - workstream.md
+  - chain.md
 references:
   - council-protocol.md
   - commit-conventions.md
   - command-redirect-format.md
   - response-style.md
+  - context-budget.md
+  - gates.md
+  - thinking-models-planning.md
+  - thinking-models-debug.md
+  - git-integration.md
+  - git-planning-commit.md
+  - state-schema.md

@@ -5,6 +5,7 @@
   "updated": "__INSTALL_DATE__",
   "current_phase": null,
   "current_plan": 0,
+  "model_profile": "balanced",
   "phases": [],
   "executions": [],
   "decisions": [],

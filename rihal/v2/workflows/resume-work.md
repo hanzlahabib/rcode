@@ -39,6 +39,7 @@ Read and parse key files:
 cat .rihal/PROJECT.md 2>/dev/null || true
 cat .rihal/STATE.md 2>/dev/null || true
 cat .rihal/PLAN.md 2>/dev/null || true
+cat .rihal/HANDOFF.json 2>/dev/null || echo "{}"
 ```
 
 **From PROJECT.md extract:**
@@ -56,6 +57,12 @@ cat .rihal/PLAN.md 2>/dev/null || true
 - What's planned
 - What's been completed
 - What's in progress
+
+**From HANDOFF.json extract (if present):**
+- `blocking_constraints` — external dependencies or constraints from previous session
+- `uncommitted_files` — work left uncommitted
+- `current_phase` — where work was paused
+- `next_steps` — suggested resumption path
 </step>
 
 <step name="check_incomplete_work">
@@ -92,6 +99,10 @@ Present complete project status to user:
 ║  Progress: [brief % or status]                              ║
 ╚═════════════════════════════════════════════════════════════╝
 
+[If HANDOFF.json exists and has blocking_constraints:]
+⚠️  BLOCKING CONSTRAINTS from previous session:
+    {blocking_constraints text}
+    
 [If uncommitted changes:]
 ⚠️  Uncommitted changes found:
     - [file 1]
@@ -102,7 +113,7 @@ Present complete project status to user:
     - [task 1]
     - [task 2]
 
-[If blockers:]
+[If other blockers in state.json:]
 ⚠️  Blockers/Concerns:
     - [blocker 1]
     - [blocker 2]

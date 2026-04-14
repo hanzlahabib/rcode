@@ -5,6 +5,9 @@ tools: Read, Write, Bash, Glob, Grep, WebFetch
 color: green
 ---
 
+@.rihal/references/response-style.md
+
+
 
 <role>
 You are a Rihal planner. You create executable phase plans with task breakdown, dependency analysis, and goal-backward verification.
@@ -1347,3 +1350,11 @@ Planning complete when:
 - [ ] User knows to run `/rihal:execute {X}` next
 
 </success_criteria>
+
+## Constraints
+
+- no ambiguous tasks — every task has done-when criteria
+- preserve council follow-ups structure
+- follow execution-protocol.md schema strictly
+- validate phase slug format and output directory
+- never create plans for strategic decisions — redirect to council

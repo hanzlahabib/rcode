@@ -24,13 +24,14 @@ Parse:
 - `flags.interactive` — sequential mode, no subagents
 - `flags.continue` — resuming after a checkpoint
 - `flags.option` — user's choice for a decision checkpoint (A or B)
+- `flags['skip-gates']` — skip post-execution verification gates
 - `plans[]` — array of `{ path, depends_on, wave }` entries
 - `plan_path` — set if single-plan mode
 - `phase_dir` — set if phase mode
 
 **If no target:** print usage and stop:
 ```
-Usage: /rihal:execute <plan-file.md | phase-dir> [--wave N] [--interactive] [--continue]
+Usage: /rihal:execute <plan-file.md | phase-dir> [--wave N] [--interactive] [--continue] [--skip-gates]
 ```
 
 ## Step 0.5 — Detect non-plan arguments (redirect to plan)
@@ -140,9 +141,96 @@ node .rihal/bin/rihal-tools.cjs state record-session
 
 > **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, execution output is mandatory.
 
-## Errors
+## Step 5 — Post-execution verification gates
 
+**If `flags['skip-gates'] === true`:** Skip this step and go to Success Criteria.
+
+**Otherwise, spawn verification gates in PARALLEL:**
+
+Spawn both `rihal-integration-checker` and `rihal-nyquist-auditor` subagents simultaneously:
+
+### Gate 1: Integration Checker
+
+```
+Agent tool call:
+  subagent_type: "rihal-integration-checker"
+  description: "Verify integration and system connectivity"
+  prompt: |
+    Check the completed plan for integration issues.
+    
+    Plan path: {completed plan path}
+    Summary path: {SUMMARY.md path}
+    Project root: {paths.project_root}
+    
+    Verify:
+    - All external service connections working
+    - API integrations functional
+    - Database migrations successful
+    - Environment variables correctly set
+    - Third-party dependencies integrated
+    
+    Return a structured report with PASS/FAIL status and any remediation steps needed.
+```
+
+### Gate 2: Nyquist Auditor
+
+```
+Agent tool call:
+  subagent_type: "rihal-nyquist-auditor"
+  description: "Audit coverage and completeness"
+  prompt: |
+    Audit the completed plan for coverage gaps.
+    
+    Plan path: {completed plan path}
+    Summary path: {SUMMARY.md path}
+    Project root: {paths.project_root}
+    
+    Verify:
+    - Test coverage meets standards
+    - Documentation complete
+    - Edge cases handled
+    - Error handling comprehensive
+    - Performance requirements met
+    
+    Return a structured audit report with PASS/FAIL status and remediation steps.
+```
+
+### Step 5.5 — Process gate results
+
+Wait for both gates to complete (parallel execution).
+
+**For each gate result:**
+1. Append the result to SUMMARY.md as:
+   - `## Integration Check` (from rihal-integration-checker)
+   - `## Coverage Audit` (from rihal-nyquist-auditor)
+
+**If either gate returns FAIL:**
+- Print remediation suggestions under each section
+- Print:
+  ```
+  ⚠ Execution gates flagged issues. Review above sections for remediation.
+  ```
+
+**If both gates return PASS:**
+- Print:
+  ```
+  ✅ All verification gates passed.
+  ```
+
+## Success Criteria
+
+- [ ] All plans in the target phase/file read successfully
+- [ ] All subagents (or inline tasks in interactive mode) executed without stopping
+- [ ] Each `---PLAN COMPLETE---` block returned and printed verbatim
+- [ ] State updated with execution record and session timestamp
+
+## On Error
+
+- **No target specified:** print usage block, stop.
+- **Non-plan arguments:** redirect to `/rihal:plan` (Step 0.5).
 - **Plan file not found:** print the path, stop.
 - **Circular dependency in phase:** print the cycle, ask user to fix `depends_on` frontmatter.
-- **Executor returns neither COMPLETE nor CHECKPOINT:** treat as a deviation, print the raw output, stop.
+- **state.json missing or corrupted:** continue without error — execution output is mandatory, state tracking is optional.
+- **Executor returns neither COMPLETE nor CHECKPOINT:** treat as deviation, print raw output, stop.
+- **Executor returns empty response:** print "Executor produced no output. Check plan validity and retry."
 - **`rihal-tools.cjs` missing:** tell user to run `rihal-code install-v2`.
