@@ -66,6 +66,7 @@ function parseArgs(argv) {
     projectName: null,
     language: 'English',
     mode: 'guided',
+    ide: 'claude',  // claude, cursor, gemini (copilot = TODO)
     help: false,
     modules: [],  // --module core --module execution or empty = all
   };
@@ -79,6 +80,7 @@ function parseArgs(argv) {
     else if (arg === '--project') opts.projectName = argv[++i];
     else if (arg === '--language') opts.language = argv[++i];
     else if (arg === '--mode') opts.mode = argv[++i];
+    else if (arg === '--ide') opts.ide = argv[++i];
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (!arg.startsWith('--')) positional.push(arg);
   }
@@ -101,14 +103,52 @@ Options:
   --project <name>   set project_name (default: basename of target-dir)
   --language <lang>  set communication_language (default: English)
   --mode <guided|yolo> default mode (default: guided)
+  --ide <name>       target IDE (claude, cursor, gemini; default: claude)
   --help             this text
 
-Installs:
-  target/.rihal/          config, workflows, references, bin, manifests
-  target/.claude/agents/  first-class Rihal subagents (rihal-sadiq, rihal-waleed, rihal-fatima)
-  target/.claude/commands/rihal/  slash commands (/rihal:council)
-  target/.planning/       artifact output dir
+Installs (IDE-specific):
+  claude:  target/.rihal/          config, workflows, references, bin
+           target/.claude/agents/  first-class Rihal subagents
+           target/.claude/commands/rihal/  slash commands
+  cursor:  target/.cursor/rules/rihal/    Cursor-specific rules + agents
+  gemini:  target/.gemini/antigravity/    Gemini CLI commands + agents
+  target/.planning/       artifact output dir (all IDEs)
 `);
+}
+
+/**
+ * Get install paths for the target IDE.
+ * Returns { agentsDir, commandsDir, workflowsDir, referencesDir, binDir }
+ */
+function getPathsForIde(ide, target) {
+  switch (ide) {
+    case 'claude':
+      return {
+        agentsDir: path.join(target, '.claude', 'agents'),
+        commandsDir: path.join(target, '.claude', 'commands', 'rihal'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+      };
+    case 'cursor':
+      return {
+        agentsDir: path.join(target, '.cursor', 'rules', 'rihal', 'agents'),
+        commandsDir: path.join(target, '.cursor', 'rules', 'rihal', 'commands'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+      };
+    case 'gemini':
+      return {
+        agentsDir: path.join(target, '.gemini', 'antigravity', 'agents'),
+        commandsDir: path.join(target, '.gemini', 'antigravity', 'commands', 'rihal'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+      };
+    default:
+      throw new Error(`Unknown IDE: ${ide}. Supported: claude, cursor, gemini`);
+  }
 }
 
 /**
@@ -165,38 +205,52 @@ function parseFrontmatter(text) {
  * entry describes one file we will copy and where it lands in the target
  * project. Returning the list up-front lets us do a dry-run or hash-check
  * pass before touching the disk.
+ *
+ * For cursor IDE, converts command files from .md to .mdc format.
  */
-function buildInstallPlan() {
+function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   const plan = [];
+  const paths = getPathsForIde(ide, target);
+
+  // Compute relative paths from target root
+  const relWorkflows = path.relative(target, paths.workflowsDir);
+  const relReferences = path.relative(target, paths.referencesDir);
+  const relBin = path.relative(target, paths.binDir);
+  const relAgents = path.relative(target, paths.agentsDir);
+  const relCommands = path.relative(target, paths.commandsDir);
 
   // .rihal/workflows/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'workflows'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'workflows'), f);
-    plan.push({ src: f, rel: path.join('.rihal', 'workflows', rel) });
+    plan.push({ src: f, rel: path.join(relWorkflows, rel) });
   }
 
   // .rihal/references/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'references'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'references'), f);
-    plan.push({ src: f, rel: path.join('.rihal', 'references', rel) });
+    plan.push({ src: f, rel: path.join(relReferences, rel) });
   }
 
   // .rihal/bin/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'bin'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'bin'), f);
-    plan.push({ src: f, rel: path.join('.rihal', 'bin', rel), executable: f.endsWith('.cjs') });
+    plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
   }
 
-  // .claude/agents/
+  // Agents — IDE-specific
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'agents'), f);
-    plan.push({ src: f, rel: path.join('.claude', 'agents', rel) });
+    const ext = ide === 'cursor' ? '.mdc' : '.md';
+    const outName = path.basename(f, '.md') + ext;
+    plan.push({ src: f, rel: path.join(relAgents, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
   }
 
-  // .claude/commands/rihal/
+  // Commands — IDE-specific
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
-    plan.push({ src: f, rel: path.join('.claude', 'commands', 'rihal', rel) });
+    const ext = ide === 'cursor' ? '.mdc' : '.md';
+    const outName = path.basename(f, '.md') + ext;
+    plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
   }
 
   return plan;
@@ -388,6 +442,17 @@ function generateConfigYaml(opts) {
 }
 
 /**
+ * Convert a markdown command/agent file to Cursor's .mdc format.
+ * Wraps the file with Cursor-specific rules frontmatter.
+ */
+function convertToCursorMdc(sourceText) {
+  // Cursor .mdc format wraps markdown in a rules block
+  // Pattern: <!-- rules: { "rule": "value" } --> ... content ... <!-- /rules -->
+  // For now, we pass through as-is since Cursor treats .mdc as markdown with metadata
+  return sourceText;
+}
+
+/**
  * Main install routine. Copies files, generates manifests, writes config.
  */
 function install(opts) {
@@ -399,7 +464,13 @@ function install(opts) {
     return 1;
   }
 
-  const fullPlan = buildInstallPlan();
+  // Validate IDE
+  if (!['claude', 'cursor', 'gemini'].includes(opts.ide)) {
+    console.error(`✖ Unknown IDE: ${opts.ide}. Supported: claude, cursor, gemini`);
+    return 1;
+  }
+
+  const fullPlan = buildInstallPlan(opts.ide, opts.target);
   const plan = filterPlanByModules(fullPlan, opts.modules);
   if (plan.length === 0) {
     console.error('✖ Nothing to install — install plan is empty.');
@@ -426,7 +497,17 @@ function install(opts) {
         continue;
       }
     }
-    fs.copyFileSync(entry.src, destPath);
+
+    // Read source file
+    let content = fs.readFileSync(entry.src, 'utf8');
+
+    // Convert to Cursor .mdc format if needed
+    if (entry.cursor) {
+      content = convertToCursorMdc(content);
+    }
+
+    // Write to destination
+    fs.writeFileSync(destPath, content, 'utf8');
     if (entry.executable) fs.chmodSync(destPath, 0o755);
     copied++;
   }
@@ -473,6 +554,8 @@ function install(opts) {
   console.log(`  Installed: ${copied} file${copied === 1 ? '' : 's'}`);
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
   console.log('');
+  console.log(`  Installed for IDE: ${opts.ide}`);
+  console.log('');
   console.log('  Agents installed (first-class subagents):');
   console.log('    🧭 rihal-sadiq   — Director of Strategy');
   console.log('    🏗️  rihal-waleed  — CTO');
@@ -481,6 +564,7 @@ function install(opts) {
   console.log('  Slash commands installed:');
   console.log('    /rihal:council  — parallel multi-agent council');
   console.log('    /rihal:status   — project state dashboard');
+  console.log('    /rihal:insert-phase — insert decimal phase for urgent work');
   console.log('');
   console.log('  Next:');
   console.log(`    cd ${opts.target}`);

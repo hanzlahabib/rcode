@@ -381,14 +381,123 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 Or: "None - plan executed exactly as written."
 
 **Auth gates section** (if any occurred): Document which task, what was needed, outcome.
-
-**Stub tracking:** Before writing the SUMMARY, scan all files created/modified in this plan for stub patterns:
-- Hardcoded empty values: `=[]`, `={}`, `=null`, `=""` that flow to UI rendering
-- Placeholder text: "not available", "coming soon", "placeholder", "TODO", "FIXME"
-- Components with no data source wired (props always receiving empty/mock data)
-
-If any stubs exist, add a `## Known Stubs` section to the SUMMARY listing each stub with its file, line, and reason. These are tracked for the verifier to catch. Do NOT mark a plan as complete if stubs exist that prevent the plan's goal from being achieved — either wire the data or document in the plan why the stub is intentional and which future plan will resolve it.
 </summary_creation>
+
+<stub_detection>
+**Before writing SUMMARY.md, scan all files created/modified in this plan for stub patterns:**
+
+```bash
+# Scan for TODO/FIXME/XXX comments
+git diff --name-only HEAD~{TASK_COUNT}..HEAD | while read file; do
+  grep -n "TODO\|FIXME\|XXX" "$file" 2>/dev/null
+done
+
+# Scan for not-implemented errors
+git diff --name-only HEAD~{TASK_COUNT}..HEAD | while read file; do
+  grep -n "throw new Error.*not implemented\|throw new Error.*TODO" "$file" 2>/dev/null
+done
+
+# Scan for placeholder values
+git diff --name-only HEAD~{TASK_COUNT}..HEAD | while read file; do
+  grep -nE "'YOUR_API_KEY'|'REPLACE_ME'|'placeholder'" "$file" 2>/dev/null
+done
+
+# Scan for console.log in non-test files
+git diff --name-only HEAD~{TASK_COUNT}..HEAD | grep -v test | grep -v spec | while read file; do
+  grep -n "console\.log\|console\.error\|console\.warn" "$file" 2>/dev/null
+done
+
+# Scan for empty function bodies
+git diff --name-only HEAD~{TASK_COUNT}..HEAD | while read file; do
+  grep -nE "return null;|return undefined;|return \[\];|return \{\};" "$file" 2>/dev/null
+done
+```
+
+**If stubs found:** Create a `## Known Stubs` section in SUMMARY.md:
+
+```markdown
+## Known Stubs
+
+**1. [Task 3, src/api/users.ts:45]** Empty API response handler
+```
+console.log('TODO: implement user list response')
+```
+- **Reason:** Placeholder for future integration
+- **Resolve in:** [future plan name or ticket]
+
+**2. [Task 5, src/components/Dashboard.tsx:120]** Mock data source
+```
+const users = [] // TODO: fetch from /api/users
+```
+- **Reason:** Backend endpoint not yet available
+- **Resolve in:** [backend plan name]
+```
+
+Do NOT mark a plan as complete if stubs prevent the plan's success criteria from being met — either wire the data or explicitly note in the plan why the stub is intentional and which future plan resolves it.
+</stub_detection>
+
+<self_check_loop>
+**After writing SUMMARY.md with known stubs (if any), run one verification pass:**
+
+**1. Count task verification:**
+```bash
+# Count tasks listed in SUMMARY
+SUMMARY_TASKS=$(grep -c "^\- \[x\]" .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md)
+
+# Count tasks in original plan
+PLAN_TASKS=$(grep -c "^### Task" {phase}-{plan}-PLAN.md)
+
+if [ "$SUMMARY_TASKS" -ne "$PLAN_TASKS" ]; then
+  echo "⚠️  MISMATCH: Plan has $PLAN_TASKS tasks, SUMMARY lists $SUMMARY_TASKS"
+fi
+```
+
+**2. Count commits verification:**
+```bash
+# Count commits listed in SUMMARY
+SUMMARY_COMMITS=$(grep -c "^- \[" .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md | grep -E "^[a-f0-9]{7,}")
+
+# Count commits in git log
+PLAN_COMMITS=$(git log --oneline --grep="({phase}-{plan})" | wc -l)
+
+if [ "$SUMMARY_COMMITS" -ne "$PLAN_COMMITS" ]; then
+  echo "⚠️  MISMATCH: Git log has $PLAN_COMMITS commits, SUMMARY lists $SUMMARY_COMMITS"
+fi
+```
+
+**3. Verify success criteria:**
+
+For each success criterion in the PLAN.md frontmatter, verify one of:
+- A git diff line shows the implementation
+- A test file confirms the behavior
+- A SUMMARY entry documents the work
+
+**4. Append result to SUMMARY.md:**
+
+```markdown
+## Self-Check
+
+**Status:** PASSED
+- Tasks: 5 completed, 5 in plan ✓
+- Commits: 5 commits recorded ✓
+- Success criteria: All verified ✓
+```
+
+Or:
+
+```markdown
+## Self-Check
+
+**Status:** FAILED
+- Task count mismatch: plan has 5, SUMMARY lists 4
+- Missing commit: Task 3 (refactor-auth) not in git log
+- Unverified criterion: "Email validation handles + in local part"
+
+**Action:** Review SUMMARY.md and PLAN.md to identify missing work before committing.
+```
+
+Do NOT proceed to state updates if self-check fails.
+</self_check_loop>
 
 <self_check>
 After writing SUMMARY.md, verify claims before proceeding.

@@ -616,6 +616,8 @@ function cmdState(subArgs) {
       blockers: [],
       council_sessions: [],
       last_session: null,
+      workstreams: [],
+      active_workstream: null,
     };
   }
 
@@ -756,7 +758,231 @@ function cmdState(subArgs) {
     return writeState(state);
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain`);
+  // --- insert-phase ---
+  if (sub === 'insert-phase') {
+    const flags = parseFlags(1);
+    const phaseNumber = flags.number || '';
+    const phaseName = flags.name || '';
+
+    // Validate N.M format
+    const phaseRegex = /^\d+\.\d+$/;
+    if (!phaseRegex.test(phaseNumber)) {
+      throw new Error(`Invalid phase number format: ${phaseNumber}. Expected N.M (e.g., 2.1, 3.2)`);
+    }
+
+    if (!phaseName) {
+      throw new Error('insert-phase requires --name <phase-name>');
+    }
+
+    // Generate slug from name: lowercase, hyphenate spaces/underscores
+    const slug = phaseName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!slug) {
+      throw new Error('Phase name must contain at least one alphanumeric character');
+    }
+
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+
+    // Check if phase already exists
+    if (state.phases.some(p => p.number === phaseNumber)) {
+      throw new Error(`Phase ${phaseNumber} already exists`);
+    }
+
+    // Parse phase number to numeric for sorting
+    const [intPart, decPart] = phaseNumber.split('.');
+    const numericValue = parseFloat(`${intPart}.${decPart}`);
+
+    // Insert phase in sorted order
+    const newPhase = {
+      number: phaseNumber,
+      name: phaseName,
+      slug: slug,
+      created: new Date().toISOString(),
+      started: null,
+      completed: null,
+    };
+
+    const insertIdx = state.phases.findIndex(p => {
+      const [pi, pd] = p.number.split('.');
+      const pNum = parseFloat(`${pi}.${pd}`);
+      return pNum > numericValue;
+    });
+
+    if (insertIdx === -1) {
+      state.phases.push(newPhase);
+    } else {
+      state.phases.splice(insertIdx, 0, newPhase);
+    }
+
+    writeState(state);
+    return {
+      ok: true,
+      phase_number: phaseNumber,
+      name: phaseName,
+      slug: slug,
+      directory: path.join(PLANNING_DIR, 'phases', `${phaseNumber}-${slug}`),
+    };
+  }
+
+  // --- workstream-validate ---
+  if (sub === 'workstream-validate') {
+    const subcommand = subArgs[1];
+    const flags = parseFlags(2);
+    const name = flags.name || '';
+
+    if (!subcommand || !['create', 'switch', 'list', 'status', 'complete'].includes(subcommand)) {
+      throw new Error(`Invalid workstream subcommand: ${subcommand}. Valid: create, switch, list, status, complete`);
+    }
+
+    if (['create', 'switch', 'complete'].includes(subcommand) && !name) {
+      throw new Error(`workstream ${subcommand} requires --name <name>`);
+    }
+
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+
+    if (subcommand === 'create') {
+      if (state.workstreams.some((w) => w.name === name)) {
+        throw new Error(`Workstream already exists: ${name}`);
+      }
+    } else if (['switch', 'complete'].includes(subcommand)) {
+      if (!state.workstreams.some((w) => w.name === name)) {
+        throw new Error(`Workstream not found: ${name}`);
+      }
+    }
+
+    return { ok: true, valid: true };
+  }
+
+  // --- workstream-create ---
+  if (sub === 'workstream-create') {
+    const flags = parseFlags(1);
+    const name = flags.name || '';
+    if (!name) throw new Error('workstream-create requires --name <name>');
+
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+    if (state.workstreams.some((w) => w.name === name)) {
+      throw new Error(`Workstream already exists: ${name}`);
+    }
+
+    // Create new workstream
+    const now = new Date().toISOString();
+    const id = `ws-${Date.now().toString(36).slice(-8)}`;
+    const newWorkstream = {
+      name,
+      id,
+      created: now,
+      active: true,
+      completed: false,
+      phases: [],
+    };
+
+    // Deactivate other workstreams
+    state.workstreams.forEach((w) => { w.active = false; });
+    state.workstreams.push(newWorkstream);
+    state.active_workstream = name;
+
+    return writeState(state);
+  }
+
+  // --- workstream-switch ---
+  if (sub === 'workstream-switch') {
+    const flags = parseFlags(1);
+    const name = flags.name || '';
+    if (!name) throw new Error('workstream-switch requires --name <name>');
+
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+
+    const ws = state.workstreams.find((w) => w.name === name);
+    if (!ws) throw new Error(`Workstream not found: ${name}`);
+
+    // Deactivate others, activate target
+    state.workstreams.forEach((w) => { w.active = w.name === name; });
+    state.active_workstream = name;
+
+    return writeState(state);
+  }
+
+  // --- workstream-list ---
+  if (sub === 'workstream-list') {
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+
+    return {
+      ok: true,
+      workstreams: state.workstreams.map((w) => ({
+        name: w.name,
+        id: w.id || '',
+        active: w.active || false,
+        completed: w.completed || false,
+        phases: (w.phases || []).length,
+        created: w.created || '',
+      })),
+    };
+  }
+
+  // --- workstream-status ---
+  if (sub === 'workstream-status') {
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+
+    const active = state.workstreams.find((w) => w.active) || state.workstreams[0];
+    if (!active) {
+      return { ok: true, workstream: null, message: 'No workstreams exist' };
+    }
+
+    return {
+      ok: true,
+      workstream: {
+        name: active.name,
+        id: active.id || '',
+        active: active.active || false,
+        completed: active.completed || false,
+        phases: (active.phases || []).length,
+        created: active.created || '',
+      },
+    };
+  }
+
+  // --- workstream-complete ---
+  if (sub === 'workstream-complete') {
+    const flags = parseFlags(1);
+    const name = flags.name || '';
+    if (!name) throw new Error('workstream-complete requires --name <name>');
+
+    const state = readState() || defaultState();
+    if (!state.workstreams) state.workstreams = [];
+
+    const ws = state.workstreams.find((w) => w.name === name);
+    if (!ws) throw new Error(`Workstream not found: ${name}`);
+    if (ws.completed) throw new Error(`Workstream already completed: ${name}`);
+
+    ws.completed = true;
+    ws.active = false;
+
+    // If this was the active workstream, switch to first incomplete
+    if (state.active_workstream === name) {
+      const next = state.workstreams.find((w) => !w.completed);
+      if (next) {
+        next.active = true;
+        state.active_workstream = next.name;
+      } else {
+        state.active_workstream = null;
+      }
+    }
+
+    return writeState(state);
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
 }
 
 /** init plan — context blob for /rihal:plan workflow. */

@@ -110,6 +110,34 @@ Written to `{plan-dir}/{plan-name}-SUMMARY.md` after completion:
 ## Deviations
 - {deviation description} → {rule applied} → {resolution}
 
-## Next
-{first task of the next plan, if known}
+## Known Stubs
+(Optional section if stubs exist)
+- [file:line] stub pattern → reason → resolved in [plan name]
+
+## Self-Check
+**Status:** PASSED | FAILED
+- Task count: {count} completed vs {plan count} in plan
+- Commits: {count} recorded
+- Criteria: {verified count}/{total} verified
 ```
+
+### Stub Detection
+
+Before writing SUMMARY.md, executor scans all modified files for stub patterns:
+- `TODO` / `FIXME` / `XXX` comments
+- `throw new Error('not implemented')` or `throw new Error('TODO')`
+- Placeholder values: `'YOUR_API_KEY'`, `'REPLACE_ME'`
+- `console.log` in non-test files
+- Empty function bodies: `return null` / `return undefined`
+
+If stubs exist, add `## Known Stubs` section listing each with file:line and resolution plan. Do NOT mark complete if stubs block success criteria.
+
+### Self-Check Loop
+
+After writing SUMMARY.md:
+1. **Count tasks:** SUMMARY task count must match plan task count
+2. **Count commits:** Commits listed must exist in git log
+3. **Verify criteria:** Each success criterion has evidence (diff line, test, or SUMMARY entry)
+4. **Report result:** Append `## Self-Check: PASSED/FAILED` with deltas if failed
+
+Stop before state updates if self-check fails.

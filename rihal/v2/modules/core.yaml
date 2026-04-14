@@ -19,6 +19,14 @@ workflows:
   - next.md
   - progress.md
   - resume-work.md
+  - insert-phase.md
+  - enable-hooks.md
+  - session-report.md
+  - update.md
+  - stats.md
+  - health.md
+  - forensics.md
+  - workstream.md
 commands:
   - council.md
   - discuss.md
@@ -30,6 +38,14 @@ commands:
   - next.md
   - progress.md
   - resume-work.md
+  - insert-phase.md
+  - enable-hooks.md
+  - session-report.md
+  - update.md
+  - stats.md
+  - health.md
+  - forensics.md
+  - workstream.md
 references:
   - council-protocol.md
   - commit-conventions.md
