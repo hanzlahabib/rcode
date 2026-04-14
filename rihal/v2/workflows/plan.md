@@ -12,13 +12,13 @@ References (execution-protocol.md, commit-conventions.md) are loaded ONLY when S
 - `rihal-planner` — plan writer subagent
 </available_agent_types>
 
-## Step 0 — Initialize
+## Step 0 — Initialize and validate
 
 ```bash
 INIT=$(node .rihal/bin/rihal-tools.cjs init plan "$ARGUMENTS")
 ```
 
-### Step 0.5 — Detect decision questions (STOP and redirect)
+### Step 0.1 — Detect decision questions (STOP and redirect)
 
 `/rihal:plan` converts CONCRETE TASKS into PLAN.md files. It does NOT answer strategic questions or weigh options.
 
@@ -54,6 +54,7 @@ Parse:
 - `output_dir` — from `--output` flag or default `.planning/plans/{phase_slug}/`
 - `config` — `{ user_name, project_name, language, mode }`
 - `paths` — standard rihal paths
+- `scope` — detected scope classification (see Step 0.2 below)
 
 **If no arguments:** print usage and stop:
 ```
@@ -64,6 +65,53 @@ Examples:
   /rihal:plan "set up Next.js 16 project with next-intl for Arabic"
   /rihal:plan .planning/council-sessions/ --phase 01-setup
 ```
+
+### Step 0.2 — Detect scope and right-size the output
+
+Before spawning the planner, classify the input scope. Match the FIRST signal that applies:
+
+| Scope | Signals | Output |
+|-------|---------|--------|
+| ticket | "fix", "bug", "typo", "small", "quick", GitHub issue URL, input < 100 chars, single filename mentioned | 1 PLAN.md with 3-5 inline tasks |
+| feature | "add", "implement", "build X", 1-3 files mentioned, < 300 chars | 1 PLAN.md with 5-8 tasks |
+| phase | "phase", "epic", "sprint", multiple components mentioned, 300-800 chars | 1 PLAN.md with up to 8 tasks + depends_on |
+| initiative | "milestone", "initiative", "roadmap", multi-team signals, > 800 chars | Multiple PLAN.md files with waves |
+
+### If scope = ticket AND a single file is mentioned (look for *.py, *.ts, *.js, *.md etc):
+Suggest `/rihal:quick` instead:
+```
+⚠ This looks like a single-file task — /rihal:quick is faster.
+
+/rihal:quick is for single-purpose work: executor spawned directly,
+atomic commit, no plan file needed.
+
+Copy-paste to use quick instead:
+
+/rihal:quick $ARGUMENTS
+
+Or proceed with /rihal:plan if you want a planned artifact anyway.
+```
+
+Give user a chance to override via AskUserQuestion (proceed with plan / switch to quick).
+
+### If input contains a GitHub issue URL (pattern: github.com/*/issues/N):
+Try to fetch the issue's effort label:
+```bash
+ISSUE_URL="$extracted_url"
+LABELS=$(gh issue view "$ISSUE_URL" --json labels -q '.labels[].name' 2>/dev/null)
+EFFORT=$(echo "$LABELS" | grep -iE "extra small|xs|small|medium|large|xl" | head -1)
+```
+
+Map effort to scope:
+- "Extra Small" / XS / <1 day → ticket
+- "Small" / S / 1-3 days → feature
+- "Medium" / M → phase
+- "Large" / XL → initiative
+
+This overrides keyword-based classification when available.
+
+### Pass scope to Step 2.5:
+The `INIT` object returned from Step 0 now includes the `scope` field. Extract this and pass it to the planner prompt in Step 2.5.
 
 ## Step 1 — Resolve input
 
@@ -126,6 +174,13 @@ Agent tool call:
 
     ## Input
     {the follow-ups text or description}
+
+    ## Scope
+    {scope detected in Step 0.2: ticket | feature | phase | initiative}
+    {if ticket}: Produce ONE PLAN.md with 3-5 inline tasks. Do not split into multiple plans.
+    {if feature}: Produce ONE PLAN.md with 5-8 tasks.
+    {if phase}: Produce ONE PLAN.md with up to 8 tasks + depends_on where needed.
+    {if initiative}: Produce multiple PLAN.md files with dependency waves.
 
     ## Research context (if available)
     {If RESEARCH.md was generated in Step 2, include its full contents here}
@@ -219,7 +274,7 @@ Silent — if state.json missing, ignore.
 ## On Error
 
 - **No arguments:** print usage block, stop.
-- **Decision question detected:** redirect to `/rihal:council` (Step 0.5).
+- **Decision question detected:** redirect to `/rihal:council` (Step 0.1).
 - **Input file not found:** print the path, stop.
 - **state.json missing or corrupted:** continue without error — plan artifact is mandatory, state tracking is optional.
 - **No follow-ups in session artifact:** fall back to reading full Panel Responses as input.

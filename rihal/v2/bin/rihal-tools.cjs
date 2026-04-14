@@ -1000,6 +1000,59 @@ function cmdState(subArgs) {
   throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, set-user-profile, write-profile, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
 }
 
+/**
+ * Classify the scope of input based on keywords and length.
+ * Returns one of: 'ticket', 'feature', 'phase', 'initiative'
+ *
+ * Priority order:
+ * 1. Initiative keywords (highest)
+ * 2. Phase keywords
+ * 3. Feature keywords (add, implement, build)
+ * 4. Ticket keywords
+ * 5. Length-based fallback
+ */
+function classifyScope(input) {
+  const text = (input || '').toLowerCase();
+  const len = text.length;
+
+  // Initiative signals — highest priority
+  if (/\b(milestone|initiative|roadmap|multi-team|multi-sprint|q[1-4]\s*\d{4})\b/.test(text)) {
+    return 'initiative';
+  }
+  if (len > 800) {
+    return 'initiative';
+  }
+
+  // Phase signals
+  if (/\b(phase|epic|sprint)\b/.test(text)) {
+    return 'phase';
+  }
+  if (len > 300 && len <= 800) {
+    return 'phase';
+  }
+
+  // Feature signals (add, implement, build)
+  if (/\b(add|implement|build|create|develop|design)\b/.test(text)) {
+    return 'feature';
+  }
+
+  // Ticket signals
+  if (/\b(fix|bug|typo|quick|small)\b/.test(text)) {
+    return 'ticket';
+  }
+  if (/github\.com\/[^/]+\/[^/]+\/issues\/\d+/.test(text)) {
+    return 'ticket';
+  }
+
+  // Length-based fallback
+  if (len < 100) {
+    return 'ticket';
+  }
+
+  // Default to feature
+  return 'feature';
+}
+
 /** init plan — context blob for /rihal:plan workflow. */
 function cmdInitPlan(rawArgs) {
   const config = readConfig();
@@ -1043,9 +1096,28 @@ function cmdInitPlan(rawArgs) {
       throw new Error(`Output path outside project root: ${flags.output}`);
     }
   }
+
+  // Classify scope based on description or resolved path content
+  let scopeInput = description || '';
+  if (!scopeInput && resolvedPath) {
+    try {
+      const content = fs.readFileSync(resolvedPath, 'utf8');
+      // Extract Follow-ups section if it's a council session
+      const followUpsMatch = content.match(/## Follow-ups\s*\n([\s\S]*?)(?:##|$)/);
+      if (followUpsMatch) {
+        scopeInput = followUpsMatch[1].slice(0, 500); // Use first 500 chars of follow-ups
+      } else {
+        scopeInput = content.slice(0, 500); // Use first 500 chars of content
+      }
+    } catch (e) {
+      // Ignore read errors, default to 'feature'
+    }
+  }
+  const scope = classifyScope(scopeInput);
+
   return {
     workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
-    phase_slug: phaseSlug, output_dir: outputDir, flags, config,
+    phase_slug: phaseSlug, output_dir: outputDir, scope, flags, config,
     paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
   };
 }
