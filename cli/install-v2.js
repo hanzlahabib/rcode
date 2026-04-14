@@ -253,6 +253,13 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
   }
 
+  // Agent rules (on-demand reference files) — copied to .rihal/agents-rules/
+  const agentRulesDir = path.join(target, '.rihal', 'agents-rules');
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents', 'rules'))) {
+    const rel = path.relative(path.join(SOURCE_ROOT, 'agents', 'rules'), f);
+    plan.push({ src: f, rel: path.join('.rihal', 'agents-rules', rel) });
+  }
+
   return plan;
 }
 
