@@ -11,6 +11,23 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-security-auditor — Verifies threat mitigation coverage
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:secure-phase <phase>
+```
+
+**Examples:**
+```
+/rihal:secure-phase 01
+/rihal:secure-phase 02.1
+```
+
 <process>
 
 ## 0. Initialize

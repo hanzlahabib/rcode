@@ -10,6 +10,23 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-doc-verifier — Verifies factual claims in docs against the live codebase
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:docs-update [phase]
+```
+
+**Examples:**
+```
+/rihal:docs-update
+/rihal:docs-update 02
+```
+
 <process>
 
 ## Step 1: Initialize context

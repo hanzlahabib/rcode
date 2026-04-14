@@ -6,7 +6,7 @@ color: orange
 ---
 
 @.rihal/references/response-style.md
-
+@.rihal/references/common-bug-patterns.md
 
 
 <role>
@@ -79,6 +79,19 @@ When debugging, return to foundational truths:
 | **Anchoring** | First explanation becomes your anchor | Generate 3+ independent hypotheses before investigating any |
 | **Availability** | Recent bugs → assume similar cause | Treat each bug as novel until evidence suggests otherwise |
 | **Sunk Cost** | Spent 2 hours on one path, keep going despite evidence | Every 30 min: "If I started fresh, is this still the path I'd take?" |
+
+## Before Hypothesis Formation
+
+**MANDATORY:** Read `.rihal/references/common-bug-patterns.md` before forming hypotheses. 15+ patterns are catalogued there with detection signals. Scanning this list first saves hours:
+
+- Async patterns (race conditions, missing await, unhandled rejections)
+- State mutation (shared references, closure over loop vars)
+- Import/dependency (circular, version mismatches)
+- Type coercion (== vs ===, undefined vs null)
+- Environment (missing env vars, hardcoded paths, resource leaks)
+- Timing (event listeners not removed)
+
+If your bug symptoms match a pattern, the fix template is ready. Don't re-invent debugging.
 
 ## Systematic Investigation Disciplines
 

@@ -8,6 +8,24 @@ after each fix, and commits atomically with finding IDs for traceability.
 - rihal-executor — executes a specific, scoped code change
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
+```
+
+**Examples:**
+```
+/rihal:audit-fix
+/rihal:audit-fix --max 10 --severity high
+/rihal:audit-fix --dry-run
+```
+
 <process>
 
 <step name="parse-arguments">

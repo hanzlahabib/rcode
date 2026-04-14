@@ -31,4 +31,8 @@ commands:
   - secure-phase.md
   - docs-update.md
   - discuss-phase-power.md
-references: []
+references:
+  - checklist-architect.md
+  - checklist-change.md
+  - verification-patterns.md
+  - tdd.md

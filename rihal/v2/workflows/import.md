@@ -6,6 +6,23 @@ External plan ingestion with conflict detection and agent delegation.
 
 Future: `--prd` mode (PRD extraction into PROJECT.md + REQUIREMENTS.md + ROADMAP.md) is planned for a follow-up PR.
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:import --from <path>
+```
+
+**Examples:**
+```
+/rihal:import --from ./external-plan.md
+/rihal:import --from ../other-project/PLAN.md
+```
+
 ---
 
 <step name="banner">

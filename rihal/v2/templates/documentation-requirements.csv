@@ -1,0 +1,11 @@
+Document,Required,Priority,Audience,Last Updated,Status
+README.md,yes,high,all,,
+API.md,yes,high,developers,,
+CONTRIBUTING.md,yes,medium,contributors,,
+DEPLOYMENT.md,yes,high,devops,,
+ARCHITECTURE.md,yes,high,architects,,
+DEVELOPMENT.md,yes,medium,developers,,
+TESTING.md,no,medium,qa-engineers,,
+SECURITY.md,yes,high,security-team,,
+CHANGELOG.md,no,low,all,,
+TROUBLESHOOTING.md,no,medium,users,,

@@ -12,6 +12,24 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+- Print the usage block below
+- STOP — do not proceed
+
+**Usage:**
+```
+/rihal:scan [--focus tech|arch|quality|concerns|tech+arch]
+```
+
+**Examples:**
+```
+/rihal:scan --focus tech
+/rihal:scan --focus arch
+/rihal:scan --focus tech+arch
+```
+
 <process>
 
 ## Focus-to-Document Mapping
