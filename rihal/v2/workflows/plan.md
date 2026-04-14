@@ -159,7 +159,24 @@ Agent tool call:
 
 After researcher completes, read the generated `{output_dir}/RESEARCH.md` file. Include its full contents in the planner prompt (Step 2.5).
 
-**If `flags.research === false`:** Skip to Step 2.5 (spawn planner).
+**If `flags.research === false`:** Skip to Step 2.1 (assign IDs).
+
+## Step 2.1 — Assign hierarchical IDs
+
+Before spawning the planner, assign IDs for the plan(s):
+
+```bash
+# Get next phase ID if creating a new phase
+PHASE_ID=$(node .rihal/bin/rihal-tools.cjs state next-phase-id)
+
+# Get next plan ID(s) for that phase
+PLAN_ID=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
+
+# If creating multiple plans (initiative), get additional plan IDs
+# PLAN_ID_2=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
+```
+
+Pass `PHASE_ID` and `PLAN_ID` (or `PLAN_IDS[]` for initiatives) to the planner in Step 2.5.
 
 ## Step 2.5 — Spawn rihal-planner
 
@@ -181,6 +198,13 @@ Agent tool call:
     {if feature}: Produce ONE PLAN.md with 5-8 tasks.
     {if phase}: Produce ONE PLAN.md with up to 8 tasks + depends_on where needed.
     {if initiative}: Produce multiple PLAN.md files with dependency waves.
+
+    ## Hierarchical IDs
+    Use these auto-assigned IDs for all plans and tasks:
+    {if single plan}: phase_id={PHASE_ID}, plan_id={PLAN_ID}
+    {if multiple plans}: phase_id={PHASE_ID}, plan_ids={PLAN_ID_1},{PLAN_ID_2},...
+    
+    Task IDs follow pattern: {PLAN_ID}.{task_number} (e.g., 01.02.01, 01.02.02)
 
     ## Research context (if available)
     {If RESEARCH.md was generated in Step 2, include its full contents here}

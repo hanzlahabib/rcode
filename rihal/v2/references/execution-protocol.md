@@ -10,10 +10,13 @@ Every plan file must have this frontmatter and structure:
 
 ```markdown
 ---
-phase: 01-project-setup
-plan: "01"
-type: auto
-depends_on: []
+id: "01.02"                 # full hierarchical ID
+phase: "01"                 # phase ID (2-digit, zero-padded)
+plan: "02"                  # plan ID within phase (2-digit, zero-padded)
+milestone: "M1"             # optional, if assigned to milestone
+type: auto | tdd
+depends_on: []              # list of other plan IDs like ["01.01"]
+wave: 1                     # auto-derived from depends_on
 ---
 
 ## Objective
@@ -24,17 +27,24 @@ One sentence describing what this plan achieves.
 
 ## Tasks
 
-### Task 1 — name
+### Task 01.02.01 — name
 type: auto
 **Steps:**
 1. ...
 **Done when:** specific, observable condition
 **Commit:** feat(scope): description
 
-### Task 2 — name
+### Task 01.02.02 — name
 type: checkpoint:human-verify
 **Verify:** what the human must confirm before continuing
 ```
+
+**Hierarchical ID format:**
+- Milestone: `M{N}` (e.g., M1, M2)
+- Phase: `{NN}` 2-digit, zero-padded (e.g., 01, 02, 72)
+- Decimal phase (inserted): `{NN.M}` (e.g., 02.1, 72.3)
+- Plan within phase: `{NN.MM}` (e.g., 01.02)
+- Task within plan: `{NN.MM.TT}` (e.g., 01.02.03)
 
 **Task types:**
 - `auto` — executor runs without pausing

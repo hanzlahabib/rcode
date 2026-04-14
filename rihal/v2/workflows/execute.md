@@ -12,14 +12,22 @@ References (execution-protocol.md, commit-conventions.md) are loaded ONLY when S
 - `rihal-executor` — plan executor subagent (one instance per plan file)
 </available_agent_types>
 
-## Step 0 — Initialize
+## Step 0 — Initialize and resolve IDs
 
 ```bash
 INIT=$(node .rihal/bin/rihal-tools.cjs init execute "$ARGUMENTS")
+
+# If argument is a short ID pattern (NN or NN.MM), resolve to actual path
+if [[ "$ARGUMENTS" =~ ^[0-9]{2}(\.[0-9]+)?$ ]]; then
+  RESOLVED=$(node .rihal/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS")
+  TARGET=$(echo "$RESOLVED" | jq -r '.path')
+else
+  TARGET="$ARGUMENTS"
+fi
 ```
 
 Parse:
-- `target` — the argument (plan path or phase name)
+- `target` — the argument (plan path, phase name, or hierarchical ID like NN or NN.MM)
 - `flags.wave` — run only this wave number
 - `flags.interactive` — sequential mode, no subagents
 - `flags.continue` — resuming after a checkpoint
@@ -29,9 +37,19 @@ Parse:
 - `plan_path` — set if single-plan mode
 - `phase_dir` — set if phase mode
 
+**Supported argument formats:**
+- `.planning/phases/01-setup/PLAN.md` — direct path (backward compatible)
+- `01` — execute all plans in phase 01 (wave-grouped)
+- `01.02` — execute specific plan 01.02
+
 **If no target:** print usage and stop:
 ```
-Usage: /rihal:execute <plan-file.md | phase-dir> [--wave N] [--interactive] [--continue] [--skip-gates]
+Usage: /rihal:execute <plan-file.md | phase-id | plan-id> [--wave N] [--interactive] [--continue] [--skip-gates]
+
+Examples:
+  /rihal:execute .planning/phases/01-setup/PLAN.md
+  /rihal:execute 01                  # all plans in phase 01
+  /rihal:execute 01.02               # plan 01.02
 ```
 
 ## Step 0.5 — Detect non-plan arguments (redirect to plan)
