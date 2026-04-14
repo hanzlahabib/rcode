@@ -576,10 +576,11 @@ ${AGENT_SKILLS_EXECUTOR}
 ",
   subagent_type="rihal-executor",
   model="{executor_model}",
-  isolation="worktree",
   description="Execute: ${DESCRIPTION}"
 )
 ```
+
+**Do not pass `isolation="worktree"` without explicit user consent.** `/rihal:quick` executes in the user's current branch by default. If the user wants isolated execution, they can re-run with `--worktree` flag and confirm — but this workflow never assumes it.
 
 After executor returns:
 1. Verify summary exists at `${QUICK_DIR}/${quick_id}-SUMMARY.md`

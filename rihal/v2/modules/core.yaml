@@ -65,3 +65,4 @@ references:
   - git-planning-commit.md
   - state-schema.md
   - karpathy-guidelines.md
+  - no-unauthorized-git-ops.md

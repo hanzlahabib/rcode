@@ -97,9 +97,17 @@ For each issue, fill the debug-subagent-prompt template and spawn:
 Task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rihal/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
   subagent_type="rihal-debugger",
-  isolation="worktree",
   description="Debug: {truth_short}"
 )
+```
+
+**Never pass `isolation="worktree"` without explicit user consent.** Worktree isolation creates a git worktree, which is a write operation the user may not want. If you believe isolation is genuinely needed (e.g., the debug agent may edit files), ask first via AskUserQuestion:
+
+```
+Spawn the debug agent with git worktree isolation?
+  - Safer: agent edits stay isolated until you merge
+  - Trade-off: creates a new worktree in .worktrees/ that needs cleanup
+  [yes / no — default no]
 ```
 
 **All agents spawn in single message** (parallel execution).
