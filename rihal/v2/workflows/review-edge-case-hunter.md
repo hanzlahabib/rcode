@@ -4,6 +4,23 @@
 Systematically enumerate edge cases by category (input, state, concurrency, network) with severity (critical/high/medium/low). Callable during code-review.md workflow. Output feeds into story AC or subtasks. Focuses on "what breaks?" rather than security.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:review-edge-case-hunter <argument-here>
+```
+
+**Examples:**
+```
+/rihal:review-edge-case-hunter example 1
+/rihal:review-edge-case-hunter example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-edge-case-hunter` — edge case enumeration agent
 </available_agent_types>

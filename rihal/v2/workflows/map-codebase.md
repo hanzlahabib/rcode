@@ -6,6 +6,23 @@ Each agent has fresh context, explores a specific focus area, and **writes docum
 Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:map-codebase <argument-here>
+```
+
+**Examples:**
+```
+/rihal:map-codebase example 1
+/rihal:map-codebase example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-codebase-mapper — Maps project structure and dependencies
@@ -225,7 +242,7 @@ If any agent failed, note the failure and continue with successful documents.
 Continue to verify_output.
 </step>
 
-<step name="sequential_mapping" condition="Task tool is NOT available (e.g. Antigravity, Gemini CLI, Codex)">
+<step name="sequential_mapping" condition="Task tool is NOT available (e.g. environments that do not support parallel subagents)">
 When the `Task` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.
 
 **IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, list_dir, view_file, grep_search, or equivalent tools available in your runtime).
@@ -375,3 +392,18 @@ End workflow.
 - Clear completion summary with line counts
 - User offered clear next steps in Rihal style
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

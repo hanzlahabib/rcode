@@ -21,6 +21,12 @@ workflows:
   - secure-phase.md
   - docs-update.md
   - discuss-phase-power.md
+  - create-epics-and-stories.md
+  - create-story.md
+  - dev-story.md
+  - document-project.md
+  - ui-phase.md
+  - ui-review.md
 commands:
   - new-project.md
   - map-codebase.md
@@ -31,6 +37,12 @@ commands:
   - secure-phase.md
   - docs-update.md
   - discuss-phase-power.md
+  - create-epics-and-stories.md
+  - create-story.md
+  - dev-story.md
+  - document-project.md
+  - ui-phase.md
+  - ui-review.md
 references:
   - checklist-architect.md
   - checklist-change.md

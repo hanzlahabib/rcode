@@ -4,6 +4,23 @@
 Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:enable-hooks <argument-here>
+```
+
+**Examples:**
+```
+/rihal:enable-hooks example 1
+/rihal:enable-hooks example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Load hooks template
 
 ```bash
@@ -38,7 +55,22 @@ For each hook type (`PreToolUse`, `PostToolUse`):
 
 Write the merged settings.json back to `.claude/settings.json` with proper JSON formatting (2-space indent).
 
-## Step 5 — Print confirmation
+## Step 5 — Verify hook binary
+
+Verify that the hook binary exists and is executable:
+
+```bash
+if [ ! -f .rihal/bin/rihal-hooks.cjs ]; then
+  echo "⚠ Hook binary missing at .rihal/bin/rihal-hooks.cjs"
+  echo "  Run: node /tmp/rihal-src/cli/install-v2.js . --force --yes"
+  exit 1
+fi
+node .rihal/bin/rihal-hooks.cjs --help 2>&1 || true
+```
+
+If the binary is missing, print error and stop. Otherwise, test it with `--help` (ignore exit code).
+
+## Step 5.5 — Print confirmation
 
 Print success message:
 

@@ -4,6 +4,23 @@
 Convert council session follow-ups or freeform task descriptions into executable PLAN.md files. Spawns rihal-planner as a single subagent that writes structured plans to `.planning/plans/`.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:plan <argument-here>
+```
+
+**Examples:**
+```
+/rihal:plan example 1
+/rihal:plan example 2
+```
+
+STOP — do not proceed.
+
 ## Note on reference loading
 
 References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
@@ -115,13 +132,34 @@ The `INIT` object returned from Step 0 now includes the `scope` field. Extract t
 
 ## Step 1 — Resolve input
 
+**If `input_type === "file"` AND resolved_path ends in PLAN.md:**
+Check if this file's frontmatter contains both `phase:` and `objective:` fields.
+
+If yes:
+```
+⚠ This file is already a PLAN.md — you probably meant /rihal:execute.
+
+/rihal:execute $resolved_path
+
+To plan FROM this file's content as input (rare), pass --re-plan flag.
+```
+STOP.
+
+Otherwise, treat it as a planning input (rare case where PLAN.md is source material).
+
 **If `input_type === "session"`:**
 Read the file at `resolved_path`. Extract the `## Follow-ups` section. If no Follow-ups section, read the full `## Panel Responses` section as input.
 
-Print:
+If Follow-ups found, print:
 ```
 📖 Planning from council session: {filename}
    Follow-ups found: {count}
+```
+
+If no Follow-ups section found, print:
+```
+⚠ No '## Follow-ups' section found in {filename} — using full Panel Responses (~{N} tokens) as input.
+   Consider /rihal:council {original-question} again to get structured follow-ups.
 ```
 
 **If `input_type === "description"`:**
@@ -159,9 +197,69 @@ Agent tool call:
 
 After researcher completes, read the generated `{output_dir}/RESEARCH.md` file. Include its full contents in the planner prompt (Step 2.5).
 
-**If `flags.research === false`:** Skip to Step 2.1 (assign IDs).
+**If `flags.research === false`:** Skip to Step 2.2.
 
-## Step 2.1 — Assign hierarchical IDs
+## Step 2.2 — Verify Upstream Artifacts (NEW)
+
+If the plan input is a debug artifact (from `.rihal/debug/*.md`) or research artifact (RESEARCH.md from prior chain), spot-check its references to detect stale/hallucinated findings before spawning the planner.
+
+**When to verify:**
+- Input type is `"file"` AND file path contains `.rihal/debug/`
+- Input type is `"file"` AND file path contains `RESEARCH.md`
+- Otherwise: skip this step
+
+**Verification process:**
+1. Extract references from the artifact file using code-references.cjs:
+   - Call `extractReferences(fileText)` to get files, symbols, fileLines
+   - Call `verifyReferences(refs, projectRoot)` to check existence
+2. Check result summary:
+   - If `summary.ratio >= 0.8`: Good — proceed with note
+   - If `0.5 <= summary.ratio < 0.8`: Warning — ask user to confirm
+   - If `summary.ratio < 0.5`: Blocker — stop and redirect
+
+**If verified.ratio >= 0.8:**
+Print info message and add to planner context in Step 2.5:
+```
+✅ Upstream artifact verified: {verified}/{total} references confirmed
+```
+
+**If 0.5 <= verified.ratio < 0.8:**
+Print warning and ask via AskUserQuestion:
+```
+⚠ Upstream artifact partially verified ({ratio}%).
+
+Missing files: {count} ({list})
+Missing symbols: {count} ({list})
+
+Options:
+  A) Proceed with planning (planner will see stale references)
+  B) Re-run /rihal:debug to refresh findings
+  C) Cancel
+```
+
+If user chooses A: continue to Step 2.3, pass stale warning to planner.
+If B or C: stop and provide the command to re-run.
+
+**If verified.ratio < 0.5:**
+Print error and stop:
+```
+❌ Upstream artifact is stale ({ratio}% references missing).
+
+This artifact likely contains hallucinated file names or function references.
+Plan built from it will fail at execute time.
+
+Re-run diagnosis first:
+
+/rihal:debug <original issue or symptom>
+
+Then:
+
+/rihal:plan {description or session}
+```
+
+**If no upstream artifact:** Skip this step entirely.
+
+## Step 2.3 — Assign hierarchical IDs
 
 Before spawning the planner, assign IDs for the plan(s):
 

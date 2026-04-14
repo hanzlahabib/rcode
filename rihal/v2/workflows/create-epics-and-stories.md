@@ -4,6 +4,23 @@
 Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rihal:sprint-planning`.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:create-epics-and-stories <argument-here>
+```
+
+**Examples:**
+```
+/rihal:create-epics-and-stories example 1
+/rihal:create-epics-and-stories example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-roadmapper` — reads PRD and generates epic structure
 </available_agent_types>
@@ -277,3 +294,18 @@ Next: /rihal:sprint-planning to organize into sprints
 - **Roadmapper returns invalid JSON:** ask roadmapper to fix and re-run
 - **Fewer than 3 epics:** warn and ask roadmapper to expand
 - **Story missing acceptance criteria:** mark with ⚠️ and ask roadmapper to add
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

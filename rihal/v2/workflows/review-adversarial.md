@@ -4,6 +4,23 @@
 Assume an adversarial/hostile perspective and audit code for weaknesses: SQL injection, XSS, race conditions, data loss scenarios, unauthorized access, abuse cases, denial of service vectors. Output attack/weakness report that feeds into story AC or subtasks.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:review-adversarial <argument-here>
+```
+
+**Examples:**
+```
+/rihal:review-adversarial example 1
+/rihal:review-adversarial example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-security-adversary` — adversarial code reviewer (security-focused)
 </available_agent_types>

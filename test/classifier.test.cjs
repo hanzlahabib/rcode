@@ -68,7 +68,8 @@ test('Roman Urdu shuru karna (start) → greenfield', () => {
   assert.ok(['greenfield', 'discovery'].includes(r.type), `expected greenfield or discovery, got ${r.type}`);
 });
 
-test('Ambiguous short question falls back to codebase', () => {
+test('Ambiguous short question falls back to discovery', () => {
   const r = classify('help me please');
-  assert.strictEqual(r.type, 'codebase');
+  // Default changed from 'codebase' to 'discovery' per #94 — ambiguous = unknown intent, not code-related
+  assert.strictEqual(r.type, 'discovery');
 });

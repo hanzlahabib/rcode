@@ -4,6 +4,23 @@
 Classify developer on 4 dimensions: communication style, autonomy preference, domain depth, and iteration speed. Spawn a profiler subagent to ask questions and produce a USER-PROFILE.md artifact with YAML frontmatter + structured classification.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:profile-user <argument-here>
+```
+
+**Examples:**
+```
+/rihal:profile-user example 1
+/rihal:profile-user example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-profiler` — user classification agent (spawned once per session)
 </available_agent_types>

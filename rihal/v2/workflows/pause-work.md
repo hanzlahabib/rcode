@@ -4,6 +4,23 @@
 Capture full project context and blocking constraints before pausing work. Creates `.rihal/HANDOFF.json` (structured machine-readable handoff) and `.rihal/.continue-here.md` (human-readable summary) for seamless context restoration on resume.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:pause-work <argument-here>
+```
+
+**Examples:**
+```
+/rihal:pause-work example 1
+/rihal:pause-work example 2
+```
+
+STOP — do not proceed.
+
 <available_tools>
 - Bash — read git status, log, file listing
 - Read — read state.json, current PLAN.md
@@ -209,3 +226,18 @@ To resume work, run:
 
 /rihal:resume-work
 ```
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

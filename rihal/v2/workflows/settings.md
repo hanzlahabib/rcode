@@ -4,6 +4,23 @@
 Interactive configuration wizard for Rihal project settings. Collects user preferences for model profile, research strategy, execution gates, and branching strategy, then writes them back to .rihal/config.yaml.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:settings <argument-here>
+```
+
+**Examples:**
+```
+/rihal:settings example 1
+/rihal:settings example 2
+```
+
+STOP — do not proceed.
+
 <available_tools>
 - AskUserQuestion — collect user input
 - Read — read current config.yaml
@@ -151,3 +168,18 @@ Print a tip:
 ```
 Tip: Use /rihal:resume-work to reload config and continue work.
 ```
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

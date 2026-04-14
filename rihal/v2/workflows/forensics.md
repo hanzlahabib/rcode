@@ -4,6 +4,23 @@
 Analyze execution history in state.json and filesystem to detect incomplete work. Show timeline of what happened, where it broke, and suggest resume command.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:forensics <argument-here>
+```
+
+**Examples:**
+```
+/rihal:forensics example 1
+/rihal:forensics example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Load state
 
 Read `.rihal/state.json`:
@@ -167,3 +184,18 @@ Recent Rihal Commits: {count}
 
 Recommendation: {recovery suggestion}
 ```
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

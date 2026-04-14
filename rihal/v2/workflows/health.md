@@ -4,6 +4,23 @@
 Run 6-point compliance check on rihal installation. Each check is pass/fail. Summary at the end.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:health <argument-here>
+```
+
+**Examples:**
+```
+/rihal:health example 1
+/rihal:health example 2
+```
+
+STOP — do not proceed.
+
 ## Step 0 — Verify .rihal/ directory exists and is writable
 
 **Action:** Check if `.rihal/` directory exists and current user can write to it.

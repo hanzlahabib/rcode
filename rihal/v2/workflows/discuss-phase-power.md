@@ -6,6 +6,23 @@ Power user mode for discuss-phase. Generates ALL questions upfront into a JSON s
 **When to use:** Large phases with many gray areas, or when users prefer to answer questions offline / asynchronously rather than interactively in the chat session.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:discuss-phase-power <argument-here>
+```
+
+**Examples:**
+```
+/rihal:discuss-phase-power example 1
+/rihal:discuss-phase-power example 2
+```
+
+STOP — do not proceed.
+
 <trigger>
 This workflow executes when `--power` flag is present in ARGUMENTS to `/rihal:discuss-phase`.
 
@@ -291,3 +308,18 @@ Next step: /rihal:plan-phase {N}
 - `canonical_refs` section always present in CONTEXT.md (MANDATORY)
 - User knows how to refresh, finalize, explain, or exit power mode
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

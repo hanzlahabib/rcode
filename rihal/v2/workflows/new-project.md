@@ -2,6 +2,24 @@
 Initialize a new project through unified flow: questioning, research (optional), requirements, roadmap. This is the most leveraged moment in any project — deep questioning here means better plans, better execution, better outcomes. One workflow takes you from idea to ready-for-planning.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:new-project <argument-here>
+```
+
+**Examples:**
+```
+/rihal:new-project employee leave request tracker for an Omani government ministry
+/rihal:new-project car rental marketplace SEO site for Dubai
+/rihal:new-project tasbeeh app with Arabic RTL support for Android
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
@@ -580,25 +598,7 @@ node .rihal/bin/rihal-tools.cjs commit "docs: initialize project" --files .plann
 
 **If auto mode:** Skip — config was collected in Step 2a. Proceed to Step 5.5.
 
-**Check for global defaults** at `~/.gsd/defaults.json`. If the file exists, offer to use saved defaults:
-
-```
-AskUserQuestion([
-  {
-    question: "Use your saved default settings? (from ~/.gsd/defaults.json)",
-    header: "Defaults",
-    multiSelect: false,
-    options: [
-      { label: "Yes (Recommended)", description: "Use saved defaults, skip settings questions" },
-      { label: "No", description: "Configure settings manually" }
-    ]
-  }
-])
-```
-
-If "Yes": read `~/.gsd/defaults.json`, use those values for config.json, and skip directly to **Commit config.json** below.
-
-If "No" or `~/.gsd/defaults.json` doesn't exist: proceed with the questions below.
+Proceed with the questions below.
 
 **Round 1 — Core workflow settings (4 questions):**
 
@@ -1443,3 +1443,11 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.
 
 </success_criteria>
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

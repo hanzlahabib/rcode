@@ -28,8 +28,13 @@ workflows:
   - health.md
   - forensics.md
   - workstream.md
-  - chain.md
   - init.md
+  - pause-work.md
+  - autonomous.md
+  - settings.md
+  - profile-user.md
+  - brainstorm.md
+  - karpathy-audit.md
 commands:
   - council.md
   - init.md
@@ -51,7 +56,20 @@ commands:
   - health.md
   - forensics.md
   - workstream.md
-  - chain.md
+  - pause-work.md
+  - autonomous.md
+  - settings.md
+  - profile-user.md
+  - brainstorm.md
+  - karpathy-audit.md
+  - report.md
+  - new-milestone.md
+  - audit-milestone.md
+  - complete-milestone.md
+  - milestone-summary.md
+  - new-workspace.md
+  - list-workspaces.md
+  - remove-workspace.md
 references:
   - council-protocol.md
   - commit-conventions.md
@@ -59,6 +77,7 @@ references:
   - response-style.md
   - context-budget.md
   - gates.md
+  - gate-prompts.md
   - thinking-models-planning.md
   - thinking-models-debug.md
   - git-integration.md
@@ -66,3 +85,6 @@ references:
   - state-schema.md
   - karpathy-guidelines.md
   - no-unauthorized-git-ops.md
+  - questioning.md
+  - domain-probes.md
+  - ui-brand.md

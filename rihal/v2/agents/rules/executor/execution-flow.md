@@ -79,6 +79,11 @@ For each task in sequence:
    - Verify criteria met
    - Check git status clean
    - Record state for recovery
+   - **Append execution log:** Append to `.planning/{plan-dir}/EXECUTION-LOG.md`:
+     ```
+     {ISO timestamp} | {task-id} | completed | {commit-sha}
+     ```
+     This enables resume-work to see progress if executor crashes
    - Continue to next
 
 ### Step 5: Summary Creation (Pattern A only)
@@ -89,6 +94,10 @@ After all auto tasks complete:
 4. Document any deviations from plan
 5. Record metrics (task count, file count, duration)
 6. Self-check: verify counts match
+7. **After every 3 tasks completed**, write a checkpoint:
+   - Create `.planning/{plan-dir}/SUMMARY-PARTIAL.md` with tasks 1-3, 4-6, etc.
+   - This allows safe recovery if executor crashes mid-plan
+   - Final SUMMARY.md integrates all partials
 
 ### Step 6: State Updates
 ```bash

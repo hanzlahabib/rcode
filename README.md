@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **An AI engineering methodology — 22 agents, 64 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or Antigravity project.**
+> **An AI engineering methodology — 22 agents, 64 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
 
 ---
 
@@ -32,7 +32,7 @@ node /tmp/rihal-src/cli/install-v2.js . --yes --user "$(whoami)" --project "$(ba
 
 That's it. No npm dependency. No global install. Pure file shipping:
 
-- `.rihal/` — config, workflows, references, bin, state.json (178 files total)
+- `.rihal/` — config, workflows, references, bin, state.json (201 files total)
 - `.claude/agents/` — 22 first-class subagents
 - `.claude/commands/rihal/` — 64 slash commands
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
@@ -210,13 +210,13 @@ Audit recent changes:
 ## Full command surface (64 commands)
 
 ### Router + lifecycle
-`do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
+`init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
 
 ### Discovery
-`new-project` · `map-codebase` · `scan` · `explore` · `generate-project-context` · `document-project`
+`new-project` · `map-codebase` · `scan` · `explore` · `document-project`
 
 ### Planning
-`plan` · `chain` · `prfaq` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
+`plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
 
 ### Execution
 `execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
@@ -304,17 +304,17 @@ Installs 3 opt-in hooks into `.claude/settings.json`:
 | **execution** | Executor, planner, verifier + checker agents, `/rihal:execute`, `/rihal:plan`, `/rihal:quick`, `/rihal:debug`, `/rihal:audit-fix`, `/rihal:undo` |
 | **discovery** | Codebase-mapper, project-researcher, roadmapper, `/rihal:new-project`, `/rihal:map-codebase`, `/rihal:scan`, `/rihal:explore`, `/rihal:code-review`, `/rihal:docs-update` |
 
-Full install = all 3 modules = 178 files.
+Full install = all 3 modules = 201 files.
 
 ---
 
 ## Testing
 
 ```bash
-node --test test/
+node --test test/*.cjs test/lib/*.cjs
 ```
 
-29 compliance tests verify:
+95 tests across 10 test files (8 compliance + 87 unit) verify:
 - Every command has a matching workflow file
 - Every agent has valid frontmatter + constraints
 - Module manifests match installed files

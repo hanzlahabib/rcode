@@ -111,7 +111,7 @@ Installs (IDE-specific):
            target/.claude/agents/  first-class Rihal subagents
            target/.claude/commands/rihal/  slash commands
   cursor:  target/.cursor/rules/rihal/    Cursor-specific rules + agents
-  gemini:  target/.gemini/antigravity/    Gemini CLI commands + agents
+  gemini:  target/.gemini/rihal/          Gemini CLI commands + agents
   target/.planning/       artifact output dir (all IDEs)
 `);
 }
@@ -140,8 +140,8 @@ function getPathsForIde(ide, target) {
       };
     case 'gemini':
       return {
-        agentsDir: path.join(target, '.gemini', 'antigravity', 'agents'),
-        commandsDir: path.join(target, '.gemini', 'antigravity', 'commands', 'rihal'),
+        agentsDir: path.join(target, '.gemini', 'rihal', 'agents'),
+        commandsDir: path.join(target, '.gemini', 'rihal', 'commands'),
         workflowsDir: path.join(target, '.rihal', 'workflows'),
         referencesDir: path.join(target, '.rihal', 'references'),
         binDir: path.join(target, '.rihal', 'bin'),
@@ -344,13 +344,18 @@ function filterPlanByModules(plan, moduleNames) {
  */
 function generateAgentManifest(plan, target) {
   const rows = [['id', 'file', 'name', 'description', 'color']];
+  const seen = new Set(); // Track IDs already added to avoid duplicates
+
   for (const entry of plan) {
     if (!entry.rel.startsWith(path.join('.claude', 'agents'))) continue;
+    if (!entry.rel.match(/^\.claude[\/\\]agents[\/\\][^\/\\]+\.md$/)) continue;
     const filePath = path.join(target, entry.rel);
     const text = fs.readFileSync(filePath, 'utf8');
     const { frontmatter } = parseFrontmatter(text);
     const name = frontmatter.name || path.basename(entry.rel, '.md');
     const bareId = name.replace(/^rihal-/, '');
+    if (seen.has(bareId)) continue; // Skip duplicate
+    seen.add(bareId);
     const desc = (frontmatter.description || '').replace(/"/g, '""');
     rows.push([
       bareId,
@@ -372,6 +377,8 @@ function generateAgentManifest(plan, target) {
       const { frontmatter } = parseFrontmatter(text);
       const name = frontmatter.name || path.basename(file, '.md');
       const bareId = name.replace(/^rihal-/, '');
+      if (seen.has(bareId)) continue; // Skip if already added
+      seen.add(bareId);
       const desc = (frontmatter.description || '').replace(/"/g, '""');
       rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
     }
@@ -444,6 +451,14 @@ function generateConfigYaml(opts) {
     `project_name: "${sanitizeYamlValue(opts.projectName)}"`,
     `communication_language: "${sanitizeYamlValue(opts.language)}"`,
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
+    `model_profile: "balanced"`,
+    'workflow:',
+    '  research_by_default: false',
+    '  plan_checker: true',
+    '  post_execute_gates: true',
+    '  ui_safety_gate: true',
+    'git:',
+    '  branching_strategy: "none"',
     '',
   ].join('\n');
 }
@@ -477,6 +492,17 @@ function install(opts) {
     return 1;
   }
 
+  // Validate requested modules exist
+  if (opts.modules.length > 0) {
+    const available = listAvailableModules();
+    const unknownModules = opts.modules.filter(m => !available.includes(m));
+    if (unknownModules.length > 0) {
+      console.error(`✖ Unknown module(s): ${unknownModules.join(', ')}`);
+      console.error(`  Available modules: ${available.join(', ')}`);
+      return 1;
+    }
+  }
+
   const fullPlan = buildInstallPlan(opts.ide, opts.target);
   const plan = filterPlanByModules(fullPlan, opts.modules);
   if (plan.length === 0) {
@@ -505,6 +531,15 @@ function install(opts) {
       }
     }
 
+    // Warn if overwriting modified file
+    if (fs.existsSync(destPath) && opts.force) {
+      const existing = fs.readFileSync(destPath);
+      const incoming = fs.readFileSync(entry.src);
+      if (!existing.equals(incoming)) {
+        console.log(`  ⚠ Overwriting modified file: ${destPath}`);
+      }
+    }
+
     // Read source file
     let content = fs.readFileSync(entry.src, 'utf8');
 
@@ -526,8 +561,9 @@ function install(opts) {
   fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
 
   // Write .rihal/config.yaml (user_name, project_name, language, mode)
+  // Note: config.yaml is user data and should NOT be overwritten on --force
   const configPath = path.join(opts.target, '.rihal', 'config.yaml');
-  if (!fs.existsSync(configPath) || opts.force) {
+  if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
   }
 

@@ -4,6 +4,26 @@
 Execute remaining incomplete phases autonomously with minimal human intervention. Runs plan → execute → verify cycles in a loop, pausing at checkpoints, failures, or decision gates. With `--interactive`, keeps discuss/plan steps inline in current context instead of delegating to subagents.
 </purpose>
 
+<required_reading>
+@.rihal/references/workstream-flag.md
+</required_reading>
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:autonomous <argument-here>
+```
+
+**Examples:**
+```
+/rihal:autonomous example 1
+/rihal:autonomous example 2
+```
+
+STOP — do not proceed.
+
 <available_tools>
 - Bash — read state, list plans, git ops
 - Read — read state.json, PLAN.md files
@@ -276,3 +296,18 @@ Example usage:
 ```
 
 This keeps the first 3 phases' planning discussions inline with the user, then executes autonomously.
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

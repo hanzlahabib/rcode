@@ -4,6 +4,23 @@
 Read .rihal/state.json and display project statistics: phases, plans, council sessions, decisions, blockers, timeline, and git stats.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:stats <argument-here>
+```
+
+**Examples:**
+```
+/rihal:stats example 1
+/rihal:stats example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Load state
 
 Read `.rihal/state.json`:
@@ -107,3 +124,18 @@ Git Activity (rihal-related)
 - Include IDs in examples and recent commit references where available
 
 If any counts are 0, still show them (e.g., "Phases: 0").
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

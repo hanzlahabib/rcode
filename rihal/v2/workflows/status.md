@@ -45,6 +45,13 @@ Open blockers ({count}):
 Council sessions ({last 3}):
 • {date} — {question_slug} — Panel: {panel}
 
+Chain runs ({last 3}):
+• {date} — {slug} — {agents}
+
+Workstreams ({active count}):
+▶ {name} (active) — {phase count} phases
+✓ {name} (complete)
+
 Last session: {last_session, human-readable}
 ```
 
@@ -64,7 +71,16 @@ If there are any open (unresolved) blockers, end with:
 ⚠ {n} unresolved blocker(s). Address before proceeding.
 ```
 
-## Errors
+## Success Criteria
+
+- [ ] State is successfully read from `.rihal/state.json`
+- [ ] Dashboard displays all available sections
+- [ ] Phase hierarchy is clear and properly formatted
+- [ ] Relative timestamps are human-readable
+- [ ] Blockers are highlighted if present
+
+## On Error
 
 - **`rihal-tools.cjs` not found:** tell user to run `rihal-code install-v2`.
 - **state.json missing:** handled in Step 1 with the clean "No state found" message.
+- **Invalid state JSON:** report the specific parsing error and suggest manual inspection of state file

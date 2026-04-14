@@ -4,6 +4,23 @@
 Orchestrate one or more PLAN.md files by spawning rihal-executor subagents. Supports single-plan mode, phase mode (multiple plans in dependency waves), and interactive mode (sequential, no subagents).
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:execute <argument-here>
+```
+
+**Examples:**
+```
+/rihal:execute example 1
+/rihal:execute example 2
+```
+
+STOP — do not proceed.
+
 ## Note on reference loading
 
 References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
@@ -12,7 +29,24 @@ References (execution-protocol.md, commit-conventions.md) are loaded ONLY when S
 - `rihal-executor` — plan executor subagent (one instance per plan file)
 </available_agent_types>
 
-## Step 0 — Initialize and resolve IDs
+## Step 0 — Concurrency Lock
+
+```bash
+LOCK=.rihal/execute.lock
+if [ -f "$LOCK" ]; then
+  LOCK_PID=$(cat "$LOCK" 2>/dev/null)
+  if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+    echo "⚠ Another /rihal:execute is running (PID $LOCK_PID). Wait for it to finish, or remove $LOCK if stale."
+    exit 1
+  fi
+  echo "Removing stale lock"
+  rm -f "$LOCK"
+fi
+echo $$ > "$LOCK"
+trap "rm -f $LOCK" EXIT
+```
+
+## Step 0.2 — Initialize and resolve IDs
 
 ```bash
 INIT=$(node .rihal/bin/rihal-tools.cjs init execute "$ARGUMENTS")
@@ -52,7 +86,7 @@ Examples:
   /rihal:execute 01.02               # plan 01.02
 ```
 
-## Step 0.5 — Detect non-plan arguments (redirect to plan)
+## Step 0.3 — Detect non-plan arguments (redirect to plan)
 
 If `$ARGUMENTS` doesn't end in `.md`, doesn't reference an existing directory, and looks like a question (contains "?", "should", "how", "what", or is a freeform topic):
 
@@ -67,6 +101,55 @@ Then run /rihal:execute on the resulting plan file.
 ```
 
 Only proceed past this step if the argument points to an actual PLAN.md file or phase directory.
+
+## Step 0.4 — Pre-flight Reference Verification (NEW)
+
+**Before any state change** (no stash, no branch switch, no commit):
+
+Verify that all files and symbols referenced in the plan(s) exist in the current branch. This prevents discovery of hallucinated references after expensive operations start.
+
+**For each plan in `plans`:**
+
+```bash
+PLAN_PATH="{plan.path}"
+VERIFY_RESULT=$(node .rihal/bin/rihal-tools.cjs verify-references "$PLAN_PATH")
+```
+
+The `rihal-tools.cjs verify-references` command internally calls code-references.cjs utility to:
+1. Extract all file and symbol references from the plan
+2. Verify each exists in the current project root
+3. Return JSON result with summary (verified count, missing count, ratio)
+
+**Check result:**
+
+**If `summary.missing.files.length > 0` OR `summary.missing.symbols.length > 5`:**
+
+⚠ STOP immediately. Print:
+```
+⚠ PRE-FLIGHT CHECK FAILED
+
+Plan references files or symbols that don't exist in the current branch:
+
+Missing files ({count}):
+  - {list}
+
+Missing symbols ({count}):
+  - {list}
+
+This usually means:
+  - Plan was built on stale findings (from debug/research on different branch)
+  - Or you need to switch to a different branch first
+
+Suggested next steps:
+  1. /rihal:plan {original input} --revise   ← re-plan with current code
+  2. /rihal:execute {plan} --force-stale     ← proceed anyway (NOT recommended)
+
+Default: stop here.
+```
+
+**Decision point:** If `--force-stale` flag was set on this `/rihal:execute` invocation, proceed to Step 1 anyway (skip this gate). Otherwise, stop.
+
+**If verified:** All references exist, proceed to Step 1.
 
 ## Step 1 — Read the plan(s)
 
@@ -151,9 +234,10 @@ After all waves complete, print each executor's `---PLAN COMPLETE---` block verb
 After each plan completes (each `---PLAN COMPLETE---` block), update `.rihal/state.json`. These commands run silently — do not print output to the user for this step.
 
 ```bash
+PLAN_ID=$(grep "^id:" "$PLAN_PATH" | head -1 | cut -d'"' -f2)
 node .rihal/bin/rihal-tools.cjs state advance-plan
 node .rihal/bin/rihal-tools.cjs state record-execution \
-  --plan "{plan name}" --tasks "{number of tasks completed}" --duration "{duration in ms}" --hash "{commit hash}"
+  --plan "$PLAN_ID" --tasks "{number of tasks completed}" --duration "{duration in ms}" --hash "{commit hash}"
 node .rihal/bin/rihal-tools.cjs state record-session
 ```
 

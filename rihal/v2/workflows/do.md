@@ -149,8 +149,9 @@ Wait for user selection (options 1–10 or 11).
 
 ## Step 2 — Handle user choice
 
-**If user picked 1–10:**
-Print the corresponding command with usage example. Do NOT execute. Example:
+**If user picked 1–10 or 11 ("Something else"):**
+
+For options 1–10, print the corresponding command with usage example. Do NOT execute. Example:
 
 ```
 👉 Run: /rihal:discuss <your-question>
@@ -159,11 +160,7 @@ Print the corresponding command with usage example. Do NOT execute. Example:
 
 Return.
 
----
-
-**If user picked 11 ("Something else"):**
-
-Use AskUserQuestion to ask:
+For option 11, use AskUserQuestion to ask:
 
 ```
 Describe what you need in a few words:
@@ -173,7 +170,15 @@ Capture the text response and loop back to Step 0 with the user's text as $ARGUM
 
 ---
 
-## Errors
+## Success Criteria
+
+- [ ] User input is classified to a Rihal command
+- [ ] Correct command suggested based on intent
+- [ ] User gets either the direct result (--auto mode) or a clear list of options
+- [ ] Next command is executable without errors
+
+## On Error
 
 - **`rihal-tools.cjs` not found:** tell the user to run `rihal-code install-v2`.
 - **AskUserQuestion fails:** print "Could not read your choice. Try specifying the command directly: /rihal:discuss <question>"
+- **Classification timeout:** fall back to suggesting `/rihal:discuss` as default

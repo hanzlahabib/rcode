@@ -4,6 +4,10 @@
 Manage parallel workstreams (milestone tracks) in Rihal. A workstream is an independent execution path with its own phases and tasks. Multiple workstreams can run in parallel, sharing decisions, blockers, and council sessions. This workflow handles creation, switching, listing, and completion of workstreams stored in state.json.
 </purpose>
 
+<required_reading>
+@.rihal/references/workstream-flag.md
+</required_reading>
+
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
@@ -176,3 +180,18 @@ All workstreams are stored in state.json:
 - `council_sessions` — sessions record which workstream they apply to (if any)
 
 **Future:** phases will record which workstream they belong to via `workstream_id` field.
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

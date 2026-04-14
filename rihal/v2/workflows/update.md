@@ -4,6 +4,23 @@
 Detect package updates for rihal-code by comparing installed file hashes against source package hashes. Show changelog (added/changed/removed files), ask user confirmation, then run installer with --force --yes if approved.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:update <argument-here>
+```
+
+**Examples:**
+```
+/rihal:update example 1
+/rihal:update example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Locate installed package
 
 Find the rihal-code package using one of these strategies (in order):
@@ -134,3 +151,18 @@ New version available at: .rihal/
 
 Run /rihal:status to verify installation.
 ```
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

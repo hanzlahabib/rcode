@@ -438,6 +438,62 @@ issue:
   fix_hint: "Add eslint verification step to each task's <verify> block"
 ```
 
+## Dimension 11: File References Verification
+
+**Question:** Do plan tasks reference files and symbols that actually exist in the codebase?
+
+**Critical issue this prevents:** Plans hallucinate file names and function names. Without verification, execution starts (switches branches, runs stash) before discovering the references don't exist.
+
+**Process:**
+1. For each task in each plan, extract file and symbol references from `<files>` and `<action>` elements
+2. Use code-references.cjs utility to:
+   - Extract candidate files matching pattern `\b[\w/.-]+\.(py|ts|tsx|js|jsx|md|yaml|yml|json|sh|cjs|mjs|rs|go|java|rb)\b`
+   - Extract symbols (snake_case functions and CamelCase classes)
+   - Extract file:line references
+3. Verify each reference against the project root:
+   - Files: `fs.existsSync(path.join(projectRoot, file))`
+   - Symbols: `grep -r "\bsymbol\b" projectRoot` (sample across source files)
+4. Calculate verification ratio: `verified / (verified + missing)`
+
+**Verification invocation (Bash step before spawning planner):**
+```bash
+PLAN_TEXT=$(cat "$PLAN_PATH")
+VERIFY_RESULT=$(node -e "
+const cr = require('.rihal/bin/lib/code-references.cjs');
+const fs = require('fs');
+const text = fs.readFileSync('$PLAN_PATH', 'utf8');
+const refs = cr.extractReferences(text);
+const result = cr.verifyReferences(refs, process.cwd());
+console.log(JSON.stringify(result, null, 2));
+")
+```
+
+**Red flags:**
+- Referenced file doesn't exist in current branch (file will not be found at execute time)
+- Referenced symbol doesn't exist (function name is hallucinated)
+- Verification ratio < 0.5 (more than half the references missing — plan is likely stale)
+- File references in different branch or commit
+
+**Severity rules:**
+- **blocker:** `verified.ratio < 0.5` OR `missing.files.length > 0` → execution will fail immediately on branch switch
+- **warning:** `verified.ratio >= 0.5 AND < 0.8` → some references missing, may require scope adjustment
+- **info:** `verified.ratio >= 0.8` → most references ok, minor gaps
+
+**Example issue:**
+```yaml
+issue:
+  dimension: file_references_verification
+  severity: blocker
+  description: "Plan references nonexistent_file.py and imaginary_function() — verification ratio 0.2"
+  plan: "01"
+  missing_files:
+    - "nonexistent_file.py"
+  missing_symbols:
+    - "imaginary_function"
+  verified_ratio: 0.2
+  fix_hint: "Plan was built on hallucinated findings. Re-run /rihal:debug to verify actual code state before replanning."
+```
+
 </verification_dimensions>
 
 <verification_process>
@@ -586,6 +642,41 @@ Thresholds: 2-3 tasks/plan good, 4 warning, 5+ blocker (split required).
 **Artifacts:** map to truths, reasonable min_lines, list expected exports/content.
 
 **Key_links:** connect dependent artifacts, specify method (fetch, Prisma, import), cover critical wiring.
+
+## Step 9.5: Verify File References (NEW)
+
+Before step 10, add pre-flight reference verification:
+
+```bash
+PLAN_TEXT=$(cat "$PLAN_PATH")
+VERIFY_RESULT=$(node -e "
+const cr = require('.rihal/bin/lib/code-references.cjs');
+const fs = require('fs');
+const text = fs.readFileSync(process.argv[1], 'utf8');
+const refs = cr.extractReferences(text);
+const result = cr.verifyReferences(refs, process.cwd());
+console.log(JSON.stringify(result, null, 2));
+" "$PLAN_PATH")
+```
+
+Check result:
+- If `summary.ratio < 0.5`: **BLOCKER** — "Plan references files/symbols that don't exist. Plan was built on hallucinated findings."
+- If `summary.ratio >= 0.5 AND < 0.8`: **WARNING** — List missing files/symbols, suggest re-planning with /rihal:debug
+- If `summary.ratio >= 0.8`: **INFO** — Most references verified, proceed
+
+Append to verification output:
+
+```markdown
+## File References Verification
+
+**Verified:** {summary.verified} / {summary.total} ({summary.ratio}%)
+**Status:** ✅ PASS / ⚠️  WARNING / ❌ FAIL
+
+{if missing refs:}
+Missing files: {list}
+Missing symbols: {list}
+{hint}
+```
 
 ## Step 10: Determine Overall Status
 

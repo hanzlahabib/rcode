@@ -6,6 +6,23 @@ After identifying issues, spawn one debug agent per issue. Each agent investigat
 Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize findings.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:debug <argument-here>
+```
+
+**Examples:**
+```
+/rihal:debug example 1
+/rihal:debug example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-debugger — Diagnoses and fixes issues
@@ -155,6 +172,18 @@ If agent returns `## INVESTIGATION INCONCLUSIVE`:
 - root_cause: "Investigation inconclusive - manual review needed"
 - Note which issue needs manual attention
 - Include remaining possibilities from agent return
+
+**Record verification metadata in DEBUG files (NEW):**
+After collecting results, each debug artifact file should have frontmatter added:
+```yaml
+---
+verified_against_commit: <current git HEAD SHA>
+verified_at: <ISO 8601 timestamp>
+---
+```
+
+This records the exact codebase state where the diagnosis was made, so downstream tools (planner, plan-checker) can detect stale findings when branch changes.
+
 </step>
 
 <step name="report_results">
@@ -210,3 +239,18 @@ Agents only diagnose—planning handles fixes (no fix application).
 - [ ] User has clear diagnosis to proceed with fixes
 </success_criteria>
 </process>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

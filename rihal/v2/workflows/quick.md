@@ -10,6 +10,24 @@ With `--research` flag: spawns a focused research agent before planning. Investi
 Flags are composable: `--discuss --research --full` gives discussion + research + plan-checking + verification.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:quick <argument-here>
+```
+
+**Examples:**
+```
+/rihal:quick add a loading spinner to the dashboard
+/rihal:quick fix typo in error message on login page
+/rihal:quick remove debug console.log statements from auth/
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
@@ -773,3 +791,18 @@ Ready for next task: /rihal:quick ${Rihal_WS}
 - [ ] STATE.md updated with quick task row (Status column when --full)
 - [ ] Artifacts committed
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+
