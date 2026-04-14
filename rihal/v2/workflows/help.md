@@ -21,6 +21,21 @@ Rihal evolves fast. Update periodically:
 npx -y rihal-code
 ```
 
+## Strategic Conversations
+
+| Command | When to use |
+|---------|-------------|
+| /rihal:council {question} | Strategic decision needing multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
+| /rihal:discuss {agent} {question} | Quick single-agent sync — fast, conversational, no artifact |
+| /rihal:chain {preset} {topic} | Sequential pipeline — Mariam → Hussain-PM → Planner produces typed artifacts |
+
+Examples:
+```
+/rihal:council should I rewrite this auth layer?
+/rihal:discuss waleed what stack for SaaS?
+/rihal:chain research-plan dubai affiliate site
+```
+
 ## Core Workflow
 
 ```
@@ -398,3 +413,15 @@ The following commands are planned for future releases:
 - `/rihal:settings` — Configure workflow toggles
 - `/rihal:join-discord` — Join Rihal Discord community
 </reference>
+
+## Success Criteria
+
+- [ ] Command reference is displayed in full
+- [ ] No extra analysis or commentary added
+- [ ] User can understand all available commands
+- [ ] Usage examples are clear and executable
+
+## On Error
+
+- If unable to load or render reference: Display fallback message "See rihal/v2/workflows/help.md for full reference"
+- Handle missing sections gracefully without breaking output

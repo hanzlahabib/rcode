@@ -2,6 +2,23 @@
 Capture an idea, task, or issue that surfaces during a Rihal session as a structured note for later work. Enables "thought → capture → continue" flow without losing context.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:add-todo <argument-here>
+```
+
+**Examples:**
+```
+/rihal:add-todo example 1
+/rihal:add-todo example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
@@ -147,3 +164,18 @@ Would you like to:
 - [ ] Todo committed to git
 </success_criteria>
 </process>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

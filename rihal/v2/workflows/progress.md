@@ -6,6 +6,23 @@ Check current project progress, summarize recent work and what's ahead, then int
 Note: This is a narrative "where are we and what's next" view. For a dashboard-style state snapshot, use `/rihal:status`.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:progress <argument-here>
+```
+
+**Examples:**
+```
+/rihal:progress example 1
+/rihal:progress example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>

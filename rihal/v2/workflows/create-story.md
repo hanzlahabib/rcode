@@ -4,6 +4,23 @@
 Convert a single story from an EPIC file into a self-contained STORY.md file. This story is ready for `/rihal:dev-story` to be wrapped for AI-coder execution. Entry is gated by checklist-story-draft.md.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:create-story <argument-here>
+```
+
+**Examples:**
+```
+/rihal:create-story example 1
+/rihal:create-story example 2
+```
+
+STOP — do not proceed.
+
 ## Step 0 — Validation
 
 **If no arguments:**
@@ -263,3 +280,18 @@ Next step: /rihal:dev-story .planning/stories/{story-id}.md
 - **Epic file not found:** print error and exit
 - **Story ID not found in epic:** print available IDs and ask user to pick again
 - **Story fails draft checklist:** print failures and ask user to return to epic
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

@@ -4,6 +4,23 @@
 Retroactively audit completed UI work against the UI-SPEC.md contract. Validates across 6 pillars: color consistency, typography compliance, component inventory coverage, accessibility requirements, responsive behavior, and design coherence. Produces audit report with pass/fail per pillar.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:ui-review <argument-here>
+```
+
+**Examples:**
+```
+/rihal:ui-review example 1
+/rihal:ui-review example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-ui-auditor` — UI compliance auditor
 </available_agent_types>

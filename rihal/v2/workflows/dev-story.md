@@ -11,6 +11,23 @@ Wrap a STORY.md file for AI-coder consumption. Produces:
 This workflow creates the execution prompt for a pair-programming session with an AI coder.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:dev-story <argument-here>
+```
+
+**Examples:**
+```
+/rihal:dev-story example 1
+/rihal:dev-story example 2
+```
+
+STOP — do not proceed.
+
 ## Step 0 — Validation
 
 **If no arguments:**
@@ -323,3 +340,18 @@ Stop and wait for user to proceed. Do NOT auto-spawn.
 - **Story file not found:** print error and exit
 - **Story fails entry gate:** print failures and ask user to fix story file
 - **Missing acceptance criteria:** cannot proceed; story is incomplete
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

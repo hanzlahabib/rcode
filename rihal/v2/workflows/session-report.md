@@ -4,6 +4,23 @@
 Generate a comprehensive session report covering work done, token usage estimation, commits, decisions, blockers, and council sessions. Writes SESSION-REPORT-{date}.md to .planning/ directory.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:session-report <argument-here>
+```
+
+**Examples:**
+```
+/rihal:session-report example 1
+/rihal:session-report example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Check usage
 
 Verify .rihal/state.json exists:

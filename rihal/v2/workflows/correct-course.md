@@ -4,6 +4,23 @@
 Load original PRD and architecture docs, compare against current codebase implementation. Identify deviations, classify by type (scope drift, wrong architecture, missing acceptance criteria, tech debt), and produce ordered remediation plan with updated story file.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:correct-course <argument-here>
+```
+
+**Examples:**
+```
+/rihal:correct-course example 1
+/rihal:correct-course example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-deviation-analyzer` — compares spec to implementation, classifies gaps
 - `rihal-remediation-planner` — creates ordered fix plan

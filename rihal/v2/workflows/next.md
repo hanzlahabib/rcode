@@ -4,6 +4,23 @@
 Detect current project state and automatically advance to the next logical Rihal workflow step. Reads project state to determine: discuss → plan → execute progression.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:next <argument-here>
+```
+
+**Examples:**
+```
+/rihal:next example 1
+/rihal:next example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>

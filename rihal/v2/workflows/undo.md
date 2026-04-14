@@ -2,6 +2,23 @@
 Safe git revert workflow. Rolls back Rihal phase or plan commits using the phase manifest with dependency checks and a confirmation gate. Uses git revert --no-commit (NEVER git reset) to preserve history.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:undo <argument-here>
+```
+
+**Examples:**
+```
+/rihal:undo example 1
+/rihal:undo example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 @.rihal/references/ui-brand.md
 @.rihal/references/gate-prompts.md
@@ -181,6 +198,7 @@ Extract the phase number from TARGET_PLAN (the NN part of NN-MM). Extract the pl
 Look for later plans in the same phase directory (`.planning/phases/${NN}-*/`). For each later plan (plans with number > MM):
 1. Read the later plan's PLAN.md
 2. Check if its `<files>` sections or `consumes` fields reference outputs from the target plan
+3. Also scan later plan's frontmatter for `depends_on:` field matching the target plan ID
 
 If any later plan references the target plan's outputs, collect warnings:
 ```
@@ -348,3 +366,18 @@ Show next steps:
 - [ ] Error handling cleans up both first-call and mid-sequence conflict cases
 - [ ] git reset --hard is NEVER used anywhere in this workflow
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

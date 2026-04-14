@@ -68,9 +68,18 @@ New commands available:
   /rihal:{command} — {description}
 ```
 
-## Errors
+## Success Criteria
+
+- [ ] Module name is validated against available modules
+- [ ] Module is not already installed
+- [ ] Dependencies are checked and satisfied
+- [ ] Installer runs without errors
+- [ ] User sees confirmation with new commands available
+
+## On Error
 
 - **Unknown module:** list available modules.
 - **Already installed:** inform user, no-op.
 - **Missing dependencies:** list missing modules, tell user to install them first.
 - **Installer not found:** tell user to install rihal-code package.
+- **Installation fails:** report the specific error and suggest manual installation steps

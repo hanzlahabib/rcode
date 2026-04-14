@@ -3,6 +3,23 @@ Socratic ideation workflow. Guides the developer through exploring an idea via p
 offers mid-conversation research when useful, then routes crystallized outputs to Rihal artifacts.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:explore <argument-here>
+```
+
+**Examples:**
+```
+/rihal:explore example 1
+/rihal:explore example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
@@ -137,3 +154,18 @@ Continue exploring with `/rihal:explore` or start working with `/rihal:next`.
 - [ ] Files written to correct destinations
 - [ ] Commit respects commit_docs config
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

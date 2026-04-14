@@ -21,6 +21,13 @@ workflows:
   - analyze-dependencies.md
   - import.md
   - inbox.md
+  - check-implementation-readiness.md
+  - correct-course.md
+  - code-review.md
+  - code-review-fix.md
+  - review-adversarial.md
+  - review-edge-case-hunter.md
+  - chain.md
 commands:
   - execute.md
   - plan.md
@@ -31,6 +38,13 @@ commands:
   - analyze-dependencies.md
   - import.md
   - inbox.md
+  - check-implementation-readiness.md
+  - correct-course.md
+  - code-review.md
+  - code-review-fix.md
+  - review-adversarial.md
+  - review-edge-case-hunter.md
+  - chain.md
 references:
   - execution-protocol.md
   - checkpoints.md

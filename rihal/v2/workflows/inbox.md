@@ -6,6 +6,23 @@ Produces a structured report showing compliance status for each item, flags miss
 required fields, identifies label gaps, and optionally takes action (label, comment, close).
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:inbox <argument-here>
+```
+
+**Examples:**
+```
+/rihal:inbox example 1
+/rihal:inbox example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Before starting, read these project files to understand the review criteria:
 - `.github/ISSUE_TEMPLATE/feature_request.yml` — required fields for feature issues
@@ -384,3 +401,18 @@ After triage:
 - [ ] Structured report generated with scores and action items
 - [ ] Auto-actions executed only when flagged and user-confirmed
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

@@ -4,6 +4,23 @@
 Capture inline notes instantly without friction. Appends text to a dated note file with YAML frontmatter. No subagents, no user questions, no bash chains — single Write operation.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:note <argument-here>
+```
+
+**Examples:**
+```
+/rihal:note example 1
+/rihal:note example 2
+```
+
+STOP — do not proceed.
+
 ## Step 1 — Parse arguments and flags
 
 Extract from `$ARGUMENTS`:

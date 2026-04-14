@@ -4,6 +4,23 @@ Instantly restore full project context when resuming work after a break.
 When the user says "continue", "what's next", "where were we", or "resume", this workflow quickly reestablishes the mental model and surfaces any incomplete work that needs attention first.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:resume-work <argument-here>
+```
+
+**Examples:**
+```
+/rihal:resume-work example 1
+/rihal:resume-work example 2
+```
+
+STOP — do not proceed.
+
 <required_reading>
 Review project files to understand current state: PROJECT.md, STATE.md, PLAN.md
 </required_reading>
@@ -11,6 +28,14 @@ Review project files to understand current state: PROJECT.md, STATE.md, PLAN.md
 <process>
 
 <step name="initialize">
+First, ensure we're at project root:
+
+```bash
+PROJECT_ROOT=$(node .rihal/bin/rihal-tools.cjs state get 2>/dev/null | grep '"project_root"' | head -1 | cut -d'"' -f4)
+[ -z "$PROJECT_ROOT" ] && PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || PROJECT_ROOT="."
+cd "$PROJECT_ROOT"
+```
+
 Load all context:
 
 ```bash
@@ -33,36 +58,37 @@ Exit.
 
 <step name="load_state">
 
-Read and parse key files:
+Read and parse v2 state files:
 
 ```bash
-cat .rihal/PROJECT.md 2>/dev/null || true
-cat .rihal/STATE.md 2>/dev/null || true
-cat .rihal/PLAN.md 2>/dev/null || true
-cat .rihal/HANDOFF.json 2>/dev/null || echo "{}"
+# v2 stores state in state.json, plans in .planning/, no flat .rihal/*.md files
+node .rihal/bin/rihal-tools.cjs state read
+test -f .rihal/HANDOFF.json && cat .rihal/HANDOFF.json
+test -f .rihal/.continue-here.md && cat .rihal/.continue-here.md
+test -d .planning/phases/ && ls .planning/phases/ | head -10
+test -d .planning/plans/ && ls .planning/plans/ | head -10
+test -d .planning/chains/ && ls .planning/chains/ | head -10
+test -d .planning/council-sessions/ && ls .planning/council-sessions/ | tail -3
 ```
 
-**From PROJECT.md extract:**
-- Project name and description
-- Current objectives
-- Key requirements
-
-**From STATE.md extract:**
-- Current stage/phase
-- Recent decisions
-- Any blockers or concerns
-- Pending items
-
-**From PLAN.md extract:**
-- What's planned
-- What's been completed
-- What's in progress
+**From state.json extract (via rihal-tools):**
+- Current project name
+- Current phase/plan
+- Recent executions
+- Decisions and blockers
+- Active workstreams
 
 **From HANDOFF.json extract (if present):**
 - `blocking_constraints` — external dependencies or constraints from previous session
 - `uncommitted_files` — work left uncommitted
 - `current_phase` — where work was paused
 - `next_steps` — suggested resumption path
+
+**From directory structure extract:**
+- Recent phase directories in .planning/phases/
+- Available plans in .planning/plans/
+- Recent chains in .planning/chains/
+- Most recent council sessions in .planning/council-sessions/
 </step>
 
 <step name="check_incomplete_work">
@@ -206,3 +232,18 @@ This ensures if session ends unexpectedly, next resume knows the state.
 - [ ] User can immediately resume work
 </success_criteria>
 </process>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

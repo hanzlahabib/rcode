@@ -4,6 +4,23 @@
 Produce UI-SPEC.md with formalized design contract: color tokens, typography system, component inventory, interaction states, accessibility requirements. Detects frontend keywords (React, Next.js, Vue, Tailwind, CSS, UI) and suggests this workflow early if UI-SPEC.md is absent.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:ui-phase <argument-here>
+```
+
+**Examples:**
+```
+/rihal:ui-phase example 1
+/rihal:ui-phase example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-ui-designer` — UI specification generator
 </available_agent_types>

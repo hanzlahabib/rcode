@@ -41,26 +41,23 @@ Only proceed past this step if the input is a true multi-perspective question (e
 
 After Step 0.5 confirmation, proceed to load references by Reading:
 - `.rihal/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
-- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
 
 <available_agent_types>
-Use these exact `subagent_type` values when calling the Task tool:
+Read the `installed_agents` array from INIT_JSON. Every entry can be invoked as
+`subagent_type: "rihal-{id}"`. The classifier and panel scorer will surface only
+agents present in this list.
 
-- `rihal-sadiq` — Director of Strategy
-- `rihal-waleed` — CTO
-- `rihal-fatima` — QA Lead
-- `rihal-mariam` — Marketing & Growth Lead
-- `rihal-hussain-pm` — Product Manager
+Currently registered council agents (always available if installed):
+- rihal-sadiq, rihal-waleed, rihal-fatima, rihal-mariam, rihal-hussain-pm
 
-Do not invoke `general-purpose` or any other agent type. If `rihal-tools.cjs select-panel` returns an agent id not in this list, error and ask the user to re-run with `--agents=...` explicitly.
+Specialist agents that may be installed (add to panel if scorer surfaces them):
+- rihal-architect, rihal-ux-designer, rihal-tech-writer
+- rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper
+- (and any other rihal-* agent in installed_agents)
 
-**Routing rules by question_type:**
-- `market` or `discovery` → Mariam leads (she researches first), Hussain-PM follows (he scopes), Sadiq closes (kill criteria). Fatima is not in this panel — she defers market questions by design.
-- `codebase` → Waleed leads, Sadiq weighs strategy, Fatima gates release.
-- `team` → Sadiq leads, Nasser if installed.
-- `release` → Fatima leads, Waleed for architecture.
-- `design` → Layla if installed, else Waleed for technical feasibility.
-- `greenfield` → Mariam (market), Hussain-PM (scope), Waleed (feasibility).
+Do not invoke `general-purpose` or any agent type not present in
+`installed_agents`. If the scorer surfaces an unknown agent, drop it
+from the panel silently.
 </available_agent_types>
 
 ## Step 1 — Initialize
@@ -109,10 +106,15 @@ Run this block ONCE. Target < 2k tokens output. Do not read files not listed her
 test -f .rihal/state.json && cat .rihal/state.json
 test -f .rihal/config.yaml && cat .rihal/config.yaml
 test -f README.md && head -60 README.md
-test -f package.json && head -40 package.json
-test -f pyproject.toml && head -40 pyproject.toml
-test -f Cargo.toml && head -40 Cargo.toml
-test -f go.mod && head -20 go.mod
+
+# Only read build manifests for codebase/release questions
+if [[ "$QUESTION_TYPE" == "codebase" || "$QUESTION_TYPE" == "release" ]]; then
+  test -f package.json && head -40 package.json
+  test -f pyproject.toml && head -40 pyproject.toml
+  test -f Cargo.toml && head -40 Cargo.toml
+  test -f go.mod && head -20 go.mod
+fi
+
 git log --oneline -20 2>/dev/null
 ls -la
 ```
@@ -250,6 +252,9 @@ Spawn all at once (same pattern as Round 1).
 - One or more panelists explicitly said they had nothing to add
 
 ## Step 5 — Present responses
+
+Before presenting, load the commit format reference:
+- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
 
 Present Round 1 then Round 2 **verbatim and in panel order**. Do NOT summarize. Do NOT paraphrase.
 

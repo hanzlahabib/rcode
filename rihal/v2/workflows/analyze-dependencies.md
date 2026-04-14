@@ -4,6 +4,23 @@
 Analyze ROADMAP.md phases for dependency relationships before execution. Detect file overlap between phases, semantic API/data-flow dependencies, and suggest `Depends on` entries to prevent merge conflicts during parallel execution by `/rihal:manager`.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:analyze-dependencies <argument-here>
+```
+
+**Examples:**
+```
+/rihal:analyze-dependencies example 1
+/rihal:analyze-dependencies example 2
+```
+
+STOP — do not proceed.
+
 ## Step 0 — Load ROADMAP.md
 
 **Action:** Read `.planning/ROADMAP.md` and extract all phases.

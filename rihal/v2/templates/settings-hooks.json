@@ -1,4 +1,5 @@
 {
+  "_comment": "pre-edit hook is currently advisory (logs warning, does not block). Full session-read tracking requires PostToolUse Read hook to write state file. Implemented in follow-up.",
   "hooks": {
     "PreToolUse": [
       {

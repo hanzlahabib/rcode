@@ -512,3 +512,18 @@ echo "════════════════════════�
 - [ ] Missing fix report handled with explicit error message in present_results
 - [ ] Results presented inline with next step suggestion
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

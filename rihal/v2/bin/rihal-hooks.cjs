@@ -39,8 +39,9 @@ function readInputJson() {
 async function preEdit() {
   try {
     const input = await readInputJson();
-    const filePath = input.file_path;
-    const sessionReads = input.reads_in_session || [];
+    // Handle both harness schema (input.tool_input.X) and legacy schema (input.X)
+    const filePath = input.tool_input?.file_path || input.file_path;
+    const sessionReads = input.tool_input?.reads_in_session || input.reads_in_session || [];
 
     if (!filePath) {
       console.error('ERROR: No file_path in hook input');
@@ -48,8 +49,8 @@ async function preEdit() {
     }
 
     if (!sessionReads.includes(filePath)) {
-      console.error(`READ-BEFORE-EDIT: Read ${filePath} before editing.`);
-      process.exit(2);
+      console.error(`⚠ READ-BEFORE-EDIT: Read ${filePath} before editing. (Advisory — session-read tracking not yet implemented)`);
+      process.exit(0);
     }
 
     process.exit(0);
@@ -111,8 +112,8 @@ async function preWorkflow() {
 async function postCommit() {
   try {
     const input = await readInputJson();
-    const command = input.command || '';
-    const output = input.output || '';
+    const command = input.tool_input?.command || input.command || '';
+    const output = input.tool_input?.output || input.output || '';
 
     // Only check git commits
     if (!command.includes('git commit')) {
@@ -127,10 +128,26 @@ async function postCommit() {
       process.exit(0);
     }
 
+    let commitMsg = output;
+
+    // If -F flag used, try to read the message file
+    const fMatch = command.match(/-F\s+(\S+)/);
+    if (fMatch && fs.existsSync(fMatch[1])) {
+      try {
+        commitMsg += '\n' + fs.readFileSync(fMatch[1], 'utf8');
+      } catch {}
+    }
+
+    // If -m used, extract message from command
+    const mMatch = command.match(/-m\s+["']([^"']+)["']/);
+    if (mMatch) {
+      commitMsg += '\n' + mMatch[1];
+    }
+
     const violations = [];
 
     // Check for Co-Authored-By, Generated, 🤖, etc.
-    if (/Co-Authored-By|Generated with Claude|Generated with|🤖/i.test(output)) {
+    if (/Co-Authored-By|Generated with Claude|Generated with|🤖/i.test(commitMsg)) {
       violations.push('Found "Co-Authored-By", "Generated with Claude", or "🤖 Generated" in commit message.');
     }
 
@@ -139,14 +156,11 @@ async function postCommit() {
       violations.push('Used --no-verify flag. Please fix underlying issues instead of bypassing hooks.');
     }
 
-    // Check commit message format (type(scope): description)
-    // This is a soft check — we can only verify if we can extract the message
-    const typeFormatMatch = output.match(/(?:feat|fix|docs|style|refactor|test|chore|perf|revert)\([a-z-]+\):/i);
-    if (!typeFormatMatch && output.match(/\[.*?\]/)) {
-      // Only warn if we detected a commit but format looks wrong
-      if (!output.match(/^[a-z]+(\([a-z-]+\))?:/im)) {
-        violations.push('Commit message may not follow Conventional Commits format: type(scope): description');
-      }
+    // Check commit message format (type(scope): description) on first line only
+    const firstLine = commitMsg.split('\n').find(l => l.trim()) || '';
+    const cc = /^[a-z]+(\([a-z-]+\))?:/.test(firstLine);
+    if (!cc && commitMatch) {
+      violations.push('Commit subject may not follow Conventional Commits format: type(scope): description');
     }
 
     if (violations.length > 0) {

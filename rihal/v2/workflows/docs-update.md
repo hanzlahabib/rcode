@@ -244,3 +244,18 @@ Next: Review docs in your editor or run verification again with /rihal:docs-upda
 - [ ] Docs committed if enabled
 - [ ] Results presented with next steps
 </success_criteria>
+
+## Success Criteria
+
+- [ ] Task completed as requested
+- [ ] Output saved or reported
+- [ ] State updated if necessary
+- [ ] No errors encountered
+
+## On Error
+
+If arguments are invalid, missing files, or subagent fails:
+- Validate inputs match expected format
+- Check that required files exist
+- Retry with clearer arguments or report the specific error to the user
+

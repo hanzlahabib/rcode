@@ -25,7 +25,17 @@ const path = require('path');
 
 // Resolve project root. This file is installed at {project-root}/.rihal/bin/,
 // so two levels up is the project.
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+// PROJECT_ROOT detection: when installed, this binary lives at <project>/.rihal/bin/rihal-tools.cjs
+// When running from source (rihal/v2/bin/), warn but allow — tests need this path.
+const _maybeRoot = path.resolve(__dirname, '..', '..');
+const _isInstalled = path.basename(path.dirname(__dirname)) === '.rihal';
+if (!_isInstalled && !process.env.RIHAL_DEV_MODE && !process.env.NODE_TEST_CONTEXT) {
+  // Source dir, not installed location — warn but proceed (tests run from here)
+  if (process.stderr.isTTY) {
+    console.error('Note: rihal-tools.cjs running from source. For full features install with: node cli/install-v2.js <target> --yes');
+  }
+}
+const PROJECT_ROOT = _maybeRoot;
 const RIHAL_DIR = path.join(PROJECT_ROOT, '.rihal');
 const CONFIG_DIR = path.join(RIHAL_DIR, '_config');
 const REFS_DIR = path.join(RIHAL_DIR, 'references');
@@ -63,13 +73,18 @@ function readConfig() {
       mode: 'guided',
     };
   }
-  const parsed = parseSimpleYaml(fs.readFileSync(configPath, 'utf8'));
-  return {
-    user_name: parsed.user_name || 'User',
-    project_name: parsed.project_name || path.basename(PROJECT_ROOT),
-    language: parsed.communication_language || parsed.language || 'English',
-    mode: parsed.mode || 'guided',
-  };
+  try {
+    const parsed = parseSimpleYaml(fs.readFileSync(configPath, 'utf8'));
+    return {
+      ...parsed,  // spread all parsed keys (model_profile, branching_strategy, etc.)
+      user_name: parsed.user_name || 'User',
+      project_name: parsed.project_name || path.basename(PROJECT_ROOT),
+      language: parsed.communication_language || parsed.language || 'English',
+      mode: parsed.mode || 'guided',
+    };
+  } catch (e) {
+    throw new Error(`Failed to read config.yaml: ${e.message}`);
+  }
 }
 
 /**
@@ -320,11 +335,17 @@ function cmdSelectPanel(rawArgs) {
     panel = [...panel].sort((a, b) => (scoreMap[b] || 0) - (scoreMap[a] || 0)).slice(0, flags.top);
   }
 
+  // Filter scores to installed-only agents
+  const installedSet = new Set(installed);
+  const filteredScores = Object.fromEntries(
+    Object.entries(explained.scores || {}).filter(([id]) => installedSet.has(id))
+  );
+
   return {
     question,
     flags,
     panel,
-    scores: explained.scores,
+    scores: filteredScores,
     installed,
   };
 }
@@ -372,6 +393,8 @@ function cmdClassifyQuestion(raw) {
       'kya karna', 'worth hai', 'sahi hai', 'kya sochte', 'kya lagta',
       // Urdu unicode discovery signals
       'ریسرچ', 'بتاؤ', 'ماذا', 'أفضل', 'کیف',
+      // Arabic discovery signals
+      'كيف أبدأ', 'ابدأ مشروع', 'مشروع جديد',
     ],
     market: [
       '2040', '2030', '2050', 'vision plan', 'national plan', 'government plan',
@@ -383,6 +406,8 @@ function cmdClassifyQuestion(raw) {
       'dubai', 'affiliate', 'karobar', 'business karna', 'market research kar',
       // Urdu unicode market signals
       'دبئی', 'مارکیٹ', 'کاروبار', 'خلیج', 'ہل', 'سوق', 'مشروع',
+      // Arabic market signals
+      'سوق', 'بحث', 'دبئي',
     ],
     greenfield: [
       'start fresh', 'from scratch', 'new project', 'blank slate', 'greenfield',
@@ -398,6 +423,7 @@ function cmdClassifyQuestion(raw) {
       'quick bucks', 'side hustle', 'make money',
       // Roman Urdu greenfield signals
       'bnanai', 'banana', 'app banana', 'shuru', 'start karna', 'naya project', 'project banana', 'build karna',
+      'chahiye', 'banana hai', 'website chahiye', 'app chahiye', 'rank and rent', 'banaiye', 'bana do',
       // Urdu unicode greenfield signals
       'سائٹ بنانا', 'ایپ بنانا',
     ],
@@ -427,7 +453,12 @@ function cmdClassifyQuestion(raw) {
       'performance', 'should i rewrite', 'auth layer', 'db migration',
       'pull request', 'code review', 'technical debt', 'tech debt',
       'feature', 'ci/cd', 'cicd', 'pipeline', 'documentation', 'docs',
+      // Tech choice signals
+      'astro', 'nextjs', 'next.js', 'remix', 'nuxt', 'svelte', 'vue', 'angular',
+      'should i use', 'which framework', 'compare framework',
       'إعادة', 'کود',
+      // Arabic execution signals
+      'إصلاح', 'كود', 'برنامج', 'نفذ', 'شغل',
     ],
   };
 
@@ -450,7 +481,7 @@ function cmdClassifyQuestion(raw) {
   }
 
   const winner = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-  const type = winner[1] > 0 ? winner[0] : 'codebase'; // default to codebase
+  const type = winner[1] > 0 ? winner[0] : 'discovery'; // default to discovery
   const allSignals = Object.values(matched).flat();
 
   return { type, signals: allSignals, scores };
@@ -483,6 +514,9 @@ function cmdInitExecute(rawArgs) {
   let plans = [];
 
   // Resolve target: could be a .md file or a phase dir/name
+  if (target && target.length > 5000) {
+    throw new Error('Target path exceeds maximum length (5000 chars)');
+  }
   const asAbsolute = path.isAbsolute(target) ? target : path.join(PROJECT_ROOT, target);
   if (!asAbsolute.startsWith(PROJECT_ROOT)) {
     throw new Error(`Path outside project root: ${target}`);
@@ -589,16 +623,44 @@ function cmdState(subArgs) {
     if (stats.size > 10 * 1024 * 1024) {
       throw new Error('state.json exceeds 10 MB limit — possible corruption');
     }
-    return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    try {
+      return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    } catch (e) {
+      throw new Error(`Invalid JSON in state.json: ${e.message}`);
+    }
   }
 
   /** Atomic write: write to temp file then rename. */
   function writeState(state) {
+    function isProcessAlive(pid) {
+      try { process.kill(pid, 0); return true; } catch { return false; }
+    }
+
     state.updated = new Date().toISOString();
     fs.mkdirSync(RIHAL_DIR, { recursive: true });
-    const tmp = statePath + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
-    fs.renameSync(tmp, statePath);
+    const lockPath = statePath + '.lock';
+    let attempts = 0;
+    while (fs.existsSync(lockPath) && attempts < 50) {
+      // Check if lock holder is alive
+      const lockPid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10);
+      if (lockPid && !isProcessAlive(lockPid)) {
+        console.error(`Stale lock from PID ${lockPid} — removing`);
+        try { fs.unlinkSync(lockPath); } catch {}
+        break;
+      }
+      require('child_process').execSync('sleep 0.05'); // 50ms backoff
+      attempts++;
+    }
+    if (attempts >= 50) throw new Error('state.json locked too long');
+
+    try {
+      fs.writeFileSync(lockPath, String(process.pid));
+      const tmp = statePath + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
+      fs.renameSync(tmp, statePath);
+    } finally {
+      try { fs.unlinkSync(lockPath); } catch {}
+    }
     return { ok: true, state };
   }
 
@@ -631,8 +693,15 @@ function cmdState(subArgs) {
 
   // --- init ---
   if (sub === 'init') {
-    if (fs.existsSync(statePath)) {
-      return { ok: true, state: readState(), message: 'state.json already exists' };
+    let existing;
+    try {
+      existing = fs.existsSync(statePath) ? readState() : null;
+    } catch (e) {
+      console.error(`Warning: existing state.json corrupted (${e.message}). Initializing fresh state.`);
+      existing = null;
+    }
+    if (existing && !parseFlags(1).force) {
+      return { ok: true, state: existing, message: 'state.json already exists; pass --force to reinitialize' };
     }
     const flags = parseFlags(1);
     const state = defaultState(flags.project);
@@ -647,7 +716,9 @@ function cmdState(subArgs) {
     state.current_phase = name;
     state.current_plan = 0;
     if (!state.phases) state.phases = [];
-    state.phases.push({ name, started: new Date().toISOString(), completed: null, plan_count: 0 });
+    if (!state.phases.some(p => p.name === name)) {
+      state.phases.push({ name, started: new Date().toISOString(), completed: null, plan_count: 0 });
+    }
     return writeState(state);
   }
 
@@ -705,7 +776,7 @@ function cmdState(subArgs) {
       phase: state.current_phase,
       plan: state.current_plan,
       date: new Date().toISOString(),
-      resolved: false,
+      resolved: null,
     });
     return writeState(state);
   }
@@ -718,7 +789,7 @@ function cmdState(subArgs) {
     if (!state.blockers || index < 0 || index >= state.blockers.length) {
       throw new Error(`Invalid blocker index: ${subArgs[1]}. Valid range: 0-${(state.blockers || []).length - 1}`);
     }
-    state.blockers[index].resolved = true;
+    state.blockers[index].resolved = new Date().toISOString();
     return writeState(state);
   }
 
@@ -795,9 +866,18 @@ function cmdState(subArgs) {
       throw new Error(`Phase ${phaseNumber} already exists`);
     }
 
-    // Parse phase number to numeric for sorting
-    const [intPart, decPart] = phaseNumber.split('.');
-    const numericValue = parseFloat(`${intPart}.${decPart}`);
+    // Helper to convert phase number to comparable tuple
+    function phaseTuple(s) {
+      const [maj, min] = s.split('.').map(x => parseInt(x, 10));
+      return [maj, min || 0];
+    }
+
+    // Helper to compare phase tuples
+    function cmpPhase(a, b) {
+      const [a1, a2] = phaseTuple(a);
+      const [b1, b2] = phaseTuple(b);
+      return a1 - b1 || a2 - b2;
+    }
 
     // Insert phase in sorted order
     const newPhase = {
@@ -810,9 +890,7 @@ function cmdState(subArgs) {
     };
 
     const insertIdx = state.phases.findIndex(p => {
-      const [pi, pd] = p.number.split('.');
-      const pNum = parseFloat(`${pi}.${pd}`);
-      return pNum > numericValue;
+      return cmpPhase(p.number, phaseNumber) > 0;
     });
 
     if (insertIdx === -1) {
@@ -1054,13 +1132,9 @@ function cmdState(subArgs) {
       }
     }
 
-    // If no subdirs, phase-level plan exists at 01
-    if (maxPlanNum === 0) {
-      maxPlanNum = 1;
-    }
-
     const nextPlanNum = String(maxPlanNum + 1).padStart(2, '0');
-    return { ok: true, next_plan_id: `${phasePart}.${nextPlanNum}` };
+    // First plan in empty phase gets .01 not .02
+    return { ok: true, next_plan_id: maxPlanNum === 0 ? `${phasePart}.01` : `${phasePart}.${nextPlanNum}` };
   }
 
   // --- next-task-id <plan-id> ---
@@ -1244,6 +1318,20 @@ function cmdState(subArgs) {
       }
     }
 
+    // Determine status
+    let status = 'not_found';
+    if (result.phase_dir && fs.existsSync(result.phase_dir)) {
+      status = 'found';
+      // Check if SUMMARY exists for "complete"
+      if (result.plan_dir) {
+        const summaryFiles = fs.existsSync(result.plan_dir) ?
+          fs.readdirSync(result.plan_dir).filter(f => f.endsWith('-SUMMARY.md')) : [];
+        if (summaryFiles.length > 0) status = 'complete';
+        else if (fs.existsSync(path.join(result.plan_dir, 'PLAN.md'))) status = 'planned';
+      }
+    }
+    result.status = status;
+
     return result;
   }
 
@@ -1365,23 +1453,36 @@ function cmdState(subArgs) {
         // Check for PLAN.md at phase level
         const phasePlanPath = path.join(phaseDir, 'PLAN.md');
         if (fs.existsSync(phasePlanPath)) {
-          let content = fs.readFileSync(phasePlanPath, 'utf8');
-          const phaseIdStr = String(phaseNum).padStart(2, '0');
+          try {
+            let content = fs.readFileSync(phasePlanPath, 'utf8');
+            const phaseIdStr = String(phaseNum).padStart(2, '0');
 
-          // Check if it has frontmatter with phase/plan fields
-          const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-          if (frontmatterMatch) {
-            const fm = frontmatterMatch[1];
-            if (!fm.match(/^id:/m)) {
-              // Only add id if missing; preserve existing phase/plan if present
-              let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.01"`;
-              if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
-              if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "01"`;
-              newFrontmatter += '\n';
-              content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
-              fs.writeFileSync(phasePlanPath, content, 'utf8');
+            // Check if it has frontmatter with phase/plan fields
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+            if (frontmatterMatch) {
+              const fm = frontmatterMatch[1];
+              if (!fm.match(/^id:/m)) {
+                // Only add id if missing; preserve existing phase/plan if present
+                let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.01"`;
+                if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
+                if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "01"`;
+                newFrontmatter += '\n';
+                content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
+                const tmp = phasePlanPath + '.tmp';
+                fs.writeFileSync(tmp, content, 'utf8');
+                fs.renameSync(tmp, phasePlanPath);
+                migratedCount++;
+              }
+            } else {
+              // No frontmatter found — prepend minimal frontmatter
+              const assignedId = `${phaseIdStr}.01`;
+              const minimal = `---\nid: "${assignedId}"\nphase: "${phaseIdStr}"\nplan: "01"\ntype: auto\n---\n`;
+              fs.writeFileSync(phasePlanPath, minimal + content);
               migratedCount++;
             }
+          } catch (e) {
+            // Log but continue on file read/write errors
+            if (process.env.DEBUG) console.error(`Warning: Could not migrate ${phasePlanPath}: ${e.message}`);
           }
         }
 
@@ -1396,23 +1497,36 @@ function cmdState(subArgs) {
             const planPath = path.join(planDir, 'PLAN.md');
 
             if (fs.existsSync(planPath)) {
-              let content = fs.readFileSync(planPath, 'utf8');
-              const phaseIdStr = String(phaseNum).padStart(2, '0');
-              const planIdStr = String(planNum).padStart(2, '0');
+              try {
+                let content = fs.readFileSync(planPath, 'utf8');
+                const phaseIdStr = String(phaseNum).padStart(2, '0');
+                const planIdStr = String(planNum).padStart(2, '0');
 
-              const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-              if (frontmatterMatch) {
-                const fm = frontmatterMatch[1];
-                if (!fm.match(/^id:/m)) {
-                  // Only add id if missing; preserve existing phase/plan if present
-                  let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.${planIdStr}"`;
-                  if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
-                  if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "${planIdStr}"`;
-                  newFrontmatter += '\n';
-                  content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
-                  fs.writeFileSync(planPath, content, 'utf8');
+                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+                if (frontmatterMatch) {
+                  const fm = frontmatterMatch[1];
+                  if (!fm.match(/^id:/m)) {
+                    // Only add id if missing; preserve existing phase/plan if present
+                    let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.${planIdStr}"`;
+                    if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
+                    if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "${planIdStr}"`;
+                    newFrontmatter += '\n';
+                    content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
+                    const tmp = planPath + '.tmp';
+                    fs.writeFileSync(tmp, content, 'utf8');
+                    fs.renameSync(tmp, planPath);
+                    migratedCount++;
+                  }
+                } else {
+                  // No frontmatter found — prepend minimal frontmatter
+                  const assignedId = `${phaseIdStr}.${planIdStr}`;
+                  const minimal = `---\nid: "${assignedId}"\nphase: "${phaseIdStr}"\nplan: "${planIdStr}"\ntype: auto\n---\n`;
+                  fs.writeFileSync(planPath, minimal + content);
                   migratedCount++;
                 }
+              } catch (e) {
+                // Log but continue on file read/write errors
+                if (process.env.DEBUG) console.error(`Warning: Could not migrate ${planPath}: ${e.message}`);
               }
             }
           }
@@ -1423,7 +1537,7 @@ function cmdState(subArgs) {
     return { ok: true, migrated: migratedCount, message: `Migrated ${migratedCount} PLAN.md files with IDs` };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, set-user-profile, write-profile, next-phase-id, next-plan-id, next-task-id, resolve-id, set-ids-in-state, migrate-ids, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, add-blocker\nRun 'rihal-tools.cjs help' for the full list of 25 state subcommands.`);
 }
 
 /**
@@ -1499,19 +1613,44 @@ function cmdInitPlan(rawArgs) {
   let resolvedPath = null;
   let description = arg;
   if (arg) {
+    if (!arg || arg.length === 0) {
+      throw new Error('Plan argument cannot be empty');
+    }
+    if (arg.length > 5000) {
+      throw new Error('Plan argument exceeds maximum length (5000 chars)');
+    }
     const asAbs = path.isAbsolute(arg) ? arg : path.join(PROJECT_ROOT, arg);
-    if (!asAbs.startsWith(PROJECT_ROOT)) {
+    const normalized = path.resolve(asAbs);
+    if (!normalized.startsWith(PROJECT_ROOT + path.sep) && normalized !== PROJECT_ROOT) {
       throw new Error(`Path outside project root: ${arg}`);
     }
-    if (arg.endsWith('.md') && fs.existsSync(asAbs)) {
-      resolvedPath = asAbs;
-      inputType = path.basename(asAbs).startsWith('council-') ? 'session' : 'file';
-      description = null;
-    } else if (fs.existsSync(asAbs) && fs.statSync(asAbs).isDirectory()) {
-      const sessions = walkFiles(asAbs).filter((f) => f.endsWith('.md')).sort().reverse();
-      if (sessions.length > 0) { resolvedPath = sessions[0]; inputType = 'session'; description = null; }
+    try {
+      if (arg.endsWith('.md') && fs.existsSync(asAbs)) {
+        resolvedPath = asAbs;
+        // Check if this is already an executable plan (ends in -PLAN.md)
+        if (/-PLAN\.md$/.test(resolvedPath)) {
+          inputType = 'executable_plan';
+          description = null;
+        } else if (path.basename(asAbs).startsWith('council-')) {
+          inputType = 'session';
+          description = null;
+        } else {
+          inputType = 'file';
+          description = null;
+        }
+      } else if (fs.existsSync(asAbs) && fs.statSync(asAbs).isDirectory()) {
+        const sessions = walkFiles(asAbs).filter((f) => f.endsWith('.md')).sort().reverse();
+        if (sessions.length > 0) { resolvedPath = sessions[0]; inputType = 'session'; description = null; }
+      }
+    } catch (e) {
+      throw new Error(`Failed to resolve plan path: ${e.message}`);
     }
   }
+
+  if (!description && !resolvedPath) {
+    console.error('rihal-tools warning: no description provided; plan will be named "unnamed". Re-run with a description.');
+  }
+
   const phaseSlug = flags.phase || (resolvedPath
     ? path.basename(resolvedPath, '.md').replace(/^council-\d{4}-\d{2}-\d{2}-/, '').slice(0, 40)
     : (arg || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40));
@@ -1540,6 +1679,18 @@ function cmdInitPlan(rawArgs) {
     }
   }
   const scope = classifyScope(scopeInput);
+
+  // If input is already an executable plan, redirect to execute workflow
+  if (inputType === 'executable_plan') {
+    return {
+      workflow: 'plan',
+      input_type: 'executable_plan',
+      resolved_path: resolvedPath,
+      suggestion: `This file is already an executable plan. Run: /rihal:execute ${path.relative(PROJECT_ROOT, resolvedPath)}`,
+      config,
+      paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+    };
+  }
 
   return {
     workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
@@ -1604,9 +1755,23 @@ function cmdInitChain(rawArgs) {
   }
 
   const topic = topicTokens.join(' ').trim();
-  const slug = (topic || preset || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  const slug = (topic || preset || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    .split('-')
+    .reduce((acc, word) => {
+      const next = acc ? acc + '-' + word : word;
+      return next.length <= 40 ? next : acc;
+    }, '');
   const date = new Date().toISOString().slice(0, 10);
   const chainDir = path.join(PLANNING_DIR, 'chains', `${date}-${slug}`);
+
+  // Normalize: if user passed "mariam", check both "mariam" and "rihal-mariam"
+  chain = chain.map(id => {
+    if (installedAgents.includes(id)) return id;
+    if (installedAgents.includes('rihal-' + id)) return 'rihal-' + id;
+    // Try without prefix if user passed full
+    if (id.startsWith('rihal-') && installedAgents.includes(id.slice(6))) return id.slice(6);
+    return id; // will fail validation downstream with proper error
+  });
 
   // Validate agents are installed
   const unknownAgents = chain.filter((id) => !installedAgents.includes(id));
@@ -1686,7 +1851,8 @@ function cmdModule(subArgs) {
   if (sub === 'check-requires') {
     const REQUIRES = { core: [], execution: ['core'], discovery: ['core'] };
     const modName = subArgs[1];
-    if (!modName || !REQUIRES[modName]) return { ok: false, error: `Unknown module: ${modName}` };
+    if (!modName) return { ok: false, error: 'check-requires requires a module name argument (core|execution|discovery)' };
+    if (!REQUIRES[modName]) return { ok: false, error: `Unknown module: ${modName}. Valid: core, execution, discovery` };
     const requires = REQUIRES[modName];
     if (requires.length === 0) return { ok: true, requires: [], missing: [] };
     const { installed } = cmdModule(['installed']);
@@ -1782,8 +1948,8 @@ function cmdConfigSet(subArgs) {
   const key = flags.key || '';
   const value = flags.value || '';
 
-  if (!key) throw new Error('config set requires --key <key>');
-  if (!value) throw new Error('config set requires --value <value>');
+  if (!key) throw new Error('config set requires --key <key> --value <value>\n  e.g. config set --key language --value Arabic');
+  if (!value) throw new Error('config set requires --key <key> --value <value>\n  e.g. config set --key language --value Arabic');
 
   const configPath = path.join(RIHAL_DIR, 'config.yaml');
   fs.mkdirSync(RIHAL_DIR, { recursive: true });
@@ -1808,7 +1974,9 @@ function cmdConfigSet(subArgs) {
   }
 
   const newContent = lines.join('\n') + '\n';
-  fs.writeFileSync(configPath, newContent, 'utf8');
+  const tmp = configPath + '.tmp';
+  fs.writeFileSync(tmp, newContent, 'utf8');
+  fs.renameSync(tmp, configPath);
 
   return { ok: true, key, value, path: configPath };
 }
@@ -1821,7 +1989,7 @@ function cmdConfigSet(subArgs) {
 function cmdNotesList() {
   const noteDirs = [
     path.join(RIHAL_DIR, 'notes'),
-    path.expandUser('~/.rihal-notes'),
+    path.join(process.env.HOME || '', '.rihal-notes'),
   ];
 
   const notes = [];
@@ -1858,7 +2026,7 @@ function cmdNotesList() {
 function cmdNotesCount() {
   const noteDirs = [
     path.join(RIHAL_DIR, 'notes'),
-    path.expandUser('~/.rihal-notes'),
+    path.join(process.env.HOME || '', '.rihal-notes'),
   ];
 
   let count = 0;
@@ -1878,6 +2046,46 @@ function cmdNotesCount() {
   }
 
   return { count };
+}
+
+function cmdFindFiles(rawArgs) {
+  const flags = {};
+  const parts = rawArgs.split(/\s+/).filter(p => p);
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i].startsWith('--')) {
+      const key = parts[i].slice(2);
+      flags[key] = parts[i + 1] || true;
+      if (parts[i + 1] && !parts[i + 1].startsWith('--')) i++;
+    }
+  }
+  const type = flags.type || 'all';
+  const patterns = {
+    'design-tokens': ['tailwind.config.*','tokens.*','design-tokens*','**/theme.*','**/colors.*'],
+    'colors': ['**/colors.*','**/palette.*','**/theme.*'],
+    'fonts': ['**/fonts.*','**/typography.*','**/font.css'],
+    'all': ['**/*'],
+  }[type] || ['**/*'];
+  const matches = [];
+  function walk(dir) {
+    if (!fs.existsSync(dir)) return;
+    try {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (e.isFile()) {
+          for (const pat of patterns) {
+            const re = new RegExp(pat.replace(/\*\*/g,'.*').replace(/\*/g,'[^/]*').replace(/\./g,'\\.'));
+            if (re.test(e.name) || re.test(p)) { matches.push(p); break; }
+          }
+        }
+      }
+    } catch (err) {
+      // Silently skip directories we can't read
+    }
+  }
+  walk(PROJECT_ROOT);
+  return { ok: true, type, matches };
 }
 
 function main() {
@@ -1936,6 +2144,19 @@ function main() {
           process.exit(1);
         }
         break;
+      case 'find-files':
+        result = cmdFindFiles(args.join(' '));
+        break;
+      case 'verify-references': {
+        const planPath = args[0];
+        if (!planPath) { console.error('Usage: verify-references <plan-path>'); process.exit(1); }
+        const cr = require(path.join(__dirname, 'lib', 'code-references.cjs'));
+        const text = fs.readFileSync(planPath, 'utf8');
+        const refs = cr.extractReferences(text);
+        const result = cr.verifyReferences(refs, PROJECT_ROOT);
+        console.log(JSON.stringify(result, null, 2));
+        return;
+      }
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -1987,9 +2208,15 @@ function main() {
         console.log('  state workstream-complete --name <name>      → mark workstream done');
         console.log('  state workstream-validate                    → validate workstream schema');
         return;
-      default:
-        console.error(`Unknown subcommand: ${subcommand}`);
+      default: {
+        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase'];
+        if (stateSubs.includes(subcommand)) {
+          console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
+        } else {
+          console.error(`Unknown subcommand: ${subcommand}. Run 'rihal-tools.cjs help' for full usage.`);
+        }
         process.exit(1);
+      }
     }
     console.log(JSON.stringify(result, null, 2));
   } catch (err) {

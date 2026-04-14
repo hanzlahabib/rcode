@@ -4,6 +4,23 @@
 Load documentation-requirements.csv, audit current documentation for coverage and staleness, identify missing or outdated docs, and file them as PLAN.md subtasks or separate plan phases.
 </purpose>
 
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+
+```
+/rihal:document-project <argument-here>
+```
+
+**Examples:**
+```
+/rihal:document-project example 1
+/rihal:document-project example 2
+```
+
+STOP — do not proceed.
+
 <available_agent_types>
 - `rihal-docs-auditor` — documentation compliance auditor
 </available_agent_types>

@@ -109,16 +109,16 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ```json
 [
   {
-    "plan": 1,
-    "tasks": ["task 1", "task 2", "task 3"],
+    "plan": "01.02",
+    "tasks": 3,
     "duration_ms": 3600000,
     "commit_hash": "abc123def456",
-    "timestamp": "2026-04-03T14:20:00Z"
+    "committed_at": "2026-04-03T14:20:00Z"
   }
 ]
 ```
-**Written by:** `/rihal:do --execute` (on phase completion)  
-**Purpose:** Log of each phase execution, duration, commit snapshot.
+**Written by:** `/rihal:execute` (after each plan completes)  
+**Purpose:** Log of each plan execution. The `plan` field is the plan ID string (e.g., "01.02"), not a number.
 
 ---
 
