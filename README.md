@@ -39,6 +39,14 @@ That's it. No npm dependency. No global install. Pure file shipping:
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
 
+### Then begin the rihla
+
+```
+/rihal:init
+```
+
+Detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, writes `.rihal/RIHLA.md` as your journey baseline, and routes you to the right first action.
+
 ### Install a specific module
 
 ```bash
