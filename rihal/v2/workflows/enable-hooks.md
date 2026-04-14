@@ -1,0 +1,60 @@
+# Workflow: rihal:enable-hooks
+
+<purpose>
+Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
+</purpose>
+
+## Step 1 — Load hooks template
+
+```bash
+cat .rihal/templates/settings-hooks.json
+```
+
+Parse the JSON. If file does not exist, print error and stop:
+
+```
+Error: .rihal/templates/settings-hooks.json not found. Run 'rihal-code install-v2' to reinstall.
+```
+
+## Step 2 — Load or create settings.json
+
+Check if `.claude/settings.json` exists in the project root.
+
+- **If it exists:** Read and parse it. Merge incoming hooks into the existing `hooks` object (or create if missing).
+- **If it does not exist:** Create a minimal settings.json with the hooks from step 1.
+
+If `.claude/` directory does not exist, create it first.
+
+## Step 3 — Merge hooks
+
+For each hook type (`PreToolUse`, `PostToolUse`):
+
+- If the hook type does not exist in the current settings.json, add it.
+- If it exists, append the new matchers and hook commands (avoid duplicates by checking for exact command matches).
+
+**Duplicate detection:** If a matcher + command pair already exists, skip it.
+
+## Step 4 — Write merged settings.json
+
+Write the merged settings.json back to `.claude/settings.json` with proper JSON formatting (2-space indent).
+
+## Step 5 — Print confirmation
+
+Print success message:
+
+```
+✓ Rihal hooks installed to .claude/settings.json
+
+Enabled guardrails:
+  • pre-edit: Verifies files are Read() before Edit/Write
+  • pre-workflow: Warns if rihal:* commands look suspicious
+  • post-commit: Validates commit format and bans "Generated with Claude" patterns
+
+To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.
+```
+
+## Errors
+
+- **Missing template:** Handled in step 1.
+- **Permission denied writing .claude/settings.json:** Print error and stop.
+- **Invalid JSON in existing settings.json:** Print error with file path and stop.
