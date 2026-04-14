@@ -2,794 +2,341 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **A context-aware AI team methodology inspired by Rihal (Muscat, Oman).**
-> 19 specialized agents. 4 specialized pipelines. File-based state. Works across Claude Code, Cursor, Windsurf, Antigravity, and any AGENTS.md-compatible tool.
+> **An AI engineering methodology — 22 agents, 64 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or Antigravity project.**
 
 ---
 
 ## What is this
 
-Most AI coding tools give you one assistant pretending to be everything. **Rihal Code gives you a real team** — 19 agents with clear roles, authorities, and decision boundaries. You run them individually, in predefined pipelines for common work types, or as a full council for cross-domain strategic questions.
+Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you a real team.**
 
-It's not a chatbot. It's a methodology — file-based state in `.rihal/`, config that every workflow reads, and a contract so each agent knows exactly what they own.
+- **22 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **64 slash commands** covering research, planning, execution, verification, and recovery
+- **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
+- **File-based state** in `.rihal/` that every workflow reads
+- **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
+- **Karpathy-inspired coding guidelines** wired into every code-writing agent
+
+It's not a chatbot. It's a methodology.
+
+---
+
+## Install — one command
+
+In any project directory:
 
 ```bash
-# One command. Zero npm dependencies. Works in any project.
-npx @hanzlahabib/rihal-code install
+git clone --branch v2-prototype --depth 1 https://github.com/hanzlahabib/rihal-code.git /tmp/rihal-src && \
+node /tmp/rihal-src/cli/install-v2.js . --yes --user "$(whoami)" --project "$(basename $(pwd))"
 ```
+
+That's it. No npm dependency. No global install. Pure file shipping:
+
+- `.rihal/` — config, workflows, references, bin, state.json (178 files total)
+- `.claude/agents/` — 22 first-class subagents
+- `.claude/commands/rihal/` — 64 slash commands
+- `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
+
+Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
+
+### Install a specific module
+
+```bash
+# Council agents + quick-sync only (lightweight)
+node /tmp/rihal-src/cli/install-v2.js . --yes --module core
+
+# Add planning + execution
+node /tmp/rihal-src/cli/install-v2.js . --yes --module execution --force
+
+# Add research + codebase discovery
+node /tmp/rihal-src/cli/install-v2.js . --yes --module discovery --force
+```
+
+### Multi-IDE support
+
+```bash
+node /tmp/rihal-src/cli/install-v2.js . --ide claude    # default
+node /tmp/rihal-src/cli/install-v2.js . --ide cursor
+node /tmp/rihal-src/cli/install-v2.js . --ide gemini
+```
+
+---
+
+## 90-second tour
+
+```
+/rihal:do                                    → interactive router
+/rihal:council should I rewrite auth?        → 5 agents debate in parallel, 2 rounds
+/rihal:discuss waleed what stack for saas?   → single expert, fast
+/rihal:chain research-plan dubai affiliate   → Mariam → Hussain-PM → Planner pipeline
+/rihal:plan --research build a rental app    → researcher grounds, plan-checker verifies
+/rihal:execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
+/rihal:status                                → phases, decisions, blockers, sessions
+/rihal:karpathy-audit HEAD~5..HEAD           → audit changes vs 4 coding principles
+```
+
+---
+
+## The team
+
+5 council agents with cultural identity, each with hard scope boundaries and response-style contracts:
+
+| Agent | Role | Spawns for |
+|-------|------|-----------|
+| 🧭 **Sadiq (صادق)** | Director of Strategy | Priorities, kill criteria, market timing, "should we build this" |
+| 🏗️ **Waleed (وليد)** | CTO | Architecture, stack, feasibility, security, scale, tech debt |
+| 🛡️ **Fatima (فاطمة)** | QA Lead | Test strategy, release readiness, regression risk, coverage |
+| 📣 **Mariam (مريم)** | Marketing & Growth | Market research, GTM, positioning, GCC/MENA markets |
+| 📋 **Hussain-PM (حسين)** | Product Manager | Scope, roadmap, features, user stories, PRDs, sprint planning |
+
+Plus **17 specialist agents** for execution and discovery: rihal-executor, rihal-planner, rihal-verifier, rihal-plan-checker, rihal-debugger, rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper, rihal-phase-researcher, rihal-advisor-researcher, rihal-assumptions-analyzer, rihal-research-synthesizer, rihal-integration-checker, rihal-nyquist-auditor, rihal-tech-writer, rihal-ux-designer, rihal-architect.
+
+---
+
+## Three modes, three mental models
+
+### 🏛️ `/rihal:council` — Parallel debate
+
+3-5 agents answer simultaneously in Round 1, then Round 2 lets each agent challenge the others' Round 1 responses. Result: one session artifact with all voices + orchestrator note flagging the sharpest disagreement.
+
+**Best for:** strategic decisions where you want disagreement, not consensus.
+
+```
+/rihal:council should we migrate from monolith to microservices?
+```
+
+### 🔗 `/rihal:chain` — Sequential pipeline
+
+Each agent runs after the previous one finishes, reading that agent's artifact as input. Result: a typed artifact per stage (RESEARCH.md → SCOPE.md → PLAN.md) in `.planning/chains/`.
+
+**Best for:** when you know roughly what you want and each specialist needs to do their part in order.
+
+```
+/rihal:chain research-plan dubai affiliate site for mobile accessories
+/rihal:chain feasibility migrate postgres to neon serverless
+/rihal:chain gtm-to-build saas bookkeeping in oman
+```
+
+Presets: `research-plan` · `feasibility` · `gtm-to-build` · `full-discovery`. Or custom: `/rihal:chain mariam,waleed,fatima "your topic"`.
+
+### 💬 `/rihal:discuss` — Single agent, quick-sync
+
+One agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague.
+
+```
+/rihal:discuss waleed can we use postgres jsonb for this?
+/rihal:discuss fatima is this release ready?
+/rihal:discuss what's the kill criterion for this project?
+```
+
+If no agent named, the panel scorer picks the top match.
+
+---
+
+## What makes Rihal different
+
+### Intent guards catch wrong commands
+
+Run the wrong command and you get a single-line copy-paste redirect — not a useless output.
+
+```
+/rihal:plan should we use postgres or mongo?
+⚠ That's a decision question, not a planning input.
+Copy-paste this to ask the council instead:
+/rihal:council should we use postgres or mongo?
+```
+
+Every workflow has a Step 0.5 intent detector.
+
+### Multilingual — Roman Urdu + Arabic + English
+
+The classifier recognizes `dubai`, `affiliate`, `bnanai`, `karobar`, `site banana`, `دبئی`, `مارکیٹ`, `کاروبار` and many more. Mariam leads for GCC/MENA market questions.
+
+```
+/rihal:council yar affiliate site bnanai hai dubai ma for quick bucks
+→ panel: [mariam, hussain-pm, sadiq]
+```
+
+### Karpathy coding guidelines
+
+4 behavioral principles from [Andrej Karpathy's observations on LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills), wired into every code-writing agent as hard constraints:
+
+1. **Think before coding** — surface assumptions, don't hide confusion
+2. **Simplicity first** — minimum code, no speculative abstractions
+3. **Surgical changes** — touch only what's needed, match existing style
+4. **Goal-driven execution** — define verifiable success criteria
+
+Audit recent changes:
+
+```
+/rihal:karpathy-audit HEAD~5..HEAD
+/rihal:karpathy-audit 03 --files=src/auth/
+```
+
+### Plan verification + post-execute gates
+
+`/rihal:plan` runs `rihal-plan-checker` after the planner writes PLAN.md. On failure, loops back to planner with feedback (max 2 retries).
+
+`/rihal:execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion. Both append to SUMMARY.md.
+
+### Model profiles
+
+```bash
+/rihal:settings       # interactive config
+```
+
+- **quality** — opus/sonnet-4.6 for reasoning agents
+- **balanced** — sonnet-4.6 across the board (default)
+- **budget** — haiku-4.5 everywhere
+- **inherit** — use parent session's model
+
+### Session handoff
+
+```
+/rihal:pause-work    → writes .rihal/HANDOFF.json + .continue-here.md
+/rihal:resume-work   → reads HANDOFF, surfaces blocking constraints
+```
+
+---
+
+## Full command surface (64 commands)
+
+### Router + lifecycle
+`do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
+
+### Discovery
+`new-project` · `map-codebase` · `scan` · `explore` · `generate-project-context` · `document-project`
+
+### Planning
+`plan` · `chain` · `prfaq` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
+
+### Execution
+`execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
+
+### Review
+`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `secure-phase`
+
+### Recovery
+`pause-work` · `resume-work` · `correct-course` · `next`
+
+### Multi-agent
+`council` · `chain` · `discuss` · `brainstorm`
+
+### Configuration
+`settings` · `install` · `enable-hooks` · `profile-user`
+
+### Lifecycle management
+`insert-phase` · `new-milestone` · `audit-milestone` · `complete-milestone` · `milestone-summary` · `new-workspace` · `list-workspaces` · `remove-workspace` · `workstream`
+
+### Docs + notes
+`docs-update` · `note` · `report` · `session-report` · `add-todo` · `import` · `inbox`
+
+### UI-specific
+`ui-phase` · `ui-review`
+
+---
+
+## Configuration
+
+`.rihal/config.yaml` — edit directly or run `/rihal:settings`:
+
+```yaml
+user_name: "Hanzla"
+project_name: "your-project"
+communication_language: "English"   # or Urdu, Arabic, etc.
+mode: "guided"                       # or yolo
+model_profile: "balanced"            # quality | balanced | budget | inherit
+workflow:
+  research_by_default: false
+  plan_checker: true
+  post_execute_gates: true
+  ui_safety_gate: true
+git:
+  branching_strategy: "none"         # none | feature-branch | worktree-isolation
+```
+
+---
+
+## State tracking
+
+`.rihal/state.json` tracks everything:
+
+- `current_phase`, `current_plan`
+- `phases[]`, `executions[]`, `decisions[]`, `blockers[]`
+- `council_sessions[]`, `chains[]`
+- `workstreams[]`, `active_workstream`, `last_session`
+
+View formatted:
+```bash
+node .rihal/bin/rihal-tools.cjs state read
+# or
+/rihal:status
+```
+
+---
+
+## Hooks (opt-in)
+
+```bash
+/rihal:enable-hooks
+```
+
+Installs 3 opt-in hooks into `.claude/settings.json`:
+1. **pre-edit** — enforces read-before-edit
+2. **pre-workflow** — soft intent warnings on mismatched commands
+3. **post-commit** — validates commit format, blocks AI attribution
+
+---
+
+## Modules
+
+| Module | Contents |
+|--------|----------|
+| **core** | 5 council agents, `/rihal:council`, `/rihal:discuss`, `/rihal:status`, `/rihal:do`, `/rihal:help`, state management |
+| **execution** | Executor, planner, verifier + checker agents, `/rihal:execute`, `/rihal:plan`, `/rihal:quick`, `/rihal:debug`, `/rihal:audit-fix`, `/rihal:undo` |
+| **discovery** | Codebase-mapper, project-researcher, roadmapper, `/rihal:new-project`, `/rihal:map-codebase`, `/rihal:scan`, `/rihal:explore`, `/rihal:code-review`, `/rihal:docs-update` |
+
+Full install = all 3 modules = 178 files.
+
+---
+
+## Testing
+
+```bash
+node --test test/
+```
+
+29 compliance tests verify:
+- Every command has a matching workflow file
+- Every agent has valid frontmatter + constraints
+- Module manifests match installed files
+- rihal-tools.cjs help matches implemented subcommands
+- Panel scorer routes correctly across 10+ question types
+- Classifier handles Roman Urdu + Arabic + edge cases
 
 ---
 
 ## Why "Rihal"
 
-[Rihal](https://rihal.om) is one of Oman's fastest-growing tech companies (Series A 2025, 270+ employees, 2,441% growth). The agent names are Arabic placeholders inspired by real team roles at Rihal. You can swap them for your own team in `rihal/team.yaml`.
+رحّال (Rihāl) is Arabic for "traveler" — someone who journeys between places carrying knowledge. [Rihal](https://rihal.om) is also one of Oman's fastest-growing tech companies. The agent names are Arabic placeholders — swap them for your team in `rihal/v2/team.yaml`.
 
 ---
 
-## Quick start — 90 seconds
+## Credits
 
-```bash
-# In any project directory
-npx @hanzlahabib/rihal-code install
-
-# A wizard asks 3 questions (all skippable with Enter)
-#   Your name or team name [Team]: Hanzla Habib
-#   Communication language [English]: Urdu
-#   Document output language [English]:
-#   Save these as global defaults for future projects? [y/N]: y
-
-# Now restart your editor (Claude Code / Cursor / Windsurf / Antigravity)
-# and try:
-
-/rihal:help                     # See everything available
-/rihal:project "tasbeeh app"    # Kickoff a new project end-to-end
-/rihal:feature "add dark mode"  # Build one feature end-to-end
-/rihal:ui "redesign login"      # UI/UX pipeline
-/rihal:council "should we rewrite in Go?"   # 13-agent strategic council
-@waleed "review this architecture"          # Invoke one agent
-```
-
-That's it. No boilerplate, no cloud setup, no API keys.
-
----
-
-## The team — 19 agents
-
-<sup>Each has a full `SKILL.md` with persona, authority, principles, and domain. Lean 20-line digests live in `rihal/digests/` and get loaded by pipeline commands without pulling the full skill.</sup>
-
-### Strategy & Leadership
-| Agent | Arabic | Role |
-|---|---|---|
-| **Sadiq** | صادق | Business Analyst / Strategy — business direction, kill criteria |
-| **Waleed** | وليد | CTO / System Architect — stack, architecture, ADRs |
-| **Ahmed Al Hassani** | أحمد | Technology & Development Director — delivery, DORA |
-| **Nasser** | ناصر | Engineering Manager — squad composition, ops |
-
-### Product & Design
-| Agent | Arabic | Role |
-|---|---|---|
-| **Hussain (PM)** | حسين | Product Manager — PRDs, scope, metrics |
-| **Hussain (SM)** | حسين | Scrum Master — sprint ops, retros, flow |
-| **Layla** | ليلى | UX Designer — flows, states, accessibility |
-| **Zahra** | زهراء | Branding Director — visual identity, design system |
-
-### Engineering
-| Agent | Arabic | Role |
-|---|---|---|
-| **Omar** | عمر | Full-stack Engineer — general implementation |
-| **Haitham Al Khamiyasi** | هيثم | Frontend Engineer — UI implementation, a11y |
-| **Yousef** | يوسف | Backend Engineer — APIs, data, infra |
-| **Zayd** | زيد | ML Engineer — models, evals, pipelines |
-
-### Quality & Ops
-| Agent | Arabic | Role |
-|---|---|---|
-| **Fatima** | فاطمة | Test Architect (QA) — testing, release gates |
-| **Khalid** | خالد | DevOps — CI/CD, infra, monitoring |
-
-### Content & Comms
-| Agent | Arabic | Role |
-|---|---|---|
-| **Noor** | نور | Technical Writer — docs, presentations |
-| **Mariam** | مريم | Marketing — GTM, positioning, copy |
-
-### Meta
-| Agent | Arabic | Role |
-|---|---|---|
-| **Raees** | رئيس | Orchestrator — routes requests to specialists |
-| **Majlis** | مجلس | The Council — multi-agent synthesis |
-| **Diwan** | ديوان | Dashboard — view-only transparency |
-
----
-
-## Architecture
-
-### Agent authority hierarchy
-
-```mermaid
-graph TD
-    subgraph Strategy["🎯 Strategy Layer"]
-        Sadiq[Sadiq<br/>Strategy]
-        Waleed[Waleed<br/>CTO]
-        Ahmed[Ahmed<br/>Tech Director]
-        Nasser[Nasser<br/>Eng Manager]
-    end
-
-    subgraph Product["📋 Product Layer"]
-        HussainPM[Hussain PM]
-        HussainSM[Hussain SM]
-        Layla[Layla<br/>UX]
-        Zahra[Zahra<br/>Branding]
-    end
-
-    subgraph Engineering["⚙️ Engineering Layer"]
-        Omar[Omar<br/>Full-stack]
-        Haitham[Haitham<br/>Frontend]
-        Yousef[Yousef<br/>Backend]
-        Zayd[Zayd<br/>ML]
-    end
-
-    subgraph Quality["✅ Quality & Ops Layer"]
-        Fatima[Fatima<br/>QA]
-        Khalid[Khalid<br/>DevOps]
-    end
-
-    subgraph Meta["🎭 Meta Layer"]
-        Raees[Raees<br/>Router]
-        Majlis[Majlis<br/>Council]
-        Diwan[Diwan<br/>Dashboard]
-    end
-
-    Sadiq --> HussainPM
-    Waleed --> Ahmed
-    Ahmed --> Nasser
-    HussainPM --> Layla
-    HussainPM --> Zahra
-    Layla --> Haitham
-    Zahra --> Haitham
-    HussainPM --> Omar
-    Waleed --> Omar
-    Omar --> Haitham
-    Omar --> Yousef
-    Waleed --> Zayd
-    Haitham --> Fatima
-    Yousef --> Fatima
-    Zayd --> Fatima
-    Fatima --> Khalid
-    Raees -.routes to.-> Strategy
-    Raees -.routes to.-> Product
-    Raees -.routes to.-> Engineering
-    Majlis -.synthesizes.-> Sadiq
-    Majlis -.synthesizes.-> Waleed
-    Majlis -.synthesizes.-> Fatima
-
-    style Strategy fill:#e1f5ff
-    style Product fill:#fff4e1
-    style Engineering fill:#e8f5e9
-    style Quality fill:#fce4ec
-    style Meta fill:#f3e5f5
-```
-
----
-
-### Pipeline commands (predefined agent chains)
-
-Rihal Code ships with 4 specialized pipelines. Each runs a fixed sequence of agents, streaming each agent's response live with handoff lines between them. You see what's happening as it happens — not a batched wall of text at the end.
-
-#### `/rihal:project <name>` — full kickoff pipeline
-
-Use this when nothing exists yet. Strategy → architecture → delivery → scope → brand → design system → team.
-
-```mermaid
-graph LR
-    A[Sadiq<br/>🎯 strategy<br/>+ kill criteria] --> B[Waleed<br/>🏗️ stack<br/>+ ADR]
-    B --> C[Ahmed<br/>📊 delivery<br/>+ DORA targets]
-    C --> D[Hussain-PM<br/>📋 phases<br/>+ sprints]
-    D --> E[Zahra<br/>🎨 brand<br/>identity]
-    E --> F[Layla<br/>🖼️ design<br/>system]
-    F --> G[Nasser<br/>👥 squad<br/>composition]
-
-    style A fill:#e1f5ff
-    style B fill:#e1f5ff
-    style C fill:#e1f5ff
-    style D fill:#fff4e1
-    style E fill:#fff4e1
-    style F fill:#fff4e1
-    style G fill:#e1f5ff
-```
-
-#### `/rihal:feature <description>` — build one feature
-
-Use this when requirements exist but need breakdown, build, test, and ship. Scope → arch → UX → FE + BE → tests → ship.
-
-```mermaid
-graph LR
-    A[Hussain-PM<br/>📋 scope<br/>+ PRD] --> B[Waleed<br/>🏗️ arch<br/>decision]
-    B --> C[Layla<br/>🖼️ UX<br/>states]
-    C --> D[Haitham<br/>🎨 frontend]
-    C --> E[Yousef<br/>⚙️ backend]
-    D --> F[Fatima<br/>✅ tests<br/>+ gate]
-    E --> F
-    F --> G[Khalid<br/>🚀 ship<br/>+ monitor]
-
-    style A fill:#fff4e1
-    style B fill:#e1f5ff
-    style C fill:#fff4e1
-    style D fill:#e8f5e9
-    style E fill:#e8f5e9
-    style F fill:#fce4ec
-    style G fill:#fce4ec
-```
-
-#### `/rihal:ui <task>` — UI/UX pipeline
-
-Use for new components, screen redesigns, brand alignment, accessibility audits, Arabic RTL work, motion/interaction design.
-
-```mermaid
-graph LR
-    A[Zahra<br/>🎨 brand<br/>direction] --> B[Layla<br/>🖼️ UX<br/>states]
-    B --> C[Haitham<br/>⚡ implement]
-    C --> D[Fatima<br/>✅ quality<br/>gate]
-
-    style A fill:#fff4e1
-    style B fill:#fff4e1
-    style C fill:#e8f5e9
-    style D fill:#fce4ec
-```
-
-#### `/rihal:council <question>` — 13-agent strategic council
-
-Use for cross-domain decisions, crisis response, or questions nobody can own alone. Each agent reads prior responses before adding their own position. Sequential to avoid content-policy issues and keep the flow coherent.
-
-```mermaid
-graph LR
-    A[Sadiq] --> B[Hussain-PM]
-    B --> C[Waleed]
-    C --> D[Ahmed]
-    D --> E[Zayd]
-    E --> F[Haitham]
-    F --> G[Yousef]
-    G --> H[Fatima]
-    H --> I[Khalid]
-    I --> J[Zahra]
-    J --> K[Mariam]
-    K --> L[Nasser]
-    L --> M[Noor<br/>📝 final<br/>synthesis]
-
-    style M fill:#ffe0b2
-```
-
----
-
-### Planning workflow — how epics/stories actually get made
-
-Rihal Code's creation workflows are **grounded, not hallucinated**. Each step reads real upstream artifacts before emitting anything. If an upstream doc is missing, the skill refuses and tells you what to run first.
-
-```mermaid
-graph TD
-    subgraph Research["Phase 1 — Research (grounded in reality)"]
-        R1[rihal-domain-research<br/>📚 web search,<br/>competitors, users]
-        R2[rihal-market-research<br/>💰 sizing,<br/>pricing, positioning]
-        R3[rihal-technical-research<br/>⚙️ stacks, libs,<br/>context7 docs]
-    end
-
-    subgraph Planning["Phase 2 — Planning (facilitated interviews)"]
-        P1[rihal-product-brief<br/>📄 problem framing]
-        P2[rihal-create-prd<br/>📋 FRs + NFRs<br/>+ metrics]
-        P3[rihal-create-architecture<br/>🏗️ ADR,<br/>data models]
-        P4[rihal-create-ux-design<br/>🖼️ UX spec,<br/>design tokens]
-    end
-
-    subgraph Breakdown["Phase 3 — Breakdown (derived from upstream)"]
-        B1[rihal-create-epics-and-stories<br/>📊 extracts FRs<br/>→ epics → stories]
-        B2[rihal-sprint-planning<br/>📅 sequences stories<br/>with capacity]
-    end
-
-    subgraph Execution["Phase 4 — Execution"]
-        E1[rihal-dev-story<br/>💻 implement<br/>one story]
-        E2[rihal-code-review<br/>🔍 multi-agent<br/>review]
-        E3[rihal-qa-generate-e2e-tests<br/>✅ test coverage]
-    end
-
-    R1 --> P1
-    R2 --> P1
-    R3 --> P1
-    P1 --> P2
-    P2 --> P3
-    P2 --> P4
-    P3 --> B1
-    P4 --> B1
-    B1 --> B2
-    B2 --> E1
-    E1 --> E2
-    E2 --> E3
-
-    style Research fill:#e1f5ff
-    style Planning fill:#fff4e1
-    style Breakdown fill:#e8f5e9
-    style Execution fill:#fce4ec
-```
-
-**Key guarantee:** `rihal-create-epics-and-stories` will refuse to run if no PRD exists — it tells you to run `rihal-create-prd` first. No hallucinated requirements. No made-up stories. Every downstream doc cites its upstream source.
-
----
-
-### Configuration cascade
-
-Config values (`user_name`, `communication_language`, `output_folder`, `model_profile`, etc.) resolve through three layers. Later layers override earlier ones.
-
-```mermaid
-graph TD
-    A[Hardcoded defaults<br/>in cli/lib/config.cjs<br/>schema_version: 1] -->|merges into| B[~/.rihal-code/defaults.json<br/>User-level globals<br/>set once per machine]
-    B -->|merges into| C[.rihal/config.json<br/>Project-level<br/>wins over all]
-    C --> D[Effective config<br/>used by workflows]
-
-    style A fill:#f3e5f5
-    style B fill:#fff4e1
-    style C fill:#e8f5e9
-    style D fill:#e1f5ff
-```
-
-Run `rihal-code config` to see which source each value came from:
-
-```
-   key                       value           source
-   ------------------------  --------------  ------
-   project_name              tasbeeh-app     project
-   user_name                 Hanzla Habib    user
-   communication_language    Urdu            user
-   document_output_language  English         default
-   model_profile             balanced        project
-```
-
----
-
-### Install flow
-
-```mermaid
-graph TD
-    Start([npx @hanzlahabib/rihal-code install]) --> Picker{Editor picker<br/>interactive?}
-    Picker -->|auto-detects .claude/ .cursor/ etc| Editors[Pick one or more editors]
-    Editors --> Wizard{Fresh install?}
-    Wizard -->|yes| Questions[📝 3-question identity wizard<br/>skippable with Enter]
-    Wizard -->|no| Skip
-    Questions --> SaveGlobal{Save as<br/>global defaults?}
-    SaveGlobal -->|yes| WriteGlobal[Write ~/.rihal-code/defaults.json]
-    SaveGlobal -->|no| Skip
-    WriteGlobal --> Skip[ ]
-    Skip --> StateDir[Create .rihal/ state dir]
-    StateDir --> CopyProfiles[Copy model-profiles.json]
-    CopyProfiles --> InitConfig[Write .rihal/config.json<br/>with wizard overrides]
-    InitConfig --> InstallEditors[Install per editor]
-    InstallEditors --> Verify{Manifest<br/>verification}
-    Verify -->|all present| Done([✅ Install verified])
-    Verify -->|drift detected| Warn([⚠ Drift reported<br/>re-run to repair])
-
-    style Start fill:#e1f5ff
-    style Done fill:#c8e6c9
-    style Warn fill:#ffe0b2
-```
-
----
-
-## Directory layout
-
-### Package (what npx installs from)
-```
-rihal-code/
-├── cli/                         # All CLI commands (Node.js, zero deps)
-│   ├── index.js                 # Entry — routes to subcommands
-│   ├── init.js                  # Install command
-│   ├── uninstall.js             # Uninstall with tar backup
-│   ├── config.js                # Config get/set/list
-│   ├── set-profile.js           # Model profile switcher
-│   ├── doctor.js                # Preflight + compliance check
-│   ├── github-sync.js           # Sync phases/epics/stories → GitHub
-│   └── lib/
-│       ├── config.cjs           # 3-level cascade loader
-│       ├── prompts.cjs          # Zero-dep readline wrapper
-│       ├── fsutil.cjs           # Atomic writes
-│       ├── manifest.cjs         # Install verification
-│       ├── github.cjs           # gh CLI wrapper
-│       └── model-profiles.cjs   # Model profile resolver
-├── rihal/
-│   ├── config.yaml              # Package metadata
-│   ├── config/
-│   │   └── model-profiles.json  # quality / balanced / budget / inherit
-│   ├── digests/                 # 19 lean 20-line agent summaries
-│   ├── skills/
-│   │   ├── agents/              # 17 agent SKILL.md files
-│   │   ├── actions/             # 23 action skills (create-prd, epics, etc.)
-│   │   └── core/                # utility skills (help, brainstorming, etc.)
-│   └── templates/               # GitHub issue/epic/story/bug templates
-└── server/
-    └── dashboard.js              # Diwan dashboard (view-only, zero deps)
-```
-
-### Project state (created by install)
-```
-your-project/
-├── .rihal/                       # Project state — git-friendly
-│   ├── config.json               # Canonical config (this is the one)
-│   ├── model-profiles.json       # Copy of the profile table
-│   ├── state.json                # Auto-generated project state
-│   ├── phases/                   # Phase briefs, sprints, stories
-│   ├── plans/                    # Implementation plans
-│   ├── decisions/                # ADRs
-│   ├── artifacts/                # Design system, pitches, research
-│   ├── progress/                 # Status reports, standups, retros
-│   ├── context/
-│   │   └── active.md             # Compacted context for AI
-│   └── backups/                  # Auto-created on uninstall
-├── .claude/skills/rihal-*        # 17 agent + 23 action skills (if Claude picked)
-├── .claude/commands/rihal/       # 16 slash commands
-├── .cursor/rules/rihal-*.mdc     # 19 Cursor rules (if Cursor picked)
-├── .windsurf/rules/rihal-*.mdc   # Same for Windsurf
-├── .antigravity/agents/rihal-*   # Same for Antigravity
-├── AGENTS.md                     # Universal AGENTS.md (always)
-└── CLAUDE.md                     # Project starter (Claude only)
-```
-
----
-
-## How to use it — common scenarios
-
-### Scenario 1: Brand-new project
-
-```bash
-mkdir my-new-app && cd my-new-app
-npx @hanzlahabib/rihal-code install
-# (go through wizard, pick all editors)
-```
-
-Then in your editor:
-
-```
-/rihal:project "my-new-app — a tool that helps Omani SMBs track zakat"
-```
-
-This runs the kickoff pipeline. **13 agents discuss sequentially.** Each reads prior responses. By the end you have:
-- Strategic positioning and kill criteria (Sadiq)
-- Stack decision with ADR saved to `.rihal/decisions/` (Waleed)
-- Delivery plan with DORA targets (Ahmed Al Hassani)
-- Phased roadmap with sprint targets (Hussain PM)
-- Brand identity direction (Zahra)
-- Design system baseline (Layla)
-- Squad composition recommendation (Nasser)
-
-### Scenario 2: Adding a feature to an existing project
-
-```
-/rihal:feature "add Arabic RTL support across the app"
-```
-
-Pipeline: Hussain-PM scopes it → Waleed decides if architectural changes are needed → Layla designs the states → Haitham + Yousef implement → Fatima gates → Khalid ships.
-
-### Scenario 3: Just a UI task
-
-```
-/rihal:ui "redesign the zakat calculator screen for mobile"
-```
-
-Shorter pipeline: Zahra brand direction → Layla UX → Haitham implementation → Fatima quality gate.
-
-### Scenario 4: Strategic question nobody can own alone
-
-```
-/rihal:council "Should we rewrite the sync engine in Go, or stay with TypeScript?"
-```
-
-All 13 agents weigh in sequentially. Noor does final synthesis.
-
-### Scenario 5: Just invoke one specialist
-
-```
-@waleed "Review this database schema for scalability"
-@fatima "Write test cases for this authentication flow"
-@sadiq "Is this feature worth building?"
-```
-
-### Scenario 6: You're stuck, not sure what to do
-
-```
-/rihal:progress      # situational awareness
-/rihal:next          # advance to next logical step
-/rihal:discuss       # facilitated pre-council framing
-```
-
-### Scenario 7: Bug hunting
-
-```
-/rihal:fix "users report the app freezes when submitting"
-```
-
-Systematic debugging workflow — reproduces, isolates, fixes, adds regression test.
-
-### Scenario 8: Quick atomic task
-
-```
-/rihal:quick "add a health check endpoint at /api/health"
-```
-
-One-shot, one commit, done.
-
-### Scenario 9: Push to GitHub
-
-Three targeted commands for pushing specific work, plus the bulk `github-sync` if you want everything at once.
-
-```bash
-# Push ONE sprint's stories (with parent epic links)
-rihal-code github-sync --sprint=sprint-01 --execute
-
-# Push ONE epic + its child stories (task list gets rendered on the epic issue)
-rihal-code github-sync --epic=epic-1-auth --execute
-
-# Push ONE story (creates parent epic issue first if needed)
-rihal-code github-sync --story=story-1-1-login --execute
-
-# Or from inside the editor:
-/rihal:push-sprint sprint-01
-/rihal:push-epic epic-1-auth
-/rihal:push-story story-1-1-login
-
-# Full bulk sync (dry-run by default, shows plan only)
-rihal-code github-sync
-
-# Actually execute the bulk sync
-rihal-code github-sync --execute
-```
-
-**What gets created on GitHub:**
-- **Milestones** — one per phase (`phase-01`, `phase-02`, …)
-- **Epic issues** — titled `[Epic] {Title}`, assigned to the phase milestone, with a `## 📝 Child Stories` task list that GitHub renders as a progress counter
-- **Story issues** — titled with the story name, body contains `Parent Epic: #N` reference for auto-linking, assigned to the phase milestone
-- **Labels** — **off by default**. Pass `--with-labels` to create/assign the full Rihal taxonomy (type / priority / status / area)
-
-**Linking conventions used:**
-- Story → Epic: body field `- **Parent Epic:** #N` (GitHub auto-links + renders under the epic)
-- Epic → Stories: task list `- [ ] #N` inside the epic body (renders progress counter)
-- Story frontmatter `epic: epic-1-auth` wins; falls back to naming convention (`story-N-...` → `epic-N-...`)
-- Everything is grouped under the phase milestone
-
-**Idempotency:**
-Every sync writes a map at `.rihal/integrations/github-map.json` with SHA-256 content hashes. Re-running a sync creates zero duplicates — only new or changed items touch GitHub.
-
-**Safety:**
-- Default is always dry-run. You have to pass `--execute` to mutate.
-- Even with `--execute`, an interactive prompt asks `Proceed? Type 'yes' to continue:` unless you pass `--yes`.
-- In `communication_mode=yolo`, `--yes` does NOT bypass the prompt for GitHub mutations. You must also pass `--force-yolo` to opt in explicitly. This is deliberate — YOLO mode should not silently push dozens of issues to a shared repo.
-- `gh` auth is checked first; if not authenticated the command exits before any work.
-
-**Why a CLI and not Claude calling `gh` directly?**
-The CLI handles the plumbing (gh calls, retries, rate limits, idempotency via sync map, atomic state updates). Claude handles the judgment (writing good story content, deciding if an epic should be split, enhancing briefs). The slash commands `/rihal:push-*` bridge the two — Claude reviews and optionally enhances the artifacts on disk, then invokes the CLI for the actual posting. See [ADR 0001](docs/adr/0001-github-sync-as-cli.md) for the full rationale.
-
----
-
-## CLI commands
-
-```bash
-# Install / uninstall
-rihal-code install [--editor=all|claude|cursor|...] [--yes]
-rihal-code uninstall [--keep-state] [--delete-state] [--yes]
-
-# Configuration
-rihal-code config                              # show all effective values + source
-rihal-code config <key>                        # get one value
-rihal-code config <key> <value>                # set in .rihal/config.json
-rihal-code config --global <key> <value>       # set in ~/.rihal-code/defaults.json
-
-# Model profile (shortcut for `config model_profile`)
-rihal-code set-profile [quality|balanced|budget|inherit]
-rihal-code show-model                          # show which model each agent uses
-
-# Health & dashboard
-rihal-code doctor                              # preflight + compliance
-rihal-code dashboard                           # start Diwan dashboard on :7717
-rihal-code team                                # list team roster
-rihal-code digest                              # compact agent digests
-
-# GitHub integration
-rihal-code github-sync                         # dry-run sync (default, labels off)
-rihal-code github-sync --execute               # mutate GitHub
-rihal-code github-sync --sprint=sprint-01      # only one sprint
-rihal-code github-sync --epic=epic-1-auth      # only one epic + its stories
-rihal-code github-sync --story=story-1-1-login # only one story
-rihal-code github-sync --with-labels           # also create the 23-label taxonomy
-rihal-code github-sync --force-yolo            # allow --yes to bypass prompt in yolo mode
-```
-
-See [ADR 0001 — github-sync as CLI](docs/adr/0001-github-sync-as-cli.md) for the architectural rationale of why push-to-github is a CLI command instead of a pure Claude workflow.
-
----
-
-## Configuration reference
-
-`.rihal/config.json` — every key, every default:
-
-```json
-{
-  "schema_version": 1,
-  "project_name": "your-directory-name",
-  "user_name": "Team",
-  "communication_language": "English",
-  "document_output_language": "English",
-  "output_folder": ".rihal",
-  "planning_artifacts": ".rihal/phases",
-  "project_knowledge": ".rihal/context",
-  "model_profile": "balanced"
-}
-```
-
-| Key | Purpose |
-|---|---|
-| `schema_version` | For future config migrations |
-| `project_name` | Used in all generated docs; defaults to `cwd` basename |
-| `user_name` | How agents address you |
-| `communication_language` | Chat language (agents speak this) |
-| `document_output_language` | Generated doc language |
-| `output_folder` | Root for all generated artifacts |
-| `planning_artifacts` | Where phases/epics/stories land |
-| `project_knowledge` | Long-term context directory |
-| `model_profile` | `quality`, `balanced`, `budget`, or `inherit` |
-
-### Model profiles
-
-```bash
-rihal-code show-model
-```
-
-| Profile | Top agents | Budget agents | Cost vs quality |
-|---|---|---|---|
-| **quality** | opus everywhere | — | Most expensive, highest fidelity |
-| **balanced** | opus for strategy, sonnet for impl | haiku for scribes | Recommended default |
-| **budget** | sonnet for leads, haiku for most | haiku everywhere | Cheapest with acceptable quality |
-| **inherit** | whatever the host tool chooses | — | Let Claude Code / Cursor decide |
-
-Switch profile:
-```bash
-rihal-code set-profile quality
-```
-
----
-
-## Multi-editor support
-
-One install, every compatible tool picks it up:
-
-| Editor | Install path | How it's loaded |
-|---|---|---|
-| **Claude Code** | `.claude/skills/rihal-*` + `.claude/commands/rihal/` | Auto-discovered on session start |
-| **Cursor** | `.cursor/rules/rihal-*.mdc` | Auto-discovered via Cursor rules |
-| **Windsurf** | `.windsurf/rules/rihal-*.mdc` | Auto-discovered via Windsurf rules |
-| **Antigravity** | `.antigravity/agents/rihal-*.md` | Follows AGENTS.md spec |
-| **Any other AGENTS.md tool** | `AGENTS.md` at project root | Universal spec |
-
-The install command detects which editor directories already exist and preselects them in the picker. You can also pick them explicitly:
-
-```bash
-rihal-code install --editor=claude
-rihal-code install --editor=all
-```
-
----
-
-## Troubleshooting
-
-### `rihal-code doctor`
-Runs 6 preflight checks before you hit a broken install at runtime:
-
-```
-Preflight:
-   ✓ Node.js ≥ 18           v24.7.0
-   ✓ .rihal/ writable       /path/to/project/.rihal
-   ✓ model-profiles.json    4 profiles (quality, balanced, budget, inherit)
-   ✓ git CLI                available
-   ✓ gh CLI                 available (github-sync ready)
-   ✓ Agent manifest         claude:17 claude:23 cursor:19 windsurf:19 antigravity:19
-
-Package compliance:
-   ✓ All 40 skills compliant with 5-component standard
-
-✅ All checks passed.
-```
-
-If manifest drift is detected (missing or extra agents from a partial install), doctor reports exactly what's off and exits non-zero. Re-run `install` to repair.
-
-### Install was interrupted mid-copy
-The install runs manifest verification at the end. If some skill dirs didn't land (disk full, Ctrl+C, permission issue), you'll see:
-
-```
-⚠ Install verification found drift:
-   ⚠ claude       agents   16/17
-      missing: waleed-architect
-Re-run install to repair, or run 'rihal-code doctor' for details.
-```
-
-Just re-run `rihal-code install` — it's idempotent, only missing pieces get copied.
-
-### You want to undo an install
-```bash
-rihal-code uninstall
-```
-
-This:
-1. Shows a preview of everything that will be touched
-2. Asks for confirmation
-3. Creates a timestamped tar.gz backup at `.rihal/backups/uninstall-{ISO}.tgz`
-4. Removes skill files from all editor dirs
-5. Strips the Rihal section from `AGENTS.md` (never deletes the file)
-6. Removes empty editor shell dirs (but never your own content)
-7. Asks separately before touching `.rihal/` (your project data)
-
-Restore is a single command — the success message prints it:
-```bash
-tar -xzf .rihal/backups/uninstall-2026-04-10T19-08-03.tgz
-```
-
-### Config got into a weird state
-```bash
-rihal-code config                # see all values + source
-rihal-code config user_name      # get one
-rihal-code config user_name "New Name"    # fix it
-```
-
-Or edit `.rihal/config.json` directly — it's just JSON.
-
-### Agent responds with wrong persona
-Make sure the agent's SKILL.md is actually installed. Check:
-```bash
-ls .claude/skills/ | grep rihal-
-rihal-code doctor
-```
-
----
-
-## Philosophy
-
-> **Strategy without execution is hallucination. Execution without strategy is drift. Rihal Code forces both.**
-
-- **Sadiq asks "why?"** before Waleed asks "how?"
-- **Waleed locks the stack** before Omar writes code
-- **Hussain scopes features** before anyone commits
-- **Layla designs states** before Haitham wires them
-- **Zahra sets the brand** before Layla picks colors
-- **Fatima gates releases** before Khalid deploys
-- **Noor documents** before knowledge walks out the door
-- **Majlis synthesizes** when no one can own the answer alone
-- **Diwan shows everything** so nothing hides in someone's head
-
-The methodology enforces these through pipelines. You can't skip Sadiq on a `/rihal:project` call. You can't bypass Fatima on `/rihal:feature`. The chain is the contract.
-
----
-
-## Customization
-
-### Replace agent names with your real team
-Edit `.rihal/team.yaml` (or the package-level `rihal/team.yaml` for global changes). The SKILL.md personas read names from here.
-
-### Change cultural elements
-`rihal/config.yaml` — greetings, language, dashboard port, context thresholds.
-
-### Add your own skill or agent
-Drop a new skill dir under `.claude/skills/rihal-your-skill/` with a valid `SKILL.md`. Doctor will flag it on next run. Or contribute it upstream.
-
-### Override model per agent
-Edit `.rihal/model-profiles.json` — you can override individual agent→model bindings within any profile.
-
----
-
-## Contributing
-
-See `CONTRIBUTING.md` for commit conventions (Conventional Commits enforced), the 5-component skill standard, and PR guidelines.
+- Karpathy coding guidelines adapted from [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (MIT)
+- File-shipping installer pattern inspired by the broader agent-skill ecosystem
 
 ---
 
 ## License
 
-UNLICENSED — internal use. Contact the author to license for your organization.
+MIT
 
-## Author
+---
 
-**Hanzla Habib** — Frontend engineer at Rihal. Built this to stop AI assistants from forgetting what role they're playing and making up requirements from thin air.
+## Roadmap
 
-<div dir="rtl">صُنع بحب في مسقط — Made with love in Muscat (in spirit)</div>
+See [GitHub Issues](https://github.com/hanzlahabib/rihal-code/issues) for tracked work. Current branch: `v2-prototype` — under active development. Main branch will track stable releases.
+
+**This branch is pre-release.** For production, wait for `v0.2.0` on main.
