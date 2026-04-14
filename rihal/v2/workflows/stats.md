@@ -75,9 +75,11 @@ Duration: $DURATION
 Phases
   Total: N
   Active: N
+  Example: [01] Initial Setup, [02] API Development, [02.1] Urgent Fix
 
 Plans
   Completed: N
+  Example: [01.01] Schema setup, [01.02] Seed data
 
 Council
   Sessions: N
@@ -93,9 +95,15 @@ Blockers
 Git Activity (rihal-related)
   Commits: N
   Recent:
-    - message-1
-    - message-2
-    - message-3
+    - [01.02] message-1
+    - [02.01] message-2
+    - [02.1] message-3
 ```
+
+**ID Format Notes:**
+- Phases display as `[NN]` (e.g., `[01]`, `[02]`)
+- Decimal phases display as `[NN.M]` (e.g., `[02.1]`)
+- Plans display as `[NN.MM]` (e.g., `[01.02]`)
+- Include IDs in examples and recent commit references where available
 
 If any counts are 0, still show them (e.g., "Phases: 0").

@@ -29,11 +29,18 @@ Using the parsed state, print a dashboard in this format:
 │ Updated:  {updated, human-readable: "2 hours ago"}   │
 ╰──────────────────────────────────────────────────────╯
 
+Phases:
+▶ [01] Initial Setup — complete ✓
+  [01.01] Schema setup — done
+  [01.02] Seed data — in progress (2/3 tasks)
+▷ [02] API Development — pending
+  [02.01] Routes — pending
+
 Recent decisions ({last 3}):
-• {decision summary} — {phase}, {date}
+• {decision summary} — [phase.plan], {date}
 
 Open blockers ({count}):
-⚠ {blocker description} — {phase}
+⚠ {blocker description} — [phase.plan]
 
 Council sessions ({last 3}):
 • {date} — {question_slug} — Panel: {panel}
@@ -42,9 +49,11 @@ Last session: {last_session, human-readable}
 ```
 
 **Formatting rules:**
+- Show hierarchical IDs in `[NN]` format for phases and `[NN.MM]` for plans
 - For `updated` and `last_session`, compute a human-readable relative time (e.g. "2 hours ago", "3 days ago", "just now").
 - For decisions and council sessions, show only the last 3 entries (most recent first).
 - For blockers, show only unresolved ones (`resolved === false`).
+- Include phases section showing current status of all phases and their plans
 - Omit any section that has zero entries (e.g. if no decisions, skip "Recent decisions" entirely).
 
 ## Step 3 — Blocker warning

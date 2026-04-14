@@ -997,7 +997,433 @@ function cmdState(subArgs) {
     return writeState(state);
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, set-user-profile, write-profile, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
+  // --- next-phase-id ---
+  if (sub === 'next-phase-id') {
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      const entries = fs.readdirSync(phasesDir);
+      for (const entry of entries) {
+        const match = entry.match(/^(\d{2})-/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          maxNum = Math.max(maxNum, num);
+        }
+      }
+    }
+    const nextId = String(maxNum + 1).padStart(2, '0');
+    return { ok: true, next_phase_id: nextId };
+  }
+
+  // --- next-plan-id <phase-id> ---
+  if (sub === 'next-plan-id') {
+    const phaseId = subArgs[1];
+    if (!phaseId) throw new Error('next-plan-id requires a phase ID argument (NN format)');
+    const phaseMatch = phaseId.match(/^(\d{2})(?:\.(\d+))?$/);
+    if (!phaseMatch) throw new Error(`Invalid phase ID format: ${phaseId}. Expected NN or NN.M`);
+
+    const phasePart = phaseMatch[1];
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+
+    // Find the phase directory matching NN-*
+    let phaseDir = null;
+    if (fs.existsSync(phasesDir)) {
+      const entries = fs.readdirSync(phasesDir);
+      for (const entry of entries) {
+        const match = entry.match(/^(\d{2})(?:\.\d+)?-/);
+        if (match && match[1] === phasePart) {
+          phaseDir = path.join(phasesDir, entry);
+          break;
+        }
+      }
+    }
+
+    // If no phase dir found, default to 01 plan
+    if (!phaseDir) {
+      return { ok: true, next_plan_id: `${phasePart}.01` };
+    }
+
+    // Scan phase dir for numbered subdirs (MM-*) to find max plan number
+    let maxPlanNum = 0;
+    const entries = fs.readdirSync(phaseDir);
+    for (const entry of entries) {
+      const match = entry.match(/^(\d{2})-/);
+      if (match && fs.statSync(path.join(phaseDir, entry)).isDirectory()) {
+        const num = parseInt(match[1], 10);
+        maxPlanNum = Math.max(maxPlanNum, num);
+      }
+    }
+
+    // If no subdirs, phase-level plan exists at 01
+    if (maxPlanNum === 0) {
+      maxPlanNum = 1;
+    }
+
+    const nextPlanNum = String(maxPlanNum + 1).padStart(2, '0');
+    return { ok: true, next_plan_id: `${phasePart}.${nextPlanNum}` };
+  }
+
+  // --- next-task-id <plan-id> ---
+  if (sub === 'next-task-id') {
+    const planId = subArgs[1];
+    if (!planId) throw new Error('next-task-id requires a plan ID argument (NN.MM format)');
+    const match = planId.match(/^(\d{2})\.(\d{2})$/);
+    if (!match) throw new Error(`Invalid plan ID format: ${planId}. Expected NN.MM`);
+
+    const phasePart = match[1];
+    const planPart = match[2];
+
+    // Construct plan file path
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    let planFile = null;
+
+    if (fs.existsSync(phasesDir)) {
+      const entries = fs.readdirSync(phasesDir);
+      for (const entry of entries) {
+        const phaseMatch = entry.match(/^(\d{2})(?:\.\d+)?-/);
+        if (phaseMatch && phaseMatch[1] === phasePart) {
+          const phaseDir = path.join(phasesDir, entry);
+
+          // Check for subdirectory named planPart-*
+          const subentries = fs.readdirSync(phaseDir);
+          for (const subentry of subentries) {
+            const subMatch = subentry.match(/^(\d{2})-/);
+            if (subMatch && subMatch[1] === planPart) {
+              const planDir = path.join(phaseDir, subentry);
+              const candidate = path.join(planDir, 'PLAN.md');
+              if (fs.existsSync(candidate)) {
+                planFile = candidate;
+                break;
+              }
+            }
+          }
+
+          // If no subdir found, check phase-level PLAN.md
+          if (!planFile && planPart === '01') {
+            const candidate = path.join(phaseDir, 'PLAN.md');
+            if (fs.existsSync(candidate)) {
+              planFile = candidate;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    if (!planFile) {
+      throw new Error(`Plan ${planId} not found. Ensure phase and plan directories exist.`);
+    }
+
+    // Read PLAN.md and count existing tasks
+    const planContent = fs.readFileSync(planFile, 'utf8');
+    const taskMatches = planContent.match(/^### Task \d+\.\d+\.\d+ —/gm) || [];
+    const nextTaskNum = String(taskMatches.length + 1).padStart(2, '0');
+
+    return { ok: true, next_task_id: `${planId}.${nextTaskNum}` };
+  }
+
+  // --- resolve-id <id> ---
+  if (sub === 'resolve-id') {
+    const id = subArgs[1];
+    if (!id) throw new Error('resolve-id requires an ID argument (NN, NN.MM, NN.MM.TT, or M{N})');
+
+    // Parse ID pattern
+    let idType = null;
+    let phaseId = null, planId = null, taskId = null, milestoneId = null;
+
+    if (/^M\d+$/.test(id)) {
+      idType = 'milestone';
+      milestoneId = id;
+    } else if (/^\d{2}$/.test(id)) {
+      idType = 'phase';
+      phaseId = id;
+    } else if (/^\d{2}\.\d+$/.test(id)) {
+      const parts = id.split('.');
+      phaseId = parts[0];
+
+      // Determine if this is a decimal phase or a plan
+      // Check if directory ends in .M pattern
+      const phasesDir = path.join(PLANNING_DIR, 'phases');
+      let isDecimalPhase = false;
+      if (fs.existsSync(phasesDir)) {
+        const entries = fs.readdirSync(phasesDir);
+        for (const entry of entries) {
+          if (entry.match(/^\d{2}\.\d+-/)) {
+            isDecimalPhase = true;
+            break;
+          }
+        }
+      }
+
+      if (isDecimalPhase) {
+        idType = 'decimal-phase';
+      } else {
+        idType = 'plan';
+        planId = id;
+      }
+    } else if (/^\d{2}\.\d+\.\d+$/.test(id)) {
+      idType = 'task';
+      const parts = id.split('.');
+      phaseId = parts[0];
+      planId = `${parts[0]}.${parts[1]}`;
+      taskId = id;
+    } else {
+      throw new Error(`Invalid ID format: ${id}. Valid formats: NN (phase), NN.MM (plan), NN.MM.TT (task), MN (milestone)`);
+    }
+
+    // Build response
+    const result = {
+      id,
+      type: idType,
+      phase_id: phaseId,
+      plan_id: planId,
+      task_id: taskId,
+      milestone_id: milestoneId,
+      path: null,
+      phase_dir: null,
+      plan_dir: null,
+      status: 'pending',
+    };
+
+    // Resolve paths
+    if (phaseId) {
+      const phasesDir = path.join(PLANNING_DIR, 'phases');
+      if (fs.existsSync(phasesDir)) {
+        const entries = fs.readdirSync(phasesDir);
+        for (const entry of entries) {
+          const match = entry.match(/^(\d{2})-/);
+          if (match && match[1] === phaseId) {
+            const phaseDir = path.join(phasesDir, entry);
+            result.phase_dir = phaseDir;
+
+            // Resolve plan path if plan_id is set
+            if (planId) {
+              const planNum = planId.split('.')[1];
+
+              // Check for subdirectory
+              const subentries = fs.readdirSync(phaseDir);
+              for (const subentry of subentries) {
+                const subMatch = subentry.match(/^(\d{2})-/);
+                if (subMatch && subMatch[1] === planNum) {
+                  const planDir = path.join(phaseDir, subentry);
+                  const planPath = path.join(planDir, 'PLAN.md');
+                  if (fs.existsSync(planPath)) {
+                    result.plan_dir = planDir;
+                    result.path = planPath;
+                  }
+                  break;
+                }
+              }
+
+              // If no subdir and planNum is 01, check phase-level PLAN.md
+              if (!result.path && planNum === '01') {
+                const candidate = path.join(phaseDir, 'PLAN.md');
+                if (fs.existsSync(candidate)) {
+                  result.plan_dir = phaseDir;
+                  result.path = candidate;
+                }
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    // Resolve milestone path if milestone_id is set
+    if (milestoneId) {
+      const milestonesDir = path.join(PLANNING_DIR, 'milestones');
+      if (fs.existsSync(milestonesDir)) {
+        const entries = fs.readdirSync(milestonesDir);
+        for (const entry of entries) {
+          if (entry.match(new RegExp(`^${milestoneId}-`))) {
+            result.path = path.join(milestonesDir, entry, 'ROADMAP.md');
+            break;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  // --- set-ids-in-state ---
+  if (sub === 'set-ids-in-state') {
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+    if (!state.plans) state.plans = [];
+    if (!state.milestones) state.milestones = [];
+
+    // Scan phases directory
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    if (fs.existsSync(phasesDir)) {
+      const entries = fs.readdirSync(phasesDir);
+      for (const entry of entries) {
+        const match = entry.match(/^(\d{2})(?:\.\d+)?-(.+)$/);
+        if (match) {
+          const phaseId = match[1];
+          const slug = match[2];
+          const phaseDir = path.join(phasesDir, entry);
+
+          // Add phase if not already present
+          if (!state.phases.some(p => p.id === phaseId)) {
+            state.phases.push({
+              id: phaseId,
+              slug,
+              path: phaseDir,
+              created: new Date().toISOString(),
+            });
+          }
+
+          // Scan for plans within phase
+          const subentries = fs.readdirSync(phaseDir);
+          for (const subentry of subentries) {
+            const subMatch = subentry.match(/^(\d{2})-(.+)$/);
+            if (subMatch && fs.statSync(path.join(phaseDir, subentry)).isDirectory()) {
+              const planNum = subMatch[1];
+              const planId = `${phaseId}.${planNum}`;
+              const planSlug = subMatch[2];
+              const planDir = path.join(phaseDir, subentry);
+              const planPath = path.join(planDir, 'PLAN.md');
+
+              if (fs.existsSync(planPath)) {
+                if (!state.plans.some(p => p.id === planId)) {
+                  state.plans.push({
+                    id: planId,
+                    phase_id: phaseId,
+                    slug: planSlug,
+                    path: planPath,
+                    created: new Date().toISOString(),
+                  });
+                }
+              }
+            }
+          }
+
+          // Check for phase-level PLAN.md (01 plan)
+          const phasePlanPath = path.join(phaseDir, 'PLAN.md');
+          if (fs.existsSync(phasePlanPath)) {
+            const planId = `${phaseId}.01`;
+            if (!state.plans.some(p => p.id === planId)) {
+              state.plans.push({
+                id: planId,
+                phase_id: phaseId,
+                slug: 'default',
+                path: phasePlanPath,
+                created: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Scan milestones directory
+    const milestonesDir = path.join(PLANNING_DIR, 'milestones');
+    if (fs.existsSync(milestonesDir)) {
+      const entries = fs.readdirSync(milestonesDir);
+      for (const entry of entries) {
+        const match = entry.match(/^(M\d+)-(.+)$/);
+        if (match) {
+          const milestoneId = match[1];
+          const slug = match[2];
+          const milestonePath = path.join(milestonesDir, entry, 'ROADMAP.md');
+
+          if (!state.milestones.some(m => m.id === milestoneId)) {
+            state.milestones.push({
+              id: milestoneId,
+              slug,
+              path: milestonePath,
+              created: new Date().toISOString(),
+            });
+          }
+        }
+      }
+    }
+
+    return writeState(state);
+  }
+
+  // --- migrate-ids ---
+  if (sub === 'migrate-ids') {
+    const state = readState() || defaultState();
+    let migratedCount = 0;
+
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    if (fs.existsSync(phasesDir)) {
+      const entries = fs.readdirSync(phasesDir).sort();
+      let phaseNum = 1;
+
+      for (const entry of entries) {
+        const match = entry.match(/^(\d{2})-/);
+        if (match) {
+          phaseNum = parseInt(match[1], 10);
+        }
+
+        const phaseDir = path.join(phasesDir, entry);
+
+        // Check for PLAN.md at phase level
+        const phasePlanPath = path.join(phaseDir, 'PLAN.md');
+        if (fs.existsSync(phasePlanPath)) {
+          let content = fs.readFileSync(phasePlanPath, 'utf8');
+          const phaseIdStr = String(phaseNum).padStart(2, '0');
+
+          // Check if it has frontmatter with phase/plan fields
+          const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+          if (frontmatterMatch) {
+            const fm = frontmatterMatch[1];
+            if (!fm.match(/^id:/m)) {
+              // Only add id if missing; preserve existing phase/plan if present
+              let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.01"`;
+              if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
+              if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "01"`;
+              newFrontmatter += '\n';
+              content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
+              fs.writeFileSync(phasePlanPath, content, 'utf8');
+              migratedCount++;
+            }
+          }
+        }
+
+        // Check for plan subdirs
+        const subentries = fs.readdirSync(phaseDir);
+        let planNum = 1;
+        for (const subentry of subentries) {
+          const subMatch = subentry.match(/^(\d{2})-/);
+          if (subMatch && fs.statSync(path.join(phaseDir, subentry)).isDirectory()) {
+            planNum = parseInt(subMatch[1], 10);
+            const planDir = path.join(phaseDir, subentry);
+            const planPath = path.join(planDir, 'PLAN.md');
+
+            if (fs.existsSync(planPath)) {
+              let content = fs.readFileSync(planPath, 'utf8');
+              const phaseIdStr = String(phaseNum).padStart(2, '0');
+              const planIdStr = String(planNum).padStart(2, '0');
+
+              const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+              if (frontmatterMatch) {
+                const fm = frontmatterMatch[1];
+                if (!fm.match(/^id:/m)) {
+                  // Only add id if missing; preserve existing phase/plan if present
+                  let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.${planIdStr}"`;
+                  if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
+                  if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "${planIdStr}"`;
+                  newFrontmatter += '\n';
+                  content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
+                  fs.writeFileSync(planPath, content, 'utf8');
+                  migratedCount++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { ok: true, migrated: migratedCount, message: `Migrated ${migratedCount} PLAN.md files with IDs` };
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}. Valid: read, get, init, set-phase, advance-plan, record-execution, add-decision, add-blocker, resolve-blocker, record-session, record-council, record-chain, insert-phase, set-user-profile, write-profile, next-phase-id, next-plan-id, next-task-id, resolve-id, set-ids-in-state, migrate-ids, workstream-validate, workstream-create, workstream-switch, workstream-list, workstream-status, workstream-complete`);
 }
 
 /**
@@ -1548,6 +1974,12 @@ function main() {
         console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
         console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
         console.log('  state insert-phase --number <N.M> --name <slug>');
+        console.log('  state next-phase-id                          → return next available 2-digit phase ID');
+        console.log('  state next-plan-id <phase-id>                → return next plan ID within phase');
+        console.log('  state next-task-id <plan-id>                 → return next task ID within plan');
+        console.log('  state resolve-id <id>                        → resolve ID to paths and metadata');
+        console.log('  state set-ids-in-state                       → scan .planning/ and populate state arrays');
+        console.log('  state migrate-ids                            → migrate existing PLAN.md files with IDs');
         console.log('  state workstream-create --name <name>        → create a new workstream');
         console.log('  state workstream-switch --name <name>        → switch active workstream');
         console.log('  state workstream-list                        → list all workstreams');
