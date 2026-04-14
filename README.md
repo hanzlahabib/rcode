@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **An AI engineering methodology — 22 agents, 64 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
+> **An AI engineering methodology — 35+ agents, 69 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
 
 ---
 
@@ -10,12 +10,16 @@
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you a real team.**
 
-- **22 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
-- **64 slash commands** covering research, planning, execution, verification, and recovery
+- **35+ agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **69 slash commands** covering research, planning, execution, verification, and recovery
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
-- **File-based state** in `.rihal/` that every workflow reads
+- **File-based state** in `.rihal/` that every workflow reads and updates
 - **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
 - **Karpathy-inspired coding guidelines** wired into every code-writing agent
+- **Numeric ID system** (M1 milestones, NN phases, NN.M plans, NN.M.T tasks, with decimal insertion for urgent work)
+- **Plan verification loop** that validates file/symbol references before execution
+- **Post-execute gates** (integration-checker, nyquist-auditor) verify completeness
+- **Global agents** at `~/.rihal/agents/` — customize without forking
 
 It's not a chatbot. It's a methodology.
 
@@ -32,10 +36,18 @@ node /tmp/rihal-src/cli/install-v2.js . --yes --user "$(whoami)" --project "$(ba
 
 That's it. No npm dependency. No global install. Pure file shipping:
 
-- `.rihal/` — config, workflows, references, bin, state.json (201 files total)
-- `.claude/agents/` — 22 first-class subagents
-- `.claude/commands/rihal/` — 64 slash commands
+- `.rihal/` — config, workflows, references, bin, state.json (238 files total)
+- `.claude/agents/` — 35+ first-class subagents
+- `.claude/commands/rihal/` — 69 slash commands
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
+
+### Directory layout
+
+**System directories (do not edit):**
+- `.rihal/` — config.yaml, state.json, bin/, workflows/, references/ (Rihal infrastructure)
+
+**Your artifacts (created automatically):**
+- `.planning/` — council-sessions/, plans/, chains/, summaries/ (all outputs from Rihal commands)
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
 
@@ -85,9 +97,41 @@ node /tmp/rihal-src/cli/install-v2.js . --ide gemini
 
 ---
 
+## Filesystem layout
+
+**System-owned directories (do not edit):**
+
+```
+.rihal/                        — Rihal infrastructure + state
+  config.yaml                  — preferences (model, language, mode, branching)
+  state.json                   — project phases, decisions, sessions, workstreams
+  RIHLA.md                      — project journey baseline
+  HANDOFF.json                  — pause-work context for resuming
+  bin/
+    rihal-tools.cjs            — CLI helper (state read/write, panel scoring, etc.)
+    lib/council-panel.cjs      — deterministic panel scorer
+  workflows/                   — 69 slash command workflows
+  references/                  — shared contracts (council-protocol, gates, karpathy-guidelines, etc.)
+  agents-rules/                — lazy-loaded agent rule files (planner, executor, debugger)
+```
+
+**Your artifacts (created automatically):**
+
+```
+.planning/                     — your work outputs
+  phases/01-name/PLAN.md       — plans organized by phase number (01, 02, 02.1, etc.)
+  council-sessions/            — debate artifacts
+  chains/                       — pipeline outputs (RESEARCH.md → SCOPE.md → PLAN.md)
+  notes/                        — quick notes from /rihal:note
+  HANDOFF.json                  — pause-work checkpoint
+  .continue-here.md            — human-readable handoff summary
+```
+
+---
+
 ## The team
 
-5 council agents with cultural identity, each with hard scope boundaries and response-style contracts:
+**5 council agents** with cultural identity, each with hard scope boundaries and response-style contracts:
 
 | Agent | Role | Spawns for |
 |-------|------|-----------|
@@ -97,7 +141,15 @@ node /tmp/rihal-src/cli/install-v2.js . --ide gemini
 | 📣 **Mariam (مريم)** | Marketing & Growth | Market research, GTM, positioning, GCC/MENA markets |
 | 📋 **Hussain-PM (حسين)** | Product Manager | Scope, roadmap, features, user stories, PRDs, sprint planning |
 
-Plus **17 specialist agents** for execution and discovery: rihal-executor, rihal-planner, rihal-verifier, rihal-plan-checker, rihal-debugger, rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper, rihal-phase-researcher, rihal-advisor-researcher, rihal-assumptions-analyzer, rihal-research-synthesizer, rihal-integration-checker, rihal-nyquist-auditor, rihal-tech-writer, rihal-ux-designer, rihal-architect.
+**30+ specialist agents** for execution, discovery, and verification:
+
+- **Execution**: rihal-executor, rihal-planner, rihal-verifier, rihal-plan-checker, rihal-debugger
+- **Discovery**: rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper, rihal-phase-researcher, rihal-advisor-researcher, rihal-assumptions-analyzer, rihal-research-synthesizer
+- **Verification**: rihal-integration-checker, rihal-nyquist-auditor
+- **Quality**: rihal-tech-writer, rihal-ux-designer, rihal-architect, rihal-code-reviewer, rihal-code-fixer, rihal-edge-case-hunter, rihal-deviation-analyzer
+- **And more**: rihal-docs-auditor, rihal-doc-verifier, rihal-doc-writer, rihal-repo-metrics, rihal-security-auditor, etc.
+
+**Customize globally:** Define reusable agents in `~/.rihal/agents/rihal-<name>.md`. They appear in every project alongside project-local agents, without forking the repo.
 
 ---
 
@@ -207,39 +259,59 @@ Audit recent changes:
 
 ---
 
-## Full command surface (64 commands)
+## What's new in v2-prototype
+
+Recent additions in this session:
+
+- **69 slash commands** across 3 modes and 3 modules (up from 64)
+- **Numeric ID system** — milestones (M1, M2), phases (01, 02, 02.1), plans (01.01, 02.03), tasks (01.01.01) with decimal insertion for urgent inserts
+- **Intent guards** (`Step 0.5`) — every workflow detects mismatched intent and redirects instead of failing
+- **Plan-checker loop** — `/rihal:plan` now verifies file existence and symbol definitions; loops back to planner on validation failure
+- **Post-execute gates** — `/rihal:execute` runs integration-checker (E2E) and nyquist-auditor (coverage) as hard gates
+- **Multilingual classifier** — Roman Urdu, Arabic, English with cultural signal routing (Mariam leads GCC/MENA)
+- **Karpathy guidelines enforcement** — 4 coding principles baked into every code-writing agent
+- **Global agents** — customize agents in `~/.rihal/agents/` without forking the repo
+- **Multi-IDE installer** — support for Claude Code, Cursor, Gemini CLI
+- **Hooks system** — opt-in pre-edit, pre-workflow, post-commit enforcement
+- **Session pause/resume** — `/rihal:pause-work` + `/rihal:resume-work` with HANDOFF.json
+- **Workspace isolation** — `/rihal:new-workspace` for parallel tracks
+- **Decimal phase insertion** — `/rihal:insert-phase` for urgent mid-cycle work
+
+---
+
+## Full command surface (69 commands)
 
 ### Router + lifecycle
 `init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
 
-### Discovery
-`new-project` · `map-codebase` · `scan` · `explore` · `document-project`
+### Discovery + research
+`new-project` · `map-codebase` · `scan` · `explore` · `document-project` · `analyze-dependencies` · `discuss-phase-power`
 
 ### Planning
-`plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
+`plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning` · `brainstorm`
 
 ### Execution
 `execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
 
-### Review
-`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `secure-phase`
+### Observability + review
+`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `secure-phase` · `show` · `why` · `rerun` · `diff`
 
-### Recovery
-`pause-work` · `resume-work` · `correct-course` · `next`
+### Recovery + correction
+`pause-work` · `resume-work` · `correct-course` · `next` · `config`
 
-### Multi-agent
-`council` · `chain` · `discuss` · `brainstorm`
+### Multi-agent modes
+`council` · `chain` · `discuss`
 
-### Configuration
+### Configuration + setup
 `settings` · `install` · `enable-hooks` · `profile-user`
 
-### Lifecycle management
+### Lifecycle + phases
 `insert-phase` · `new-milestone` · `audit-milestone` · `complete-milestone` · `milestone-summary` · `new-workspace` · `list-workspaces` · `remove-workspace` · `workstream`
 
-### Docs + notes
+### Docs + notes + reporting
 `docs-update` · `note` · `report` · `session-report` · `add-todo` · `import` · `inbox`
 
-### UI-specific
+### UI design
 `ui-phase` · `ui-review`
 
 ---

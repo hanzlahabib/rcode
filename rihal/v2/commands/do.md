@@ -1,6 +1,6 @@
 ---
 name: rihal:do
-description: Interactive router — describe what you want and rihal picks the right command
+description: "[ROUTER] Interactive picker — describe what you want and rihal picks the command"
 argument-hint: "[optional question or task description]"
 allowed-tools:
   - Read

@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "project": "rihal",
+  "created": "2026-04-14T16:07:48.220Z",
+  "updated": "2026-04-14T16:07:48.221Z",
+  "current_phase": null,
+  "current_plan": 0,
+  "phases": [],
+  "executions": [
+    {
+      "plan": "test",
+      "tasks": 5,
+      "duration_ms": null,
+      "commit_hash": null,
+      "committed_at": "2026-04-14T16:07:48.221Z"
+    }
+  ],
+  "decisions": [],
+  "blockers": [],
+  "council_sessions": [],
+  "last_session": null,
+  "workstreams": [],
+  "active_workstream": null
+}

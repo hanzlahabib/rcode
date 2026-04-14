@@ -61,6 +61,7 @@ function parseArgs(argv) {
   const opts = {
     target: process.cwd(),
     force: false,
+    reset: false,
     yes: false,
     userName: os.userInfo().username || 'User',
     projectName: null,
@@ -75,6 +76,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') opts.help = true;
     else if (arg === '--force') opts.force = true;
+    else if (arg === '--reset') opts.reset = true;
     else if (arg === '--yes' || arg === '-y') opts.yes = true;
     else if (arg === '--user') opts.userName = argv[++i];
     else if (arg === '--project') opts.projectName = argv[++i];
@@ -98,6 +100,7 @@ Usage:
 
 Options:
   --force            overwrite existing files without prompting
+  --reset            with --force, also delete config.yaml and state.json to re-init
   --yes              non-interactive, accept defaults
   --user <name>      set user_name in config.yaml (default: $USER)
   --project <name>   set project_name (default: basename of target-dir)
@@ -452,6 +455,7 @@ function generateConfigYaml(opts) {
     `communication_language: "${sanitizeYamlValue(opts.language)}"`,
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
+    `rihal_source_path: "${sanitizeYamlValue(path.dirname(path.dirname(process.argv[1])))}/"`,
     'workflow:',
     '  research_by_default: false',
     '  plan_checker: true',
@@ -489,6 +493,15 @@ function install(opts) {
   // Validate IDE
   if (!['claude', 'cursor', 'gemini'].includes(opts.ide)) {
     console.error(`✖ Unknown IDE: ${opts.ide}. Supported: claude, cursor, gemini`);
+    return 1;
+  }
+
+  // Gemini IDE support deferred
+  if (opts.ide === 'gemini') {
+    console.log(`\n⚠️  Gemini CLI install not yet implemented\n`);
+    console.log(`Gemini IDE requires aggregating all agents and commands into a single GEMINI.md file.`);
+    console.log(`This feature is planned but not yet available.\n`);
+    console.log(`For now, use: --ide claude or --ide cursor\n`);
     return 1;
   }
 
@@ -560,15 +573,29 @@ function install(opts) {
   fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
   fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
 
-  // Write .rihal/config.yaml (user_name, project_name, language, mode)
-  // Note: config.yaml is user data and should NOT be overwritten on --force
+  // Handle --reset flag: delete config.yaml and state.json if --reset is passed
   const configPath = path.join(opts.target, '.rihal', 'config.yaml');
+  const stateDest = path.join(opts.target, '.rihal', 'state.json');
+  let existedBefore = false;
+
+  if (opts.reset && opts.force) {
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+    if (fs.existsSync(stateDest)) {
+      fs.unlinkSync(stateDest);
+    }
+  } else if (opts.force && (fs.existsSync(configPath) || fs.existsSync(stateDest))) {
+    existedBefore = true;
+  }
+
+  // Write .rihal/config.yaml (user_name, project_name, language, mode)
+  // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
   }
 
-  // Seed .rihal/state.json (skip if already exists — don't overwrite on re-install)
-  const stateDest = path.join(opts.target, '.rihal', 'state.json');
+  // Seed .rihal/state.json (skip if already exists — don't overwrite on re-install unless --reset)
   if (!fs.existsSync(stateDest)) {
     const stateSrc = path.join(SOURCE_ROOT, 'state.json');
     if (fs.existsSync(stateSrc)) {
@@ -584,6 +611,10 @@ function install(opts) {
   // .planning/council-sessions/ empty dir
   ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
 
+  // ~/.rihal/agents/ global agents directory
+  const globalAgentsDir = path.join(os.homedir(), '.rihal', 'agents');
+  ensureDir(globalAgentsDir);
+
   // files-manifest.csv — written LAST so it includes itself's siblings
   // (but not itself, since hashing a file referencing its own hash is
   // self-referential nonsense).
@@ -596,8 +627,15 @@ function install(opts) {
   console.log('');
   console.log(`  Installed: ${copied} file${copied === 1 ? '' : 's'}`);
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
+  if (opts.force && existedBefore) {
+    console.log('  ⚠ Preserved: .rihal/config.yaml and .rihal/state.json');
+    console.log('     Pass --reset to wipe and re-init those too.');
+  }
   console.log('');
   console.log(`  Installed for IDE: ${opts.ide}`);
+  console.log(`  Language: ${opts.language}  (change in .rihal/config.yaml → communication_language)`);
+  console.log(`  Mode: ${opts.mode}  (guided=confirm at gates, yolo=autonomous)`);
+  console.log(`  Model profile: balanced`);
   console.log('');
   console.log('  Agents installed (first-class subagents):');
   console.log('    🧭 rihal-sadiq   — Director of Strategy');
@@ -611,8 +649,12 @@ function install(opts) {
   console.log('');
   console.log('  Next:');
   console.log(`    cd ${opts.target}`);
-  console.log('    claude  # start Claude Code');
-  console.log('    /rihal:council should I rewrite this auth layer?');
+  console.log('    claude  # start Claude Code (or restart if already open)');
+  console.log('    /rihal:init                 # ← run this first to configure');
+  console.log('    /rihal:do                   # interactive command picker');
+  console.log('    /rihal:council <question>   # multi-agent strategic answer');
+  console.log('');
+  console.log('  ⚠ If Claude Code is already running, start a new session to load commands.');
   console.log('');
   return 0;
 }

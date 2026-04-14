@@ -6,8 +6,8 @@ Generate, update, and verify project documentation — both canonical doc types 
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-doc-writer — Writes and updates project documentation files
-- rihal-doc-verifier — Verifies factual claims in docs against the live codebase
+- rihal-tech-writer — Writes and updates project documentation files
+- rihal-docs-auditor — Verifies factual claims in docs against the live codebase
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -151,11 +151,11 @@ Create output directories:
 mkdir -p docs
 ```
 
-For each doc in the queue, spawn a `rihal-doc-writer` agent in parallel waves (up to 3 agents in parallel per wave):
+For each doc in the queue, spawn a `rihal-tech-writer` agent in parallel waves (up to 3 agents in parallel per wave):
 
 ```
 Task(
-  subagent_type="rihal-doc-writer",
+  subagent_type="rihal-tech-writer",
   prompt="
 Generate documentation for {doc_type}.
 Output path: {resolved_path}
@@ -172,12 +172,12 @@ Do NOT commit — the orchestrator will handle that.
 
 ## Step 6: Verify generated docs
 
-After all doc writers complete, spawn `rihal-doc-verifier` agents to cross-check all generated content against the live codebase.
+After all doc writers complete, spawn `rihal-docs-auditor` agents to cross-check all generated content against the live codebase.
 
 For each generated doc:
 ```
 Task(
-  subagent_type="rihal-doc-verifier",
+  subagent_type="rihal-docs-auditor",
   prompt="
 Verify this documentation file against the live codebase:
 Path: {resolved_path}

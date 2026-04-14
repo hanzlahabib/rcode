@@ -1,6 +1,6 @@
 ---
 name: rihal:help
-description: Display the complete Rihal command reference
+description: "[REFERENCE] Show all commands organized by purpose"
 argument-hint: ""
 allowed-tools: []
 ---

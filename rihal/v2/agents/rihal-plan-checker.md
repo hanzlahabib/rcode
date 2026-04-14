@@ -5,6 +5,8 @@ tools: read_file, run_shell_command, glob, search_file_content
 color: green
 ---
 
+<!-- TODO: Apply slim-agent + on-demand rule files split (see rihal-executor.md pattern). Tracked in followup issue. -->
+
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines.md
 

@@ -168,7 +168,20 @@ function readAgentManifest() {
 }
 
 function listInstalledAgents() {
-  return readAgentManifest().map((row) => row.id).filter(Boolean);
+  // Local agents from project manifest
+  const local = readAgentManifest().map((row) => row.id).filter(Boolean);
+
+  // Global agents from ~/.rihal/agents/
+  let global = [];
+  const globalDir = path.join(process.env.HOME || '', '.rihal', 'agents');
+  if (fs.existsSync(globalDir)) {
+    global = fs.readdirSync(globalDir)
+      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
+      .map(f => f.replace('rihal-', '').replace('.md', ''));
+  }
+
+  // Merge and deduplicate: local takes precedence if defined in both
+  return [...new Set([...local, ...global])];
 }
 
 /**
@@ -178,7 +191,7 @@ function listInstalledAgents() {
 function loadPanelScorer() {
   const scorerPath = path.join(__dirname, 'lib', 'council-panel.cjs');
   if (!fs.existsSync(scorerPath)) {
-    throw new Error(`Panel scorer missing at ${scorerPath}. Reinstall with 'rihal-code install-v2'.`);
+    throw new Error(`Panel scorer missing at ${scorerPath}. Reinstall: see README install command, or re-run install-v2.js with --force.`);
   }
   return require(scorerPath);
 }
@@ -389,6 +402,7 @@ function cmdClassifyQuestion(raw) {
       'new venture', 'new startup', 'what opportunity',
       // Roman Urdu discovery signals
       'research kar', 'pata karo', 'batao', 'kaisa', 'kya karo', 'suggest karo',
+      'plan karo', 'soche', 'plan karna',
       // Roman Urdu strategic signals (what-should-I-do questions)
       'kya karna', 'worth hai', 'sahi hai', 'kya sochte', 'kya lagta',
       // Urdu unicode discovery signals
@@ -424,6 +438,7 @@ function cmdClassifyQuestion(raw) {
       // Roman Urdu greenfield signals
       'bnanai', 'banana', 'app banana', 'shuru', 'start karna', 'naya project', 'project banana', 'build karna',
       'chahiye', 'banana hai', 'website chahiye', 'app chahiye', 'rank and rent', 'banaiye', 'bana do',
+      'banai', 'banaye', 'tayyar karna',
       // Urdu unicode greenfield signals
       'سائٹ بنانا', 'ایپ بنانا',
     ],
@@ -456,6 +471,8 @@ function cmdClassifyQuestion(raw) {
       // Tech choice signals
       'astro', 'nextjs', 'next.js', 'remix', 'nuxt', 'svelte', 'vue', 'angular',
       'should i use', 'which framework', 'compare framework',
+      // Roman Urdu codebase/fix signals
+      'fix karo', 'theek karo', 'sahi karo',
       'إعادة', 'کود',
       // Arabic execution signals
       'إصلاح', 'كود', 'برنامج', 'نفذ', 'شغل',
@@ -686,6 +703,12 @@ function cmdState(subArgs) {
 
   // --- read / get ---
   if (sub === 'read' || sub === 'get') {
+    if (!fs.existsSync(statePath)) {
+      return {
+        ok: false,
+        error: 'No state.json yet. Run /rihal:init to initialize project state, or `state init --project <name>` directly.'
+      };
+    }
     const state = readState();
     if (!state) return { state: null };
     return state;

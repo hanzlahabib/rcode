@@ -133,9 +133,11 @@ Artifacts in {chain_dir}/:
 
 Next step:
 /rihal:execute {chain_dir}/3-planner-PLAN.md
+
+─── ~5K tokens per stage · {duration}s · {stage-count} agents ───
 ```
 
-The "next step" line is a single copy-paste command — see `.rihal/references/command-redirect-format.md`.
+The "next step" line is a single copy-paste command — see `.rihal/references/command-redirect-format.md`. The footer uses the estimation from `.rihal/references/response-style.md#session-cost-footer`.
 
 ## Step 4 — Update state
 

@@ -1,5 +1,12 @@
 <purpose>
 Initialize a new project through unified flow: questioning, research (optional), requirements, roadmap. This is the most leveraged moment in any project — deep questioning here means better plans, better execution, better outcomes. One workflow takes you from idea to ready-for-planning.
+
+<!-- TODO: Bug 7 — Refactor for under 600 lines. Current file exceeds size limits. Split into:
+  - new-project.md (usage, initial questions, directory creation) — ~200 lines
+  - new-project-research.md (research phase) — optional subworkflow
+  - new-project-roadmap.md (roadmap creation) — optional subworkflow
+  This is deferred pending architecture review of how multi-step workflows are orchestrated.
+-->
 </purpose>
 
 
