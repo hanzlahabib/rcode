@@ -29,8 +29,10 @@ workflows:
   - forensics.md
   - workstream.md
   - chain.md
+  - init.md
 commands:
   - council.md
+  - init.md
   - discuss.md
   - status.md
   - install.md
