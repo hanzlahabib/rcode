@@ -53,8 +53,18 @@ Enabled guardrails:
 To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.
 ```
 
-## Errors
+## Success Criteria
 
-- **Missing template:** Handled in step 1.
-- **Permission denied writing .claude/settings.json:** Print error and stop.
-- **Invalid JSON in existing settings.json:** Print error with file path and stop.
+- [ ] `.claude/settings.json` created or updated with hooks merged
+- [ ] No duplicate hook entries in merged settings
+- [ ] File written with valid JSON formatting
+- [ ] Confirmation message printed to user
+
+## On Error
+
+- **Template not found:** print error and stop (Step 1).
+- **`.claude/` directory creation fails:** print error and stop.
+- **state.json missing:** continue without error — hooks installation is standalone.
+- **settings.json has invalid JSON:** print error with path and stop.
+- **Permission denied writing .claude/settings.json:** print error and stop.
+- **Merge produces duplicate hooks:** skip duplicates (Step 3).

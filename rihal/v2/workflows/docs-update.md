@@ -14,22 +14,28 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 
 ## Step 1: Initialize context
 
-Load docs-update context:
+Initialize docs-update context by scanning the project:
 
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" docs-init)
-if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" agent-skills rihal-doc-writer 2>/dev/null)
+# Create docs directory if needed
+test -d docs || mkdir -p docs
+
+# Read agent manifest to get model for doc writers
+AGENT_MANIFEST=".rihal/_config/agent-manifest.csv"
+if [[ -f "$AGENT_MANIFEST" ]]; then
+  DOC_WRITER_MODEL=$(grep -i "rihal-doc-writer" "$AGENT_MANIFEST" | cut -d',' -f3)
+else
+  DOC_WRITER_MODEL="claude-opus"  # fallback
+fi
 ```
 
-Extract from init JSON:
-- `doc_writer_model` — model string to pass to each spawned agent (never hardcode a model name)
-- `commit_docs` — whether to commit generated files when done
-- `existing_docs` — array of `{path, has_rihal_marker}` objects for existing Markdown files
-- `project_type` — object with boolean signals: `has_package_json`, `has_api_routes`, `has_cli_bin`, `is_open_source`, `has_deploy_config`, `is_monorepo`, `has_tests`
-- `doc_tooling` — object with booleans: `docusaurus`, `vitepress`, `mkdocs`, `storybook`
-- `monorepo_workspaces` — array of workspace glob patterns (empty if not a monorepo)
-- `project_root` — absolute path to the project root
+Extract from project analysis:
+- `doc_writer_model` — model string from agent manifest (never hardcode a model name)
+- `commit_docs` — whether to commit generated files when done (read from `.planning/config.json` if exists)
+- `existing_docs` — find all existing Markdown files with `find docs -name "*.md" 2>/dev/null`
+- `project_type` — detect from: `package.json`, `src/pages/api` or `pages/api`, `bin/` or `cli/`, `LICENSE`, `vercel.json` or `netlify.toml`, `lerna.json` or `pnpm-workspace.yaml`, `test/` or `__tests__/`
+- `doc_tooling` — detect from: `docusaurus.config.js`, `vitepress.config.js`, `mkdocs.yml`, `storybook.js`
+- `project_root` — `$(pwd)`
 
 ## Step 2: Classify project
 
@@ -181,9 +187,9 @@ mkdir -p .planning/tmp
 
 If `commit_docs` is enabled:
 ```bash
-node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" commit \
-  "docs: regenerate and verify project documentation" \
-  --files {doc_paths}
+# Stage generated docs and commit
+git add docs/*.md
+git commit -m "docs: regenerate and verify project documentation"
 ```
 
 ```

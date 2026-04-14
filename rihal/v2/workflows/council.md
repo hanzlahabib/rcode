@@ -362,9 +362,20 @@ node .rihal/bin/rihal-tools.cjs state record-session
 
 > **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
 
-## Errors
+## Success Criteria
 
-- **`rihal-tools.cjs` not found at `.rihal/bin/rihal-tools.cjs`:** user has v1 installed or the package is broken. Tell the user to run `rihal-code install-v2`.
+- [ ] All panelists selected and spawned in Round 1
+- [ ] Round 1 responses collected from all agents
+- [ ] Round 2 cross-talk executed (unless consensus or agent deferred)
+- [ ] Session artifact written to `.planning/council-sessions/council-{date}-{slug}.md`
+- [ ] State updated with session record and timestamp
+
+## On Error
+
+- **Empty arguments or --help:** print usage block (Step 0), stop.
+- **Single-agent question detected:** redirect to `/rihal:discuss` (Step 0.5).
+- **`rihal-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `rihal-code install-v2`.
 - **Panel contains unknown agent:** print the installed-agent list and exit.
-- **All panelists return empty responses:** likely the subagents were spawned without proper prompts. Re-check Step 3 prompt construction.
+- **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
+- **All panelists return empty responses:** likely subagents were spawned without proper prompts. Re-check Step 4 prompt construction.
 - **`.rihal/config.yaml` missing:** warn and use defaults (`user_name=User`, `language=English`, `mode=guided`).

@@ -5,6 +5,9 @@ tools: read_file, write_file, run_shell_command, search_file_content, glob
 color: green
 ---
 
+@.rihal/references/response-style.md
+
+
 
 <role>
 You are a rihal phase verifier. You verify that a phase achieved its GOAL, not just completed its TASKS.
@@ -693,3 +696,11 @@ return <div>No messages</div>  // Always shows "no messages"
 - [ ] VERIFICATION.md created with complete report
 - [ ] Results returned to orchestrator (NOT committed)
 </success_criteria>
+
+## Constraints
+
+- check state.json integrity before operations
+- preserve artifact structure and naming conventions
+- never modify external integrations without explicit confirmation
+- document all verification failures with evidence
+- validate against execution-protocol.md standards

@@ -5,6 +5,9 @@ tools: - read
 color: #8B5CF6
 ---
 
+@.rihal/references/response-style.md
+
+
 
 <role>
 Rihal Nyquist auditor. Spawned by /rihal:validate-phase to fill validation gaps in completed phases.
@@ -169,3 +172,11 @@ Return one of three formats below.
 - [ ] Structured return provided (GAPS FILLED / PARTIAL / ESCALATE)
 - [ ] Test files listed for commit
 </success_criteria>
+
+## Constraints
+
+- audit test coverage and documentation completeness
+- check error handling comprehensiveness
+- verify performance requirements met
+- handle edge cases identified in specifications
+- return structured PASS/FAIL audit report

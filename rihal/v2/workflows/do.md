@@ -1,15 +1,29 @@
 # Workflow: rihal:do
 
 <purpose>
-Route freeform text to the right Rihal command. This is the entry point for users who aren't sure which command to use. The router classifies their intent and suggests the best command from the available workflows.
+Route freeform text to the right Rihal command. This is the entry point for users who aren't sure which command to use. The router classifies their intent and suggests the best command from the available workflows. With --auto flag, directly invokes the classified command if confidence is high.
 </purpose>
 
-## Step 0 — If $ARGUMENTS is non-empty
+## Step 0 — Parse arguments and flags
+
+Extract `$ARGUMENTS` and check for `--auto` flag:
+
+```bash
+# Split ARGUMENTS to isolate --auto flag
+AUTO_MODE=false
+QUESTION="$ARGUMENTS"
+if [[ "$ARGUMENTS" == *"--auto"* ]]; then
+  AUTO_MODE=true
+  QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
+fi
+```
+
+## Step 1 — If $QUESTION is non-empty
 
 Call the classify helper to determine the best command:
 
 ```bash
-CLASSIFY=$(node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS")
+CLASSIFY=$(node .rihal/bin/rihal-tools.cjs classify-question "$QUESTION")
 ```
 
 Parse the JSON for `type` (one of: `discovery`, `market`, `greenfield`, `team`, `release`, `design`, `codebase`).
@@ -22,12 +36,38 @@ Map the question type and keywords to a suggested command:
 - Keywords: "progress", "status", "where am I", "state" → suggest `/rihal:progress`
 - Keywords: "next", "what should I do", "what's next" → suggest `/rihal:next`
 - Keywords: "continue", "resume", "pick up", "where were we" → suggest `/rihal:resume-work`
-- Keywords: "note", "remember", "todo", "capture" → suggest `/rihal:add-todo`
+- Keywords: "note", "remember", "todo", "capture" → suggest `/rihal:note`
 - Keywords: "plan" or "execute" → suggest `/rihal:plan` or `/rihal:execute`
 
 If no clear keyword match, default to `/rihal:discuss` for quick single-agent sync.
 
-Print:
+## Step 2 — Check confidence and --auto mode
+
+Extract from CLASSIFY JSON:
+- `signals` — matched phrases (indicates classifier confidence)
+- If `signals` array has 1+ matches: confidence is **high**
+- If `signals` is empty: confidence is **low**
+
+### If AUTO_MODE is true AND confidence is high (signals matched > 0):
+
+Skip user prompts. Directly invoke the routed command via SlashCommand syntax:
+
+```
+/rihal:{command} {full question text}
+```
+
+Example:
+```bash
+# Input: /rihal:do --auto "affiliate site dubai"
+# Classified as: market-research question
+# Invokes: /rihal:council affiliate site dubai
+```
+
+Return immediately after invoking.
+
+### If AUTO_MODE is false OR confidence is low (signals empty):
+
+Print suggestion:
 
 ```
 💡 Based on your question, I'd use: /rihal:{command} {full argument}
@@ -46,7 +86,7 @@ Then call AskUserQuestion with options:
 6. 📈 Check progress
 7. ⏭️  Jump to next step
 8. ▶ Resume work
-9. 📝 Add todo
+9. 📝 Add note
 10. Pick something different
 ```
 

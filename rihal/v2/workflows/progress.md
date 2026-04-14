@@ -1,3 +1,5 @@
+# Workflow: rihal:progress
+
 <purpose>
 Check current project progress, summarize recent work and what's ahead, then intelligently route to the next action. Provides situational awareness before continuing work.
 
@@ -8,10 +10,9 @@ Note: This is a narrative "where are we and what's next" view. For a dashboard-s
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
-<process>
+## Step 0 — Load progress context
 
-<step name="init_context">
-**Load progress context:**
+**Action:** Initialize progress context and check if project exists.
 
 ```bash
 INIT=$(node .rihal/bin/rihal-tools.cjs init progress)
@@ -28,13 +29,13 @@ No Rihal project structure found.
 Run `/rihal:plan` to start a new project.
 ```
 
-Exit.
+Exit immediately.
 
-If missing STATE.md: suggest creating project structure.
-</step>
+If STATE.md missing: suggest creating project structure first.
 
-<step name="load">
-**Load project state and configuration:**
+## Step 1 — Load project state and configuration
+
+**Action:** Read project files and extract current state.
 
 Check what files exist:
 - `.rihal/STATE.md` — current status, decisions, blockers
@@ -42,12 +43,10 @@ Check what files exist:
 - Project git history — recent work
 
 Extract key data from each source.
-</step>
 
-<step name="recent">
-**Gather recent work context:**
+## Step 2 — Gather recent work context
 
-Check git log for recent commits related to project:
+**Action:** Check git history and uncommitted changes to understand recent activity.
 
 ```bash
 git log --oneline -10 -- .rihal/ 2>/dev/null || true
@@ -59,14 +58,14 @@ Also check for uncommitted changes:
 ```bash
 git status --short 2>/dev/null || true
 ```
-</step>
 
-<step name="position">
-**Parse current position:**
+## Step 3 — Parse current position
+
+**Action:** Extract project state and count pending work.
 
 From STATE.md or PROJECT.md:
 - Project name and current focus
-- What phase/stage are we in
+- What phase/stage we're in
 - What has been completed
 - What's blocked or pending
 
@@ -74,10 +73,10 @@ Count:
 - Pending todos: check if .rihal/todos exists
 - Uncommitted changes: git status
 - Active threads/discussions
-</step>
 
-<step name="report">
-**Generate progress narrative:**
+## Step 4 — Generate progress narrative
+
+**Action:** Format and display progress report.
 
 Present in this format:
 
@@ -112,10 +111,9 @@ Last activity: [date] - [summary]
 [Based on current state: next logical action or phase]
 ```
 
-</step>
+## Step 5 — Suggest next action
 
-<step name="route">
-**Suggest next action based on current state:**
+**Action:** Route to appropriate next action based on state.
 
 Determine logical next step:
 
@@ -142,16 +140,17 @@ Present:
 ---
 ```
 
-</step>
+## Success Criteria
 
-</process>
-
-<success_criteria>
 - [ ] Project context loaded successfully
 - [ ] Recent work summarized
 - [ ] Current position clearly described
 - [ ] Decisions and blockers highlighted
 - [ ] Next action intelligently suggested
 - [ ] User has clear situational awareness
-</success_criteria>
-</process>
+
+## On Error
+
+- **Project not found:** Show "No Rihal project structure found" and suggest `/rihal:plan`
+- **State file missing:** Proceed with default progress view
+- **Git commands fail:** Continue without git history

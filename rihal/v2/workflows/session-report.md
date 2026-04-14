@@ -153,8 +153,18 @@ Then print summary:
 - Estimated tokens
 - Open blockers count
 
-## Errors
+## Success Criteria
 
-- **Missing state.json:** Handled in step 1.
-- **Git not available:** Report gracefully ("Git not available, skipping commit history.").
-- **Write permission denied:** Print error and stop.
+- [ ] `.planning/SESSION-REPORT-{date}.md` written with all sections populated
+- [ ] Report includes artifact counts, token estimates, decisions, blockers, and commits
+- [ ] Confirmation message printed with period and summary
+- [ ] Report is readable markdown with proper formatting
+
+## On Error
+
+- **No state.json found:** print error and stop (Step 1).
+- **state.json has invalid JSON:** print error with path and stop.
+- **No artifacts in .planning/:** report gracefully ("No session artifacts found yet.").
+- **Git not available:** report gracefully ("Git not available, skipping commit history.").
+- **Write permission denied to .planning/:** print error and stop.
+- **Insufficient readable history:** report gracefully and skip that section.

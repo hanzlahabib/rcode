@@ -60,37 +60,6 @@ Usage: `/rihal:map-codebase`
 
 ### Phase Planning
 
-**`/rihal:discuss-phase <number>`**
-Help articulate your vision for a phase before planning.
-
-- Captures how you imagine this phase working
-- Creates CONTEXT.md with your vision, essentials, and boundaries
-- Use when you have ideas about how something should look/feel
-- Optional `--batch` asks 2-5 related questions at a time instead of one-by-one
-
-Usage: `/rihal:discuss-phase 2`
-Usage: `/rihal:discuss-phase 2 --batch`
-Usage: `/rihal:discuss-phase 2 --batch=3`
-
-**`/rihal:research-phase <number>`**
-Comprehensive ecosystem research for niche/complex domains.
-
-- Discovers standard stack, architecture patterns, pitfalls
-- Creates RESEARCH.md with "how experts build this" knowledge
-- Use for 3D, games, audio, shaders, ML, and other specialized domains
-- Goes beyond "which library" to ecosystem knowledge
-
-Usage: `/rihal:research-phase 3`
-
-**`/rihal:list-phase-assumptions <number>`**
-See what the agent is planning to do before it starts.
-
-- Shows the agent's intended approach for a phase
-- Lets you course-correct if the agent misunderstood your vision
-- No files created - conversational output only
-
-Usage: `/rihal:list-phase-assumptions 3`
-
 **`/rihal:plan-phase <number>`**
 Create detailed execution plan for a specific phase.
 
@@ -170,15 +139,6 @@ Usage: `/rihal:fast "add .env to gitignore"`
 
 ### Roadmap Management
 
-**`/rihal:add-phase <description>`**
-Add new phase to end of current milestone.
-
-- Appends to ROADMAP.md
-- Uses next sequential number
-- Updates phase directory structure
-
-Usage: `/rihal:add-phase "Add admin dashboard"`
-
 **`/rihal:insert-phase <after> <description>`**
 Insert urgent work as decimal phase between existing phases.
 
@@ -188,43 +148,6 @@ Insert urgent work as decimal phase between existing phases.
 
 Usage: `/rihal:insert-phase 7 "Fix critical auth bug"`
 Result: Creates Phase 7.1
-
-**`/rihal:remove-phase <number>`**
-Remove a future phase and renumber subsequent phases.
-
-- Deletes phase directory and all references
-- Renumbers all subsequent phases to close the gap
-- Only works on future (unstarted) phases
-- Git commit preserves historical record
-
-Usage: `/rihal:remove-phase 17`
-Result: Phase 17 deleted, phases 18-20 become 17-19
-
-### Milestone Management
-
-**`/rihal:new-milestone <name>`**
-Start a new milestone through unified flow.
-
-- Deep questioning to understand what you're building next
-- Optional domain research (spawns 4 parallel researcher agents)
-- Requirements definition with scoping
-- Roadmap creation with phase breakdown
-- Optional `--reset-phase-numbers` flag restarts numbering at Phase 1 and archives old phase dirs first for safety
-
-Mirrors `/rihal:new-project` flow for brownfield projects (existing PROJECT.md).
-
-Usage: `/rihal:new-milestone "v2.0 Features"`
-Usage: `/rihal:new-milestone --reset-phase-numbers "v2.0 Features"`
-
-**`/rihal:complete-milestone <version>`**
-Archive completed milestone and prepare for next version.
-
-- Creates MILESTONES.md entry with stats
-- Archives full details to milestones/ directory
-- Creates git tag for the release
-- Prepares workspace for next version
-
-Usage: `/rihal:complete-milestone 1.0.0`
 
 ### Progress Tracking
 
@@ -251,15 +174,6 @@ Resume work from previous session with full context restoration.
 
 Usage: `/rihal:resume-work`
 
-**`/rihal:pause-work`**
-Create context handoff when pausing work mid-phase.
-
-- Creates .continue-here file with current state
-- Updates STATE.md session continuity section
-- Captures in-progress work context
-
-Usage: `/rihal:pause-work`
-
 ### Debugging
 
 **`/rihal:debug [issue description]`**
@@ -274,21 +188,6 @@ Systematic debugging with persistent state across context resets.
 Usage: `/rihal:debug "login button doesn't work"`
 Usage: `/rihal:debug` (resume active session)
 
-### Quick Notes
-
-**`/rihal:note <text>`**
-Zero-friction idea capture — one command, instant save, no questions.
-
-- Saves timestamped note to `.planning/notes/` (or `~/.rihal/notes/` globally)
-- Three subcommands: append (default), list, promote
-- Promote converts a note into a structured todo
-- Works without a project (falls back to global scope)
-
-Usage: `/rihal:note refactor the hook system`
-Usage: `/rihal:note list`
-Usage: `/rihal:note promote 3`
-Usage: `/rihal:note --global cross-project idea`
-
 ### Todo Management
 
 **`/rihal:add-todo [description]`**
@@ -302,132 +201,6 @@ Capture idea or task as todo from current conversation.
 
 Usage: `/rihal:add-todo` (infers from conversation)
 Usage: `/rihal:add-todo Add auth token refresh`
-
-**`/rihal:check-todos [area]`**
-List pending todos and select one to work on.
-
-- Lists all pending todos with title, area, age
-- Optional area filter (e.g., `/rihal:check-todos api`)
-- Loads full context for selected todo
-- Routes to appropriate action (work now, add to phase, brainstorm)
-- Moves todo to done/ when work begins
-
-Usage: `/rihal:check-todos`
-Usage: `/rihal:check-todos api`
-
-### User Acceptance Testing
-
-**`/rihal:verify-work [phase]`**
-Validate built features through conversational UAT.
-
-- Extracts testable deliverables from SUMMARY.md files
-- Presents tests one at a time (yes/no responses)
-- Automatically diagnoses failures and creates fix plans
-- Ready for re-execution if issues found
-
-Usage: `/rihal:verify-work 3`
-
-### Ship Work
-
-**`/rihal:ship [phase]`**
-Create a PR from completed phase work with an auto-generated body.
-
-- Pushes branch to remote
-- Creates PR with summary from SUMMARY.md, VERIFICATION.md, REQUIREMENTS.md
-- Optionally requests code review
-- Updates STATE.md with shipping status
-
-Prerequisites: Phase verified, `gh` CLI installed and authenticated.
-
-Usage: `/rihal:ship 4` or `/rihal:ship 4 --draft`
-
----
-
-**`/rihal:review --phase N [--gemini] [--claude] [--codex] [--all]`**
-Cross-AI peer review — invoke external AI CLIs to independently review phase plans.
-
-- Detects available CLIs (gemini, claude, codex)
-- Each CLI reviews plans independently with the same structured prompt
-- Produces REVIEWS.md with per-reviewer feedback and consensus summary
-- Feed reviews back into planning: `/rihal:plan-phase N --reviews`
-
-Usage: `/rihal:review --phase 3 --all`
-
----
-
-**`/rihal:pr-branch [target]`**
-Create a clean branch for pull requests by filtering out .planning/ commits.
-
-- Classifies commits: code-only (include), planning-only (exclude), mixed (include sans .planning/)
-- Cherry-picks code commits onto a clean branch
-- Reviewers see only code changes, no Rihal artifacts
-
-Usage: `/rihal:pr-branch` or `/rihal:pr-branch main`
-
----
-
-**`/rihal:plant-seed [idea]`**
-Capture a forward-looking idea with trigger conditions for automatic surfacing.
-
-- Seeds preserve WHY, WHEN to surface, and breadcrumbs to related code
-- Auto-surfaces during `/rihal:new-milestone` when trigger conditions match
-- Better than deferred items — triggers are checked, not forgotten
-
-Usage: `/rihal:plant-seed "add real-time notifications when we build the events system"`
-
----
-
-**`/rihal:audit-uat`**
-Cross-phase audit of all outstanding UAT and verification items.
-- Scans every phase for pending, skipped, blocked, and human_needed items
-- Cross-references against codebase to detect stale documentation
-- Produces prioritized human test plan grouped by testability
-- Use before starting a new milestone to clear verification debt
-
-Usage: `/rihal:audit-uat`
-
-### Milestone Auditing
-
-**`/rihal:audit-milestone [version]`**
-Audit milestone completion against original intent.
-
-- Reads all phase VERIFICATION.md files
-- Checks requirements coverage
-- Spawns integration checker for cross-phase wiring
-- Creates MILESTONE-AUDIT.md with gaps and tech debt
-
-Usage: `/rihal:audit-milestone`
-
-**`/rihal:plan-milestone-gaps`**
-Create phases to close gaps identified by audit.
-
-- Reads MILESTONE-AUDIT.md and groups gaps into phases
-- Prioritizes by requirement priority (must/should/nice)
-- Adds gap closure phases to ROADMAP.md
-- Ready for `/rihal:plan-phase` on new phases
-
-Usage: `/rihal:plan-milestone-gaps`
-
-### Configuration
-
-**`/rihal:settings`**
-Configure workflow toggles and model profile interactively.
-
-- Toggle researcher, plan checker, verifier agents
-- Select model profile (quality/balanced/budget/inherit)
-- Updates `.planning/config.json`
-
-Usage: `/rihal:settings`
-
-**`/rihal:set-profile <profile>`**
-Quick switch model profile for Rihal agents.
-
-- `quality` — Opus everywhere except verification
-- `balanced` — Opus for planning, Sonnet for execution (default)
-- `budget` — Sonnet for writing, Haiku for research/verification
-- `inherit` — Use current session model for all agents (OpenCode `/model`)
-
-Usage: `/rihal:set-profile budget`
 
 ### Utility Commands
 
@@ -454,14 +227,6 @@ Update Rihal to latest version with changelog preview.
 - Better than raw `npx -y rihal-code`
 
 Usage: `/rihal:update`
-
-**`/rihal:join-discord`**
-Join the Rihal Discord community.
-
-- Get help, share what you're building, stay updated
-- Connect with other Rihal users
-
-Usage: `/rihal:join-discord`
 
 ## Files & Structure
 
@@ -603,4 +368,33 @@ Example config:
 - Read `.planning/STATE.md` for current context
 - Check `.planning/ROADMAP.md` for phase status
 - Run `/rihal:progress` to check where you're up to
+
+## Roadmap / Planned
+
+The following commands are planned for future releases:
+
+- `/rihal:plan-phase` — Create detailed phase plan
+- `/rihal:execute-phase` — Execute all plans in a phase
+- `/rihal:plan-milestone-gaps` — Create phases to close audit gaps
+- `/rihal:add-phase` — Add new phase to end of milestone
+- `/rihal:remove-phase` — Remove a future phase and renumber
+- `/rihal:new-milestone` — Start a new milestone cycle
+- `/rihal:complete-milestone` — Archive completed milestone
+- `/rihal:audit-milestone` — Audit milestone completion
+- `/rihal:research-phase` — Comprehensive ecosystem research
+- `/rihal:discuss-phase` — Gather phase context
+- `/rihal:plant-seed` — Capture forward-looking idea
+- `/rihal:note` — Zero-friction idea capture
+- `/rihal:ship` — Create PR from completed phase
+- `/rihal:verify-work` — Validate built features through UAT
+- `/rihal:pause-work` — Create context handoff
+- `/rihal:pr-branch` — Create clean PR branch
+- `/rihal:review` — Cross-AI peer review
+- `/rihal:check-todos` — List and work on todos
+- `/rihal:cleanup` — Archive completed phase directories
+- `/rihal:fast` — Execute trivial task inline
+- `/rihal:audit-uat` — Audit all outstanding UAT items
+- `/rihal:list-phase-assumptions` — See agent's intended approach
+- `/rihal:settings` — Configure workflow toggles
+- `/rihal:join-discord` — Join Rihal Discord community
 </reference>

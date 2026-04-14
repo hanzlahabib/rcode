@@ -294,6 +294,70 @@ If "Keep exploring" — ask what they want to add, or identify gaps and probe na
 
 Loop until "Create PROJECT.md" selected.
 
+## 3.5. Detect Project Type
+
+**If auto mode:** Skip — project type will be inferred from document in Step 4.
+
+**Goal:** Classify the project into one of 9 types (api-backend, mobile-app, saas-b2b, cli-tool, web-app, desktop-app, iot, dev-tool, other). This shapes discovery questions and discovery section requirements.
+
+**Load project type signals:**
+
+```bash
+PROJECT_TYPES=$(cat .rihal/references/project-types.yaml)
+```
+
+**Classify by signals:**
+
+Scan the user's responses from Step 3 (questioning) for keywords from the `signals` list in project-types.yaml. Build a score per type:
+
+- Each signal match adds 1 point to that type's score
+- Pick the type with the highest score
+- If tie or score < 2, ask the user to clarify
+
+**If score is clear (>2 points for one type):**
+
+Print the detected type with an offer to confirm:
+
+```
+📋 Detected project type: {display_name} (based on your description mentioning {signal1}, {signal2}, {signal3})
+
+Proceed with this type? [Y/n]
+```
+
+If "n": Ask the user to pick from the list:
+
+```
+Which project type best fits?
+- API / Backend Service
+- Mobile Application
+- SaaS / B2B Platform
+- Command-Line Interface / Tool
+- Web Application / SPA
+- Desktop Application
+- IoT / Embedded Device
+- Developer Tool / Library / SDK
+- Other (generic discovery)
+```
+
+**Store the detected type:**
+
+```bash
+PROJECT_TYPE=$(echo "$PROJECT_TYPES" | yq ".${selected_type}" -o json)
+REQUIRED_SECTIONS="$(echo "$PROJECT_TYPE" | jq -r '.required_sections[]')"
+SKIP_SECTIONS="$(echo "$PROJECT_TYPE" | jq -r '.skip_sections[]')"
+DISCOVERY_QUESTIONS="$(echo "$PROJECT_TYPE" | jq -r '.discovery_questions[]')"
+```
+
+**Adapt discovery for this project type:**
+
+When moving to Step 5 (Workflow Preferences), incorporate type-specific discovery questions into questionnaire:
+
+- Add all questions from `DISCOVERY_QUESTIONS` to the discovery questionnaire
+- When showing requirements table (Step 5.5+), show REQUIRED_SECTIONS as must-haves
+- When offering optional sections, exclude SKIP_SECTIONS
+
+This allows discovery to be tailored per project type while maintaining a consistent flow.
+
 ## 4. Write PROJECT.md
 
 **If auto mode:** Synthesize from provided document. No "Ready?" gate was shown — proceed directly to commit.
