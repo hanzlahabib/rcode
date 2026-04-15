@@ -1,39 +1,36 @@
-# V2 Preview
+# V2 Preview — Historical Note
 
-`rihal/v2/` is the next-generation Rihal Code methodology — currently in active development and **not yet the default path**.
+> **Status as of v1.0-beta:** v1 and v2 have been merged. This document is preserved for historical context only.
 
-## Status
+## What happened
 
-- 36 agents, 67 workflows, 69 commands (much larger than v1)
-- Not wired into the CLI — `npx rihal-code` commands still route to v1
-- Latest commits on the `v2-prototype` branch
+Rihal Code originally had two parallel systems:
 
-## Should you use it?
+- **v1** — Phrase-activated skills (e.g. "create a PRD" → rihal-create-prd). Conversational AI helpers.
+- **v2** — Slash-command methodology (`/rihal:council`, `/rihal:plan`, `/rihal:execute`). Structured plan-execute-verify harness with council + karpathy-audit.
 
-- **Using Rihal Code to ship a real project?** → No. Stick with v1 (see [`TIERS.md`](./TIERS.md)).
-- **Exploring / contributing?** → Open `rihal/v2/` and browse. Expect rapid change.
+They lived side-by-side, with separate installers (`cli/init.js` vs `cli/install-v2.js`) and duplicate concepts (agents, workflows, team.yaml in both trees).
 
-## What v2 changes
+## v1.0-beta merge
 
-Rough direction (subject to change):
-- File-shipping install with more multi-IDE support
-- Parallel subagents and cross-talk
-- Question classification for smarter routing
-- Hierarchical numeric IDs for phases/plans/tasks/milestones
-- Lazy-loaded agent rules (smaller context per invocation)
+In v1.0-beta we unified both into a single landscape under `rihal/`:
 
-## How to find current state
+- `rihal/agents/` — 36 agents (from v2, replaces v1's 14)
+- `rihal/commands/` — 70 slash commands (from v2)
+- `rihal/workflows/` — 68 workflows (from v2)
+- `rihal/skills/` — 22 action skills + 17 agent skills (preserved from v1)
+- `rihal/references/`, `rihal/bin/`, `rihal/modules/`, `rihal/team.yaml` — v2 infrastructure
 
-```bash
-git log --oneline -- rihal/v2 | head -20
-```
+One install command (`npx rihal-code install`) ships everything.
 
-The top of that log reflects the most recent v2 work.
+## Why keep this note?
 
-## Migration plan
+Until v1.0 ships, downstream users and contributors may still have v2-prototype branches, v2-style install instructions, or references to `rihal/v2/` in cloned repos. This document explains where that came from.
 
-Not yet finalized. Until v2 is wired into the CLI and documented end-to-end here, treat it as preview-only.
+## Rollback / Reference
+
+If you need to see the pre-merge state, the backup tag `backup/pre-v1v2-merge` exists locally on the maintainer's machine. No v2 branch exists on origin after the unification.
 
 ---
 
-**TL;DR:** Ignore `rihal/v2/` unless you're actively prototyping the next version. Everything a real user needs today lives in v1 — see [`TIERS.md`](./TIERS.md).
+For the current canonical structure, see [`TIERS.md`](./TIERS.md).

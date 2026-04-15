@@ -19,7 +19,7 @@ Rihal Code has a lot in it. To keep things approachable, everything is organized
 
 **Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
 
-> v2 is in active development. See [`docs/V2-PREVIEW.md`](docs/V2-PREVIEW.md). The sections below describe the broader v2 direction — for the current path, use the tier links above.
+> **v1.0-beta:** v1 and v2 have been unified into a single methodology. One `install` command, one agent roster, one set of slash commands + phrase-activated skills. See release notes in `CHANGELOG.md`.
 
 ---
 
@@ -47,24 +47,16 @@ It's not a chatbot. It's a methodology.
 In any project directory:
 
 ```bash
-git clone --branch v2-prototype --depth 1 https://github.com/hanzlahabib/rihal-code.git /tmp/rihal-src && \
-node /tmp/rihal-src/cli/install-v2.js . --yes --user "$(whoami)" --project "$(basename $(pwd))"
+npx @hanzlahabib/rihal-code install
 ```
 
-That's it. No npm dependency. No global install. Pure file shipping:
+That's it. One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
-- `.rihal/` — config, workflows, references, bin, state.json (238 files total)
-- `.claude/agents/` — 35+ first-class subagents
-- `.claude/commands/rihal/` — 69 slash commands
+- `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
+- `.claude/agents/` — 36 first-class subagents
+- `.claude/commands/rihal/` — 70 slash commands
+- `.claude/skills/` — 39 phrase-activated skills (scaffold-project, create-prd, retrospective, etc.)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
-
-### Directory layout
-
-**System directories (do not edit):**
-- `.rihal/` — config.yaml, state.json, bin/, workflows/, references/ (Rihal infrastructure)
-
-**Your artifacts (created automatically):**
-- `.planning/` — council-sessions/, plans/, chains/, summaries/ (all outputs from Rihal commands)
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
 
@@ -74,27 +66,22 @@ Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears
 /rihal:init
 ```
 
-Detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, writes `.rihal/RIHLA.md` as your journey baseline, and routes you to the right first action.
+Detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, and routes you to the right first action.
 
 ### Install a specific module
 
 ```bash
-# Council agents + quick-sync only (lightweight)
-node /tmp/rihal-src/cli/install-v2.js . --yes --module core
-
-# Add planning + execution
-node /tmp/rihal-src/cli/install-v2.js . --yes --module execution --force
-
-# Add research + codebase discovery
-node /tmp/rihal-src/cli/install-v2.js . --yes --module discovery --force
+npx @hanzlahabib/rihal-code install --module core         # council + quick-sync only
+npx @hanzlahabib/rihal-code install --module execution --force
+npx @hanzlahabib/rihal-code install --module discovery --force
 ```
 
 ### Multi-IDE support
 
 ```bash
-node /tmp/rihal-src/cli/install-v2.js . --ide claude    # default
-node /tmp/rihal-src/cli/install-v2.js . --ide cursor
-node /tmp/rihal-src/cli/install-v2.js . --ide gemini
+npx @hanzlahabib/rihal-code install --ide claude    # default
+npx @hanzlahabib/rihal-code install --ide cursor
+npx @hanzlahabib/rihal-code install --ide gemini
 ```
 
 ---

@@ -4,7 +4,56 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
-## v2-prototype (in progress)
+## v1.0.0-beta.0 (2026-04-15)
+
+First beta release. v1 and v2 methodologies unified into a single landscape.
+
+### Breaking
+
+- **`rihal/v2/` directory removed.** All contents promoted to `rihal/` root. Any external scripts referencing `rihal/v2/...` paths must update to `rihal/...`.
+- **`cli/install-v2.js` renamed to `cli/install.js`.** Old script path invalid.
+- **`npx rihal-code install` is now the single entry point.** Routes through the unified installer (was previously routing to v1's `cli/init.js`).
+- **Multi-IDE support reduced to Claude / Cursor / Gemini.** Dropped Windsurf, Antigravity, Codex direct install paths (AGENTS.md still applies).
+
+### Added
+
+- **Unified installer** — installs v2 agents/commands/workflows AND v1 phrase-activated skills in one command. 70 slash commands + 36 agents + 39 skills.
+- **`/rihal:dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
+- **`rihal-scaffold-project`** skill — bootstraps a new Rihalian project from `github.com/rihal-om/template`. Fresh clone, no cache, safety checks on non-empty dirs.
+- **Tier-based docs** — `docs/TIERS.md`, `docs/STANDARDS.md`. Skills organized into Starter / Advanced / Ultra Advanced / Standards.
+- **`npx rihal-code tiers`** CLI command — prints the tier map.
+- **Golden Path** — 7-step Starter tier (scaffold → PRD → story → sprint → dev → review → status) for first-time users.
+- **`.planning/PROJECT.md` + `ROADMAP.md` + `STATE.md`** — dogfooded tracking artifacts for rihal-code itself.
+
+### Changed
+
+- **Install output** now reports `Skills: N phrase-activated` in addition to files/commands/agents.
+- **`README.md`** — "Start Here" tier navigation block at the top. Install section collapsed to one command.
+- **CLI help** — commands grouped into PROJECT / TEAM / META (was flat list of 17).
+- **Postinstall** — shows 7-step Golden Path instead of generic command list.
+- **`rihal/team.yaml`** — v2 schema (agents + utility_agents + routing). v1 schema removed.
+
+### Removed
+
+- `rihal/agents/*.agent.md` — 14 v1 persona agents (superseded by v2's 36).
+- `rihal/workflows/` (v1 — 13 files). Replaced by v2's 68 workflows.
+- `rihal/v2/` directory entirely (contents promoted).
+- All `BMAD` / `GSD` references from commit history (rewritten in 95 commits).
+
+### Fixed
+
+- `.rihal/state.json` was previously committed with the literal string `bad json`. Now gitignored and regenerated on install.
+- `rihal/v2/` hardcoded paths in 3 test files, CLI, references, workflows — all updated.
+
+### Internal
+
+- Backup tag `backup/pre-v1v2-merge` kept locally (not pushed) for rollback.
+- `pnpm test`: 95/95 passing after merge.
+- Dashboard server boots cleanly (view-only, pure Node stdlib).
+
+---
+
+## v2-prototype (pre-merge, archived)
 
 v2-prototype is the current active branch. Stable releases will be tagged on main.
 

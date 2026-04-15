@@ -20,8 +20,8 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
 
 const COMMANDS = {
-  install: require('./init'),  // primary command (BMAD-style)
-  init: require('./init'),     // backward-compat alias
+  install: require('./install'), // primary unified installer (v2 base + v1 skills)
+  init: require('./install'),    // backward-compat alias
   update: require('./update'),
   uninstall: require('./uninstall'),
   remove: require('./uninstall'),  // alias

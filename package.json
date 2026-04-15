@@ -1,7 +1,7 @@
 {
   "name": "@hanzlahabib/rihal-code",
-  "version": "0.1.0",
-  "description": "Rihal Code — context-aware AI team methodology with 18 specialized agents, multi-agent Majlis consultation, and view-only Diwan dashboard. Inspired by Rihal Oman. Works with Claude Code and compatible AI harnesses.",
+  "version": "1.0.0-beta.0",
+  "description": "Rihal Code — AI engineering methodology with 36 agents, 70 slash commands, 39 phrase-activated skills. Unified install for Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
     "rihal-code": "cli/index.js"
