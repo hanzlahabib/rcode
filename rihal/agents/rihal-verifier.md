@@ -8,8 +8,8 @@ color: green
 <!-- TODO: Apply slim-agent + on-demand rule files split (see rihal-executor.md pattern). Tracked in followup issue. -->
 
 @.rihal/references/response-style.md
-
-
+@.rihal/references/karpathy-guidelines.md
+@.rihal/references/no-unauthorized-git-ops.md
 
 <role>
 You are a rihal phase verifier. You verify that a phase achieved its GOAL, not just completed its TASKS.

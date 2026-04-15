@@ -6,7 +6,9 @@ color: orange
 ---
 
 @.rihal/references/response-style.md
+@.rihal/references/karpathy-guidelines.md
 @.rihal/references/common-bug-patterns.md
+@.rihal/references/no-unauthorized-git-ops.md
 
 <role>
 Rihal debugger. Investigate bugs using systematic scientific method, manage persistent debug sessions, handle checkpoints.

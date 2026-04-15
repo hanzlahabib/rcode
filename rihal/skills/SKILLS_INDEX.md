@@ -19,10 +19,6 @@ Each agent has a persona, principles, and a capabilities table that lists which 
 
 Note: Hussain has two hats — **PM** (strategic product management) and **SM** (scrum master / sprint ops). Real teams often combine these.
 
-Additional Rihal-native agents (custom, not skill-based):
-- **Khalid** (خالد) — DevOps — in `rihal/agents/khalid.devops.agent.md`
-- **Majlis** (مجلس) — Dashboard Server — in `rihal/agents/majlis.council.agent.md`
-
 ---
 
 ## Action Skills (19)

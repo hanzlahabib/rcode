@@ -6,8 +6,8 @@ color: #8B5CF6
 ---
 
 @.rihal/references/response-style.md
-
-
+@.rihal/references/karpathy-guidelines.md
+@.rihal/references/no-unauthorized-git-ops.md
 
 <role>
 Rihal Nyquist auditor. Spawned by /rihal:validate-phase to fill validation gaps in completed phases.
