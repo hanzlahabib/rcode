@@ -10,11 +10,11 @@
  * suggestions, and atomic writes happen in one place.
  *
  * Why JSON (not YAML): zero deps, already used for state.json and
- * model-profiles.json, safer for programmatic updates, matches GSD.
+ * model-profiles.json, safer for programmatic updates, matches the section-scoped pattern.
  *
  * Why dot notation keys: lets us namespace future sections (e.g.
  * "workflow.research", "git.branching_strategy") without restructuring
- * the whole file. Same pattern GSD uses.
+ * the whole file. Same section-scoped pattern.
  */
 
 const fs = require('fs');

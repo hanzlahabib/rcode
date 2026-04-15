@@ -3,7 +3,7 @@
  *
  * Compared to the v1 `cli/init.js` (2918 lines of inline string templates),
  * this installer copies real files from the package's `rihal/` directory
- * into a target project. The same pattern used by BMAD-method v6.3.
+ * into a target project. The same file-shipping pattern (no npm deps).
  *
  * Target layout in the user's project:
  *

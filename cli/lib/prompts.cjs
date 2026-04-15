@@ -3,7 +3,7 @@
  *
  * Why this exists:
  *   Hand-rolled readline.question() crashes or silently aborts when a user
- *   types an unexpected value (e.g. "a" instead of "1"). bmad-method uses
+ *   types an unexpected value (e.g. "a" instead of "1"). (prior tooling used)
  *   @clack/prompts; we stay zero-dep by implementing a small, well-tested
  *   helper with validation loops, friendly errors, and clean SIGINT/EOF
  *   handling.

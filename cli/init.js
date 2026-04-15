@@ -123,7 +123,7 @@ function copyDirRecursive(source, dest) {
  * Snapshot the package's `rihal/` core (digests, templates, workflows, agents,
  * tasks, team.yaml, config.yaml) into `.rihal/lib/` inside the project.
  *
- * Why: bmad-style "everything in the project". After this snapshot the project
+ * Why: "everything in the project". After this snapshot the project
  * is fully self-contained — agent digests, templates, workflows, and team
  * config travel with the repo and survive even if the global rihal-code
  * package or its source checkout is removed. The `rihal-code digest <agent>`
@@ -2339,7 +2339,7 @@ Show all available Rihal Code slash commands, agent skills, and workflows.
 - \`/rihal:dashboard\` — start the Diwan view-only dashboard
 - \`/rihal:help\` — this message
 
-**Milestones and state** (BMAD-style — Claude reads/writes \`.rihal/**\` files directly via slash commands):
+**Milestones and state** (file-based — Claude reads/writes \`.rihal/**\` files directly via slash commands):
 - Milestones live at \`.rihal/milestones/*.md\` with frontmatter \`status:\` — use \`/rihal:kickoff\` or edit directly
 - Sprints live at \`.rihal/phases/{phase}/sprints/{id}/state.json\` — use \`/rihal:progress\` or \`/rihal:next\`
 - Bugs via \`/rihal:bug\` / \`/rihal:bugs\` / \`/rihal:bug-resolve\`
