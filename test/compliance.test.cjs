@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const RIHAL_DIR = path.join(PROJECT_ROOT, 'rihal/v2');
+const RIHAL_DIR = path.join(PROJECT_ROOT, 'rihal');
 const COMMANDS_DIR = path.join(RIHAL_DIR, 'commands');
 const WORKFLOWS_DIR = path.join(RIHAL_DIR, 'workflows');
 const AGENTS_DIR = path.join(RIHAL_DIR, 'agents');
@@ -164,7 +164,7 @@ test('every command file @-includes its corresponding workflow', () => {
  * Test 5: rihal-tools.cjs has matching subcommand handlers
  */
 test('rihal-tools.cjs has implemented subcommands', () => {
-  const toolFile = path.join(PROJECT_ROOT, 'rihal/v2/bin/rihal-tools.cjs');
+  const toolFile = path.join(PROJECT_ROOT, 'rihal/bin/rihal-tools.cjs');
   assert.ok(fs.existsSync(toolFile), 'rihal-tools.cjs exists');
 
   const content = fs.readFileSync(toolFile, 'utf8');

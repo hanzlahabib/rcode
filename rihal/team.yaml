@@ -1,261 +1,149 @@
-# Rihal Code — Team Roster
-#
-# Real Rihal team members are marked `real: true`. Placeholders are
-# marked with `real: false` and a note — replace with your actual
-# colleagues.
-#
-# Author Hanzla Habib uses this module as a personal assistant for his
-# Rihal work, so the agent names reflect (or approximate) real Rihal
-# colleagues where known.
-#
-# Agents are organized into 4 tiers (Starter / Advanced / Ultra Advanced /
-# Standards). See docs/TIERS.md for how each agent maps to a tier.
+# Rihal v2 Agent Roster
+# Structured definition of all installed agents: roles, authority levels, domain keywords for council dispatch
+# Updated: 2026-04-12
 
-team:
-  # ============================================================
-  # Strategy & Leadership
-  # ============================================================
-
-  - id: strategist
-    name: Sadiq Damani
-    arabic_name: صادق
+agents:
+  - id: rihal-sadiq
+    name: Sadiq (صادق)
+    file_path: rihal/agents/rihal-sadiq.md
     role: Director of Strategy
-    real: true
-    source: Rihal company research doc
-    authority: Strategic direction, market prioritization, go/no-go decisions
-    agent_file: agents/sadiq.strategy.agent.md
-    skill_path: skills/agents/sadiq-analyst/
-    focus: business strategy, market fit, initiative prioritization
+    authority_level: strategic
+    domain_keywords:
+      - strategy
+      - priority
+      - kill-criterion
+      - opportunity-cost
+      - should-we-build
+      - timing
+      - market-opportunity
+    description: Pushes for measurable outcomes and kill criteria. Answers "should we build this", "why now", "what NOT to do" questions.
 
-  # ============================================================
-  # Technology Leadership Chain
-  # CTO → Tech & Development Director → Engineering Manager
-  # ============================================================
-
-  - id: cto
-    name: Waleed Al Harthi
-    arabic_name: وليد
+  - id: rihal-waleed
+    name: Waleed (وليد)
+    file_path: rihal/agents/rihal-waleed.md
     role: Chief Technology Officer
-    real: true
-    authority: Final say on tech stack, architecture, security posture, technical direction
-    agent_file: agents/waleed.cto.agent.md
-    skill_path: skills/agents/waleed-architect/
-    focus: tech stack, architecture, scalability, security, team capability
+    authority_level: technical
+    domain_keywords:
+      - architecture
+      - stack
+      - feasibility
+      - security
+      - scale
+      - performance
+      - tech-debt
+      - database
+      - infrastructure
+    description: Answers architecture, stack selection, technical feasibility, security, and scale questions.
 
-  - id: tech_director
-    name: Ahmed Al Hassani
-    arabic_name: أحمد الحسني
-    role: Technology & Development Director
-    real: true
-    authority: Engineering standards, delivery timelines, cross-team coordination, tech debt backlog
-    agent_file: agents/ahmed-hassani.tech-director.agent.md
-    skill_path: skills/agents/ahmed-hassani-director/
-    focus: delivery discipline, DORA metrics, engineering culture, cross-team coordination
-
-  - id: eng_manager
-    name: Nasser
-    arabic_name: ناصر
-    role: Software Engineering Manager
-    real: true
-    authority: Individual performance, 1:1s, hiring, onboarding, squad composition, burnout prevention
-    agent_file: agents/nasser.eng-manager.agent.md
-    skill_path: skills/agents/nasser-eng-manager/
-    focus: 1:1s, hiring pipelines, growth plans, team health
-
-  # ============================================================
-  # Product Management
-  # ============================================================
-
-  - id: product_manager
-    name: Hussain
-    arabic_name: حسين
-    role: Product Manager
-    real: false
-    note: placeholder — replace with your real PM
-    authority: Product scope, requirements, PRD ownership
-    agent_file: agents/hussain.pm.agent.md
-    skill_path: skills/agents/hussain-pm/
-    focus: sprint planning, requirements, stakeholder management
-
-  - id: scrum_master
-    name: Hussain
-    arabic_name: حسين
-    role: Scrum Master
-    real: false
-    note: Same person as PM, wearing SM hat
-    authority: Sprint operations, story flow, retros
-    agent_file: agents/hussain.pm.agent.md
-    skill_path: skills/agents/hussain-sm/
-    focus: sprint ceremonies, story preparation, course correction
-
-  # ============================================================
-  # Design & Branding
-  # ============================================================
-
-  - id: designer
-    name: Layla
-    arabic_name: ليلى
-    role: Lead UX Designer
-    real: false
-    note: placeholder — replace with your real designer
-    authority: UI/UX interaction design, usability, accessibility standards
-    agent_file: agents/layla.design.agent.md
-    skill_path: skills/agents/layla-designer/
-    focus: UX design, interaction design, design system implementation, WCAG compliance
-
-  - id: branding
-    name: Zahra
-    arabic_name: زهرة
-    role: Branding & Creative Director
-    real: false
-    note: placeholder — replace with your real creative director
-    authority: Brand identity, typography systems (Latin + Arabic), color systems, motion language, cross-touchpoint consistency
-    agent_file: agents/zahra.branding.agent.md
-    skill_path: skills/agents/zahra-branding/
-    focus: brand systems, bilingual typography, Omani-modern aesthetic, design tokens
-
-  # ============================================================
-  # Engineering — Full-Stack + Specialists
-  # ============================================================
-
-  - id: engineer_fullstack
-    name: Omar
-    arabic_name: عمر
-    role: Senior Full-Stack Engineer
-    real: false
-    note: placeholder — generalist engineer
-    authority: Implementation, refactoring, code review
-    agent_file: agents/omar.engineer.agent.md
-    skill_path: skills/agents/omar-engineer/
-    focus: full-stack implementation, code review, mentorship
-
-  - id: frontend
-    name: Haitham Al Khamiyasi
-    arabic_name: هيثم
-    role: Senior Frontend Engineer
-    real: true
-    source: provided by Hanzla (author)
-    authority: Frontend implementation, Arabic RTL, pixel-perfect UIs, website clones
-    skill_path: skills/agents/haitham-frontend/
-    focus: Next.js, TypeScript, Tailwind, shadcn/ui, bilingual UIs, clone-website
-    stack:
-      - React 18
-      - Next.js 15 App Router
-      - TypeScript strict
-      - Tailwind v4
-      - shadcn/ui
-      - next-intl
-      - Framer Motion
-    note: |
-      Hanzla Habib (module author) is also a frontend engineer at Rihal.
-      Haitham is a real Rihal frontend colleague.
-
-  - id: backend
-    name: Yousef
-    arabic_name: يوسف
-    role: Senior Backend Engineer
-    real: false
-    note: placeholder — replace with your real backend engineer
-    authority: APIs, database schemas, data pipelines, integrations
-    skill_path: skills/agents/yousef-backend/
-    focus: REST/GraphQL APIs, PostgreSQL, RPA, enterprise integrations
-
-  - id: ml_engineer
-    name: Zayd
-    arabic_name: زيد
-    role: Senior ML Engineer
-    real: false
-    note: placeholder — replace with your real ML engineer
-    authority: ML model selection, training, evaluation, LLM integration
-    skill_path: skills/agents/zayd-ml/
-    focus: NLP (incl. Arabic), RAG, LLM integration, model eval rigor
-
-  # ============================================================
-  # Quality
-  # ============================================================
-
-  - id: quality
-    name: Fatima
-    arabic_name: فاطمة
+  - id: rihal-fatima
+    name: Fatima (فاطمة)
+    file_path: rihal/agents/rihal-fatima.md
     role: QA Lead
-    real: false
-    note: placeholder — replace with your real QA lead
-    authority: Test strategy, release gating, bug triage
-    agent_file: agents/fatima.qa.agent.md
-    skill_path: skills/agents/fatima-qa/
-    focus: testing strategy, quality gates, edge case hunting
+    authority_level: quality
+    domain_keywords:
+      - quality
+      - testing
+      - test-strategy
+      - coverage
+      - release-readiness
+      - regression
+      - bugs
+      - qa-gates
+    description: Answers quality gates, test strategy, coverage, release readiness, and "is this production-ready" questions.
 
-  # ============================================================
-  # Operations
-  # ============================================================
+  - id: rihal-mariam
+    name: Mariam (مريم)
+    file_path: rihal/agents/rihal-mariam.md
+    role: Marketing & Growth Lead
+    authority_level: growth
+    domain_keywords:
+      - market-research
+      - discovery
+      - user-research
+      - gtm
+      - positioning
+      - messaging
+      - growth-strategy
+    description: Market research, user discovery, GTM strategy, positioning, and growth metrics.
 
-  - id: devops
-    name: Khalid
-    arabic_name: خالد
-    role: DevOps Engineer
-    real: false
-    note: placeholder — replace with your real DevOps engineer
-    authority: CI/CD, infrastructure, monitoring, deployment
-    agent_file: agents/khalid.devops.agent.md
-    focus: CI/CD, infra, monitoring, incident response
+  - id: rihal-hussain-pm
+    name: Hussain (حسين)
+    file_path: rihal/agents/rihal-hussain-pm.md
+    role: Product Manager
+    authority_level: product
+    domain_keywords:
+      - scope
+      - requirements
+      - prd
+      - user-stories
+      - acceptance-criteria
+      - backlog
+    description: Scope, requirements, PRD writing, user stories, and backlog curation.
 
-  # ============================================================
-  # Content & Marketing
-  # ============================================================
+  - id: rihal-tech-writer
+    name: Tech Writer
+    file_path: rihal/agents/rihal-tech-writer.md
+    role: Technical Documentation Specialist
+    authority_level: operational
+    domain_keywords:
+      - documentation
+      - readme
+      - api-docs
+      - changelog
+      - migration-guide
+      - inline-comments
+    description: Generates and updates README, API docs, changelogs, migration guides, and inline code comments.
 
-  - id: scribe
-    name: Noor
-    arabic_name: نور
-    role: Technical Writer & Presentation Lead
-    real: false
-    note: placeholder — replace with your real tech writer
-    authority: Documentation, pitch decks, presentations
-    agent_file: agents/noor.scribe.agent.md
-    skill_path: skills/agents/noor-writer/
-    focus: technical writing, pitch decks, audience-aware communication
+utility_agents:
+  - id: rihal-planner
+    name: Rihal Planner
+    role: Phase Planning
+    authority_level: operational
+    domain_keywords:
+      - planning
+      - phase-plan
+      - task-breakdown
+    description: Creates detailed implementation plans from scope and context.
 
-  - id: marketing
-    name: Mariam
-    arabic_name: مريم
-    role: Marketing Lead
-    real: false
-    note: placeholder — replace with your real marketing lead
-    authority: Go-to-market, positioning, client-facing messaging, case studies
-    skill_path: skills/agents/mariam-marketing/
-    focus: B2B enterprise marketing, gov procurement, Arabic-English messaging
+  - id: rihal-executor
+    name: Rihal Executor
+    role: Implementation
+    authority_level: operational
+    domain_keywords:
+      - implementation
+      - execution
+      - code-changes
+    description: Executes planned work, commits changes, creates summaries.
 
-  # ============================================================
-  # Meta Agents — Orchestration and Council
-  # ============================================================
+  - id: rihal-verifier
+    name: Rihal Verifier
+    role: Quality Verification
+    authority_level: quality
+    domain_keywords:
+      - verification
+      - testing
+      - validation
+    description: Verifies phase completion and checks quality gates.
 
-  - id: orchestrator
-    name: Raees
-    arabic_name: رئيس
-    role: Project Orchestration Director
-    real: false
-    note: meta-agent — dispatches work to specialists
-    authority: Work dispatch, phase sequencing, handoff coordination
-    agent_file: agents/raees.orchestrator.agent.md
-    skill_path: skills/agents/raees-orchestrator/
-    focus: routing requests, execution sequences, parallelizing work
-
-  - id: council
-    name: Majlis
-    arabic_name: مجلس
-    role: Consulting Council
-    real: false
-    note: meta-agent — convenes full team for cross-domain discussions
-    authority: Multi-agent consultation, synthesis with dissent
-    agent_file: agents/majlis.council.agent.md
-    skill_path: skills/agents/majlis-council/
-    focus: cross-domain discussions, strategic decisions, crisis response
-
-  - id: registry
-    name: Diwan
-    arabic_name: ديوان
-    role: Dashboard Registry (view-only)
-    real: false
-    note: renamed from old Majlis dashboard — now the ديوان (registry)
-    authority: None (read-only)
-    agent_file: agents/diwan.dashboard.agent.md
-    focus: runs the view-only dashboard server on localhost
+# Council panel routing rules
+# These rules determine which agents are spawned for different question types
+routing:
+  market:
+    - rihal-mariam      # leads
+    - rihal-hussain-pm  # scopes
+    - rihal-sadiq       # kill criteria
+  codebase:
+    - rihal-waleed      # leads
+    - rihal-sadiq       # strategy
+    - rihal-fatima      # quality
+  team:
+    - rihal-sadiq       # leads
+  release:
+    - rihal-fatima      # leads
+    - rihal-waleed      # architecture
+  design:
+    - rihal-waleed      # technical feasibility (layla if installed)
+  greenfield:
+    - rihal-mariam      # market
+    - rihal-hussain-pm  # scope
+    - rihal-waleed      # feasibility

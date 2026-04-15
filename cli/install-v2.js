@@ -2,7 +2,7 @@
  * cli/install-v2.js — Rihal v2 file-shipping installer (prototype)
  *
  * Compared to the v1 `cli/init.js` (2918 lines of inline string templates),
- * this installer copies real files from the package's `rihal/v2/` directory
+ * this installer copies real files from the package's `rihal/` directory
  * into a target project. The same pattern used by BMAD-method v6.3.
  *
  * Target layout in the user's project:
@@ -10,7 +10,7 @@
  *   .rihal/
  *     _config/
  *       manifest.yaml          (version + install date + installed modules)
- *       agent-manifest.csv     (auto-generated from rihal/v2/agents/*.md frontmatter)
+ *       agent-manifest.csv     (auto-generated from rihal/agents/*.md frontmatter)
  *       files-manifest.csv     (SHA256 hashes for update/doctor)
  *     config.yaml              (user_name, project_name, language, mode)
  *     workflows/
@@ -52,7 +52,7 @@ const crypto = require('crypto');
 const os = require('os');
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
-const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal', 'v2');
+const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
 
 /**
  * Parse command-line args into a normalized options object.
@@ -267,7 +267,7 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
 }
 
 /**
- * Parse a module YAML manifest (rihal/v2/modules/{name}.yaml).
+ * Parse a module YAML manifest (rihal/modules/{name}.yaml).
  * Returns { name, requires[], agents[], workflows[], commands[], references[] }.
  */
 function readModuleManifest(moduleName) {
@@ -306,7 +306,7 @@ function readModuleManifest(moduleName) {
 }
 
 /**
- * List available module names by scanning rihal/v2/modules/*.yaml
+ * List available module names by scanning rihal/modules/*.yaml
  */
 function listAvailableModules() {
   const modulesDir = path.join(SOURCE_ROOT, 'modules');

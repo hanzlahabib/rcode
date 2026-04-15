@@ -107,7 +107,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - `/rihal:inbox` — review + process captured notes/todos
 
 #### Documentation & References
-- 35+ reference documents in `rihal/v2/references/`
+- 35+ reference documents in `rihal/references/`
 - council-protocol.md — 5-step majlis + deterministic panel scoring
 - karpathy-guidelines.md — 4 coding principles + validation framework
 - state-schema.md — complete state.json documentation

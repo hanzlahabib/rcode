@@ -40,7 +40,7 @@ AskUserQuestion(
 
 ## Step 2 — Load brainstorming methods
 
-Read `rihal/v2/references/brain-methods.csv` and parse it.
+Read `rihal/references/brain-methods.csv` and parse it.
 
 If `--method` was specified:
 - Validate the method exists in the CSV

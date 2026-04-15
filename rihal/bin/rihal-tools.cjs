@@ -26,7 +26,7 @@ const path = require('path');
 // Resolve project root. This file is installed at {project-root}/.rihal/bin/,
 // so two levels up is the project.
 // PROJECT_ROOT detection: when installed, this binary lives at <project>/.rihal/bin/rihal-tools.cjs
-// When running from source (rihal/v2/bin/), warn but allow — tests need this path.
+// When running from source (rihal/bin/), warn but allow — tests need this path.
 const _maybeRoot = path.resolve(__dirname, '..', '..');
 const _isInstalled = path.basename(path.dirname(__dirname)) === '.rihal';
 if (!_isInstalled && !process.env.RIHAL_DEV_MODE && !process.env.NODE_TEST_CONTEXT) {

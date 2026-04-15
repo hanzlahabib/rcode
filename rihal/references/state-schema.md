@@ -168,7 +168,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
     "date": "2026-04-04T10:00:00Z",
     "question_slug": "auth-strategy",
     "panel": ["rihal-sadiq", "rihal-waleed", "rihal-fatima"],
-    "artifact_path": "rihal/v2/artifacts/council-sessions/auth-strategy-20260404.md"
+    "artifact_path": "rihal/artifacts/council-sessions/auth-strategy-20260404.md"
   }
 ]
 ```
@@ -186,7 +186,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
     "date": "2026-04-05T14:00:00Z",
     "slug": "implement-login-flow",
     "agents": ["rihal-waleed", "rihal-fatima"],
-    "artifacts_dir": "rihal/v2/artifacts/chains/implement-login-flow-20260405"
+    "artifacts_dir": "rihal/artifacts/chains/implement-login-flow-20260405"
   }
 ]
 ```

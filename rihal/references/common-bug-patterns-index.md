@@ -41,4 +41,4 @@ A reference of 15+ patterns that appear repeatedly across codebases. Each patter
 
 ## Full Details
 
-For complete examples with 30+ patterns, code snippets, and debugging strategies, see `/rihal/v2/references/common-bug-patterns.md` (detailed reference).
+For complete examples with 30+ patterns, code snippets, and debugging strategies, see `/rihal/references/common-bug-patterns.md` (detailed reference).

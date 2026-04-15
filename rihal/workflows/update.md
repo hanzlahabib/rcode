@@ -60,8 +60,8 @@ Run the installer helper to read the source package's file list:
 node "$INSTALLER_PATH" --list-files 2>/dev/null || echo "[]"
 ```
 
-If that flag doesn't exist, walk the source package's `rihal/v2/` directory manually:
-- Find all files in `$(npm root -g)/rihal-code/rihal/v2/` (or local `./rihal/v2/`)
+If that flag doesn't exist, walk the source package's `rihal/` directory manually:
+- Find all files in `$(npm root -g)/rihal-code/rihal/` (or local `./rihal/`)
 - Compute SHA256 for each
 - Store as `$SOURCE_HASHES` (map rel → sha256)
 
@@ -89,16 +89,16 @@ Print a human-readable changelog:
 📦 rihal-code Update Available
 
 Added files (3):
-  ✨ rihal/v2/commands/update.md
-  ✨ rihal/v2/workflows/update.md
-  ✨ rihal/v2/commands/stats.md
+  ✨ rihal/commands/update.md
+  ✨ rihal/workflows/update.md
+  ✨ rihal/commands/stats.md
 
 Changed files (2):
-  🔄 rihal/v2/modules/core.yaml
+  🔄 rihal/modules/core.yaml
   🔄 cli/install-v2.js
 
 Removed files (1):
-  ❌ rihal/v2/references/old-style.md
+  ❌ rihal/references/old-style.md
 
 Total: +3 / ~2 / -1
 ```

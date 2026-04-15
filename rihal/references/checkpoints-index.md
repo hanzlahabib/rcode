@@ -50,4 +50,4 @@ When the agent encounters `type="checkpoint:*"`:
 
 ## Full Details
 
-For complete checkpoint examples, auth gate patterns, and decision-making templates, see `/rihal/v2/references/checkpoints.md` (detailed reference with 30+ examples).
+For complete checkpoint examples, auth gate patterns, and decision-making templates, see `/rihal/references/checkpoints.md` (detailed reference with 30+ examples).

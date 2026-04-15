@@ -70,7 +70,7 @@ The project explicitly rejects AI attribution in commit messages. Human authorsh
 Always stage specific files:
 
 ```bash
-git add rihal/v2/agents/rihal-sadiq.md rihal/v2/agents/rihal-waleed.md
+git add rihal/agents/rihal-sadiq.md rihal/agents/rihal-waleed.md
 ```
 
 Not:

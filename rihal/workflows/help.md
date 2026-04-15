@@ -423,5 +423,5 @@ The following commands are planned for future releases:
 
 ## On Error
 
-- If unable to load or render reference: Display fallback message "See rihal/v2/workflows/help.md for full reference"
+- If unable to load or render reference: Display fallback message "See rihal/workflows/help.md for full reference"
 - Handle missing sections gracefully without breaking output
