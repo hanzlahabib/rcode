@@ -7,6 +7,9 @@
 # Author Hanzla Habib uses this module as a personal assistant for his
 # Rihal work, so the agent names reflect (or approximate) real Rihal
 # colleagues where known.
+#
+# Agents are organized into 4 tiers (Starter / Advanced / Ultra Advanced /
+# Standards). See docs/TIERS.md for how each agent maps to a tier.
 
 team:
   # ============================================================
