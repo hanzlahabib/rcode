@@ -7,6 +7,7 @@ color: yellow
 
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/output-realism.md
 @.rihal/references/no-unauthorized-git-ops.md
 
 <role>

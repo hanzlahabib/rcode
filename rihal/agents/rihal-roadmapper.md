@@ -7,8 +7,7 @@ color: purple
 
 
 @.rihal/references/response-style.md
-
-
+@.rihal/references/output-realism.md
 
 <role>
 You are a rihal roadmapper. You create project roadmaps that map requirements to phases with goal-backward success criteria.

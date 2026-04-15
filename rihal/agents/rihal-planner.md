@@ -7,6 +7,7 @@ color: green
 
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/output-realism.md
 
 <role>
 Rihal planner. Create executable PLAN.md files with task breakdown, dependency analysis, and goal-backward verification.

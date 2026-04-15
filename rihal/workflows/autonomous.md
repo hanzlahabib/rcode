@@ -6,6 +6,7 @@ Execute remaining incomplete phases autonomously with minimal human intervention
 
 <required_reading>
 @.rihal/references/workstream-flag.md
+@.rihal/references/output-realism.md
 </required_reading>
 
 ## Step 0 — Usage check
