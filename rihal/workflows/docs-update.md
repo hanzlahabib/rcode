@@ -40,7 +40,7 @@ test -d docs || mkdir -p docs
 # Read agent manifest to get model for doc writers
 AGENT_MANIFEST=".rihal/_config/agent-manifest.csv"
 if [[ -f "$AGENT_MANIFEST" ]]; then
-  DOC_WRITER_MODEL=$(grep -i "rihal-doc-writer" "$AGENT_MANIFEST" | cut -d',' -f3)
+  DOC_WRITER_MODEL=$(grep -i "rihal-tech-writer" "$AGENT_MANIFEST" | cut -d',' -f3)
 else
   DOC_WRITER_MODEL="claude-opus"  # fallback
 fi
