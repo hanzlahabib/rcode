@@ -6,6 +6,23 @@
 
 ---
 
+## 🚦 Start Here
+
+Rihal Code has a lot in it. To keep things approachable, everything is organized into **four tiers**:
+
+| Tier | Who it's for | Start with |
+|------|--------------|-----------|
+| 🌱 **[Starter](docs/TIERS.md#-starter--the-golden-path)** | First-time Rihalian | 7 skills — the Golden Path |
+| 🌿 **[Advanced](docs/TIERS.md#-advanced--real-sprint-team)** | Teams running sprints | PRD variants, architecture, UX, QA |
+| 🌳 **[Ultra Advanced](docs/TIERS.md#-ultra-advanced--power-user-workflows)** | Power users | Multi-agent council, dashboard, clone-website |
+| 📐 **[Standards](docs/STANDARDS.md)** | Contributors | Skill spec, commit rules, PR checklist |
+
+**Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
+
+> v2 is in active development. See [`docs/V2-PREVIEW.md`](docs/V2-PREVIEW.md). The sections below describe the broader v2 direction — for the current path, use the tier links above.
+
+---
+
 ## What is this
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you a real team.**
