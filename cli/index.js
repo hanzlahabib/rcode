@@ -36,6 +36,7 @@ const COMMANDS = {
   context: require('./context'),
   'show-model': require('./show-model'),
   'github-sync': require('./github-sync'),
+  tiers: require('./tiers'),
   version: () => console.log(PACKAGE_JSON.version),
   help: printHelp,
 };
@@ -43,39 +44,42 @@ const COMMANDS = {
 function printHelp() {
   console.log(`
 🕌 Rihal Code v${PACKAGE_JSON.version}
-    Context-aware AI team methodology with 18 specialized agents.
+    Context-aware AI team methodology. See tiers: \`rihal-code tiers\`
 
 Usage:
   npx @hanzlahabib/rihal-code <command>
 
-Commands:
+📦 PROJECT
   install        Install Rihal Code into the current project
                  (sets up .rihal/, .claude/skills/, .claude/commands/rihal/,
                  .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
-  init           Alias for install (backward compatibility)
-  update         Refresh skill files while preserving .rihal/ state
-                 (backs up to .rihal/backups/update-{ts}.tgz first)
+  init           Alias for install
+  update         Refresh skill files (backs up .rihal/ state first)
   uninstall      Remove Rihal Code from the current project
-                 (asks before deleting .rihal/ state — your project data)
   remove         Alias for uninstall
+  config         Get/set project configuration (project_name, user_name, etc.)
+  context        Memory bank freshness (--check | --refresh | --install-hook)
+  github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
+
+👥 TEAM
+  team           List the team roster
+  digest         Print compact digests for all agents
+  show-model     Show which model each agent uses in the current profile
   dashboard      Start the Diwan view-only dashboard (port 7717)
   serve          Alias for dashboard
-  digest         Print compact digests for all agents
-  team           List the team roster
+
+⚙️  META
+  tiers          Show Starter / Advanced / Ultra / Standards tier map
   doctor         Run compliance check on skills
-  set-profile    Change the model profile (quality | balanced | budget | inherit)
+  set-profile    Change model profile (quality | balanced | budget | inherit)
   set-mode       Toggle communication mode (guided | yolo)
-  config         Get/set project configuration (project_name, user_name, etc.)
-  context        Check memory bank freshness (--check | --refresh | --install-hook)
-  show-model     Show which model each agent uses in the current profile
-  github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
   version        Print version
   help           Show this help
 
-Examples:
+Getting started:
   cd my-project
-  npx @hanzlahabib/rihal-code install       # sets up agents + slash commands
-  npx @hanzlahabib/rihal-code dashboard     # view project state in browser
+  npx @hanzlahabib/rihal-code install       # set up agents + slash commands
+  npx @hanzlahabib/rihal-code tiers         # see the Golden Path
 
 Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
