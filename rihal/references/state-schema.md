@@ -88,18 +88,77 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
     "number": 1,
     "name": "Setup & Scaffolding",
     "started": "2026-04-01T10:30:00Z",
-    "completed": "2026-04-03T14:20:00Z"
-  },
-  {
-    "number": 2,
-    "name": "Authentication",
-    "started": "2026-04-04T09:00:00Z",
-    "completed": null
+    "completed": "2026-04-03T14:20:00Z",
+    "sprints": [
+      {
+        "id": "01.1",
+        "number": 1,
+        "goal": "Project structure + CI",
+        "status": "completed",
+        "velocity_target": 13,
+        "velocity_actual": 11,
+        "started_at": "2026-04-01T10:30:00Z",
+        "completed_at": "2026-04-02T18:00:00Z",
+        "stories": [
+          {
+            "id": "01.1.01",
+            "title": "Initialize repo with standard layout",
+            "points": 3,
+            "status": "done",
+            "acceptance": "Repo has src/, tests/, CI config"
+          },
+          {
+            "id": "01.1.02",
+            "title": "Setup CI pipeline",
+            "points": 5,
+            "status": "done",
+            "acceptance": "PR checks run lint + test"
+          }
+        ]
+      }
+    ]
   }
 ]
 ```
-**Written by:** `/rihal:do --execute`, `/rihal:next`  
-**Purpose:** Tracks which phases started and completed, with timestamps.
+**Written by:** `/rihal:do --execute`, `/rihal:next`, sprint/story state tools  
+**Purpose:** Tracks phases with nested sprints and stories.
+
+**Sprint fields:**
+- `id` — `{NN}.{S}` (phase.sprint)
+- `goal` — one-sentence sprint focus
+- `status` — `planned | active | completed`
+- `velocity_target` — estimated story points
+- `velocity_actual` — actual points completed (set on sprint complete)
+- `stories[]` — array of story objects
+
+**Story fields:**
+- `id` — `{NN}.{S}.{TT}` (phase.sprint.story)
+- `title` — story description
+- `points` — story points (0 = unestimated)
+- `status` — `todo | in_progress | review | done`
+- `acceptance` — acceptance criteria (optional)
+
+---
+
+### `velocity_history`
+**Type:** array of objects  
+**Example:**
+```json
+[
+  { "sprint": "01.1", "points": 11, "completed_at": "2026-04-02T18:00:00Z" },
+  { "sprint": "01.2", "points": 13, "completed_at": "2026-04-05T16:00:00Z" }
+]
+```
+**Written by:** `sprint complete` state tool  
+**Purpose:** Rolling velocity log. Used to calculate average velocity for sprint capacity planning.
+
+---
+
+### `current_sprint`
+**Type:** string (nullable)  
+**Example:** `"01.1"`  
+**Written by:** `sprint add`, `sprint start`, `sprint complete`  
+**Purpose:** Currently active sprint. Null when no sprint in progress.
 
 ---
 
@@ -286,15 +345,22 @@ The `state resolve-id <id>` command accepts the following formats:
 |--------|---------|-------------|-------|
 | `M{N}` | `M1`, `M2` | Milestone N | Lowercase or uppercase M |
 | `{NN}` | `01`, `02`, `10` | Phase with number NN | Zero-padded two-digit phase number |
-| `{NN.M}` | `02.1`, `03.2` | Decimal phase (decimal phase) OR plan NN.M | Interpreted based on context—if decimal phase exists, refers to that; otherwise plan ID |
-| `{NN.M.T}` | `01.02.03`, `02.01.05` | Task T in plan NN.M | Three-part hierarchical task ID |
+| `{NN.S}` | `01.1`, `02.3` | Sprint S in Phase NN | Sprint within a phase |
+| `{NN.S.TT}` | `01.1.01`, `02.3.05` | Story TT in Sprint NN.S | Three-part hierarchical story ID |
+| `{NN.M}` | `02.1`, `03.2` | Decimal phase (legacy) OR sprint | Context-dependent — prefer sprint interpretation |
 
 **Examples:**
 ```bash
 node .rihal/bin/rihal-tools.cjs state resolve-id M1          # → Milestone 1
 node .rihal/bin/rihal-tools.cjs state resolve-id 02          # → Phase 02
-node .rihal/bin/rihal-tools.cjs state resolve-id 02.1        # → Phase 02.1 (decimal) or Plan 02.01
-node .rihal/bin/rihal-tools.cjs state resolve-id 02.01.03    # → Task 3 in Plan 02.01
+node .rihal/bin/rihal-tools.cjs state resolve-id 01.1        # → Sprint 1 in Phase 01
+node .rihal/bin/rihal-tools.cjs state resolve-id 01.1.03     # → Story 3 in Sprint 01.1
 ```
 
-Use these IDs in `/rihal:plan show <id>` or `/rihal:execute <id>` commands.
+**Sprint state commands:**
+```bash
+node .rihal/bin/rihal-tools.cjs state sprint add --phase 01 --goal "Setup" --velocity 13
+node .rihal/bin/rihal-tools.cjs state story add --title "Login" --points 5
+node .rihal/bin/rihal-tools.cjs state story move --id 01.1.01 --status done
+node .rihal/bin/rihal-tools.cjs state sprint velocity
+```

@@ -690,7 +690,9 @@ function cmdState(subArgs) {
       updated: now,
       current_phase: null,
       current_plan: 0,
+      current_sprint: null,
       phases: [],
+      velocity_history: [],
       executions: [],
       decisions: [],
       blockers: [],
@@ -756,6 +758,222 @@ function cmdState(subArgs) {
       current.plan_count = state.current_plan;
     }
     return writeState(state);
+  }
+
+  // =====================================================================
+  // Sprint & Story Management
+  // =====================================================================
+
+  // --- sprint add --phase NN --goal "Sprint goal" ---
+  if (sub === 'sprint' && subArgs[1] === 'add') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    if (!flags.phase) throw new Error('sprint add requires --phase <NN>');
+    if (!flags.goal) throw new Error('sprint add requires --goal "Sprint goal"');
+
+    const phaseIdx = state.phases.findIndex(p => String(p.number) === String(flags.phase) || p.name === flags.phase);
+    if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state`);
+    const phase = state.phases[phaseIdx];
+
+    // Derive phase number: prefer explicit .number, fallback to array position
+    const phaseNum = phase.number != null ? phase.number : phaseIdx + 1;
+    if (!phase.sprints) phase.sprints = [];
+    const sprintNum = phase.sprints.length + 1;
+    const padPhase = String(phaseNum).padStart(2, '0');
+    const sprintId = `${padPhase}.${sprintNum}`;
+
+    const sprint = {
+      id: sprintId,
+      number: sprintNum,
+      goal: flags.goal,
+      status: 'planned',
+      velocity_target: flags.velocity ? parseInt(flags.velocity, 10) : null,
+      velocity_actual: null,
+      started_at: null,
+      completed_at: null,
+      stories: [],
+    };
+    phase.sprints.push(sprint);
+    state.current_sprint = sprintId;
+    return writeState(state, { sprint_id: sprintId, phase: padPhase });
+  }
+
+  // --- sprint list [--phase NN] ---
+  if (sub === 'sprint' && subArgs[1] === 'list') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const results = [];
+    for (const phase of (state.phases || [])) {
+      if (flags.phase && String(phase.number) !== String(flags.phase)) continue;
+      for (const s of (phase.sprints || [])) {
+        const done = (s.stories || []).filter(t => t.status === 'done').length;
+        const total = (s.stories || []).length;
+        const points_done = (s.stories || []).filter(t => t.status === 'done').reduce((a, t) => a + (t.points || 0), 0);
+        const points_total = (s.stories || []).reduce((a, t) => a + (t.points || 0), 0);
+        results.push({
+          id: s.id, goal: s.goal, status: s.status,
+          stories: `${done}/${total}`, points: `${points_done}/${points_total}`,
+          velocity_target: s.velocity_target,
+        });
+      }
+    }
+    return results;
+  }
+
+  // --- sprint status [--sprint NN.S] ---
+  if (sub === 'sprint' && subArgs[1] === 'status') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const targetId = flags.sprint || state.current_sprint;
+    if (!targetId) throw new Error('No current sprint. Use --sprint NN.S or run sprint add first.');
+
+    let found = null;
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        if (s.id === targetId) { found = s; break; }
+      }
+      if (found) break;
+    }
+    if (!found) throw new Error(`Sprint "${targetId}" not found`);
+
+    const stories = found.stories || [];
+    const byStatus = { todo: [], in_progress: [], review: [], done: [] };
+    for (const st of stories) (byStatus[st.status] || byStatus.todo).push(st);
+    const points_done = byStatus.done.reduce((a, t) => a + (t.points || 0), 0);
+    const points_total = stories.reduce((a, t) => a + (t.points || 0), 0);
+
+    return {
+      sprint: found.id, goal: found.goal, status: found.status,
+      velocity_target: found.velocity_target, velocity_actual: found.velocity_actual,
+      stories: { todo: byStatus.todo.length, in_progress: byStatus.in_progress.length,
+                 review: byStatus.review.length, done: byStatus.done.length, total: stories.length },
+      points: { done: points_done, total: points_total,
+                remaining: points_total - points_done },
+    };
+  }
+
+  // --- sprint start [--sprint NN.S] ---
+  if (sub === 'sprint' && subArgs[1] === 'start') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const targetId = flags.sprint || state.current_sprint;
+    if (!targetId) throw new Error('No sprint to start. Use --sprint NN.S.');
+
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        if (s.id === targetId) {
+          s.status = 'active';
+          s.started_at = new Date().toISOString();
+          state.current_sprint = targetId;
+          return writeState(state, { started: targetId });
+        }
+      }
+    }
+    throw new Error(`Sprint "${targetId}" not found`);
+  }
+
+  // --- sprint complete [--sprint NN.S] ---
+  if (sub === 'sprint' && subArgs[1] === 'complete') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const targetId = flags.sprint || state.current_sprint;
+    if (!targetId) throw new Error('No sprint to complete. Use --sprint NN.S.');
+
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        if (s.id === targetId) {
+          const points_done = (s.stories || []).filter(t => t.status === 'done').reduce((a, t) => a + (t.points || 0), 0);
+          s.status = 'completed';
+          s.completed_at = new Date().toISOString();
+          s.velocity_actual = points_done;
+          if (!state.velocity_history) state.velocity_history = [];
+          state.velocity_history.push({ sprint: targetId, points: points_done, completed_at: s.completed_at });
+          state.current_sprint = null;
+          return writeState(state, { completed: targetId, velocity: points_done });
+        }
+      }
+    }
+    throw new Error(`Sprint "${targetId}" not found`);
+  }
+
+  // --- sprint velocity ---
+  if (sub === 'sprint' && subArgs[1] === 'velocity') {
+    const state = readState() || defaultState();
+    const history = state.velocity_history || [];
+    const avg = history.length > 0
+      ? Math.round(history.reduce((a, v) => a + v.points, 0) / history.length)
+      : 0;
+    return { history, average_velocity: avg, sprint_count: history.length };
+  }
+
+  // --- story add --sprint NN.S --title "Story title" --points N ---
+  if (sub === 'story' && subArgs[1] === 'add') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const sprintId = flags.sprint || state.current_sprint;
+    if (!sprintId) throw new Error('story add requires --sprint NN.S or an active sprint');
+    if (!flags.title) throw new Error('story add requires --title "Story title"');
+
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        if (s.id === sprintId) {
+          if (!s.stories) s.stories = [];
+          const storyNum = s.stories.length + 1;
+          const storyId = `${sprintId}.${String(storyNum).padStart(2, '0')}`;
+          const story = {
+            id: storyId,
+            title: flags.title,
+            points: flags.points ? parseInt(flags.points, 10) : 0,
+            status: 'todo',
+            acceptance: flags.acceptance || null,
+          };
+          s.stories.push(story);
+          return writeState(state, { story_id: storyId, sprint: sprintId });
+        }
+      }
+    }
+    throw new Error(`Sprint "${sprintId}" not found`);
+  }
+
+  // --- story move --id NN.S.TT --status done ---
+  if (sub === 'story' && subArgs[1] === 'move') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    if (!flags.id) throw new Error('story move requires --id NN.S.TT');
+    if (!flags.status) throw new Error('story move requires --status <todo|in_progress|review|done>');
+    const validStatuses = ['todo', 'in_progress', 'review', 'done'];
+    if (!validStatuses.includes(flags.status)) throw new Error(`Invalid status "${flags.status}". Valid: ${validStatuses.join(', ')}`);
+
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        for (const story of (s.stories || [])) {
+          if (story.id === flags.id) {
+            const prev = story.status;
+            story.status = flags.status;
+            return writeState(state, { story: flags.id, from: prev, to: flags.status });
+          }
+        }
+      }
+    }
+    throw new Error(`Story "${flags.id}" not found`);
+  }
+
+  // --- story list [--sprint NN.S] [--status todo|in_progress|done] ---
+  if (sub === 'story' && subArgs[1] === 'list') {
+    const flags = parseFlags(2);
+    const state = readState() || defaultState();
+    const sprintId = flags.sprint || state.current_sprint;
+    const results = [];
+    for (const phase of (state.phases || [])) {
+      for (const s of (phase.sprints || [])) {
+        if (sprintId && s.id !== sprintId) continue;
+        for (const story of (s.stories || [])) {
+          if (flags.status && story.status !== flags.status) continue;
+          results.push({ ...story, sprint: s.id });
+        }
+      }
+    }
+    return results;
   }
 
   // --- record-execution ---
@@ -2230,6 +2448,19 @@ function main() {
         console.log('  state workstream-status                      → show active workstream');
         console.log('  state workstream-complete --name <name>      → mark workstream done');
         console.log('  state workstream-validate                    → validate workstream schema');
+        console.log('');
+        console.log('Sprint subcommands:');
+        console.log('  state sprint add --phase <NN> --goal "..."   → create sprint under phase');
+        console.log('  state sprint list [--phase <NN>]             → list all sprints');
+        console.log('  state sprint status [--sprint <NN.S>]        → sprint progress + points');
+        console.log('  state sprint start [--sprint <NN.S>]         → mark sprint active');
+        console.log('  state sprint complete [--sprint <NN.S>]      → complete sprint, record velocity');
+        console.log('  state sprint velocity                        → velocity history + average');
+        console.log('');
+        console.log('Story subcommands:');
+        console.log('  state story add --sprint <NN.S> --title "..." [--points N]');
+        console.log('  state story move --id <NN.S.TT> --status <todo|in_progress|review|done>');
+        console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
         const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase'];
