@@ -1,15 +1,17 @@
-# Workflow: rihal:do
-
 <purpose>
-Route freeform text to the right Rihal command. This is the entry point for users who aren't sure which command to use. The router classifies their intent and suggests the best command from the available workflows. With --auto flag, directly invokes the classified command if confidence is high.
+Route freeform text to the right Rihal command. Entry point for users who know what they want but not which command to use. Classifies intent, confirms match, invokes. With --auto, skips confirmation.
 </purpose>
 
-## Step 0 — Parse arguments and flags
+<required_reading>
+Read all files referenced by the invoking prompt's execution_context before starting.
+</required_reading>
 
+<process>
+
+<step name="parse_args">
 Extract `$ARGUMENTS` and check for `--auto` flag:
 
 ```bash
-# Split ARGUMENTS to isolate --auto flag
 AUTO_MODE=false
 QUESTION="$ARGUMENTS"
 if [[ "$ARGUMENTS" == *"--auto"* ]]; then
@@ -17,179 +19,92 @@ if [[ "$ARGUMENTS" == *"--auto"* ]]; then
   QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
 fi
 ```
+</step>
 
-## Step 0.5 — Check installed modules
+<step name="empty_args">
+**If $ARGUMENTS is empty:**
 
-Before routing to execution-only commands, verify which modules are installed:
+Present the main menu via AskUserQuestion:
 
-```bash
-INSTALLED_MODULES=$(node .rihal/bin/rihal-tools.cjs module installed 2>/dev/null || echo '{}')
-HAS_EXECUTION=$(echo "$INSTALLED_MODULES" | jq -r '.installed | map(select(. == "execution")) | length > 0' 2>/dev/null || echo 'false')
+```
+What would you like to do?
+
+1. Quick chat with one expert (/rihal:discuss)
+2. Convene the council (/rihal:council)
+3. Plan a sprint (/rihal:sprint-planning)
+4. Execute a sprint (/rihal:execute)
+5. Check sprint status (/rihal:sprint-status)
+6. Check progress (/rihal:progress)
+7. Auto-advance to next step (/rihal:next)
+8. Debug an issue (/rihal:debug)
+9. Resume paused work (/rihal:resume-work)
+10. Add a note (/rihal:note)
+11. Something else — describe it
 ```
 
-If HAS_EXECUTION is false, note that plan/execute/debug commands require the execution module.
+If user picks 1-10, print the command and invoke it immediately.
+If user picks 11, capture text and proceed to classify step below.
+</step>
 
-## Step 1 — If $QUESTION is non-empty
+<step name="classify">
+**If $QUESTION is non-empty:**
 
-Call the classify helper to determine the best command:
+Classify using rihal-tools:
 
 ```bash
 CLASSIFY=$(node .rihal/bin/rihal-tools.cjs classify-question "$QUESTION")
 ```
 
-Parse the JSON for `type` (one of: `discovery`, `market`, `greenfield`, `team`, `release`, `design`, `codebase`).
+Parse `type` from JSON. Map to command:
 
-Map the question type and keywords to a suggested command:
+| Intent keywords | Command |
+|----------------|---------|
+| "plan", "sprint", "stories", "backlog" | `/rihal:sprint-planning` |
+| "execute", "run", "build", "implement", "dev" | `/rihal:execute` |
+| "status", "sprint status", "board" | `/rihal:sprint-status` |
+| "progress", "where am I", "what's done" | `/rihal:progress` |
+| "next", "what should I do", "what's next", "continue" | `/rihal:next` |
+| "debug", "error", "broken", "bug", "fix" | `/rihal:debug` |
+| "resume", "pick up", "where were we" | `/rihal:resume-work` |
+| "note", "remember", "todo", "capture" | `/rihal:note` |
+| "review", "code review", "check code" | `/rihal:code-review` |
+| "council", "discuss strategy", "should we" | `/rihal:council` |
+| market/discovery/greenfield (from classify) | `/rihal:council` |
+| codebase/team/release (from classify) | `/rihal:discuss` |
 
-- `codebase`, `team`, `release` → suggest `/rihal:discuss`
-- `market`, `discovery`, `greenfield` → suggest `/rihal:council`
-- Keywords: "debug", "error", "broken", "bug", "issue" → if HAS_EXECUTION then suggest `/rihal:debug`, else suggest `/rihal:discuss` + note execution module needed
-- Keywords: "progress", "status", "where am I", "state" → suggest `/rihal:progress`
-- Keywords: "next", "what should I do", "what's next" → suggest `/rihal:next`
-- Keywords: "continue", "resume", "pick up", "where were we" → suggest `/rihal:resume-work`
-- Keywords: "note", "remember", "todo", "capture" → suggest `/rihal:note`
-- Keywords: "plan" or "execute" → if HAS_EXECUTION then suggest `/rihal:plan` or `/rihal:execute`, else print: "Plan/execute requires the execution module. Run: /rihal:install execution to add it." and suggest `/rihal:council` as alternative
+Default (no match): `/rihal:discuss`
+</step>
 
-If no clear keyword match, default to `/rihal:discuss` for quick single-agent sync.
+<step name="execute_or_confirm">
+**If AUTO_MODE is true AND classify returned signals:**
 
-## Step 2 — Check confidence and --auto mode
-
-Extract from CLASSIFY JSON:
-- `signals` — matched phrases (indicates classifier confidence)
-- If `signals` array has 1+ matches: confidence is **high**
-- If `signals` is empty: confidence is **low**
-
-### If AUTO_MODE is true AND confidence is high (signals matched > 0):
-
-Skip user prompts. Directly invoke the routed command via SlashCommand syntax:
-
+Invoke immediately:
 ```
-/rihal:{command} {full question text}
+/rihal:{command} {question}
 ```
 
-Example:
-```bash
-# Input: /rihal:do --auto "affiliate site dubai"
-# Classified as: market-research question
-# Invokes: /rihal:council affiliate site dubai
-```
+**If AUTO_MODE is false:**
 
-Return immediately after invoking.
-
-### If AUTO_MODE is false OR confidence is low (signals empty):
-
-Print suggestion:
+Show suggestion and ask:
 
 ```
-💡 Based on your question, I'd use: /rihal:{command} {full argument}
+Based on your request, I'd use: /rihal:{command} {arguments}
 
-Run that now, or pick an alternative:
+Run that now?
 ```
 
-Then call AskUserQuestion with options:
+Ask via AskUserQuestion with options:
+1. Yes, run it
+2. Use council instead (3-5 agents)
+3. Pick something else
 
-```
-1. 💬 Use that command (rihal:{suggested})
-2. 🏛️ Use council instead (3-5 agents)
-3. 📋 Plan a project
-4. ▶ Execute a plan
-5. 🐛 Debug an issue
-6. 📈 Check progress
-7. ⏭️  Jump to next step
-8. ▶ Resume work
-9. 📝 Add note
-10. Pick something different
-```
+If user confirms, invoke the command immediately.
+</step>
 
-Based on the user's choice, print the full suggested command (no execution).
+</process>
 
-Example output if user picked the suggested command:
-
-```
-👉 Run: /rihal:discuss what stack should I use?
-```
-
-Then return. Do NOT invoke the command — user types it.
-
----
-
-## Step 1 — If $ARGUMENTS is empty
-
-Use AskUserQuestion to present the main menu:
-
-```
-What would you like to do?
-
-1. 💬 Quick chat with one expert (rihal:discuss)
-   Fast single-agent sync for a specific question
-   
-2. 🏛️ Convene the council (rihal:council)
-   3-5 experts answer a strategic question in parallel
-   
-3. 📋 Plan a project (rihal:plan)
-   Turn an idea or council session into executable SPRINT.md files
-   
-4. ▶ Execute a plan (rihal:execute)
-   Run SPRINT.md files with automated commits and checkpoints
-   
-5. 📊 Check status (rihal:status)
-   Project state dashboard — phase, decisions, blockers
-
-6. 🐛 Debug an issue (rihal:debug)
-   Systematically investigate and diagnose problems
-   
-7. 📈 Check progress (rihal:progress)
-   Project progress narrative and next steps
-   
-8. ⏭️  Jump to next step (rihal:next)
-   Automatically advance to the next logical action
-   
-9. ▶ Resume work (rihal:resume-work)
-   Restore context and pick up where you left off
-   
-10. 📝 Add todo (rihal:add-todo)
-    Capture an idea or task for later
-   
-11. Something else — describe it
-    Tell me in plain text what you need
-```
-
-Wait for user selection (options 1–10 or 11).
-
----
-
-## Step 2 — Handle user choice
-
-**If user picked 1–10 or 11 ("Something else"):**
-
-For options 1–10, print the corresponding command with usage example. Do NOT execute. Example:
-
-```
-👉 Run: /rihal:discuss <your-question>
-   Example: /rihal:discuss what stack should I use?
-```
-
-Return.
-
-For option 11, use AskUserQuestion to ask:
-
-```
-Describe what you need in a few words:
-```
-
-Capture the text response and loop back to Step 0 with the user's text as $ARGUMENTS.
-
----
-
-## Success Criteria
-
-- [ ] User input is classified to a Rihal command
+<success_criteria>
+- [ ] User input classified to a Rihal command
 - [ ] Correct command suggested based on intent
-- [ ] User gets either the direct result (--auto mode) or a clear list of options
-- [ ] Next command is executable without errors
-
-## On Error
-
-- **`rihal-tools.cjs` not found:** tell the user to run `rihal-code install-v2`.
-- **AskUserQuestion fails:** print "Could not read your choice. Try specifying the command directly: /rihal:discuss <question>"
-- **Classification timeout:** fall back to suggesting `/rihal:discuss` as default
+- [ ] Command invoked (auto mode) or confirmed then invoked
+</success_criteria>

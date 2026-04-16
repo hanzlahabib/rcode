@@ -1,103 +1,143 @@
-# Workflow: rihal:next
-
 <purpose>
-Detect current project state and automatically advance to the next logical Rihal workflow step. Reads project state to determine: discuss → plan → execute progression.
+Detect current project state and automatically advance to the next logical Rihal workflow step.
+Reads project state to determine: plan → execute → verify → complete progression.
+Zero-friction — detects and invokes, no confirmation needed.
 </purpose>
-
-
-## Step 0 — Usage check
-
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
-
-```
-/rihal:next <argument-here>
-```
-
-**Examples:**
-```
-/rihal:next example 1
-/rihal:next example 2
-```
-
-STOP — do not proceed.
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
-## Step 0 — Detect current project state
+<process>
 
-**Action:** Read project state to determine current position.
+<step name="detect_state">
+Read project state to determine current position:
 
 ```bash
-# Get state snapshot
-[ -f .rihal/STATE.md ] && cat .rihal/STATE.md || echo "No STATE.md"
+STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
+SPRINT_STATUS=$(node .rihal/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo '{}')
+VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
 ```
 
-Also check:
-- `.rihal/PROJECT.md` — project definition
-- `.rihal/SPRINT.md` — if exists, planning stage
-- Recent git commits — work progress
+Also read:
+- `.planning/STATE.md` — current phase, progress
+- `.planning/ROADMAP.md` — milestone structure and phase list
 
-Extract:
-- `project_exists` — is there a .rihal/ directory
-- `current_stage` — what phase is active
-- `has_uncommitted` — any changes not committed
+Extract from state JSON:
+- `current_phase` — which phase is active
+- `current_sprint` — active sprint ID (or null)
+- `phases[]` — all phases with status
+- `velocity_history[]` — sprint velocity data
 
-If no `.rihal/` directory exists:
+If no `.planning/` directory AND no `.rihal/state.json`:
 ```
-No Rihal project detected. Run `/rihal:plan` to get started.
+No Rihal project detected. Run `/rihal:new-project` to get started.
 ```
-Exit immediately.
+Exit.
+</step>
 
-## Step 1 — Apply routing rules
+<step name="safety_gates">
+Run hard-stop checks before routing. Exit on first hit unless `--force` was passed.
 
-**Action:** Determine next action based on project state.
+If `--force` flag was passed, skip all gates.
+Print: `Warning: --force — skipping safety gates`
+Then proceed to `determine_next_action`.
 
-Route decisions:
+**Gate 1: Unresolved checkpoint**
+```bash
+[ -f .planning/.continue-here.md ]
+```
+If found:
+```
+Stop: Unresolved checkpoint
 
-**Route 1 — No project structure yet**
-If `.rihal/` doesn't exist → Next action: `/rihal:plan <topic>`
+`.planning/.continue-here.md` exists — a previous session left
+unfinished work. Read it, resolve, then delete to continue.
+Use `--force` to bypass.
+```
+Exit.
 
-**Route 2 — Project exists but no plan**
-If PROJECT.md exists but no detailed plan → Suggest: `/rihal:discuss <question>` for context OR `/rihal:plan` to create plan
+**Gate 2: Error state**
+Check STATE.md for `status: error` or `status: failed`.
+If found:
+```
+Stop: Project in error state
 
-**Route 3 — Plan exists but not executed**
-If SPRINT.md exists and has action items → Next action: `/rihal:execute`
+Resolve the error before advancing. Run `/rihal:health` to diagnose.
+Use `--force` to bypass.
+```
+Exit.
 
-**Route 4 — Changes made but not committed**
-If git shows uncommitted changes → Suggest: Commit changes first, then continue
+**Gate 3: Unchecked verification**
+Check if current phase has VERIFICATION.md with FAIL items:
+If found:
+```
+Stop: Unchecked verification failures
 
-**Route 5 — Planned work complete**
-If plan is complete → Next action: `/rihal:progress` to assess and determine next phase
+Phase {N} has {count} unresolved failures. Address them first.
+Use `--force` to bypass.
+```
+Exit.
+</step>
 
-## Step 2 — Display determination and advance
+<step name="determine_next_action">
+Apply routing rules based on state:
 
-**Action:** Show current state and next action, then invoke command immediately.
+**Route 1: No phases exist yet**
+ROADMAP.md exists but no phase directories on disk:
+Next: `/rihal:sprint-planning`
 
-Display:
+**Route 2: Phase exists but no sprint**
+Current phase directory exists but has no SPRINT.md:
+Next: `/rihal:sprint-planning --phase {current_phase}`
+
+**Route 3: Sprint exists, stories incomplete**
+SPRINT.md exists and has stories with status != done:
+Next: `/rihal:execute .planning/phases/{phase_dir}/SPRINT.md`
+
+**Route 4: All stories done, sprint not closed**
+All stories are done but sprint status is still "active":
+Next: complete the sprint via `rihal-tools.cjs state sprint complete`, then suggest `/rihal:sprint-planning` for next sprint
+
+**Route 5: Sprint complete, next phase exists**
+Current phase is complete, next phase exists in ROADMAP:
+Next: `/rihal:sprint-planning --phase {next_phase}`
+
+**Route 6: All phases complete**
+All phases in ROADMAP are complete:
+Next: `/rihal:complete-milestone`
+
+**Route 7: Paused**
+State shows paused_at is set:
+Next: `/rihal:resume-work`
+
+**Route 8: No sprint system, fallback**
+State has no sprints[] data — legacy or empty project:
+Next: `/rihal:sprint-planning`
+</step>
+
+<step name="show_and_execute">
+Display the determination:
 
 ```
-## Next Step
+## Rihal Next
 
-**Current:** [Project state in 1 line]
-**Status:** [What's ready/in progress]
+**Current:** Phase {N} — {name} | Sprint {sprint_id}
+**Sprint:** {done}/{total} stories ({points_done}/{points_total} pts)
 
-▶ **Next:** `/rihal:[command] [args]`
-  [One-line explanation of why this is the next step]
+Next: `/rihal:{command} {args}`
+  {One-line explanation}
 ```
 
-Immediately invoke the determined command via SlashCommand. Do not ask for confirmation — the whole point of `/rihal:next` is zero-friction advancement.
+Then immediately invoke the determined command.
+Do not ask for confirmation — `/rihal:next` is zero-friction advancement.
+</step>
 
-## Success Criteria
+</process>
 
+<success_criteria>
 - [ ] Project state correctly detected
 - [ ] Next action correctly determined from routing rules
 - [ ] Command invoked immediately without user confirmation
 - [ ] Clear status shown before invoking
-
-## On Error
-
-- **State file missing:** Treat as Route 1 (no project)
-- **Cannot determine next step:** Default to `/rihal:progress` for context
-- **Git command fails:** Proceed without git state check
+</success_criteria>
