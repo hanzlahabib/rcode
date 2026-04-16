@@ -40,20 +40,29 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 03 — V2 Stabilization
+## Phase 03 — V2 Stabilization ✅
 
-**Goal:** V2 (36 agents, 67 workflows, 69 commands) just shipped to main. Now verify it works end-to-end in a fresh project and wire CLI to v2 where it isn't already.
+**Goal:** Merge v1/v2 into a single unified methodology. One install command, one agent roster, one set of slash commands + phrase-activated skills. Verify end-to-end.
 
-**Status:** Planned
+**Status:** Complete (2026-04-15)
 
-**Plans:**
-- Test `npx rihal-code install` on a fresh dir (dogfood)
-- Verify all 69 slash commands load in Claude Code
-- Identify any CLI commands still pointing to v1 paths
-- Fix broken references if any
-- Update README to describe v2 as the default (not preview)
+**Delivered:**
+- `rihal/v2/` promoted to `rihal/` root — v2 folder eliminated (`8c61e15`)
+- `cli/install-v2.js` → `cli/install.js` — single unified installer (`da2b48e`)
+- Install ships: 70 commands + 34 agents + 39 skills + 71 workflows
+- Ghost v1 agents purged from model-profiles.json (14 → 0 ghosts) + 14 orphan digests deleted (`ab35321`)
+- Missing sprint-planning workflow added (`09c1c55`)
+- 5 bloated agents slim-split: plan-checker, codebase-mapper, phase-researcher, project-researcher, roadmapper (#103-#107)
+- Docs agents consolidated: deleted doc-writer + doc-verifier aliases (#108)
+- `new-project.md` split 1460 → 3 files (780 + 262 + 446) (#102)
+- BMAD/GSD references removed from all commit history (95 commits rewritten) + CLI comments
+- `output-realism.md` reference added — honest batch-and-confirm discipline
+- SKILLS_INDEX.md cleaned (removed 2 bogus v1 agent refs)
+- Version bumped to `1.0.0-beta.0`
+- CHANGELOG.md: full v1.0.0-beta.0 release notes
+- Clean sweep test: zero broken refs, 95/95 tests passing
 
-**Acceptance:** v2 install on fresh dir → 69 commands available → 5 council agents responsive → no errors.
+**Acceptance met:** Fresh install → 70 commands + 34 agents + 39 skills. Smoke test clean. Pushed to origin/main.
 
 ---
 
