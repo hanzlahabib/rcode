@@ -1,9 +1,9 @@
 # Workflow: rihal:sprint-planning
 
 <purpose>
-Plan the next sprint: read epic/story files, compute capacity, prioritize, identify dependencies and risks. Produces a sprint plan document and optional sprint-status.yaml for tracking.
+Plan the next sprint: compute capacity from velocity history, prioritize stories from phase scope, create SPRINT.md, register sprint + stories in state.json.
 
-Prefer the phrase-activated skill `rihal-sprint-planning` (say "plan a sprint") for the full guided ceremony. This slash command is a faster direct entry point.
+Uses rihal-tools.cjs sprint/story state commands for tracking.
 </purpose>
 
 ## Step 0 — Usage check
@@ -11,74 +11,137 @@ Prefer the phrase-activated skill `rihal-sprint-planning` (say "plan a sprint") 
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:sprint-planning [--epics <dir>] [--sprints <count>] [--velocity <days>]
+/rihal:sprint-planning [--phase <NN>] [--velocity <points>] [--goal "Sprint goal"]
 ```
 
 **Examples:**
 ```
 /rihal:sprint-planning
-/rihal:sprint-planning --epics .planning/epics --sprints 2
-/rihal:sprint-planning --velocity 10
+/rihal:sprint-planning --phase 01 --goal "Auth system MVP"
+/rihal:sprint-planning --velocity 13
 ```
 
-## Step 1 — Discover stories
+STOP — do not proceed.
 
-Default epics/stories location: `.planning/stories/` or `.planning/epics/`. Override with `--epics <dir>`.
+## Step 1 — Load context
 
-If no stories found:
+```bash
+STATE=$(node .rihal/bin/rihal-tools.cjs state read)
+VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity)
 ```
-❌ No stories discovered.
-Run /rihal:create-epics-and-stories first, or say "create a story" to use the skill.
+
+Extract:
+- Current phase from state
+- Velocity history + average from velocity output
+- Phase scope from `.planning/phases/{phase}/SCOPE.md` (if exists)
+
+If no phases in state:
+```
+No phases found. Run /rihal:new-project first to create a roadmap.
 ```
 Exit.
 
-## Step 2 — Load context
+## Step 2 — Determine capacity
 
-Read `.rihal/state.json` for current phase/milestone. Read `.rihal/config.yaml` for velocity defaults. Override velocity with `--velocity` flag.
+**If velocity history exists:**
+- Use rolling 3-sprint average as capacity baseline
+- Commit max 80% of average (buffer for interrupts + unknowns)
 
-## Step 3 — Compute plan
+**If no velocity history (first sprint):**
+- Ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
+- Or use `--velocity` flag
 
-For each story:
-- Effort estimate (XS/S/M/L/XL or story points)
-- Dependencies (blockers, sequences)
-- Priority (from PRD alignment + user impact)
+Store as `velocity_target`.
 
-Distribute into sprints based on velocity. Flag any story that can't fit.
+## Step 3 — Curate stories
 
-## Step 4 — Write plan
+Read phase scope (SCOPE.md, REQUIREMENTS.md, or ROADMAP.md phase section).
 
-Output to `.planning/sprints/sprint-<N>-plan.md` with sections:
-- Goal
-- Committed stories (with effort + dep)
-- At-risk / stretch
-- Dependencies graph (ASCII if possible)
-- Blockers to resolve before start
+For each requirement/feature in scope:
+1. Break into stories: `As a [user], I want [action] so that [outcome]`
+2. Estimate: XS(1) / S(2) / M(3) / L(5) / XL(8)
+3. Stories > 8 points → split immediately
+4. Prioritize: must-have first, nice-to-have last
 
-Also write `.planning/sprints/sprint-<N>-status.yaml` as a tracking template (state: planned).
+Present story table to user:
 
-## Step 5 — Report
+```markdown
+| # | Story | Points | Priority | Acceptance |
+|---|-------|--------|----------|------------|
+| 1 | Login endpoint | 5 | must | Returns JWT on valid creds |
+| 2 | Register endpoint | 3 | must | Creates user, hashes password |
+| 3 | Rate limiting | 2 | should | 429 after 10 req/min |
+```
 
-Print a compact summary:
-- N sprints planned, M stories total
-- Committed vs at-risk count per sprint
-- Blockers needing resolution
+**Capacity check:** Total committed points <= velocity_target.
+If over: "We're at {N} points vs {target} capacity. Move story #{X} to next sprint?"
+
+Wait for user confirmation before proceeding.
+
+## Step 4 — Create sprint
+
+After user confirms stories:
+
+```bash
+# Register sprint in state
+node .rihal/bin/rihal-tools.cjs state sprint add \
+  --phase "{phase_name}" \
+  --goal "{sprint_goal}" \
+  --velocity {velocity_target}
+
+# Register each story
+node .rihal/bin/rihal-tools.cjs state story add \
+  --title "{story_title}" \
+  --points {points}
+```
+
+Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template at `rihal/templates/sprint.md`. Fill in:
+- Sprint goal
+- Stories table (from user-confirmed list)
+- Capacity section (velocity target, average, buffer)
+- Dependencies
+- Risks (if identified during estimation)
+
+## Step 5 — Start sprint
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sprint start
+```
+
+## Step 6 — Summary
+
+```
+Sprint {sprint_id} created and started.
+
+Goal: {sprint_goal}
+Stories: {count} ({total_points} points)
+Capacity: {velocity_target} points ({buffer}% buffer)
+
+Next:
+  /rihal:execute .planning/phases/{phase}/SPRINT.md   ← execute the sprint
+  /rihal:sprint-status                                ← check progress anytime
+```
 
 ## Output Format
 
-- `.planning/sprints/sprint-<N>-plan.md` per sprint
-- `.planning/sprints/sprint-<N>-status.yaml` tracking stub
-- Console summary with next action suggestion
+- SPRINT.md at `.planning/phases/{phase_slug}/SPRINT.md`
+- Sprint + stories registered in `.rihal/state.json`
+- Console summary with next-step commands
 
 ## Examples
 
 ### Happy Path
-**Input:** `/rihal:sprint-planning`
-**Expected:** 2 sprints planned from 8 stories, status yaml scaffolded, summary printed.
+**Input:** `/rihal:sprint-planning --phase 01 --goal "Auth MVP"`
+**Expected:** Load phase scope, estimate stories, present table, confirm, create SPRINT.md + register in state, start sprint.
 
-### Edge Case: No stories
-**Input:** `/rihal:sprint-planning` (empty stories dir)
-**Expected:** Graceful exit suggesting create-epics-and-stories or the skill.
+### Edge Case: Over capacity
+**Input:** 15 points of stories but velocity avg is 10
+**Expected:** Flag over-commitment, suggest deferring lowest-priority story.
+
+### Edge Case: No scope
+**Input:** Phase has no SCOPE.md or requirements
+**Expected:** "No scope found for this phase. Run /rihal:new-project or write a SCOPE.md first."
 
 ### Negative Test
-**Input:** `/rihal:sprint-planning --velocity abc`
-**Expected:** Reject non-numeric velocity, print usage.
+**Input:** `/rihal:sprint-planning` with no phases in state
+**Expected:** Graceful exit suggesting /rihal:new-project.
