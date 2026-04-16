@@ -36,7 +36,7 @@ Parse:
 - `flags.prd` — path to original PRD/requirements document
 - `flags.architecture` — path to original architecture document
 - `deviation_report_path` — `.rihal/DEVIATION-REPORT.md`
-- `remediation_plan_path` — `.planning/plans/corrections/PLAN.md`
+- `remediation_plan_path` — `.planning/plans/corrections/SPRINT.md`
 
 ## Step 1 — Load Original Spec and Current Implementation
 
@@ -126,14 +126,14 @@ Task tool call:
     - Rollback risk
     - Acceptance criteria for "fixed"
     
-    Output: PLAN.md that can be executed with /rihal:execute
+    Output: SPRINT.md that can be executed with /rihal:execute
 ```
 
 ## Step 4 — Generate Report and Plan
 
 Write:
 - `.rihal/DEVIATION-REPORT.md` (analysis)
-- `.planning/plans/corrections/PLAN.md` (execution plan)
+- `.planning/plans/corrections/SPRINT.md` (execution plan)
 
 Also update `.rihal/story-current.md` if exists:
 
@@ -179,7 +179,7 @@ Run remediation with:
 ## Success Criteria
 
 - DEVIATION-REPORT.md created with all deviations classified
-- PLAN.md created with ordered fix tasks
+- SPRINT.md created with ordered fix tasks
 - Story file updated with deviation summary
 - Deviations ordered by priority (AC → Architecture → Scope → Debt)
 

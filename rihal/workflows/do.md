@@ -127,10 +127,10 @@ What would you like to do?
    3-5 experts answer a strategic question in parallel
    
 3. 📋 Plan a project (rihal:plan)
-   Turn an idea or council session into executable PLAN.md files
+   Turn an idea or council session into executable SPRINT.md files
    
 4. ▶ Execute a plan (rihal:execute)
-   Run PLAN.md files with automated commits and checkpoints
+   Run SPRINT.md files with automated commits and checkpoints
    
 5. 📊 Check status (rihal:status)
    Project state dashboard — phase, decisions, blockers

@@ -36,7 +36,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-phase-researcher — Researches technical approaches for a phase
 - rihal-planner — Creates detailed plans from phase scope
-- rihal-plan-checker — Reviews plan quality before execution
+- rihal-sprint-checker — Reviews plan quality before execution
 - rihal-executor — Executes plan tasks, commits, creates SUMMARY.md
 - rihal-verifier — Verifies phase completion, checks quality gates
 </available_agent_types>
@@ -438,7 +438,7 @@ ${FULL_MODE ? '- Each task MUST have `files`, `action`, `verify`, `done` fields'
 </constraints>
 
 <output>
-Write plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
+Write plan to: ${QUICK_DIR}/${quick_id}-SPRINT.md
 Return: ## PLANNING COMPLETE with plan path
 </output>
 ",
@@ -449,11 +449,11 @@ Return: ## PLANNING COMPLETE with plan path
 ```
 
 After planner returns:
-1. Verify plan exists at `${QUICK_DIR}/${quick_id}-PLAN.md`
+1. Verify plan exists at `${QUICK_DIR}/${quick_id}-SPRINT.md`
 2. Extract plan count (typically 1 for quick tasks)
-3. Report: "Plan created: ${QUICK_DIR}/${quick_id}-PLAN.md"
+3. Report: "Plan created: ${QUICK_DIR}/${quick_id}-SPRINT.md"
 
-If plan not found, error: "Planner failed to create ${quick_id}-PLAN.md"
+If plan not found, error: "Planner failed to create ${quick_id}-SPRINT.md"
 
 ---
 
@@ -478,7 +478,7 @@ Checker prompt:
 **Task Description:** ${DESCRIPTION}
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan to verify)
+- ${QUICK_DIR}/${quick_id}-SPRINT.md (Plan to verify)
 </files_to_read>
 
 ${AGENT_SKILLS_CHECKER}
@@ -506,7 +506,7 @@ ${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions fro
 ```
 Task(
   prompt=checker_prompt,
-  subagent_type="rihal-plan-checker",
+  subagent_type="rihal-sprint-checker",
   model="{checker_model}",
   description="Check quick plan: ${DESCRIPTION}"
 )
@@ -532,7 +532,7 @@ Revision prompt:
 **Mode:** quick-full (revision)
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Existing plan)
+- ${QUICK_DIR}/${quick_id}-SPRINT.md (Existing plan)
 </files_to_read>
 
 ${AGENT_SKILLS_PLANNER}
@@ -577,7 +577,7 @@ Task(
 Execute quick task ${quick_id}.
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
+- ${QUICK_DIR}/${quick_id}-SPRINT.md (Plan)
 - .planning/STATE.md (Project state)
 - ./CLAUDE.md (Project instructions, if exists)
 - .agent/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
@@ -633,7 +633,7 @@ Task directory: ${QUICK_DIR}
 Task goal: ${DESCRIPTION}
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
+- ${QUICK_DIR}/${quick_id}-SPRINT.md (Plan)
 </files_to_read>
 
 ${AGENT_SKILLS_VERIFIER}
@@ -720,7 +720,7 @@ Use Edit tool to make these changes atomically
 Stage and commit quick task artifacts:
 
 Build file list:
-- `${QUICK_DIR}/${quick_id}-PLAN.md`
+- `${QUICK_DIR}/${quick_id}-SPRINT.md`
 - `${QUICK_DIR}/${quick_id}-SUMMARY.md`
 - `.planning/STATE.md`
 - If `$DISCUSS_MODE` and context file exists: `${QUICK_DIR}/${quick_id}-CONTEXT.md`
@@ -784,7 +784,7 @@ Ready for next task: /rihal:quick ${Rihal_WS}
 - [ ] Directory created at `.planning/quick/YYMMDD-xxx-slug/`
 - [ ] (--discuss) Gray areas identified and presented, decisions captured in `${quick_id}-CONTEXT.md`
 - [ ] (--research) Research agent spawned, `${quick_id}-RESEARCH.md` created
-- [ ] `${quick_id}-PLAN.md` created by planner (honors CONTEXT.md decisions when --discuss, uses RESEARCH.md findings when --research)
+- [ ] `${quick_id}-SPRINT.md` created by planner (honors CONTEXT.md decisions when --discuss, uses RESEARCH.md findings when --research)
 - [ ] (--full) Plan checker validates plan, revision loop capped at 2
 - [ ] `${quick_id}-SUMMARY.md` created by executor
 - [ ] (--full) `${quick_id}-VERIFICATION.md` created by verifier

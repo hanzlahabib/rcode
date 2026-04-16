@@ -1,7 +1,7 @@
 # Workflow: rihal:execute
 
 <purpose>
-Orchestrate one or more PLAN.md files by spawning rihal-executor subagents. Supports single-plan mode, phase mode (multiple plans in dependency waves), and interactive mode (sequential, no subagents).
+Orchestrate one or more SPRINT.md files by spawning rihal-executor subagents. Supports single-plan mode, phase mode (multiple plans in dependency waves), and interactive mode (sequential, no subagents).
 </purpose>
 
 
@@ -72,7 +72,7 @@ Parse:
 - `phase_dir` — set if phase mode
 
 **Supported argument formats:**
-- `.planning/phases/01-setup/PLAN.md` — direct path (backward compatible)
+- `.planning/phases/01-setup/SPRINT.md` — direct path (backward compatible)
 - `01` — execute all plans in phase 01 (wave-grouped)
 - `01.02` — execute specific plan 01.02
 
@@ -81,7 +81,7 @@ Parse:
 Usage: /rihal:execute <plan-file.md | phase-id | plan-id> [--wave N] [--interactive] [--continue] [--skip-gates]
 
 Examples:
-  /rihal:execute .planning/phases/01-setup/PLAN.md
+  /rihal:execute .planning/phases/01-setup/SPRINT.md
   /rihal:execute 01                  # all plans in phase 01
   /rihal:execute 01.02               # plan 01.02
 ```
@@ -91,7 +91,7 @@ Examples:
 If `$ARGUMENTS` doesn't end in `.md`, doesn't reference an existing directory, and looks like a question (contains "?", "should", "how", "what", or is a freeform topic):
 
 ```
-⚠ /rihal:execute runs existing PLAN.md files — it doesn't create them.
+⚠ /rihal:execute runs existing SPRINT.md files — it doesn't create them.
 
 To turn an idea or question into a plan first, use:
 
@@ -100,7 +100,7 @@ To turn an idea or question into a plan first, use:
 Then run /rihal:execute on the resulting plan file.
 ```
 
-Only proceed past this step if the argument points to an actual PLAN.md file or phase directory.
+Only proceed past this step if the argument points to an actual SPRINT.md file or phase directory.
 
 ## Step 0.4 — Pre-flight Reference Verification (NEW)
 
@@ -189,7 +189,7 @@ Task tool call:
     {plan.path}
 
     ## Plan contents
-    {full contents of the PLAN.md file}
+    {full contents of the SPRINT.md file}
 
     ## Project context
     - Project: {config.project_name}
@@ -231,11 +231,11 @@ After all waves complete, print each executor's `---PLAN COMPLETE---` block verb
 
 ### Step 4b — Update state (silent)
 
-After each plan completes (each `---PLAN COMPLETE---` block), update `.rihal/state.json`. These commands run silently — do not print output to the user for this step.
+After each sprint completes (each `---PLAN COMPLETE---` block), update `.rihal/state.json`. These commands run silently — do not print output to the user for this step.
 
 ```bash
 PLAN_ID=$(grep "^id:" "$PLAN_PATH" | head -1 | cut -d'"' -f2)
-node .rihal/bin/rihal-tools.cjs state advance-plan
+node .rihal/bin/rihal-tools.cjs state advance-sprint
 node .rihal/bin/rihal-tools.cjs state record-execution \
   --plan "$PLAN_ID" --tasks "{number of tasks completed}" --duration "{duration in ms}" --hash "{commit hash}"
 node .rihal/bin/rihal-tools.cjs state record-session

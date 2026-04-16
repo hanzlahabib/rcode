@@ -54,16 +54,16 @@ Store as `$FAILED_EXECS`.
 Scan `.planning/` directory for:
 
 ```bash
-find .planning/ -name "PLAN.md" -type f
+find .planning/ -name "SPRINT.md" -type f
 ```
 
-For each PLAN.md found, check if a corresponding SUMMARY.md exists:
+For each SPRINT.md found, check if a corresponding SUMMARY.md exists:
 
 ```bash
 ls -1 .planning/*/SUMMARY.md 2>/dev/null || true
 ```
 
-If PLAN.md exists but no SUMMARY.md, that's an incomplete execution.
+If SPRINT.md exists but no SUMMARY.md, that's an incomplete execution.
 
 Store as `$INCOMPLETE_PLANS` (list of plan IDs).
 
@@ -112,7 +112,7 @@ Format as:
 Timeline of Execution
 
 T-5h: Started phase "Feature X" (/rihal:plan feature-x)
-T-3h: Phase created, plan saved to .planning/feature-x/PLAN.md
+T-3h: Phase created, plan saved to .planning/feature-x/SPRINT.md
 T-2h: Execution began — checkpoint at step 3/8
 T-0h: ❌ FAIL — Execution error: "Dependency not installed"
       Stuck at: .planning/feature-x/ (no SUMMARY.md yet)

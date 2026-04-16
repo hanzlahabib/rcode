@@ -1,7 +1,7 @@
 # Workflow: rihal:plan
 
 <purpose>
-Convert council session follow-ups or freeform task descriptions into executable PLAN.md files. Spawns rihal-planner as a single subagent that writes structured plans to `.planning/plans/`.
+Convert council session follow-ups or freeform task descriptions into executable SPRINT.md files. Spawns rihal-planner as a single subagent that writes structured plans to `.planning/plans/`.
 </purpose>
 
 
@@ -30,7 +30,7 @@ If first argument is `list`:
 
 If first argument is `show <id>`:
   Run: `node .rihal/bin/rihal-tools.cjs state resolve-id $id`
-  Read the resolved PLAN.md and print contents
+  Read the resolved SPRINT.md and print contents
   STOP.
 
 ## Note on reference loading
@@ -49,7 +49,7 @@ INIT=$(node .rihal/bin/rihal-tools.cjs init plan "$ARGUMENTS")
 
 ### Step 0.1 — Detect decision questions (STOP and redirect)
 
-`/rihal:plan` converts CONCRETE TASKS into PLAN.md files. It does NOT answer strategic questions or weigh options.
+`/rihal:plan` converts CONCRETE TASKS into SPRINT.md files. It does NOT answer strategic questions or weigh options.
 
 **If the input is a question (contains "should we", "should I", "which is better", "A or B", "vs", "worth it", "kya karna", or ends with "?"), STOP immediately and redirect to `/rihal:council`.**
 
@@ -63,7 +63,7 @@ If `question_type` is `market`, `discovery`, `greenfield`, or the input matches 
 ```
 ⚠ That's a decision question, not a planning input.
 
-/rihal:plan turns concrete tasks into executable PLAN.md files.
+/rihal:plan turns concrete tasks into executable SPRINT.md files.
 /rihal:council answers "should we do X?" questions with a panel of experts.
 
 Copy-paste this to ask the council instead:
@@ -101,10 +101,10 @@ Before spawning the planner, classify the input scope. Match the FIRST signal th
 
 | Scope | Signals | Output |
 |-------|---------|--------|
-| ticket | "fix", "bug", "typo", "small", "quick", GitHub issue URL, input < 100 chars, single filename mentioned | 1 PLAN.md with 3-5 inline tasks |
-| feature | "add", "implement", "build X", 1-3 files mentioned, < 300 chars | 1 PLAN.md with 5-8 tasks |
-| phase | "phase", "epic", "sprint", multiple components mentioned, 300-800 chars | 1 PLAN.md with up to 8 tasks + depends_on |
-| initiative | "milestone", "initiative", "roadmap", multi-team signals, > 800 chars | Multiple PLAN.md files with waves |
+| ticket | "fix", "bug", "typo", "small", "quick", GitHub issue URL, input < 100 chars, single filename mentioned | 1 SPRINT.md with 3-5 inline tasks |
+| feature | "add", "implement", "build X", 1-3 files mentioned, < 300 chars | 1 SPRINT.md with 5-8 tasks |
+| phase | "phase", "epic", "sprint", multiple components mentioned, 300-800 chars | 1 SPRINT.md with up to 8 tasks + depends_on |
+| initiative | "milestone", "initiative", "roadmap", multi-team signals, > 800 chars | Multiple SPRINT.md files with waves |
 
 ### If scope = ticket AND a single file is mentioned (look for *.py, *.ts, *.js, *.md etc):
 Suggest `/rihal:quick` instead:
@@ -144,12 +144,12 @@ The `INIT` object returned from Step 0 now includes the `scope` field. Extract t
 
 ## Step 1 — Resolve input
 
-**If `input_type === "file"` AND resolved_path ends in PLAN.md:**
+**If `input_type === "file"` AND resolved_path ends in SPRINT.md:**
 Check if this file's frontmatter contains both `phase:` and `objective:` fields.
 
 If yes:
 ```
-⚠ This file is already a PLAN.md — you probably meant /rihal:execute.
+⚠ This file is already a SPRINT.md — you probably meant /rihal:execute.
 
 /rihal:execute $resolved_path
 
@@ -157,7 +157,7 @@ To plan FROM this file's content as input (rare), pass --re-plan flag.
 ```
 STOP.
 
-Otherwise, treat it as a planning input (rare case where PLAN.md is source material).
+Otherwise, treat it as a planning input (rare case where SPRINT.md is source material).
 
 **If `input_type === "session"`:**
 Read the file at `resolved_path`. Extract the `## Follow-ups` section. If no Follow-ups section, read the full `## Panel Responses` section as input.
@@ -279,10 +279,10 @@ Before spawning the planner, assign IDs for the plan(s):
 # Get next phase ID if creating a new phase
 PHASE_ID=$(node .rihal/bin/rihal-tools.cjs state next-phase-id)
 
-# Get next plan ID(s) for that phase
+# Get next sprint ID(s) for that phase
 PLAN_ID=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
 
-# If creating multiple plans (initiative), get additional plan IDs
+# If creating multiple plans (initiative), get additional sprint IDs
 # PLAN_ID_2=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
 ```
 
@@ -295,19 +295,19 @@ Spawn a single `rihal-planner` subagent:
 ```
 Agent tool call:
   subagent_type: "rihal-planner"
-  description: "Generate PLAN.md files from council follow-ups"
+  description: "Generate SPRINT.md files from council follow-ups"
   prompt: |
-    Write executable PLAN.md files from the input below.
+    Write executable SPRINT.md files from the input below.
 
     ## Input
     {the follow-ups text or description}
 
     ## Scope
     {scope detected in Step 0.2: ticket | feature | phase | initiative}
-    {if ticket}: Produce ONE PLAN.md with 3-5 inline tasks. Do not split into multiple plans.
-    {if feature}: Produce ONE PLAN.md with 5-8 tasks.
-    {if phase}: Produce ONE PLAN.md with up to 8 tasks + depends_on where needed.
-    {if initiative}: Produce multiple PLAN.md files with dependency waves.
+    {if ticket}: Produce ONE SPRINT.md with 3-5 inline tasks. Do not split into multiple plans.
+    {if feature}: Produce ONE SPRINT.md with 5-8 tasks.
+    {if phase}: Produce ONE SPRINT.md with up to 8 tasks + depends_on where needed.
+    {if initiative}: Produce multiple SPRINT.md files with dependency waves.
 
     ## Hierarchical IDs
     Use these auto-assigned IDs for all plans and tasks:
@@ -329,8 +329,8 @@ Agent tool call:
     - Project: {config.project_name}
     - Root: {paths.project_root}
 
-    ## PLAN.md schema (follow exactly)
-    {contents of execution-protocol.md — the PLAN.md schema section}
+    ## SPRINT.md schema (follow exactly)
+    {contents of execution-protocol.md — the SPRINT.md schema section}
 
     ## Commit conventions
     {contents of commit-conventions.md — the format section}
@@ -340,14 +340,14 @@ Agent tool call:
 
 ## Step 3 — Verify plan
 
-After planner completes, spawn `rihal-plan-checker` subagent to validate the PLAN.md:
+After planner completes, spawn `rihal-sprint-checker` subagent to validate the SPRINT.md:
 
 ```
 Agent tool call:
-  subagent_type: "rihal-plan-checker"
-  description: "Verify PLAN.md structure and completeness"
+  subagent_type: "rihal-sprint-checker"
+  description: "Verify SPRINT.md structure and completeness"
   prompt: |
-    Verify the PLAN.md files in this directory: {output_dir}
+    Verify the SPRINT.md files in this directory: {output_dir}
     
     Check for:
     - Valid YAML frontmatter (phase, objective, depends_on)
@@ -362,18 +362,18 @@ Agent tool call:
 
 **Initialize retry counter:** `retries = 0`
 
-**If plan-checker returns PASS:**
+**If sprint-checker returns PASS:**
 - Proceed to Step 4 (print output)
 
-**If plan-checker returns issues:**
+**If sprint-checker returns issues:**
 - If `retries < 2`:
   1. Increment `retries`
   2. Spawn `rihal-planner` again with prompt:
      ```
      The plan had these issues:
-     {issues list from plan-checker}
+     {issues list from sprint-checker}
      
-     Fix them and regenerate the PLAN.md file(s) at: {output_dir}
+     Fix them and regenerate the SPRINT.md file(s) at: {output_dir}
      ```
   3. After planner completes, loop back to Step 3.5 (verify again)
 
@@ -420,5 +420,5 @@ Silent — if state.json missing, ignore.
 - **state.json missing or corrupted:** continue without error — plan artifact is mandatory, state tracking is optional.
 - **No follow-ups in session artifact:** fall back to reading full Panel Responses as input.
 - **rihal-planner returns empty output:** print "Planner produced no plans. Check input."
-- **rihal-plan-checker fails to load:** print the error, proceed to Step 4 anyway (skip verification).
+- **rihal-sprint-checker fails to load:** print the error, proceed to Step 4 anyway (skip verification).
 - **rihal-tools.cjs missing:** tell user to run `rihal-code install-v2`.

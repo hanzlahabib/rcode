@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <required_reading>
-Review project files to understand current state: PROJECT.md, STATE.md, PLAN.md
+Review project files to understand current state: PROJECT.md, STATE.md, SPRINT.md
 </required_reading>
 
 <process>
@@ -45,7 +45,7 @@ Load all context:
 Check what files exist:
 - `.rihal/PROJECT.md` — project definition
 - `.rihal/STATE.md` — current status
-- `.rihal/PLAN.md` — execution plan
+- `.rihal/SPRINT.md` — execution plan
 - `.rihal/NOTES.md` — session notes if any
 - Git status — uncommitted changes
 
@@ -102,7 +102,7 @@ git status --short 2>/dev/null || true
 grep -i "TODO\|FIXME\|BLOCKED" .rihal/NOTES.md 2>/dev/null || true
 
 # Check for incomplete tasks in PLAN
-grep -i "in.progress\|blocked\|pending" .rihal/PLAN.md 2>/dev/null || true
+grep -i "in.progress\|blocked\|pending" .rihal/SPRINT.md 2>/dev/null || true
 ```
 
 Track:

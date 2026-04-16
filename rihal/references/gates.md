@@ -18,7 +18,7 @@ Defines 4 gate types used in rihal workflows to control execution flow, validate
 **Example:** Phase execution gate
 ```
 Gate: Check phase.md exists and has required sections
-Block: "Phase {N} has no PLAN.md. Create with /rihal:help"
+Block: "Phase {N} has no SPRINT.md. Create with /rihal:help"
 Warn: "Phase overdue by {days}. Review roadmap?"
 ```
 
@@ -51,7 +51,7 @@ On 4th failure: escalate to user
 **Purpose:** Pause execution and ask user for direction.
 
 **Behavior:**
-- Preserve current state (save PLAN.md, commit progress)
+- Preserve current state (save SPRINT.md, commit progress)
 - Pause execution with AskUserQuestion
 - Wait for user decision (proceed, abort, or retry with modified approach)
 - Log decision timestamp and rationale

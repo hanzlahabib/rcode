@@ -27,8 +27,8 @@ STOP — do not proceed.
 
 <available_tools>
 - Bash — read state, list plans, git ops
-- Read — read state.json, PLAN.md files
-- Agent — spawn rihal-planner, rihal-executor, rihal-plan-checker
+- Read — read state.json, SPRINT.md files
+- Agent — spawn rihal-planner, rihal-executor, rihal-sprint-checker
 - AskUserQuestion — handle checkpoints and failures
 </available_tools>
 
@@ -80,14 +80,14 @@ Store filtered phases list as `todo_phases`.
 
 For each phase in `todo_phases`:
 
-### 1.1 — Check for PLAN.md
+### 1.1 — Check for SPRINT.md
 
 ```bash
-PLAN_FILE=".planning/phases/$phase_slug/PLAN.md"
+PLAN_FILE=".planning/phases/$phase_slug/SPRINT.md"
 [ -f "$PLAN_FILE" ] || PLAN_FILE=""
 ```
 
-If no PLAN.md found:
+If no SPRINT.md found:
 
 **Option A (default `--interactive=false`):**
 
@@ -96,17 +96,17 @@ Spawn rihal-planner subagent:
 ```
 Agent spawn:
   type: rihal-planner
-  brief: "Generate a PLAN.md for this phase"
+  brief: "Generate a SPRINT.md for this phase"
   prompt: |
     Phase: {phase_name}
     
-    Create a PLAN.md that breaks down this phase into executable steps.
-    Save to: .planning/phases/{phase_slug}/PLAN.md
+    Create a SPRINT.md that breaks down this phase into executable steps.
+    Save to: .planning/phases/{phase_slug}/SPRINT.md
     
-    Follow the PLAN.md schema in references/execution-protocol.md
+    Follow the SPRINT.md schema in references/execution-protocol.md
 ```
 
-Wait for planner to complete. Read generated PLAN.md.
+Wait for planner to complete. Read generated SPRINT.md.
 
 **Option B (`--interactive=true`):**
 
@@ -114,14 +114,14 @@ Spawn a rihal-planner in the current context (inline discussion, not delegated).
 
 ### 1.2 — Execute Plan
 
-After PLAN.md exists, spawn rihal-executor:
+After SPRINT.md exists, spawn rihal-executor:
 
 ```
 Agent spawn:
   type: rihal-executor
-  brief: "Execute the PLAN.md for this phase"
+  brief: "Execute the SPRINT.md for this phase"
   prompt: |
-    Execute PLAN.md at: .planning/phases/{phase_slug}/PLAN.md
+    Execute SPRINT.md at: .planning/phases/{phase_slug}/SPRINT.md
     
     Follow all checkpoints. If a checkpoint blocks execution, return to
     the orchestrator with a clear summary of what to decide.
@@ -151,7 +151,7 @@ What would you like to do?
 
 Ask user via AskUserQuestion. Branch:
 - **Continue:** Loop back to Step 1.2 (re-spawn executor with `--continue` flag)
-- **Modify:** Re-spawn rihal-planner to patch the PLAN.md
+- **Modify:** Re-spawn rihal-planner to patch the SPRINT.md
 - **Rollback:** Run `git reset --hard HEAD~N` or undo via planner, then loop back to executor
 - **Pause:** Write HANDOFF.json and stop
 

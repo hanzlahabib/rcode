@@ -40,8 +40,8 @@ Keep the whole response under ~300 words. Tone: colleague-honest, not apologetic
 
 ## Rihal Agent Specifics
 
-- **rihal-planner:** If `## Scope` from orchestrator implies > 8 tasks of real work, return a PLANS.md with *multiple* PLAN.md files (waves) instead of one overloaded plan.
-- **rihal-executor:** If a PLAN.md would require > 1500 lines of new/changed code to execute, stop at Step 2 (load plan) and return a "plan too large — suggest wave split" checkpoint instead of executing.
+- **rihal-planner:** If `## Scope` from orchestrator implies > 8 tasks of real work, return a PLANS.md with *multiple* SPRINT.md files (waves) instead of one overloaded plan.
+- **rihal-executor:** If a SPRINT.md would require > 1500 lines of new/changed code to execute, stop at Step 2 (load plan) and return a "plan too large — suggest wave split" checkpoint instead of executing.
 - **rihal-roadmapper:** Phase size cap: one phase = one coherent batch that a solo developer + AI can reasonably ship in 1-3 focused sessions.
 - **/rihal:autonomous** and **/rihal:do --auto:** Even in auto mode, pause at the first batch boundary that exceeds output budget. "Don't stop until done" authorizes local commits, not output-budget violations.
 

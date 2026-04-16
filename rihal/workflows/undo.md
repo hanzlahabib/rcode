@@ -181,7 +181,7 @@ Search for phases that list a dependency on the target phase. Look for patterns 
 
 For each dependent phase N found:
 1. Check if `.planning/phases/${N}-*/` directory exists
-2. If directory exists, check for any PLAN.md or SUMMARY.md files inside it
+2. If directory exists, check for any SPRINT.md or SUMMARY.md files inside it
 
 If any downstream phase has started work, collect warnings:
 ```
@@ -196,7 +196,7 @@ If any downstream phase has started work, collect warnings:
 Extract the phase number from TARGET_PLAN (the NN part of NN-MM). Extract the plan number (the MM part).
 
 Look for later plans in the same phase directory (`.planning/phases/${NN}-*/`). For each later plan (plans with number > MM):
-1. Read the later plan's PLAN.md
+1. Read the later plan's SPRINT.md
 2. Check if its `<files>` sections or `consumes` fields reference outputs from the target plan
 3. Also scan later plan's frontmatter for `depends_on:` field matching the target plan ID
 

@@ -78,13 +78,13 @@ Usage: `/rihal:map-codebase`
 **`/rihal:plan-phase <number>`**
 Create detailed execution plan for a specific phase.
 
-- Generates `.planning/phases/XX-phase-name/XX-YY-PLAN.md`
+- Generates `.planning/phases/XX-phase-name/XX-YY-SPRINT.md`
 - Breaks phase into concrete, actionable tasks
 - Includes verification criteria and success measures
 - Multiple plans per phase supported (XX-01, XX-02, etc.)
 
 Usage: `/rihal:plan-phase 1`
-Result: Creates `.planning/phases/01-foundation/01-01-PLAN.md`
+Result: Creates `.planning/phases/01-foundation/01-01-SPRINT.md`
 
 **PRD Express Path:** Pass `--prd path/to/requirements.md` to skip discuss-phase entirely. Your PRD becomes locked decisions in CONTEXT.md. Useful when you already have clear acceptance criteria.
 
@@ -135,7 +135,7 @@ Flags are composable: `--discuss --research --full` gives the complete quality p
 
 Usage: `/rihal:quick`
 Usage: `/rihal:quick --research --full`
-Result: Creates `.planning/quick/NNN-slug/PLAN.md`, `.planning/quick/NNN-slug/SUMMARY.md`
+Result: Creates `.planning/quick/NNN-slug/SPRINT.md`, `.planning/quick/NNN-slug/SUMMARY.md`
 
 ---
 
@@ -144,7 +144,7 @@ Execute a trivial task inline — no subagents, no planning files, no overhead.
 
 For tasks too small to justify planning: typo fixes, config changes, forgotten commits, simple additions. Runs in the current context, makes the change, commits, and logs to STATE.md.
 
-- No PLAN.md or SUMMARY.md created
+- No SPRINT.md or SUMMARY.md created
 - No subagent spawned (runs inline)
 - ≤ 3 file edits — redirects to `/rihal:quick` if task is non-trivial
 - Atomic commit with conventional message
@@ -273,10 +273,10 @@ Usage: `/rihal:update`
 │   └── CONCERNS.md       # Tech debt, known issues
 └── phases/
     ├── 01-foundation/
-    │   ├── 01-01-PLAN.md
+    │   ├── 01-01-SPRINT.md
     │   └── 01-01-SUMMARY.md
     └── 02-core-features/
-        ├── 02-01-PLAN.md
+        ├── 02-01-SPRINT.md
         └── 02-01-SUMMARY.md
 ```
 

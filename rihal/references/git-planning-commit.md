@@ -14,7 +14,7 @@ Planning commits are **metadata about work**, not code changes. They use special
 
 ### 1. `plan:` — Planning Artifacts
 
-**Purpose:** Capture or update PLAN.md, roadmap files, phase structure
+**Purpose:** Capture or update SPRINT.md, roadmap files, phase structure
 
 **Format:**
 ```
@@ -30,8 +30,8 @@ plan: revise Phase 1 scope — reduce by 2 tasks
 ```
 
 **When to use:**
-- Create new PLAN.md after phase design
-- Update PLAN.md during refinement (before execution)
+- Create new SPRINT.md after phase design
+- Update SPRINT.md during refinement (before execution)
 - Record major scope decisions
 - Capture planning worksheets or pre-mortems
 
@@ -126,7 +126,7 @@ refactor(database): normalize user schema
 
 **Planning commits** use special prefixes:
 ```
-plan: add execute-phase 02 PLAN.md
+plan: add execute-phase 02 SPRINT.md
 wip: implementation attempt 1 of 2
 session: pause work at task 4
 roadmap: plan Q3 milestones
@@ -155,7 +155,7 @@ msg=$(git log -1 --format=%B)
 files=$(git diff-tree --no-commit-id --name-only -r HEAD)
 
 if [[ "$msg" =~ ^plan: ]]; then
-  # Expect *.md files (PLAN.md, roadmap, etc.)
+  # Expect *.md files (SPRINT.md, roadmap, etc.)
   if [[ ! "$files" =~ \.md$ ]]; then
     echo "Warning: 'plan:' commit but no .md files changed"
   fi
@@ -169,7 +169,7 @@ if [[ "$msg" =~ ^wip: ]]; then
 fi
 
 if [[ "$msg" =~ ^session: ]] || [[ "$msg" =~ ^roadmap: ]]; then
-  # These typically commit PLAN.md or metadata
+  # These typically commit SPRINT.md or metadata
   true  # No validation needed
 fi
 ```
@@ -179,7 +179,7 @@ fi
 ## Best Practices
 
 1. **One prefix per commit** — Don't mix `plan:` and `feat:` in same commit
-2. **Descriptive detail** — "update PLAN.md" is vague; "add execute-phase 02 for auth module" is clear
+2. **Descriptive detail** — "update SPRINT.md" is vague; "add execute-phase 02 for auth module" is clear
 3. **Session markers** — Always mark session start/pause to enable resume
 4. **Escalation tracking** — Use `session: escalation gate` to mark decision points
 5. **Preserve state** — Never delete planning commits; history aids context recovery

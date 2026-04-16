@@ -36,7 +36,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 Also check:
 - `.rihal/PROJECT.md` — project definition
-- `.rihal/PLAN.md` — if exists, planning stage
+- `.rihal/SPRINT.md` — if exists, planning stage
 - Recent git commits — work progress
 
 Extract:
@@ -63,7 +63,7 @@ If `.rihal/` doesn't exist → Next action: `/rihal:plan <topic>`
 If PROJECT.md exists but no detailed plan → Suggest: `/rihal:discuss <question>` for context OR `/rihal:plan` to create plan
 
 **Route 3 — Plan exists but not executed**
-If PLAN.md exists and has action items → Next action: `/rihal:execute`
+If SPRINT.md exists and has action items → Next action: `/rihal:execute`
 
 **Route 4 — Changes made but not committed**
 If git shows uncommitted changes → Suggest: Commit changes first, then continue

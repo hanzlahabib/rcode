@@ -12,7 +12,7 @@ If `$ARGUMENTS` is empty, print:
 Usage: /rihal:chain <preset|agent-list> <topic or question>
 
 Presets (common pipelines):
-  research-plan      Mariam (research) → Hussain-PM (scope) → Planner (PLAN.md)
+  research-plan      Mariam (research) → Hussain-PM (scope) → Planner (SPRINT.md)
   feasibility        Waleed (architecture) → Fatima (QA gates)
   gtm-to-build       Mariam (GTM) → Hussain-PM (scope) → Waleed (feasibility)
   full-discovery     Mariam → Sadiq (kill criteria) → Hussain-PM → Waleed → Planner
@@ -33,7 +33,7 @@ STOP here if no arguments.
 If `$ARGUMENTS` is a pure decision question with no topic to work on (patterns like "should we", "A or B", "is X better than Y", "worth it") and does NOT contain a preset name or agent list:
 
 ```
-⚠ /rihal:chain produces deliverables (RESEARCH.md, SCOPE.md, PLAN.md).
+⚠ /rihal:chain produces deliverables (RESEARCH.md, SCOPE.md, SPRINT.md).
 For decisions only, /rihal:council is the right tool.
 
 For a debate: /rihal:council $ARGUMENTS
@@ -101,7 +101,7 @@ Artifact names by agent:
 - `waleed` → `ADR.md`
 - `fatima` → `QA-GATES.md`
 - `sadiq` → `STRATEGY.md`
-- `planner` → `PLAN.md`
+- `planner` → `SPRINT.md`
 
 ### Spawn the agent
 Spawn exactly ONE agent at a time via the Agent tool with the prompt above. Wait for completion. Do not spawn the next stage until this one finishes.
@@ -129,10 +129,10 @@ After the last stage:
 Artifacts in {chain_dir}/:
   1-mariam-RESEARCH.md       (Mariam, stage 1)
   2-hussain-pm-SCOPE.md      (Hussain-PM, stage 2)
-  3-planner-PLAN.md          (Planner, stage 3)
+  3-planner-SPRINT.md          (Planner, stage 3)
 
 Next step:
-/rihal:execute {chain_dir}/3-planner-PLAN.md
+/rihal:execute {chain_dir}/3-planner-SPRINT.md
 
 ─── ~5K tokens per stage · {duration}s · {stage-count} agents ───
 ```
@@ -162,7 +162,7 @@ Silent on failure — state tracking is optional.
 
 | Preset | Chain | Use when |
 |--------|-------|----------|
-| `research-plan` | mariam → hussain-pm → planner | Have an idea, want PLAN.md |
+| `research-plan` | mariam → hussain-pm → planner | Have an idea, want SPRINT.md |
 | `feasibility` | waleed → fatima | Technical decision with QA gate |
 | `gtm-to-build` | mariam → hussain-pm → waleed | Market → scope → tech reality check |
 | `full-discovery` | mariam → sadiq → hussain-pm → waleed → planner | Full validation before committing |
@@ -174,7 +174,7 @@ Silent on failure — state tracking is optional.
 | Execution | Parallel (Round 1 + cross-talk Round 2) | Sequential (one at a time) |
 | Output | One session artifact with all agent voices | One artifact per agent |
 | Best for | Debate, disagreement, multiple perspectives | Pipelines where each stage builds on the last |
-| Subsequent use | `/rihal:plan {session}` converts follow-ups to plans | Last stage often IS a PLAN.md already |
+| Subsequent use | `/rihal:plan {session}` converts follow-ups to plans | Last stage often IS a SPRINT.md already |
 
 ## On Error
 

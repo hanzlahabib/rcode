@@ -106,7 +106,7 @@ fi
 ```bash
 SOURCE_FILES=""
 for file in $GIT_DIFF; do
-  if [[ "$file" == *.md || "$file" == *.json || "$file" == *.yaml ]] && [[ ! "$file" == *-PLAN.md ]] && [[ ! "$file" == *-SUMMARY.md ]]; then
+  if [[ "$file" == *.md || "$file" == *.json || "$file" == *.yaml ]] && [[ ! "$file" == *-SPRINT.md ]] && [[ ! "$file" == *-SUMMARY.md ]]; then
     continue
   fi
   if [[ "$file" == *.ts || "$file" == *.tsx || "$file" == *.js || "$file" == *.jsx || "$file" == *.py || "$file" == *.go || "$file" == *.rs ]]; then

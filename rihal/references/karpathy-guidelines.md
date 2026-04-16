@@ -65,7 +65,7 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-**Rihal application:** Every task in a PLAN.md must have a "Done when:" clause that's externally verifiable. rihal-executor self-check loop verifies Done-when conditions were met. rihal-plan-checker rejects plans where tasks have vague success criteria.
+**Rihal application:** Every task in a SPRINT.md must have a "Done when:" clause that's externally verifiable. rihal-executor self-check loop verifies Done-when conditions were met. rihal-sprint-checker rejects plans where tasks have vague success criteria.
 
 ## Enforcement
 

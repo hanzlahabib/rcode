@@ -4,7 +4,7 @@ Shared reference `@`-included by `execute.md` workflow and `rihal-executor` suba
 
 **Also see:** @.rihal/references/karpathy-guidelines.md for behavioral principles that apply during execution.
 
-## PLAN.md schema
+## SPRINT.md schema
 
 Every plan file must have this frontmatter and structure:
 

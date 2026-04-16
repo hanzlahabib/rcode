@@ -23,7 +23,7 @@ STOP — do not proceed.
 
 <available_tools>
 - Bash — read git status, log, file listing
-- Read — read state.json, current PLAN.md
+- Read — read state.json, current SPRINT.md
 - AskUserQuestion — collect blocking notes and constraints
 - Write — write HANDOFF.json and .continue-here.md
 </available_tools>
@@ -49,7 +49,7 @@ find .planning -type f -name "*.md" 2>/dev/null | sort || true
 
 Extract from state.json:
 - `current_phase` — active phase name
-- `current_plan` — active plan index
+- `current_sprint` — active plan index
 - `phases` — list of all phases
 - `executions` — completed executions
 - `blockers` — unresolved blockers
@@ -57,15 +57,15 @@ Extract from state.json:
 
 ## Step 2 — Read Active Plan (if any)
 
-If `current_plan > 0`:
+If `current_sprint > 0`:
 
 ```bash
-# Find the active PLAN.md
-PLAN_FILE=$(find .planning/plans -name "PLAN.md" -type f | head -1)
+# Find the active SPRINT.md
+PLAN_FILE=$(find .planning/plans -name "SPRINT.md" -type f | head -1)
 [ -f "$PLAN_FILE" ] && cat "$PLAN_FILE" || true
 ```
 
-Extract from active PLAN.md:
+Extract from active SPRINT.md:
 - Objective
 - Task list
 - Checkpoint status
@@ -115,7 +115,7 @@ Write `.rihal/HANDOFF.json` with structured data:
   "timestamp": "ISO-8601 timestamp",
   "project": "project name from state.json",
   "current_phase": "name of current phase or null",
-  "current_plan": "index of current plan or 0",
+  "current_sprint": "index of current plan or 0",
   "phases": [
     {
       "name": "phase name",
@@ -125,14 +125,14 @@ Write `.rihal/HANDOFF.json` with structured data:
   ],
   "completed_tasks": [
     {
-      "plan": "PLAN.md filename",
+      "plan": "SPRINT.md filename",
       "task": "task description",
       "completed_at": "ISO-8601 timestamp"
     }
   ],
   "remaining_tasks": [
     {
-      "plan": "PLAN.md filename",
+      "plan": "SPRINT.md filename",
       "task": "task description",
       "status": "in-progress|blocked|pending"
     }
@@ -173,7 +173,7 @@ Write `.rihal/.continue-here.md` with human-readable summary:
 ## Current Work
 {If current plan active:}
 - **Plan:** {filename}
-- **Objective:** {objective from PLAN.md}
+- **Objective:** {objective from SPRINT.md}
 - **Status:** {in-progress|paused|blocked}
 
 ## Uncommitted Work

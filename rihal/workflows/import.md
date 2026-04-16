@@ -2,7 +2,7 @@
 
 External plan ingestion with conflict detection and agent delegation.
 
-- **--from**: Import external plan → conflict detection → write PLAN.md → validate via rihal-plan-checker
+- **--from**: Import external plan → conflict detection → write SPRINT.md → validate via rihal-sprint-checker
 
 Future: `--prd` mode (PRD extraction into PROJECT.md + REQUIREMENTS.md + ROADMAP.md) is planned for a follow-up PR.
 
@@ -20,7 +20,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 **Examples:**
 ```
 /rihal:import --from ./external-plan.md
-/rihal:import --from ../other-project/PLAN.md
+/rihal:import --from ../other-project/SPRINT.md
 ```
 
 ---
@@ -110,7 +110,7 @@ Store loaded context for conflict detection in the next step.
 Read the imported file at FILEPATH.
 
 Determine the format:
-- **RIHAL PLAN.md format**: Has YAML frontmatter with `phase:`, `plan:`, `type:` fields
+- **RIHAL SPRINT.md format**: Has YAML frontmatter with `phase:`, `plan:`, `type:` fields
 - **Freeform document**: Any other format (markdown spec, design doc, task list, etc.)
 
 Extract from the imported content:
@@ -177,7 +177,7 @@ Display:
 RIHAL > BLOCKED: {N} blockers must be resolved before import can proceed.
 ```
 
-Exit WITHOUT writing any files. This is the safety gate — no PLAN.md is written when blockers exist.
+Exit WITHOUT writing any files. This is the safety gate — no SPRINT.md is written when blockers exist.
 
 **If only WARNINGS and/or INFO (no blockers):**
 
@@ -192,9 +192,9 @@ If user selects "Abort": exit cleanly with message "Import cancelled."
 
 <step name="plan_convert">
 
-Convert the imported content to RIHAL PLAN.md format.
+Convert the imported content to RIHAL SPRINT.md format.
 
-Ensure the PLAN.md has all required frontmatter fields:
+Ensure the SPRINT.md has all required frontmatter fields:
 ```yaml
 ---
 phase: "{NN}-{slug}"
@@ -211,10 +211,10 @@ must_haves:
 ```
 
 **Reject PBR naming conventions in source content:**
-If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to RIHAL `{NN}-{MM}-PLAN.md` convention during conversion.
+If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to RIHAL `{NN}-{MM}-SPRINT.md` convention during conversion.
 
 Apply RIHAL naming convention for the output filename:
-- Format: `{NN}-{MM}-PLAN.md` (e.g., `04-01-PLAN.md`)
+- Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-01-SPRINT.md`)
 - NEVER use `PLAN-01.md`, `plan-01.md`, or any other format
 - NN = phase number (zero-padded), MM = plan number within the phase (zero-padded)
 
@@ -228,18 +228,18 @@ If the directory does not exist, create it:
 mkdir -p ".planning/phases/{NN}-{slug}/"
 ```
 
-Write the PLAN.md file to the target directory.
+Write the SPRINT.md file to the target directory.
 
 </step>
 
 <step name="plan_validate">
 
-Delegate validation to rihal-plan-checker:
+Delegate validation to rihal-sprint-checker:
 
 ```
 Task({
-  subagent_type: "rihal-plan-checker",
-  prompt: "Validate: .planning/phases/{phase}/{plan}-PLAN.md — check frontmatter completeness, task structure, and RIHAL conventions. Report any issues."
+  subagent_type: "rihal-sprint-checker",
+  prompt: "Validate: .planning/phases/{phase}/{plan}-SPRINT.md — check frontmatter completeness, task structure, and RIHAL conventions. Report any issues."
 })
 ```
 
@@ -263,7 +263,7 @@ Update `.planning/STATE.md` if appropriate (e.g., increment total plan count).
 
 Commit the imported plan and updated files:
 ```bash
-node "$HOME/.rihal/bin/rihal-tools.cjs" commit "docs({phase}): import plan from {basename FILEPATH}" --files .planning/phases/{phase}/{plan}-PLAN.md .planning/ROADMAP.md
+node "$HOME/.rihal/bin/rihal-tools.cjs" commit "docs({phase}): import plan from {basename FILEPATH}" --files .planning/phases/{phase}/{plan}-SPRINT.md .planning/ROADMAP.md
 ```
 
 Display completion:
@@ -283,11 +283,11 @@ Show: plan filename written, phase directory, validation result, next steps.
 
 Do NOT:
 - Use markdown tables (`|---|`) in the conflict detection report — use plain-text [BLOCKER]/[WARNING]/[INFO] labels
-- Write PLAN.md files as `PLAN-01.md` or `plan-01.md` — always use `{NN}-{MM}-PLAN.md`
-- Use `pbr:plan-checker` or `pbr:planner` — use `rihal-plan-checker` and `rihal-planner`
+- Write SPRINT.md files as `PLAN-01.md` or `plan-01.md` — always use `{NN}-{MM}-SPRINT.md`
+- Use `pbr:sprint-checker` or `pbr:planner` — use `rihal-sprint-checker` and `rihal-planner`
 - Write `.planning/.active-skill` — this is a PBR pattern with no RIHAL equivalent
 - Reference `pbr-tools`, `pbr:`, or `PLAN-BUILD-RUN` anywhere
-- Write any PLAN.md file when blockers exist — the safety gate must hold
+- Write any SPRINT.md file when blockers exist — the safety gate must hold
 - Skip path validation on the --from file argument
 
 ## Success Criteria

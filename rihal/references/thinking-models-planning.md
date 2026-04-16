@@ -20,7 +20,7 @@ For each, describe the early warning sign we missed.
 ```
 
 **Planning step:**
-- After drafting PLAN.md, ask pre-mortem questions
+- After drafting SPRINT.md, ask pre-mortem questions
 - Add risk mitigation to Phase {N}
 - Example: *"Failure mode: UI doesn't resize on mobile. Early signal: No responsive testing in Phase 2. Mitigation: Add device testing checkpoint."*
 
@@ -97,13 +97,13 @@ List one-way decisions. For each, answer:
 ```
 
 **Planning step:**
-- Flag one-way decisions in PLAN.md with `[ONE-WAY]` tag
+- Flag one-way decisions in SPRINT.md with `[ONE-WAY]` tag
 - For one-way decisions, add deliberation time before Phase {N}
 - Example: *"[ONE-WAY] Framework choice (Next.js vs Remix). Allocate 1 day for prototyping before commit."*
 
 ---
 
-## Integration in PLAN.md
+## Integration in SPRINT.md
 
 Add a **Planning Context** section:
 

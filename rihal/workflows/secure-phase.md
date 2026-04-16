@@ -1,5 +1,5 @@
 <purpose>
-Verify threat mitigations for a completed phase. Confirm PLAN.md threat register dispositions are resolved. Update SECURITY.md.
+Verify threat mitigations for a completed phase. Confirm SPRINT.md threat register dispositions are resolved. Update SECURITY.md.
 </purpose>
 
 <required_reading>
@@ -53,7 +53,7 @@ Display banner: `Rihal > SECURE PHASE {N}: {name}`
 
 ```bash
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
-PLAN_FILES=$(ls "${PHASE_DIR}"/*-PLAN.md 2>/dev/null)
+PLAN_FILES=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null)
 SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 ```
 
@@ -65,7 +65,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 ### 2a. Read Phase Artifacts
 
-Read PLAN.md — extract `<threat_model>` block: trust boundaries, STRIDE register (`threat_id`, `category`, `component`, `disposition`, `mitigation_plan`).
+Read SPRINT.md — extract `<threat_model>` block: trust boundaries, STRIDE register (`threat_id`, `category`, `component`, `disposition`, `mitigation_plan`).
 
 ### 2b. Read Summary Threat Flags
 
@@ -169,7 +169,7 @@ Display `/clear` reminder.
 <success_criteria>
 - [ ] Security enforcement checked — exit if false
 - [ ] Input state detected (A/B/C) — state C exits cleanly
-- [ ] PLAN.md threat model parsed, register built
+- [ ] SPRINT.md threat model parsed, register built
 - [ ] SUMMARY.md threat flags incorporated
 - [ ] threats_open: 0 → skip directly to Step 6
 - [ ] User gate with threat table presented

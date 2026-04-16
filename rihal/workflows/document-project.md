@@ -1,7 +1,7 @@
 # Workflow: rihal:document-project
 
 <purpose>
-Load documentation-requirements.csv, audit current documentation for coverage and staleness, identify missing or outdated docs, and file them as PLAN.md subtasks or separate plan phases.
+Load documentation-requirements.csv, audit current documentation for coverage and staleness, identify missing or outdated docs, and file them as SPRINT.md subtasks or separate plan phases.
 </purpose>
 
 
@@ -33,7 +33,7 @@ INIT=$(node .rihal/bin/rihal-tools.cjs init document-project "$ARGUMENTS")
 
 Parse:
 - `flags.csv` — path to documentation-requirements.csv (default: `.rihal/documentation-requirements.csv`)
-- `flags.auto_file_tasks` — auto-create PLAN.md for missing docs (default: false)
+- `flags.auto_file_tasks` — auto-create SPRINT.md for missing docs (default: false)
 - `csv_path` — resolved CSV path
 - `audit_output_path` — `.rihal/DOCS-AUDIT.md` (output)
 
@@ -129,9 +129,9 @@ node .rihal/bin/rihal-tools.cjs state add-task \
   --component documentation
 ```
 
-Create PLAN.md if multiple docs needed:
+Create SPRINT.md if multiple docs needed:
 
-File: `.planning/plans/documentation-updates/PLAN.md`
+File: `.planning/plans/documentation-updates/SPRINT.md`
 
 ```markdown
 # Plan: Documentation Updates
@@ -152,7 +152,7 @@ Summary:
 
 Missing docs filed as tasks. Run:
 
-/rihal:plan .planning/plans/documentation-updates/PLAN.md
+/rihal:plan .planning/plans/documentation-updates/SPRINT.md
 ```
 
 ## Step 5 — Auto-inject into Resume-Work
@@ -171,7 +171,7 @@ If .rihal/DOCS-AUDIT.md exists, check for missing/stale docs:
 - All docs in CSV audited for presence/staleness
 - DOCS-AUDIT.md generated with per-doc assessment
 - Missing/stale docs categorized by priority
-- (Optional) Tasks filed in state or PLAN.md created
+- (Optional) Tasks filed in state or SPRINT.md created
 
 ## On Error
 

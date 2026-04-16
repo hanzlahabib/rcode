@@ -1,5 +1,5 @@
 <purpose>
-Print a specific PLAN.md file or all plans in a phase, with execution status from state.json.
+Print a specific SPRINT.md file or all plans in a phase, with execution status from state.json.
 </purpose>
 
 ## Step 0: Usage Check
@@ -26,17 +26,17 @@ If `type === "unknown"`: Return error `ID not found: $ARGUMENTS. Try /rihal:show
 ## Step 2: Phase or Plan?
 
 If `type === "phase"`:
-- Walk `.planning/phases/{phase-dir}/` for all `*.md` files matching `[0-9]{2}-[0-9]{2}-PLAN.md`
-- Read each PLAN.md frontmatter + body
+- Walk `.planning/phases/{phase-dir}/` for all `*.md` files matching `[0-9]{2}-[0-9]{2}-SPRINT.md`
+- Read each SPRINT.md frontmatter + body
 - Continue to Step 3
 
 If `type === "plan"`:
-- Read the single PLAN.md at `{path}/PLAN.md`
+- Read the single SPRINT.md at `{path}/SPRINT.md`
 - Continue to Step 3
 
 ## Step 3: Display with Status
 
-For each PLAN.md:
+For each SPRINT.md:
 
 1. Print frontmatter as YAML block (title, wave, description)
 2. Print body in full
@@ -52,12 +52,12 @@ Separate multiple plans with `---\n`
 ## Success Criteria
 
 - [ ] ID resolves correctly
-- [ ] Full PLAN.md content displayed (frontmatter + body)
+- [ ] Full SPRINT.md content displayed (frontmatter + body)
 - [ ] Execution status appended
 - [ ] Multiple plans separated cleanly
 
 ## On Error
 
 - ID unresolvable → Show resolve-id error message
-- PLAN.md missing → "File not found: {path}"
+- SPRINT.md missing → "File not found: {path}"
 - state.json corrupt → Omit execution status, continue
