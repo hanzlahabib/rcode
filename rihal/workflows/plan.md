@@ -1,424 +1,1075 @@
-# Workflow: rihal:plan
-
 <purpose>
-Convert council session follow-ups or freeform task descriptions into executable SPRINT.md files. Spawns rihal-planner as a single subagent that writes structured plans to `.planning/plans/`.
+Create executable phase prompts (SPRINT.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates rihal-phase-researcher, rihal-planner, and rihal-sprint-checker agents with a revision loop (max 3 iterations).
 </purpose>
 
+<required_reading>
+Read all files referenced by the invoking prompt's execution_context before starting.
 
-## Step 0 — Usage check
-
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
-
-```
-/rihal:plan <argument-here>
-```
-
-**Examples:**
-```
-/rihal:plan example 1
-/rihal:plan example 2
-```
-
-STOP — do not proceed.
-
-## Step 0.3 — Subcommand routing
-
-If first argument is `list`:
-  Run: `node .rihal/bin/rihal-tools.cjs plan list`
-  Print results in table format
-  STOP — do not proceed to plan creation.
-
-If first argument is `show <id>`:
-  Run: `node .rihal/bin/rihal-tools.cjs state resolve-id $id`
-  Read the resolved SPRINT.md and print contents
-  STOP.
-
-## Note on reference loading
-
-References (execution-protocol.md, commit-conventions.md) are loaded ONLY when Step 0 determines valid arguments are present. Usage check happens first to print help quickly without reading files.
+@.rihal/references/ui-brand.md
+@.rihal/references/revision-loop.md
+@.rihal/references/gate-prompts.md
+@.rihal/references/agent-contracts.md
+@.rihal/references/gates.md
+</required_reading>
 
 <available_agent_types>
-- `rihal-planner` — plan writer subagent
+Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+- rihal-phase-researcher — Researches technical approaches for a phase
+- rihal-planner — Creates detailed plans from phase scope
+- rihal-sprint-checker — Reviews plan quality before execution
 </available_agent_types>
 
-## Step 0 — Initialize and validate
+<process>
+
+## 1. Initialize
+
+Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init plan "$ARGUMENTS")
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init sprint-plan "$PHASE")
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-researcher 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
+CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 ```
 
-### Step 0.1 — Detect decision questions (STOP and redirect)
+When `CONTEXT_WINDOW >= 500000`, the planner prompt includes prior phase CONTEXT.md files so cross-phase decisions are consistent (e.g., "use library X for all data fetching" from Phase 2 is visible to Phase 5's planner).
 
-`/rihal:plan` converts CONCRETE TASKS into SPRINT.md files. It does NOT answer strategic questions or weigh options.
+Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
-**If the input is a question (contains "should we", "should I", "which is better", "A or B", "vs", "worth it", "kya karna", or ends with "?"), STOP immediately and redirect to `/rihal:council`.**
+**If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
-Classify the input by running:
+**File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
+
+**If `planning_exists` is false:** Error — run `/rihal:new-project` first.
+
+## 2. Parse and Normalize Arguments
+
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--prd <filepath>`, `--reviews`, `--text`).
+
+Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the Claude App.
+
+Extract `--prd <filepath>` from $ARGUMENTS. If present, set PRD_FILE to the filepath.
+
+**If no phase number:** Detect next unplanned phase from roadmap.
+
+**If `phase_found` is false:** Validate phase exists in ROADMAP.md. If valid, create the directory using `phase_slug` and `padded_phase` from init:
 ```bash
-node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS"
+mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 ```
 
-If `question_type` is `market`, `discovery`, `greenfield`, or the input matches a decision pattern, print EXACTLY this block and STOP (do not spawn planner):
+**Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
+## 2.5. Validate `--reviews` Prerequisite
+
+**Skip if:** No `--reviews` flag.
+
+**If `--reviews` AND `--gaps`:** Error — cannot combine `--reviews` with `--gaps`. These are conflicting modes.
+
+**If `--reviews` AND `has_reviews` is false (no REVIEWS.md in phase dir):**
+
+Error:
 ```
-⚠ That's a decision question, not a planning input.
+No REVIEWS.md found for Phase {N}. Run reviews first:
 
-/rihal:plan turns concrete tasks into executable SPRINT.md files.
-/rihal:council answers "should we do X?" questions with a panel of experts.
+/rihal:review --phase {N}
 
-Copy-paste this to ask the council instead:
-
-/rihal:council $ARGUMENTS
+Then re-run /rihal:sprint-plan {N} --reviews
 ```
+Exit workflow.
 
-**Important formatting:** the suggested `/rihal:council` command MUST be on a single line with no line breaks, so the user can copy it verbatim. Do not split, wrap, or bullet it.
+## 3. Validate Phase
 
-Only proceed past this step if the input is a concrete task description (e.g., "set up Next.js 16 project") or a council session file path.
-
-Parse:
-- `input_type` — `"session"`, `"file"`, or `"description"`
-- `resolved_path` — absolute path to the input file (if session/file type)
-- `description` — raw text (if description type)
-- `phase_slug` — from `--phase` flag or auto-generated from input
-- `output_dir` — from `--output` flag or default `.planning/plans/{phase_slug}/`
-- `config` — `{ user_name, project_name, language, mode }`
-- `paths` — standard rihal paths
-- `scope` — detected scope classification (see Step 0.2 below)
-
-**If no arguments:** print usage and stop:
-```
-Usage: /rihal:plan <council-session.md | "task description"> [--phase <name>] [--output <dir>]
-
-Examples:
-  /rihal:plan .planning/council-sessions/council-2026-04-12-affiliate-site.md
-  /rihal:plan "set up Next.js 16 project with next-intl for Arabic"
-  /rihal:plan .planning/council-sessions/ --phase 01-setup
-```
-
-### Step 0.2 — Detect scope and right-size the output
-
-Before spawning the planner, classify the input scope. Match the FIRST signal that applies:
-
-| Scope | Signals | Output |
-|-------|---------|--------|
-| ticket | "fix", "bug", "typo", "small", "quick", GitHub issue URL, input < 100 chars, single filename mentioned | 1 SPRINT.md with 3-5 inline tasks |
-| feature | "add", "implement", "build X", 1-3 files mentioned, < 300 chars | 1 SPRINT.md with 5-8 tasks |
-| phase | "phase", "epic", "sprint", multiple components mentioned, 300-800 chars | 1 SPRINT.md with up to 8 tasks + depends_on |
-| initiative | "milestone", "initiative", "roadmap", multi-team signals, > 800 chars | Multiple SPRINT.md files with waves |
-
-### If scope = ticket AND a single file is mentioned (look for *.py, *.ts, *.js, *.md etc):
-Suggest `/rihal:quick` instead:
-```
-⚠ This looks like a single-file task — /rihal:quick is faster.
-
-/rihal:quick is for single-purpose work: executor spawned directly,
-atomic commit, no plan file needed.
-
-Copy-paste to use quick instead:
-
-/rihal:quick $ARGUMENTS
-
-Or proceed with /rihal:plan if you want a planned artifact anyway.
-```
-
-Give user a chance to override via AskUserQuestion (proceed with plan / switch to quick).
-
-### If input contains a GitHub issue URL (pattern: github.com/*/issues/N):
-Try to fetch the issue's effort label:
 ```bash
-ISSUE_URL="$extracted_url"
-LABELS=$(gh issue view "$ISSUE_URL" --json labels -q '.labels[].name' 2>/dev/null)
-EFFORT=$(echo "$LABELS" | grep -iE "extra small|xs|small|medium|large|xl" | head -1)
+PHASE_INFO=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
-Map effort to scope:
-- "Extra Small" / XS / <1 day → ticket
-- "Small" / S / 1-3 days → feature
-- "Medium" / M → phase
-- "Large" / XL → initiative
+**If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
 
-This overrides keyword-based classification when available.
+## 3.5. Handle PRD Express Path
 
-### Pass scope to Step 2.5:
-The `INIT` object returned from Step 0 now includes the `scope` field. Extract this and pass it to the planner prompt in Step 2.5.
+**Skip if:** No `--prd` flag in arguments.
 
-## Step 1 — Resolve input
+**If `--prd <filepath>` provided:**
 
-**If `input_type === "file"` AND resolved_path ends in SPRINT.md:**
-Check if this file's frontmatter contains both `phase:` and `objective:` fields.
-
-If yes:
-```
-⚠ This file is already a SPRINT.md — you probably meant /rihal:execute.
-
-/rihal:execute $resolved_path
-
-To plan FROM this file's content as input (rare), pass --re-plan flag.
-```
-STOP.
-
-Otherwise, treat it as a planning input (rare case where SPRINT.md is source material).
-
-**If `input_type === "session"`:**
-Read the file at `resolved_path`. Extract the `## Follow-ups` section. If no Follow-ups section, read the full `## Panel Responses` section as input.
-
-If Follow-ups found, print:
-```
-📖 Planning from council session: {filename}
-   Follow-ups found: {count}
+1. Read the PRD file:
+```bash
+PRD_CONTENT=$(cat "$PRD_FILE" 2>/dev/null)
+if [ -z "$PRD_CONTENT" ]; then
+  echo "Error: PRD file not found: $PRD_FILE"
+  exit 1
+fi
 ```
 
-If no Follow-ups section found, print:
+2. Display banner:
 ```
-⚠ No '## Follow-ups' section found in {filename} — using full Panel Responses (~{N} tokens) as input.
-   Consider /rihal:council {original-question} again to get structured follow-ups.
-```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► PRD EXPRESS PATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**If `input_type === "description"`:**
-Print:
-```
-📖 Planning from description: "{first 80 chars}..."
+Using PRD: {PRD_FILE}
+Generating CONTEXT.md from requirements...
 ```
 
-## Step 2 — Research phase (conditional)
+3. Parse the PRD content and generate CONTEXT.md. The orchestrator should:
+   - Extract all requirements, user stories, acceptance criteria, and constraints from the PRD
+   - Map each to a locked decision (everything in the PRD is treated as a locked decision)
+   - Identify any areas the PRD doesn't cover and mark as "Claude's Discretion"
+   - **Extract canonical refs** from ROADMAP.md for this phase, plus any specs/ADRs referenced in the PRD — expand to full file paths (MANDATORY)
+   - Create CONTEXT.md in the phase directory
 
-**If `flags.research === true`:**
+4. Write CONTEXT.md:
+```markdown
+# Phase [X]: [Name] - Context
 
-Spawn `rihal-phase-researcher` subagent:
+**Gathered:** [date]
+**Status:** Ready for planning
+**Source:** PRD Express Path ({PRD_FILE})
+
+<domain>
+## Phase Boundary
+
+[Extracted from PRD — what this phase delivers]
+
+</domain>
+
+<decisions>
+## Implementation Decisions
+
+{For each requirement/story/criterion in the PRD:}
+### [Category derived from content]
+- [Requirement as locked decision]
+
+### Claude's Discretion
+[Areas not covered by PRD — implementation details, technical choices]
+
+</decisions>
+
+<canonical_refs>
+## Canonical References
+
+**Downstream agents MUST read these before planning or implementing.**
+
+[MANDATORY. Extract from ROADMAP.md and any docs referenced in the PRD.
+Use full relative paths. Group by topic area.]
+
+### [Topic area]
+- `path/to/spec-or-adr.md` — [What it decides/defines]
+
+[If no external specs: "No external specs — requirements fully captured in decisions above"]
+
+</canonical_refs>
+
+<specifics>
+## Specific Ideas
+
+[Any specific references, examples, or concrete requirements from PRD]
+
+</specifics>
+
+<deferred>
+## Deferred Ideas
+
+[Items in PRD explicitly marked as future/v2/out-of-scope]
+[If none: "None — PRD covers phase scope"]
+
+</deferred>
+
+---
+
+*Phase: XX-name*
+*Context gathered: [date] via PRD Express Path*
+```
+
+5. Commit:
+```bash
+node ".rihal/bin/rihal-tools.cjs" commit "docs(${padded_phase}): generate context from PRD" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+```
+
+6. Set `context_content` to the generated CONTEXT.md content and continue to step 5 (Handle Research).
+
+**Effect:** This completely bypasses step 4 (Load CONTEXT.md) since we just created it. The rest of the workflow (research, planning, verification) proceeds normally with the PRD-derived context.
+
+## 4. Load CONTEXT.md
+
+**Skip if:** PRD express path was used (CONTEXT.md already created in step 3.5).
+
+Check `context_path` from init JSON.
+
+If `context_path` is not null, display: `Using phase context from: ${context_path}`
+
+**If `context_path` is null (no CONTEXT.md exists):**
+
+Read discuss mode for context gate label:
+```bash
+DISCUSS_MODE=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+```
+
+If `TEXT_MODE` is true, present as a plain-text numbered list:
+```
+No CONTEXT.md found for Phase {X}. Plans will use research and requirements only — your design preferences won't be included.
+
+1. Continue without context — Plan using research + requirements only
+[If DISCUSS_MODE is "assumptions":]
+2. Gather context (assumptions mode) — Analyze codebase and surface assumptions before planning
+[If DISCUSS_MODE is "discuss" or unset:]
+2. Run discuss-phase first — Capture design decisions before planning
+
+Enter number:
+```
+
+Otherwise use AskUserQuestion:
+- header: "No context"
+- question: "No CONTEXT.md found for Phase {X}. Plans will use research and requirements only — your design preferences won't be included. Continue or capture context first?"
+- options:
+  - "Continue without context" — Plan using research + requirements only
+  If `DISCUSS_MODE` is `"assumptions"`:
+  - "Gather context (assumptions mode)" — Analyze codebase and surface assumptions before planning
+  If `DISCUSS_MODE` is `"discuss"` (or unset):
+  - "Run discuss-phase first" — Capture design decisions before planning
+
+If "Continue without context": Proceed to step 5.
+If "Run discuss-phase first":
+  **IMPORTANT:** Do NOT invoke discuss-phase as a nested Skill/Task call — AskUserQuestion
+  does not work correctly in nested subcontexts (#1009). Instead, display the command
+  and exit so the user runs it as a top-level command:
+  ```
+  Run this command first, then re-run /rihal:sprint-plan {X} ${Rihal_WS}:
+
+  /rihal:discuss-phase {X} ${Rihal_WS}
+  ```
+  **Exit the sprint-plan workflow. Do not continue.**
+
+## 5. Handle Research
+
+**Skip if:** `--gaps` flag or `--skip-research` flag or `--reviews` flag.
+
+**If `has_research` is true (from init) AND no `--research` flag:** Use existing, skip to step 6.
+
+**If RESEARCH.md missing OR `--research` flag:**
+
+**If no explicit flag (`--research` or `--skip-research`) and not `--auto`:**
+Ask the user whether to research, with a contextual recommendation based on the phase:
+
+If `TEXT_MODE` is true, present as a plain-text numbered list:
+```
+Research before planning Phase {X}: {phase_name}?
+
+1. Research first (Recommended) — Investigate domain, patterns, and dependencies before planning. Best for new features, unfamiliar integrations, or architectural changes.
+2. Skip research — Plan directly from context and requirements. Best for bug fixes, simple refactors, or well-understood tasks.
+
+Enter number:
+```
+
+Otherwise use AskUserQuestion:
+```
+AskUserQuestion([
+  {
+    question: "Research before planning Phase {X}: {phase_name}?",
+    header: "Research",
+    multiSelect: false,
+    options: [
+      { label: "Research first (Recommended)", description: "Investigate domain, patterns, and dependencies before planning. Best for new features, unfamiliar integrations, or architectural changes." },
+      { label: "Skip research", description: "Plan directly from context and requirements. Best for bug fixes, simple refactors, or well-understood tasks." }
+    ]
+  }
+])
+```
+
+If user selects "Skip research": skip to step 6.
+
+**If `--auto` and `research_enabled` is false:** Skip research silently (preserves automated behavior).
+
+Display banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► RESEARCHING PHASE {X}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+◆ Spawning researcher...
+```
+
+### Spawn rihal-phase-researcher
+
+```bash
+PHASE_DESC=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section)
+```
+
+Research prompt:
+
+```markdown
+<objective>
+Research how to implement Phase {phase_number}: {phase_name}
+Answer: "What do I need to know to PLAN this phase well?"
+</objective>
+
+<files_to_read>
+- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {requirements_path} (Project requirements)
+- {state_path} (Project decisions and history)
+</files_to_read>
+
+${AGENT_SKILLS_RESEARCHER}
+
+<additional_context>
+**Phase description:** {phase_description}
+**Phase requirement IDs (MUST address):** {phase_req_ids}
+
+**Project instructions:** Read ./CLAUDE.md if exists — follow project-specific guidelines
+**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, research should account for project skill patterns
+</additional_context>
+
+<output>
+Write to: {phase_dir}/{phase_num}-RESEARCH.md
+</output>
+```
 
 ```
-Agent tool call:
-  subagent_type: "rihal-phase-researcher"
-  description: "Research topic and generate context"
-  prompt: |
-    Research the following topic and generate context:
-    
-    Topic: {description or follow-ups summary}
-    Project: {config.project_name}
-    Output directory: {output_dir}
-    
-    Write findings to: {output_dir}/RESEARCH.md
-    
-    Include:
-    - Background and context
-    - Technical considerations
-    - Best practices and patterns
-    - Relevant tools and libraries
-    - Known pitfalls to avoid
+Task(
+  prompt=research_prompt,
+  subagent_type="rihal-phase-researcher",
+  model="{researcher_model}",
+  description="Research Phase {phase}"
+)
 ```
 
-After researcher completes, read the generated `{output_dir}/RESEARCH.md` file. Include its full contents in the planner prompt (Step 2.5).
+### Handle Researcher Return
 
-**If `flags.research === false`:** Skip to Step 2.2.
+- **`## RESEARCH COMPLETE`:** Display confirmation, continue to step 6
+- **`## RESEARCH BLOCKED`:** Display blocker, offer: 1) Provide context, 2) Skip research, 3) Abort
 
-## Step 2.2 — Verify Upstream Artifacts (NEW)
+## 5.5. Create Validation Strategy
 
-If the plan input is a debug artifact (from `.rihal/debug/*.md`) or research artifact (RESEARCH.md from prior chain), spot-check its references to detect stale/hallucinated findings before spawning the planner.
+Skip if `nyquist_validation_enabled` is false OR `research_enabled` is false.
 
-**When to verify:**
-- Input type is `"file"` AND file path contains `.rihal/debug/`
-- Input type is `"file"` AND file path contains `RESEARCH.md`
-- Otherwise: skip this step
+If `research_enabled` is false and `nyquist_validation_enabled` is true: warn "Nyquist validation enabled but research disabled — VALIDATION.md cannot be created without RESEARCH.md. Plans will lack validation requirements (Dimension 8)." Continue to step 6.
 
-**Verification process:**
-1. Extract references from the artifact file using code-references.cjs:
-   - Call `extractReferences(fileText)` to get files, symbols, fileLines
-   - Call `verifyReferences(refs, projectRoot)` to check existence
-2. Check result summary:
-   - If `summary.ratio >= 0.8`: Good — proceed with note
-   - If `0.5 <= summary.ratio < 0.8`: Warning — ask user to confirm
-   - If `summary.ratio < 0.5`: Blocker — stop and redirect
+**But Nyquist is not applicable for this run** when all of the following are true:
+- `research_enabled` is false
+- `has_research` is false
+- no `--research` flag was provided
 
-**If verified.ratio >= 0.8:**
-Print info message and add to planner context in Step 2.5:
-```
-✅ Upstream artifact verified: {verified}/{total} references confirmed
+In that case: **skip validation-strategy creation entirely**. Do **not** expect `RESEARCH.md` or `VALIDATION.md` for this run, and continue to Step 6.
+
+```bash
+grep -l "## Validation Architecture" "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null || true
 ```
 
-**If 0.5 <= verified.ratio < 0.8:**
-Print warning and ask via AskUserQuestion:
+**If found:**
+1. Read template: `.rihal/templates/VALIDATION.md`
+2. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md` (use Write tool)
+3. Fill frontmatter: `{N}` → phase number, `{phase-slug}` → slug, `{date}` → current date
+4. Verify:
+```bash
+test -f "${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md" && echo "VALIDATION_CREATED=true" || echo "VALIDATION_CREATED=false"
 ```
-⚠ Upstream artifact partially verified ({ratio}%).
+5. If `VALIDATION_CREATED=false`: STOP — do not proceed to Step 6
+6. If `commit_docs`: `commit "docs(phase-${PHASE}): add validation strategy"`
 
-Missing files: {count} ({list})
-Missing symbols: {count} ({list})
+**If not found:** Warn and continue — plans may fail Dimension 8.
+
+## 5.55. Security Threat Model Gate
+
+> Skip if `workflow.security_enforcement` is explicitly `false`. Absent = enabled.
+
+```bash
+SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_ASVS=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_asvs_level --raw 2>/dev/null || echo "1")
+SECURITY_BLOCK=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_block_on --raw 2>/dev/null || echo "high")
+```
+
+**If `SECURITY_CFG` is `false`:** Skip to step 5.6.
+
+**If `SECURITY_CFG` is `true`:** Display banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each SPRINT.md must include a <threat_model> block.
+Block on: {SECURITY_BLOCK} severity threats.
+Opt out: set security_enforcement: false in .planning/config.json
+```
+
+Continue to step 5.6. Security config is passed to the planner in step 8.
+
+## 5.6. UI Design Contract Gate
+
+> Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.planning/config.json`. If keys are absent, treat as enabled.
+
+```bash
+UI_PHASE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_GATE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_safety_gate 2>/dev/null || echo "true")
+```
+
+**If both are `false`:** Skip to step 6.
+
+Check if phase has frontend indicators:
+
+```bash
+PHASE_SECTION=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" 2>/dev/null)
+echo "$PHASE_SECTION" | grep -iE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" > /dev/null 2>&1
+HAS_UI=$?
+```
+
+**If `HAS_UI` is 0 (frontend indicators found):**
+
+Check for existing UI-SPEC:
+```bash
+UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
+```
+
+**If UI-SPEC.md found:** Set `UI_SPEC_PATH=$UI_SPEC_FILE`. Display: `Using UI design contract: ${UI_SPEC_PATH}`
+
+**If UI-SPEC.md missing AND `UI_GATE_CFG` is `true`:**
+
+Read auto-chain state:
+```bash
+AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+```
+
+**If `AUTO_CHAIN` is `true` (running inside a `--chain` or `--auto` pipeline):**
+
+Auto-generate UI-SPEC without prompting:
+```
+Skill(skill="rihal-ui-phase", args="${PHASE} --auto ${Rihal_WS}")
+```
+After `rihal-ui-phase` returns, re-read:
+```bash
+UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
+UI_SPEC_PATH="${UI_SPEC_FILE}"
+```
+Continue to step 6.
+
+**If `AUTO_CHAIN` is `false` (manual invocation):**
+
+If `TEXT_MODE` is true, present as a plain-text numbered list:
+```
+Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?
+
+1. Generate UI-SPEC first — Run /rihal:ui-phase {N} then re-run /rihal:sprint-plan {N}
+2. Continue without UI-SPEC
+3. Not a frontend phase
+
+Enter number:
+```
+
+Otherwise use AskUserQuestion:
+- header: "UI Design Contract"
+- question: "Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?"
+- options:
+  - "Generate UI-SPEC first" → Display: "Run `/rihal:ui-phase {N} ${Rihal_WS}` then re-run `/rihal:sprint-plan {N} ${Rihal_WS}`". Exit workflow.
+  - "Continue without UI-SPEC" → Continue to step 6.
+  - "Not a frontend phase" → Continue to step 6.
+
+**If `HAS_UI` is 1 (no frontend indicators):** Skip silently to step 5.7.
+
+## 5.7. Schema Push Detection Gate
+
+> Detects schema-relevant files in the phase scope and injects a mandatory `[BLOCKING]` schema push task into the plan. Prevents false-positive verification where build/types pass because TypeScript types come from config, not the live database.
+
+Check if any files in the phase scope match schema patterns:
+
+```bash
+PHASE_SECTION=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section 2>/dev/null)
+```
+
+Scan `PHASE_SECTION`, `CONTEXT.md` (if loaded), and `RESEARCH.md` (if exists) for file paths matching these ORM patterns:
+
+| ORM | File Patterns |
+|-----|--------------|
+| Payload CMS | `src/collections/**/*.ts`, `src/globals/**/*.ts` |
+| Prisma | `prisma/schema.prisma`, `prisma/schema/*.prisma` |
+| Drizzle | `drizzle/schema.ts`, `src/db/schema.ts`, `drizzle/*.ts` |
+| Supabase | `supabase/migrations/*.sql` |
+| TypeORM | `src/entities/**/*.ts`, `src/migrations/**/*.ts` |
+
+Also check if any existing SPRINT.md files for this phase already reference these file patterns in `files_modified`.
+
+**If schema-relevant files detected:**
+
+Set `SCHEMA_PUSH_REQUIRED=true` and `SCHEMA_ORM={detected_orm}`.
+
+Determine the push command for the detected ORM:
+
+| ORM | Push Command | Non-TTY Workaround |
+|-----|-------------|-------------------|
+| Payload CMS | `npx payload migrate` | `CI=true PAYLOAD_MIGRATING=true npx payload migrate` |
+| Prisma | `npx prisma db push` | `npx prisma db push --accept-data-loss` (if destructive) |
+| Drizzle | `npx drizzle-kit push` | `npx drizzle-kit push` |
+| Supabase | `supabase db push` | Set `SUPABASE_ACCESS_TOKEN` env var |
+| TypeORM | `npx typeorm migration:run` | `npx typeorm migration:run -d src/data-source.ts` |
+
+Inject the following into the planner prompt (step 8) as an additional constraint:
+
+```markdown
+<schema_push_requirement>
+**[BLOCKING] Schema Push Required**
+
+This phase modifies schema-relevant files ({detected_files}). The planner MUST include
+a `[BLOCKING]` task that runs the database schema push command AFTER all schema file
+modifications are complete but BEFORE verification.
+
+- ORM detected: {SCHEMA_ORM}
+- Push command: {push_command}
+- Non-TTY workaround: {env_hint}
+- If push requires interactive prompts that cannot be suppressed, flag the task for
+  manual intervention with `autonomous: false`
+
+This task is mandatory — the phase CANNOT pass verification without it. Build and
+type checks will pass without the push (types come from config, not the live database),
+creating a false-positive verification state.
+</schema_push_requirement>
+```
+
+Display: `Schema files detected ({SCHEMA_ORM}) — [BLOCKING] push task will be injected into plans`
+
+**If no schema-relevant files detected:** Skip silently to step 6.
+
+## 6. Check Existing Plans
+
+```bash
+ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null || true
+```
+
+**If exists AND `--reviews` flag:** Skip prompt — go straight to replanning (the purpose of `--reviews` is to replan with review feedback).
+
+**If exists AND no `--reviews` flag:** Offer: 1) Add more plans, 2) View existing, 3) Replan from scratch.
+
+## 7. Use Context Paths from INIT
+
+Extract from INIT JSON:
+
+```bash
+_rihal_field() { node -e "const o=JSON.parse(process.argv[1]); const v=o[process.argv[2]]; process.stdout.write(v==null?'':String(v))" "$1" "$2"; }
+STATE_PATH=$(_rihal_field "$INIT" state_path)
+ROADMAP_PATH=$(_rihal_field "$INIT" roadmap_path)
+REQUIREMENTS_PATH=$(_rihal_field "$INIT" requirements_path)
+RESEARCH_PATH=$(_rihal_field "$INIT" research_path)
+VERIFICATION_PATH=$(_rihal_field "$INIT" verification_path)
+UAT_PATH=$(_rihal_field "$INIT" uat_path)
+CONTEXT_PATH=$(_rihal_field "$INIT" context_path)
+REVIEWS_PATH=$(_rihal_field "$INIT" reviews_path)
+```
+
+## 7.5. Verify Nyquist Artifacts
+
+Skip if `nyquist_validation_enabled` is false OR `research_enabled` is false.
+
+Also skip if all of the following are true:
+- `research_enabled` is false
+- `has_research` is false
+- no `--research` flag was provided
+
+In that no-research path, Nyquist artifacts are **not required** for this run.
+
+```bash
+VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
+```
+
+If missing and Nyquist is still enabled/applicable — ask user:
+1. Re-run: `/rihal:sprint-plan {PHASE} --research ${Rihal_WS}`
+2. Disable Nyquist with the exact command:
+   `node ".rihal/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
+3. Continue anyway (plans fail Dimension 8)
+
+Proceed to Step 8 only if user selects 2 or 3.
+
+## 8. Spawn rihal-planner Agent
+
+Display banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► PLANNING PHASE {X}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+◆ Spawning planner...
+```
+
+Planner prompt:
+
+```markdown
+<planning_context>
+**Phase:** {phase_number}
+**Mode:** {standard | gap_closure | reviews}
+
+<files_to_read>
+- {state_path} (Project State)
+- {roadmap_path} (Roadmap)
+- {requirements_path} (Requirements)
+- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {research_path} (Technical Research)
+- {verification_path} (Verification Gaps - if --gaps)
+- {uat_path} (UAT Gaps - if --gaps)
+- {reviews_path} (Cross-AI Review Feedback - if --reviews)
+- {UI_SPEC_PATH} (UI Design Contract — visual/interaction specs, if exists)
+${CONTEXT_WINDOW >= 500000 ? `
+**Cross-phase context (1M model enrichment):**
+- Prior phase CONTEXT.md files (locked decisions from earlier phases — maintain consistency)
+- Prior phase SUMMARY.md files (what was actually built — reuse patterns, avoid duplication)
+` : ''}
+</files_to_read>
+
+${AGENT_SKILLS_PLANNER}
+
+**Phase requirement IDs (every ID MUST appear in a plan's `requirements` field):** {phase_req_ids}
+
+**Project instructions:** Read ./CLAUDE.md if exists — follow project-specific guidelines
+**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
+
+</planning_context>
+
+<downstream_consumer>
+Output consumed by /rihal:execute-phase. Plans need:
+- Frontmatter (wave, depends_on, files_modified, autonomous)
+- Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
+- Verification criteria
+- must_haves for goal-backward verification
+</downstream_consumer>
+
+<deep_work_rules>
+## Anti-Shallow Execution Rules (MANDATORY)
+
+Every task MUST include these fields — they are NOT optional:
+
+1. **`<read_first>`** — Files the executor MUST read before touching anything. Always include:
+   - The file being modified (so executor sees current state, not assumptions)
+   - Any "source of truth" file referenced in CONTEXT.md (reference implementations, existing patterns, config files, schemas)
+   - Any file whose patterns, signatures, types, or conventions must be replicated or respected
+
+2. **`<acceptance_criteria>`** — Verifiable conditions that prove the task was done correctly. Rules:
+   - Every criterion must be checkable with grep, file read, test command, or CLI output
+   - NEVER use subjective language ("looks correct", "properly configured", "consistent with")
+   - ALWAYS include exact strings, patterns, values, or command outputs that must be present
+   - Examples:
+     - Code: `auth.py contains def verify_token(` / `test_auth.py exits 0`
+     - Config: `.env.example contains DATABASE_URL=` / `Dockerfile contains HEALTHCHECK`
+     - Docs: `README.md contains '## Installation'` / `API.md lists all endpoints`
+     - Infra: `deploy.yml has rollback step` / `docker-compose.yml has healthcheck for db`
+
+3. **`<action>`** — Must include CONCRETE values, not references. Rules:
+   - NEVER say "align X with Y", "match X to Y", "update to be consistent" without specifying the exact target state
+   - ALWAYS include the actual values: config keys, function signatures, SQL statements, class names, import paths, env vars, etc.
+   - If CONTEXT.md has a comparison table or expected values, copy them into the action verbatim
+   - The executor should be able to complete the task from the action text alone, without needing to read CONTEXT.md or reference files (read_first is for verification, not discovery)
+
+**Why this matters:** Executor agents work from the plan text. Vague instructions like "update the config to match production" produce shallow one-line changes. Concrete instructions like "add DATABASE_URL=postgresql://... , set POOL_SIZE=20, add REDIS_URL=redis://..." produce complete work. The cost of verbose plans is far less than the cost of re-doing shallow execution.
+</deep_work_rules>
+
+<quality_gate>
+- [ ] SPRINT.md files created in phase directory
+- [ ] Each plan has valid frontmatter
+- [ ] Tasks are specific and actionable
+- [ ] Every task has `<read_first>` with at least the file being modified
+- [ ] Every task has `<acceptance_criteria>` with grep-verifiable conditions
+- [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
+- [ ] Dependencies correctly identified
+- [ ] Waves assigned for parallel execution
+- [ ] must_haves derived from phase goal
+</quality_gate>
+```
+
+```
+Task(
+  prompt=filled_prompt,
+  subagent_type="rihal-planner",
+  model="{planner_model}",
+  description="Plan Phase {phase}"
+)
+```
+
+## 9. Handle Planner Return
+
+- **`## PLANNING COMPLETE`:** Display plan count. If `--skip-verify` or `plan_checker_enabled` is false (from init): skip to step 13. Otherwise: step 10.
+- **`## PHASE SPLIT RECOMMENDED`:** The planner determined the phase is too complex to implement all user decisions without simplifying them. Handle in step 9b.
+- **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
+- **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
+
+## 9b. Handle Phase Split Recommendation
+
+When the planner returns `## PHASE SPLIT RECOMMENDED`, it means the phase has too many decisions to implement at full fidelity within the plan budget. The planner proposes groupings.
+
+**Extract from planner return:**
+- Proposed sub-phases (e.g., "17a: processing core (D-01 to D-19)", "17b: billing + config UX (D-20 to D-27)")
+- Which D-XX decisions go in each sub-phase
+- Why the split is necessary (decision count, complexity estimate)
+
+**Present to user:**
+```
+## Phase {X} is too complex for full-fidelity implementation
+
+The planner found {N} decisions that cannot all be implemented without
+simplifying some. Instead of reducing your decisions, we recommend splitting:
+
+**Option 1: Split into sub-phases**
+- Phase {X}a: {name} — {D-XX to D-YY} ({N} decisions)
+- Phase {X}b: {name} — {D-XX to D-YY} ({M} decisions)
+
+**Option 2: Proceed anyway** (planner will attempt all, quality may degrade)
+
+**Option 3: Prioritize** — you choose which decisions to implement now,
+rest become a follow-up phase
+```
+
+Use AskUserQuestion with these 3 options.
+
+**If "Split":** Use `/rihal:insert-phase` to create the sub-phases, then replan each.
+**If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
+**If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
+
+## 10. Spawn rihal-sprint-checker Agent
+
+Display banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► VERIFYING PLANS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+◆ Spawning plan checker...
+```
+
+Checker prompt:
+
+```markdown
+<verification_context>
+**Phase:** {phase_number}
+**Phase Goal:** {goal from ROADMAP}
+
+<files_to_read>
+- {PHASE_DIR}/*-SPRINT.md (Plans to verify)
+- {roadmap_path} (Roadmap)
+- {requirements_path} (Requirements)
+- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {research_path} (Technical Research — includes Validation Architecture)
+</files_to_read>
+
+${AGENT_SKILLS_CHECKER}
+
+**Phase requirement IDs (MUST ALL be covered):** {phase_req_ids}
+
+**Project instructions:** Read ./CLAUDE.md if exists — verify plans honor project guidelines
+**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — verify plans account for project skill rules
+</verification_context>
+
+<expected_output>
+- ## VERIFICATION PASSED — all checks pass
+- ## ISSUES FOUND — structured issue list
+</expected_output>
+```
+
+```
+Task(
+  prompt=checker_prompt,
+  subagent_type="rihal-sprint-checker",
+  model="{checker_model}",
+  description="Verify Phase {phase} plans"
+)
+```
+
+## 11. Handle Checker Return
+
+- **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 13.
+- **`## ISSUES FOUND`:** Display issues, check iteration count, proceed to step 12.
+
+**Thinking partner for architectural tradeoffs (conditional):**
+If `features.thinking_partner` is enabled, scan the checker's issues for architectural tradeoff keywords
+("architecture", "approach", "strategy", "pattern", "vs", "alternative"). If found:
+
+```
+The sprint-checker flagged an architectural decision point:
+{issue description}
+
+Brief analysis:
+- Option A: {approach_from_plan} — {pros/cons}
+- Option B: {alternative_approach} — {pros/cons}
+- Recommendation: {choice} aligned with {phase_goal}
+
+Apply this to the revision? [Yes] / [No, I'll decide]
+```
+
+If yes: include the recommendation in the revision prompt. If no: proceed to revision loop as normal.
+If thinking_partner disabled: skip this block entirely.
+
+## 12. Revision Loop (Max 3 Iterations)
+
+Track `iteration_count` (starts at 1 after initial plan + check).
+Track `prev_issue_count` (initialized to `Infinity` before the loop begins).
+Track `stall_reentry_count` (starts at 0; incremented each time "Adjust approach" re-enters step 8).
+
+**If iteration_count < 3:**
+
+Parse issue count from checker return: count BLOCKER + WARNING entries in the YAML issues block (structured output from rihal-sprint-checker). If the checker's return contains no YAML issues block (i.e., the plan was approved with no issues), treat `issue_count` as 0 and skip the stall check — the plan passed. Proceed to step 13.
+
+Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} warnings`
+
+**Stall detection:** If `issue_count >= prev_issue_count`:
+  Display: `Revision loop stalled — issue count not decreasing ({issue_count} issues remain after {N} iterations)`
+
+  **If `stall_reentry_count < 2`:**
+    Ask user:
+      Question: "Issues remain after {N} revision attempts with no progress. Proceed with current output?"
+      Options: "Proceed anyway" | "Adjust approach"
+    If "Proceed anyway": accept current plans and continue to step 13.
+    If "Adjust approach": increment `stall_reentry_count`, open freeform discussion, then re-enter step 8 (full replanning). Note: re-entry resets `iteration_count` and `prev_issue_count` but `stall_reentry_count` persists across re-entries and is capped at 2.
+
+  **If `stall_reentry_count >= 2`:**
+    Display: `Stall persists after 2 re-planning attempts. The following issues could not be resolved automatically:`
+    List the remaining issues from the checker.
+    Suggest: "Consider resolving these issues manually or running `/rihal:debug` to investigate root causes."
+    Options: "Proceed anyway" | "Abandon"
+    If "Proceed anyway": accept current plans and continue to step 13.
+    If "Abandon": stop workflow.
+
+Set `prev_issue_count = issue_count`.
+
+Revision prompt:
+
+```markdown
+<revision_context>
+**Phase:** {phase_number}
+**Mode:** revision
+
+<files_to_read>
+- {PHASE_DIR}/*-SPRINT.md (Existing plans)
+- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+</files_to_read>
+
+${AGENT_SKILLS_PLANNER}
+
+**Checker issues:** {structured_issues_from_checker}
+</revision_context>
+
+<instructions>
+Make targeted updates to address checker issues.
+Do NOT replan from scratch unless issues are fundamental.
+Return what changed.
+</instructions>
+```
+
+```
+Task(
+  prompt=revision_prompt,
+  subagent_type="rihal-planner",
+  model="{planner_model}",
+  description="Revise Phase {phase} plans"
+)
+```
+
+After planner returns -> spawn checker again (step 10), increment iteration_count.
+
+**If iteration_count >= 3:**
+
+Display: `Max iterations reached. {N} issues remain:` + issue list
+
+Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
+
+## 13. Requirements Coverage Gate
+
+After plans pass the checker (or checker is skipped), verify that all phase requirements are covered by at least one plan.
+
+**Skip if:** `phase_req_ids` is null or TBD (no requirements mapped to this phase).
+
+**Step 1: Extract requirement IDs claimed by plans**
+```bash
+# Collect all requirement IDs from plan frontmatter
+PLAN_REQS=$(grep -h "requirements_addressed\|requirements:" ${PHASE_DIR}/*-SPRINT.md 2>/dev/null | tr -d '[]' | tr ',' '\n' | sed 's/^[[:space:]]*//' | sort -u)
+```
+
+**Step 2: Compare against phase requirements from ROADMAP**
+
+For each REQ-ID in `phase_req_ids`:
+- If REQ-ID appears in `PLAN_REQS` → covered ✓
+- If REQ-ID does NOT appear in any plan → uncovered ✗
+
+**Step 3: Check CONTEXT.md features against plan objectives**
+
+Read CONTEXT.md `<decisions>` section. Extract feature/capability names. Check each against plan `<objective>` blocks. Features not mentioned in any plan objective → potentially dropped.
+
+**Step 4: Report**
+
+If all requirements covered and no dropped features:
+```
+✓ Requirements coverage: {N}/{N} REQ-IDs covered by plans
+```
+→ Proceed to step 14.
+
+If gaps found:
+```
+## ⚠ Requirements Coverage Gap
+
+{M} of {N} phase requirements are not assigned to any plan:
+
+| REQ-ID | Description | Plans |
+|--------|-------------|-------|
+| {id} | {from REQUIREMENTS.md} | None |
+
+{K} CONTEXT.md features not found in plan objectives:
+- {feature_name} — described in CONTEXT.md but no plan covers it
 
 Options:
-  A) Proceed with planning (planner will see stale references)
-  B) Re-run /rihal:debug to refresh findings
-  C) Cancel
+1. Re-plan to include missing requirements (recommended)
+2. Move uncovered requirements to next phase
+3. Proceed anyway — accept coverage gaps
 ```
 
-If user chooses A: continue to Step 2.3, pass stale warning to planner.
-If B or C: stop and provide the command to re-run.
+If `TEXT_MODE` is true, present as a plain-text numbered list (options already shown in the block above). Otherwise use AskUserQuestion to present the options.
 
-**If verified.ratio < 0.5:**
-Print error and stop:
-```
-❌ Upstream artifact is stale ({ratio}% references missing).
+## 13b. Record Planning Completion in STATE.md
 
-This artifact likely contains hallucinated file names or function references.
-Plan built from it will fail at execute time.
-
-Re-run diagnosis first:
-
-/rihal:debug <original issue or symptom>
-
-Then:
-
-/rihal:plan {description or session}
-```
-
-**If no upstream artifact:** Skip this step entirely.
-
-## Step 2.3 — Assign hierarchical IDs
-
-Before spawning the planner, assign IDs for the plan(s):
+After plans pass all gates, record that planning is complete so STATE.md reflects the new phase status:
 
 ```bash
-# Get next phase ID if creating a new phase
-PHASE_ID=$(node .rihal/bin/rihal-tools.cjs state next-phase-id)
-
-# Get next sprint ID(s) for that phase
-PLAN_ID=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
-
-# If creating multiple plans (initiative), get additional sprint IDs
-# PLAN_ID_2=$(node .rihal/bin/rihal-tools.cjs state next-plan-id $PHASE_ID)
+node ".rihal/bin/rihal-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
 ```
 
-Pass `PHASE_ID` and `PLAN_ID` (or `PLAN_IDS[]` for initiatives) to the planner in Step 2.5.
+This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
 
-## Step 2.5 — Spawn rihal-planner
+## 14. Present Final Status
 
-Spawn a single `rihal-planner` subagent:
+Route to `<offer_next>` OR `auto_advance` depending on flags/config.
 
-```
-Agent tool call:
-  subagent_type: "rihal-planner"
-  description: "Generate SPRINT.md files from council follow-ups"
-  prompt: |
-    Write executable SPRINT.md files from the input below.
+## 15. Auto-Advance Check
 
-    ## Input
-    {the follow-ups text or description}
+Check for auto-advance trigger:
 
-    ## Scope
-    {scope detected in Step 0.2: ticket | feature | phase | initiative}
-    {if ticket}: Produce ONE SPRINT.md with 3-5 inline tasks. Do not split into multiple plans.
-    {if feature}: Produce ONE SPRINT.md with 5-8 tasks.
-    {if phase}: Produce ONE SPRINT.md with up to 8 tasks + depends_on where needed.
-    {if initiative}: Produce multiple SPRINT.md files with dependency waves.
+1. Parse `--auto` and `--chain` flags from $ARGUMENTS
+2. **Sync chain flag with intent** — if user invoked manually (no `--auto` and no `--chain`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
+   ```bash
+   if [[ ! "$ARGUMENTS" =~ --auto ]] && [[ ! "$ARGUMENTS" =~ --chain ]]; then
+     node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+   fi
+   ```
+3. Read both the chain flag and user preference:
+   ```bash
+   AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   ```
 
-    ## Hierarchical IDs
-    Use these auto-assigned IDs for all plans and tasks:
-    {if single plan}: phase_id={PHASE_ID}, plan_id={PLAN_ID}
-    {if multiple plans}: phase_id={PHASE_ID}, plan_ids={PLAN_ID_1},{PLAN_ID_2},...
-    
-    Task IDs follow pattern: {PLAN_ID}.{task_number} (e.g., 01.02.01, 01.02.02)
-
-    ## Research context (if available)
-    {If RESEARCH.md was generated in Step 2, include its full contents here}
-
-    ## Output directory
-    {output_dir}
-
-    ## Phase slug
-    {phase_slug}
-
-    ## Project context
-    - Project: {config.project_name}
-    - Root: {paths.project_root}
-
-    ## SPRINT.md schema (follow exactly)
-    {contents of execution-protocol.md — the SPRINT.md schema section}
-
-    ## Commit conventions
-    {contents of commit-conventions.md — the format section}
-
-    Write the plans. Print your summary at the end.
-```
-
-## Step 3 — Verify plan
-
-After planner completes, spawn `rihal-sprint-checker` subagent to validate the SPRINT.md:
-
-```
-Agent tool call:
-  subagent_type: "rihal-sprint-checker"
-  description: "Verify SPRINT.md structure and completeness"
-  prompt: |
-    Verify the SPRINT.md files in this directory: {output_dir}
-    
-    Check for:
-    - Valid YAML frontmatter (phase, objective, depends_on)
-    - All tasks present and properly formatted
-    - Checkpoints correctly placed
-    - References to execution-protocol.md standards
-    
-    Return PASS or a list of issues found.
-```
-
-### Step 3.5 — Handle verification results
-
-**Initialize retry counter:** `retries = 0`
-
-**If sprint-checker returns PASS:**
-- Proceed to Step 4 (print output)
-
-**If sprint-checker returns issues:**
-- If `retries < 2`:
-  1. Increment `retries`
-  2. Spawn `rihal-planner` again with prompt:
-     ```
-     The plan had these issues:
-     {issues list from sprint-checker}
-     
-     Fix them and regenerate the SPRINT.md file(s) at: {output_dir}
-     ```
-  3. After planner completes, loop back to Step 3.5 (verify again)
-
-- If `retries = 2`:
-  1. Print warning:
-     ```
-     ⚠ Plan verification failed after 2 retries. Saving anyway.
-     Issues:
-     {issues list}
-     ```
-  2. Proceed to Step 4 (print output)
-
-## Step 4 — Print planner output
-
-Print the rihal-planner's output **verbatim**. Do not summarize.
-
-Append footer:
-```
-─── ~10-15K tokens · {duration}s · 1-2 agents ───
-```
-
-(Use estimation from `.rihal/references/response-style.md#session-cost-footer`)
-
-## Step 5 — Update state
-
+**If `--auto` or `--chain` flag present AND `AUTO_CHAIN` is not true:** Persist chain flag to config (handles direct invocation without prior discuss-phase):
 ```bash
-node .rihal/bin/rihal-tools.cjs state record-session 2>/dev/null || true
+if ([[ "$ARGUMENTS" =~ --auto ]] || [[ "$ARGUMENTS" =~ --chain ]]) && [[ "$AUTO_CHAIN" != "true" ]]; then
+  node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
+fi
 ```
 
-Silent — if state.json missing, ignore.
+**If `--auto` or `--chain` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true:**
 
-## Success Criteria
+Display banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► AUTO-ADVANCING TO EXECUTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- [ ] Plan file(s) written to output_dir with correct naming and YAML frontmatter
-- [ ] Plan-checker validation passes (or user proceeds with warnings if retries exhausted)
-- [ ] Planner output printed verbatim to user
-- [ ] State updated with session record
+Plans ready. Launching execute-phase...
+```
 
-## On Error
+Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
+```
+Skill(skill="rihal-execute-phase", args="${PHASE} --auto --no-transition ${Rihal_WS}")
+```
 
-- **No arguments:** print usage block, stop.
-- **Decision question detected:** redirect to `/rihal:council` (Step 0.1).
-- **Input file not found:** print the path, stop.
-- **state.json missing or corrupted:** continue without error — plan artifact is mandatory, state tracking is optional.
-- **No follow-ups in session artifact:** fall back to reading full Panel Responses as input.
-- **rihal-planner returns empty output:** print "Planner produced no plans. Check input."
-- **rihal-sprint-checker fails to load:** print the error, proceed to Step 4 anyway (skip verification).
-- **rihal-tools.cjs missing:** tell user to run `rihal-code install-v2`.
+The `--no-transition` flag tells execute-phase to return status after verification instead of chaining further. This keeps the auto-advance chain flat — each phase runs at the same nesting level rather than spawning deeper Task agents.
+
+**Handle execute-phase return:**
+- **PHASE COMPLETE** → Display final summary:
+  ```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Rihal ► PHASE ${PHASE} COMPLETE ✓
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Auto-advance pipeline finished.
+
+  Next: /rihal:discuss-phase ${NEXT_PHASE} --auto ${Rihal_WS}
+  ```
+- **GAPS FOUND / VERIFICATION FAILED** → Display result, stop chain:
+  ```
+  Auto-advance stopped: Execution needs review.
+
+  Review the output above and continue manually:
+  /rihal:execute-phase ${PHASE} ${Rihal_WS}
+  ```
+
+**If neither `--auto` nor config enabled:**
+Route to `<offer_next>` (existing behavior).
+
+</process>
+
+<offer_next>
+Output this markdown directly (not as a code block):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► PHASE {X} PLANNED ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Phase {X}: {Name}** — {N} plan(s) in {M} wave(s)
+
+| Wave | Plans | What it builds |
+|------|-------|----------------|
+| 1    | 01, 02 | [objectives] |
+| 2    | 03     | [objective]  |
+
+Research: {Completed | Used existing | Skipped}
+Verification: {Passed | Passed with override | Skipped}
+
+───────────────────────────────────────────────────────────────
+
+## ▶ Next Up
+
+**Execute Phase {X}** — run all {N} plans
+
+/clear then:
+
+/rihal:execute-phase {X} ${Rihal_WS}
+
+───────────────────────────────────────────────────────────────
+
+**Also available:**
+- cat .planning/phases/{phase-dir}/*-SPRINT.md — review plans
+- /rihal:sprint-plan {X} --research — re-research first
+- /rihal:review --phase {X} --all — peer review plans with external AIs
+- /rihal:sprint-plan {X} --reviews — replan incorporating review feedback
+
+───────────────────────────────────────────────────────────────
+</offer_next>
+
+<windows_troubleshooting>
+**Windows users:** If sprint-plan freezes during agent spawning (common on Windows due to
+stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-code#28126):
+
+1. **Force-kill:** Close the terminal (Ctrl+C may not work)
+2. **Clean up orphaned processes:**
+   ```powershell
+   # Kill orphaned node processes from stale MCP servers
+   Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.StartTime -lt (Get-Date).AddHours(-1)} | Stop-Process -Force
+   ```
+3. **Clean up stale task directories:**
+   ```powershell
+   # Remove stale subagent task dirs (Claude Code never cleans these on crash)
+   Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
+   ```
+4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
+5. **Retry:** Restart Claude Code and run `/rihal:sprint-plan` again
+
+If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
+```
+/rihal:sprint-plan N --skip-research
+```
+</windows_troubleshooting>
+
+<success_criteria>
+- [ ] .planning/ directory validated
+- [ ] Phase validated against roadmap
+- [ ] Phase directory created if needed
+- [ ] CONTEXT.md loaded early (step 4) and passed to ALL agents
+- [ ] Research completed (unless --skip-research or --gaps or exists)
+- [ ] rihal-phase-researcher spawned with CONTEXT.md
+- [ ] Existing plans checked
+- [ ] rihal-planner spawned with CONTEXT.md + RESEARCH.md
+- [ ] Plans created (PLANNING COMPLETE or CHECKPOINT handled)
+- [ ] rihal-sprint-checker spawned with CONTEXT.md
+- [ ] Verification passed OR user override OR max iterations with user decision
+- [ ] User sees status between agent spawns
+- [ ] User knows next steps
+</success_criteria>
