@@ -1,148 +1,154 @@
-<purpose>
-Instantly restore full project context when resuming work after a break.
+<trigger>
+Use this workflow when:
+- Starting a new session on an existing project
+- User says "continue", "what's next", "where were we", "resume"
+- Any planning operation when .planning/ already exists
+- User returns after time away from project
+</trigger>
 
-When the user says "continue", "what's next", "where were we", or "resume", this workflow quickly reestablishes the mental model and surfaces any incomplete work that needs attention first.
+<purpose>
+Instantly restore full project context so "Where were we?" has an immediate, complete answer.
 </purpose>
 
-
-## Step 0 — Usage check
-
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
-
-```
-/rihal:resume-work <argument-here>
-```
-
-**Examples:**
-```
-/rihal:resume-work example 1
-/rihal:resume-work example 2
-```
-
-STOP — do not proceed.
-
 <required_reading>
-Review project files to understand current state: PROJECT.md, STATE.md, SPRINT.md
+@.rihal/references/continuation-format.md
 </required_reading>
 
 <process>
 
 <step name="initialize">
-First, ensure we're at project root:
+Load all context in one call:
 
 ```bash
-PROJECT_ROOT=$(node .rihal/bin/rihal-tools.cjs state get 2>/dev/null | grep '"project_root"' | head -1 | cut -d'"' -f4)
-[ -z "$PROJECT_ROOT" ] && PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || PROJECT_ROOT="."
-cd "$PROJECT_ROOT"
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init resume)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Load all context:
+Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `has_interrupted_agent`, `interrupted_agent_id`, `commit_docs`.
 
-```bash
-[ -d .rihal ] && echo "Rihal project found" || echo "No Rihal project"
-```
-
-Check what files exist:
-- `.rihal/PROJECT.md` — project definition
-- `.rihal/STATE.md` — current status
-- `.rihal/SPRINT.md` — execution plan
-- `.rihal/NOTES.md` — session notes if any
-- Git status — uncommitted changes
-
-If `.rihal/` doesn't exist:
-```
-No Rihal project found. Start with `/rihal:plan` to create one.
-```
-Exit.
+**If `state_exists` is true:** Proceed to load_state
+**If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
+**If `planning_exists` is false:** This is a new project - route to /rihal:new-project
 </step>
 
 <step name="load_state">
 
-Read and parse v2 state files:
+Read and parse STATE.md, then PROJECT.md:
 
 ```bash
-# v2 stores state in state.json, plans in .planning/, no flat .rihal/*.md files
-node .rihal/bin/rihal-tools.cjs state read
-test -f .rihal/HANDOFF.json && cat .rihal/HANDOFF.json
-test -f .rihal/.continue-here.md && cat .rihal/.continue-here.md
-test -d .planning/phases/ && ls .planning/phases/ | head -10
-test -d .planning/plans/ && ls .planning/plans/ | head -10
-test -d .planning/chains/ && ls .planning/chains/ | head -10
-test -d .planning/council-sessions/ && ls .planning/council-sessions/ | tail -3
+cat .planning/STATE.md
+cat .planning/PROJECT.md
 ```
 
-**From state.json extract (via rihal-tools):**
-- Current project name
-- Current phase/plan
-- Recent executions
-- Decisions and blockers
-- Active workstreams
+**From STATE.md extract:**
 
-**From HANDOFF.json extract (if present):**
-- `blocking_constraints` — external dependencies or constraints from previous session
-- `uncommitted_files` — work left uncommitted
-- `current_phase` — where work was paused
-- `next_steps` — suggested resumption path
+- **Project Reference**: Core value and current focus
+- **Current Position**: Phase X of Y, Plan A of B, Status
+- **Progress**: Visual progress bar
+- **Recent Decisions**: Key decisions affecting current work
+- **Pending Todos**: Ideas captured during sessions
+- **Blockers/Concerns**: Issues carried forward
+- **Session Continuity**: Where we left off, any resume files
 
-**From directory structure extract:**
-- Recent phase directories in .planning/phases/
-- Available plans in .planning/plans/
-- Recent chains in .planning/chains/
-- Most recent council sessions in .planning/council-sessions/
+**From PROJECT.md extract:**
+
+- **What This Is**: Current accurate description
+- **Requirements**: Validated, Active, Out of Scope
+- **Key Decisions**: Full decision log with outcomes
+- **Constraints**: Hard limits on implementation
+
 </step>
 
 <step name="check_incomplete_work">
-Look for incomplete work that needs immediate attention:
+Look for incomplete work that needs attention:
 
 ```bash
-# Check for uncommitted changes
-git status --short 2>/dev/null || true
+# Check for structured handoff (preferred — machine-readable)
+cat .planning/HANDOFF.json 2>/dev/null || true
 
-# Check for TODOs or FIXMEs in notes
-grep -i "TODO\|FIXME\|BLOCKED" .rihal/NOTES.md 2>/dev/null || true
+# Check for continue-here files (mid-plan resumption)
+ls .planning/phases/*/.continue-here*.md 2>/dev/null || true
 
-# Check for incomplete tasks in PLAN
-grep -i "in.progress\|blocked\|pending" .rihal/SPRINT.md 2>/dev/null || true
+# Check for plans without summaries (incomplete execution)
+for plan in .planning/phases/*/*-SPRINT.md; do
+  [ -e "$plan" ] || continue
+  summary="${plan/PLAN/SUMMARY}"
+  [ ! -f "$summary" ] && echo "Incomplete: $plan"
+done 2>/dev/null || true
+
+# Check for interrupted agents (use has_interrupted_agent and interrupted_agent_id from init)
+if [ "$has_interrupted_agent" = "true" ]; then
+  echo "Interrupted agent: $interrupted_agent_id"
+fi
 ```
 
-Track:
-- `uncommitted_changes`: any git changes
-- `pending_work`: tasks not yet done
-- `blockers`: anything blocking progress
-</step>
+**If HANDOFF.json exists:**
+
+- This is the primary resumption source — structured data from `/rihal:pause-work`
+- Parse `status`, `phase`, `plan`, `task`, `total_tasks`, `next_action`
+- Check `blockers` and `human_actions_pending` — surface these immediately
+- Check `completed_tasks` for `in_progress` items — these need attention first
+- Validate `uncommitted_files` against `git status` — flag divergence
+- Use `context_notes` to restore mental model
+- Flag: "Found structured handoff — resuming from task {task}/{total_tasks}"
+- **After successful resumption, delete HANDOFF.json** (it's a one-shot artifact)
+
+**If .continue-here file exists (fallback):**
+
+- This is a mid-plan resumption point
+- Read the file for specific resumption context
+- Flag: "Found mid-plan checkpoint"
+
+**If PLAN without SUMMARY exists:**
+
+- Execution was started but not completed
+- Flag: "Found incomplete plan execution"
+
+**If interrupted agent found:**
+
+- Subagent was spawned but session ended before completion
+- Read agent-history.json for task details
+- Flag: "Found interrupted agent"
+  </step>
 
 <step name="present_status">
 Present complete project status to user:
 
 ```
-╔═════════════════════════════════════════════════════════════╗
-║  PROJECT STATUS                                              ║
-╠═════════════════════════════════════════════════════════════╣
-║  Building: [one-liner from PROJECT.md]                      ║
-║                                                              ║
-║  Current Stage: [phase/state]                               ║
-║  Last activity: [date] - [what happened]                    ║
-║  Progress: [brief % or status]                              ║
-╚═════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  PROJECT STATUS                                               ║
+╠══════════════════════════════════════════════════════════════╣
+║  Building: [one-liner from PROJECT.md "What This Is"]         ║
+║                                                               ║
+║  Phase: [X] of [Y] - [Phase name]                            ║
+║  Plan:  [A] of [B] - [Status]                                ║
+║  Progress: [██████░░░░] XX%                                  ║
+║                                                               ║
+║  Last activity: [date] - [what happened]                     ║
+╚══════════════════════════════════════════════════════════════╝
 
-[If HANDOFF.json exists and has blocking_constraints:]
-⚠️  BLOCKING CONSTRAINTS from previous session:
-    {blocking_constraints text}
-    
-[If uncommitted changes:]
-⚠️  Uncommitted changes found:
-    - [file 1]
-    - [file 2]
+[If incomplete work found:]
+⚠️  Incomplete work detected:
+    - [.continue-here file or incomplete plan]
 
-[If pending work:]
-📋 Pending work:
-    - [task 1]
-    - [task 2]
+[If interrupted agent found:]
+⚠️  Interrupted agent detected:
+    Agent ID: [id]
+    Task: [task description from agent-history.json]
+    Interrupted: [timestamp]
 
-[If other blockers in state.json:]
-⚠️  Blockers/Concerns:
+    Resume with: Task tool (resume parameter with agent ID)
+
+[If pending todos exist:]
+📋 [N] pending todos — /rihal:check-todos to review
+
+[If blockers exist:]
+⚠️  Carried concerns:
     - [blocker 1]
     - [blocker 2]
+
+[If alignment is not ✓:]
+⚠️  Brief alignment: [status] - [assessment]
 ```
 
 </step>
@@ -150,25 +156,39 @@ Present complete project status to user:
 <step name="determine_next_action">
 Based on project state, determine the most logical next action:
 
-**If uncommitted changes exist:**
-→ Primary: Review and commit changes first
-→ Then: Proceed with next phase
+**If interrupted agent exists:**
+→ Primary: Resume interrupted agent (Task tool with resume parameter)
+→ Option: Start fresh (abandon agent work)
 
-**If pending work exists (in progress tasks):**
-→ Primary: Complete the in-progress work
-→ Option: Review or adjust plan
+**If HANDOFF.json exists:**
+→ Primary: Resume from structured handoff (highest priority — specific task/blocker context)
+→ Option: Discard handoff and reassess from files
 
-**If all work complete:**
-→ Primary: Assess and create next phase plan
-→ Use: `/rihal:progress` to understand what's next
+**If .continue-here file exists:**
+→ Fallback: Resume from checkpoint
+→ Option: Start fresh on current plan
 
-**If blocked on a decision:**
-→ Primary: Use `/rihal:council` for input
-→ Then: Resume work after resolving
+**If incomplete plan (PLAN without SUMMARY):**
+→ Primary: Complete the incomplete plan
+→ Option: Abandon and move on
 
-**If ready to continue execution:**
-→ Primary: Show next phase/task
-→ Use: `/rihal:execute` to continue
+**If phase in progress, all plans complete:**
+→ Primary: Advance to next phase (via internal transition workflow)
+→ Option: Review completed work
+
+**If phase ready to plan:**
+→ Check if CONTEXT.md exists for this phase:
+
+- If CONTEXT.md missing:
+  → Primary: Discuss phase vision (how user imagines it working)
+  → Secondary: Plan directly (skip context gathering)
+- If CONTEXT.md exists:
+  → Primary: Plan the phase
+  → Option: Review roadmap
+
+**If phase ready to execute:**
+→ Primary: Execute next plan
+→ Option: Review the plan first
 </step>
 
 <step name="offer_options">
@@ -178,20 +198,28 @@ Present contextual options based on project state:
 What would you like to do?
 
 [Primary action based on state - e.g.:]
-1. Commit pending changes
+1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Continue with in-progress work
+1. Execute phase (/rihal:execute-phase {phase} ${Rihal_WS})
    OR
-1. Review project progress (/rihal:progress)
+1. Discuss Phase 3 context (/rihal:discuss-phase 3 ${Rihal_WS}) [if CONTEXT.md missing]
    OR
-1. Execute next phase (/rihal:execute)
+1. Plan Phase 3 (/rihal:plan 3 ${Rihal_WS}) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
-2. Review current plan
-3. Check decision log
-4. See what's blocking us
+2. Review current phase status
+3. Check pending todos ([N] pending)
+4. Review brief alignment
 5. Something else
 ```
+
+**Note:** When offering phase planning, check for CONTEXT.md existence first:
+
+```bash
+ls .planning/phases/XX-name/*-CONTEXT.md 2>/dev/null || true
+```
+
+If missing, suggest discuss-phase before plan. If exists, offer plan directly.
 
 Wait for user selection.
 </step>
@@ -199,23 +227,57 @@ Wait for user selection.
 <step name="route_to_workflow">
 Based on user selection, route to appropriate workflow:
 
-- **Commit changes** → Show git status and guide to commit
-- **Continue work** → Show the next task/phase
-- **Review progress** → Invoke `/rihal:progress`
-- **See decisions** → Display PROJECT.md key decisions
-- **Execute** → Invoke `/rihal:execute`
+- **Execute plan** → Show command for user to run after clearing:
+  ```
+  ---
+
+  ## ▶ Next Up
+
+  **{phase}-{plan}: [Plan Name]** — [objective from SPRINT.md]
+
+  `/clear` then:
+
+  `/rihal:execute-phase {phase} ${Rihal_WS}`
+
+  ---
+  ```
+- **Plan phase** → Show command for user to run after clearing:
+  ```
+  ---
+
+  ## ▶ Next Up
+
+  **Phase [N]: [Name]** — [Goal from ROADMAP.md]
+
+  `/clear` then:
+
+  `/rihal:plan [phase-number] ${Rihal_WS}`
+
+  ---
+
+  **Also available:**
+  - `/rihal:discuss-phase [N] ${Rihal_WS}` — gather context first
+  - `/rihal:research-phase [N] ${Rihal_WS}` — investigate unknowns
+
+  ---
+  ```
+- **Advance to next phase** → ./transition.md (internal workflow, invoked inline — NOT a user command)
+- **Check todos** → Read .planning/todos/pending/, present summary
+- **Review alignment** → Read PROJECT.md, compare to current state
 - **Something else** → Ask what they need
 </step>
 
 <step name="update_session">
-Before proceeding, update session continuity:
+Before proceeding to routed workflow, update session continuity:
 
-Update STATE.md with:
-```
+Update STATE.md:
+
+```markdown
 ## Session Continuity
 
-Last resumed: [now]
-Proceeding to: [action]
+Last session: [now]
+Stopped at: Session resumed, proceeding to [action]
+Resume file: [updated if applicable]
 ```
 
 This ensures if session ends unexpectedly, next resume knows the state.
@@ -223,27 +285,42 @@ This ensures if session ends unexpectedly, next resume knows the state.
 
 </process>
 
+<reconstruction>
+If STATE.md is missing but other artifacts exist:
+
+"STATE.md missing. Reconstructing from artifacts..."
+
+1. Read PROJECT.md → Extract "What This Is" and Core Value
+2. Read ROADMAP.md → Determine phases, find current position
+3. Scan \*-SUMMARY.md files → Extract decisions, concerns
+4. Count pending todos in .planning/todos/pending/
+5. Check for .continue-here files → Session continuity
+
+Reconstruct and write STATE.md, then proceed normally.
+
+This handles cases where:
+
+- Project predates STATE.md introduction
+- File was accidentally deleted
+- Cloning repo without full .planning/ state
+  </reconstruction>
+
+<quick_resume>
+If user says "continue" or "go":
+- Load state silently
+- Determine primary action
+- Execute immediately without presenting options
+
+"Continuing from [state]... [action]"
+</quick_resume>
+
 <success_criteria>
-- [ ] Project state correctly loaded
-- [ ] Incomplete work identified and surfaced
-- [ ] Current position clearly presented
-- [ ] Blockers/concerns highlighted
-- [ ] Next action logically determined
-- [ ] User can immediately resume work
-</success_criteria>
-</process>
+Resume is complete when:
 
-## Success Criteria
-
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
-
-## On Error
-
-If arguments are invalid, missing files, or subagent fails:
-- Validate inputs match expected format
-- Check that required files exist
-- Retry with clearer arguments or report the specific error to the user
-
+- [ ] STATE.md loaded (or reconstructed)
+- [ ] Incomplete work detected and flagged
+- [ ] Clear status presented to user
+- [ ] Contextual next actions offered
+- [ ] User knows exactly where project stands
+- [ ] Session continuity updated
+      </success_criteria>
