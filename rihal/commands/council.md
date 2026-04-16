@@ -11,4 +11,15 @@ allowed-tools:
   - AskUserQuestion
 ---
 
+<objective>
+Convene 3-5 specialist agents in parallel to answer a strategic question. Agents picked by keyword scoring, responses synthesized into actionable decision.
+</objective>
+
+<execution_context>
 @.rihal/workflows/council.md
+</execution_context>
+
+<process>
+Execute the council workflow from @.rihal/workflows/council.md end-to-end.
+Use rihal-tools.cjs classify-question and select-panel to pick agents. Spawn agents in parallel. Synthesize responses.
+</process>

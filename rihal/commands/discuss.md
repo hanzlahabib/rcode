@@ -9,4 +9,15 @@ allowed-tools:
   - AskUserQuestion
 ---
 
+<objective>
+Quick sync with one Rihal agent — lighter than council. One agent answers, no cross-talk, optional artifact save.
+</objective>
+
+<execution_context>
 @.rihal/workflows/discuss.md
+</execution_context>
+
+<process>
+Execute the discuss workflow from @.rihal/workflows/discuss.md end-to-end.
+Identify the right agent from the question, spawn it, return focused answer.
+</process>
