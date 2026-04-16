@@ -23,7 +23,7 @@ Read `.planning/STATE.md` to determine:
 - Known blockers or issues
 
 ### Step 2: Load Plan Metadata
-Parse the PLAN.md frontmatter to extract:
+Parse the SPRINT.md frontmatter to extract:
 - `phase`: Phase identifier
 - `plan`: Plan number
 - `type`: Execution type (execute, tdd)
@@ -108,7 +108,7 @@ node ".rihal/bin/rihal-tools.cjs" roadmap update-plan-progress "$PHASE_NUMBER"
 node ".rihal/bin/rihal-tools.cjs" requirements mark-complete $REQ_IDS
 ```
 
-Extract requirement IDs from PLAN.md frontmatter `requirements:` field.
+Extract requirement IDs from SPRINT.md frontmatter `requirements:` field.
 
 ### Step 7: Final Commit
 ```bash

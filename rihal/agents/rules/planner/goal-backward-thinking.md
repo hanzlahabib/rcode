@@ -187,7 +187,7 @@ must_haves:
 
 ## Using Must-Haves in Plans
 
-When creating tasks in PLAN.md, reference must-haves:
+When creating tasks in SPRINT.md, reference must-haves:
 
 ```xml
 <task type="auto">

@@ -555,7 +555,7 @@ function cmdInitExecute(rawArgs) {
       }
     }
     if (phaseDir) {
-      const planFiles = walkFiles(phaseDir).filter((f) => path.basename(f) === 'PLAN.md');
+      const planFiles = walkFiles(phaseDir).filter((f) => path.basename(f) === 'SPRINT.md' || path.basename(f) === 'PLAN.md');
       plans = planFiles.map((f) => {
         const text = fs.readFileSync(f, 'utf8');
         const { frontmatter } = parseFrontmatter(text);
@@ -1405,7 +1405,7 @@ function cmdState(subArgs) {
             const subMatch = subentry.match(/^(\d{2})-/);
             if (subMatch && subMatch[1] === planPart) {
               const planDir = path.join(phaseDir, subentry);
-              const candidate = path.join(planDir, 'PLAN.md');
+              const candidate = path.join(planDir, 'SPRINT.md');
               if (fs.existsSync(candidate)) {
                 planFile = candidate;
                 break;
@@ -1415,7 +1415,7 @@ function cmdState(subArgs) {
 
           // If no subdir found, check phase-level PLAN.md
           if (!planFile && planPart === '01') {
-            const candidate = path.join(phaseDir, 'PLAN.md');
+            const candidate = path.join(phaseDir, 'SPRINT.md');
             if (fs.existsSync(candidate)) {
               planFile = candidate;
             }
@@ -1521,7 +1521,7 @@ function cmdState(subArgs) {
                 const subMatch = subentry.match(/^(\d{2})-/);
                 if (subMatch && subMatch[1] === planNum) {
                   const planDir = path.join(phaseDir, subentry);
-                  const planPath = path.join(planDir, 'PLAN.md');
+                  const planPath = path.join(planDir, 'SPRINT.md');
                   if (fs.existsSync(planPath)) {
                     result.plan_dir = planDir;
                     result.path = planPath;
@@ -1532,7 +1532,7 @@ function cmdState(subArgs) {
 
               // If no subdir and planNum is 01, check phase-level PLAN.md
               if (!result.path && planNum === '01') {
-                const candidate = path.join(phaseDir, 'PLAN.md');
+                const candidate = path.join(phaseDir, 'SPRINT.md');
                 if (fs.existsSync(candidate)) {
                   result.plan_dir = phaseDir;
                   result.path = candidate;
@@ -1568,7 +1568,7 @@ function cmdState(subArgs) {
         const summaryFiles = fs.existsSync(result.plan_dir) ?
           fs.readdirSync(result.plan_dir).filter(f => f.endsWith('-SUMMARY.md')) : [];
         if (summaryFiles.length > 0) status = 'complete';
-        else if (fs.existsSync(path.join(result.plan_dir, 'PLAN.md'))) status = 'planned';
+        else if (fs.existsSync(path.join(result.plan_dir, 'SPRINT.md'))) status = 'planned';
       }
     }
     result.status = status;
@@ -1613,7 +1613,7 @@ function cmdState(subArgs) {
               const planId = `${phaseId}.${planNum}`;
               const planSlug = subMatch[2];
               const planDir = path.join(phaseDir, subentry);
-              const planPath = path.join(planDir, 'PLAN.md');
+              const planPath = path.join(planDir, 'SPRINT.md');
 
               if (fs.existsSync(planPath)) {
                 if (!state.plans.some(p => p.id === planId)) {
@@ -1630,7 +1630,7 @@ function cmdState(subArgs) {
           }
 
           // Check for phase-level PLAN.md (01 plan)
-          const phasePlanPath = path.join(phaseDir, 'PLAN.md');
+          const phasePlanPath = path.join(phaseDir, 'SPRINT.md');
           if (fs.existsSync(phasePlanPath)) {
             const planId = `${phaseId}.01`;
             if (!state.plans.some(p => p.id === planId)) {
@@ -1692,7 +1692,7 @@ function cmdState(subArgs) {
         const phaseDir = path.join(phasesDir, entry);
 
         // Check for PLAN.md at phase level
-        const phasePlanPath = path.join(phaseDir, 'PLAN.md');
+        const phasePlanPath = path.join(phaseDir, 'SPRINT.md');
         if (fs.existsSync(phasePlanPath)) {
           try {
             let content = fs.readFileSync(phasePlanPath, 'utf8');
@@ -1735,7 +1735,7 @@ function cmdState(subArgs) {
           if (subMatch && fs.statSync(path.join(phaseDir, subentry)).isDirectory()) {
             planNum = parseInt(subMatch[1], 10);
             const planDir = path.join(phaseDir, subentry);
-            const planPath = path.join(planDir, 'PLAN.md');
+            const planPath = path.join(planDir, 'SPRINT.md');
 
             if (fs.existsSync(planPath)) {
               try {
@@ -2145,7 +2145,7 @@ function cmdResolveModel(agentId) {
     'rihal-sadiq': 'claude-3-5-opus-20241022',
     'rihal-waleed': 'claude-3-5-opus-20241022',
     'rihal-planner': 'claude-3-5-opus-20241022',
-    'rihal-plan-checker': 'claude-3-5-opus-20241022',
+    'rihal-sprint-checker': 'claude-3-5-opus-20241022',
     'rihal-fatima': 'claude-3-5-sonnet-20241022',
     'rihal-executor': 'claude-3-5-sonnet-20241022',
     'rihal-verifier': 'claude-3-5-sonnet-20241022',

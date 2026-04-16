@@ -13,7 +13,7 @@ Optimized for reasoning-heavy agents that make strategic decisions or verify wor
 | rihal-sadiq | claude-3-5-opus-20241022 | Strategic priority, decision framing |
 | rihal-waleed | claude-3-5-opus-20241022 | Architecture, technical feasibility |
 | rihal-planner | claude-3-5-opus-20241022 | Plan generation and task breakdown |
-| rihal-plan-checker | claude-3-5-opus-20241022 | Plan verification and quality gates |
+| rihal-sprint-checker | claude-3-5-opus-20241022 | Plan verification and quality gates |
 | rihal-fatima | claude-3-5-sonnet-20241022 | QA strategy and release readiness |
 | rihal-executor | claude-3-5-sonnet-20241022 | Task execution and implementation |
 | rihal-verifier | claude-3-5-sonnet-20241022 | Post-execution verification |

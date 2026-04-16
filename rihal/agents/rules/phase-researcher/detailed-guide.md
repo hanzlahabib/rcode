@@ -569,7 +569,7 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs($PHASE): research phase domain" -
 [Gaps that couldn't be resolved]
 
 ### Ready for Planning
-Research complete. Planner can now create PLAN.md files.
+Research complete. Planner can now create SPRINT.md files.
 ```
 
 ## Research Blocked

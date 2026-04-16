@@ -76,7 +76,7 @@ Set `is_re_verification = false`, proceed with Step 1.
 ## Step 1: Load Context (Initial Mode Only)
 
 ```bash
-ls "$PHASE_DIR"/*-PLAN.md 2>/dev/null
+ls "$PHASE_DIR"/*-SPRINT.md 2>/dev/null
 ls "$PHASE_DIR"/*-SUMMARY.md 2>/dev/null
 node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "$PHASE_NUM"
 grep -E "^| $PHASE_NUM" .rihal/REQUIREMENTS.md 2>/dev/null
@@ -91,7 +91,7 @@ In re-verification mode, must-haves come from Step 0.
 **Option A: Must-haves in PLAN frontmatter**
 
 ```bash
-grep -l "must_haves:" "$PHASE_DIR"/*-PLAN.md 2>/dev/null
+grep -l "must_haves:" "$PHASE_DIR"/*-SPRINT.md 2>/dev/null
 ```
 
 If found, extract and use:
@@ -317,7 +317,7 @@ Status: WIRED (state displayed) | NOT_WIRED (state exists, not rendered)
 **6a. Extract requirement IDs from PLAN frontmatter:**
 
 ```bash
-grep -A5 "^requirements:" "$PHASE_DIR"/*-PLAN.md 2>/dev/null
+grep -A5 "^requirements:" "$PHASE_DIR"/*-SPRINT.md 2>/dev/null
 ```
 
 Collect ALL requirement IDs declared across plans for this phase.

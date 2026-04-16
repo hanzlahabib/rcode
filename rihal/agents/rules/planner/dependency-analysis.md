@@ -1,6 +1,6 @@
 # Dependency Analysis for Task Planning
 
-When building PLAN.md frontmatter, you must determine dependencies between tasks. This determines **wave assignment** — which tasks can run in parallel and which must run sequentially.
+When building SPRINT.md frontmatter, you must determine dependencies between tasks. This determines **wave assignment** — which tasks can run in parallel and which must run sequentially.
 
 ---
 
@@ -116,7 +116,7 @@ If you're creating too many tasks in sequence, you may be over-splitting. Check:
 
 ## Documenting Dependencies
 
-In PLAN.md frontmatter, list ONLY the tasks this plan **directly** depends on:
+In SPRINT.md frontmatter, list ONLY the tasks this plan **directly** depends on:
 
 ```yaml
 depends_on: [01, 03]
@@ -186,7 +186,7 @@ task-2:
 
 ## Verification Checklist
 
-Before submitting PLAN.md, verify:
+Before submitting SPRINT.md, verify:
 
 - [ ] Each `depends_on` list is explicit and specific (not transitive)
 - [ ] Wave assignment follows the algorithm (wave = max(dependencies) + 1)

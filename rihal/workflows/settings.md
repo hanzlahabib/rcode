@@ -88,7 +88,7 @@ Valid responses: 1/yes/y or 2/no/n. Store as `new_enable_research_pre_step` (tru
 
 ```
 Question:
-Enable plan-checker loop during /rihal:plan?
+Enable sprint-checker loop during /rihal:plan?
 
 This verifies and repairs plans before execution if enabled.
 

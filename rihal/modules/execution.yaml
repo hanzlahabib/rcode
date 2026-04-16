@@ -8,7 +8,7 @@ agents:
   - rihal-planner.md
   - rihal-verifier.md
   - rihal-debugger.md
-  - rihal-plan-checker.md
+  - rihal-sprint-checker.md
   - rihal-integration-checker.md
   - rihal-nyquist-auditor.md
 workflows:

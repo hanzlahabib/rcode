@@ -12,7 +12,7 @@ Extract from init JSON: `phase_dir`, `phase_number`, `has_plans`, `plan_count`.
 Orchestrator provides CONTEXT.md content in the verification prompt. If provided, parse for locked decisions, discretion areas, deferred ideas.
 
 ```bash
-ls "$phase_dir"/*-PLAN.md 2>/dev/null
+ls "$phase_dir"/*-SPRINT.md 2>/dev/null
 # Read research for Nyquist validation data
 cat "$phase_dir"/*-RESEARCH.md 2>/dev/null
 node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "$phase_number"
@@ -26,7 +26,7 @@ ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 Use rihal-tools to validate plan structure:
 
 ```bash
-for plan in "$PHASE_DIR"/*-PLAN.md; do
+for plan in "$PHASE_DIR"/*-SPRINT.md; do
   echo "=== $plan ==="
   PLAN_STRUCTURE=$(node ".rihal/bin/rihal-tools.cjs" verify plan-structure "$plan")
   echo "$PLAN_STRUCTURE"
@@ -104,13 +104,13 @@ The `tasks` array in the result shows each task's completeness:
 
 **For manual validation of specificity** (rihal-tools checks structure, not content quality):
 ```bash
-grep -B5 "</task>" "$PHASE_DIR"/*-PLAN.md | grep -v "<verify>"
+grep -B5 "</task>" "$PHASE_DIR"/*-SPRINT.md | grep -v "<verify>"
 ```
 
 ## Step 6: Verify Dependency Graph
 
 ```bash
-for plan in "$PHASE_DIR"/*-PLAN.md; do
+for plan in "$PHASE_DIR"/*-SPRINT.md; do
   grep "depends_on:" "$plan"
 done
 ```
@@ -130,8 +130,8 @@ Missing: No mention of fetch/API call → Issue: Key link not planned
 ## Step 8: Assess Scope
 
 ```bash
-grep -c "<task" "$PHASE_DIR"/$PHASE-01-PLAN.md
-grep "files_modified:" "$PHASE_DIR"/$PHASE-01-PLAN.md
+grep -c "<task" "$PHASE_DIR"/$PHASE-01-SPRINT.md
+grep "files_modified:" "$PHASE_DIR"/$PHASE-01-SPRINT.md
 ```
 
 Thresholds: 2-3 tasks/plan good, 4 warning, 5+ blocker (split required).
@@ -347,7 +347,7 @@ Plans verified. Run `/rihal:execute {phase}` to proceed.
 Plan verification complete when:
 
 - [ ] Phase goal extracted from ROADMAP.md
-- [ ] All PLAN.md files in phase directory loaded
+- [ ] All SPRINT.md files in phase directory loaded
 - [ ] must_haves parsed from each plan frontmatter
 - [ ] Requirement coverage checked (all requirements have tasks)
 - [ ] Task completeness validated (all required fields present)

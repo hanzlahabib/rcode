@@ -31,7 +31,7 @@ issue:
 **Question:** Does every task have Files + Action + Verify + Done?
 
 **Process:**
-1. Parse each `<task>` element in PLAN.md
+1. Parse each `<task>` element in SPRINT.md
 2. Check for required fields based on task type
 3. Flag incomplete tasks
 

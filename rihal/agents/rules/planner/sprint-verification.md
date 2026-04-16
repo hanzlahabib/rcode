@@ -1,6 +1,6 @@
 # Plan Verification Checklist
 
-Before outputting a PLAN.md file, run this self-check to catch common planning errors. This is the planner's **"did I build this right?"** validation.
+Before outputting a SPRINT.md file, run this self-check to catch common planning errors. This is the planner's **"did I build this right?"** validation.
 
 ---
 
@@ -169,27 +169,27 @@ Before finalizing, ask yourself:
 
 ## Fast Verification Script
 
-Use this to spot-check PLAN.md files locally:
+Use this to spot-check SPRINT.md files locally:
 
 ```bash
 # Check for empty fields
-grep -E "^(requirements|files_modified):\s*\[\s*\]" PLAN.md && echo "ERROR: Empty array found"
+grep -E "^(requirements|files_modified):\s*\[\s*\]" SPRINT.md && echo "ERROR: Empty array found"
 
 # Check for vague action descriptions
-grep -E "^\s+<action>\s*$" PLAN.md | head -1 && echo "WARNING: Action section may be empty"
+grep -E "^\s+<action>\s*$" SPRINT.md | head -1 && echo "WARNING: Action section may be empty"
 
 # Count verify commands
-grep -c "<verify>" PLAN.md  # Should equal task count
+grep -c "<verify>" SPRINT.md  # Should equal task count
 
 # Check wave calculation
-grep "wave:" PLAN.md
+grep "wave:" SPRINT.md
 ```
 
 ---
 
 ## When to Reject & Replan
 
-If you catch **any** of these, reject the PLAN.md and replan:
+If you catch **any** of these, reject the SPRINT.md and replan:
 
 - [ ] Empty `requirements` field
 - [ ] Circular dependencies
@@ -199,4 +199,4 @@ If you catch **any** of these, reject the PLAN.md and replan:
 - [ ] Context > 1000 lines
 - [ ] Wave count > 5 (likely over-split)
 
-Otherwise, output the PLAN.md with confidence.
+Otherwise, output the SPRINT.md with confidence.

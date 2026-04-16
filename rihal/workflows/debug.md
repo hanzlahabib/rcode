@@ -182,7 +182,7 @@ verified_at: <ISO 8601 timestamp>
 ---
 ```
 
-This records the exact codebase state where the diagnosis was made, so downstream tools (planner, plan-checker) can detect stale findings when branch changes.
+This records the exact codebase state where the diagnosis was made, so downstream tools (planner, sprint-checker) can detect stale findings when branch changes.
 
 </step>
 
