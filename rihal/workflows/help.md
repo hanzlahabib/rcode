@@ -221,6 +221,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:sprint-status` | Sprint progress — stories, points, velocity, burndown. |
 | `/rihal:list-plans` | Table of every SPRINT.md across phases — goal, stories, points, state. |
 | `/rihal:decisions` | Browse decisions across every Rihal project (~/.rihal/decisions.jsonl). |
+| `/rihal:replay <slug>` | Re-run a past council session with the same question — fresh panel round. |
 | `/rihal:retrospective` | Run an epic retrospective and produce owned action items. |
 
 ## Operational / rare

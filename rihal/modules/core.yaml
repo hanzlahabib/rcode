@@ -36,6 +36,7 @@ workflows:
   - brainstorm.md
   - karpathy-audit.md
   - decisions.md
+  - replay.md
 commands:
   - council.md
   - init.md
@@ -72,6 +73,7 @@ commands:
   - list-workspaces.md
   - remove-workspace.md
   - decisions.md
+  - replay.md
 references:
   - council-protocol.md
   - codebase-grounding.md
