@@ -104,38 +104,31 @@ function findMatches(content, pattern) {
 }
 
 function installIntoTempDir(cwd) {
-  // We need the install to run against our real package source so that
-  // the slash command templates from cli/init.js are expanded into files
-  // exactly as a user would receive them.
-  //
-  // Rather than spawn a subprocess, we require and call init directly with
-  // --yes so the non-interactive path is used. The install prints a
-  // multi-line banner to stdout — we silence it so test output stays
-  // clean. Errors are still reported via the returned promise.
-  const originalCwd = process.cwd();
+  // Installs rihal-code into a fresh temp directory via cli/install.js
+  // (the unified installer). Copies agents, commands, skills, workflows
+  // exactly as a real user install. Output is silenced so test log stays clean.
   const originalWrite = process.stdout.write.bind(process.stdout);
   process.stdout.write = () => true;
   try {
-    process.chdir(cwd);
-    // Fresh require so the install module gets the new cwd
-    delete require.cache[require.resolve('../../cli/init.js')];
-    const init = require('../../cli/init.js');
-    // The init module's default export is an async function that takes
-    // (args, context). Context expects packageRoot + packageJson.
-    const packageRoot = path.resolve(__dirname, '..', '..');
-    const packageJson = JSON.parse(
-      fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'),
-    );
-    const result = init(['--yes'], { packageRoot, packageJson });
-    // Restore stdout after the promise resolves; install is synchronous
-    // enough that awaiting here is safe.
-    return Promise.resolve(result).finally(() => {
+    delete require.cache[require.resolve('../../cli/install.js')];
+    const install = require('../../cli/install.js');
+    install.install({
+      target: cwd,
+      force: true,
+      yes: true,
+      userName: 'test',
+      projectName: 'rihal-noleaks-test',
+      language: 'English',
+      mode: 'guided',
+      ide: 'claude',
+      modules: [],
+      help: false,
+    });
+    return Promise.resolve().finally(() => {
       process.stdout.write = originalWrite;
-      process.chdir(originalCwd);
     });
   } catch (err) {
     process.stdout.write = originalWrite;
-    process.chdir(originalCwd);
     throw err;
   }
 }

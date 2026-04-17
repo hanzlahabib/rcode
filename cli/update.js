@@ -7,7 +7,7 @@
  *   3. If same → confirms user wants to refresh anyway (files might have
  *      drifted from the package), or exit with --yes
  *   4. Backs up current editor-dir skill files to .rihal/backups/update-{ts}.tgz
- *   5. Re-runs each editor install function (reuses init.js exports)
+ *   5. Delegates file refresh to cli/install.js (single source of truth)
  *   6. Updates installed_version in .rihal/config.json atomically
  *   7. Runs manifest verification to catch drift
  *
@@ -34,7 +34,7 @@ const { spawnSync } = require('child_process');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
 const { writeJsonAtomic } = require('./lib/fsutil.cjs');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
-const init = require('./init');
+const install = require('./install');
 
 function parseArgs(args) {
   const opts = { yes: false };
@@ -297,36 +297,26 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   // ------ Strip old AGENTS.md section so it can be re-appended fresh ------
   stripAgentsMdSection(cwd);
 
-  // ------ Re-run install functions (reused from init.js) ------
+  // ------ Re-run unified installer ------
+  // Delegates to cli/install.js which handles all IDE-specific file shipping
+  // (agents, commands, skills, workflows, references, bin). install.js is
+  // the single source of truth — update.js reuses it with --force.
   console.log();
-  if (editors.includes('claude')) {
-    const n = init.installSkills(packageRoot, cwd);
-    console.log(`   ✓ claude  → ${n} skills refreshed`);
-    const c = init.installSlashCommands(packageRoot, cwd);
-    console.log(`   ✓ claude  → ${c} slash commands refreshed`);
-  }
-  if (editors.includes('cursor')) {
-    const n = init.installCursorRules(packageRoot, cwd);
-    console.log(`   ✓ cursor  → ${n} rules refreshed`);
-  }
-  if (editors.includes('windsurf')) {
-    const n = init.installWindsurfRules(packageRoot, cwd);
-    console.log(`   ✓ windsurf → ${n} rules refreshed`);
-  }
-  if (editors.includes('antigravity')) {
-    const n = init.installAntigravityAgents(packageRoot, cwd);
-    console.log(`   ✓ antigravity → ${n} agents refreshed`);
-  }
-  // Always re-append AGENTS.md section (universal)
-  const result = init.installUniversalAgentsMd(packageRoot, cwd);
-  console.log(`   ✓ universal → AGENTS.md ${result}`);
-
-  // Refresh the .rihal/lib/ self-contained snapshot of digests, templates,
-  // workflows, agents, and tasks. Keeps the project independent of the
-  // global package source.
-  const libCount = init.snapshotCoreIntoProject(packageRoot, cwd);
-  if (libCount > 0) {
-    console.log(`   ✓ .rihal/lib/ snapshot refreshed — ${libCount} core dirs/files`);
+  for (const ide of editors) {
+    if (!['claude', 'cursor', 'gemini'].includes(ide)) continue;
+    install.install({
+      target: cwd,
+      force: true,
+      yes: true,
+      userName: config.user_name || require('os').userInfo().username,
+      projectName: config.project_name || require('path').basename(cwd),
+      language: config.language || 'English',
+      mode: config.mode || 'guided',
+      ide,
+      modules: [],
+      help: false,
+    });
+    console.log(`   ✓ ${ide} → refreshed via install.js`);
   }
 
   // ------ Update installed_version in config.json (atomic) ------
