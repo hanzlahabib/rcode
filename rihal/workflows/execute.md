@@ -2,6 +2,80 @@
 Execute all plans in a phase using wave-based parallel execution. Orchestrator stays lean — delegates plan execution to subagents.
 </purpose>
 
+<pre_flight>
+**Mandatory before execution begins.** Run these checks first and surface
+findings BEFORE any subagents are spawned. If any check fails, stop and
+route back to the user.
+
+1. **Init state**: `node .rihal/bin/rihal-tools.cjs init execute-phase {N}`
+2. **Phase index**: list all plans via `state phase-plan-index {N}` — extract
+   plan count, wave count, autonomy flag per plan, files_modified overlaps
+3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
+   error flag, existing VERIFICATION.md with FAIL items without overrides
+4. **Branch check**: confirm current git branch matches milestone's expected
+   branch (from config or roadmap)
+5. **Worktree config**: read `workflow.use_worktrees` — if true + parallelization
+   is true + no file overlaps, plans in a wave run parallel via worktrees
+</pre_flight>
+
+<insight_block>
+After pre-flight, emit an insight block with the 2-3 most load-bearing
+observations from phase inspection. Format exactly:
+
+```
+★ Insight ─────────────────────────────────────
+  - {observation 1: key scope reality}
+  - {observation 2: forced-sequential / overlap / checkpoint flags}
+  - {observation 3: autonomous-false plans needing human presence}
+─────────────────────────────────────────────────
+```
+
+Keep to 3 bullets. Name specific files and plan IDs. No generic advice.
+</insight_block>
+
+<execution_plan>
+After insight block, render a table of waves × plans:
+
+```
+Execution Plan
+
+Phase {NN}: {phase_name} — {N} plans across {M} waves{, building {one-line outcome}}.
+
+┌──────┬───────┬───────────────┬──────────────────────────────────────────────┐
+│ Wave │ Plan  │   Autonomy    │                 What it builds                │
+├──────┼───────┼───────────────┼──────────────────────────────────────────────┤
+│ 1    │ NN-01 │ 🛑 checkpoint │ {one-line what it builds}                    │
+│ 1    │ NN-02 │ auto          │ {one-line what it builds}                    │
+│ 2    │ NN-03 │ auto          │ {one-line what it builds}                    │
+└──────┴───────┴───────────────┴──────────────────────────────────────────────┘
+```
+
+Below the table, flag any wave forced to sequential (file overlaps) and
+why. One sentence reality check about scope size (file count, token cost,
+wall-clock expectation).
+</execution_plan>
+
+<three_options>
+After execution plan, offer three modes via AskUserQuestion. Each option
+names the tradeoff explicitly:
+
+**A) Autonomous run** — Spawn subagent per plan in sequence/parallel per
+    wave rules. Checkpoints still pause for user. Fastest wall-clock.
+    Highest token cost. Least visibility mid-plan.
+
+**B) Interactive mode** (`--interactive`) — Execute plans inline in the
+    current context (no subagents). Pair-programming style. Lower token
+    cost. Catch mistakes early. Best for design-heavy or novel work.
+
+**C) Wave-only** (`--wave N`) — Run just one wave now, review, then run
+    later waves in a separate session. Good for staged rollout / review
+    gates.
+
+Include a recommendation line: "My recommendation: {letter} because {reason
+in one clause}." Then ask which option to proceed with — do NOT silently
+pick one.
+</three_options>
+
 <output_format>
 Open with banner:
 

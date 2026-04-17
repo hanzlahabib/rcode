@@ -175,6 +175,66 @@ after finishing (not batched at the end).
 
 ---
 
+## Insight Block (pre-execution observations)
+
+When a workflow inspects state/plans/scope before acting, emit a compact
+insight block with 2-3 load-bearing observations. Format exactly:
+
+```
+★ Insight ─────────────────────────────────────
+  - {observation 1: specific scope reality with files/IDs}
+  - {observation 2: overlap / forced sequential / blocker}
+  - {observation 3: checkpoint or human-in-loop flag}
+─────────────────────────────────────────────────
+```
+
+Rules:
+- Exactly 2-3 bullets (never 1, never 4+)
+- Name specific file paths, plan IDs, agent names
+- No generic advice ("consider testing", "might be slow")
+- No restating what user already asked for
+
+Use before Execution Plan tables and Three-Options blocks.
+
+---
+
+## Execution Plan Table (before multi-step work)
+
+Render waves × plans with autonomy flags:
+
+```
+Execution Plan
+
+Phase {NN}: {name} — {N} plans across {M} waves.
+
+┌──────┬───────┬───────────────┬──────────────────────────────────────┐
+│ Wave │ Plan  │   Autonomy    │           What it builds             │
+├──────┼───────┼───────────────┼──────────────────────────────────────┤
+│ 1    │ NN-01 │ 🛑 checkpoint │ {one-line outcome}                   │
+│ 1    │ NN-02 │ auto          │ {one-line outcome}                   │
+│ 2    │ NN-03 │ auto          │ {one-line outcome}                   │
+└──────┴───────┴───────────────┴──────────────────────────────────────┘
+```
+
+Below table: one-line reality check about scope size, then one-line flag
+for any wave forced to sequential and why (file overlaps, auth gates).
+
+---
+
+## Three-Options Block (before long-running execution)
+
+Offer autonomy tradeoffs via AskUserQuestion:
+
+- **A) Autonomous** — subagent per plan, fastest, highest token cost, least visibility
+- **B) Interactive** (`--interactive`) — inline execution, pair-programming, lower cost, catches mistakes early
+- **C) Wave-only** (`--wave N`) — staged, review between waves, lowest risk
+
+Always end with a recommendation line: `My recommendation: {letter} because {one-clause reason}.`
+
+Never silently pick for the user on large scope.
+
+---
+
 ## Next Up Block
 
 Always at end of major completions.
