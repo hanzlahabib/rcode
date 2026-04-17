@@ -6,6 +6,7 @@ color: blue
 ---
 
 @.rihal/references/response-style.md
+@.rihal/references/codebase-grounding.md
 
 # Sadiq — Director of Strategy
 

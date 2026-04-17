@@ -126,24 +126,42 @@ utility_agents:
     description: Verifies phase completion and checks quality gates.
 
 # Council panel routing rules
-# These rules determine which agents are spawned for different question types
+# These rules determine which agents are spawned for different question types.
+# Panel scorer (council-panel.cjs) picks from these based on keyword signals.
 routing:
   market:
     - rihal-mariam      # leads
     - rihal-hussain-pm  # scopes
     - rihal-sadiq       # kill criteria
   codebase:
-    - rihal-waleed      # leads
-    - rihal-sadiq       # strategy
-    - rihal-fatima      # quality
+    - rihal-waleed      # architecture lead
+    - rihal-yousef      # backend implementation
+    - rihal-fatima      # quality gates
+  performance:
+    - rihal-yousef      # backend perf diagnosis owns p50/p95/throughput
+    - rihal-waleed      # architecture-level perf decisions (caching, sharding)
+    - rihal-fatima      # benchmarking + regression guards
+  ml:
+    - rihal-zayd        # ML/OCR/retrieval lead
+    - rihal-yousef      # integration points (queues, APIs)
+    - rihal-fatima      # eval + perf testing
+  frontend:
+    - rihal-haitham     # React/Next.js/RTL implementation
+    - rihal-layla       # UX + interaction design
+    - rihal-fatima      # accessibility + visual regression
   team:
     - rihal-sadiq       # leads
+    - rihal-nasser      # people/ops
   release:
     - rihal-fatima      # leads
     - rihal-waleed      # architecture
+    - rihal-khalid      # infra/deploy (if installed)
   design:
-    - rihal-waleed      # technical feasibility (layla if installed)
+    - rihal-layla       # UX design lead
+    - rihal-zahra       # branding + visual identity
+    - rihal-waleed      # technical feasibility
   greenfield:
     - rihal-mariam      # market
     - rihal-hussain-pm  # scope
     - rihal-waleed      # feasibility
+    - rihal-sadiq       # strategic fit

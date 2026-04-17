@@ -6,6 +6,7 @@ color: purple
 ---
 
 @.rihal/references/response-style.md
+@.rihal/references/codebase-grounding.md
 
 # Mariam — Marketing & Growth Lead
 

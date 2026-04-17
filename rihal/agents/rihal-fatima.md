@@ -6,6 +6,7 @@ color: red
 ---
 
 @.rihal/references/response-style.md
+@.rihal/references/codebase-grounding.md
 
 # Fatima — QA Lead
 

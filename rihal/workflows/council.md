@@ -164,12 +164,21 @@ Parse the JSON for:
 **Branch on `question_type`** (returned by `rihal-tools.cjs init` as `question_type`):
 
 - `codebase` — existing code question → codebase scan
+- `performance` — latency/p95/throughput → codebase scan + read `baseline-metrics.md` if present
+- `ml` — OCR/retrieval/LLM → codebase scan + read ML service paths
+- `frontend` — React/UI/a11y/RTL → codebase scan + read component dirs
 - `team` — people/process question → codebase scan (for team context from README/state) + no external research
 - `release` — shipping/incident → codebase scan
 - `design` — UX/brand → codebase scan
 - `market` — external plan/geography/regulation → research pre-step
 - `discovery` — what to build/which sector → research pre-step
 - `greenfield` — starting from scratch → research pre-step
+
+**Context grounding is mandatory for concrete technical categories.** For
+`codebase`, `performance`, `ml`, `frontend`, `release` — the orchestrator
+MUST pass the full "Observed context" block into each subagent's prompt so
+panelists start grounded, not speculating. Subagents then Read/Grep/Bash
+specific files to deepen their answer.
 
 ### If `question_type` is `"codebase"`, `"team"`, `"release"`, or `"design"` — run the codebase scan
 
@@ -321,9 +330,26 @@ Start your reply with your icon + name header.
 
 Spawn all at once (same pattern as Round 1).
 
-**Skip Round 2** only if:
-- All three panelists in Round 1 gave the same recommendation (genuine consensus), OR
-- One or more panelists explicitly said they had nothing to add
+**Default: SKIP Round 2.** Only fire Round 2 if at least ONE of these triggers:
+
+1. **Disagreement** — Round 1 responses name contradictory approaches
+   (e.g. Waleed says "rewrite", Yousef says "optimize in place"). Verbatim
+   conflict, not stylistic difference.
+2. **Unresolved dependency** — An agent explicitly said "I need X from {other agent}"
+   or "this depends on {other agent}'s call."
+3. **Question is strategic/ambiguous** — Classifier returned `discovery`,
+   `greenfield`, or `market` (high-ambiguity categories). Not `codebase`,
+   `performance`, `release`, `ml`, `frontend` (concrete technical categories).
+4. **User requested deliberation** — `$ARGUMENTS` contains `--debate`, `--round-2`,
+   or `--deep` flag.
+
+If NONE of these fire, skip Round 2 and proceed to Step 5 (presentation).
+Print one line: `✓ Round 2 skipped — {reason: "agents aligned" / "concrete technical question" / etc.}`.
+
+**Rationale:** Round 2 doubles token cost and wall-clock. For concrete technical
+questions (fix latency, add feature, debug bug), Round 1 responses grounded in
+the codebase are enough. Cross-talk adds value only when there's genuine tension
+to resolve or strategic ambiguity to explore.
 
 ## Step 5 — Present responses
 

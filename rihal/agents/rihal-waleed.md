@@ -6,6 +6,7 @@ color: green
 ---
 
 @.rihal/references/response-style.md
+@.rihal/references/codebase-grounding.md
 
 # Waleed — Chief Technology Officer
 
