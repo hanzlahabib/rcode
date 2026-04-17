@@ -66,22 +66,7 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 04 — Template Improvements (Issue #101)
-
-**Goal:** Close template suggestions: pnpm scripts, `.rihal/config.json` scaffold, Node 20+ engine, gitignore, README template, TypeScript strict.
-
-**Status:** Planned (tracked in GH #101)
-
-**Plans:**
-- Audit `rihal-om/template` current state
-- Open PRs on template repo per suggestion
-- Link PRs from #101
-
-**Acceptance:** #101 closed. Template is modern + Rihal-ready out of the box.
-
----
-
-## Phase 05 — Dashboard Refresh
+## Phase 04 — Dashboard Refresh
 
 **Goal:** Diwan view-only dashboard (`server/dashboard.js`) should visualize tier breakdown, phase progress, and council sessions pulled from `.rihal/state.json` and `.planning/`.
 
@@ -96,7 +81,7 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 06 — Marketing + Launch
+## Phase 05 — Marketing + Launch
 
 **Goal:** Publish v2 with tier docs. Get first external users.
 
@@ -118,3 +103,4 @@ Started: 2026-03 · Current
 - Consolidate create-prd / edit-prd / validate-prd into one skill with modes
 - Archive v1 once v2 is fully stable
 - Add Windsurf / Antigravity install paths tested
+- Template Improvements (GH #101) — pnpm, Node 20+, .gitignore, README, .rihal/config.json scaffold, TypeScript strict
