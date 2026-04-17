@@ -296,23 +296,32 @@ function installSkills(packageRoot, target) {
 
   let count = 0;
 
-  for (const bucket of ['agents', 'actions']) {
-    const bucketDir = path.join(skillsSource, bucket);
-    if (!fs.existsSync(bucketDir)) continue;
-
-    for (const entry of fs.readdirSync(bucketDir, { withFileTypes: true })) {
+  // Recursively find every directory that contains a SKILL.md. Flattens
+  // phase-based organization (1-analysis/, 2-plan/, 3-solutioning/,
+  // 4-implementation/, core/) into .claude/skills/rihal-*/ in the target.
+  // Supports both legacy flat layout and new phased layout.
+  function walkForSkills(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const src = path.join(bucketDir, entry.name);
-      // Agent skills already start with "rihal-". Action skills use their
-      // own name (e.g. "rihal-scaffold-project"). Namespace actions under
-      // rihal- prefix if they don't already carry it.
-      const destName = entry.name.startsWith('rihal-')
-        ? entry.name
-        : `rihal-${entry.name}`;
-      const dest = path.join(skillsDest, destName);
-      copyDirRecursive(src, dest);
-      count++;
+      const src = path.join(dir, entry.name);
+      const hasSkillMd = fs.existsSync(path.join(src, 'SKILL.md'));
+      if (hasSkillMd) {
+        const destName = entry.name.startsWith('rihal-')
+          ? entry.name
+          : `rihal-${entry.name}`;
+        const dest = path.join(skillsDest, destName);
+        copyDirRecursive(src, dest);
+        count++;
+      } else {
+        // No SKILL.md here — recurse (phase dirs, research dir, etc.)
+        walkForSkills(src);
+      }
     }
+  }
+
+  for (const bucket of ['agents', 'actions', 'core']) {
+    walkForSkills(path.join(skillsSource, bucket));
   }
 
   return count;
