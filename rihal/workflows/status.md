@@ -8,6 +8,17 @@ Read `.rihal/state.json` and print a human-readable project status dashboard.
 @.rihal/references/output-format.md
 </required_reading>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► STATUS — {project}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+Use status symbols (✓ complete, ◆ in_progress, ○ planned) in phase/plan list.
+Highlight open blockers with ⚠. End with Next Up block routing to next action.
+</output_format>
+
 <process>
 
 ## Step 1 — Read state
