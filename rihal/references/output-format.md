@@ -128,6 +128,53 @@ Velocity: avg 11 pts (last 3 sprints)
 
 ---
 
+## TODO Lists (MANDATORY for multi-step workflows)
+
+Any workflow with 3+ discrete steps MUST use `TaskCreate` to show a visible
+todo list, and `TaskUpdate` as each completes. This gives users live
+visibility into progress.
+
+**Pattern at workflow start:**
+
+```
+TaskCreate: "Collect workflow config"
+TaskCreate: "Write PROJECT.md"
+TaskCreate: "Run domain research (4 parallel agents)"
+TaskCreate: "Define REQUIREMENTS.md"
+TaskCreate: "Build ROADMAP.md"
+TaskCreate: "Finalize state + commit"
+```
+
+**As each completes, update status:**
+
+```
+TaskUpdate(taskId: <N>, status: "completed")
+```
+
+**Display pattern (from GSD-style workflows):**
+
+```
+✔ Map codebase: spawn 4 parallel mappers
+✔ Collect workflow config (mode, granularity, git, agents)
+◼ Write and commit PROJECT.md           ← currently in_progress
+◻ Run domain research (4 parallel agents + synthesizer)
+◻ Define REQUIREMENTS.md
+◻ Spawn rihal-roadmapper to build ROADMAP.md
+◻ Finalize: STATE.md, CLAUDE.md refresh, commit
+```
+
+**Status symbols in TODO lists:**
+- `✔` completed
+- `◼` in_progress (exactly one active)
+- `◻` pending
+- `✗` failed / blocked
+
+**Rule:** Never leave all tasks in `pending` after starting. Always mark
+one `in_progress` before beginning work on it, and `completed` immediately
+after finishing (not batched at the end).
+
+---
+
 ## Next Up Block
 
 Always at end of major completions.

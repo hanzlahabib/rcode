@@ -3,6 +3,55 @@ Initialize a new project through unified flow: questioning, research (optional),
 
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
+<output_format>
+Open with banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► NEW PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Use TaskCreate at workflow start to show the full journey:
+- TaskCreate: "Detect project type (greenfield / brownfield)"
+- TaskCreate: "Collect workflow config (mode, granularity, parallelization, models, agents)"
+- TaskCreate: "Write and commit PROJECT.md"
+- TaskCreate: "Run domain research (4 parallel agents + synthesizer)" — if research enabled
+- TaskCreate: "Define REQUIREMENTS.md"
+- TaskCreate: "Spawn rihal-roadmapper to build ROADMAP.md"
+- TaskCreate: "Finalize: STATE.md, CLAUDE.md refresh, commit"
+
+Mark one in_progress at a time. Mark completed immediately after each step.
+
+**Brownfield detection banner** (if existing code found):
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► BROWNFIELD DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing {stack} code found in {path}. Mapping it first will save
+duplication during planning.
+```
+
+Then AskUserQuestion to route to /rihal:map-codebase before proceeding.
+
+**Exiting to map-codebase handoff:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► EXITING TO CODEBASE MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Per the workflow, mapping runs first. After it finishes I'll re-enter
+/rihal:new-project automatically with the map in hand.
+
+Handing off to /rihal:map-codebase now.
+```
+</output_format>
+
 
 ## Step 0 — Usage check
 

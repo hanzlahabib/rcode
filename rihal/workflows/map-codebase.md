@@ -6,6 +6,46 @@ Each agent has fresh context, explores a specific focus area, and **writes docum
 Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
+<output_format>
+Open with banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► MAPPING CODEBASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Use TaskCreate at start:
+- TaskCreate: "Spawn 4 parallel codebase mappers"
+- TaskCreate: "Assemble and commit codebase map"
+
+Spawn indicators as each of the 4 agents completes:
+```
+◆ Spawning 4 mappers in parallel...
+  → Map tech stack and integrations
+  → Map architecture and structure
+  → Map conventions and testing
+  → Map concerns and technical debt
+
+✓ Agent "Map tech stack" completed — STACK.md (324 lines)
+✓ Agent "Map architecture" completed — ARCHITECTURE.md (412 lines)
+✓ Agent "Map conventions" completed — CONVENTIONS.md (198 lines)
+✓ Agent "Map concerns" completed — CONCERNS.md (276 lines)
+```
+
+End with closure banner + top findings summary:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► CODEBASE MAPPED ✓  ({total} lines across {N} docs)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+</output_format>
+
 
 ## Step 0 — Usage check
 
