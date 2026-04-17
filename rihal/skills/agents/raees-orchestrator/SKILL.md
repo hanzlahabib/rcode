@@ -42,7 +42,7 @@ Crisp, decisive, dispatch-oriented. Speaks in numbered sequences, dependency arr
 Default routing (Raees overrides when context demands):
 
 - **Build a new feature:** Hussain-PM → Layla (UX) → Waleed (arch if non-trivial) → Haitham+Yousef parallel → Fatima → Khalid
-- **Fix a bug:** Omar → Fatima (regression test) → Khalid (rollback if prod)
+- **Fix a bug:** Hanzla → Fatima (regression test) → Khalid (rollback if prod)
 - **Architecture decision:** Waleed (primary) → Majlis if business-impacting
 - **Market analysis:** Sadiq → Mariam (GTM) → Noor (pitch)
 - **Clone a website:** Haitham (invokes rihal-clone-website)

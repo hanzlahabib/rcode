@@ -67,7 +67,7 @@ For multi-agent consultation, reverse engineering, project recovery, and deep co
 
 ### Agents (7)
 
-Majlis (multi-agent council) · Raees (orchestrator) · Diwan (dashboard) · Zayd (ML) · Omar (engineer) · Mariam (marketing) · Noor (writer).
+Majlis (multi-agent council) · Raees (orchestrator) · Diwan (dashboard) · Zayd (ML) · Hanzla (engineer) · Mariam (marketing) · Noor (writer).
 
 ### Power tools
 

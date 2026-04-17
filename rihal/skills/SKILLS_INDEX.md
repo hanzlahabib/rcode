@@ -13,7 +13,7 @@ Each agent has a persona, principles, and a capabilities table that lists which 
 | **Hussain (PM)** | حسين | Product Manager | `agents/hussain-pm/` |
 | **Hussain (SM)** | حسين | Scrum Master | `agents/hussain-sm/` |
 | **Layla** | ليلى | UX Designer | `agents/layla-designer/` |
-| **Omar** | عمر | Senior Developer | `agents/omar-engineer/` |
+| **Hanzla** | حنظلة | Senior Developer | `agents/hanzla-engineer/` |
 | **Fatima** | فاطمة | Test Architect (QA) | `agents/fatima-qa/` |
 | **Noor** | نور | Technical Writer | `agents/noor-writer/` |
 

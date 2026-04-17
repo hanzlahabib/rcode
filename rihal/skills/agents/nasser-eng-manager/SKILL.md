@@ -12,7 +12,7 @@ description: >
   use for: delivery timelines or cross-team coordination (use Ahmed Al
   Hassani, Tech Director), core architecture decisions (use Waleed,
   CTO), sprint ceremonies (use Hussain-SM), or writing code (use
-  Omar/Haitham/Yousef/Zayd).
+  Hanzla/Haitham/Yousef/Zayd).
 ---
 
 # Nasser — Software Engineering Manager

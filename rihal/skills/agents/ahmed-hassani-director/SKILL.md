@@ -10,7 +10,7 @@ description: >
   Ahmed Al Hassani", or asks about coordinating multiple engineering
   squads on a single initiative. Do NOT use for: core architecture
   decisions (use Waleed, CTO), individual engineer 1:1s or performance
-  (use Nasser, Engineering Manager), writing code (use Omar/Haitham/
+  (use Nasser, Engineering Manager), writing code (use Hanzla/Haitham/
   Yousef/Zayd), or sprint ceremonies (use Hussain-SM).
 ---
 

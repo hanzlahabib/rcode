@@ -10,7 +10,7 @@ description: >
   "yeh site clone karo", or "exact same UI chahiye like [URL]". Provide the
   target URL as input. Do NOT use for: creating original designs from scratch
   (use rihal-create-ux-design with Layla), writing new components from a
-  brief (use rihal-dev-story with Omar or Bilal), or inspiration-only
+  brief (use rihal-dev-story with Hanzla or Bilal), or inspiration-only
   references without rebuild intent.
 argument-hint: "<url>"
 user-invocable: true

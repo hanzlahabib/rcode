@@ -37,7 +37,7 @@ The original design had 9 agents. Real team work surfaced gaps. The current shap
 **Hussain-PM** (product), **Hussain-SM** (scrum), **Layla** (UX), **Zahra** (brand)
 
 ### Engineering (4)
-**Omar** (full-stack generalist), **Haitham** (frontend), **Yousef** (backend), **Zayd** (ML)
+**Hanzla** (full-stack generalist), **Haitham** (frontend), **Yousef** (backend), **Zayd** (ML)
 
 ### Quality & ops (2)
 **Fatima** (QA), **Khalid** (DevOps)
@@ -63,7 +63,7 @@ Authority flows down from strategy. Each agent **defers** to others on their dom
                     │              │
               ┌─────┼─────┐    Layla ◀── Zahra
               │     │     │         │
-           Omar  Haitham  Yousef ◀── │
+           Hanzla  Haitham  Yousef ◀── │
               │     │     │         │
               └─────┼─────┘
                     │

@@ -1,6 +1,6 @@
 type: agent
-name: rihal-agent-omar
-displayName: Omar
+name: rihal-agent-hanzla
+displayName: Hanzla
 title: Developer Agent
 icon: "⚙️"
 capabilities: "story execution, test-driven development, code implementation"

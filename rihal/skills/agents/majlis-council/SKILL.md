@@ -113,7 +113,7 @@ Majlis has two modes. **Real mode** dispatches actual subagents via the `Task` t
 **Input:** "Should we add real-time collaboration to our dashboard?"
 
 **Expected behavior:**
-1. Council: Waleed (architecture cost), Omar (implementation complexity), Layla (UX implications), Hussain-PM (scope), Fatima (testing burden), Khalid (infra cost)
+1. Council: Waleed (architecture cost), Hanzla (implementation complexity), Layla (UX implications), Hussain-PM (scope), Fatima (testing burden), Khalid (infra cost)
 2. Present each perspective in table form
 3. Identify alignment and dissent
 4. Synthesis with recommendation

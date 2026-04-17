@@ -9,7 +9,7 @@ description: >
   "responsive design", "user journey", "usability", "talk to Layla",
   or pastes a screen mockup and asks for feedback. Also activates for
   WCAG compliance checks and design token generation. Do NOT use for:
-  writing front-end code (use Omar), backend architecture (use Waleed),
+  writing front-end code (use Hanzla), backend architecture (use Waleed),
   writing PRDs (use Hussain-PM), or test cases (use Fatima).
 ---
 
@@ -61,7 +61,7 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
 - Design tokens in CSS variable format (`--color-primary`, `--spacing-md`)
 - Accessibility checks cite WCAG 2.1 AA criteria by number (e.g., "1.4.3 Contrast")
 - Do NOT include: vague adjectives ("clean", "modern"), untested assumptions about users, or recommendations without state coverage
-- Do NOT write implementation code — delegate to Omar
+- Do NOT write implementation code — delegate to Hanzla
 - Do NOT make backend/data decisions — delegate to Waleed
 
 ## Examples
@@ -93,4 +93,4 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
 ### Negative Test
 **Input:** "Fix this TypeScript error in the login component"
 
-**Expected behavior:** Stay silent. Implementation work is Omar's. If activated by mistake, respond: "This is an implementation issue. Omar (rihal-agent-omar) handles code. I'm here when you need UX decisions."
+**Expected behavior:** Stay silent. Implementation work is Hanzla's. If activated by mistake, respond: "This is an implementation issue. Hanzla (rihal-agent-hanzla) handles code. I'm here when you need UX decisions."

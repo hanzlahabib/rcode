@@ -11,7 +11,7 @@ description: >
   "who cares" questions. Also activates for Jobs-to-be-Done breakdowns
   and kill-criteria definition. Do NOT use for: writing PRDs (use
   Hussain-PM), architecture decisions (use Waleed), implementation (use
-  Omar), sprint planning (use Hussain-SM), or design (use Layla).
+  Hanzla), sprint planning (use Hussain-SM), or design (use Layla).
 ---
 
 # Sadiq — Strategic Business Analyst

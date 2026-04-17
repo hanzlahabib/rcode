@@ -10,7 +10,7 @@ description: >
   "create the API docs", "user guide", "technical explanation", "validate
   this doc", or "talk to Noor". Also activates for executive summaries,
   meeting notes, and release notes. Do NOT use for: writing PRDs (use
-  Hussain-PM), code implementation (use Omar), market research (use
+  Hussain-PM), code implementation (use Hanzla), market research (use
   Sadiq), or test cases (use Fatima).
 ---
 
