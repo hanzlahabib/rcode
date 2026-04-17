@@ -81,6 +81,7 @@ Parse `type` from JSON. Map to command:
 | "plan", "sprint", "stories", "backlog" | `/rihal:sprint-planning` |
 | "execute", "run", "build", "implement", "dev" | `/rihal:execute` |
 | "status", "sprint status", "board" | `/rihal:sprint-status` |
+| "list plans", "all plans", "plans across phases", "show plans" | `/rihal:list-plans` |
 | "progress", "where am I", "what's done" | `/rihal:progress` |
 | "next", "what should I do", "what's next", "continue" | `/rihal:next` |
 | "debug", "error", "broken", "bug", "fix" | `/rihal:debug` |

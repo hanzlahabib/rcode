@@ -219,6 +219,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:correct-course` | Course-correct mid-sprint when major change is discovered. |
 | `/rihal:sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal:sprint-status` | Sprint progress — stories, points, velocity, burndown. |
+| `/rihal:list-plans` | Table of every SPRINT.md across phases — goal, stories, points, state. |
 | `/rihal:retrospective` | Run an epic retrospective and produce owned action items. |
 
 ## Operational / rare
