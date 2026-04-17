@@ -351,7 +351,15 @@ questions (fix latency, add feature, debug bug), Round 1 responses grounded in
 the codebase are enough. Cross-talk adds value only when there's genuine tension
 to resolve or strategic ambiguity to explore.
 
-## Step 5 — Present responses
+## Step 5 — Present responses (MANDATORY — do not skip)
+
+**Hard rule:** Before saving any artifact, before printing any closure banner,
+before offering Next Up options — you MUST first print the full Round 1
+(and Round 2 if ran) responses **verbatim** in the current message.
+
+The user loses trust if they only see "session saved to {path}" without
+reading the agent responses inline. The artifact is a backup, not a
+replacement for the in-conversation output.
 
 Before presenting, load the commit format reference:
 - `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
@@ -390,6 +398,38 @@ After all responses, add an **Orchestrator Note** (max 3 sentences) flagging the
 ```
 
 The Orchestrator Note is **your own voice**, not an agent voice. Label it clearly.
+
+## Step 5b — Drill-down question (MANDATORY when disagreement exists)
+
+If Round 1 (or Round 2) surfaced a concrete disagreement between panelists,
+you MUST use AskUserQuestion to force resolution before proceeding. Do NOT
+just list "Next Up" options and leave — a disagreement with no decision
+means nothing shipped.
+
+Format the question as the specific tension the user needs to resolve,
+with 2-4 concrete options reflecting the panelists' positions:
+
+```
+AskUserQuestion:
+  question: "{Panelist A} says {X}. {Panelist B} says {Y}. Which do you pick?"
+  header: "{short label}"
+  options:
+    - label: "{A's position, paraphrased}"
+      description: "{tradeoff in one line — what you gain, what you lose}"
+    - label: "{B's position, paraphrased}"
+      description: "{tradeoff}"
+    - label: "Both — in parallel tracks"
+      description: "{only offer if feasible}"
+    - label: "Discuss further with {agent-name}"
+      description: "Route to /rihal:discuss for a deeper 1:1"
+```
+
+After the user picks, emit a one-line decision record and proceed to
+Save step. The chosen path is what goes into the "Next Up" block —
+the options list is no longer needed once a decision is made.
+
+**Skip Step 5b only if:** there was genuine consensus (all agents aligned)
+or user passed `--no-followup` flag.
 
 ## Step 6 — Save the session
 
