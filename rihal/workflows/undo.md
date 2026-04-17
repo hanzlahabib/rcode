@@ -42,20 +42,25 @@ Parse $ARGUMENTS for the undo mode:
 - `--last N` → MODE=last, COUNT=N (integer, default 10 if N missing)
 - `--phase NN` → MODE=phase, TARGET_PHASE=NN (two-digit phase number)
 - `--plan NN-MM` → MODE=plan, TARGET_PLAN=NN-MM (phase-plan ID)
+- `--to-snapshot` → TO_SNAPSHOT=true (only combines with `--phase NN`). Uses the pre-execution git tag `rihal/snapshot/phase-NN` to determine the full commit range to revert — guaranteed to restore exact pre-execution state regardless of manifest accuracy.
 
 If no valid argument is provided, display usage and exit:
 
 ```
-Usage: /rihal:undo --last N | --phase NN | --plan NN-MM
+Usage: /rihal:undo --last N | --phase NN [--to-snapshot] | --plan NN-MM
 
 Modes:
-  --last N      Show last N Rihal commits for interactive selection
-  --phase NN    Revert all commits for phase NN
-  --plan NN-MM  Revert all commits for plan NN-MM
+  --last N              Show last N Rihal commits for interactive selection
+  --phase NN            Revert all commits for phase NN (uses manifest, fallback to git log)
+  --phase NN --to-snapshot
+                        Revert every commit between rihal/snapshot/phase-NN and HEAD —
+                        exact restore to the pre-execution tag created by /rihal:execute
+  --plan NN-MM          Revert all commits for plan NN-MM
 
 Examples:
   /rihal:undo --last 5
   /rihal:undo --phase 03
+  /rihal:undo --phase 03 --to-snapshot
   /rihal:undo --plan 03-02
 ```
 
@@ -127,6 +132,37 @@ Parse the user's selection into COMMITS list.
 ---
 
 **MODE=phase:**
+
+**If `TO_SNAPSHOT` is true:**
+
+```bash
+SNAPSHOT_TAG="rihal/snapshot/phase-${TARGET_PHASE}"
+if ! git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
+  cat <<EOF
+No snapshot tag found: ${SNAPSHOT_TAG}
+
+Snapshots are created automatically when /rihal:execute runs for a phase.
+Options:
+  - Drop --to-snapshot and use manifest/git-log fallback:   /rihal:undo --phase ${TARGET_PHASE}
+  - Re-run /rihal:execute <phase> to create a snapshot for future undo
+EOF
+  exit 0
+fi
+
+mapfile -t COMMITS < <(git log --pretty=format:%H --no-merges "${SNAPSHOT_TAG}..HEAD")
+```
+
+If the range is empty (HEAD is already at the snapshot):
+```
+Nothing to revert — HEAD already matches ${SNAPSHOT_TAG}.
+```
+Exit cleanly. Skip the rest of this step.
+
+Otherwise set `SNAPSHOT_SHA=$(git rev-parse --short "${SNAPSHOT_TAG}")` for use in the confirm_revert preview (display the target SHA).
+
+---
+
+**If `TO_SNAPSHOT` is false (default):**
 
 Read `.planning/.phase-manifest.json` if it exists.
 
@@ -298,9 +334,14 @@ If any revert fails (merge conflict or error):
 
 After all reverts are staged successfully, create a single commit:
 
-For MODE=phase:
+For MODE=phase (default):
 ```bash
 git commit -m "revert(${TARGET_PHASE}): undo phase ${TARGET_PHASE} — ${REVERT_REASON}"
+```
+
+For MODE=phase with `--to-snapshot`:
+```bash
+git commit -m "revert(${TARGET_PHASE}): restore phase ${TARGET_PHASE} to snapshot ${SNAPSHOT_SHA} — ${REVERT_REASON}"
 ```
 
 For MODE=plan:
@@ -357,6 +398,8 @@ Show next steps:
 - [ ] Arguments parsed correctly for all three modes
 - [ ] --phase mode reads .planning/.phase-manifest.json using manifest.phases[TARGET_PHASE].commits
 - [ ] --phase mode falls back to git log if manifest entry missing
+- [ ] --phase --to-snapshot uses rihal/snapshot/phase-NN tag and reverts ${TAG}..HEAD
+- [ ] --to-snapshot exits cleanly when the snapshot tag is missing (no surprise no-op)
 - [ ] Dependency check warns when downstream phases have started (MODE=phase)
 - [ ] Dependency check warns when later plans reference target plan outputs (MODE=plan)
 - [ ] Dirty-tree guard aborts if working tree has uncommitted changes

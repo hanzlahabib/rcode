@@ -229,6 +229,28 @@ fi
 ```
 </step>
 
+<step name="create_phase_snapshot" priority="first">
+**Create a pre-execution git tag so `/rihal:undo --phase NN --to-snapshot` can restore to this exact state.**
+
+Only runs when inside a git repository with a valid HEAD (skip silently for fresh/empty repos).
+
+```bash
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  SNAPSHOT_TAG="rihal/snapshot/phase-${phase_number}"
+  if git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
+    PREV_SHA=$(git rev-parse --short "${SNAPSHOT_TAG}")
+    git tag -d "${SNAPSHOT_TAG}" >/dev/null 2>&1
+    echo "Replaced prior snapshot (was at ${PREV_SHA})"
+  fi
+  git tag -a "${SNAPSHOT_TAG}" -m "Pre-execution snapshot for phase ${phase_number}" HEAD 2>/dev/null \
+    && echo "✓ Snapshot: ${SNAPSHOT_TAG} @ $(git rev-parse --short HEAD)" \
+    || echo "⚠ Could not create snapshot tag (non-fatal — undo --to-snapshot will be unavailable for this phase)"
+fi
+```
+
+Tags are local-only by default (never auto-pushed), honoring the repo's push policy.
+</step>
+
 <step name="check_blocking_antipatterns" priority="first">
 **MANDATORY — Check for blocking anti-patterns before any other work.**
 
