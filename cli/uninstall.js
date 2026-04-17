@@ -2,13 +2,14 @@
  * rihal-code uninstall — remove Rihal Code from the current project.
  *
  * Cleanly removes:
- *   - .claude/skills/rihal-*            (agent + action skills)
- *   - .claude/commands/rihal/            (slash commands)
- *   - .cursor/rules/rihal-*.mdc          (cursor rules)
- *   - .windsurf/rules/rihal-*.mdc        (windsurf rules)
- *   - .antigravity/agents/rihal-*        (antigravity agents)
- *   - Rihal Code section in AGENTS.md    (appended section only — file preserved)
- *   - .rihal/                            (ONLY if user explicitly confirms — contains project state)
+ *   - .claude/skills/rihal-*             (phrase-activated skills)
+ *   - .claude/commands/rihal/             (slash commands)
+ *   - .claude/agents/rihal-*.md           (v2 subagents: sadiq, waleed, yousef, zayd, etc.)
+ *   - .cursor/rules/rihal-*.mdc           (cursor rules)
+ *   - .windsurf/rules/rihal-*.mdc         (windsurf rules)
+ *   - .antigravity/agents/rihal-*         (antigravity agents)
+ *   - Rihal Code section in AGENTS.md     (appended section only — file preserved)
+ *   - .rihal/                             (ONLY if user explicitly confirms — contains project state)
  *
  * Default: interactive preview → confirmation → delete.
  *
@@ -99,12 +100,13 @@ function cleanupEmptyDirs(cwd, relPaths) {
  */
 function buildPlan(cwd, editors) {
   const plan = {
-    claude: { skills: [], commands: [] },
+    claude: { skills: [], commands: [], agents: [] },
     cursor: [],
     windsurf: [],
     antigravity: [],
     agentsMd: null, // null = no section; 'present' = section present
     stateDir: null, // null = missing; { files: N } = present
+    planningDir: null, // null = missing; { files: N } = present
   };
 
   if (editors.includes('claude')) {
@@ -117,6 +119,13 @@ function buildPlan(cwd, editors) {
     const commandsDir = path.join(cwd, '.claude/commands/rihal');
     if (fs.existsSync(commandsDir)) {
       plan.claude.commands = fs.readdirSync(commandsDir);
+    }
+    // v2 installs agents to .claude/agents/rihal-*.md — scan for them
+    const agentsDir = path.join(cwd, '.claude/agents');
+    if (fs.existsSync(agentsDir)) {
+      plan.claude.agents = fs
+        .readdirSync(agentsDir)
+        .filter((name) => name.startsWith('rihal-') && name.endsWith('.md'));
     }
   }
 
@@ -220,6 +229,9 @@ function planToPathList(plan, cwd) {
   }
   if (plan.claude.commands.length > 0) {
     paths.push('.claude/commands/rihal');
+  }
+  for (const name of plan.claude.agents) {
+    paths.push(path.join('.claude/agents', name));
   }
   for (const name of plan.cursor) {
     paths.push(path.join('.cursor/rules', name));
@@ -378,7 +390,8 @@ async function runUninstall(args) {
   const totalCursor = plan.cursor.length;
   const totalWindsurf = plan.windsurf.length;
   const totalAG = plan.antigravity.length;
-  const totalItems = totalSkills + totalCommands + totalCursor + totalWindsurf + totalAG;
+  const totalAgents = plan.claude.agents.length;
+  const totalItems = totalSkills + totalCommands + totalAgents + totalCursor + totalWindsurf + totalAG;
 
   // Edge case: install traces exist but no actual files match our patterns
   // (e.g. user manually deleted Rihal files but left dirs). Exit clean.
@@ -394,6 +407,7 @@ async function runUninstall(args) {
     console.log(`   Claude Code`);
     console.log(`     .claude/skills/ (rihal-*):    ${totalSkills} skills`);
     console.log(`     .claude/commands/rihal/:      ${totalCommands} slash commands`);
+    console.log(`     .claude/agents/rihal-*.md:    ${totalAgents} agents`);
   }
   if (editors.includes('cursor')) {
     console.log(`   Cursor`);
@@ -464,6 +478,24 @@ async function runUninstall(args) {
       removed += plan.claude.commands.length;
       console.log(`   ✓ removed .claude/commands/rihal/ (${plan.claude.commands.length} slash commands)`);
     }
+
+    // v2: .claude/agents/rihal-*.md
+    const agentsDir = path.join(cwd, '.claude/agents');
+    const nAgents = removeMatching(agentsDir, (name) =>
+      name.startsWith('rihal-') && name.endsWith('.md'),
+    );
+    removed += nAgents;
+    if (nAgents > 0) console.log(`   ✓ removed ${nAgents} Claude agents`);
+
+    // Clean up now-empty .claude/commands and .claude/agents dirs
+    try {
+      if (fs.existsSync(path.join(cwd, '.claude/commands')) && fs.readdirSync(path.join(cwd, '.claude/commands')).length === 0) {
+        fs.rmdirSync(path.join(cwd, '.claude/commands'));
+      }
+      if (fs.existsSync(agentsDir) && fs.readdirSync(agentsDir).length === 0) {
+        fs.rmdirSync(agentsDir);
+      }
+    } catch { /* best effort */ }
   }
 
   if (editors.includes('cursor')) {
