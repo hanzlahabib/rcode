@@ -2,6 +2,44 @@
 Execute all plans in a phase using wave-based parallel execution. Orchestrator stays lean — delegates plan execution to subagents.
 </purpose>
 
+<output_format>
+Open with banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► EXECUTING PHASE {NN}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Use TaskCreate at start, one entry per wave:
+- TaskCreate: "Wave 1: {N} plan(s) in parallel"
+- TaskCreate: "Wave 2: {N} plan(s) in parallel"
+- TaskCreate: "Write phase SUMMARY.md"
+- TaskCreate: "Run verifier gate"
+
+Per-wave banner as each begins:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► EXECUTING WAVE {N}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+◆ Spawning {N} rihal-executor agents in parallel...
+```
+
+Per-agent completion:
+```
+✓ rihal-executor complete: {plan-id} → SUMMARY.md ({N} commits)
+```
+
+Closure:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PHASE {NN} COMPLETE ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+End with Next Up block routing to /rihal:verify-work or /rihal:next.
+</output_format>
+
 <core_principle>
 Orchestrator coordinates, not executes. Each subagent loads the full execute-sprint context. Orchestrator: discover plans → analyze deps → group waves → spawn agents → handle checkpoints → collect results.
 </core_principle>

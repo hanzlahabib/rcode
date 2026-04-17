@@ -6,6 +6,18 @@ Plan the next sprint: compute capacity from velocity history, prioritize stories
 Uses rihal-tools.cjs sprint/story state commands for tracking.
 </purpose>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PLANNING SPRINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+TaskCreate: "Load phase scope + velocity", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Start sprint".
+Closure: `RIHAL ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
+Next Up: `/rihal:execute .planning/phases/{phase}/SPRINT.md`
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>

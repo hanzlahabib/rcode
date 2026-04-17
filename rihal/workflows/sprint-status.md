@@ -4,6 +4,19 @@
 Display current sprint progress: stories by status, points done vs remaining, velocity comparison, and burndown. Quick situational awareness without starting execution.
 </purpose>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► SPRINT {NN.S} STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+Use status symbols (✓ done, ◆ in_progress, ○ todo) in story board.
+Show sprint progress bar: `Sprint 01.1: 8/13 points ████████░░░░░ 61%`.
+Show velocity line: `Velocity: avg 11 pts (last 3 sprints)`.
+End with Next Up routing based on sprint state.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>

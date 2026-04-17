@@ -4,6 +4,28 @@
 Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rihal-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
 </purpose>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► MAJLIS CONVENING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question: {$ARGUMENTS}
+Panel: {N} agents selected by keyword scoring
+```
+TaskCreate: "Classify question type", "Select panel ({N} agents)", "Spawn agents in parallel", "Collect + synthesize responses", "Write artifact to council-sessions/".
+Per-agent spawn indicator:
+```
+◆ Spawning panel in parallel:
+  → 🧭 Sadiq (strategy)
+  → 🏗️ Waleed (architecture)
+  → 🛡️ Fatima (QA)
+```
+Agent headers when presenting responses: `🧭 **Sadiq (صادق) — Director of Strategy:**`.
+Closure: `RIHAL ► COUNCIL COMPLETE ✓` + Next Up with decision options.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>

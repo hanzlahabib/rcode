@@ -4,6 +4,21 @@
 Execute remaining incomplete phases autonomously with minimal human intervention. Runs plan → execute → verify cycles in a loop, pausing at checkpoints, failures, or decision gates. With `--interactive`, keeps discuss/plan steps inline in current context instead of delegating to subagents.
 </purpose>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► AUTONOMOUS EXECUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Scope: {N} incomplete phases to process
+```
+TaskCreate: one entry per phase in `todo_phases` list.
+Per-phase banners: `RIHAL ► PLANNING PHASE {NN}`, `RIHAL ► EXECUTING PHASE {NN}`, `RIHAL ► VERIFYING PHASE {NN}`, `RIHAL ► PHASE {NN} COMPLETE ✓`.
+On checkpoint: show 62-char checkpoint box from output-format.md.
+Closure: `RIHAL ► MILESTONE COMPLETE 🎉` if all phases done, else `RIHAL ► PAUSED at Phase {NN}`.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 @.rihal/references/workstream-flag.md

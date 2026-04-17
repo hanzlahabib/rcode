@@ -4,6 +4,19 @@ Validate built features through conversational testing with persistent state. Cr
 User tests, Claude records. One test at a time. Plain text responses.
 </purpose>
 
+<output_format>
+Open with banner:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► VERIFYING SPRINT {NN.S}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+TaskCreate: one entry per story to verify.
+Per-story status: `✓ Story 01.1.01 — passed`, `✗ Story 01.1.02 — FAILED: {reason}`, `⚠ Story 01.1.03 — partial`.
+If any fail: route to `/rihal:plan --gaps` for remediation.
+If all pass: `RIHAL ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal:next`.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>

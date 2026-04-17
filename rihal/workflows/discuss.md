@@ -4,6 +4,15 @@
 Orchestrate a single-agent quick sync session. This is the lightweight alternative to council — one agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague, not calling a board meeting.
 </purpose>
 
+<output_format>
+Lightweight — no full banner. Open with one-line header:
+```
+◆ Spawning {agent-id}...
+```
+Agent response opens with header: `🧭 **Sadiq (صادق) — Director of Strategy:**`.
+No closure banner (discuss is lightweight). End with optional Next Up if the user should escalate: `Want to convene full council? /rihal:council <question>`.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>

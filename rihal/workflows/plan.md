@@ -2,6 +2,44 @@
 Create executable phase prompts (SPRINT.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates rihal-phase-researcher, rihal-planner, and rihal-sprint-checker agents with a revision loop (max 3 iterations).
 </purpose>
 
+<output_format>
+Open with banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PLANNING PHASE {NN}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+TaskCreate at start:
+- TaskCreate: "Load phase scope and context"
+- TaskCreate: "Research phase (if enabled)"
+- TaskCreate: "Spawn rihal-planner → SPRINT.md"
+- TaskCreate: "Run rihal-sprint-checker verification"
+- TaskCreate: "Revise plan (up to 3 iterations)" — only if checker flags issues
+- TaskCreate: "Commit SPRINT.md + update state"
+
+Spawning indicators:
+```
+◆ Spawning rihal-phase-researcher...
+✓ Research complete: RESEARCH.md ({N} lines)
+
+◆ Spawning rihal-planner...
+✓ Planner complete: SPRINT.md ({N} stories, {M} points)
+
+◆ Spawning rihal-sprint-checker...
+✓ Check complete: {PASS|PARTIAL|FAIL} — see CHECK.md
+```
+
+Closure:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PLAN READY ✓  ({N} stories, {M} points)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+End with Next Up routing to /rihal:execute.
+</output_format>
+
 <required_reading>
 @.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
