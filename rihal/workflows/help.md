@@ -1,427 +1,312 @@
 <purpose>
-Display the complete Rihal command reference. Output ONLY the reference content. Do NOT add project-specific analysis, git status, next-step suggestions, or any commentary beyond the reference.
+Display the Rihal command reference at the requested tier. Output ONLY the tier section. Do NOT add project-specific analysis, git status, next-step suggestions, or any commentary beyond the reference.
 </purpose>
 
-<reference>
-# Rihal Command Reference
+## Step 0 — Parse arguments
 
-**Rihal** (Council-driven project automation) creates hierarchical project plans optimized for solo agentic development with Claude Code.
+Read `$ARGUMENTS` and resolve to one of: `basic`, `intermediate`, `advanced`, `all`.
 
-## Quick Start
+| Input | Tier shown |
+|-------|------------|
+| (empty) or `basic` or `1` | **TIER 1 — Basic** |
+| `intermediate` or `int` or `2` | **TIER 2 — Intermediate** |
+| `advanced` or `adv` or `3` | **TIER 3 — Advanced** |
+| `all` or `full` | **All three tiers in sequence** |
+| `--help` or `-h` | Show usage block, then exit |
 
-1. `/rihal:new-project` - Initialize project (includes research, requirements, roadmap)
-2. `/rihal:plan-phase 1` - Create detailed plan for first phase
-3. `/rihal:execute-phase 1` - Execute the phase
-
-## Staying Updated
-
-Rihal evolves fast. Update periodically:
-
-```bash
-npx -y rihal-code
-```
-
-## Strategic Conversations
-
-| Command | When to use |
-|---------|-------------|
-| /rihal:council {question} | Strategic decision needing multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
-| /rihal:discuss {agent} {question} | Quick single-agent sync — fast, conversational, no artifact |
-| /rihal:chain {preset} {topic} | Sequential pipeline — Mariam → Hussain-PM → Planner produces typed artifacts |
-
-Examples:
-```
-/rihal:council should I rewrite this auth layer?
-/rihal:discuss waleed what stack for SaaS?
-/rihal:chain research-plan dubai affiliate site
-```
-
-## Core Workflow
+Usage block:
 
 ```
-/rihal:new-project → /rihal:plan-phase → /rihal:execute-phase → repeat
+Usage: /rihal:help [basic|intermediate|advanced|all]
+
+  basic         Show the 8 essentials (default)
+  intermediate  Show real-project ops (council, review, ship, capture)
+  advanced      Show power tools (audits, workspaces, council variants, etc.)
+  all           Show everything
 ```
 
-### Project Initialization
+## Step 1 — Render the requested tier
 
-**`/rihal:new-project`**
-Initialize new project through unified flow.
-
-One command takes you from idea to ready-for-planning:
-- Deep questioning to understand what you're building
-- Optional domain research (spawns 4 parallel researcher agents)
-- Requirements definition with v1/v2/out-of-scope scoping
-- Roadmap creation with phase breakdown and success criteria
-
-Creates all `.planning/` artifacts:
-- `PROJECT.md` — vision and requirements
-- `config.json` — workflow mode (interactive/yolo)
-- `research/` — domain research (if selected)
-- `REQUIREMENTS.md` — scoped requirements with REQ-IDs
-- `ROADMAP.md` — phases mapped to requirements
-- `STATE.md` — project memory
-
-Usage: `/rihal:new-project`
-
-**`/rihal:map-codebase`**
-Map an existing codebase for brownfield projects.
-
-- Analyzes codebase with parallel Explore agents
-- Creates `.planning/codebase/` with 7 focused documents
-- Covers stack, architecture, structure, conventions, testing, integrations, concerns
-- Use before `/rihal:new-project` on existing codebases
-
-Usage: `/rihal:map-codebase`
-
-### Phase Planning
-
-**`/rihal:plan-phase <number>`**
-Create detailed execution plan for a specific phase.
-
-- Generates `.planning/phases/XX-phase-name/XX-YY-SPRINT.md`
-- Breaks phase into concrete, actionable tasks
-- Includes verification criteria and success measures
-- Multiple plans per phase supported (XX-01, XX-02, etc.)
-
-Usage: `/rihal:plan-phase 1`
-Result: Creates `.planning/phases/01-foundation/01-01-SPRINT.md`
-
-**PRD Express Path:** Pass `--prd path/to/requirements.md` to skip discuss-phase entirely. Your PRD becomes locked decisions in CONTEXT.md. Useful when you already have clear acceptance criteria.
-
-### Execution
-
-**`/rihal:execute-phase <phase-number>`**
-Execute all plans in a phase, or run a specific wave.
-
-- Groups plans by wave (from frontmatter), executes waves sequentially
-- Plans within each wave run in parallel via Task tool
-- Optional `--wave N` flag executes only Wave `N` and stops unless the phase is now fully complete
-- Verifies phase goal after all plans complete
-- Updates REQUIREMENTS.md, ROADMAP.md, STATE.md
-
-Usage: `/rihal:execute-phase 5`
-Usage: `/rihal:execute-phase 5 --wave 2`
-
-### Smart Router
-
-**`/rihal:do <description>`**
-Route freeform text to the right Rihal command automatically.
-
-- Analyzes natural language input to find the best matching Rihal command
-- Acts as a dispatcher — never does the work itself
-- Resolves ambiguity by asking you to pick between top matches
-- Use when you know what you want but don't know which `/rihal:*` command to run
-
-Usage: `/rihal:do fix the login button`
-Usage: `/rihal:do refactor the auth system`
-Usage: `/rihal:do I want to start a new milestone`
-
-### Quick Mode
-
-**`/rihal:quick [--full] [--discuss] [--research]`**
-Execute small, ad-hoc tasks with Rihal guarantees but skip optional agents.
-
-Quick mode uses the same system with a shorter path:
-- Spawns planner + executor (skips researcher, checker, verifier by default)
-- Quick tasks live in `.planning/quick/` separate from planned phases
-- Updates STATE.md tracking (not ROADMAP.md)
-
-Flags enable additional quality steps:
-- `--discuss` — Lightweight discussion to surface gray areas before planning
-- `--research` — Focused research agent investigates approaches before planning
-- `--full` — Adds plan-checking (max 2 iterations) and post-execution verification
-
-Flags are composable: `--discuss --research --full` gives the complete quality pipeline for a single task.
-
-Usage: `/rihal:quick`
-Usage: `/rihal:quick --research --full`
-Result: Creates `.planning/quick/NNN-slug/SPRINT.md`, `.planning/quick/NNN-slug/SUMMARY.md`
+Output the matching `<tier-N>` block below verbatim. For `all`, output all three blocks separated by `---`.
 
 ---
 
-**`/rihal:fast [description]`**
-Execute a trivial task inline — no subagents, no planning files, no overhead.
+<tier-1>
+# Rihal — Tier 1 (Basic)
 
-For tasks too small to justify planning: typo fixes, config changes, forgotten commits, simple additions. Runs in the current context, makes the change, commits, and logs to STATE.md.
+> **Rihal** is council-driven project automation built for solo agentic work in Claude Code.
+> Tier 1 is everything you need to ship a small project end-to-end. **8 commands.**
 
-- No SPRINT.md or SUMMARY.md created
-- No subagent spawned (runs inline)
-- ≤ 3 file edits — redirects to `/rihal:quick` if task is non-trivial
-- Atomic commit with conventional message
+## The loop
 
-Usage: `/rihal:fast "fix the typo in README"`
-Usage: `/rihal:fast "add .env to gitignore"`
+```
+init → new-project → plan → execute → next → status → ship
+```
 
-### Roadmap Management
+## Commands
 
-**`/rihal:insert-phase <after> <description>`**
-Insert urgent work as decimal phase between existing phases.
+| Command | What it does |
+|---------|--------------|
+| `/rihal:init` | First-time setup in this repo. Detects state, asks config questions, writes `.rihal/RIHLA.md`. Run once per project. |
+| `/rihal:new-project` | Take an idea to a planned roadmap. Questioning → optional research → REQUIREMENTS → ROADMAP. |
+| `/rihal:plan <phase>` | Create executable plans for a phase. Produces `SPRINT.md` files. |
+| `/rihal:execute <phase>` | Run all plans in a phase in dependency waves. Updates STATE on completion. |
+| `/rihal:next` | Auto-route to the next logical step based on project state. Zero friction. |
+| `/rihal:status` | Where am I — current phase, plan progress, recent decisions, blockers. |
+| `/rihal:progress` | Visual progress + intelligent suggestion for next action. |
+| `/rihal:help [tier]` | This reference. Add `intermediate`, `advanced`, or `all` for more. |
 
-- Creates intermediate phase (e.g., 7.1 between 7 and 8)
-- Useful for discovered work that must happen mid-milestone
-- Maintains phase ordering
+## Minimal happy path
 
-Usage: `/rihal:insert-phase 7 "Fix critical auth bug"`
-Result: Creates Phase 7.1
+```
+/rihal:init
+/rihal:new-project
+/rihal:plan 1
+/rihal:execute 1
+/rihal:next
+```
 
-### Progress Tracking
-
-**`/rihal:progress`**
-Check project status and intelligently route to next action.
-
-- Shows visual progress bar and completion percentage
-- Summarizes recent work from SUMMARY files
-- Displays current position and what's next
-- Lists key decisions and open issues
-- Offers to execute next plan or create it if missing
-- Detects 100% milestone completion
-
-Usage: `/rihal:progress`
-
-### Session Management
-
-**`/rihal:resume-work`**
-Resume work from previous session with full context restoration.
-
-- Reads STATE.md for project context
-- Shows current position and recent progress
-- Offers next actions based on project state
-
-Usage: `/rihal:resume-work`
-
-### Debugging
-
-**`/rihal:debug [issue description]`**
-Systematic debugging with persistent state across context resets.
-
-- Gathers symptoms through adaptive questioning
-- Creates `.planning/debug/[slug].md` to track investigation
-- Investigates using scientific method (evidence → hypothesis → test)
-- Survives `/clear` — run `/rihal:debug` with no args to resume
-- Archives resolved issues to `.planning/debug/resolved/`
-
-Usage: `/rihal:debug "login button doesn't work"`
-Usage: `/rihal:debug` (resume active session)
-
-### Todo Management
-
-**`/rihal:add-todo [description]`**
-Capture idea or task as todo from current conversation.
-
-- Extracts context from conversation (or uses provided description)
-- Creates structured todo file in `.planning/todos/pending/`
-- Infers area from file paths for grouping
-- Checks for duplicates before creating
-- Updates STATE.md todo count
-
-Usage: `/rihal:add-todo` (infers from conversation)
-Usage: `/rihal:add-todo Add auth token refresh`
-
-### Utility Commands
-
-**`/rihal:cleanup`**
-Archive accumulated phase directories from completed milestones.
-
-- Identifies phases from completed milestones still in `.planning/phases/`
-- Shows dry-run summary before moving anything
-- Moves phase dirs to `.planning/milestones/v{X.Y}-phases/`
-- Use after multiple milestones to reduce `.planning/phases/` clutter
-
-Usage: `/rihal:cleanup`
-
-**`/rihal:help`**
-Show this command reference.
-
-**`/rihal:update`**
-Update Rihal to latest version with changelog preview.
-
-- Shows installed vs latest version comparison
-- Displays changelog entries for versions you've missed
-- Highlights breaking changes
-- Confirms before running install
-- Better than raw `npx -y rihal-code`
-
-Usage: `/rihal:update`
-
-## Files & Structure
+## Files Rihal creates
 
 ```
 .planning/
-├── PROJECT.md            # Project vision
-├── ROADMAP.md            # Current phase breakdown
-├── STATE.md              # Project memory & context
-├── RETROSPECTIVE.md      # Living retrospective (updated per milestone)
-├── config.json           # Workflow mode & gates
-├── todos/                # Captured ideas and tasks
-│   ├── pending/          # Todos waiting to be worked on
-│   └── done/             # Completed todos
-├── debug/                # Active debug sessions
-│   └── resolved/         # Archived resolved issues
-├── milestones/
-│   ├── v1.0-ROADMAP.md       # Archived roadmap snapshot
-│   ├── v1.0-REQUIREMENTS.md  # Archived requirements
-│   └── v1.0-phases/          # Archived phase dirs (via /rihal:cleanup or --archive-phases)
-│       ├── 01-foundation/
-│       └── 02-core-features/
-├── codebase/             # Codebase map (brownfield projects)
-│   ├── STACK.md          # Languages, frameworks, dependencies
-│   ├── ARCHITECTURE.md   # Patterns, layers, data flow
-│   ├── STRUCTURE.md      # Directory layout, key files
-│   ├── CONVENTIONS.md    # Coding standards, naming
-│   ├── TESTING.md        # Test setup, patterns
-│   ├── INTEGRATIONS.md   # External services, APIs
-│   └── CONCERNS.md       # Tech debt, known issues
+├── PROJECT.md            # vision
+├── REQUIREMENTS.md       # scoped requirements
+├── ROADMAP.md            # phase breakdown
+├── STATE.md              # project memory
 └── phases/
-    ├── 01-foundation/
-    │   ├── 01-01-SPRINT.md
-    │   └── 01-01-SUMMARY.md
-    └── 02-core-features/
-        ├── 02-01-SPRINT.md
-        └── 02-01-SUMMARY.md
+    └── 01-foundation/
+        ├── 01-01-SPRINT.md   # the plan
+        └── 01-01-SUMMARY.md  # what got done
 ```
 
-## Workflow Modes
+**Done with Tier 1?** → `/rihal:help intermediate` for council, review, ship, and capture.
+</tier-1>
 
-Set during `/rihal:new-project`:
+---
 
-**Interactive Mode**
+<tier-2>
+# Rihal — Tier 2 (Intermediate)
 
-- Confirms each major decision
-- Pauses at checkpoints for approval
-- More guidance throughout
+> Real-project ops: strategic input, quality gates, capture, and session continuity.
+> Assumes you know Tier 1. **~18 commands.**
 
-**YOLO Mode**
+## Strategy & input
 
-- Auto-approves most decisions
-- Executes plans without confirmation
-- Only stops for critical checkpoints
+| Command | When to use |
+|---------|-------------|
+| `/rihal:council <question>` | Strategic decision needing multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk. |
+| `/rihal:discuss <agent> <q>` | Quick single-agent sync — fast, conversational, no artifact. |
+| `/rihal:discuss-phase <n>` | Gather context through adaptive questioning before planning. Produces CONTEXT.md. |
+| `/rihal:explore <topic>` | Socratic ideation — think through ideas before committing to plans. |
+| `/rihal:do <description>` | Smart router — natural language in, picks the right `/rihal:*` command. |
 
-Change anytime by editing `.planning/config.json`
+## Quality & shipping
 
-## Planning Configuration
+| Command | When to use |
+|---------|-------------|
+| `/rihal:code-review` | Adversarial code review of changed files — bugs, security, style. |
+| `/rihal:code-review-fix` | Auto-apply fixes from a code-review report. |
+| `/rihal:verify-phase <n>` | Goal-backward audit — does the codebase deliver what the phase promised? |
+| `/rihal:verify-work` | Conversational UAT against acceptance criteria. |
+| `/rihal:ship` | Create PR, run review, prepare for merge after verification passes. |
 
-Configure how planning artifacts are managed in `.planning/config.json`:
+## Phase & plan management
 
-**`planning.commit_docs`** (default: `true`)
-- `true`: Planning artifacts committed to git (standard workflow)
-- `false`: Planning artifacts kept local-only, not committed
+| Command | When to use |
+|---------|-------------|
+| `/rihal:show <id>` | Print a phase or plan in full with execution status. |
+| `/rihal:add-phase <name>` | Append a new phase to the active milestone. |
+| `/rihal:insert-phase <after> <name>` | Insert urgent decimal phase (e.g. 7.1) without renumbering. |
+| `/rihal:remove-phase <n>` | Remove a future phase and renumber. |
+| `/rihal:quick [flags]` | Small ad-hoc tasks with Rihal guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
+| `/rihal:fast "<task>"` | Trivial inline task — typo, gitignore tweak, etc. No subagents, ≤3 file edits. |
 
-When `commit_docs: false`:
-- Add `.planning/` to your `.gitignore`
-- Useful for OSS contributions, client projects, or keeping planning private
-- All planning files still work normally, just not tracked in git
+## Capture & session continuity
 
-**`planning.search_gitignored`** (default: `false`)
-- `true`: Add `--no-ignore` to broad ripgrep searches
-- Only needed when `.planning/` is gitignored and you want project-wide searches to include it
+| Command | When to use |
+|---------|-------------|
+| `/rihal:note "<text>"` | Zero-friction idea capture — appends to dated note file. |
+| `/rihal:add-todo [desc]` | Capture an idea or task as a todo (infers from conversation if no arg). |
+| `/rihal:check-todos [area]` | List pending todos and pick one to work on. |
+| `/rihal:plant-seed "<idea>"` | Capture a forward-looking idea with trigger conditions — surfaces at the right milestone. |
+| `/rihal:resume-work` | Restore project context after a break. |
+| `/rihal:pause-work` | Create HANDOFF.json and continue-here.md before stopping mid-phase. |
+| `/rihal:session-report` | Work summary, decisions, open blockers from this session. |
 
-Example config:
+**Done with Tier 2?** → `/rihal:help advanced` for audits, workspaces, milestone ops, and power variants.
+</tier-2>
+
+---
+
+<tier-3>
+# Rihal — Tier 3 (Advanced)
+
+> Power tools: milestone ops, parallel workspaces, audits, council variants, and rare ops.
+> Assumes Tier 1 + 2. Use these when you know exactly what you need.
+
+## Milestone lifecycle
+
+| Command | Use |
+|---------|-----|
+| `/rihal:new-milestone` | Start the next milestone — initializes ROADMAP, REQUIREMENTS, STATE. |
+| `/rihal:complete-milestone <ver>` | Archive milestone → move to `.planning/milestones/`. |
+| `/rihal:milestone-summary` | Human-readable summary of all phases, decisions, outcomes. |
+| `/rihal:audit-milestone` | Cross-phase audit — verify completion against original goals. |
+| `/rihal:plan-milestone-gaps` | Create phases to close gaps from the audit. |
+| `/rihal:cleanup` | Archive accumulated phase dirs from completed milestones. |
+
+## Workspaces & parallel work
+
+| Command | Use |
+|---------|-----|
+| `/rihal:new-workspace` | Isolated workspace with separate ROADMAP/STATE for parallel work. |
+| `/rihal:list-workspaces` | List all active workspaces. |
+| `/rihal:remove-workspace` | Delete a workspace and clean up artifacts. |
+| `/rihal:workstream` | Manage parallel workstreams (milestone tracks). |
+
+## Audits & specialty review
+
+| Command | Use |
+|---------|-----|
+| `/rihal:secure-phase <n>` | Retroactively verify threat mitigations exist in code. |
+| `/rihal:validate-phase <n>` | Audit Nyquist validation gaps for a completed phase. |
+| `/rihal:add-tests <n>` | Generate unit + E2E tests based on SPRINT/SUMMARY/CONTEXT. |
+| `/rihal:audit-uat` | Cross-phase audit of all outstanding UAT items. |
+| `/rihal:audit-fix` | Autonomous audit-to-fix pipeline — find, classify, fix, test, commit. |
+| `/rihal:karpathy-audit` | Audit recent code against Karpathy's 4 LLM coding principles. |
+| `/rihal:ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
+| `/rihal:ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
+| `/rihal:review-adversarial` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |
+| `/rihal:review-edge-case-hunter` | Enumerate edge cases by category and severity. |
+| `/rihal:review` | Cross-AI peer review — invoke external AI CLIs to review plans. |
+
+## Council variants & strategy power tools
+
+| Command | Use |
+|---------|-----|
+| `/rihal:discuss-phase-power` | Bulk question generation with async UI for context-heavy phases. |
+| `/rihal:chain <preset> <topic>` | Sequential agent pipeline (research → scope → build), typed artifacts. |
+| `/rihal:brainstorm` | Guided brainstorming — pick a method, generate ideas systematically. |
+| `/rihal:why <decision>` | Explain reasoning behind a decision, classification, or panel pick. |
+
+## Document, scaffold, integrate
+
+| Command | Use |
+|---------|-----|
+| `/rihal:map-codebase` | Brownfield: parallel Explore agents → 7 codebase docs. |
+| `/rihal:scan` | Rapid codebase assessment — lighter than map-codebase. |
+| `/rihal:document-project` | Audit missing/stale docs, file SPRINT tasks for each gap. |
+| `/rihal:docs-update` | Generate or update docs verified against codebase. |
+| `/rihal:install <module>` | Install a Rihal capability bundle into the project. |
+| `/rihal:enable-hooks` | Install optional Rihal hooks into `.claude/settings.json`. |
+| `/rihal:scaffold-project` | Scaffold a new project from the official Rihal template. |
+| `/rihal:bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. |
+
+## Story-level epics workflow
+
+| Command | Use |
+|---------|-----|
+| `/rihal:create-prd` | Create a PRD from scratch through guided facilitation. |
+| `/rihal:edit-prd` | Update an existing PRD with revisions or clarifications. |
+| `/rihal:validate-prd` | Validate an existing PRD for completeness and consistency. |
+| `/rihal:create-epics-and-stories` | Parse a PRD into numbered epic + story files. |
+| `/rihal:create-story` | Prepare a dev-ready STORY.md with full implementation context. |
+| `/rihal:dev-story <file>` | Execute an approved STORY by writing tests + code per AC. |
+| `/rihal:check-implementation-readiness` | Verify PRD + architecture + epics aligned before build. |
+| `/rihal:create-architecture` | Write an Architecture Decision Record (ADR). |
+| `/rihal:create-ux-design` | Realize a UX design that informs architecture and implementation. |
+| `/rihal:correct-course` | Course-correct mid-sprint when major change is discovered. |
+| `/rihal:sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
+| `/rihal:sprint-status` | Sprint progress — stories, points, velocity, burndown. |
+| `/rihal:retrospective` | Run an epic retrospective and produce owned action items. |
+
+## Operational / rare
+
+| Command | Use |
+|---------|-----|
+| `/rihal:debug "<issue>"` | Systematic debugging with persistent state across `/clear`. |
+| `/rihal:forensics` | Diagnose incomplete executions — timeline of what broke. |
+| `/rihal:undo <id>` | Safe git revert for a phase or plan with dependency checks. |
+| `/rihal:rerun <id>` | Re-execute a phase or plan, resetting state, fresh commits. |
+| `/rihal:diff <a> <b>` | Show changes to plans and state between commits. |
+| `/rihal:import <path>` | Ingest external plans with conflict detection against decisions. |
+| `/rihal:inbox` | Triage incoming issues and PRs against contribution templates. |
+| `/rihal:pr-branch` | Create clean PR branch — filter out `.planning/` commits. |
+| `/rihal:autonomous` | Run remaining phases autonomously — plan → execute → verify cycles. |
+| `/rihal:research-phase <n>` | Standalone research (usually use `/rihal:plan` instead). |
+| `/rihal:analyze-dependencies` | Suggest "Depends on" entries for ROADMAP.md. |
+| `/rihal:list-phase-assumptions <n>` | Surface agent's intended approach before planning. |
+| `/rihal:profile-user` | Classify developer on 4 dimensions, produce profile artifact. |
+| `/rihal:dashboard` | Start the Diwan view-only dashboard (port 7717). |
+| `/rihal:health` | 6-point health check of the Rihal installation. |
+| `/rihal:stats` | Phases, plans, decisions, council sessions, timeline. |
+| `/rihal:settings` | Interactive config wizard — model profile, gates, branching. |
+| `/rihal:config` | View or edit Rihal configuration directly. |
+| `/rihal:update` | Update Rihal to latest version with changelog preview. |
+| `/rihal:note` | (also Tier 2) Inline note capture. |
+
+## Common compound flows
+
+**New project (full quality):**
+```
+/rihal:new-project → /clear → /rihal:plan 1 → /clear → /rihal:execute 1 → /rihal:verify-phase 1 → /rihal:ship
+```
+
+**Mid-milestone urgent work:**
+```
+/rihal:insert-phase 5 "Critical security fix" → /rihal:plan 5.1 → /rihal:execute 5.1
+```
+
+**Resume after break:**
+```
+/rihal:resume-work   # or just /rihal:next
+```
+
+**Debug across context resets:**
+```
+/rihal:debug "form submission fails" → ...investigation... → /clear → /rihal:debug   # resumes
+```
+
+**Complete + start next milestone:**
+```
+/rihal:audit-milestone → /rihal:plan-milestone-gaps → /rihal:complete-milestone 1.0.0 → /rihal:new-milestone
+```
+
+## Configuration reference
+
+`.planning/config.json`:
+
 ```json
 {
+  "mode": "interactive",            // or "yolo"
   "planning": {
-    "commit_docs": false,
-    "search_gitignored": true
+    "commit_docs": true,            // false = .planning/ kept local
+    "search_gitignored": false      // true = ripgrep with --no-ignore
   }
 }
 ```
 
-## Common Workflows
+## Where to find context
 
-**Starting a new project:**
+- `.planning/PROJECT.md` — vision
+- `.planning/STATE.md` — current memory
+- `.planning/ROADMAP.md` — phase status
+- `.planning/RETROSPECTIVE.md` — living retrospective
+- `.planning/codebase/` — brownfield maps (STACK, ARCHITECTURE, etc.)
 
-```
-/rihal:new-project        # Unified flow: questioning → research → requirements → roadmap
-/clear
-/rihal:plan-phase 1       # Create plans for first phase
-/clear
-/rihal:execute-phase 1    # Execute all plans in phase
-```
-
-**Resuming work after a break:**
-
-```
-/rihal:progress  # See where you left off and continue
-```
-
-**Adding urgent mid-milestone work:**
-
-```
-/rihal:insert-phase 5 "Critical security fix"
-/rihal:plan-phase 5.1
-/rihal:execute-phase 5.1
-```
-
-**Completing a milestone:**
-
-```
-/rihal:complete-milestone 1.0.0
-/clear
-/rihal:new-milestone  # Start next milestone (questioning → research → requirements → roadmap)
-```
-
-**Capturing ideas during work:**
-
-```
-/rihal:add-todo                    # Capture from conversation context
-/rihal:add-todo Fix modal z-index  # Capture with explicit description
-/rihal:check-todos                 # Review and work on todos
-/rihal:check-todos api             # Filter by area
-```
-
-**Debugging an issue:**
-
-```
-/rihal:debug "form submission fails silently"  # Start debug session
-# ... investigation happens, context fills up ...
-/clear
-/rihal:debug                                    # Resume from where you left off
-```
-
-## Getting Help
-
-- Read `.planning/PROJECT.md` for project vision
-- Read `.planning/STATE.md` for current context
-- Check `.planning/ROADMAP.md` for phase status
-- Run `/rihal:progress` to check where you're up to
-
-## Roadmap / Planned
-
-The following commands are planned for future releases:
-
-- `/rihal:plan-phase` — Create detailed phase plan
-- `/rihal:execute-phase` — Execute all plans in a phase
-- `/rihal:plan-milestone-gaps` — Create phases to close audit gaps
-- `/rihal:add-phase` — Add new phase to end of milestone
-- `/rihal:remove-phase` — Remove a future phase and renumber
-- `/rihal:new-milestone` — Start a new milestone cycle
-- `/rihal:complete-milestone` — Archive completed milestone
-- `/rihal:audit-milestone` — Audit milestone completion
-- `/rihal:research-phase` — Comprehensive ecosystem research
-- `/rihal:discuss-phase` — Gather phase context
-- `/rihal:plant-seed` — Capture forward-looking idea
-- `/rihal:note` — Zero-friction idea capture
-- `/rihal:ship` — Create PR from completed phase
-- `/rihal:verify-work` — Validate built features through UAT
-- `/rihal:pause-work` — Create context handoff
-- `/rihal:pr-branch` — Create clean PR branch
-- `/rihal:review` — Cross-AI peer review
-- `/rihal:check-todos` — List and work on todos
-- `/rihal:cleanup` — Archive completed phase directories
-- `/rihal:fast` — Execute trivial task inline
-- `/rihal:audit-uat` — Audit all outstanding UAT items
-- `/rihal:list-phase-assumptions` — See agent's intended approach
-- `/rihal:settings` — Configure workflow toggles
-- `/rihal:join-discord` — Join Rihal Discord community
-</reference>
+**End of reference.**
+</tier-3>
 
 ## Success Criteria
 
-- [ ] Command reference is displayed in full
-- [ ] No extra analysis or commentary added
-- [ ] User can understand all available commands
-- [ ] Usage examples are clear and executable
+- [ ] Correct tier section is rendered based on `$ARGUMENTS`
+- [ ] No extra analysis, commentary, or project state added
+- [ ] "Next tier" pointer present at end of Tier 1 and Tier 2
+- [ ] `all` renders all three tiers separated by `---`
+- [ ] Unknown args fall back to Tier 1 silently (do not error)
 
 ## On Error
 
-- If unable to load or render reference: Display fallback message "See rihal/workflows/help.md for full reference"
+- If unable to load or render reference: display fallback `See rihal/workflows/help.md for full reference`
 - Handle missing sections gracefully without breaking output
