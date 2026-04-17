@@ -792,12 +792,22 @@ function cmdState(subArgs) {
     if (!flags.phase) throw new Error('sprint add requires --phase <NN>');
     if (!flags.goal) throw new Error('sprint add requires --goal "Sprint goal"');
 
-    const phaseIdx = state.phases.findIndex(p => String(p.number) === String(flags.phase) || p.name === flags.phase);
+    const phaseIdx = state.phases.findIndex(p =>
+      String(p.number) === String(flags.phase) ||
+      String(p.id) === String(flags.phase) ||
+      p.name === flags.phase
+    );
     if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state`);
     const phase = state.phases[phaseIdx];
 
     // Derive phase number: prefer explicit .number, fallback to array position
-    const phaseNum = phase.number != null ? phase.number : phaseIdx + 1;
+    // Prefer explicit .number, then .id (zero-padded string like "01"),
+    // then array position
+    const phaseNum = phase.number != null
+      ? phase.number
+      : phase.id != null
+        ? parseInt(phase.id, 10) || (phaseIdx + 1)
+        : phaseIdx + 1;
     if (!phase.sprints) phase.sprints = [];
     const sprintNum = phase.sprints.length + 1;
     const padPhase = String(phaseNum).padStart(2, '0');

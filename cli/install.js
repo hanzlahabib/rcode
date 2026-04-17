@@ -191,6 +191,96 @@ function copyDirRecursive(source, dest) {
 }
 
 /**
+ * Seed .planning/ with starter ROADMAP.md + STATE.md + PROJECT.md so
+ * workflows work immediately after install. User can /rihal:sprint-planning
+ * on a fresh install without manual setup.
+ *
+ * Only seeds if .planning/ROADMAP.md doesn't already exist (preserves user data).
+ */
+function seedStarterPlanning(target, projectName) {
+  const planningDir = path.join(target, '.planning');
+  const roadmapPath = path.join(planningDir, 'ROADMAP.md');
+  const statePath = path.join(planningDir, 'STATE.md');
+  const projectPath = path.join(planningDir, 'PROJECT.md');
+
+  if (fs.existsSync(roadmapPath)) return false; // preserve existing
+
+  fs.mkdirSync(planningDir, { recursive: true });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const name = projectName || path.basename(target);
+
+  fs.writeFileSync(projectPath,
+    `# ${name}\n\n` +
+    `**One-line:** Describe what this project is in one sentence.\n\n` +
+    `## Vision\n\n` +
+    `What this project delivers and who it serves.\n\n` +
+    `## Stack\n\n` +
+    `- Language/framework\n- Key dependencies\n- Deployment target\n`
+  );
+
+  fs.writeFileSync(roadmapPath,
+    `# ${name} — Roadmap\n\n` +
+    `**Milestone: M1 — Initial Delivery** (v1.0)\n` +
+    `Started: ${today} · Current\n\n` +
+    `---\n\n` +
+    `## Phase 01 — Setup & Scaffolding\n\n` +
+    `**Goal:** Lay the foundation. Replace this with your first phase when ready.\n\n` +
+    `**Status:** Planned\n\n` +
+    `**Acceptance:** Working dev environment; first feature in progress.\n\n` +
+    `---\n\n` +
+    `## Backlog\n\n` +
+    `Ideas and future phases go here.\n`
+  );
+
+  fs.writeFileSync(statePath,
+    `# ${name} — State\n\n` +
+    `**Last updated:** ${today}\n` +
+    `**Milestone:** M1 — Initial Delivery\n` +
+    `**Current phase:** 01 — Setup & Scaffolding\n` +
+    `**Branch:** main\n\n` +
+    `---\n\n` +
+    `## Decisions\n\n_None yet._\n\n` +
+    `## Blockers\n\n_None._\n\n` +
+    `## Next Action\n\nSay "plan a sprint" or run \`/rihal:sprint-planning\` to break Phase 01 into stories.\n`
+  );
+
+  // Also pre-seed .rihal/state.json with Phase 01 so sprint tools work
+  // immediately (otherwise auto-init in rihal-tools.cjs creates state with
+  // empty phases[], requiring manual set-phase before sprint add).
+  const rihalStateJson = path.join(target, '.rihal', 'state.json');
+  if (!fs.existsSync(rihalStateJson)) {
+    const now = new Date().toISOString();
+    const state = {
+      version: '1',
+      project: name,
+      created: now,
+      updated: now,
+      current_phase: '01',
+      current_plan: 0,
+      current_sprint: null,
+      milestone: 'M1 — Initial Delivery',
+      phases: [
+        { id: '01', name: 'Setup & Scaffolding', status: 'planned' }
+      ],
+      executions: [],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      chains: [],
+      workstreams: [],
+      active_workstream: null,
+      last_session: null,
+      velocity_history: [],
+    };
+    fs.mkdirSync(path.dirname(rihalStateJson), { recursive: true });
+    fs.writeFileSync(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
+  }
+
+  return true;
+}
+
+/**
  * Install v1-style skills (rihal/skills/actions and rihal/skills/agents) into
  * the target's .claude/skills/ so Claude Code can auto-discover them by
  * trigger phrases. These coexist with v2 agents/commands — skills are
@@ -679,6 +769,9 @@ function install(opts) {
   // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
   const skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
 
+  // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
+  const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
+
   // Summary
   console.log('');
   console.log(`  Installed: ${copied} file${copied === 1 ? '' : 's'}`);
@@ -706,10 +799,14 @@ function install(opts) {
   console.log('    /rihal:status   — project state dashboard');
   console.log('    /rihal:insert-phase — insert decimal phase for urgent work');
   console.log('');
+  if (starterSeeded) {
+    console.log('  ✓ Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)');
+    console.log('');
+  }
   console.log('  Next:');
   console.log(`    cd ${opts.target}`);
   console.log('    claude  # start Claude Code (or restart if already open)');
-  console.log('    /rihal:init                 # ← run this first to configure');
+  console.log('    /rihal:sprint-planning      # plan your first sprint');
   console.log('    /rihal:do                   # interactive command picker');
   console.log('    /rihal:council <question>   # multi-agent strategic answer');
   console.log('');
