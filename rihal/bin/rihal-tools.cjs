@@ -681,6 +681,12 @@ function cmdState(subArgs) {
     return { ok: true, state };
   }
 
+  /** Write state and return compact result (hides full state from output) */
+  function writeStateCompact(state, meta) {
+    writeState(state);
+    return { ok: true, ...meta };
+  }
+
   function defaultState(projectName) {
     const now = new Date().toISOString();
     return {
@@ -795,7 +801,7 @@ function cmdState(subArgs) {
     };
     phase.sprints.push(sprint);
     state.current_sprint = sprintId;
-    return writeState(state, { sprint_id: sprintId, phase: padPhase });
+    return writeStateCompact(state, { sprint_id: sprintId, phase: padPhase });
   }
 
   // --- sprint list [--phase NN] ---
@@ -865,7 +871,7 @@ function cmdState(subArgs) {
           s.status = 'active';
           s.started_at = new Date().toISOString();
           state.current_sprint = targetId;
-          return writeState(state, { started: targetId });
+          return writeStateCompact(state, { started: targetId });
         }
       }
     }
@@ -889,7 +895,7 @@ function cmdState(subArgs) {
           if (!state.velocity_history) state.velocity_history = [];
           state.velocity_history.push({ sprint: targetId, points: points_done, completed_at: s.completed_at });
           state.current_sprint = null;
-          return writeState(state, { completed: targetId, velocity: points_done });
+          return writeStateCompact(state, { completed: targetId, velocity: points_done });
         }
       }
     }
@@ -928,7 +934,7 @@ function cmdState(subArgs) {
             acceptance: flags.acceptance || null,
           };
           s.stories.push(story);
-          return writeState(state, { story_id: storyId, sprint: sprintId });
+          return writeStateCompact(state, { story_id: storyId, sprint: sprintId });
         }
       }
     }
@@ -950,7 +956,7 @@ function cmdState(subArgs) {
           if (story.id === flags.id) {
             const prev = story.status;
             story.status = flags.status;
-            return writeState(state, { story: flags.id, from: prev, to: flags.status });
+            return writeStateCompact(state, { story: flags.id, from: prev, to: flags.status });
           }
         }
       }
