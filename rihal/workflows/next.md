@@ -5,8 +5,27 @@ Zero-friction — detects and invokes, no confirmation needed.
 </purpose>
 
 <required_reading>
+@.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
+
+<output_format>
+Print a routing banner when dispatching to the next command:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► ROUTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current: Phase {N} — {name} | Sprint {sprint_id}
+Status:  {status description}
+
+▶ Next: `/rihal:{command} {args}`
+  {One-line explanation}
+```
+
+Follow all banner and status-symbol conventions from output-format.md.
+</output_format>
 
 <process>
 

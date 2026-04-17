@@ -4,6 +4,10 @@
 Read `.rihal/state.json` and print a human-readable project status dashboard.
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
 <process>
 
 ## Step 1 — Read state

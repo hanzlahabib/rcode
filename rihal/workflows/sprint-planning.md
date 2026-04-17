@@ -6,6 +6,10 @@ Plan the next sprint: compute capacity from velocity history, prioritize stories
 Uses rihal-tools.cjs sprint/story state commands for tracking.
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
 <process>
 ## Step 0 — Usage check
 

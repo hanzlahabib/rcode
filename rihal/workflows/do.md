@@ -3,8 +3,27 @@ Route freeform text to the right Rihal command. Entry point for users who know w
 </purpose>
 
 <required_reading>
+@.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
+
+<output_format>
+Before dispatching, print a routing banner using the format from output-format.md:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► ROUTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: {$ARGUMENTS}
+Scope: {one-line scope summary}
+
+Routing to: /rihal:{target}
+Reason: {one-line why}
+
+Handing off to the workflow now.
+```
+</output_format>
 
 <process>
 

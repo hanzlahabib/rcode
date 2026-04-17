@@ -4,6 +4,10 @@
 Display current sprint progress: stories by status, points done vs remaining, velocity comparison, and burndown. Quick situational awareness without starting execution.
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
 <process>
 ## Step 0 — Usage check
 

@@ -4,6 +4,10 @@ Validate built features through conversational testing with persistent state. Cr
 User tests, Claude records. One test at a time. Plain text responses.
 </purpose>
 
+<required_reading>
+@.rihal/references/output-format.md
+</required_reading>
+
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-planner — Creates detailed plans from phase scope

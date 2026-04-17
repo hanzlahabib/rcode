@@ -5,6 +5,7 @@ Execute remaining incomplete phases autonomously with minimal human intervention
 </purpose>
 
 <required_reading>
+@.rihal/references/output-format.md
 @.rihal/references/workstream-flag.md
 @.rihal/references/output-realism.md
 </required_reading>

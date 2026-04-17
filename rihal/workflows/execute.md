@@ -24,6 +24,7 @@ via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
+@.rihal/references/output-format.md
 Read STATE.md before any operation to load project context.
 
 @.rihal/references/agent-contracts.md

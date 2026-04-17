@@ -3,6 +3,7 @@ Create executable phase prompts (SPRINT.md files) for a roadmap phase with integ
 </purpose>
 
 <required_reading>
+@.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 @.rihal/references/ui-brand.md

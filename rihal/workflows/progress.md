@@ -5,8 +5,22 @@ For a quick board view use `/rihal:sprint-status`. This gives the full narrative
 </purpose>
 
 <required_reading>
+@.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
+
+<output_format>
+Print a progress header using banner format from output-format.md:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PROGRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Use status symbols (✓ complete, ◆ in_progress, ○ planned) throughout.
+End with a Next Up block (see output-format.md) when a routing suggestion applies.
+</output_format>
 
 <process>
 
