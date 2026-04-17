@@ -37,6 +37,7 @@ workflows:
   - karpathy-audit.md
   - decisions.md
   - replay.md
+  - notify-test.md
 commands:
   - council.md
   - init.md
@@ -74,6 +75,7 @@ commands:
   - remove-workspace.md
   - decisions.md
   - replay.md
+  - notify-test.md
 references:
   - council-protocol.md
   - codebase-grounding.md

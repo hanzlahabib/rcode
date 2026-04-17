@@ -2308,6 +2308,112 @@ function cmdConfigSet(subArgs) {
 }
 
 /**
+ * notify send — post a message to configured webhook URLs.
+ *
+ * Config keys read from .rihal/config.yaml (top-level, flat):
+ *   slack_webhook_url   — Slack incoming webhook
+ *   discord_webhook_url — Discord webhook
+ *   teams_webhook_url   — Microsoft Teams incoming webhook (MessageCard format)
+ *
+ * Flags:
+ *   --title <t>   required headline
+ *   --body <b>    optional detail text
+ *   --event <e>   optional short event tag (e.g. "execute-done", "council-done")
+ *   --only slack|discord|teams   restrict to one platform (for /rihal:notify-test)
+ *
+ * Returns: { sent: [...], skipped: [...], failed: [...] }
+ * Never throws on webhook failure — this runs at the tail of workflows and
+ * must not break the primary pipeline.
+ */
+async function cmdNotify(subArgs) {
+  const sub = subArgs[0];
+  if (sub !== 'send') {
+    throw new Error("Unknown notify subcommand. Valid: send");
+  }
+  const flags = {};
+  for (let i = 1; i < subArgs.length; i++) {
+    if (subArgs[i].startsWith('--')) {
+      flags[subArgs[i].slice(2)] = subArgs[i + 1] || '';
+      i++;
+    }
+  }
+  const title = flags.title || '';
+  const body = flags.body || '';
+  const event = flags.event || 'rihal';
+  const only = flags.only || '';
+  if (!title) throw new Error('notify send requires --title <text>');
+
+  // Read config
+  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  const config = fs.existsSync(configPath)
+    ? parseSimpleYaml(fs.readFileSync(configPath, 'utf8'))
+    : {};
+
+  const targets = [
+    { name: 'slack',   url: config.slack_webhook_url,   shape: buildSlackPayload },
+    { name: 'discord', url: config.discord_webhook_url, shape: buildDiscordPayload },
+    { name: 'teams',   url: config.teams_webhook_url,   shape: buildTeamsPayload },
+  ];
+
+  const sent = [], skipped = [], failed = [];
+  for (const t of targets) {
+    if (only && t.name !== only) continue;
+    if (!t.url) { skipped.push({ platform: t.name, reason: 'no webhook configured' }); continue; }
+    try {
+      const payload = t.shape({ title, body, event, project: path.basename(PROJECT_ROOT) });
+      const res = await fetch(t.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        failed.push({ platform: t.name, status: res.status, text: (await res.text()).slice(0, 200) });
+      } else {
+        sent.push({ platform: t.name });
+      }
+    } catch (e) {
+      failed.push({ platform: t.name, error: String(e.message || e) });
+    }
+  }
+  return { sent, skipped, failed };
+}
+
+function buildSlackPayload({ title, body, event, project }) {
+  const lines = [`*${title}*`];
+  if (body) lines.push(body);
+  lines.push(`_project: ${project} · event: ${event}_`);
+  return { text: lines.join('\n') };
+}
+
+function buildDiscordPayload({ title, body, event, project }) {
+  return {
+    embeds: [{
+      title: title.slice(0, 256),
+      description: (body || '').slice(0, 4000),
+      footer: { text: `project: ${project} · event: ${event}` },
+    }],
+  };
+}
+
+// Teams legacy MessageCard — still accepted by Incoming Webhook connectors.
+function buildTeamsPayload({ title, body, event, project }) {
+  return {
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    themeColor: '0076D7',
+    summary: title.slice(0, 256),
+    title,
+    text: body || '',
+    sections: [{
+      facts: [
+        { name: 'Project', value: project },
+        { name: 'Event', value: event },
+      ],
+    }],
+  };
+}
+
+/**
  * notes list — glob .rihal/notes/*.md and ~/.rihal-notes/*.md,
  * parse frontmatter, return sorted array of {path, date, slug, summary}
  * (10 most recent).
@@ -2414,7 +2520,7 @@ function cmdFindFiles(rawArgs) {
   return { ok: true, type, matches };
 }
 
-function main() {
+async function main() {
   const [, , subcommand, ...args] = process.argv;
   try {
     let result;
@@ -2470,6 +2576,9 @@ function main() {
           process.exit(1);
         }
         break;
+      case 'notify':
+        result = await cmdNotify(args);
+        break;
       case 'find-files':
         result = cmdFindFiles(args.join(' '));
         break;
@@ -2490,7 +2599,7 @@ function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|resolve-model|version|help> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|notify|resolve-model|version|help> [args]');
         console.log('');
         console.log('Top-level subcommands:');
         console.log('  init                                         → initialize .rihal directory structure');
@@ -2503,6 +2612,7 @@ function main() {
         console.log('  plan <subcommand> [args]                     → phase/plan operations');
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
+        console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
         console.log('  resolve-model <profile>                      → resolve model name from profile');
         console.log('  version                                      → print rihal-tools version');
         console.log('  help                                         → print this help text');
@@ -2566,4 +2676,8 @@ function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error(`rihal-tools error: ${err.message}`);
+  if (process.env.DEBUG) console.error(err.stack);
+  process.exit(1);
+});

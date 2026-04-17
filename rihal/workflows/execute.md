@@ -1294,6 +1294,29 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-{X}): evolve PROJECT.md aft
 **Skip this step if** `.planning/PROJECT.md` does not exist.
 </step>
 
+<step name="notify_on_completion">
+**Post phase completion to configured webhooks (Slack / Discord / MS Teams).**
+
+Silent no-op if no webhook URLs are in `.rihal/config.yaml`. Failures are reported but never block the workflow.
+
+```bash
+node ".rihal/bin/rihal-tools.cjs" notify send \
+  --title "Phase ${phase_number} complete — ${phase_name}" \
+  --body "$(basename "$PWD") · $(git rev-parse --short HEAD) · ${incomplete_count:-0} plan(s) remaining" \
+  --event "execute-done" 2>/dev/null || true
+```
+
+Users configure webhooks by editing `.rihal/config.yaml`:
+
+```yaml
+slack_webhook_url: "https://hooks.slack.com/services/..."
+discord_webhook_url: "https://discord.com/api/webhooks/..."
+teams_webhook_url: "https://outlook.office.com/webhook/..."
+```
+
+Then verify with `/rihal:notify-test`.
+</step>
+
 <step name="offer_next">
 
 **Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rihal:plan {X} --gaps`). No additional routing needed — skip auto-advance.
