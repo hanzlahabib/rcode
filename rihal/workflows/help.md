@@ -220,6 +220,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal:sprint-status` | Sprint progress — stories, points, velocity, burndown. |
 | `/rihal:list-plans` | Table of every SPRINT.md across phases — goal, stories, points, state. |
+| `/rihal:decisions` | Browse decisions across every Rihal project (~/.rihal/decisions.jsonl). |
 | `/rihal:retrospective` | Run an epic retrospective and produce owned action items. |
 
 ## Operational / rare

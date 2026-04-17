@@ -633,6 +633,31 @@ function cmdState(subArgs) {
     return flags;
   }
 
+  /** Cross-project decision log at ~/.rihal/decisions.jsonl. One JSON record per line. */
+  function globalDecisionsPath() {
+    const os = require('os');
+    return path.join(os.homedir(), '.rihal', 'decisions.jsonl');
+  }
+
+  function appendGlobalDecision(record) {
+    const file = globalDecisionsPath();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.appendFileSync(file, JSON.stringify(record) + '\n', 'utf8');
+  }
+
+  function readGlobalDecisions() {
+    const file = globalDecisionsPath();
+    if (!fs.existsSync(file)) return [];
+    const raw = fs.readFileSync(file, 'utf8');
+    const out = [];
+    for (const line of raw.split('\n')) {
+      const t = line.trim();
+      if (!t) continue;
+      try { out.push(JSON.parse(t)); } catch (_) { /* skip malformed */ }
+    }
+    return out;
+  }
+
   /** Read state or return default skeleton. */
   function readState() {
     if (!fs.existsSync(statePath)) return null;
@@ -1028,13 +1053,42 @@ function cmdState(subArgs) {
     if (!summary) throw new Error('add-decision requires a summary argument');
     const state = readState() || defaultState();
     if (!state.decisions) state.decisions = [];
-    state.decisions.push({
+    const record = {
       summary,
       phase: state.current_phase,
       plan: state.current_plan,
       date: new Date().toISOString(),
+    };
+    state.decisions.push(record);
+    const result = writeState(state);
+    // Mirror to cross-project store (best-effort, never fails the local write).
+    try {
+      appendGlobalDecision({
+        ts: record.date,
+        project: state.project || path.basename(PROJECT_ROOT),
+        project_root: PROJECT_ROOT,
+        phase: record.phase,
+        plan: record.plan,
+        summary: record.summary,
+      });
+    } catch (_) { /* silent — local commit must not break on home-dir issues */ }
+    return result;
+  }
+
+  // --- decisions-global: query ~/.rihal/decisions.jsonl across all projects ---
+  if (sub === 'decisions-global') {
+    const flags = parseFlags(1);
+    const limit = Math.max(1, parseInt(flags.limit || '20', 10));
+    const sinceMs = flags.since ? Date.parse(flags.since) : null;
+    const lines = readGlobalDecisions();
+    const filtered = lines.filter((d) => {
+      if (flags.project && d.project !== flags.project) return false;
+      if (sinceMs && Date.parse(d.ts) < sinceMs) return false;
+      return true;
     });
-    return writeState(state);
+    // newest first
+    filtered.sort((a, b) => (a.ts < b.ts ? 1 : -1));
+    return { decisions: filtered.slice(0, limit), total: filtered.length };
   }
 
   // --- add-blocker ---
@@ -1809,7 +1863,7 @@ function cmdState(subArgs) {
     return { ok: true, migrated: migratedCount, message: `Migrated ${migratedCount} PLAN.md files with IDs` };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, add-blocker\nRun 'rihal-tools.cjs help' for the full list of 25 state subcommands.`);
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
 }
 
 /**
@@ -2460,7 +2514,8 @@ function main() {
         console.log('  state set-phase <name>                       → set current phase, reset plan counter');
         console.log('  state advance-plan                           → increment current_plan counter');
         console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>');
-        console.log('  state add-decision "<summary>"               → append to decisions[]');
+        console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');
+        console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rihal/decisions.jsonl across all projects');
         console.log('  state add-blocker "<description>"            → append to blockers[]');
         console.log('  state resolve-blocker <index>                → mark blocker as resolved');
         console.log('  state record-session                         → update last_session timestamp');
@@ -2494,7 +2549,7 @@ function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase'];
         if (stateSubs.includes(subcommand)) {
           console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
         } else {
