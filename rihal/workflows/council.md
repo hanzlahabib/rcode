@@ -4,6 +4,7 @@
 Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rihal-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
 </purpose>
 
+<process>
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
@@ -435,3 +436,5 @@ node .rihal/bin/rihal-tools.cjs state record-session
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
 - **All panelists return empty responses:** likely subagents were spawned without proper prompts. Re-check Step 4 prompt construction.
 - **`.rihal/config.yaml` missing:** warn and use defaults (`user_name=User`, `language=English`, `mode=guided`).
+
+</process>

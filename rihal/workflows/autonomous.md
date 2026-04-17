@@ -9,6 +9,7 @@ Execute remaining incomplete phases autonomously with minimal human intervention
 @.rihal/references/output-realism.md
 </required_reading>
 
+<process>
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
@@ -312,3 +313,5 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+</process>

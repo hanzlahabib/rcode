@@ -6,6 +6,7 @@ Plan the next sprint: compute capacity from velocity history, prioritize stories
 Uses rihal-tools.cjs sprint/story state commands for tracking.
 </purpose>
 
+<process>
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` contains `--help` or `-h`:
@@ -145,3 +146,5 @@ Next:
 ### Negative Test
 **Input:** `/rihal:sprint-planning` with no phases in state
 **Expected:** Graceful exit suggesting /rihal:new-project.
+
+</process>

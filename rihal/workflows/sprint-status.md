@@ -4,6 +4,7 @@
 Display current sprint progress: stories by status, points done vs remaining, velocity comparison, and burndown. Quick situational awareness without starting execution.
 </purpose>
 
+<process>
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` contains `--help` or `-h`:
@@ -102,3 +103,5 @@ Based on data, suggest next action:
 ### Negative Test
 **Input:** `/rihal:sprint-status --sprint 99.9`
 **Expected:** "Sprint 99.9 not found."
+
+</process>

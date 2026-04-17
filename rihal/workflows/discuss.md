@@ -4,6 +4,7 @@
 Orchestrate a single-agent quick sync session. This is the lightweight alternative to council — one agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague, not calling a board meeting.
 </purpose>
 
+<process>
 ## Step 0 — Usage check
 
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
@@ -209,3 +210,5 @@ This records the discuss session in `.rihal/state.json` as `last_session`.
 - **No installed agents:** print "No agents installed. Run `rihal-code install-v2`."
 - **Agent id not in installed list:** print available agents and ask the user to pick one.
 - **Agent returns empty response:** print "Agent responded empty. Check question clarity and retry."
+
+</process>
