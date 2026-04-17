@@ -712,9 +712,24 @@ function cmdState(subArgs) {
   // --- read / get ---
   if (sub === 'read' || sub === 'get') {
     if (!fs.existsSync(statePath)) {
+      // Auto-init with defaults if config.yaml exists (install happened).
+      // Removes the "run /rihal:init first" friction — any workflow can
+      // call `state read` and get a usable state back.
+      const configPath = path.join(RIHAL_DIR, 'config.yaml');
+      if (fs.existsSync(configPath)) {
+        let projectName = path.basename(PROJECT_ROOT);
+        try {
+          const cfg = fs.readFileSync(configPath, 'utf8');
+          const match = cfg.match(/^project_name:\s*"?([^"\n]+)"?/m);
+          if (match) projectName = match[1].trim();
+        } catch { /* use basename fallback */ }
+        const state = defaultState(projectName);
+        writeState(state);
+        return state;
+      }
       return {
         ok: false,
-        error: 'No state.json yet. Run /rihal:init to initialize project state, or `state init --project <name>` directly.'
+        error: 'No state.json yet. Run /rihal:install to set up this project, or `state init --project <name>` directly.'
       };
     }
     const state = readState();
