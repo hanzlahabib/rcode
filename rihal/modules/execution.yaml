@@ -49,6 +49,8 @@ references:
   - execution-protocol.md
   - checkpoints.md
   - continuation-format.md
+  - output-format.md
+  - output-realism.md
   - verification-patterns.md
   - tdd.md
   - checklist-story-draft.md

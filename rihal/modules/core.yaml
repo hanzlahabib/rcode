@@ -72,9 +72,12 @@ commands:
   - remove-workspace.md
 references:
   - council-protocol.md
+  - codebase-grounding.md
   - commit-conventions.md
   - command-redirect-format.md
   - response-style.md
+  - output-format.md
+  - output-realism.md
   - context-budget.md
   - gates.md
   - gate-prompts.md
