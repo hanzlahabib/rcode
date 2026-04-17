@@ -4,6 +4,8 @@
 Read `.rihal/state.json` and print a human-readable project status dashboard.
 </purpose>
 
+<process>
+
 ## Step 1 — Read state
 
 ```bash
@@ -70,6 +72,8 @@ If there are any open (unresolved) blockers, end with:
 ```
 ⚠ {n} unresolved blocker(s). Address before proceeding.
 ```
+
+</process>
 
 ## Success Criteria
 
