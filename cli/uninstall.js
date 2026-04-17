@@ -583,3 +583,18 @@ async function runUninstall(args) {
   console.log(`\nTo reinstall later:`);
   console.log(`   npx --yes github:hanzlahabib/rihal-code install`);
 }
+
+// Direct invocation — allow `node cli/uninstall.js [flags]` to run end-to-end.
+// When called via cli/index.js, module.exports is invoked directly.
+if (require.main === module) {
+  module.exports(process.argv.slice(2))
+    .catch((err) => {
+      if (err instanceof PromptAbortError) {
+        console.log('\n❌ Aborted.');
+        process.exit(1);
+      }
+      console.error(`\n❌ Uninstall failed: ${err.message}`);
+      if (process.env.DEBUG) console.error(err.stack);
+      process.exit(1);
+    });
+}
