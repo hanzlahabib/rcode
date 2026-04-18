@@ -39,8 +39,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:council <question> [--full] [--agents=a,b,c] [--explain] [--resume <session-path>]
+/rihal:council <question> [--full] [--verbose] [--agents=a,b,c] [--explain] [--resume <session-path>]
 ```
+
+**Flag semantics:**
+- `--full` — expanded panel (5 agents instead of 3), full panelist roster
+- `--verbose` — print full verbatim agent transcripts inline (default is compact summary; artifact always has full text)
+- `--debate` / `--round-2` / `--deep` — force Round 2 cross-talk even if consensus
 
 **Examples:**
 ```
@@ -48,6 +53,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:council --agents=sadiq,waleed,fatima is this plan ready to ship?
 /rihal:council --explain what stack should I use for a multi-tenant SaaS?
 /rihal:council --full should we rewrite the auth layer?
+/rihal:council --verbose --debate deep-dive the TTFT tradeoffs
 /rihal:council --resume .planning/council-sessions/council-2026-04-12-should-i-start.md
 ```
 
@@ -322,10 +328,13 @@ You are in Round 2 of a Rihal council session.
 {fatima_round1_response}
 
 ## Instructions
-This is Round 2 — cross-talk. Reference specific points from your colleagues by name.
-Build on where they are right. Push back where they are wrong or incomplete. If you
-genuinely have nothing to add, say so in one sentence. Do NOT repeat your Round 1 answer.
-Start your reply with your icon + name header.
+This is Round 2 — cross-talk. Respond with **deltas only**:
+- What changed in your position after reading your colleagues' Round 1 (walk-back, sharpen, narrow, extend)
+- Where you specifically agree/disagree with another panelist (name them)
+- If you hold your Round 1 position unchanged, say so in one sentence and stop.
+
+Do NOT restate your Round 1 answer. Do NOT re-derive reasoning already in Round 1.
+Target 6-12 lines max unless genuine new substance. Start with your icon + name header.
 ```
 
 Spawn all at once (same pattern as Round 1).
@@ -351,20 +360,53 @@ questions (fix latency, add feature, debug bug), Round 1 responses grounded in
 the codebase are enough. Cross-talk adds value only when there's genuine tension
 to resolve or strategic ambiguity to explore.
 
-## Step 5 — Present responses (MANDATORY — do not skip)
+## Step 5 — Present responses
 
-**Hard rule:** Before saving any artifact, before printing any closure banner,
-before offering Next Up options — you MUST first print the full Round 1
-(and Round 2 if ran) responses **verbatim** in the current message.
+Before saving any artifact, print the panel output inline. Two modes:
 
-The user loses trust if they only see "session saved to {path}" without
-reading the agent responses inline. The artifact is a backup, not a
-replacement for the in-conversation output.
+### Default mode (compact summary)
 
-Before presenting, load the commit format reference:
-- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
+**Scannable in 20 seconds. No verbatim transcripts. Full text goes to the artifact file.**
 
-Present Round 1 then Round 2 **verbatim and in panel order**. Do NOT summarize. Do NOT paraphrase.
+Format:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► COUNCIL VERDICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**One-liners (Round 1)**
+🧭 Sadiq:   {one-sentence position}
+🏗️ Waleed:  {one-sentence position}
+🛡️ Fatima:  {one-sentence position}
+
+**Convergence / divergence**
+| Issue | Sadiq | Waleed | Fatima |
+|-------|-------|--------|--------|
+| {axis 1} | {stance} | {stance} | {stance} |
+| {axis 2} | {stance} | {stance} | {stance} |
+
+{If Round 2 ran:}
+**Round 2 deltas**
+🧭 Sadiq:   {what changed, or "held position"}
+🏗️ Waleed:  {what changed}
+🛡️ Fatima:  {what changed}
+
+**Orchestrator note**
+{max 2 sentences — sharpest remaining disagreement OR clearest convergent action}
+
+📄 Full transcripts: {artifact path}
+```
+
+Rules for compact mode:
+- Each one-liner ≤ 25 words. Paraphrase, don't quote.
+- Convergence table: 2-5 rows, only axes where panelists take a stance. Cells ≤ 6 words.
+- Round 2 deltas: ≤ 15 words each. "Held position" is a valid delta.
+- No section headers beyond the four above. No numbered story breakdowns. No tables from panelists verbatim.
+
+### Verbose mode (`--verbose` flag)
+
+Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 
 ```
 ### Round 1
@@ -379,25 +421,16 @@ Present Round 1 then Round 2 **verbatim and in panel order**. Do NOT summarize. 
 <full verbatim response>
 
 ### Round 2 — Cross-talk
+{same pattern}
 
-🧭 **Sadiq:**
-<full verbatim response>
-
-🏗️ **Waleed:**
-<full verbatim response>
-
-🛡️ **Fatima:**
-<full verbatim response>
-```
-
-After all responses, add an **Orchestrator Note** (max 3 sentences) flagging the sharpest disagreement or the clearest action:
-
-```
 ---
-**Orchestrator Note:** ...
+**Orchestrator Note:** {max 3 sentences}
 ```
 
-The Orchestrator Note is **your own voice**, not an agent voice. Label it clearly.
+Before presenting, load the commit format reference:
+- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
+
+**Either mode:** the artifact file saved in Step 6 always contains full verbatim text — the compact/verbose flag only controls inline presentation.
 
 ## Step 5b — Drill-down question (MANDATORY when disagreement exists)
 
