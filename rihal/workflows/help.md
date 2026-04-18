@@ -224,6 +224,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:replay <slug>` | Re-run a past council session with the same question — fresh panel round. |
 | `/rihal:export-to-github` | Push phases/stories/decisions to GitHub issues (wraps `rihal-code github-sync`). |
 | `/rihal:notify-test` | Verify Slack/Discord/MS Teams webhook wiring — posts a test message. |
+| `/rihal:from-template <type>` | Seed .planning/ from a starter template (saas-b2b, api-backend, mobile-app). |
 | `/rihal:retrospective` | Run an epic retrospective and produce owned action items. |
 
 ## Operational / rare

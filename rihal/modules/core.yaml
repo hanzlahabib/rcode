@@ -38,6 +38,7 @@ workflows:
   - decisions.md
   - replay.md
   - notify-test.md
+  - from-template.md
 commands:
   - council.md
   - init.md
@@ -76,6 +77,7 @@ commands:
   - decisions.md
   - replay.md
   - notify-test.md
+  - from-template.md
 references:
   - council-protocol.md
   - codebase-grounding.md

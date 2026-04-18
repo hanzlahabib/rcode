@@ -391,6 +391,14 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
   }
 
+  // .rihal/templates/projects/  — starter templates consumed by /rihal:from-template
+  const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
+  const relProjectTemplates = path.relative(target, path.join(target, '.rihal', 'templates', 'projects'));
+  for (const f of walkFiles(projectTemplatesSrc)) {
+    const rel = path.relative(projectTemplatesSrc, f);
+    plan.push({ src: f, rel: path.join(relProjectTemplates, rel) });
+  }
+
   // Agents — IDE-specific
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'agents'), f);
