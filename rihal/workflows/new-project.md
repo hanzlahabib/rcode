@@ -5,6 +5,8 @@ Initialize a new project through unified flow: questioning, research (optional),
 
 <required_reading>
 @.rihal/references/output-format.md
+
+Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <output_format>
@@ -26,6 +28,14 @@ Use TaskCreate at workflow start to show the full journey:
 - TaskCreate: "Finalize: STATE.md, CLAUDE.md refresh, commit"
 
 Mark one in_progress at a time. Mark completed immediately after each step.
+
+Per-stage banners:
+- `RIHAL ► QUESTIONING`
+- `RIHAL ► RESEARCHING`
+- `RIHAL ► RESEARCH COMPLETE ✓`
+- `RIHAL ► DEFINING REQUIREMENTS`
+- `RIHAL ► CREATING ROADMAP`
+- `RIHAL ► PROJECT INITIALIZED ✓`
 
 **Brownfield detection banner** (if existing code found):
 ```
@@ -70,10 +80,6 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 STOP — do not proceed.
 
-<required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
-</required_reading>
-
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-project-researcher — Researches project-level technical decisions
@@ -86,7 +92,7 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 Before any processing, check if a project already exists in this directory:
 
 ```bash
-EXISTING=$(node .rihal/bin/rihal-tools.cjs state get 2>/dev/null | grep '"project"' | head -1)
+EXISTING=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | grep '"project"' | head -1)
 ```
 
 If `$EXISTING` is non-empty (project already initialized):
@@ -145,14 +151,40 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init new-project)
+INIT=$(node .rihal/bin/rihal-tools.cjs init new-project 2>/dev/null || node .rihal/bin/rihal-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-research-synthesizer 2>/dev/null)
-AGENT_SKILLS_ROADMAPPER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-roadmapper 2>/dev/null)
+AGENT_RESEARCHER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
+AGENT_SYNTHESIZER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
+AGENT_ROADMAPPER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
+SYNTHESIZER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
+ROADMAPPER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
 ```
 
-Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
+Parse JSON for: `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
+
+**Detect runtime and set instruction file name:**
+
+Derive `RUNTIME` from the invoking prompt's `execution_context` path:
+- Path contains `/.codex/` → `RUNTIME=codex`
+- Path contains `/.gemini/` → `RUNTIME=gemini`
+- Path contains `/.config/opencode/` or `/.opencode/` → `RUNTIME=opencode`
+- Otherwise → `RUNTIME=claude`
+
+Fallback via env vars:
+```bash
+if [ -n "$CODEX_HOME" ]; then RUNTIME="codex"
+elif [ -n "$GEMINI_CONFIG_DIR" ]; then RUNTIME="gemini"
+elif [ -n "$OPENCODE_CONFIG_DIR" ] || [ -n "$OPENCODE_CONFIG" ]; then RUNTIME="opencode"
+else RUNTIME="claude"; fi
+```
+
+Set instruction file variable:
+```bash
+if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION_FILE="CLAUDE.md"; fi
+```
+
+All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
 
 **If `project_exists` is true:** Error — project already initialized. Use `/rihal:progress`.
 
@@ -164,11 +196,9 @@ git init
 
 ## 2. Project Type Classification
 
-**If auto mode:** Detect project type from provided document context (look for "existing codebase", "migration", "enhancement", or assume greenfield). Skip to Step 4.
+**If auto mode:** Detect project type from provided document context. Skip to Step 4.
 
-**Otherwise:** Ask user to classify the project:
-
-Use AskUserQuestion:
+**Otherwise:** Ask user to classify the project via AskUserQuestion:
 
 - header: "Project Type"
 - question: "Is this a greenfield project or brownfield (existing codebase)?"
@@ -176,11 +206,6 @@ Use AskUserQuestion:
 - options:
   - "Greenfield" — New project from scratch (default flow)
   - "Brownfield" — Enhancing/modifying existing codebase (narrow discovery to delta questions)
-
-**Store choice:**
-```bash
-node .rihal/bin/rihal-tools.cjs state set --project-type greenfield|brownfield
-```
 
 ## 2.1. Brownfield Path (if brownfield selected)
 
@@ -211,8 +236,6 @@ Continue to Step 3 (standard deep discovery flow).
 ### Step 3b. Brownfield Discovery (instead of deep questioning)
 
 For brownfield projects, narrow discovery to delta questions:
-
-Instead of full deep questioning (Step 3), use focused questions:
 
 ```
 AskUserQuestion([
@@ -251,12 +274,7 @@ AskUserQuestion([
 ])
 ```
 
-Then adapt PRD template:
-
-- Focus on delta: what's NEW or CHANGED
-- Reference existing architecture/patterns
-- Highlight breaking changes if any
-- Identify rollback/migration strategy
+Adapt PRD template — focus on delta: what's NEW or CHANGED, reference existing architecture/patterns, highlight breaking changes, identify rollback/migration strategy.
 
 **Brownfield PRD Template:**
 
@@ -293,13 +311,11 @@ Then adapt PRD template:
 - Performance impact: {acceptable degradation}
 ```
 
-## Continue from Step 5 (shared with greenfield)
-
-After delta discovery, continue with Step 5 (research, requirements approval, roadmap). Roadmap will be more focused on change scope.
+After delta discovery, continue with Step 5 (research, requirements approval, roadmap).
 
 ## 2a. Auto Mode Config (auto mode only)
 
-**If auto mode:** Collect config settings upfront before processing the idea document.
+**If auto mode:** Collect config settings upfront.
 
 YOLO mode is implicit (auto = YOLO). Ask remaining config questions:
 
@@ -377,32 +393,43 @@ AskUserQuestion([
       { label: "Balanced (Recommended)", description: "Sonnet for most agents — good quality/cost ratio" },
       { label: "Quality", description: "Opus for research/roadmap — higher cost, deeper analysis" },
       { label: "Budget", description: "Haiku where possible — fastest, lowest cost" },
-      { label: "Inherit", description: "Use the current session model for all agents (OpenCode /model)" }
+      { label: "Inherit", description: "Use the current session model for all agents" }
     ]
   }
 ])
 ```
 
-Create `.planning/config.json` with all settings (CLI fills in remaining defaults automatically):
+Create `.planning/config.json`:
 
 ```bash
 mkdir -p .planning
-node .rihal/bin/rihal-tools.cjs config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true}}'
+cat > .planning/config.json <<EOF
+{
+  "mode": "yolo",
+  "granularity": "[selected]",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "balanced",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": true,
+    "auto_advance": true,
+    "_auto_chain_active": true
+  }
+}
+EOF
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
 
-**Commit config.json:**
+**Commit config.json (guarded):**
 
 ```bash
-mkdir -p .planning
-node .rihal/bin/rihal-tools.cjs commit "chore: add project config" --files .planning/config.json
-```
-
-**Persist auto-advance chain flag to config (survives context compaction):**
-
-```bash
-node .rihal/bin/rihal-tools.cjs config-set workflow._auto_chain_active true
+git add .planning/config.json 2>/dev/null \
+  && git commit -m "chore: add project config" 2>/dev/null \
+  || echo "ℹ .planning/ gitignored — config written, not committed"
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -415,7 +442,7 @@ Proceed to Step 4 (skip Steps 3 and 5).
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► QUESTIONING
+ RIHAL ► QUESTIONING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -427,19 +454,19 @@ Ask inline (freeform, NOT AskUserQuestion):
 
 Wait for their response. This gives you the context needed to ask intelligent follow-up questions.
 
-**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.planning/config.json` (or the config from init context). When enabled, before asking follow-up questions about a topic area:
+**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.planning/config.json`. When enabled, before asking follow-up questions about a topic:
 
 1. Do a brief web search for best practices related to what the user described
-2. Mention key findings naturally as you ask questions (e.g., "Most projects like this use X — is that what you're thinking, or something different?")
+2. Mention key findings naturally as you ask questions
 3. This makes questions more informed without changing the conversational flow
 
-When disabled (default), ask questions directly as before.
+When disabled (default), ask questions directly.
 
 **Follow the thread:**
 
-Based on what they said, ask follow-up questions that dig into their response. Use AskUserQuestion with options that probe what they mentioned — interpretations, clarifications, concrete examples.
+Based on what they said, ask follow-up questions via AskUserQuestion with options that probe what they mentioned — interpretations, clarifications, concrete examples.
 
-Keep following threads. Each answer opens new threads to explore. Ask about:
+Keep following threads. Ask about:
 
 - What excited them
 - What problem sparked this
@@ -447,7 +474,7 @@ Keep following threads. Each answer opens new threads to explore. Ask about:
 - What it would actually look like
 - What's already decided
 
-Consult `questioning.md` for techniques:
+Techniques:
 
 - Challenge vagueness
 - Make abstract concrete
@@ -457,7 +484,7 @@ Consult `questioning.md` for techniques:
 
 **Check context (background, not out loud):**
 
-As you go, mentally check the context checklist from `questioning.md`. If gaps remain, weave questions naturally. Don't suddenly switch to checklist mode.
+Mentally check the context checklist. If gaps remain, weave questions naturally. Don't suddenly switch to checklist mode.
 
 **Decision gate:**
 
@@ -482,20 +509,18 @@ Loop until "Create PROJECT.md" selected.
 **Load project type signals:**
 
 ```bash
-PROJECT_TYPES=$(cat .rihal/references/project-types.yaml)
+PROJECT_TYPES=$(cat .rihal/references/project-types.yaml 2>/dev/null || true)
 ```
 
 **Classify by signals:**
 
-Scan the user's responses from Step 3 (questioning) for keywords from the `signals` list in project-types.yaml. Build a score per type:
+Scan the user's responses from Step 3 for keywords from the `signals` list. Build a score per type:
 
-- Each signal match adds 1 point to that type's score
+- Each signal match adds 1 point
 - Pick the type with the highest score
 - If tie or score < 2, ask the user to clarify
 
 **If score is clear (>2 points for one type):**
-
-Print the detected type with an offer to confirm:
 
 ```
 📋 Detected project type: {display_name} (based on your description mentioning {signal1}, {signal2}, {signal3})
@@ -503,125 +528,64 @@ Print the detected type with an offer to confirm:
 Proceed with this type? [Y/n]
 ```
 
-If "n": Ask the user to pick from the list:
+If "n": Ask the user to pick from the list.
 
-```
-Which project type best fits?
-- API / Backend Service
-- Mobile Application
-- SaaS / B2B Platform
-- Command-Line Interface / Tool
-- Web Application / SPA
-- Desktop Application
-- IoT / Embedded Device
-- Developer Tool / Library / SDK
-- Other (generic discovery)
-```
-
-**Store the detected type:**
-
-```bash
-PROJECT_TYPE=$(echo "$PROJECT_TYPES" | yq ".${selected_type}" -o json)
-REQUIRED_SECTIONS="$(echo "$PROJECT_TYPE" | jq -r '.required_sections[]')"
-SKIP_SECTIONS="$(echo "$PROJECT_TYPE" | jq -r '.skip_sections[]')"
-DISCOVERY_QUESTIONS="$(echo "$PROJECT_TYPE" | jq -r '.discovery_questions[]')"
-```
-
-**Adapt discovery for this project type:**
-
-When moving to Step 5 (Workflow Preferences), incorporate type-specific discovery questions into questionnaire:
-
-- Add all questions from `DISCOVERY_QUESTIONS` to the discovery questionnaire
-- When showing requirements table (Step 5.5+), show REQUIRED_SECTIONS as must-haves
-- When offering optional sections, exclude SKIP_SECTIONS
-
-This allows discovery to be tailored per project type while maintaining a consistent flow.
+**Store the detected type** in a shell variable for Step 5 discovery adaptation. Add required-sections and discovery questions from project-types.yaml to the upcoming questionnaire.
 
 ## 4. Write PROJECT.md
 
 **If auto mode:** Synthesize from provided document. No "Ready?" gate was shown — proceed directly to commit.
 
-Synthesize all context into `.planning/PROJECT.md` using the template from `templates/project.md`.
-
-**For greenfield projects:**
-
-Initialize requirements as hypotheses:
+Synthesize all context into `.planning/PROJECT.md`. If `.rihal/templates/project.md` exists, use it. Otherwise use this inline template:
 
 ```markdown
+# Project: {name}
+
+## What This Is
+
+{1-2 sentence description}
+
+## Core Value
+
+{The ONE thing that must work}
+
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+{For greenfield: "(None yet — ship to validate)"}
+{For brownfield: list existing capabilities}
 
 ### Active
 
-- [ ] [Requirement 1]
-- [ ] [Requirement 2]
-- [ ] [Requirement 3]
+- [ ] {Requirement 1}
+- [ ] {Requirement 2}
+- [ ] {Requirement 3}
 
 ### Out of Scope
 
-- [Exclusion 1] — [why]
-- [Exclusion 2] — [why]
-```
+- {Exclusion 1} — {why}
+- {Exclusion 2} — {why}
 
-All Active requirements are hypotheses until shipped and validated.
-
-**For brownfield projects (codebase map exists):**
-
-Infer Validated requirements from existing code:
-
-1. Read `.planning/codebase/ARCHITECTURE.md` and `STACK.md`
-2. Identify what the codebase already does
-3. These become the initial Validated set
-
-```markdown
-## Requirements
-
-### Validated
-
-- ✓ [Existing capability 1] — existing
-- ✓ [Existing capability 2] — existing
-- ✓ [Existing capability 3] — existing
-
-### Active
-
-- [ ] [New requirement 1]
-- [ ] [New requirement 2]
-
-### Out of Scope
-
-- [Exclusion 1] — [why]
-```
-
-**Key Decisions:**
-
-Initialize with any decisions made during questioning:
-
-```markdown
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| [Choice from questioning] | [Why] | — Pending |
-```
+| {Choice} | {Why} | — Pending |
 
-**Last updated footer:**
+## Constraints
 
-```markdown
----
-*Last updated: [date] after initialization*
-```
+- {Budget / timeline / tech}
 
-**Evolution section** (include at the end of PROJECT.md, before the footer):
+## Context
 
-```markdown
+{Current state, tech stack, user feedback themes}
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/rihal:transition`):
+**After each phase transition** (via `/rihal:discuss-phase` + `/rihal:plan`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
@@ -633,22 +597,51 @@ This document evolves at phase transitions and milestone boundaries.
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
+
+---
+*Last updated: {date} after initialization*
 ```
+
+**For greenfield projects:** Initialize requirements as hypotheses (all Active).
+
+**For brownfield projects (codebase map exists):** Read `.planning/codebase/ARCHITECTURE.md` and `STACK.md`. Identify what the codebase already does — these become the initial Validated set.
+
+**Key Decisions:** Initialize with any decisions made during questioning.
 
 Do not compress. Capture everything gathered.
 
-**Commit PROJECT.md:**
+**Commit PROJECT.md (guarded):**
 
 ```bash
 mkdir -p .planning
-node .rihal/bin/rihal-tools.cjs commit "docs: initialize project" --files .planning/PROJECT.md
+git add .planning/PROJECT.md 2>/dev/null \
+  && git commit -m "docs: initialize project" 2>/dev/null \
+  || echo "ℹ .planning/ gitignored — PROJECT.md written, not committed"
 ```
 
 ## 5. Workflow Preferences
 
 **If auto mode:** Skip — config was collected in Step 2a. Proceed to Step 5.5.
 
-Proceed with the questions below.
+**Check for global defaults** at `~/.rihal/defaults.json`. If the file exists, offer to use saved defaults:
+
+```
+AskUserQuestion([
+  {
+    question: "Use your saved default settings? (from ~/.rihal/defaults.json)",
+    header: "Defaults",
+    multiSelect: false,
+    options: [
+      { label: "Yes (Recommended)", description: "Use saved defaults, skip settings questions" },
+      { label: "No", description: "Configure settings manually" }
+    ]
+  }
+])
+```
+
+If "Yes": read `~/.rihal/defaults.json`, use those values for config.json, skip to **Commit config.json** below.
+
+If "No" or file doesn't exist: proceed with the questions below.
 
 **Round 1 — Core workflow settings (4 questions):**
 
@@ -704,8 +697,6 @@ These spawn additional agents during planning/execution. They add tokens and tim
 | **Plan Checker** | After plan is created | Verifies plan actually achieves the phase goal |
 | **Verifier** | After phase execution | Confirms must-haves were delivered |
 
-All recommended for important projects. Skip for quick experiments.
-
 ```
 questions: [
   {
@@ -743,17 +734,31 @@ questions: [
       { label: "Balanced (Recommended)", description: "Sonnet for most agents — good quality/cost ratio" },
       { label: "Quality", description: "Opus for research/roadmap — higher cost, deeper analysis" },
       { label: "Budget", description: "Haiku where possible — fastest, lowest cost" },
-      { label: "Inherit", description: "Use the current session model for all agents (OpenCode /model)" }
+      { label: "Inherit", description: "Use the current session model for all agents" }
     ]
   }
 ]
 ```
 
-Create `.planning/config.json` with all settings (CLI fills in remaining defaults automatically):
+Create `.planning/config.json` with all settings:
 
 ```bash
 mkdir -p .planning
-node .rihal/bin/rihal-tools.cjs config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]}}'
+cat > .planning/config.json <<EOF
+{
+  "mode": "[yolo|interactive]",
+  "granularity": "[selected]",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "[quality|balanced|budget|inherit]",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": true
+  }
+}
+EOF
 ```
 
 **Note:** Run `/rihal:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
@@ -763,21 +768,17 @@ node .rihal/bin/rihal-tools.cjs config-new-project '{"mode":"[yolo|interactive]"
 - Set `commit_docs: false` in config.json
 - Add `.planning/` to `.gitignore` (create if needed)
 
-**If commit_docs = Yes:**
-
-- No additional gitignore entries needed
-
-**Commit config.json:**
+**Commit config.json (guarded):**
 
 ```bash
-node .rihal/bin/rihal-tools.cjs commit "chore: add project config" --files .planning/config.json
+git add .planning/config.json 2>/dev/null \
+  && git commit -m "chore: add project config" 2>/dev/null \
+  || echo "ℹ .planning/ gitignored — config written, not committed"
 ```
 
 ## 5.1. Sub-Repo Detection
 
 **Detect multi-repo workspace:**
-
-Check for directories with their own `.git` folders (separate repos within the workspace):
 
 ```bash
 find . -maxdepth 1 -type d -not -name ".*" -not -name "node_modules" -exec test -d "{}/.git" \; -print
@@ -785,7 +786,7 @@ find . -maxdepth 1 -type d -not -name ".*" -not -name "node_modules" -exec test 
 
 **If sub-repos found:**
 
-Strip the `./` prefix to get directory names (e.g., `./backend` → `backend`).
+Strip the `./` prefix (e.g., `./backend` → `backend`).
 
 Use AskUserQuestion:
 
@@ -793,37 +794,710 @@ Use AskUserQuestion:
 - question: "I detected separate git repos in this workspace. Which directories contain code that Rihal should commit to?"
 - multiSelect: true
 - options: one option per detected directory
-  - "[directory name]" — Separate git repo
 
 **If user selects one or more directories:**
 
-- Set `planning.sub_repos` in config.json to the selected directory names array (e.g., `["backend", "frontend"]`)
+- Set `planning.sub_repos` in config.json to the selected directory names array
 - Auto-set `planning.commit_docs` to `false` (planning docs stay local in multi-repo workspaces)
 - Add `.planning/` to `.gitignore` if not already present
-
-Config changes are saved locally — no commit needed since `commit_docs` is `false` in multi-repo mode.
 
 **If no sub-repos found or user selects none:** Continue with no changes to config.
 
 ## 5.5. Resolve Model Profile
 
-Use models from init: `researcher_model`, `synthesizer_model`, `roadmapper_model`.
+Use models resolved in Step 1: `RESEARCHER_MODEL`, `SYNTHESIZER_MODEL`, `ROADMAPPER_MODEL`.
 
+## 6. Research Decision
+
+**If auto mode:** Default to "Research first" without asking.
+
+Use AskUserQuestion:
+
+- header: "Research"
+- question: "Research the domain ecosystem before defining requirements?"
+- options:
+  - "Research first (Recommended)" — Discover standard stacks, expected features, architecture patterns
+  - "Skip research" — I know this domain well, go straight to requirements
+
+**If "Research first":**
+
+Display stage banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► RESEARCHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Researching [domain] ecosystem...
+```
+
+Create research directory:
+
+```bash
+mkdir -p .planning/research
+```
+
+**Determine milestone context:**
+
+- If no "Validated" requirements in PROJECT.md → Greenfield (building from scratch)
+- If "Validated" requirements exist → Subsequent milestone (adding to existing app)
+
+Display spawning indicator:
+
+```
+◆ Spawning 4 researchers in parallel...
+  → Stack research
+  → Features research
+  → Architecture research
+  → Pitfalls research
+```
+
+Spawn 4 parallel rihal-project-researcher agents:
+
+```
+Task(prompt="<research_type>
+Project Research — Stack dimension for [domain].
+</research_type>
+
+<milestone_context>
+[greenfield OR subsequent]
+
+Greenfield: Research the standard stack for building [domain] from scratch.
+Subsequent: Research what's needed to add [target features] to an existing [domain] app.
+</milestone_context>
+
+<question>
+What's the standard 2026 stack for [domain]?
+</question>
+
+<files_to_read>
+- .planning/PROJECT.md (Project context and goals)
+</files_to_read>
+
+${AGENT_RESEARCHER}
+
+<downstream_consumer>
+Your STACK.md feeds into roadmap creation. Be prescriptive:
+- Specific libraries with versions
+- Clear rationale for each choice
+- What NOT to use and why
+</downstream_consumer>
+
+<quality_gate>
+- [ ] Versions are current (verify with Context7/official docs, not training data)
+- [ ] Rationale explains WHY, not just WHAT
+- [ ] Confidence levels assigned to each recommendation
+</quality_gate>
+
+<output>
+Write to: .planning/research/STACK.md
+</output>
+", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Stack research")
+
+Task(prompt="<research_type>
+Project Research — Features dimension for [domain].
+</research_type>
+
+<milestone_context>
+[greenfield OR subsequent]
+
+Greenfield: What features do [domain] products have? What's table stakes vs differentiating?
+Subsequent: How do [target features] typically work? What's expected behavior?
+</milestone_context>
+
+<files_to_read>
+- .planning/PROJECT.md
+</files_to_read>
+
+${AGENT_RESEARCHER}
+
+<downstream_consumer>
+Your FEATURES.md feeds into requirements definition. Categorize clearly:
+- Table stakes (must have or users leave)
+- Differentiators (competitive advantage)
+- Anti-features (things to deliberately NOT build)
+</downstream_consumer>
+
+<quality_gate>
+- [ ] Categories are clear (table stakes vs differentiators vs anti-features)
+- [ ] Complexity noted for each feature
+- [ ] Dependencies between features identified
+</quality_gate>
+
+<output>
+Write to: .planning/research/FEATURES.md
+</output>
+", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Features research")
+
+Task(prompt="<research_type>
+Project Research — Architecture dimension for [domain].
+</research_type>
+
+<milestone_context>
+[greenfield OR subsequent]
+
+Greenfield: How are [domain] systems typically structured? What are major components?
+Subsequent: How do [target features] integrate with existing [domain] architecture?
+</milestone_context>
+
+<files_to_read>
+- .planning/PROJECT.md
+</files_to_read>
+
+${AGENT_RESEARCHER}
+
+<downstream_consumer>
+Your ARCHITECTURE.md informs phase structure in roadmap. Include:
+- Component boundaries (what talks to what)
+- Data flow (how information moves)
+- Suggested build order (dependencies between components)
+</downstream_consumer>
+
+<quality_gate>
+- [ ] Components clearly defined with boundaries
+- [ ] Data flow direction explicit
+- [ ] Build order implications noted
+</quality_gate>
+
+<output>
+Write to: .planning/research/ARCHITECTURE.md
+</output>
+", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Architecture research")
+
+Task(prompt="<research_type>
+Project Research — Pitfalls dimension for [domain].
+</research_type>
+
+<milestone_context>
+[greenfield OR subsequent]
+
+Greenfield: What do [domain] projects commonly get wrong? Critical mistakes?
+Subsequent: What are common mistakes when adding [target features] to [domain]?
+</milestone_context>
+
+<files_to_read>
+- .planning/PROJECT.md
+</files_to_read>
+
+${AGENT_RESEARCHER}
+
+<downstream_consumer>
+Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
+- Warning signs (how to detect early)
+- Prevention strategy (how to avoid)
+- Which phase should address it
+</downstream_consumer>
+
+<quality_gate>
+- [ ] Pitfalls are specific to this domain (not generic advice)
+- [ ] Prevention strategies are actionable
+- [ ] Phase mapping included where relevant
+</quality_gate>
+
+<output>
+Write to: .planning/research/PITFALLS.md
+</output>
+", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Pitfalls research")
+```
+
+After all 4 agents complete, spawn synthesizer to create SUMMARY.md:
+
+```
+Task(prompt="
+<task>
+Synthesize research outputs into SUMMARY.md.
+</task>
+
+<files_to_read>
+- .planning/research/STACK.md
+- .planning/research/FEATURES.md
+- .planning/research/ARCHITECTURE.md
+- .planning/research/PITFALLS.md
+</files_to_read>
+
+${AGENT_SYNTHESIZER}
+
+<output>
+Write to: .planning/research/SUMMARY.md
+Synthesize into: recommended stack, table stakes vs differentiators, architecture outline, top pitfalls to avoid.
+</output>
+", subagent_type="rihal-research-synthesizer", model="${SYNTHESIZER_MODEL}", description="Synthesize research")
+```
+
+**Commit research (guarded):**
+
+```bash
+git add .planning/research/ 2>/dev/null \
+  && git commit -m "docs: add project research" 2>/dev/null \
+  || echo "ℹ .planning/ gitignored — research written, not committed"
+```
+
+Display research complete banner and key findings:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► RESEARCH COMPLETE ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Key Findings
+
+**Stack:** [from SUMMARY.md]
+**Table Stakes:** [from SUMMARY.md]
+**Watch Out For:** [from SUMMARY.md]
+
+Files: `.planning/research/`
+```
+
+**If "Skip research":** Continue to Step 7.
+
+## 7. Define Requirements
+
+Display stage banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► DEFINING REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Load context:**
+
+Read PROJECT.md and extract:
+
+- Core value (the ONE thing that must work)
+- Stated constraints (budget, timeline, tech limitations)
+- Any explicit scope boundaries
+
+**If research exists:** Read research/FEATURES.md and extract feature categories.
+
+**If auto mode:**
+
+- Auto-include all table stakes features
+- Include features explicitly mentioned in provided document
+- Auto-defer differentiators not mentioned in document
+- Skip per-category AskUserQuestion loops
+- Skip "Any additions?" question
+- Skip requirements approval gate
+- Generate REQUIREMENTS.md and commit directly
+
+**Present features by category (interactive mode only):**
+
+```
+Here are the features for [domain]:
+
+## Authentication
+**Table stakes:**
+- Sign up with email/password
+- Email verification
+- Password reset
+- Session management
+
+**Differentiators:**
+- Magic link login
+- OAuth (Google, GitHub)
+- 2FA
+
+**Research notes:** [any relevant notes]
 
 ---
 
-## 6. Research Phase
+## [Next Category]
+...
+```
 
-Load and execute the research subworkflow:
+**If no research:** Gather requirements through conversation.
 
-@.rihal/workflows/new-project-research.md
+Ask: "What are the main things users need to be able to do?"
 
-After research completes (or is skipped), continue below.
+For each capability mentioned:
+
+- Ask clarifying questions to make it specific
+- Probe for related capabilities
+- Group into categories
+
+**Scope each category:**
+
+For each category, use AskUserQuestion:
+
+- header: "[Category]" (max 12 chars)
+- question: "Which [category] features are in v1?"
+- multiSelect: true
+- options:
+  - "[Feature 1]" — [brief description]
+  - "[Feature 2]" — [brief description]
+  - "[Feature 3]" — [brief description]
+  - "None for v1" — Defer entire category
+
+Track responses:
+
+- Selected features → v1 requirements
+- Unselected table stakes → v2
+- Unselected differentiators → out of scope
+
+**Identify gaps:**
+
+Use AskUserQuestion:
+
+- header: "Additions"
+- question: "Any requirements research missed?"
+- options:
+  - "No, research covered it" — Proceed
+  - "Yes, let me add some" — Capture additions
+
+**Validate core value:**
+
+Cross-check requirements against Core Value from PROJECT.md. If gaps detected, surface them.
+
+**Generate REQUIREMENTS.md:**
+
+Create `.planning/REQUIREMENTS.md` with:
+
+- v1 Requirements grouped by category (checkboxes, REQ-IDs)
+- v2 Requirements (deferred)
+- Out of Scope (explicit exclusions with reasoning)
+- Traceability section (empty, filled by roadmap)
+
+**REQ-ID format:** `[CATEGORY]-[NUMBER]` (AUTH-01, CONTENT-02)
+
+**Requirement quality criteria:**
+
+Good requirements are:
+
+- **Specific and testable:** "User can reset password via email link"
+- **User-centric:** "User can X"
+- **Atomic:** One capability per requirement
+- **Independent:** Minimal dependencies on other requirements
+
+Reject vague requirements. Push for specificity:
+
+- "Handle authentication" → "User can log in with email/password and stay logged in across sessions"
+- "Support sharing" → "User can share post via link that opens in recipient's browser"
+
+**Present full requirements list (interactive mode only):**
+
+Show every requirement for user confirmation:
+
+```
+## v1 Requirements
+
+### Authentication
+- [ ] **AUTH-01**: User can create account with email/password
+- [ ] **AUTH-02**: User can log in and stay logged in across sessions
+- [ ] **AUTH-03**: User can log out from any page
+
+### Content
+- [ ] **CONT-01**: User can create posts with text
+- [ ] **CONT-02**: User can edit their own posts
+
+[... full list ...]
 
 ---
 
-## 7–9. Requirements, Roadmap, and Done
+Does this capture what you're building? (yes / adjust)
+```
 
-Load and execute the requirements + roadmap subworkflow:
+If "adjust": Return to scoping.
 
-@.rihal/workflows/new-project-roadmap.md
+**Commit requirements (guarded):**
+
+```bash
+git add .planning/REQUIREMENTS.md 2>/dev/null \
+  && git commit -m "docs: define v1 requirements" 2>/dev/null \
+  || echo "ℹ .planning/ gitignored — requirements written, not committed"
+```
+
+## 8. Create Roadmap
+
+Display stage banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► CREATING ROADMAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+◆ Spawning roadmapper...
+```
+
+Spawn rihal-roadmapper agent:
+
+```
+Task(prompt="
+<planning_context>
+
+<files_to_read>
+- .planning/PROJECT.md (Project context)
+- .planning/REQUIREMENTS.md (v1 Requirements)
+- .planning/research/SUMMARY.md (Research findings - if exists)
+- .planning/config.json (Granularity and mode settings)
+</files_to_read>
+
+${AGENT_ROADMAPPER}
+
+</planning_context>
+
+<instructions>
+Create roadmap:
+1. Derive phases from requirements (don't impose structure)
+2. Map every v1 requirement to exactly one phase
+3. Derive 2-5 success criteria per phase (observable user behaviors)
+4. Validate 100% coverage
+5. Write files immediately (ROADMAP.md, STATE.md, update REQUIREMENTS.md traceability)
+6. Return ROADMAP CREATED with summary
+
+Write files first, then return. This ensures artifacts persist even if context is lost.
+</instructions>
+", subagent_type="rihal-roadmapper", model="${ROADMAPPER_MODEL}", description="Create roadmap")
+```
+
+**Handle roadmapper return:**
+
+**If `## ROADMAP BLOCKED`:**
+
+- Present blocker information
+- Work with user to resolve
+- Re-spawn when resolved
+
+**If `## ROADMAP CREATED`:**
+
+Read the created ROADMAP.md and present it nicely inline:
+
+```
+---
+
+## Proposed Roadmap
+
+**[N] phases** | **[X] requirements mapped** | All v1 requirements covered ✓
+
+| # | Phase | Goal | Requirements | Success Criteria |
+|---|-------|------|--------------|------------------|
+| 1 | [Name] | [Goal] | [REQ-IDs] | [count] |
+| 2 | [Name] | [Goal] | [REQ-IDs] | [count] |
+| 3 | [Name] | [Goal] | [REQ-IDs] | [count] |
+
+### Phase Details
+
+**Phase 1: [Name]**
+Goal: [goal]
+Requirements: [REQ-IDs]
+Success criteria:
+1. [criterion]
+2. [criterion]
+3. [criterion]
+
+[... continue for all phases ...]
+
+---
+```
+
+**If auto mode:** Skip approval gate — auto-approve and commit directly.
+
+**CRITICAL: Ask for approval before committing (interactive mode only):**
+
+Use AskUserQuestion:
+
+- header: "Roadmap"
+- question: "Does this roadmap structure work for you?"
+- options:
+  - "Approve" — Commit and continue
+  - "Adjust phases" — Tell me what to change
+  - "Review full file" — Show raw ROADMAP.md
+
+**If "Approve":** Continue to commit.
+
+**If "Adjust phases":**
+
+- Get user's adjustment notes
+- Re-spawn roadmapper with revision context:
+
+  ```
+  Task(prompt="
+  <revision>
+  User feedback on roadmap:
+  [user's notes]
+
+  <files_to_read>
+  - .planning/ROADMAP.md (Current roadmap to revise)
+  </files_to_read>
+
+  ${AGENT_ROADMAPPER}
+
+  Update the roadmap based on feedback. Edit files in place.
+  Return ROADMAP REVISED with changes made.
+  </revision>
+  ", subagent_type="rihal-roadmapper", model="${ROADMAPPER_MODEL}", description="Revise roadmap")
+  ```
+
+- Present revised roadmap
+- Loop until user approves
+
+**If "Review full file":** Display raw `cat .planning/ROADMAP.md`, then re-ask.
+
+**Generate or refresh project instruction file before final commit:**
+
+The rihal-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rihal workflow docs:
+
+```markdown
+# {INSTRUCTION_FILE} — project instructions
+
+This project uses Rihal for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
+
+Common commands:
+- /rihal:progress — check status and next action
+- /rihal:discuss-phase N — gather context before planning phase N
+- /rihal:plan N — create a SPRINT.md for phase N
+- /rihal:execute N — execute a SPRINT.md
+- /rihal:verify-work — conversational UAT
+- /rihal:complete-milestone — archive milestone and reset
+
+Rules:
+- Never run `git push` without explicit user authorization.
+- No Claude/AI attribution in commits.
+- Prefer editing existing files over creating new ones.
+```
+
+If it already exists, leave it alone (respect user-customized content).
+
+**Commit roadmap (guarded):**
+
+```bash
+git add \
+  .planning/ROADMAP.md \
+  .planning/STATE.md \
+  .planning/REQUIREMENTS.md \
+  "$INSTRUCTION_FILE" 2>/dev/null \
+&& git commit -m "docs: create roadmap ([N] phases)" 2>/dev/null \
+|| echo "ℹ .planning/ gitignored — roadmap written, not committed (instruction file committed separately)"
+
+# Fallback: also try committing just the instruction file if .planning was ignored
+git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project instruction file" 2>/dev/null || true
+```
+
+## 9. Done
+
+Present completion summary:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PROJECT INITIALIZED ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**[Project Name]**
+
+| Artifact       | Location                    |
+|----------------|-----------------------------|
+| Project        | `.planning/PROJECT.md`      |
+| Config         | `.planning/config.json`     |
+| Research       | `.planning/research/`       |
+| Requirements   | `.planning/REQUIREMENTS.md` |
+| Roadmap        | `.planning/ROADMAP.md`      |
+| Project guide  | `$INSTRUCTION_FILE`         |
+
+**[N] phases** | **[X] requirements** | Ready to build ✓
+```
+
+**If auto mode:**
+
+```
+╔══════════════════════════════════════════╗
+║  AUTO-ADVANCING → DISCUSS PHASE 1        ║
+╚══════════════════════════════════════════╝
+```
+
+Exit skill and invoke `/rihal:discuss-phase 1 --auto`.
+
+**If interactive mode:**
+
+Check if Phase 1 has UI indicators in ROADMAP.md:
+
+```bash
+PHASE1_SECTION=$(sed -n '/^## Phase 1/,/^## Phase /p' .planning/ROADMAP.md)
+PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" && echo "true" || echo "false")
+```
+
+**If Phase 1 has UI:**
+
+```
+───────────────────────────────────────────────────────────────
+
+## ▶ Next Up
+
+**Phase 1: [Phase Name]** — [Goal from ROADMAP.md]
+
+/clear then:
+
+/rihal:discuss-phase 1 — gather context and clarify approach
+
+---
+
+**Also available:**
+- /rihal:ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /rihal:plan 1 — skip discussion, plan directly
+
+───────────────────────────────────────────────────────────────
+```
+
+**If Phase 1 has no UI:**
+
+```
+───────────────────────────────────────────────────────────────
+
+## ▶ Next Up
+
+**Phase 1: [Phase Name]** — [Goal from ROADMAP.md]
+
+/clear then:
+
+/rihal:discuss-phase 1 — gather context and clarify approach
+
+---
+
+**Also available:**
+- /rihal:plan 1 — skip discussion, plan directly
+
+───────────────────────────────────────────────────────────────
+```
+
+</process>
+
+<output>
+
+- `.planning/PROJECT.md`
+- `.planning/config.json`
+- `.planning/research/` (if research selected)
+  - `STACK.md`
+  - `FEATURES.md`
+  - `ARCHITECTURE.md`
+  - `PITFALLS.md`
+  - `SUMMARY.md`
+- `.planning/REQUIREMENTS.md`
+- `.planning/ROADMAP.md`
+- `.planning/STATE.md`
+- `$INSTRUCTION_FILE` (`AGENTS.md` for Codex, `CLAUDE.md` for all other runtimes)
+
+</output>
+
+<success_criteria>
+
+- [ ] .planning/ directory created
+- [ ] Git repo initialized
+- [ ] Brownfield detection completed
+- [ ] Deep questioning completed (threads followed, not rushed)
+- [ ] PROJECT.md captures full context → **committed (or noted as gitignored)**
+- [ ] config.json has workflow mode, granularity, parallelization → **committed**
+- [ ] Research completed (if selected) — 4 parallel agents spawned → **committed**
+- [ ] Requirements gathered (from research or conversation)
+- [ ] User scoped each category (v1/v2/out of scope)
+- [ ] REQUIREMENTS.md created with REQ-IDs → **committed**
+- [ ] rihal-roadmapper spawned with context
+- [ ] Roadmap files written immediately (not draft)
+- [ ] User feedback incorporated (if any)
+- [ ] ROADMAP.md created with phases, requirement mappings, success criteria
+- [ ] STATE.md initialized
+- [ ] REQUIREMENTS.md traceability updated
+- [ ] `$INSTRUCTION_FILE` generated (if missing) with rihal workflow guidance
+- [ ] User knows next step is `/rihal:discuss-phase 1`
+- [ ] No `git push` issued by the workflow (per AGENTS.md)
+
+**Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist. When `.planning/` is gitignored, files are written but commit is skipped gracefully.
+
+</success_criteria>
