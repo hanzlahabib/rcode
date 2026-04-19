@@ -2592,6 +2592,16 @@ async function main() {
         console.log(JSON.stringify(result, null, 2));
         return;
       }
+      case 'roadmap': {
+        const roadmap = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+        const r = roadmap.dispatch(PROJECT_ROOT, args);
+        if (r && typeof r === 'object' && '__raw' in r) {
+          console.log(r.__raw);
+          return;
+        }
+        result = r;
+        break;
+      }
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -2599,7 +2609,7 @@ async function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|notify|resolve-model|version|help> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|roadmap|notify|resolve-model|version|help> [args]');
         console.log('');
         console.log('Top-level subcommands:');
         console.log('  init                                         → initialize .rihal directory structure');
@@ -2613,6 +2623,7 @@ async function main() {
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
+        console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
         console.log('  resolve-model <profile>                      → resolve model name from profile');
         console.log('  version                                      → print rihal-tools version');
         console.log('  help                                         → print this help text');
