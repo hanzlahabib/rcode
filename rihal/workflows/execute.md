@@ -877,36 +877,103 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 </step>
 
 <step name="code_review_gate" required="true">
-**This step is REQUIRED and must not be skipped.** Auto-invoke code review on the phase's source changes. Advisory only — never blocks execution flow.
+**This step is REQUIRED and must not be skipped.** Spawn `rihal-code-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
 
-**Config gate:**
+**Config gate (default ON):**
 ```bash
-CODE_REVIEW_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.code_review_enabled 2>/dev/null || echo "true")
 ```
 
-If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to next step.
+If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review_enabled=false)" and proceed to `close_parent_artifacts`.
 
-**Invoke review:**
-```
-Skill(skill="rihal:code-review", args="${PHASE_NUMBER}")
-```
-
-**Check results using deterministic path (not glob):**
+**Resolve reviewer model:**
 ```bash
+REVIEWER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "")
+REVIEWER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
 PADDED=$(printf "%02d" "${PHASE_NUMBER}")
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
-REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
 ```
 
-If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
+**Spawn the reviewer agent:**
 ```
-Code review found issues. Consider running:
-/rihal:code-review-fix ${PHASE_NUMBER}
+Task(
+  description="Code review for phase {phase_number}",
+  prompt="Review the source code changes for phase {phase_number}.
+Phase directory: {phase_dir}
+Phase goal: {goal from ROADMAP.md}
+
+Read all plan files and summaries in the phase directory, then review the source files actually modified (from SUMMARY.md `key-files.created`/`modified`). Classify each finding by severity: critical, high, medium, or low.
+
+Write the review to: ${REVIEW_FILE}
+
+The file MUST begin with YAML frontmatter including:
+---
+status: clean | issues_found | skipped
+phase: {phase_number}
+critical: <count>
+high: <count>
+medium: <count>
+low: <count>
+generated: <ISO timestamp>
+---
+
+Group findings by severity. For each finding include: file path, line reference, description, recommended fix.
+
+${REVIEWER_SKILLS}",
+  subagent_type="rihal-code-reviewer",
+  model="${REVIEWER_MODEL}"
+)
 ```
 
-**Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
+**Error handling:** If the Task invocation fails or throws, display "Code review encountered an error (non-blocking): {error}" and proceed to `close_parent_artifacts`. A broken reviewer must never permanently block execution.
 
-Regardless of review result, ALWAYS proceed to close_parent_artifacts → regression_gate → verify_phase_goal.
+**Parse severity counts:**
+```bash
+if [[ -f "$REVIEW_FILE" ]]; then
+  REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
+  CRITICAL_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^critical:" | head -1 | cut -d: -f2 | tr -d ' ')
+  HIGH_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^high:" | head -1 | cut -d: -f2 | tr -d ' ')
+  MEDIUM_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^medium:" | head -1 | cut -d: -f2 | tr -d ' ')
+  LOW_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^low:" | head -1 | cut -d: -f2 | tr -d ' ')
+fi
+```
+
+**Blocking gate on critical/high:**
+
+If `CRITICAL_COUNT > 0` OR `HIGH_COUNT > 0`, present the block banner and use AskUserQuestion:
+
+```
+## ⛔ Code Review Gate: Blocking Findings
+
+Phase {phase_number} code review found:
+  critical: ${CRITICAL_COUNT}
+  high:     ${HIGH_COUNT}
+  medium:   ${MEDIUM_COUNT}
+  low:      ${LOW_COUNT}
+
+Report: ${REVIEW_FILE}
+
+Verifier is blocked until critical/high findings are resolved.
+```
+
+AskUserQuestion with options:
+1. **"Run /rihal:code-review-fix first (recommended)"** — Stop. Print next command: `/rihal:code-review-fix ${PHASE_NUMBER} ${Rihal_WS}`. Do NOT spawn verifier.
+2. **"Proceed to verifier anyway (high findings unresolved)"** — Log override and continue to `close_parent_artifacts` → `regression_gate` → `verify_phase_goal`.
+3. **"Cancel execution"** — Stop. Report partial completion.
+
+**Advisory line on medium/low only:**
+
+If `CRITICAL_COUNT == 0` AND `HIGH_COUNT == 0` AND (`MEDIUM_COUNT > 0` OR `LOW_COUNT > 0`), display:
+```
+⚠ Code review found non-blocking findings (medium: ${MEDIUM_COUNT}, low: ${LOW_COUNT}).
+  Report: ${REVIEW_FILE}
+  Consider: /rihal:code-review-fix ${PHASE_NUMBER}
+```
+Then continue to `close_parent_artifacts`.
+
+**Clean review:** If `REVIEW_STATUS == "clean"` (or all counts are zero), display "✓ Code review clean" and continue.
+
+Only when the gate is clean or the user overrides do we proceed to close_parent_artifacts → regression_gate → verify_phase_goal.
 </step>
 
 <step name="close_parent_artifacts">
