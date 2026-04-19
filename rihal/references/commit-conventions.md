@@ -2,6 +2,31 @@
 
 Shared reference `@`-included by every workflow that creates or modifies git artifacts.
 
+## Detect project-local conventions FIRST (mandatory)
+
+Before writing any commit, scan the project for local commit standards and let them **override** the defaults in this file. Check in this priority order — stop at the first one that yields a concrete allowed-types + allowed-scopes list:
+
+1. **`commitlint.config.{js,cjs,ts,mjs,json}`** — most authoritative. Parse `rules['type-enum']` and `rules['scope-enum']`.
+2. **`.github/workflows/semantic*.{yaml,yml}`** — GitHub Semantic PR action. Parse `types:` and `scopes:` blocks under `amannn/action-semantic-pull-request`.
+3. **`.github/COMMIT_CONVENTIONS.md`, `CONTRIBUTING.md`, `AGENTS.md`, `CLAUDE.md`** — look for sections naming allowed types/scopes.
+4. **`git log --oneline -50`** — infer from past 50 commits: extract `type(scope):` prefixes, take the set that appears ≥2 times.
+
+Run this cheaply before composing the commit:
+
+```bash
+# Priority 2 example — semantic PR action scopes
+if [ -f .github/workflows/semantic.yaml ] || [ -f .github/workflows/semantic.yml ]; then
+  echo "--- project semantic PR config ---"
+  cat .github/workflows/semantic*.y*ml 2>/dev/null | sed -n '/types:/,/scopes:/{p}; /scopes:/,/[A-Za-z]*:/{p}'
+fi
+# Priority 4 fallback — infer from history
+git log --oneline -50 | grep -oE '^[a-f0-9]+ [a-z]+\([a-z0-9-]+\):' | awk '{print $2}' | sort -u
+```
+
+**If the project defines scopes, you MUST pick from that list.** Do not invent new scopes (e.g., `branding` when only `web, server, docker, k8s, e2e, docs, ci, deps, ml, strapi` are allowed). A commit that fails the project's semantic PR check wastes the user's CI run and signals the workflow didn't read the repo.
+
+If no project list exists, fall back to the generic rihal scopes in the "Format" section below.
+
 ## Format
 
 All commits follow [Conventional Commits](https://www.conventionalcommits.org/):
@@ -91,9 +116,10 @@ Workflows that produce commits must hand back to the user at the end and wait fo
 
 When a Rihal workflow creates a commit on the user's behalf:
 
-1. Stage only the files the workflow actually modified (never `-A`)
-2. Write the subject as `type(scope): subject`
-3. If the body adds real value (the why isn't obvious from the diff), include it
-4. Do not sign with AI attribution
-5. Print the commit SHA and one-line summary to the user
-6. **Stop.** Do not push. Wait for explicit authorization.
+1. **Run the "Detect project-local conventions" scan** above. Pick scope from the project's allowed list if one exists.
+2. Stage only the files the workflow actually modified (never `-A`)
+3. Write the subject as `type(scope): subject` using project-local types/scopes when defined, generic rihal scopes only as fallback
+4. If the body adds real value (the why isn't obvious from the diff), include it
+5. Do not sign with AI attribution
+6. Print the commit SHA and one-line summary to the user
+7. **Stop.** Do not push. Wait for explicit authorization.
