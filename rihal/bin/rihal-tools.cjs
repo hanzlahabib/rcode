@@ -2702,6 +2702,9 @@ async function main() {
         result = verify.dispatch(PROJECT_ROOT, args);
         break;
       }
+      case 'agent-skills':
+        result = cmdAgentInfo(args[0]);
+        break;
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -2709,13 +2712,14 @@ async function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|config-get|config-set|roadmap|verify|notify|resolve-model|version|help> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|agent-skills|list-agents|state|module|plan|notes|config|config-get|config-set|roadmap|verify|notify|resolve-model|version|help> [args]');
         console.log('');
         console.log('Top-level subcommands:');
         console.log('  init                                         → initialize .rihal directory structure');
         console.log('  select-panel                                 → choose council panel members');
         console.log('  classify-question                            → categorize user questions');
         console.log('  agent-info <name>                            → show agent metadata and skills');
+        console.log('  agent-skills <name>                          → alias for agent-info');
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
         console.log('  module <subcommand> [args]                   → module system helpers');
