@@ -91,6 +91,17 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 
 Extract `--prd <filepath>` from $ARGUMENTS. If present, set PRD_FILE to the filepath.
 
+**Detect gaps mode:**
+```bash
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--gaps($|[[:space:]]) ]]; then
+  GAPS_MODE=true
+else
+  GAPS_MODE=false
+fi
+```
+
+When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-PLAN.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
+
 **If no phase number:** Detect next unplanned phase from roadmap.
 
 **If `phase_found` is false:** Validate phase exists in ROADMAP.md. If valid, create the directory using `phase_slug` and `padded_phase` from init:
@@ -230,9 +241,96 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(${padded_phase}): generate contex
 
 **Effect:** This completely bypasses step 4 (Load CONTEXT.md) since we just created it. The rest of the workflow (research, planning, verification) proceeds normally with the PRD-derived context.
 
+## 3.6. Handle `--gaps` Mode
+
+**Skip unless:** `GAPS_MODE=true`.
+
+**Purpose:** Read `NNN-VERIFICATION.md`, extract failing/partial gaps, count existing plan files, and prepare a `gap_list` payload to feed the planner. On completion, control flow continues at step 8 (skipping CONTEXT.md gating, research, and validation-strategy creation).
+
+**Step 1: Locate VERIFICATION.md**
+
+```bash
+PHASE_DIR=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
+# Fallback if --pick dir not supported. TODO(#118): expose roadmap --pick dir cleanly.
+if [[ -z "$PHASE_DIR" ]]; then
+  PHASE_DIR=$(ls -d .planning/phases/${padded_phase}-* 2>/dev/null | head -1)
+fi
+
+VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
+```
+
+**If `VERIFICATION_FILE` is empty:**
+```
+Error: No VERIFICATION.md found for Phase {X}. Gap-closure planning requires the phase to have run through the verifier first.
+
+Try:
+  /rihal:execute {X} ${Rihal_WS}      # run or re-run execution + verification
+```
+Exit workflow.
+
+**Step 2: Extract gaps from VERIFICATION.md**
+
+Parse the file for gap entries with `status: gap_found` or `status: partial`. Inspect these sections:
+- `## Automated Gap` (or `## Automated Gaps`)
+- `## Human Verification Required`
+- Any findings block that includes a `status:` field set to `gap_found` or `partial`
+
+Collect into `GAP_LIST` (an ordered list where each entry has: id, title, expected, actual, status, source_section, severity if present).
+
+If `GAP_LIST` is empty, display:
+```
+Phase {X} VERIFICATION.md contains no gap_found or partial items — nothing to close.
+Report: {VERIFICATION_FILE}
+```
+Exit workflow.
+
+**Step 3: Determine next plan number**
+
+```bash
+EXISTING_PLAN_COUNT=$(ls "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | wc -l | tr -d ' ')
+NEXT_PLAN_NUMBER=$(printf "%02d" $((EXISTING_PLAN_COUNT + 1)))
+PADDED_PHASE=$(printf "%02d" "${PHASE}")
+GAP_PLAN_FILENAME="${PADDED_PHASE}-${NEXT_PLAN_NUMBER}-PLAN.md"
+GAP_PLAN_PATH="${PHASE_DIR}/${GAP_PLAN_FILENAME}"
+```
+
+If `EXISTING_PLAN_COUNT == 0`, there is no prior execution to reference. Display a warning but proceed — the planner can still close verification gaps.
+
+**Step 4: Gather prior plans for planner context**
+
+```bash
+EXISTING_PLAN_FILES=$(ls "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | tr '\n' ' ')
+EXISTING_SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null | tr '\n' ' ')
+```
+
+**Step 5: Display banner**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► GAP-CLOSURE PLANNING — Phase {X}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verification report: {VERIFICATION_FILE}
+Gaps to close:       {count(GAP_LIST)}
+Existing plans:      {EXISTING_PLAN_COUNT}
+New plan file:       {GAP_PLAN_FILENAME}
+```
+
+**Step 6: Skip ahead**
+
+Control flow jumps directly to step 8 (Spawn rihal-planner). Steps 4 (CONTEXT.md), 5 (Research), and 5.5 (Validation) are ALL skipped when `GAPS_MODE=true`.
+
+Step 8 will consume these variables when filling the planner prompt:
+- `GAP_LIST` — serialized list of gaps (id, title, expected, actual, status)
+- `GAP_PLAN_PATH` — exact output path the planner must write
+- `EXISTING_PLAN_FILES` / `EXISTING_SUMMARY_FILES` — prior phase context
+- `VERIFICATION_FILE` — authoritative source-of-truth
+
+After the planner returns, the existing plan-checker / revision loop (step 10 onward) runs unchanged — gap plans are verified just like normal plans.
+
 ## 4. Load CONTEXT.md
 
-**Skip if:** PRD express path was used (CONTEXT.md already created in step 3.5).
+**Skip if:** PRD express path was used (CONTEXT.md already created in step 3.5) OR `GAPS_MODE=true` (gap closure is grounded in VERIFICATION.md, not CONTEXT.md).
 
 Check `context_path` from init JSON.
 
@@ -626,6 +724,56 @@ Display banner:
 
 ◆ Spawning planner...
 ```
+
+**Gap-closure planner prompt (when `GAPS_MODE=true`):**
+
+When `GAPS_MODE=true`, use the prompt below in place of the standard planner prompt. The planner must emit **exactly one** new plan file at `${GAP_PLAN_PATH}` that closes the listed gaps. Do not create CONTEXT.md or RESEARCH.md references — gaps are grounded in already-shipped code.
+
+```markdown
+<planning_context>
+**Phase:** {phase_number}
+**Mode:** gap_closure
+**Phase goal:** {goal from ROADMAP.md}
+
+<files_to_read>
+- {VERIFICATION_FILE} (Authoritative verification report — source of truth for gaps)
+- {state_path} (Project State)
+- {roadmap_path} (Roadmap)
+- {requirements_path} (Requirements)
+- Existing plan files in this phase: {EXISTING_PLAN_FILES}
+- Existing summary files in this phase: {EXISTING_SUMMARY_FILES}
+</files_to_read>
+
+${AGENT_SKILLS_PLANNER}
+
+<gap_list>
+{Serialized GAP_LIST — for each gap include id, title, expected behavior, actual behavior, status (gap_found|partial), and source section.}
+</gap_list>
+
+<output>
+Write a single new plan file to: {GAP_PLAN_PATH}
+
+Frontmatter MUST include:
+---
+phase: {phase_number}
+plan_number: {NEXT_PLAN_NUMBER}
+gap_closure: true
+wave: 1
+depends_on: []
+files_modified: [...]
+autonomous: true|false
+---
+
+Each gap in the list MUST be addressed by at least one task. Use the anti-shallow execution rules below.
+</output>
+</planning_context>
+```
+
+Proceed to the standard planner Task invocation below, but pass the gap-closure prompt above. After the planner returns, the normal plan-checker / revision loop (step 10+) runs unchanged.
+
+---
+
+**Standard planner prompt (when `GAPS_MODE=false`):**
 
 Planner prompt:
 
