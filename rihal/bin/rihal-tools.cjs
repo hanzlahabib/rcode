@@ -1863,6 +1863,90 @@ function cmdState(subArgs) {
     return { ok: true, migrated: migratedCount, message: `Migrated ${migratedCount} PLAN.md files with IDs` };
   }
 
+  // =====================================================================
+  // Execution-lifecycle phase state
+  // =====================================================================
+
+  if (sub === 'planned-phase') {
+    const flags = parseFlags(1);
+    if (!flags.phase) throw new Error('planned-phase requires --phase <N>');
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+    const phaseKey = String(flags.phase);
+    let entry = state.phases.find((p) => String(p.number || p.id || p.name) === phaseKey);
+    const previousStatus = entry ? (entry.status || null) : null;
+    if (!entry) {
+      entry = { number: phaseKey, name: flags.name || phaseKey, plans: Number(flags.plans || 0) };
+      state.phases.push(entry);
+    }
+    entry.status = 'planned';
+    entry.name = flags.name || entry.name;
+    if (flags.plans !== undefined) entry.plans = Number(flags.plans);
+    entry.planned_at = new Date().toISOString();
+    writeState(state);
+    return { updated: true, phase: phaseKey, status: 'planned', previous_status: previousStatus, name: entry.name, plans: entry.plans };
+  }
+
+  if (sub === 'begin-phase') {
+    const flags = parseFlags(1);
+    if (!flags.phase) throw new Error('begin-phase requires --phase <N>');
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+    const phaseKey = String(flags.phase);
+    let entry = state.phases.find((p) => String(p.number || p.id || p.name) === phaseKey);
+    const previousStatus = entry ? (entry.status || null) : null;
+    if (!entry) {
+      entry = { number: phaseKey, name: flags.name || phaseKey, plans: Number(flags.plans || 0) };
+      state.phases.push(entry);
+    }
+    entry.status = 'executing';
+    if (flags.name) entry.name = flags.name;
+    if (flags.plans !== undefined) entry.plans = Number(flags.plans);
+    entry.started = entry.started || new Date().toISOString();
+    state.current_phase = entry.name;
+    writeState(state);
+    return { updated: true, phase: phaseKey, status: 'executing', previous_status: previousStatus };
+  }
+
+  if (sub === 'complete-phase') {
+    const flags = parseFlags(1);
+    if (!flags.phase) throw new Error('complete-phase requires --phase <N>');
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+    const phaseKey = String(flags.phase);
+    const entry = state.phases.find((p) => String(p.number || p.id || p.name) === phaseKey);
+    if (!entry) throw new Error(`Phase ${phaseKey} not found in state`);
+    const previousStatus = entry.status || null;
+    entry.status = 'complete';
+    entry.completed = new Date().toISOString();
+    writeState(state);
+    return { updated: true, phase: phaseKey, status: 'complete', previous_status: previousStatus };
+  }
+
+  // Truncates execution state but preserves decisions, council_sessions, and workstreams.
+  if (sub === 'reset') {
+    const state = readState() || defaultState();
+    const preserved = {
+      version: state.version || '1',
+      project: state.project || path.basename(PROJECT_ROOT),
+      created: state.created || new Date().toISOString(),
+      current_phase: null,
+      current_plan: 0,
+      current_sprint: null,
+      phases: [],
+      velocity_history: [],
+      executions: [],
+      decisions: state.decisions || [],
+      blockers: [],
+      council_sessions: state.council_sessions || [],
+      last_session: state.last_session || null,
+      workstreams: state.workstreams || [],
+      active_workstream: state.active_workstream || null,
+    };
+    writeState(preserved);
+    return { updated: true, status: 'reset', preserved_decisions: preserved.decisions.length };
+  }
+
   throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
 }
 
@@ -2670,7 +2754,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
         if (stateSubs.includes(subcommand)) {
           console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
         } else {
