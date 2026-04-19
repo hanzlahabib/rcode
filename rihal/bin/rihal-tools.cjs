@@ -2686,6 +2686,17 @@ async function main() {
         result = r;
         break;
       }
+      case 'config-get': {
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        const val = cfg.cmdGet(PROJECT_ROOT, args[0]);
+        if (val !== null && val !== undefined) console.log(val);
+        return;
+      }
+      case 'config-set': {
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        result = cfg.cmdSet(PROJECT_ROOT, args[0], args.slice(1).join(' '));
+        break;
+      }
       case 'version':
         console.log(readPackageVersion());
         return;
@@ -2693,7 +2704,7 @@ async function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|roadmap|notify|resolve-model|version|help> [args]');
+        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|list-agents|state|module|plan|notes|config|config-get|config-set|roadmap|notify|resolve-model|version|help> [args]');
         console.log('');
         console.log('Top-level subcommands:');
         console.log('  init                                         → initialize .rihal directory structure');
@@ -2708,6 +2719,8 @@ async function main() {
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
         console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
+        console.log('  config-get <dotted.key>                      → read scalar from .rihal/config.yaml');
+        console.log('  config-set <dotted.key> <value>              → atomically set a value in .rihal/config.yaml');
         console.log('  resolve-model <profile>                      → resolve model name from profile');
         console.log('  version                                      → print rihal-tools version');
         console.log('  help                                         → print this help text');
