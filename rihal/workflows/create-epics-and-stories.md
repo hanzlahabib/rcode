@@ -174,7 +174,7 @@ done
 
 ---
 
-## Story {EPIC-N.1}: {Story title}
+## Story {N}.1: {Story title}
 
 **Persona:** {Named persona}
 
@@ -203,7 +203,7 @@ done
 
 ---
 
-## Story {EPIC-N.2}: ...
+## Story {N}.2: ...
 
 [Same structure as Story N.1, repeat for each story in epic]
 
@@ -213,8 +213,8 @@ done
 
 | Story | Persona | Effort | Status |
 |-------|---------|--------|--------|
-| EPIC-{N}.1 | ... | S | — |
-| EPIC-{N}.2 | ... | M | — |
+| {N}.1 | ... | S | — |
+| {N}.2 | ... | M | — |
 
 **Total Epic Effort:** {sum of all story efforts}
 

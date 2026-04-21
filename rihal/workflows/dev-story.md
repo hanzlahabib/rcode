@@ -86,10 +86,9 @@ fi
 
 ```bash
 if [[ -z "$STORY_NUMBER" ]]; then
-  STORY_LIST=$(grep -n "^## Story " "$EPIC_FILE" | sed 's/.*## Story //' | sed 's/: /  —  /')
-  echo "Stories in $EPIC_FILE:"
-  echo "$STORY_LIST"
-  # AskUserQuestion: "Which story do you want to work on? Enter the story number (e.g. 1, 2, 3)"
+  echo "Stories in Epic ${EPIC_NUM}:"
+  grep '^## Story' "$EPIC_FILE" | sed 's/^## Story /  /'
+  # AskUserQuestion: "Which story number? (e.g. 1, 2, 3)"
   # Set STORY_NUMBER from response
 fi
 ```
@@ -97,18 +96,20 @@ fi
 **Extract story section from epic file:**
 
 ```bash
-STORY_SECTION_HEADER="## Story EPIC-$(printf '%02d' $EPIC_NUM).${STORY_NUMBER}"
-STORY_CONTENT=$(awk "/^${STORY_SECTION_HEADER}/,/^## Story EPIC-[0-9]/{if (!/^## Story EPIC-[0-9]/ || NR==1) print}" "$EPIC_FILE")
+# Stories are headed "## Story N.M: Title" (no EPIC prefix)
+STORY_SECTION_HEADER="## Story ${EPIC_NUM}.${STORY_NUMBER}"
+STORY_CONTENT=$(awk "/^${STORY_SECTION_HEADER}[: ]/{found=1} found && /^## Story [0-9]/ && !/^${STORY_SECTION_HEADER}[: ]/{found=0} found{print}" "$EPIC_FILE")
 
 if [[ -z "$STORY_CONTENT" ]]; then
   echo "Error: Story ${EPIC_NUM}.${STORY_NUMBER} not found in $EPIC_FILE"
-  echo "Available stories: $(grep '^## Story' "$EPIC_FILE" | sed 's/## Story //')"
+  echo "Available stories:"
+  grep '^## Story' "$EPIC_FILE" | sed 's/^## /  /'
   STOP
 fi
 
-# Derive IDs
-STORY_ID="EPIC-$(printf '%02d' $EPIC_NUM).${STORY_NUMBER}"
-STORY_TITLE=$(echo "$STORY_CONTENT" | grep "^## Story $STORY_ID" | sed "s/^## Story $STORY_ID: //")
+# Derive IDs — story ID is plain N.M, no EPIC prefix
+STORY_ID="${EPIC_NUM}.${STORY_NUMBER}"
+STORY_TITLE=$(echo "$STORY_CONTENT" | head -1 | sed "s/^## Story ${STORY_ID}: //")
 PERSONA=$(echo "$STORY_CONTENT" | grep "^\*\*Persona:\*\*" | sed 's/\*\*Persona:\*\* //')
 EFFORT=$(echo "$STORY_CONTENT" | grep "^\*\*Estimate:\*\*\|^\*\*Size:\*\*" | head -1 | sed 's/\*\*[^*]*\*\*: //')
 ```
@@ -118,7 +119,7 @@ EFFORT=$(echo "$STORY_CONTENT" | grep "^\*\*Estimate:\*\*\|^\*\*Size:\*\*" | hea
 ```bash
 if [[ "$BRANCH_FLAG" == true ]]; then
   STORY_SLUG=$(echo "$STORY_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | cut -c1-40)
-  BRANCH_NAME="story/${STORY_ID,,}-${STORY_SLUG}"
+  BRANCH_NAME="story/${EPIC_NUM}.${STORY_NUMBER}-${STORY_SLUG}"
   git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
   echo "Branch: $BRANCH_NAME"
 fi
@@ -283,7 +284,7 @@ When committing code for this story, use:
 Example for this story:
 
 ```
-feat(EPIC-01): {story-specific description}
+feat(story-{N}.{M}): {story-specific description}
 
 {Why this change, what problem it solves}
 ```
