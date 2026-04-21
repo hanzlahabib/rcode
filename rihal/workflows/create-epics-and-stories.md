@@ -5,102 +5,174 @@ Parse a PRD, PROJECT.md, or project document to generate numbered epic files in 
 </purpose>
 
 
-## Step 0 — Usage check
-
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
-
-```
-/rihal:create-epics-and-stories <argument-here>
-```
-
-**Examples:**
-```
-/rihal:create-epics-and-stories example 1
-/rihal:create-epics-and-stories example 2
-```
-
-STOP — do not proceed.
-
 <available_agent_types>
-- `rihal-roadmapper` — reads PRD and generates epic structure
+- `rihal-roadmapper` — reads PRD/context and generates epic structure
 </available_agent_types>
 
-## Step 0 — Validation
-
-**If no arguments:**
-
-```
-Usage: /rihal:create-epics-and-stories <prd.md | PROJECT.md> [--prefix <name>]
-
-Examples:
-  /rihal:create-epics-and-stories .planning/PROJECT.md
-  /rihal:create-epics-and-stories prd.md --prefix myapp
-```
-
-Stop and wait for arguments.
-
-**Validate input file exists:**
+## Step 0 — Parse Arguments & Detect Context Mode
 
 ```bash
-if [[ ! -f "$INPUT_FILE" ]]; then
-  echo "Error: File not found: $INPUT_FILE"
-  exit 1
-fi
+INPUT_FILE=""
+PREFIX=""
+CONTEXT_MODE="file"   # file | interactive | codebase
+
+for arg in $ARGUMENTS; do
+  if [[ "$arg" == "--prefix" ]]; then PREFIX_NEXT=true
+  elif [[ "$PREFIX_NEXT" == true ]]; then PREFIX="$arg"; PREFIX_NEXT=false
+  elif [[ "$arg" != --* ]]; then INPUT_FILE="$arg"
+  fi
+done
 ```
 
-**Parse flags:**
+**Route based on what was provided:**
 
-- `--prefix` (optional): prefix for epic filenames. Default: derived from input filename (e.g., `PROJECT.md` → prefix `project`)
+| Situation | Action |
+|-----------|--------|
+| `INPUT_FILE` given and file exists | Use it — `CONTEXT_MODE=file` |
+| `INPUT_FILE` given but file missing | Error — "File not found: {path}" — STOP |
+| No `INPUT_FILE` given, `.planning/PROJECT.md` exists | Use PROJECT.md — `CONTEXT_MODE=file` |
+| No `INPUT_FILE` given, no PROJECT.md | Ask user (see below) |
 
-## Step 1 — Load References
+**When no context file exists — ask via AskUserQuestion:**
+
+```
+No PRD or PROJECT.md found. How should we proceed?
+
+1. Initialize the project first — run /rihal:new-project to capture goals, stack, 
+   milestones, and generate PROJECT.md. Recommended if this is a new project.
+
+2. Gather context from codebase + GitHub issues — I'll scan the repo, read open 
+   issues, and use that as the foundation. Good for existing projects.
+
+3. Tell me what you want to build — describe the feature/epic scope and I'll 
+   generate stories from that description directly.
+```
+
+- If **1**: invoke `/rihal:new-project` and stop.
+- If **2**: set `CONTEXT_MODE=codebase`
+- If **3**: capture description → set `CONTEXT_MODE=interactive`, `DESCRIPTION=$response`
+
+## Step 1 — Load References & Gather Deep Context
 
 ```bash
 @.rihal/references/checklist-story-draft.md
 @.rihal/references/commit-conventions.md
 ```
 
-## Step 2 — Spawn Epic Generator
+**Context gathering varies by mode:**
 
-Call `rihal-roadmapper` to read the PRD and produce epic structure:
+### Mode: `file`
+
+Read `INPUT_FILE`. Also run supplemental scan:
+
+```bash
+STACK=$(cat .planning/STACK.md 2>/dev/null || cat README.md 2>/dev/null | head -60)
+OPEN_ISSUES=$(gh issue list --state open --limit 50 --json number,title,labels,assignees 2>/dev/null)
+RECENT_COMMITS=$(git log --oneline -20 2>/dev/null)
+```
+
+### Mode: `codebase`
+
+Do NOT proceed with thin analysis. Run deep parallel scan:
+
+```bash
+# 1. Codebase structure
+CODEBASE=$(gemini -p "@./ Summarize: tech stack, main modules, key entry points, 
+  any existing feature flags or TODOs. Under 400 words.")
+
+# 2. Open GitHub issues (grouped by label/theme)
+OPEN_ISSUES=$(gh issue list --state open --limit 100 \
+  --json number,title,labels,assignees,body 2>/dev/null)
+
+# 3. Recent git activity (last 30 commits = what changed recently)
+RECENT_WORK=$(git log --oneline -30 2>/dev/null)
+
+# 4. Existing planning files
+EXISTING_EPICS=$(ls .planning/epics/*.md 2>/dev/null | xargs grep '^# Epic' 2>/dev/null)
+```
+
+After gathering, synthesize into a brief context document:
 
 ```
-You are reading a project requirements document to extract epics and stories.
+Project context:
+- Stack: {from codebase scan}
+- Recent work: {from git log}
+- Open issues: {grouped themes from GitHub}
+- Existing epics: {if any}
+- User's scope description: {from ARGUMENTS or interactive input}
+```
+
+### Mode: `interactive`
+
+Use the user's description + quick codebase scan:
+
+```bash
+CODEBASE_QUICK=$(gemini -p "@./ In 200 words: tech stack and main modules only.")
+```
+
+## Step 2 — Generate Epic Structure
+
+Call `rihal-roadmapper` with full context. The prompt MUST enforce proper epic decomposition:
+
+```
+You are a senior product manager breaking down a feature area into epics and stories.
+
+## Context
+
+{Full context document from Step 1 — PRD/PROJECT.md content, codebase summary, 
+open issues, recent git activity}
 
 ## Your task
 
-Read the provided document and generate a structured list of epics. Each epic contains 3-5 user stories.
+Generate a structured set of epics. Each epic covers ONE coherent concern or phase.
 
-## Document
+## Epic decomposition rules (MANDATORY)
 
-{content of INPUT_FILE}
+1. One epic = one coherent theme. Examples of correct splits:
+   - ✅ "Web Search Investigation" + "Toggle Bug Fixes" + "Provider Improvements" = 3 epics
+   - ❌ "Web Search (everything)" with 10 stories = 1 bloated epic (WRONG)
+   
+2. Each epic has 3–5 stories MAX. If you have 8+ stories for one theme, split into 2 epics.
 
-## Output format
+3. Epics are ordered by dependency: investigation before implementation, 
+   infrastructure before features, blockers before dependent work.
 
-Return JSON with this structure:
+4. Story IDs use plain numbers: 1.1, 1.2 — NOT "EPIC-1.1". The epic number is 
+   implied by the file. Story IDs must never repeat across epics.
+
+5. A story must be completable in 1–5 days (S or M effort). L effort stories 
+   must be split into smaller stories.
+
+6. Investigation/spike stories are valid and should be their own epic when 
+   there are 3+ unknowns to resolve.
+
+## Output format (strict JSON)
 
 {
   "epics": [
     {
       "number": 1,
-      "title": "Epic title",
-      "description": "2-3 sentence description of this epic's scope",
+      "title": "Short epic title (max 6 words)",
+      "description": "2-3 sentences: what this epic covers, why it exists, what done looks like",
+      "phase": "investigation | design | implementation | testing | release",
+      "depends_on": [],
       "stories": [
         {
-          "id": "EPIC-1.1",
-          "title": "Story title",
-          "persona": "Named persona (e.g., 'Alice (Product Manager)')",
-          "action": "as a [persona], I want to [action]",
-          "outcome": "so that [business value]",
+          "number": 1,
+          "title": "Story title (max 8 words)",
+          "persona": "Full name + role (e.g. 'Hanzla (Backend Engineer)')",
+          "action": "I want to {specific action}",
+          "outcome": "so that {specific measurable outcome}",
           "acceptance_criteria": [
-            "Testable condition 1",
-            "Testable condition 2"
+            "Specific, testable criterion 1",
+            "Specific, testable criterion 2",
+            "Specific, testable criterion 3"
           ],
-          "out_of_scope": [
-            "What this does NOT do"
-          ],
+          "out_of_scope": ["What this story explicitly does NOT cover"],
           "effort": "S|M|L",
-          "effort_rationale": "why this size",
-          "dev_notes": "Technical considerations, risks, dependencies"
+          "effort_rationale": "why this size — name the files/systems involved",
+          "dev_notes": "Exact file paths, function names, line-level hints. Be specific.",
+          "linked_issues": ["#123", "#456"]
         }
       ]
     }
@@ -108,18 +180,33 @@ Return JSON with this structure:
 }
 ```
 
-## Output requirements
+## Quality checks
 
-1. Generate 3-8 epics (adjust based on scope)
-2. Each epic has 3-5 stories
-3. Each story must pass checklist-story-draft.md checks
-4. Effort estimates realistic (S=1-2 days, M=3-5 days, L=1+ weeks)
-5. All effort estimates must be verifiable (not all S, not all L)
-6. User personas must be named and specific
-7. Acceptance criteria must be independently testable
+- Reject epics with >5 stories — split them
+- Reject stories with vague acceptance criteria ("it works", "it is fast")  
+- Reject stories missing dev_notes (every story needs at least 2 file paths)
+- Reject L-effort stories — split into 2 M stories
+- linked_issues must reference real issue numbers from the context above
 ```
 
 Wait for the roadmapper response (JSON).
+
+**Validate response before continuing:**
+
+```bash
+EPIC_COUNT=$(echo "$EPIC_JSON" | jq '.epics | length')
+MAX_STORIES=$(echo "$EPIC_JSON" | jq '[.epics[].stories | length] | max')
+
+if [[ $MAX_STORIES -gt 5 ]]; then
+  echo "⚠ Epic has >5 stories — asking roadmapper to split..."
+  # Re-prompt: "Epic {N} has {count} stories. Split into 2 epics by grouping 
+  # closely related stories. Return updated JSON."
+fi
+
+if [[ $EPIC_COUNT -lt 2 && $MAX_STORIES -gt 4 ]]; then
+  echo "⚠ Only 1 epic generated — likely under-split. Asking roadmapper to separate concerns..."
+fi
+```
 
 ## Step 3 — Validate Epic Structure
 
