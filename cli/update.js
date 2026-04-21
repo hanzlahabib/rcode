@@ -31,7 +31,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
+const { askConfirm, askChoice, PromptAbortError } = require('./lib/prompts.cjs');
 const { writeJsonAtomic } = require('./lib/fsutil.cjs');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const install = require('./install');
@@ -266,6 +266,31 @@ async function runUpdate(args, { packageRoot, packageJson }) {
     console.log(`     Refreshing files will overwrite any manual changes to`);
     console.log(`     installed skill/command files with the package copies.`);
     console.log();
+  }
+
+  // ------ Ask about adding new editors ------
+  if (!opts.yes) {
+    const ALL_EDITORS = ['claude', 'cursor', 'gemini'];
+    const missing = ALL_EDITORS.filter(e => !editors.includes(e));
+    if (missing.length > 0) {
+      const choices = [
+        { id: 'no',  label: `No — refresh existing only (${editors.join(', ')})` },
+        ...missing.map(e => ({ id: e, label: `Add ${e}` })),
+        { id: 'all', label: 'Add all missing editors' },
+      ];
+      const answer = await askChoice(
+        `Add support for additional editors?`,
+        { choices, default: 'no' }
+      );
+      const picked = answer[0];
+      if (picked === 'all') {
+        for (const e of missing) editors.push(e);
+      } else if (picked !== 'no') {
+        editors.push(picked);
+      }
+      console.log(`   Editors to update: ${editors.join(', ')}`);
+      console.log();
+    }
   }
 
   // ------ Confirm ------
