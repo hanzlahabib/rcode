@@ -210,169 +210,144 @@ fi
 
 ## Step 3 — Validate Epic Structure
 
-```bash
-EPIC_JSON=$(# roadmapper response from Step 2)
-EPIC_COUNT=$(echo "$EPIC_JSON" | jq '.epics | length')
-
-if [[ $EPIC_COUNT -lt 3 ]]; then
-  echo "Warning: Generated only $EPIC_COUNT epics (expected 3-8). Ask roadmapper to expand."
-  # Re-run Step 2 with prompt: "Expand to 5-8 epics. Split large stories into smaller ones."
-fi
-```
-
-Validate each story passes draft checklist:
+Validate each story passes draft checklist before writing any files:
 - Persona named ✓
 - Action/outcome specified ✓
 - 3+ acceptance criteria ✓
 - Out-of-scope listed ✓
-- Effort estimated ✓
+- Effort is S or M (never L) ✓
+- dev_notes contains at least 2 file paths ✓
 
-If any story fails, ask roadmapper to fix.
+If any story fails, ask roadmapper to fix before continuing.
 
-## Step 4 — Generate Epic Files
+## Step 4 — Write Split Files
 
-Create `.planning/epics/` directory:
-
-```bash
-mkdir -p .planning/epics
+**Layout:**
+```
+.planning/epics/
+  EPIC-01.md          ← lean summary only (~25 lines)
+  EPIC-02.md
+  INDEX.md            ← master table of all epics + stories
+  stories/
+    1.1.md            ← one file per story (~35 lines)
+    1.2.md
+    2.1.md
 ```
 
-For each epic in the JSON, generate a numbered file `EPIC-{n}.md`:
+**Why split:** Epic files are kept lean so GitHub API updates only rewrite one small story file instead of the full epic. Token cost per `/rihal:dev-story` is proportional to one story, not the whole epic.
 
 ```bash
-for epic in $(echo "$EPIC_JSON" | jq -r '.epics[] | @base64'); do
-  NUMBER=$(echo "$epic" | base64 -d | jq -r '.number')
-  TITLE=$(echo "$epic" | base64 -d | jq -r '.title')
-  FILENAME=".planning/epics/EPIC-$(printf "%02d" $NUMBER).md"
-  
-  # Generate file content (see template below)
-  node .rihal/bin/rihal-tools.cjs generate-epic "$epic" > "$FILENAME"
-done
+mkdir -p .planning/epics/stories
 ```
 
-**Epic file template (EPIC-01.md, EPIC-02.md, etc.):**
+**For each epic — write lean `EPIC-{NN}.md`:**
 
 ```markdown
 # Epic {N}: {Title}
 
-**Scope:** {description}
+**Phase:** {phase}
+**Scope:** {2-3 sentence description}
+**Depends on:** {epic numbers or "none"}
 
-**Stories:** {count}
+## Stories
+
+| Story | Title | Effort | Status |
+|-------|-------|--------|--------|
+| {N}.1 | {title} | S | — |
+| {N}.2 | {title} | M | — |
+
+**Total:** {sum effort}
+
+---
+*Stories: `.planning/epics/stories/{N}.1.md` … `{N}.{last}.md`*
+```
+
+**For each story — write `.planning/epics/stories/{N}.{M}.md`:**
+
+```markdown
+# Story {N}.{M}: {Title}
+
+**Epic:** EPIC-{N} — {Epic title}
+**Persona:** {Full name + role}
+**Effort:** {S | M}
+**Status:** todo
+**Linked issues:** {#123, #456 or none}
 
 ---
 
-## Story {N}.1: {Story title}
+## User Story
 
-**Persona:** {Named persona}
+As a {persona}, I want to {action} so that {outcome}.
 
-**Action:** As a {persona}, I want to {action} so that {outcome}.
-
-### Acceptance Criteria
+## Acceptance Criteria
 
 - [ ] {Criterion 1}
 - [ ] {Criterion 2}
 - [ ] {Criterion 3}
 
-### Out of Scope
+## Out of Scope
 
-- {Exclusion 1} — {why}
-- {Exclusion 2} — {why}
+- {Exclusion} — {why}
 
-### Effort
+## Dev Notes
 
-**Estimate:** {S | M | L}
-
-**Rationale:** {why this size}
-
-### Dev Notes
-
-{Technical considerations, risks, dependencies, implementation hints}
+{Exact file paths, function names, line-level hints}
 
 ---
-
-## Story {N}.2: ...
-
-[Same structure as Story N.1, repeat for each story in epic]
-
----
-
-## Summary
-
-| Story | Persona | Effort | Status |
-|-------|---------|--------|--------|
-| {N}.1 | ... | S | — |
-| {N}.2 | ... | M | — |
-
-**Total Epic Effort:** {sum of all story efforts}
-
----
-
-*Generated: {timestamp}*
-*Generated from: {input filename}*
-*Ready for: /rihal:create-story, /rihal:sprint-planning*
+*Start: `/rihal:dev-story {N}.{M}`*
 ```
 
-## Step 5 — Create Index
+## Step 5 — Write INDEX.md
 
-Create `.planning/epics/INDEX.md`:
+`.planning/epics/INDEX.md` — master overview, kept under 60 lines:
 
 ```markdown
-# Epics & Stories
+# Epic Index
 
-Generated from: {input filename}
-Date: {ISO date}
+Generated: {ISO date} | Source: {input filename}
 
 ## Epics
 
-| Epic | Title | Stories | Total Effort |
-|------|-------|---------|--------------|
-| EPIC-01 | {Title} | 4 | M + M + S + S = 1.5w |
-| EPIC-02 | {Title} | 3 | L + M + S = 2.5w |
-| ... | | | |
+| Epic | Title | Phase | Stories | Effort | Depends on |
+|------|-------|-------|---------|--------|------------|
+| EPIC-01 | {title} | investigation | 4 | ~1.5w | — |
+| EPIC-02 | {title} | implementation | 3 | ~2w | EPIC-01 |
 
-**Total Project Effort (sum of all stories):** {estimated weeks}
+**Total effort:** {sum}
 
-**Key Stories (must complete before others can start):**
+## All Stories
 
-- EPIC-01.1: Setup infrastructure
-- EPIC-02.1: Authentication
-
-**Nice-to-Have Stories (can slip if needed):**
-
-- EPIC-05.3: Analytics dashboard
-- EPIC-08.2: Premium features
+| Story | Title | Effort | Status | Issues |
+|-------|-------|--------|--------|--------|
+| 1.1 | {title} | S | todo | #1959 |
+| 1.2 | {title} | M | todo | #1909 |
+| 2.1 | {title} | M | todo | — |
 
 ---
-
-## Next Steps
-
-1. Run `/rihal:sprint-planning` to organize epics into sprints
-2. Run `/rihal:create-story [epic-file]` to enter detailed development mode
-3. Run `/rihal:dev-story` to wrap a story for AI-coder execution
-
----
-
-*Use this index as the master roadmap. Update after each sprint.*
+*Update story status: edit `.planning/epics/stories/{N}.{M}.md` → change `Status:` line*
+*Next: `/rihal:sprint-planning` or `/rihal:dev-story {N}.{M}`*
 ```
 
-## Step 6 — Commit Epic Files
+## Step 6 — Commit
 
 ```bash
 git add .planning/epics/
 git commit -m "feat(epics): generate epic structure from $(basename $INPUT_FILE)"
 ```
 
-Print:
+Print summary:
 
 ```
-📊 Epic structure generated
+Epic structure generated
 
-Location: .planning/epics/
-Files: {count} epic files + INDEX.md
-Total stories: {count}
-Total estimated effort: {weeks}
+Epics:   {count} files in .planning/epics/
+Stories: {count} files in .planning/epics/stories/
+Index:   .planning/epics/INDEX.md
+Effort:  ~{weeks} total
 
-Next: /rihal:sprint-planning to organize into sprints
+Next:
+  /rihal:sprint-planning          organise into sprints
+  /rihal:dev-story {N}.{M}        start working on a story
 ```
 
 ## Errors

@@ -64,54 +64,61 @@ else
   echo "  /rihal:dev-story epic 1 story 3     # work on EPIC-01, story 3"
   echo "  /rihal:dev-story EPIC-01.3          # same as above"
   echo "  /rihal:dev-story 1.3 --branch       # with new git branch"
-  echo "  /rihal:dev-story .planning/epics/EPIC-01.md  # direct path"
+  echo "  /rihal:dev-story .planning/epics/stories/1.3.md  # direct path"
   echo ""
-  echo "Epic files live in: .planning/epics/"
+  echo "Story files live in: .planning/epics/stories/"
   STOP
 fi
 ```
 
-**Validate epic file exists:**
+**Resolve story file — stories live in `.planning/epics/stories/`:**
 
 ```bash
-if [[ ! -f "$EPIC_FILE" ]]; then
-  AVAILABLE=$(ls .planning/epics/EPIC-*.md 2>/dev/null | sed 's|.planning/epics/||' | sed 's|.md||' | tr '\n' ', ' | sed 's|,$||')
-  echo "Error: Epic file not found: $EPIC_FILE"
-  echo "Available epics: $AVAILABLE"
-  STOP
+# Direct path form resolves immediately
+if [[ "$ARGS" == *.md ]]; then
+  STORY_FILE="$ARGS"
+else
+  STORY_FILE=".planning/epics/stories/${EPIC_NUM}.${STORY_NUMBER}.md"
 fi
 ```
 
-**If no story number — list stories and ask user to pick:**
+**If no story number — list available stories for that epic and ask:**
 
 ```bash
 if [[ -z "$STORY_NUMBER" ]]; then
+  AVAILABLE=$(ls .planning/epics/stories/${EPIC_NUM}.*.md 2>/dev/null)
+  if [[ -z "$AVAILABLE" ]]; then
+    echo "Error: No stories found for Epic ${EPIC_NUM} in .planning/epics/stories/"
+    echo "Run /rihal:create-epics-and-stories first."
+    STOP
+  fi
   echo "Stories in Epic ${EPIC_NUM}:"
-  grep '^## Story' "$EPIC_FILE" | sed 's/^## Story /  /'
+  for f in $AVAILABLE; do
+    ID=$(basename "$f" .md)
+    TITLE=$(grep "^# Story" "$f" 2>/dev/null | sed 's/^# Story [0-9.]*: //')
+    EFF=$(grep "^\*\*Effort:\*\*" "$f" 2>/dev/null | sed 's/\*\*Effort:\*\* //')
+    STATUS=$(grep "^\*\*Status:\*\*" "$f" 2>/dev/null | sed 's/\*\*Status:\*\* //')
+    echo "  ${ID}  [${EFF}] [${STATUS}]  ${TITLE}"
+  done
   # AskUserQuestion: "Which story number? (e.g. 1, 2, 3)"
-  # Set STORY_NUMBER from response
+  # Set STORY_NUMBER, then STORY_FILE=".planning/epics/stories/${EPIC_NUM}.${STORY_NUMBER}.md"
 fi
 ```
 
-**Extract story section from epic file:**
+**Validate and read story file — no extraction, it's a standalone file:**
 
 ```bash
-# Stories are headed "## Story N.M: Title" (no EPIC prefix)
-STORY_SECTION_HEADER="## Story ${EPIC_NUM}.${STORY_NUMBER}"
-STORY_CONTENT=$(awk "/^${STORY_SECTION_HEADER}[: ]/{found=1} found && /^## Story [0-9]/ && !/^${STORY_SECTION_HEADER}[: ]/{found=0} found{print}" "$EPIC_FILE")
-
-if [[ -z "$STORY_CONTENT" ]]; then
-  echo "Error: Story ${EPIC_NUM}.${STORY_NUMBER} not found in $EPIC_FILE"
-  echo "Available stories:"
-  grep '^## Story' "$EPIC_FILE" | sed 's/^## /  /'
+if [[ ! -f "$STORY_FILE" ]]; then
+  echo "Error: Story file not found: $STORY_FILE"
+  echo "Available: $(ls .planning/epics/stories/${EPIC_NUM}.*.md 2>/dev/null | xargs -I{} basename {} .md | tr '\n' ' ')"
   STOP
 fi
 
-# Derive IDs — story ID is plain N.M, no EPIC prefix
+STORY_CONTENT=$(cat "$STORY_FILE")
 STORY_ID="${EPIC_NUM}.${STORY_NUMBER}"
-STORY_TITLE=$(echo "$STORY_CONTENT" | head -1 | sed "s/^## Story ${STORY_ID}: //")
-PERSONA=$(echo "$STORY_CONTENT" | grep "^\*\*Persona:\*\*" | sed 's/\*\*Persona:\*\* //')
-EFFORT=$(echo "$STORY_CONTENT" | grep "^\*\*Estimate:\*\*\|^\*\*Size:\*\*" | head -1 | sed 's/\*\*[^*]*\*\*: //')
+STORY_TITLE=$(grep "^# Story" "$STORY_FILE" | sed "s/^# Story ${STORY_ID}: //")
+PERSONA=$(grep "^\*\*Persona:\*\*" "$STORY_FILE" | sed 's/\*\*Persona:\*\* //')
+EFFORT=$(grep "^\*\*Effort:\*\*" "$STORY_FILE" | sed 's/\*\*Effort:\*\* //')
 ```
 
 **Branch creation (if `--branch` or `BRANCH_FLAG=true`):**
