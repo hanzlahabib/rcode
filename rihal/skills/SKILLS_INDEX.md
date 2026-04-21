@@ -56,7 +56,7 @@ Invoked by agents via the capabilities table in their SKILL.md.
 
 ## Core Skills (12)
 
-- `core/rihal-init` — initialize project context
+- `core/rihal-init` — INTERNAL config loader (installs to .rihal/skills/, not .claude/skills/)
 - `core/rihal-help` — meta-help on available skills
 - `core/rihal-brainstorming` — structured brainstorming workflow
 - `core/rihal-advanced-elicitation` — advanced requirements elicitation

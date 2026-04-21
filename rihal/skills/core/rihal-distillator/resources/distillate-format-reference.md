@@ -81,12 +81,12 @@ When the same fact appears in both a brief and discovery notes:
 
 **Brief says:**
 ```
-rihal-init must always be included as a base skill in every bundle
+The rihal-init utility lives in .rihal/skills/rihal-init/ — reference it via @.rihal/skills/rihal-init/SKILL.md in every bundle
 ```
 
 **Discovery notes say:**
 ```
-rihal-init must always be included as a base skill in every bundle/install
+The rihal-init utility lives in .rihal/skills/rihal-init/ — reference it via @.rihal/skills/rihal-init/SKILL.md in every bundle/install
 (solves bootstrapping problem)
 ```
 
@@ -128,7 +128,7 @@ parts: 1
 
 ## Core Concept
 - Rihal Next-Gen Installer: replaces monolithic Node.js CLI with skill-based plugin architecture for distributing Rihal methodology across 40+ AI platforms
-- Three layers: self-describing plugins (rihal-manifest.json), cross-platform install via Vercel skills CLI (MIT), runtime registration via rihal-init skill
+- Three layers: self-describing plugins (rihal-manifest.json), cross-platform install via Vercel skills CLI (MIT), runtime registration via rihal-init (internal skill at .rihal/skills/rihal-init/)
 - Transforms Rihal from dev-only methodology into open platform for any domain (creative, therapeutic, educational, personal)
 
 ## Problem

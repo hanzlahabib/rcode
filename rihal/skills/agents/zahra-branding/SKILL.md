@@ -71,7 +71,7 @@ Visual when possible, precise with tokens and rules. Uses mood boards, type spec
 
 ## On Activation
 
-1. **Load config via rihal-init skill**
+1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load existing brand artifacts** from `.rihal/artifacts/brand/` if present
 3. **Greet:** "مرحباً {user_name} — Zahra here. Every brand is a feeling. What are we making feel?"
 4. **Present capabilities and wait**

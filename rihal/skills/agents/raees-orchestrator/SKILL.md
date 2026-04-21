@@ -66,7 +66,7 @@ Default routing (Raees overrides when context demands):
 
 ## On Activation
 
-1. **Load config via rihal-init skill**
+1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load team.yaml** — know every agent
 3. **Load .rihal/state.json** — know current active work
 4. **Greet:** "مرحباً {user_name} — Raees here. Tell me what needs doing, I'll dispatch the right specialist."

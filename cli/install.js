@@ -285,25 +285,32 @@ function seedStarterPlanning(target, projectName) {
 }
 
 /**
- * Install v1-style skills (rihal/skills/actions and rihal/skills/agents) into
- * the target's .claude/skills/ so Claude Code can auto-discover them by
- * trigger phrases. These coexist with v2 agents/commands — skills are
- * phrase-activated workflows (scaffold-project, create-prd, retrospective,
- * etc.), commands are slash-triggered (/rihal:plan, /rihal:execute).
+ * Install v1-style skills into the target project.
+ *
+ * User-facing skills  → .claude/skills/rihal-*/   (phrase-activated, visible as /rihal-* commands)
+ * Internal skills     → .rihal/skills/rihal-*/     (utility libs called by other skills, NOT in
+ *                                                    .claude/skills/ so they don't pollute the / menu)
+ *
+ * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
  */
 function installSkills(packageRoot, target) {
   const skillsSource = path.join(packageRoot, 'rihal/skills');
   const skillsDest = path.join(target, '.claude/skills');
+  const internalDest = path.join(target, '.rihal/skills');
 
   if (!fs.existsSync(skillsSource)) return 0;
   fs.mkdirSync(skillsDest, { recursive: true });
+  fs.mkdirSync(internalDest, { recursive: true });
 
   let count = 0;
 
-  // Recursively find every directory that contains a SKILL.md. Flattens
-  // phase-based organization (1-analysis/, 2-plan/, 3-solutioning/,
-  // 4-implementation/, core/) into .claude/skills/rihal-*/ in the target.
-  // Supports both legacy flat layout and new phased layout.
+  function isInternalSkill(skillDir) {
+    const skillMd = path.join(skillDir, 'SKILL.md');
+    if (!fs.existsSync(skillMd)) return false;
+    const text = fs.readFileSync(skillMd, 'utf8');
+    return /^internal:\s*true\s*$/m.test(text);
+  }
+
   function walkForSkills(dir) {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -314,11 +321,12 @@ function installSkills(packageRoot, target) {
         const destName = entry.name.startsWith('rihal-')
           ? entry.name
           : `rihal-${entry.name}`;
-        const dest = path.join(skillsDest, destName);
+        const dest = isInternalSkill(src)
+          ? path.join(internalDest, destName)   // internal → .rihal/skills/
+          : path.join(skillsDest, destName);     // user-facing → .claude/skills/
         copyDirRecursive(src, dest);
         count++;
       } else {
-        // No SKILL.md here — recurse (phase dirs, research dir, etc.)
         walkForSkills(src);
       }
     }

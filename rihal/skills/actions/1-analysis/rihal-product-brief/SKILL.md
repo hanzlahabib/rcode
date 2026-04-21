@@ -89,7 +89,7 @@ Check activation context immediately:
 ## External Skills
 
 This workflow uses:
-- `rihal-init` — Configuration loading (module: rihal)
+- `rihal-init` — Configuration loading (module: rihal) — lives in .rihal/skills/rihal-init/
 
 ## Output Format
 

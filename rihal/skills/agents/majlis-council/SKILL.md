@@ -69,7 +69,7 @@ Majlis has two modes. **Real mode** dispatches actual subagents via the `Task` t
 
 ## On Activation
 
-1. **Load config via rihal-init skill** — Store `{user_name}`, `{communication_language}`.
+1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load team.yaml** — know every team member's role and authority.
 3. **Load .rihal/state.json and .rihal/context/active.md** if they exist.
 4. **Greet formally:** "مرحباً {user_name} — Majlis convened. The team is listening. What shall we discuss?"
