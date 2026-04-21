@@ -287,9 +287,9 @@ function seedStarterPlanning(target, projectName) {
 /**
  * Install v1-style skills into the target project.
  *
- * User-facing skills  → .claude/skills/rihal-*/   (phrase-activated, visible as /rihal-* commands)
- * Internal skills     → .rihal/skills/rihal-*/     (utility libs called by other skills, NOT in
- *                                                    .claude/skills/ so they don't pollute the / menu)
+ * User-facing skills  → .claude/skills/rihal-{name}   (phrase-activated, visible as slash commands)
+ * Internal skills     → .rihal/skills/rihal-{name}    (utility libs called by other skills, NOT in
+ *                                                       .claude/skills/ so they don't pollute the menu)
  *
  * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
  */
