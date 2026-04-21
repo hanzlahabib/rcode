@@ -35,16 +35,20 @@ What would you like to do?
 3. Discuss an unlocked phase (/rihal:discuss-phase)
 4. Plan a phase (/rihal:plan)
 5. Execute a phase (/rihal:execute)
-6. Check phase status (/rihal:sprint-status)
-7. Check progress (/rihal:progress)
-8. Auto-advance to next step (/rihal:next)
-9. Debug an issue (/rihal:debug)
-10. Resume paused work (/rihal:resume-work)
-11. Add a note (/rihal:note)
-12. Something else — describe it
+6. Sprint planning (/rihal:sprint-planning)
+7. Execute a sprint (/rihal:execute-sprint)
+8. Check sprint status (/rihal:sprint-status)
+9. Break milestone into epics & stories (/rihal:create-epics-and-stories)
+10. Implement a story (/rihal:dev-story)
+11. Check progress (/rihal:progress)
+12. Auto-advance to next step (/rihal:next)
+13. Debug an issue (/rihal:debug)
+14. Resume paused work (/rihal:resume-work)
+15. Add a note (/rihal:note)
+16. Something else — describe it
 ```
 
-If user picks 1-11, invoke that command. If 12, capture text and continue.
+If user picks 1-15, invoke that command. If 16, capture text and continue.
 </step>
 
 <step name="check_project">
@@ -70,8 +74,15 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Exploring, researching, comparing, or "how does X work" | `/rihal:research-phase` | Domain research before planning |
 | Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rihal:discuss-phase` | Decisions not yet locked — gather before planning |
 | A complex task: refactoring, migration, multi-file architecture, system redesign | `/rihal:add-phase` | Needs a full phase with plan/build cycle |
-| Planning a specific phase, "plan phase N", "sprint planning" | `/rihal:plan` | Direct planning request |
-| Executing a phase, "build phase N", "run phase N", "implement" | `/rihal:execute` | Direct execution request |
+| Planning a specific phase, "plan phase N" | `/rihal:plan` | Direct phase-level planning |
+| "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rihal:sprint-planning` | Sprint-level scope/capacity planning |
+| Executing a sprint, "run the sprint", "start sprint", "work on sprint" | `/rihal:execute-sprint` | Sprint execution with wave batching |
+| Sprint status, "how is the sprint going", "sprint board", "sprint progress" | `/rihal:sprint-status` | Current sprint state |
+| Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal:create-epics-and-stories` | Milestone → epic → story decomposition |
+| Create a single story, "add story", "write a story for X" | `/rihal:create-story` | Single story addition |
+| Implement a story, "work on story", "dev story", "build story" | `/rihal:dev-story` | Story-level implementation |
+| Find gaps in milestone plans, "gaps in plans", "missing plan", "unplanned phases" | `/rihal:plan-milestone-gaps` | Identify and fill planning gaps |
+| Executing a phase, "build phase N", "run phase N", "implement phase" | `/rihal:execute` | Direct phase execution request |
 | Running all remaining phases automatically | `/rihal:autonomous` | Full autonomous execution |
 | A review or quality concern about existing work | `/rihal:verify-work` | Needs verification |
 | "Council", "discuss strategy", "should we" | `/rihal:council` | Multi-agent strategic discussion |
