@@ -12,46 +12,115 @@ This workflow creates the execution prompt for a pair-programming session with a
 </purpose>
 
 
-## Step 0 — Usage check
+## Step 0 — Parse Arguments
 
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+**Supported argument forms (in order of precedence):**
 
-```
-/rihal:dev-story <argument-here>
-```
+| Input | Example | Resolves to |
+|-------|---------|-------------|
+| Direct file path | `.planning/epics/EPIC-01.md` | Use as-is |
+| Epic + Story ID | `epic 1 story 3` or `EPIC-01.3` or `1.3` | `.planning/epics/EPIC-01.md` → Story 3 section |
+| Epic only | `epic 1` or `EPIC-01` or just `1` | `.planning/epics/EPIC-01.md` → list stories → pick |
+| No arguments | (empty) | Show usage, stop |
 
-**Examples:**
-```
-/rihal:dev-story example 1
-/rihal:dev-story example 2
-```
-
-STOP — do not proceed.
-
-## Step 0 — Validation
-
-**If no arguments:**
-
-```
-Usage: /rihal:dev-story <STORY.md>
-
-Examples:
-  /rihal:dev-story .planning/stories/EPIC-01.1.md
-```
-
-Stop and wait for arguments.
-
-**Validate input file exists:**
+**Parse logic:**
 
 ```bash
-if [[ ! -f "$STORY_FILE" ]]; then
-  echo "Error: File not found: $STORY_FILE"
-  exit 1
+ARGS="$ARGUMENTS"
+EPIC_FILE=""
+STORY_NUMBER=""
+BRANCH_FLAG=false
+
+# Flag detection
+[[ "$ARGS" == *"--branch"* ]] && BRANCH_FLAG=true
+ARGS=$(echo "$ARGS" | sed 's/--branch[[:space:]]*//' | xargs)
+
+# Form 1: Direct .md path
+if [[ "$ARGS" == *.md ]]; then
+  EPIC_FILE="$ARGS"
+
+# Form 2: EPIC-01.3 or 1.3
+elif [[ "$ARGS" =~ ^[Ee][Pp][Ii][Cc]-?([0-9]+)\.([0-9]+)$ ]] || [[ "$ARGS" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+  EPIC_NUM=$(echo "$ARGS" | grep -oE '[0-9]+' | head -1)
+  STORY_NUMBER=$(echo "$ARGS" | grep -oE '[0-9]+' | tail -1)
+  EPIC_FILE=".planning/epics/EPIC-$(printf '%02d' $EPIC_NUM).md"
+
+# Form 3: "epic 1 story 3"
+elif [[ "$ARGS" =~ [Ee]pic[[:space:]]+([0-9]+)[[:space:]]+[Ss]tory[[:space:]]+([0-9]+) ]]; then
+  EPIC_NUM=$(echo "$ARGS" | grep -oiP '(?<=epic )\d+')
+  STORY_NUMBER=$(echo "$ARGS" | grep -oiP '(?<=story )\d+')
+  EPIC_FILE=".planning/epics/EPIC-$(printf '%02d' $EPIC_NUM).md"
+
+# Form 4: "epic 1" or "EPIC-01" or just "1"
+elif [[ "$ARGS" =~ ^[Ee]pic[[:space:]]+([0-9]+)$ ]] || [[ "$ARGS" =~ ^[Ee][Pp][Ii][Cc]-?([0-9]+)$ ]] || [[ "$ARGS" =~ ^([0-9]+)$ ]]; then
+  EPIC_NUM=$(echo "$ARGS" | grep -oE '[0-9]+' | head -1)
+  EPIC_FILE=".planning/epics/EPIC-$(printf '%02d' $EPIC_NUM).md"
+
+else
+  echo "Usage: /rihal:dev-story <epic-ref> [--branch]"
+  echo ""
+  echo "Examples:"
+  echo "  /rihal:dev-story epic 1             # list stories in EPIC-01"
+  echo "  /rihal:dev-story epic 1 story 3     # work on EPIC-01, story 3"
+  echo "  /rihal:dev-story EPIC-01.3          # same as above"
+  echo "  /rihal:dev-story 1.3 --branch       # with new git branch"
+  echo "  /rihal:dev-story .planning/epics/EPIC-01.md  # direct path"
+  echo ""
+  echo "Epic files live in: .planning/epics/"
+  STOP
+fi
+```
+
+**Validate epic file exists:**
+
+```bash
+if [[ ! -f "$EPIC_FILE" ]]; then
+  AVAILABLE=$(ls .planning/epics/EPIC-*.md 2>/dev/null | sed 's|.planning/epics/||' | sed 's|.md||' | tr '\n' ', ' | sed 's|,$||')
+  echo "Error: Epic file not found: $EPIC_FILE"
+  echo "Available epics: $AVAILABLE"
+  STOP
+fi
+```
+
+**If no story number — list stories and ask user to pick:**
+
+```bash
+if [[ -z "$STORY_NUMBER" ]]; then
+  STORY_LIST=$(grep -n "^## Story " "$EPIC_FILE" | sed 's/.*## Story //' | sed 's/: /  —  /')
+  echo "Stories in $EPIC_FILE:"
+  echo "$STORY_LIST"
+  # AskUserQuestion: "Which story do you want to work on? Enter the story number (e.g. 1, 2, 3)"
+  # Set STORY_NUMBER from response
+fi
+```
+
+**Extract story section from epic file:**
+
+```bash
+STORY_SECTION_HEADER="## Story EPIC-$(printf '%02d' $EPIC_NUM).${STORY_NUMBER}"
+STORY_CONTENT=$(awk "/^${STORY_SECTION_HEADER}/,/^## Story EPIC-[0-9]/{if (!/^## Story EPIC-[0-9]/ || NR==1) print}" "$EPIC_FILE")
+
+if [[ -z "$STORY_CONTENT" ]]; then
+  echo "Error: Story ${EPIC_NUM}.${STORY_NUMBER} not found in $EPIC_FILE"
+  echo "Available stories: $(grep '^## Story' "$EPIC_FILE" | sed 's/## Story //')"
+  STOP
 fi
 
-if [[ ! "$STORY_FILE" =~ \.md$ ]]; then
-  echo "Error: Must be a .md file: $STORY_FILE"
-  exit 1
+# Derive IDs
+STORY_ID="EPIC-$(printf '%02d' $EPIC_NUM).${STORY_NUMBER}"
+STORY_TITLE=$(echo "$STORY_CONTENT" | grep "^## Story $STORY_ID" | sed "s/^## Story $STORY_ID: //")
+PERSONA=$(echo "$STORY_CONTENT" | grep "^\*\*Persona:\*\*" | sed 's/\*\*Persona:\*\* //')
+EFFORT=$(echo "$STORY_CONTENT" | grep "^\*\*Estimate:\*\*\|^\*\*Size:\*\*" | head -1 | sed 's/\*\*[^*]*\*\*: //')
+```
+
+**Branch creation (if `--branch` or `BRANCH_FLAG=true`):**
+
+```bash
+if [[ "$BRANCH_FLAG" == true ]]; then
+  STORY_SLUG=$(echo "$STORY_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | cut -c1-40)
+  BRANCH_NAME="story/${STORY_ID,,}-${STORY_SLUG}"
+  git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
+  echo "Branch: $BRANCH_NAME"
 fi
 ```
 
@@ -63,14 +132,12 @@ fi
 @.rihal/references/commit-conventions.md
 ```
 
-Read the story file:
+`STORY_CONTENT`, `STORY_ID`, `STORY_TITLE`, `PERSONA`, `EFFORT` are already set from Step 0.
+No re-read needed. Verify non-empty:
 
 ```bash
-STORY_CONTENT=$(cat "$STORY_FILE")
-STORY_ID=$(echo "$STORY_CONTENT" | grep "^**ID:**" | sed "s/^**ID:** //")
-STORY_TITLE=$(echo "$STORY_CONTENT" | grep "^# Story:" | sed "s/^# Story: //")
-PERSONA=$(echo "$STORY_CONTENT" | grep "^**Persona:**" | sed "s/^**Persona:** //")
-EFFORT=$(echo "$STORY_CONTENT" | grep "^**Size:**" | sed "s/^**Size:** //")
+[[ -z "$STORY_ID" ]]    && echo "Error: Could not parse Story ID from epic file"    && STOP
+[[ -z "$STORY_TITLE" ]] && echo "Error: Could not parse Story title from epic file" && STOP
 ```
 
 ## Step 2 — Check Entry Gate
