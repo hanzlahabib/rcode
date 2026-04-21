@@ -60,6 +60,7 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
 function parseArgs(argv) {
   const opts = {
     target: process.cwd(),
+    targetProvided: false,
     force: false,
     reset: false,
     yes: false,
@@ -86,7 +87,10 @@ function parseArgs(argv) {
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (!arg.startsWith('--')) positional.push(arg);
   }
-  if (positional[0]) opts.target = path.resolve(positional[0]);
+  if (positional[0]) {
+    opts.target = path.resolve(positional[0]);
+    opts.targetProvided = true;
+  }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
 }
@@ -832,9 +836,43 @@ function install(opts) {
   return 0;
 }
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2);
   const opts = parseArgs(argv);
+
+  // Prompt for target directory when not explicitly provided and not --yes
+  if (!opts.targetProvided && !opts.yes && !opts.help) {
+    const { askText, askChoice, PromptAbortError } = require('./lib/prompts.cjs');
+    try {
+      console.log('');
+      const answer = await askText(
+        `Install Rihal Code into which directory?\n  (press Enter for current directory: ${opts.target})`,
+        { default: opts.target }
+      );
+      const resolved = path.resolve(answer.trim() || opts.target);
+      opts.target = resolved;
+      opts.projectName = path.basename(resolved);
+
+      const ideAnswer = await askChoice(
+        'Which editor are you installing for?',
+        {
+          choices: [
+            { id: 'claude',  label: 'Claude Code' },
+            { id: 'cursor',  label: 'Cursor' },
+            { id: 'gemini',  label: 'Gemini CLI' },
+            { id: 'all',     label: 'All (Claude + Cursor + Gemini)' },
+          ],
+          default: 'claude',
+        }
+      );
+      opts.ide = ideAnswer[0];
+      console.log('');
+    } catch (err) {
+      if (err.name === 'PromptAbortError') process.exit(0);
+      throw err;
+    }
+  }
+
   try {
     process.exit(install(opts));
   } catch (err) {
