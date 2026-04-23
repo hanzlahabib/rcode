@@ -1,0 +1,112 @@
+name: release
+
+# Semver release pipeline (issue #161, M4 of v2.0 milestone).
+#
+# Triggers on annotated tag pushes matching v*. Runs the compliance
+# check, verifies the CLI syntax, builds the install bundle, and
+# attaches it to a GitHub Release along with the changelog section for
+# this version.
+#
+# Auth: NO tokens beyond GITHUB_TOKEN are required. The workflow does
+# not push, does not modify main, and does not create tags — tags are
+# created by a human via `git tag -a vX.Y.Z -m "..."` and `git push
+# origin vX.Y.Z`.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout at tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: CLI syntax check
+        run: node -c rihal/bin/rihal-tools.cjs
+
+      - name: 5-component skill compliance
+        run: |
+          missing=0
+          for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/*/SKILL.md; do
+            [ -f "$f" ] || continue
+            grep -q "^## Output Format" "$f" || { echo "MISSING Output Format: $f"; missing=$((missing+1)); }
+            grep -q "^## Examples" "$f"      || { echo "MISSING Examples: $f";      missing=$((missing+1)); }
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "Compliance check failed — $missing missing section(s)"
+            exit 1
+          fi
+          echo "Compliance OK."
+
+      - name: Brain sources dry-run
+        run: |
+          # brain list must return valid JSON with ok:true; don't crash on placeholder URLs
+          node rihal/bin/rihal-tools.cjs brain list > /tmp/brain-list.json
+          grep -q '"ok": true' /tmp/brain-list.json || {
+            echo "brain list did not return ok:true"
+            cat /tmp/brain-list.json
+            exit 1
+          }
+          echo "Brain sources configuration OK."
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG"         >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog section for this version
+        id: changelog
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          # Slice CHANGELOG.md from `## ${TAG}` or `## v${VERSION}` down to
+          # the next `## ` heading — whichever matches first.
+          VERSION="${{ steps.version.outputs.version }}"
+          awk -v tag="$TAG" -v ver="v$VERSION" '
+            /^## / {
+              if (in_section) { exit }
+              if ($0 ~ tag || $0 ~ ver) { in_section = 1; print; next }
+            }
+            in_section { print }
+          ' CHANGELOG.md > /tmp/release-notes.md
+          if [ ! -s /tmp/release-notes.md ]; then
+            echo "No CHANGELOG section found for $TAG — using fallback notes."
+            echo "# $TAG" > /tmp/release-notes.md
+            echo "" >> /tmp/release-notes.md
+            echo "See CHANGELOG.md for details." >> /tmp/release-notes.md
+          fi
+
+      - name: Build install bundle (tar.gz of the rihal/ + cli/ + docs/ tree)
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          mkdir -p dist
+          tar czf "dist/rihal-code-${TAG}.tar.gz" \
+            rihal/ cli/ docs/ \
+            README.md CHANGELOG.md CONTRIBUTING.md AGENTS.md package.json
+          ls -lh dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: /tmp/release-notes.md
+          files: dist/rihal-code-*.tar.gz
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}

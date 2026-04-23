@@ -4,6 +4,41 @@ Thank you for contributing. These guidelines exist to keep the module maintainab
 
 ---
 
+## Who owns what — contribute to YOUR slice
+
+Rihal Code v2 is organized around **role ownership** (issue #160). Find your role, touch only that slice, open a focused PR. CODEOWNERS in `.github/CODEOWNERS` routes reviews automatically.
+
+| I am a… | Touch this | Why you'd edit |
+|---------|-----------|----------------|
+| **PM / Scrum Master** | `rihal/skills/agents/hussain-pm/`, `hussain-sm/`, `raees-orchestrator/` + `rihal/skills/actions/2-plan/` + `actions/1-analysis/` | Sharper PRD questions, better story templates, sprint-planning that matches how Rihal runs sprints |
+| **CTO / Architect** | `rihal/skills/agents/waleed-architect/`, `ahmed-hassani-director/`, `nasser-eng-manager/` + `rihal/skills/actions/3-solutioning/` | ADR structure, tech-selection criteria reflecting Rihal stack biases, arch-review gates |
+| **Designer / UX** | `rihal/skills/agents/layla-designer/`, `zahra-branding/` + `rihal/skills/actions/2-plan/rihal-create-ux-design/`, `rihal-frontend-design/` | Stronger design critiques, accessibility checks, Arabic-first RTL guidance |
+| **Backend / Frontend / ML** | `rihal/skills/agents/yousef-backend/`, `haitham-frontend/`, `zayd-ml/`, `hanzla-engineer/` + `rihal/skills/actions/4-implementation/` | Code-review checklists that catch the bugs Rihal sees in production, sprint capacity rules from lived experience |
+| **QA / Writer** | `rihal/skills/agents/fatima-qa/`, `noor-writer/` | Edge-case hunters, documentation patterns (README / API / ADR) |
+| **Strategy / Marketing** | `rihal/skills/agents/sadiq-analyst/`, `mariam-marketing/`, `majlis-council/` + `rihal/skills/actions/1-analysis/` | Kill-criteria framing, GCC-first GTM patterns, council panel heuristics |
+| **Any role, cross-cutting rule** | `rihal/skills/_shared/` | **Rarely.** A change here affects every skill referencing the fragment. Bring a clear motivating failure; expect extra scrutiny. |
+| **Infra / CLI / workflows** | `rihal/bin/`, `cli/`, `rihal/workflows/`, `rihal/commands/`, `.github/` | New CLI subcommands (follow the `rihal-tools state sync` / `brain pull` patterns), new slash commands, CI tweaks |
+| **Rihal standards / brain content** | `rihal/brain/` + `rihal/skills/_shared/` | New cross-project Rihal standards. After issue #162 (M5), upstream Rihal-docs-repo changes flow here via `brain pull`. |
+
+### The four-step pattern
+
+1. **Branch off `main`:** `git checkout -b <role>/<short-slug>` (e.g. `pm/sharper-prd-questions`).
+2. **Edit one slice.** If you touch multiple roles' slices in one PR, split it.
+3. **Run the compliance check** (below in [Pull Request Standards](#pull-request-standards)).
+4. **Open PR.** CODEOWNERS auto-requests the right reviewer. Conventional Commits title. No AI attribution in messages.
+
+Example — a PM improving the PRD discovery step:
+
+```bash
+git checkout -b pm/sharper-prd-discovery
+# edit rihal/skills/actions/2-plan/rihal-create-prd/steps-c/step-02-discovery.md
+# run the compliance check
+git commit -am "feat(skills): sharper PRD discovery on pricing models"
+gh pr create --title "feat(skills): sharper PRD discovery on pricing models"
+```
+
+---
+
 ## 🚨 Critical Rule — Never Auto-Push
 
 **AI agents and automation tools working on this repository MUST NEVER push to any remote without explicit, interactive user approval on every push.**

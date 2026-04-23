@@ -2642,6 +2642,230 @@ function cmdNotesCount() {
   return { count };
 }
 
+/**
+ * cmdBrain — pull Rihal brain content from configured sources.
+ *
+ * Subcommands:
+ *   brain pull           Fetch all configured sources into rihal/brain/
+ *   brain pull <name>    Fetch a single named source
+ *   brain status         Report cache freshness and placeholder status
+ *   brain list           Print configured sources
+ *
+ * Uses git sparse-checkout so we pull only the paths listed per source.
+ * Placeholder URLs (containing `<PLACEHOLDER`) are skipped with a clear
+ * message — useful in v2.0 before M5 lands real Rihal repo URLs.
+ */
+function cmdBrain(args) {
+  const sub = args[0] || 'help';
+  const sourcesPath = path.join(PROJECT_ROOT, 'rihal', 'brain', 'sources.yaml');
+  const brainDir = path.join(PROJECT_ROOT, 'rihal', 'brain');
+
+  if (!fs.existsSync(sourcesPath)) {
+    return {
+      ok: false,
+      error: `sources.yaml missing at ${sourcesPath}. Run install or see issue #158.`,
+    };
+  }
+
+  // Minimal YAML reader specifically for sources.yaml — not a general parser.
+  // Handles: `version: 1`, `defaults:` block, `sources:` list where each
+  // entry is a `- name: X` block with sibling key: value lines and an
+  // `paths:` sub-list of strings.
+  function parseSourcesYaml(text) {
+    const root = { version: null, defaults: {}, sources: [] };
+    const lines = text.split('\n');
+    let section = null;
+    let current = null;     // current source map
+    let inPaths = false;
+    let inDescription = false;
+    let descLines = [];
+
+    function unquote(s) { return s.replace(/^['"]|['"]$/g, ''); }
+
+    for (const raw of lines) {
+      if (!raw.trim() || raw.trim().startsWith('#')) continue;
+
+      // Flush description if we were collecting
+      if (inDescription && raw.match(/^ {4}\S/) && !raw.trim().startsWith('-')) {
+        // still inside the description block
+        const m = raw.match(/^ *(.*)$/);
+        if (m) descLines.push(m[1]);
+        continue;
+      } else if (inDescription) {
+        current.description = descLines.join(' ').trim();
+        inDescription = false;
+        descLines = [];
+      }
+
+      // Top-level keys
+      const top = raw.match(/^(\w+):\s*(.*)$/);
+      if (top) {
+        const key = top[1], val = top[2].trim();
+        if (key === 'version') { root.version = unquote(val); section = null; continue; }
+        if (key === 'defaults') { section = 'defaults'; continue; }
+        if (key === 'sources') { section = 'sources'; continue; }
+      }
+
+      // defaults: indented key-value
+      if (section === 'defaults') {
+        const m = raw.match(/^ +([\w_]+):\s*(.*)$/);
+        if (m) root.defaults[m[1]] = unquote(m[2]);
+        continue;
+      }
+
+      // sources: list items
+      if (section === 'sources') {
+        const startItem = raw.match(/^ *- ([\w_-]+):\s*(.*)$/);
+        if (startItem) {
+          current = {};
+          current[startItem[1]] = unquote(startItem[2]);
+          root.sources.push(current);
+          inPaths = false;
+          continue;
+        }
+        // paths: list-of-strings under current
+        const pathsStart = raw.match(/^ +paths:\s*$/);
+        if (pathsStart) { current.paths = []; inPaths = true; continue; }
+        if (inPaths) {
+          const pItem = raw.match(/^ *- (.*)$/);
+          if (pItem) { current.paths.push(unquote(pItem[1])); continue; }
+          inPaths = false;
+        }
+        // description: block scalar `>`
+        const descStart = raw.match(/^ +description:\s*>\s*$/);
+        if (descStart) { inDescription = true; descLines = []; continue; }
+        // Regular key: value on current item
+        const kv = raw.match(/^ +([\w_-]+):\s*(.*)$/);
+        if (kv && current) {
+          current[kv[1]] = unquote(kv[2]);
+        }
+      }
+    }
+    // final flush
+    if (inDescription && current) current.description = descLines.join(' ').trim();
+    return root;
+  }
+
+  const cfg = parseSourcesYaml(fs.readFileSync(sourcesPath, 'utf8'));
+  const sources = Array.isArray(cfg.sources) ? cfg.sources : [];
+
+  if (sub === 'list') {
+    return {
+      ok: true,
+      version: cfg.version,
+      sources: sources.map(s => ({
+        name: s.name,
+        repo: s.repo,
+        dest: s.dest,
+        placeholder: String(s.repo || '').includes('<PLACEHOLDER'),
+      })),
+    };
+  }
+
+  if (sub === 'status') {
+    const report = { ok: true, sources: [] };
+    for (const s of sources) {
+      const destPath = path.join(PROJECT_ROOT, s.dest || '');
+      const exists = fs.existsSync(destPath);
+      report.sources.push({
+        name: s.name,
+        dest: s.dest,
+        fetched: exists,
+        placeholder: String(s.repo || '').includes('<PLACEHOLDER'),
+      });
+    }
+    return report;
+  }
+
+  if (sub !== 'pull') {
+    return {
+      ok: false,
+      error: `Unknown brain subcommand: ${sub}. Try: pull | status | list`,
+    };
+  }
+
+  // sub === 'pull'
+  const onlyName = args[1];
+  const report = { ok: true, pulled: [], skipped: [], errors: [] };
+
+  for (const s of sources) {
+    if (onlyName && s.name !== onlyName) continue;
+    const repo = String(s.repo || '');
+
+    if (repo.includes('<PLACEHOLDER')) {
+      report.skipped.push({ name: s.name, reason: 'placeholder URL — fill in via issue #162 (M5)' });
+      continue;
+    }
+
+    if (repo === 'self') {
+      // In-repo copy — use rsync-ish node copy from paths under project root.
+      const destPath = path.join(PROJECT_ROOT, s.dest);
+      fs.mkdirSync(destPath, { recursive: true });
+      const paths = Array.isArray(s.paths) ? s.paths : [];
+      let copied = 0;
+      for (const pattern of paths) {
+        // Very simple glob: expand ** to recursive copy.
+        const base = pattern.split('**')[0].replace(/\/$/, '');
+        const srcDir = path.join(PROJECT_ROOT, base);
+        if (!fs.existsSync(srcDir)) continue;
+        // Recursive copy of .md files
+        function walk(dir) {
+          for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, e.name);
+            if (e.isDirectory()) { walk(full); continue; }
+            if (!e.isFile()) continue;
+            if (!full.endsWith('.md')) continue;
+            const rel = path.relative(srcDir, full);
+            const out = path.join(destPath, rel);
+            fs.mkdirSync(path.dirname(out), { recursive: true });
+            fs.copyFileSync(full, out);
+            copied++;
+          }
+        }
+        walk(srcDir);
+      }
+      report.pulled.push({ name: s.name, kind: 'self', files: copied });
+      continue;
+    }
+
+    // External git source — use sparse checkout into a tmp dir then copy.
+    const { execSync } = require('child_process');
+    const os = require('os');
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-brain-'));
+    const branch = s.branch || cfg.defaults?.branch || 'main';
+    try {
+      execSync(
+        `git clone --depth=1 --filter=blob:none --sparse --branch="${branch}" "${repo}" "${tmp}"`,
+        { stdio: 'pipe' }
+      );
+      const paths = Array.isArray(s.paths) ? s.paths : [];
+      execSync(`git -C "${tmp}" sparse-checkout set ${paths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
+
+      const destPath = path.join(PROJECT_ROOT, s.dest);
+      fs.mkdirSync(destPath, { recursive: true });
+      // Copy everything the sparse checkout materialized.
+      function copyTree(src, dst) {
+        for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+          if (e.name === '.git') continue;
+          const sp = path.join(src, e.name);
+          const dp = path.join(dst, e.name);
+          if (e.isDirectory()) { fs.mkdirSync(dp, { recursive: true }); copyTree(sp, dp); }
+          else if (e.isFile()) fs.copyFileSync(sp, dp);
+        }
+      }
+      copyTree(tmp, destPath);
+      report.pulled.push({ name: s.name, kind: 'git', repo, branch });
+    } catch (e) {
+      report.errors.push({ name: s.name, error: String(e.message || e).slice(0, 200) });
+    } finally {
+      try { fs.rmSync(tmp, { recursive: true, force: true }); } catch {}
+    }
+  }
+
+  if (report.errors.length) report.ok = false;
+  return report;
+}
+
 function cmdFindFiles(rawArgs) {
   const flags = {};
   const parts = rawArgs.split(/\s+/).filter(p => p);
@@ -2778,6 +3002,10 @@ async function main() {
       case 'verify': {
         const verify = require(path.join(__dirname, 'lib', 'verify.cjs'));
         result = verify.dispatch(PROJECT_ROOT, args);
+        break;
+      }
+      case 'brain': {
+        result = cmdBrain(args);
         break;
       }
       case 'agent-skills':

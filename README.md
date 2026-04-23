@@ -2,13 +2,23 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **An AI engineering methodology — 44 agents, 93 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
+> **Install Rihal's brain into your project in one command.** Every Rihalian — engineer, PM, designer, CTO, QA — gets an AI assistant that already knows how Rihal builds: PR standards, commit conventions, architecture patterns, sprint cadence, the Rihal team's agent personas. No onboarding. No prompting. Works in Claude Code, Cursor, and any compatible AI IDE.
+
+---
+
+## Why this exists
+
+Every Rihal project carries unwritten context — how we review PRs, what "done" means, how we sequence milestones, how PRDs travel from Product into Engineering. That context sits in people's heads, Slack, Notion, senior engineers' review comments. AI assistants pick it up never, because every new chat session starts knowing nothing about how Rihal works.
+
+**Rihal Code fixes that.** One install, and the AI knows. Every session. Every repo. Every Rihalian.
+
+See [`docs/what-is-rihal-code.md`](docs/what-is-rihal-code.md) for the full story, and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where this is going (next: live MCP server in v3.0).
 
 ---
 
 ## 🚦 Start Here
 
-Rihal Code has a lot in it. To keep things approachable, everything is organized into **four tiers**:
+Rihal Code packages a lot. To keep things approachable, everything is organized into **four tiers**:
 
 | Tier | Who it's for | Start with |
 |------|--------------|-----------|
@@ -19,13 +29,13 @@ Rihal Code has a lot in it. To keep things approachable, everything is organized
 
 **Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
 
-> **v1.0-beta:** v1 and v2 have been unified into a single methodology. One `install` command, one agent roster, one set of slash commands + phrase-activated skills. See release notes in `CHANGELOG.md`.
+> **v2.0 — Rihal Brain.** v1 was a generic AI-engineering methodology. v2 keeps all of that and adds the Rihal context layer on top: standards, guides, and institutional knowledge pulled fresh from Rihal's own repos on install and on `/rihal:update`. See [`CHANGELOG.md`](CHANGELOG.md) and the [v2.0 milestone](https://github.com/hanzlahabib/rihal-code/milestone/4).
 
 ---
 
 ## What is this
 
-Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you a real team.**
+Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
 
 - **44 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
 - **93 slash commands** covering research, planning, execution, verification, and recovery

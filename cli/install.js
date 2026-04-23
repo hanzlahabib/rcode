@@ -801,11 +801,39 @@ function install(opts) {
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
 
+  // Pull Rihal brain content (v2.0 — issue #158).
+  // Runs rihal-tools brain pull as a child process. Placeholder URLs
+  // are skipped gracefully so this does not fail a fresh install.
+  let brainReport = null;
+  try {
+    const { execFileSync } = require('child_process');
+    const toolsPath = path.join(opts.target, '.rihal', 'bin', 'rihal-tools.cjs');
+    if (fs.existsSync(toolsPath)) {
+      const out = execFileSync('node', [toolsPath, 'brain', 'pull'], {
+        cwd: opts.target,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      try { brainReport = JSON.parse(out); } catch {}
+    }
+  } catch (e) {
+    // brain pull is best-effort on install — do not fail the whole install
+    brainReport = { ok: false, error: String(e.message || e).slice(0, 200) };
+  }
+
   // Summary
   console.log('');
   console.log(`  Installed: ${copied} file${copied === 1 ? '' : 's'}`);
   if (skillsInstalled > 0) {
     console.log(`  Skills:    ${skillsInstalled} phrase-activated (in .claude/skills/)`);
+  }
+  if (brainReport && brainReport.ok) {
+    const pulledCount = (brainReport.pulled || []).length;
+    const skippedCount = (brainReport.skipped || []).length;
+    console.log(`  Brain:     ${pulledCount} source${pulledCount === 1 ? '' : 's'} pulled` +
+      (skippedCount ? `, ${skippedCount} skipped (placeholder URLs — see issue #162)` : ''));
+  } else if (brainReport && brainReport.error) {
+    console.log(`  Brain:     skipped (${brainReport.error})`);
   }
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
   if (opts.force && existedBefore) {

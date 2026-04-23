@@ -135,7 +135,22 @@ If the command exits with non-zero status, print:
 ```
 Exit with error code.
 
-## Step 8 — Success summary
+## Step 8 — Pull Rihal brain content (v2.0)
+
+After installer finishes, refresh the brain content from configured sources (issue #158). This is idempotent and safe to re-run.
+
+```bash
+node .rihal/bin/rihal-tools.cjs brain pull
+```
+
+Parse the JSON output. Report counts to the user:
+- `pulled[]` — sources actually fetched (git or in-repo)
+- `skipped[]` — sources with `<PLACEHOLDER>` URLs (waiting on issue #162 / M5)
+- `errors[]` — sources that failed (network, auth, etc.)
+
+If the user passed a version argument (`/rihal:update v1.3.0`), pass it through to `brain pull` as `--version v1.3.0`. When supported, `brain pull` will pin each source to the commit recorded in that release's `sources.yaml`. Unknown versions: treat as latest and warn.
+
+## Step 9 — Success summary
 
 Print:
 
@@ -146,6 +161,8 @@ Updated files: N
   - file-path-1
   - file-path-2
   ...
+
+Rihal brain: M sources pulled, K skipped (placeholder URLs)
 
 New version available at: .rihal/
 
