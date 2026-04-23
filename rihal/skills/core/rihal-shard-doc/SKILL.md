@@ -100,6 +100,20 @@ Present user with options for the original document:
   - Consider deleting or archiving the original document
 - Confirm user choice: "Original document kept at: [source-document-path]"
 
+## Examples
+
+### Happy path
+**User:** "shard document ./docs/architecture.md"
+**Result:** Splits into `architecture/` folder with section files + index.md → asks what to do with original
+
+### Edge case
+**User:** "shard document" + non-markdown file
+**Result:** HALT — file must be .md format
+
+### Negative boundary
+**User:** "split this into smaller components"
+**Result:** If referring to code, not a doc sharding task. If referring to a document, proceed with sharding.
+
 ## HALT CONDITIONS
 
 - HALT if npx command fails or produces no output files

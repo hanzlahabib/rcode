@@ -99,3 +99,21 @@ The script:
 ### Step 5: Return vars
 
 After writing, re-run `rihal_init.py` with the `load` subcommand (same as the fast path) to return resolved vars. Store returned vars as `{var-name}` and return them to the calling skill.
+
+## Output Format
+
+JSON config vars returned to the calling skill. When init path runs, interactive Q&A with the user, then config files written to `_rihal/`.
+
+## Examples
+
+### Happy path (fast path)
+**Calling skill:** invokes rihal-init with `--module bmb`
+**Result:** Config exists → returns `{"output_folder": "_rihal-output", ...}` instantly
+
+### Edge case (init path)
+**Calling skill:** invokes rihal-init, no config exists
+**Result:** Asks core questions → asks module questions → writes config → returns vars
+
+### Negative boundary
+**User:** "initialize my project"
+**Result:** rihal-init is internal — user should use `rihal-scaffold-project` or `/rihal:install` instead

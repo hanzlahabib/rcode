@@ -17,7 +17,7 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 
 ### Added
 
-- **Unified installer** — installs v2 agents/commands/workflows AND v1 phrase-activated skills in one command. 70 slash commands + 36 agents + 39 skills.
+- **Unified installer** — installs v2 agents/commands/workflows AND v1 phrase-activated skills in one command. 93 slash commands + 44 agents + 58 skills.
 - **`/rihal:dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
 - **`rihal-scaffold-project`** skill — bootstraps a new Rihalian project from `github.com/rihal-om/template`. Fresh clone, no cache, safety checks on non-empty dirs.
 - **Tier-based docs** — `docs/TIERS.md`, `docs/STANDARDS.md`. Skills organized into Starter / Advanced / Ultra Advanced / Standards.

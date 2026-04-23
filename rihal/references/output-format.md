@@ -151,7 +151,7 @@ TaskCreate: "Finalize state + commit"
 TaskUpdate(taskId: <N>, status: "completed")
 ```
 
-**Display pattern (from GSD-style workflows):**
+**Display pattern:**
 
 ```
 ✔ Map codebase: spawn 4 parallel mappers

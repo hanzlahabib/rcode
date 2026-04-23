@@ -1,6 +1,6 @@
 # Full Command Reference
 
-All 69 Rihal commands, grouped by purpose. Each entry includes syntax, examples, and related commands.
+All 96 Rihal commands, grouped by purpose. Each entry includes syntax, examples, and related commands.
 
 ---
 

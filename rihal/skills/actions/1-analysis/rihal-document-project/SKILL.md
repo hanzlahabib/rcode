@@ -8,6 +8,8 @@ description: >
   NOT use for writing net-new docs (use write-document prompt).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

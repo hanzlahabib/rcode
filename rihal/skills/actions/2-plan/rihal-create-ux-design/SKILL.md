@@ -8,6 +8,8 @@ description: >
   use for UI code (use rihal-dev-story) or visual code review.
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

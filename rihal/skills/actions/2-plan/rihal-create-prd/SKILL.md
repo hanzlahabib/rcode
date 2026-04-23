@@ -9,6 +9,8 @@ description: >
   existing PRD (use rihal-validate-prd).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

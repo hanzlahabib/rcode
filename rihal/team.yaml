@@ -1,6 +1,6 @@
 # Rihal v2 Agent Roster
 # Structured definition of all installed agents: roles, authority levels, domain keywords for council dispatch
-# Updated: 2026-04-12
+# Updated: 2026-04-23
 
 agents:
   - id: rihal-sadiq
@@ -93,6 +93,182 @@ agents:
       - migration-guide
       - inline-comments
     description: Generates and updates README, API docs, changelogs, migration guides, and inline code comments.
+
+  - id: rihal-yousef
+    name: Yousef (يوسف)
+    file_path: rihal/agents/rihal-yousef.md
+    role: Senior Backend Engineer
+    authority_level: technical
+    domain_keywords:
+      - backend
+      - api
+      - database
+      - performance
+      - latency
+      - queues
+      - webhooks
+      - integrations
+      - p50
+      - p95
+    description: Backend implementation, API design, database queries, performance tuning, and latency diagnosis.
+
+  - id: rihal-haitham
+    name: Haitham (هيثم)
+    file_path: rihal/agents/rihal-haitham.md
+    role: Senior Frontend Engineer
+    authority_level: technical
+    domain_keywords:
+      - frontend
+      - react
+      - nextjs
+      - components
+      - rtl
+      - arabic-layout
+      - accessibility
+      - a11y
+      - bundle-size
+    description: React/Next.js, component design, RTL/Arabic layouts, accessibility, and frontend performance.
+
+  - id: rihal-zayd
+    name: Zayd (زيد)
+    file_path: rihal/agents/rihal-zayd.md
+    role: Senior ML Engineer
+    authority_level: technical
+    domain_keywords:
+      - ml
+      - machine-learning
+      - ocr
+      - llm
+      - rag
+      - retrieval
+      - embeddings
+      - vector-search
+      - nlp
+      - arabic-nlp
+    description: ML model selection, training, LLM integration, RAG/retrieval, vector search, and Arabic NLP.
+
+  - id: rihal-layla
+    name: Layla (ليلى)
+    file_path: rihal/agents/rihal-layla.md
+    role: UX Designer
+    authority_level: design
+    domain_keywords:
+      - ux
+      - user-experience
+      - interaction-design
+      - user-flow
+      - wireframe
+      - design-system
+      - accessibility
+      - usability
+    description: User experience design, interaction flows, design systems, accessibility audits, and usability reviews.
+
+  - id: rihal-zahra
+    name: Zahra (زهرة)
+    file_path: rihal/agents/rihal-zahra.md
+    role: Branding & Creative Director
+    authority_level: design
+    domain_keywords:
+      - brand
+      - brand-identity
+      - typography
+      - arabic-typography
+      - color-system
+      - design-tokens
+      - visual-language
+      - brand-audit
+    description: Brand identity, visual language, typography systems (Latin + Arabic), color systems, and design tokens.
+
+  - id: rihal-nasser
+    name: Nasser (ناصر)
+    file_path: rihal/agents/rihal-nasser.md
+    role: Software Engineering Manager
+    authority_level: management
+    domain_keywords:
+      - 1on1
+      - hiring
+      - onboarding
+      - growth-plan
+      - performance-review
+      - team-health
+      - burnout
+      - squad-composition
+    description: People operations, 1:1s, hiring, onboarding, growth plans, team health, and burnout detection.
+
+  - id: rihal-khalid
+    name: Khalid (خالد)
+    file_path: rihal/agents/rihal-khalid.md
+    role: DevOps & Infrastructure Engineer
+    authority_level: operational
+    domain_keywords:
+      - devops
+      - ci-cd
+      - deployment
+      - containers
+      - docker
+      - kubernetes
+      - monitoring
+      - infrastructure
+      - release-engineering
+    description: Deployment pipelines, CI/CD, container orchestration, cloud infrastructure, monitoring, and release engineering.
+
+  - id: rihal-noor
+    name: Noor (نور)
+    file_path: rihal/agents/rihal-noor.md
+    role: Technical Writer & Presentation Lead
+    authority_level: operational
+    domain_keywords:
+      - documentation
+      - readme
+      - api-docs
+      - mermaid
+      - diagrams
+      - pitch-deck
+      - changelog
+      - blog-post
+    description: Documentation, README files, API docs, architecture diagrams, changelogs, pitch decks, and blog posts.
+
+  - id: rihal-ahmed
+    name: Ahmed Al Hassani (أحمد الحسني)
+    file_path: rihal/agents/rihal-ahmed.md
+    role: Technology & Development Director
+    authority_level: strategic
+    domain_keywords:
+      - delivery-plan
+      - engineering-standards
+      - raci
+      - cross-team
+      - dora-metrics
+      - tech-debt-backlog
+      - delivery-timeline
+    description: Bridges CTO vision to executable delivery. Engineering standards, DORA metrics, cross-team coordination.
+
+  - id: rihal-hanzla
+    name: Hanzla (حنظلة)
+    file_path: rihal/agents/rihal-hanzla.md
+    role: Senior Full-Stack Engineer
+    authority_level: technical
+    domain_keywords:
+      - implementation
+      - story-execution
+      - code
+      - bug-fix
+      - refactoring
+      - testing
+    description: Story execution, code implementation, bug fixes, refactoring, and hands-on development.
+
+  - id: rihal-omar
+    name: Omar (عمر)
+    file_path: rihal/agents/rihal-omar.md
+    role: Software Engineer
+    authority_level: operational
+    domain_keywords:
+      - implementation
+      - code
+      - pairing
+      - tasks
+      - migrations
+    description: Generalist engineer for implementation tasks spanning frontend and backend. Pairs with Hanzla on complex stories.
 
 utility_agents:
   - id: rihal-planner

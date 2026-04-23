@@ -84,3 +84,25 @@ description: 'Clinical copy-editor that reviews text for communication issues. U
 - HALT with error if content is empty or fewer than 3 words
 - HALT with error if reader_type is not `humans` or `llm`
 - If no issues found after thorough review, output "No editorial issues identified" (this is valid completion, not an error)
+
+## Output Format
+
+Three-column markdown table:
+
+| Original Text | Revised Text | Changes |
+|---------------|--------------|---------|}
+| The exact original passage | The suggested revision | Brief explanation |
+
+## Examples
+
+### Happy path
+**User:** "review for prose" + pastes a PRD section
+**Result:** Table with 5 fixes — subject-verb agreement, redundant pronoun, ambiguous antecedent, passive voice, spelling
+
+### Edge case
+**User:** "review for prose" + perfect text
+**Result:** "No editorial issues identified"
+
+### Negative boundary
+**User:** "restructure this document"
+**Result:** Not prose review → route to `rihal-editorial-review-structure`

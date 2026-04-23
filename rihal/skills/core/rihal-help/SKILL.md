@@ -71,3 +71,21 @@ For each recommended item, present:
 - Recommend running each skill in a **fresh context window**
 - Match the user's tone — conversational when they're casual, structured when they want specifics
 - If the active module is ambiguous, ask rather than guess
+
+## Output Format
+
+Status summary of current workflow position, then ordered list of recommended next skills with `[menu-code]` **Display name**, skill name in backticks, and description.
+
+## Examples
+
+### Happy path
+**User:** "what should I do next?"
+**Result:** Detects PRD exists but no stories → recommends `rihal-create-epics-and-stories` → offers to run it
+
+### Edge case
+**User:** "help" in an empty project
+**Result:** No artifacts found → recommends starting with `rihal-scaffold-project` or `rihal-init`
+
+### Negative boundary
+**User:** "help me write a React component"
+**Result:** Not a Rihal workflow question → route to `rihal-dev-story` or answer directly

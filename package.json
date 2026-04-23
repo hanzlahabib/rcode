@@ -1,7 +1,7 @@
 {
   "name": "@hanzlahabib/rihal-code",
   "version": "1.0.0-beta.0",
-  "description": "Rihal Code — AI engineering methodology with 36 agents, 70 slash commands, 39 phrase-activated skills. Unified install for Claude Code, Cursor, and Gemini.",
+  "description": "Rihal Code — AI engineering methodology with 44 agents, 93 slash commands, 58 phrase-activated skills. Unified install for Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
     "rihal-code": "cli/index.js"

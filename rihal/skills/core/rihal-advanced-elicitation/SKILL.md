@@ -135,3 +135,21 @@ x. Proceed / No Further Actions
   1. Apply to the current enhanced version of the content
   2. Show the improvements made
   3. Return to the prompt for additional elicitations or completion
+
+## Output Format
+
+Interactive menu loop presenting 5 elicitation methods, then the enhanced content after each method application. Final output is the user-approved enhanced version of the original content.
+
+## Examples
+
+### Happy path
+**User:** "push deeper on this PRD section"
+**Result:** Menu of 5 methods → user picks "Pre-Mortem" → analysis reveals 3 blind spots → user approves changes → re-offered menu → user selects 'x' to proceed
+
+### Edge case
+**User:** "elicit" (no content in context)
+**Result:** Skill asks user to provide or point to the content to enhance
+
+### Negative boundary
+**User:** "review this code for bugs"
+**Result:** Not elicitation → route to `rihal-code-review` or `rihal-review-adversarial-general`

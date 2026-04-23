@@ -8,6 +8,8 @@ description: >
   rihal-dev-story).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

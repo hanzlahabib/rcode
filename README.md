@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **An AI engineering methodology — 35+ agents, 69 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
+> **An AI engineering methodology — 44 agents, 93 slash commands, 3 execution modes, file-based state. Install in one command into any Claude Code, Cursor, or compatible AI IDE project.**
 
 ---
 
@@ -27,8 +27,8 @@ Rihal Code has a lot in it. To keep things approachable, everything is organized
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you a real team.**
 
-- **35+ agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
-- **69 slash commands** covering research, planning, execution, verification, and recovery
+- **44 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **93 slash commands** covering research, planning, execution, verification, and recovery
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
 - **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
@@ -53,9 +53,9 @@ npx @hanzlahabib/rihal-code install
 That's it. One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
-- `.claude/agents/` — 36 first-class subagents
-- `.claude/commands/rihal/` — 70 slash commands
-- `.claude/skills/` — 39 phrase-activated skills (scaffold-project, create-prd, retrospective, etc.)
+- `.claude/agents/` — 44 first-class subagents
+- `.claude/commands/rihal/` — 93 slash commands
+- `.claude/skills/` — 58 phrase-activated skills (scaffold-project, create-prd, retrospective, etc.)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.

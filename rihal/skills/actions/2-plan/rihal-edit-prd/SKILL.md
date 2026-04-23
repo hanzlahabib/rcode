@@ -8,6 +8,8 @@ description: >
   rihal-create-prd) or to validate quality (use rihal-validate-prd).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

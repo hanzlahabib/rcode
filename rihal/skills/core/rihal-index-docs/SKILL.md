@@ -63,4 +63,18 @@ description: 'Generates or updates an index.md to reference all docs in the fold
 - Read file contents to generate accurate descriptions - don't guess from filenames
 - Keep descriptions concise but informative (3-10 words)
 - Sort alphabetically within groups
+
+## Examples
+
+### Happy path
+**User:** "create an index of all files in ./docs"
+**Result:** Scans docs/ → groups by type → generates index.md with relative links and descriptions
+
+### Edge case
+**User:** "index docs" + folder with 200 files and nested subdirectories
+**Result:** Groups by subdirectory, generates hierarchical index with descriptions read from each file
+
+### Negative boundary
+**User:** "document this project"
+**Result:** Not indexing → route to `rihal-document-project`
 - Skip hidden files (starting with .) unless specified

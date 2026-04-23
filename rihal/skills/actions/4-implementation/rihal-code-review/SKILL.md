@@ -8,6 +8,8 @@ description: >
   rihal-validate-prd or editorial skills).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

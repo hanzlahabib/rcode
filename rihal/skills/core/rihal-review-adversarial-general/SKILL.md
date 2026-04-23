@@ -31,6 +31,24 @@ Review with extreme skepticism — assume problems exist. Find at least ten issu
 Output findings as a Markdown list (descriptions only).
 
 
+## Output Format
+
+Markdown bullet list of findings, each describing a specific problem, gap, or risk.
+
+## Examples
+
+### Happy path
+**User:** "critically review this PRD"
+**Result:** 12 findings covering missing error handling, vague acceptance criteria, unaddressed security, scope creep risks
+
+### Edge case
+**User:** "review" + empty content
+**Result:** "No content provided — please share the artifact to review"
+
+### Negative boundary
+**User:** "review this code for edge cases"
+**Result:** Not adversarial → route to `rihal-review-edge-case-hunter`
+
 ## HALT CONDITIONS
 
 - HALT if zero findings — this is suspicious, re-analyze or ask for guidance

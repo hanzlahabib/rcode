@@ -8,6 +8,8 @@ description: >
   NOT use during active implementation (use rihal-correct-course instead).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

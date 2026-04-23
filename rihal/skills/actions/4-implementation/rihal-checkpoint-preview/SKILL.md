@@ -3,6 +3,9 @@ name: rihal-checkpoint-preview
 description: 'LLM-assisted human-in-the-loop review. Make sense of a change, focus attention where it matters, test. Use when the user says "checkpoint", "human review", or "walk me through this change".'
 ---
 
+## Workflow
+
+
 # Checkpoint Review Workflow
 
 **Goal:** Guide a human through reviewing a change — from purpose and context into details.

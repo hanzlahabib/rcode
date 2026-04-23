@@ -9,6 +9,8 @@ description: >
   rihal-create-architecture) or market analysis.
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

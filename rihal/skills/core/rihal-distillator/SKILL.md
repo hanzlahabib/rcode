@@ -175,4 +175,31 @@ This stage proves the distillate is lossless by reconstructing source documents 
 
 5. **If gaps are found**, offer to run a targeted fix pass on the distillate — adding the missing information without full recompression. Limit to 2 fix passes maximum.
 
+## Output Format
+
+Structured JSON result:
+```json
+{
+  "status": "complete",
+  "distillate": "path/to/distillate.md",
+  "compression_ratio": "3.2:1",
+  "source_total_tokens": 15000,
+  "distillate_total_tokens": 4688
+}
+```
+
+## Examples
+
+### Happy path
+**User:** "distill ./docs/architecture.md ./docs/decisions.md"
+**Result:** Analyzes sources → single-mode compression → saves `architecture-distillate.md` → reports 3.2:1 ratio
+
+### Edge case
+**User:** "distill ./docs/ --validate"
+**Result:** Fan-out mode for large folder → merge pass → round-trip validation via reconstructor agent
+
+### Negative boundary
+**User:** "summarize this meeting"
+**Result:** Distillation is lossless compression, not summarization. If user wants a summary, clarify the difference or route to a writing skill
+
 6. **Clean up** — delete the temporary reconstruction files after the report is generated.

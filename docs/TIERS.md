@@ -1,6 +1,6 @@
 # Rihal Code — Tiers
 
-Rihal Code has **22 action skills, 17 team agents, and 17 CLI commands**. That's a lot. To keep it approachable, everything is organized into four tiers plus a preview track.
+Rihal Code has **26 action skills, 17 team agents, 13 core skills, and 93 slash commands**. That's a lot. To keep it approachable, everything is organized into four tiers plus a preview track.
 
 > **New to Rihal Code?** Start with the 🌱 Starter tier. You can do a complete project with just 7 skills. Ignore everything else until you need it.
 
@@ -12,13 +12,13 @@ The seven skills you actually need to ship your first Rihal project, in order:
 
 | # | Skill | What it does | Say this to activate |
 |---|-------|--------------|----------------------|
-| 1 | `rihal-scaffold-project` | Clone the Rihal template into a new folder | "scaffold a new project" |
-| 2 | `rihal-create-prd` | Interview you and write a Product Requirements Document | "create a PRD" |
+| 1 | `rihal-scaffold-project` | Clone the Rihal template into a new folder | "scaffold a new project" or `/rihal:install` |
+| 2 | `rihal-create-prd` | Interview you and write a Product Requirements Document | "create a PRD" or `/rihal:do` |
 | 3 | `rihal-create-story` | Break the PRD into implementable stories | "create a story" |
-| 4 | `rihal-sprint-planning` | Plan a sprint with the team | "plan a sprint" |
-| 5 | `rihal-dev-story` | Implement a story (code + tests + PR) | "dev this story" |
-| 6 | `rihal-code-review` | Review changes before merging | "review this code" |
-| 7 | `rihal-sprint-status` | Check sprint progress + blockers | "sprint status" |
+| 4 | `rihal-sprint-planning` | Plan a sprint with the team | "plan a sprint" or `/rihal:sprint-planning` |
+| 5 | `rihal-dev-story` | Implement a story (code + tests + PR) | "dev this story" or `/rihal:dev-story` |
+| 6 | `rihal-code-review` | Review changes before merging | "review this code" or `/rihal:code-review` |
+| 7 | `rihal-sprint-status` | Check sprint progress + blockers | "sprint status" or `/rihal:sprint-status` |
 
 **Starter agents (3):** Sadiq (strategy) · Hussain (PM) · Nasser (engineering manager).
 
@@ -30,23 +30,25 @@ If you only learn these, you can run a full project from zero to ship.
 
 For teams running multiple sprints with formal ceremonies and design work.
 
-### Skills (9)
+### Skills (11)
 
-| Skill | What it does |
-|-------|--------------|
-| `rihal-product-brief` | 1–2 page executive brief (input to PRD) |
-| `rihal-edit-prd` | Revise an existing PRD |
-| `rihal-validate-prd` | Check PRD completeness and consistency |
-| `rihal-create-epics-and-stories` | Expand PRD → epics → stories batch |
-| `rihal-create-architecture` | Write an Architecture Decision Record (ADR) |
-| `rihal-create-ux-design` | UX flows, wireframes, design system |
-| `rihal-frontend-design` | Typography, colours, motion, spatial design |
-| `rihal-qa-generate-e2e-tests` | Generate end-to-end test cases |
-| `rihal-retrospective` | Run a retro, capture action items |
+| Skill | What it does | Say this to activate |
+|-------|--------------|----------------------|
+| `rihal-product-brief` | 1–2 page executive brief (input to PRD) | "create a product brief" |
+| `rihal-prfaq` | Amazon Working Backwards PRFAQ challenge | "create a PRFAQ" or "work backwards" |
+| `rihal-edit-prd` | Revise an existing PRD | "edit the PRD" |
+| `rihal-validate-prd` | Check PRD completeness and consistency | "validate the PRD" |
+| `rihal-create-epics-and-stories` | Expand PRD → epics → stories batch | "create epics" |
+| `rihal-create-architecture` | Write an Architecture Decision Record (ADR) | "write an ADR" |
+| `rihal-create-ux-design` | UX flows, wireframes, design system | "create UX design" |
+| `rihal-frontend-design` | Typography, colours, motion, spatial design | "design this UI" |
+| `rihal-qa-generate-e2e-tests` | Generate end-to-end test cases | "generate e2e tests" |
+| `rihal-retrospective` | Run a retro, capture action items | "run retrospective" |
+| `rihal-create-milestone` | Create milestone definition | "create a milestone" |
 
-### Agents (7)
+### Agents (8)
 
-Waleed (CTO) · Ahmed Hassani (tech director) · Layla (designer) · Zahra (branding) · Haitham (frontend) · Yousef (backend) · Fatima (QA) · Hussain-SM (scrum master).
+Waleed (CTO) · Ahmed Al Hassani (tech director) · Layla (designer) · Zahra (branding) · Haitham (frontend) · Yousef (backend) · Fatima (QA) · Hussain-SM (scrum master).
 
 ---
 
@@ -54,20 +56,22 @@ Waleed (CTO) · Ahmed Hassani (tech director) · Layla (designer) · Zahra (bran
 
 For multi-agent consultation, reverse engineering, project recovery, and deep context work.
 
-### Skills (6)
+### Skills (8)
 
-| Skill | What it does |
-|-------|--------------|
-| `rihal-check-implementation-readiness` | Verify alignment before dev |
-| `rihal-correct-course` | Pivot mid-project with minimal disruption |
-| `rihal-clone-website` | Reverse-engineer a website (CSS + content + layout) |
-| `rihal-document-project` | Auto-generate full project docs for AI agents |
-| `rihal-generate-project-context` | Extract conventions, stack, patterns → `.rihal/project-context.md` |
-| `research` | Generic multi-source research skill |
+| Skill | What it does | Say this to activate |
+|-------|--------------|----------------------|
+| `rihal-check-implementation-readiness` | Verify alignment before dev | "check implementation readiness" |
+| `rihal-correct-course` | Pivot mid-project with minimal disruption | "course correct" |
+| `rihal-clone-website` | Reverse-engineer a website (CSS + content + layout) | "clone this website" |
+| `rihal-document-project` | Auto-generate full project docs for AI agents | "document this project" |
+| `rihal-generate-project-context` | Extract conventions, stack, patterns → `.rihal/project-context.md` | "generate project context" |
+| `rihal-checkpoint-preview` | LLM-assisted human-in-the-loop review | "checkpoint" or "walk me through this change" |
+| `research` | Generic multi-source research skill | "research [topic]" |
+| `rihal-brainstorming` | Structured brainstorming workflow | "brainstorm" |
 
 ### Agents (7)
 
-Majlis (multi-agent council) · Raees (orchestrator) · Diwan (dashboard) · Zayd (ML) · Hanzla (engineer) · Mariam (marketing) · Noor (writer).
+Majlis (multi-agent council) · Raees (orchestrator) · Zayd (ML) · Hanzla (engineer) · Omar (engineer) · Mariam (marketing) · Noor (writer) · Khalid (DevOps).
 
 ### Power tools
 
@@ -93,7 +97,7 @@ Covers:
 
 ## 🧪 Preview — v2
 
-`rihal/v2/` contains the next-generation methodology (36 agents, 67 workflows, 69 commands). It's **in active development and not yet the default path**. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) before using it.
+`rihal/v2/` has been unified into the main methodology. All 44 agents, 93 commands, and 58 skills are now available through the single installer. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) for migration notes.
 
 ---
 

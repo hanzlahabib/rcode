@@ -177,3 +177,17 @@ Use the following output format:
 - HALT with error if content is empty or fewer than 3 words
 - HALT with error if reader_type is not "humans" or "llm"
 - If no structural issues found, output "No substantive changes recommended" (this is valid completion, not an error)
+
+## Examples
+
+### Happy path
+**User:** "structural review of this tutorial"
+**Result:** Document Summary → 6 recommendations (2 CUT, 1 MERGE, 2 MOVE, 1 CONDENSE) → estimated 30% reduction
+
+### Edge case
+**User:** "structural review" + well-structured doc
+**Result:** "No substantive changes recommended — document structure is sound"
+
+### Negative boundary
+**User:** "fix the typos in this doc"
+**Result:** Not structural → route to `rihal-editorial-review-prose`

@@ -9,6 +9,8 @@ description: >
   rihal-document-project).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

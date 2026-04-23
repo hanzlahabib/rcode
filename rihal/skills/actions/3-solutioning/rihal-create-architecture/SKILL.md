@@ -9,6 +9,8 @@ description: >
   rihal-dev-story) or sprint planning (use rihal-sprint-planning).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

@@ -8,6 +8,8 @@ description: >
   generation or code review (use rihal-code-review).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

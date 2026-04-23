@@ -8,6 +8,8 @@ description: >
   use without a prepared story file (use rihal-create-story first).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

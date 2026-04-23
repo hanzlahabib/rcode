@@ -8,6 +8,8 @@ description: >
   (use rihal-sprint-status).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

@@ -7,6 +7,8 @@ description: >
   check", or "audit the PRD". Do NOT use to create or edit a PRD.
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

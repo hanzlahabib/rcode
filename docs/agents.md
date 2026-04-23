@@ -1,6 +1,6 @@
 # Agent Reference
 
-All 35+ agents in Rihal Code, their roles, and when they spawn.
+All 44 agents in Rihal Code, their roles, and when they spawn.
 
 ---
 
@@ -98,7 +98,7 @@ These are the primary decision-makers, spawned by `/rihal:council` debates.
 
 ---
 
-## Specialist Agents (30+)
+## Specialist Agents (39)
 
 Spawned by specific commands and workflows. Not typically called directly; the system routes you to them.
 
@@ -414,6 +414,64 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 **Purpose:** Security-focused code review.
 
 **Spawned by:** `/rihal:secure-phase`, `/rihal:review-adversarial`
+
+---
+
+### Team Agents (added in v1.0)
+
+#### rihal-layla 🎭
+**Purpose:** UX Designer — interaction design, user flows, wireframes, accessibility audits, design systems.
+
+**Spawned by:** `/rihal:council`, design-related discussions
+
+---
+
+#### rihal-nasser 👥
+**Purpose:** Engineering Manager — 1:1s, hiring, onboarding, growth plans, performance, team health.
+
+**Spawned by:** `/rihal:council`, people-ops questions
+
+---
+
+#### rihal-khalid 🚀
+**Purpose:** DevOps & Infrastructure — CI/CD, containers, monitoring, deployment pipelines.
+
+**Spawned by:** `/rihal:council`, infrastructure questions
+
+---
+
+#### rihal-zahra ✨
+**Purpose:** Branding & Creative Director — typography, color systems, design tokens, brand consistency.
+
+**Spawned by:** `/rihal:council`, brand-related discussions
+
+---
+
+#### rihal-noor 📝
+**Purpose:** Technical Writer — docs, Mermaid diagrams, presentations, changelogs.
+
+**Spawned by:** `/rihal:council`, `/rihal:docs-update`
+
+---
+
+#### rihal-ahmed 📋
+**Purpose:** Technology & Development Director — delivery coordination, DORA metrics, engineering scorecards.
+
+**Spawned by:** `/rihal:council`, delivery planning
+
+---
+
+#### rihal-hanzla ⚡
+**Purpose:** Senior Full-Stack Engineer — story execution, code implementation, complex features.
+
+**Spawned by:** `/rihal:execute`, `/rihal:dev-story`
+
+---
+
+#### rihal-omar 🔧
+**Purpose:** Software Engineer — generalist implementation, bug fixes, testing.
+
+**Spawned by:** `/rihal:execute`, `/rihal:dev-story`
 
 ---
 

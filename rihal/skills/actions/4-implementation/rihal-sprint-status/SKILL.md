@@ -8,6 +8,8 @@ description: >
   rihal-retrospective).
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

@@ -8,6 +8,8 @@ description: >
   deep-dives (use rihal-domain-research) or technical feasibility.
 ---
 
+## Workflow
+
 Follow the instructions in ./workflow.md.
 
 ## Output Format

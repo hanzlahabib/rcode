@@ -65,3 +65,17 @@ No extra text, no explanations, no markdown wrapping. An empty array `[]` is val
 ## HALT CONDITIONS
 
 - If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+## Examples
+
+### Happy path
+**User:** "find edge cases in this auth middleware"
+**Result:** JSON array with 8 findings — missing null check on token, no timeout on DB lookup, off-by-one in retry loop, etc.
+
+### Edge case
+**User:** pastes a diff with no branching logic
+**Result:** `[]` — empty array, no unhandled paths found
+
+### Negative boundary
+**User:** "critically review this spec"
+**Result:** Not edge-case hunting → route to `rihal-review-adversarial-general`
