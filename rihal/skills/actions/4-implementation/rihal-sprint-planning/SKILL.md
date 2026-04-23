@@ -27,3 +27,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: No Capacity Info
 **Input:** "Plan the sprint"
 **Expected behavior:** Ask: "How many devs, any PTO, any known meetings? I need capacity numbers before committing to stories."
+
+### Negative Example: Fabricated Capacity
+**Input:** "Plan the sprint" (no prior capacity info, no `mode: yolo`, no `--auto`)
+**Expected behavior:** DO NOT assume "1 senior FT, 30 pts/week" or any other capacity. DO NOT write `sprint-N.md` until the user provides numeric answers for devs/PTO/velocity. If the user resists, point them at the two sanctioned bypass paths (`.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`). See `../../_shared/no-autonomous-bypass.md`.
