@@ -2,6 +2,8 @@
 Check project progress, summarize recent work and what's ahead, then intelligently route to the next action — either executing an existing plan or creating the next one. Provides situational awareness before continuing work.
 
 For a quick board view use `/rihal:sprint-status`. This gives the full narrative + routing.
+
+**SSOT:** `.rihal/state.json` is the single source of truth for phase counts and current position. `/rihal:progress` and `/rihal:status` MUST agree. When this workflow reads `ROADMAP.md` for human-readable goal text, it must first verify that `state.json` is in sync — if not, surface a drift warning and suggest `node .rihal/bin/rihal-tools.cjs state sync --from-disk`. See issue #131.
 </purpose>
 
 <required_reading>
@@ -35,6 +37,15 @@ End with a Next Up block (see output-format.md) when a routing suggestion applie
 INIT=$(node .rihal/bin/rihal-tools.cjs init progress 2>/dev/null || node .rihal/bin/rihal-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
+
+# Drift check — detect state/disk divergence (issue #131)
+if [ -f .planning/ROADMAP.md ]; then
+  DISK_PHASES=$(grep -cE "^\|\s*[0-9]{1,3}" .planning/ROADMAP.md)
+  STATE_PHASES=$(echo "$STATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log((s.state?.phases||s.phases||[]).length)}catch{console.log(0)}}")
+  if [ "$DISK_PHASES" -gt 0 ] && [ "$DISK_PHASES" -ne "$STATE_PHASES" ]; then
+    echo "⚠ Drift: ROADMAP.md has $DISK_PHASES phases, state.json has $STATE_PHASES. Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk"
+  fi
+fi
 ```
 
 Extract from init/state JSON: `project_exists`, `roadmap_exists`, `state_exists`, `phases`, `current_phase`, `next_phase`, `milestone_version`, `completed_count`, `phase_count`, `paused_at`, `state_path`, `roadmap_path`, `project_path`, `config_path`.

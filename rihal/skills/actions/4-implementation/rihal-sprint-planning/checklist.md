@@ -1,5 +1,15 @@
 # Sprint Planning Validation Checklist
 
+## Capacity Gate (BLOCKING — must pass before any story is committed)
+
+- [ ] Number of devs on the sprint is a concrete integer provided by the user
+- [ ] PTO / days off is accounted for (hours or days, explicit)
+- [ ] Known meetings / interrupt load is estimated (hours/week)
+- [ ] Velocity is either (a) provided by the user, or (b) pulled from prior sprint retrospective
+- [ ] 20% buffer is applied to the resulting capacity
+
+If any of the above is missing and the session is NOT running with `.rihal/config.yaml` `mode: yolo` or `/rihal:do --auto`, the workflow MUST halt and ask the user — never fabricate numbers.
+
 ## Core Validation
 
 ### Complete Coverage Check

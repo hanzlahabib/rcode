@@ -70,6 +70,19 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
 
 <workflow>
 
+<step n="0" goal="Capacity Gate — halt until capacity inputs are known">
+<action>Check whether a recent sprint retrospective or prior sprint file contains numeric capacity (devs, PTO, velocity). If yes, load and display it for user confirmation.</action>
+<action>If no capacity data is available, ask the user — via AskUserQuestion or plain prompt — for:
+  1. Number of devs on the sprint
+  2. PTO / days off
+  3. Known meetings / interrupt load (hours/week)
+  4. Target velocity (story points or hours) — use prior sprint if available
+</action>
+<action>Compute: available_capacity = (devs × working_hours × velocity_factor) − PTO − meetings; apply a 20% buffer.</action>
+<action>BLOCKING: If any input is missing and the runtime is NOT in `mode: yolo` or `--auto`, halt and restate the question. Never fabricate numbers. See `../../_shared/no-autonomous-bypass.md`.</action>
+<action>Record the capacity inputs in the output `sprint-status.yaml` frontmatter under `capacity:` so downstream status/progress workflows can display the source of truth.</action>
+</step>
+
 <step n="1" goal="Parse epic files and extract all work items">
 <action>Load {project_context} for project-wide patterns and conventions (if exists)</action>
 <action>Communicate in {communication_language} with {user_name}</action>

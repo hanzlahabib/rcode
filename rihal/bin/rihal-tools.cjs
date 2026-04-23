@@ -1947,7 +1947,85 @@ function cmdState(subArgs) {
     return { updated: true, status: 'reset', preserved_decisions: preserved.decisions.length };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
+  // --- sync --from-disk ---
+  // Parse ROADMAP.md + epics.md and upsert milestones/phases/epics into state.json.
+  // Preserves existing statuses on matching phase names/numbers.
+  // Tracks: issue #126 (state desync between planning artifacts and state.json).
+  if (sub === 'sync') {
+    const flags = parseFlags(1);
+    if (!flags['from-disk'] && flags['from-disk'] !== '') {
+      // Support both "--from-disk" (flag) and "--from-disk true"
+      // parseFlags consumes the next token as value; accept empty-string value.
+    }
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const epicsPath = path.join(PLANNING_DIR, 'epics.md');
+    const state = readState() || defaultState();
+
+    const parsed = {
+      milestones_found: 0,
+      phases_found: 0,
+      phases_upserted: 0,
+      epics_found: 0,
+      roadmap_exists: fs.existsSync(roadmapPath),
+      epics_exists: fs.existsSync(epicsPath),
+    };
+
+    // Parse ROADMAP.md for phase tables.
+    // Expected row format:  | 01 | Phase Name | Goal text | ... |
+    // First cell is phase number (1-3 chars of digits or digits+letter).
+    if (parsed.roadmap_exists) {
+      const roadmap = fs.readFileSync(roadmapPath, 'utf8');
+      parsed.milestones_found = (roadmap.match(/^##\s+Milestone\s+M\d+/gim) || []).length;
+      const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      let m;
+      if (!state.phases) state.phases = [];
+      while ((m = rowRe.exec(roadmap)) !== null) {
+        const phaseNum = m[1].trim();
+        const phaseName = m[2].trim();
+        const phaseGoal = m[3].trim();
+        // Skip header rows like "| # | Phase | Goal |"
+        if (!/^\d/.test(phaseNum)) continue;
+        if (phaseName.toLowerCase() === 'phase') continue;
+        parsed.phases_found += 1;
+        const existingIdx = state.phases.findIndex(p =>
+          String(p.number) === phaseNum || p.name === phaseName
+        );
+        if (existingIdx >= 0) {
+          // Preserve existing status fields; update metadata.
+          state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
+          state.phases[existingIdx].name = phaseName;
+          if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
+        } else {
+          state.phases.push({
+            number: phaseNum,
+            name: phaseName,
+            goal: phaseGoal,
+            status: 'planned',
+            started: null,
+            completed: null,
+            plan_count: 0,
+          });
+          parsed.phases_upserted += 1;
+        }
+      }
+    }
+
+    // Parse epics.md for epic count (lightweight — full epic sync is a future enhancement).
+    if (parsed.epics_exists) {
+      const epics = fs.readFileSync(epicsPath, 'utf8');
+      parsed.epics_found = (epics.match(/^##\s+EPIC-\d+/gim) || epics.match(/^##\s+Epic\s+\d+/gim) || []).length;
+      state.epics_count = parsed.epics_found;
+    }
+
+    if (!parsed.roadmap_exists && !parsed.epics_exists) {
+      throw new Error(`state sync --from-disk: neither ROADMAP.md nor epics.md found at ${PLANNING_DIR}`);
+    }
+
+    writeState(state);
+    return { ok: true, synced: true, ...parsed };
+  }
+
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
 }
 
 /**

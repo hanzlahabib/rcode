@@ -42,6 +42,7 @@ This uses **step-file architecture** for disciplined execution:
 - ⏸️ **ALWAYS** halt at menus and wait for user input
 - 📋 **NEVER** create mental todo lists from future steps
 - 🚷 **NEVER** invent an "autonomous mode", "research mode", or any self-declared bypass. The only sanctioned bypass paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
+- 🔗 **NEVER** cite an external source (competitor pricing, API limits, market numbers) without first `WebFetch`ing it in the same session. `WebSearch` snippets are not sufficient evidence. See `../../_shared/research-citation-rule.md`.
 
 ## INITIALIZATION SEQUENCE
 
