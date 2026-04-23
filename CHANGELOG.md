@@ -4,6 +4,43 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.0.0 — Rihal Brain (unreleased)
+
+**Repositioning release.** Rihal Code is no longer a generic AI-engineering methodology that happens to be written at Rihal. It is **the installable context-brain for Rihalians** — every Rihal project can now pull PR standards, commit conventions, architecture docs, and internal guides straight from Rihal's own repos into the AI assistant's context on install.
+
+The v1 methodology, agents, and skills all remain. v2 adds the brain layer on top and reorganizes contribution around role-owners.
+
+Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/milestone/4).
+
+### Added
+
+- **`docs/what-is-rihal-code.md`** — product story for the v2 repositioning.
+- **`docs/ROADMAP.md`** — public roadmap through v3.0 (MCP server) with binary kill criteria.
+- **`rihal/brain/`** — new content tree with `sources.yaml` (placeholder URLs until M5) and pull destinations for `rihal-github/`, `rihal-docs/`, and `best-practices/`.
+- **`rihal-tools brain pull`** — CLI subcommand that fetches configured sources via `git` sparse-checkout. Mirrors the `state sync --from-disk` pattern shipped in v1.0.0-beta.0 / issue #126.
+- **Install hook** runs `brain pull` automatically (graceful no-op when sources are placeholders).
+- **`.github/CODEOWNERS`** — per-role ownership enforcement so PM / CTO / UX / QA etc. changes route to the right reviewers.
+- **`CONTRIBUTING.md` — per-role guide** — one paragraph, one command sequence, one PR per role.
+- **`.github/workflows/release.yml`** — semver release pipeline: compliance check → bundle → GitHub release artefact.
+- **`docs/adr/mcp-design.md`** — design doc stub for the v3.0 MCP server (tracks open questions, not yet implemented).
+
+### Changed
+
+- **README.md** — new top section leads with the brain-in-a-box framing. Tier structure and methodology docs unchanged beneath it.
+- **`/rihal:update`** — now also runs `brain pull`, supports version pinning (`/rihal:update v1.3.0`).
+
+### Documentation
+
+- Public roadmap surfaces M2.5 (progress/status UX overhaul matching GSD-parity), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
+
+### Deferred to follow-up releases
+
+- **Full skill-folder reorganization under role owners** — CODEOWNERS ships in v2.0 covering the current folder layout; deeper reorg is a v2.1 scope.
+- **Elegant /progress and /status rebuild** (GSD-parity) — tracked as issue #159, landing in v2.5.
+- **Live MCP server** — v3.0 (design doc only in v2.0).
+
+---
+
 ## v1.0.0-beta.0 (2026-04-15)
 
 First beta release. v1 and v2 methodologies unified into a single landscape.
