@@ -1947,6 +1947,57 @@ function cmdState(subArgs) {
     return { updated: true, status: 'reset', preserved_decisions: preserved.decisions.length };
   }
 
+  // --- promote-backlog <from> --to <target> ---
+  // Promote a 999.x parking-lot phase to a real phase number.
+  // Mutates state.phases[]; renames the on-disk directory if present.
+  // Tracks issue #159 (M2.5 — GSD-parity 999.x convention).
+  if (sub === 'promote-backlog') {
+    const from = subArgs[1];
+    const flags = parseFlags(2);
+    const to = flags.to;
+    if (!from || !to) {
+      throw new Error('Usage: state promote-backlog <999.x> --to <NN>');
+    }
+    if (!/^999\.\d+$/.test(from)) {
+      throw new Error(`Source must be 999.x parking-lot number, got: ${from}`);
+    }
+    if (!/^\d{1,3}(\.\d+)?$/.test(to)) {
+      throw new Error(`Target must be NN or NN.M, got: ${to}`);
+    }
+    const state = readState() || defaultState();
+    if (!state.phases) state.phases = [];
+    const idx = state.phases.findIndex(p => String(p.number) === from);
+    if (idx < 0) {
+      throw new Error(`Parking-lot phase ${from} not found in state.phases`);
+    }
+    if (state.phases.some(p => String(p.number) === to)) {
+      throw new Error(`Target phase ${to} already exists`);
+    }
+    const phase = state.phases[idx];
+    const oldNumber = phase.number;
+    phase.number = to;
+    phase.promoted_from = oldNumber;
+    phase.promoted_at = new Date().toISOString();
+
+    // Rename on-disk directory if present
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    let renamed = false;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        if (entry.startsWith(`${oldNumber}-`) || entry === oldNumber) {
+          const oldPath = path.join(phasesDir, entry);
+          const newPath = path.join(phasesDir, entry.replace(oldNumber, to));
+          fs.renameSync(oldPath, newPath);
+          renamed = true;
+          break;
+        }
+      }
+    }
+
+    writeState(state);
+    return { ok: true, promoted: { from: oldNumber, to }, renamed_disk: renamed };
+  }
+
   // --- sync --from-disk ---
   // Parse ROADMAP.md + epics.md and upsert milestones/phases/epics into state.json.
   // Preserves existing statuses on matching phase names/numbers.
@@ -2025,7 +2076,7 @@ function cmdState(subArgs) {
     return { ok: true, synced: true, ...parsed };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, promote-backlog\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
 }
 
 /**
@@ -2866,6 +2917,293 @@ function cmdBrain(args) {
   return report;
 }
 
+/**
+ * cmdProgress — single pre-computed progress blob (GSD-parity, issue #159).
+ *
+ * Subcommands:
+ *   progress init          Full snapshot — everything /rihal:progress needs.
+ *   progress bar --raw     ASCII bar only (e.g. "[████░░░░] 50%").
+ *   progress insights      insights[] array (drift warnings, between-milestone detection).
+ *   progress routes        intent-tree routes[] for Next Up menu.
+ *
+ * Pushing logic into the CLI lets the workflow file shrink to pure
+ * rendering — no ROADMAP.md parsing, no SUMMARY.md walking, no grep.
+ */
+function cmdProgress(args) {
+  const sub = args[0] || 'init';
+  const rawMode = args.includes('--raw');
+
+  // Resolve paths — workflow files may run this from any subdirectory.
+  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+
+  function readState() {
+    if (!fs.existsSync(statePath)) return null;
+    try { return JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+    catch { return null; }
+  }
+
+  function parseRoadmapPhases() {
+    if (!fs.existsSync(roadmapPath)) return [];
+    const text = fs.readFileSync(roadmapPath, 'utf8');
+    const phases = [];
+    const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+    let m;
+    while ((m = rowRe.exec(text)) !== null) {
+      const num = m[1].trim();
+      const name = m[2].trim();
+      const goal = m[3].trim();
+      if (!/^\d/.test(num)) continue;
+      if (name.toLowerCase() === 'phase') continue;
+      phases.push({ number: num, name, goal });
+    }
+    return phases;
+  }
+
+  function extractMilestoneName() {
+    if (!fs.existsSync(roadmapPath)) return null;
+    const text = fs.readFileSync(roadmapPath, 'utf8');
+    const m = text.match(/^##\s+Milestone\s+(M\d+\S*)\s*[—\-:]?\s*(.*)$/m);
+    return m ? `${m[1]} ${m[2]}`.trim() : null;
+  }
+
+  function walkPhaseDirs() {
+    if (!fs.existsSync(phasesDir)) return {};
+    const byNum = {};
+    for (const entry of fs.readdirSync(phasesDir)) {
+      const full = path.join(phasesDir, entry);
+      if (!fs.statSync(full).isDirectory()) continue;
+      const numMatch = entry.match(/^(\d{1,3}(?:\.\d+)?)/);
+      if (!numMatch) continue;
+      const num = numMatch[1];
+      const files = fs.readdirSync(full);
+      byNum[num] = {
+        path: full,
+        dirName: entry,
+        plan_count: files.filter(f => /PLAN\.md$|-PLAN\.md$|SPRINT\.md$/.test(f)).length,
+        summary_count: files.filter(f => /SUMMARY\.md$|-SUMMARY\.md$/.test(f)).length,
+        has_research: files.includes('RESEARCH.md'),
+        has_context: files.includes('CONTEXT.md'),
+        has_verification: files.includes('VERIFICATION.md'),
+      };
+    }
+    return byNum;
+  }
+
+  function detectInsights(state, roadmapPhases, diskByNum) {
+    const insights = [];
+    const statePhases = (state && (state.state?.phases || state.phases)) || [];
+
+    // Drift: ROADMAP phase count vs state.json phase count
+    if (roadmapPhases.length > 0 && statePhases.length !== roadmapPhases.length) {
+      insights.push({
+        kind: 'drift',
+        severity: 'warn',
+        message: `ROADMAP.md has ${roadmapPhases.length} phases, state.json has ${statePhases.length}. Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk`,
+      });
+    }
+
+    // Undercount: phases that exist on disk but not in state
+    const statePhaseNums = new Set(statePhases.map(p => String(p.number)));
+    const diskPhaseNums = Object.keys(diskByNum);
+    const missingFromState = diskPhaseNums.filter(n => !statePhaseNums.has(n));
+    if (missingFromState.length > 0) {
+      insights.push({
+        kind: 'undercount',
+        severity: 'warn',
+        message: `${missingFromState.length} phase dir(s) on disk not registered in state.json: ${missingFromState.slice(0, 5).join(', ')}`,
+      });
+    }
+
+    // Between-milestones heuristic: no current_phase + previous milestone's last phase is complete
+    if (state && state.current_phase === null && statePhases.length > 0) {
+      const allComplete = statePhases.every(p => p.status === 'complete' || p.completed);
+      if (allComplete) {
+        insights.push({
+          kind: 'between-milestones',
+          severity: 'info',
+          message: 'All registered phases complete — effectively between milestones. Consider /rihal:audit-milestone or /rihal:new-milestone.',
+        });
+      }
+    }
+
+    return insights;
+  }
+
+  function deriveRoutes(state, roadmapPhases, diskByNum) {
+    const routes = [];
+    const statePhases = (state && (state.state?.phases || state.phases)) || [];
+
+    // Route A — phases with pending plans (ready to execute)
+    const pendingExec = statePhases.filter(p => {
+      const disk = diskByNum[String(p.number)];
+      return disk && disk.plan_count > disk.summary_count;
+    }).slice(0, 3);
+    for (const p of pendingExec) {
+      routes.push({
+        letter: 'A',
+        label: `Execute phase ${p.number} — unfinished plans`,
+        command: `/rihal:execute-phase ${p.number}`,
+      });
+    }
+
+    // Route B — phases with research but no plans
+    const researchOnly = Object.entries(diskByNum)
+      .filter(([num, d]) => d.has_research && d.plan_count === 0)
+      .slice(0, 3);
+    for (const [num, d] of researchOnly) {
+      routes.push({
+        letter: 'B',
+        label: `Plan phase ${num} — researched, awaiting plan`,
+        command: `/rihal:plan-phase ${num}`,
+      });
+    }
+
+    // Route C — close out milestone if everything seems done
+    const allDone = statePhases.length > 0 && statePhases.every(p => p.status === 'complete' || p.completed);
+    if (allDone) {
+      routes.push({ letter: 'C', label: 'Audit current milestone', command: '/rihal:audit-milestone' });
+      routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal:complete-milestone' });
+    }
+
+    // Fallback — nothing obvious: offer status
+    if (routes.length === 0) {
+      routes.push({ letter: 'A', label: 'Check progress detail', command: '/rihal:progress' });
+      routes.push({ letter: 'B', label: 'Start a council on what to do next', command: '/rihal:council' });
+    }
+
+    return routes;
+  }
+
+  function buildBar(completed, total) {
+    if (!total) return '[░░░░░░░░░░░░░░░░░░░░] 0/0 (0%)';
+    const pct = Math.round((completed / total) * 100);
+    const width = 20;
+    const filled = Math.min(width, Math.round((completed / total) * width));
+    const bar = '█'.repeat(filled) + '░'.repeat(width - filled);
+    return `[${bar}] ${completed}/${total} (${pct}%)`;
+  }
+
+  // Build the core snapshot once — all subcommands derive from it.
+  const state = readState();
+  const roadmapPhases = parseRoadmapPhases();
+  const diskByNum = walkPhaseDirs();
+  const statePhases = (state && (state.state?.phases || state.phases)) || [];
+  const completedCount = statePhases.filter(p => p.status === 'complete' || p.completed).length;
+  const phaseCount = Math.max(statePhases.length, roadmapPhases.length);
+
+  if (sub === 'bar') {
+    const bar = buildBar(completedCount, phaseCount);
+    if (rawMode) { console.log(bar); process.exit(0); }
+    return { ok: true, bar, completed: completedCount, total: phaseCount };
+  }
+
+  if (sub === 'insights') {
+    return { ok: true, insights: detectInsights(state, roadmapPhases, diskByNum) };
+  }
+
+  if (sub === 'routes') {
+    return { ok: true, routes: deriveRoutes(state, roadmapPhases, diskByNum) };
+  }
+
+  // sub === 'init' (default) — full snapshot
+  const currentPhase = state && state.current_phase;
+  const insights = detectInsights(state, roadmapPhases, diskByNum);
+  const routes = deriveRoutes(state, roadmapPhases, diskByNum);
+
+  return {
+    ok: true,
+    project: state && state.project,
+    milestone: extractMilestoneName(),
+    current_phase: currentPhase,
+    phase_count: phaseCount,
+    completed_count: completedCount,
+    bar: buildBar(completedCount, phaseCount),
+    phases: roadmapPhases.map(p => ({
+      ...p,
+      disk: diskByNum[p.number] || null,
+      in_state: statePhases.some(sp => String(sp.number) === p.number),
+    })),
+    decisions: state ? (state.decisions || []).slice(-3) : [],
+    blockers: state ? (state.blockers || []).filter(b => !b.resolved).slice(0, 5) : [],
+    insights,
+    routes,
+    updated: state && state.updated,
+  };
+}
+
+/**
+ * cmdSummaryExtract — surgically pull named fields from a SUMMARY.md.
+ * Avoids whole-file loads when the caller only wants one or two headings.
+ * Usage: summary-extract <path> --fields one_liner,status
+ */
+function cmdSummaryExtract(args) {
+  const filePath = args[0];
+  const fieldsFlag = args.indexOf('--fields');
+  const fields = fieldsFlag >= 0 ? (args[fieldsFlag + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : ['one_liner'];
+
+  if (!filePath) return { ok: false, error: 'Usage: summary-extract <path> [--fields a,b,c]' };
+  if (!fs.existsSync(filePath)) return { ok: false, error: `file not found: ${filePath}` };
+
+  const text = fs.readFileSync(filePath, 'utf8');
+  const out = { ok: true, path: filePath };
+
+  const fieldToPatterns = {
+    one_liner: [/^##\s+One[-\s]?liner\s*\n([\s\S]*?)(?=\n##|\n---|$)/im, /^##\s+Summary\s*\n([\s\S]*?)(?=\n##|\n---|$)/im],
+    status: [/^##\s+Status\s*\n([\s\S]*?)(?=\n##|\n---|$)/im, /^status:\s*(.+)$/im],
+    outcomes: [/^##\s+Outcomes?\s*\n([\s\S]*?)(?=\n##|\n---|$)/im],
+    decisions: [/^##\s+Decisions?\s*\n([\s\S]*?)(?=\n##|\n---|$)/im],
+    blockers: [/^##\s+Blockers?\s*\n([\s\S]*?)(?=\n##|\n---|$)/im],
+    followups: [/^##\s+Follow[-\s]?ups?\s*\n([\s\S]*?)(?=\n##|\n---|$)/im, /^##\s+Next[-\s]?steps?\s*\n([\s\S]*?)(?=\n##|\n---|$)/im],
+  };
+
+  for (const f of fields) {
+    const patterns = fieldToPatterns[f] || [new RegExp(`^##\\s+${f.replace(/_/g, '[ _-]?')}\\s*\\n([\\s\\S]*?)(?=\\n##|\\n---|$)`, 'im')];
+    let value = null;
+    for (const re of patterns) {
+      const m = text.match(re);
+      if (m && m[1]) { value = m[1].trim().split('\n').map(l => l.trim()).filter(Boolean).join('\n'); break; }
+    }
+    // Fallback for one_liner: first non-empty paragraph after H1
+    if (f === 'one_liner' && !value) {
+      const afterH1 = text.replace(/^#[^\n]*\n/, '');
+      const firstPara = afterH1.match(/^[^\n#][^\n]*(?:\n(?!\n)[^\n#][^\n]*)*/m);
+      if (firstPara) value = firstPara[0].trim();
+    }
+    out[f] = value;
+  }
+
+  return out;
+}
+
+/**
+ * cmdStateSnapshot — compact, display-friendly state extract.
+ * Hides internal machinery (lock metadata, full history) from callers
+ * that only need a render-ready summary.
+ */
+function cmdStateSnapshot() {
+  const statePath = path.join(RIHAL_DIR, 'state.json');
+  if (!fs.existsSync(statePath)) return { ok: true, state: null };
+  let state;
+  try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+  catch (e) { return { ok: false, error: `invalid state.json: ${e.message}` }; }
+
+  return {
+    ok: true,
+    project: state.project,
+    current_phase: state.current_phase,
+    current_plan: state.current_plan,
+    current_sprint: state.current_sprint,
+    phase_count: (state.phases || []).length,
+    decisions_count: (state.decisions || []).length,
+    blockers_open: (state.blockers || []).filter(b => !b.resolved).length,
+    last_session: state.last_session,
+    updated: state.updated,
+    active_workstream: state.active_workstream,
+  };
+}
+
 function cmdFindFiles(rawArgs) {
   const flags = {};
   const parts = rawArgs.split(/\s+/).filter(p => p);
@@ -3006,6 +3344,18 @@ async function main() {
       }
       case 'brain': {
         result = cmdBrain(args);
+        break;
+      }
+      case 'progress': {
+        result = cmdProgress(args);
+        break;
+      }
+      case 'summary-extract': {
+        result = cmdSummaryExtract(args);
+        break;
+      }
+      case 'state-snapshot': {
+        result = cmdStateSnapshot();
         break;
       }
       case 'agent-skills':
