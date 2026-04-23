@@ -1,0 +1,65 @@
+# Rihal Code — Code Owners
+#
+# Routes PR reviews to the right person automatically. Each rule matches
+# a path pattern; only listed owners can approve changes to those paths.
+#
+# When Rihal GitHub teams are created, replace @hanzlahabib with
+# @rihal-om/<team> (e.g. @rihal-om/pm-team for rihal-hussain-pm).
+#
+# Catch-all fallback (last rule) points to the repo maintainer.
+
+# -------- Role-specific agent skills --------
+
+/rihal/skills/agents/hussain-pm/         @hanzlahabib
+/rihal/skills/agents/hussain-sm/         @hanzlahabib
+/rihal/skills/agents/raees-orchestrator/ @hanzlahabib
+
+/rihal/skills/agents/waleed-architect/   @hanzlahabib
+/rihal/skills/agents/ahmed-hassani-director/ @hanzlahabib
+/rihal/skills/agents/nasser-eng-manager/ @hanzlahabib
+
+/rihal/skills/agents/layla-designer/     @hanzlahabib
+/rihal/skills/agents/zahra-branding/     @hanzlahabib
+
+/rihal/skills/agents/yousef-backend/     @hanzlahabib
+/rihal/skills/agents/haitham-frontend/   @hanzlahabib
+/rihal/skills/agents/hanzla-engineer/    @hanzlahabib
+/rihal/skills/agents/zayd-ml/            @hanzlahabib
+
+/rihal/skills/agents/fatima-qa/          @hanzlahabib
+/rihal/skills/agents/noor-writer/        @hanzlahabib
+
+/rihal/skills/agents/sadiq-analyst/      @hanzlahabib
+/rihal/skills/agents/mariam-marketing/   @hanzlahabib
+/rihal/skills/agents/majlis-council/     @hanzlahabib
+
+# -------- Action skills by stage (PRDs, architecture, sprint, dev) --------
+
+# 1-analysis — discovery, research, market, PRFAQ, product-brief
+/rihal/skills/actions/1-analysis/        @hanzlahabib
+
+# 2-plan — PRD, epics/stories, milestone, UX design, architecture
+/rihal/skills/actions/2-plan/            @hanzlahabib
+
+# 3-solutioning — architecture decisions, research phase, solution design
+/rihal/skills/actions/3-solutioning/     @hanzlahabib
+
+# 4-implementation — dev-story, sprint-planning, code review, QA
+/rihal/skills/actions/4-implementation/  @hanzlahabib
+
+# -------- Shared rules (cross-cutting) --------
+# Changes here affect ALL skills; require extra scrutiny.
+/rihal/skills/_shared/                   @hanzlahabib
+
+# -------- Core infrastructure --------
+/rihal/bin/                              @hanzlahabib
+/cli/                                    @hanzlahabib
+/.github/                                @hanzlahabib
+/rihal/workflows/                        @hanzlahabib
+/rihal/commands/                         @hanzlahabib
+
+# -------- Brain content layer (v2.0) --------
+/rihal/brain/                            @hanzlahabib
+
+# -------- Catch-all --------
+*                                         @hanzlahabib
