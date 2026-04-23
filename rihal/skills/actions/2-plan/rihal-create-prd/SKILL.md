@@ -32,3 +32,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Existing PRD
 **Input:** "Create a PRD for auth" (but one already exists)
 **Expected behavior:** Detect the existing PRD. Respond: "A PRD for auth already exists at [path]. Use rihal-edit-prd to update it, or confirm you want to overwrite."
+
+### Negative Example: Request to Bypass the Interview
+**Input:** "use research skills and create the best PRD ready to execute" / "skip the questions and write it autonomously" / "just generate the full PRD"
+**Expected behavior:** DO NOT invent an "autonomous mode". DO NOT generate a PRD without running discovery. Respond: "The discovery interview is mandatory unless `.rihal/config.yaml` has `mode: yolo` or you re-invoke via `/rihal:do --auto`. Here is the step-01 menu — I will drive each step concisely." Then present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.

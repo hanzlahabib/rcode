@@ -6,6 +6,14 @@
 
 ---
 
+## CRITICAL RULES (NO EXCEPTIONS)
+
+- ⏸️ **ALWAYS** halt for capacity input (devs, PTO, meetings, velocity) before committing stories to the sprint. Per `SKILL.md` Edge Cases, the skill must ask: *"How many devs, any PTO, any known meetings? I need capacity numbers before committing to stories."*
+- 🚫 **NEVER** fabricate capacity numbers (e.g. *"1 senior FT, 30 pts/week"*) when the user has not provided them.
+- 🚷 **NEVER** invent an "autonomous mode" or any self-declared bypass. The only sanctioned bypass paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
+
+---
+
 ## INITIALIZATION
 
 ### Configuration Loading
@@ -61,6 +69,19 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
 **Fuzzy matching**: Be flexible with document names - users may use variations like `epics.md`, `rihal-epics.md`, `user-stories.md`, etc.
 
 <workflow>
+
+<step n="0" goal="Capacity Gate — halt until capacity inputs are known">
+<action>Check whether a recent sprint retrospective or prior sprint file contains numeric capacity (devs, PTO, velocity). If yes, load and display it for user confirmation.</action>
+<action>If no capacity data is available, ask the user — via AskUserQuestion or plain prompt — for:
+  1. Number of devs on the sprint
+  2. PTO / days off
+  3. Known meetings / interrupt load (hours/week)
+  4. Target velocity (story points or hours) — use prior sprint if available
+</action>
+<action>Compute: available_capacity = (devs × working_hours × velocity_factor) − PTO − meetings; apply a 20% buffer.</action>
+<action>BLOCKING: If any input is missing and the runtime is NOT in `mode: yolo` or `--auto`, halt and restate the question. Never fabricate numbers. See `../../_shared/no-autonomous-bypass.md`.</action>
+<action>Record the capacity inputs in the output `sprint-status.yaml` frontmatter under `capacity:` so downstream status/progress workflows can display the source of truth.</action>
+</step>
 
 <step n="1" goal="Parse epic files and extract all work items">
 <action>Load {project_context} for project-wide patterns and conventions (if exists)</action>

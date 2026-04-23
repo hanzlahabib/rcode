@@ -36,6 +36,7 @@ This uses **step-file architecture** for disciplined execution:
 - 🎯 **ALWAYS** follow the exact instructions in the step file
 - ⏸️ **ALWAYS** halt at menus and wait for user input
 - 📋 **NEVER** create mental todo lists from future steps
+- 🚷 **NEVER** invent an "autonomous mode", "research mode", or any self-declared bypass. The only sanctioned bypass paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
 
 ---
 

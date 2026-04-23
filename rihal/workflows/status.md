@@ -2,11 +2,30 @@
 
 <purpose>
 Read `.rihal/state.json` and print a human-readable project status dashboard.
+
+**SSOT:** `.rihal/state.json` is the single source of truth for phase counts, milestone names, and current position. `/rihal:status` and `/rihal:progress` MUST agree — if `state.json` is out of date relative to `ROADMAP.md` or `epics.md`, that is a sync bug (see issue #126) and should be fixed by running `node .rihal/bin/rihal-tools.cjs state sync --from-disk`, not by reading the markdown files directly from this workflow.
 </purpose>
 
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>
+
+<drift_detection>
+Before printing the dashboard, detect state/disk drift:
+
+```bash
+if [ -f .planning/ROADMAP.md ]; then
+  DISK_PHASES=$(grep -cE "^\|\s*[0-9]{1,3}" .planning/ROADMAP.md)
+  STATE_PHASES=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log((s.state?.phases||[]).length)}catch{console.log(0)}}")
+  if [ "$DISK_PHASES" -gt 0 ] && [ "$DISK_PHASES" -ne "$STATE_PHASES" ]; then
+    echo "⚠ Drift detected: ROADMAP.md has $DISK_PHASES phases, state.json has $STATE_PHASES."
+    echo "  Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk"
+  fi
+fi
+```
+
+Print this warning above the dashboard if drift is detected. Do NOT silently fall back to reading `ROADMAP.md` — that was the cause of the `/rihal:status` vs `/rihal:progress` disagreement in issue #131.
+</drift_detection>
 
 <output_format>
 Open with banner:

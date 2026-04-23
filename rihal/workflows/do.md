@@ -78,7 +78,8 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rihal:sprint-planning` | Sprint-level scope/capacity planning |
 | Executing a sprint, "run the sprint", "start sprint", "work on sprint" | `/rihal:execute-sprint` | Sprint execution with wave batching |
 | Sprint status, "how is the sprint going", "sprint board", "sprint progress" | `/rihal:sprint-status` | Current sprint state |
-| Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal:create-epics-and-stories` | Milestone → epic → story decomposition |
+| "Create milestones", "plan milestones", "create roadmap", "what milestones do I need", "break project into milestones" | `/rihal:create-milestone` | Roadmap-level planning — designs M1..Mn from the PRD. Do NOT route to `create-epics-and-stories`; that skill decomposes a single milestone into epics |
+| Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal:create-epics-and-stories` | Milestone → epic → story decomposition (assumes roadmap already exists) |
 | Create a single story, "add story", "write a story for X" | `/rihal:create-story` | Single story addition |
 | Implement a story, "work on story", "dev story", "build story" | `/rihal:dev-story` | Story-level implementation |
 | Find gaps in milestone plans, "gaps in plans", "missing plan", "unplanned phases" | `/rihal:plan-milestone-gaps` | Identify and fill planning gaps |
