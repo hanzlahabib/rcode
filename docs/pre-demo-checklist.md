@@ -29,7 +29,7 @@ Once #165 is fixed, `release.yml` will auto-publish. If #165 isn't fixed, publis
 In a clean scratch dir:
 ```bash
 mkdir /tmp/rihal-demo && cd /tmp/rihal-demo
-npx @hanzlahabib/rihal-code@v2.1.0 install
+npx @hanzlaa/rcode@latest install
 ls -la .rihal/ .claude/
 node .rihal/bin/rihal-tools.cjs brain pull
 node .rihal/bin/rihal-tools.cjs progress init | head -30

@@ -28,3 +28,7 @@ output/
 !.planning/phases/*/
 !.planning/phases/*/SPRINT.md
 !.planning/phases/*/SCOPE.md
+
+# Build artifacts
+dist/
+image.png

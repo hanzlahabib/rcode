@@ -27,7 +27,7 @@ Rihal Code fixes that. One install, and the AI now knows. Every session. Every r
 
 ## What you get when you install it
 
-Running `npx rihal-code install` into a project produces:
+Running `npx @hanzlaa/rcode install` into a project produces:
 
 - **55+ phrase-activated skills** (from `/rihal:create-prd` to `/rihal:sprint-planning` to `/rihal:dev-story`) that route your request to the right workflow.
 - **35+ agents** — Rihal's team in AI form: Sadiq for strategy, Waleed for architecture, Hussain for product, Layla for UX, Fatima for QA, and more. Each has a hard scope boundary, so you know which one to talk to.
