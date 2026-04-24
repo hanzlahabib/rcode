@@ -10,7 +10,7 @@ A practical guide to using Rihal Code on your own projects day-to-day.
 
 ```bash
 cd my-project
-npx @hanzlahabib/rihal-code install
+npx @hanzlaa/rcode install
 ```
 
 That's it. After install you'll have:
@@ -155,10 +155,10 @@ Say the phrase — Claude matches the skill automatically:
 Switch between quality/balanced/budget/inherit:
 
 ```bash
-npx rihal-code set-profile balanced  # default
-npx rihal-code set-profile quality   # opus for most agents
-npx rihal-code set-profile budget    # haiku for most agents
-npx rihal-code set-profile inherit   # follow session model
+npx @hanzlaa/rcode set-profile balanced  # default
+npx @hanzlaa/rcode set-profile quality   # opus for most agents
+npx @hanzlaa/rcode set-profile budget    # haiku for most agents
+npx @hanzlaa/rcode set-profile inherit   # follow session model
 ```
 
 ---
@@ -189,7 +189,7 @@ Workflows call these under the hood — you rarely need them directly.
 ## Dashboard (optional)
 
 ```bash
-npx rihal-code dashboard
+npx @hanzlaa/rcode dashboard
 ```
 
 Opens a view-only dashboard at `http://localhost:7717` showing phases, sprints, council sessions, and velocity charts.
@@ -199,7 +199,7 @@ Opens a view-only dashboard at `http://localhost:7717` showing phases, sprints, 
 ## Updating Rihal
 
 ```bash
-npx rihal-code update
+npx @hanzlaa/rcode update
 ```
 
 Refreshes installed agents/commands/workflows without touching your state or planning artifacts. Backs up the previous state to `.rihal/backups/update-{ts}.tgz`.

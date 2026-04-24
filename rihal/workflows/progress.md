@@ -179,6 +179,6 @@ If `SNAPSHOT.routes[]` is empty or only has fallback entries, print:
 
 ## On Error
 
-- **CLI missing:** "Rihal Code install missing or stale. Run: npx @hanzlahabib/rihal-code install"
+- **CLI missing:** "Rihal Code install missing or stale. Run: npx @hanzlaa/rcode install"
 - **CLI returns `ok: false`:** surface the CLI's error verbatim. Do not attempt to compensate — the CLI's failures are the source of truth on what's wrong.
 - **Network-dependent insights:** there should be none. Insights are computed from local state + disk only.

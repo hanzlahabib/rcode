@@ -75,10 +75,10 @@ Majlis (multi-agent council) · Raees (orchestrator) · Zayd (ML) · Hanzla (eng
 
 ### Power tools
 
-- `npx rihal-code dashboard` — launches Diwan view-only dashboard on :7717
-- `npx rihal-code digest` — compact agent summaries
-- `npx rihal-code github-sync` — sync phases/epics/stories to GitHub issues
-- `npx rihal-code context --refresh` — refresh memory bank from current repo state
+- `npx @hanzlaa/rcode dashboard` — launches Diwan view-only dashboard on :7717
+- `npx @hanzlaa/rcode digest` — compact agent summaries
+- `npx @hanzlaa/rcode github-sync` — sync phases/epics/stories to GitHub issues
+- `npx @hanzlaa/rcode context --refresh` — refresh memory bank from current repo state
 
 ---
 
@@ -103,7 +103,7 @@ Covers:
 
 ## CLI Commands at a Glance
 
-Grouped by purpose (full help: `npx rihal-code help`):
+Grouped by purpose (full help: `npx @hanzlaa/rcode help`):
 
 ### Project commands
 `install` · `update` · `uninstall` · `config` · `context` · `github-sync`

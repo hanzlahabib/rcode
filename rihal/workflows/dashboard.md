@@ -27,14 +27,14 @@ Check for the dashboard server in priority order:
 
 1. `./server/dashboard.js` (when inside the rihal-code source repo)
 2. `./.rihal/lib/server/dashboard.js` (installed package copy)
-3. `$(npm root -g)/@hanzlahabib/rihal-code/server/dashboard.js` (global install)
+3. `$(npm root -g)/@hanzlaa/rcode/server/dashboard.js` (global install)
 
 Store the resolved path as `$DASHBOARD`.
 
 If none found, print:
 ```
 ❌ Dashboard script not found.
-Run `npx rihal-code install` to install the package, or check you're inside a project with .rihal/.
+Run `npx @hanzlaa/rcode install` to install the package, or check you're inside a project with .rihal/.
 ```
 Exit.
 

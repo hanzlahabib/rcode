@@ -50,8 +50,8 @@ The installer needs to be called with the `--module` flag. Detect the rihal-code
 # Try local dev first, then global
 if [ -f ./cli/install-v2.js ]; then
   node ./cli/install-v2.js . --module {name} --force --yes
-elif [ -f "$(npm root -g)/@hanzlahabib/rihal-code/cli/install-v2.js" ]; then
-  node "$(npm root -g)/@hanzlahabib/rihal-code/cli/install-v2.js" . --module {name} --force --yes
+elif [ -f "$(npm root -g)/@hanzlaa/rcode/cli/install-v2.js" ]; then
+  node "$(npm root -g)/@hanzlaa/rcode/cli/install-v2.js" . --module {name} --force --yes
 else
   echo "Cannot find rihal-code package. Install it globally or run from the repo."
   exit 1

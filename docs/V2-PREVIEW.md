@@ -21,7 +21,7 @@ In v1.0-beta we unified both into a single landscape under `rihal/`:
 - `rihal/skills/` — 22 action skills + 17 agent skills (preserved from v1)
 - `rihal/references/`, `rihal/bin/`, `rihal/modules/`, `rihal/team.yaml` — v2 infrastructure
 
-One install command (`npx rihal-code install`) ships everything.
+One install command (`npx @hanzlaa/rcode install`) ships everything.
 
 ## Why keep this note?
 
