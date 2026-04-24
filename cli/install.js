@@ -71,6 +71,9 @@ function parseArgs(argv) {
     ide: 'claude',  // claude, cursor, gemini (copilot = TODO)
     help: false,
     modules: [],  // --module core --module execution or empty = all
+    // #189 — planning commit policy. null = ask interactively (or default true under --yes).
+    // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
+    commitPlanning: null,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -85,6 +88,8 @@ function parseArgs(argv) {
     else if (arg === '--mode') opts.mode = argv[++i];
     else if (arg === '--ide') opts.ide = argv[++i];
     else if (arg === '--module') opts.modules.push(argv[++i]);
+    else if (arg === '--commit-planning') opts.commitPlanning = true;
+    else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -93,6 +98,30 @@ function parseArgs(argv) {
   }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
+}
+
+/**
+ * Resolve commit-planning preference — CLI flag wins, then interactive
+ * prompt (when TTY + not --yes), else GSD-style default: true.
+ * #189.
+ */
+async function resolveCommitPlanning(opts) {
+  if (opts.commitPlanning !== null) return opts.commitPlanning;
+  if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
+
+  const readline = require('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = (q) => new Promise(r => rl.question(q, a => r(a)));
+  console.log('');
+  console.log('📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files.');
+  console.log('   Commit them to git, or keep them local?');
+  console.log('');
+  console.log('   [Y] Commit — collaborators see the same plans  (default, recommended)');
+  console.log('   [n] Gitignore — planning stays local  (good for sensitive PRDs)');
+  console.log('');
+  const answer = (await prompt('   Commit planning artifacts? [Y/n]: ')).trim().toLowerCase();
+  rl.close();
+  return !(answer === 'n' || answer === 'no');
 }
 
 function printHelp() {
@@ -282,6 +311,146 @@ function seedStarterPlanning(target, projectName) {
   }
 
   return true;
+}
+
+/**
+ * Ensure the target project's .gitignore has the rcode-managed block.
+ *
+ * Idempotent via a sentinel comment line. On first install, appends a block
+ * that separates:
+ *   - installed methodology files (ignored; re-install to refresh)
+ *   - user's project config, state, and planning artifacts (committable)
+ *
+ * If the user already has a block (marker present) we leave their customizations
+ * alone. This function is best-effort — never throws. A missing .gitignore
+ * is created. A read/write error is logged and install continues.
+ *
+ * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-error' }
+ */
+function ensureRcodeGitignore(target, options = {}) {
+  const commitPlanning = options.commitPlanning !== false; // default true
+  const BEGIN = '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====';
+  const END   = '# ===== end rcode-managed gitignore block =====';
+
+  const lines = [
+    '',
+    BEGIN,
+    '# Added automatically on first rcode install. Idempotent — safe to re-run.',
+    '# Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.',
+    '',
+    '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
+    '.claude/',
+    '.rihal/bin/',
+    '.rihal/workflows/',
+    '.rihal/references/',
+    '.rihal/commands/',
+    '.rihal/skills/',
+    '',
+    '# Pulled Rihal brain content (refresh with: rcode brain pull)',
+    '.rihal/brain/rihal-github/',
+    '.rihal/brain/rihal-docs/',
+    '.rihal/brain/best-practices/',
+    '',
+    '# Runtime noise',
+    '.rihal/state.json.lock',
+    '.planning/debug/',
+    '.planning/_backup/',
+  ];
+
+  if (!commitPlanning) {
+    lines.push(
+      '',
+      '# Planning artifacts — kept local (commit_planning: false)',
+      '.planning/'
+    );
+  }
+
+  lines.push(
+    '',
+    '# What you DO commit:',
+    '#   .rihal/config.yaml        - project mode/language/profile/commit_planning',
+    '#   .rihal/state.json         - decisions, roadmap pointer, blockers',
+    '#   .rihal/brain/sources.yaml - brain source manifest',
+    commitPlanning
+      ? '#   .planning/                - PRD, roadmap, sprints, SUMMARY.md files'
+      : '#   (planning artifacts are NOT committed — see commit_planning in config)',
+    END,
+    ''
+  );
+  const BLOCK = lines.join('\n');
+
+  const gitignorePath = path.join(target, '.gitignore');
+  try {
+    if (!fs.existsSync(gitignorePath)) {
+      fs.writeFileSync(gitignorePath, BLOCK);
+      return { action: 'created' };
+    }
+    const existing = fs.readFileSync(gitignorePath, 'utf8');
+    // Replace existing rcode block using indexOf (regex escaping on the
+    // sentinel is fiddly — indexOf is deterministic and easier to audit).
+    function spliceBlock(text, newBlock) {
+      const start = text.indexOf(BEGIN);
+      if (start < 0) return null;
+      const endIdx = text.indexOf(END, start);
+      if (endIdx < 0) return null;
+      let sliceStart = start;
+      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+      let sliceEnd = endIdx + END.length;
+      if (text[sliceEnd] === '\n') sliceEnd += 1;
+      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
+    }
+    if (existing.includes(BEGIN)) {
+      const rewritten = spliceBlock(existing, BLOCK);
+      if (rewritten !== null && rewritten !== existing) {
+        fs.writeFileSync(gitignorePath, rewritten);
+        return { action: 'updated' };
+      }
+      return { action: 'already-present' };
+    }
+    fs.writeFileSync(gitignorePath, existing + BLOCK);
+    return { action: 'appended' };
+  } catch (err) {
+    return { action: 'skipped-error', error: err.message };
+  }
+}
+
+/**
+ * Install brain scaffold (sources.yaml + README.md) into .rihal/brain/ on target.
+ * Actual brain content lands after `brain pull` runs.
+ * Closes #188 — previously the package's rihal/brain/sources.yaml was never
+ * copied to the target at all, leaving brain pull permanently broken.
+ */
+function installBrainScaffold(packageRoot, target) {
+  const srcDir = path.join(packageRoot, 'rihal', 'brain');
+  const destDir = path.join(target, '.rihal', 'brain');
+  fs.mkdirSync(destDir, { recursive: true });
+  let copied = 0;
+  for (const name of ['sources.yaml', 'README.md']) {
+    const src = path.join(srcDir, name);
+    const dest = path.join(destDir, name);
+    if (fs.existsSync(src) && !fs.existsSync(dest)) {
+      fs.copyFileSync(src, dest);
+      copied++;
+    }
+  }
+  // Also pre-seed the best-practices subfolder from the package's
+  // rihal/skills/_shared/ so a fresh install has working brain content
+  // immediately, even before brain pull runs against real upstream URLs.
+  const sharedSrc = path.join(packageRoot, 'rihal', 'skills', '_shared');
+  if (fs.existsSync(sharedSrc)) {
+    const bpDest = path.join(destDir, 'best-practices');
+    fs.mkdirSync(bpDest, { recursive: true });
+    for (const entry of fs.readdirSync(sharedSrc, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        const dest = path.join(bpDest, entry.name);
+        if (!fs.existsSync(dest)) {
+          fs.copyFileSync(path.join(sharedSrc, entry.name), dest);
+          copied++;
+        }
+      }
+    }
+  }
+  return copied;
 }
 
 /**
@@ -575,6 +744,67 @@ function generateFilesManifest(plan, target) {
   return rows.map((r) => r.join(',')).join('\n') + '\n';
 }
 
+/**
+ * Orphan sweep — remove files that were part of a previous install but aren't
+ * in the current plan. Reads `.rihal/_config/files-manifest.csv` from the
+ * previous install and computes the diff against the new plan.
+ *
+ * Closes #196 — without this, upgrading rcode leaves stale skill/command
+ * files around that show up as ghost slash commands in the IDE.
+ *
+ * Deliberately conservative:
+ *   - Only removes files that appeared in the PREVIOUS manifest.
+ *   - Never removes files the user created themselves.
+ *   - Never touches .rihal/config.yaml, .rihal/state.json, or .planning/.
+ *
+ * Returns the number of orphan files removed.
+ */
+function sweepStaleInstalledFiles(target, newPlan) {
+  const manifestPath = path.join(target, '.rihal', '_config', 'files-manifest.csv');
+  if (!fs.existsSync(manifestPath)) return 0;
+
+  let oldRels;
+  try {
+    const rows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
+    oldRels = rows.map(r => r.split(',')[0]).filter(Boolean);
+  } catch {
+    return 0;
+  }
+
+  const newRelsSet = new Set(newPlan.map(e => e.rel.split(path.sep).join('/')));
+  // Safety — never sweep these, even if they somehow landed in the manifest.
+  const neverSweep = /^(\.rihal\/config\.yaml|\.rihal\/state\.json|\.rihal\/state\.json\.lock|\.planning\/|\.rihal\/brain\/sources\.yaml)/;
+
+  let removed = 0;
+  const emptyCandidateDirs = new Set();
+  for (const rel of oldRels) {
+    if (newRelsSet.has(rel)) continue;
+    if (neverSweep.test(rel)) continue;
+    const full = path.join(target, rel);
+    try {
+      if (fs.existsSync(full)) {
+        fs.rmSync(full, { force: true });
+        emptyCandidateDirs.add(path.dirname(full));
+        removed += 1;
+      }
+    } catch {
+      // ignore individual failures — sweep is best-effort
+    }
+  }
+
+  // Remove any now-empty parent dirs (bottom-up, so nested emptiness cascades).
+  const dirsSortedDeep = Array.from(emptyCandidateDirs).sort((a, b) => b.length - a.length);
+  for (const dir of dirsSortedDeep) {
+    try {
+      if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
+        fs.rmdirSync(dir);
+      }
+    } catch {}
+  }
+
+  return removed;
+}
+
 function readPackageVersion() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
@@ -626,6 +856,7 @@ function generateConfigYaml(opts) {
     `communication_language: "${sanitizeYamlValue(opts.language)}"`,
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
+    `commit_planning: ${opts.commitPlanning !== false}`,
     `rihal_source_path: "${sanitizeYamlValue(path.dirname(path.dirname(process.argv[1])))}/"`,
     'workflow:',
     '  research_by_default: false',
@@ -652,18 +883,53 @@ function convertToCursorMdc(sourceText) {
 /**
  * Main install routine. Copies files, generates manifests, writes config.
  */
-function install(opts) {
+async function install(opts) {
   if (opts.help) { printHelp(); return 0; }
 
-  console.log(`\n🕌 Rihal Code installer → ${opts.target}`);
+  // Resolve commit-planning preference (interactive prompt or flag) — #189.
+  opts.commitPlanning = await resolveCommitPlanning(opts);
+
+  console.log(`\n🕌 Rihal Code v${readPackageVersion()} installer → ${opts.target}`);
+
+  // Detect an existing install and surface it (#195).
+  const existingManifestPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
+  if (fs.existsSync(existingManifestPath)) {
+    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
+    const existingVersion = m ? m[1].trim() : 'unknown';
+    const newVersion = readPackageVersion();
+    if (existingVersion === newVersion) {
+      console.log(`  ↻ Existing install at v${existingVersion} — refreshing (config + state + .planning preserved).`);
+    } else {
+      console.log(`  ⬆ Existing install at v${existingVersion} — upgrading to v${newVersion} (config + state + .planning preserved).`);
+    }
+    if (!opts.force) {
+      console.log('    Pass --force to also sweep orphaned files from the previous version.');
+    }
+  }
   if (!fs.existsSync(SOURCE_ROOT)) {
     console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
     return 1;
   }
 
-  // Validate IDE
+  // Validate IDE — structured error for unsupported editors (#197).
   if (!['claude', 'cursor', 'gemini'].includes(opts.ide)) {
-    console.error(`✖ Unknown IDE: ${opts.ide}. Supported: claude, cursor, gemini`);
+    console.error(`✖ --ide ${opts.ide} is not supported in v${readPackageVersion()}.`);
+    console.error('');
+    console.error('  Currently supported:');
+    console.error('    claude    — Claude Code native (recommended)');
+    console.error('    cursor    — Cursor IDE');
+    console.error('    gemini    — Gemini CLI');
+    console.error('');
+    console.error('  Tracked for v3.0 (see issue #182):');
+    console.error('    vscode    — VS Code native extension');
+    console.error('    jetbrains — IntelliJ / PyCharm');
+    console.error('    zed       — Zed editor');
+    console.error('');
+    if (/^(vscode|vs-code|code)$/i.test(opts.ide)) {
+      console.error('  Workaround: if you use VS Code WITH the Claude Code extension,');
+      console.error('  run `--ide claude` — the extension reads from .claude/ too.');
+      console.error('');
+    }
     return 1;
   }
 
@@ -696,6 +962,13 @@ function install(opts) {
   }
   if (opts.modules.length > 0) {
     console.log(`  Modules: ${opts.modules.join(', ')}`);
+  }
+
+  // Orphan sweep — remove files from previous install not in the new plan (#196).
+  // Runs on --force only, to preserve user-edited or hand-dropped files on regular installs.
+  let sweptOrphans = 0;
+  if (opts.force) {
+    sweptOrphans = sweepStaleInstalledFiles(opts.target, plan);
   }
 
   // Copy files
@@ -801,6 +1074,14 @@ function install(opts) {
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
 
+  // Install brain scaffolding at .rihal/brain/ (sources.yaml + README).
+  // Actual brain content lands after first brain pull runs.
+  installBrainScaffold(PACKAGE_ROOT, opts.target);
+
+  // Ensure .gitignore separates installed methodology from committable artifacts.
+  // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
+  const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
+
   // Pull Rihal brain content (v2.0 — issue #158).
   // Runs rihal-tools brain pull as a child process. Placeholder URLs
   // are skipped gracefully so this does not fail a fresh install.
@@ -823,10 +1104,7 @@ function install(opts) {
 
   // Summary
   console.log('');
-  console.log(`  Installed: ${copied} file${copied === 1 ? '' : 's'}`);
-  if (skillsInstalled > 0) {
-    console.log(`  Skills:    ${skillsInstalled} phrase-activated (in .claude/skills/)`);
-  }
+  console.log(`  Files:     ${copied} installed` + (opts.force && sweptOrphans > 0 ? `, ${sweptOrphans} stale swept` : ''));
   if (brainReport && brainReport.ok) {
     const pulledCount = (brainReport.pulled || []).length;
     const skippedCount = (brainReport.skipped || []).length;
@@ -835,26 +1113,50 @@ function install(opts) {
   } else if (brainReport && brainReport.error) {
     console.log(`  Brain:     skipped (${brainReport.error})`);
   }
+  if (gitignoreReport) {
+    const gitMsg = {
+      'created': '.gitignore created with rcode block',
+      'appended': '.gitignore updated — rcode block appended',
+      'already-present': '.gitignore rcode block already present',
+      'updated': '.gitignore rcode block refreshed',
+      'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
+    }[gitignoreReport.action] || '.gitignore unchanged';
+    console.log(`  Gitignore: ${gitMsg}`);
+  }
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
   if (opts.force && existedBefore) {
     console.log('  ⚠ Preserved: .rihal/config.yaml and .rihal/state.json');
     console.log('     Pass --reset to wipe and re-init those too.');
   }
+
+  // Count installed agents + commands dynamically (#190).
+  const agentsDir = path.join(opts.target, '.claude', 'agents');
+  const commandsDir = path.join(opts.target, '.claude', 'commands', 'rihal');
+  let agentCount = 0, commandCount = 0;
+  try {
+    if (fs.existsSync(agentsDir)) {
+      agentCount = fs.readdirSync(agentsDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+    }
+    if (fs.existsSync(commandsDir)) {
+      commandCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md')).length;
+    }
+  } catch {}
+
   console.log('');
-  console.log(`  Installed for IDE: ${opts.ide}`);
-  console.log(`  Language: ${opts.language}  (change in .rihal/config.yaml → communication_language)`);
-  console.log(`  Mode: ${opts.mode}  (guided=confirm at gates, yolo=autonomous)`);
-  console.log(`  Model profile: balanced`);
+  console.log(`  Version:   @hanzlaa/rcode@${readPackageVersion()}`);
+  console.log(`  IDE:       ${opts.ide}`);
+  console.log(`  Language:  ${opts.language}  (change in .rihal/config.yaml)`);
+  console.log(`  Mode:      ${opts.mode}  (guided=confirm at gates, yolo=autonomous)`);
+  console.log(`  Profile:   balanced`);
+  console.log(`  Planning:  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  (flip: rihal-tools gitignore refresh)`);
   console.log('');
-  console.log('  Agents installed (first-class subagents):');
-  console.log('    🧭 rihal-sadiq   — Director of Strategy');
-  console.log('    🏗️  rihal-waleed  — CTO');
-  console.log('    🛡️  rihal-fatima  — QA Lead');
-  console.log('');
-  console.log('  Slash commands installed:');
-  console.log('    /rihal:council  — parallel multi-agent council');
-  console.log('    /rihal:status   — project state dashboard');
-  console.log('    /rihal:insert-phase — insert decimal phase for urgent work');
+  console.log(`  Agents:    ${agentCount} installed in .claude/agents/  (e.g. rihal-sadiq, rihal-waleed, rihal-fatima)`);
+  console.log(`             Full roster: node .rihal/bin/rihal-tools.cjs list-agents`);
+  console.log(`  Commands:  ${commandCount} slash commands in .claude/commands/rihal/  (e.g. /rihal:council, /rihal:create-prd, /rihal:progress)`);
+  console.log(`             Full list:   ls .claude/commands/rihal/`);
+  if (skillsInstalled > 0) {
+    console.log(`  Skills:    ${skillsInstalled} phrase-activated in .claude/skills/`);
+  }
   console.log('');
   if (starterSeeded) {
     console.log('  ✓ Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)');
@@ -862,14 +1164,89 @@ function install(opts) {
   }
   console.log('  Next:');
   console.log(`    cd ${opts.target}`);
-  console.log('    claude  # start Claude Code (or restart if already open)');
-  console.log('    /rihal:sprint-planning      # plan your first sprint');
-  console.log('    /rihal:do                   # interactive command picker');
-  console.log('    /rihal:council <question>   # multi-agent strategic answer');
+  console.log('    claude              # start Claude Code (reload window if already open)');
+  console.log('    /rihal:progress     # where you are, what\'s next');
+  console.log('    /rihal:do           # interactive command picker');
+  console.log('    /rihal:council <q>  # multi-agent strategic answer');
   console.log('');
-  console.log('  ⚠ If Claude Code is already running, start a new session to load commands.');
+  console.log('  Refresh anytime:');
+  console.log('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain');
+  console.log('    /rihal:update v2.2.0                # pin rcode to a specific version');
   console.log('');
-  return 0;
+  console.log('  ⚠ If your IDE is already open, reload the window to refresh skills/commands.');
+  console.log('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window');
+  console.log('');
+
+  // Health check — smoke test that the install actually works (#193).
+  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled });
+  return healthPass ? 0 : 1;
+}
+
+/**
+ * Run a 5-point smoke test against the fresh install. Closes #193.
+ * Returns true if all pass, false if any critical check failed.
+ * Prints a clean ✓/✖ line per check.
+ */
+function runInstallHealthCheck(target, counts) {
+  console.log('  Health check:');
+  const { execFileSync } = require('child_process');
+  let fails = 0;
+
+  function check(label, fn) {
+    try {
+      const out = fn();
+      console.log(`    ✓ ${label}${out ? ' — ' + out : ''}`);
+    } catch (err) {
+      fails += 1;
+      console.log(`    ✖ ${label} — ${String(err.message || err).slice(0, 120)}`);
+    }
+  }
+
+  check('rihal-tools.cjs runs', () => {
+    const toolsPath = path.join(target, '.rihal', 'bin', 'rihal-tools.cjs');
+    if (!fs.existsSync(toolsPath)) throw new Error('bin/rihal-tools.cjs not installed');
+    execFileSync('node', ['-c', toolsPath], { stdio: 'pipe' });
+    return 'syntax ok';
+  });
+
+  check('.rihal/config.yaml present', () => {
+    const p = path.join(target, '.rihal', 'config.yaml');
+    if (!fs.existsSync(p)) throw new Error('missing');
+    const text = fs.readFileSync(p, 'utf8');
+    if (!/user_name:|project_name:/.test(text)) throw new Error('config.yaml incomplete');
+    return `${fs.statSync(p).size} bytes`;
+  });
+
+  check('.rihal/state.json parses', () => {
+    const p = path.join(target, '.rihal', 'state.json');
+    if (!fs.existsSync(p)) throw new Error('missing');
+    JSON.parse(fs.readFileSync(p, 'utf8'));
+    return 'valid JSON';
+  });
+
+  check('agents installed', () => {
+    if ((counts.agentCount || 0) < 20) throw new Error(`only ${counts.agentCount} agents (expected ≥ 20)`);
+    return `${counts.agentCount}`;
+  });
+
+  check('skills + commands installed', () => {
+    const issues = [];
+    if ((counts.skillsInstalled || 0) < 20) issues.push(`${counts.skillsInstalled} skills`);
+    if ((counts.commandCount || 0) < 20) issues.push(`${counts.commandCount} commands`);
+    if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
+    return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
+  });
+
+  if (fails > 0) {
+    console.log('');
+    console.log(`  ✖ ${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`);
+    console.log('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/');
+    console.log('     Reinstall: npx @hanzlaa/rcode install . --force');
+    console.log('');
+    return false;
+  }
+  console.log('');
+  return true;
 }
 
 async function main() {
@@ -909,9 +1286,7 @@ async function main() {
     }
   }
 
-  try {
-    process.exit(install(opts));
-  } catch (err) {
+  install(opts).then(code => process.exit(code)).catch(err => {
     if (err.code === 'EACCES' || err.code === 'EPERM') {
       console.error(`✖ Permission denied: ${err.path || err.message}`);
       process.exit(1);
@@ -923,7 +1298,7 @@ async function main() {
     console.error(`✖ Install failed: ${err.message}`);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
-  }
+  });
 }
 
 if (require.main === module) main();
@@ -933,10 +1308,10 @@ if (require.main === module) main();
  * Converts the index.js-style (args, ctx) signature into a cli/install.js
  * parseArgs-compatible argv and runs install().
  */
-function runFromCli(args /* , ctx */) {
+async function runFromCli(args /* , ctx */) {
   const argv = Array.isArray(args) ? args : [];
   const opts = parseArgs(argv);
-  const code = install(opts);
+  const code = await install(opts);
   if (code !== 0) process.exit(code);
 }
 

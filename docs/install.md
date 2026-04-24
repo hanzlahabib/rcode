@@ -34,6 +34,69 @@ Total install footprint: ~3.8 MB, 676 files.
 
 ---
 
+## What gets committed vs ignored
+
+On first install, rcode automatically updates your project's `.gitignore` so you commit the **work**, not the **methodology**. If you already have a `.gitignore`, rcode appends its block — your existing entries are preserved.
+
+Interactive installs also prompt you on `.planning/` specifically — you choose whether to commit PRDs, roadmaps, sprints, SUMMARY files (default yes) or keep them local (`--no-commit-planning`). You can flip this later at any time.
+
+| Path | Commit? | Why |
+|------|:-------:|-----|
+| `.rihal/config.yaml` | ✅ commit | Your project's chosen mode, language, profile, commit_planning — collaborators should see the same |
+| `.rihal/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
+| `.rihal/brain/sources.yaml` | ✅ commit | Brain source manifest — collaborators pull the same content |
+| `.planning/` | ✅ commit *(toggle-able)* | PRD, roadmap, sprints, SUMMARY.md — the actual thinking. Set `commit_planning: false` in config to gitignore instead. |
+| `.claude/` | ❌ ignored | Installed skills/agents/commands — 500+ files, regenerate with `rcode install` |
+| `.rihal/bin/`, `.rihal/workflows/`, `.rihal/references/`, `.rihal/commands/`, `.rihal/skills/` | ❌ ignored | Methodology files — re-installed on every update |
+| `.rihal/brain/rihal-github/`, `.rihal/brain/rihal-docs/`, `.rihal/brain/best-practices/` | ❌ ignored | Pulled Rihal standards — refresh with `rcode brain pull` |
+| `.rihal/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
+
+### Flipping commit_planning after install
+
+If you want to change the commit policy for `.planning/` after install:
+
+```bash
+# Stop committing planning artifacts:
+node .rihal/bin/rihal-tools.cjs config-set commit_planning false
+node .rihal/bin/rihal-tools.cjs gitignore refresh
+
+# Start committing them again:
+node .rihal/bin/rihal-tools.cjs config-set commit_planning true
+node .rihal/bin/rihal-tools.cjs gitignore refresh
+```
+
+`gitignore refresh` reads `.rihal/config.yaml` and rewrites the rcode-managed block in `.gitignore`. It's idempotent — safe to run any time, and leaves your non-rcode gitignore entries untouched.
+
+**Without the auto-managed `.gitignore`**, `git add .` would bloat your repo by 676 files (~3.8 MB) — methodology files that regenerate on every install.
+
+The rcode block in `.gitignore` is marked with a sentinel comment:
+```
+# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====
+```
+Re-running install is idempotent — it detects the marker and skips re-appending. Safe to customize entries inside the block, but edits can be overwritten if you ever `sed` it out.
+
+### Manually commit everything anyway?
+
+Remove the rcode block from `.gitignore`. You own your repo. Just know that every `rcode update` will produce large diffs.
+
+---
+
+## Editor support matrix
+
+| Editor | `--ide` | What gets written | Status |
+|--------|---------|------------------|:------:|
+| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rihal/`, `.claude/skills/` | ✅ v2.x |
+| Cursor | `cursor` | `.cursor/rules/rihal-*.mdc` | ✅ v2.x |
+| Gemini CLI | `gemini` | `.gemini/rihal/` | ✅ v2.x |
+| VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v2.x |
+| VS Code native (no Claude Code extension) | `vscode` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+| JetBrains (IntelliJ / PyCharm) | `jetbrains` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+| Zed | `zed` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+
+Passing an unsupported `--ide` value prints a clear error with workaround guidance (e.g. VS Code users are pointed at `--ide claude` if they have the Claude Code extension).
+
+---
+
 ## Pick your install flavor
 
 ### Default — full install, guided mode

@@ -34,7 +34,7 @@ sources:
       - docs/issue-standards.md
       - docs/commit-standards.md
       - docs/review-checklist.md
-    dest: rihal/brain/rihal-github/
+    dest: rihal-github/
 
   - name: rihal-docs
     description: >
@@ -47,13 +47,16 @@ sources:
       - "guides/**/*.md"
       - "standards/**/*.md"
       - "playbooks/**/*.md"
-    dest: rihal/brain/rihal-docs/
+    dest: rihal-docs/
 
   - name: rihal-best-practices
     description: >
       Hanzla's one-year-of-usage best practices — in-repo, version-
-      controlled alongside the rest of Rihal Code.
+      controlled alongside the rest of Rihal Code. Resolved from the
+      installed .rihal/skills/_shared/ dir (or the package's own
+      rihal/skills/_shared/ when running inside the rihal-code repo).
     repo: self
     paths:
+      - .rihal/skills/_shared/**/*.md
       - rihal/skills/_shared/**/*.md
-    dest: rihal/brain/best-practices/
+    dest: best-practices/
