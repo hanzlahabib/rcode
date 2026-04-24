@@ -57,7 +57,7 @@ It's not a chatbot. It's a methodology.
 In any project directory:
 
 ```bash
-npx @hanzlahabib/rihal-code install
+npx @hanzlaa/rcode install
 ```
 
 That's it. One unified installer. Pure file shipping, no runtime dependencies. Installs into:
@@ -81,17 +81,17 @@ Detects your project state (fresh / existing-with-no-rihal / returning), asks a 
 ### Install a specific module
 
 ```bash
-npx @hanzlahabib/rihal-code install --module core         # council + quick-sync only
-npx @hanzlahabib/rihal-code install --module execution --force
-npx @hanzlahabib/rihal-code install --module discovery --force
+npx @hanzlaa/rcode install --module core         # council + quick-sync only
+npx @hanzlaa/rcode install --module execution --force
+npx @hanzlaa/rcode install --module discovery --force
 ```
 
 ### Multi-IDE support
 
 ```bash
-npx @hanzlahabib/rihal-code install --ide claude    # default
-npx @hanzlahabib/rihal-code install --ide cursor
-npx @hanzlahabib/rihal-code install --ide gemini
+npx @hanzlaa/rcode install --ide claude    # default
+npx @hanzlaa/rcode install --ide cursor
+npx @hanzlaa/rcode install --ide gemini
 ```
 
 ---

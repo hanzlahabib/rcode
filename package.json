@@ -1,9 +1,10 @@
 {
-  "name": "@hanzlahabib/rihal-code",
-  "version": "1.0.0-beta.0",
-  "description": "Rihal Code — AI engineering methodology with 44 agents, 93 slash commands, 58 phrase-activated skills. Unified install for Claude Code, Cursor, and Gemini.",
+  "name": "@hanzlaa/rcode",
+  "version": "2.1.0",
+  "description": "Rihal Code (rcode) — installable context-brain for Rihalians. 44 agents, 93 slash commands, 58 skills, pullable Rihal standards. Unified install for Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
+    "rcode": "cli/index.js",
     "rihal-code": "cli/index.js"
   },
   "scripts": {
