@@ -74,6 +74,8 @@ function parseArgs(argv) {
     // #189 — planning commit policy. null = ask interactively (or default true under --yes).
     // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
     commitPlanning: null,
+    // #199 — install the pre-commit hook (default true; opt out with --no-git-hooks).
+    gitHooks: true,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -90,6 +92,8 @@ function parseArgs(argv) {
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
+    else if (arg === '--git-hooks') opts.gitHooks = true;
+    else if (arg === '--no-git-hooks') opts.gitHooks = false;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -420,6 +424,65 @@ function ensureRcodeGitignore(target, options = {}) {
  * Closes #188 — previously the package's rihal/brain/sources.yaml was never
  * copied to the target at all, leaving brain pull permanently broken.
  */
+/**
+ * Install a pre-commit git hook that auto-syncs state.json when .planning/
+ * or brain sources.yaml files are part of a commit (#199).
+ *
+ * Idempotent via a sentinel marker. User's existing pre-commit logic is
+ * preserved — we only append our block. Best-effort: never throws.
+ *
+ * Returns { action }: 'skipped-no-git' | 'created' | 'appended' | 'already-present' | 'skipped-error' | 'opted-out'
+ */
+function installPreCommitHook(target) {
+  const gitDir = path.join(target, '.git');
+  if (!fs.existsSync(gitDir) || !fs.statSync(gitDir).isDirectory()) {
+    return { action: 'skipped-no-git' };
+  }
+
+  const hookDir = path.join(gitDir, 'hooks');
+  const hookPath = path.join(hookDir, 'pre-commit');
+  const MARKER_BEGIN = '# ===== rcode-managed pre-commit block (state auto-sync) =====';
+  const MARKER_END = '# ===== end rcode-managed pre-commit block =====';
+
+  const block = [
+    '',
+    MARKER_BEGIN,
+    '# Auto-sync .rihal/state.json when .planning/ or brain sources.yaml change.',
+    '# Best-effort: never blocks a commit. Remove this block (or set git_hooks: false',
+    '# in .rihal/config.yaml + re-install) to opt out.',
+    'if git diff --cached --name-only | grep -qE "^\\.planning/|^\\.rihal/brain/sources\\.yaml$"; then',
+    '  if [ -x .rihal/bin/rihal-tools.cjs ] || [ -f .rihal/bin/rihal-tools.cjs ]; then',
+    '    node .rihal/bin/rihal-tools.cjs state sync --from-disk >/dev/null 2>&1 || true',
+    '    git add .rihal/state.json 2>/dev/null || true',
+    '  fi',
+    'fi',
+    MARKER_END,
+    '',
+  ].join('\n');
+
+  try {
+    fs.mkdirSync(hookDir, { recursive: true });
+
+    if (!fs.existsSync(hookPath)) {
+      fs.writeFileSync(hookPath, '#!/bin/sh\n' + block);
+      fs.chmodSync(hookPath, 0o755);
+      return { action: 'created' };
+    }
+
+    const existing = fs.readFileSync(hookPath, 'utf8');
+    if (existing.includes(MARKER_BEGIN)) {
+      return { action: 'already-present' };
+    }
+
+    // Append our block — preserve user's existing hook body.
+    fs.writeFileSync(hookPath, existing + block);
+    try { fs.chmodSync(hookPath, 0o755); } catch {}
+    return { action: 'appended' };
+  } catch (err) {
+    return { action: 'skipped-error', error: err.message };
+  }
+}
+
 function installBrainScaffold(packageRoot, target) {
   const srcDir = path.join(packageRoot, 'rihal', 'brain');
   const destDir = path.join(target, '.rihal', 'brain');
@@ -857,6 +920,7 @@ function generateConfigYaml(opts) {
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
     `commit_planning: ${opts.commitPlanning !== false}`,
+    `git_hooks: ${opts.gitHooks !== false}`,
     `rihal_source_path: "${sanitizeYamlValue(path.dirname(path.dirname(process.argv[1])))}/"`,
     'workflow:',
     '  research_by_default: false',
@@ -1078,6 +1142,10 @@ async function install(opts) {
   // Actual brain content lands after first brain pull runs.
   installBrainScaffold(PACKAGE_ROOT, opts.target);
 
+  // Install the pre-commit hook that auto-syncs state on .planning/ changes (#199).
+  // Opt-out via --no-git-hooks or git_hooks: false in config. Best-effort; never fails install.
+  const hookReport = opts.gitHooks !== false ? installPreCommitHook(opts.target) : { action: 'opted-out' };
+
   // Ensure .gitignore separates installed methodology from committable artifacts.
   // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
   const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
@@ -1122,6 +1190,17 @@ async function install(opts) {
       'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
     }[gitignoreReport.action] || '.gitignore unchanged';
     console.log(`  Gitignore: ${gitMsg}`);
+  }
+  if (hookReport) {
+    const hookMsg = {
+      'created': 'pre-commit hook installed (auto-syncs state on .planning/ changes)',
+      'appended': 'pre-commit hook updated — rcode block appended',
+      'already-present': 'pre-commit hook already present',
+      'skipped-no-git': 'pre-commit hook skipped (no .git/ found)',
+      'skipped-error': `pre-commit hook skipped (${hookReport.error})`,
+      'opted-out': 'pre-commit hook skipped (--no-git-hooks)',
+    }[hookReport.action];
+    if (hookMsg) console.log(`  Git hook:  ${hookMsg}`);
   }
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
   if (opts.force && existedBefore) {

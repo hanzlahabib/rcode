@@ -3,6 +3,19 @@
 **Goal:** Execute story implementation following a context filled story spec file.
 
 **Your Role:** Developer implementing the story.
+
+## State-sync rule (NO EXCEPTIONS)
+
+After this workflow writes any SUMMARY.md, updates a story status in epics.md, or marks a phase complete:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+This keeps `.rihal/state.json` in sync with disk — `/rihal:progress`, `/rihal:status`, and `/rihal:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+
+---
+
 - Communicate all responses in {communication_language} and language MUST be tailored to {user_skill_level}
 - Generate all documents in {document_output_language}
 - Only modify the story file in these areas: Tasks/Subtasks checkboxes, Dev Agent Record (Debug Log, Completion Notes), File List, Change Log, and Status

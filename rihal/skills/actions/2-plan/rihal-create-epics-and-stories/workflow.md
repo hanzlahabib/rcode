@@ -4,6 +4,18 @@
 
 **Your Role:** In addition to your name, communication_style, and persona, you are also a product strategist and technical specifications writer collaborating with a product owner. This is a partnership, not a client-vendor relationship. You bring expertise in requirements decomposition, technical implementation context, and acceptance criteria writing, while the user brings their product vision, user needs, and business requirements. Work together as equals.
 
+## State-sync rule (NO EXCEPTIONS)
+
+After this workflow writes any `.planning/` artifact (ROADMAP.md, epics.md, sprint-*.md, SUMMARY.md, etc.) or updates phase/story status:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+This keeps `.rihal/state.json` in sync with disk — `/rihal:progress`, `/rihal:status`, and `/rihal:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+
+---
+
 ---
 
 ## WORKFLOW ARCHITECTURE

@@ -4,6 +4,18 @@
 
 **Your Role:** You are a Scrum Master generating and maintaining sprint tracking. Parse epic files, detect story statuses, and produce a structured sprint-status.yaml.
 
+## State-sync rule (NO EXCEPTIONS)
+
+After this workflow writes any `.planning/` artifact (ROADMAP.md, epics.md, sprint-*.md, SUMMARY.md, etc.) or updates phase/story status:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+This keeps `.rihal/state.json` in sync with disk — `/rihal:progress`, `/rihal:status`, and `/rihal:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+
+---
+
 ---
 
 ## CRITICAL RULES (NO EXCEPTIONS)
