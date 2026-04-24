@@ -341,3 +341,252 @@ routing:
     - rihal-hussain-pm  # scope
     - rihal-waleed      # feasibility
     - rihal-sadiq       # strategic fit
+
+  # ===== Tactical sub-agents (spawned by slash commands / workflows) =====
+  # These are orchestration helpers, not council-facing first-class agents.
+  # Added 2026-04-24 to close team.yaml/disk divergence (#201).
+
+  - id: rihal-advisor-researcher
+    name: Advisor Researcher
+    file_path: rihal/agents/rihal-advisor-researcher.md
+    role: Gray-area decision researcher
+    authority_level: operational
+    domain_keywords:
+      - decision-research
+      - comparison-table
+      - tradeoff-analysis
+
+  - id: rihal-architect
+    name: Architect
+    file_path: rihal/agents/rihal-architect.md
+    role: Enterprise Architecture & System Design
+    authority_level: technical
+    domain_keywords:
+      - architecture
+      - system-design
+      - scalability
+      - integration
+
+  - id: rihal-assumptions-analyzer
+    name: Assumptions Analyzer
+    file_path: rihal/agents/rihal-assumptions-analyzer.md
+    role: Codebase assumption surfacer
+    authority_level: operational
+    domain_keywords:
+      - assumptions
+      - discuss-phase
+      - evidence-gathering
+
+  - id: rihal-codebase-mapper
+    name: Codebase Mapper
+    file_path: rihal/agents/rihal-codebase-mapper.md
+    role: Codebase exploration + structured analysis
+    authority_level: operational
+    domain_keywords:
+      - codebase-analysis
+      - tech-stack
+      - architecture-discovery
+
+  - id: rihal-code-fixer
+    name: Code Fixer
+    file_path: rihal/agents/rihal-code-fixer.md
+    role: Code fix specialist — applies review findings
+    authority_level: technical
+    domain_keywords:
+      - code-fix
+      - refactor
+      - style
+
+  - id: rihal-code-reviewer
+    name: Code Reviewer
+    file_path: rihal/agents/rihal-code-reviewer.md
+    role: Code review specialist — architectural + quality assessment
+    authority_level: quality
+    domain_keywords:
+      - code-review
+      - quality
+      - security
+      - tests
+
+  - id: rihal-debugger
+    name: Debugger
+    file_path: rihal/agents/rihal-debugger.md
+    role: Scientific-method bug investigation
+    authority_level: technical
+    domain_keywords:
+      - bug
+      - debug
+      - investigation
+      - checkpoint
+
+  - id: rihal-deviation-analyzer
+    name: Deviation Analyzer
+    file_path: rihal/agents/rihal-deviation-analyzer.md
+    role: Plan-deviation root cause analyst
+    authority_level: operational
+    domain_keywords:
+      - deviation
+      - scope-creep
+      - remediation
+
+  - id: rihal-docs-auditor
+    name: Docs Auditor
+    file_path: rihal/agents/rihal-docs-auditor.md
+    role: Documentation completeness + accuracy audit
+    authority_level: quality
+    domain_keywords:
+      - docs-audit
+      - completeness
+      - accuracy
+
+  - id: rihal-edge-case-hunter
+    name: Edge Case Hunter
+    file_path: rihal/agents/rihal-edge-case-hunter.md
+    role: Enumerate edge cases + boundary conditions
+    authority_level: quality
+    domain_keywords:
+      - edge-cases
+      - boundary-conditions
+      - corner-cases
+      - defensive-coding
+
+  - id: rihal-integration-checker
+    name: Integration Checker
+    file_path: rihal/agents/rihal-integration-checker.md
+    role: Cross-phase integration + E2E flow verifier
+    authority_level: quality
+    domain_keywords:
+      - integration
+      - e2e
+      - cross-phase
+
+  - id: rihal-nyquist-auditor
+    name: Nyquist Auditor
+    file_path: rihal/agents/rihal-nyquist-auditor.md
+    role: Validation-gap auditor (Nyquist coverage)
+    authority_level: quality
+    domain_keywords:
+      - validation
+      - test-coverage
+      - nyquist-gap
+
+  - id: rihal-phase-researcher
+    name: Phase Researcher
+    file_path: rihal/agents/rihal-phase-researcher.md
+    role: Pre-plan research producer (RESEARCH.md)
+    authority_level: operational
+    domain_keywords:
+      - phase-research
+      - prior-art
+      - evaluation
+
+  - id: rihal-profiler
+    name: Profiler
+    file_path: rihal/agents/rihal-profiler.md
+    role: User behavior / persona profiler
+    authority_level: product
+    domain_keywords:
+      - personas
+      - usage-patterns
+      - user-behavior
+
+  - id: rihal-project-researcher
+    name: Project Researcher
+    file_path: rihal/agents/rihal-project-researcher.md
+    role: Domain ecosystem researcher for roadmap inputs
+    authority_level: operational
+    domain_keywords:
+      - domain-research
+      - ecosystem
+      - roadmap-inputs
+
+  - id: rihal-remediation-planner
+    name: Remediation Planner
+    file_path: rihal/agents/rihal-remediation-planner.md
+    role: Issue + blocker remediation planner
+    authority_level: operational
+    domain_keywords:
+      - remediation
+      - unblocking
+      - recovery-plan
+
+  - id: rihal-research-synthesizer
+    name: Research Synthesizer
+    file_path: rihal/agents/rihal-research-synthesizer.md
+    role: Parallel-researcher output synthesizer
+    authority_level: operational
+    domain_keywords:
+      - synthesis
+      - aggregation
+      - research-consolidation
+
+  - id: rihal-roadmapper
+    name: Roadmapper
+    file_path: rihal/agents/rihal-roadmapper.md
+    role: Roadmap builder — phase + requirement + acceptance coverage
+    authority_level: product
+    domain_keywords:
+      - roadmap
+      - phases
+      - requirements-mapping
+
+  - id: rihal-security-adversary
+    name: Security Adversary
+    file_path: rihal/agents/rihal-security-adversary.md
+    role: Adversarial security review + threat modelling
+    authority_level: quality
+    domain_keywords:
+      - security
+      - threat-model
+      - adversarial
+      - attack-surface
+
+  - id: rihal-security-auditor
+    name: Security Auditor
+    file_path: rihal/agents/rihal-security-auditor.md
+    role: Comprehensive security audit + compliance verification
+    authority_level: quality
+    domain_keywords:
+      - security-audit
+      - compliance
+      - remediation
+
+  - id: rihal-sprint-checker
+    name: Sprint Checker
+    file_path: rihal/agents/rihal-sprint-checker.md
+    role: Sprint goal-backward verifier before execution
+    authority_level: quality
+    domain_keywords:
+      - sprint-check
+      - goal-backward
+      - pre-execute-gate
+
+  - id: rihal-ui-auditor
+    name: UI Auditor
+    file_path: rihal/agents/rihal-ui-auditor.md
+    role: UI usability + consistency + accessibility audit
+    authority_level: design
+    domain_keywords:
+      - ui-audit
+      - accessibility
+      - design-consistency
+      - usability
+
+  - id: rihal-ui-designer
+    name: UI Designer (alias for rihal-ux-designer)
+    file_path: rihal/agents/rihal-ui-designer.md
+    role: Alias — see rihal-ux-designer
+    authority_level: design
+    domain_keywords:
+      - ui-design
+
+  - id: rihal-ux-designer
+    name: UX Designer
+    file_path: rihal/agents/rihal-ux-designer.md
+    role: UX design + interaction design + accessibility
+    authority_level: design
+    domain_keywords:
+      - ux
+      - interaction-design
+      - accessibility
+      - user-flows
