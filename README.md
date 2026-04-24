@@ -54,21 +54,26 @@ It's not a chatbot. It's a methodology.
 
 ## Install — one command
 
-In any project directory:
+In any project directory (existing codebase OR empty folder):
 
 ```bash
 npx @hanzlaa/rcode install
 ```
 
-That's it. One unified installer. Pure file shipping, no runtime dependencies. Installs into:
+[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode` · current version `v2.1.0`. See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE options, version pinning, yolo mode).
+
+One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
 - `.claude/agents/` — 44 first-class subagents
 - `.claude/commands/rihal/` — 93 slash commands
 - `.claude/skills/` — 58 phrase-activated skills (scaffold-project, create-prd, retrospective, etc.)
+- `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
+
+Update anytime with `npx @hanzlaa/rcode update` (or `/rihal:update` inside a Claude session).
 
 ### Then begin the rihla
 

@@ -11,7 +11,7 @@ This walkthrough takes you from an empty directory to a planned sprint in ~10 mi
 ## 1. Install Rihal Code
 
 ```bash
-npx @hanzlahabib/rihal-code install
+npx @hanzlaa/rcode install
 ```
 
 ## 2. Initialize a new project

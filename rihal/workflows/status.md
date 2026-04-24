@@ -111,6 +111,6 @@ Group routes by letter. If multiple routes share a letter, list them indented. I
 
 ## On Error
 
-- **CLI not found:** "Rihal Code install missing. Run: npx @hanzlahabib/rihal-code install"
+- **CLI not found:** "Rihal Code install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
 - **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rihal/bin/rihal-tools.cjs state read"

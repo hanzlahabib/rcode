@@ -71,7 +71,7 @@ Binary — if either fires, we cut scope or pivot:
 ### v3.x — Internal Rihal registry
 **Goal:** Rihalians install from an internal source, not GitHub. Faster, access-controlled, audit-trailed.
 
-- Replaces `npx rihal-code@latest` as the primary install path for Rihal employees.
+- Replaces `npx @hanzlaa/rcode@latest` as the primary install path for Rihal employees.
 - GitHub release stays available for non-Rihalian contributors and for transparency.
 
 ---

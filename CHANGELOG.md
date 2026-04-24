@@ -4,6 +4,47 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.1.0 — First npm publish as @hanzlaa/rcode (2026-04-24)
+
+**Shipping release.** Live on npm at [@hanzlaa/rcode](https://www.npmjs.com/package/@hanzlaa/rcode). Previously only installable by cloning the repo; now available as `npx @hanzlaa/rcode install` from any project anywhere.
+
+Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the orphan fixes (#135 story-level state sync, #136 verification matrix, #137 create-milestone compliance audit, PR #167 + #168).
+
+### Added
+
+- **npm package:** `@hanzlaa/rcode` scoped under the personal `hanzlaa` npm account (pending Rihal org approval for a future `@rihal/code` rename).
+- **Binary aliases:** `rcode` (primary) + `rihal-code` (legacy alias — existing commands keep working).
+- **`docs/install.md`** — dedicated install guide covering flavors (module subsets, IDE options, version pinning), yolo mode, troubleshooting, uninstall.
+- **M2.5 CLI subcommands** (via PR #166):
+  - `rihal-tools progress init` — single pre-computed snapshot for `/rihal:progress` rendering.
+  - `rihal-tools progress bar --raw` — ASCII bar string only.
+  - `rihal-tools progress insights` — drift / undercount / between-milestones detection.
+  - `rihal-tools progress routes` — intent-tree for Route A/B/C Next Up menu.
+  - `rihal-tools summary-extract` — surgical field extraction from SUMMARY.md (no whole-file load).
+  - `rihal-tools state-snapshot` — compact state for display.
+  - `rihal-tools state promote-backlog 999.x --to NN` — parking-lot promotion.
+- **Story- and sprint-level state sync** (PR #167, issue #135): `state sync --from-disk` now parses `epics.md` for stories + walks `.rihal/phases/*/sprint-*.md` for sprint entries. Status preservation verified end-to-end.
+- **`docs/verification/v2.0-gap-fixes.md`** (PR #168, issue #136): 9-row verification matrix confirming the v2.0 gap batch is intact.
+- **`docs/parking-lot-convention.md`**: 999.x numbering documentation.
+
+### Changed
+
+- **Workflow shrinkage:** `rihal/workflows/progress.md` dropped from 573 to 184 lines (68% reduction) — CLI does the thinking, workflow renders.
+- **`/rihal:status`** and **`/rihal:progress`** both call the same CLI subcommand — guaranteed consistency, closes the seam from issue #131.
+- **README** install command updated to `npx @hanzlaa/rcode install`.
+
+### Fixed
+
+- Self-drift on the rihal-code repo itself — phases 04, 05 now have proper `number` fields in `.rihal/state.json`, drift-detection reports clean.
+
+### Deferred to follow-ups (issues open in v3.0 milestone)
+
+- Full skill-folder reorganization under role directories (#179).
+- Real Rihal brain URLs (#162) — pending Rihal approval.
+- CI Actions quota fix (#165) — pending billing action.
+
+---
+
 ## v2.0.0 — Rihal Brain (unreleased)
 
 **Repositioning release.** Rihal Code is no longer a generic AI-engineering methodology that happens to be written at Rihal. It is **the installable context-brain for Rihalians** — every Rihal project can now pull PR standards, commit conventions, architecture docs, and internal guides straight from Rihal's own repos into the AI assistant's context on install.
