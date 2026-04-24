@@ -2061,15 +2061,112 @@ function cmdState(subArgs) {
       }
     }
 
-    // Parse epics.md for epic count (lightweight — full epic sync is a future enhancement).
+    // Parse epics.md for epics AND stories (issue #135 — story-level sync).
+    // Supports both whole-document "## EPIC-NN" and sharded "epics/epic-N.md" layouts.
+    parsed.stories_found = 0;
+    parsed.stories_upserted = 0;
+    parsed.stories_preserved_status = 0;
+    parsed.sprints_found = 0;
+    parsed.sprints_upserted = 0;
+
     if (parsed.epics_exists) {
       const epics = fs.readFileSync(epicsPath, 'utf8');
       parsed.epics_found = (epics.match(/^##\s+EPIC-\d+/gim) || epics.match(/^##\s+Epic\s+\d+/gim) || []).length;
       state.epics_count = parsed.epics_found;
+
+      // Parse epic blocks and their stories.
+      // Epic heading examples:  "## EPIC-01 — Setup"  or  "## Epic 1: User Auth"
+      // Story heading examples: "### Story 01.03 — Schema"  or  "### Story 1.3: Foo"
+      if (!state.epics) state.epics = [];
+      const epicBlocks = epics.split(/^##\s+(?:EPIC-\d+|Epic\s+\d+)/im);
+      const epicHeaders = epics.match(/^##\s+(?:EPIC-\d+|Epic\s+\d+)[^\n]*$/gim) || [];
+      for (let i = 0; i < epicHeaders.length; i++) {
+        const header = epicHeaders[i];
+        const body = epicBlocks[i + 1] || '';
+        const numMatch = header.match(/(\d+)/);
+        if (!numMatch) continue;
+        const epicNum = numMatch[1].padStart(2, '0');
+        const nameMatch = header.match(/[—\-:]\s*(.+?)\s*$/);
+        const epicName = nameMatch ? nameMatch[1].trim() : `Epic ${epicNum}`;
+
+        // Upsert epic with story-level preservation.
+        let epicEntry = state.epics.find(e => String(e.number) === epicNum);
+        if (!epicEntry) {
+          epicEntry = { number: epicNum, name: epicName, status: 'planned', stories: [] };
+          state.epics.push(epicEntry);
+        } else {
+          epicEntry.name = epicName;
+          if (!epicEntry.stories) epicEntry.stories = [];
+        }
+
+        // Parse stories inside this epic's body.
+        const storyRe = /^###\s+Story\s+(\d+[\.-]\d+)[^\n]*?(?:[—\-:]\s*(.+?))?$/gim;
+        let sm;
+        while ((sm = storyRe.exec(body)) !== null) {
+          const storyId = sm[1].replace('-', '.');
+          const storyName = (sm[2] || '').trim() || `Story ${storyId}`;
+          parsed.stories_found += 1;
+          const existing = epicEntry.stories.find(s => String(s.id) === storyId);
+          if (existing) {
+            // Preserve status — state is authoritative for "completed" / "in_progress"
+            existing.name = storyName;
+            parsed.stories_preserved_status += 1;
+          } else {
+            epicEntry.stories.push({
+              id: storyId,
+              name: storyName,
+              status: 'pending',
+            });
+            parsed.stories_upserted += 1;
+          }
+        }
+      }
     }
 
-    if (!parsed.roadmap_exists && !parsed.epics_exists) {
-      throw new Error(`state sync --from-disk: neither ROADMAP.md nor epics.md found at ${PLANNING_DIR}`);
+    // Walk .rihal/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const rihalPhasesDir = path.join(RIHAL_DIR, 'phases');
+    const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rihalPhasesDir) ? rihalPhasesDir : null);
+    if (sprintRoot) {
+      if (!state.sprints) state.sprints = [];
+      for (const phaseEntry of fs.readdirSync(sprintRoot)) {
+        const phaseDir = path.join(sprintRoot, phaseEntry);
+        if (!fs.statSync(phaseDir).isDirectory()) continue;
+        const phaseNumMatch = phaseEntry.match(/^(\d{1,3}(?:\.\d+)?)/);
+        const phaseNum = phaseNumMatch ? phaseNumMatch[1] : phaseEntry;
+        for (const file of fs.readdirSync(phaseDir)) {
+          const sprintMatch = file.match(/^sprint-(\d+)\.md$/);
+          if (!sprintMatch) continue;
+          const sprintNum = sprintMatch[1];
+          const sprintKey = `${phaseNum}/${sprintNum}`;
+          parsed.sprints_found += 1;
+          const sprintPath = path.join(phaseDir, file);
+          const sprintText = fs.readFileSync(sprintPath, 'utf8');
+          const goalMatch = sprintText.match(/(?:^goal:\s*(.+)$|\*\*Sprint Goal:\*\*\s*(.+))/im);
+          const goal = goalMatch ? (goalMatch[1] || goalMatch[2] || '').trim() : '';
+          const existing = state.sprints.find(s => s.key === sprintKey);
+          if (existing) {
+            existing.phase = phaseNum;
+            existing.number = sprintNum;
+            if (goal) existing.goal = goal;
+            existing.file = path.relative(PROJECT_ROOT, sprintPath);
+          } else {
+            state.sprints.push({
+              key: sprintKey,
+              phase: phaseNum,
+              number: sprintNum,
+              goal,
+              status: 'planned',
+              file: path.relative(PROJECT_ROOT, sprintPath),
+            });
+            parsed.sprints_upserted += 1;
+          }
+        }
+      }
+    }
+
+    if (!parsed.roadmap_exists && !parsed.epics_exists && parsed.sprints_found === 0) {
+      throw new Error(`state sync --from-disk: no ROADMAP.md, epics.md, or sprint files found`);
     }
 
     writeState(state);
