@@ -285,6 +285,67 @@ function seedStarterPlanning(target, projectName) {
 }
 
 /**
+ * Ensure the target project's .gitignore has the rcode-managed block.
+ *
+ * Idempotent via a sentinel comment line. On first install, appends a block
+ * that separates:
+ *   - installed methodology files (ignored; re-install to refresh)
+ *   - user's project config, state, and planning artifacts (committable)
+ *
+ * If the user already has a block (marker present) we leave their customizations
+ * alone. This function is best-effort — never throws. A missing .gitignore
+ * is created. A read/write error is logged and install continues.
+ *
+ * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-error' }
+ */
+function ensureRcodeGitignore(target) {
+  const MARKER = '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====';
+  const BLOCK = [
+    '',
+    MARKER,
+    '# Added automatically on first rcode install. Idempotent — safe to re-run.',
+    '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
+    '.claude/',
+    '.rihal/bin/',
+    '.rihal/workflows/',
+    '.rihal/references/',
+    '.rihal/commands/',
+    '.rihal/skills/',
+    '',
+    '# Pulled Rihal brain content (refresh with: rcode brain pull)',
+    'rihal/brain/',
+    '',
+    '# Runtime noise',
+    '.rihal/state.json.lock',
+    '.planning/debug/',
+    '.planning/_backup/',
+    '',
+    '# What you DO commit:',
+    '#   .rihal/config.yaml   - project mode/language/profile',
+    '#   .rihal/state.json    - decisions, roadmap pointer, blockers',
+    '#   .planning/           - PRD, roadmap, sprints, SUMMARY.md files',
+    '# ===== end rcode-managed gitignore block =====',
+    '',
+  ].join('\n');
+
+  const gitignorePath = path.join(target, '.gitignore');
+  try {
+    if (!fs.existsSync(gitignorePath)) {
+      fs.writeFileSync(gitignorePath, BLOCK);
+      return { action: 'created' };
+    }
+    const existing = fs.readFileSync(gitignorePath, 'utf8');
+    if (existing.includes(MARKER)) {
+      return { action: 'already-present' };
+    }
+    fs.writeFileSync(gitignorePath, existing + BLOCK);
+    return { action: 'appended' };
+  } catch (err) {
+    return { action: 'skipped-error', error: err.message };
+  }
+}
+
+/**
  * Install v1-style skills into the target project.
  *
  * User-facing skills  → .claude/skills/rihal-{name}   (phrase-activated, visible as slash commands)
@@ -801,6 +862,10 @@ function install(opts) {
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
 
+  // Ensure .gitignore separates installed methodology from committable artifacts.
+  // Idempotent via sentinel marker — safe to re-run. Best-effort (never throws).
+  const gitignoreReport = ensureRcodeGitignore(opts.target);
+
   // Pull Rihal brain content (v2.0 — issue #158).
   // Runs rihal-tools brain pull as a child process. Placeholder URLs
   // are skipped gracefully so this does not fail a fresh install.
@@ -834,6 +899,15 @@ function install(opts) {
       (skippedCount ? `, ${skippedCount} skipped (placeholder URLs — see issue #162)` : ''));
   } else if (brainReport && brainReport.error) {
     console.log(`  Brain:     skipped (${brainReport.error})`);
+  }
+  if (gitignoreReport) {
+    const gitMsg = {
+      'created': '.gitignore created with rcode block',
+      'appended': '.gitignore updated — rcode block appended',
+      'already-present': '.gitignore rcode block already present',
+      'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
+    }[gitignoreReport.action] || '.gitignore unchanged';
+    console.log(`  Gitignore: ${gitMsg}`);
   }
   if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
   if (opts.force && existedBefore) {

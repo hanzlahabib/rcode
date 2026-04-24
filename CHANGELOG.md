@@ -4,6 +4,33 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.2.0 — Auto-managed .gitignore on install (2026-04-24)
+
+**Installer polish.** Before v2.2, a fresh `rcode install` + `git add .` would bloat the user's repo by 676 methodology files (~3.8 MB) that regenerate on every update. This release fixes that at the install step, not after-the-fact.
+
+### Added
+
+- `cli/install.js` now appends an idempotent `rcode-managed gitignore block` to the project's `.gitignore` on first install. Block is marked with a sentinel comment so re-runs detect and skip. Existing user entries are preserved when rcode appends; never overwrites.
+- `docs/install.md` grows a **"What gets committed vs ignored"** table with the rationale for each path.
+
+### The committable split
+
+- ✅ **Commit:** `.rihal/config.yaml` (project mode/language/profile), `.rihal/state.json` (decisions log + roadmap + blockers), `.planning/` (PRD, roadmap, sprints, SUMMARY files).
+- ❌ **Ignore:** `.claude/`, `.rihal/{bin,workflows,references,commands,skills}/`, `rihal/brain/`, lock files, debug artifacts.
+
+### Verified
+
+3-scenario smoke test:
+- Fresh project, no `.gitignore` → **created** with rcode block.
+- Re-run install → detects sentinel, **already-present** (no duplicate append).
+- Existing `.gitignore` with user entries (e.g. `node_modules/`) → **appended**; user entries preserved byte-for-byte.
+
+### Deferred
+
+Users already on v2.1.0 who accidentally committed `.claude/` etc. will need a one-off cleanup: `git rm -r --cached .claude .rihal/workflows .rihal/bin .rihal/references rihal/brain && git commit -m "chore: stop tracking rcode-managed files"`. A follow-up `rcode migrate` subcommand could automate this but it's not shipped here.
+
+---
+
 ## v2.1.0 — First npm publish as @hanzlaa/rcode (2026-04-24)
 
 **Shipping release.** Live on npm at [@hanzlaa/rcode](https://www.npmjs.com/package/@hanzlaa/rcode). Previously only installable by cloning the repo; now available as `npx @hanzlaa/rcode install` from any project anywhere.

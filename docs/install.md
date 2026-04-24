@@ -34,6 +34,34 @@ Total install footprint: ~3.8 MB, 676 files.
 
 ---
 
+## What gets committed vs ignored
+
+On first install, rcode automatically updates your project's `.gitignore` so you commit the **work**, not the **methodology**. If you already have a `.gitignore`, rcode appends its block — your existing entries are preserved.
+
+| Path | Commit? | Why |
+|------|:-------:|-----|
+| `.rihal/config.yaml` | ✅ commit | Your project's chosen mode, language, profile — collaborators should see the same |
+| `.rihal/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
+| `.planning/` | ✅ commit | PRD, roadmap, sprints, SUMMARY.md — the actual thinking |
+| `.claude/` | ❌ ignored | Installed skills/agents/commands — 500+ files, regenerate with `rcode install` |
+| `.rihal/bin/`, `.rihal/workflows/`, `.rihal/references/`, `.rihal/commands/`, `.rihal/skills/` | ❌ ignored | Methodology files — re-installed on every update |
+| `rihal/brain/` | ❌ ignored | Pulled Rihal standards — refresh with `rcode brain pull` |
+| `.rihal/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
+
+**Without the auto-managed `.gitignore`**, `git add .` would bloat your repo by 676 files (~3.8 MB) — methodology files that regenerate on every install.
+
+The rcode block in `.gitignore` is marked with a sentinel comment:
+```
+# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====
+```
+Re-running install is idempotent — it detects the marker and skips re-appending. Safe to customize entries inside the block, but edits can be overwritten if you ever `sed` it out.
+
+### Manually commit everything anyway?
+
+Remove the rcode block from `.gitignore`. You own your repo. Just know that every `rcode update` will produce large diffs.
+
+---
+
 ## Pick your install flavor
 
 ### Default — full install, guided mode
