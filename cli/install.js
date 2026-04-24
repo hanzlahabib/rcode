@@ -890,14 +890,46 @@ async function install(opts) {
   opts.commitPlanning = await resolveCommitPlanning(opts);
 
   console.log(`\n🕌 Rihal Code v${readPackageVersion()} installer → ${opts.target}`);
+
+  // Detect an existing install and surface it (#195).
+  const existingManifestPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
+  if (fs.existsSync(existingManifestPath)) {
+    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
+    const existingVersion = m ? m[1].trim() : 'unknown';
+    const newVersion = readPackageVersion();
+    if (existingVersion === newVersion) {
+      console.log(`  ↻ Existing install at v${existingVersion} — refreshing (config + state + .planning preserved).`);
+    } else {
+      console.log(`  ⬆ Existing install at v${existingVersion} — upgrading to v${newVersion} (config + state + .planning preserved).`);
+    }
+    if (!opts.force) {
+      console.log('    Pass --force to also sweep orphaned files from the previous version.');
+    }
+  }
   if (!fs.existsSync(SOURCE_ROOT)) {
     console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
     return 1;
   }
 
-  // Validate IDE
+  // Validate IDE — structured error for unsupported editors (#197).
   if (!['claude', 'cursor', 'gemini'].includes(opts.ide)) {
-    console.error(`✖ Unknown IDE: ${opts.ide}. Supported: claude, cursor, gemini`);
+    console.error(`✖ --ide ${opts.ide} is not supported in v${readPackageVersion()}.`);
+    console.error('');
+    console.error('  Currently supported:');
+    console.error('    claude    — Claude Code native (recommended)');
+    console.error('    cursor    — Cursor IDE');
+    console.error('    gemini    — Gemini CLI');
+    console.error('');
+    console.error('  Tracked for v3.0 (see issue #182):');
+    console.error('    vscode    — VS Code native extension');
+    console.error('    jetbrains — IntelliJ / PyCharm');
+    console.error('    zed       — Zed editor');
+    console.error('');
+    if (/^(vscode|vs-code|code)$/i.test(opts.ide)) {
+      console.error('  Workaround: if you use VS Code WITH the Claude Code extension,');
+      console.error('  run `--ide claude` — the extension reads from .claude/ too.');
+      console.error('');
+    }
     return 1;
   }
 
@@ -1144,7 +1176,77 @@ async function install(opts) {
   console.log('  ⚠ If your IDE is already open, reload the window to refresh skills/commands.');
   console.log('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window');
   console.log('');
-  return 0;
+
+  // Health check — smoke test that the install actually works (#193).
+  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled });
+  return healthPass ? 0 : 1;
+}
+
+/**
+ * Run a 5-point smoke test against the fresh install. Closes #193.
+ * Returns true if all pass, false if any critical check failed.
+ * Prints a clean ✓/✖ line per check.
+ */
+function runInstallHealthCheck(target, counts) {
+  console.log('  Health check:');
+  const { execFileSync } = require('child_process');
+  let fails = 0;
+
+  function check(label, fn) {
+    try {
+      const out = fn();
+      console.log(`    ✓ ${label}${out ? ' — ' + out : ''}`);
+    } catch (err) {
+      fails += 1;
+      console.log(`    ✖ ${label} — ${String(err.message || err).slice(0, 120)}`);
+    }
+  }
+
+  check('rihal-tools.cjs runs', () => {
+    const toolsPath = path.join(target, '.rihal', 'bin', 'rihal-tools.cjs');
+    if (!fs.existsSync(toolsPath)) throw new Error('bin/rihal-tools.cjs not installed');
+    execFileSync('node', ['-c', toolsPath], { stdio: 'pipe' });
+    return 'syntax ok';
+  });
+
+  check('.rihal/config.yaml present', () => {
+    const p = path.join(target, '.rihal', 'config.yaml');
+    if (!fs.existsSync(p)) throw new Error('missing');
+    const text = fs.readFileSync(p, 'utf8');
+    if (!/user_name:|project_name:/.test(text)) throw new Error('config.yaml incomplete');
+    return `${fs.statSync(p).size} bytes`;
+  });
+
+  check('.rihal/state.json parses', () => {
+    const p = path.join(target, '.rihal', 'state.json');
+    if (!fs.existsSync(p)) throw new Error('missing');
+    JSON.parse(fs.readFileSync(p, 'utf8'));
+    return 'valid JSON';
+  });
+
+  check('agents installed', () => {
+    if ((counts.agentCount || 0) < 20) throw new Error(`only ${counts.agentCount} agents (expected ≥ 20)`);
+    return `${counts.agentCount}`;
+  });
+
+  check('skills + commands installed', () => {
+    const issues = [];
+    if ((counts.skillsInstalled || 0) < 20) issues.push(`${counts.skillsInstalled} skills`);
+    if ((counts.commandCount || 0) < 20) issues.push(`${counts.commandCount} commands`);
+    if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
+    return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
+  });
+
+  if (fails > 0) {
+    console.log('');
+    console.log(`  ✖ ${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`);
+    console.log('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/');
+    console.log('     Reinstall: npx @hanzlaa/rcode install . --force');
+    console.log('');
+    return false;
+  }
+  console.log('');
+  return true;
 }
 
 async function main() {

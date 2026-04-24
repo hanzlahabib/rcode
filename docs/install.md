@@ -81,6 +81,22 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 
 ---
 
+## Editor support matrix
+
+| Editor | `--ide` | What gets written | Status |
+|--------|---------|------------------|:------:|
+| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rihal/`, `.claude/skills/` | ✅ v2.x |
+| Cursor | `cursor` | `.cursor/rules/rihal-*.mdc` | ✅ v2.x |
+| Gemini CLI | `gemini` | `.gemini/rihal/` | ✅ v2.x |
+| VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v2.x |
+| VS Code native (no Claude Code extension) | `vscode` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+| JetBrains (IntelliJ / PyCharm) | `jetbrains` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+| Zed | `zed` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+
+Passing an unsupported `--ide` value prints a clear error with workaround guidance (e.g. VS Code users are pointed at `--ide claude` if they have the Claude Code extension).
+
+---
+
 ## Pick your install flavor
 
 ### Default — full install, guided mode
