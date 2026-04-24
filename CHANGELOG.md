@@ -72,7 +72,7 @@ Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the 
 
 ---
 
-## v2.0.0 — Rihal Brain (unreleased)
+## v2.0.0 — Rihal Brain (2026-04-23)
 
 **Repositioning release.** Rihal Code is no longer a generic AI-engineering methodology that happens to be written at Rihal. It is **the installable context-brain for Rihalians** — every Rihal project can now pull PR standards, commit conventions, architecture docs, and internal guides straight from Rihal's own repos into the AI assistant's context on install.
 

@@ -549,6 +549,15 @@ async function runUninstall(args) {
     '.antigravity',
   ]);
 
+  // Always remove .rihal/brain/ — it's regenerable pulled content, not user state (#202).
+  // Keeps config.yaml + state.json + rest of .rihal/ for the separate state-delete flow below.
+  const brainDir = path.join(cwd, '.rihal', 'brain');
+  if (fs.existsSync(brainDir)) {
+    fs.rmSync(brainDir, { recursive: true, force: true });
+    console.log(`   ✓ removed .rihal/brain/ (pulled content — regenerable via brain pull)`);
+    removed += 1;
+  }
+
   // Handle .rihal/ state directory
   if (plan.stateDir) {
     const rihalDir = path.join(cwd, '.rihal');
