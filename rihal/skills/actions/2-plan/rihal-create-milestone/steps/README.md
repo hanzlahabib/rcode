@@ -4,8 +4,9 @@ This skill uses the same step-file architecture as `rihal-create-prd` and `rihal
 
 ## Status
 
-- `step-01-init.md` — implemented (initial scaffold, issue #129)
-- `step-02-outcomes.md` through `step-10-complete.md` — **to be written in a follow-up**. Track in a GitHub issue titled `feat(skills): complete step files for rihal-create-milestone`.
+- All 10 step files are **implemented and production-ready** as of #134.
+- Scaffolded in #129; completed in #134; compliance re-verified in #137.
+- If a step is missing from this directory at runtime, re-install the package — do not fall back to inline generation.
 
 ## Expected Step Files (per workflow.md)
 
