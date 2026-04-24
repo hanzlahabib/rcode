@@ -71,6 +71,9 @@ function parseArgs(argv) {
     ide: 'claude',  // claude, cursor, gemini (copilot = TODO)
     help: false,
     modules: [],  // --module core --module execution or empty = all
+    // #189 — planning commit policy. null = ask interactively (or default true under --yes).
+    // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
+    commitPlanning: null,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -85,6 +88,8 @@ function parseArgs(argv) {
     else if (arg === '--mode') opts.mode = argv[++i];
     else if (arg === '--ide') opts.ide = argv[++i];
     else if (arg === '--module') opts.modules.push(argv[++i]);
+    else if (arg === '--commit-planning') opts.commitPlanning = true;
+    else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -93,6 +98,30 @@ function parseArgs(argv) {
   }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
+}
+
+/**
+ * Resolve commit-planning preference — CLI flag wins, then interactive
+ * prompt (when TTY + not --yes), else GSD-style default: true.
+ * #189.
+ */
+async function resolveCommitPlanning(opts) {
+  if (opts.commitPlanning !== null) return opts.commitPlanning;
+  if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
+
+  const readline = require('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = (q) => new Promise(r => rl.question(q, a => r(a)));
+  console.log('');
+  console.log('📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files.');
+  console.log('   Commit them to git, or keep them local?');
+  console.log('');
+  console.log('   [Y] Commit — collaborators see the same plans  (default, recommended)');
+  console.log('   [n] Gitignore — planning stays local  (good for sensitive PRDs)');
+  console.log('');
+  const answer = (await prompt('   Commit planning artifacts? [Y/n]: ')).trim().toLowerCase();
+  rl.close();
+  return !(answer === 'n' || answer === 'no');
 }
 
 function printHelp() {
@@ -298,12 +327,17 @@ function seedStarterPlanning(target, projectName) {
  *
  * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-error' }
  */
-function ensureRcodeGitignore(target) {
-  const MARKER = '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====';
-  const BLOCK = [
+function ensureRcodeGitignore(target, options = {}) {
+  const commitPlanning = options.commitPlanning !== false; // default true
+  const BEGIN = '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====';
+  const END   = '# ===== end rcode-managed gitignore block =====';
+
+  const lines = [
     '',
-    MARKER,
+    BEGIN,
     '# Added automatically on first rcode install. Idempotent — safe to re-run.',
+    '# Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.',
+    '',
     '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
     '.claude/',
     '.rihal/bin/',
@@ -313,20 +347,37 @@ function ensureRcodeGitignore(target) {
     '.rihal/skills/',
     '',
     '# Pulled Rihal brain content (refresh with: rcode brain pull)',
-    'rihal/brain/',
+    '.rihal/brain/rihal-github/',
+    '.rihal/brain/rihal-docs/',
+    '.rihal/brain/best-practices/',
     '',
     '# Runtime noise',
     '.rihal/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',
+  ];
+
+  if (!commitPlanning) {
+    lines.push(
+      '',
+      '# Planning artifacts — kept local (commit_planning: false)',
+      '.planning/'
+    );
+  }
+
+  lines.push(
     '',
     '# What you DO commit:',
-    '#   .rihal/config.yaml   - project mode/language/profile',
-    '#   .rihal/state.json    - decisions, roadmap pointer, blockers',
-    '#   .planning/           - PRD, roadmap, sprints, SUMMARY.md files',
-    '# ===== end rcode-managed gitignore block =====',
-    '',
-  ].join('\n');
+    '#   .rihal/config.yaml        - project mode/language/profile/commit_planning',
+    '#   .rihal/state.json         - decisions, roadmap pointer, blockers',
+    '#   .rihal/brain/sources.yaml - brain source manifest',
+    commitPlanning
+      ? '#   .planning/                - PRD, roadmap, sprints, SUMMARY.md files'
+      : '#   (planning artifacts are NOT committed — see commit_planning in config)',
+    END,
+    ''
+  );
+  const BLOCK = lines.join('\n');
 
   const gitignorePath = path.join(target, '.gitignore');
   try {
@@ -335,7 +386,25 @@ function ensureRcodeGitignore(target) {
       return { action: 'created' };
     }
     const existing = fs.readFileSync(gitignorePath, 'utf8');
-    if (existing.includes(MARKER)) {
+    // Replace existing rcode block using indexOf (regex escaping on the
+    // sentinel is fiddly — indexOf is deterministic and easier to audit).
+    function spliceBlock(text, newBlock) {
+      const start = text.indexOf(BEGIN);
+      if (start < 0) return null;
+      const endIdx = text.indexOf(END, start);
+      if (endIdx < 0) return null;
+      let sliceStart = start;
+      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+      let sliceEnd = endIdx + END.length;
+      if (text[sliceEnd] === '\n') sliceEnd += 1;
+      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
+    }
+    if (existing.includes(BEGIN)) {
+      const rewritten = spliceBlock(existing, BLOCK);
+      if (rewritten !== null && rewritten !== existing) {
+        fs.writeFileSync(gitignorePath, rewritten);
+        return { action: 'updated' };
+      }
       return { action: 'already-present' };
     }
     fs.writeFileSync(gitignorePath, existing + BLOCK);
@@ -343,6 +412,45 @@ function ensureRcodeGitignore(target) {
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
   }
+}
+
+/**
+ * Install brain scaffold (sources.yaml + README.md) into .rihal/brain/ on target.
+ * Actual brain content lands after `brain pull` runs.
+ * Closes #188 — previously the package's rihal/brain/sources.yaml was never
+ * copied to the target at all, leaving brain pull permanently broken.
+ */
+function installBrainScaffold(packageRoot, target) {
+  const srcDir = path.join(packageRoot, 'rihal', 'brain');
+  const destDir = path.join(target, '.rihal', 'brain');
+  fs.mkdirSync(destDir, { recursive: true });
+  let copied = 0;
+  for (const name of ['sources.yaml', 'README.md']) {
+    const src = path.join(srcDir, name);
+    const dest = path.join(destDir, name);
+    if (fs.existsSync(src) && !fs.existsSync(dest)) {
+      fs.copyFileSync(src, dest);
+      copied++;
+    }
+  }
+  // Also pre-seed the best-practices subfolder from the package's
+  // rihal/skills/_shared/ so a fresh install has working brain content
+  // immediately, even before brain pull runs against real upstream URLs.
+  const sharedSrc = path.join(packageRoot, 'rihal', 'skills', '_shared');
+  if (fs.existsSync(sharedSrc)) {
+    const bpDest = path.join(destDir, 'best-practices');
+    fs.mkdirSync(bpDest, { recursive: true });
+    for (const entry of fs.readdirSync(sharedSrc, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        const dest = path.join(bpDest, entry.name);
+        if (!fs.existsSync(dest)) {
+          fs.copyFileSync(path.join(sharedSrc, entry.name), dest);
+          copied++;
+        }
+      }
+    }
+  }
+  return copied;
 }
 
 /**
@@ -687,6 +795,7 @@ function generateConfigYaml(opts) {
     `communication_language: "${sanitizeYamlValue(opts.language)}"`,
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
+    `commit_planning: ${opts.commitPlanning !== false}`,
     `rihal_source_path: "${sanitizeYamlValue(path.dirname(path.dirname(process.argv[1])))}/"`,
     'workflow:',
     '  research_by_default: false',
@@ -713,8 +822,11 @@ function convertToCursorMdc(sourceText) {
 /**
  * Main install routine. Copies files, generates manifests, writes config.
  */
-function install(opts) {
+async function install(opts) {
   if (opts.help) { printHelp(); return 0; }
+
+  // Resolve commit-planning preference (interactive prompt or flag) — #189.
+  opts.commitPlanning = await resolveCommitPlanning(opts);
 
   console.log(`\n🕌 Rihal Code installer → ${opts.target}`);
   if (!fs.existsSync(SOURCE_ROOT)) {
@@ -862,9 +974,13 @@ function install(opts) {
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
 
+  // Install brain scaffolding at .rihal/brain/ (sources.yaml + README).
+  // Actual brain content lands after first brain pull runs.
+  installBrainScaffold(PACKAGE_ROOT, opts.target);
+
   // Ensure .gitignore separates installed methodology from committable artifacts.
-  // Idempotent via sentinel marker — safe to re-run. Best-effort (never throws).
-  const gitignoreReport = ensureRcodeGitignore(opts.target);
+  // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
+  const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
 
   // Pull Rihal brain content (v2.0 — issue #158).
   // Runs rihal-tools brain pull as a child process. Placeholder URLs
@@ -983,9 +1099,7 @@ async function main() {
     }
   }
 
-  try {
-    process.exit(install(opts));
-  } catch (err) {
+  install(opts).then(code => process.exit(code)).catch(err => {
     if (err.code === 'EACCES' || err.code === 'EPERM') {
       console.error(`✖ Permission denied: ${err.path || err.message}`);
       process.exit(1);
@@ -997,7 +1111,7 @@ async function main() {
     console.error(`✖ Install failed: ${err.message}`);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
-  }
+  });
 }
 
 if (require.main === module) main();
@@ -1007,10 +1121,10 @@ if (require.main === module) main();
  * Converts the index.js-style (args, ctx) signature into a cli/install.js
  * parseArgs-compatible argv and runs install().
  */
-function runFromCli(args /* , ctx */) {
+async function runFromCli(args /* , ctx */) {
   const argv = Array.isArray(args) ? args : [];
   const opts = parseArgs(argv);
-  const code = install(opts);
+  const code = await install(opts);
   if (code !== 0) process.exit(code);
 }
 

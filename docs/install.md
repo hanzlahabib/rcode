@@ -38,15 +38,34 @@ Total install footprint: ~3.8 MB, 676 files.
 
 On first install, rcode automatically updates your project's `.gitignore` so you commit the **work**, not the **methodology**. If you already have a `.gitignore`, rcode appends its block — your existing entries are preserved.
 
+Interactive installs also prompt you on `.planning/` specifically — you choose whether to commit PRDs, roadmaps, sprints, SUMMARY files (default yes) or keep them local (`--no-commit-planning`). You can flip this later at any time.
+
 | Path | Commit? | Why |
 |------|:-------:|-----|
-| `.rihal/config.yaml` | ✅ commit | Your project's chosen mode, language, profile — collaborators should see the same |
+| `.rihal/config.yaml` | ✅ commit | Your project's chosen mode, language, profile, commit_planning — collaborators should see the same |
 | `.rihal/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
-| `.planning/` | ✅ commit | PRD, roadmap, sprints, SUMMARY.md — the actual thinking |
+| `.rihal/brain/sources.yaml` | ✅ commit | Brain source manifest — collaborators pull the same content |
+| `.planning/` | ✅ commit *(toggle-able)* | PRD, roadmap, sprints, SUMMARY.md — the actual thinking. Set `commit_planning: false` in config to gitignore instead. |
 | `.claude/` | ❌ ignored | Installed skills/agents/commands — 500+ files, regenerate with `rcode install` |
 | `.rihal/bin/`, `.rihal/workflows/`, `.rihal/references/`, `.rihal/commands/`, `.rihal/skills/` | ❌ ignored | Methodology files — re-installed on every update |
-| `rihal/brain/` | ❌ ignored | Pulled Rihal standards — refresh with `rcode brain pull` |
+| `.rihal/brain/rihal-github/`, `.rihal/brain/rihal-docs/`, `.rihal/brain/best-practices/` | ❌ ignored | Pulled Rihal standards — refresh with `rcode brain pull` |
 | `.rihal/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
+
+### Flipping commit_planning after install
+
+If you want to change the commit policy for `.planning/` after install:
+
+```bash
+# Stop committing planning artifacts:
+node .rihal/bin/rihal-tools.cjs config-set commit_planning false
+node .rihal/bin/rihal-tools.cjs gitignore refresh
+
+# Start committing them again:
+node .rihal/bin/rihal-tools.cjs config-set commit_planning true
+node .rihal/bin/rihal-tools.cjs gitignore refresh
+```
+
+`gitignore refresh` reads `.rihal/config.yaml` and rewrites the rcode-managed block in `.gitignore`. It's idempotent — safe to run any time, and leaves your non-rcode gitignore entries untouched.
 
 **Without the auto-managed `.gitignore`**, `git add .` would bloat your repo by 676 files (~3.8 MB) — methodology files that regenerate on every install.
 
