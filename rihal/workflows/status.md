@@ -1,124 +1,116 @@
 # Workflow: rihal:status
 
 <purpose>
-Read `.rihal/state.json` and print a human-readable project status dashboard.
+Render a human-readable project status dashboard. All data comes from a single `rihal-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rihal-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
 
-**SSOT:** `.rihal/state.json` is the single source of truth for phase counts, milestone names, and current position. `/rihal:status` and `/rihal:progress` MUST agree — if `state.json` is out of date relative to `ROADMAP.md` or `epics.md`, that is a sync bug (see issue #126) and should be fixed by running `node .rihal/bin/rihal-tools.cjs state sync --from-disk`, not by reading the markdown files directly from this workflow.
+**SSOT:** `.rihal/state.json`. `/rihal:status` and `/rihal:progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
 
 <required_reading>
 @.rihal/references/output-format.md
 </required_reading>
 
-<drift_detection>
-Before printing the dashboard, detect state/disk drift:
-
-```bash
-if [ -f .planning/ROADMAP.md ]; then
-  DISK_PHASES=$(grep -cE "^\|\s*[0-9]{1,3}" .planning/ROADMAP.md)
-  STATE_PHASES=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log((s.state?.phases||[]).length)}catch{console.log(0)}}")
-  if [ "$DISK_PHASES" -gt 0 ] && [ "$DISK_PHASES" -ne "$STATE_PHASES" ]; then
-    echo "⚠ Drift detected: ROADMAP.md has $DISK_PHASES phases, state.json has $STATE_PHASES."
-    echo "  Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk"
-  fi
-fi
-```
-
-Print this warning above the dashboard if drift is detected. Do NOT silently fall back to reading `ROADMAP.md` — that was the cause of the `/rihal:status` vs `/rihal:progress` disagreement in issue #131.
-</drift_detection>
-
-<output_format>
-Open with banner:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► STATUS — {project}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-Use status symbols (✓ complete, ◆ in_progress, ○ planned) in phase/plan list.
-Highlight open blockers with ⚠. End with Next Up block routing to next action.
-</output_format>
-
 <process>
 
-## Step 1 — Read state
+## Step 1 — Fetch the snapshot
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state read
+SNAPSHOT=$(node .rihal/bin/rihal-tools.cjs progress init)
 ```
 
-Parse the JSON output.
+Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
 
-**If the output contains `"state": null`:** print the following message and stop:
+If `SNAPSHOT.project` is empty and `SNAPSHOT.phases` is empty, print:
 
 ```
 No state found. Run a council session or execute a plan to initialize state.
 ```
 
-## Step 2 — Print dashboard
+Then stop.
 
-Using the parsed state, print a dashboard in this format:
+## Step 2 — Print banner + dashboard
 
 ```
-╭─ Rihal Status — {project} ─────────────────────╮
-│ Phase:    {current_phase or "none started"}          │
-│ Plan:     {current_plan} completed                   │
-│ Updated:  {updated, human-readable: "2 hours ago"}   │
-╰──────────────────────────────────────────────────────╯
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► STATUS — {SNAPSHOT.project}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+╭─ Rihal Status — {SNAPSHOT.project} ─────────────────────╮
+│ Milestone:  {SNAPSHOT.milestone or "—"}                 │
+│ Phase:      {SNAPSHOT.current_phase or "none started"}  │
+│ Progress:   {SNAPSHOT.bar}                              │
+│ Updated:    {relative_time(SNAPSHOT.updated)}           │
+╰─────────────────────────────────────────────────────────╯
+```
+
+## Step 3 — Phases section
+
+For each entry in `SNAPSHOT.phases[]`:
+
+- `▶` if `phase.number === SNAPSHOT.current_phase`
+- `✓` if `phase.disk.summary_count > 0` AND matches `phase.disk.plan_count` (complete)
+- `◆` if `phase.disk.plan_count > phase.disk.summary_count` (in progress)
+- `○` otherwise (planned)
+
+```
 Phases:
-▶ [01] Initial Setup — complete ✓
-  [01.01] Schema setup — done
-  [01.02] Seed data — in progress (2/3 tasks)
-▷ [02] API Development — pending
-  [02.01] Routes — pending
-
-Recent decisions ({last 3}):
-• {decision summary} — [phase.plan], {date}
-
-Open blockers ({count}):
-⚠ {blocker description} — [phase.plan]
-
-Council sessions ({last 3}):
-• {date} — {question_slug} — Panel: {panel}
-
-Chain runs ({last 3}):
-• {date} — {slug} — {agents}
-
-Workstreams ({active count}):
-▶ {name} (active) — {phase count} phases
-✓ {name} (complete)
-
-Last session: {last_session, human-readable}
+  ▶ [04] Component compaction — in progress (1/3 plans)
+  ✓ [03] Auth hardening — complete
+  ○ [05] Billing rewrite — planned
 ```
 
-**Formatting rules:**
-- Show hierarchical IDs in `[NN]` format for phases and `[NN.MM]` for plans
-- For `updated` and `last_session`, compute a human-readable relative time (e.g. "2 hours ago", "3 days ago", "just now").
-- For decisions and council sessions, show only the last 3 entries (most recent first).
-- For blockers, show only unresolved ones (`resolved === false`).
-- Include phases section showing current status of all phases and their plans
-- Omit any section that has zero entries (e.g. if no decisions, skip "Recent decisions" entirely).
+If a phase number starts with `999.`, render with a `🅿` marker and the label `(parking lot)`.
 
-## Step 3 — Blocker warning
+## Step 4 — Insights (NEW — issue #159)
 
-If there are any open (unresolved) blockers, end with:
+If `SNAPSHOT.insights[]` is non-empty, print above the Next Up section:
 
 ```
-⚠ {n} unresolved blocker(s). Address before proceeding.
+Insights:
+  ⚠ {insight.message}       (for severity: warn)
+  ℹ {insight.message}       (for severity: info)
 ```
+
+Do NOT hide insights. They exist because the CLI noticed something the workflow would otherwise gloss over.
+
+## Step 5 — Recent decisions + blockers
+
+- If `SNAPSHOT.decisions.length > 0`, print the last 3 (most recent first).
+- If `SNAPSHOT.blockers.length > 0`, render each with ⚠ and the blocker description.
+
+Omit a section entirely when its array is empty.
+
+## Step 6 — Next Up (intent-tree)
+
+Render `SNAPSHOT.routes[]` as a Route A/B/C menu:
+
+```
+Next Up:
+
+  [A] {route where letter === "A"}
+      → {route.command}
+
+  [B] {route where letter === "B"}
+      → {route.command}
+
+  [C] {route where letter === "C"}
+      → {route.command}
+```
+
+Group routes by letter. If multiple routes share a letter, list them indented. If there are no routes, print the fallback suggestion from the CLI output.
 
 </process>
 
 ## Success Criteria
 
-- [ ] State is successfully read from `.rihal/state.json`
-- [ ] Dashboard displays all available sections
-- [ ] Phase hierarchy is clear and properly formatted
-- [ ] Relative timestamps are human-readable
-- [ ] Blockers are highlighted if present
+- [ ] State read via `progress init` — no direct ROADMAP.md or SUMMARY.md parsing
+- [ ] Drift insights surfaced if present
+- [ ] Banner + dashboard printed
+- [ ] Phases section shows symbols based on CLI-computed disk state
+- [ ] Next Up is a route tree, not a single suggestion
 
 ## On Error
 
-- **`rihal-tools.cjs` not found:** tell user to run `rihal-code install-v2`.
-- **state.json missing:** handled in Step 1 with the clean "No state found" message.
-- **Invalid state JSON:** report the specific parsing error and suggest manual inspection of state file
+- **CLI not found:** "Rihal Code install missing. Run: npx @hanzlahabib/rihal-code install"
+- **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
+- **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rihal/bin/rihal-tools.cjs state read"
