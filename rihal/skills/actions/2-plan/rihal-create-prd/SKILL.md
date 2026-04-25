@@ -21,6 +21,19 @@ Follow the instructions in ./workflow.md.
 - Every section has explicit owner and deadline
 - Do NOT include: vague verbs ("optimize"), unquantified metrics, or requirements without owners
 
+## Fast-path detection
+
+If `$ARGUMENTS` or the opening message contains ALL FOUR of these fields, skip the discovery interview and go straight to drafting:
+
+| Field | Signal words |
+|-------|-------------|
+| Product / feature name | explicit name or noun |
+| Problem statement | "problem is", "users can't", "currently X fails" |
+| Target user | "for X users", "persona is", "audience is" |
+| Scope signal | "must have", "v1 only", "just need", "MVP" |
+
+When fast-pathing: confirm detected fields in one line ("Got it — building {name} for {user} to solve {problem}. Starting PRD draft."), then generate without asking further questions. If any of the four are absent, run the normal interview.
+
 ## Examples
 
 ### Happy Path

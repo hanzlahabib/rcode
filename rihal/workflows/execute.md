@@ -56,8 +56,14 @@ wall-clock expectation).
 </execution_plan>
 
 <three_options>
-After execution plan, offer three modes via AskUserQuestion. Each option
-names the tradeoff explicitly:
+Check config mode first:
+```bash
+CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+```
+
+**If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rihal:settings set mode guided to change.`
+
+Otherwise, offer three modes via AskUserQuestion. Each option names the tradeoff explicitly:
 
 **A) Autonomous run** — Spawn subagent per plan in sequence/parallel per
     wave rules. Checkpoints still pause for user. Fastest wall-clock.

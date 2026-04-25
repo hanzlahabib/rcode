@@ -83,7 +83,13 @@ No gaps → skip to Step 6, set `nyquist_compliant: true`.
 
 ## 4. Present Gap Plan
 
-Call AskUserQuestion with gap table and options:
+```bash
+CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+```
+
+**If `CONFIG_MODE == "yolo"`:** Auto-select option 1 ("Fix all gaps") and proceed to Step 5 without asking. Print: `▶ Auto-fixing all gaps (yolo mode).`
+
+Otherwise call AskUserQuestion with gap table and options:
 1. "Fix all gaps" → Step 5
 2. "Skip — mark manual-only" → add to Manual-Only, Step 6
 3. "Cancel" → exit

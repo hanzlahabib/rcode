@@ -7,7 +7,7 @@ color: green
 
 
 @.rihal/references/response-style.md
-@.rihal/references/karpathy-guidelines.md
+@.rihal/references/karpathy-guidelines-full.md
 
 <role>
 You are a Rihal sprint checker. Verify that sprints WILL achieve the phase goal, not just that they look complete.

@@ -57,6 +57,7 @@ $TOOL config-get workflow.ui_safety_gate              || echo "(unset)"
 $TOOL config-get workflow.discuss_mode                || echo "(unset)"
 $TOOL config-get git.branching_strategy               || echo "(unset)"
 $TOOL config-get git.commit_docs                      || echo "(unset)"
+$TOOL config-get output.verbose                       || echo "(unset)"
 ```
 
 Render as a table:
@@ -78,6 +79,9 @@ Current Rihal Settings (.rihal/config.yaml)
     workflow.post_execute_gates     : {value}    # true | false
     workflow.ui_safety_gate         : {value}    # true | false
     workflow.discuss_mode           : {value}    # adaptive | discuss | skip
+
+  Output
+    output.verbose                  : {value}    # false (slim, default) | true (full detail)
 
   Git
     git.branching_strategy          : {value}    # none | feature-branch | worktree-isolation
@@ -105,6 +109,7 @@ Validate the value:
 - `workflow.discuss_mode` ∈ {adaptive, discuss, skip}
 - `git.branching_strategy` ∈ {none, feature-branch, worktree-isolation}
 - `workflow.*` booleans ∈ {true, false}
+- `output.verbose` ∈ {true, false}
 
 ```bash
 node .rihal/bin/rihal-tools.cjs config-set "$KEY" "$VALUE"
@@ -136,6 +141,7 @@ Options:
   8. git.branching_strategy
   9. git.commit_docs
   10. communication_language
+  11. output.verbose (slim output / full detail)
   0. Done — exit
 ```
 

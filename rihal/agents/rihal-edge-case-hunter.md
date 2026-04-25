@@ -6,7 +6,7 @@ color: maroon
 ---
 
 @.rihal/references/response-style.md
-@.rihal/references/karpathy-guidelines.md
+@.rihal/references/karpathy-guidelines-full.md
 @.rihal/references/no-unauthorized-git-ops.md
 
 # Rihal Edge Case Hunter

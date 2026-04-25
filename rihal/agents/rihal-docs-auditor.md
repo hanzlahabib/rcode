@@ -6,7 +6,7 @@ color: gold
 ---
 
 @.rihal/references/response-style.md
-@.rihal/references/karpathy-guidelines.md
+@.rihal/references/karpathy-guidelines-full.md
 @.rihal/references/no-unauthorized-git-ops.md
 
 # Rihal Documentation Auditor

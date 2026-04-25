@@ -73,7 +73,13 @@ Extract from active SPRINT.md:
 
 ## Step 3 — Collect Blocking Constraints
 
-Ask user via AskUserQuestion for any constraints or notes:
+```bash
+CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+```
+
+**If `CONFIG_MODE == "yolo"`:** Set `blocking_constraints = ""` and skip to Step 4.
+
+Otherwise ask user via AskUserQuestion:
 
 ```
 Question:

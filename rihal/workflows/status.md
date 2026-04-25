@@ -16,9 +16,14 @@ Render a human-readable project status dashboard. All data comes from a single `
 
 ```bash
 SNAPSHOT=$(node .rihal/bin/rihal-tools.cjs progress init)
+VERBOSE=$(node .rihal/bin/rihal-tools.cjs config-get output.verbose 2>/dev/null || echo "false")
 ```
 
 Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
+
+**Slim mode** (default when `VERBOSE != "true"`): Output Steps 2–3 only (banner + phases list). Skip decisions, blockers detail, and route menu — just print the top route as a single "Next: `/rihal:X`" line. Append `(run /rihal:status --verbose for full detail)`.
+
+**Verbose mode** (`VERBOSE == "true"` or `$ARGUMENTS` contains `--verbose`): Full Steps 2–6 output.
 
 If `SNAPSHOT.project` is empty and `SNAPSHOT.phases` is empty, print:
 

@@ -404,7 +404,9 @@ Rules for compact mode:
 - Round 2 deltas: ≤ 15 words each. "Held position" is a valid delta.
 - No section headers beyond the four above. No numbered story breakdowns. No tables from panelists verbatim.
 
-### Verbose mode (`--verbose` flag)
+### Verbose mode (`--verbose` flag or `output.verbose: true` in config)
+
+Activated by: `--verbose` in `$ARGUMENTS` OR `$(node .rihal/bin/rihal-tools.cjs config-get output.verbose)` equals `"true"`.
 
 Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 

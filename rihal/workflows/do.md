@@ -10,7 +10,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="parse_args">
-Extract `$ARGUMENTS` and detect `--auto` flag (suppresses confirmation, dispatches immediately):
+Extract `$ARGUMENTS`, detect `--auto` flag, and check config mode:
 
 ```bash
 AUTO_MODE=false
@@ -18,6 +18,11 @@ QUESTION="$ARGUMENTS"
 if [[ "$ARGUMENTS" == *"--auto"* ]]; then
   AUTO_MODE=true
   QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
+fi
+# Also auto-dispatch in yolo mode
+CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+if [[ "$CONFIG_MODE" == "yolo" ]]; then
+  AUTO_MODE=true
 fi
 ```
 </step>
@@ -106,6 +111,10 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Starting a new project, "set up", "initialize" | `/rihal:new-project` | Needs full project initialization |
 | Mapping or analyzing an existing codebase | `/rihal:map-codebase` | Codebase discovery |
 | A bug, error, crash, failure, or something broken | `/rihal:debug` | Needs systematic investigation |
+| Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rihal:prfaq` | Stress-test concept before committing sprint capacity |
+| Brainstorm, generate ideas, "explore options", "what could we do" | `/rihal:brainstorm` | Structured ideation before planning |
+| Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rihal:karpathy-audit` | 4-principle code audit against recent diff |
+| Walk through a change, "checkpoint", "explain this diff", "human review" | `/rihal:checkpoint-preview` | Human-in-the-loop diff walkthrough |
 | Exploring, researching, comparing, or "how does X work" | `/rihal:research-phase` | Domain research before planning |
 | Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rihal:discuss-phase` | Decisions not yet locked — gather before planning |
 | A complex task: refactoring, migration, multi-file architecture, system redesign | `/rihal:add-phase` | Needs a full phase with plan/build cycle |

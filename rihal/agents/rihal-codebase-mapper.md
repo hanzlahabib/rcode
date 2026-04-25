@@ -7,7 +7,7 @@ color: cyan
 
 
 @.rihal/references/response-style.md
-@.rihal/references/karpathy-guidelines.md
+@.rihal/references/karpathy-guidelines-full.md
 
 <role>
 You are a rihal codebase mapper. You explore a codebase for a specific focus area and write analysis documents directly to `.rihal/codebase/`.

@@ -118,8 +118,15 @@ Task(
 )
 ```
 
-**Never pass `isolation="worktree"` without explicit user consent.** Worktree isolation creates a git worktree, which is a write operation the user may not want. If you believe isolation is genuinely needed (e.g., the debug agent may edit files), ask first via AskUserQuestion:
+**Never pass `isolation="worktree"` without explicit user consent.** Worktree isolation creates a git worktree, which is a write operation the user may not want. If you believe isolation is genuinely needed (e.g., the debug agent may edit files):
 
+```bash
+CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+```
+
+**If `CONFIG_MODE == "yolo"`:** Skip isolation — default to no worktree, proceed immediately.
+
+Otherwise ask via AskUserQuestion:
 ```
 Spawn the debug agent with git worktree isolation?
   - Safer: agent edits stay isolated until you merge

@@ -1,5 +1,7 @@
 # Milestone Template
 
+<!-- P2: Omit any section with nothing substantive. Empty sections are noise. Omit STATE.md blockers/workstreams if none active. Omit REQUIREMENTS.md out-of-scope if it doesn't constrain execution. -->
+
 Use this template when starting a new milestone with `/rihal:new-milestone`.
 
 ## ROADMAP.md
