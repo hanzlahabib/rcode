@@ -1,5 +1,35 @@
 <purpose>
-Create a pull request from completed phase/milestone work, generate a rich PR body from planning artifacts, optionally run code review, and prepare for merge. Closes the plan → execute → verify → ship loop.
+Push a verified feature branch and open a pull request with an auto-generated
+body drawn from planning artifacts (ROADMAP, VERIFICATION, SUMMARY). Closes
+the plan → execute → verify → **ship** loop.
+
+**What this command does:**
+1. Runs preflight: clean tree, on a feature branch, VERIFICATION.md passed, gh CLI authenticated
+2. Pushes the branch to origin
+3. Generates a rich PR body — phase goal, list of changes, requirements addressed, verification status
+4. Creates the PR via `gh pr create`
+5. Optionally requests a reviewer
+6. Updates STATE.md with shipping status
+
+**Preconditions (all must be true before running):**
+- `/rihal:execute <phase>` completed
+- `/rihal:verify-phase <phase>` passed (VERIFICATION.md exists with `status: passed`)
+- You are on a feature branch (not main/develop directly)
+- `gh` CLI is authenticated (`gh auth status`)
+
+**This command is NOT for:**
+- Publishing npm packages → use `npm publish`
+- Creating git release tags → use `git tag -a vX.Y.Z && git push --tags`
+- Repos that commit directly to main (`git.branching_strategy: none`)
+- The rihal-code framework repo itself (no phases exist there)
+
+**Typical usage:**
+```
+/rihal:plan 1          → plan the phase
+/rihal:execute 1       → build it
+/rihal:verify-phase 1  → prove it works
+/rihal:ship 1          → PR it ← you are here
+```
 </purpose>
 
 <required_reading>

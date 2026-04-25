@@ -109,7 +109,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:code-review-fix` | Auto-apply fixes from a code-review report. |
 | `/rihal:verify-phase <n>` | Goal-backward audit — does the codebase deliver what the phase promised? |
 | `/rihal:verify-work` | Conversational UAT against acceptance criteria. |
-| `/rihal:ship` | Create PR, run review, prepare for merge after verification passes. |
+| `/rihal:ship [phase] [--draft]` | Push feature branch + open PR with auto-generated body (goal, changes, requirements, verification status). Use AFTER `/rihal:verify-phase` passes. **Not for npm publish or tagging releases.** |
 
 ## Phase & plan management
 
