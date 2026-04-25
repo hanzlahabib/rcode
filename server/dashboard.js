@@ -17,120 +17,122 @@ const fs = require('fs');
 const path = require('path');
 
 // ---------- Configuration ----------
-const PORT = 7717;
+const PORT = parseInt(process.env.PORT || '7717', 10);
 const RIHAL_DIR = process.env.RIHAL_DIR || path.join(process.cwd(), '.rihal');
 
 // ---------- State scanner ----------
-// All reads go through safe wrappers that return null on any failure —
-// the dashboard is view-only and must never crash on malformed project
-// state. Since rihal-code v0.2.0 ("BMAD-style pivot"), state files are
-// written by Claude directly via the Write tool, not by the CLI, so we
-// can no longer rely on CLI-level schema validation. The wrappers log a
-// single-line warning when parsing fails so broken files are visible.
 function safeReadJson(filepath) {
   let raw;
-  try {
-    raw = fs.readFileSync(filepath, 'utf8');
-  } catch {
-    return null;
-  }
-  try {
-    return JSON.parse(raw);
-  } catch (err) {
+  try { raw = fs.readFileSync(filepath, 'utf8'); } catch { return null; }
+  try { return JSON.parse(raw); } catch (err) {
     console.warn(`[dashboard] malformed JSON at ${filepath}: ${err.message}`);
     return null;
   }
 }
 
 function safeReadText(filepath) {
-  try {
-    return fs.readFileSync(filepath, 'utf8');
-  } catch {
-    return null;
-  }
+  try { return fs.readFileSync(filepath, 'utf8'); } catch { return null; }
 }
 
 function listDir(dir) {
-  try {
-    return fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return [];
+  try { return fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
+}
+
+// Parse simple YAML key: value (handles nested with tabs)
+function parseSimpleYaml(text) {
+  if (!text) return {};
+  const out = {};
+  for (const line of text.split('\n')) {
+    const m = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.+)/);
+    if (m) out[m[1].trim()] = m[2].trim();
   }
+  return out;
 }
 
 function scanState() {
+  const projectDir = path.dirname(RIHAL_DIR);
   const state = {
     exists: fs.existsSync(RIHAL_DIR),
-    project: null,
-    phases: [],
-    decisions: [],
-    progress: [],
-    artifacts: [],
+    projectName: null,
+    raw: null,         // full state.json
+    phases: [],        // from state.json.phases
+    decisions: [],     // from state.json.decisions
+    blockers: [],      // from state.json.blockers
+    councilSessions: 0,
+    milestone: null,
+    currentPhase: null,
+    currentSprint: null,
+    planningFiles: [], // .planning/ MD artifacts
     context: null,
     lastScanned: new Date().toISOString(),
   };
 
   if (!state.exists) return state;
 
-  // Project state
-  state.project = safeReadJson(path.join(RIHAL_DIR, 'state.json'));
+  // Read state.json (primary data source)
+  state.raw = safeReadJson(path.join(RIHAL_DIR, 'state.json'));
 
-  // Active context
-  state.context = safeReadText(path.join(RIHAL_DIR, 'context', 'active.md'));
+  // Read config.yaml for project_name fallback
+  const cfg = parseSimpleYaml(safeReadText(path.join(RIHAL_DIR, 'config.yaml')));
 
-  // Phases
-  const phasesDir = path.join(RIHAL_DIR, 'phases');
-  for (const entry of listDir(phasesDir)) {
-    if (!entry.isDirectory()) continue;
-    const phaseDir = path.join(phasesDir, entry.name);
-    const phase = {
-      id: entry.name,
-      brief: safeReadText(path.join(phaseDir, 'brief.md')),
-      sprints: safeReadText(path.join(phaseDir, 'sprints.md')),
-      stories: listDir(path.join(phaseDir, 'stories')).filter(e => e.isFile()).map(e => e.name),
-      tasks: listDir(path.join(phaseDir, 'tasks')).filter(e => e.isFile()).map(e => e.name),
-    };
-    state.phases.push(phase);
-  }
+  // Resolve project name: state.json uses "project" field; config.yaml uses "project_name"
+  state.projectName = state.raw?.project_name
+    || cfg.project_name
+    || state.raw?.project
+    || 'Unknown project';
 
-  // Decisions (ADRs)
-  for (const entry of listDir(path.join(RIHAL_DIR, 'decisions'))) {
-    if (entry.isFile() && entry.name.endsWith('.md')) {
-      state.decisions.push({
-        name: entry.name,
-        content: safeReadText(path.join(RIHAL_DIR, 'decisions', entry.name)),
-      });
-    }
-  }
+  state.currentPhase   = state.raw?.current_phase  || null;
+  state.currentSprint  = state.raw?.current_sprint || null;
+  state.milestone      = state.raw?.milestone       || null;
+  state.councilSessions = (state.raw?.council_sessions || []).length;
 
-  // Progress (latest 10)
-  const progressFiles = listDir(path.join(RIHAL_DIR, 'progress'))
-    .filter(e => e.isFile() && e.name.endsWith('.md'))
-    .sort((a, b) => b.name.localeCompare(a.name))
-    .slice(0, 10);
-  for (const entry of progressFiles) {
-    state.progress.push({
-      name: entry.name,
-      content: safeReadText(path.join(RIHAL_DIR, 'progress', entry.name)),
+  // Phases — from state.json.phases array
+  if (Array.isArray(state.raw?.phases)) {
+    state.phases = state.raw.phases.map(p => {
+      const sprints   = Array.isArray(p.sprints) ? p.sprints : [];
+      const allStories = sprints.flatMap(s => Array.isArray(s.stories) ? s.stories : []);
+      const done   = allStories.filter(s => s.status === 'done' || s.status === 'completed').length;
+      const total  = allStories.length;
+      return {
+        id:     p.id,
+        name:   p.name || p.slug || p.id,
+        status: p.status || (sprints[0]?.status) || 'planned',
+        sprints: sprints.length,
+        stories: total,
+        storiesDone: done,
+        goal: sprints[0]?.goal || null,
+      };
     });
   }
 
-  // Artifacts
-  function walkArtifacts(dir, prefix = '') {
+  // Decisions — from state.json.decisions array
+  if (Array.isArray(state.raw?.decisions)) {
+    state.decisions = state.raw.decisions;
+  }
+
+  // Blockers — from state.json.blockers array
+  if (Array.isArray(state.raw?.blockers)) {
+    state.blockers = state.raw.blockers.filter(b => b && (typeof b === 'string' || b.title));
+  }
+
+  // Active context — check a few common locations
+  state.context = safeReadText(path.join(RIHAL_DIR, 'context', 'active.md'))
+    || safeReadText(path.join(projectDir, '.planning', 'CONTEXT.md'));
+
+  // .planning/ artifacts (SPRINT.md, VERIFICATION.md, SUMMARY.md, RESEARCH.md)
+  const planningDir = path.join(projectDir, '.planning');
+  function walkPlanning(dir, prefix = '') {
     for (const entry of listDir(dir)) {
       const full = path.join(dir, entry.name);
-      const rel = path.join(prefix, entry.name);
+      const rel  = path.join(prefix, entry.name);
       if (entry.isDirectory()) {
-        walkArtifacts(full, rel);
+        walkPlanning(full, rel);
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        state.artifacts.push({
-          path: rel,
-          content: safeReadText(full),
-        });
+        state.planningFiles.push({ path: rel, name: entry.name });
       }
     }
   }
-  walkArtifacts(path.join(RIHAL_DIR, 'artifacts'));
+  if (fs.existsSync(planningDir)) walkPlanning(planningDir);
 
   return state;
 }
@@ -155,12 +157,13 @@ function mdToHtml(md) {
 
 // ---------- HTML Renderer ----------
 function renderHtml(state) {
-  const projectName = state.project?.project_name || 'No project initialized';
-  const currentPhase = state.project?.current_phase || '—';
-  const activeAgents = state.project?.active_agents || [];
-  const phaseCount = state.phases.length;
+  const projectName   = state.projectName || 'No project initialized';
+  const currentPhase  = state.currentPhase || '—';
+  const currentSprint = state.currentSprint || null;
+  const phaseCount    = state.phases.length;
   const decisionCount = state.decisions.length;
-  const artifactCount = state.artifacts.length;
+  const artifactCount = state.planningFiles.length;
+  const activeAgents  = [];
 
   return `<!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -442,12 +445,12 @@ ${!state.exists ? `
     <div class="stat">
       <div class="label">Current Phase</div>
       <div class="value">${currentPhase}</div>
-      <div class="sub">${phaseCount} total phases</div>
+      <div class="sub">${phaseCount} total phases${currentSprint ? ` · Sprint ${currentSprint}` : ''}</div>
     </div>
     <div class="stat">
-      <div class="label">Active Agents</div>
-      <div class="value">${activeAgents.length}</div>
-      <div class="sub">${activeAgents.join(', ') || '—'}</div>
+      <div class="label">Milestone</div>
+      <div class="value" style="font-size:16px;padding-top:6px;">${state.milestone || '—'}</div>
+      <div class="sub">&nbsp;</div>
     </div>
     <div class="stat">
       <div class="label">Decisions (ADRs)</div>
@@ -455,10 +458,22 @@ ${!state.exists ? `
       <div class="sub">Architecture records</div>
     </div>
     <div class="stat">
-      <div class="label">Artifacts</div>
+      <div class="label">Planning Files</div>
       <div class="value">${artifactCount}</div>
-      <div class="sub">Plans, reviews, research</div>
+      <div class="sub">SPRINT, CONTEXT, VERIFY, RESEARCH</div>
     </div>
+    ${state.blockers.length > 0 ? `
+    <div class="stat" style="border-left-color:#ef4444;">
+      <div class="label" style="color:#ef4444;">Blockers</div>
+      <div class="value" style="color:#ef4444;">${state.blockers.length}</div>
+      <div class="sub">Active blockers</div>
+    </div>` : ''}
+    ${state.councilSessions > 0 ? `
+    <div class="stat">
+      <div class="label">Council Sessions</div>
+      <div class="value">${state.councilSessions}</div>
+      <div class="sub">Recorded sessions</div>
+    </div>` : ''}
   </div>
 
   <section>
@@ -505,32 +520,56 @@ ${!state.exists ? `
   <section>
     <h2>📂 Phases</h2>
     <div class="body">
-      ${state.phases.length === 0 ? '<div class="empty">No phases yet. Run *kickoff.</div>' : `
+      ${state.phases.length === 0 ? '<div class="empty">No phases in state.json yet.</div>' : `
         <div class="phase-list">
-          ${state.phases.map(p => `
-            <div class="item">
-              <div class="item-title">${p.id}</div>
-              <div class="item-meta">
-                <span class="tag">${p.stories.length} stories</span>
-                <span class="tag">${p.tasks.length} tasks</span>
+          ${state.phases.map(p => {
+            const statusColor = p.status === 'completed' ? '#10b981' : p.status === 'in_progress' ? '#f59e0b' : '#6b7280';
+            const pct = p.stories > 0 ? Math.round((p.storiesDone / p.stories) * 100) : 0;
+            const isCurrent = p.id === state.currentPhase;
+            return `
+            <div class="item" style="${isCurrent ? 'border-left-color:#f59e0b;' : ''}">
+              <div class="item-title">
+                Phase ${p.id} — ${p.name}
+                ${isCurrent ? '<span class="tag" style="background:rgba(245,158,11,0.2);">current</span>' : ''}
+                <span style="color:${statusColor};font-size:12px;margin-left:8px;">● ${p.status}</span>
               </div>
-              ${p.brief ? `<div class="item-preview">${mdToHtml(p.brief.slice(0, 500))}</div>` : ''}
-            </div>
-          `).join('')}
+              <div class="item-meta">
+                <span class="tag">${p.sprints} sprint${p.sprints !== 1 ? 's' : ''}</span>
+                <span class="tag">${p.stories} stories</span>
+                ${p.stories > 0 ? `<span class="tag">${pct}% done</span>` : ''}
+              </div>
+              ${p.goal ? `<div style="color:#94a3b8;font-size:13px;margin-top:4px;">${p.goal}</div>` : ''}
+            </div>`;
+          }).join('')}
         </div>
       `}
     </div>
   </section>
+
+  ${state.blockers.length > 0 ? `
+  <section>
+    <h2 style="color:#ef4444;">🚧 Blockers</h2>
+    <div class="body">
+      <div class="phase-list">
+        ${state.blockers.map(b => `
+          <div class="item" style="border-left-color:#ef4444;">
+            <div class="item-title">${typeof b === 'string' ? b : (b.title || JSON.stringify(b))}</div>
+            ${b.description ? `<div style="color:#94a3b8;font-size:13px;">${b.description}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>` : ''}
 
   <section>
     <h2>⚖️ Decisions (ADRs)</h2>
     <div class="body">
-      ${state.decisions.length === 0 ? '<div class="empty">No decisions recorded yet.</div>' : `
+      ${state.decisions.length === 0 ? '<div class="empty">No decisions recorded yet. Decisions made during /rihal:council and /rihal:discuss appear here.</div>' : `
         <div class="decision-list">
           ${state.decisions.map(d => `
             <div class="item">
-              <div class="item-title">${d.name}</div>
-              <div class="item-preview">${mdToHtml((d.content || '').slice(0, 400))}</div>
+              <div class="item-title">${typeof d === 'string' ? d : (d.title || d.decision || JSON.stringify(d).slice(0, 80))}</div>
+              ${d.rationale ? `<div style="color:#94a3b8;font-size:13px;margin-top:4px;">${d.rationale}</div>` : ''}
             </div>
           `).join('')}
         </div>
@@ -539,31 +578,12 @@ ${!state.exists ? `
   </section>
 
   <section>
-    <h2>📈 Progress Log</h2>
+    <h2>📎 Planning Files</h2>
     <div class="body">
-      ${state.progress.length === 0 ? '<div class="empty">No progress entries yet.</div>' : `
-        <div class="progress-list">
-          ${state.progress.map(p => `
-            <div class="item">
-              <div class="item-title">${p.name}</div>
-              <div class="item-preview">${mdToHtml((p.content || '').slice(0, 400))}</div>
-            </div>
-          `).join('')}
-        </div>
-      `}
-    </div>
-  </section>
-
-  <section>
-    <h2>📎 Artifacts</h2>
-    <div class="body">
-      ${state.artifacts.length === 0 ? '<div class="empty">No artifacts yet.</div>' : `
-        <div class="phase-list">
-          ${state.artifacts.map(a => `
-            <div class="item">
-              <div class="item-title">${a.path}</div>
-              <div class="item-preview">${mdToHtml((a.content || '').slice(0, 300))}</div>
-            </div>
+      ${state.planningFiles.length === 0 ? '<div class="empty">No .planning/ files yet.</div>' : `
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${state.planningFiles.map(a => `
+            <span style="background:rgba(59,130,246,0.1);border:1px solid #1f2937;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;color:#93c5fd;">${a.path}</span>
           `).join('')}
         </div>
       `}
