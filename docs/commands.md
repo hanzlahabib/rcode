@@ -675,25 +675,6 @@ Shows:
 
 ---
 
-### `/rihal:report`
-**Purpose:** Generate a phase report (progress, decisions, blockers).
-
-```
-/rihal:report 02
-/rihal:report --since=2026-04-01
-```
-
-Includes:
-- Phase summary
-- Decisions made
-- Blockers encountered
-- Time spent per task
-- Risk assessment
-
-**Related:** `/rihal:status`, `/rihal:session-report`
-
----
-
 ## Recovery + Correction (4 commands)
 
 ### `/rihal:pause-work`
@@ -991,7 +972,7 @@ Outputs:
 - Blockers encountered
 - Lessons learned
 
-**Related:** `/rihal:complete-milestone`, `/rihal:report`
+**Related:** `/rihal:complete-milestone`, `/rihal:session-report`
 
 ---
 
@@ -1092,11 +1073,6 @@ Updates:
 Appends to `.planning/notes/[phase].md`. No ceremony.
 
 **Related:** `/rihal:add-todo`, `/rihal:docs-update`
-
----
-
-### `/rihal:report`
-(See Observability section)
 
 ---
 
