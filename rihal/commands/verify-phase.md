@@ -1,7 +1,7 @@
 ---
 name: rihal:verify-phase
-description: Verify phase goal achievement through goal-backward analysis. Check that the codebase delivers what the phase promised, 
-argument-hint: ""
+description: "Goal-backward audit — does the codebase actually deliver what the phase promised? Produces VERIFICATION.md with pass/fail. Required before /rihal:ship. Run after /rihal:execute completes."
+argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---
 

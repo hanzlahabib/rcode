@@ -1,7 +1,7 @@
 ---
 name: rihal:pr-branch
-description: Execute pr-branch workflow
-argument-hint: ""
+description: "Create a clean PR branch that strips all Rihal planning artifacts (.planning/, SPRINT.md, SUMMARY.md, STATE.md). Reviewers see only code changes. Use before /rihal:ship when you want a clean git history in the PR."
+argument-hint: "[<base-branch>]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---
 

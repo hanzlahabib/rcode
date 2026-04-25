@@ -1,7 +1,7 @@
 ---
 name: rihal:validate-phase
 description: Audit Nyquist validation gaps for a completed phase. Generate missing tests. Update VALIDATION.md.
-argument-hint: ""
+argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---
 

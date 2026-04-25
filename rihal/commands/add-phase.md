@@ -1,7 +1,7 @@
 ---
 name: rihal:add-phase
-description: Execute add-phase workflow
-argument-hint: ""
+description: "Add a new integer phase to the end of the current milestone. Auto-calculates the next phase number, creates the phase directory, and updates ROADMAP.md. Use when scope expands mid-milestone."
+argument-hint: "<phase-name>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---
 

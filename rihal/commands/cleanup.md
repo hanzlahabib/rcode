@@ -1,7 +1,7 @@
 ---
 name: rihal:cleanup
-description: Execute cleanup workflow
-argument-hint: ""
+description: "Archive completed milestone phase directories into .planning/milestones/. Run after /rihal:complete-milestone to keep .planning/ tidy. Shows a dry-run summary before moving anything."
+argument-hint: "[--dry-run]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---
 
