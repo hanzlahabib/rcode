@@ -196,7 +196,7 @@ function runPreflight(cwd, packageRoot) {
       checks.push({
         label: 'Memory bank',
         status: 'warn',
-        message: `STALE — ${staleness.reasons[0]}${staleness.reasons.length > 1 ? ` (+${staleness.reasons.length - 1} more)` : ''} — run /rihal:init`,
+        message: `STALE — ${staleness.reasons[0]}${staleness.reasons.length > 1 ? ` (+${staleness.reasons.length - 1} more)` : ''}`,
       });
     }
   }
