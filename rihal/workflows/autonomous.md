@@ -4,15 +4,82 @@ Drive milestone phases autonomously — all remaining phases, a range via `--fro
 
 </purpose>
 
+<critical_rules priority="absolute">
+
+These rules apply throughout autonomous execution. Violations broke the
+interpos audit (issue #221) — DO NOT regress.
+
+1. **NEVER modify `.rihal/config.yaml`.** Specifically: never write
+   `mode: yolo`, never call `rihal-tools config-set mode`, never `sed`
+   the file. The user's mode preference is sacred. Autonomous behavior
+   is governed by the workflow's own internal flags + the `--auto`
+   invocation flag, NOT by mutating persistent config.
+
+2. **NEVER skip the methodology chain on greenfield projects.** Before
+   the phase loop runs, the prerequisite check (next step) MUST verify:
+   - `.planning/prd.md` exists (else halt → /rihal:create-prd)
+   - ROADMAP.md has milestone structure (else halt → /rihal:create-milestone)
+   - `.planning/epics.md` exists (else halt → /rihal:create-epics-and-stories)
+   See issue #219 + #229.
+
+3. **NEVER write SPRINT.md directly.** Sprint creation MUST go through
+   the `rihal-sprint-planning` skill so the capacity gate (#127) fires.
+   If autonomous needs a sprint, invoke the skill — don't shortcut.
+
+4. **ALWAYS call `state sync --from-disk` after writing any
+   .planning/ artifact.** Otherwise state.json drifts and downstream
+   workflows lie. See `_shared/state-sync-rule.md` (#198).
+
+5. **ALWAYS record decisions via `rihal-tools state add-decision`.**
+   Never write decision prose to STATE.md. See #224.
+
+</critical_rules>
+
 <required_reading>
 
 @.rihal/references/output-format.md
 @.rihal/references/workstream-flag.md
 @.rihal/references/output-realism.md
+@.rihal/skills/_shared/no-autonomous-bypass.md
+@.rihal/skills/_shared/state-sync-rule.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 </required_reading>
+
+<step name="prerequisite_check" priority="before-everything">
+
+## 0. Prerequisite check (greenfield guard)
+
+Before any phase work, verify the methodology chain has run:
+
+```bash
+HAS_PRD=$([ -f .planning/prd.md ] && echo true || echo false)
+HAS_ROADMAP_MILESTONES=$(grep -qE "^## Milestone\s+M[0-9]+" .planning/ROADMAP.md 2>/dev/null && echo true || echo false)
+HAS_EPICS=$([ -f .planning/epics.md ] && echo true || echo false)
+SKIP_FLAG=$(echo "$ARGUMENTS" | grep -qE "\-\-skip-prerequisites" && echo true || echo false)
+```
+
+If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with a clear message:
+
+```
+⚠ Cannot run autonomous: missing prerequisite — {what}.
+
+The autonomous flow assumes a project that has already gone through:
+  1. /rihal:create-prd               → produces .planning/prd.md
+  2. /rihal:create-milestone         → produces ROADMAP.md with M1..Mn
+  3. /rihal:create-epics-and-stories → produces .planning/epics.md
+  4. THEN /rihal:autonomous           ← you are here
+
+Suggested first step: /rihal:{first-missing-command}
+
+If you genuinely want to skip these (rare — usually inverted methodology),
+re-invoke with: /rihal:autonomous --skip-prerequisites
+```
+
+If `SKIP_FLAG=true`: print a warning that downstream workflows may produce low-quality output without upstream artifacts, then proceed.
+
+</step>
 
 <output_format>
 
