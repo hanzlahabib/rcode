@@ -6,7 +6,19 @@ description: >
   when the user says "create UX design", "design the user flow", "wireframe
   this", "UX plan", "design this screen", or "create the design for". Do NOT
   use for UI code (use rihal-dev-story) or visual code review.
+triggers:
+  - "create UX design"
+  - "design the user flow"
+  - "wireframe
+  this"
+  - "UX plan"
+  - "design this screen"
+  - "create the design for"
 ---
+
+## Overview
+
+Guide through realizing a UX design that informs architecture and implementation — user flows, wireframes, design system updates.
 
 ## Workflow
 

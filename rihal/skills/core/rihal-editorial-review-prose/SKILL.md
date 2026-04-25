@@ -1,6 +1,8 @@
 ---
 name: rihal-editorial-review-prose
 description: 'Clinical copy-editor that reviews text for communication issues. Use when user says review for prose or improve the prose'
+triggers:
+  - "editorial review prose"
 ---
 
 # Editorial Review - Prose
@@ -16,6 +18,10 @@ description: 'Clinical copy-editor that reviews text for communication issues. U
 - **style_guide** (optional) — Project-specific style guide. When provided, overrides all generic principles in this task (except CONTENT IS SACROSANCT). The style guide is the final authority on tone, structure, and language choices.
 - **reader_type** (optional, default: `humans`) — `humans` for standard editorial, `llm` for precision focus
 
+
+## Overview
+
+Editorial review prose skill for Rihal Code.
 
 ## PRINCIPLES
 
@@ -92,6 +98,12 @@ Three-column markdown table:
 | Original Text | Revised Text | Changes |
 |---------------|--------------|---------|}
 | The exact original passage | The suggested revision | Brief explanation |
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

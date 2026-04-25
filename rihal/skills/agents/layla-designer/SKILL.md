@@ -56,7 +56,7 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
 |------|-------------|-------|
 | CU | Guide through realizing the UX plan to inform architecture and implementation | rihal-create-ux-design |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

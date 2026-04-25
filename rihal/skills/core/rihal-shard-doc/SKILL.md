@@ -1,11 +1,17 @@
 ---
 name: rihal-shard-doc
 description: 'Splits large markdown documents into smaller, organized files based on level 2 (default) sections. Use if the user says perform shard document'
+triggers:
+  - "shard doc"
 ---
 
 # Shard Document
 
 **Goal:** Split large markdown documents into smaller, organized files based on level 2 sections using `npx @kayvan/markdown-tree-parser`.
+
+## Overview
+
+Shard doc skill for Rihal Code.
 
 ## CRITICAL RULES
 
@@ -99,6 +105,18 @@ Present user with options for the original document:
   - Duplicate content taking up space
   - Consider deleting or archiving the original document
 - Confirm user choice: "Original document kept at: [source-document-path]"
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
+
+## Output Format
+
+- Structured Markdown response
+- Headers for each section
+- Concise, actionable content
 
 ## Examples
 

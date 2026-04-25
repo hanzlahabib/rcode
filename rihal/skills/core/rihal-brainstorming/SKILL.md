@@ -7,8 +7,24 @@ description: >
   thinking", "generate ideas", "idea generation", "divergent thinking",
   "lateral thinking", or "think outside the box". Do NOT use for strategic
   analysis (use rihal-sadiq-analyst) or product requirements (use rihal-create-prd).
+triggers:
+  - "brainstorm"
+  - "help me brainstorm"
+  - "help me ideate"
+  - "ideation session"
+  - "creative
+  thinking"
+  - "generate ideas"
+  - "idea generation"
+  - "divergent thinking"
+  - "lateral thinking"
+  - "think outside the box"
 user-invocable: true
 ---
+
+## Overview
+
+Facilitate interactive brainstorming sessions using diverse creative techniques and ideation methods.
 
 Structured brainstorming facilitator that guides users through creative ideation using techniques from brain-methods.csv. Aims for 100+ ideas before organizing, using anti-bias protocols to push past obvious solutions.
 

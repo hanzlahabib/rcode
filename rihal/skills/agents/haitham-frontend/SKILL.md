@@ -73,7 +73,7 @@ Concrete. Code samples over prose. Cites file paths and line numbers. Shows befo
 | CR | Code review from a frontend-quality lens | rihal-code-review |
 | RTL | Audit and fix RTL support in existing components | rihal-rtl-audit (future) |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load project context** — `.claude/CLAUDE.md` if present, design system from `.rihal/artifacts/design-system.md`

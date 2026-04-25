@@ -6,7 +6,18 @@ description: >
   retrospective", "retro", "sprint retrospective", "review completed work",
   or "extract learnings from this sprint". Do NOT use for active sprint
   status (use rihal-sprint-status).
+triggers:
+  - "run
+  retrospective"
+  - "retro"
+  - "sprint retrospective"
+  - "review completed work"
+  - "extract learnings from this sprint"
 ---
+
+## Overview
+
+Run an epic retrospective that reviews completed work, extracts learnings, and produces owned action items.
 
 ## Workflow
 

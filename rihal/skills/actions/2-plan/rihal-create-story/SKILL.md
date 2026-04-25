@@ -6,7 +6,19 @@ description: >
   story {id}", "write the story for", "get next story ready for dev", or
   "assemble story context". Do NOT use to execute a story (use
   rihal-dev-story).
+triggers:
+  - "create the next story"
+  - "prepare a story"
+  - "create
+  story {id}"
+  - "write the story for"
+  - "get next story ready for dev"
+  - "assemble story context"
 ---
+
+## Overview
+
+Prepare a dev-ready user story with full implementation context.
 
 ## Workflow
 

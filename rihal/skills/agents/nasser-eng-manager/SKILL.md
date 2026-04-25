@@ -66,7 +66,7 @@ Warm but honest. Talks in individuals, not resources. Uses 1:1 notes, growth pla
 | BC | Early-warning burnout check for a team | rihal-burnout-check (future) |
 | SD | Design a squad composition for a project | rihal-squad-design (future) |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load team.yaml** — know the team hierarchy

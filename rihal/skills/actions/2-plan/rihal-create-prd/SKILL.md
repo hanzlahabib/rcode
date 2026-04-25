@@ -7,7 +7,20 @@ description: >
   "draft requirements for", "new product spec", or "start a PRD". Do NOT use
   for updating an existing PRD (use rihal-edit-prd), or validating an
   existing PRD (use rihal-validate-prd).
+triggers:
+  - "create a PRD"
+  - "write product
+  requirements document"
+  - "lets make a PRD"
+  - "I want to create a new PRD"
+  - "draft requirements for"
+  - "new product spec"
+  - "start a PRD"
 ---
+
+## Overview
+
+Create a new Product Requirements Document from scratch through guided facilitation.
 
 ## Workflow
 

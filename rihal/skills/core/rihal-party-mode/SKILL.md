@@ -9,8 +9,22 @@ description: >
   decisions (use rihal-majlis-council), single-agent questions where one
   specialist is clearly the right owner (invoke that agent directly), or
   sprint ceremonies (use rihal-hussain-sm).
+triggers:
+  - "party mode"
+  - "activate party mode"
+  - "start party mode"
+  - "group discussion"
+  - "team discussion"
+  - "talk to everyone"
+  - "bring all agents"
+  - "multi-agent chat"
+  - "let's have a party"
 user-invocable: true
 ---
+
+## Overview
+
+Orchestrates group discussions between all installed Rihal agents, enabling natural multi-agent conversations with maintained personalities.
 
 # Party Mode
 

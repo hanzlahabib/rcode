@@ -1,9 +1,15 @@
 ---
 name: rihal-help
 description: 'Analyzes current state and user query to answer Rihal questions or recommend the next skill(s) to use. Use when user asks for help, Rihal help, what to do next, or what to start with in Rihal.'
+triggers:
+  - "help"
 ---
 
 # Rihal Help
+
+## Overview
+
+Help skill for Rihal Code.
 
 ## Purpose
 
@@ -75,6 +81,12 @@ For each recommended item, present:
 ## Output Format
 
 Status summary of current workflow position, then ordered list of recommended next skills with `[menu-code]` **Display name**, skill name in backticks, and description.
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

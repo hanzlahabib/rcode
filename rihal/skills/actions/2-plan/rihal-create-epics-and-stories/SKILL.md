@@ -6,7 +6,19 @@ description: >
   the epic list", "epic and story breakdown", "decompose the PRD", or
   "create the backlog". Do NOT use to prepare a single story for dev (use
   rihal-create-story).
+triggers:
+  - "create epics"
+  - "break this into stories"
+  - "generate
+  the epic list"
+  - "epic and story breakdown"
+  - "decompose the PRD"
+  - "create the backlog"
 ---
+
+## Overview
+
+Break a PRD into epics and user stories that drive development.
 
 ## Workflow
 

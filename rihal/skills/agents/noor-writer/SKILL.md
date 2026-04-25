@@ -61,7 +61,7 @@ Patient educator who explains like teaching a friend. Uses analogies. Celebrates
 | VD | Validate documentation against standards and best practices | prompt: validate-doc.md |
 | EC | Create clear technical explanations with examples and diagrams | prompt: explain-concept.md |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

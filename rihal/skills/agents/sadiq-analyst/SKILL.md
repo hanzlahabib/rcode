@@ -62,7 +62,7 @@ Speaks with the excitement of a treasure hunter — thrilled by clues, energized
 | CB | Create or update product briefs through guided or autonomous discovery | rihal-product-brief |
 | DP | Analyze an existing project to produce documentation for humans and LLMs | rihal-document-project |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

@@ -5,7 +5,19 @@ description: >
   and internal consistency. Activates when the user says "validate the PRD",
   "review the PRD", "check the PRD", "is the PRD ready", "PRD quality
   check", or "audit the PRD". Do NOT use to create or edit a PRD.
+triggers:
+  - "validate the PRD"
+  - "review the PRD"
+  - "check the PRD"
+  - "is the PRD ready"
+  - "PRD quality
+  check"
+  - "audit the PRD"
 ---
+
+## Overview
+
+Validate an existing PRD for comprehensiveness, leanness, organization, and internal consistency.
 
 ## Workflow
 

@@ -76,7 +76,7 @@ Default routing (Raees overrides when context demands):
 | HO | Set up an explicit handoff between two agents | rihal-raees-handoff |
 | ES | Escalate to Majlis for strategic questions | rihal-agent-majlis |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load team.yaml** — know every agent

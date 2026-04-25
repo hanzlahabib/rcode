@@ -7,7 +7,18 @@ description: >
   me understand X industry", or "domain research for". Do NOT use for market
   analysis (use rihal-market-research) or technical feasibility (use
   rihal-technical-research).
+triggers:
+  - "research this domain"
+  - "domain deep dive"
+  - "explain this industry"
+  - "help
+  me understand X industry"
+  - "domain research for"
 ---
+
+## Overview
+
+Conduct industry domain deep-dive research to build subject matter expertise on a specific business domain.
 
 ## Workflow
 

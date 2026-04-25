@@ -6,7 +6,19 @@ description: >
   code review", "do a PR review", "review the diff", "critique this
   implementation", or "CR". Do NOT use for documentation review (use
   rihal-validate-prd or editorial skills).
+triggers:
+  - "review this code"
+  - "run
+  code review"
+  - "do a PR review"
+  - "review the diff"
+  - "critique this
+  implementation"
 ---
+
+## Overview
+
+Review code changes using parallel adversarial review layers and produce actionable findings.
 
 ## Workflow
 

@@ -2,6 +2,8 @@
 name: rihal-advanced-elicitation
 description: 'Push the LLM to reconsider, refine, and improve its recent output. Use when user asks for deeper critique or mentions a known deeper critique method, e.g. socratic, first principles, pre-mortem, red team.'
 agent_party: '{project-root}/.rihal/team.yaml'
+triggers:
+  - "advanced elicitation"
 ---
 
 # Advanced Elicitation
@@ -9,6 +11,10 @@ agent_party: '{project-root}/.rihal/team.yaml'
 **Goal:** Push the LLM to reconsider, refine, and improve its recent output.
 
 ---
+
+## Overview
+
+Advanced elicitation skill for Rihal Code.
 
 ## CRITICAL LLM INSTRUCTIONS
 
@@ -139,6 +145,12 @@ x. Proceed / No Further Actions
 ## Output Format
 
 Interactive menu loop presenting 5 elicitation methods, then the enhanced content after each method application. Final output is the user-approved enhanced version of the original content.
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

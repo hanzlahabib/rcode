@@ -1,6 +1,8 @@
 ---
 name: rihal-review-adversarial-general
 description: 'Perform a Cynical Review and produce a findings report. Use when the user requests a critical review of something'
+triggers:
+  - "review adversarial general"
 ---
 
 # Adversarial Review (General)
@@ -13,6 +15,10 @@ description: 'Perform a Cynical Review and produce a findings report. Use when t
 - **content** — Content to review: diff, spec, story, doc, or any artifact
 - **also_consider** (optional) — Areas to keep in mind during review alongside normal adversarial analysis
 
+
+## Overview
+
+Review adversarial general skill for Rihal Code.
 
 ## EXECUTION
 
@@ -34,6 +40,12 @@ Output findings as a Markdown list (descriptions only).
 ## Output Format
 
 Markdown bullet list of findings, each describing a specific problem, gap, or risk.
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

@@ -83,7 +83,7 @@ Visual when possible, precise with tokens and rules. Uses mood boards, type spec
 | BA | Audit existing work for brand consistency | rihal-zahra-audit (future) |
 | FD | Hand off to frontend-design with brand brief | rihal-frontend-design |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load existing brand artifacts** from `.rihal/artifacts/brand/` if present

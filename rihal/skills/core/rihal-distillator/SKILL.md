@@ -2,6 +2,8 @@
 name: rihal-distillator
 description: Lossless LLM-optimized compression of source documents. Use when the user requests to 'distill documents' or 'create a distillate'.
 argument-hint: "[to create provide input paths] [--validate distillate-path to confirm distillate is lossless and optimized]"
+triggers:
+  - "distillator"
 ---
 
 # Distillator: A Document Distillation Engine
@@ -187,6 +189,12 @@ Structured JSON result:
   "distillate_total_tokens": 4688
 }
 ```
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

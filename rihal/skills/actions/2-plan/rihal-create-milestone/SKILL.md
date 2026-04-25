@@ -8,7 +8,19 @@ description: >
   lifecycle (use rihal-new-milestone / rihal-complete-milestone), for
   decomposing one milestone into epics (use rihal-create-epics-and-stories),
   or for single-phase planning (use rihal-plan-phase).
+triggers:
+  - "create milestones"
+  - "plan milestones"
+  - "create roadmap"
+  - "what milestones do I need"
+  - "break this project into
+  milestones"
+  - "roadmap for this product"
 ---
+
+## Overview
+
+Design the milestone roadmap (M1..Mn) for a project from an approved PRD.
 
 Follow the instructions in ./workflow.md.
 
@@ -21,6 +33,12 @@ Follow the instructions in ./workflow.md.
 - Every milestone must include an `Assumptions` block — decisions that, if wrong, invalidate this milestone's scope
 - Do NOT include: unquantified success language ("grow the user base"), open-ended milestones without dates, or more than 6 active milestones in one roadmap (split into v1/v2 if needed)
 - If a milestone goal cannot be expressed as a single verifiable sentence, split it into two milestones
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

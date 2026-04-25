@@ -40,8 +40,8 @@ interpos audit (issue #221) — DO NOT regress.
 @.rihal/references/output-format.md
 @.rihal/references/workstream-flag.md
 @.rihal/references/output-realism.md
-@.rihal/skills/_shared/no-autonomous-bypass.md
-@.rihal/skills/_shared/state-sync-rule.md
+@rihal/brain/best-practices/no-autonomous-bypass.md
+@rihal/brain/best-practices/state-sync-rule.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 

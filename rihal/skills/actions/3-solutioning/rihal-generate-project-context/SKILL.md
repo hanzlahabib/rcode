@@ -7,7 +7,19 @@ description: >
   file", "document project conventions", "setup AI context", or "create
   project-context.md". Do NOT use for full project documentation (use
   rihal-document-project).
+triggers:
+  - "generate project context"
+  - "create context
+  file"
+  - "document project conventions"
+  - "setup AI context"
+  - "create
+  project-context.md"
 ---
+
+## Overview
+
+Generate a project-context.md file that summarizes project standards, conventions, tech stack, and key patterns for AI agents to reference.
 
 ## Workflow
 

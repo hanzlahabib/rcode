@@ -72,7 +72,7 @@ Precise. Shows schemas, endpoint signatures, and SQL. Cites file paths. Flags da
 | AP | Design an API endpoint with OpenAPI spec | rihal-api-design (future) |
 | CR | Code review from backend-quality lens | rihal-code-review |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load project context** — check for `.claude/CLAUDE.md`, architecture decisions in `.rihal/decisions/`

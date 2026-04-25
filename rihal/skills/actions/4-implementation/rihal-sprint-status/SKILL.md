@@ -6,7 +6,17 @@ description: >
   "how is the sprint going", "generate status report", "sprint progress", or
   "where are we in the sprint". Do NOT use for retrospectives (use
   rihal-retrospective).
+triggers:
+  - "sprint status"
+  - "how is the sprint going"
+  - "generate status report"
+  - "sprint progress"
+  - "where are we in the sprint"
 ---
+
+## Overview
+
+Generate a sprint status report showing progress, blockers, and recommended next actions.
 
 ## Workflow
 

@@ -1,6 +1,8 @@
 ---
 name: rihal-review-edge-case-hunter
 description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+triggers:
+  - "review edge case hunter"
 ---
 
 # Edge Case Hunter Review
@@ -18,6 +20,10 @@ Ignore the rest of the codebase unless the provided content explicitly reference
 
 **Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
 
+
+## Overview
+
+Review edge case hunter skill for Rihal Code.
 
 ## EXECUTION
 
@@ -65,6 +71,18 @@ No extra text, no explanations, no markdown wrapping. An empty array `[]` is val
 ## HALT CONDITIONS
 
 - If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
+
+## Output Format
+
+- Structured Markdown response
+- Headers for each section
+- Concise, actionable content
 
 ## Examples
 

@@ -1,6 +1,8 @@
 ---
 name: rihal-editorial-review-structure
 description: 'Structural editor that proposes cuts, reorganization, and simplification while preserving comprehension. Use when user requests structural review or editorial review of structure'
+triggers:
+  - "editorial review structure"
 ---
 
 # Editorial Review - Structure
@@ -18,6 +20,10 @@ description: 'Structural editor that proposes cuts, reorganization, and simplifi
 - **target_audience** (optional) -- Who reads this? (e.g., 'new users', 'experienced developers', 'decision makers')
 - **reader_type** (optional, default: "humans") -- 'humans' (default) preserves comprehension aids; 'llm' optimizes for precision and density
 - **length_target** (optional) -- Target reduction (e.g., '30% shorter', 'half the length', 'no limit')
+
+## Overview
+
+Editorial review structure skill for Rihal Code.
 
 ## Principles
 
@@ -177,6 +183,18 @@ Use the following output format:
 - HALT with error if content is empty or fewer than 3 words
 - HALT with error if reader_type is not "humans" or "llm"
 - If no structural issues found, output "No substantive changes recommended" (this is valid completion, not an error)
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
+
+## Output Format
+
+- Structured Markdown response
+- Headers for each section
+- Concise, actionable content
 
 ## Examples
 

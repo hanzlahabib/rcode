@@ -6,7 +6,20 @@ description: >
   the scope mid-sprint", "we need to pivot", "correct course", "handle scope
   change", or "change story mid-way". Do NOT use for normal sprint updates
   (use rihal-sprint-status).
+triggers:
+  - "course correct"
+  - "change
+  the scope mid-sprint"
+  - "we need to pivot"
+  - "correct course"
+  - "handle scope
+  change"
+  - "change story mid-way"
 ---
+
+## Overview
+
+Course-correct when major change is discovered mid-sprint or mid-implementation.
 
 ## Workflow
 

@@ -6,6 +6,13 @@ description: >
   brief", "draft a brief for", "product briefing", or "create the brief". Do
   NOT use for full PRD (use rihal-create-prd) or market analysis alone (use
   rihal-market-research).
+triggers:
+  - "create a product brief"
+  - "write a product
+  brief"
+  - "draft a brief for"
+  - "product briefing"
+  - "create the brief"
 ---
 
 ## Workflow

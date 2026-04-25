@@ -6,7 +6,19 @@ description: >
   "check implementation readiness", "is this ready for dev", "verify
   alignment", "readiness check", "IR check", or "can we start building". Do
   NOT use during active implementation (use rihal-correct-course instead).
+triggers:
+  - "check implementation readiness"
+  - "is this ready for dev"
+  - "verify
+  alignment"
+  - "readiness check"
+  - "IR check"
+  - "can we start building"
 ---
+
+## Overview
+
+Verify that PRD, UX designs, architecture decisions, and epics/stories are all aligned and ready for implementation.
 
 ## Workflow
 

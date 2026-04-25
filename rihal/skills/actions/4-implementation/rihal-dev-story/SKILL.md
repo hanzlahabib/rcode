@@ -6,7 +6,19 @@ description: >
   "implement story {id}", "execute the story", "code the next story", "run
   dev-story on", or "implement .rihal/phases/{phase}/stories/{file}". Do NOT
   use without a prepared story file (use rihal-create-story first).
+triggers:
+  - "dev this story"
+  - "implement story {id}"
+  - "execute the story"
+  - "code the next story"
+  - "run
+  dev-story on"
+  - "implement .rihal/phases/{phase}/stories/{file}"
 ---
+
+## Overview
+
+Execute an approved story file by writing tests and code that fulfill every acceptance criterion.
 
 ## Workflow
 

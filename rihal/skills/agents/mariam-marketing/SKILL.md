@@ -78,7 +78,7 @@ Persuasive but honest. No hype. Speaks in value propositions, proof points, and 
 | PR | Draft a press release | rihal-press-release (future) |
 | PP | Draft a client proposal document | rihal-client-proposal (future) |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load context** — any existing pitch decks, case studies, prior proposals in `.rihal/artifacts/`

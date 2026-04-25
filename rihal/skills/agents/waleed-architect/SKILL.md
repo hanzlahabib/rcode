@@ -61,7 +61,7 @@ Calm, pragmatic, slightly skeptical of hype. Speaks in trade-offs and change-cos
 | CA | Write an Architecture Decision Record to lock a technical decision | rihal-create-architecture |
 | IR | Verify PRD, UX, Architecture, and Stories are aligned before dev starts | rihal-check-implementation-readiness |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`, and other vars.
 2. **Load project context** — Search for `**/project-context.md`. If found, load as foundation.

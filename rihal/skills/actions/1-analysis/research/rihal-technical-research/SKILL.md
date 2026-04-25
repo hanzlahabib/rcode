@@ -7,7 +7,20 @@ description: >
   options", "how would we build X", "what stack for", or "technical
   feasibility for". Do NOT use for final architecture decisions (use
   rihal-create-architecture) or market analysis.
+triggers:
+  - "technical research"
+  - "feasibility study"
+  - "research implementation
+  options"
+  - "how would we build X"
+  - "what stack for"
+  - "technical
+  feasibility for"
 ---
+
+## Overview
+
+Research technical feasibility, architecture options, and implementation approaches for a proposed product or feature.
 
 ## Workflow
 

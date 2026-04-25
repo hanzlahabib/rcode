@@ -37,8 +37,8 @@ they bypass the capacity gate.
 
 <required_reading>
 @.rihal/references/output-format.md
-@.rihal/skills/_shared/no-autonomous-bypass.md
-@.rihal/skills/_shared/state-sync-rule.md
+@rihal/brain/best-practices/no-autonomous-bypass.md
+@rihal/brain/best-practices/state-sync-rule.md
 </required_reading>
 
 <output_format>

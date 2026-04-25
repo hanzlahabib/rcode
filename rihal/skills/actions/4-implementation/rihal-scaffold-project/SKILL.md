@@ -7,6 +7,16 @@ description: >
   "rihal new project", or "start a new rihal project". Do NOT use for generating
   project context files (use rihal-generate-project-context) or cloning websites
   (use rihal-clone-website).
+triggers:
+  - "scaffold project"
+  - "create project"
+  - "new project"
+  - "initialize project"
+  - "setup new project"
+  - "scaffold from template"
+  - "create from template"
+  - "rihal new project"
+  - "start a new rihal project"
 ---
 
 ## Workflow

@@ -7,7 +7,21 @@ description: >
   architecture record", "lock this technical decision", or "record the
   decision to use X". Do NOT use for implementation code (use
   rihal-dev-story) or sprint planning (use rihal-sprint-planning).
+triggers:
+  - "write an ADR"
+  - "create
+  architecture decision"
+  - "document this architectural choice"
+  - "write an
+  architecture record"
+  - "lock this technical decision"
+  - "record the
+  decision to use X"
 ---
+
+## Overview
+
+Write an Architecture Decision Record (ADR) to lock a significant technical decision.
 
 ## Workflow
 

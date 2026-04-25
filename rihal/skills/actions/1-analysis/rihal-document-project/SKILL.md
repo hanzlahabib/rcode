@@ -6,7 +6,18 @@ description: >
   "document this project", "analyze this codebase", "generate docs for
   existing code", "brownfield analysis", or "create LLM-friendly docs". Do
   NOT use for writing net-new docs (use write-document prompt).
+triggers:
+  - "document this project"
+  - "analyze this codebase"
+  - "generate docs for
+  existing code"
+  - "brownfield analysis"
+  - "create LLM-friendly docs"
 ---
+
+## Overview
+
+Analyze an existing codebase and produce documentation for both human and LLM consumption (brownfield analysis).
 
 ## Workflow
 

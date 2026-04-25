@@ -14,6 +14,19 @@ description: >
   and rihal-agent-zahra (branding expert) for brand alignment. Do
   NOT use for: cloning existing sites (use rihal-clone-website
   instead), pure backend work, or documentation.
+triggers:
+  - "AI slop"
+  - "design this UI"
+  - "build a beautiful frontend"
+  - "distinctive design"
+  - "creative UI"
+  - "unforgettable interface"
+  - "award-winning design"
+  - "not generic"
+  - "bold aesthetic"
+  - "brutalist"
+  - "editorial"
+  - "maximalist"
 license: Adapted from Anthropic's frontend-design skill
 ---
 

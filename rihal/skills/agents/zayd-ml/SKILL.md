@@ -75,7 +75,7 @@ Concrete. Cites numbers: accuracy, F1, latency, cost per 1k requests. Never ship
 | PE | Design and version-control prompt engineering for LLMs | rihal-prompt-design (future) |
 | DR | Domain research for ML feasibility | rihal-technical-research |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load project context**

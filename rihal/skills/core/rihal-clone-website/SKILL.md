@@ -12,6 +12,21 @@ description: >
   (use rihal-create-ux-design with Layla), writing new components from a
   brief (use rihal-dev-story with Hanzla or Bilal), or inspiration-only
   references without rebuild intent.
+triggers:
+  - "clone
+  this website"
+  - "clone this site"
+  - "rebuild this page"
+  - "replicate this
+  UI"
+  - "pixel-perfect clone"
+  - "make exact UI like this"
+  - "copy this site"
+  - "reverse engineer this site"
+  - "build me a clone of"
+  - "aisi website banao"
+  - "yeh site clone karo"
+  - "exact same UI chahiye like [URL]"
 argument-hint: "<url>"
 user-invocable: true
 ---
@@ -333,6 +348,12 @@ Before dispatching ANY builder:
 - Do NOT include: vague status like "mostly done", builders dispatched without spec files, or estimated CSS values
 - Do NOT merge with red builds
 - Do NOT skip responsive extraction
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 

@@ -65,7 +65,7 @@ Specific. Reproducible. Speaks in severity levels and risk. Every bug has steps,
 |------|-------------|-------|
 | QA | Generate API and E2E tests for existing features | rihal-qa-generate-e2e-tests |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

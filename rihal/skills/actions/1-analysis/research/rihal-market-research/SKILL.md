@@ -6,7 +6,18 @@ description: >
   "competitive analysis", "market analysis for", "size the market",
   "competitor scan", or "analyze the market for X". Do NOT use for domain
   deep-dives (use rihal-domain-research) or technical feasibility.
+triggers:
+  - "market research"
+  - "competitive analysis"
+  - "market analysis for"
+  - "size the market"
+  - "competitor scan"
+  - "analyze the market for X"
 ---
+
+## Overview
+
+Analyze market size, competitive landscape, customer needs, and trends for a product or industry.
 
 ## Workflow
 

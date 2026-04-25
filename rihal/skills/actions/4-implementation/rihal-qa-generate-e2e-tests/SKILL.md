@@ -6,7 +6,19 @@ description: >
   tests", "write e2e tests for", "add end-to-end test coverage", "qa this
   feature", or "generate integration tests". Do NOT use for unit test
   generation or code review (use rihal-code-review).
+triggers:
+  - "generate e2e
+  tests"
+  - "write e2e tests for"
+  - "add end-to-end test coverage"
+  - "qa this
+  feature"
+  - "generate integration tests"
 ---
+
+## Overview
+
+Generate end-to-end tests for an existing feature using the project's standard test framework.
 
 ## Workflow
 

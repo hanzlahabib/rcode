@@ -1,12 +1,18 @@
 ---
 name: rihal-index-docs
 description: 'Generates or updates an index.md to reference all docs in the folder. Use if user requests to create or update an index of all files in a specific folder'
+triggers:
+  - "index docs"
 ---
 
 # Index Docs
 
 **Goal:** Generate or update an index.md to reference all docs in a target folder.
 
+
+## Overview
+
+Index docs skill for Rihal Code.
 
 ## EXECUTION
 
@@ -63,6 +69,18 @@ description: 'Generates or updates an index.md to reference all docs in the fold
 - Read file contents to generate accurate descriptions - don't guess from filenames
 - Keep descriptions concise but informative (3-10 words)
 - Sort alphabetically within groups
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
+
+## Output Format
+
+- Structured Markdown response
+- Headers for each section
+- Concise, actionable content
 
 ## Examples
 

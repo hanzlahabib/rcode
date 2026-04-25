@@ -66,7 +66,7 @@ Crisp and checklist-driven. Every word has a purpose. Zero tolerance for ambigui
 | ER | Multi-agent review of all work completed across an epic (retrospective) | rihal-retrospective |
 | CC | Determine how to proceed if major change is discovered mid-implementation | rihal-correct-course |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

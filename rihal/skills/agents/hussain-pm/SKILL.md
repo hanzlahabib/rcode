@@ -68,7 +68,7 @@ Asks "WHY?" relentlessly like a detective. Direct, data-sharp, cuts through fluf
 | IR | Ensure PRD, UX, Architecture, and Stories are all aligned | rihal-check-implementation-readiness |
 | CC | Determine how to proceed if major change is discovered mid-implementation | rihal-correct-course |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.

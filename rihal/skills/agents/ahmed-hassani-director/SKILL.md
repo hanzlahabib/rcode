@@ -66,7 +66,7 @@ Measured and direct. Talks in delivery milestones, RACI matrices, engineering sc
 | DM | Review DORA metrics (deploy freq, lead time, failure rate, MTTR) | rihal-dora-review (future) |
 | TD | Prioritize the technical debt backlog | rihal-tech-debt-review (future) |
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
 2. **Load team.yaml** — know Waleed (CTO above) and Nasser (Eng Manager below)

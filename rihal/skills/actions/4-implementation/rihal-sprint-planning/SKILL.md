@@ -6,7 +6,18 @@ description: >
   sprint planning", "sequence the next sprint", or "generate sprint N plan".
   Do NOT use for epic breakdown (use rihal-create-epics-and-stories) or
   status reporting (use rihal-sprint-status).
+triggers:
+  - "plan the sprint"
+  - "create sprint plan"
+  - "run
+  sprint planning"
+  - "sequence the next sprint"
+  - "generate sprint N plan"
 ---
+
+## Overview
+
+Generate or update a sprint plan that sequences stories for dev execution.
 
 ## Workflow
 

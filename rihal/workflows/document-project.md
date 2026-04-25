@@ -162,7 +162,7 @@ After audit, if resume-work.md exists, prepend to Step 2:
 ```
 If .rihal/DOCS-AUDIT.md exists, check for missing/stale docs:
 
-@.rihal/DOCS-AUDIT.md
+<!-- DOCS-AUDIT.md is generated at runtime by rihal-tools.cjs docs-audit — not a tracked file -->
 ```
 
 ## Success Criteria

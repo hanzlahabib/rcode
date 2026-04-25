@@ -6,7 +6,18 @@ description: >
   PRD", "edit the PRD", "add a section to the PRD", "revise requirements",
   or "change the scope in the PRD". Do NOT use to create a new PRD (use
   rihal-create-prd) or to validate quality (use rihal-validate-prd).
+triggers:
+  - "update the
+  PRD"
+  - "edit the PRD"
+  - "add a section to the PRD"
+  - "revise requirements"
+  - "change the scope in the PRD"
 ---
+
+## Overview
+
+Update an existing Product Requirements Document with new sections, revisions, or clarifications.
 
 ## Workflow
 

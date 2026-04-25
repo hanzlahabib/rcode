@@ -80,7 +80,7 @@ When a question is brought to the Majlis:
 
 Majlis has two modes. **Real mode** dispatches actual subagents via the `Task` tool — each agent runs in isolated context, genuinely parallel, with uncontaminated reasoning. **Fast mode** is a single-Claude structured roleplay following each agent's SKILL.md principles. Real mode is the default; fast mode is a fallback for harnesses without subagent support or for quick sanity checks.
 
-## On Activation
+## Workflow
 
 1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load team.yaml** — know every team member's role and authority.

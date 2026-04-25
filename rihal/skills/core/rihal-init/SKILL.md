@@ -3,6 +3,8 @@ name: rihal-init
 internal: true
 description: "INTERNAL config loader — called by other skills, not by users directly. Loads module config vars from .rihal/. Install puts this in .rihal/skills/, not .claude/skills/."
 argument-hint: "[--module=module_code] [--vars=var1:default1,var2] [--skill-path=/path/to/calling/skill]"
+triggers:
+  - "init"
 ---
 
 ## Overview
@@ -103,6 +105,12 @@ After writing, re-run `rihal_init.py` with the `load` subcommand (same as the fa
 ## Output Format
 
 JSON config vars returned to the calling skill. When init path runs, interactive Q&A with the user, then config files written to `_rihal/`.
+
+## Workflow
+
+1. Read the user request and extract key parameters.
+2. Execute the skill logic as described in the Overview.
+3. Return output in the format specified below.
 
 ## Examples
 
