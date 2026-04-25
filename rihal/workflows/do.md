@@ -52,17 +52,52 @@ If user picks 1-15, invoke that command. If 16, capture text and continue.
 </step>
 
 <step name="check_project">
-**Check if project exists.**
+**Check if project exists + state survey.**
 
 ```bash
 INIT=$(node ".rihal/bin/rihal-tools.cjs" state load 2>/dev/null)
+HAS_PRD=$([ -f .planning/prd.md ] && echo true || echo false)
+HAS_EPICS=$([ -f .planning/epics.md ] && echo true || echo false)
+PHASE_COUNT=$(node ".rihal/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
+HAS_PHASES=$([ "$PHASE_COUNT" -gt 0 ] && echo true || echo false)
 ```
 
-Track whether `.planning/` exists — some routes require it, others don't.
+These flags drive the greenfield guard in the next step. `.planning/` existing alone is not enough — we need to know whether the methodology chain has actually run (PRD → milestone → epics → phases).
+</step>
+
+<step name="greenfield_guard" priority="first-match">
+**Block methodology inversion.**
+
+Some routes ASSUME upstream artifacts exist. If they don't, dispatching to them inverts the chain (the autonomous-bypass pattern that produced the interpos disaster — issue #220 + #219).
+
+Apply this guard BEFORE the routing table below:
+
+| Intent contains... | AND state shows... | Then re-route to... | Why |
+|--------------------|---------------------|----------------------|-----|
+| "draft phases", "all phases", "build all phases", "groom phases", "auto mode" + "phases" | `HAS_PRD=false` | `/rihal:create-prd` first | Phases need a PRD foundation. Without one, the autonomous flow hallucinates requirements. |
+| "execute phase", "build phase N", "run phase N" | `HAS_PHASES=false` OR PLAN.md missing for phase N | `/rihal:plan N` first (or `/rihal:create-prd` if no PRD) | Can't execute what hasn't been planned. |
+| "sprint planning", "plan the sprint" | `HAS_EPICS=false` | `/rihal:create-epics-and-stories` first | Sprints draw stories from epics. No epics = no stories to schedule. |
+| "create stories", "epics" | `HAS_PRD=false` | `/rihal:create-prd` first | Epics decompose a milestone. Milestone needs PRD. |
+| "create milestones", "roadmap" | `HAS_PRD=false` | `/rihal:create-prd` first | Roadmap is derived from PRD success metrics. |
+
+When the guard fires, print a clear message:
+
+```
+⚠ Cannot {requested action}: missing prerequisite — {what's missing}.
+
+Re-routing to: /rihal:{prerequisite-command}
+Once that completes, re-run your original request.
+```
+
+Then dispatch to the prerequisite command instead of the originally-matched route.
+
+The guard never silently rejects intent — it always either dispatches to a sensible alternative OR explicitly tells the user what flag overrides it (e.g. `--skip-prerequisites` for the rare legitimate use case).
 </step>
 
 <step name="route">
 **Match intent to command.**
+
+(Run only after greenfield_guard has cleared.)
 
 Evaluate `$QUESTION` against these routing rules. Apply the **first matching** rule:
 

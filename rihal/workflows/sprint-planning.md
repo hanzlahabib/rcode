@@ -1,10 +1,45 @@
 # Workflow: rihal:sprint-planning
 
 <purpose>
-Plan the next sprint: compute capacity from velocity history, prioritize stories from phase scope, create SPRINT.md, register sprint + stories in state.json.
+Plan the next sprint. Authoritative implementation lives in the
+`rihal-sprint-planning` skill — this workflow delegates to it so every
+safety rail (capacity gate per #127, halt-at-menu per #124, state-sync
+per #198) fires identically whether the user invokes the slash command
+or the phrase-activated skill.
 
-Uses rihal-tools.cjs sprint/story state commands for tracking.
+The skill MUST be loaded before the in-line steps below run. If the skill
+file is missing (broken install), report and stop — do not silently fall
+back to the in-line implementation.
 </purpose>
+
+<delegate_to_skill>
+Required skill: `rihal-sprint-planning`
+Path:           `.claude/skills/rihal-sprint-planning/SKILL.md`
+Workflow ref:   `.claude/skills/rihal-sprint-planning/workflow.md`
+
+Behaviour:
+1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
+   Rule from the workflow's `## CRITICAL RULES (NO EXCEPTIONS)` block,
+   including the capacity gate (step n="0") which MUST halt for
+   numeric capacity inputs before any story is committed.
+2. Run the skill's step files in order. The in-line steps below this
+   block are a fallback summary for legacy installs that lack the skill;
+   they are NOT the authoritative behaviour.
+3. After SPRINT.md is written, ALWAYS run:
+   `node .rihal/bin/rihal-tools.cjs state sync --from-disk`
+   so state.sprints[] reflects the new sprint.
+
+If skill files are missing: print
+"Sprint-planning skill not installed. Run: npx @hanzlaa/rcode install"
+and exit non-zero. Do not proceed with the legacy in-line steps because
+they bypass the capacity gate.
+</delegate_to_skill>
+
+<required_reading>
+@.rihal/references/output-format.md
+@.rihal/skills/_shared/no-autonomous-bypass.md
+@.rihal/skills/_shared/state-sync-rule.md
+</required_reading>
 
 <output_format>
 Open with banner:
@@ -13,14 +48,10 @@ Open with banner:
  RIHAL ► PLANNING SPRINT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-TaskCreate: "Load phase scope + velocity", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Start sprint".
+TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
 Closure: `RIHAL ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
 Next Up: `/rihal:execute .planning/phases/{phase}/SPRINT.md`
 </output_format>
-
-<required_reading>
-@.rihal/references/output-format.md
-</required_reading>
 
 <process>
 ## Step 0 — Usage check
