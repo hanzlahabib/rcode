@@ -259,12 +259,12 @@ function checkStaleness(cwd) {
     };
   }
 
-  // Context files exist but no fingerprint stored — happened before
-  // fingerprinting was added, or state.json got truncated.
+  // Context files exist but no fingerprint stored — fresh install with stub
+  // context files, or state.json got truncated before fingerprint was written.
   if (!stored) {
     return {
       status: 'stale',
-      reasons: ['no fingerprint recorded — run /rihal:init once to bootstrap tracking'],
+      reasons: ['run /rihal:init in your editor to populate project context'],
       current,
       stored,
       context_files,

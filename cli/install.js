@@ -1251,6 +1251,19 @@ async function install(opts) {
   // .planning/council-sessions/ empty dir
   ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
 
+  // .rihal/context/ — seed stub files so doctor doesn't report "never initialized"
+  // The /rihal:init slash command populates these with real project content.
+  const contextDir = path.join(opts.target, '.rihal', 'context');
+  ensureDir(contextDir);
+  const activeCtx = path.join(contextDir, 'active.md');
+  const briefCtx = path.join(contextDir, 'project-brief.md');
+  if (!fs.existsSync(activeCtx)) {
+    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rihal:init` inside your AI editor to populate this file._\n');
+  }
+  if (!fs.existsSync(briefCtx)) {
+    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rihal:init` inside your AI editor to populate this file._\n');
+  }
+
   // ~/.rihal/agents/ global agents directory
   const globalAgentsDir = path.join(os.homedir(), '.rihal', 'agents');
   ensureDir(globalAgentsDir);

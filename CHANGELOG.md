@@ -4,6 +4,14 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.3.4 — Doctor fixes: actions drift false positive + memory bank stub (2026-04-25)
+
+### Fixed
+- `doctor` no longer reports `actions 0/4 missing: 1-analysis, 2-plan, ...` — manifest builder now walks action bucket dirs recursively (matching `installSkills` behavior) instead of adding bucket directory names that never appear in `.claude/skills/`
+- `doctor` no longer reports `Memory bank: never initialized` immediately after fresh install — `install` now seeds empty `.rihal/context/active.md` and `.rihal/context/project-brief.md` stubs so the "never" state is skipped; message reads "run /rihal:init in your editor to populate project context"
+
+---
+
 ## v2.3.3 — CLI aliases + state.json fix + stale install-v2 refs removed (2026-04-25)
 
 ### Added

@@ -35,21 +35,27 @@ function readPackageManifest(packageRoot) {
     }
   }
 
-  const actionsDir = path.join(skillsRoot, 'actions');
-  if (fs.existsSync(actionsDir)) {
-    for (const entry of fs.readdirSync(actionsDir, { withFileTypes: true })) {
+  // Mirror installSkills() walkForSkills: recurse into action bucket dirs
+  // (1-analysis, 2-plan, etc.) until a dir with SKILL.md is found, then add
+  // the dir name as installed. Bucket dirs themselves are never installed.
+  function walkActions(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      if (entry.name === 'research') {
-        // Flatten research/* → actions set (matches installSkills)
-        const researchDir = path.join(actionsDir, 'research');
-        for (const sub of fs.readdirSync(researchDir, { withFileTypes: true })) {
-          if (sub.isDirectory()) manifest.actions.add(sub.name);
-        }
+      const full = path.join(dir, entry.name);
+      if (fs.existsSync(path.join(full, 'SKILL.md'))) {
+        // Use the name as it lands in .claude/skills/ (installSkills prefixes
+        // non-rihal- dirs with 'rihal-', but all current skills already have it)
+        const installedName = entry.name.startsWith('rihal-')
+          ? entry.name
+          : `rihal-${entry.name}`;
+        manifest.actions.add(installedName);
       } else {
-        manifest.actions.add(entry.name);
+        walkActions(full);
       }
     }
   }
+  walkActions(path.join(skillsRoot, 'actions'));
 
   return manifest;
 }
