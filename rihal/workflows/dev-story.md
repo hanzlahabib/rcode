@@ -11,6 +11,31 @@ Wrap a STORY.md file for AI-coder consumption. Produces:
 This workflow creates the execution prompt for a pair-programming session with an AI coder.
 </purpose>
 
+<delegate_to_skill>
+**Authoritative implementation lives in the `rihal-dev-story` skill.**
+This workflow exists for slash-command activation. To preserve every
+safety rail (halt-at-menu, capacity gates, citation rules, state-sync
+rules), load and follow the skill's files BEFORE running any in-line
+steps below:
+
+- `.claude/skills/rihal-dev-story/SKILL.md` — triggers + Output Format + Examples
+- `.claude/skills/rihal-dev-story/workflow.md` — Critical Rules + step files
+
+Apply every rule from the skill's `## CRITICAL RULES (NO EXCEPTIONS)` block.
+The in-line steps in this file are a legacy fallback only — they are
+NOT the authoritative behaviour.
+
+After this workflow writes any `.planning/` artifact, ALWAYS run:
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+Per `_shared/state-sync-rule.md` (#198).
+
+If the skill is not installed: print
+"Skill rihal-dev-story not found. Run: npx @hanzlaa/rcode install"
+and exit non-zero. Do not proceed with the legacy in-line steps.
+</delegate_to_skill>
+
 
 ## Step 0 — Parse Arguments
 

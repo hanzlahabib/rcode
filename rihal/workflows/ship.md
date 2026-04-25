@@ -2,6 +2,35 @@
 Create a pull request from completed phase/milestone work, generate a rich PR body from planning artifacts, optionally run code review, and prepare for merge. Closes the plan → execute → verify → ship loop.
 </purpose>
 
+<state_sync_rule priority="enforce">
+
+## State sync (NO EXCEPTIONS)
+
+After this workflow writes any `.planning/` artifact (ROADMAP.md, prd.md,
+epics.md, PLAN.md, SPRINT.md, SUMMARY.md, etc.) OR records a decision,
+ALWAYS run:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+Skipping this drifts state.json from disk. `/rihal:status`, `/rihal:progress`,
+and `/rihal:execute` all read state.json and lie when it's stale.
+Closes #198 / #223 across the workflow surface.
+
+For decision capture, use the CLI — never write decision prose into
+STATE.md directly:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state add-decision "<text>"   --workflow <workflow-name>   --reversibility one-way|reversible|nuanced
+```
+
+This populates `state.decisions[]` so `/rihal:why <decision-id>` and
+`~/.rihal/decisions.jsonl` stay accurate. Closes #224 across the
+workflow surface.
+
+</state_sync_rule>
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>

@@ -2,6 +2,73 @@
 Execute all plans in a phase using wave-based parallel execution. Orchestrator stays lean — delegates plan execution to subagents.
 </purpose>
 
+<state_sync_rule priority="enforce">
+
+## State sync (NO EXCEPTIONS)
+
+After this workflow writes any `.planning/` artifact (ROADMAP.md, prd.md,
+epics.md, PLAN.md, SPRINT.md, SUMMARY.md, etc.) OR records a decision,
+ALWAYS run:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+Skipping this drifts state.json from disk. `/rihal:status`, `/rihal:progress`,
+and `/rihal:execute` all read state.json and lie when it's stale.
+Closes #198 / #223 across the workflow surface.
+
+For decision capture, use the CLI — never write decision prose into
+STATE.md directly:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state add-decision "<text>"   --workflow <workflow-name>   --reversibility one-way|reversible|nuanced
+```
+
+This populates `state.decisions[]` so `/rihal:why <decision-id>` and
+`~/.rihal/decisions.jsonl` stay accurate. Closes #224 across the
+workflow surface.
+
+</state_sync_rule>
+
+<prerequisite_check priority="absolute">
+
+## 0. Prerequisite check (closes #225)
+
+Before executing ANY phase, verify the upstream chain has produced what
+this workflow assumes exists. Skip = inverted methodology = low-quality
+output (the interpos pattern from #219).
+
+```bash
+PHASE_NUM=$(echo "$ARGUMENTS" | grep -oE '[0-9]+(.[0-9]+)?' | head -1)
+PHASE_DIR=$(ls -d .planning/phases/${PHASE_NUM}-* 2>/dev/null | head -1)
+HAS_PRD=$([ -f .planning/prd.md ] && echo true || echo false)
+HAS_PLAN=$([ -n "$PHASE_DIR" ] && ls "$PHASE_DIR"/*-PLAN.md "$PHASE_DIR"/PLAN.md 2>/dev/null | head -1 | grep -q . && echo true || echo false)
+HAS_SPRINT=$([ -n "$PHASE_DIR" ] && ls "$PHASE_DIR"/*-SPRINT.md "$PHASE_DIR"/SPRINT.md 2>/dev/null | head -1 | grep -q . && echo true || echo false)
+SKIP_FLAG=$(echo "$ARGUMENTS" | grep -qE "--skip-prerequisites" && echo true || echo false)
+```
+
+If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with:
+
+```
+⚠ Cannot execute phase ${PHASE_NUM}: missing {what}.
+
+The /rihal:execute workflow assumes:
+  • .planning/prd.md exists           (PRD foundation)
+  • PLAN.md exists for the target phase (run /rihal:plan ${PHASE_NUM} first)
+  • SPRINT.md exists                  (run /rihal:sprint-planning --phase ${PHASE_NUM} first)
+
+Suggested next step: /rihal:{first-missing-command}
+
+Override with: /rihal:execute --skip-prerequisites
+(rare — only when you genuinely want to bypass the methodology gate)
+```
+
+Do not proceed past this step until either every prerequisite is satisfied
+OR `--skip-prerequisites` is set.
+
+</prerequisite_check>
+
 <pre_flight>
 **Mandatory before execution begins.** Run these checks first and surface
 findings BEFORE any subagents are spawned. If any check fails, stop and

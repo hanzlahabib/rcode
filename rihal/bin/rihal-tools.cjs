@@ -1661,8 +1661,14 @@ function cmdState(subArgs) {
     return result;
   }
 
-  // --- set-ids-in-state ---
+  // --- set-ids-in-state (DEPRECATED per #227) ---
+  // Kept for backward compatibility. New callers should use `state sync --from-disk`.
   if (sub === 'set-ids-in-state') {
+    process.stderr.write(
+      '\x1b[33m⚠ DEPRECATED:\x1b[0m `state set-ids-in-state` is superseded by ' +
+      '`state sync --from-disk` (#227). It will be removed in v3.0.\n' +
+      '  Migrate: replace any script calls with `node .rihal/bin/rihal-tools.cjs state sync --from-disk`\n\n'
+    );
     const state = readState() || defaultState();
     if (!state.phases) state.phases = [];
     if (!state.plans) state.plans = [];
@@ -2173,7 +2179,87 @@ function cmdState(subArgs) {
     return { ok: true, synced: true, ...parsed };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, promote-backlog\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
+  // --- render ---
+  // Generate .planning/STATE.md from state.json. Closes #222 — STATE.md is
+  // a rendered view, never the source of truth. Pre-commit hook (#199)
+  // auto-runs this when state.json changes.
+  if (sub === 'render') {
+    const state = readState();
+    if (!state) {
+      throw new Error('state render: no state.json — run a council or plan to initialize state first');
+    }
+    const planningDir = path.join(PROJECT_ROOT, '.planning');
+    fs.mkdirSync(planningDir, { recursive: true });
+    const statePath = path.join(planningDir, 'STATE.md');
+
+    const lines = [];
+    lines.push(`# ${state.project || 'Project'} — State`);
+    lines.push('');
+    lines.push(`**Last rendered:** ${new Date().toISOString().slice(0, 10)}`);
+    lines.push(`**Source of truth:** \`.rihal/state.json\` (this file is auto-generated; do not edit by hand)`);
+    if (state.milestone) lines.push(`**Milestone:** ${state.milestone}`);
+    if (state.current_phase) lines.push(`**Current phase:** ${state.current_phase}`);
+    lines.push('');
+
+    lines.push('---');
+    lines.push('');
+
+    lines.push('## Decisions');
+    lines.push('');
+    const decisions = state.decisions || [];
+    if (decisions.length === 0) {
+      lines.push('_None recorded yet. Use `state add-decision` to capture._');
+    } else {
+      for (const d of decisions) {
+        const date = d.date ? d.date.slice(0, 10) : '';
+        const text = d.summary || d.text || '(no summary)';
+        const meta = [];
+        if (d.workflow) meta.push(`via ${d.workflow}`);
+        if (d.reversibility) meta.push(d.reversibility);
+        const metaStr = meta.length ? ` _(${meta.join(', ')})_` : '';
+        lines.push(`- **${date}** ${text}${metaStr}`);
+      }
+    }
+    lines.push('');
+
+    lines.push('## Blockers');
+    lines.push('');
+    const blockers = (state.blockers || []).filter(b => !b.resolved);
+    if (blockers.length === 0) {
+      lines.push('_None._');
+    } else {
+      for (const b of blockers) {
+        lines.push(`- ⚠ ${b.description || b.text || '(no description)'}`);
+      }
+    }
+    lines.push('');
+
+    if (state.phases && state.phases.length > 0) {
+      lines.push('## Phases');
+      lines.push('');
+      for (const p of state.phases) {
+        const num = p.number || '?';
+        const name = p.name || '(unnamed)';
+        const status = p.status || 'planned';
+        lines.push(`- **[${num}]** ${name} — _${status}_`);
+      }
+      lines.push('');
+    }
+
+    lines.push('---');
+    lines.push('');
+    lines.push('_Re-render: `node .rihal/bin/rihal-tools.cjs state render`_');
+    lines.push('_Add a decision: `node .rihal/bin/rihal-tools.cjs state add-decision "<text>"`_');
+    lines.push('');
+
+    fs.writeFileSync(statePath, lines.join('\n'));
+    return { ok: true, rendered: statePath, decisions: decisions.length, blockers: blockers.length, phases: (state.phases || []).length };
+  }
+
+  // --- set-ids-in-state (deprecated alias for sync --from-disk per #227) ---
+  if (sub === 'set-ids-in-state' && false) { /* placeholder — see deprecation below */ }
+
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, render, promote-backlog\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
 }
 
 /**
