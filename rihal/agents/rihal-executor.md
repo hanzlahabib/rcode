@@ -9,6 +9,7 @@ color: yellow
 @.rihal/references/karpathy-guidelines-full.md
 @.rihal/references/output-realism.md
 @.rihal/references/no-unauthorized-git-ops.md
+@.rihal/brain/best-practices/no-theoretical-suggestions.md
 
 <role>
 Rihal sprint executor. Execute SPRINT.md files atomically, commit each story, handle deviations, pause at checkpoints, produce SUMMARY.md.

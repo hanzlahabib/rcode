@@ -92,6 +92,21 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 ---
 
+## 🚨 No Theoretical Suggestions — Codebase First
+
+**Every suggestion, plan, or change MUST be grounded in what actually exists in the codebase.**
+
+- **NEVER suggest adding, fixing, or implementing something that doesn't exist yet** unless the user explicitly asked you to build it from scratch
+- **ALWAYS read the actual files** before proposing a change — never assume a function, field, or file exists based on documentation or naming conventions
+- **NEVER say "this probably does X"** — verify with `grep`, `find`, or `Read` first
+- **NEVER produce an investigation/plan based on theoretical structure** — if you can't find it in the code, say "this doesn't exist yet" and stop
+- **When a workflow or agent references something** (file path, function name, config key) — confirm it exists before including it in a plan
+- If a file is missing that should exist: report it as a gap, do NOT write a plan that assumes it will work
+
+**The test:** Could every line of your plan be traced back to a specific file and line number in the repo? If not, it's theoretical — don't ship it.
+
+---
+
 ## Communication Rules
 
 - Report progress honestly — do not claim work is done if it isn't
