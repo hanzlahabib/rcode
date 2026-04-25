@@ -15,10 +15,12 @@ Follow the instructions in ./workflow.md.
 ## Output Format
 
 - Output: .rihal/phases/{phase}/sprint-{N}.md
-- Fixed structure: Sprint Goal (one sentence) | Duration | Stories (with owners) | Capacity Used/Available | Risks | Definition of Done
+- Fixed structure: Sprint Goal (one sentence) | Assumptions | Duration | Stories (with owners) | Capacity Used/Available | Risks | Definition of Done
 - Stories ranked by priority from epics.md
 - Leave 20% capacity buffer
 - Do NOT commit to stories without explicit owners
+- Sprint Goal must be one verifiable sentence — if it cannot be verified at sprint end without interpretation, rewrite it
+- `Assumptions` block required: list capacity assumptions, any known blockers assumed absent, any dependencies assumed resolved
 
 ## Examples
 

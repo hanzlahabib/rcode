@@ -37,8 +37,8 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
 
-- **44 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
-- **93 slash commands** covering research, planning, execution, verification, and recovery
+- **45 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **99 slash commands** covering research, planning, execution, verification, and recovery
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
 - **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
@@ -65,9 +65,9 @@ npx @hanzlaa/rcode install
 One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
-- `.claude/agents/` — 44 first-class subagents
-- `.claude/commands/rihal/` — 93 slash commands
-- `.claude/skills/` — 58 phrase-activated skills (scaffold-project, create-prd, retrospective, etc.)
+- `.claude/agents/` — 45 first-class subagents
+- `.claude/commands/rihal/` — 99 slash commands
+- `.claude/skills/` — 57 phrase-activated skills (scaffold-project, create-prd, prfaq, retrospective, etc.)
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
@@ -236,6 +236,17 @@ The classifier recognizes `dubai`, `affiliate`, `bnanai`, `karobar`, `site banan
 → panel: [mariam, hussain-pm, sadiq]
 ```
 
+### PRFAQ — validate before you build
+
+Amazon's "Working Backwards" method: write the finished-product press release *before* writing a line of code. If you can't write a compelling press release, the product isn't ready. `/rihal:prfaq` runs a 5-stage coaching gauntlet — Ignition → Press Release → Customer FAQ → Internal FAQ → Verdict — and outputs a battle-hardened concept document plus a PRD distillate ready for `/rihal:create-prd`.
+
+**When to use it:** Any time a PM or engineer wants to validate whether an idea is worth building before committing sprint capacity. The skill challenges vague thinking, enforces customer-first framing, and gives a build/refine/kill verdict.
+
+```
+/rihal:prfaq                                         → interactive gauntlet
+/rihal:prfaq --headless --customer "..." --problem "..." --solution "..."   → autonomous first draft
+```
+
 ### Karpathy coding guidelines
 
 4 behavioral principles from [Andrej Karpathy's observations on LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills), wired into every code-writing agent as hard constraints:
@@ -245,7 +256,7 @@ The classifier recognizes `dubai`, `affiliate`, `bnanai`, `karobar`, `site banan
 3. **Surgical changes** — touch only what's needed, match existing style
 4. **Goal-driven execution** — define verifiable success criteria
 
-Audit recent changes:
+`/rihal:karpathy-audit` runs these 4 principles as a post-hoc audit against any diff or phase. Use it after implementation to catch bloated, over-engineered, or scope-creeping changes before they land in a PR.
 
 ```
 /rihal:karpathy-audit HEAD~5..HEAD
@@ -298,7 +309,7 @@ Recent additions in this session:
 
 ---
 
-## Full command surface (69 commands)
+## Full command surface (99 commands)
 
 ### Router + lifecycle
 `init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
@@ -306,14 +317,17 @@ Recent additions in this session:
 ### Discovery + research
 `new-project` · `map-codebase` · `scan` · `explore` · `document-project` · `analyze-dependencies` · `discuss-phase-power`
 
+### Discovery + validation
+`prfaq` · `brainstorm` · `market-research` · `domain-research` · `technical-research` · `product-brief`
+
 ### Planning
-`plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning` · `brainstorm`
+`plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
 
 ### Execution
 `execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
 
 ### Observability + review
-`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `secure-phase` · `show` · `why` · `rerun` · `diff`
+`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`
 
 ### Recovery + correction
 `pause-work` · `resume-work` · `correct-course` · `next` · `config`

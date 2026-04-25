@@ -4,6 +4,144 @@ Thank you for contributing. These guidelines exist to keep the module maintainab
 
 ---
 
+## Architecture overview — what are all these files?
+
+Before you touch anything, you need a mental model of how the four building blocks fit together. Every feature in Rihal Code is assembled from the same four pieces.
+
+### The four building blocks
+
+| Layer | Where | What it is |
+|-------|-------|-----------|
+| **Command** | `rihal/commands/*.md` | The slash command entry point — what you type in Claude Code |
+| **Workflow** | `rihal/workflows/*.md` | Step-by-step orchestration instructions for multi-step tasks |
+| **Skill** | `rihal/skills/actions/*/SKILL.md` | Deep, domain-specific instructions for complex multi-stage tasks |
+| **Agent** | `rihal/agents/*.md` + `rihal/skills/agents/*/SKILL.md` | A specialized persona spawned by a workflow or skill to do focused work |
+
+### Commands — the entry point
+
+A command file is tiny. It registers a slash command in Claude Code's UI and points at the logic that handles it:
+
+```markdown
+---
+name: rihal:prfaq
+description: Working Backwards PRFAQ challenge
+allowed-tools: [Read, Write, Agent, AskUserQuestion, WebSearch]
+---
+
+@.rihal/skills/rihal-prfaq/SKILL.md
+```
+
+That `@-include` line tells Claude to load the target file's contents as context. Without a command file, a skill is unreachable via `/` — it can only be triggered by describing the task in natural language.
+
+**Rule:** Every capability intended to be user-typed as `/rihal:something` needs a matching `rihal/commands/something.md`.
+
+### Workflows — orchestration logic
+
+Workflows are prose instructions — markdown files Claude reads as a script to follow. They handle control flow: read state, ask a question, dispatch to a sub-workflow, report results. Most slash commands point to a workflow:
+
+```
+/rihal:audit  →  commands/audit.md  →  @workflows/audit.md
+```
+
+Workflows are the right tool when the task is a sequence of steps that Claude drives (check state → ask user → run something → report). They should not contain deep domain knowledge — that belongs in skills.
+
+### Skills — deep domain knowledge
+
+Skills go deeper than workflows. A skill like `rihal-prfaq` has its own folder with multi-stage reference files, sub-agent definitions, and templates:
+
+```
+rihal/skills/actions/1-analysis/rihal-prfaq/
+├── SKILL.md                   ← main entry, loaded by the command
+├── references/
+│   ├── press-release.md       ← Stage 2 instructions
+│   ├── customer-faq.md        ← Stage 3
+│   ├── internal-faq.md        ← Stage 4
+│   └── verdict.md             ← Stage 5
+├── agents/
+│   ├── artifact-analyzer.md   ← sub-agent spawned inline
+│   └── web-researcher.md
+└── assets/
+    └── prfaq-template.md
+```
+
+Skills are the right tool when the task has multiple stages, needs sub-agent parallelism, or carries domain-specific coaching logic (e.g., how to run a PRFAQ gauntlet, how to do a Karpathy code review).
+
+Skills have **two activation paths**:
+1. **Via command** — `/rihal:prfaq` loads the SKILL.md directly
+2. **Phrase-activated** — when a user describes the task, Claude picks up the skill from its `description` field in the YAML frontmatter
+
+### Agents — focused specialists
+
+Agents are spawned by workflows and skills to do a specific job. They have a persona, a set of tools, and deferral rules (Hanzla defers to Waleed on architecture; Waleed defers to Sadiq on whether to build).
+
+There are two kinds:
+
+**Sub-agents** live inside skill folders (`rihal/skills/agents/*/SKILL.md`). They're invoked by their parent skill, not by the user directly. Example: the PRFAQ skill spawns `artifact-analyzer` and `web-researcher` in parallel during Stage 1.
+
+**Council agents** live in `rihal/agents/*.md`. They're the named characters (Waleed, Hanzla, Fatima, Sadiq…) that `/rihal:council` assembles into a panel. These are installed to `.claude/agents/` and can be spawned from any workflow.
+
+### How they chain for a real request
+
+```
+User types:  /rihal:council "Should we use Redis?"
+                   │
+         commands/council.md          ← slash command entry
+                   │ @-includes
+         workflows/council.md         ← orchestration: pick agents, frame question
+                   │ spawns (parallel)
+        ┌──────────┴───────────────┐
+        ▼                          ▼
+  agents/rihal-waleed.md     agents/rihal-sadiq.md
+  (architecture answer)      (strategic kill criteria)
+        └──────────┬───────────────┘
+                   ▼
+        synthesize → output to user
+```
+
+A more complex chain involving a skill:
+
+```
+User types:  /rihal:prfaq
+                   │
+         commands/prfaq.md
+                   │ @-includes
+         skills/rihal-prfaq/SKILL.md   ← Stage 1: ignition + context gathering
+                   │ spawns (parallel)
+        ┌──────────┴────────────────────┐
+        ▼                               ▼
+  skills/.../artifact-analyzer.md   skills/.../web-researcher.md
+        └──────────┬────────────────────┘
+                   ▼
+         references/press-release.md    ← Stage 2: loaded by SKILL.md
+         references/customer-faq.md     ← Stage 3
+         references/verdict.md          ← Stage 5: output + PRD distillate
+```
+
+### Which layer do I edit?
+
+| I want to… | Edit this |
+|-----------|-----------|
+| Add a new `/rihal:something` slash command | Create `rihal/commands/something.md` pointing to a workflow or skill |
+| Change the steps in an existing command | Edit the workflow it points to |
+| Improve how a persona thinks (Hanzla, Waleed, etc.) | Edit `rihal/skills/agents/<name>/SKILL.md` or `rihal/agents/<name>.md` |
+| Add a new agent to `/rihal:council` | Edit `rihal/agents/team.yaml` + add agent file |
+| Improve a complex multi-stage task (PRFAQ, code review, etc.) | Edit the skill's stage reference files |
+| Add a new skill triggered by natural language | Create `rihal/skills/actions/<category>/<name>/SKILL.md` — no command file needed if slash is not required |
+| Fix a broken `@-include` reference | Check that the target file exists at `.rihal/<path>` after install |
+
+### The install chain
+
+The source tree in `rihal/` is **not what Claude reads at runtime**. On install, `cli/install.js` copies everything into `.rihal/` and `.claude/`. When a command `@-includes` `.rihal/workflows/audit.md`, it's reading the installed copy. If you edit the source but don't reinstall, Claude still sees the old version.
+
+```bash
+# After editing source files:
+node cli/install.js . --force-overwrite --yes
+```
+
+This is why the compliance check runs against the source tree but the reload window step (after install) is what actually activates your changes.
+
+---
+
 ## Who owns what — contribute to YOUR slice
 
 Rihal Code v2 is organized around **role ownership** (issue #160). Find your role, touch only that slice, open a focused PR. CODEOWNERS in `.github/CODEOWNERS` routes reviews automatically.

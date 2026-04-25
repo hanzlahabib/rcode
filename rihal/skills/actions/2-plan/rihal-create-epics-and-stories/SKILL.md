@@ -15,9 +15,11 @@ Follow the instructions in ./workflow.md.
 ## Output Format
 
 - Produces .rihal/phases/{phase}/epics.md with hierarchical structure
-- Each epic has: Title | Goal | Stories (list) | Priority | Estimate
+- Each epic has: Title | Goal | Assumptions | Stories (list) | Priority | Estimate
 - Each story is independently testable and under 4-hour estimate
 - Do NOT create epics larger than 10 stories — split further
+- Every epic must include an `Assumptions` line — at minimum one entry; "none" is not acceptable
+- Every story must have a one-line verifiable AC before being listed — vague stories get flagged and blocked
 
 ## Examples
 

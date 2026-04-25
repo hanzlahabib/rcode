@@ -15,8 +15,8 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Examples:**
 ```
-/rihal:profile-user example 1
-/rihal:profile-user example 2
+/rihal:profile-user
+/rihal:profile-user --json '{"communication":"Direct & dense","autonomy":"Autonomous","domain_depth":"Advanced","iteration_speed":"Fast"}'
 ```
 
 STOP — do not proceed.

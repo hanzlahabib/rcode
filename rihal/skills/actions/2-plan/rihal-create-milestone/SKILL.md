@@ -15,10 +15,12 @@ Follow the instructions in ./workflow.md.
 ## Output Format
 
 - Output: ROADMAP.md in `{planning_artifacts}/`
-- Structure: per milestone — Name, Window (dates), Goal (one sentence), Acceptance criteria, Kill criteria (binary), Phases (stub list), then a trailing Backlog / parking lot section
+- Structure: per milestone — Name, Window (dates), Goal (one sentence), Assumptions, Acceptance criteria, Kill criteria (binary), Phases (stub list), then a trailing Backlog / parking lot section
 - Each kill criterion must be binary (number + threshold), not adjectival
 - Every milestone has an explicit window with start + end dates
+- Every milestone must include an `Assumptions` block — decisions that, if wrong, invalidate this milestone's scope
 - Do NOT include: unquantified success language ("grow the user base"), open-ended milestones without dates, or more than 6 active milestones in one roadmap (split into v1/v2 if needed)
+- If a milestone goal cannot be expressed as a single verifiable sentence, split it into two milestones
 
 ## Examples
 
