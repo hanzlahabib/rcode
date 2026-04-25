@@ -382,28 +382,21 @@ Auto-fix some issues: /rihal:code-review-fix {phase}
 
 </process>
 
-<success_criteria>
+## Success Criteria
+
 - [ ] Input parsed correctly (phase, git ref, or file override)
 - [ ] Source files filtered from non-code files
 - [ ] All 4 principles audited with specific rules
 - [ ] Findings include file:line references
-- [ ] Severity levels assigned (critical/warning/info)
+- [ ] Severity levels assigned (critical / warning / info)
 - [ ] Report written with summary table and details
 - [ ] User receives actionable recommendations
 - [ ] Report saved to phase dir if phase mode
-</success_criteria>
-
-## Success Criteria
-
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
 
 ## On Error
 
-If arguments are invalid, missing files, or subagent fails:
-- Validate inputs match expected format
-- Check that required files exist
-- Retry with clearer arguments or report the specific error to the user
+- **Phase not found:** suggest `/rihal:karpathy-audit HEAD~5..HEAD` as the git-ref fallback.
+- **No source files in diff:** report "no auditable changes in range" and STOP — do not invent findings.
+- **karpathy-guidelines.md missing:** print "Reference doc missing. Run: npx @hanzlaa/rcode install ." and STOP.
+- **Empty diff:** STOP gracefully, do not run principle checks against an empty input.
 
