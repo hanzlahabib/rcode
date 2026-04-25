@@ -37,7 +37,7 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
 
-- **46 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries (43 persona + tactical, 3 workflow)
+- **44 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
 - **98 slash commands** covering research, planning, execution, verification, and recovery
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
@@ -65,7 +65,7 @@ npx @hanzlaa/rcode install
 One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
-- `.claude/agents/` — 46 first-class subagents
+- `.claude/agents/` — 44 first-class subagents
 - `.claude/commands/rihal/` — 98 slash commands
 - `.claude/skills/` — 56 phrase-activated skills (scaffold-project, create-prd, prfaq, retrospective, etc.)
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
@@ -446,7 +446,7 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ rihal-tools.cjs runs — syntax ok
     ✓ .rihal/config.yaml present — 412 bytes
     ✓ .rihal/state.json parses — valid JSON
-    ✓ agents installed — 46
+    ✓ agents installed — 44
     ✓ skills + commands installed — 56 skills + 98 commands
 ```
 

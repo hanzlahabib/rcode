@@ -533,6 +533,13 @@ tactical_agents:
     authority_level: design
     description: UX design, accessibility, and design system work
 
+  - id: rihal-plan-checker
+    name: Plan Checker
+    file_path: rihal/agents/rihal-sprint-checker.md
+    role: Plan Checker
+    authority_level: quality
+    description: Validates PLAN.md/SPRINT.md quality before execution (alias for sprint-checker)
+
   - id: rihal-verifier
     name: Verifier
     file_path: rihal/agents/rihal-verifier.md

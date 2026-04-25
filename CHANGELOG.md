@@ -4,6 +4,22 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.3.2 — Documentation audit: agent counts corrected, orphaned stubs removed (2026-04-25)
+
+**Documentation correctness pass.** No behavior changes.
+
+### Fixed
+
+- Corrected `team.yaml` YAML structure: tactical agents block was nested inside `routing:` mapping, causing parse errors. Added proper `tactical_agents:` top-level key.
+- Registered `rihal-plan-checker` in `team.yaml` (alias for `rihal-sprint-checker`; referenced in `verify-work.md` workflow but was never registered)
+- Removed 3 dead stub entries from `docs/agents.md`: `rihal-doc-verifier`, `rihal-doc-writer`, `rihal-repo-metrics` — no agent files exist, no workflow references found
+- Corrected agent counts across all docs: 46 → 44 (17 persona + 27 tactical)
+  - `docs/agents.md` header
+  - `README.md` feature list and health check output
+  - `docs/TIERS.md` preview section
+
+---
+
 ## v2.3.1 — Auto-heal: full skill compliance + 26 tactical agents registered (2026-04-25)
 
 **Maintenance release.** Zero behavior changes — all fixes are structural correctness.

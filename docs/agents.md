@@ -1,6 +1,6 @@
 # Agent Reference
 
-All 46 agents in Rihal Code, their roles, and when they spawn.
+All 44 agents in Rihal Code, their roles, and when they spawn.
 
 ---
 
@@ -389,26 +389,6 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-doc-verifier
-**Purpose:** Verify documentation is up-to-date with code.
-
-**Spawned by:** Post-execute workflows
-
----
-
-#### rihal-doc-writer
-**Purpose:** Write user-facing documentation.
-
-**Spawned by:** `/rihal:docs-update`
-
----
-
-#### rihal-repo-metrics
-**Purpose:** Calculate project health metrics.
-
-**Spawned by:** `/rihal:stats`, `/rihal:health`
-
----
 
 #### rihal-security-auditor
 **Purpose:** Security-focused code review.
