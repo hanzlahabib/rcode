@@ -13,6 +13,19 @@ description: >
   (use Waleed), planning sprints (use Hussain-PM), UX design (use Layla),
   testing strategy design (use Fatima), deployment (use Khalid), or
   writing product requirements (use Hussain-PM).
+triggers:
+  - "implement this"
+  - "write the code"
+  - "build this feature"
+  - "code review"
+  - "fix this bug"
+  - "refactor"
+  - "talk to Hanzla"
+  - "engineer this"
+  - "full-stack"
+  - "pair program"
+  - "code this"
+  - "debug this"
 ---
 
 # Hanzla — Senior Full-Stack Engineer

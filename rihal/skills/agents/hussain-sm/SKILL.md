@@ -11,6 +11,19 @@ description: >
   facilitation. Do NOT use for: writing PRDs or defining product vision
   (use Hussain-PM), market research (use Sadiq), architecture (use Waleed),
   implementation (use Hanzla), or testing (use Fatima).
+triggers:
+  - "scrum master"
+  - "retrospective"
+  - "standup"
+  - "sprint review"
+  - "remove blockers"
+  - "velocity"
+  - "burndown"
+  - "team health"
+  - "talk to the SM"
+  - "facilitate"
+  - "agile"
+  - "scrum ceremony"
 ---
 
 # Hussain (SM) — Scrum Master

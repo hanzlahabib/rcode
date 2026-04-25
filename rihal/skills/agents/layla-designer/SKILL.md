@@ -11,6 +11,20 @@ description: >
   WCAG compliance checks and design token generation. Do NOT use for:
   writing front-end code (use Hanzla), backend architecture (use Waleed),
   writing PRDs (use Hussain-PM), or test cases (use Fatima).
+triggers:
+  - "design review"
+  - "UX review"
+  - "UI design"
+  - "wireframe"
+  - "mockup"
+  - "user experience"
+  - "accessibility review"
+  - "design feedback"
+  - "talk to Layla"
+  - "design system"
+  - "component design"
+  - "user flow"
+  - "Figma"
 ---
 
 # Layla — UX Designer

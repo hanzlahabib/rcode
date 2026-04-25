@@ -6,6 +6,7 @@ agents:
   - id: rihal-sadiq
     name: Sadiq (صادق)
     file_path: rihal/agents/rihal-sadiq.md
+    skill_path: rihal/skills/agents/sadiq-analyst
     role: Director of Strategy
     authority_level: strategic
     domain_keywords:
@@ -21,6 +22,7 @@ agents:
   - id: rihal-waleed
     name: Waleed (وليد)
     file_path: rihal/agents/rihal-waleed.md
+    skill_path: rihal/skills/agents/waleed-architect
     role: Chief Technology Officer
     authority_level: technical
     domain_keywords:
@@ -38,6 +40,7 @@ agents:
   - id: rihal-fatima
     name: Fatima (فاطمة)
     file_path: rihal/agents/rihal-fatima.md
+    skill_path: rihal/skills/agents/fatima-qa
     role: QA Lead
     authority_level: quality
     domain_keywords:
@@ -54,6 +57,7 @@ agents:
   - id: rihal-mariam
     name: Mariam (مريم)
     file_path: rihal/agents/rihal-mariam.md
+    skill_path: rihal/skills/agents/mariam-marketing
     role: Marketing & Growth Lead
     authority_level: growth
     domain_keywords:
@@ -69,6 +73,7 @@ agents:
   - id: rihal-hussain-pm
     name: Hussain (حسين)
     file_path: rihal/agents/rihal-hussain-pm.md
+    skill_path: rihal/skills/agents/hussain-pm
     role: Product Manager
     authority_level: product
     domain_keywords:
@@ -97,6 +102,7 @@ agents:
   - id: rihal-yousef
     name: Yousef (يوسف)
     file_path: rihal/agents/rihal-yousef.md
+    skill_path: rihal/skills/agents/yousef-backend
     role: Senior Backend Engineer
     authority_level: technical
     domain_keywords:
@@ -115,6 +121,7 @@ agents:
   - id: rihal-haitham
     name: Haitham (هيثم)
     file_path: rihal/agents/rihal-haitham.md
+    skill_path: rihal/skills/agents/haitham-frontend
     role: Senior Frontend Engineer
     authority_level: technical
     domain_keywords:
@@ -132,6 +139,7 @@ agents:
   - id: rihal-zayd
     name: Zayd (زيد)
     file_path: rihal/agents/rihal-zayd.md
+    skill_path: rihal/skills/agents/zayd-ml
     role: Senior ML Engineer
     authority_level: technical
     domain_keywords:
@@ -150,6 +158,7 @@ agents:
   - id: rihal-layla
     name: Layla (ليلى)
     file_path: rihal/agents/rihal-layla.md
+    skill_path: rihal/skills/agents/layla-designer
     role: UX Designer
     authority_level: design
     domain_keywords:
@@ -166,6 +175,7 @@ agents:
   - id: rihal-zahra
     name: Zahra (زهرة)
     file_path: rihal/agents/rihal-zahra.md
+    skill_path: rihal/skills/agents/zahra-branding
     role: Branding & Creative Director
     authority_level: design
     domain_keywords:
@@ -182,6 +192,7 @@ agents:
   - id: rihal-nasser
     name: Nasser (ناصر)
     file_path: rihal/agents/rihal-nasser.md
+    skill_path: rihal/skills/agents/nasser-eng-manager
     role: Software Engineering Manager
     authority_level: management
     domain_keywords:
@@ -215,6 +226,7 @@ agents:
   - id: rihal-noor
     name: Noor (نور)
     file_path: rihal/agents/rihal-noor.md
+    skill_path: rihal/skills/agents/noor-writer
     role: Technical Writer & Presentation Lead
     authority_level: operational
     domain_keywords:
@@ -231,6 +243,7 @@ agents:
   - id: rihal-ahmed
     name: Ahmed Al Hassani (أحمد الحسني)
     file_path: rihal/agents/rihal-ahmed.md
+    skill_path: rihal/skills/agents/ahmed-hassani-director
     role: Technology & Development Director
     authority_level: strategic
     domain_keywords:
@@ -246,6 +259,7 @@ agents:
   - id: rihal-hanzla
     name: Hanzla (حنظلة)
     file_path: rihal/agents/rihal-hanzla.md
+    skill_path: rihal/skills/agents/hanzla-engineer
     role: Senior Full-Stack Engineer
     authority_level: technical
     domain_keywords:

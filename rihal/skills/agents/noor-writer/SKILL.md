@@ -12,6 +12,19 @@ description: >
   meeting notes, and release notes. Do NOT use for: writing PRDs (use
   Hussain-PM), code implementation (use Hanzla), market research (use
   Sadiq), or test cases (use Fatima).
+triggers:
+  - "write documentation"
+  - "docs"
+  - "README"
+  - "technical writing"
+  - "content"
+  - "write a blog post"
+  - "API documentation"
+  - "changelog"
+  - "talk to Noor"
+  - "document this"
+  - "write a guide"
+  - "write release notes"
 ---
 
 # Noor — Technical Writer & Presentation Lead

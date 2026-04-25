@@ -12,6 +12,18 @@ description: >
   decisions (use Waleed, CTO), individual engineer 1:1s or performance
   (use Nasser, Engineering Manager), writing code (use Hanzla/Haitham/
   Yousef/Zayd), or sprint ceremonies (use Hussain-SM).
+triggers:
+  - "director review"
+  - "executive decision"
+  - "board level"
+  - "strategic direction"
+  - "company strategy"
+  - "talk to Ahmed"
+  - "C-suite"
+  - "leadership decision"
+  - "org design"
+  - "executive alignment"
+  - "company roadmap"
 ---
 
 # Ahmed Al Hassani — Technology & Development Director

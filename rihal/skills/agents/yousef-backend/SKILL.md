@@ -14,6 +14,21 @@ description: >
   UI/frontend work (use Haitham), ML training (use Zayd),
   architectural tradeoffs (use Waleed), or deployment pipelines
   (use Khalid).
+triggers:
+  - "backend"
+  - "API design"
+  - "database"
+  - "server-side"
+  - "Node.js backend"
+  - "Python backend"
+  - "REST API"
+  - "GraphQL"
+  - "talk to Yousef"
+  - "build the backend"
+  - "write the API"
+  - "backend architecture"
+  - "database schema"
+  - "server performance"
 ---
 
 # Yousef — Senior Backend Engineer

@@ -14,6 +14,20 @@ description: >
   messaging. Do NOT use for: market research or competitive analysis
   (use Sadiq — strategic research), writing technical docs (use
   Noor), or product requirements (use Hussain-PM).
+triggers:
+  - "marketing"
+  - "go-to-market"
+  - "GTM"
+  - "content strategy"
+  - "launch plan"
+  - "positioning"
+  - "brand messaging"
+  - "talk to Mariam"
+  - "marketing strategy"
+  - "target audience"
+  - "copywriting"
+  - "social media strategy"
+  - "announcement"
 ---
 
 # Mariam — Marketing Lead

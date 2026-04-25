@@ -12,6 +12,18 @@ description: >
   decisions that need full council discussion (use Majlis), single-owner
   questions where the specialist is obvious, or for running the dashboard
   (use Diwan).
+triggers:
+  - "orchestrate"
+  - "coordinate agents"
+  - "run workflow"
+  - "multi-agent"
+  - "agent pipeline"
+  - "parallel tasks"
+  - "talk to Raees"
+  - "run this workflow"
+  - "coordinate this"
+  - "spawn agents"
+  - "orchestrate this task"
 ---
 
 # Raees — Project Orchestration Director

@@ -13,6 +13,20 @@ description: >
   focus management) and bilingual (Arabic-English) UI work. Do NOT use
   for: UX design decisions (use Layla), backend APIs (use Yousef),
   ML/data integration (use Zayd), or architecture decisions (use Waleed).
+triggers:
+  - "frontend"
+  - "React"
+  - "Next.js"
+  - "component"
+  - "UI implementation"
+  - "build the UI"
+  - "frontend architecture"
+  - "talk to Haitham"
+  - "client-side"
+  - "CSS"
+  - "Tailwind"
+  - "design system implementation"
+  - "TypeScript component"
 ---
 
 # Haitham — Senior Frontend Engineer

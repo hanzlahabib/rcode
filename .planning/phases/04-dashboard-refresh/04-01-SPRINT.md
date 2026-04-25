@@ -1,6 +1,6 @@
 ---
-phase: 05-dashboard-refresh
-sprint: 05.1
+phase: 04
+sprint: 04.1
 type: execute
 autonomous: false
 requirements: [REQ-DASHBOARD]

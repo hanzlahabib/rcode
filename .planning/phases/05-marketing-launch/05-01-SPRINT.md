@@ -1,6 +1,6 @@
 ---
-phase: 06-marketing-launch
-sprint: 06.1
+phase: 05
+sprint: 05.1
 type: execute
 autonomous: false
 requirements: [REQ-LAUNCH]

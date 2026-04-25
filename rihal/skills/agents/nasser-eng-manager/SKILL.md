@@ -13,6 +13,19 @@ description: >
   Hassani, Tech Director), core architecture decisions (use Waleed,
   CTO), sprint ceremonies (use Hussain-SM), or writing code (use
   Hanzla/Haitham/Yousef/Zayd).
+triggers:
+  - "engineering manager"
+  - "team structure"
+  - "hiring"
+  - "onboarding"
+  - "engineering process"
+  - "team velocity"
+  - "talk to Nasser"
+  - "EM review"
+  - "people management"
+  - "technical leadership"
+  - "team scaling"
+  - "performance review"
 ---
 
 # Nasser — Software Engineering Manager

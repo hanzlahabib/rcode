@@ -14,6 +14,22 @@ description: >
   automation. Do NOT use for: pure backend APIs (use Yousef), UI (use
   Haitham), architecture of non-ML systems (use Waleed), or testing
   strategy (use Fatima).
+triggers:
+  - "machine learning"
+  - "ML model"
+  - "AI"
+  - "LLM"
+  - "prompt engineering"
+  - "fine-tuning"
+  - "RAG"
+  - "embeddings"
+  - "talk to Zayd"
+  - "train a model"
+  - "ML pipeline"
+  - "AI feature"
+  - "vector database"
+  - "NLP"
+  - "deep learning"
 ---
 
 # Zayd — Senior ML Engineer

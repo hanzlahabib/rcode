@@ -68,16 +68,30 @@ Started: 2026-03 · Current
 
 ## Phase 04 — Dashboard Refresh
 
-**Goal:** Diwan view-only dashboard (`server/dashboard.js`) should visualize tier breakdown, phase progress, and council sessions pulled from `.rihal/state.json` and `.planning/`.
+**Goal:** Majlis dashboard (`server/dashboard.js`) becomes a proper project intelligence view with a design system, hierarchical navigation (Milestone → Phase → Sprint → Task), collapseable roadmap tree, live file browser, and auto-refresh.
 
-**Status:** Planned
+**Status:** Active (Sprint 04.2 in progress)
 
-**Plans:**
-- Add tier view (Starter / Advanced / Ultra)
-- Add phase progress visualization from ROADMAP.md
-- Keep dep-free (pure Node stdlib)
+**Delivered (Sprint 04.1):**
+- Tier breakdown view (Starter / Advanced / Ultra)
+- Sprint progress visualization from state.json
+- Velocity chart from velocity_history
+- Council session list
 
-**Acceptance:** `node server/dashboard.js` starts clean, shows tiers + phase progress.
+**In Progress (Sprint 04.2):**
+- Inter font + CSS custom properties design system
+- Sidebar with Roadmap / Milestones / Phases / Sprints / Tasks nav
+- Drill-down: click Milestone → phases, Phase → sprints, Sprint → tasks
+- Collapseable M→Phase→Sprint→Task roadmap tree
+- Live `.planning/` file browser
+- 30s auto-refresh + manual refresh button
+
+**Constraints:**
+- Pure Node stdlib — zero npm deps in server code
+- Single-file server (`server/dashboard.js`)
+- View-only — no write endpoints ever
+
+**Acceptance:** `node server/dashboard.js` starts on :7717. All hierarchy levels navigable with drill-down and back navigation.
 
 ---
 

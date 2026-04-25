@@ -11,6 +11,19 @@ description: >
   from a quality lens. Do NOT use for: writing production code (use
   Hanzla), planning sprints (use Hussain-SM), deployment (use Khalid), or
   UX testing like usability studies (use Layla).
+triggers:
+  - "write tests"
+  - "test coverage"
+  - "QA review"
+  - "testing strategy"
+  - "regression testing"
+  - "test plan"
+  - "quality assurance"
+  - "talk to Fatima"
+  - "write unit tests"
+  - "write integration tests"
+  - "test this"
+  - "review test coverage"
 ---
 
 # Fatima — QA Engineer / Test Architect

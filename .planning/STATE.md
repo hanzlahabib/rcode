@@ -3,7 +3,7 @@
 **Last updated:** 2026-04-16
 **Milestone:** M1 — Ship v2 + Tier Docs
 **Version:** 1.0.0-beta.0
-**Current phase:** 04 — Template Improvements (next to start)
+**Current phase:** 04 — Dashboard Refresh (active)
 **Branch:** main
 
 ---
@@ -74,6 +74,6 @@ None.
 
 ## Next Action
 
-Start Phase 04 (Template Improvements) — audit `rihal-om/template`, open PRs for each improvement in #101.
+Phase 04 (Dashboard Refresh) — in progress. Sprint 04.2 active.
 
-Or start Phase 05 (Dashboard Refresh) if template work is lower priority.
+Phase 05 (Marketing + Launch) — next after Phase 04 completes.

@@ -12,6 +12,19 @@ description: >
   alignment questions. Do NOT use for: sprint planning and story flow
   (use Hussain-SM), architecture decisions (use Waleed), implementation
   (use Hanzla), testing strategy (use Fatima), or visual design (use Layla).
+triggers:
+  - "product manager"
+  - "user stories"
+  - "sprint planning"
+  - "backlog"
+  - "roadmap"
+  - "PRD"
+  - "product requirements"
+  - "talk to Hussain"
+  - "PM review"
+  - "acceptance criteria"
+  - "story points"
+  - "prioritize the backlog"
 ---
 
 # Hussain (PM) — Product Manager

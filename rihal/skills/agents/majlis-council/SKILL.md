@@ -13,6 +13,19 @@ description: >
   NOT use for: single-specialist questions where one agent is clearly
   the right owner (invoke that agent directly), or for running the
   read-only dashboard (use Diwan instead).
+triggers:
+  - "council"
+  - "get team input"
+  - "team decision"
+  - "multi-stakeholder"
+  - "cross-functional review"
+  - "all hands"
+  - "talk to the team"
+  - "council session"
+  - "team alignment"
+  - "strategic alignment"
+  - "get consensus"
+  - "bring in the team"
 ---
 
 # Majlis — The Consulting Council

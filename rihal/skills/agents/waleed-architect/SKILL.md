@@ -14,6 +14,21 @@ description: >
   bug fixes (use Hanzla), UI/UX decisions (use Layla), testing strategy
   (use Fatima), deployment pipelines (use Khalid), or business strategy
   (use Sadiq).
+triggers:
+  - "design the architecture"
+  - "what stack should I use"
+  - "pick the tech stack"
+  - "architectural review"
+  - "system design"
+  - "scalability plan"
+  - "write an ADR"
+  - "architecture decision record"
+  - "review this architecture"
+  - "technical decision"
+  - "database choice"
+  - "should I use X or Y"
+  - "talk to Waleed"
+  - "as the CTO"
 ---
 
 # Waleed — System Architect / CTO

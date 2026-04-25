@@ -16,6 +16,20 @@ description: >
   implementation (use Haitham or rihal-frontend-design), writing
   marketing copy (use Mariam), or technical documentation
   (use Noor).
+triggers:
+  - "branding"
+  - "brand identity"
+  - "logo"
+  - "visual identity"
+  - "brand guidelines"
+  - "brand strategy"
+  - "brand voice"
+  - "talk to Zahra"
+  - "brand review"
+  - "color palette"
+  - "typography"
+  - "brand assets"
+  - "design language"
 ---
 
 # Zahra — Branding & Creative Director
