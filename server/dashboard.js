@@ -793,15 +793,27 @@ function renderHtml(state) {
       const resp = await fetch('/api/file?path=' + encodeURIComponent(item.dataset.path));
       if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Failed to load file.</div>'; return; }
       const md = await resp.text();
-      const html = (typeof marked !== 'undefined')
-        ? marked.parse(md)
-        : '<pre>' + md.replace(/</g,'&lt;') + '</pre>';
+      const html = renderMd(md);
       fv.innerHTML = '<div class="md-render">' + html + '</div>';
     } catch {
       fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>';
     }
   });
 })();
+
+// Strip YAML frontmatter (--- ... ---) before rendering markdown
+function stripFrontmatter(md) {
+  if (!md.startsWith('---')) return md;
+  const end = md.indexOf('\n---', 3);
+  return end === -1 ? md : md.slice(end + 4).trimStart();
+}
+
+function renderMd(md) {
+  const clean = stripFrontmatter(md);
+  return (typeof marked !== 'undefined')
+    ? marked.parse(clean)
+    : '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
+}
 
 // Refresh logic
 let _lastScanned = ${JSON.stringify(state.lastScanned)};
@@ -864,7 +876,7 @@ async function openFile(filePath) {
     const resp = await fetch('/api/file?path=' + encodeURIComponent(filePath));
     if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Failed to load file.</div>'; return; }
     const md = await resp.text();
-    const html = (typeof marked !== 'undefined') ? marked.parse(md) : '<pre>' + md.replace(/</g,'&lt;') + '</pre>';
+    const html = renderMd(md);
     fv.innerHTML = '<div class="md-render">' + html + '</div>';
   } catch {
     fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Network error.</div>';
