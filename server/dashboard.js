@@ -85,19 +85,39 @@ function scanState() {
   state.councilSessions = (state.raw?.council_sessions || []).length;
 
   if (Array.isArray(state.raw?.phases)) {
+    const phasesDir = path.join(projectDir, '.planning', 'phases');
     state.phases = state.raw.phases.map(p => {
-      const sprints   = Array.isArray(p.sprints) ? p.sprints : [];
+      const sprints    = Array.isArray(p.sprints) ? p.sprints : [];
       const allStories = sprints.flatMap(s => Array.isArray(s.stories) ? s.stories : []);
-      const done   = allStories.filter(s => s.status === 'done' || s.status === 'completed').length;
-      const total  = allStories.length;
+      const done  = allStories.filter(s => s.status === 'done' || s.status === 'completed').length;
+      const total = allStories.length;
+
+      // Find the phase directory on disk by matching padded ID prefix
+      const padded = String(p.id || p.number || '').padStart(2, '0');
+      let phaseDir = null, sprintFile = null;
+      try {
+        const dirs = fs.readdirSync(phasesDir, { withFileTypes: true });
+        const match = dirs.find(d => d.isDirectory() && d.name.startsWith(padded + '-'));
+        if (match) {
+          phaseDir = match.name;
+          // Find most recent sprint file (highest numbered or plain SPRINT.md)
+          const allMd = fs.readdirSync(path.join(phasesDir, match.name)).filter(f => f.endsWith('.md'));
+          // Prefer numbered sprint files (NN-NN-SPRINT.md) — highest number = most recent
+          const numbered = allMd.filter(f => /^\d{2}-\d{2}-/.test(f)).sort().reverse();
+          const chosen = numbered.length ? numbered[0] : allMd.sort().reverse()[0];
+          if (chosen) sprintFile = `.planning/phases/${match.name}/${chosen}`;
+        }
+      } catch { /* phasesDir missing — fine */ }
+
       return {
-        id:     p.id,
-        name:   p.name || p.slug || p.id,
-        status: p.status || (sprints[0]?.status) || 'planned',
-        sprints: sprints.length,
-        stories: total,
+        id:         p.id,
+        name:       p.name || p.slug || p.id,
+        status:     p.status || (sprints[0]?.status) || 'planned',
+        sprints:    sprints.length,
+        stories:    total,
         storiesDone: done,
-        goal: sprints[0]?.goal || null,
+        goal:       sprints[0]?.goal || null,
+        sprintFile,          // .planning/phases/NN-slug/NN-NN-SPRINT.md or null
       };
     });
   }
@@ -448,6 +468,8 @@ function renderHtml(state) {
   h1, h2, h3 { line-height: 1.3; }
   p { margin-bottom: 10px; }
   ul { margin-left: 20px; margin-bottom: 10px; }
+  .item-clickable { cursor: pointer; }
+  .item-clickable:hover { background: var(--bg-hover); border-color: var(--accent-blue); }
   .status-chip {
     display: inline-flex;
     align-items: center;
@@ -643,16 +665,21 @@ function renderHtml(state) {
               const pct = p.stories > 0 ? Math.round((p.storiesDone / p.stories) * 100) : 0;
               const isCurrent = p.id === state.currentPhase;
               const filterText = (p.name + ' ' + p.status + ' ' + (p.goal || '')).toLowerCase();
+              const clickable = !!p.sprintFile;
               return `
-              <div class="item" style="${isCurrent ? 'border-left-color:var(--accent-amber);' : ''}" data-filter-text="${filterText}">
+              <div class="item${clickable ? ' item-clickable' : ''}"
+                   style="${isCurrent ? 'border-left-color:var(--accent-amber);' : ''}"
+                   data-filter-text="${filterText}"
+                   ${clickable ? `onclick="openFile('${p.sprintFile}')"` : ''}>
                 <div class="item-title">
                   Phase ${p.id} — ${p.name}
                   ${isCurrent ? '<span class="tag" style="background:rgba(245,158,11,0.2);">current</span>' : ''}
                   <span class="status-chip ${chipClass}">● ${p.status}</span>
+                  ${clickable ? '<span class="tag" style="float:right;color:var(--text-muted);">View plan →</span>' : ''}
                 </div>
                 <div class="item-meta">
                   <span class="tag">${p.sprints} sprint${p.sprints !== 1 ? 's' : ''}</span>
-                  <span class="tag">${p.stories} stories</span>
+                  <span class="tag">${p.stories} stor${p.stories !== 1 ? 'ies' : 'y'}</span>
                   ${p.stories > 0 ? `<span class="tag">${pct}% done</span>` : ''}
                 </div>
                 ${p.goal ? `<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">${p.goal}</div>` : ''}
@@ -814,6 +841,35 @@ setInterval(async () => {
 }, 30000);
 
 function manualRefresh() { fetchAndRenderOverview(); }
+
+// Open a .md file in Files view — called by clickable phase cards
+async function openFile(filePath) {
+  // Switch nav to Files view
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const filesNav = document.querySelector('.nav-link[data-view="files"]');
+  if (filesNav) filesNav.classList.add('active');
+  const filesView = document.getElementById('view-files');
+  if (filesView) filesView.classList.add('active');
+
+  // Highlight matching tree item if visible
+  document.querySelectorAll('.file-tree-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.path === filePath);
+  });
+
+  const fv = document.getElementById('file-view');
+  if (!fv) return;
+  fv.innerHTML = '<div style="color:var(--text-muted);padding:var(--space-8);">Loading…</div>';
+  try {
+    const resp = await fetch('/api/file?path=' + encodeURIComponent(filePath));
+    if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Failed to load file.</div>'; return; }
+    const md = await resp.text();
+    const html = (typeof marked !== 'undefined') ? marked.parse(md) : '<pre>' + md.replace(/</g,'&lt;') + '</pre>';
+    fv.innerHTML = '<div class="md-render">' + html + '</div>';
+  } catch {
+    fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Network error.</div>';
+  }
+}
 
 // Live filter
 document.querySelectorAll('.filter-input').forEach(input => {
