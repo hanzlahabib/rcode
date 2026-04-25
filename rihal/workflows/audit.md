@@ -1,0 +1,171 @@
+# Workflow: rihal:audit
+
+<purpose>
+Single entry point for every kind of audit. Asks the user *what* to audit
+and dispatches to the right sub-workflow. Closes #234 — replaces the prior
+state where users had to know about six separate audit/verify commands by
+name (`audit-milestone`, `audit-uat`, `audit-fix`, `karpathy-audit`,
+`verify-phase`, `verify-work`).
+
+Honours `.rihal/config.yaml`: in `mode: yolo`, the router skips the menu
+and auto-picks the most-relevant target based on project state. In
+`mode: guided` (default), it asks.
+</purpose>
+
+## Step 0 — Usage check
+
+If `$ARGUMENTS` contains `--help` or `-h`:
+
+```
+/rihal:audit                       # interactive — asks what to audit
+/rihal:audit phase [<NN>]          # → /rihal:verify-phase
+/rihal:audit milestone [--strict]  # → /rihal:audit-milestone (with synth fallback)
+/rihal:audit uat                   # → /rihal:audit-uat
+/rihal:audit code [--scope=...]    # → /rihal:karpathy-audit
+/rihal:audit fix                   # → /rihal:audit-fix
+/rihal:audit work                  # → /rihal:verify-work
+```
+
+**Examples:**
+```
+/rihal:audit
+/rihal:audit milestone --strict
+/rihal:audit phase 03
+```
+
+## Step 1 — Resolve mode + arguments
+
+```bash
+TOOL="node .rihal/bin/rihal-tools.cjs"
+MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
+DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
+```
+
+Parse `$ARGUMENTS`:
+- First word ∈ {phase, milestone, uat, code, fix, work} → set `$TARGET`, drop it from args, jump to Step 4.
+- Empty or unrecognised → continue to Step 2.
+
+## Step 2 — Detect project state
+
+Probe what's audit-able right now:
+
+```bash
+ROADMAP=$([ -f .planning/ROADMAP.md ] && echo yes || echo no)
+PHASES=$(ls -d .planning/phases/*/ 2>/dev/null | wc -l)
+PLANS=$(find .planning/phases -name PLAN.md 2>/dev/null | wc -l)
+SUMMARIES=$(find .planning/phases -name SUMMARY.md 2>/dev/null | wc -l)
+UAT_FILES=$(find .planning -name 'UAT*.md' 2>/dev/null | wc -l)
+ON_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+DIRTY=$([ -n "$(git status --porcelain 2>/dev/null)" ] && echo yes || echo no)
+```
+
+Use these to decide which menu options are *relevant* and which to mark
+as `(no data — skip)`.
+
+## Step 3 — Ask user (guided mode only)
+
+If `$MODE` is `yolo`, skip this step and pick the most relevant target
+automatically (priority: `work` if dirty branch, else `phase` if PLANS>0
+and SUMMARIES<PLANS, else `milestone` if SUMMARIES>0, else `code`).
+
+Otherwise call AskUserQuestion:
+
+```
+Question:
+What do you want to audit?
+
+Options:
+  1. phase           — verify a single phase against its PLAN  ({PLANS} plans)
+  2. milestone       — cross-phase milestone goal coverage     ({SUMMARIES} summaries)
+  3. uat             — outstanding UAT / verification items    ({UAT_FILES} files)
+  4. code-quality    — Karpathy 4-principle code review        (current diff)
+  5. auto-fix        — audit then auto-fix findings            (uses #1–4 output)
+  6. work            — verify current branch / WIP             ({ON_BRANCH}, dirty={DIRTY})
+  0. cancel
+```
+
+Set `$TARGET` from the user's choice.
+
+## Step 4 — Pre-flight per target
+
+Each target has a precondition. Fail loudly with the fix step *before*
+dispatching, so the user doesn't get a surprise halt deep inside the
+sub-workflow.
+
+| target | precondition | failure message |
+|---|---|---|
+| phase | at least one `.planning/phases/*/PLAN.md` | `No PLAN.md found. Run /rihal:plan first.` |
+| milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal:new-milestone first.` |
+| uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal:execute on a phase first.` |
+| code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
+| fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal:audit first.` |
+| work | inside a git worktree | `Not in a git repo.` |
+
+For `milestone` specifically, check the **graceful-degrade** condition
+(closes #234 audit-milestone halt):
+
+```bash
+if [ "$TARGET" = "milestone" ] && [ "$SUMMARIES" -eq 0 ] && [ "$PLANS" -gt 0 ]; then
+  # Phases planned but no formal closes — offer to synthesize.
+  GIT_FEAT_COMMITS=$(git log --oneline --grep='^feat' 2>/dev/null | wc -l)
+  echo "⚠ $PLANS phases planned, 0 SUMMARY.md, $GIT_FEAT_COMMITS feat commits."
+  echo "  Phases were executed but never formally closed."
+  # Offer (yolo: auto-pick 1; guided: ask):
+  #   1. Synthesize SUMMARY.md per phase from PLAN.md + git log    [recommended]
+  #   2. Run /rihal:verify-phase per phase (manual close)
+  #   3. Continue audit anyway (will only assess what's documented)
+  #   0. Cancel
+fi
+```
+
+In `mode: yolo`, auto-pick option 1 and call:
+
+```bash
+node .rihal/bin/rihal-tools.cjs phase synthesize-summaries --from=git
+```
+
+(If that subcommand doesn't exist yet — file as follow-up; for now just
+print the git-commit grouping per phase and instruct the user to write
+SUMMARY.md or pick option 2.)
+
+## Step 5 — Dispatch
+
+Run the target's slash command, forwarding remaining args:
+
+| target | dispatch |
+|---|---|
+| phase | `/rihal:verify-phase $REST_ARGS` |
+| milestone | `/rihal:audit-milestone $REST_ARGS` |
+| uat | `/rihal:audit-uat $REST_ARGS` |
+| code | `/rihal:karpathy-audit $REST_ARGS` |
+| fix | `/rihal:audit-fix $REST_ARGS` |
+| work | `/rihal:verify-work $REST_ARGS` |
+
+## Step 6 — Closing summary
+
+After the sub-workflow returns:
+
+```
+RIHAL ► AUDIT ({TARGET}) ✓
+
+Report: {report_path or "(stdout only)"}
+Findings: {count}
+
+Next:
+  /rihal:audit fix         — auto-fix findings classified as auto-fixable
+  /rihal:audit code        — drill into code-quality issues
+  /rihal:settings show     — review which audit gates are enabled
+```
+
+## Success Criteria
+
+- [ ] `/rihal:audit` (no args) presents menu in guided mode, auto-picks in yolo
+- [ ] `/rihal:audit milestone` short-circuits the menu
+- [ ] When SUMMARY.md absent but PLAN.md present, milestone offers synthesize/verify/skip — does not dead-halt
+- [ ] Sub-workflow's closing report is surfaced unchanged
+
+## On Error
+
+- **Sub-workflow not installed** (slash file missing): `Audit subroute '/rihal:{target}' not found. Run: npx @hanzlaa/rcode install .`
+- **Precondition failed**: print the message from Step 4's table, suggest the unblocking command, STOP.
+- **`.rihal/config.yaml` missing**: treat as `mode: guided`, continue.
