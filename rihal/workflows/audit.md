@@ -118,15 +118,16 @@ if [ "$TARGET" = "milestone" ] && [ "$SUMMARIES" -eq 0 ] && [ "$PLANS" -gt 0 ]; 
 fi
 ```
 
-In `mode: yolo`, auto-pick option 1 and call:
+In `mode: yolo`, auto-pick option 1: group `git log --oneline` output by
+phase tag (e.g. commits matching `^feat\(0?(\d+)`) and write a first-pass
+`SUMMARY.md` per phase under `.planning/phases/<phase>/SUMMARY.md`
+containing the goal (from PLAN.md), the commit list, and a `# TODO:
+expand outcomes` marker. The user can then refine before re-running the
+audit.
 
-```bash
-node .rihal/bin/rihal-tools.cjs phase synthesize-summaries --from=git
-```
-
-(If that subcommand doesn't exist yet — file as follow-up; for now just
-print the git-commit grouping per phase and instruct the user to write
-SUMMARY.md or pick option 2.)
+A native `phase synthesize-summaries` CLI subcommand is tracked separately
+(see #234 follow-ups) — until it lands, the LLM performs the synthesis
+inline using `git log` + `Read PLAN.md` + `Write SUMMARY.md`.
 
 ## Step 5 — Dispatch
 

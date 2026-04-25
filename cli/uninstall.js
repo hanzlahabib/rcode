@@ -549,6 +549,14 @@ async function runUninstall(args) {
     '.antigravity',
   ]);
 
+  // Always remove .rihal/brain/ — it's pulled rcode content (issue #202),
+  // not user data. Refreshed by `brain pull` on next install.
+  const brainDir = path.join(cwd, '.rihal', 'brain');
+  if (fs.existsSync(brainDir)) {
+    fs.rmSync(brainDir, { recursive: true, force: true });
+    console.log(`   ✓ removed .rihal/brain/ (pulled content, will refresh on reinstall)`);
+  }
+
   // Handle .rihal/ state directory
   if (plan.stateDir) {
     const rihalDir = path.join(cwd, '.rihal');

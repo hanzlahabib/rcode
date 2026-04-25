@@ -3,6 +3,16 @@ name: rihal-checkpoint-preview
 description: 'LLM-assisted human-in-the-loop review. Make sense of a change, focus attention where it matters, test. Use when the user says "checkpoint", "human review", or "walk me through this change".'
 ---
 
+## Do NOT use this skill for
+
+- **Automated code review without a human** — use `/rihal:karpathy-audit` or a code-reviewer agent directly.
+- **Approving a deploy or merge** — this skill explains a change; it does not authorize git push, deploys, or PR merges.
+- **Bug investigation** from scratch — use `/rihal:debug` or the diagnose-issues workflow.
+- **Architecture review of an undelivered design** — this skill reviews delivered code/diffs, not specs.
+- **Sprint retros or milestone closure** — use `rihal-retrospective` or `rihal-complete-milestone`.
+
+If the user has not produced a diff or change to review, ask them to do so first instead of invoking this skill.
+
 ## Workflow
 
 

@@ -3,6 +3,16 @@ name: rihal-prfaq
 description: Working Backwards PRFAQ challenge to forge product concepts. Use when the user requests to 'create a PRFAQ', 'work backwards', or 'run the PRFAQ challenge'.
 ---
 
+## Do NOT use this skill for
+
+- **Refining an existing PRD** — use `rihal-create-prd` or `rihal-edit-prd`.
+- **Brainstorming raw ideas** before there's a concept — use `rihal-brainstorming` first; PRFAQ assumes a candidate concept exists.
+- **Sprint or phase planning** — use `rihal-sprint-planning` / `rihal-create-milestone`.
+- **Pure market research with no product hypothesis** — use a research workflow.
+- **Single-question Q&A** — PRFAQ runs a multi-stage gauntlet; for a one-off answer, just answer.
+
+If the user asks to "validate" or "polish" an existing PRD, redirect to `rihal-validate-prd`.
+
 ## Workflow
 
 

@@ -26,33 +26,31 @@ Per-project state is ALWAYS preserved (never touched by either mode):
 
 ## Step 0 — Usage check
 
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:update <argument-here>
+/rihal:update                       # pull latest, preserve user-modified files
+/rihal:update v2.4.0                # pin to a specific version
+/rihal:update --force-overwrite     # discard local edits, overwrite all rcode files
 ```
 
 **Examples:**
 ```
-/rihal:update example 1
-/rihal:update example 2
+/rihal:update
+/rihal:update v2.4.0
+/rihal:update --force-overwrite
 ```
-
-STOP — do not proceed.
 
 ## Step 1 — Locate installed package
 
-Find the rihal-code package using one of these strategies (in order):
-1. Check `$(npm root -g)/rihal-code/cli/install-v2.js` (global install)
-2. Check `./cli/install-v2.js` (local install)
-3. If neither exists, print:
-   ```
-   ❌ rihal-code package not found. Install with:
-   npm install -g rihal-code
-   ```
-   Exit.
+Find the local rcode installer (used as the network-fallback path in
+Step 7). Try in order:
 
-Store the installer path in `$INSTALLER_PATH`.
+1. `$(npm root -g)/@hanzlaa/rcode/cli/install.js` (global install)
+2. `./cli/install.js` (local clone)
+3. If neither exists, skip — Step 7's primary path uses `npx @hanzlaa/rcode@latest` and works without a local installer.
+
+Store the resolved path (or empty) in `$INSTALLER_PATH`.
 
 ## Step 2 — Read installed manifest
 
@@ -64,8 +62,8 @@ cat .rihal/_config/files-manifest.csv
 
 If the file doesn't exist:
 ```
-ℹ️ No rihal installation detected in this project.
-Run: node <installer-path> . --force --yes
+ℹ️ No rcode installation detected in this project.
+Run: npx @hanzlaa/rcode@latest install . --yes
 ```
 Exit.
 
