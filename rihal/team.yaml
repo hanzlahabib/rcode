@@ -357,7 +357,7 @@ routing:
     - rihal-sadiq       # strategic fit
 
 # Tactical / Workflow Agents (spawned by workflows)
-
+tactical_agents:
   - id: rihal-advisor-researcher
     name: Advisor Researcher
     file_path: rihal/agents/rihal-advisor-researcher.md
