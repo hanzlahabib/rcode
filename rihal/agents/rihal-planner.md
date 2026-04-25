@@ -129,7 +129,7 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute-plan.md
+@.rihal/workflows/execute.md
 @.rihal/templates/summary.md
 </execution_context>
 

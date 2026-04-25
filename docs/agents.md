@@ -1,6 +1,6 @@
 # Agent Reference
 
-All 44 agents in Rihal Code, their roles, and when they spawn.
+All 46 agents in Rihal Code, their roles, and when they spawn.
 
 ---
 
@@ -472,6 +472,64 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 **Purpose:** Software Engineer — generalist implementation, bug fixes, testing.
 
 **Spawned by:** `/rihal:execute`, `/rihal:dev-story`
+
+---
+
+#### rihal-haitham 💻
+**Purpose:** Senior Frontend Engineer — React/Next.js, component design, RTL/Arabic layouts, frontend performance.
+
+**Spawned by:** `/rihal:council`, `/rihal:ui-phase`, frontend implementation discussions
+
+---
+
+#### rihal-yousef ⚙️
+**Purpose:** Senior Backend Engineer — API design, database queries, performance, queues, webhooks.
+
+**Spawned by:** `/rihal:council`, backend implementation discussions
+
+---
+
+#### rihal-zayd 🧠
+**Purpose:** Senior ML Engineer — LLM integration, RAG/retrieval, embeddings, prompt engineering, evals.
+
+**Spawned by:** `/rihal:council`, AI/ML feature discussions
+
+---
+
+#### rihal-sprint-checker ✅
+**Purpose:** Verify sprint plans will achieve the phase goal before execution.
+
+**Spawned by:** `/rihal:plan` (post-planner, pre-execution)
+
+**Checks:** Goal-backward analysis — does the plan actually deliver what the phase promises?
+
+---
+
+#### rihal-ui-auditor 🎨
+**Purpose:** Retroactive visual audit of implemented frontend code across 6 quality pillars.
+
+**Spawned by:** `/rihal:ui-review`
+
+---
+
+#### rihal-profiler 👤
+**Purpose:** Analyze user behavior patterns, create personas, identify usage flows.
+
+**Spawned by:** `/rihal:profile-user`
+
+---
+
+#### rihal-security-adversary 🔴
+**Purpose:** Adversarial security review — think like an attacker, find exploitation paths.
+
+**Spawned by:** `/rihal:review-adversarial`, `/rihal:secure-phase`
+
+---
+
+#### rihal-remediation-planner 🔧
+**Purpose:** Plan remediation for issues and blockers — create action plans to recover from deviations.
+
+**Spawned by:** `/rihal:correct-course`, post-execute failure workflows
 
 ---
 

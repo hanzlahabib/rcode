@@ -1,6 +1,6 @@
 # Rihal Code — Tiers
 
-Rihal Code has **26 action skills, 17 team agents, 13 core skills, and 93 slash commands**. That's a lot. To keep it approachable, everything is organized into four tiers plus a preview track.
+Rihal Code has **26 action skills, 17 team agents, 13 core skills, and 98 slash commands**. That's a lot. To keep it approachable, everything is organized into four tiers plus a preview track.
 
 > **New to Rihal Code?** Start with the 🌱 Starter tier. You can do a complete project with just 7 skills. Ignore everything else until you need it.
 
@@ -97,7 +97,7 @@ Covers:
 
 ## 🧪 Preview — v2
 
-`rihal/v2/` has been unified into the main methodology. All 44 agents, 93 commands, and 58 skills are now available through the single installer. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) for migration notes.
+`rihal/v2/` has been unified into the main methodology. All 46 agents, 98 commands, and 56 skills are now available through the single installer. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) for migration notes.
 
 ---
 

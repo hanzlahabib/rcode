@@ -4,6 +4,49 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.3.1 — Auto-heal: full skill compliance + 26 tactical agents registered (2026-04-25)
+
+**Maintenance release.** Zero behavior changes — all fixes are structural correctness.
+
+### Fixed
+
+- All 56 SKILL.md files now pass the 5-component compliance check: `triggers:`, `## Overview`, `## Workflow`, `## Output Format`, `## Examples`
+- Added `triggers:` frontmatter to 39 action + core skills previously missing it (agents were fixed in v2.3.0)
+- Added `## Overview` to 34 skills, `## Workflow` to 12 skills
+- Renamed `## On Activation` → `## Workflow` in all 17 agent SKILL.md files
+- Fixed 7 broken `@`-includes across workflows: `autonomous.md`, `sprint-planning.md`, `checkpoint-preview.md`, `prfaq.md`, `document-project.md`
+- Fixed broken `@.rihal/workflows/execute-plan.md` reference in `rihal-planner.md` → `execute.md`
+- Removed legacy nested duplicate SKILL.md dirs (`rihal-shard-doc/rihal-shard-doc`, `rihal-advanced-elicitation/rihal-advanced-elicitation`)
+- Added `skill_path:` field to 14 agents in `team.yaml` linking persona IDs to `skills/agents/` dirs
+- Registered all 26 tactical/workflow agents in `team.yaml` (executor, planner, verifier, debugger, etc.) — were on disk but invisible to council dispatch (#201)
+- Added retroactive `SPRINT.md` for phases 01–03 (completed before sprint tracking was standardized)
+- Fixed stale counts in `README.md` and `docs/TIERS.md`
+- Fixed `CHANGELOG.md` missing entries for v2.3.0 and v2.3.1
+
+---
+
+## v2.3.0 — State integrity + commit sync + brainstorm dashboard (2026-04-25)
+
+**State integrity pass.** Focused on making state.json the reliable source of truth and wiring it to git.
+
+### Added
+
+- Auto-sync state on commit (pre-commit hook writes `.rihal/state.json` on every `git commit`)
+- `/rihal:brainstorm` skill — structured ideation with reverse-brainstorm, SCAMPER, and 6-hats modes
+- 24 tactical sub-agents registered in `team.yaml` (partial — full registration in v2.3.1)
+- Dashboard: hierarchical nav (milestones → phases → sprints → tasks), file browser, auto-refresh, blocker banner, design system, dark/light toggle, keyboard shortcuts
+
+### Fixed
+
+- Dashboard: strip YAML frontmatter before rendering markdown in file viewer
+- Dashboard: project name showing `.` instead of `rihal-code`
+- Dashboard: auto-refresh re-renders active view without page reload
+- Dashboard: modularized monolithic 1200-line file into `server/lib/` modules
+- Planning: aligned `.planning/` structure with GSD standard (phases 01–05 dirs, PLAN.md, VERIFICATION.md)
+- Config: `project_name: '.'` → `rihal-code`; stale `rihal_source_path` cleared
+
+---
+
 ## v2.2.0 — Auto-managed .gitignore on install (2026-04-24)
 
 **Installer polish.** Before v2.2, a fresh `rcode install` + `git add .` would bloat the user's repo by 676 methodology files (~3.8 MB) that regenerate on every update. This release fixes that at the install step, not after-the-fact.
