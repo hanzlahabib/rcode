@@ -124,38 +124,39 @@ STOP.
 
 ## Step 2 — Interactive edit
 
-After Step 1.5 prints the table, ask:
+After Step 1.5 prints the table, use the **`AskUserQuestion` tool** to prompt:
 
 ```
-Question:
 Which setting would you like to change?
 
-Options:
   1. mode (guided / yolo)
-  2. model_profile
-  3. workflow.research_by_default
-  4. workflow.plan_checker
-  5. workflow.post_execute_gates
-  6. workflow.ui_safety_gate
-  7. workflow.discuss_mode
-  8. git.branching_strategy
-  9. git.commit_docs
+  2. model_profile (quality / balanced / budget / inherit)
+  3. workflow.research_by_default (true / false)
+  4. workflow.plan_checker (true / false)
+  5. workflow.post_execute_gates (true / false)
+  6. workflow.ui_safety_gate (true / false)
+  7. workflow.discuss_mode (adaptive / discuss / skip)
+  8. git.branching_strategy (none / feature-branch / worktree-isolation)
+  9. git.commit_docs (true / false)
   10. communication_language
-  11. output.verbose (slim output / full detail)
+  11. output.verbose (true / false)
   0. Done — exit
 ```
 
-For each pick, present the constrained option set from Step 1.8, accept the
-choice, then call:
+When the user picks a number, use **`AskUserQuestion` tool** again to ask for
+the new value, showing the allowed values for that key.
+
+Then call:
 
 ```bash
 node .rihal/bin/rihal-tools.cjs config-set "{dotted.key}" "{value}"
 ```
 
-After each successful write, re-display the affected row from Step 1.5 so the
-user sees the change took effect.
+After each successful write, re-display the affected row so the user sees the
+change took effect.
 
-Loop until the user picks `0. Done`.
+Use **`AskUserQuestion`** again to loop — ask which setting to change next —
+until the user picks `0` or `done`.
 
 ## Step 3 — Closing summary
 
