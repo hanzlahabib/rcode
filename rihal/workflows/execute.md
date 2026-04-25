@@ -157,7 +157,7 @@ Always use the exact name from this list — do not fall back to 'general-purpos
 - rihal-codebase-mapper — Maps project structure and dependencies
 - rihal-integration-checker — Checks cross-phase integration
 - rihal-nyquist-auditor — Validates verification coverage
-- rihal-ui-designer — Researches UI/UX approaches
+- rihal-ux-designer — Researches UI/UX approaches
 - rihal-ui-auditor — Reviews UI implementation quality
 - rihal-ui-auditor — Audits UI against design requirements
 </available_agent_types>

@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-ui-designer` — UI specification generator
+- `rihal-ux-designer` — UI specification generator
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -51,11 +51,11 @@ Load existing design system, extract:
 
 ## Step 2 — Spawn UI Designer
 
-Spawn `rihal-ui-designer` subagent:
+Spawn `rihal-ux-designer` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-ui-designer"
+  subagent_type: "rihal-ux-designer"
   description: "Generate UI-SPEC.md"
   prompt: |
     Generate a UI-SPEC.md file with the following structure:

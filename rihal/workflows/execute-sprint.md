@@ -341,16 +341,23 @@ If verification fails:
 
 **Check if node repair is enabled** (default: on):
 ```bash
-NODE_REPAIR=$(node "./.claude/get-shit-done/bin/rihal-tools.cjs" config-get workflow.node_repair 2>/dev/null || echo "true")
+NODE_REPAIR=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.node_repair 2>/dev/null || echo "true")
 ```
 
-If `NODE_REPAIR` is `true`: invoke `@./.claude/get-shit-done/workflows/node-repair.md` with:
+If `NODE_REPAIR` is `true`: attempt RETRY → DECOMPOSE → PRUNE in that order
+within a budget of `workflow.node_repair_budget` (default: 2). Track:
+
 - FAILED_TASK: task number, name, done-criteria
 - ERROR: expected vs actual result
 - PLAN_CONTEXT: adjacent task names + phase goal
-- REPAIR_BUDGET: `workflow.node_repair_budget` from config (default: 2)
+- REPAIR_BUDGET: remaining attempts
 
-Node repair will attempt RETRY, DECOMPOSE, or PRUNE autonomously. Only reaches this gate again if repair budget is exhausted (ESCALATE).
+Repair strategies:
+- **RETRY** — re-run the same task with the failure context as added input.
+- **DECOMPOSE** — split into smaller subtasks (only if the original was L/XL).
+- **PRUNE** — drop the task from the sprint scope and record under "Issues Encountered" in SUMMARY.
+
+If the budget is exhausted without success: ESCALATE.
 
 If `NODE_REPAIR` is `false` OR repair returns ESCALATE: STOP. Present: "Verification failed for Task [X]: [name]. Expected: [criteria]. Actual: [result]. Repair attempted: [summary of what was tried]." Options: Retry | Skip (mark incomplete) | Stop (investigate). If skipped → SUMMARY "Issues Encountered".
 </step>
