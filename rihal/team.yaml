@@ -355,3 +355,187 @@ routing:
     - rihal-hussain-pm  # scope
     - rihal-waleed      # feasibility
     - rihal-sadiq       # strategic fit
+
+# Tactical / Workflow Agents (spawned by workflows)
+
+  - id: rihal-advisor-researcher
+    name: Advisor Researcher
+    file_path: rihal/agents/rihal-advisor-researcher.md
+    role: Advisor Researcher
+    authority_level: research
+    description: Advisor-level deep research for gray-area decisions
+
+  - id: rihal-architect
+    name: Architect
+    file_path: rihal/agents/rihal-architect.md
+    role: Architect
+    authority_level: technical
+    description: Enterprise architecture and system design reviews
+
+  - id: rihal-assumptions-analyzer
+    name: Assumptions Analyzer
+    file_path: rihal/agents/rihal-assumptions-analyzer.md
+    role: Assumptions Analyzer
+    authority_level: analysis
+    description: Analyzes phase assumptions with evidence from codebase
+
+  - id: rihal-code-fixer
+    name: Code Fixer
+    file_path: rihal/agents/rihal-code-fixer.md
+    role: Code Fixer
+    authority_level: implementation
+    description: Applies code review findings and implements fixes
+
+  - id: rihal-code-reviewer
+    name: Code Reviewer
+    file_path: rihal/agents/rihal-code-reviewer.md
+    role: Code Reviewer
+    authority_level: quality
+    description: Reviews code for bugs, security issues, quality problems
+
+  - id: rihal-codebase-mapper
+    name: Codebase Mapper
+    file_path: rihal/agents/rihal-codebase-mapper.md
+    role: Codebase Mapper
+    authority_level: analysis
+    description: Explores and documents codebase architecture
+
+  - id: rihal-debugger
+    name: Debugger
+    file_path: rihal/agents/rihal-debugger.md
+    role: Debugger
+    authority_level: implementation
+    description: Investigates bugs using scientific method
+
+  - id: rihal-deviation-analyzer
+    name: Deviation Analyzer
+    file_path: rihal/agents/rihal-deviation-analyzer.md
+    role: Deviation Analyzer
+    authority_level: analysis
+    description: Analyzes plan deviations and root causes
+
+  - id: rihal-docs-auditor
+    name: Docs Auditor
+    file_path: rihal/agents/rihal-docs-auditor.md
+    role: Docs Auditor
+    authority_level: quality
+    description: Audits documentation completeness and accuracy
+
+  - id: rihal-edge-case-hunter
+    name: Edge Case Hunter
+    file_path: rihal/agents/rihal-edge-case-hunter.md
+    role: Edge Case Hunter
+    authority_level: quality
+    description: Enumerates edge cases and boundary conditions
+
+  - id: rihal-executor
+    name: Executor
+    file_path: rihal/agents/rihal-executor.md
+    role: Executor
+    authority_level: implementation
+    description: Executes sprint plans with atomic commits
+
+  - id: rihal-integration-checker
+    name: Integration Checker
+    file_path: rihal/agents/rihal-integration-checker.md
+    role: Integration Checker
+    authority_level: quality
+    description: Verifies cross-phase integration and E2E flows
+
+  - id: rihal-nyquist-auditor
+    name: Nyquist Auditor
+    file_path: rihal/agents/rihal-nyquist-auditor.md
+    role: Nyquist Auditor
+    authority_level: quality
+    description: Fills test coverage gaps for phase requirements
+
+  - id: rihal-phase-researcher
+    name: Phase Researcher
+    file_path: rihal/agents/rihal-phase-researcher.md
+    role: Phase Researcher
+    authority_level: research
+    description: Researches how to implement a phase before planning
+
+  - id: rihal-planner
+    name: Planner
+    file_path: rihal/agents/rihal-planner.md
+    role: Planner
+    authority_level: planning
+    description: Creates executable phase plans with task breakdown
+
+  - id: rihal-profiler
+    name: Profiler
+    file_path: rihal/agents/rihal-profiler.md
+    role: Profiler
+    authority_level: analysis
+    description: Analyzes user behavior patterns and personas
+
+  - id: rihal-project-researcher
+    name: Project Researcher
+    file_path: rihal/agents/rihal-project-researcher.md
+    role: Project Researcher
+    authority_level: research
+    description: Researches domain ecosystem before roadmap creation
+
+  - id: rihal-remediation-planner
+    name: Remediation Planner
+    file_path: rihal/agents/rihal-remediation-planner.md
+    role: Remediation Planner
+    authority_level: planning
+    description: Plans remediation for issues and blockers
+
+  - id: rihal-research-synthesizer
+    name: Research Synthesizer
+    file_path: rihal/agents/rihal-research-synthesizer.md
+    role: Research Synthesizer
+    authority_level: research
+    description: Synthesizes parallel research outputs into summary
+
+  - id: rihal-roadmapper
+    name: Roadmapper
+    file_path: rihal/agents/rihal-roadmapper.md
+    role: Roadmapper
+    authority_level: planning
+    description: Creates project roadmaps with phase breakdown
+
+  - id: rihal-security-adversary
+    name: Security Adversary
+    file_path: rihal/agents/rihal-security-adversary.md
+    role: Security Adversary
+    authority_level: security
+    description: Adversarial security review and threat modeling
+
+  - id: rihal-security-auditor
+    name: Security Auditor
+    file_path: rihal/agents/rihal-security-auditor.md
+    role: Security Auditor
+    authority_level: security
+    description: Comprehensive security audit and compliance verification
+
+  - id: rihal-sprint-checker
+    name: Sprint Checker
+    file_path: rihal/agents/rihal-sprint-checker.md
+    role: Sprint Checker
+    authority_level: quality
+    description: Verifies sprint plans before execution
+
+  - id: rihal-ui-auditor
+    name: UI Auditor
+    file_path: rihal/agents/rihal-ui-auditor.md
+    role: UI Auditor
+    authority_level: quality
+    description: Audits UI for usability and design quality
+
+  - id: rihal-ux-designer
+    name: UX Designer
+    file_path: rihal/agents/rihal-ux-designer.md
+    role: UX Designer
+    authority_level: design
+    description: UX design, accessibility, and design system work
+
+  - id: rihal-verifier
+    name: Verifier
+    file_path: rihal/agents/rihal-verifier.md
+    role: Verifier
+    authority_level: quality
+    description: Verifies phase goal achievement goal-backward

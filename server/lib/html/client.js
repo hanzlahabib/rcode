@@ -577,7 +577,7 @@ function renderDecisions() {
     h += '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(phase) + '</div>';
     h += '<div class="decision-list">';
     for (const d of decs) {
-      const title = typeof d === 'string' ? d : (d.title || d.decision || JSON.stringify(d).slice(0, 80));
+      const title = typeof d === 'string' ? d : (d.title || d.summary || d.decision || JSON.stringify(d).slice(0, 80));
       const filterText = String(title).toLowerCase();
       // #306: date and phase context
       const dateInfo = (typeof d === 'object' && d.date) ? '<span style="color:var(--text-muted);font-size:var(--text-xs);margin-left:8px;">' + humanDate(d.date) + '</span>' : '';
