@@ -4,6 +4,31 @@
 Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rihal:sprint-planning`.
 </purpose>
 
+<delegate_to_skill>
+**Authoritative implementation lives in the `rihal-create-epics-and-stories` skill.**
+This workflow exists for slash-command activation. To preserve every
+safety rail (halt-at-menu, capacity gates, citation rules, state-sync
+rules), load and follow the skill's files BEFORE running any in-line
+steps below:
+
+- `.claude/skills/rihal-create-epics-and-stories/SKILL.md` — triggers + Output Format + Examples
+- `.claude/skills/rihal-create-epics-and-stories/workflow.md` — Critical Rules + step files
+
+Apply every rule from the skill's `## CRITICAL RULES (NO EXCEPTIONS)` block.
+The in-line steps in this file are a legacy fallback only — they are
+NOT the authoritative behaviour.
+
+After this workflow writes any `.planning/` artifact, ALWAYS run:
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+Per `_shared/state-sync-rule.md` (#198).
+
+If the skill is not installed: print
+"Skill rihal-create-epics-and-stories not found. Run: npx @hanzlaa/rcode install"
+and exit non-zero. Do not proceed with the legacy in-line steps.
+</delegate_to_skill>
+
 
 <available_agent_types>
 - `rihal-roadmapper` — reads PRD/context and generates epic structure

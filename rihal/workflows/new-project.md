@@ -3,8 +3,48 @@ Initialize a new project through unified flow: questioning, research (optional),
 
 </purpose>
 
+<chain_orchestration priority="absolute">
+
+## 0. Methodology chain orchestration (closes #226)
+
+`/rihal:new-project` is the ONLY workflow that creates the upstream chain
+out of nothing. It MUST trigger the create-prd → create-milestone →
+create-epics-and-stories chain in order, not skip to phase scaffolding.
+
+Required call sequence (each step halts for user review before next):
+
+```
+1. /rihal:create-prd               → produces .planning/prd.md
+   (skip if --prd <path> flag points to existing PRD; load that instead)
+
+2. /rihal:create-milestone         → produces .planning/ROADMAP.md with M1..Mn
+   (input: prd.md from step 1)
+
+3. /rihal:create-epics-and-stories → produces .planning/epics.md
+   (input: M1 from step 2)
+
+4. /rihal:sprint-planning --phase 01 → produces first sprint
+   (input: epics.md from step 3)
+
+5. State sync at every step:
+   node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+If `--auto` flag is set, halts are minimized but each chain step still
+runs in order. If `--skip-prerequisites` is set, this orchestration is
+bypassed (rare — usually means user has another tool generating these
+artifacts).
+
+NEVER hand-write PROJECT.md, ROADMAP.md, or epics.md inline — always
+delegate to the upstream skills so their safety rails (citation rule,
+capacity gate, halt-at-menu) fire. See `_shared/no-autonomous-bypass.md`.
+
+</chain_orchestration>
+
 <required_reading>
 @.rihal/references/output-format.md
+@.rihal/skills/_shared/no-autonomous-bypass.md
+@.rihal/skills/_shared/state-sync-rule.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>

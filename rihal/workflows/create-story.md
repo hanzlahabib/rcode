@@ -4,6 +4,31 @@
 Convert a single story from an EPIC file into a self-contained STORY.md file. This story is ready for `/rihal:dev-story` to be wrapped for AI-coder execution. Entry is gated by checklist-story-draft.md.
 </purpose>
 
+<delegate_to_skill>
+**Authoritative implementation lives in the `rihal-create-story` skill.**
+This workflow exists for slash-command activation. To preserve every
+safety rail (halt-at-menu, capacity gates, citation rules, state-sync
+rules), load and follow the skill's files BEFORE running any in-line
+steps below:
+
+- `.claude/skills/rihal-create-story/SKILL.md` — triggers + Output Format + Examples
+- `.claude/skills/rihal-create-story/workflow.md` — Critical Rules + step files
+
+Apply every rule from the skill's `## CRITICAL RULES (NO EXCEPTIONS)` block.
+The in-line steps in this file are a legacy fallback only — they are
+NOT the authoritative behaviour.
+
+After this workflow writes any `.planning/` artifact, ALWAYS run:
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+Per `_shared/state-sync-rule.md` (#198).
+
+If the skill is not installed: print
+"Skill rihal-create-story not found. Run: npx @hanzlaa/rcode install"
+and exit non-zero. Do not proceed with the legacy in-line steps.
+</delegate_to_skill>
+
 
 ## Step 0 — Usage check
 
