@@ -233,7 +233,7 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   const configPath = path.join(cwd, '.rihal/config.json');
   if (!fs.existsSync(configPath)) {
     console.error(`\n❌ Rihal Code is not installed in this directory.`);
-    console.error(`   To install: rihal-code install\n`);
+    console.error(`   To install: rcode install\n`);
     process.exit(1);
   }
 
@@ -251,7 +251,7 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   const editors = detectInstalledEditors(cwd);
   if (editors.length === 0) {
     console.error(`\n❌ No editor install detected.`);
-    console.error(`   Run 'rihal-code install' to set up at least one editor first.\n`);
+    console.error(`   Run 'rcode install' to set up at least one editor first.\n`);
     process.exit(1);
   }
 
@@ -355,7 +355,7 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   if (hasDrift) {
     console.log(`⚠ Post-update verification found drift:`);
     console.log(formatReport(reports));
-    console.log(`\n   Run 'rihal-code doctor' for details, or re-run update to retry.`);
+    console.log(`\n   Run 'rcode doctor' for details, or re-run update to retry.`);
   } else {
     console.log(`   ✓ Post-update verification passed.`);
   }

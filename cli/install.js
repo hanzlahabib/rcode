@@ -62,6 +62,7 @@ const fg = require('fast-glob');
 const { z } = require('zod');
 const semver = require('semver');
 const { createTwoFilesPatch } = require('diff');
+const clack = require('@clack/prompts');
 
 // Output helpers: always respect NO_COLOR / non-TTY (picocolors handles this).
 const ok   = (s) => pc.green('✓') + ' ' + s;
@@ -1486,7 +1487,7 @@ function runInstallHealthCheck(target, counts) {
     console.log('');
     console.log('  ' + fail(`${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`));
     console.log(dim('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/'));
-    console.log(dim('     Reinstall: npx @hanzlaa/rcode install . --force'));
+    console.log(dim('     Reinstall: rcode install . --force'));
     console.log('');
     return false;
   }
@@ -1498,40 +1499,19 @@ async function main() {
   const argv = process.argv.slice(2);
   const opts = parseArgs(argv);
 
-  // Prompt for target directory when not explicitly provided and not --yes
-  if (!opts.targetProvided && !opts.yes && !opts.help) {
-    const { askText, askChoice, PromptAbortError } = require('./lib/prompts.cjs');
-    try {
-      console.log('');
-      const answer = await askText(
-        `Install Rihal Code into which directory?\n  (press Enter for current directory: ${opts.target})`,
-        { default: opts.target }
-      );
-      const resolved = path.resolve(answer.trim() || opts.target);
-      opts.target = resolved;
-      opts.projectName = path.basename(resolved);
+  if (opts.help) { printHelp(); return; }
 
-      const ideAnswer = await askChoice(
-        'Which editor are you installing for?',
-        {
-          choices: [
-            { id: 'claude',  label: 'Claude Code' },
-            { id: 'cursor',  label: 'Cursor' },
-            { id: 'gemini',  label: 'Gemini CLI' },
-            { id: 'all',     label: 'All (Claude + Cursor + Gemini)' },
-          ],
-          default: 'claude',
-        }
-      );
-      opts.ide = ideAnswer[0];
-      console.log('');
-    } catch (err) {
-      if (err.name === 'PromptAbortError') process.exit(0);
-      throw err;
-    }
+  // ── Non-interactive fast path (--yes / CI / piped stdin) ─────────────────
+  const interactive = !opts.yes && process.stdin.isTTY && !process.env.CI;
+
+  if (interactive) {
+    await runInstallWizard(opts);
   }
 
-  install(opts).then(code => process.exit(code)).catch(err => {
+  try {
+    const code = await install(opts);
+    process.exit(code);
+  } catch (err) {
     if (err.code === 'EACCES' || err.code === 'EPERM') {
       console.error(`✖ Permission denied: ${err.path || err.message}`);
       process.exit(1);
@@ -1543,7 +1523,110 @@ async function main() {
     console.error(`✖ Install failed: ${err.message}`);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
+  }
+}
+
+/**
+ * Interactive install wizard powered by @clack/prompts.
+ * Mutates opts in-place. Exits 0 on cancel.
+ */
+async function runInstallWizard(opts) {
+  const { intro, outro, text, select, confirm, isCancel, cancel, note } = clack;
+  const pkgVersion = readPackageVersion();
+
+  console.log('');
+  intro(pc.bold('🕌 Rihal Code') + pc.dim(`  v${pkgVersion}`));
+
+  // ── 1. Install directory ──────────────────────────────────────────────
+  if (!opts.targetProvided) {
+    const dir = await text({
+      message: 'Install directory?',
+      placeholder: opts.target,
+      defaultValue: opts.target,
+      initialValue: opts.target,
+    });
+    if (isCancel(dir)) { cancel('Installation cancelled.'); process.exit(0); }
+    const resolved = path.resolve((dir || opts.target).trim());
+    opts.target = resolved;
+    opts.projectName = path.basename(resolved);
+  }
+
+  // ── 2. Editor / LLM ──────────────────────────────────────────────────
+  const editorChoice = await select({
+    message: 'Which editor are you installing for?',
+    options: [
+      { value: 'claude',  label: 'Claude Code',  hint: 'recommended' },
+      { value: 'cursor',  label: 'Cursor' },
+      { value: 'gemini',  label: 'Gemini CLI',   hint: 'coming soon' },
+    ],
+    initialValue: opts.ide || 'claude',
   });
+  if (isCancel(editorChoice)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.ide = editorChoice;
+
+  // ── 3. Communication language ─────────────────────────────────────────
+  const langChoice = await select({
+    message: 'Communication language?',
+    options: [
+      { value: 'English',  label: 'English' },
+      { value: 'Arabic',   label: 'Arabic  (العربية)' },
+      { value: 'French',   label: 'French  (Français)' },
+      { value: 'Spanish',  label: 'Spanish (Español)' },
+      { value: 'Urdu',     label: 'Urdu    (اردو)' },
+    ],
+    initialValue: opts.language || 'English',
+  });
+  if (isCancel(langChoice)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.language = langChoice;
+
+  // ── 4. Agent mode ─────────────────────────────────────────────────────
+  const modeChoice = await select({
+    message: 'Agent mode?',
+    options: [
+      { value: 'guided', label: 'Guided', hint: 'confirm at key decision gates' },
+      { value: 'yolo',   label: 'Yolo',   hint: 'fully autonomous — no confirmation' },
+    ],
+    initialValue: opts.mode || 'guided',
+  });
+  if (isCancel(modeChoice)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.mode = modeChoice;
+
+  // ── 5. Planning artifacts ─────────────────────────────────────────────
+  const planningChoice = await select({
+    message: 'Where should planning artifacts (.planning/) be saved?',
+    options: [
+      { value: true,  label: 'Commit to git',  hint: 'recommended — team sees the same plans' },
+      { value: false, label: 'Keep local',      hint: 'gitignore — good for sensitive PRDs' },
+    ],
+    initialValue: true,
+  });
+  if (isCancel(planningChoice)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.commitPlanning = planningChoice;
+
+  // ── 6. User name ──────────────────────────────────────────────────────
+  const nameInput = await text({
+    message: 'Your name? (used in agent responses)',
+    placeholder: opts.userName,
+    defaultValue: opts.userName,
+    initialValue: opts.userName,
+  });
+  if (isCancel(nameInput)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.userName = (nameInput || opts.userName).trim();
+
+  // ── Summary before install ────────────────────────────────────────────
+  note(
+    [
+      `${pc.dim('Directory:')}   ${opts.target}`,
+      `${pc.dim('Editor:')}      ${opts.ide}`,
+      `${pc.dim('Language:')}    ${opts.language}`,
+      `${pc.dim('Mode:')}        ${opts.mode}`,
+      `${pc.dim('Planning:')}    ${opts.commitPlanning ? 'committed to git' : 'kept local (gitignored)'}`,
+      `${pc.dim('User:')}        ${opts.userName}`,
+    ].join('\n'),
+    'Installing with these settings'
+  );
+
+  console.log('');
 }
 
 if (require.main === module) main();

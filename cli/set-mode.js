@@ -45,7 +45,7 @@ module.exports = function setMode(args) {
 
   if (!fs.existsSync(rihalDir)) {
     console.error(`❌ No .rihal/ directory found in ${cwd}`);
-    console.error(`   Run 'rihal-code install' first.`);
+    console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }
 
@@ -62,7 +62,7 @@ module.exports = function setMode(args) {
       console.log(`     ${MODE_DESCRIPTIONS[mode]}`);
       console.log();
     }
-    console.log(`Usage: rihal-code set-mode <${[...VALID_COMMUNICATION_MODES].join('|')}>`);
+    console.log(`Usage: rcode set-mode <${[...VALID_COMMUNICATION_MODES].join('|')}>`);
     console.log();
     return;
   }

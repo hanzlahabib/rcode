@@ -20,7 +20,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+function findPackageRoot(dir) {
+  while (dir !== require('path').parse(dir).root) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
+    dir = path.dirname(dir);
+  }
+  throw new Error('Could not find package root');
+}
+const PACKAGE_ROOT = findPackageRoot(__dirname);
 const PROFILES_PATH = path.join(PACKAGE_ROOT, 'rihal/config/model-profiles.json');
 
 let _cached = null;

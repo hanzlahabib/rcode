@@ -90,7 +90,7 @@ module.exports = function config(args) {
     const rihalDir = path.join(cwd, '.rihal');
     if (!fs.existsSync(rihalDir) && !opts.global) {
       console.error(`❌ No .rihal/ directory found in ${cwd}`);
-      console.error(`   Run 'rihal-code install' first, or use --global to manage user defaults.`);
+      console.error(`   Run 'rcode install' first, or use --global to manage user defaults.`);
       process.exit(1);
     }
     printListing(cwd);
@@ -118,7 +118,7 @@ module.exports = function config(args) {
     // For global writes, we don't need .rihal/ to exist
     if (scope === 'project' && !fs.existsSync(path.join(cwd, '.rihal'))) {
       console.error(`❌ No .rihal/ directory found in ${cwd}`);
-      console.error(`   Run 'rihal-code install' first, or use --global.`);
+      console.error(`   Run 'rcode install' first, or use --global.`);
       process.exit(1);
     }
 
@@ -137,6 +137,6 @@ module.exports = function config(args) {
   }
 
   console.error(`❌ Too many arguments.`);
-  console.error(`   Usage: rihal-code config [--global] [key] [value]`);
+  console.error(`   Usage: rcode config [--global] [key] [value]`);
   process.exit(1);
 };

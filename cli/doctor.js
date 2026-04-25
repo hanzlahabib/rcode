@@ -92,7 +92,7 @@ function runPreflight(cwd, packageRoot) {
     checks.push({
       label: '.rihal/ state',
       status: 'warn',
-      message: 'not initialized in this directory (run `rihal-code install`)',
+      message: 'not initialized in this directory (run `rcode install`)',
     });
   }
 

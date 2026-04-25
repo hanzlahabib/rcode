@@ -35,7 +35,7 @@ function parseArgs(args) {
     else if (arg === '--install-hook') opts.installHook = true;
     else {
       console.error(`Unknown flag: ${arg}`);
-      console.error(`Usage: rihal-code context [--check|--refresh|--install-hook]`);
+      console.error(`Usage: rcode context [--check|--refresh|--install-hook]`);
       process.exit(1);
     }
   }
@@ -45,7 +45,7 @@ function parseArgs(args) {
 function ensureRihalDir(cwd) {
   if (!fs.existsSync(path.join(cwd, '.rihal'))) {
     console.error(`❌ No .rihal/ directory found in ${cwd}`);
-    console.error(`   Run 'rihal-code install' first.`);
+    console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }
 }
@@ -155,10 +155,10 @@ function installHook(cwd) {
 
   const hookContent = `#!/bin/sh
 # Rihal Code — memory bank freshness check
-# Installed by: rihal-code context --install-hook
+# Installed by: rcode context --install-hook
 # Non-blocking: prints a one-line warning if the memory bank is stale.
-if command -v rihal-code >/dev/null 2>&1; then
-  output=$(rihal-code context --check 2>&1)
+if command -v rcode >/dev/null 2>&1; then
+  output=$(rcode context --check 2>&1)
   if [ $? -ne 0 ]; then
     echo ""
     echo "⚠ Rihal memory bank is stale — run /rihal:init in your editor to refresh."

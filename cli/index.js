@@ -47,7 +47,7 @@ function printHelp() {
     Context-aware AI team methodology. See tiers: \`rihal-code tiers\`
 
 Usage:
-  npx @hanzlahabib/rihal-code <command>
+  rcode <command>
 
 📦 PROJECT
   install        Install Rihal Code into the current project
@@ -78,8 +78,9 @@ Usage:
 
 Getting started:
   cd my-project
-  npx @hanzlahabib/rihal-code install       # set up agents + slash commands
-  npx @hanzlahabib/rihal-code tiers         # see the Golden Path
+  rcode install      # set up agents + slash commands
+  rcode tiers        # see the Golden Path
+  rcode set-profile  # choose model profile (quality | balanced | budget)
 
 Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());

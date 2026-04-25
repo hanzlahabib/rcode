@@ -446,7 +446,7 @@ async function main(args) {
   // ------ Precondition: .rihal/ exists ------
   const state = loadState(cwd);
   if (!state) {
-    console.error(`❌ No .rihal/state.json found. Run 'rihal-code init' first.`);
+    console.error(`❌ No .rihal/state.json found. Run 'rcode install' first.`);
     process.exit(1);
   }
   console.log(`   ✓ Project: ${state.project_name || '(unnamed)'}`);

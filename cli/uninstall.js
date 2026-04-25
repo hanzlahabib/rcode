@@ -377,7 +377,7 @@ async function runUninstall(args) {
     console.log(`\n❌ Rihal Code is not installed in this directory.`);
     console.log(`   Nothing to uninstall.`);
     console.log();
-    console.log(`   To install: npx --yes github:hanzlahabib/rihal-code install`);
+    console.log(`   To install: rcode install`);
     console.log();
     return;
   }
@@ -589,7 +589,7 @@ async function runUninstall(args) {
 
   // Hint about reinstalling
   console.log(`\nTo reinstall later:`);
-  console.log(`   npx --yes github:hanzlahabib/rihal-code install`);
+  console.log(`   rcode install`);
 }
 
 // Direct invocation — allow `node cli/uninstall.js [flags]` to run end-to-end.

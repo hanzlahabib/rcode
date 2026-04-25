@@ -30,7 +30,7 @@ module.exports = function setProfile(args) {
 
   if (!fs.existsSync(rihalDir)) {
     console.error(`❌ No .rihal/ directory found in ${cwd}`);
-    console.error(`   Run 'npx @hanzlahabib/rihal-code install' first.`);
+    console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }
 
@@ -55,7 +55,7 @@ module.exports = function setProfile(args) {
       console.log(`  • ${name}${marker}`);
       console.log(`    ${p.description}`);
     }
-    console.log(`\nUsage: npx @hanzlahabib/rihal-code set-profile <name>`);
+    console.log(`\nUsage: rcode set-profile <name>`);
     return;
   }
 
