@@ -2568,8 +2568,12 @@ function cmdResolveModel(agentId) {
 }
 
 /**
- * config set --key <k> --value <v> — update a key in .rihal/config.yaml
- * Writes YAML-style `key: value` (quotes strings with spaces).
+ * config set --key <k> --value <v> — DEPRECATED legacy form.
+ *
+ * Closes #233. The original implementation used a flat YAML parser that
+ * destroyed the nested `workflow:` and `git:` sections on every save.
+ * This shim now delegates to the nested-safe writer in lib/config.cjs and
+ * emits a one-line deprecation warning to stderr so callers migrate.
  */
 function cmdConfigSet(subArgs) {
   const flags = {};
@@ -2587,34 +2591,10 @@ function cmdConfigSet(subArgs) {
   if (!key) throw new Error('config set requires --key <key> --value <value>\n  e.g. config set --key language --value Arabic');
   if (!value) throw new Error('config set requires --key <key> --value <value>\n  e.g. config set --key language --value Arabic');
 
-  const configPath = path.join(RIHAL_DIR, 'config.yaml');
-  fs.mkdirSync(RIHAL_DIR, { recursive: true });
+  process.stderr.write(`[deprecated] 'config set --key X --value Y' — use 'config-set X Y' instead (preserves nested YAML).\n`);
 
-  let content = '';
-  if (fs.existsSync(configPath)) {
-    content = fs.readFileSync(configPath, 'utf8');
-  }
-
-  // Parse current config
-  const config = parseSimpleYaml(content);
-
-  // Update the key
-  config[key] = value;
-
-  // Serialize back to YAML
-  const lines = [];
-  for (const [k, v] of Object.entries(config)) {
-    const needsQuotes = /\s/.test(v);
-    const yamlValue = needsQuotes ? `"${v.replace(/"/g, '\\"')}"` : v;
-    lines.push(`${k}: ${yamlValue}`);
-  }
-
-  const newContent = lines.join('\n') + '\n';
-  const tmp = configPath + '.tmp';
-  fs.writeFileSync(tmp, newContent, 'utf8');
-  fs.renameSync(tmp, configPath);
-
-  return { ok: true, key, value, path: configPath };
+  const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+  return cfg.cmdSet(PROJECT_ROOT, key, value);
 }
 
 /**

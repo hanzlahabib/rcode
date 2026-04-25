@@ -1,185 +1,177 @@
 # Workflow: rihal:settings
 
 <purpose>
-Interactive configuration wizard for Rihal project settings. Collects user preferences for model profile, research strategy, execution gates, and branching strategy, then writes them back to .rihal/config.yaml.
-</purpose>
+View and edit Rihal project settings stored in `.rihal/config.yaml`. Closes
+#233 — replaces the previous broken implementation that wrote flat keys
+nothing read and corrupted the nested `workflow:` / `git:` sections on every
+save.
 
+The single source of truth for config keys is the table in Step 1.5. All keys
+documented there are consumed somewhere in the codebase — settings that the
+wizard writes are settings that workflows actually honour.
+</purpose>
 
 ## Step 0 — Usage check
 
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:settings <argument-here>
+/rihal:settings              # show current + interactive edit
+/rihal:settings show         # show current only
+/rihal:settings get <key>    # read a single dotted key (e.g. workflow.discuss_mode)
+/rihal:settings set <key> <value>   # write a single dotted key
 ```
 
 **Examples:**
 ```
-/rihal:settings example 1
-/rihal:settings example 2
+/rihal:settings show
+/rihal:settings get workflow.research_by_default
+/rihal:settings set workflow.research_by_default true
+/rihal:settings set git.branching_strategy feature-branch
 ```
 
-STOP — do not proceed.
+## Step 1 — Resolve mode
 
-<available_tools>
-- AskUserQuestion — collect user input
-- Read — read current config.yaml
-- Write — write updated config.yaml
-- Bash — validate git state if needed
-</available_tools>
+Parse `$ARGUMENTS`:
+- `show` (or empty) → run Step 1.5 then Step 2 (interactive)
+- `get <key>` → Step 1.7 then STOP
+- `set <key> <value>` → Step 1.8 then STOP
+- anything else → print usage from Step 0 and STOP
 
-## Step 1 — Initialize
+## Step 1.5 — Show current settings
 
-Load current settings from `.rihal/config.yaml`:
+Read each known key via `rihal-tools.cjs config-get <dotted.key>` (the
+nested-safe reader in `rihal/bin/lib/config.cjs`). **Do not** call the legacy
+`config set` — it uses a flat YAML parser and corrupts nested sections.
 
 ```bash
-[ -f .rihal/config.yaml ] && cat .rihal/config.yaml || echo "# No config yet"
+TOOL="node .rihal/bin/rihal-tools.cjs"
+$TOOL config-get user_name                            || echo "(unset)"
+$TOOL config-get communication_language               || echo "(unset)"
+$TOOL config-get mode                                 || echo "(unset)"
+$TOOL config-get model_profile                        || echo "(unset)"
+$TOOL config-get workflow.research_by_default         || echo "(unset)"
+$TOOL config-get workflow.plan_checker                || echo "(unset)"
+$TOOL config-get workflow.post_execute_gates          || echo "(unset)"
+$TOOL config-get workflow.ui_safety_gate              || echo "(unset)"
+$TOOL config-get workflow.discuss_mode                || echo "(unset)"
+$TOOL config-get git.branching_strategy               || echo "(unset)"
+$TOOL config-get git.commit_docs                      || echo "(unset)"
 ```
 
-Parse the config to extract current values:
-- `model_profile` (default: "balanced")
-- `enable_research_pre_step` (default: "false")
-- `enable_plan_checker_loop` (default: "true")
-- `enable_post_execute_verifier` (default: "false")
-- `branching_strategy` (default: "none")
-
-Store these as `current_*` variables for pre-fill use.
-
-## Step 2 — Collect Settings
-
-Use AskUserQuestion to prompt the user for each setting. Pre-fill current values where applicable.
-
-### Setting 1: Model Profile
+Render as a table:
 
 ```
-Question:
-Which model profile would you like to use?
+Current Rihal Settings (.rihal/config.yaml)
 
-Options:
-  1. quality (Opus for reasoning agents, Sonnet for executor, Haiku for utilities)
-  2. balanced (Sonnet across the board) [CURRENT]
-  3. budget (Haiku across the board)
-  4. inherit (Use parent session model, no override)
+  Identity
+    user_name                       : {value}
+    communication_language          : {value}
 
-Your choice: [pre-filled with current_model_profile]
+  Execution
+    mode                            : {value}    # guided | yolo
+    model_profile                   : {value}    # quality | balanced | budget | inherit
+
+  Workflow gates
+    workflow.research_by_default    : {value}    # true | false
+    workflow.plan_checker           : {value}    # true | false
+    workflow.post_execute_gates     : {value}    # true | false
+    workflow.ui_safety_gate         : {value}    # true | false
+    workflow.discuss_mode           : {value}    # adaptive | discuss | skip
+
+  Git
+    git.branching_strategy          : {value}    # none | feature-branch | worktree-isolation
+    git.commit_docs                 : {value}    # true | false
 ```
 
-Valid responses: 1, 2, 3, 4, or exact names (quality, balanced, budget, inherit).
-Map numeric choices to profile names. Store as `new_model_profile`.
+If invoked as `/rihal:settings show`, STOP here.
 
-### Setting 2: Enable Research Pre-step
-
-```
-Question:
-Enable research pre-step in /rihal:plan by default?
-
-This runs a research phase before planning if enabled, providing additional context.
-
-Options:
-  1. Yes
-  2. No [CURRENT]
-
-Your choice:
-```
-
-Valid responses: 1/yes/y or 2/no/n. Store as `new_enable_research_pre_step` (true/false string).
-
-### Setting 3: Enable Plan-Checker Loop
-
-```
-Question:
-Enable sprint-checker loop during /rihal:plan?
-
-This verifies and repairs plans before execution if enabled.
-
-Options:
-  1. Yes [CURRENT]
-  2. No
-
-Your choice:
-```
-
-Valid responses: 1/yes/y or 2/no/n. Store as `new_enable_plan_checker_loop` (true/false string).
-
-### Setting 4: Enable Post-Execute Verifier Gates
-
-```
-Question:
-Enable post-execute verifier gates?
-
-This runs verification after each task execution to catch regressions and issues.
-
-Options:
-  1. Yes
-  2. No [CURRENT]
-
-Your choice:
-```
-
-Valid responses: 1/yes/y or 2/no/n. Store as `new_enable_post_execute_verifier` (true/false string).
-
-### Setting 5: Branching Strategy
-
-```
-Question:
-What branching strategy should workflows use?
-
-Options:
-  1. none (No branching, work on current branch)
-  2. feature-branch (Create feature branches, leave checkout to user)
-  3. worktree-isolation (Use git worktrees for isolated work)
-
-Your choice: [pre-filled with current_branching_strategy]
-```
-
-Valid responses: 1, 2, 3, or exact names (none, feature-branch, worktree-isolation).
-Map numeric choices to strategy names. Store as `new_branching_strategy`.
-
-## Step 3 — Write Config
-
-After collecting all settings, write them back to `.rihal/config.yaml` using `rihal-tools.cjs config set`:
+## Step 1.7 — `get <key>`
 
 ```bash
-node .rihal/bin/rihal-tools.cjs config set --key model_profile --value "$new_model_profile"
-node .rihal/bin/rihal-tools.cjs config set --key enable_research_pre_step --value "$new_enable_research_pre_step"
-node .rihal/bin/rihal-tools.cjs config set --key enable_plan_checker_loop --value "$new_enable_plan_checker_loop"
-node .rihal/bin/rihal-tools.cjs config set --key enable_post_execute_verifier --value "$new_enable_post_execute_verifier"
-node .rihal/bin/rihal-tools.cjs config set --key branching_strategy --value "$new_branching_strategy"
+node .rihal/bin/rihal-tools.cjs config-get "$KEY"
 ```
 
-## Step 4 — Confirm and Print
+Print the result (empty output means unset). STOP.
 
-Print a summary of the new settings:
+## Step 1.8 — `set <key> <value>`
+
+Validate the key against the table in Step 1.5 — reject unknown keys with
+the table printed.
+
+Validate the value:
+- `mode` ∈ {guided, yolo}
+- `model_profile` ∈ {quality, balanced, budget, inherit}
+- `workflow.discuss_mode` ∈ {adaptive, discuss, skip}
+- `git.branching_strategy` ∈ {none, feature-branch, worktree-isolation}
+- `workflow.*` booleans ∈ {true, false}
+
+```bash
+node .rihal/bin/rihal-tools.cjs config-set "$KEY" "$VALUE"
+```
+
+Print:
+```
+✓ {key} = {value}
+```
+
+STOP.
+
+## Step 2 — Interactive edit
+
+After Step 1.5 prints the table, ask:
 
 ```
-✓ Settings updated successfully!
+Question:
+Which setting would you like to change?
 
-Model Profile: $new_model_profile
-Research pre-step: $new_enable_research_pre_step
-Plan-checker loop: $new_enable_plan_checker_loop
-Post-execute verifier: $new_enable_post_execute_verifier
-Branching strategy: $new_branching_strategy
-
-Settings saved to: .rihal/config.yaml
+Options:
+  1. mode (guided / yolo)
+  2. model_profile
+  3. workflow.research_by_default
+  4. workflow.plan_checker
+  5. workflow.post_execute_gates
+  6. workflow.ui_safety_gate
+  7. workflow.discuss_mode
+  8. git.branching_strategy
+  9. git.commit_docs
+  10. communication_language
+  0. Done — exit
 ```
 
-Print a tip:
+For each pick, present the constrained option set from Step 1.8, accept the
+choice, then call:
+
+```bash
+node .rihal/bin/rihal-tools.cjs config-set "{dotted.key}" "{value}"
+```
+
+After each successful write, re-display the affected row from Step 1.5 so the
+user sees the change took effect.
+
+Loop until the user picks `0. Done`.
+
+## Step 3 — Closing summary
+
+Print:
 
 ```
-Tip: Use /rihal:resume-work to reload config and continue work.
+✓ Settings saved to .rihal/config.yaml
+
+Tip: settings take effect on the next workflow run. Use /rihal:settings show
+to verify, or /rihal:resume-work to reload context.
 ```
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `/rihal:settings show` prints all 11 keys (no `(unset)` for keys with defaults)
+- [ ] `/rihal:settings set workflow.discuss_mode discuss` round-trips: `config-get` returns `discuss`
+- [ ] After any save, sibling keys in `workflow:` and `git:` blocks are preserved (no nesting corruption)
+- [ ] Unknown keys are rejected with the allowed-keys table
 
 ## On Error
 
-If arguments are invalid, missing files, or subagent fails:
-- Validate inputs match expected format
-- Check that required files exist
-- Retry with clearer arguments or report the specific error to the user
-
+- **`.rihal/config.yaml` missing:** print "No config found. Run /rihal:init first." and STOP.
+- **Invalid key:** print the allowed keys from Step 1.5 and STOP.
+- **Invalid value:** print the allowed values for that key and STOP.
+- **`rihal-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.

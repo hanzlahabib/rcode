@@ -140,12 +140,44 @@ If `--report` flag set, also print the report to stdout. Otherwise, just save to
 
 ## On Error
 
-If no SUMMARY.md files found:
+If no SUMMARY.md files found, **do not dead-halt** (closes #234). Probe
+for executed-phase signals and offer recovery options:
+
+```bash
+PLANS=$(find "$MILESTONE_DIR" -name PLAN.md 2>/dev/null | wc -l)
+GIT_FEAT=$(git log --oneline --grep='^feat' 2>/dev/null | wc -l)
+APPS=$(ls -d apps packages src 2>/dev/null | wc -l)
+```
+
+If `PLANS > 0` AND (`GIT_FEAT > 0` OR `APPS > 0`):
 
 ```
-⚠ No phase summaries found. Have phases been executed?
-  Check: {MILESTONE_DIR}/phases/
+⚠ {PLANS} phases planned, 0 SUMMARY.md, {GIT_FEAT} feat commits, code present.
+  Phases were executed but never formally closed.
+
+  Options:
+    1. Synthesize SUMMARY.md per phase from PLAN.md + git log [recommended]
+       (groups commits by phase tag like "feat(03-1):", writes a
+        first-pass SUMMARY.md the user can edit)
+    2. Run /rihal:verify-phase NN per phase (manual close path)
+    3. Continue audit anyway (only assesses what is documented — likely
+       reports 0% goal coverage)
+    0. Cancel
 ```
+
+In `mode: yolo` (read via `node .rihal/bin/rihal-tools.cjs config-get
+mode`), auto-pick option 1. In guided mode, ask. STOP after the user
+picks 0 or 2; resume audit at Step 4 after option 1 completes.
+
+If `PLANS == 0`:
+
+```
+⚠ No phase summaries and no plans found. Have phases been executed?
+  Check: {MILESTONE_DIR}/phases/
+  Start one: /rihal:plan
+```
+
+STOP.
 
 If ROADMAP missing:
 

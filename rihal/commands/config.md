@@ -1,8 +1,8 @@
 ---
 name: rihal:config
-description: View or edit Rihal configuration (language, mode, model profile, branching strategy)
-argument-hint: "[show | set <key> <value>]"
-allowed-tools: Read, Bash, AskUserQuestion
+description: Alias for /rihal:settings — view or edit Rihal config (language, mode, model profile, workflow gates, git strategy)
+argument-hint: "[show | get <key> | set <key> <value>]"
+allowed-tools: Read, Write, Bash, AskUserQuestion
 ---
 
-@.rihal/workflows/config.md
+@.rihal/workflows/settings.md
