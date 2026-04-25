@@ -12,4 +12,4 @@ allowed-tools:
   - WebFetch
 ---
 
-@.rihal/skills/rihal-prfaq/SKILL.md
+@.rihal/workflows/prfaq.md

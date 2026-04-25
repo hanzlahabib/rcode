@@ -10,4 +10,4 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-@.rihal/skills/rihal-checkpoint-preview/SKILL.md
+@.rihal/workflows/checkpoint-preview.md
