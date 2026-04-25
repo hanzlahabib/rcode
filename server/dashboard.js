@@ -159,6 +159,15 @@ function renderHtml(state) {
   const decisionCount = state.decisions.length;
   const artifactCount = state.planningFiles.length;
   const activeAgents  = [];
+  // Full raw data embedded for client-side rendering
+  const clientData = JSON.stringify({
+    phases:        state.raw?.phases        || [],
+    milestone:     state.raw?.milestone     || '',
+    currentPhase:  state.raw?.current_phase || null,
+    currentSprint: state.raw?.current_sprint|| null,
+    decisions:     state.raw?.decisions     || [],
+    blockers:      state.raw?.blockers      || [],
+  });
 
   const agents = [
     { name: 'Sadiq Damani', arabic: 'صادق', role: 'Director of Strategy', real: true },
@@ -547,6 +556,47 @@ function renderHtml(state) {
     color: var(--text-primary);
     margin-bottom: var(--space-6);
   }
+  /* Breadcrumb + back */
+  .breadcrumb { margin-bottom: var(--space-5); }
+  .back-btn {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+    padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+    cursor: pointer; font-size: var(--text-sm); font-family: inherit; transition: all 0.15s;
+  }
+  .back-btn:hover { color: var(--text-primary); border-color: var(--accent-blue); }
+  /* Entity detail header */
+  .entity-header { margin-bottom: var(--space-6); }
+  .entity-title { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-4); }
+  .attr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
+  .attr-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: 4px;
+  }
+  .attr-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .attr-value { font-size: var(--text-sm); color: var(--text-primary); font-weight: 500; }
+  /* Collapseable tree */
+  .tree-container { padding: 0; }
+  .tree-ms { border-left: none !important; margin-left: 0 !important; }
+  .tree-node { border-left: 1px solid var(--border); margin-left: var(--space-4); }
+  .tree-row {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-2) var(--space-3); cursor: pointer;
+    border-radius: var(--radius-sm); transition: background 0.1s; user-select: none;
+  }
+  .tree-row:hover { background: var(--bg-hover); }
+  .task-leaf > .tree-row { cursor: default; }
+  .tree-chevron { color: var(--text-muted); font-size: 10px; width: 14px; flex-shrink: 0; }
+  .tree-icon { flex-shrink: 0; }
+  .tree-label { flex: 1; font-size: var(--text-sm); color: var(--text-primary); }
+  .tree-badge { color: var(--text-muted); font-size: var(--text-xs); flex-shrink: 0; }
+  .tree-ms > .tree-row .tree-label { font-weight: 700; font-size: var(--text-base); color: var(--rihal-gold); }
+  .tree-children { padding-left: var(--space-3); }
+  /* Nav section label */
+  .nav-section {
+    padding: var(--space-3) var(--space-4) var(--space-1);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -557,11 +607,18 @@ function renderHtml(state) {
       ${projectName}
     </div>
     <nav>
-      <button class="nav-link active" data-view="overview">Overview</button>
-      <button class="nav-link" data-view="files">Files</button>
-      <button class="nav-link" data-view="phases">Phases</button>
-      <button class="nav-link" data-view="agents">Agents</button>
-      <button class="nav-link" data-view="decisions">Decisions</button>
+      <div class="nav-section">Overview</div>
+      <button class="nav-link" data-view="overview">🏠 Overview</button>
+      <button class="nav-link" data-view="roadmap">🗺 Roadmap</button>
+      <div class="nav-section">Planning</div>
+      <button class="nav-link" data-view="milestones">🎯 Milestones</button>
+      <button class="nav-link" data-view="phases">📋 Phases</button>
+      <button class="nav-link" data-view="sprints">⚡ Sprints</button>
+      <button class="nav-link" data-view="tasks">✓ Tasks</button>
+      <div class="nav-section">Workspace</div>
+      <button class="nav-link" data-view="files">📄 Files</button>
+      <button class="nav-link" data-view="agents">🤝 Agents</button>
+      <button class="nav-link" data-view="decisions">⚖ Decisions</button>
     </nav>
     <div id="sidebar-file-tree" style="margin-top:var(--space-4);padding:0 var(--space-2);"></div>
   </aside>
@@ -642,51 +699,16 @@ function renderHtml(state) {
       `}
     </div>
 
+    <div id="view-roadmap"    class="view"></div>
+    <div id="view-milestones" class="view"></div>
+    <div id="view-phases"     class="view"></div>
+    <div id="view-sprints"    class="view"></div>
+    <div id="view-tasks"      class="view"></div>
+
     <div id="view-files" class="view">
       <div class="view-title">Files</div>
       <div id="file-view">
         <div style="color:var(--text-muted);padding:var(--space-8);">Select a file from the sidebar to preview it.</div>
-      </div>
-    </div>
-
-    <div id="view-phases" class="view">
-      <div class="view-title">Phases</div>
-      <div class="filter-bar">
-        <input class="filter-input" type="text" placeholder="Filter…" data-filter-target="phases-list">
-      </div>
-      <div id="phases-list">
-        ${state.phases.length === 0 ? '<div class="empty">No phases in state.json yet.</div>' : `
-          <div class="phase-list">
-            ${state.phases.map(p => {
-              const chipClass = ['complete'].includes(p.status) ? 'complete'
-                : ['active','in_progress'].includes(p.status)   ? 'active'
-                : p.status === 'blocked'                         ? 'blocked'
-                : 'other';
-              const pct = p.stories > 0 ? Math.round((p.storiesDone / p.stories) * 100) : 0;
-              const isCurrent = p.id === state.currentPhase;
-              const filterText = (p.name + ' ' + p.status + ' ' + (p.goal || '')).toLowerCase();
-              const clickable = !!p.sprintFile;
-              return `
-              <div class="item${clickable ? ' item-clickable' : ''}"
-                   style="${isCurrent ? 'border-left-color:var(--accent-amber);' : ''}"
-                   data-filter-text="${filterText}"
-                   ${clickable ? `onclick="openFile('${p.sprintFile}')"` : ''}>
-                <div class="item-title">
-                  Phase ${p.id} — ${p.name}
-                  ${isCurrent ? '<span class="tag" style="background:rgba(245,158,11,0.2);">current</span>' : ''}
-                  <span class="status-chip ${chipClass}">● ${p.status}</span>
-                  ${clickable ? '<span class="tag" style="float:right;color:var(--text-muted);">View plan →</span>' : ''}
-                </div>
-                <div class="item-meta">
-                  <span class="tag">${p.sprints} sprint${p.sprints !== 1 ? 's' : ''}</span>
-                  <span class="tag">${p.stories} stor${p.stories !== 1 ? 'ies' : 'y'}</span>
-                  ${p.stories > 0 ? `<span class="tag">${pct}% done</span>` : ''}
-                </div>
-                ${p.goal ? `<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">${p.goal}</div>` : ''}
-              </div>`;
-            }).join('')}
-          </div>
-        `}
       </div>
     </div>
 
@@ -739,170 +761,351 @@ function renderHtml(state) {
 </div>
 
 <script>
-// View switching
-(function() {
-  const links = document.querySelectorAll('.nav-link[data-view]');
-  const views = document.querySelectorAll('.view');
-  links.forEach(link => {
-    link.addEventListener('click', () => {
-      links.forEach(l => l.classList.remove('active'));
-      views.forEach(v => v.classList.remove('active'));
-      link.classList.add('active');
-      const target = document.getElementById('view-' + link.dataset.view);
-      if (target) target.classList.add('active');
-    });
-  });
-})();
+// ---- Embedded state data ----
+window.__S__ = ${clientData};
+const S = window.__S__;
+const _phases = S.phases || [];
 
-// File tree population — shows only .planning/ artifacts grouped by type
+// ---- Helpers ----
+function chip(s) {
+  const c = (s === 'complete' || s === 'completed' || s === 'done') ? 'complete'
+    : (s === 'active' || s === 'in_progress') ? 'active'
+    : s === 'blocked' ? 'blocked' : 'other';
+  return '<span class="status-chip ' + c + '">● ' + s + '</span>';
+}
+function tag(t) { return '<span class="tag">' + t + '</span>'; }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pct(d, t) { return t > 0 ? Math.round(d/t*100) + '%' : '—'; }
+function dateStr(s) { return s ? String(s).slice(0,10) : null; }
+function allSprints() {
+  return _phases.flatMap(p => (p.sprints||[]).map(s => Object.assign({}, s, {phaseId:p.id, phaseName:p.name})));
+}
+function allTasks() {
+  return _phases.flatMap(p => (p.sprints||[]).flatMap(s =>
+    (s.stories||[]).map(t => Object.assign({}, t, {sprintId:s.id, phaseId:p.id, phaseName:p.name}))
+  ));
+}
+function attr(label, val) {
+  return '<div class="attr-item"><span class="attr-label">' + label + '</span><span class="attr-value">' + (val||'—') + '</span></div>';
+}
+function breadcrumb(label, hash) {
+  return '<div class="breadcrumb"><button class="back-btn" onclick="navTo(\\'' + hash + '\\')">← ' + label + '</button></div>';
+}
+function filterInput(listId) {
+  return '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Filter…" oninput="filterItems(this,\\'' + listId + '\\')"></div>';
+}
+
+// ---- Entity cards ----
+function phaseCard(p) {
+  const sps = p.sprints || [];
+  const stories = sps.flatMap(s => s.stories || []);
+  const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
+  const isCur = p.id === S.currentPhase;
+  return '<div class="item item-clickable" onclick="navTo(\'phases/' + p.id + '\')"' +
+    (isCur ? ' style="border-left-color:var(--accent-amber)"' : '') + '>' +
+    '<div class="item-title">Phase ' + esc(p.id) + ' — ' + esc(p.name) +
+    (isCur ? tag('current') : '') + chip(p.status) + '</div>' +
+    '<div class="item-meta">' + tag(sps.length + ' sprint' + (sps.length!==1?'s':'')) +
+    tag(done + '/' + stories.length + ' tasks') +
+    (stories.length > 0 ? tag(pct(done,stories.length) + ' done') : '') + '</div>' +
+    (sps[0]?.goal ? '<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">' + esc(sps[0].goal) + '</div>' : '') +
+    '</div>';
+}
+
+function sprintCard(s) {
+  const stories = s.stories || [];
+  const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
+  return '<div class="item item-clickable" onclick="navTo(\'sprints/' + s.id + '\')">' +
+    '<div class="item-title">Sprint ' + esc(s.id) + ' — ' + esc(s.goal || 'No goal') + chip(s.status) + '</div>' +
+    '<div class="item-meta">' +
+    (s.phaseId ? tag('Phase ' + s.phaseId) : '') +
+    tag(done + '/' + stories.length + ' tasks') +
+    (s.velocity_target ? tag('Target: ' + s.velocity_target + 'pts') : '') +
+    (s.velocity_actual ? tag('Actual: ' + s.velocity_actual + 'pts') : '') + '</div>' +
+    (s.started_at ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">Started ' + dateStr(s.started_at) +
+      (s.completed_at ? ' · Done ' + dateStr(s.completed_at) : '') + '</div>' : '') +
+    '</div>';
+}
+
+function taskCard(t) {
+  const done = t.status === 'done' || t.status === 'completed';
+  return '<div class="item" style="' + (done ? 'opacity:.65' : '') + '">' +
+    '<div class="item-title" style="' + (done ? 'text-decoration:line-through' : '') + '">' +
+    (done ? '✓ ' : '') + esc(t.title) + chip(t.status) + '</div>' +
+    '<div class="item-meta">' +
+    (t.points ? tag(t.points + 'pts') : '') +
+    (t.sprintId ? tag('Sprint ' + t.sprintId) : '') +
+    (t.phaseId ? tag('Phase ' + t.phaseId) : '') + '</div>' +
+    (t.acceptance ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">✓ ' + esc(t.acceptance) + '</div>' : '') +
+    '</div>';
+}
+
+// ---- View renderers ----
+function renderRoadmap() {
+  const ms = S.milestone || 'M1';
+  const totalStories = allTasks();
+  const doneStories  = totalStories.filter(t => t.status === 'done' || t.status === 'completed');
+  let h = '<div class="view-title">Roadmap</div><div class="tree-container">';
+  h += '<div class="tree-node tree-ms"><div class="tree-row tree-header" onclick="toggleNode(this)">';
+  h += '<span class="tree-chevron">▼</span><span class="tree-icon">🎯</span>';
+  h += '<span class="tree-label">' + esc(ms) + '</span>';
+  h += '<span class="tree-badge">' + _phases.length + ' phases · ' + doneStories.length + '/' + totalStories.length + ' tasks</span></div>';
+  h += '<div class="tree-children">';
+  for (const p of _phases) {
+    const sps = p.sprints || [];
+    const pStories = sps.flatMap(s => s.stories||[]);
+    const pDone = pStories.filter(t => t.status==='done'||t.status==='completed').length;
+    h += '<div class="tree-node"><div class="tree-row" onclick="toggleNode(this)">';
+    h += '<span class="tree-chevron">▶</span><span class="tree-icon">📋</span>';
+    h += '<span class="tree-label">P' + esc(p.id) + ' — ' + esc(p.name) + '</span>' + chip(p.status);
+    h += '<span class="tree-badge">' + sps.length + ' sprints · ' + pDone + '/' + pStories.length + ' tasks</span></div>';
+    h += '<div class="tree-children" style="display:none">';
+    for (const s of sps) {
+      const sts = s.stories || [];
+      const sDone = sts.filter(t => t.status==='done'||t.status==='completed').length;
+      h += '<div class="tree-node"><div class="tree-row" onclick="toggleNode(this)">';
+      h += '<span class="tree-chevron">▶</span><span class="tree-icon">⚡</span>';
+      h += '<span class="tree-label">Sprint ' + esc(s.id) + ' — ' + esc(s.goal||'No goal') + '</span>' + chip(s.status);
+      h += '<span class="tree-badge">' + sDone + '/' + sts.length + ' tasks</span></div>';
+      h += '<div class="tree-children" style="display:none">';
+      for (const t of sts) {
+        const td = t.status==='done'||t.status==='completed';
+        h += '<div class="tree-node task-leaf"><div class="tree-row">';
+        h += '<span class="tree-icon">' + (td?'✓':'○') + '</span>';
+        h += '<span class="tree-label" style="' + (td?'opacity:.6;text-decoration:line-through':'') + '">' + esc(t.title) + '</span>';
+        h += chip(t.status) + (t.points ? '<span class="tree-badge">' + t.points + 'pts</span>' : '');
+        h += '</div></div>';
+      }
+      if (!sts.length) h += '<div style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2) var(--space-6);">No tasks</div>';
+      h += '</div></div>';
+    }
+    if (!sps.length) h += '<div style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2) var(--space-6);">No sprints</div>';
+    h += '</div></div>';
+  }
+  h += '</div></div></div>';
+  document.getElementById('view-roadmap').innerHTML = h;
+}
+
+function renderMilestones(subId) {
+  const el = document.getElementById('view-milestones');
+  const ms = S.milestone || 'M1';
+  if (subId) {
+    const doneP = _phases.filter(p => p.status==='complete'||p.status==='completed').length;
+    const total = allTasks(), done = total.filter(t => t.status==='done'||t.status==='completed');
+    el.innerHTML = breadcrumb('Milestones','milestones') +
+      '<div class="entity-header"><div class="entity-title">🎯 ' + esc(ms) + '</div>' +
+      '<div class="attr-grid">' +
+      attr('Total Phases', _phases.length) + attr('Completed Phases', doneP) +
+      attr('Current Phase', S.currentPhase||'—') + attr('Current Sprint', S.currentSprint||'—') +
+      attr('Tasks Done', done.length + '/' + total.length) +
+      attr('Progress', pct(done.length, total.length)) + '</div></div>' +
+      '<div class="view-title" style="margin-top:var(--space-6)">Phases under this milestone</div>' +
+      '<div class="phase-list">' + _phases.map(phaseCard).join('') + '</div>';
+  } else {
+    const total = allTasks(), done = total.filter(t => t.status==='done'||t.status==='completed');
+    el.innerHTML = '<div class="view-title">Milestones</div>' +
+      '<div class="phase-list"><div class="item item-clickable" onclick="navTo(\'milestones/M1\')">' +
+      '<div class="item-title">🎯 ' + esc(ms) + '</div>' +
+      '<div class="item-meta">' + tag(_phases.length + ' phases') + tag(allSprints().length + ' sprints') +
+      tag(done.length + '/' + total.length + ' tasks done') + tag(pct(done.length,total.length) + ' complete') + '</div>' +
+      '</div></div>';
+  }
+}
+
+function renderPhases(subId) {
+  const el = document.getElementById('view-phases');
+  if (subId) {
+    const p = _phases.find(ph => ph.id === subId || ph.number === subId);
+    if (!p) { el.innerHTML = breadcrumb('Phases','phases') + '<div class="empty">Phase not found.</div>'; return; }
+    const sps = p.sprints || [];
+    const stories = sps.flatMap(s => s.stories||[]);
+    const done = stories.filter(t => t.status==='done'||t.status==='completed').length;
+    el.innerHTML = breadcrumb('All Phases','phases') +
+      '<div class="entity-header"><div class="entity-title">📋 Phase ' + esc(p.id) + ' — ' + esc(p.name) + '</div>' +
+      '<div class="attr-grid">' +
+      attr('Status', chip(p.status)) + attr('Sprints', sps.length) +
+      attr('Tasks Done', done + '/' + stories.length) + attr('Progress', pct(done,stories.length)) +
+      (p.completed_at ? attr('Completed', p.completed_at) : '') + '</div></div>' +
+      '<div class="view-title" style="margin-top:var(--space-6)">Sprints</div>' +
+      '<div class="phase-list">' + (sps.length ? sps.map(s => sprintCard(Object.assign({},s,{phaseId:p.id,phaseName:p.name}))).join('') : '<div class="empty">No sprints in this phase yet.</div>') + '</div>';
+  } else {
+    el.innerHTML = '<div class="view-title">Phases</div>' + filterInput('phases-inner') +
+      '<div id="phases-inner" class="phase-list">' +
+      (_phases.length ? _phases.map(phaseCard).join('') : '<div class="empty">No phases yet.</div>') + '</div>';
+  }
+}
+
+function renderSprints(subId) {
+  const el = document.getElementById('view-sprints');
+  const sprints = allSprints();
+  if (subId) {
+    const s = sprints.find(sp => sp.id === subId);
+    if (!s) { el.innerHTML = breadcrumb('All Sprints','sprints') + '<div class="empty">Sprint not found.</div>'; return; }
+    const stories = s.stories || [];
+    const done = stories.filter(t => t.status==='done'||t.status==='completed').length;
+    el.innerHTML = breadcrumb('All Sprints','sprints') +
+      '<div class="entity-header"><div class="entity-title">⚡ Sprint ' + esc(s.id) + '</div>' +
+      '<div class="attr-grid">' +
+      attr('Goal', esc(s.goal||'—')) + attr('Status', chip(s.status)) +
+      attr('Phase', 'P' + s.phaseId + ' — ' + esc(s.phaseName)) +
+      attr('Velocity', (s.velocity_actual||'—') + ' / ' + (s.velocity_target||'—') + ' pts') +
+      attr('Tasks Done', done + '/' + stories.length) + attr('Progress', pct(done,stories.length)) +
+      (s.started_at   ? attr('Started',   dateStr(s.started_at))   : '') +
+      (s.completed_at ? attr('Completed', dateStr(s.completed_at)) : '') + '</div></div>' +
+      '<div class="view-title" style="margin-top:var(--space-6)">Tasks</div>' +
+      '<div class="phase-list">' + (stories.length ? stories.map(taskCard).join('') : '<div class="empty">No tasks in this sprint yet.</div>') + '</div>';
+  } else {
+    el.innerHTML = '<div class="view-title">Sprints</div>' + filterInput('sprints-inner') +
+      '<div id="sprints-inner" class="phase-list">' +
+      (sprints.length ? sprints.map(sprintCard).join('') : '<div class="empty">No sprints yet.</div>') + '</div>';
+  }
+}
+
+function renderTasks() {
+  const el = document.getElementById('view-tasks');
+  const tasks = allTasks();
+  el.innerHTML = '<div class="view-title">Tasks</div>' + filterInput('tasks-inner') +
+    '<div id="tasks-inner" class="phase-list">' +
+    (tasks.length ? tasks.map(taskCard).join('') : '<div class="empty">No tasks yet.</div>') + '</div>';
+}
+
+// ---- Tree toggle ----
+function toggleNode(row) {
+  const children = row.nextElementSibling;
+  const chevron = row.querySelector('.tree-chevron');
+  if (!children) return;
+  const open = children.style.display !== 'none';
+  children.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.textContent = open ? '▶' : '▼';
+}
+
+// ---- Hash router ----
+function navTo(hash) { location.hash = hash; }
+
+function route() {
+  const raw = location.hash.slice(1) || 'overview';
+  const slash = raw.indexOf('/');
+  const view  = slash === -1 ? raw : raw.slice(0, slash);
+  const subId = slash === -1 ? null : raw.slice(slash + 1);
+
+  document.querySelectorAll('.nav-link[data-view]').forEach(l =>
+    l.classList.toggle('active', l.dataset.view === view));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+
+  if (view === 'roadmap')    renderRoadmap();
+  else if (view === 'milestones') renderMilestones(subId);
+  else if (view === 'phases')     renderPhases(subId);
+  else if (view === 'sprints')    renderSprints(subId);
+  else if (view === 'tasks')      renderTasks();
+}
+
+window.addEventListener('hashchange', route);
+document.querySelectorAll('.nav-link[data-view]').forEach(l =>
+  l.addEventListener('click', () => navTo(l.dataset.view)));
+
+// ---- Inline filter for dynamically rendered lists ----
+function filterItems(input, listId) {
+  const q = input.value.toLowerCase().trim();
+  const el = document.getElementById(listId);
+  if (!el) return;
+  el.querySelectorAll('.item').forEach(item => {
+    item.style.display = !q || item.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ---- File tree (sidebar) ----
 (async function() {
   let groups = [];
-  try {
-    const r = await fetch('/api/files');
-    groups = await r.json();
-  } catch { return; }
-
+  try { const r = await fetch('/api/files'); groups = await r.json(); } catch { return; }
   const tree = document.getElementById('sidebar-file-tree');
   if (!tree) return;
-
   tree.innerHTML = '<div class="file-tree">' +
     groups.map(({ group, files }) =>
-      '<details class="file-tree-group" open>' +
-        '<summary>' + group + '</summary>' +
-        files.map(f => '<span class="file-tree-item" data-path="' + f.path + '">' + f.label + '</span>').join('') +
-      '</details>'
-    ).join('') +
+      '<details class="file-tree-group" open><summary>' + group + '</summary>' +
+      files.map(f => '<span class="file-tree-item" data-path="' + f.path + '">' + f.label + '</span>').join('') +
+      '</details>').join('') +
   '</div>';
-
   tree.addEventListener('click', async (e) => {
     const item = e.target.closest('.file-tree-item');
     if (!item) return;
     tree.querySelectorAll('.file-tree-item').forEach(el => el.classList.remove('selected'));
     item.classList.add('selected');
-
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    const filesNav = document.querySelector('.nav-link[data-view="files"]');
-    if (filesNav) filesNav.classList.add('active');
-    const filesView = document.getElementById('view-files');
-    if (filesView) filesView.classList.add('active');
-
+    navTo('files');
     const fv = document.getElementById('file-view');
     fv.innerHTML = '<div style="color:var(--text-muted);padding:16px;">Loading…</div>';
     try {
       const resp = await fetch('/api/file?path=' + encodeURIComponent(item.dataset.path));
       if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Failed to load file.</div>'; return; }
-      const md = await resp.text();
-      const html = renderMd(md);
-      fv.innerHTML = '<div class="md-render">' + html + '</div>';
-    } catch {
-      fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>';
-    }
+      fv.innerHTML = '<div class="md-render">' + renderMd(await resp.text()) + '</div>';
+    } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>'; }
   });
 })();
 
-// Strip YAML frontmatter (--- ... ---) before rendering markdown
+// ---- Markdown + frontmatter ----
 function stripFrontmatter(md) {
   if (!md.startsWith('---')) return md;
   const end = md.indexOf('\n---', 3);
   return end === -1 ? md : md.slice(end + 4).trimStart();
 }
-
 function renderMd(md) {
   const clean = stripFrontmatter(md);
-  return (typeof marked !== 'undefined')
-    ? marked.parse(clean)
-    : '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
+  return (typeof marked !== 'undefined') ? marked.parse(clean) : '<pre>' + clean.replace(/</g,'&lt;') + '</pre>';
 }
 
-// Refresh logic
-let _lastScanned = ${JSON.stringify(state.lastScanned)};
-let _scanTime = Date.now();
-
-function renderUpdatedAgo() {
-  const seconds = Math.floor((Date.now() - _scanTime) / 1000);
-  const el = document.getElementById('updated-ago');
-  if (!el) return;
-  el.textContent = seconds < 5 ? 'just now'
-    : seconds < 60 ? seconds + 's ago'
-    : Math.floor(seconds / 60) + 'm ago';
-}
-setInterval(renderUpdatedAgo, 1000);
-
-async function fetchAndRenderOverview() {
-  const btn = document.getElementById('refresh-btn');
-  if (btn) btn.textContent = '↺ …';
-  try {
-    const r = await fetch('/api/state');
-    const s = await r.json();
-    _lastScanned = s.lastScanned;
-    _scanTime = Date.now();
-    renderUpdatedAgo();
-    const ms = document.getElementById('stat-milestone');
-    if (ms && s.raw && s.raw.milestone) ms.textContent = s.raw.milestone;
-  } catch { /* silent */ }
-  if (btn) btn.textContent = '↺ Refresh';
-}
-
-setInterval(async () => {
-  try {
-    const r = await fetch('/api/state');
-    const s = await r.json();
-    if (s.lastScanned !== _lastScanned) fetchAndRenderOverview();
-  } catch { /* silent */ }
-}, 30000);
-
-function manualRefresh() { fetchAndRenderOverview(); }
-
-// Open a .md file in Files view — called by clickable phase cards
+// ---- Open file from phase card ----
 async function openFile(filePath) {
-  // Switch nav to Files view
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const filesNav = document.querySelector('.nav-link[data-view="files"]');
-  if (filesNav) filesNav.classList.add('active');
-  const filesView = document.getElementById('view-files');
-  if (filesView) filesView.classList.add('active');
-
-  // Highlight matching tree item if visible
-  document.querySelectorAll('.file-tree-item').forEach(el => {
-    el.classList.toggle('selected', el.dataset.path === filePath);
-  });
-
+  navTo('files');
+  document.querySelectorAll('.file-tree-item').forEach(el =>
+    el.classList.toggle('selected', el.dataset.path === filePath));
   const fv = document.getElementById('file-view');
   if (!fv) return;
   fv.innerHTML = '<div style="color:var(--text-muted);padding:var(--space-8);">Loading…</div>';
   try {
     const resp = await fetch('/api/file?path=' + encodeURIComponent(filePath));
-    if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Failed to load file.</div>'; return; }
-    const md = await resp.text();
-    const html = renderMd(md);
-    fv.innerHTML = '<div class="md-render">' + html + '</div>';
-  } catch {
-    fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Network error.</div>';
-  }
+    if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Failed.</div>'; return; }
+    fv.innerHTML = '<div class="md-render">' + renderMd(await resp.text()) + '</div>';
+  } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:var(--space-8);">Network error.</div>'; }
 }
 
-// Live filter
-document.querySelectorAll('.filter-input').forEach(input => {
-  input.addEventListener('input', () => {
-    const q = input.value.toLowerCase().trim();
-    const target = document.getElementById(input.dataset.filterTarget);
-    if (!target) return;
-    target.querySelectorAll('[data-filter-text]').forEach(card => {
-      const match = !q || card.dataset.filterText.includes(q);
-      card.style.display = match ? '' : 'none';
-    });
-  });
-});
+// ---- Refresh ----
+let _lastScanned = ${JSON.stringify(state.lastScanned)};
+let _scanTime = Date.now();
+function renderUpdatedAgo() {
+  const s = Math.floor((Date.now() - _scanTime) / 1000);
+  const el = document.getElementById('updated-ago');
+  if (el) el.textContent = s < 5 ? 'just now' : s < 60 ? s + 's ago' : Math.floor(s/60) + 'm ago';
+}
+setInterval(renderUpdatedAgo, 1000);
+async function fetchAndRenderOverview() {
+  const btn = document.getElementById('refresh-btn');
+  if (btn) btn.textContent = '↺ …';
+  try {
+    const r = await fetch('/api/state'); const s = await r.json();
+    _lastScanned = s.lastScanned; _scanTime = Date.now(); renderUpdatedAgo();
+    const ms = document.getElementById('stat-milestone');
+    if (ms && s.raw?.milestone) ms.textContent = s.raw.milestone;
+  } catch {}
+  if (btn) btn.textContent = '↺ Refresh';
+}
+setInterval(async () => {
+  try { const r = await fetch('/api/state'); const s = await r.json();
+    if (s.lastScanned !== _lastScanned) fetchAndRenderOverview();
+  } catch {}
+}, 30000);
+function manualRefresh() { fetchAndRenderOverview(); }
 
-// Restore blocker banner dismiss state from sessionStorage
+// ---- Blocker banner dismiss ----
 (function() {
   if (sessionStorage.getItem('blockers-dismissed') === '1') {
     const b = document.getElementById('blocker-banner');
     if (b) b.style.display = 'none';
   }
 })();
+
+// ---- Boot ----
+route();
 </script>
 
 </body>
