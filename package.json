@@ -1,22 +1,25 @@
 {
   "name": "@hanzlaa/rcode",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "description": "Rihal Code (rcode) — installable context-brain for Rihalians. 44 agents, 93 slash commands, 58 skills, pullable Rihal standards. Unified install for Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
-    "rcode": "cli/index.js",
-    "rihal-code": "cli/index.js"
+    "rcode": "dist/rcode.js",
+    "rihal-code": "dist/rcode.js"
   },
   "scripts": {
     "dashboard": "node server/dashboard.js",
     "test": "node --test",
     "test:ci": "node --test --test-reporter=spec",
-    "postinstall": "node cli/postinstall.js"
+    "postinstall": "node cli/postinstall.js",
+    "build:cli": "node scripts/build.cjs",
+    "build": "node scripts/build.cjs"
   },
   "files": [
     "cli/",
     "rihal/",
     "server/",
+    "dist/",
     ".rihal-template/",
     "README.md",
     "AGENTS.md",
@@ -54,6 +57,16 @@
     "node": ">=18.0.0"
   },
   "dependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "picocolors": "^1.1.1",
+    "nanospinner": "^1.2.2",
+    "fast-glob": "^3.3.3",
+    "zod": "^3.24.0",
+    "semver": "^7.7.1",
+    "diff": "^7.0.0",
+    "@clack/prompts": "^0.9.1"
+  },
   "publishConfig": {
     "access": "public"
   }

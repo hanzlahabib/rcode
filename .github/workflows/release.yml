@@ -35,6 +35,18 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install build dependencies
+        run: npm ci
+
+      - name: Build CLI bundle (dist/rcode.js)
+        run: npm run build:cli
+
+      - name: Verify bundle is self-contained
+        run: |
+          node -c dist/rcode.js
+          node dist/rcode.js version
+          echo "✓ dist/rcode.js parses and runs"
+
       - name: CLI syntax check
         run: node -c rihal/bin/rihal-tools.cjs
 

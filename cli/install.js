@@ -32,18 +32,22 @@
  *   .planning/
  *     council-sessions/        (empty dir, populated on first council run)
  *
- * Zero external dependencies. Pure Node stdlib.
+ * Bundled packages (devDeps, inlined by esbuild in dist/rcode.js):
+ *   picocolors, nanospinner, fast-glob, zod, semver, diff
  *
  * Usage:
  *   node cli/install.js [target-project-dir]
  *   node cli/install.js --help
  *
  * Flags:
- *   --force           overwrite existing files without prompting
- *   --yes             non-interactive, accept defaults
- *   --user <name>     set user_name in config.yaml (default: $USER)
- *   --project <name>  set project_name in config.yaml (default: basename of target)
- *   --language <lang> set communication_language (default: English)
+ *   --force             overwrite existing files without prompting
+ *   --yes               non-interactive, accept defaults
+ *   --user <name>       set user_name in config.yaml (default: $USER)
+ *   --project <name>    set project_name in config.yaml (default: basename of target)
+ *   --language <lang>   set communication_language (default: English)
+ *   --show-diff         print full unified diff for preserved files during update
+ *   --diff-stat         print +N -N summary for preserved files (default on update)
+ *   --accept-all        overwrite all user-modified files with source version
  */
 
 const fs = require('fs');
@@ -51,8 +55,50 @@ const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
 
+// Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
+const pc = require('picocolors');
+const { createSpinner } = require('nanospinner');
+const fg = require('fast-glob');
+const { z } = require('zod');
+const semver = require('semver');
+const { createTwoFilesPatch } = require('diff');
+
+// Output helpers: always respect NO_COLOR / non-TTY (picocolors handles this).
+const ok   = (s) => pc.green('✓') + ' ' + s;
+const fail = (s) => pc.red('✗') + ' ' + s;
+const warn = (s) => pc.yellow('⚠') + ' ' + s;
+const info = (s) => pc.cyan('→') + ' ' + s;
+const dim  = (s) => pc.dim(s);
+const bold = (s) => pc.bold(s);
+
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
+
+// Zod schema for .rihal/config.yaml validation (#250).
+const ConfigSchema = z.object({
+  user_name: z.string().min(1),
+  project_name: z.string().min(1),
+  communication_language: z.string().default('English'),
+  mode: z.enum(['guided', 'yolo'], {
+    errorMap: () => ({ message: 'expected "guided" or "yolo"' }),
+  }).default('guided'),
+  model_profile: z.string().optional(),
+  commit_planning: z.boolean().optional(),
+  rihal_source_path: z.string().optional(),
+  workflow: z.object({
+    research_by_default: z.boolean().optional(),
+    plan_checker: z.boolean().optional(),
+    post_execute_gates: z.boolean().optional(),
+    ui_safety_gate: z.boolean().optional(),
+    nyquist_validation: z.boolean().optional(),
+  }).optional(),
+  output: z.object({
+    verbose: z.boolean().optional(),
+  }).optional(),
+  git: z.object({
+    branching_strategy: z.string().optional(),
+  }).optional(),
+}).passthrough();
 
 /**
  * Parse command-line args into a normalized options object.
@@ -75,10 +121,15 @@ function parseArgs(argv) {
     // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
     commitPlanning: null,
     // #232 — non-destructive update. Preserves files the user modified after install.
-    // True for /rihal:update flow; false for fresh install.
     nonDestructive: false,
-    // #232 — force-overwrite always wins. Same as today's --force for the copy loop.
+    // #232 — force-overwrite always wins.
     forceOverwrite: false,
+    // #251 — diff display flags
+    showDiff: false,
+    diffStat: false,
+    acceptAll: false,
+    // #252 — skip update-notifier check
+    noUpdateCheck: false,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -97,6 +148,10 @@ function parseArgs(argv) {
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
     else if (arg === '--non-destructive') opts.nonDestructive = true;
     else if (arg === '--force-overwrite') opts.forceOverwrite = true;
+    else if (arg === '--show-diff') opts.showDiff = true;       // #251 full unified diff
+    else if (arg === '--diff-stat') opts.diffStat = true;       // #251 +N -N summary (default)
+    else if (arg === '--accept-all') opts.acceptAll = true;     // #251 overwrite all preserved
+    else if (arg === '--no-update-check') opts.noUpdateCheck = true; // #252
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -195,17 +250,32 @@ function getPathsForIde(ide, target) {
 }
 
 /**
- * Recursively walk a directory and return absolute file paths.
+ * Walk a directory and return absolute file paths. Uses fast-glob so
+ * symlink cycles are never followed and patterns can be excluded via
+ * .rihalignore files (#249).
  */
-function walkFiles(dir) {
-  const out = [];
-  if (!fs.existsSync(dir)) return out;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walkFiles(full));
-    else if (entry.isFile()) out.push(full);
-  }
-  return out;
+function walkFiles(dir, extraIgnore = []) {
+  if (!fs.existsSync(dir)) return [];
+  return fg.sync('**/*', {
+    cwd: dir,
+    dot: true,
+    onlyFiles: true,
+    followSymbolicLinks: false,
+    ignore: extraIgnore,
+  }).map((rel) => path.join(dir, rel));
+}
+
+/**
+ * Read .rihalignore patterns from a given root directory.
+ * Returns an array of glob-style ignore patterns (same syntax as .gitignore).
+ */
+function readRihalIgnore(root) {
+  const ignoreFile = path.join(root, '.rihalignore');
+  if (!fs.existsSync(ignoreFile)) return [];
+  return fs.readFileSync(ignoreFile, 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'));
 }
 
 function sha256(buffer) {
@@ -824,13 +894,18 @@ function readPackageVersion() {
 function generateInstallManifest(opts) {
   const version = readPackageVersion();
   const newModules = opts.modules.length > 0 ? opts.modules : listAvailableModules();
-  // Merge with existing manifest if present
+  // Merge with existing manifest if present; capture previous_version for rollback (#253).
   let existingModules = [];
+  let previousVersion = null;
   const existingPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
   if (fs.existsSync(existingPath)) {
     const text = fs.readFileSync(existingPath, 'utf8');
     let inModules = false;
     for (const line of text.split('\n')) {
+      if (line.startsWith('version:')) {
+        const v = line.replace('version:', '').trim();
+        if (semver.valid(v) && v !== version) previousVersion = v;
+      }
       if (line.startsWith('modules:')) { inModules = true; continue; }
       if (inModules && line.trim().startsWith('-')) { existingModules.push(line.trim().slice(1).trim()); }
       else if (inModules && !line.startsWith(' ')) { inModules = false; }
@@ -838,16 +913,14 @@ function generateInstallManifest(opts) {
   }
   const allModules = [...new Set([...existingModules, ...newModules])];
   const moduleLines = allModules.map((m) => `  - ${m}`).join('\n');
-  return [
+  const lines = [
     '# Rihal v2 install manifest',
     `version: ${version}`,
     `installDate: ${new Date().toISOString()}`,
-    'modules:',
-    moduleLines,
-    'ides:',
-    '  - claude-code',
-    '',
-  ].join('\n');
+  ];
+  if (previousVersion) lines.push(`previous_version: ${previousVersion}`);
+  lines.push('modules:', moduleLines, 'ides:', '  - claude-code', '');
+  return lines.join('\n');
 }
 
 function sanitizeYamlValue(val) {
@@ -877,6 +950,57 @@ function generateConfigYaml(opts) {
 }
 
 /**
+ * Validate a parsed config.yaml object against ConfigSchema (#250).
+ * Returns { valid: true } or { valid: false, errors: string[] }.
+ */
+function validateConfig(data) {
+  const result = ConfigSchema.safeParse(data);
+  if (result.success) return { valid: true };
+  const errors = result.error.issues.map((issue) => {
+    const field = issue.path.join('.');
+    return `  ${field || '(root)'}: ${issue.message}`;
+  });
+  return { valid: false, errors };
+}
+
+/**
+ * Parse a minimal YAML key:value file into a plain object.
+ * Only handles scalar values — sufficient for config.yaml.
+ */
+function parseSimpleYaml(text) {
+  const obj = {};
+  let currentParent = null;
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/#.*$/, '');
+    if (!line.trim()) continue;
+    const indent = line.match(/^(\s*)/)[1].length;
+    if (indent === 0) {
+      const colonAt = line.indexOf(':');
+      if (colonAt === -1) continue;
+      const key = line.slice(0, colonAt).trim();
+      let val = line.slice(colonAt + 1).trim();
+      if (val === '') { currentParent = key; obj[key] = {}; continue; }
+      currentParent = null;
+      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+      if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+      if (val === 'true') val = true;
+      else if (val === 'false') val = false;
+      obj[key] = val;
+    } else if (currentParent && indent > 0) {
+      const colonAt = line.indexOf(':');
+      if (colonAt === -1) continue;
+      const key = line.slice(0, colonAt).trim();
+      let val = line.slice(colonAt + 1).trim();
+      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+      if (val === 'true') val = true;
+      else if (val === 'false') val = false;
+      obj[currentParent][key] = val;
+    }
+  }
+  return obj;
+}
+
+/**
  * Convert a markdown command/agent file to Cursor's .mdc format.
  * Wraps the file with Cursor-specific rules frontmatter.
  */
@@ -896,21 +1020,24 @@ async function install(opts) {
   // Resolve commit-planning preference (interactive prompt or flag) — #189.
   opts.commitPlanning = await resolveCommitPlanning(opts);
 
-  console.log(`\n🕌 Rihal Code v${readPackageVersion()} installer → ${opts.target}`);
+  const pkgVersion = readPackageVersion();
+  console.log(`\n🕌 ${bold('Rihal Code')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
 
   // Detect an existing install and surface it (#195).
   const existingManifestPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
   if (fs.existsSync(existingManifestPath)) {
     const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
     const existingVersion = m ? m[1].trim() : 'unknown';
-    const newVersion = readPackageVersion();
-    if (existingVersion === newVersion) {
-      console.log(`  ↻ Existing install at v${existingVersion} — refreshing (config + state + .planning preserved).`);
+    const isUpgrade = semver.valid(existingVersion) && semver.valid(pkgVersion)
+      ? semver.lt(existingVersion, pkgVersion)
+      : existingVersion !== pkgVersion;
+    if (isUpgrade) {
+      console.log('  ' + info(`Upgrading ${pc.dim('v' + existingVersion)} → ${pc.green('v' + pkgVersion)} (config + state + .planning preserved)`));
     } else {
-      console.log(`  ⬆ Existing install at v${existingVersion} — upgrading to v${newVersion} (config + state + .planning preserved).`);
+      console.log('  ' + info(`Refreshing v${existingVersion} (config + state + .planning preserved)`));
     }
     if (!opts.force) {
-      console.log('    Pass --force to also sweep orphaned files from the previous version.');
+      console.log(dim('    Pass --force to also sweep orphaned files from the previous version.'));
     }
   }
   if (!fs.existsSync(SOURCE_ROOT)) {
@@ -998,31 +1125,44 @@ async function install(opts) {
     }
   }
 
-  // Copy files
+  // Copy files — spinner gives feedback on long installs (#248).
   let copied = 0;
   let skipped = 0;
   let preserved = 0;
   const preservedFiles = [];
+  const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
+  const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
+
   for (const entry of plan) {
     const destPath = path.join(opts.target, entry.rel);
     const relForward = entry.rel.split(path.sep).join('/');
     ensureDir(path.dirname(destPath));
 
-    // Non-destructive guard (#232): if user modified this file since prior install, preserve it
-    if (opts.nonDestructive && !opts.forceOverwrite && fs.existsSync(destPath)) {
+    // Non-destructive guard (#232): preserve user-modified files.
+    // --accept-all (#251) overrides: treat all files as pristine.
+    if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
       const priorHash = priorManifest.get(relForward);
       if (priorHash) {
-        const currentHash = sha256(fs.readFileSync(destPath));
+        const installedContent = fs.readFileSync(destPath, 'utf8');
+        const currentHash = sha256(Buffer.from(installedContent));
         if (currentHash !== priorHash) {
-          // File was edited by user since install — preserve it
+          // Compute diff stat for display (#251)
+          const srcContent = fs.readFileSync(entry.src, 'utf8');
+          const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
           preserved += 1;
           preservedFiles.push(relForward);
+          preservedDiffs.push({ rel: relForward, insertions: ins, deletions: del, patch });
           skipped += 1;
           continue;
         }
-        // Hash matches prior install → file is pristine → safe to overwrite below
+        // Hash matches prior install → pristine → safe to overwrite
       }
-      // No prior hash → file is new in this install plan → install normally
+      // No prior hash → new file in this plan → install normally
     }
 
     if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
@@ -1030,34 +1170,30 @@ async function install(opts) {
       const sourceHash = sha256(fs.readFileSync(entry.src));
       if (existingHash === sourceHash) { skipped++; continue; }
       if (!opts.yes && !opts.nonDestructive) {
-        console.warn(`  ⚠ ${entry.rel} differs from package version — use --force-overwrite to overwrite`);
+        spinner.stop();
+        console.warn('  ' + warn(`${entry.rel} differs from package version — use --force-overwrite to overwrite`));
+        spinner.start();
         skipped++;
         continue;
       }
     }
 
-    // Warn if overwriting modified file (only when --force-overwrite is explicit)
     if (fs.existsSync(destPath) && opts.forceOverwrite) {
       const existing = fs.readFileSync(destPath);
       const incoming = fs.readFileSync(entry.src);
       if (!existing.equals(incoming)) {
-        console.log(`  ⚠ Force-overwriting modified file: ${entry.rel}`);
+        spinner.update({ text: dim(`overwriting ${entry.rel}`) });
       }
     }
 
-    // Read source file
     let content = fs.readFileSync(entry.src, 'utf8');
-
-    // Convert to Cursor .mdc format if needed
-    if (entry.cursor) {
-      content = convertToCursorMdc(content);
-    }
-
-    // Write to destination
+    if (entry.cursor) content = convertToCursorMdc(content);
     fs.writeFileSync(destPath, content, 'utf8');
     if (entry.executable) fs.chmodSync(destPath, 0o755);
     copied++;
   }
+
+  spinner.success({ text: ok(`${copied} files installed`) });
 
   // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
   const configDir = path.join(opts.target, '.rihal', '_config');
@@ -1086,6 +1222,18 @@ async function install(opts) {
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
   }
+  // Validate config.yaml with zod schema (#250) — warn but never block install.
+  try {
+    const configText = fs.readFileSync(configPath, 'utf8');
+    const configData = parseSimpleYaml(configText);
+    const validation = validateConfig(configData);
+    if (!validation.valid) {
+      console.log('');
+      console.log('  ' + warn('config.yaml has validation errors:'));
+      for (const e of validation.errors) console.log(pc.yellow(e));
+      console.log(dim('  → Edit .rihal/config.yaml to fix, then run /rihal:status'));
+    }
+  } catch { /* best-effort */ }
 
   // Seed .rihal/state.json (skip if already exists — don't overwrite on re-install unless --reset)
   if (!fs.existsSync(stateDest)) {
@@ -1152,29 +1300,17 @@ async function install(opts) {
 
   // Summary
   console.log('');
-  let filesLine = `  Files:     ${copied} installed`;
-  if (opts.force && sweptOrphans > 0) filesLine += `, ${sweptOrphans} stale swept`;
-  if (preserved > 0) filesLine += `, ${preserved} user-modified preserved`;
-  console.log(filesLine);
-  if (preserved > 0 && opts.nonDestructive) {
-    console.log('');
-    console.log(`  ℹ ${preserved} file${preserved === 1 ? '' : 's'} were modified after install and preserved:`);
-    for (const f of preservedFiles.slice(0, 10)) {
-      console.log(`     - ${f}`);
-    }
-    if (preservedFiles.length > 10) {
-      console.log(`     ... and ${preservedFiles.length - 10} more`);
-    }
-    console.log('  To force-update them: re-run with --force-overwrite');
-    console.log('');
+  if (opts.force && sweptOrphans > 0) console.log('  ' + info(`${sweptOrphans} stale files swept`));
+  if (opts.force && existedBefore) {
+    console.log('  ' + warn('config.yaml and state.json preserved (pass --reset to wipe)'));
   }
   if (brainReport && brainReport.ok) {
     const pulledCount = (brainReport.pulled || []).length;
     const skippedCount = (brainReport.skipped || []).length;
-    console.log(`  Brain:     ${pulledCount} source${pulledCount === 1 ? '' : 's'} pulled` +
-      (skippedCount ? `, ${skippedCount} skipped (placeholder URLs — see issue #162)` : ''));
+    console.log('  ' + ok(`Brain: ${pulledCount} source${pulledCount === 1 ? '' : 's'} pulled` +
+      (skippedCount ? `, ${skippedCount} skipped (placeholder URLs)` : '')));
   } else if (brainReport && brainReport.error) {
-    console.log(`  Brain:     skipped (${brainReport.error})`);
+    console.log('  ' + dim(`Brain: skipped (${brainReport.error})`));
   }
   if (gitignoreReport) {
     const gitMsg = {
@@ -1184,12 +1320,29 @@ async function install(opts) {
       'updated': '.gitignore rcode block refreshed',
       'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
     }[gitignoreReport.action] || '.gitignore unchanged';
-    console.log(`  Gitignore: ${gitMsg}`);
+    console.log('  ' + dim(gitMsg));
   }
-  if (skipped > 0) console.log(`  Skipped:   ${skipped} (already present, unchanged)`);
-  if (opts.force && existedBefore) {
-    console.log('  ⚠ Preserved: .rihal/config.yaml and .rihal/state.json');
-    console.log('     Pass --reset to wipe and re-init those too.');
+  if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
+
+  // Diff display for preserved files (#251)
+  if (preserved > 0 && opts.nonDestructive) {
+    console.log('');
+    console.log('  ' + warn(`${preserved} file${preserved === 1 ? '' : 's'} preserved (modified since install):`));
+    for (const d of preservedDiffs.slice(0, 10)) {
+      const stat = pc.green(`+${d.insertions}`) + ' ' + pc.red(`-${d.deletions}`);
+      console.log(`     ${dim(d.rel)}  ${stat}`);
+      if (opts.showDiff && d.patch) {
+        for (const line of d.patch.split('\n').slice(4)) {  // skip file headers
+          if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
+          else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
+          else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
+          else process.stdout.write(dim(line) + '\n');
+        }
+      }
+    }
+    if (preservedDiffs.length > 10) console.log(dim(`     … and ${preservedDiffs.length - 10} more`));
+    console.log(dim('  To overwrite: re-run with --force-overwrite  |  To see full diffs: --show-diff'));
+    console.log('');
   }
 
   // Count installed agents + commands dynamically (#190).
@@ -1205,40 +1358,56 @@ async function install(opts) {
     }
   } catch {}
 
+  const version = readPackageVersion();
   console.log('');
-  console.log(`  Version:   @hanzlaa/rcode@${readPackageVersion()}`);
-  console.log(`  IDE:       ${opts.ide}`);
-  console.log(`  Language:  ${opts.language}  (change in .rihal/config.yaml)`);
-  console.log(`  Mode:      ${opts.mode}  (guided=confirm at gates, yolo=autonomous)`);
-  console.log(`  Profile:   balanced`);
-  console.log(`  Planning:  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  (flip: rihal-tools gitignore refresh)`);
+  console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
+  console.log(`  ${bold('IDE:')}       ${opts.ide}`);
+  console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rihal/config.yaml)')}`);
+  console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
+  console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rihal-tools gitignore refresh)')}`);
   console.log('');
-  console.log(`  Agents:    ${agentCount} installed in .claude/agents/  (e.g. rihal-sadiq, rihal-waleed, rihal-fatima)`);
-  console.log(`             Full roster: node .rihal/bin/rihal-tools.cjs list-agents`);
-  console.log(`  Commands:  ${commandCount} slash commands in .claude/commands/rihal/  (e.g. /rihal:council, /rihal:create-prd, /rihal:progress)`);
-  console.log(`             Full list:   ls .claude/commands/rihal/`);
-  if (skillsInstalled > 0) {
-    console.log(`  Skills:    ${skillsInstalled} phrase-activated in .claude/skills/`);
-  }
+  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in .claude/agents/`);
+  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in .claude/commands/rihal/`);
+  if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated in .claude/skills/`);
   console.log('');
   if (starterSeeded) {
-    console.log('  ✓ Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)');
+    console.log('  ' + ok('Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)'));
     console.log('');
   }
-  console.log('  Next:');
+  console.log(`  ${bold('Next:')}`);
   console.log(`    cd ${opts.target}`);
   console.log('    claude              # start Claude Code (reload window if already open)');
   console.log('    /rihal:progress     # where you are, what\'s next');
   console.log('    /rihal:do           # interactive command picker');
   console.log('    /rihal:council <q>  # multi-agent strategic answer');
   console.log('');
-  console.log('  Refresh anytime:');
-  console.log('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain');
-  console.log('    /rihal:update v2.2.0                # pin rcode to a specific version');
+  console.log(dim('  Refresh anytime:'));
+  console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
+  console.log(dim(`    /rihal:update v${version}              # pin rcode to a specific version`));
   console.log('');
-  console.log('  ⚠ If your IDE is already open, reload the window to refresh skills/commands.');
-  console.log('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window');
+  console.log('  ' + warn('If your IDE is already open, reload the window to refresh skills/commands.'));
+  console.log(dim('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window'));
   console.log('');
+
+  // Lightweight update check (#252) — async background, never blocks install.
+  // Suppressed in non-TTY / CI or when --no-update-check is passed.
+  if (!opts.noUpdateCheck && process.stdout.isTTY && !process.env.CI && !process.env.RIHAL_NO_UPDATE_NOTIFIER) {
+    const { execFile } = require('child_process');
+    execFile('npm', ['view', '@hanzlaa/rcode', 'version', '--json'], { timeout: 4000 }, (err, stdout) => {
+      if (err) return;
+      try {
+        const latest = JSON.parse(stdout.trim());
+        if (semver.valid(latest) && semver.gt(latest, version)) {
+          console.log('');
+          console.log('  ╭──────────────────────────────────────────────────────╮');
+          console.log(`  │  ${pc.yellow('Update available:')} ${pc.dim(version)} → ${pc.green(latest)}${' '.repeat(Math.max(0, 20 - version.length - latest.length))}    │`);
+          console.log('  │  Run: npx @hanzlaa/rcode@latest install .            │');
+          console.log('  ╰──────────────────────────────────────────────────────╯');
+          console.log('');
+        }
+      } catch { /* ignore parse errors */ }
+    });
+  }
 
   // Health check — smoke test that the install actually works (#193).
   const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled });
@@ -1251,17 +1420,17 @@ async function install(opts) {
  * Prints a clean ✓/✖ line per check.
  */
 function runInstallHealthCheck(target, counts) {
-  console.log('  Health check:');
+  console.log(`  ${bold('Health check:')}`);
   const { execFileSync } = require('child_process');
   let fails = 0;
 
   function check(label, fn) {
     try {
       const out = fn();
-      console.log(`    ✓ ${label}${out ? ' — ' + out : ''}`);
+      console.log(`    ${ok(label)}${out ? dim(' — ' + out) : ''}`);
     } catch (err) {
       fails += 1;
-      console.log(`    ✖ ${label} — ${String(err.message || err).slice(0, 120)}`);
+      console.log(`    ${fail(label)} ${pc.red('—')} ${String(err.message || err).slice(0, 120)}`);
     }
   }
 
@@ -1302,9 +1471,9 @@ function runInstallHealthCheck(target, counts) {
 
   if (fails > 0) {
     console.log('');
-    console.log(`  ✖ ${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`);
-    console.log('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/');
-    console.log('     Reinstall: npx @hanzlaa/rcode install . --force');
+    console.log('  ' + fail(`${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`));
+    console.log(dim('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/'));
+    console.log(dim('     Reinstall: npx @hanzlaa/rcode install . --force'));
     console.log('');
     return false;
   }

@@ -56,16 +56,27 @@ jobs:
           fi
           echo "✓ zero runtime dependencies"
 
-      - name: verify package.json has no dev dependencies
+      - name: verify devDependencies are build-only (no runtime deps allowed)
         run: |
-          DEVDEPS=$(jq '.devDependencies // {} | length' package.json)
-          if [ "$DEVDEPS" -ne 0 ]; then
-            echo "❌ package.json has $DEVDEPS dev dependencies."
-            echo "   Tests use only node:test (built-in). No dev deps either."
-            jq '.devDependencies' package.json
+          # devDependencies are allowed for build tooling (esbuild bundles them).
+          # They must NOT appear in dependencies{} (that's the runtime zero-dep gate above).
+          # Enforce: only whitelisted build tools in devDependencies.
+          ALLOWED="esbuild picocolors nanospinner fast-glob zod semver diff update-notifier @clack/prompts"
+          DEVDEPS=$(jq -r '.devDependencies // {} | keys[]' package.json 2>/dev/null || true)
+          BAD=""
+          for dep in $DEVDEPS; do
+            found=0
+            for allowed in $ALLOWED; do
+              [ "$dep" = "$allowed" ] && found=1 && break
+            done
+            [ "$found" -eq 0 ] && BAD="$BAD $dep"
+          done
+          if [ -n "$BAD" ]; then
+            echo "❌ Unapproved devDependencies:$BAD"
+            echo "   Add to the ALLOWED list in test.yml if intentional."
             exit 1
           fi
-          echo "✓ zero dev dependencies"
+          echo "✓ devDependencies are build-tool only"
 
   syntax-check:
     name: syntax check all cli files
