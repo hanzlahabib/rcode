@@ -106,7 +106,7 @@ function parseArgs(argv) {
 
 /**
  * Resolve commit-planning preference — CLI flag wins, then interactive
- * prompt (when TTY + not --yes), else GSD-style default: true.
+ * prompt (when TTY + not --yes), else default: true (commit planning artifacts).
  * #189.
  */
 async function resolveCommitPlanning(opts) {

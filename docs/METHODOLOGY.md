@@ -349,17 +349,17 @@ Because CRUD is where projects break:
 
 These give you one assistant. Rihal Code gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want Rihal Code.
 
-### vs BMAD-method
+### What makes Rihal Code different
 
-BMAD is the inspiration. What's different in Rihal Code:
+Defining traits that separate Rihal Code from adjacent skill-driven AI methodology tools:
 
-- **Zero npm dependencies** — BMAD pulls `@clack/prompts` and friends; Rihal's installer is pure Node stdlib
-- **Multi-editor native** — BMAD is Claude-focused; Rihal installs to Claude, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously
-- **Atomic writes + verification** — Rihal writes state files atomically (tempfile + fsync + rename) and verifies the manifest after install to catch partial installs
-- **Timestamped uninstall backup** — Rihal creates a tar.gz before any destructive operation
-- **Config cascade with user-level** — Rihal has `~/.rihal-code/defaults.json` so you configure identity once per machine
-- **Cultural framing** — Rihal is bilingual Arabic-English from day one
-- **Pipeline streaming protocol** — Rihal shows each agent's response live with handoff lines; no batched wall of text
+- **Zero npm dependencies** — pure Node stdlib installer; no `@clack/prompts` or similar runtime deps to pull on install
+- **Multi-editor native** — installs to Claude Code, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously, not Claude-only
+- **Atomic writes + verification** — state files are written atomically (tempfile + fsync + rename) with manifest verification after install to catch partial states
+- **Timestamped uninstall backup** — every destructive operation creates a tar.gz first
+- **Config cascade with user-level** — `~/.rihal-code/defaults.json` lets you configure identity once per machine, then per-project overrides
+- **Cultural framing** — bilingual Arabic-English from day one; Arabic agent names with cultural identity baked in
+- **Pipeline streaming protocol** — each agent's response surfaces live with handoff lines; no batched wall of text
 
 ### vs generic AI agent frameworks (LangGraph, CrewAI, AutoGen)
 

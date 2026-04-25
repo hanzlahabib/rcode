@@ -1,6 +1,11 @@
 ---
 name: rihal-prfaq
-description: Working Backwards PRFAQ challenge to forge product concepts. Use when the user requests to 'create a PRFAQ', 'work backwards', or 'run the PRFAQ challenge'.
+description: >
+  Working Backwards PRFAQ challenge to forge product concepts. Use when the
+  user requests to 'create a PRFAQ', 'work backwards', 'run the PRFAQ
+  challenge', or 'press release first'. Do NOT use for full PRD creation
+  (use rihal-create-prd), lightweight product framing (use
+  rihal-product-brief), or early-stage ideation (use rihal-brainstorm).
 ---
 
 ## Workflow

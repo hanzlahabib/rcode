@@ -572,14 +572,6 @@ routing:
       - design-consistency
       - usability
 
-  - id: rihal-ui-designer
-    name: UI Designer (alias for rihal-ux-designer)
-    file_path: rihal/agents/rihal-ui-designer.md
-    role: Alias — see rihal-ux-designer
-    authority_level: design
-    domain_keywords:
-      - ui-design
-
   - id: rihal-ux-designer
     name: UX Designer
     file_path: rihal/agents/rihal-ux-designer.md

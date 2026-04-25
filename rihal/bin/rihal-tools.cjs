@@ -1950,7 +1950,7 @@ function cmdState(subArgs) {
   // --- promote-backlog <from> --to <target> ---
   // Promote a 999.x parking-lot phase to a real phase number.
   // Mutates state.phases[]; renames the on-disk directory if present.
-  // Tracks issue #159 (M2.5 — GSD-parity 999.x convention).
+  // Tracks issue #159 (M2.5 — 999.x parking-lot convention).
   if (sub === 'promote-backlog') {
     const from = subArgs[1];
     const flags = parseFlags(2);
@@ -3033,7 +3033,7 @@ function cmdBrain(args) {
 }
 
 /**
- * cmdProgress — single pre-computed progress blob (GSD-parity, issue #159).
+ * cmdProgress — single pre-computed progress blob (issue #159).
  *
  * Subcommands:
  *   progress init          Full snapshot — everything /rihal:progress needs.

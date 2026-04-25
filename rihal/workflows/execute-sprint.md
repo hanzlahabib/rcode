@@ -337,22 +337,23 @@ Orchestrator parses → presents to user → spawns fresh continuation with your
 </step>
 
 <step name="verification_failure_gate">
-If verification fails:
+If verification fails: STOP and present a clear failure report:
 
-**Check if node repair is enabled** (default: on):
-```bash
-NODE_REPAIR=$(node "./.claude/get-shit-done/bin/rihal-tools.cjs" config-get workflow.node_repair 2>/dev/null || echo "true")
+```
+Verification failed for Task [X]: [name].
+  Expected: [done-criteria from PLAN.md]
+  Actual:   [observed result]
+  Adjacent: [neighbouring task names + phase goal]
+
+Options:
+  [R] Retry — re-run the failing task once
+  [S] Skip — mark incomplete, continue with next task; record in SUMMARY "Issues Encountered"
+  [I] Investigate — pause execution, return control to user
 ```
 
-If `NODE_REPAIR` is `true`: invoke `@./.claude/get-shit-done/workflows/node-repair.md` with:
-- FAILED_TASK: task number, name, done-criteria
-- ERROR: expected vs actual result
-- PLAN_CONTEXT: adjacent task names + phase goal
-- REPAIR_BUDGET: `workflow.node_repair_budget` from config (default: 2)
+Wait for user choice. If `S`, the SUMMARY MUST include the failure under "Issues Encountered" — never silently swallow.
 
-Node repair will attempt RETRY, DECOMPOSE, or PRUNE autonomously. Only reaches this gate again if repair budget is exhausted (ESCALATE).
-
-If `NODE_REPAIR` is `false` OR repair returns ESCALATE: STOP. Present: "Verification failed for Task [X]: [name]. Expected: [criteria]. Actual: [result]. Repair attempted: [summary of what was tried]." Options: Retry | Skip (mark incomplete) | Stop (investigate). If skipped → SUMMARY "Issues Encountered".
+Future enhancement (tracked separately): an autonomous repair gate with RETRY / DECOMPOSE / PRUNE budget. For now, repair logic is human-driven via the choices above.
 </step>
 
 <step name="record_completion_time">

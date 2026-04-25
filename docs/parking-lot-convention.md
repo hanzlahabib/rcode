@@ -78,6 +78,12 @@ Because parking-lot items become active phases. Keeping them in the same data st
 
 ---
 
-## Inspiration
+## Why this specific number
 
-This convention is adopted from the GSD (Get Shit Done) sibling project, which uses `999.1`, `999.5` etc. for promotable backlog phases and has proven durable across dozens of GSD projects over a year of use.
+`999.x` works because:
+
+- `999` is far above any plausible real phase number — no collision risk with active milestones.
+- The decimal sub-numbering (`999.1`, `999.2`, …) preserves order and makes parking-lot items individually addressable.
+- When promoted, the integer phase number it lands on (e.g. `07`) is unrelated to the parking-lot id, so the promotion doesn't disturb other phase numbering.
+
+The convention has been validated across multiple project lifecycles in adjacent tooling that solved the same problem.

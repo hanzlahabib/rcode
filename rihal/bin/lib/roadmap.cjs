@@ -1,8 +1,8 @@
 /**
  * Roadmap — Rihal ROADMAP.md parsing and mutation helpers.
  *
- * Self-contained (stdlib only). Matches GSD output shapes for the subset of
- * commands that Rihal workflows currently invoke: get-phase, list-phases,
+ * Self-contained (stdlib only). Returns concise output shapes for the subset
+ * of commands that Rihal workflows currently invoke: get-phase, list-phases,
  * update-plan-progress, and clear.
  */
 

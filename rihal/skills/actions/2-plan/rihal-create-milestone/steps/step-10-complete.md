@@ -33,7 +33,7 @@ Hard deadline:  {deadline or "none specified"}
 [{completedAt}]
 ```
 
-### 3. Next-step menu (intent-based, mirrors the GSD /progress Route A/B/C pattern)
+### 3. Next-step menu (intent-based Route A/B/C/D)
 
 ```
 What's next?

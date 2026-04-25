@@ -51,7 +51,7 @@ Binary — if either fires, we cut scope or pivot:
 - Automated compliance check in CI (no reviewer time spent on structural issues).
 
 ### v2.5 — Progress/status UX polish
-**Goal:** Running `/rihal:progress` or `/rihal:status` on any project feels as sharp as the GSD (Get Shit Done) sibling project.
+**Goal:** Running `/rihal:progress` or `/rihal:status` on any project feels instantaneous and actionable — pre-computed CLI output, surfaced insights, and an intent-based Next Up menu instead of a single suggestion.
 
 - Bundled into v2.0 as M2.5 (issue [#159](https://github.com/hanzlahabib/rihal-code/issues/159)) — listed here for the public roadmap view.
 - Pre-computed CLI output, insight block for drift, intent-tree Next Up.

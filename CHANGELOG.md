@@ -35,7 +35,7 @@ Users already on v2.1.0 who accidentally committed `.claude/` etc. will need a o
 
 **Shipping release.** Live on npm at [@hanzlaa/rcode](https://www.npmjs.com/package/@hanzlaa/rcode). Previously only installable by cloning the repo; now available as `npx @hanzlaa/rcode install` from any project anywhere.
 
-Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the orphan fixes (#135 story-level state sync, #136 verification matrix, #137 create-milestone compliance audit, PR #167 + #168).
+Also bundles M2.5 (`/progress` and `/status` rebuilt with CLI-rendered output and intent-tree Next Up, PR #166) + the orphan fixes (#135 story-level state sync, #136 verification matrix, #137 create-milestone compliance audit, PR #167 + #168).
 
 ### Added
 
@@ -99,12 +99,12 @@ Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/miles
 
 ### Documentation
 
-- Public roadmap surfaces M2.5 (progress/status UX overhaul matching GSD-parity), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
+- Public roadmap surfaces M2.5 (progress/status UX overhaul — CLI-rendered output + intent-tree Next Up), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
 
 ### Deferred to follow-up releases
 
 - **Full skill-folder reorganization under role owners** — CODEOWNERS ships in v2.0 covering the current folder layout; deeper reorg is a v2.1 scope.
-- **Elegant /progress and /status rebuild** (GSD-parity) — tracked as issue #159, landing in v2.5.
+- **Elegant /progress and /status rebuild** — tracked as issue #159, landing in v2.5.
 - **Live MCP server** — v3.0 (design doc only in v2.0).
 
 ---
@@ -143,7 +143,7 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 - `rihal/agents/*.agent.md` — 14 v1 persona agents (superseded by v2's 36).
 - `rihal/workflows/` (v1 — 13 files). Replaced by v2's 68 workflows.
 - `rihal/v2/` directory entirely (contents promoted).
-- All `BMAD` / `GSD` references from commit history (rewritten in 95 commits).
+- Inspiration-source references stripped from commit history (rewrite across 95 commits) so the shipped tree describes Rihal Code on its own terms.
 
 ### Fixed
 
