@@ -30,7 +30,7 @@ cat .rihal/templates/settings-hooks.json
 Parse the JSON. If file does not exist, print error and stop:
 
 ```
-Error: .rihal/templates/settings-hooks.json not found. Run 'rihal-code install-v2' to reinstall.
+Error: .rihal/templates/settings-hooks.json not found. Run 'npx @hanzlaa/rcode install' to reinstall.
 ```
 
 ## Step 2 — Load or create settings.json

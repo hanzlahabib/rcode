@@ -371,6 +371,37 @@ function renderCss() {
     .agents { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
     .attr-grid { grid-template-columns: 1fr 1fr; }
   }
+  /* Command hints accordion */
+  .cmd-hints {
+    margin-top: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--bg-card); overflow: hidden;
+  }
+  .cmd-hints summary {
+    padding: var(--space-2) var(--space-3); cursor: pointer; font-size: var(--text-sm);
+    color: var(--text-muted); font-weight: 500; list-style: none;
+    display: flex; align-items: center; gap: 6px; user-select: none;
+  }
+  .cmd-hints summary::-webkit-details-marker { display: none; }
+  .cmd-hints summary::before { content: '▶'; font-size: 10px; transition: transform 0.2s; }
+  .cmd-hints[open] summary::before { transform: rotate(90deg); }
+  .cmd-hints summary:hover { color: var(--text-primary); background: var(--bg-hover); }
+  .cmd-hints-list { padding: var(--space-2) 0; }
+  .cmd-hint-item {
+    display: flex; align-items: baseline; gap: var(--space-3); padding: var(--space-2) var(--space-3);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .cmd-hint-item:hover { background: var(--bg-hover); }
+  .cmd-hint-item .cmd-text {
+    font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: var(--text-xs);
+    color: var(--accent-blue); white-space: nowrap; font-weight: 500;
+  }
+  .cmd-hint-item .cmd-desc {
+    font-size: var(--text-xs); color: var(--text-muted); flex: 1;
+  }
+  .cmd-hint-item .cmd-copy {
+    font-size: 10px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s; margin-left: auto;
+  }
+  .cmd-hint-item:hover .cmd-copy { opacity: 1; }
   /* Toast notification (for copy feedback) */
   .toast {
     position: fixed; bottom: 20px; right: 20px; background: var(--accent-green);

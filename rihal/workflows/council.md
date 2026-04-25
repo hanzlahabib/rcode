@@ -558,7 +558,7 @@ node .rihal/bin/rihal-tools.cjs state record-session
 
 - **Empty arguments or --help:** print usage block (Step 0), stop.
 - **Single-agent question detected:** redirect to `/rihal:discuss` (Step 0.5).
-- **`rihal-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `rihal-code install-v2`.
+- **`rihal-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
 - **Panel contains unknown agent:** print the installed-agent list and exit.
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
 - **All panelists return empty responses:** likely subagents were spawned without proper prompts. Re-check Step 4 prompt construction.

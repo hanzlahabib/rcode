@@ -185,4 +185,4 @@ Silent on failure — state tracking is optional.
 - **state.json missing or corrupted:** continue without error — chain artifacts are mandatory, state tracking is optional.
 - **Stage fails to produce artifact:** print stage number, allow `/rihal:chain --continue` to resume.
 - **Agent returns empty output:** print "Agent produced no output. Check input and retry."
-- **`rihal-tools.cjs` missing:** tell user to run `rihal-code install-v2`.
+- **`rihal-tools.cjs` missing:** tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).

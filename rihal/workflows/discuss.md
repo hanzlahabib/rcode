@@ -219,8 +219,8 @@ This records the discuss session in `.rihal/state.json` as `last_session`.
 - **Empty arguments:** print usage block and stop (Step 0).
 - **Question redirects to council:** print redirect message (Step 0.5).
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
-- **`rihal-tools.cjs` not found:** tell the user to run `rihal-code install-v2`.
-- **No installed agents:** print "No agents installed. Run `rihal-code install-v2`."
+- **`rihal-tools.cjs` not found:** tell the user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
+- **No installed agents:** print "No agents installed. Run `npx @hanzlaa/rcode install`."
 - **Agent id not in installed list:** print available agents and ask the user to pick one.
 - **Agent returns empty response:** print "Agent responded empty. Check question clarity and retry."
 

@@ -177,9 +177,8 @@ ${renderCss()}
 
     <div id="view-files" class="view">
       <div class="view-title">Files</div>
-      <div id="file-view">
-        <div class="empty">Select a file from the sidebar to preview it.<div class="empty-action">Browse the file tree on the left</div></div>
-      </div>
+      <div id="file-list-inline"></div>
+      <div id="file-view"></div>
     </div>
 
     <div id="view-agents" class="view">

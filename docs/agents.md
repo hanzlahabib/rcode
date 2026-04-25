@@ -1,6 +1,6 @@
 # Agent Reference
 
-All 44 agents in Rihal Code, their roles, and when they spawn.
+All 43 agents in Rihal Code, their roles, and when they spawn.
 
 ---
 

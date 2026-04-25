@@ -79,6 +79,82 @@ function showToast(msg) {
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2000);
 }
+function copyCmd(el) {
+  const cmd = el.getAttribute('data-cmd');
+  if (!cmd) return;
+  navigator.clipboard.writeText(cmd).then(() => showToast('Copied: ' + cmd)).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = cmd;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Copied: ' + cmd);
+  });
+}
+function cmdHint(cmd, desc) {
+  return '<div class="cmd-hint-item" data-cmd="' + esc(cmd) + '" onclick="copyCmd(this)">' +
+    '<span class="cmd-text">' + esc(cmd) + '</span>' +
+    '<span class="cmd-desc">' + esc(desc) + '</span>' +
+    '<span class="cmd-copy">📋</span></div>';
+}
+function cmdAccordion(hints) {
+  if (!hints.length) return '';
+  return '<details class="cmd-hints"><summary>💡 Commands</summary>' +
+    '<div class="cmd-hints-list">' + hints.join('') + '</div></details>';
+}
+function sprintHints(s) {
+  const stories = Array.isArray(s.stories) ? s.stories : [];
+  const st = s.status || 'planned';
+  const sid = s.id || '';
+  const pid = s.phaseId || '';
+  const h = [];
+  if (st === 'completed' || st === 'complete' || st === 'done') {
+    h.push(cmdHint('/rihal:verify-work', 'Verify UAT for Sprint ' + sid));
+    h.push(cmdHint('/rihal:audit', 'Audit completed Sprint ' + sid));
+    h.push(cmdHint('/rihal:session-report', 'Generate session report'));
+    h.push(cmdHint('/rihal:code-review', 'Review code from Sprint ' + sid));
+  } else if (st === 'active' || st === 'in_progress') {
+    h.push(cmdHint('/rihal:progress', 'Check Sprint ' + sid + ' progress'));
+    h.push(cmdHint('/rihal:sprint-status', 'Status report for Sprint ' + sid));
+    h.push(cmdHint('/rihal:pause-work', 'Pause and save context'));
+  } else if (st === 'blocked') {
+    h.push(cmdHint('/rihal:debug', 'Debug blocker in Sprint ' + sid));
+    h.push(cmdHint('/rihal:correct-course', 'Course-correct Sprint ' + sid));
+  } else {
+    if (!stories.length) {
+      h.push(cmdHint('/rihal:sprint-planning', 'Groom Sprint ' + sid + ' — add stories'));
+      h.push(cmdHint('/rihal:create-story', 'Create a story for Sprint ' + sid));
+      h.push(cmdHint('/rihal:discuss-phase', 'Discuss approach before planning'));
+    } else {
+      h.push(cmdHint('/rihal:execute', 'Execute Sprint ' + sid));
+      h.push(cmdHint('/rihal:discuss-phase', 'Discuss before executing'));
+      h.push(cmdHint('/rihal:sprint-planning', 'Refine Sprint ' + sid + ' plan'));
+    }
+  }
+  return h;
+}
+function phaseHints(p) {
+  const sps = Array.isArray(p.sprints) ? p.sprints : [];
+  const st = p.status || 'planned';
+  const pid = p.id || '';
+  const h = [];
+  if (st === 'completed' || st === 'complete' || st === 'done') {
+    h.push(cmdHint('/rihal:validate-phase', 'Validate Phase ' + pid + ' deliverables'));
+    h.push(cmdHint('/rihal:audit', 'Audit Phase ' + pid + ' completion'));
+    h.push(cmdHint('/rihal:code-review', 'Review Phase ' + pid + ' code'));
+  } else if (st === 'active' || st === 'in_progress') {
+    h.push(cmdHint('/rihal:progress', 'Check Phase ' + pid + ' progress'));
+    h.push(cmdHint('/rihal:sprint-status', 'Current sprint status'));
+    h.push(cmdHint('/rihal:code-review', 'Review code in Phase ' + pid));
+  } else {
+    if (!sps.length) {
+      h.push(cmdHint('/rihal:plan', 'Create sprint plan for Phase ' + pid));
+      h.push(cmdHint('/rihal:discuss-phase', 'Discuss Phase ' + pid + ' approach'));
+      h.push(cmdHint('/rihal:research-phase', 'Research Phase ' + pid + ' before planning'));
+    } else {
+      h.push(cmdHint('/rihal:execute', 'Start executing Phase ' + pid));
+      h.push(cmdHint('/rihal:sprint-planning', 'Plan next sprint in Phase ' + pid));
+    }
+  }
+  return h;
+}
 
 // ---- Entity cards ----
 function phaseCard(p) {
@@ -200,7 +276,10 @@ function renderOverview() {
   }
 
   const el = document.getElementById('view-overview-dynamic');
-  if (el) el.innerHTML = sprintProgressHtml + velocityHtml + councilHtml + chainsHtml + lastSessionHtml;
+  // Overview hints
+  var oHints = [cmdHint('/rihal:next', 'What should I do next?'), cmdHint('/rihal:status', 'Quick project status'), cmdHint('/rihal:council', 'Ask the team a question')];
+  if (curSprint) { oHints = sprintHints(curSprint).concat(oHints); }
+  if (el) el.innerHTML = sprintProgressHtml + velocityHtml + councilHtml + chainsHtml + lastSessionHtml + cmdAccordion(oHints);
 }
 
 function renderRoadmap() {
@@ -254,7 +333,11 @@ function renderRoadmap() {
     h += '</div></div>';
   }
   h += '</div></div></div>';
-  document.getElementById('view-roadmap').innerHTML = h;
+  // Roadmap hints
+  var rmHints = [cmdHint('/rihal:add-phase', 'Add a new phase'), cmdHint('/rihal:milestone-summary', 'View milestone summary'), cmdHint('/rihal:new-milestone', 'Start a new milestone')];
+  var allPDone = _phases.length > 0 && _phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
+  if (allPDone) { rmHints.push(cmdHint('/rihal:audit-milestone', 'Audit milestone completion')); rmHints.push(cmdHint('/rihal:complete-milestone', 'Complete and archive milestone')); }
+  document.getElementById('view-roadmap').innerHTML = h + cmdAccordion(rmHints);
 }
 
 function filterRoadmap(q) {
@@ -363,11 +446,15 @@ function renderPhases(subId) {
       velocityHtml +
       '<div class="view-title" style="margin-top:var(--space-6)">Sprints</div>' +
       '<div class="phase-list">' + (sps.length ? sps.map(s => sprintCard(Object.assign({},s,{phaseId:p.id,phaseName:p.name}))).join('') :
-        '<div class="empty">No sprints in this phase yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>';
+        '<div class="empty">No sprints in this phase yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>' +
+      cmdAccordion(phaseHints(p));
   } else {
+    var plHints = [cmdHint('/rihal:add-phase', 'Add a new phase'), cmdHint('/rihal:stats', 'Project statistics'), cmdHint('/rihal:progress', 'Overall progress')];
+    var allComplete = _phases.length > 0 && _phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
+    if (allComplete) { plHints.push(cmdHint('/rihal:audit-milestone', 'Audit milestone completion')); plHints.push(cmdHint('/rihal:complete-milestone', 'Complete and archive milestone')); plHints.push(cmdHint('/rihal:ship', 'Create PR and ship')); }
     el.innerHTML = '<div class="view-title">Phases</div>' + filterInput('phases-inner') +
       '<div id="phases-inner" class="phase-list">' +
-      (_phases.length ? _phases.map(phaseCard).join('') : '<div class="empty">No phases yet.<div class="empty-action">Run /rihal:new-project to start</div></div>') + '</div>';
+      (_phases.length ? _phases.map(phaseCard).join('') : '<div class="empty">No phases yet.<div class="empty-action">Run /rihal:new-project to start</div></div>') + '</div>' + cmdAccordion(plHints);
   }
 }
 
@@ -406,12 +493,15 @@ function renderSprints(subId) {
       '<div class="view-title" style="margin-top:var(--space-6)">Tasks</div>' +
       '<div class="phase-list">' + (stories.length ? stories.map(taskCard).join('') :
         '<div class="empty">No tasks in this sprint yet.<div class="empty-action">Run /rihal:create-story to add tasks</div></div>') + '</div>' +
-      acHtml;
+      acHtml + cmdAccordion(sprintHints(s));
   } else {
+    var slHints = [cmdHint('/rihal:sprint-planning', 'Plan a new sprint'), cmdHint('/rihal:stats', 'Project statistics')];
+    var curSp = sprints.find(sp => sp.id === S.currentSprint);
+    if (curSp) { slHints.push(cmdHint('/rihal:execute', 'Execute current sprint ' + curSp.id)); slHints.push(cmdHint('/rihal:sprint-status', 'Status of Sprint ' + curSp.id)); }
     el.innerHTML = '<div class="view-title">Sprints</div>' + filterInput('sprints-inner') +
       '<div id="sprints-inner" class="phase-list">' +
       (sprints.length ? sprints.map(sprintCard).join('') :
-        '<div class="empty">No sprints yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>';
+        '<div class="empty">No sprints yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>' + cmdAccordion(slHints);
   }
 }
 
@@ -438,6 +528,13 @@ function renderTasks() {
     // #294: group by sprint
     '<div id="tasks-inner" class="phase-list">' +
     renderTasksGrouped(tasks) + '</div>';
+  // Task hints accordion
+  var tHints = [cmdHint('/rihal:create-story', 'Add a new story/task'), cmdHint('/rihal:sprint-planning', 'Plan the next sprint')];
+  var allDone = tasks.length > 0 && tasks.every(t => t.status === 'done' || t.status === 'completed');
+  var hasBlocked = tasks.some(t => t.status === 'blocked');
+  if (allDone) { tHints.push(cmdHint('/rihal:verify-work', 'Verify all tasks pass UAT')); tHints.push(cmdHint('/rihal:audit-uat', 'Audit UAT coverage')); }
+  if (hasBlocked) { tHints.push(cmdHint('/rihal:debug', 'Debug blocked tasks')); tHints.push(cmdHint('/rihal:correct-course', 'Course-correct blockers')); }
+  el.innerHTML += cmdAccordion(tHints);
 }
 
 function renderTasksGrouped(tasks) {
@@ -592,7 +689,11 @@ function renderDecisions() {
     h += '</div>';
   }
   h += '</div>';
-  el.innerHTML = h;
+  el.innerHTML = h + cmdAccordion([
+    cmdHint('/rihal:council', 'Convene the council for a new decision'),
+    cmdHint('/rihal:discuss [agent] \"topic\"', 'Discuss with a specific expert'),
+    cmdHint('/rihal:decisions', 'View decision log')
+  ]);
 }
 
 window.addEventListener('hashchange', route);
@@ -646,6 +747,51 @@ function filterItems(input, listId) {
     } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>'; }
   });
 })();
+
+// Inline file list inside Files view
+(async function() {
+  let groups = [];
+  try { const r = await fetch('/api/files'); groups = await r.json(); } catch { return; }
+  const el = document.getElementById('file-list-inline');
+  if (!el) return;
+  let h = '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Search files…" oninput="filterInlineFiles(this.value)"></div>';
+  h += '<div id="inline-file-items" class="phase-list">';
+  groups.forEach(function(g) {
+    h += '<div class="inline-file-group" style="margin-bottom:var(--space-3);">';
+    h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) 0;">' + g.group + '</div>';
+    g.files.forEach(function(f) {
+      h += '<div class="item item-clickable inline-file-entry" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path).toLowerCase() + '" onclick="loadInlineFile(this)" style="padding:var(--space-2) var(--space-3);font-family:\\'SF Mono\\',Monaco,Consolas,monospace;font-size:var(--text-xs);">' + esc(f.label) + '</div>';
+    });
+    h += '</div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
+})();
+function filterInlineFiles(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('#inline-file-items .inline-file-entry').forEach(function(item) {
+    item.style.display = !q || (item.dataset.filterText || '').includes(q) ? '' : 'none';
+  });
+}
+async function loadInlineFile(el) {
+  var fv = document.getElementById('file-view');
+  if (!fv) return;
+  fv.innerHTML = '<div class="skeleton"></div><div class="skeleton" style="height:200px;"></div>';
+  document.querySelectorAll('.inline-file-entry').forEach(function(e) { e.style.borderLeftColor = ''; });
+  el.style.borderLeftColor = 'var(--accent-blue)';
+  // Also sync sidebar selection
+  document.querySelectorAll('.file-tree-item').forEach(function(e) {
+    e.classList.toggle('selected', e.dataset.path === el.dataset.path);
+  });
+  try {
+    var resp = await fetch('/api/file?path=' + encodeURIComponent(el.dataset.path));
+    if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Failed to load file.</div>'; return; }
+    var text = await resp.text();
+    fv.innerHTML = '<div class="file-path-header"><span>' + esc(el.dataset.path) + '</span>' +
+      '<button class="copy-btn" onclick="navigator.clipboard.writeText(\\'' + el.dataset.path.replace(/'/g, "\\\\'") + '\\');showToast(\\'Path copied!\\')">📋 Copy</button></div>' +
+      '<div class="md-render">' + renderMd(text) + '</div>';
+  } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>'; }
+}
 
 // #301: filter file tree
 function filterFileTree(q) {

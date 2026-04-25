@@ -4,6 +4,23 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v2.3.3 — CLI aliases + state.json fix + stale install-v2 refs removed (2026-04-25)
+
+### Added
+- `rihal` bin alias in package.json — `rihal install`, `rihal update`, `rihal uninstall` now work alongside `rcode` and `rihal-code`
+- `rihal/state.json` template — install now seeds `.rihal/state.json` correctly on first install (was silently skipped because template was missing, causing health check failure `✗ .rihal/state.json parses — missing`)
+
+### Fixed
+- Replaced all `rihal-code install-v2` error messages in workflows (council.md, chain.md, discuss.md, enable-hooks.md) — stale v1 command, now `npx @hanzlaa/rcode install`
+- Corrected agent/command counts everywhere: **43 agents, 99 commands** (plan-checker alias shares sprint-checker file; 99 command files on disk)
+  - README.md, docs/agents.md, docs/TIERS.md all updated
+
+### No behavior change
+- `rihal-code` alias preserved for backward compatibility
+- `npx @hanzlaa/rcode` still works as before
+
+---
+
 ## v2.3.2 — Documentation audit: agent counts corrected, orphaned stubs removed (2026-04-25)
 
 **Documentation correctness pass.** No behavior changes.
