@@ -727,29 +727,22 @@ function renderHtml(state) {
   });
 })();
 
-// File tree population
+// File tree population — shows only .planning/ artifacts grouped by type
 (async function() {
-  let files = [];
+  let groups = [];
   try {
     const r = await fetch('/api/files');
-    files = await r.json();
+    groups = await r.json();
   } catch { return; }
 
   const tree = document.getElementById('sidebar-file-tree');
   if (!tree) return;
 
-  const groups = {};
-  files.forEach(f => {
-    const top = f.split('/')[0];
-    if (!groups[top]) groups[top] = [];
-    groups[top].push(f);
-  });
-
   tree.innerHTML = '<div class="file-tree">' +
-    Object.entries(groups).map(([grp, paths]) =>
+    groups.map(({ group, files }) =>
       '<details class="file-tree-group" open>' +
-        '<summary>' + grp + '</summary>' +
-        paths.map(p => '<span class="file-tree-item" data-path="' + p + '">' + p.split('/').pop() + '</span>').join('') +
+        '<summary>' + group + '</summary>' +
+        files.map(f => '<span class="file-tree-item" data-path="' + f.path + '">' + f.label + '</span>').join('') +
       '</details>'
     ).join('') +
   '</div>';
@@ -866,26 +859,68 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === '/api/files') {
-    const results = [];
-    const roots = [
-      { base: RIHAL_DIR,                            prefix: '.rihal' },
-      { base: path.join(PROJECT_ROOT, '.planning'), prefix: '.planning' },
-    ];
-    function walkMd(dir, prefix, depth) {
-      if (depth > 3) return;
-      let entries;
-      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
-      for (const e of entries) {
-        if (e.name === 'node_modules') continue;
-        const full = path.join(dir, e.name);
-        const rel  = prefix + '/' + e.name;
-        if (e.isDirectory()) walkMd(full, rel, depth + 1);
-        else if (e.isFile() && e.name.endsWith('.md')) results.push(rel);
+    // Only expose user-facing artifacts under .planning/ — not internal .rihal/ framework files
+    const PLANNING_DIR = path.join(PROJECT_ROOT, '.planning');
+    const ARTIFACT_DIRS = ['phases', 'brainstorms', 'council-sessions', 'summaries', 'memory'];
+    const ROOT_FILES    = ['ROADMAP.md', 'STATE.md', 'PROJECT.md'];
+
+    const groups = [];
+
+    // Root-level planning docs
+    const rootFiles = ROOT_FILES
+      .filter(f => { try { fs.accessSync(path.join(PLANNING_DIR, f)); return true; } catch { return false; } })
+      .map(f => ({ label: f.replace('.md', ''), path: '.planning/' + f }));
+    if (rootFiles.length) groups.push({ group: 'Overview', files: rootFiles });
+
+    // Artifact subdirectories
+    for (const dir of ARTIFACT_DIRS) {
+      const full = path.join(PLANNING_DIR, dir);
+      const files = [];
+      function walkArtifacts(d, prefix, depth) {
+        if (depth > 3) return;
+        let entries;
+        try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+        for (const e of entries) {
+          if (e.name.startsWith('.')) continue;
+          const rel = prefix + '/' + e.name;
+          if (e.isDirectory()) walkArtifacts(path.join(d, e.name), rel, depth + 1);
+          else if (e.isFile() && e.name.endsWith('.md')) {
+            const parentDir = prefix.split('/').filter(Boolean).pop() || '';
+            const parentLabel = parentDir
+              ? parentDir.replace(/^\d+-/, '').replace(/-/g, ' ') + ' › '
+              : '';
+            const base = e.name.replace('.md', '');
+            // NN-NN-TYPE.md → "Type N" (e.g. 04-02-SPRINT → Sprint 2)
+            const sprintMatch = base.match(/^\d{2}-(\d{2})-([A-Z]+)$/);
+            const phaseMatch  = base.match(/^(\d{2})-([A-Z]+)$/);
+            const dateMatch   = base.match(/^\d{4}-\d{2}-\d{2}-(.+)$/);
+            let fileLabel;
+            if (sprintMatch) {
+              fileLabel = sprintMatch[2].charAt(0) + sprintMatch[2].slice(1).toLowerCase() + ' ' + parseInt(sprintMatch[1], 10);
+            } else if (phaseMatch) {
+              fileLabel = phaseMatch[2].charAt(0) + phaseMatch[2].slice(1).toLowerCase() + ' ' + parseInt(phaseMatch[1], 10);
+            } else if (dateMatch) {
+              fileLabel = dateMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            } else if (base === base.toUpperCase() && /^[A-Z_-]+$/.test(base)) {
+              // Plain uppercase word like SPRINT, ROADMAP — title-case it
+              fileLabel = base.charAt(0) + base.slice(1).toLowerCase();
+            } else {
+              fileLabel = base.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
+            // rel already contains full path from artifact root (e.g. /04-dashboard-refresh/04-02-SPRINT.md)
+            files.push({ label: parentLabel + fileLabel, path: '.planning/' + dir + rel });
+          }
+        }
+      }
+      walkArtifacts(full, '', 0);
+      if (files.length) {
+        const groupLabel = dir.charAt(0).toUpperCase() + dir.slice(1).replace(/-/g, ' ');
+        groups.push({ group: groupLabel, files });
       }
     }
-    for (const r of roots) walkMd(r.base, r.prefix, 0);
+
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(results));
+    res.end(JSON.stringify(groups));
     return;
   }
 
