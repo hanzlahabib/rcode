@@ -11,8 +11,8 @@ console.log(`
 🕌 Rihal Code installed.
 
 First-time setup:
-  npx @hanzlahabib/rihal-code install     # set up agents + slash commands
-  npx @hanzlahabib/rihal-code tiers       # see the tier map
+  npx @hanzlaa/rcode install     # set up agents + slash commands
+  npx @hanzlaa/rcode tiers       # see the tier map
 
 🌱 The Golden Path (say these phrases in your AI IDE):
   1. "scaffold a new project"     → rihal-scaffold-project
@@ -24,8 +24,8 @@ First-time setup:
   7. "sprint status"              → rihal-sprint-status
 
 More:
-  npx @hanzlahabib/rihal-code help        # all commands (grouped)
-  npx @hanzlahabib/rihal-code dashboard   # view-only Diwan on :7717
+  npx @hanzlaa/rcode help        # all commands (grouped)
+  npx @hanzlaa/rcode dashboard   # view-only Diwan on :7717
 
 Docs: https://github.com/hanzlahabib/rihal-code
 Tiers: docs/TIERS.md   ·   Standards: docs/STANDARDS.md
