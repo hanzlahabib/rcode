@@ -74,6 +74,11 @@ function parseArgs(argv) {
     // #189 — planning commit policy. null = ask interactively (or default true under --yes).
     // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
     commitPlanning: null,
+    // #232 — non-destructive update. Preserves files the user modified after install.
+    // True for /rihal:update flow; false for fresh install.
+    nonDestructive: false,
+    // #232 — force-overwrite always wins. Same as today's --force for the copy loop.
+    forceOverwrite: false,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -90,6 +95,8 @@ function parseArgs(argv) {
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
+    else if (arg === '--non-destructive') opts.nonDestructive = true;
+    else if (arg === '--force-overwrite') opts.forceOverwrite = true;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -971,29 +978,70 @@ async function install(opts) {
     sweptOrphans = sweepStaleInstalledFiles(opts.target, plan);
   }
 
+  // Load previous manifest for non-destructive mode (#232).
+  // Map<rel, expectedHashFromPriorInstall> — if a file's current hash matches
+  // its expected-from-prior-install hash, the user hasn't touched it → safe
+  // to overwrite. If hashes differ, user customized it → preserve.
+  const priorManifest = new Map();
+  if (opts.nonDestructive) {
+    const manifestPath = path.join(opts.target, '.rihal', '_config', 'files-manifest.csv');
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const lines = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
+        for (const line of lines) {
+          const [rel, hash] = line.split(',');
+          if (rel && hash) priorManifest.set(rel, hash);
+        }
+      } catch {
+        // best-effort — if manifest is malformed, fall back to behaving like fresh install
+      }
+    }
+  }
+
   // Copy files
   let copied = 0;
   let skipped = 0;
+  let preserved = 0;
+  const preservedFiles = [];
   for (const entry of plan) {
     const destPath = path.join(opts.target, entry.rel);
+    const relForward = entry.rel.split(path.sep).join('/');
     ensureDir(path.dirname(destPath));
-    if (fs.existsSync(destPath) && !opts.force) {
+
+    // Non-destructive guard (#232): if user modified this file since prior install, preserve it
+    if (opts.nonDestructive && !opts.forceOverwrite && fs.existsSync(destPath)) {
+      const priorHash = priorManifest.get(relForward);
+      if (priorHash) {
+        const currentHash = sha256(fs.readFileSync(destPath));
+        if (currentHash !== priorHash) {
+          // File was edited by user since install — preserve it
+          preserved += 1;
+          preservedFiles.push(relForward);
+          skipped += 1;
+          continue;
+        }
+        // Hash matches prior install → file is pristine → safe to overwrite below
+      }
+      // No prior hash → file is new in this install plan → install normally
+    }
+
+    if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
       const existingHash = sha256(fs.readFileSync(destPath));
       const sourceHash = sha256(fs.readFileSync(entry.src));
       if (existingHash === sourceHash) { skipped++; continue; }
-      if (!opts.yes) {
-        console.warn(`  ⚠ ${entry.rel} differs from package version — use --force to overwrite`);
+      if (!opts.yes && !opts.nonDestructive) {
+        console.warn(`  ⚠ ${entry.rel} differs from package version — use --force-overwrite to overwrite`);
         skipped++;
         continue;
       }
     }
 
-    // Warn if overwriting modified file
-    if (fs.existsSync(destPath) && opts.force) {
+    // Warn if overwriting modified file (only when --force-overwrite is explicit)
+    if (fs.existsSync(destPath) && opts.forceOverwrite) {
       const existing = fs.readFileSync(destPath);
       const incoming = fs.readFileSync(entry.src);
       if (!existing.equals(incoming)) {
-        console.log(`  ⚠ Overwriting modified file: ${destPath}`);
+        console.log(`  ⚠ Force-overwriting modified file: ${entry.rel}`);
       }
     }
 
@@ -1104,7 +1152,22 @@ async function install(opts) {
 
   // Summary
   console.log('');
-  console.log(`  Files:     ${copied} installed` + (opts.force && sweptOrphans > 0 ? `, ${sweptOrphans} stale swept` : ''));
+  let filesLine = `  Files:     ${copied} installed`;
+  if (opts.force && sweptOrphans > 0) filesLine += `, ${sweptOrphans} stale swept`;
+  if (preserved > 0) filesLine += `, ${preserved} user-modified preserved`;
+  console.log(filesLine);
+  if (preserved > 0 && opts.nonDestructive) {
+    console.log('');
+    console.log(`  ℹ ${preserved} file${preserved === 1 ? '' : 's'} were modified after install and preserved:`);
+    for (const f of preservedFiles.slice(0, 10)) {
+      console.log(`     - ${f}`);
+    }
+    if (preservedFiles.length > 10) {
+      console.log(`     ... and ${preservedFiles.length - 10} more`);
+    }
+    console.log('  To force-update them: re-run with --force-overwrite');
+    console.log('');
+  }
   if (brainReport && brainReport.ok) {
     const pulledCount = (brainReport.pulled || []).length;
     const skippedCount = (brainReport.skipped || []).length;

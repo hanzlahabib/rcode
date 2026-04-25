@@ -1,7 +1,26 @@
 # Workflow: rihal:update
 
 <purpose>
-Detect package updates for rihal-code by comparing installed file hashes against source package hashes. Show changelog (added/changed/removed files), ask user confirmation, then run installer with --force --yes if approved.
+Pull the latest rcode from npm and install it **non-destructively** —
+overwrite only files the user hasn't customized since their last install.
+User-modified files are preserved and reported. Closes #232.
+
+Default invocation:
+```
+npx @hanzlaa/rcode@latest install . --non-destructive --yes
+```
+
+The `--non-destructive` flag (set by default in this workflow) makes the
+installer compare each file's current SHA256 to the SHA256 stored in
+`.rihal/_config/files-manifest.csv` from the previous install:
+- Hashes match → file is pristine → safe to overwrite with new version
+- Hashes differ → user has edited it → SKIP and report
+
+Per-project state is ALWAYS preserved (never touched by either mode):
+- `.rihal/config.yaml`
+- `.rihal/state.json` (and `.lock`)
+- `.planning/` (PRD, ROADMAP, sprints, SUMMARY files)
+- `.rihal/brain/` content (refreshed via `brain pull` separately)
 </purpose>
 
 
@@ -121,19 +140,60 @@ Options:
 - If user chooses [1], proceed to Step 7
 - If user chooses [2], print "Update cancelled" and exit
 
-## Step 7 — Apply update
+## Step 7 — Apply update (non-destructive by default per #232)
 
-Run the installer with `--force --yes`:
+Pull from npm AND install non-destructively. User-modified files are
+preserved automatically; the installer reports each one in the summary.
 
 ```bash
-node "$INSTALLER_PATH" . --force --yes
+npx @hanzlaa/rcode@latest install . --non-destructive --yes
+```
+
+**If the user explicitly wants destructive overwrite** (rare — only
+when they intentionally want to discard their customizations):
+
+```bash
+npx @hanzlaa/rcode@latest install . --force-overwrite --yes
+```
+
+**Version pinning** — if the user passed `/rihal:update v2.4.0`, pass
+the version through:
+
+```bash
+npx @hanzlaa/rcode@2.4.0 install . --non-destructive --yes
+```
+
+**Local fallback** — if the user's network can't reach npm, fall back
+to the locally-cached installer (still non-destructive):
+
+```bash
+node "$INSTALLER_PATH" . --non-destructive --yes
 ```
 
 If the command exits with non-zero status, print:
+
 ```
 ❌ Update failed. Check the output above.
+   Tip: try --force-overwrite if you intentionally want to overwrite
+   your customizations, or run with the local installer fallback.
 ```
+
 Exit with error code.
+
+## Step 7.5 — Surface preserved files
+
+The installer's stdout will include a "user-modified preserved" report
+when relevant. Capture it and re-print as a callout so users notice:
+
+```
+ℹ Files preserved (your customizations were kept):
+   - .claude/skills/rihal-create-prd/workflow.md
+   - rihal/workflows/sprint-planning.md
+   - .rihal/references/output-format.md
+
+These will not auto-update on future /rihal:update calls. To force
+their update next time, run /rihal:update --force-overwrite.
+```
 
 ## Step 8 — Pull Rihal brain content (v2.0)
 
