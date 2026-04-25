@@ -416,16 +416,61 @@ Full install = all 3 modules = 201 files.
 ## Testing
 
 ```bash
-node --test test/*.cjs test/lib/*.cjs
+node --test          # full suite (95 tests, ~1s)
+node --test --test-reporter=spec   # verbose output with test names
 ```
 
-95 tests across 10 test files (8 compliance + 87 unit) verify:
-- Every command has a matching workflow file
-- Every agent has valid frontmatter + constraints
-- Module manifests match installed files
-- rihal-tools.cjs help matches implemented subcommands
-- Panel scorer routes correctly across 10+ question types
-- Classifier handles Roman Urdu + Arabic + edge cases
+**95 tests · 0 failures · pure Node stdlib (no test runner install needed)**
+
+### Test scenarios
+
+| Suite | Tests | What it verifies |
+|-------|-------|-----------------|
+| `compliance.test.cjs` | 8 | Architecture invariants — every command routes through a workflow, every agent has valid frontmatter, all module manifests resolve, `rihal-tools.cjs` subcommands match help text |
+| `classifier.test.cjs` | 10 | Question classifier handles Roman Urdu, Arabic (unicode), English, ambiguous, and multilingual inputs; routes to correct intent (greenfield / market / codebase) |
+| `panel-scorer.test.cjs` | 12 | Council panel scorer selects correct agents for market, greenfield, and codebase questions; `--agents` override bypasses scoring; `--full` returns all agents |
+| `lib/config.test.cjs` | 15 | Config loader merges hardcoded → user → project layers; validates enum values; `suggestClosest` catches typos |
+| `lib/fsutil.test.cjs` | 8 | `writeFileAtomic` creates parents, overwrites cleanly, leaves no temp files, handles custom chmod modes |
+| `lib/manifest.test.cjs` | 12 | `readPackageManifest` discovers agents/actions; `verifyClaudeInstall` detects drift; `verifyInstall` aggregates multi-editor state |
+| `lib/memory-bank.test.cjs` | 10 | Fingerprint stability, staleness detection on hash change and structure change, `never/stale/fresh` thresholds |
+| `lib/prompts.test.cjs` | 15 | `askText`, `askConfirm`, `askChoice` in piped (CI) mode; re-prompt on bad input; `PromptAbortError` on max attempts; `closeSession` idempotency |
+| `lib/no-absolute-home-paths.test.cjs` | 3 | No slash command template embeds absolute `$HOME` paths (install portability) |
+| `lib/wizard-piped.test.cjs` | 2 | Full install in piped mode against temp dir; every known slash command installs non-empty |
+
+### Post-install health check
+
+Every install runs 5 automated smoke tests before exiting:
+
+```
+  Health check:
+    ✓ rihal-tools.cjs runs — syntax ok
+    ✓ .rihal/config.yaml present — 412 bytes
+    ✓ .rihal/state.json parses — valid JSON
+    ✓ agents installed — 43
+    ✓ skills + commands installed — 56 skills + 99 commands
+```
+
+A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
+
+### CI pipeline
+
+Three jobs run on every push and pull request to `main`:
+
+| Job | What it checks |
+|-----|----------------|
+| `test` | Runs `node --test` on Node 18, 20, 22, and 24 — no `npm install` needed |
+| `no-new-deps` | Blocks any addition to `dependencies{}` (runtime zero-dep invariant); audits `devDependencies` against approved build-tool list |
+| `syntax-check` | `node -c` on every file in `cli/` to catch parse errors before runtime |
+
+The release pipeline additionally runs `npm ci && npm run build:cli` to produce `dist/rcode.js` (the self-contained esbuild bundle published to npm), then runs a compliance check and attaches the artefact to the GitHub Release.
+
+### Run a single suite
+
+```bash
+node --test test/compliance.test.cjs     # architecture invariants only
+node --test test/lib/config.test.cjs     # config layer only
+node --test test/lib/manifest.test.cjs   # install verification only
+```
 
 ---
 
