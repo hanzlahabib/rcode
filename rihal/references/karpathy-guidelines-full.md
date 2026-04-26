@@ -69,7 +69,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Enforcement
 
-Agents that write or modify code (rihal-executor, rihal-planner, rihal-tech-writer, rihal-codebase-mapper when producing code docs) must:
+Agents that write or modify code (rihal-executor, rihal-planner, rihal-noor, rihal-codebase-mapper when producing code docs) must:
 1. @-include this file
 2. Apply the 4 principles as hard constraints, not suggestions
 3. Reference the specific principle when refusing to make a change (e.g., "Declining per Karpathy #3: that's adjacent to the requested change but not part of it")

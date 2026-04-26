@@ -65,7 +65,7 @@ module,skill,display-name,menu-code,description,action,args,phase,after,before,r
 For each recommended item, present:
 - `[menu-code]` **Display name** — e.g., "[CP] Create PRD"
 - Skill name in backticks — e.g., `rihal-create-prd`
-- For multi-action skills: action invocation context — e.g., "tech-writer lets create a mermaid diagram!"
+- For multi-action skills: action invocation context — e.g., "noor lets create a mermaid diagram!"
 - Description if present in CSV; otherwise your existing knowledge of the skill suffices
 - Args if available
 

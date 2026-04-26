@@ -289,7 +289,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-tech-writer
+#### rihal-noor
 **Purpose:** Write technical documentation.
 
 **Spawned by:** `/rihal:docs-update`, `/rihal:document-project`

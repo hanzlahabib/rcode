@@ -245,7 +245,7 @@ Spawned by specific workflows for targeted analysis.
 | `rihal-security-adversary` | Attack-mode security review, threat modeling, attack surface analysis | `/rihal:code-review --attack` |
 | `rihal-ui-auditor` | UI audit for usability, consistency, accessibility, design quality | `/rihal:ui-review` |
 | `rihal-ux-designer` | UI/UX design, design system work, accessibility, usability | `/rihal:ui-phase` |
-| `rihal-tech-writer` | Generates and updates README, API docs, changelogs, migration guides | `/rihal:docs-update` |
+| `rihal-noor` | Generates and updates README, API docs, changelogs, migration guides | `/rihal:docs-update` |
 | `rihal-profiler` | Analyzes user behavior patterns, creates personas, identifies usage flows | `/rihal:profile-user` |
 | `rihal-deviation-analyzer` | Analyzes plan deviations, scope creep, timeline slips | `/rihal:correct-course` |
 | `rihal-remediation-planner` | Plans remediation for issues, blockers, failures | internal |

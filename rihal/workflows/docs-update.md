@@ -6,7 +6,7 @@ Generate, update, and verify project documentation — both canonical doc types 
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-tech-writer — Writes and updates project documentation files
+- rihal-noor — Writes and updates project documentation files
 - rihal-docs-auditor — Verifies factual claims in docs against the live codebase
 </available_agent_types>
 
@@ -40,7 +40,7 @@ test -d docs || mkdir -p docs
 # Read agent manifest to get model for doc writers
 AGENT_MANIFEST=".rihal/_config/agent-manifest.csv"
 if [[ -f "$AGENT_MANIFEST" ]]; then
-  DOC_WRITER_MODEL=$(grep -i "rihal-tech-writer" "$AGENT_MANIFEST" | cut -d',' -f3)
+  DOC_WRITER_MODEL=$(grep -i "rihal-noor" "$AGENT_MANIFEST" | cut -d',' -f3)
 else
   DOC_WRITER_MODEL="claude-opus"  # fallback
 fi
@@ -151,11 +151,11 @@ Create output directories:
 mkdir -p docs
 ```
 
-For each doc in the queue, spawn a `rihal-tech-writer` agent in parallel waves (up to 3 agents in parallel per wave):
+For each doc in the queue, spawn a `rihal-noor` agent in parallel waves (up to 3 agents in parallel per wave):
 
 ```
 Task(
-  subagent_type="rihal-tech-writer",
+  subagent_type="rihal-noor",
   prompt="
 Generate documentation for {doc_type}.
 Output path: {resolved_path}

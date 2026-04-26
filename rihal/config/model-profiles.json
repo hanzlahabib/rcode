@@ -41,7 +41,7 @@
         "ux-designer": "sonnet",
         "doc-verifier": "haiku",
         "docs-auditor": "haiku",
-        "tech-writer": "haiku"
+        "noor": "haiku"
       }
     },
 
@@ -82,7 +82,7 @@
         "ux-designer": "sonnet",
         "doc-verifier": "haiku",
         "docs-auditor": "haiku",
-        "tech-writer": "haiku"
+        "noor": "haiku"
       }
     },
 
@@ -123,7 +123,7 @@
         "ux-designer": "haiku",
         "doc-verifier": "haiku",
         "docs-auditor": "haiku",
-        "tech-writer": "haiku"
+        "noor": "haiku"
       }
     },
 
@@ -164,7 +164,7 @@
         "ux-designer": "inherit",
         "doc-verifier": "inherit",
         "docs-auditor": "inherit",
-        "tech-writer": "inherit"
+        "noor": "inherit"
       }
     }
   },
@@ -197,7 +197,7 @@
       "model_overrides": {
         "waleed": "opus",
         "code-reviewer": "sonnet",
-        "tech-writer": "inherit"
+        "noor": "inherit"
       }
     }
   },

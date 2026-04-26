@@ -85,20 +85,6 @@ agents:
       - backlog
     description: Scope, requirements, PRD writing, user stories, and backlog curation.
 
-  - id: rihal-tech-writer
-    name: Tech Writer
-    file_path: rihal/agents/rihal-tech-writer.md
-    role: Technical Documentation Specialist
-    authority_level: operational
-    domain_keywords:
-      - documentation
-      - readme
-      - api-docs
-      - changelog
-      - migration-guide
-      - inline-comments
-    description: Generates and updates README, API docs, changelogs, migration guides, and inline code comments.
-
   - id: rihal-yousef
     name: Yousef (يوسف)
     file_path: rihal/agents/rihal-yousef.md
@@ -238,7 +224,9 @@ agents:
       - pitch-deck
       - changelog
       - blog-post
-    description: Documentation, README files, API docs, architecture diagrams, changelogs, pitch decks, and blog posts.
+      - migration-guide
+      - inline-comments
+    description: Documentation, README files, API docs, architecture diagrams, changelogs, migration guides, inline code comments, pitch decks, and blog posts.
 
   - id: rihal-ahmed
     name: Ahmed Al Hassani (أحمد الحسني)
