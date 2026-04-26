@@ -1,184 +1,46 @@
+# Workflow: rihal:progress
+
 <purpose>
-Render project progress: what was accomplished, where you are, what's pending, what's next. All data comes from a single `rihal-tools progress init` call. This workflow is a pure renderer — no direct markdown parsing, no state.json grep, no phase-directory walk.
+**`/rihal:progress` is an alias of `/rihal:status --verbose`.**
 
-**SSOT:** `.rihal/state.json`, surfaced through `rihal-tools progress init`. `/rihal:progress` and `/rihal:status` call the same CLI and cannot disagree (issue #131 closed).
+Historically this was a separate workflow with overlapping data and a heavier render. They both read the same source of truth (`rihal-tools progress init`), so we collapsed them: `/rihal:status` is the canonical renderer with built-in slim/verbose modes, and `/rihal:progress` is a thin alias that always runs in verbose mode.
 
-For a sprint-board view, use `/rihal:sprint-status`. For a concise dashboard, use `/rihal:status`. This workflow gives the full narrative view with recent-work excerpts and an intent-tree Next Up menu.
+Use whichever name you prefer — they produce the same output.
 </purpose>
 
 <required_reading>
-@.rihal/references/output-format.md
-Read all files referenced by the invoking prompt's execution_context before starting.
+@.rihal/workflows/status.md
 </required_reading>
-
-<output_format>
-Banner from output-format.md:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PROGRESS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-Use ✓ complete / ◆ in_progress / ○ planned / 🅿 parking-lot throughout.
-End with a Next Up block rendered from the CLI's `routes[]` array.
-</output_format>
 
 <process>
 
-<step name="init_context">
+## Step 1 — Delegate to /rihal:status in verbose mode
 
-## 1. Init context
+Execute the workflow defined in `.rihal/workflows/status.md` end-to-end, with one override:
 
-Fetch the full progress snapshot in a single call:
+- Always render in **verbose mode** (full Steps 2–6 output: banner + phases + insights + decisions + blockers + Next Up route tree).
+- Treat `$ARGUMENTS` exactly as `/rihal:status --verbose $ARGUMENTS` would.
 
-```bash
-SNAPSHOT=$(node .rihal/bin/rihal-tools.cjs progress init)
-```
+Do not parse ROADMAP.md, walk SUMMARY.md files, or grep state.json directly. If the underlying CLI reports a drift insight, surface it — do not silently compensate.
 
-Parse as JSON.
+## Step 2 — Footer note (one-time alias hint)
 
-If `SNAPSHOT.project` is null AND `SNAPSHOT.phases[]` is empty:
-
-```
-No planning structure found.
-
-Run /rihal:new-project to start a new project.
-```
-
-Exit.
-
-Read `DISCUSS_MODE` from config (separate cheap call):
-
-```bash
-DISCUSS_MODE=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"discuss_mode"\s*:\s*"[^"]*"' | cut -d'"' -f4 || echo "discuss")
-```
-
-</step>
-
-<step name="recent_work">
-
-## 2. Recent work excerpts
-
-For the last 2-3 phase directories with SUMMARY.md, pull the one-liner field surgically:
-
-```bash
-# find the 3 most recent SUMMARY.md files
-(find .planning/phases -name "SUMMARY.md" -o -name "*-SUMMARY.md" 2>/dev/null) | xargs -r ls -t 2>/dev/null | head -3 | while read f; do
-  node .rihal/bin/rihal-tools.cjs summary-extract "$f" --fields one_liner,status
-done
-```
-
-Each call returns `{ ok: true, one_liner: "...", status: "..." }`. Collect into an in-memory list for rendering. This avoids loading full SUMMARY.md bodies — context-expensive and unnecessary.
-
-</step>
-
-<step name="insights">
-
-## 3. Insights — surface what the CLI noticed
-
-`SNAPSHOT.insights[]` contains drift warnings, between-milestone detection, phase-dir undercount. Render above the progress bar so the user sees divergences immediately:
+After the verbose status output, append a single grey line:
 
 ```
-⚠ {insight.message}     (severity: warn)
-ℹ {insight.message}     (severity: info)
+(/rihal:progress is an alias of /rihal:status --verbose — same data, same source.)
 ```
 
-Each insight that mentions a fix command should have it surfaced exactly as-is — e.g. "Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk".
-
-</step>
-
-<step name="report">
-
-## 4. Render the progress view
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PROGRESS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# {SNAPSHOT.project}
-
-{insights block — printed FIRST if present}
-
-**Progress:** {SNAPSHOT.bar}
-**Milestone:** {SNAPSHOT.milestone or "—"}
-**Discuss mode:** {DISCUSS_MODE}
-
-## Recent Work
-- [Phase {N}]: {one_liner extracted in step 2}
-- [Phase {N}]: {one_liner}
-
-## Current Position
-Phase [{SNAPSHOT.current_phase}] of [{SNAPSHOT.phase_count}]
-Plan progress: {completed_count}/{phase_count}
-
-## Key Decisions
-- {SNAPSHOT.decisions[].summary} — [{phase}.{plan}], {date}
-
-## Blockers
-- ⚠ {SNAPSHOT.blockers[].description} — [{phase}.{plan}]
-
-## Pending Todos
-- {todo count} pending — /rihal:check-todos to review
-(Skip if count = 0)
-
-## Active Debug Sessions
-- {count} active — /rihal:debug to continue
-(Skip if count = 0)
-```
-
-Omit any section whose underlying array is empty — don't print "Key Decisions" with zero entries.
-
-</step>
-
-<step name="next_up">
-
-## 5. Next Up — intent tree
-
-Render `SNAPSHOT.routes[]` as a grouped menu. Group by `letter` field (A / B / C). Multiple routes per letter print indented under that letter's heading:
-
-```
-▶ Next Up
-
-  [A] Execute unfinished work
-      → /rihal:execute-phase 999.5
-      → /rihal:execute-phase 66
-
-  [B] Plan researched-but-unplanned phases
-      → /rihal:plan-phase 68
-
-  [C] Close out current milestone
-      → /rihal:audit-milestone
-      → /rihal:complete-milestone
-```
-
-The CLI derives routes from current disk state (researched-not-planned phases, phases with pending plans, all-complete detection for milestone closure). Do NOT second-guess by walking disk yourself.
-
-If `SNAPSHOT.routes[]` is empty or only has fallback entries, print:
-
-```
-▶ Nothing obvious on deck.
-
-  [A] /rihal:progress          — refresh
-  [B] /rihal:council            — start a conversation on what next
-  [C] /rihal:new-milestone     — if the current cycle is done
-```
-
-</step>
+Skip this footer if `$ARGUMENTS` already contains `--no-alias-hint`.
 
 </process>
 
 ## Success Criteria
 
-- [ ] `progress init` called once — not repeatedly per section
-- [ ] No direct parsing of ROADMAP.md, epics.md, or SUMMARY.md in the workflow body
-- [ ] Recent work uses `summary-extract --fields one_liner` (surgical read)
-- [ ] Insights section rendered when non-empty
-- [ ] Next Up is a grouped route tree, not a single suggestion
+- [ ] Calls the status workflow with verbose mode forced
+- [ ] No independent CLI parsing — single source of truth via `progress init`
+- [ ] Optional alias hint footer printed unless suppressed
 
 ## On Error
 
-- **CLI missing:** "Rihal Code install missing or stale. Run: npx @hanzlaa/rcode install"
-- **CLI returns `ok: false`:** surface the CLI's error verbatim. Do not attempt to compensate — the CLI's failures are the source of truth on what's wrong.
-- **Network-dependent insights:** there should be none. Insights are computed from local state + disk only.
+Defer to `.rihal/workflows/status.md` error handling. This workflow adds nothing on top.
