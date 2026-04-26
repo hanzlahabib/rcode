@@ -52,8 +52,10 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
 
-- **43 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
-- **99 slash commands** covering research, planning, execution, verification, and recovery
+- **45 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **95 slash commands** covering research, planning, execution, verification, and recovery
+- **61 skills** including Memory Bank primitives — `/rcode:memory-init`, `-update`, `-distill`, `-audit`
+- **Persistent project memory** at `.rihal/memory/` — checked into git, visible in the Diwan dashboard, lossless distillates for fast LLM hydration
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
 - **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
@@ -62,6 +64,8 @@ Most AI tools give you one assistant pretending to be everything. **Rihal Code g
 - **Plan verification loop** that validates file/symbol references before execution
 - **Post-execute gates** (integration-checker, nyquist-auditor) verify completeness
 - **Global agents** at `~/.rihal/agents/` — customize without forking
+
+See [`MIGRATIONS.md`](MIGRATIONS.md) if you're upgrading from a pre-Memory-Bank install.
 
 It's not a chatbot. It's a methodology.
 
@@ -80,9 +84,9 @@ npx @hanzlaa/rcode install
 One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
-- `.claude/agents/` — 43 first-class subagents
-- `.claude/commands/rihal/` — 99 slash commands
-- `.claude/skills/` — 56 phrase-activated skills (scaffold-project, create-prd, prfaq, retrospective, etc.)
+- `.claude/agents/` — 45 first-class subagents
+- `.claude/commands/rihal/` — 95 slash commands
+- `.claude/skills/` — 61 phrase-activated skills (scaffold-project, create-prd, prfaq, memory-init, retrospective, etc.)
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
@@ -324,7 +328,7 @@ Recent additions in this session:
 
 ---
 
-## Full command surface (99 commands)
+## Full command surface (95 commands)
 
 ### Router + lifecycle
 `init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
@@ -461,8 +465,8 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ rihal-tools.cjs runs — syntax ok
     ✓ .rihal/config.yaml present — 412 bytes
     ✓ .rihal/state.json parses — valid JSON
-    ✓ agents installed — 43
-    ✓ skills + commands installed — 56 skills + 99 commands
+    ✓ agents installed — 45
+    ✓ skills + commands installed — 61 skills + 95 commands
 ```
 
 A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
