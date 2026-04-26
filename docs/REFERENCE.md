@@ -174,7 +174,6 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | `/rihal:plant-seed` | `<idea>` | Capture a forward-looking idea with trigger conditions — surfaces automatically at the right milestone. |
 | `/rihal:inbox` | `[--issues] [--prs] [--label] [--close-incomplete]` | Triage incoming issues and PRs against contribution templates. |
 | `/rihal:session-report` | — | Generate a session report with work summary, token usage estimation, commits, decisions, and open blockers. |
-| `/rihal:report` | — | Short alias for session-report. |
 | `/rihal:notify-test` | `[--only slack\|discord\|teams] [--title "<t>"] [--body "<b>"]` | Verify configured webhooks (Slack / Discord / MS Teams) by posting a test message. |
 | `/rihal:import` | `--from <path>` | Ingest external plans with conflict detection against project decisions. |
 | `/rihal:new-workspace` | `<workspace-name> [--from-current]` | Create an isolated workspace for parallel work — separate ROADMAP/STATE with independent tracking. |
