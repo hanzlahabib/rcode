@@ -1,7 +1,7 @@
 ---
 name: rihal-phase-researcher
 description: Researches how to implement a phase before planning. Produces RESEARCH.md consumed by rihal-planner. Spawned by /rihal:plan orchestrator.
-tools: read_file, write_file, run_shell_command, search_file_content, glob, google_web_search, web_fetch
+tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 

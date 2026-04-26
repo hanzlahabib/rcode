@@ -1,7 +1,7 @@
 ---
 name: rihal-advisor-researcher
 description: Researches a single gray area decision and returns a structured comparison table with rationale. Spawned by discuss-phase advisor mode.
-tools: read_file, run_shell_command, search_file_content, glob, google_web_search, web_fetch
+tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 

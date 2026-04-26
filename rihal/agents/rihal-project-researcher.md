@@ -1,7 +1,7 @@
 ---
 name: rihal-project-researcher
 description: Researches domain ecosystem before roadmap creation. Produces files in .rihal/research/ consumed during roadmap creation. Spawned by /rihal:new-project or /rihal:new-milestone orchestrators.
-tools: read_file, write_file, run_shell_command, search_file_content, glob, google_web_search, web_fetch
+tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 

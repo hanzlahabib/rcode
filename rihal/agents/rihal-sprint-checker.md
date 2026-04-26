@@ -1,7 +1,7 @@
 ---
 name: rihal-sprint-checker
 description: Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rihal:plan orchestrator.
-tools: read_file, run_shell_command, glob, search_file_content
+tools: Read, Bash, Glob, Grep
 color: green
 ---
 

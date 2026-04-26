@@ -1,7 +1,7 @@
 ---
 name: rihal-research-synthesizer
 description: Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Spawned by /rihal:new-project after 4 researcher agents complete.
-tools: read_file, write_file, run_shell_command
+tools: Read, Write, Bash
 color: purple
 ---
 
