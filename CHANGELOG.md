@@ -4,6 +4,25 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.2.1 — VS Code + Antigravity end-to-end install paths (2026-04-27)
+
+Patch for v3.2.0 — selecting VS Code or Antigravity from the install menu now actually completes the install instead of erroring with "not supported".
+
+### Fixed
+
+- **`--ide vscode`** now routes through `getPathsForIde()` to install at `.claude/agents/`, `.claude/commands/rihal/`, and `.claude/skills/` (where the Claude Code / Continue / Copilot extensions read from). User-visible: install completes; the user-facing notice reads "VS Code → installing to .claude/ paths".
+- **`--ide antigravity`** routes to `.antigravity/rihal/{agents,commands}/`, mirroring the `.gemini/rihal/` layout. Marked experimental — the user is told at install time that Antigravity's plugin protocol is still firming up and they may need to adjust paths via `.rihal/config.yaml`.
+- **Health check** at end of install now reads from the IDE-specific install paths (was hardcoded to `.claude/`). Cursor / Gemini / VS Code / Antigravity installs no longer false-fail the agent / command counts.
+- **IDE-validation list** in `cli/install.js` extended to include `vscode` and `antigravity` so explicit `--ide vscode` / `--ide antigravity` flags pass validation.
+
+### Verified
+
+- `node dist/rcode.js install /tmp/test-vscode --ide vscode --yes` → 41 agents + 80 skills + 95 commands, health check ✓
+- `node dist/rcode.js install /tmp/test-anti --ide antigravity --yes` → 41 agents + 80 skills + 95 commands at `.antigravity/rihal/`, health check ✓
+- 130 tests still passing
+
+---
+
 ## v3.2.0 — install UX overhaul: arrow-key prompts, two new IDEs, interactive upgrade resolver (2026-04-27)
 
 Closes the 5 install-UX bugs (#449–#453) from the v3.1.0 user feedback session. The headline win is upgrade ergonomics — the wall of `differs from package version` warnings is gone, replaced by a categorised summary and an interactive per-file resolver.

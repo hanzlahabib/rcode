@@ -415,8 +415,33 @@ function getPathsForIde(ide, target) {
         referencesDir: path.join(target, '.rihal', 'references'),
         binDir: path.join(target, '.rihal', 'bin'),
       };
+    case 'vscode':
+      // VS Code's Claude Code / Continue / Copilot extensions all read from
+      // .claude/ (Claude Code's canonical paths). We install there directly
+      // and additionally write a .vscode/rihal/ marker so VS Code workspace
+      // settings can pin behaviour.
+      return {
+        agentsDir: path.join(target, '.claude', 'agents'),
+        commandsDir: path.join(target, '.claude', 'commands', 'rihal'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+        markerDir: path.join(target, '.vscode', 'rihal'),
+      };
+    case 'antigravity':
+      // Antigravity (Google's agentic IDE) — install to .antigravity/ mirroring
+      // the .gemini/ structure. Antigravity's plugin protocol is still firming
+      // up; the user can adjust paths via .rihal/config.yaml's `extra_install_paths`
+      // if Antigravity expects different routing.
+      return {
+        agentsDir: path.join(target, '.antigravity', 'rihal', 'agents'),
+        commandsDir: path.join(target, '.antigravity', 'rihal', 'commands'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+      };
     default:
-      throw new Error(`Unknown IDE: ${ide}. Supported: claude, cursor, gemini`);
+      throw new Error(`Unknown IDE: ${ide}. Supported: claude, cursor, gemini, vscode, antigravity`);
   }
 }
 
@@ -1231,25 +1256,26 @@ async function install(opts) {
   }
 
   // Validate IDE — structured error for unsupported editors (#197).
-  if (!['claude', 'cursor', 'gemini'].includes(opts.ide)) {
+  if (!['claude', 'cursor', 'gemini', 'vscode', 'antigravity'].includes(opts.ide)) {
     console.error(`✖ --ide ${opts.ide} is not supported in v${readPackageVersion()}.`);
     console.error('');
     console.error('  Currently supported:');
-    console.error('    claude    — Claude Code native (recommended)');
-    console.error('    cursor    — Cursor IDE');
-    console.error('    gemini    — Gemini CLI');
+    console.error('    claude       — Claude Code native (recommended)');
+    console.error('    cursor       — Cursor IDE');
+    console.error('    gemini       — Gemini CLI');
+    console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
+    console.error('    antigravity  — Antigravity (experimental)');
     console.error('');
-    console.error('  Tracked for v3.0 (see issue #182):');
-    console.error('    vscode    — VS Code native extension');
-    console.error('    jetbrains — IntelliJ / PyCharm');
-    console.error('    zed       — Zed editor');
+    console.error('  Tracked for future:');
+    console.error('    jetbrains    — IntelliJ / PyCharm');
+    console.error('    zed          — Zed editor');
     console.error('');
-    if (/^(vscode|vs-code|code)$/i.test(opts.ide)) {
-      console.error('  Workaround: if you use VS Code WITH the Claude Code extension,');
-      console.error('  run `--ide claude` — the extension reads from .claude/ too.');
-      console.error('');
-    }
     return 1;
+  }
+
+  // VS Code installs to .claude/ paths (extension reads from there). Inform the user.
+  if (opts.ide === 'vscode') {
+    console.log('  ' + dim('VS Code → installing to .claude/ paths (read by Claude Code / Continue / Copilot extensions).'));
   }
 
   // Gemini IDE support deferred
@@ -1259,6 +1285,12 @@ async function install(opts) {
     console.log(`This feature is planned but not yet available.\n`);
     console.log(`For now, use: --ide claude or --ide cursor\n`);
     return 1;
+  }
+
+  // Antigravity install is experimental — best-effort path, user may need to adjust
+  if (opts.ide === 'antigravity') {
+    console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rihal/{agents,commands}/.'));
+    console.log('  ' + dim('If Antigravity expects a different path, adjust .rihal/config.yaml and re-run.'));
   }
 
   // Validate requested modules exist
@@ -1667,16 +1699,19 @@ async function install(opts) {
     console.log('');
   }
 
-  // Count installed agents + commands dynamically (#190).
-  const agentsDir = path.join(opts.target, '.claude', 'agents');
-  const commandsDir = path.join(opts.target, '.claude', 'commands', 'rihal');
+  // Count installed agents + commands dynamically (#190). Reads from the
+  // IDE-specific install paths so cursor/gemini/vscode/antigravity don't
+  // false-fail the health check.
+  const idePaths = getPathsForIde(opts.ide, opts.target);
+  const agentsDir = idePaths.agentsDir;
+  const commandsDir = idePaths.commandsDir;
   let agentCount = 0, commandCount = 0;
   try {
     if (fs.existsSync(agentsDir)) {
-      agentCount = fs.readdirSync(agentsDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+      agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
     }
     if (fs.existsSync(commandsDir)) {
-      commandCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md')).length;
+      commandCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') || f.endsWith('.mdc')).length;
     }
   } catch {}
 
@@ -1688,9 +1723,12 @@ async function install(opts) {
   console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
   console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rihal-tools gitignore refresh)')}`);
   console.log('');
-  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in .claude/agents/`);
-  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in .claude/commands/rihal/`);
-  if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated in .claude/skills/`);
+  // Show the actual install paths so cursor/gemini/antigravity output is accurate
+  const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
+  const relCommands = path.relative(opts.target, idePaths.commandsDir) || idePaths.commandsDir;
+  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${relAgents}/`);
+  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${relCommands}/`);
+  if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated`);
   console.log('');
   if (starterSeeded) {
     console.log('  ' + ok('Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)'));
