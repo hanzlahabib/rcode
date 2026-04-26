@@ -3043,6 +3043,9 @@ function cmdProgress(args) {
     if (!fs.existsSync(roadmapPath)) return [];
     const text = fs.readFileSync(roadmapPath, 'utf8');
     const phases = [];
+    const seen = new Set();
+
+    // Format A — markdown pipe tables: | 07 | Name | Goal |
     const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
     let m;
     while ((m = rowRe.exec(text)) !== null) {
@@ -3051,16 +3054,54 @@ function cmdProgress(args) {
       const goal = m[3].trim();
       if (!/^\d/.test(num)) continue;
       if (name.toLowerCase() === 'phase') continue;
+      if (seen.has(num)) continue;
+      seen.add(num);
       phases.push({ number: num, name, goal });
     }
+
+    // Format B — heading style: ## Phase 07 — Name  /  ### Phase 07: Name  /  ## Phase 07 - Name
+    const headRe = /^#{2,4}\s*Phase\s+(\d{1,3}(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
+    while ((m = headRe.exec(text)) !== null) {
+      const num = m[1].trim();
+      const name = m[2].trim();
+      if (seen.has(num)) continue;
+      seen.add(num);
+      // Goal: pull the first non-empty line after the heading that starts with **Goal:** or is plain text
+      const after = text.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
+      const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
+      phases.push({ number: num, name, goal: goalMatch ? goalMatch[1].trim() : '' });
+    }
+
+    // Sort numerically (handles "07" vs "10" string ordering correctly)
+    phases.sort((a, b) => parseFloat(a.number) - parseFloat(b.number));
     return phases;
   }
 
   function extractMilestoneName() {
-    if (!fs.existsSync(roadmapPath)) return null;
-    const text = fs.readFileSync(roadmapPath, 'utf8');
-    const m = text.match(/^##\s+Milestone\s+(M\d+\S*)\s*[—\-:]?\s*(.*)$/m);
-    return m ? `${m[1]} ${m[2]}`.trim() : null;
+    // 1. Try ROADMAP.md headings — match any milestone header form
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      // Bold form: **Milestone: v1.0 — Name** or **Milestone v1.0 — Name**
+      let m = text.match(/\*\*\s*Milestone\s*:?\s*([^\n*]+?)\s*\*\*/i);
+      if (m) return m[1].trim();
+      // Header form: ## Milestone v1.0 — Name  /  ## Milestone: v1.0 — Name
+      m = text.match(/^#{1,4}\s+Milestone\s*:?\s*([^\n]+)$/m);
+      if (m) return m[1].trim();
+    }
+    // 2. Fall back to state.json milestone field
+    try {
+      if (fs.existsSync(statePath)) {
+        const s = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        if (s && s.milestone) return String(s.milestone).trim();
+      }
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  // Treat any of `number`, `id`, or `name` as the phase identifier.
+  // Different commands historically write different field names — accept all.
+  function phaseKey(p) {
+    return String(p?.number ?? p?.id ?? p?.name ?? '').trim();
   }
 
   function walkPhaseDirs() {
@@ -3099,10 +3140,13 @@ function cmdProgress(args) {
       });
     }
 
-    // Undercount: phases that exist on disk but not in state
-    const statePhaseNums = new Set(statePhases.map(p => String(p.number)));
+    // Undercount: phases that exist on disk but not in state.
+    // Accept any of `number`, `id`, or `name` as the phase identifier — the codebase historically writes different fields.
+    // Also normalize "07" / "7" / 7 to a comparable form.
+    const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
+    const statePhaseNums = new Set(statePhases.map(p => norm(phaseKey(p))));
     const diskPhaseNums = Object.keys(diskByNum);
-    const missingFromState = diskPhaseNums.filter(n => !statePhaseNums.has(n));
+    const missingFromState = diskPhaseNums.filter(n => !statePhaseNums.has(norm(n)));
     if (missingFromState.length > 0) {
       insights.push({
         kind: 'undercount',
@@ -3132,14 +3176,15 @@ function cmdProgress(args) {
 
     // Route A — phases with pending plans (ready to execute)
     const pendingExec = statePhases.filter(p => {
-      const disk = diskByNum[String(p.number)];
+      const disk = diskByNum[phaseKey(p)];
       return disk && disk.plan_count > disk.summary_count;
     }).slice(0, 3);
     for (const p of pendingExec) {
+      const k = phaseKey(p);
       routes.push({
         letter: 'A',
-        label: `Execute phase ${p.number} — unfinished plans`,
-        command: `/rihal:execute-phase ${p.number}`,
+        label: `Execute phase ${k} — unfinished plans`,
+        command: `/rihal:execute-phase ${k}`,
       });
     }
 
@@ -3152,6 +3197,23 @@ function cmdProgress(args) {
         letter: 'B',
         label: `Plan phase ${num} — researched, awaiting plan`,
         command: `/rihal:plan-phase ${num}`,
+      });
+    }
+
+    // Route B' — in-progress phases without plans (the user is actively working but no SPRINT.md exists yet)
+    const inProgressNoPlan = statePhases
+      .filter(p => (p.status === 'in_progress' || p.status === 'in-progress'))
+      .filter(p => {
+        const disk = diskByNum[phaseKey(p)];
+        return !disk || disk.plan_count === 0;
+      })
+      .slice(0, 2);
+    for (const p of inProgressNoPlan) {
+      const k = phaseKey(p);
+      routes.push({
+        letter: 'B',
+        label: `Plan phase ${k} — in progress without SPRINT.md`,
+        command: `/rihal:plan ${k}`,
       });
     }
 
@@ -3215,11 +3277,28 @@ function cmdProgress(args) {
     phase_count: phaseCount,
     completed_count: completedCount,
     bar: buildBar(completedCount, phaseCount),
-    phases: roadmapPhases.map(p => ({
-      ...p,
-      disk: diskByNum[p.number] || null,
-      in_state: statePhases.some(sp => String(sp.number) === p.number),
-    })),
+    phases: (() => {
+      // Prefer ROADMAP-parsed phases when available; fall back to state.phases
+      // when the roadmap doesn't use a parseable format. Normalize "07" / "7" / 7.
+      const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
+      const source = roadmapPhases.length > 0 ? roadmapPhases : statePhases.map(p => ({
+        number: phaseKey(p),
+        name: p.name || '',
+        goal: p.goal || '',
+        status: p.status,
+      }));
+      return source.map(p => {
+        const k = phaseKey(p);
+        const sp = statePhases.find(x => norm(phaseKey(x)) === norm(k));
+        return {
+          ...p,
+          number: k,
+          status: p.status || (sp && sp.status) || null,
+          disk: diskByNum[k] || null,
+          in_state: !!sp,
+        };
+      });
+    })(),
     decisions: state ? (state.decisions || []).slice(-3) : [],
     blockers: state ? (state.blockers || []).filter(b => !b.resolved).slice(0, 5) : [],
     insights,
