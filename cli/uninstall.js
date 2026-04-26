@@ -17,6 +17,10 @@
  *   --editor=claude|cursor|windsurf|antigravity|all   Limit scope
  *   --keep-state                                      Never touch .rihal/
  *   --delete-state                                    Also delete .rihal/ (skip prompt)
+ *   --purge / --all                                   Wipe everything — editor files,
+ *                                                       .rihal/, .planning/, gitignore block.
+ *                                                       Use when you want /rihal:init to
+ *                                                       report "fresh" on next install.
  *   --yes / -y                                        Skip the main confirmation
  */
 
@@ -32,6 +36,7 @@ function parseArgs(args) {
     keepState: false,       // if true, never delete .rihal/
     deleteState: false,     // if true, delete .rihal/ without prompting
     yes: false,             // skip the main confirmation
+    purge: false,           // wipe everything: editor files + .rihal/ + .planning/ + gitignore block
   };
   for (const arg of args) {
     if (arg.startsWith('--editor=')) {
@@ -42,6 +47,11 @@ function parseArgs(args) {
       opts.deleteState = true;
     } else if (arg === '--yes' || arg === '-y') {
       opts.yes = true;
+    } else if (arg === '--purge' || arg === '--all') {
+      // --purge implies --delete-state and removes .planning/ + gitignore block.
+      // Use this when you want a clean slate so /rihal:init reports "fresh" next time.
+      opts.purge = true;
+      opts.deleteState = true;
     }
   }
   return opts;
@@ -365,9 +375,14 @@ async function runUninstall(args) {
   console.log();
 
   // Fast path: is Rihal Code installed here at all? Check our own marker
-  // (.rihal/config.json) + any editor install trace. If nothing, exit cleanly
+  // (.rihal/config.yaml) + any editor install trace. If nothing, exit cleanly
   // with a clear message so users don't wonder "did it work?"
-  const hasConfig = fs.existsSync(path.join(cwd, '.rihal/config.json'));
+  // (Was checking config.json — a long-standing typo since the installer
+  // writes config.yaml. The check still worked thanks to the editor-files
+  // fallback, but a project with .rihal/ and no editor files would falsely
+  // report "not installed".)
+  const hasConfig = fs.existsSync(path.join(cwd, '.rihal/config.yaml'))
+    || fs.existsSync(path.join(cwd, '.rihal/config.json'));
   const hasAnyEditorFiles =
     fs.existsSync(path.join(cwd, '.claude/skills')) ||
     fs.existsSync(path.join(cwd, '.cursor/rules')) ||
@@ -565,8 +580,13 @@ async function runUninstall(args) {
     if (!opts.deleteState && !opts.keepState && !opts.yes) {
       console.log();
       console.log(`⚠️  The .rihal/ state directory contains your project data:`);
+      console.log(`   - config.yaml, state.json, RIHLA.md`);
       console.log(`   - phases, decisions, progress, artifacts, context`);
       console.log(`   - ${plan.stateDir.files} files total`);
+      console.log();
+      console.log(`   If you keep it: /rihal:init will report "already configured"`);
+      console.log(`     and reuse your existing config + history on next install.`);
+      console.log(`   If you delete it: next install starts fresh — no carry-over.`);
       console.log();
       shouldDeleteState = await askConfirm(
         `Also delete .rihal/ state? This is destructive and cannot be undone. [y/N] `,
@@ -582,9 +602,49 @@ async function runUninstall(args) {
     }
   }
 
+  // --purge: also wipe .planning/ artifacts and the rcode .gitignore block.
+  // Without this, "uninstall + reinstall" carries forward stale phases /
+  // sprints / SUMMARY files even after .rihal/ is gone.
+  if (opts.purge) {
+    const planningDir = path.join(cwd, '.planning');
+    if (fs.existsSync(planningDir)) {
+      fs.rmSync(planningDir, { recursive: true, force: true });
+      console.log(`   ✓ removed .planning/ (--purge)`);
+    }
+
+    // Strip the rcode-managed block from .gitignore. The installer writes
+    // a fenced block; we remove it cleanly without touching user lines.
+    const gitignorePath = path.join(cwd, '.gitignore');
+    if (fs.existsSync(gitignorePath)) {
+      try {
+        const before = fs.readFileSync(gitignorePath, 'utf8');
+        // Match either fenced markers or the legacy "# rcode" header through to
+        // the next blank line — both shapes the installer has used historically.
+        const stripped = before
+          .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
+          .replace(/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g, '\n')
+          .replace(/\n{3,}/g, '\n\n');
+        if (stripped !== before) {
+          fs.writeFileSync(gitignorePath, stripped);
+          console.log(`   ✓ stripped rcode block from .gitignore (--purge)`);
+        }
+      } catch (err) {
+        console.log(`   ⚠ could not strip .gitignore block: ${err.message}`);
+      }
+    }
+  }
+
   console.log(`\n✅ Uninstall complete. Removed ${removed} files.`);
   if (backup.ok) {
     console.log(`   Backup: ${backup.path} (restore with: tar -xzf ${backup.path})`);
+  }
+
+  // Hint about the purge flag if the user kept state — closes the user's
+  // most common confusion: "I uninstalled but /rihal:init still says configured."
+  if (plan.stateDir && fs.existsSync(path.join(cwd, '.rihal'))) {
+    console.log();
+    console.log(`ℹ  .rihal/ state was preserved. /rihal:init will detect this on reinstall.`);
+    console.log(`   For a fully clean slate next time, use: rcode uninstall --purge`);
   }
 
   // Hint about reinstalling
