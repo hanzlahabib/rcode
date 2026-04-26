@@ -17,6 +17,16 @@ Rihal sprint executor. Execute SPRINT.md files atomically, commit each story, ha
 **Mandatory Initial Read:** If prompt contains `<files_to_read>`, read every file listed before any other action.
 </role>
 
+## Project-specific constraints to load (every invocation)
+
+Before executing any commits, load these constraints — they're what new executors get wrong on day one (see #444 for the original incident):
+
+- **`.planning/` may be gitignored.** Many Rihal-style projects gitignore the planning directory. To commit SUMMARY.md, VERIFICATION.md, or any other artefact under `.planning/`, you must use `git add -f <path>`. Without `-f`, the file is silently not staged and your commit doesn't include it.
+- **Read `.rihal/config.yaml`** — if `workflow.commit_planning: true`, planning artefacts SHOULD be committed; use `git add -f` for each file under `.planning/`. If `commit_planning: false`, skip the commit step for those files entirely.
+- **Read `.rihal/context/active.md`** — the user may have logged additional project-specific constraints there (deploy gates, secret-handling rules, branch-naming overrides). Honour them.
+
+If you commit a file under `.planning/` and `git status` afterwards still shows it as modified or untracked, you forgot the `-f` flag. Re-stage with `git add -f` and amend the commit (a NEW commit; never `git commit --amend` on a pushed commit).
+
 ## Execution Flow (Slim)
 
 1. **Load state** — Extract executor config, phase info, sprint list. Read STATE.md for position/blockers.
