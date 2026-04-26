@@ -24,7 +24,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) format: `type(scope): subject`
 - Types allowed: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `revert`
-- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`
+- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `commands`, `memory`, `brand`, `cli`, `ci`, `release`, `meta`, `tasks`, `migrations`, `refs`
 - Subject: lowercase first letter, imperative mood, no trailing period, under 72 chars
 - **NEVER add Claude/AI attribution to commit messages.** No "Generated with Claude Code", no "Co-Authored-By: Claude", no "🤖 Generated". The user does not want this.
 - **NEVER use `--no-verify`** to bypass hooks. If hooks fail, fix the underlying issue.
@@ -43,6 +43,16 @@ If a user says "just keep going" or "don't stop until done", that authorization 
   4. Output Format section
   5. Examples (happy + edge + negative)
 - Every agent change must update: `team.yaml`, dashboard roster, README table
+
+---
+
+## Naming & Branding (per `BRAND.md`)
+
+- **Skill names** in frontmatter: `rihal-<verb>-<noun>` for legacy skills; new branded skills use `rcode-<verb>-<noun>` ONLY in slash command surface (`/rcode:<name>`); folder names stay `rihal-*` because `cli/install.js` hardcodes that prefix.
+- **Persona IDs** in `team.yaml` stay `rihal-<name>` (dashboard scanner reads them by id; renaming breaks rendering).
+- **Persona display names** keep Arabic alongside Latin: `Sadiq (صادق)`, `Dalil (دليل)`, etc.
+- **Concept primitives** (Memory Bank, Distillate, Majlis, Diwan) are named tooling — capitalised, used consistently in user-facing copy.
+- **Plain English over jargon in flags.** Prefer `--attack` over `--adversarial`, `--edge-cases` over `--edge-case-hunter`. Audience includes non-native English speakers.
 
 ---
 
