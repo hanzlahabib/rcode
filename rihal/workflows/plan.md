@@ -999,7 +999,27 @@ Track `stall_reentry_count` (starts at 0; incremented each time "Adjust approach
 
 **If iteration_count < 3:**
 
-Parse issue count from checker return: count BLOCKER + WARNING entries in the YAML issues block (structured output from rihal-sprint-checker). If the checker's return contains no YAML issues block (i.e., the plan was approved with no issues), treat `issue_count` as 0 and skip the stall check — the plan passed. Proceed to step 13.
+**Sprint-checker malfunction guard (BLOCKER-class — added in v3.1.0 after #440):**
+
+Before parsing issues, verify the checker actually invoked tools. The checker MUST exhibit at least one of these evidence markers in its return:
+
+- A YAML `issues:` block (even an empty one — `issues: []`)
+- A YAML `verified_files:` block listing files it read
+- At least one `path:` field in any block (e.g. `path: src/components/Foo.tsx:42`)
+- A summary line of the form `Verified N of M files` or `Checked N symbols`
+
+If NONE of these evidence markers are present, the checker malfunctioned (returned narrative without invoking tools — see #440). BLOCK execution:
+
+```
+Display: "Sprint-checker returned without evidence of tool use — likely
+         malfunctioned (cf. issue #440). Refusing to advance the plan
+         on unverified output. Re-run /rihal:plan or inspect the agent."
+Halt the workflow with a non-zero exit signal.
+```
+
+Do NOT treat empty / narrative-only checker output as "plan approved". An empty checker output is a malfunction, not a pass.
+
+Parse issue count from checker return: count BLOCKER + WARNING entries in the YAML issues block (structured output from rihal-sprint-checker). If the checker's return contains a populated YAML issues block with `issues: []` (i.e., the plan was approved with no issues AFTER actual checking), treat `issue_count` as 0 and skip the stall check — the plan passed. Proceed to step 13.
 
 Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} warnings`
 

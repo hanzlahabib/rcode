@@ -108,6 +108,24 @@ Each dimension has pass/partial/fail criteria, remediation guidance, and output 
 3. **Synthesize** — Produce CHECK.md with overall verdict, per-dimension scores, remediation asks.
 4. **Return** — Block execution if critical dimensions fail; proceed with cautions if only partials.
 
+## Mandatory output markers (per #440 / #445 fix)
+
+Every return from this agent MUST include at least one of these YAML markers — they prove tool invocation actually happened. The orchestrator's malfunction guard in `plan.md` blocks execution if none are present.
+
+```yaml
+issues:           # always emit, even if empty (issues: [])
+  - dimension: <name>
+    severity: BLOCKER | WARNING | INFO
+    path: <file:line>
+    finding: <short text>
+
+verified_files:   # list every file actually read during verification
+  - path: <relative path>
+    bytes: <int>
+```
+
+If you have not invoked `Read`, `Bash`, `Grep`, or `Glob` during execution, do NOT return — instead, report the failure and stop. Empty narrative output is treated as malfunction, not pass.
+
 ## On-Demand Rule Files
 
 | When you need... | Read |
