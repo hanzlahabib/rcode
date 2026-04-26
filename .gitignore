@@ -29,6 +29,10 @@ output/
 dist/
 image.png
 
+# Working scratch — external clones and plan drafts, not part of the product
+temp/agent-skills/
+temp/
+
 # ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====
 # Added automatically on first rcode install. Idempotent — safe to re-run.
 # Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.
