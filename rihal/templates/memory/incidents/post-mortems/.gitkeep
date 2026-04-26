@@ -1,0 +1,3 @@
+# Post-mortems land here, one file per resolved incident.
+# Filename: `YYYYMMDD-<short-slug>.md` (e.g. `20260315-keycloak-ad-sync.md`).
+# Use the rcode-incident-record skill (Phase 6) to generate.

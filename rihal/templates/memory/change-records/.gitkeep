@@ -1,0 +1,4 @@
+# Change records — production / staging changes that need an audit trail.
+# Filename: `YYYYMMDD-NNN.md` (e.g. `20260426-001.md`).
+# Each change record contains: ID, date, requester, owner, category, type,
+# description, risk, deployment method, approval, rollback plan, verification.
