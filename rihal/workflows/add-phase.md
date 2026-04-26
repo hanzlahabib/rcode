@@ -41,11 +41,43 @@ Run /rihal:new-project to initialize.
 Exit.
 </step>
 
+<step name="detect_task_list">
+**Detect bulk-task input** — when /rihal:quick or /rihal:do auto-routes a multi-task input here, the entire bug list arrives as `${description}`. Don't put it all in the phase title; extract structure.
+
+Match if `${description}` contains ANY of:
+- 5+ numbered list items (`/^\s*\d+\.\s/m` ≥ 5)
+- 5+ bullet items (`/^\s*[-*]\s/m` ≥ 5)
+- 3+ "Bug Report:" / "Issue:" / "Severity:" headers
+- Multiple newlines (> 5 lines total)
+
+If matched:
+
+1. **Phase name** = first line of `${description}` (or first 80 chars if no newline). If the first line is itself a heading like `# Phase 09 — UI Bug Cleanup`, strip the leading `#` characters.
+2. **Phase body** = the rest of the input.
+3. After the phase directory is created (next step), write the body to `.planning/phases/{NN}-{slug}/TASKS.md` with header:
+
+   ```markdown
+   # Phase {N} — {phase name} — Tasks
+
+   *Auto-extracted from /rihal:quick or /rihal:do bulk auto-route on {ISO date}.*
+
+   {original body, preserved verbatim}
+   ```
+
+4. Note in the completion message: "TASKS.md written with N tasks". The downstream /rihal:plan workflow consumes TASKS.md as the input to SPRINT.md generation — no manual re-paste needed.
+
+If NOT matched (single task), proceed normally — `${description}` is the phase name as-is.
+
+Set `BULK_MODE=true|false` for the next step.
+</step>
+
 <step name="add_phase">
 **Delegate the phase addition to rihal-tools:**
 
 ```bash
-RESULT=$(node ".rihal/bin/rihal-tools.cjs" phase add "${description}")
+# In bulk mode, pass only the extracted phase name (not the entire body)
+PHASE_NAME=$( [ "$BULK_MODE" = "true" ] && echo "$EXTRACTED_FIRST_LINE" || echo "$description" )
+RESULT=$(node ".rihal/bin/rihal-tools.cjs" phase add "${PHASE_NAME}")
 ```
 
 The CLI handles:
@@ -56,6 +88,8 @@ The CLI handles:
 - Inserting the phase entry into ROADMAP.md with Goal, Depends on, and Plans sections
 
 Extract from result: `phase_number`, `padded`, `name`, `slug`, `directory`.
+
+**If `BULK_MODE=true`:** after the CLI returns, write the bulk body to `${directory}/TASKS.md` per the structure defined in `detect_task_list`. This step is non-destructive — it only ADDs a TASKS.md file inside the new phase directory.
 </step>
 
 <step name="update_project_state">
