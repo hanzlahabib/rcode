@@ -503,7 +503,7 @@ Produces:
 - Suggestions for improvement
 - Compliance check
 
-**Related:** `/rihal:code-review-fix`, `/rihal:karpathy-audit`
+**Related:** `/rihal:code-review-fix`, `/rihal:code-review --karpathy`
 
 ---
 
@@ -551,12 +551,12 @@ Audits code for:
 
 ---
 
-### `/rihal:karpathy-audit`
-**Purpose:** Audit code vs Karpathy's 4 coding principles.
+### `/rihal:code-review --karpathy`
+**Purpose:** Audit code vs Karpathy's 4 coding principles. Folded into `/rihal:code-review` as a flag.
 
 ```
-/rihal:karpathy-audit HEAD~5..HEAD
-/rihal:karpathy-audit 03 --files=src/auth/
+/rihal:code-review HEAD~5..HEAD --karpathy
+/rihal:code-review 03 --files=src/auth/ --karpathy
 ```
 
 Checks:

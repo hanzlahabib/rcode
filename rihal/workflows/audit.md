@@ -4,7 +4,7 @@
 Single entry point for every kind of audit. Asks the user *what* to audit
 and dispatches to the right sub-workflow. Closes #234 — replaces the prior
 state where users had to know about six separate audit/verify commands by
-name (`audit-milestone`, `audit-uat`, `audit-fix`, `karpathy-audit`,
+name (`audit-milestone`, `audit-uat`, `audit-fix`, `code-review --karpathy`,
 `verify-phase`, `verify-work`).
 
 Honours `.rihal/config.yaml`: in `mode: yolo`, the router skips the menu
@@ -21,7 +21,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 /rihal:audit phase [<NN>]          # → /rihal:verify-phase
 /rihal:audit milestone [--strict]  # → /rihal:audit-milestone (with synth fallback)
 /rihal:audit uat                   # → /rihal:audit-uat
-/rihal:audit code [--scope=...]    # → /rihal:karpathy-audit
+/rihal:audit code [--scope=...]    # → /rihal:code-review --karpathy
 /rihal:audit fix                   # → /rihal:audit-fix
 /rihal:audit work                  # → /rihal:verify-work
 ```
@@ -138,7 +138,7 @@ Run the target's slash command, forwarding remaining args:
 | phase | `/rihal:verify-phase $REST_ARGS` |
 | milestone | `/rihal:audit-milestone $REST_ARGS` |
 | uat | `/rihal:audit-uat $REST_ARGS` |
-| code | `/rihal:karpathy-audit $REST_ARGS` |
+| code | `/rihal:code-review $REST_ARGS --karpathy` |
 | fix | `/rihal:audit-fix $REST_ARGS` |
 | work | `/rihal:verify-work $REST_ARGS` |
 

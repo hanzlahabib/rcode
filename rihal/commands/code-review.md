@@ -1,7 +1,7 @@
 ---
 name: rihal:code-review
 description: Review source files for bugs, security issues, and code quality problems.
-argument-hint: "<phase> [--depth=quick|standard|deep] [--files=file1,file2,...]"
+argument-hint: "<phase> [--depth=quick|standard|deep] [--files=file1,file2,...] [--karpathy]"
 allowed-tools:
   - Read
   - Grep

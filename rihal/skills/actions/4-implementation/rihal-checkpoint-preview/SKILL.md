@@ -11,7 +11,7 @@ Checkpoint preview skill for Rihal Code.
 
 ## Do NOT use this skill for
 
-- **Automated code review without a human** — use `/rihal:karpathy-audit` or a code-reviewer agent directly.
+- **Automated code review without a human** — use `/rihal:code-review --karpathy` or a code-reviewer agent directly.
 - **Approving a deploy or merge** — this skill explains a change; it does not authorize git push, deploys, or PR merges.
 - **Bug investigation** from scratch — use `/rihal:debug` or the diagnose-issues workflow.
 - **Architecture review of an undelivered design** — this skill reviews delivered code/diffs, not specs.

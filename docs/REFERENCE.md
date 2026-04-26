@@ -96,7 +96,7 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | `/rihal:review` | — | Cross-AI peer review — invoke external AI CLIs to independently review phase plans. |
 | `/rihal:review-adversarial` | `[--phase <name>] [--component <name>]` | Produce attack/weakness report from hostile perspective — security, race conditions, data loss, abuse cases. |
 | `/rihal:review-edge-case-hunter` | `[--phase <name>] [--component <name>]` | Enumerate edge cases by category (input, state, concurrency, network) with severity. |
-| `/rihal:karpathy-audit` | `<phase\|git-ref> [--files=path1,path2]` | Audit recent code changes against Karpathy's 4 LLM coding principles. |
+| `/rihal:code-review --karpathy` | `<phase\|git-ref> [--files=path1,path2]` | Audit recent code changes against Karpathy's 4 LLM coding principles. |
 | `/rihal:secure-phase` | `<phase>` | Retroactively verify threat mitigations for a completed phase. |
 | `/rihal:ui-review` | `[--phase <name>] [--detailed]` | Retroactive 6-pillar visual audit — color consistency, typography, components, accessibility, responsive, coherence. |
 | `/rihal:checkpoint-preview` | `[<branch-or-diff>]` | Human-in-the-loop change review — makes sense of a diff, focuses attention where it matters, walks through testing. |

@@ -126,7 +126,7 @@ npx @hanzlaa/rcode install --ide gemini
 /rihal:plan --research build a rental app    → researcher grounds, plan-checker verifies
 /rihal:execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
 /rihal:status                                → phases, decisions, blockers, sessions
-/rihal:karpathy-audit HEAD~5..HEAD           → audit changes vs 4 coding principles
+/rihal:code-review HEAD~5..HEAD --karpathy   → audit changes vs 4 coding principles
 ```
 
 ---
@@ -271,11 +271,11 @@ Amazon's "Working Backwards" method: write the finished-product press release *b
 3. **Surgical changes** — touch only what's needed, match existing style
 4. **Goal-driven execution** — define verifiable success criteria
 
-`/rihal:karpathy-audit` runs these 4 principles as a post-hoc audit against any diff or phase. Use it after implementation to catch bloated, over-engineered, or scope-creeping changes before they land in a PR.
+`/rihal:code-review --karpathy` runs these 4 principles as a post-hoc audit against any diff or phase. Use it after implementation to catch bloated, over-engineered, or scope-creeping changes before they land in a PR.
 
 ```
-/rihal:karpathy-audit HEAD~5..HEAD
-/rihal:karpathy-audit 03 --files=src/auth/
+/rihal:code-review HEAD~5..HEAD --karpathy
+/rihal:code-review 03 --files=src/auth/ --karpathy
 ```
 
 ### Plan verification + post-execute gates
@@ -342,7 +342,7 @@ Recent additions in this session:
 `execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
 
 ### Observability + review
-`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `karpathy-audit` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`
+`code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`
 
 ### Recovery + correction
 `pause-work` · `resume-work` · `correct-course` · `next` · `config`

@@ -445,7 +445,7 @@ etc.
 Wired into every code-writing agent as hard constraints. Audit recent changes:
 
 ```
-/rihal:karpathy-audit HEAD~5..HEAD
+/rihal:code-review HEAD~5..HEAD --karpathy
 ```
 
 ---

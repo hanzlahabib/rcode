@@ -174,7 +174,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:add-tests <n>` | Generate unit + E2E tests based on SPRINT/SUMMARY/CONTEXT. |
 | `/rihal:audit-uat` | Cross-phase audit of all outstanding UAT items. |
 | `/rihal:audit-fix` | Autonomous audit-to-fix pipeline — find, classify, fix, test, commit. |
-| `/rihal:karpathy-audit` | Audit recent code against Karpathy's 4 LLM coding principles. |
+| `/rihal:code-review --karpathy` | Audit recent code against Karpathy's 4 LLM coding principles. |
 | `/rihal:ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
 | `/rihal:ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
 | `/rihal:review-adversarial` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |

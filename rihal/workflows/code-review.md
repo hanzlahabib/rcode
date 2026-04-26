@@ -18,7 +18,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2]
+/rihal:code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2] [--karpathy]
 ```
 
 **Examples:**
@@ -26,7 +26,18 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:code-review 01
 /rihal:code-review 02.1 --depth=deep
 /rihal:code-review 03 --files=src/auth.js,src/db.js
+/rihal:code-review HEAD~5..HEAD --karpathy
 ```
+
+## Step 0a — Karpathy mode delegation
+
+If `$ARGUMENTS` contains `--karpathy`, delegate to the Karpathy 4-principle audit workflow and stop:
+
+```
+Read and execute @.rihal/workflows/karpathy-audit.md end-to-end with the same arguments minus `--karpathy`.
+```
+
+The standard code-review steps below are skipped when `--karpathy` is set — the karpathy-audit workflow produces its own report.
 
 <process>
 

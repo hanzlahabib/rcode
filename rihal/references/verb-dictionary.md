@@ -87,7 +87,7 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 | plan (verb form — "plan phase N") | `plan` | `/rihal:plan` |
 | story (impl) | `dev story`, `implement story`, `build story` | `/rihal:dev-story` |
 | brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna` | `/rihal:brainstorm` |
-| review (code) | `code review`, `karpathy`, `check my diff` | `/rihal:karpathy-audit` / `/rihal:code-review` |
+| review (code) | `code review`, `karpathy`, `check my diff` | `/rihal:code-review [--karpathy]` |
 | debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek` | `/rihal:debug` |
 
 ---
