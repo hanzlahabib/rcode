@@ -81,6 +81,7 @@ ${renderCss()}
       <button class="nav-link" data-view="files">📄 Files</button>
       <button class="nav-link" data-view="agents">🤝 Agents</button>
       <button class="nav-link" data-view="decisions">⚖ Decisions</button>
+      <button class="nav-link" data-view="memory">🧠 Memory Bank</button>
     </nav>
     <div id="sidebar-file-tree" style="margin-top:var(--space-4);padding:0 var(--space-2);"></div>
   </aside>
@@ -199,6 +200,10 @@ ${renderCss()}
     </div>
 
     <div id="view-decisions" class="view"></div>
+
+    <div id="view-memory" class="view">
+      <div id="view-memory-content"><div class="empty" style="padding:80px;background:var(--bg-card);border-radius:var(--radius-lg);"><h2 style="color:var(--rihal-gold);margin-bottom:16px;">Memory Bank</h2><p>Loading…</p></div></div>
+    </div>
 
     <footer>
       <div class="arabic">رحلة البناء · The Journey of Building</div>
