@@ -24,7 +24,7 @@ const http = require('http');
 const path = require('path');
 
 const { scanState } = require('./lib/scanner');
-const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy } = require('./lib/api');
+const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory } = require('./lib/api');
 const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
@@ -59,6 +59,11 @@ const server = http.createServer((req, res) => {
 
   if (url === '/api/hierarchy') {
     handleApiHierarchy(req, res, RIHAL_DIR);
+    return;
+  }
+
+  if (url === '/api/memory') {
+    handleApiMemory(req, res, RIHAL_DIR);
     return;
   }
 
