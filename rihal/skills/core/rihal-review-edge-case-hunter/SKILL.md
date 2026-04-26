@@ -97,3 +97,8 @@ No extra text, no explanations, no markdown wrapping. An empty array `[]` is val
 ### Negative boundary
 **User:** "critically review this spec"
 **Result:** Not edge-case hunting → route to `rihal-review-adversarial-general`
+
+## Memory Bank Hooks
+
+- **Reads:** the content under review (diff, full file, or function)
+- **Writes:** nothing — produces an unhandled-edges report only

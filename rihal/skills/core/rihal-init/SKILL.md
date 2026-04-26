@@ -125,3 +125,8 @@ JSON config vars returned to the calling skill. When init path runs, interactive
 ### Negative boundary
 **User:** "initialize my project"
 **Result:** rihal-init is internal — user should use `rihal-scaffold-project` or `/rihal:install` instead
+
+## Memory Bank Hooks
+
+- **Reads:** `package.json`, existing `.rihal/state.json` to detect prior runs
+- **Writes:** `.rihal/config.yaml`, `.rihal/state.json`, `.rihal/context/active.md`, `.rihal/context/project-brief.md`, `.rihal/RIHLA.md`. Bootstraps the project so all subsequent rcode skills have a stable root.

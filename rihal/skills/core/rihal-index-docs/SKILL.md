@@ -96,3 +96,8 @@ Index docs skill for Rihal Code.
 **User:** "document this project"
 **Result:** Not indexing → route to `rihal-document-project`
 - Skip hidden files (starting with .) unless specified
+
+## Memory Bank Hooks
+
+- **Reads:** every doc in the indexing scope
+- **Writes:** the index file at the configured output path; does NOT modify `.rihal/memory/` (use `rcode-memory-distill` for memory bank index regeneration)

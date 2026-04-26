@@ -96,3 +96,8 @@ Follow the instructions in ./workflow.md.
 ### Negative boundary
 **User:** "brainstorm which tech stack to use"
 **Result:** Redirects to `/rihal:council` or Waleed (CTO) — architecture decisions need structured ADR evaluation, not open ideation.
+
+## Memory Bank Hooks
+
+- **Reads:** `.rihal/memory/project/glossary.md` (so generated ideas use project domain terms)
+- **Writes:** the brainstorm output document at the user-specified path; if any idea becomes a committed direction, the user should run `rcode-memory-update` to log it as a decision

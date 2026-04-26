@@ -118,3 +118,8 @@ Three-column markdown table:
 ### Negative boundary
 **User:** "restructure this document"
 **Result:** Not prose review → route to `rihal-editorial-review-structure`
+
+## Memory Bank Hooks
+
+- **Reads:** the document under review; `style_guide` if provided
+- **Writes:** nothing — produces a recommendations report only

@@ -101,3 +101,8 @@ Status summary of current workflow position, then ordered list of recommended ne
 ### Negative boundary
 **User:** "help me write a React component"
 **Result:** Not a Rihal workflow question → route to `rihal-dev-story` or answer directly
+
+## Memory Bank Hooks
+
+- **Reads:** nothing — `help` is pure reference output
+- **Writes:** nothing — read-only

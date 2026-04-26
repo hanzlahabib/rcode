@@ -135,3 +135,8 @@ Present user with options for the original document:
 ## HALT CONDITIONS
 
 - HALT if npx command fails or produces no output files
+
+## Memory Bank Hooks
+
+- **Reads:** the source document being sharded
+- **Writes:** the sharded output files only; does NOT modify `.rihal/memory/`. If the sharded doc is a Memory Bank file, use `rcode-memory-distill` instead.

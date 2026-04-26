@@ -89,3 +89,8 @@ Each party mode turn follows this pattern:
 ### Negative boundary
 **User:** "party mode — approve this PR"
 **Result:** Redirects to `/rihal:code-review` — code review needs structured evaluation, not open discussion.
+
+## Memory Bank Hooks
+
+- **Reads:** `rihal/team.yaml`, every consulted persona's SKILL.md, `.rihal/memory/people/team.md` (so the casual chat respects active team availability)
+- **Writes:** transcript saved to `.rihal/progress/party-{date}.md` for audit; does NOT update Memory Bank decision log (use `rcode-memory-update` if the chat surfaced a real decision)

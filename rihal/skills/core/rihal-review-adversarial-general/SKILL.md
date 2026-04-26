@@ -65,3 +65,8 @@ Markdown bullet list of findings, each describing a specific problem, gap, or ri
 
 - HALT if zero findings — this is suspicious, re-analyze or ask for guidance
 - HALT if content is empty or unreadable
+
+## Memory Bank Hooks
+
+- **Reads:** the content under review (diff, spec, story, doc)
+- **Writes:** nothing — produces findings only. Findings can be persisted by the caller via `rcode-memory-update` if they shape downstream work.
