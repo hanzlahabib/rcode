@@ -17,7 +17,7 @@ You'll feel rcode pay off if you've lived any of these:
 - **Late client requirements** keep shifting the goal posts, and there's no record of what was decided when.
 - **MVPs that work but can't be revamped** without rewriting from scratch — the original context is lost.
 
-rcode addresses these with a checked-in **Memory Bank** (`.rihal/memory/`), distinctive engineering personas, and a phased workflow that survives session resets. See [`MEMORY_BANK.md`](MEMORY_BANK.md) for the spec, and [`BRAND.md`](BRAND.md) for naming and voice conventions.
+rcode addresses these with a checked-in **Memory Bank** (`.rihal/memory/`), distinctive engineering personas, and a phased workflow that survives session resets. **For everything in one place, read [`DOCS.md`](DOCS.md).** See [`MEMORY_BANK.md`](MEMORY_BANK.md) for the spec, and [`BRAND.md`](BRAND.md) for naming and voice conventions.
 
 ---
 
