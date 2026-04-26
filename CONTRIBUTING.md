@@ -2,6 +2,13 @@
 
 Thank you for contributing. These guidelines exist to keep the module maintainable and impressive when demoed.
 
+> **Before you contribute, also read:**
+> - [`BRAND.md`](BRAND.md) — voice, naming conventions, persona glossary
+> - [`AGENTS.md`](AGENTS.md) — non-negotiable rules for AI coding agents (commit policy, push policy, off-limits files)
+> - [`MIGRATIONS.md`](MIGRATIONS.md) — every renamed/dropped surface in the rcode improvement programme
+> - [`MEMORY_BANK.md`](MEMORY_BANK.md) — Memory Bank specification
+> - [`TASKS.md`](TASKS.md) — master task tracker driving GitHub issues
+
 ---
 
 ## Architecture overview — what are all these files?
