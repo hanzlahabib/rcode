@@ -39,6 +39,16 @@ Read and execute @.rihal/workflows/karpathy-audit.md end-to-end with the same ar
 
 The standard code-review steps below are skipped when `--karpathy` is set — the karpathy-audit workflow produces its own report.
 
+## Step 0b — Attack mode delegation
+
+If `$ARGUMENTS` contains `--attack`, delegate to the attack-mode review workflow and stop:
+
+```
+Read and execute @.rihal/workflows/review-adversarial.md end-to-end with the same arguments minus `--attack`.
+```
+
+Attack mode produces a weakness report from a hostile perspective — security vulnerabilities, race conditions, data loss, abuse cases. The standard code-review steps below are skipped when `--attack` is set.
+
 <process>
 
 <step name="initialize">

@@ -503,12 +503,12 @@ Runs `/rihal:code-review`, then automatically fixes all flagged issues.
 
 ---
 
-### `/rihal:review-adversarial`
-**Purpose:** Stress-test a design or implementation.
+### `/rihal:code-review --attack`
+**Purpose:** Stress-test a design or implementation. Folded into `/rihal:code-review` as a flag.
 
 ```
-/rihal:review-adversarial .planning/phases/01/PLAN.md
-/rihal:review-adversarial "our payment flow"
+/rihal:code-review .planning/phases/01/PLAN.md --attack
+/rihal:code-review "our payment flow" --attack
 ```
 
 Fatima (QA) and Waleed (CTO) pick apart the design, find worst-case scenarios.
@@ -530,7 +530,7 @@ Audits code for:
 - Race conditions
 - Input validation gaps
 
-**Related:** `/rihal:code-review`, `/rihal:review-adversarial`
+**Related:** `/rihal:code-review`, `/rihal:code-review --attack`
 
 ---
 
@@ -566,7 +566,7 @@ Audits:
 - Data sensitivity handling
 - Third-party integrations
 
-**Related:** `/rihal:code-review`, `/rihal:review-adversarial`
+**Related:** `/rihal:code-review`, `/rihal:code-review --attack`
 
 ---
 

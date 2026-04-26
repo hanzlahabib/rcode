@@ -93,7 +93,7 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | `/rihal:code-review` | `<phase> [--depth=quick\|standard\|deep] [--files=file1,file2,...]` | Review source files for bugs, security issues, and code quality problems. |
 | `/rihal:code-review-fix` | `<phase> [--all] [--auto]` | Auto-apply fixes found by code review. |
 | `/rihal:review` | — | Cross-AI peer review — invoke external AI CLIs to independently review phase plans. |
-| `/rihal:review-adversarial` | `[--phase <name>] [--component <name>]` | Produce attack/weakness report from hostile perspective — security, race conditions, data loss, abuse cases. |
+| `/rihal:code-review --attack` | `<phase\|git-ref> [--files=path1,path2]` | Attack-mode review — vulnerabilities, race conditions, data loss, abuse cases. |
 | `/rihal:review-edge-case-hunter` | `[--phase <name>] [--component <name>]` | Enumerate edge cases by category (input, state, concurrency, network) with severity. |
 | `/rihal:code-review --karpathy` | `<phase\|git-ref> [--files=path1,path2]` | Audit recent code changes against Karpathy's 4 LLM coding principles. |
 | `/rihal:secure-phase` | `<phase>` | Retroactively verify threat mitigations for a completed phase. |
@@ -242,7 +242,7 @@ Spawned by specific workflows for targeted analysis.
 | `rihal-integration-checker` | Verifies cross-phase integration and E2E flows | `/rihal:audit-milestone` |
 | `rihal-nyquist-auditor` | Fills validation gaps, generates missing tests, verifies coverage | `/rihal:validate-phase` |
 | `rihal-security-auditor` | Comprehensive security audit, compliance verification, posture assessment | `/rihal:secure-phase` |
-| `rihal-security-adversary` | Adversarial security review, threat modeling, attack surface analysis | `/rihal:review-adversarial` |
+| `rihal-security-adversary` | Attack-mode security review, threat modeling, attack surface analysis | `/rihal:code-review --attack` |
 | `rihal-ui-auditor` | UI audit for usability, consistency, accessibility, design quality | `/rihal:ui-review` |
 | `rihal-ux-designer` | UI/UX design, design system work, accessibility, usability | `/rihal:ui-phase` |
 | `rihal-tech-writer` | Generates and updates README, API docs, changelogs, migration guides | `/rihal:docs-update` |

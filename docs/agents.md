@@ -238,7 +238,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 #### rihal-assumptions-analyzer
 **Purpose:** Surface hidden assumptions in a plan.
 
-**Spawned by:** `/rihal:review-adversarial`
+**Spawned by:** `/rihal:code-review --attack`
 
 **Produces:**
 - List of assumptions made
@@ -380,7 +380,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 #### rihal-security-auditor
 **Purpose:** Security-focused code review.
 
-**Spawned by:** `/rihal:secure-phase`, `/rihal:review-adversarial`
+**Spawned by:** `/rihal:secure-phase`, `/rihal:code-review --attack`
 
 ---
 
@@ -489,7 +489,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 #### rihal-security-adversary 🔴
 **Purpose:** Adversarial security review — think like an attacker, find exploitation paths.
 
-**Spawned by:** `/rihal:review-adversarial`, `/rihal:secure-phase`
+**Spawned by:** `/rihal:code-review --attack`, `/rihal:secure-phase`
 
 ---
 
