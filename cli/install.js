@@ -1025,12 +1025,18 @@ function sweepStaleInstalledFiles(target, newPlan) {
   const newRelsSet = new Set(newPlan.map(e => e.rel.split(path.sep).join('/')));
   // Safety — never sweep these, even if they somehow landed in the manifest.
   const neverSweep = /^(\.rihal\/config\.yaml|\.rihal\/state\.json|\.rihal\/state\.json\.lock|\.planning\/|\.rihal\/brain\/sources\.yaml)/;
+  // #382 — local overrides: files matching <name>.local.md are user-managed.
+  // The installer never touches them: not in copy, not in sweep, not even on
+  // --force-overwrite. This gives users a stable path to customize agent
+  // voice / examples / project-specific rules without losing them on update.
+  const isLocalOverride = (rel) => /\.local\.(md|mdc|json|yaml|yml|toml|js|ts)$/.test(rel);
 
   let removed = 0;
   const emptyCandidateDirs = new Set();
   for (const rel of oldRels) {
     if (newRelsSet.has(rel)) continue;
     if (neverSweep.test(rel)) continue;
+    if (isLocalOverride(rel)) continue; // #382 — never sweep user-owned overrides
     const full = path.join(target, rel);
     try {
       if (fs.existsSync(full)) {
@@ -1602,6 +1608,10 @@ async function install(opts) {
   console.log(dim('  Refresh anytime:'));
   console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
   console.log(dim(`    /rihal:update v${version}              # pin rcode to a specific version`));
+  console.log('');
+  console.log(dim('  Customize without losing changes on update:'));
+  console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rihal-waleed.local.md)'));
+  console.log(dim('    *.local.md files are NEVER touched by install / --force-overwrite / uninstall.'));
   console.log('');
   console.log('  ' + warn('If your IDE is already open, reload the window to refresh skills/commands.'));
   console.log(dim('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window'));

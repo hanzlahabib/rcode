@@ -58,13 +58,25 @@ function parseArgs(args) {
 }
 
 /**
+ * #382 — Local overrides: files matching <name>.local.md (or .local.mdc /
+ * .local.json / etc.) are user-managed. The uninstaller never removes them
+ * — they survive both regular uninstall AND --purge. Users can customize
+ * an agent voice / skill / command by creating a .local.md sibling, knowing
+ * it'll persist across updates and uninstalls.
+ */
+function isLocalOverride(name) {
+  return /\.local\.(md|mdc|json|yaml|yml|toml|js|ts)$/.test(name);
+}
+
+/**
  * Walk a directory and remove all files/subdirs whose name matches a predicate.
- * Returns the number of entries removed.
+ * Returns the number of entries removed. Always skips local overrides (#382).
  */
 function removeMatching(dir, predicate) {
   if (!fs.existsSync(dir)) return 0;
   let count = 0;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (isLocalOverride(entry.name)) continue; // #382 — never remove user overrides
     if (!predicate(entry.name)) continue;
     const full = path.join(dir, entry.name);
     fs.rmSync(full, { recursive: true, force: true });
