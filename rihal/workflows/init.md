@@ -142,9 +142,12 @@ git remote -v 2>/dev/null | head -2
 find . -maxdepth 3 -type d ! -path "./node_modules*" ! -path "./.git*" ! -path "./.rihal*" ! -path "./.claude*" ! -path "./.planning*" 2>/dev/null | head -20
 ```
 
-Write `.rihal/RIHLA.md` following this template (don't over-interpret — just record what's seen):
+Write `.rihal/RIHLA.md` following this template (don't over-interpret — just record what's seen).
+
+**Naming note (do NOT remove from the template):** the file is `RIHLA.md`, not `RIHAL.md`. This is intentional — same Arabic root, different word. **Rihal (رحّال)** = the traveler/tool. **Rihla (رحلة)** = the journey/voyage. The product is *Rihal* (the tool you use); the per-project artifact is *Rihla* (your project's journey). The HTML comment in the template below preserves this reminder for anyone who later wonders if it's a typo.
 
 ```markdown
+<!-- RIHLA (رحلة) = "the journey". Not a typo of RIHAL (رحّال) = "the traveler" / the tool itself. Same root, different word. This file documents your project's journey; Rihal is the tool that walks it with you. -->
 # RIHLA — Project journey baseline
 
 **Written by:** /rihal:init
