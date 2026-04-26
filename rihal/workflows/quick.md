@@ -95,6 +95,62 @@ Do the work directly:
 **No SPRINT.md. No subagents. Just do it.**
 </step>
 
+<step name="blocker_handling">
+**When investigation reveals a blocker, do NOT present a multi-option menu.** Pick ONE response per the rules below.
+
+Common blocker types:
+- Need a screenshot / browser-rendered state to confirm
+- Need the dev server running
+- Need a decision the user hasn't given yet
+- Need access to an external system (production logs, Sentry, etc.)
+
+**Rules:**
+
+1. **If the original input was a LIST of tasks** (bulk_detection-eligible OR the user passed multiple tasks): silently SKIP the blocked task, log the blocker in the running tracker, and PIVOT to the next clearly-runnable task in the list. Do not stop. Do not ask. Do not present 5 options.
+
+   Example log line (appended to `.planning/BUG-TRACKER-YYYY-MM-DD.md` if it exists, or stdout otherwise):
+
+   ```
+   ⏸  #36 (Extraction wizard CSS) — skipped: needs runtime screenshot to confirm cascade-layer hypothesis. Will resume when dev server is available.
+   ```
+
+   Then continue with #19 / #17 / whichever is the next-most-runnable in the list. State the pivot in one line:
+
+   ```
+   ▶ Pivoting to next runnable: #19 (Breadcrumb UUID→name) — clear scope, no runtime needed.
+   ```
+
+2. **If the input was a SINGLE task and there's nothing to pivot to**: stop with ONE line stating the single specific blocker and how to unblock it. No menu. No options. The user pastes back the resolved info and re-runs.
+
+   ```
+   ⏸  Blocked on: a screenshot of the broken Extraction wizard. Paste the screenshot or run `pnpm dev` and share what you see — I'll resume from where I left off.
+   ```
+
+3. **If the user passed `--force-inline` AND the input was single-task AND blocked**: attempt the highest-confidence speculative fix, COMMIT it with a clear "speculative — needs runtime verification" prefix in the commit message, and proceed. The user explicitly chose this path.
+
+**Never present a 4+ option menu in blocker_handling.** Multi-option menus during execution are decision-fatigue. Pick one response, do it, move on.
+</step>
+
+<step name="next_task_loop">
+**If the original input was a list and there are remaining tasks after this one** (whether the current task succeeded, failed, or was skipped due to blocker), automatically continue to the next task without asking. State the pivot in one line and re-enter execute_inline.
+
+**Stop the loop only when:**
+- All tasks in the list are processed (done / skipped / blocked)
+- A task touches `> 5` files (escalate the rest of the list to /rihal:add-phase)
+- The user types stop / cancel / pause
+
+At the end of the loop, summarise:
+
+```
+✅ Loop complete: {N} done · {M} skipped · {K} blocked
+   Done:    {bullet list with commit hashes}
+   Skipped: {bullet list with reasons}
+   Blocked: {bullet list with what info is needed}
+
+Resume blocked tasks: {one-line guidance on what to provide and re-run}
+```
+</step>
+
 <step name="commit">
 Commit atomically with conventional commit format (`fix:`, `feat:`, `docs:`, `chore:`, `refactor:`):
 

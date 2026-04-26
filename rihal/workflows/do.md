@@ -4,6 +4,7 @@ Analyze freeform text from the user and route to the most appropriate Rihal comm
 
 <required_reading>
 @.rihal/references/output-format.md
+@.rihal/references/verb-dictionary.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
@@ -149,25 +150,23 @@ When the user uses a literal create/make/start verb paired with a scope-noun (mi
 
 This was a real bug: `/rihal:do "milestone bnao aur ... list down karo"` triggered an ambiguity prompt offering new-milestone vs add-phase vs create-epics-and-stories — even though the user literally said "milestone bnao" (= "create a milestone" in Roman Urdu). That second-guessing wasted the user's time and broke trust.
 
-**Verb dictionary — match if `$QUESTION` contains any of these (case-insensitive):**
+**Verb + scope detection — sourced from `@.rihal/references/verb-dictionary.md`.**
 
-- English: `create`, `make`, `start`, `add`, `new`, `set up`, `setup`, `kick off`, `spin up`
-- Roman Urdu / Hindi: `bnao`, `banao`, `bana do`, `bnado`, `banaa`, `banade`, `shuru karo`, `start karo`, `create karo`, `naya banao`, `add karo`, `daal do`
-- Arabic transliteration: `ansha'`, `inshaa`
+Match if `$QUESTION` contains any verb from §Create or §Add (English + Roman Urdu/Hindi + Arabic transliteration — full list lives in the dictionary file, do not duplicate here). Pair with a scope noun to determine the route.
 
-**Scope-noun → command map:**
+The full mapping is in the dictionary's "Scope nouns" table. Pre-conditions enforced by this workflow:
 
-| Scope noun in input | Direct route | Pre-condition |
+| Scope noun | Direct route | Pre-condition (this workflow only) |
 |---|---|---|
-| `milestone`, `milestones` | `/rihal:new-milestone` | none — methodology chain assumed when greenfield_guard cleared |
-| `phase`, `phases` (singular intent — "add a phase") | `/rihal:add-phase` | HAS_PHASES OR HAS_PRD true |
-| `story`, `stories`, `user story` | `/rihal:create-story` | HAS_EPICS true |
-| `epic`, `epics`, `epics and stories` | `/rihal:create-epics-and-stories` | HAS_PRD true |
-| `sprint` | `/rihal:sprint-planning` | HAS_EPICS true |
-| `PRD`, `requirements doc`, `product requirements` | `/rihal:create-prd` | none |
-| `roadmap` | `/rihal:create-milestone` | HAS_PRD true |
-| `council`, `majlis` | `/rihal:council` | none |
-| `plan` (verb — "plan phase N") | `/rihal:plan` | HAS_PHASES true |
+| milestone | `/rihal:new-milestone` | none — methodology chain assumed when greenfield_guard cleared |
+| phase | `/rihal:add-phase` | HAS_PHASES OR HAS_PRD true |
+| story | `/rihal:create-story` | HAS_EPICS true |
+| epic | `/rihal:create-epics-and-stories` | HAS_PRD true |
+| sprint | `/rihal:sprint-planning` | HAS_EPICS true |
+| PRD | `/rihal:create-prd` | none |
+| roadmap | `/rihal:create-milestone` | HAS_PRD true |
+| council | `/rihal:council` | none |
+| plan (verb) | `/rihal:plan` | HAS_PHASES true |
 
 **Behavior:**
 1. If both a verb AND a scope-noun match, fire this step.
