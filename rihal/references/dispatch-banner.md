@@ -1,6 +1,6 @@
 # Dispatch Banner — Persona-driven hand-off format
 
-**Purpose:** every time a Rihal workflow spawns a sub-agent (mapper, planner, executor, council member, etc.), the user must see WHO is taking over, in their voice, with what scope. Inspired by BMAD's PM-introduces-itself pattern. No silent dispatches.
+**Purpose:** every time a Rihal workflow spawns a sub-agent (mapper, planner, executor, council member, etc.), the user must see WHO is taking over, in their voice, with what scope. Inspired by other persona-driven agent tools — the pattern of an agent introducing itself in first person before working. No silent dispatches.
 
 This banner format is mandatory for every `Task(subagent_type=...)` invocation in any Rihal workflow.
 

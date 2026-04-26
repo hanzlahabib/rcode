@@ -170,7 +170,7 @@ mkdir -p .planning/codebase
 
 ## Step 4: Announce dispatch (persona-driven)
 
-Use the canonical dispatch-banner spec at `.rihal/references/dispatch-banner.md`. Read it now if you have not already — it defines the BMAD-style first-person hand-off the user expects.
+Use the canonical dispatch-banner spec at `.rihal/references/dispatch-banner.md`. Read it now if you have not already — it defines the persona-driven first-person hand-off pattern.
 
 For this workflow, the dispatched agent is `rihal-codebase-mapper` → persona **Dalil (دليل) — Codebase Scout** 🧭.
 
