@@ -132,6 +132,8 @@ function parseArgs(argv) {
     acceptAll: false,
     // #252 — skip update-notifier check
     noUpdateCheck: false,
+    // #381 — skip backup tarball on --force-overwrite (CI escape hatch)
+    noBackup: false,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -154,6 +156,7 @@ function parseArgs(argv) {
     else if (arg === '--diff-stat') opts.diffStat = true;       // #251 +N -N summary (default)
     else if (arg === '--accept-all') opts.acceptAll = true;     // #251 overwrite all preserved
     else if (arg === '--no-update-check') opts.noUpdateCheck = true; // #252
+    else if (arg === '--no-backup') opts.noBackup = true;             // #381
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -162,6 +165,79 @@ function parseArgs(argv) {
   }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
+}
+
+/**
+ * Create a tar.gz backup of every file the install plan would touch BEFORE
+ * --force-overwrite clobbers them. Closes #381 — without this, customized
+ * .claude/agents/rihal-*.md and similar files were silently lost.
+ *
+ * Returns { ok, path, warning, fileCount } — ok=false means we couldn't
+ * create the backup (tar missing, no paths, etc.); the caller decides
+ * whether to abort or continue.
+ */
+function createInstallBackup(target, plan) {
+  const { spawnSync } = require('child_process');
+
+  // Build the list of files that EXIST and are about to be overwritten.
+  // Plan items use `rel` (the relative dest path); see plan.push sites in
+  // buildInstallPlan / discover* helpers.
+  const paths = [];
+  for (const item of plan) {
+    const relPath = item.rel || item.dest;
+    if (!relPath) continue;
+    const fullDest = path.join(target, relPath);
+    if (fs.existsSync(fullDest)) {
+      paths.push(relPath);
+    }
+  }
+  // Also include the package-managed state files even though install
+  // explicitly preserves them — defensive: if install regresses and starts
+  // touching them, the backup catches it.
+  for (const stateFile of [
+    '.rihal/config.yaml',
+    '.rihal/state.json',
+    '.rihal/_config/manifest.yaml',
+    '.rihal/_config/files-manifest.csv',
+  ]) {
+    if (fs.existsSync(path.join(target, stateFile))) {
+      paths.push(stateFile);
+    }
+  }
+
+  if (paths.length === 0) {
+    return { ok: false, warning: 'no existing files to back up — fresh install', fileCount: 0 };
+  }
+
+  const backupsDir = path.join(target, '.rihal/backups');
+  try {
+    fs.mkdirSync(backupsDir, { recursive: true });
+  } catch (err) {
+    return { ok: false, warning: `could not create .rihal/backups/: ${err.message}`, fileCount: 0 };
+  }
+
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const backupFile = path.join(backupsDir, `install-force-${ts}.tgz`);
+  const backupRel = path.relative(target, backupFile);
+
+  const result = spawnSync(
+    'tar',
+    ['-czf', backupFile, '-C', target, '--files-from=-'],
+    {
+      input: paths.join('\n') + '\n',
+      encoding: 'utf8',
+    }
+  );
+
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      warning: `tar failed: ${(result.stderr || '').trim().split('\n')[0]}`,
+      fileCount: paths.length,
+    };
+  }
+
+  return { ok: true, path: backupRel, fileCount: paths.length };
 }
 
 /**
@@ -1202,6 +1278,29 @@ async function install(opts) {
   }
   if (opts.modules.length > 0) {
     console.log(`  Modules: ${opts.modules.join(', ')}`);
+  }
+
+  // Force-overwrite backup — closes #381. Without this, customized
+  // .claude/agents/rihal-*.md and similar package-managed files were silently
+  // clobbered with no recovery path. Now every --force-overwrite run creates
+  // a tar.gz of every existing target before any write happens.
+  // Skip when --no-backup is passed (CI escape hatch) or on fresh installs.
+  if (opts.forceOverwrite && !opts.noBackup) {
+    const backup = createInstallBackup(opts.target, plan);
+    if (backup.ok) {
+      console.log('  ' + info(
+        `${pc.dim('--force-overwrite')} backup: ${pc.cyan(backup.path)} ` +
+        `${pc.dim('(' + backup.fileCount + ' files — restore with: tar -xzf ' + backup.path + ')')}`
+      ));
+    } else if (backup.fileCount > 0) {
+      // Files exist but tar failed — fail loud rather than clobbering silently.
+      console.error('');
+      console.error(`✖ Could not create backup: ${backup.warning}`);
+      console.error(`  Refusing to --force-overwrite without a backup. Pass --no-backup to override.`);
+      console.error('');
+      return 1;
+    }
+    // backup.fileCount === 0 → fresh install, nothing to back up — proceed silently.
   }
 
   // Orphan sweep — remove files from previous install not in the new plan (#196).
