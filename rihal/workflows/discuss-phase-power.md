@@ -12,13 +12,13 @@ Power user mode for discuss-phase. Generates ALL questions upfront into a JSON s
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:discuss-phase-power <argument-here>
+/rihal:discuss-phase --power <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:discuss-phase-power example 1
-/rihal:discuss-phase-power example 2
+/rihal:discuss-phase --power example 1
+/rihal:discuss-phase --power example 2
 ```
 
 STOP — do not proceed.

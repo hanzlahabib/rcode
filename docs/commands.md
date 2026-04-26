@@ -261,19 +261,6 @@ Add `--security` for security-only scan.
 
 ---
 
-### `/rihal:discuss-phase-power`
-**Purpose:** Quick expert discussion without formal artifact.
-
-```
-/rihal:discuss-phase-power how should we architect this module?
-```
-
-Single agent responds conversationally. No mandatory output artifact.
-
-**Related:** `/rihal:discuss`, `/rihal:council`
-
----
-
 ## Planning (7 commands)
 
 ### `/rihal:plan`

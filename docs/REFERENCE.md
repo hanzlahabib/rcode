@@ -50,8 +50,7 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | Command | Arguments | What it does |
 |---------|-----------|--------------|
 | `/rihal:plan` | `<phase\|description> [--phase <name>] [--output <dir>]` | Convert task description or phase into executable SPRINT.md files. Spawns rihal-planner → rihal-sprint-checker. The core planning command. |
-| `/rihal:discuss-phase` | `<phase-number> [--auto] [--chain]` | Gather context through adaptive questioning before sprint planning. Creates CONTEXT.md with locked decisions, discretion areas, deferred ideas. Run before `/rihal:plan`. |
-| `/rihal:discuss-phase-power` | `<phase> [--power]` | Power variant of discuss-phase — bulk question generation. |
+| `/rihal:discuss-phase` | `<phase-number> [--auto] [--chain] [--power]` | Gather context through adaptive questioning before sprint planning. Creates CONTEXT.md with locked decisions, discretion areas, deferred ideas. Run before `/rihal:plan`. Pass `--power` for bulk question generation on context-heavy phases. |
 | `/rihal:research-phase` | `<phase-number>` | Research how to implement a phase before planning. Standalone — `/rihal:plan` runs this automatically. Use only when you want research without creating a plan. |
 | `/rihal:sprint-planning` | `[--phase <NN>] [--velocity <points>] [--goal 'Sprint goal']` | Plan the next sprint — compute capacity, prioritize stories, create SPRINT.md, register in state. |
 | `/rihal:add-phase` | `<phase-name>` | Add a new integer phase to the end of the current milestone. Auto-calculates next phase number, creates directory, updates ROADMAP.md. |

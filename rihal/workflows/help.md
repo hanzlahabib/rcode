@@ -185,7 +185,7 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | Use |
 |---------|-----|
-| `/rihal:discuss-phase-power` | Bulk question generation with async UI for context-heavy phases. |
+| `/rihal:discuss-phase --power` | Bulk question generation with async UI for context-heavy phases. |
 | `/rihal:chain <preset> <topic>` | Sequential agent pipeline (research → scope → build), typed artifacts. |
 | `/rihal:brainstorm` | Guided brainstorming — pick a method, generate ideas systematically. |
 | `/rihal:why <decision>` | Explain reasoning behind a decision, classification, or panel pick. |

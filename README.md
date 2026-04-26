@@ -330,7 +330,7 @@ Recent additions in this session:
 `init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
 
 ### Discovery + research
-`new-project` · `map-codebase` · `scan` · `explore` · `document-project` · `analyze-dependencies` · `discuss-phase-power`
+`new-project` · `map-codebase` · `scan` · `explore` · `document-project` · `analyze-dependencies`
 
 ### Discovery + validation
 `prfaq` · `brainstorm` · `market-research` · `domain-research` · `technical-research` · `product-brief`
