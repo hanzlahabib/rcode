@@ -365,13 +365,6 @@ tactical_agents:
     authority_level: research
     description: Advisor-level deep research for gray-area decisions
 
-  - id: rihal-architect
-    name: Architect
-    file_path: rihal/agents/rihal-architect.md
-    role: Architect
-    authority_level: technical
-    description: Enterprise architecture and system design reviews
-
   - id: rihal-assumptions-analyzer
     name: Assumptions Analyzer
     file_path: rihal/agents/rihal-assumptions-analyzer.md

@@ -315,19 +315,6 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-architect
-**Purpose:** Design system architecture.
-
-**Spawned by:** `/rihal:chain feasibility`, `/rihal:council` (architecture debates)
-
-**Output:**
-- Architecture diagrams
-- Data flow
-- Service boundaries
-- Scaling considerations
-
----
-
 #### rihal-code-reviewer
 **Purpose:** Review code for quality and style.
 

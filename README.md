@@ -180,7 +180,7 @@ npx @hanzlaa/rcode install --ide gemini
 - **Execution**: rihal-executor, rihal-planner, rihal-verifier, rihal-plan-checker, rihal-debugger
 - **Discovery**: rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper, rihal-phase-researcher, rihal-advisor-researcher, rihal-assumptions-analyzer, rihal-research-synthesizer
 - **Verification**: rihal-integration-checker, rihal-nyquist-auditor
-- **Quality**: rihal-tech-writer, rihal-ux-designer, rihal-architect, rihal-code-reviewer, rihal-code-fixer, rihal-edge-case-hunter, rihal-deviation-analyzer
+- **Quality**: rihal-tech-writer, rihal-ux-designer, rihal-code-reviewer, rihal-code-fixer, rihal-edge-case-hunter, rihal-deviation-analyzer
 - **And more**: rihal-docs-auditor, rihal-doc-verifier, rihal-doc-writer, rihal-repo-metrics, rihal-security-auditor, etc.
 
 **Customize globally:** Define reusable agents in `~/.rihal/agents/rihal-<name>.md`. They appear in every project alongside project-local agents, without forking the repo.

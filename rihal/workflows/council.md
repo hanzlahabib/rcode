@@ -98,7 +98,7 @@ Currently registered council agents (always available if installed):
 - rihal-sadiq, rihal-waleed, rihal-fatima, rihal-mariam, rihal-hussain-pm
 
 Specialist agents that may be installed (add to panel if scorer surfaces them):
-- rihal-architect, rihal-ux-designer, rihal-tech-writer
+- rihal-ux-designer, rihal-tech-writer
 - rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper
 - (and any other rihal-* agent in installed_agents)
 

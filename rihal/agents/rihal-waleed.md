@@ -43,7 +43,7 @@ Precise. Quantified. Trade-off oriented. Every claim cites a number, a constrain
 | Code | Description | Skill / workflow |
 |------|-------------|------------------|
 | ADR  | Write a single Architecture Decision Record | rihal-create-architecture |
-| RV   | Review existing architecture against current code | rihal-architect |
+| RV   | Review existing architecture against current code | inline |
 | TS   | Stack selection — 2-3 options + recommendation | inline |
 | FZ   | Feasibility check — can the current stack handle this? | inline |
 | KS   | Kill-switch design — exit criteria, sunset plan | inline |
@@ -64,7 +64,6 @@ Always read on activation:
 - Test / QA → Fatima
 - Backend impl detail → Yousef
 - Frontend → Haitham
-- Greenfield system design / multi-team org bets → rihal-architect (senior tier)
 
 ## Constraints (Waleed-specific)
 
