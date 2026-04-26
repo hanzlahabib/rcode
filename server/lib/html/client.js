@@ -649,6 +649,69 @@ function route() {
   else if (view === 'sprints')    renderSprints(subId);
   else if (view === 'tasks')      renderTasks();
   else if (view === 'decisions')  renderDecisions();
+  else if (view === 'memory')     renderMemory();
+}
+
+function renderMemory() {
+  const el = document.getElementById('view-memory-content');
+  if (!el) return;
+  el.innerHTML = '<div class="view-title">🧠 Memory Bank</div><div class="empty">Loading…</div>';
+  fetch('/api/memory').then(r => r.json()).then(m => {
+    if (!m.exists) {
+      el.innerHTML = '<div class="view-title">🧠 Memory Bank</div>' +
+        '<div class="empty"><h3 style="color:var(--rihal-gold);">Not initialised</h3>' +
+        '<p>The Memory Bank is rcode\\'s structured project context.</p>' +
+        '<div class="empty-action">Run <code>/rcode:memory-init</code> to bootstrap</div></div>';
+      return;
+    }
+    let h = '<div class="view-title">🧠 Memory Bank</div>';
+    if (!m.initialised) {
+      h += '<div class="empty"><p>Directory exists but INDEX.md is missing — re-run <code>/rcode:memory-init</code></p></div>';
+      el.innerHTML = h;
+      return;
+    }
+    const sections = m.sections || {};
+    h += '<div class="filter-bar"><span style="color:var(--text-muted);font-size:var(--text-sm);">Last scanned: ' + esc(m.lastScanned) + '</span></div>';
+    h += '<div id="memory-sections">';
+    for (const [section, files] of Object.entries(sections)) {
+      h += '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(section) + '</div>';
+      h += '<div class="decision-list">';
+      for (const f of files) {
+        const status = f.exists ? (f.populated ? '✓' : '○') : '✗';
+        const meta = f.exists ? (f.populated ? 'populated' : 'template only') : 'missing';
+        h += '<div class="item">' +
+          '<div class="item-title">' + status + ' ' + esc(f.name) + '</div>' +
+          '<div class="item-meta">' + esc(meta) + ' · ' + (f.bytes || 0) + ' bytes</div>' +
+          '</div>';
+      }
+      h += '</div>';
+    }
+    function listGroup(label, items) {
+      if (!items || !items.length) return '';
+      let g = '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(label) + ' (' + items.length + ')</div>';
+      g += '<div class="decision-list">';
+      for (const f of items) {
+        g += '<div class="item">' +
+          '<div class="item-title">' + esc(f.name) + '</div></div>';
+      }
+      g += '</div>';
+      return g;
+    }
+    h += listGroup('Distillates', m.distillates);
+    h += listGroup('Change Records', m.changeRecords);
+    h += listGroup('Milestone Archive', m.archive);
+    h += listGroup('Post-mortems', m.postMortems);
+    h += '</div>';
+    h += cmdAccordion([
+      cmdHint('/rcode:memory-init',    'Bootstrap the Memory Bank'),
+      cmdHint('/rcode:memory-update',  'Append a decision, issue, or stakeholder entry'),
+      cmdHint('/rcode:memory-distill', 'Regenerate fast-load distillates'),
+      cmdHint('/rcode:memory-audit',   'Find stale entries and gaps')
+    ]);
+    el.innerHTML = h;
+  }).catch(err => {
+    el.innerHTML = '<div class="view-title">🧠 Memory Bank</div><div class="empty">Failed to load /api/memory: ' + esc(String(err)) + '</div>';
+  });
 }
 
 function renderDecisions() {
