@@ -1297,6 +1297,56 @@ Also: `/rihal:verify-work {X} ${Rihal_WS}` — manual testing first
 Gap closure cycle: `/rihal:plan {X} --gaps ${Rihal_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rihal:execute {X} --gaps-only ${Rihal_WS}` → verifier re-runs.
 </step>
 
+<step name="uat_gate" priority="blocker">
+**UAT gate (added in v3.1.0 after #443 / #448):**
+
+Before marking the phase complete, verify a passing VERIFICATION.md exists for this phase. Without it, the phase advances to `status: executed` (work done, awaiting verification) — not `status: complete`.
+
+```bash
+VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
+
+if [ -z "$VERIFICATION_FILE" ]; then
+  VERIFICATION_STATUS="missing"
+elif grep -q "^status:\s*pass\b" "$VERIFICATION_FILE" 2>/dev/null; then
+  VERIFICATION_STATUS="pass"
+elif grep -q "^status:\s*fail\b" "$VERIFICATION_FILE" 2>/dev/null; then
+  VERIFICATION_STATUS="fail"
+else
+  VERIFICATION_STATUS="indeterminate"
+fi
+```
+
+**If `VERIFICATION_STATUS` is `missing` or `indeterminate`:**
+
+1. Mark the phase as `status: executed` (NOT `complete`) via:
+   ```bash
+   node ".rihal/bin/rihal-tools.cjs" phase set-status "${PHASE_NUMBER}" executed
+   ```
+2. Print the mandatory UAT checklist:
+   ```
+   ⚠ Phase {X} EXECUTED but not yet verified.
+
+   The following acceptance criteria require human verification before
+   the phase can advance to `status: complete`:
+
+   {list AC items from SPRINT.md}
+
+   Run /rihal:verify-work {X} to perform UAT and produce VERIFICATION.md.
+   /rihal:next will refuse to advance until this gate passes.
+   ```
+3. STOP the workflow. Do NOT proceed to `update_roadmap`. Do NOT call `phase complete`.
+
+**If `VERIFICATION_STATUS` is `fail`:**
+
+1. Mark the phase as `status: executed` (so /rihal:plan --gaps can run a closure cycle).
+2. Surface the failed AC items.
+3. STOP. Don't mark complete on a failing verification.
+
+**Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
+
+The previous behaviour (printing "Next Up: /rihal:verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
+</step>
+
 <step name="update_roadmap">
 **Mark phase complete and update all tracking files:**
 
