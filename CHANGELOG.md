@@ -4,6 +4,37 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.3.0 — sidebar discoverability: install-time skill stubs for slash commands (2026-04-27)
+
+VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rihal/` are reachable only via the `/` autocomplete picker. Users coming from GSD (which ships a skill per command) expected `rihal-do` to appear in the sidebar like `gsd-do` does.
+
+This release closes the gap **without duplicating files in the source codebase** — sidebar stubs are generated only at install destination.
+
+### Added
+
+- **`cli/generate-command-skills.cjs`** — install-time generator that creates `.claude/skills/rihal-<cmd>/SKILL.md` for a curated list of 28 user-facing commands (`do`, `status`, `progress`, `next`, `plan`, `execute`, `council`, `discuss`, `ship`, `audit`, `verify-phase`, `verify-work`, `note`, `add-todo`, `check-todos`, `pause-work`, `resume-work`, etc.). Each stub:
+  - Has `generated: true` and `generated-by: rcode-install-vX.Y.Z` frontmatter so the next install can refresh it idempotently
+  - Includes a prominent `<!-- AUTO-GENERATED — Do NOT edit -->` HTML comment
+  - Points the user at the source of truth (`rihal/commands/<cmd>.md` and `rihal/workflows/<cmd>.md`)
+  - Skipped automatically when a real skill with the same name already exists (e.g. `rihal-debug`, `rihal-code-review`)
+- **`test/no-source-command-skill-dupes.test.cjs`** — guards the source codebase from accidentally introducing the very duplication this generator solves at install time. Catches if a future PR ships a `rihal-do` skill folder that would shadow the generated stub.
+
+### Fixed
+
+- Issue users reported after upgrading to v3.2.1: VS Code sidebar showed `gsd-do` (skill) but not `rihal-do` (command). Now both appear, sourced from a single command file.
+
+### Counts
+
+- 132 passing tests (was 130; +2 dedupe guards)
+- 80 skills in source + 26 sidebar stubs at install destination = **106 skills visible in VS Code sidebar after install**
+- 95 slash commands (unchanged — the source of truth for invocation behaviour)
+
+### Honesty about the duplication
+
+The stubs ARE duplicates of the slash commands in a sense — they invoke the same workflow files. The difference: they live ONLY at the install destination (`.claude/skills/`), never in the rcode source tree (`rihal/skills/`). One source of truth per command + a generated sidebar entry, refreshed every install. CI test #no-source-command-skill-dupes prevents anyone from sneaking duplicate source folders past review.
+
+---
+
 ## v3.2.1 — VS Code + Antigravity end-to-end install paths (2026-04-27)
 
 Patch for v3.2.0 — selecting VS Code or Antigravity from the install menu now actually completes the install instead of erroring with "not supported".

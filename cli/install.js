@@ -1619,7 +1619,24 @@ async function install(opts) {
 
   // Install v1-style phrase-activated skills (scaffold-project, create-prd,
   // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
-  const skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+  let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+
+  // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
+  // Source codebase stays clean — these stubs only exist at the install
+  // destination, marked with `generated: true` so they refresh idempotently.
+  // See cli/generate-command-skills.cjs for rationale.
+  try {
+    const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
+    const stubsDir = path.join(opts.target, '.claude', 'skills');
+    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion());
+    if (result.generated > 0) {
+      console.log('  ' + dim(`${result.generated} sidebar skill stub${result.generated === 1 ? '' : 's'} generated for command discoverability`));
+      skillsInstalled += result.generated;
+    }
+  } catch (err) {
+    // Non-fatal: install succeeds without sidebar stubs
+    console.log('  ' + dim(`(sidebar stub generation skipped: ${err.message})`));
+  }
 
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
