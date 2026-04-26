@@ -1,5 +1,5 @@
 ---
-name: rcode-memory-distill
+name: rihal-memory-distill
 description: >
   Generate or regenerate Memory Bank distillates — token-optimised, lossless
   compressions of Memory Bank source files for fast LLM context loading.

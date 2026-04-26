@@ -1,5 +1,5 @@
 ---
-name: rcode-memory-audit
+name: rihal-memory-audit
 description: >
   Audit the Memory Bank for stale entries, contradictions, missing sections,
   and content that should be archived. Produces a report with severity-tagged

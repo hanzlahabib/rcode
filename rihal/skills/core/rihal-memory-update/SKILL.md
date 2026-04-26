@@ -1,5 +1,5 @@
 ---
-name: rcode-memory-update
+name: rihal-memory-update
 description: >
   Surgical update of specific Memory Bank files from conversation context.
   Adds an entry to decisions.md, appends a known issue, updates the current

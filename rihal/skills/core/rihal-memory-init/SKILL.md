@@ -1,5 +1,5 @@
 ---
-name: rcode-memory-init
+name: rihal-memory-init
 description: >
   Bootstrap the rcode Memory Bank for a project. Copies templates from
   `rihal/templates/memory/` into `.rihal/memory/`, then asks 5 questions to
