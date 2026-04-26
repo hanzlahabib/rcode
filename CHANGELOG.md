@@ -4,6 +4,128 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.0.0 — rcode improvement programme: Memory Bank, brand vocab, engineering + real-pain skills (2026-04-26)
+
+The largest single delta since v2.0. 10 phases, 80+ commits, 19 new skills, comprehensive test coverage. See [`MIGRATIONS.md`](MIGRATIONS.md) for the upgrade path and [`TASKS.md`](TASKS.md) for the work log. Issue history: #386–#439.
+
+### Added — `Memory Bank` primitive (Phase 3)
+
+Persistent, structured, checked-in project context. `.rihal/memory/` directory with project, people, milestones, incidents, change-records, and distillates subdirectories.
+
+- `rihal-memory-init` skill — bootstrap a Memory Bank for an existing project
+- `rihal-memory-update` skill — surgical update from conversation context
+- `rihal-memory-distill` skill — regenerate token-optimised distillates
+- `rihal-memory-audit` skill — find stale entries and contradictions
+- 4 slash commands: `/rcode:memory-init`, `-update`, `-distill`, `-audit`
+- 13 template files at `rihal/templates/memory/`
+- Diwan dashboard `/api/memory` endpoint + `/memory` view (additive to `server/lib/*`)
+- `MEMORY_BANK.md` specification at repo root
+
+### Added — Engineering rigour skills (Phase 11, 11 skills)
+
+Stack-grounded for Next.js 16, React 19, Strapi, Postgres, Three.js, Sentry, Temporal, Helm/K8s.
+
+- `rihal-incremental` — atomic, verifiable shipping
+- `rihal-prove-it` — TDD with Jest + Playwright + node:test
+- `rihal-source-truth` — cite official docs before code
+- `rihal-browser-verify` — Chrome DevTools MCP for runtime verification
+- `rihal-debug` — root-cause debugging via the scientific method
+- `rihal-trim` — code simplification (no behaviour change)
+- `rihal-harden` — security checklist for SaaS auth/tenant patterns
+- `rihal-perf` — performance optimisation per stack layer
+- `rihal-git-flow` — branching aligned with Epic→Feature→Task hierarchy
+- `rihal-ci` — Helm + K8s + Docker Compose quality gates
+- `rihal-migrate` — MVP-to-production transitions
+
+### Added — Real-pain skills (Phase 12, 8 skills)
+
+Encoded from verified Rihal incidents — no other tool has these because they require the scars.
+
+- `rihal-auth-audit` — Keycloak ↔ AD sync verification, JWT validation, tenant isolation
+- `rihal-deploy-unify` — multiple-deploy-paths detection (Siraaj incident)
+- `rihal-ocr-consistency` — OCR pipeline determinism + ground-truth validation
+- `rihal-theme-system` — design token audit before launch (rebrand incident)
+- `rihal-mvp-graduate` — MVP-to-production strategic plan with stakeholder sequencing
+- `rihal-client-gate` — client requirement freeze gates and async-comm patterns
+- `rihal-rebrand` — stack-wide rebranding migration (9 surfaces)
+- `rihal-incident-record` — change-record + post-mortem in one flow
+
+### Added — Brand & docs (Phase 1, Phase 8)
+
+- `BRAND.md` — voice guide, naming conventions, persona glossary
+- `MIGRATIONS.md` — every renamed/dropped surface from this programme
+- `TASKS.md` — master task tracker driving GitHub issue hierarchy
+- `docs/skills-catalog.md` — auto-generated catalogue of all 80 skills
+- `scripts/build-skills-catalog.cjs` — catalogue generator
+- README "Who is rcode for" target-audience section
+- Refreshed `package.json` description for the rcode positioning
+
+### Added — Test coverage (Phase 7 + Phase 10)
+
+- `test/skills-compliance.test.cjs` — every SKILL.md has frontmatter + line budget + prefix convention (4 tests)
+- `test/dashboard-boot.test.cjs` — boot smoke for `/health`, `/api/state`, `/api/memory` (2 tests)
+- `test/memory-templates.test.cjs` — required files, INDEX coverage, distillate frontmatter (5 tests)
+- `test/agents-registry.test.cjs` — team.yaml integrity, no orphans (5 tests)
+- `test/dashboard-e2e.test.cjs` — 9 end-to-end content assertions across all routes
+- Total: 25 new test cases. Suite at 120 passing.
+
+### Changed — Slash commands (Phase 2 + Phase 4)
+
+| Old | New |
+|---|---|
+| `/rihal:report` | `/rihal:session-report` (was a pure alias) |
+| `/rihal:karpathy-audit <args>` | `/rihal:code-review <args> --karpathy` |
+| `/rihal:review-adversarial <args>` | `/rihal:code-review <args> --attack` (plain English) |
+| `/rihal:review-edge-case-hunter <args>` | `/rihal:code-review <args> --edge-cases` |
+| `/rihal:discuss-phase-power <args>` | `/rihal:discuss-phase <args> --power` |
+
+Underlying workflow files retained — `code-review` delegates to them on flag match.
+
+### Changed — Agents (Phase 2 + Phase 4)
+
+- `rihal-architect` agent dropped — folded into `rihal-waleed` (CTO + Chief Architect)
+- `rihal-tech-writer` agent dropped — folded into `rihal-noor` (Technical Writer & Presentation Lead). Noor gained `Write, Edit` tools.
+- `team.yaml` agent count: 47 → 45
+
+### Changed — Skills slimmed (Phase 4 Group 4)
+
+8 oversized SKILL.md files moved to ≤120 lines with detail in sibling `references.md`:
+
+- `rihal-clone-website` (416 → 75)
+- `rihal-distillator` (212 → 63)
+- `rihal-editorial-review-structure` (211 → 73)
+- `rihal-advanced-elicitation` (167 → 67)
+- `dalil-scout` (202 → 120)
+- `majlis-council` (192 → 98)
+- `raees-orchestrator` (166 → 105)
+- `rihal-frontend-design` (182 → 92)
+
+### Removed (user-facing slashes only — internal workflows preserved)
+
+- `/rihal:report`, `/rihal:new-project-research`, `/rihal:new-project-roadmap`, `/rihal:check-implementation-readiness`
+- `/rihal:discuss-phase-power`, `/rihal:karpathy-audit`, `/rihal:review-adversarial`, `/rihal:review-edge-case-hunter`
+
+### Notable decisions
+
+- **Path B** — skill folder names stay `rihal-*` for `cli/install.js` compatibility; brand vocabulary lives in slash names and content. See [`BRAND.md`](BRAND.md).
+- **Plain English over jargon** — `--attack` instead of `--adversarial`, `--edge-cases` instead of `--edge-case-hunter`. Audience includes non-native English speakers.
+- **Workflow file splits skipped** — Phase 5 work was deferred. Rationale: workflows are dense executable bash + agent-dispatch, not redundant prose. Trimming carried unverified runtime risk.
+- **Off-limits files preserved** — `cli/install.js`, `cli/update.js`, `cli/github-sync.js`, `cli/postinstall.js`, `cli/uninstall.js` were not modified in this programme. `server/dashboard.js` was extended additively (one route registration) with explicit user approval.
+
+### Counts after this release
+
+- 45 agents (was 47)
+- 95 slash commands (was 99)
+- **80 skills** (was 56) — Memory Bank + Engineering + Real-pain layers added
+- 120 passing tests (was ~95) — added 25 new test cases
+- Zero runtime dependencies preserved
+
+### Upgrade path
+
+See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old references at install time.
+
+---
+
 ## v2.3.4 — Doctor fixes: actions drift false positive + memory bank stub (2026-04-25)
 
 ### Fixed

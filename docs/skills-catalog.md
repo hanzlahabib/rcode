@@ -3,11 +3,19 @@
 
 Auto-generated from every `rihal/skills/**/SKILL.md`. Re-run `node scripts/build-skills-catalog.cjs` after adding or renaming a skill.
 
-**61 skills** across 3 buckets.
+**80 skills** across 3 buckets.
 
 ---
 
-## Actions (26)
+## Actions (37)
+
+### `rihal-browser-verify`
+
+Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests, performance traces, screenshot diffs. Use when implementing or debugging any browser-runtime feature, especially Three.js scenes, scroll-driven UI, or frontend perf concerns. Closes the gap between "the build passes" and "the user actually sees what we intended".
+
+**Triggers:** `verify in browser`, `check the dom`, `browser test`, `dev tools mcp`, `screenshot diff`, `console errors`, `network trace`, `browser smoke test`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-browser-verify/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-browser-verify/SKILL.md) — 71 lines
 
 ### `rihal-check-implementation-readiness`
 
@@ -22,6 +30,14 @@ LLM-assisted human-in-the-loop review. Make sense of a change, focus attention w
 **Triggers:** `checkpoint preview`
 
 **Source:** [`rihal/skills/actions/4-implementation/rihal-checkpoint-preview/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-checkpoint-preview/SKILL.md) — 65 lines
+
+### `rihal-ci`
+
+CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix, Helm charts for K8s deployment, Docker Compose for dev environments. Use when standing up CI for a new repo, adding a quality gate, debugging a flaky workflow, or migrating dev-compose to production Helm. Opinionated about zero-runtime-dep invariants and pre-merge gates.
+
+**Triggers:** `set up ci`, `github actions`, `ci pipeline`, `quality gate`, `helm chart`, `docker compose`, `k8s deploy`, `release workflow`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-ci/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-ci/SKILL.md) — 109 lines
 
 ### `rihal-code-review`
 
@@ -71,6 +87,14 @@ LLM-assisted human-in-the-loop review. Make sense of a change, focus attention w
 
 **Source:** [`rihal/skills/actions/2-plan/rihal-create-ux-design/SKILL.md`](../rihal/skills/actions/2-plan/rihal-create-ux-design/SKILL.md) — 44 lines
 
+### `rihal-debug`
+
+Root-cause debugging via the scientific method. Use when a test fails, a build breaks, behaviour doesn't match expectations, or any "it's broken and I don't know why" moment. Forces hypothesis → experiment → observation → narrow → repeat — never guessing or shotgunning fixes. Default observability layer is Sentry; the skill knows how to read Sentry traces if available.
+
+**Triggers:** `debug this`, `why is this broken`, `find the root cause`, `investigate the bug`, `what's wrong`, `track this down`, `narrow down the bug`, `scientific method`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-debug/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-debug/SKILL.md) — 79 lines
+
 ### `rihal-dev-story`
 
 **Triggers:** `dev this story`, `implement story {id}`, `execute the story`, `code the next story`, `run`
@@ -107,11 +131,51 @@ LLM-assisted human-in-the-loop review. Make sense of a change, focus attention w
 
 **Source:** [`rihal/skills/actions/3-solutioning/rihal-generate-project-context/SKILL.md`](../rihal/skills/actions/3-solutioning/rihal-generate-project-context/SKILL.md) — 44 lines
 
+### `rihal-git-flow`
+
+Branching, commits, conflicts, parallel work — aligned with the Rihal Epic→Feature→Task hierarchy from GITHUB_WORKFLOW.md. Use when starting a new feature, opening a PR, resolving a merge conflict, or coordinating multi-developer work. Enforces Conventional Commits, no AI attribution lines, no force-push to main.
+
+**Triggers:** `git flow`, `branching strategy`, `open a pr`, `merge conflict`, `rebase or merge`, `feature branch`, `commit policy`, `branch from main`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-git-flow/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-git-flow/SKILL.md) — 91 lines
+
+### `rihal-harden`
+
+Security hardening checklist for SaaS applications. Use before launching any feature that touches authentication, authorization, tenant data, file upload, or external integrations. Specifically opinionated about Keycloak/Active Directory sync (rcode learned this the hard way), JWT validation pitfalls, and tenant isolation in multi-org Postgres.
+
+**Triggers:** `harden this`, `security check`, `auth audit`, `tenant isolation`, `keycloak ad sync`, `secure this endpoint`, `owasp`, `before we ship`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-harden/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-harden/SKILL.md) — 92 lines
+
+### `rihal-incremental`
+
+Ship code in small, atomic, verifiable steps. Use when implementing any feature, fixing any bug, or refactoring any module. Forces one logical change per commit, build-and-test gate after each step, and a rollback-ready trail. Pairs with rihal-prove-it (TDD) and rihal-code-review.
+
+**Triggers:** `ship incrementally`, `atomic commits`, `small steps`, `step by step build`, `incremental implementation`, `one commit at a time`, `build verifiably`, `rollback ready`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-incremental/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-incremental/SKILL.md) — 51 lines
+
 ### `rihal-market-research`
 
 **Triggers:** `market research`, `competitive analysis`, `market analysis for`, `size the market`, `competitor scan`, `analyze the market for X`
 
 **Source:** [`rihal/skills/actions/1-analysis/research/rihal-market-research/SKILL.md`](../rihal/skills/actions/1-analysis/research/rihal-market-research/SKILL.md) — 42 lines
+
+### `rihal-migrate`
+
+Plan and execute the move from MVP to production-grade infrastructure without rewriting from scratch. Use when an MVP works but the next round of features hits a wall — flaky deploys, manual ops, no observability, no tests, hand-rolled auth. Specifically addresses the documented Rihal pain ("MVP delivered, hard to revamp"). Pairs with rihal-harden for security pass and rihal-ci for the new pipeline.
+
+**Triggers:** `graduate the mvp`, `production grade infra`, `mvp to prod`, `scale this beyond demo`, `harden the stack`, `revamp the architecture`, `from prototype to product`, `ready for real users`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-migrate/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-migrate/SKILL.md) — 87 lines
+
+### `rihal-perf`
+
+Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration), Three.js (frame budget, draw calls, geometry uploads), Postgres (query plans, indexes), and Vercel/K8s (cold starts, memory). Use when Lighthouse scores regress, fps drops, queries get slow, or a deploy gets OOM-killed. Pairs with rihal-browser-verify for runtime measurement.
+
+**Triggers:** `optimize performance`, `page is slow`, `fps drop`, `core web vitals`, `query is slow`, `lcp regression`, `perf budget`, `tune this`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-perf/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-perf/SKILL.md) — 97 lines
 
 ### `rihal-prfaq`
 
@@ -126,6 +190,14 @@ Working Backwards PRFAQ challenge to forge product concepts. Use when the user r
 **Triggers:** `create a product brief`, `write a product`
 
 **Source:** [`rihal/skills/actions/1-analysis/rihal-product-brief/SKILL.md`](../rihal/skills/actions/1-analysis/rihal-product-brief/SKILL.md) — 120 lines
+
+### `rihal-prove-it`
+
+Test-first development. Use when implementing any new behaviour, fixing any bug, or changing existing logic. Writes a failing test first, then the minimum code to pass it, then refactors. For UI flows uses Playwright; for unit logic uses Jest or node:test. The phrase "prove it" is the activation — every claim of "this works" must have a test backing it.
+
+**Triggers:** `prove it`, `tdd`, `test first`, `write a failing test`, `red green refactor`, `test driven`, `regression test`, `reproduce the bug first`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-prove-it/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-prove-it/SKILL.md) — 65 lines
 
 ### `rihal-qa-generate-e2e-tests`
 
@@ -145,6 +217,14 @@ Working Backwards PRFAQ challenge to forge product concepts. Use when the user r
 
 **Source:** [`rihal/skills/actions/4-implementation/rihal-scaffold-project/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-scaffold-project/SKILL.md) — 88 lines
 
+### `rihal-source-truth`
+
+Cite official documentation before writing or recommending any framework, library, or API code. Use when working with Next.js, React, Strapi, Postgres, or any third-party tool. Forces the agent to fetch the upstream doc page (or local docs in `node_modules`) and quote the version-specific API rather than relying on training-data memory. Catches "the API changed in v15" foot-guns.
+
+**Triggers:** `cite the docs`, `official source`, `verify the api`, `what does the doc say`, `rtfm`, `version specific`, `from the source`, `source-driven`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-source-truth/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-source-truth/SKILL.md) — 77 lines
+
 ### `rihal-sprint-planning`
 
 **Triggers:** `plan the sprint`, `create sprint plan`, `run`
@@ -162,6 +242,14 @@ Working Backwards PRFAQ challenge to forge product concepts. Use when the user r
 **Triggers:** `technical research`, `feasibility study`, `research implementation`
 
 **Source:** [`rihal/skills/actions/1-analysis/research/rihal-technical-research/SKILL.md`](../rihal/skills/actions/1-analysis/research/rihal-technical-research/SKILL.md) — 45 lines
+
+### `rihal-trim`
+
+Code simplification. Reduce lines, remove dead branches, collapse abstractions, delete commented-out code. Use when a file has grown past comprehension, a function takes more than 80 lines, or a class has accumulated "while I'm here" features. Applies the rcode Distillator philosophy — lossless compression — to source code rather than documents.
+
+**Triggers:** `trim this`, `simplify this code`, `code is too long`, `reduce complexity`, `deduplicate`, `remove dead code`, `tighten this function`, `extract dead branches`
+
+**Source:** [`rihal/skills/actions/4-implementation/rihal-trim/SKILL.md`](../rihal/skills/actions/4-implementation/rihal-trim/SKILL.md) — 74 lines
 
 ### `rihal-validate-prd`
 
@@ -283,7 +371,7 @@ Working Backwards PRFAQ challenge to forge product concepts. Use when the user r
 
 ---
 
-## Core (17)
+## Core (25)
 
 ### `rihal-advanced-elicitation`
 
@@ -293,17 +381,41 @@ Push the LLM to reconsider, refine, and improve its recent output through struct
 
 **Source:** [`rihal/skills/core/rihal-advanced-elicitation/SKILL.md`](../rihal/skills/core/rihal-advanced-elicitation/SKILL.md) — 68 lines
 
+### `rihal-auth-audit`
+
+Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres. Use when seeing authentication weirdness — users disappearing, tokens accepted post-deactivation, "phantom" sessions, or tenant data leaking across orgs. Specifically encodes the lessons from the Rihal Keycloak data-loss incident — sync drift between Keycloak and AD silently broke logins.
+
+**Triggers:** `auth audit`, `keycloak ad sync`, `users disappearing`, `ghost session`, `tenant leak`, `jwt validation check`, `stale token`, `session not invalidating`
+
+**Source:** [`rihal/skills/core/rihal-auth-audit/SKILL.md`](../rihal/skills/core/rihal-auth-audit/SKILL.md) — 94 lines
+
 ### `rihal-brainstorming`
 
 **Triggers:** `brainstorm`, `help me brainstorm`, `help me ideate`, `ideation session`, `creative`
 
 **Source:** [`rihal/skills/core/rihal-brainstorming/SKILL.md`](../rihal/skills/core/rihal-brainstorming/SKILL.md) — 99 lines
 
+### `rihal-client-gate`
+
+Client requirement freeze gates and async-comm patterns to stop late requirements from derailing delivery. Use when a project keeps slipping because the client adds requirements mid-sprint, or when the client takes a week to respond to a blocking question. Specifically encodes Rihal's "client late requirements caused project delays" pain — the fix isn't to "communicate better", it's structural gates that the project actually enforces.
+
+**Triggers:** `client gate`, `freeze requirements`, `scope creep`, `client slow response`, `requirements freeze`, `client comm pattern`, `stop late requirements`, `delivery slipping`
+
+**Source:** [`rihal/skills/core/rihal-client-gate/SKILL.md`](../rihal/skills/core/rihal-client-gate/SKILL.md) — 92 lines
+
 ### `rihal-clone-website`
 
 **Triggers:** `clone this website`, `clone this site`, `rebuild this page`, `replicate this UI`, `pixel-perfect clone`, `make exact UI like this`, `copy this site`, `reverse engineer this site`, `build me a clone of`, `aisi website banao`, `yeh site clone karo`, `exact same UI chahiye like [URL]`
 
 **Source:** [`rihal/skills/core/rihal-clone-website/SKILL.md`](../rihal/skills/core/rihal-clone-website/SKILL.md) — 76 lines
+
+### `rihal-deploy-unify`
+
+Detect and unify multiple deployment paths in a single project. Use when a repo has accumulated overlapping deploy mechanisms (Docker Compose + Helm + manual scripts + Vercel + Jenkins) and "which one runs in production" is unclear. Specifically encodes the Siraaj deployment chaos lesson — multiple deploy paths cost a week of debugging and broke Keycloak more than once.
+
+**Triggers:** `deploy unify`, `multiple deploy paths`, `which deploy is production`, `deploy chaos`, `consolidate deployments`, `kubernetes vs compose`, `single deploy path`, `deployment audit`
+
+**Source:** [`rihal/skills/core/rihal-deploy-unify/SKILL.md`](../rihal/skills/core/rihal-deploy-unify/SKILL.md) — 88 lines
 
 ### `rihal-distillator`
 
@@ -336,6 +448,14 @@ Analyzes current state and user query to answer Rihal questions or recommend the
 **Triggers:** `help`
 
 **Source:** [`rihal/skills/core/rihal-help/SKILL.md`](../rihal/skills/core/rihal-help/SKILL.md) — 104 lines
+
+### `rihal-incident-record`
+
+Generate a change record + post-mortem in one flow. Use after resolving any production incident, deploying any non-trivial change, or making any decision that future-you will need to retrace. Implements the verified Rihal change-record format from `template/docs/change_records/`. Pairs with rihal-debug — once the bug is rooted-out, this skill writes the record.
+
+**Triggers:** `incident record`, `post mortem`, `change record`, `document this incident`, `write a postmortem`, `record this change`, `rca write up`, `incident summary`
+
+**Source:** [`rihal/skills/core/rihal-incident-record/SKILL.md`](../rihal/skills/core/rihal-incident-record/SKILL.md) — 162 lines
 
 ### `rihal-index-docs`
 
@@ -377,11 +497,35 @@ INTERNAL config loader — called by other skills, not by users directly. Loads 
 
 **Source:** [`rihal/skills/core/rihal-memory-update/SKILL.md`](../rihal/skills/core/rihal-memory-update/SKILL.md) — 74 lines
 
+### `rihal-mvp-graduate`
+
+Move an MVP to production-grade infrastructure incrementally. Use when an MVP has shipped, has real users, and "the next round of features" is hitting walls — flaky deploys, no observability, manual ops, hand-rolled auth. Specifically addresses Rihal's "MVPs delivered, hard to revamp" pain. Companion to rihal-migrate (the engineering skill); this one is the strategic / sequenced version specifically scoped to MVP→prod.
+
+**Triggers:** `graduate this mvp`, `mvp to prod plan`, `real users now`, `scale beyond demo`, `post-mvp infrastructure`, `revamp mvp`, `hardening pass`, `ready for production`
+
+**Source:** [`rihal/skills/core/rihal-mvp-graduate/SKILL.md`](../rihal/skills/core/rihal-mvp-graduate/SKILL.md) — 117 lines
+
+### `rihal-ocr-consistency`
+
+OCR pipeline determinism + ground-truth validation. Use when running an OCR pipeline (text extraction from PDFs, scanned documents, government forms) and seeing inconsistent output across runs, language-routing mistakes, or accuracy regressions. Specifically encodes Rihal's OCR pain — Arabic/English routing failures, Triton inconsistencies, missing ground-truth checks.
+
+**Triggers:** `ocr inconsistency`, `ocr pipeline`, `text extraction`, `pdf ocr`, `siglip routing`, `triton ocr`, `ground truth`, `ocr accuracy regression`
+
+**Source:** [`rihal/skills/core/rihal-ocr-consistency/SKILL.md`](../rihal/skills/core/rihal-ocr-consistency/SKILL.md) — 107 lines
+
 ### `rihal-party-mode`
 
 **Triggers:** `party mode`, `activate party mode`, `start party mode`, `group discussion`, `team discussion`, `talk to everyone`, `bring all agents`, `multi-agent chat`, `let's have a party`
 
 **Source:** [`rihal/skills/core/rihal-party-mode/SKILL.md`](../rihal/skills/core/rihal-party-mode/SKILL.md) — 92 lines
+
+### `rihal-rebrand`
+
+Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names. Use when a project's brand changes mid-flight and the rename has to ripple through dozens of files without breaking anything. Specifically encodes the Rihal "had to do complete rebranding" pain — the rename touched 100+ files and broke 3 deploys before we got it right.
+
+**Triggers:** `rebrand`, `stack-wide rename`, `product rename`, `rename project`, `brand migration`, `logo refresh`, `domain change`, `company name change`
+
+**Source:** [`rihal/skills/core/rihal-rebrand/SKILL.md`](../rihal/skills/core/rihal-rebrand/SKILL.md) — 134 lines
 
 ### `rihal-review-adversarial-general`
 
@@ -406,3 +550,11 @@ Splits large markdown documents into smaller, organized files based on level 2 (
 **Triggers:** `shard doc`
 
 **Source:** [`rihal/skills/core/rihal-shard-doc/SKILL.md`](../rihal/skills/core/rihal-shard-doc/SKILL.md) — 138 lines
+
+### `rihal-theme-system`
+
+Audit a frontend's design tokens BEFORE launch. Catches inconsistent colours, scattered hex values, hardcoded spacing, font drift, and missing dark/RTL mode support. Specifically encodes Rihal's "had to do complete rebranding mid-project" pain — themes accumulated drift until a full pass was the only fix. Pairs with rihal-rebrand if a rebrand becomes unavoidable.
+
+**Triggers:** `theme audit`, `design tokens`, `scattered colours`, `hardcoded hex`, `design system audit`, `before launch design check`, `consistent theme`, `css variable audit`
+
+**Source:** [`rihal/skills/core/rihal-theme-system/SKILL.md`](../rihal/skills/core/rihal-theme-system/SKILL.md) — 114 lines

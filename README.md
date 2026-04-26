@@ -54,7 +54,7 @@ Most AI tools give you one assistant pretending to be everything. **Rihal Code g
 
 - **45 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
 - **95 slash commands** covering research, planning, execution, verification, and recovery
-- **61 skills** including Memory Bank primitives — `/rcode:memory-init`, `-update`, `-distill`, `-audit`
+- **80 skills** including Memory Bank primitives, 11 engineering-rigor skills (TDD, harden, perf, debug, trim, etc.), and 8 real-pain skills (auth-audit, mvp-graduate, deploy-unify, etc.)
 - **Persistent project memory** at `.rihal/memory/` — checked into git, visible in the Diwan dashboard, lossless distillates for fast LLM hydration
 - **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
@@ -86,7 +86,7 @@ One unified installer. Pure file shipping, no runtime dependencies. Installs int
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
 - `.claude/agents/` — 45 first-class subagents
 - `.claude/commands/rihal/` — 95 slash commands
-- `.claude/skills/` — 61 phrase-activated skills (scaffold-project, create-prd, prfaq, memory-init, retrospective, etc.)
+- `.claude/skills/` — 80 phrase-activated skills (scaffold-project, create-prd, prfaq, memory-init, retrospective, etc.)
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
@@ -466,7 +466,7 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ .rihal/config.yaml present — 412 bytes
     ✓ .rihal/state.json parses — valid JSON
     ✓ agents installed — 45
-    ✓ skills + commands installed — 61 skills + 95 commands
+    ✓ skills + commands installed — 80 skills + 95 commands
 ```
 
 A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
