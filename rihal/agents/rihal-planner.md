@@ -116,6 +116,31 @@ else: wave = max(waves of dependencies) + 1
 
 **File ownership:** No overlap in files_modified → can run parallel. Overlap → later depends on earlier.
 
+## File-existence verification (BLOCKER — added in v3.1.0 after #441)
+
+Before writing each entry into `files_modified`, you MUST verify the file actually exists in the project. Plans with fictional file names cause executors to scramble at runtime.
+
+For every candidate path:
+
+```bash
+# Try the exact name first
+test -f "<candidate>" && echo "OK" && exit 0
+
+# Then try a fuzzy match for renamed/moved files
+find . -type f \( -name "<basename>" -o -iname "*$<short-slug>*" \) \
+  -not -path './node_modules/*' -not -path './.git/*' 2>/dev/null
+```
+
+Apply these rules to every path you put in `files_modified`:
+
+- **Exact match exists** → use the verified path verbatim
+- **No exact match, fuzzy match found** → use the fuzzy match's path AND log a note in the SPRINT.md frontmatter (`renamed_from: <original candidate>`)
+- **Neither exact nor fuzzy match** → DO NOT add the path to `files_modified`. Either:
+  - Mark it as a CREATE story (the executor will create the file fresh) — set `creates: [<path>]` in the story body
+  - OR raise a BLOCKER finding for sprint-checker to surface: file referenced by name but not present and not flagged for creation
+
+Sprint-checker enforces this — see `rihal-sprint-checker.md` Mandatory Output Markers section. Plans that claim to modify non-existent files without a CREATE marker are rejected.
+
 ## Plan Structure
 
 ```markdown
