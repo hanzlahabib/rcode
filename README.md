@@ -1,16 +1,31 @@
-# Rihal Code
+# Rihal Code (rcode)
 
 <div dir="rtl">طريقة رحال</div>
 
-> **Install Rihal's brain into your project in one command.** Every Rihalian — engineer, PM, designer, CTO, QA — gets an AI assistant that already knows how Rihal builds: PR standards, commit conventions, architecture patterns, sprint cadence, the Rihal team's agent personas. No onboarding. No prompting. Works in Claude Code, Cursor, and any compatible AI IDE.
+> **rcode is the memory bank for AI-driven SaaS teams — your project's context, structured, visible, and never lost.**
+>
+> Built by Rihal. Designed for solo devs, startup teams, and SaaS builders. Install once, and your AI assistant gets a persistent project brain: structured memory, decisions log, distinctive personas, and phase-based workflows. Works in Claude Code, Cursor, and any compatible AI IDE.
+
+---
+
+## Who is rcode for
+
+You'll feel rcode pay off if you've lived any of these:
+
+- **AI agents lose context mid-project.** Three sessions in, the assistant has forgotten the architectural decision you made on day one.
+- **Onboarding a teammate** means a 30-minute archaeology dig through Slack, Notion, and review comments to explain "why we did it this way".
+- **Late client requirements** keep shifting the goal posts, and there's no record of what was decided when.
+- **MVPs that work but can't be revamped** without rewriting from scratch — the original context is lost.
+
+rcode addresses these with a checked-in **Memory Bank** (`.rihal/memory/`), distinctive engineering personas, and a phased workflow that survives session resets. See [`MEMORY_BANK.md`](MEMORY_BANK.md) for the spec, and [`BRAND.md`](BRAND.md) for naming and voice conventions.
 
 ---
 
 ## Why this exists
 
-Every Rihal project carries unwritten context — how we review PRs, what "done" means, how we sequence milestones, how PRDs travel from Product into Engineering. That context sits in people's heads, Slack, Notion, senior engineers' review comments. AI assistants pick it up never, because every new chat session starts knowing nothing about how Rihal works.
+Every project carries unwritten context — how the team reviews PRs, what "done" means, how milestones sequence, how PRDs travel from Product into Engineering. That context sits in people's heads, Slack, Notion, and senior engineers' review comments. AI assistants pick it up never, because every new chat session starts knowing nothing about how this project actually works.
 
-**Rihal Code fixes that.** One install, and the AI knows. Every session. Every repo. Every Rihalian.
+**rcode fixes that.** One install, and the AI knows. Every session. Every repo. Every contributor.
 
 See [`docs/what-is-rihal-code.md`](docs/what-is-rihal-code.md) for the full story, and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where this is going (next: live MCP server in v3.0).
 
