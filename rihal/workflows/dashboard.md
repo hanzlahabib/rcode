@@ -23,18 +23,49 @@ STOP — do not proceed.
 
 ## Step 1 — Resolve dashboard script
 
-Check for the dashboard server in priority order:
+Check for the dashboard server in priority order. Use a single bash block so all fallbacks run before failing:
 
-1. `./server/dashboard.js` (when inside the rihal-code source repo)
-2. `./.rihal/lib/server/dashboard.js` (installed package copy)
-3. `$(npm root -g)/@hanzlaa/rcode/server/dashboard.js` (global install)
+```bash
+DASHBOARD=""
+# 1. Source repo
+if [ -f ./server/dashboard.js ]; then
+  DASHBOARD="./server/dashboard.js"
+# 2. Installed package copy inside project
+elif [ -f ./.rihal/lib/server/dashboard.js ]; then
+  DASHBOARD="./.rihal/lib/server/dashboard.js"
+else
+  # 3. Global installs — check npm, pnpm, and yarn roots
+  for ROOT in "$(npm root -g 2>/dev/null)" "$(pnpm root -g 2>/dev/null)" "$(yarn global dir 2>/dev/null)/node_modules"; do
+    [ -z "$ROOT" ] && continue
+    if [ -f "$ROOT/@hanzlaa/rcode/server/dashboard.js" ]; then
+      DASHBOARD="$ROOT/@hanzlaa/rcode/server/dashboard.js"
+      break
+    fi
+  done
+  # 4. Last resort — resolve via the rcode/rihal binary symlink
+  if [ -z "$DASHBOARD" ]; then
+    for BIN in rcode rihal rihal-code; do
+      BIN_PATH="$(command -v $BIN 2>/dev/null)" || continue
+      REAL_BIN="$(readlink -f "$BIN_PATH" 2>/dev/null)"
+      [ -z "$REAL_BIN" ] && continue
+      # Walk up from dist/rcode.js → package root → server/dashboard.js
+      PKG_ROOT="$(dirname "$(dirname "$REAL_BIN")")"
+      if [ -f "$PKG_ROOT/server/dashboard.js" ]; then
+        DASHBOARD="$PKG_ROOT/server/dashboard.js"
+        break
+      fi
+    done
+  fi
+fi
+echo "DASHBOARD=$DASHBOARD"
+```
 
 Store the resolved path as `$DASHBOARD`.
 
 If none found, print:
 ```
 ❌ Dashboard script not found.
-Run `npx @hanzlaa/rcode install` to install the package, or check you're inside a project with .rihal/.
+Run `npx @hanzlaa/rcode install` (or `pnpm add -g @hanzlaa/rcode`) to install the package, or check you're inside a project with .rihal/.
 ```
 Exit.
 
