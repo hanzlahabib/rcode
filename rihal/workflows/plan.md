@@ -111,6 +111,18 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
+**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rihal:add-phase` from a bulk `/rihal:quick` or `/rihal:do` route), read it now:
+
+```bash
+TASKS_FILE=".planning/phases/${padded_phase}-${phase_slug}/TASKS.md"
+HAS_TASKS=$([ -f "$TASKS_FILE" ] && echo true || echo false)
+```
+
+When `HAS_TASKS=true`:
+- Pass the TASKS.md content to the planner agent as authoritative phase scope. The planner uses it as the input list — each entry becomes a candidate sprint task in SPRINT.md.
+- Surface this in the opening banner: *"Phase scope source: TASKS.md ({N} entries auto-extracted from bulk route on {date})"*.
+- Do NOT re-prompt the user for scope when TASKS.md is present — they already provided the list once at the /rihal:quick or /rihal:do entry point. The whole point of the auto-route chain is that the user doesn't paste the same content multiple times.
+
 ## 2.5. Validate `--reviews` Prerequisite
 
 **Skip if:** No `--reviews` flag.
