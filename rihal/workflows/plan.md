@@ -1084,6 +1084,51 @@ Display: `Max iterations reached. {N} issues remain:` + issue list
 
 Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 
+## 12.5. Wave Parallelism File-Overlap Check (added in v3.1.0 after #442)
+
+Before declaring plans ready, validate the wave-parallelism rule the planner declares: **same wave + overlapping `files_modified` = sequential, not parallel**. If two plans share `depends_on` (same wave) and both list the same file in `files_modified`, the planner should have marked the later one `sequential: true`. Catch the cases where it didn't.
+
+```bash
+# For every pair of plans (A, B) with the same depends_on:
+#   if files_modified(A) ∩ files_modified(B) is non-empty:
+#     - the later plan (by sprint id) MUST declare sequential: true
+#     - and must list the conflicting files in its frontmatter
+
+node ".rihal/bin/rihal-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+```
+
+The CLI helper returns a JSON report:
+
+```json
+{
+  "conflicts": [
+    {
+      "wave": 2,
+      "plan_a": "96.2",
+      "plan_b": "96.3",
+      "shared_files": ["src/components/LeadDetailPanel.tsx", "src/styles/inbox.css"],
+      "plan_b_sequential": false
+    }
+  ]
+}
+```
+
+**If `conflicts` is non-empty:**
+
+1. For each conflict, edit the later plan's SPRINT.md frontmatter to add:
+   ```yaml
+   sequential: true
+   sequential_after: <plan_a id>
+   conflicting_files: [<shared_files...>]
+   ```
+2. Recompute waves: the formerly-parallel plan now depends on the earlier one, so its wave is `max(waves of dependencies) + 1`.
+3. Re-run the checker to confirm the updated frontmatter.
+4. Display: `Wave parallelism: {N} conflict(s) auto-corrected to sequential.`
+
+**If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
+
+This closes the gap from #442 — the rule was stated in `rihal-planner.md` but not enforced. Now it's enforced automatically.
+
 ## 13. Requirements Coverage Gate
 
 After plans pass the checker (or checker is skipped), verify that all phase requirements are covered by at least one plan.
