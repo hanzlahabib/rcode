@@ -58,7 +58,6 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | `/rihal:remove-phase` | `<phase-number>` | Remove an unstarted future phase, renumber subsequent phases, and commit. Cannot remove a phase in progress. |
 | `/rihal:list-plans` | `[--phase <id>] [--status <state>] [--detail]` | Table of all SPRINT.md plans across phases — goal, story counts, points, and state in one view. |
 | `/rihal:analyze-dependencies` | — | Analyze phase dependencies, suggest "Depends on" entries for ROADMAP.md. |
-| `/rihal:check-implementation-readiness` | `[--phase <name>]` | Verify PRD approved, architecture approved, external deps identified, no blocking assumptions. Returns pass/fail. |
 
 ---
 

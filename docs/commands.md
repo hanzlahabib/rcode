@@ -278,7 +278,7 @@ Flow:
 
 Outputs: `.planning/phases/{NN}/PLAN.md`.
 
-**Related:** `/rihal:chain`, `/rihal:execute`, `/rihal:check-implementation-readiness`
+**Related:** `/rihal:chain`, `/rihal:execute`
 
 ---
 
@@ -467,23 +467,6 @@ Flow:
 Reverts commits from the phase and marks phase incomplete. Keeps artifacts by default; add `--keep-artifacts` to preserve.
 
 **Related:** `/rihal:correct-course`, `/rihal:pause-work`
-
----
-
-### `/rihal:check-implementation-readiness`
-**Purpose:** Verify a plan is ready before execution.
-
-```
-/rihal:check-implementation-readiness .planning/phases/01/PLAN.md
-```
-
-Checks:
-- All file references exist
-- All symbol definitions reachable
-- Dependencies installed
-- Test infrastructure present
-
-**Related:** `/rihal:plan`, `/rihal:execute`
 
 ---
 
