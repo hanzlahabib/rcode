@@ -342,7 +342,7 @@ Recent additions in this session:
 `execute` · `quick` · `autonomous` · `audit-fix` · `undo`
 
 ### Observability + review
-`code-review` · `code-review-fix` · `review-edge-case-hunter` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`
+`code-review` · `code-review-fix` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`
 
 ### Recovery + correction
 `pause-work` · `resume-work` · `correct-course` · `next` · `config`

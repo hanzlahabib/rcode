@@ -513,15 +513,15 @@ Runs `/rihal:code-review`, then automatically fixes all flagged issues.
 
 Fatima (QA) and Waleed (CTO) pick apart the design, find worst-case scenarios.
 
-**Related:** `/rihal:code-review`, `/rihal:review-edge-case-hunter`
+**Related:** `/rihal:code-review`, `/rihal:code-review --edge-cases`
 
 ---
 
-### `/rihal:review-edge-case-hunter`
+### `/rihal:code-review --edge-cases`
 **Purpose:** Find edge cases and error paths.
 
 ```
-/rihal:review-edge-case-hunter src/payment/process.js
+/rihal:code-review --edge-cases src/payment/process.js
 ```
 
 Audits code for:

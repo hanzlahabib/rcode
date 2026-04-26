@@ -94,7 +94,7 @@ No invented capabilities. Everything here is sourced directly from `rihal/comman
 | `/rihal:code-review-fix` | `<phase> [--all] [--auto]` | Auto-apply fixes found by code review. |
 | `/rihal:review` | — | Cross-AI peer review — invoke external AI CLIs to independently review phase plans. |
 | `/rihal:code-review --attack` | `<phase\|git-ref> [--files=path1,path2]` | Attack-mode review — vulnerabilities, race conditions, data loss, abuse cases. |
-| `/rihal:review-edge-case-hunter` | `[--phase <name>] [--component <name>]` | Enumerate edge cases by category (input, state, concurrency, network) with severity. |
+| `/rihal:code-review --edge-cases` | `[--phase <name>] [--component <name>]` | Enumerate edge cases by category (input, state, concurrency, network) with severity. |
 | `/rihal:code-review --karpathy` | `<phase\|git-ref> [--files=path1,path2]` | Audit recent code changes against Karpathy's 4 LLM coding principles. |
 | `/rihal:secure-phase` | `<phase>` | Retroactively verify threat mitigations for a completed phase. |
 | `/rihal:ui-review` | `[--phase <name>] [--detailed]` | Retroactive 6-pillar visual audit — color consistency, typography, components, accessibility, responsive, coherence. |
@@ -250,7 +250,7 @@ Spawned by specific workflows for targeted analysis.
 | `rihal-deviation-analyzer` | Analyzes plan deviations, scope creep, timeline slips | `/rihal:correct-course` |
 | `rihal-remediation-planner` | Plans remediation for issues, blockers, failures | internal |
 | `rihal-docs-auditor` | Audits documentation completeness, accuracy, gaps between code and docs | `/rihal:docs-update` |
-| `rihal-edge-case-hunter` | Enumerates edge cases by category with severity | `/rihal:review-edge-case-hunter` |
+| `rihal-edge-case-hunter` | Enumerates edge cases by category with severity | `/rihal:code-review --edge-cases` |
 | `rihal-assumptions-analyzer` | Analyzes codebase for a phase, returns structured assumptions with evidence | `/rihal:discuss-phase` (assumptions mode) |
 | `rihal-advisor-researcher` | Researches a gray area decision, returns structured comparison table | `/rihal:discuss-phase` (advisor mode) |
 

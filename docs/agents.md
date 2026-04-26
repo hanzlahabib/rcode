@@ -345,7 +345,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 #### rihal-edge-case-hunter
 **Purpose:** Find error paths and boundary conditions.
 
-**Spawned by:** `/rihal:review-edge-case-hunter`, `/rihal:audit-fix`
+**Spawned by:** `/rihal:code-review --edge-cases`, `/rihal:audit-fix`
 
 **Finds:**
 - Uncaught exceptions

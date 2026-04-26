@@ -49,6 +49,16 @@ Read and execute @.rihal/workflows/review-adversarial.md end-to-end with the sam
 
 Attack mode produces a weakness report from a hostile perspective — security vulnerabilities, race conditions, data loss, abuse cases. The standard code-review steps below are skipped when `--attack` is set.
 
+## Step 0c — Edge cases mode delegation
+
+If `$ARGUMENTS` contains `--edge-cases`, delegate to the edge-case-hunter workflow and stop:
+
+```
+Read and execute @.rihal/workflows/review-edge-case-hunter.md end-to-end with the same arguments minus `--edge-cases`.
+```
+
+Edge-cases mode enumerates boundary conditions by category (input, state, concurrency, network) with severity. The standard code-review steps below are skipped when `--edge-cases` is set.
+
 <process>
 
 <step name="initialize">

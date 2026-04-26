@@ -178,7 +178,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
 | `/rihal:ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
 | `/rihal:code-review --attack` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |
-| `/rihal:review-edge-case-hunter` | Enumerate edge cases by category and severity. |
+| `/rihal:code-review --edge-cases` | Enumerate edge cases by category and severity. |
 | `/rihal:review` | Cross-AI peer review — invoke external AI CLIs to review plans. |
 
 ## Council variants & strategy power tools
