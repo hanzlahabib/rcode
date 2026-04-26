@@ -1,167 +1,67 @@
 ---
 name: rihal-advanced-elicitation
-description: 'Push the LLM to reconsider, refine, and improve its recent output. Use when user asks for deeper critique or mentions a known deeper critique method, e.g. socratic, first principles, pre-mortem, red team.'
+description: Push the LLM to reconsider, refine, and improve its recent output through structured methods like socratic questioning, first principles, pre-mortem, and red-teaming. Use when the user asks for deeper critique, says "push harder on this", "go deeper", "challenge this", "stress-test this section", or names a specific elicitation method. For prose editing use rihal-editorial-review-prose; for structural review use rihal-editorial-review-structure.
 agent_party: '{project-root}/.rihal/team.yaml'
 triggers:
   - "advanced elicitation"
----
-
-# Advanced Elicitation
-
-**Goal:** Push the LLM to reconsider, refine, and improve its recent output.
-
+  - "push deeper"
+  - "go deeper"
+  - "challenge this"
+  - "stress-test this"
+  - "pre-mortem"
+  - "red team this"
+  - "first principles"
+user-invocable: true
 ---
 
 ## Overview
 
-Advanced elicitation skill for Rihal Code.
+Iterative menu-driven enhancement of recently-generated content. Presents 5 contextually-chosen elicitation methods (from `methods.csv`), runs the user's pick against the current content, shows the improvement, and re-offers the menu until the user picks `x` to proceed. Designed to be invoked indirectly from a parent prompt that just produced a section, then return the enhanced version. Detailed method registry, response cases, and execution rules live in [`references.md`](references.md).
 
-## CRITICAL LLM INSTRUCTIONS
+## Process
 
-- **MANDATORY:** Execute ALL steps in the flow section IN EXACT ORDER
-- DO NOT skip steps or change the sequence
-- HALT immediately when halt-conditions are met
-- Each action within a step is a REQUIRED action to complete that step
-- Sections outside flow (validation, output, critical-context) provide essential context - review and apply throughout execution
-- **YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the `communication_language`**
+1. **Method registry loading.** Read `./methods.csv` and `{agent_party}` from `.rihal/team.yaml`.
+2. **Context analysis.** Use conversation history to detect content type, complexity, stakeholder needs, risk level, creative potential.
+3. **Smart selection.** Pick 5 methods from the CSV that best match the context. Balance foundational and specialised techniques.
+4. **Present menu.** Show the 5 options + `r` (reshuffle), `a` (list all), `x` (proceed). HALT for input.
+5. **Execute on selection.** Apply the chosen method to the current content. Show the enhanced version. Ask the user `apply changes? y/n`. HALT.
+6. **On `y`** apply changes; on `n` discard. Re-present the menu — every method runs against the latest enhanced version.
+7. **On `x`** return the fully enhanced content to the invoking skill.
 
----
+**Iterative enhancement:** every method (1-5) applies to the current enhanced version, not the original. The loop continues until `x`.
 
-## INTEGRATION (When Invoked Indirectly)
-
-When invoked from another prompt or process:
-
-1. Receive or review the current section content that was just generated
-2. Apply elicitation methods iteratively to enhance that specific content
-3. Return the enhanced version back when user selects 'x' to proceed and return back
-4. The enhanced content replaces the original section content in the output document
-
----
-
-## FLOW
-
-### Step 1: Method Registry Loading
-
-**Action:** Load and read `./methods.csv` and `{agent_party}`
-
-#### CSV Structure
-
-- **category:** Method grouping (core, structural, risk, etc.)
-- **method_name:** Display name for the method
-- **description:** Rich explanation of what the method does, when to use it, and why it's valuable
-- **output_pattern:** Flexible flow guide using arrows (e.g., "analysis -> insights -> action")
-
-#### Context Analysis
-
-- Use conversation history
-- Analyze: content type, complexity, stakeholder needs, risk level, and creative potential
-
-#### Smart Selection
-
-1. Analyze context: Content type, complexity, stakeholder needs, risk level, creative potential
-2. Parse descriptions: Understand each method's purpose from the rich descriptions in CSV
-3. Select 5 methods: Choose methods that best match the context based on their descriptions
-4. Balance approach: Include mix of foundational and specialized techniques as appropriate
-
----
-
-### Step 2: Present Options and Handle Responses
-
-#### Display Format
+## Output Format
 
 ```
 **Advanced Elicitation Options**
 _If party mode is active, agents will join in._
 Choose a number (1-5), [r] to Reshuffle, [a] List All, or [x] to Proceed:
 
-1. [Method Name]
-2. [Method Name]
-3. [Method Name]
-4. [Method Name]
-5. [Method Name]
+1. <Method name>
+2. <Method name>
+3. <Method name>
+4. <Method name>
+5. <Method name>
 r. Reshuffle the list with 5 new options
 a. List all methods with descriptions
-x. Proceed / No Further Actions
+x. Proceed / No further actions
 ```
 
-#### Response Handling
-
-**Case 1-5 (User selects a numbered method):**
-
-- Execute the selected method using its description from the CSV
-- Adapt the method's complexity and output format based on the current context
-- Apply the method creatively to the current section content being enhanced
-- Display the enhanced version showing what the method revealed or improved
-- **CRITICAL:** Ask the user if they would like to apply the changes to the doc (y/n/other) and HALT to await response.
-- **CRITICAL:** ONLY if Yes, apply the changes. IF No, discard your memory of the proposed changes. If any other reply, try best to follow the instructions given by the user.
-- **CRITICAL:** Re-present the same 1-5,r,x prompt to allow additional elicitations
-
-**Case r (Reshuffle):**
-
-- Select 5 random methods from methods.csv, present new list with same prompt format
-- When selecting, try to think and pick a diverse set of methods covering different categories and approaches, with 1 and 2 being potentially the most useful for the document or section being discovered
-
-**Case x (Proceed):**
-
-- Complete elicitation and proceed
-- Return the fully enhanced content back to the invoking skill
-- The enhanced content becomes the final version for that section
-- Signal completion back to the invoking skill to continue with next section
-
-**Case a (List All):**
-
-- List all methods with their descriptions from the CSV in a compact table
-- Allow user to select any method by name or number from the full list
-- After selection, execute the method as described in the Case 1-5 above
-
-**Case: Direct Feedback:**
-
-- Apply changes to current section content and re-present choices
-
-**Case: Multiple Numbers:**
-
-- Execute methods in sequence on the content, then re-offer choices
-
----
-
-### Step 3: Execution Guidelines
-
-- **Method execution:** Use the description from CSV to understand and apply each method
-- **Output pattern:** Use the pattern as a flexible guide (e.g., "paths -> evaluation -> selection")
-- **Dynamic adaptation:** Adjust complexity based on content needs (simple to sophisticated)
-- **Creative application:** Interpret methods flexibly based on context while maintaining pattern consistency
-- Focus on actionable insights
-- **Stay relevant:** Tie elicitation to specific content being analyzed (the current section from the document being created unless user indicates otherwise)
-- **Identify personas:** For single or multi-persona methods, clearly identify viewpoints, and use party members if available in memory already
-- **Critical loop behavior:** Always re-offer the 1-5,r,a,x choices after each method execution
-- Continue until user selects 'x' to proceed with enhanced content, confirm or ask the user what should be accepted from the session
-- Each method application builds upon previous enhancements
-- **Content preservation:** Track all enhancements made during elicitation
-- **Iterative enhancement:** Each selected method (1-5) should:
-  1. Apply to the current enhanced version of the content
-  2. Show the improvements made
-  3. Return to the prompt for additional elicitations or completion
-
-## Output Format
-
-Interactive menu loop presenting 5 elicitation methods, then the enhanced content after each method application. Final output is the user-approved enhanced version of the original content.
-
-## Workflow
-
-1. Read the user request and extract key parameters.
-2. Execute the skill logic as described in the Overview.
-3. Return output in the format specified below.
+After execution: show the enhanced version, then ask `apply changes? (y/n/other)`, HALT, and re-present the menu.
 
 ## Examples
 
-### Happy path
-**User:** "push deeper on this PRD section"
-**Result:** Menu of 5 methods → user picks "Pre-Mortem" → analysis reveals 3 blind spots → user approves changes → re-offered menu → user selects 'x' to proceed
+**Happy path** — `push deeper on this PRD section` → menu of 5 → user picks "Pre-Mortem" → analysis surfaces 3 blind spots → user approves → menu re-offered → user types `x` → return enhanced content to caller.
 
-### Edge case
-**User:** "elicit" (no content in context)
-**Result:** Skill asks user to provide or point to the content to enhance
+**Edge case — no content in context** — skill asks the user to provide or point to the content to enhance.
 
-### Negative boundary
-**User:** "review this code for bugs"
-**Result:** Not elicitation → route to `rihal-code-review` or `rihal-review-adversarial-general`
+**Negative — wrong skill** — `review this code for bugs` is code review, not elicitation. Route to `rihal-code-review`.
+
+## Memory Bank Hooks
+
+- **Reads:** `methods.csv`, `.rihal/team.yaml` (agent_party), the section content being enhanced
+- **Writes:** the enhanced content is returned to the invoking skill — this skill does not write Memory Bank files itself
+
+## Detailed reference
+
+See [`references.md`](references.md) for: the CSV schema, the full case-by-case response handler (1-5 / r / a / x / direct feedback / multiple numbers), execution guidelines, and HALT conditions.
