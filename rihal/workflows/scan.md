@@ -20,7 +20,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:scan [--focus tech|arch|quality|concerns|tech+arch]
+/rihal:scan [--focus tech|arch|quality|concerns|tech+arch] [--refresh] [--reset]
 ```
 
 **Examples:**
@@ -28,7 +28,19 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rihal:scan --focus tech
 /rihal:scan --focus arch
 /rihal:scan --focus tech+arch
+/rihal:scan --refresh                 # auto-update stale docs, brief diff, log to CHANGELOG.md
+/rihal:scan --reset --focus tech+arch # silent overwrite (CI / autonomous)
 ```
+
+**Refresh flag — memory-bank pattern.** When `--refresh` is passed AND existing docs are present, the orchestrator:
+
+1. Captures a *pre-state snapshot* (top-level dirs, manifests, dep counts, file counts, git HEAD).
+2. Reads the oldest existing target doc's mtime — anchor for "changes since last scan".
+3. Runs git log + dir diff + manifest diff against that anchor.
+4. Spawns Dalil with the diff context, instructs him to overwrite docs AND prepend a "Changes since last scan" section to each.
+5. Appends a structured entry to `.planning/codebase/CHANGELOG.md` with the brief.
+
+This is the canonical way to keep the memory bank fresh without losing the audit trail of what changed and why.
 
 <process>
 
@@ -48,7 +60,11 @@ Parse the user's input for `--focus <area>`. Default to `tech+arch` if not speci
 
 Validate that the focus is one of: `tech`, `arch`, `quality`, `concerns`, `tech+arch`.
 
-If invalid:
+Also parse:
+- `--refresh` → auto-update mode (briefs the user on what changed, then overwrites)
+- `--reset` → silent overwrite (no prompt, no brief — for CI / autonomous chains)
+
+If invalid focus:
 ```
 Unknown focus area: "{input}". Valid options: tech, arch, quality, concerns, tech+arch
 ```
@@ -68,16 +84,83 @@ For each target document, check if it already exists in `.planning/codebase/`:
 ls -la .planning/codebase/{DOCUMENT}.md 2>/dev/null
 ```
 
-If any exist, show their modification dates and ask:
+**Three modes:**
+
+### 2a — Refresh mode (`--refresh` flag)
+
+Skip the [y/N] prompt. Instead, run the diff analysis in Step 2c and proceed to dispatch with refresh context.
+
+### 2b — Reset mode (`--reset` flag)
+
+Silent overwrite. No prompt, no brief, no CHANGELOG entry. Use only for CI or chained autonomous workflows.
+
+### 2c — Default mode (no flag)
+
+If any target doc exists, show their mod dates AND age in days, AND a one-line activity hint, then ask:
+
+```bash
+# For each existing doc, compute relative age:
+for DOC in {document_list}; do
+  if [ -f ".planning/codebase/$DOC" ]; then
+    MTIME=$(stat -c %Y ".planning/codebase/$DOC" 2>/dev/null || stat -f %m ".planning/codebase/$DOC" 2>/dev/null)
+    NOW=$(date +%s)
+    AGE_DAYS=$(( (NOW - MTIME) / 86400 ))
+    COMMITS_SINCE=$(git log --oneline --since="@$MTIME" 2>/dev/null | wc -l | tr -d ' ')
+    echo "  - $DOC ({date}, ${AGE_DAYS}d ago, ${COMMITS_SINCE} commits since)"
+  fi
+done
+```
+
 ```
 Existing documents found:
-  - STACK.md (modified 2026-04-03)
-  - INTEGRATIONS.md (modified 2026-04-01)
+  - STACK.md         (2026-03-22, 35d ago, 14 commits since)
+  - INTEGRATIONS.md  (2026-03-22, 35d ago, 14 commits since)
 
-Overwrite with fresh scan? [y/N]
+These docs are stale. Three options:
+  [Y]   Refresh — analyze what changed, briefly explain, then overwrite + log to CHANGELOG.md
+  [o]   Overwrite blind — skip the diff brief, just rebuild
+  [n]   Keep as-is, exit
 ```
 
-If user says no, exit.
+Map the answer:
+- `Y` / `y` / empty → set internal mode to **refresh**, continue to Step 2d
+- `o` → set mode to **reset**, continue to Step 4
+- `n` / `no` → exit
+
+## Step 2d — Pre-state capture (refresh mode only)
+
+Before dispatching Dalil, capture a structured snapshot for diff comparison. Fire each command and save the output verbatim — it goes into the dispatch prompt and the CHANGELOG entry.
+
+```bash
+# Anchor mtime — oldest existing target doc
+ANCHOR_TS=$(for DOC in {document_list}; do
+  [ -f ".planning/codebase/$DOC" ] && stat -c %Y ".planning/codebase/$DOC" 2>/dev/null || stat -f %m ".planning/codebase/$DOC" 2>/dev/null
+done | sort -n | head -1)
+ANCHOR_DATE=$(date -d "@$ANCHOR_TS" -u +%Y-%m-%d 2>/dev/null || date -r "$ANCHOR_TS" -u +%Y-%m-%d 2>/dev/null)
+
+# Commits since anchor
+echo "=== COMMITS SINCE $ANCHOR_DATE ==="
+git log --oneline --since="@$ANCHOR_TS" 2>/dev/null | head -50
+
+# Top-level dir set
+echo "=== TOP-LEVEL DIRS ==="
+find . -maxdepth 1 -type d -not -name '.git' -not -name 'node_modules' -not -name '.next' -not -name 'dist' -not -name '.venv' -not -name '__pycache__' | sort
+
+# Manifest hashes (changed if deps shifted)
+echo "=== MANIFEST HASHES ==="
+for M in package.json pnpm-lock.yaml pyproject.toml requirements.txt Cargo.toml go.mod; do
+  [ -f "$M" ] && echo "$M  $(sha256sum "$M" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$M" | awk '{print $1}')"
+done
+
+# Source file count by language
+echo "=== SOURCE FILE COUNTS ==="
+for EXT in py ts tsx js jsx go rs rb; do
+  COUNT=$(find . -name "*.$EXT" -not -path '*/node_modules/*' -not -path '*/.venv/*' -not -path '*/dist/*' 2>/dev/null | wc -l | tr -d ' ')
+  [ "$COUNT" -gt 0 ] && echo "*.$EXT  $COUNT"
+done
+```
+
+Store this entire output as `$PRE_STATE` for the dispatch prompt.
 
 ## Step 3: Create output directory
 
@@ -121,7 +204,9 @@ Always first-person. Always include the deliverable path. If a topic phrase isn'
 
 ## Step 5: Spawn mapper agent
 
-Spawn a single `rihal-codebase-mapper` agent. Pass the persona instructions in the prompt so the agent's own response opens in-character:
+Spawn a single `rihal-codebase-mapper` agent. Pass the persona instructions in the prompt so the agent's own response opens in-character.
+
+**Base prompt (always sent):**
 
 ```
 Task(
@@ -143,6 +228,35 @@ Task(
   model="{resolved_model}"
 )
 ```
+
+**Refresh-mode addendum (append to the prompt above when mode === "refresh"):**
+
+```
+  REFRESH MODE — this is NOT a first scan. Existing docs are present and stale.
+
+  Anchor date (last scan): {ANCHOR_DATE}
+  Pre-state snapshot (verbatim from orchestrator):
+  {PRE_STATE}
+
+  Additional requirements for refresh runs:
+  1. After the Scan Scope section in EACH document, insert a section titled
+     '## Changes since last scan ({ANCHOR_DATE} → today)' that lists, in bullets:
+     - new files / removed files relevant to this doc's focus
+     - new dependencies / removed dependencies (for STACK.md / INTEGRATIONS.md)
+     - new modules / removed modules (for ARCHITECTURE.md / STRUCTURE.md)
+     - new TODO/FIXME or eliminated ones (for CONCERNS.md)
+     - 3-7 most-important commit subjects from the pre-state COMMITS list
+       that materially shaped the current state
+  2. The body of each document must reflect CURRENT state — not a diff. The
+     'Changes since last scan' section is the ONLY place where pre-state and
+     diff narrative belongs.
+  3. Include a final line in your return summary:
+     'Brief: {one-paragraph plain-English summary of the most important changes
+     since last scan, suitable for posting to CHANGELOG.md}'
+     The orchestrator extracts this verbatim.
+```
+
+When refresh mode is active, also include `topic_keyword` (if any) and the resolved focus in the prompt as before.
 
 ## Step 6: Announce return (persona-driven)
 
@@ -183,6 +297,44 @@ If the document is missing its Scan Scope section, do NOT print the success bann
 ## Follow-up framing
 
 Until the next `Task()` dispatch, answer follow-up questions about the scan AS Dalil — first-person, sign with `— Dalil`. If the user asks something outside Dalil's scope (e.g. strategy, planning, code editing), hand off explicitly per the dispatch-banner spec and print a fresh DISPATCH banner for the new persona.
+
+## Step 6.5: Append to CHANGELOG.md (refresh mode only)
+
+When mode === "refresh", extract Dalil's `Brief:` line from his RETURNED summary and append a structured entry to `.planning/codebase/CHANGELOG.md`. Create the file if missing. Use the Read tool first if updating, then Edit/Write — never blind-overwrite a file with prior entries.
+
+**Entry format:**
+
+```markdown
+## {today's ISO date} — refresh
+
+**Anchor:** {ANCHOR_DATE} ({age in days} days ago)
+**Focus:** {focus}
+**Commits since anchor:** {count}
+**Docs touched:** {comma-separated list}
+
+{Dalil's Brief: line, verbatim, formatted as a paragraph}
+
+**Top-level signals:**
+- Source roots: {comma-separated list of dirs from PRE_STATE}
+- Languages: {detected mix}
+- Manifest changes: {hash diff summary, e.g. "package.json: changed", "pyproject.toml: unchanged"}
+
+---
+```
+
+Insert at the TOP of the file body (newest-first), under any pre-existing `# Changelog — Codebase Memory Bank` H1. If the file doesn't exist, write it with this header:
+
+```markdown
+# Changelog — Codebase Memory Bank
+
+This file tracks structural changes between scans. Each entry is auto-written by `/rihal:scan --refresh`. Newest entries first.
+
+---
+
+{first entry here}
+```
+
+This file is **read by future `/rihal:scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
 
 ## Step 7: Final cue (orchestrator-level, after RETURNED banner)
 

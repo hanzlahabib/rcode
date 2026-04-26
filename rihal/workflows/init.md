@@ -128,6 +128,16 @@ test -f .rihal/state.json || node .rihal/bin/rihal-tools.cjs state init --projec
 
 If the project has code (from Step 1 detection), produce `.rihal/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal:map-codebase` or `/rihal:scan` later for deep analysis.
 
+**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rihal:scan --refresh --focus tech+arch` immediately after writing RIHLA.md. The refresh path:
+
+- Captures pre-state (commits since last doc mtime, manifest hashes, top-level dirs).
+- Briefs the user on what changed since the last scan.
+- Overwrites the docs and appends an entry to `.planning/codebase/CHANGELOG.md`.
+
+Skip the chain if `--skip-scan` is set, no existing docs are present (nothing stale to refresh), or the user passes `--no-refresh`.
+
+This makes init+reset a true memory-bank refresh — RIHLA baseline updated, codebase docs reconciled with current code, CHANGELOG entry written.
+
 Gather (parallel reads, all bounded):
 
 ```bash
