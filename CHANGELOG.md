@@ -4,6 +4,50 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.1.0 — pipeline integrity audit: 9 silent-malfunction bugs fixed (2026-04-27)
+
+Patch release closing the 9 bugs surfaced during the 2026-04-27 pipeline integrity audit (see [`docs/audits/2026-04-27-pipeline-integrity.md`](docs/audits/2026-04-27-pipeline-integrity.md)). All 9 issues affected silent runtime behaviour — the test suite at v3.0.0 didn't catch them because tests cover rcode source invariants, not target-project runtime. Issue range: #440–#448.
+
+### Fixed — agent runtime
+
+- **#440 / #445 (CRITICAL):** 10 agents declared tools using Gemini-style snake_case names (`read_file`, `run_shell_command`, etc.). Claude Code silently rejected these — agents narrated what they would do without invoking any tool. Affected: `rihal-sprint-checker`, `rihal-verifier`, `rihal-codebase-mapper` (Dalil), `rihal-integration-checker`, `rihal-roadmapper`, `rihal-advisor-researcher`, `rihal-assumptions-analyzer`, `rihal-phase-researcher`, `rihal-project-researcher`, `rihal-research-synthesizer`. All renamed to PascalCase (`Read`, `Bash`, `Grep`, `Glob`, `Write`, `WebFetch`, `WebSearch`).
+- **#440 (defence):** `plan.md` now refuses to advance plans on empty sprint-checker output. Sprint-checker MUST emit YAML evidence markers (`issues:`, `verified_files:`, file:line refs) — empty narrative output is treated as malfunction, not pass.
+
+### Fixed — workflow correctness
+
+- **#441:** Planner now verifies every file in `files_modified` actually exists on disk before committing it to a plan. Plans referencing fictional file names are rejected.
+- **#442:** New `12.5. Wave Parallelism File-Overlap Check` in `plan.md`. Calls `rihal-tools plan check-wave-overlaps`; auto-corrects same-wave plans with overlapping files to `sequential: true`.
+- **#443 / #448:** New `executed` → `complete` state transition. Phase moves to `executed` after work is done; only a passing VERIFICATION.md promotes to `complete`. `/rihal:next` refuses to advance from `executed`. Closes the gap where phases reached `complete` without UAT.
+- **#446:** Removed `git commit --no-verify` recommendation from parallel-execution mode in `execute.md`. AGENTS.md forbids `--no-verify`. Replaced with file-based commit lock (`.rihal/.commit-lock`) so hooks run normally per commit.
+
+### Fixed — documentation drift
+
+- **#444:** `.planning/` gitignore + `git add -f` constraint now documented in `rihal-executor.md` so every executor session loads it. Prevents silently-dropped SUMMARY.md commits.
+- **#447:** 9 legacy core skills now declare `## Memory Bank Hooks` (matching the post-Phase-3 5-component standard): `rihal-init`, `rihal-help`, `rihal-index-docs`, `rihal-shard-doc`, `rihal-party-mode`, `rihal-brainstorming`, `rihal-editorial-review-prose`, `rihal-review-adversarial-general`, `rihal-review-edge-case-hunter`.
+
+### Added — regression-prevention tests (4 new test files, +10 cases)
+
+- `test/agents-tool-conventions.test.cjs` — asserts every agent uses Claude Code PascalCase tool naming
+- `test/skills-memory-hooks.test.cjs` — asserts every core SKILL.md has a non-empty `Memory Bank Hooks` section
+- `test/workflows-no-verify.test.cjs` — scans for `--no-verify` recommendations (allowing negative-form prohibitions)
+- `test/workflows-state-gating.test.cjs` — asserts `execute.md` has the UAT gate, `plan.md` has the sprint-checker malfunction guard and wave-overlap check
+
+Test suite: **120 → 130 cases**, all green.
+
+### Audit artefact
+
+- [`docs/audits/2026-04-27-pipeline-integrity.md`](docs/audits/2026-04-27-pipeline-integrity.md) catalogues the 5 anti-patterns found and prescribes detection commands for each.
+
+### Counts after this release
+
+- 130 passing tests (was 120) — added 10 new regression cases
+- 80 skills (unchanged)
+- 45 agents (unchanged)
+- 95 slash commands (unchanged)
+- Zero runtime dependencies preserved
+
+---
+
 ## v3.0.0 — rcode improvement programme: Memory Bank, brand vocab, engineering + real-pain skills (2026-04-26)
 
 The largest single delta since v2.0. 10 phases, 80+ commits, 19 new skills, comprehensive test coverage. See [`MIGRATIONS.md`](MIGRATIONS.md) for the upgrade path and [`TASKS.md`](TASKS.md) for the work log. Issue history: #386–#439.
