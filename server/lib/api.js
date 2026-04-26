@@ -3,7 +3,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { scanState } = require('./scanner');
+const { scanState, scanMemoryBank } = require('./scanner');
 
 function handleApiState(req, res, rihalDir) {
   const state = scanState(rihalDir);
@@ -120,4 +120,10 @@ function handleApiHierarchy(req, res, rihalDir) {
   res.end(JSON.stringify(hierarchy, null, 2));
 }
 
-module.exports = { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy };
+function handleApiMemory(req, res, rihalDir) {
+  const memory = scanMemoryBank(rihalDir);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(memory, null, 2));
+}
+
+module.exports = { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory };
