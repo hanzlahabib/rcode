@@ -59,15 +59,21 @@ If user picks 1-15, invoke that command. If 16, capture text and continue.
 <step name="check_project">
 **Check if project exists + state survey.**
 
+Detect PRD / epics with glob — projects use either singular files (`.planning/prd.md`) OR per-milestone directories (`.planning/prds/v1.8.md`). Closes #377 — false 'create-prd first' redirects on multi-milestone repos.
+
 ```bash
 INIT=$(node ".rihal/bin/rihal-tools.cjs" state load 2>/dev/null)
-HAS_PRD=$([ -f .planning/prd.md ] && echo true || echo false)
-HAS_EPICS=$([ -f .planning/epics.md ] && echo true || echo false)
+HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
+HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
 PHASE_COUNT=$(node ".rihal/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
 HAS_PHASES=$([ "$PHASE_COUNT" -gt 0 ] && echo true || echo false)
+
+# State-aware milestone detection (#374) — used by explicit_intent_check
+ACTIVE_MILESTONE=$(grep -m1 '^## Current Milestone' .planning/PROJECT.md 2>/dev/null | sed 's/^## Current Milestone[: ]*//' | xargs)
+LAST_SHIPPED_VERSION=$(grep -m1 -oE 'v[0-9]+\.[0-9]+' .planning/MILESTONES.md 2>/dev/null | head -1)
 ```
 
-These flags drive the greenfield guard in the next step. `.planning/` existing alone is not enough — we need to know whether the methodology chain has actually run (PRD → milestone → epics → phases).
+These flags drive the greenfield guard AND the explicit_intent_check below. `.planning/` existing alone is not enough — we need to know whether the methodology chain has actually run (PRD → milestone → epics → phases) AND which milestone is currently open.
 </step>
 
 <step name="greenfield_guard" priority="first-match">
@@ -166,12 +172,41 @@ This was a real bug: `/rihal:do "milestone bnao aur ... list down karo"` trigger
 **Behavior:**
 1. If both a verb AND a scope-noun match, fire this step.
 2. Skip the ambiguity-handling logic in the `route` step entirely.
-3. Print the routing banner with `Reason: explicit user verb — "{matched verb}" + "{matched noun}"`.
-4. Dispatch immediately.
+3. Apply the state-aware redirect rules below.
+4. Print the routing banner with `Reason: explicit user verb — "{matched verb}" + "{matched noun}"` plus any state-redirect explanation.
+5. Dispatch immediately.
 
-**Edge case — multiple scope-nouns in one input** (e.g. "milestone bnao aur usmy phase 1 banao"): take the OUTER/PARENT scope. "Milestone bnao aur usmy phase X" → `/rihal:new-milestone` (parent = milestone). The dispatched command will handle the nested phase 1 internally.
+**State-aware redirects (closes #374):**
+
+The naive route is "user said milestone bnao → dispatch new-milestone". But if a milestone is already active, that violates the one-active-milestone convention and triggers a second prompt downstream. Apply these state-aware overrides BEFORE dispatching:
+
+| Verb + scope | State signal | Redirect | Banner message |
+|---|---|---|---|
+| create + milestone | `$ACTIVE_MILESTONE` is non-empty AND user did NOT pass `--force-new-milestone` | `/rihal:add-phase` | `$ACTIVE_MILESTONE is active — adding as a phase to it instead of opening a new milestone. Override: add `--force-new-milestone` to the original input.` |
+| create + milestone | No active milestone | `/rihal:new-milestone $NEXT_VERSION` (auto-derived from `$LAST_SHIPPED_VERSION` + 0.1) | `Auto-versioned $NEXT_VERSION based on last shipped $LAST_SHIPPED_VERSION.` |
+| create + phase | `$HAS_PHASES=false` AND `$HAS_PRD=false` | `/rihal:create-prd` | greenfield_guard already covers this; this row is for completeness. |
+| create + story | `$HAS_EPICS=false` | `/rihal:create-epics-and-stories` (greenfield_guard) | likewise. |
+
+**Auto-version computation when no milestone is active:**
+
+```bash
+# Parse last shipped version (e.g. "v1.7"), bump minor by default
+if [ -n "$LAST_SHIPPED_VERSION" ]; then
+  MAJOR=$(echo "$LAST_SHIPPED_VERSION" | sed -E 's/v([0-9]+)\.[0-9]+/\1/')
+  MINOR=$(echo "$LAST_SHIPPED_VERSION" | sed -E 's/v[0-9]+\.([0-9]+)/\1/')
+  NEXT_VERSION="v${MAJOR}.$((MINOR + 1))"
+else
+  NEXT_VERSION="v1.0"
+fi
+```
+
+Pass `$NEXT_VERSION` as the dispatch arg. The user is NOT prompted to pick a version — the workflow just chose the right one based on history.
+
+**Edge case — multiple scope-nouns in one input** (e.g. "milestone bnao aur usmy phase 1 banao"): take the OUTER/PARENT scope. "Milestone bnao aur usmy phase X" → state-aware-redirect kicks in. If active milestone exists → `/rihal:add-phase` (the inner phase becomes the dispatched action directly). If not → `/rihal:new-milestone $NEXT_VERSION` (the dispatched workflow will create phase 1 internally).
 
 **Edge case — verb without scope-noun** (e.g. "kuch karo", "do something"): do NOT fire this step. Fall through to the normal routing table which can ask for clarification.
+
+**Edge case — explicit override via flag** (`--force-new-milestone`, `--force-new`): bypasses the active-milestone redirect. Use sparingly — usually for emergency hotfix tracks that genuinely need a parallel milestone.
 
 If this step fires, skip the route-step's ambiguity prompt entirely and proceed to display + dispatch.
 </step>

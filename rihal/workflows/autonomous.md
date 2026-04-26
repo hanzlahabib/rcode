@@ -54,9 +54,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 Before any phase work, verify the methodology chain has run:
 
 ```bash
-HAS_PRD=$([ -f .planning/prd.md ] && echo true || echo false)
+HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
 HAS_ROADMAP_MILESTONES=$(grep -qE "^## Milestone\s+M[0-9]+" .planning/ROADMAP.md 2>/dev/null && echo true || echo false)
-HAS_EPICS=$([ -f .planning/epics.md ] && echo true || echo false)
+HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
 SKIP_FLAG=$(echo "$ARGUMENTS" | grep -qE "\-\-skip-prerequisites" && echo true || echo false)
 ```
 
