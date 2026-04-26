@@ -139,4 +139,79 @@ function scanState(rihalDir) {
   return state;
 }
 
-module.exports = { scanState, safeReadText, safeReadJson, listDir, parseSimpleYaml };
+/**
+ * Scan the Memory Bank at .rihal/memory/. Returns structure suitable
+ * for the /api/memory endpoint and the dashboard /memory view.
+ * Returns { exists: false } when the Memory Bank has not been initialised.
+ */
+function scanMemoryBank(rihalDir) {
+  const memoryDir = path.join(rihalDir, 'memory');
+  const result = {
+    exists: false,
+    initialised: false,
+    indexPath: null,
+    sections: {},
+    distillates: [],
+    changeRecords: [],
+    archive: [],
+    postMortems: [],
+    lastScanned: new Date().toISOString(),
+  };
+
+  if (!fs.existsSync(memoryDir)) return result;
+  result.exists = true;
+
+  const indexPath = path.join(memoryDir, 'INDEX.md');
+  if (fs.existsSync(indexPath)) {
+    result.initialised = true;
+    result.indexPath = '.rihal/memory/INDEX.md';
+  }
+
+  const sectionMap = {
+    project: ['stack.md', 'decisions.md', 'glossary.md'],
+    people: ['stakeholders.md', 'team.md'],
+    milestones: ['current.md'],
+    incidents: ['known-issues.md'],
+  };
+  for (const [section, files] of Object.entries(sectionMap)) {
+    const sectionDir = path.join(memoryDir, section);
+    if (!fs.existsSync(sectionDir)) continue;
+    result.sections[section] = files.map(name => {
+      const full = path.join(sectionDir, name);
+      const exists = fs.existsSync(full);
+      let bytes = 0, populated = false;
+      if (exists) {
+        try {
+          const stat = fs.statSync(full);
+          bytes = stat.size;
+          const text = fs.readFileSync(full, 'utf8');
+          populated = !/\{\{[A-Z_]+\}\}/.test(text) && !/_\(e\.g\.\s/.test(text);
+        } catch { /* ignore */ }
+      }
+      return {
+        name,
+        path: `.rihal/memory/${section}/${name}`,
+        exists,
+        bytes,
+        populated,
+      };
+    });
+  }
+
+  function listMd(subdir) {
+    const full = path.join(memoryDir, subdir);
+    if (!fs.existsSync(full)) return [];
+    return listDir(full)
+      .filter(e => e.isFile() && e.name.endsWith('.md'))
+      .map(e => ({ name: e.name, path: `.rihal/memory/${subdir}/${e.name}` }));
+  }
+
+  result.distillates = listMd('distillates');
+  result.changeRecords = listMd('change-records');
+  result.archive = listMd('milestones/archive');
+  result.postMortems = listMd('incidents/post-mortems');
+
+  return result;
+}
+
+module.exports = { scanState, scanMemoryBank, safeReadText, safeReadJson, listDir, parseSimpleYaml };
