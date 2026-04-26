@@ -1,6 +1,6 @@
 {
   "name": "@hanzlaa/rcode",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "Rihal Code (rcode) — installable context-brain for Rihalians. 43 agents, 99 slash commands, 56 skills, pullable Rihal standards. Unified install for Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
