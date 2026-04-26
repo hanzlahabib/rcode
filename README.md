@@ -339,7 +339,7 @@ Recent additions in this session:
 `plan` · `chain` · `create-epics-and-stories` · `create-story` · `dev-story` · `sprint-planning`
 
 ### Execution
-`execute` · `quick` · `autonomous` · `audit-fix` · `undo` · `check-implementation-readiness`
+`execute` · `quick` · `autonomous` · `audit-fix` · `undo`
 
 ### Observability + review
 `code-review` · `code-review-fix` · `review-adversarial` · `review-edge-case-hunter` · `checkpoint-preview` · `secure-phase` · `show` · `why` · `rerun` · `diff`

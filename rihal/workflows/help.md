@@ -213,7 +213,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal:create-epics-and-stories` | Parse a PRD into numbered epic + story files. |
 | `/rihal:create-story` | Prepare a dev-ready STORY.md with full implementation context. |
 | `/rihal:dev-story <file>` | Execute an approved STORY by writing tests + code per AC. |
-| `/rihal:check-implementation-readiness` | Verify PRD + architecture + epics aligned before build. |
+| (internal) `check-implementation-readiness` | Guard called by `/rihal:plan` and `/rihal:execute` to verify PRD + architecture aligned before build. |
 | `/rihal:create-architecture` | Write an Architecture Decision Record (ADR). |
 | `/rihal:create-ux-design` | Realize a UX design that informs architecture and implementation. |
 | `/rihal:correct-course` | Course-correct mid-sprint when major change is discovered. |
