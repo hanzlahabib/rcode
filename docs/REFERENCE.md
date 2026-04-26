@@ -318,10 +318,8 @@ These are real gaps in the current version (`v2.3.1`):
 
 2. **`/rihal:ship` does not apply to `git.branching_strategy: none`** — if you commit directly to main, the preflight will always fail the "on feature branch" gate.
 
-3. **`/rihal:new-project-research` and `/rihal:new-project-roadmap`** are internal sub-workflows. They are documented in `rihal/commands/` but not intended for direct use — invoking them directly produces incomplete results.
+3. **`/rihal:execute-sprint`** is an internal wrapper. Use `/rihal:execute` instead.
 
-4. **`/rihal:execute-sprint`** is an internal wrapper. Use `/rihal:execute` instead.
+4. **Skills do not auto-trigger in all AI IDEs** — trigger phrases work in Claude Code and compatible tools that support the `.rihal/commands/` format. Plain ChatGPT or Copilot won't pick them up automatically.
 
-5. **Skills do not auto-trigger in all AI IDEs** — trigger phrases work in Claude Code and compatible tools that support the `.rihal/commands/` format. Plain ChatGPT or Copilot won't pick them up automatically.
-
-6. **The dashboard (`/rihal:dashboard`)** is view-only. It reads `.planning/` data. It has no write endpoints.
+5. **The dashboard (`/rihal:dashboard`)** is view-only. It reads `.planning/` data. It has no write endpoints.
