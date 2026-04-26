@@ -676,6 +676,45 @@ Define reusable agents at `~/.rihal/agents/rihal-<name>.md`. They appear in ever
 
 ## 14. Troubleshooting
 
+### Upgrade flow (v3.2.0+): interactive resolution of local edits
+
+Starting in **v3.2.0**, `npx @hanzlaa/rcode install` on an existing project that has local edits no longer prints a wall of `differs from package version` warnings. Instead:
+
+1. The installer collects all conflicts into a categorised summary (workflows / agents / commands / skills).
+2. It prompts you with three options — review each one, take upstream for all, or keep local for all.
+3. **Review mode** shows the per-file diff (with stats), then asks per file: take upstream / keep local / view full diff.
+
+Use `--force-overwrite` to skip the prompts entirely (legacy behaviour). Use `--yes` for fully non-interactive runs (default = keep local).
+
+### Upgrade flow on v3.1.0 and earlier: manual workaround
+
+If you're upgrading from v3.1.0 or older and see 30+ `differs from package version` warnings, you have two paths:
+
+**Path A — surgical upstream pull (recommended):** apply just the critical bug-fix files (the v3.1.0 agent tool-name fixes from #445, plus `plan.md` and `execute.md` updates). Keep your local edits everywhere else.
+
+```bash
+cd <your-project>
+
+# 1. Diff each critical-fix file before deciding
+for f in rihal-sprint-checker rihal-verifier rihal-codebase-mapper \
+         rihal-integration-checker rihal-roadmapper \
+         rihal-advisor-researcher rihal-assumptions-analyzer \
+         rihal-phase-researcher rihal-project-researcher \
+         rihal-research-synthesizer; do
+  echo "=== $f ==="
+  diff ".claude/agents/$f.md" \
+       "$(npm root -g)/@hanzlaa/rcode/rihal/agents/$f.md" | head -20
+done
+```
+
+**Path B — full force-overwrite:** loses any local customisations to those 30+ files, but applies every v3.1.0 fix.
+
+```bash
+npx @hanzlaa/rcode install --force-overwrite
+```
+
+If you've made meaningful local edits, prefer Path A. If your install is mostly stock, Path B is faster.
+
 ### `node --test` fails after install
 
 Likely cause: `cli/install.js` couldn't create one of the target directories. Run `/rihal:health` for a 6-point diagnostic:

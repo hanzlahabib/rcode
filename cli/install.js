@@ -268,20 +268,26 @@ function printInstallHeader(targetVersion) {
  * Returns a set like { claude: true, cursor: false, gemini: false }.
  */
 function detectIdeSignals(target) {
-  const signals = { claude: false, cursor: false, gemini: false };
+  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false };
   // 1. Project-local install dirs (strongest signal — they already use one)
   if (fs.existsSync(path.join(target, '.claude'))) signals.claude = true;
   if (fs.existsSync(path.join(target, '.cursor'))) signals.cursor = true;
   if (fs.existsSync(path.join(target, '.gemini'))) signals.gemini = true;
+  if (fs.existsSync(path.join(target, '.vscode'))) signals.vscode = true;
+  if (fs.existsSync(path.join(target, '.antigravity'))) signals.antigravity = true;
   // 2. User-level config dirs
   const home = os.homedir();
   if (fs.existsSync(path.join(home, '.claude'))) signals.claude = true;
   if (fs.existsSync(path.join(home, '.cursor'))) signals.cursor = true;
   if (fs.existsSync(path.join(home, '.config', 'Cursor'))) signals.cursor = true;
   if (fs.existsSync(path.join(home, '.gemini'))) signals.gemini = true;
+  if (fs.existsSync(path.join(home, '.vscode'))) signals.vscode = true;
+  if (fs.existsSync(path.join(home, '.config', 'Code'))) signals.vscode = true;
+  if (fs.existsSync(path.join(home, '.antigravity'))) signals.antigravity = true;
   // 3. Env vars commonly set by editor terminals
   if (process.env.CURSOR_TRACE_ID || /cursor/i.test(process.env.TERM_PROGRAM || '')) signals.cursor = true;
   if (process.env.CLAUDECODE === '1' || process.env.CLAUDE_CODE_ENTRYPOINT) signals.claude = true;
+  if (process.env.VSCODE_PID || /vscode/i.test(process.env.TERM_PROGRAM || '')) signals.vscode = true;
   return signals;
 }
 
@@ -297,43 +303,32 @@ async function resolveIde(opts) {
   if (opts.yes || !process.stdin.isTTY) return opts.ide || 'claude';
 
   const signals = detectIdeSignals(opts.target);
-  const detected = ['claude', 'cursor', 'gemini'].filter(k => signals[k]);
-
-  // Build the menu — detected IDEs marked with a hint
-  const choices = [
-    { key: '1', value: 'claude', label: 'Claude Code',  hint: signals.claude ? dim('(detected)') : '' },
-    { key: '2', value: 'cursor', label: 'Cursor',       hint: signals.cursor ? dim('(detected)') : '' },
-    { key: '3', value: 'gemini', label: 'Gemini CLI',   hint: signals.gemini ? dim('(detected)') : dim('(beta — limited)') },
-  ];
+  const detected = ['claude', 'cursor', 'gemini', 'vscode'].filter(k => signals[k]);
 
   // Pick a default: prefer the single detected IDE; otherwise claude
   let defaultValue = 'claude';
   if (detected.length === 1) defaultValue = detected[0];
 
-  const readline = require('readline');
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const prompt = (q) => new Promise(r => rl.question(q, a => r(a)));
+  // Use @clack/prompts for arrow-key navigation. Closes #449 / #450.
+  const choice = await clack.select({
+    message: '🎯 Which editor will you use rcode with?',
+    initialValue: defaultValue,
+    options: [
+      { value: 'claude',     label: 'Claude Code',  hint: signals.claude ? '(detected)' : undefined },
+      { value: 'cursor',     label: 'Cursor',       hint: signals.cursor ? '(detected)' : undefined },
+      { value: 'gemini',     label: 'Gemini CLI',   hint: signals.gemini ? '(detected)' : '(beta — limited)' },
+      { value: 'vscode',     label: 'VS Code',      hint: signals.vscode ? '(detected)' : '(via Continue / Copilot extensions)' },
+      { value: 'antigravity', label: 'Antigravity', hint: '(experimental — installs to .antigravity/)' },
+    ],
+  });
 
-  console.log(pc.bold('🎯 Which editor will you use Rihal with?'));
-  console.log('');
-  for (const c of choices) {
-    const marker = c.value === defaultValue ? pc.green('●') : dim('○');
-    const label = c.value === defaultValue ? pc.bold(c.label) : c.label;
-    console.log(`   ${marker} ${pc.cyan('[' + c.key + ']')} ${label}  ${c.hint}`);
+  // Handle Ctrl-C cleanly
+  if (clack.isCancel(choice)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
   }
-  console.log('');
-  const defaultKey = choices.find(c => c.value === defaultValue).key;
-  const answer = (await prompt(`   Pick an editor [${defaultKey}]: `)).trim().toLowerCase();
-  rl.close();
 
-  if (!answer) return defaultValue;
-  // Accept either the number key or the name
-  const byKey = choices.find(c => c.key === answer);
-  if (byKey) return byKey.value;
-  const byName = choices.find(c => c.value === answer || c.label.toLowerCase().startsWith(answer));
-  if (byName) return byName.value;
-  console.log(dim(`   Unrecognised choice "${answer}" — falling back to ${defaultValue}.`));
-  return defaultValue;
+  return choice;
 }
 
 /**
@@ -345,19 +340,21 @@ async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
   if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
 
-  const readline = require('readline');
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const prompt = (q) => new Promise(r => rl.question(q, a => r(a)));
-  console.log('');
-  console.log('📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files.');
-  console.log('   Commit them to git, or keep them local?');
-  console.log('');
-  console.log('   [Y] Commit — collaborators see the same plans  (default, recommended)');
-  console.log('   [n] Gitignore — planning stays local  (good for sensitive PRDs)');
-  console.log('');
-  const answer = (await prompt('   Commit planning artifacts? [Y/n]: ')).trim().toLowerCase();
-  rl.close();
-  return !(answer === 'n' || answer === 'no');
+  const choice = await clack.select({
+    message: '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
+    initialValue: 'commit',
+    options: [
+      { value: 'commit',    label: 'Commit',    hint: 'collaborators see the same plans (recommended)' },
+      { value: 'gitignore', label: 'Gitignore', hint: 'planning stays local (good for sensitive PRDs)' },
+    ],
+  });
+
+  if (clack.isCancel(choice)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
+  }
+
+  return choice === 'commit';
 }
 
 function printHelp() {
@@ -1342,6 +1339,7 @@ async function install(opts) {
   let preserved = 0;
   const preservedFiles = [];
   const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
+  const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
   const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
 
   for (const entry of plan) {
@@ -1381,9 +1379,15 @@ async function install(opts) {
       const sourceHash = sha256(fs.readFileSync(entry.src));
       if (existingHash === sourceHash) { skipped++; continue; }
       if (!opts.yes && !opts.nonDestructive) {
-        spinner.stop();
-        console.warn('  ' + warn(`${entry.rel} differs from package version — use --force-overwrite to overwrite`));
-        spinner.start();
+        // Buffer the conflict instead of spamming a warning per file (#451).
+        // Surfaced as a categorised summary post-install + interactive offer (#453).
+        conflictedFiles.push({
+          rel: relForward,
+          src: entry.src,
+          destPath,
+          existingContent: fs.readFileSync(destPath, 'utf8'),
+          sourceContent: fs.readFileSync(entry.src, 'utf8'),
+        });
         skipped++;
         continue;
       }
@@ -1405,6 +1409,100 @@ async function install(opts) {
   }
 
   spinner.success({ text: ok(`${copied} files installed`) });
+
+  // Categorised conflict summary (#451) + interactive resolution offer (#453).
+  // Replaces the per-file 'differs from package version' warning spam.
+  if (conflictedFiles.length > 0) {
+    const byCategory = { workflows: [], agents: [], commands: [], skills: [], references: [], other: [] };
+    for (const c of conflictedFiles) {
+      if (c.rel.includes('/workflows/')) byCategory.workflows.push(c);
+      else if (c.rel.includes('/agents/')) byCategory.agents.push(c);
+      else if (c.rel.includes('/commands/')) byCategory.commands.push(c);
+      else if (c.rel.includes('/skills/')) byCategory.skills.push(c);
+      else if (c.rel.includes('/references/')) byCategory.references.push(c);
+      else byCategory.other.push(c);
+    }
+    console.log('');
+    console.log('  ' + warn(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} have local edits AND v${readPackageVersion()} updates:`));
+    for (const [cat, list] of Object.entries(byCategory)) {
+      if (list.length === 0) continue;
+      console.log('    ' + dim(`${list.length} ${cat}`));
+    }
+    console.log('');
+
+    if (!opts.yes && process.stdin.isTTY) {
+      const action = await clack.select({
+        message: 'How should we handle these?',
+        initialValue: 'review',
+        options: [
+          { value: 'review', label: 'Review each one',                hint: 'see the diff, decide per file' },
+          { value: 'upstream', label: 'Take v' + readPackageVersion() + ' for all', hint: 'lose local edits, get all bug fixes' },
+          { value: 'keep',   label: 'Keep my local edits',            hint: 'skip v' + readPackageVersion() + ' updates for these files (current behaviour)' },
+        ],
+      });
+      if (clack.isCancel(action)) {
+        clack.note('Skipped — local edits preserved.');
+      } else if (action === 'upstream') {
+        let applied = 0;
+        for (const c of conflictedFiles) {
+          fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+          applied++;
+        }
+        console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
+      } else if (action === 'review') {
+        let applied = 0, kept = 0;
+        for (const c of conflictedFiles) {
+          const patch = createTwoFilesPatch(c.rel, c.rel, c.existingContent, c.sourceContent, 'local', 'v' + readPackageVersion());
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
+          console.log('');
+          console.log('  ' + pc.bold(c.rel) + dim('  ') + pc.green(`+${ins}`) + ' ' + pc.red(`-${del}`));
+          const decision = await clack.select({
+            message: 'Take upstream, keep local, or view diff?',
+            initialValue: 'view',
+            options: [
+              { value: 'upstream', label: 'Take v' + readPackageVersion() },
+              { value: 'keep',     label: 'Keep local' },
+              { value: 'view',     label: 'View diff first' },
+            ],
+          });
+          let finalAction = decision;
+          if (clack.isCancel(decision) || decision === 'view') {
+            for (const line of patch.split('\n').slice(4)) {
+              if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
+              else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
+              else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
+              else process.stdout.write(dim(line) + '\n');
+            }
+            const after = await clack.select({
+              message: 'Now: take upstream or keep local?',
+              initialValue: 'keep',
+              options: [
+                { value: 'upstream', label: 'Take v' + readPackageVersion() },
+                { value: 'keep',     label: 'Keep local' },
+              ],
+            });
+            finalAction = clack.isCancel(after) ? 'keep' : after;
+          }
+          if (finalAction === 'upstream') {
+            fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+            applied++;
+          } else {
+            kept++;
+          }
+        }
+        console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
+      } else {
+        console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
+      }
+    } else {
+      console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
+    }
+    console.log('');
+  }
 
   // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
   const configDir = path.join(opts.target, '.rihal', '_config');

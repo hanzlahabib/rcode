@@ -4,6 +4,48 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.2.0 — install UX overhaul: arrow-key prompts, two new IDEs, interactive upgrade resolver (2026-04-27)
+
+Closes the 5 install-UX bugs (#449–#453) from the v3.1.0 user feedback session. The headline win is upgrade ergonomics — the wall of `differs from package version` warnings is gone, replaced by a categorised summary and an interactive per-file resolver.
+
+### Added
+
+- **VS Code** as a first-class IDE target — detected via `.vscode/`, `~/.vscode/`, `~/.config/Code/`, `VSCODE_PID` env. Installs alongside Claude Code if both are present.
+- **Antigravity** as an experimental IDE target — detected via `.antigravity/` and `~/.antigravity/`.
+- **Interactive upgrade resolver** in `cli/install.js` — when conflicts are detected on upgrade, the installer offers three paths via `@clack/prompts`:
+  - **Review each one** (default) — per-file: see diff stats, choose take-upstream / keep-local / view-full-diff
+  - **Take vX.Y.Z for all** — single bulk override
+  - **Keep my local edits** — current behaviour (skip upstream updates)
+  Replaces the previous all-or-nothing `--force-overwrite` choice. (#453)
+
+### Changed — install prompts
+
+- **Arrow-key navigation** for IDE selection and gitignore-planning prompts. Uses `@clack/prompts` instead of Node's built-in readline; adds Ctrl-C handling. (#449)
+- **Categorised conflict summary** — instead of 44 lines of `differs from package version`, the installer now prints one summary line per category (workflows / agents / commands / skills / references) and surfaces the choice via the interactive resolver above. (#451)
+- **Visual separation** between prompt phase and install phase — clarifies that conflicts are unrelated to the user's gitignore-planning choice. (#452)
+
+### Affected files
+
+- `cli/install.js` — replaced 2 readline prompt blocks with `@clack/prompts` calls; added VS Code + Antigravity detection signals; replaced per-file diff warnings with buffered conflict array + interactive resolver
+- `package.json` — version bumped, description updated to mention new IDE targets
+- `DOCS.md` — Troubleshooting section adds the new upgrade flow + manual workaround for v3.1.0 and earlier
+
+### Notable
+
+- Falls back to the previous behaviour when stdout is not a TTY or `--yes` is passed (CI-friendly).
+- `--force-overwrite` still works for users who want the legacy all-or-nothing path.
+- Test suite unchanged at 130 cases — install UX paths are interactive and CI-skipped.
+
+### Issue links
+
+- #449 — readline → `@clack/prompts`
+- #450 — VS Code + Antigravity IDE targets
+- #451 — warning overload → categorised summary
+- #452 — gitignore prompt vs warnings cognitive conflation
+- #453 — interactive upgrade resolver (the umbrella)
+
+---
+
 ## v3.1.0 — pipeline integrity audit: 9 silent-malfunction bugs fixed (2026-04-27)
 
 Patch release closing the 9 bugs surfaced during the 2026-04-27 pipeline integrity audit (see [`docs/audits/2026-04-27-pipeline-integrity.md`](docs/audits/2026-04-27-pipeline-integrity.md)). All 9 issues affected silent runtime behaviour — the test suite at v3.0.0 didn't catch them because tests cover rcode source invariants, not target-project runtime. Issue range: #440–#448.
