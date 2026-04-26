@@ -1,7 +1,7 @@
 {
   "name": "@hanzlaa/rcode",
   "version": "2.8.0",
-  "description": "Rihal Code (rcode) — installable context-brain for Rihalians. 43 agents, 99 slash commands, 56 skills, pullable Rihal standards. Unified install for Claude Code, Cursor, and Gemini.",
+  "description": "rcode — the memory bank for AI-driven SaaS teams. Persistent project context, distinctive engineering personas, and phase-based workflows. Built by Rihal. Works in Claude Code, Cursor, and Gemini.",
   "main": "cli/index.js",
   "bin": {
     "rcode": "dist/rcode.js",
