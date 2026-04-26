@@ -507,11 +507,17 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        </worktree_branch_check>
 
        <parallel_execution>
-       You are running as a PARALLEL executor agent. Use --no-verify on all git
-       commits to avoid pre-commit hook contention with other agents. The
-       orchestrator validates hooks once after all agents complete.
-       For rihal-tools commits: add --no-verify flag.
-       For direct git commits: use git commit --no-verify -m "..."
+       You are running as a PARALLEL executor agent. To avoid pre-commit hook
+       contention with other agents, acquire a file-based lock before each
+       commit and release it immediately after:
+
+         while ! mkdir .rihal/.commit-lock 2>/dev/null; do sleep 0.5; done
+         git commit -m "..."           # hooks run normally
+         rmdir .rihal/.commit-lock
+
+       Hooks run as designed for every commit. AGENTS.md forbids --no-verify;
+       hook failures must be fixed at the source, not bypassed. The orchestrator
+       still validates state once after all agents complete.
        </parallel_execution>
 
        <execution_context>
