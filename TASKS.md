@@ -1,6 +1,8 @@
 # rcode — Master Task Tracker
 
-Single source of truth for the rcode improvement programme. Every task here corresponds to a GitHub issue; major phases are tracked as Epics. Past phases are recorded for traceability; future phases drive the work that's still ahead.
+> **🎉 Programme complete (2026-04-26).** All 13 phases delivered. v3.0.0 commit ready to tag. Issue range: #386–#439. See [`CHANGELOG.md`](CHANGELOG.md) for the full release notes.
+
+Single source of truth for the rcode improvement programme. Every task here corresponds to a GitHub issue; major phases are tracked as Epics. All phases below are complete.
 
 > **Issue convention** (per `.github/ISSUE_TEMPLATE/epic.yml` and `GITHUB_WORKFLOW.md`):
 > - Phases → Epics (`type: epic`)
@@ -91,24 +93,24 @@ Decision: workflows are dense executable logic (bash + agent dispatches), not re
 
 ## Phase 8 — Docs Refresh ⏳ next
 
-- [ ] Refresh `README.md` to reflect new state (post-drops, post-merges)
-- [ ] Update `CONTRIBUTING.md` to align with the BRAND.md naming and commit conventions
-- [ ] Update `AGENTS.md` (root) — keep `git push` rule, add new persona/skill conventions
-- [ ] Sweep `docs/` for `rihal-tech-writer`, `rihal-architect`, dropped command names
-- [ ] Create `MIGRATIONS.md` with every renamed/dropped item and replacement
-- [ ] Generate `docs/skills-catalog.md` from SKILL.md frontmatter (script in `scripts/`)
+- [x] Refresh `README.md` to reflect new state (post-drops, post-merges)
+- [x] Update `CONTRIBUTING.md` to align with the BRAND.md naming and commit conventions
+- [x] Update `AGENTS.md` (root) — keep `git push` rule, add new persona/skill conventions
+- [x] Sweep `docs/` for `rihal-tech-writer`, `rihal-architect`, dropped command names
+- [x] Create `MIGRATIONS.md` with every renamed/dropped item and replacement
+- [x] Generate `docs/skills-catalog.md` from SKILL.md frontmatter (script in `scripts/`)
 
 ---
 
 ## Phase 9 — Quality: Migration & Release ⏳ pending
 
-- [ ] Pre-release sanity: `npm pack --dry-run` review
-- [ ] `node --test` end-to-end pass (already passes; reconfirm)
-- [ ] `node server/dashboard.js` end-to-end smoke against a test project
-- [ ] `CHANGELOG.md` entries for Phase 1-8
-- [ ] Bump `package.json` version (minor; rename behaviour preserved via Path B)
-- [ ] `.github/release.yml` auto-categorisation review
-- [ ] Tag and release notes
+- [x] Pre-release sanity: `npm pack --dry-run` review
+- [x] `node --test` end-to-end pass (already passes; reconfirm)
+- [x] `node server/dashboard.js` end-to-end smoke against a test project
+- [x] `CHANGELOG.md` entries for Phase 1-8
+- [x] Bump `package.json` version (minor; rename behaviour preserved via Path B)
+- [x] `.github/release.yml` auto-categorisation review
+- [x] Tag and release notes
 
 ---
 
@@ -116,17 +118,17 @@ Decision: workflows are dense executable logic (bash + agent dispatches), not re
 
 User-requested verification phase. Make sure every dashboard view works correctly with all current state.
 
-- [ ] Boot dashboard against a fresh project — verify no `.rihal/` empty-state UX
-- [ ] Boot dashboard against this repo — verify all routes render
-- [ ] Verify `/` overview view renders project name, phase, milestone
-- [ ] Verify `/roadmap`, `/milestones`, `/phases`, `/sprints`, `/tasks` views (existing)
-- [ ] Verify `/files` view walks `.planning/` correctly
-- [ ] Verify `/agents` view renders the personas roster
-- [ ] Verify `/decisions` view renders decision log
-- [ ] Verify `/memory` view (new in Phase 3) handles uninitialised, partial, and full Memory Banks
-- [ ] Verify dashboard nav links and theme toggle
-- [ ] Add an end-to-end test that visits every route and asserts non-zero meaningful content
-- [ ] Document any UI gaps found and decide fix-vs-defer per-gap
+- [x] Boot dashboard against a fresh project — verify no `.rihal/` empty-state UX
+- [x] Boot dashboard against this repo — verify all routes render
+- [x] Verify `/` overview view renders project name, phase, milestone
+- [x] Verify `/roadmap`, `/milestones`, `/phases`, `/sprints`, `/tasks` views (existing)
+- [x] Verify `/files` view walks `.planning/` correctly
+- [x] Verify `/agents` view renders the personas roster
+- [x] Verify `/decisions` view renders decision log
+- [x] Verify `/memory` view (new in Phase 3) handles uninitialised, partial, and full Memory Banks
+- [x] Verify dashboard nav links and theme toggle
+- [x] Add an end-to-end test that visits every route and asserts non-zero meaningful content
+- [x] Document any UI gaps found and decide fix-vs-defer per-gap
 
 ---
 
@@ -134,17 +136,17 @@ User-requested verification phase. Make sure every dashboard view works correctl
 
 Port the 11 missing engineering-rigor skills from the original plan, written from scratch in rcode voice and grounded in the verified Rihal stack (Next.js 16, React 19, Strapi, Postgres, Three.js, Sentry, Temporal, Helm/K8s).
 
-- [ ] `rihal-incremental` — atomic, verifiable shipping
-- [ ] `rihal-prove-it` — TDD with Jest + Playwright (replaces missing TDD skill)
-- [ ] `rihal-source-truth` — cite official docs before code
-- [ ] `rihal-browser-verify` — DevTools MCP for browser checks (Three.js perf)
-- [ ] `rihal-debug` — root-cause debugging with Sentry-default observability
-- [ ] `rihal-trim` — code simplification (Distillator philosophy applied to code)
-- [ ] `rihal-harden` — security checklist for SaaS auth/tenant patterns
-- [ ] `rihal-perf` — Next.js + Three.js + Postgres performance
-- [ ] `rihal-git-flow` — branching aligned with Epic→Feature→Task hierarchy
-- [ ] `rihal-ci` — Helm + K8s + Docker Compose quality gates
-- [ ] `rihal-migrate` — MVP-to-prod transitions (addresses the "MVP can't be revamped" pain)
+- [x] `rihal-incremental` — atomic, verifiable shipping
+- [x] `rihal-prove-it` — TDD with Jest + Playwright (replaces missing TDD skill)
+- [x] `rihal-source-truth` — cite official docs before code
+- [x] `rihal-browser-verify` — DevTools MCP for browser checks (Three.js perf)
+- [x] `rihal-debug` — root-cause debugging with Sentry-default observability
+- [x] `rihal-trim` — code simplification (Distillator philosophy applied to code)
+- [x] `rihal-harden` — security checklist for SaaS auth/tenant patterns
+- [x] `rihal-perf` — Next.js + Three.js + Postgres performance
+- [x] `rihal-git-flow` — branching aligned with Epic→Feature→Task hierarchy
+- [x] `rihal-ci` — Helm + K8s + Docker Compose quality gates
+- [x] `rihal-migrate` — MVP-to-prod transitions (addresses the "MVP can't be revamped" pain)
 
 ---
 
@@ -152,24 +154,24 @@ Port the 11 missing engineering-rigor skills from the original plan, written fro
 
 8 skills mapped 1:1 to verified Rihal incidents. No competitor has these because they don't have the scars.
 
-- [ ] `rihal-auth-audit` — Keycloak ↔ AD sync verification (incident: Keycloak data lost)
-- [ ] `rihal-deploy-unify` — multiple-deploy-paths detection (incident: Siraaj deploy chaos)
-- [ ] `rihal-ocr-consistency` — OCR pipeline determinism + ground-truth (incident: OCR inconsistencies)
-- [ ] `rihal-theme-system` — design token audit before launch (incident: theme rebrand)
-- [ ] `rihal-mvp-graduate` — MVP-to-production migration plan (incident: MVPs that can't be revamped)
-- [ ] `rihal-client-gate` — client-requirement freeze gates and async-comm patterns (incident: late requirements)
-- [ ] `rihal-rebrand` — stack-wide rebranding migration
-- [ ] `rihal-incident-record` — change-record + post-mortem in one flow
+- [x] `rihal-auth-audit` — Keycloak ↔ AD sync verification (incident: Keycloak data lost)
+- [x] `rihal-deploy-unify` — multiple-deploy-paths detection (incident: Siraaj deploy chaos)
+- [x] `rihal-ocr-consistency` — OCR pipeline determinism + ground-truth (incident: OCR inconsistencies)
+- [x] `rihal-theme-system` — design token audit before launch (incident: theme rebrand)
+- [x] `rihal-mvp-graduate` — MVP-to-production migration plan (incident: MVPs that can't be revamped)
+- [x] `rihal-client-gate` — client-requirement freeze gates and async-comm patterns (incident: late requirements)
+- [x] `rihal-rebrand` — stack-wide rebranding migration
+- [x] `rihal-incident-record` — change-record + post-mortem in one flow
 
 ---
 
 ## Phase 13 — Final consolidation ⏳ NEW
 
-- [ ] Update `BRAND.md` and `MEMORY_BANK.md` to reflect any changes
-- [ ] Update `TASKS.md` (this file) — close completed Epics
-- [ ] Update `README.md` "What is this" section (currently lists "43 agents, 99 commands" — outdated)
-- [ ] Final `npm pack --dry-run` and human review
-- [ ] Tag final version, push, release
+- [x] Update `BRAND.md` and `MEMORY_BANK.md` to reflect any changes
+- [x] Update `TASKS.md` (this file) — close completed Epics
+- [x] Update `README.md` "What is this" section (currently lists "43 agents, 99 commands" — outdated)
+- [x] Final `npm pack --dry-run` and human review
+- [x] Tag final version, push, release
 
 ---
 
