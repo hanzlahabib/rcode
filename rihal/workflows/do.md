@@ -99,10 +99,47 @@ Then dispatch to the prerequisite command instead of the originally-matched rout
 The guard never silently rejects intent — it always either dispatches to a sensible alternative OR explicitly tells the user what flag overrides it (e.g. `--skip-prerequisites` for the rare legitimate use case).
 </step>
 
+<step name="external_data_guard" priority="first-match">
+**Block code-only routing when the actionable signal lives in an external system.**
+
+Some tasks reference systems whose data is NOT in the repo — observability platforms, issue trackers, analytics, and product dashboards. A pure codebase scan can map *instrumentation* but cannot classify *what is actually firing*. Routing such requests to `/rihal:scan` or `/rihal:map-codebase` without first establishing a data source produces theoretical output (violates the codebase-first rule).
+
+**External-data signals** — match if `$QUESTION` contains any of:
+
+- Observability: `sentry`, `datadog`, `new relic`, `newrelic`, `bugsnag`, `rollbar`, `honeycomb`, `grafana`, `prometheus`, `splunk`, `cloudwatch`
+- Analytics: `google analytics`, ` GA4`, `mixpanel`, `amplitude`, `posthog`, `heap`
+- Issue/support: `linear`, `jira`, `zendesk`, `intercom`, `freshdesk`, `pagerduty`
+- Product/CRM: `stripe dashboard`, `hubspot`, `salesforce`
+
+**Action verbs** — match if `$QUESTION` contains any of: `audit`, `clean up`, `cleanup`, `classify`, `triage`, `review errors`, `noisy`, `top errors`, `which errors`, `production errors`, `dashboard`.
+
+If BOTH a system signal AND an action verb match, fire the guard. Ask via AskUserQuestion BEFORE choosing a route:
+
+```
+The task involves {detected system} — the actionable data lives there, not in the repo.
+A codebase scan alone will only show instrumentation, not which errors are firing.
+
+How should we access the external data?
+
+1. MCP/API access available — pull the data and analyze it
+2. I'll paste the top errors / dashboard export manually
+3. Codebase-only scan is fine — I just want the instrumentation map
+4. Cancel — let me reformulate
+```
+
+Then route accordingly:
+- **Option 1:** Continue to `route` step but tag the chosen command with a note to use the external data source. If no Rihal command natively reads the external system, route to `/rihal:discuss` and have the agent guide MCP/API setup.
+- **Option 2:** Route to `/rihal:discuss` so the user can paste data into a focused conversation, OR `/rihal:note` to capture, then re-run.
+- **Option 3:** Continue to `route` step normally (likely `/rihal:scan` or `/rihal:map-codebase`) but display a clear caveat: *"Output will be an instrumentation map only — it cannot classify which errors are noisy vs critical."*
+- **Option 4:** Stop. Print the original input back so the user can rephrase.
+
+Skip this guard when `AUTO_MODE=true` AND the input explicitly contains `--codebase-only` or `instrumentation map` — those signal the user already accepted the limitation.
+</step>
+
 <step name="route">
 **Match intent to command.**
 
-(Run only after greenfield_guard has cleared.)
+(Run only after greenfield_guard AND external_data_guard have cleared.)
 
 Evaluate `$QUESTION` against these routing rules. Apply the **first matching** rule:
 
