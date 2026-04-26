@@ -116,6 +116,7 @@ function parseArgs(argv) {
     language: 'English',
     mode: 'guided',
     ide: 'claude',  // claude, cursor, gemini (copilot = TODO)
+    ideProvided: false, // true when --ide is passed explicitly — skip interactive prompt
     help: false,
     modules: [],  // --module core --module execution or empty = all
     // #189 — planning commit policy. null = ask interactively (or default true under --yes).
@@ -143,7 +144,7 @@ function parseArgs(argv) {
     else if (arg === '--project') opts.projectName = argv[++i];
     else if (arg === '--language') opts.language = argv[++i];
     else if (arg === '--mode') opts.mode = argv[++i];
-    else if (arg === '--ide') opts.ide = argv[++i];
+    else if (arg === '--ide') { opts.ide = argv[++i]; opts.ideProvided = true; }
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
@@ -161,6 +162,102 @@ function parseArgs(argv) {
   }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
+}
+
+/**
+ * Print the Rihal Memory Bank installer header. Box-drawn banner shown once
+ * at the top of every interactive install run.
+ */
+function printInstallHeader(targetVersion) {
+  const v = targetVersion || readPackageVersion();
+  const lines = [
+    '',
+    pc.cyan('╭───────────────────────────────────────────────────────────╮'),
+    pc.cyan('│') + '                                                           ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + pc.bold(pc.yellow('🕌  Rihal Memory Bank')) + '  ' + dim('— installer') + '                       ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('A persistent context-brain for your editor') + '             ' + pc.cyan('│'),
+    pc.cyan('│') + '                                                           ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzla-habib/rihal-code              ' + pc.cyan('│'),
+    pc.cyan('│') + '                                                           ' + pc.cyan('│'),
+    pc.cyan('╰───────────────────────────────────────────────────────────╯'),
+    '',
+  ];
+  console.log(lines.join('\n'));
+}
+
+/**
+ * Detect which IDEs the user likely uses. Soft signals only — never rejects,
+ * just biases the default selection in the interactive prompt.
+ * Returns a set like { claude: true, cursor: false, gemini: false }.
+ */
+function detectIdeSignals(target) {
+  const signals = { claude: false, cursor: false, gemini: false };
+  // 1. Project-local install dirs (strongest signal — they already use one)
+  if (fs.existsSync(path.join(target, '.claude'))) signals.claude = true;
+  if (fs.existsSync(path.join(target, '.cursor'))) signals.cursor = true;
+  if (fs.existsSync(path.join(target, '.gemini'))) signals.gemini = true;
+  // 2. User-level config dirs
+  const home = os.homedir();
+  if (fs.existsSync(path.join(home, '.claude'))) signals.claude = true;
+  if (fs.existsSync(path.join(home, '.cursor'))) signals.cursor = true;
+  if (fs.existsSync(path.join(home, '.config', 'Cursor'))) signals.cursor = true;
+  if (fs.existsSync(path.join(home, '.gemini'))) signals.gemini = true;
+  // 3. Env vars commonly set by editor terminals
+  if (process.env.CURSOR_TRACE_ID || /cursor/i.test(process.env.TERM_PROGRAM || '')) signals.cursor = true;
+  if (process.env.CLAUDECODE === '1' || process.env.CLAUDE_CODE_ENTRYPOINT) signals.claude = true;
+  return signals;
+}
+
+/**
+ * Resolve target IDE — explicit --ide flag wins, then interactive prompt
+ * (when TTY + not --yes + not --ideProvided), else default to 'claude'.
+ *
+ * Closes the gap where users got auto-installed to claude even when they
+ * actually wanted cursor or gemini.
+ */
+async function resolveIde(opts) {
+  if (opts.ideProvided) return opts.ide;            // user passed --ide, respect it
+  if (opts.yes || !process.stdin.isTTY) return opts.ide || 'claude';
+
+  const signals = detectIdeSignals(opts.target);
+  const detected = ['claude', 'cursor', 'gemini'].filter(k => signals[k]);
+
+  // Build the menu — detected IDEs marked with a hint
+  const choices = [
+    { key: '1', value: 'claude', label: 'Claude Code',  hint: signals.claude ? dim('(detected)') : '' },
+    { key: '2', value: 'cursor', label: 'Cursor',       hint: signals.cursor ? dim('(detected)') : '' },
+    { key: '3', value: 'gemini', label: 'Gemini CLI',   hint: signals.gemini ? dim('(detected)') : dim('(beta — limited)') },
+  ];
+
+  // Pick a default: prefer the single detected IDE; otherwise claude
+  let defaultValue = 'claude';
+  if (detected.length === 1) defaultValue = detected[0];
+
+  const readline = require('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = (q) => new Promise(r => rl.question(q, a => r(a)));
+
+  console.log(pc.bold('🎯 Which editor will you use Rihal with?'));
+  console.log('');
+  for (const c of choices) {
+    const marker = c.value === defaultValue ? pc.green('●') : dim('○');
+    const label = c.value === defaultValue ? pc.bold(c.label) : c.label;
+    console.log(`   ${marker} ${pc.cyan('[' + c.key + ']')} ${label}  ${c.hint}`);
+  }
+  console.log('');
+  const defaultKey = choices.find(c => c.value === defaultValue).key;
+  const answer = (await prompt(`   Pick an editor [${defaultKey}]: `)).trim().toLowerCase();
+  rl.close();
+
+  if (!answer) return defaultValue;
+  // Accept either the number key or the name
+  const byKey = choices.find(c => c.key === answer);
+  if (byKey) return byKey.value;
+  const byName = choices.find(c => c.value === answer || c.label.toLowerCase().startsWith(answer));
+  if (byName) return byName.value;
+  console.log(dim(`   Unrecognised choice "${answer}" — falling back to ${defaultValue}.`));
+  return defaultValue;
 }
 
 /**
@@ -1018,10 +1115,18 @@ function convertToCursorMdc(sourceText) {
 async function install(opts) {
   if (opts.help) { printHelp(); return 0; }
 
+  const pkgVersion = readPackageVersion();
+
+  // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
+  const isInteractive = process.stdin.isTTY && !opts.yes;
+  if (isInteractive) printInstallHeader(pkgVersion);
+
+  // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
+  opts.ide = await resolveIde(opts);
+
   // Resolve commit-planning preference (interactive prompt or flag) — #189.
   opts.commitPlanning = await resolveCommitPlanning(opts);
 
-  const pkgVersion = readPackageVersion();
   console.log(`\n🕌 ${bold('Rihal Code')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
 
   // Detect an existing install and surface it (#195).
