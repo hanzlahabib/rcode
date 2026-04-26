@@ -136,10 +136,50 @@ Then route accordingly:
 Skip this guard when `AUTO_MODE=true` AND the input explicitly contains `--codebase-only` or `instrumentation map` — those signal the user already accepted the limitation.
 </step>
 
+<step name="explicit_intent_check" priority="first-match">
+**Honor explicit user verbs — skip ambiguity prompts when intent is unambiguous.**
+
+When the user uses a literal create/make/start verb paired with a scope-noun (milestone, phase, story, epic, sprint, plan, PRD, roadmap, council), dispatch IMMEDIATELY. Do not present a multi-route ambiguity menu. The user already chose.
+
+This was a real bug: `/rihal:do "milestone bnao aur ... list down karo"` triggered an ambiguity prompt offering new-milestone vs add-phase vs create-epics-and-stories — even though the user literally said "milestone bnao" (= "create a milestone" in Roman Urdu). That second-guessing wasted the user's time and broke trust.
+
+**Verb dictionary — match if `$QUESTION` contains any of these (case-insensitive):**
+
+- English: `create`, `make`, `start`, `add`, `new`, `set up`, `setup`, `kick off`, `spin up`
+- Roman Urdu / Hindi: `bnao`, `banao`, `bana do`, `bnado`, `banaa`, `banade`, `shuru karo`, `start karo`, `create karo`, `naya banao`, `add karo`, `daal do`
+- Arabic transliteration: `ansha'`, `inshaa`
+
+**Scope-noun → command map:**
+
+| Scope noun in input | Direct route | Pre-condition |
+|---|---|---|
+| `milestone`, `milestones` | `/rihal:new-milestone` | none — methodology chain assumed when greenfield_guard cleared |
+| `phase`, `phases` (singular intent — "add a phase") | `/rihal:add-phase` | HAS_PHASES OR HAS_PRD true |
+| `story`, `stories`, `user story` | `/rihal:create-story` | HAS_EPICS true |
+| `epic`, `epics`, `epics and stories` | `/rihal:create-epics-and-stories` | HAS_PRD true |
+| `sprint` | `/rihal:sprint-planning` | HAS_EPICS true |
+| `PRD`, `requirements doc`, `product requirements` | `/rihal:create-prd` | none |
+| `roadmap` | `/rihal:create-milestone` | HAS_PRD true |
+| `council`, `majlis` | `/rihal:council` | none |
+| `plan` (verb — "plan phase N") | `/rihal:plan` | HAS_PHASES true |
+
+**Behavior:**
+1. If both a verb AND a scope-noun match, fire this step.
+2. Skip the ambiguity-handling logic in the `route` step entirely.
+3. Print the routing banner with `Reason: explicit user verb — "{matched verb}" + "{matched noun}"`.
+4. Dispatch immediately.
+
+**Edge case — multiple scope-nouns in one input** (e.g. "milestone bnao aur usmy phase 1 banao"): take the OUTER/PARENT scope. "Milestone bnao aur usmy phase X" → `/rihal:new-milestone` (parent = milestone). The dispatched command will handle the nested phase 1 internally.
+
+**Edge case — verb without scope-noun** (e.g. "kuch karo", "do something"): do NOT fire this step. Fall through to the normal routing table which can ask for clarification.
+
+If this step fires, skip the route-step's ambiguity prompt entirely and proceed to display + dispatch.
+</step>
+
 <step name="route">
 **Match intent to command.**
 
-(Run only after greenfield_guard AND external_data_guard have cleared.)
+(Run only after greenfield_guard, external_data_guard, AND explicit_intent_check have all cleared without dispatching.)
 
 Evaluate `$QUESTION` against these routing rules. Apply the **first matching** rule:
 
