@@ -1,7 +1,7 @@
 # Rihal Brain — content sources
 #
 # This file lists upstream repositories whose content is pulled into
-# rihal/brain/ on install and on every `/rihal:update`. Anything pulled
+# rihal/brain/ on install and on every `/rihal-update`. Anything pulled
 # here ends up in every Rihalian's project context.
 #
 # Repo URLs are placeholders until M5 (issue #162) when Hanzla supplies

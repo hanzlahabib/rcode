@@ -1,6 +1,6 @@
 name: core
 version: "1.0"
-description: "Council agents, /rihal:council, /rihal:discuss, /rihal:status, /rihal:do router, and state management"
+description: "Council agents, /rihal-council, /rihal-discuss, /rihal-status, /rihal-do router, and state management"
 requires: []
 agents:
   - rihal-sadiq.md
