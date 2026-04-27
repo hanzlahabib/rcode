@@ -18,6 +18,8 @@ triggers:
   - "rihal new project"
   - "start a new rihal project"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Workflow
 

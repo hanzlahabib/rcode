@@ -4,6 +4,8 @@ description: 'Generates or updates an index.md to reference all docs in the fold
 triggers:
   - "index docs"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Index Docs
 

@@ -26,6 +26,8 @@ triggers:
   - "maximalist"
 license: Adapted from Anthropic's frontend-design skill
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

@@ -27,6 +27,8 @@ triggers:
   - "team scaling"
   - "performance review"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Nasser — Software Engineering Manager
 

@@ -6,6 +6,7 @@ Users currently hand-craft `/rihal-quick` prompts for test generation after each
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <process>

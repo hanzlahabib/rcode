@@ -14,6 +14,8 @@ triggers:
   - "competitor scan"
   - "analyze the market for X"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

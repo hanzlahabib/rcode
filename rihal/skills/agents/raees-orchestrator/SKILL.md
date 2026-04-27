@@ -25,6 +25,8 @@ triggers:
   - "spawn agents"
   - "orchestrate this task"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

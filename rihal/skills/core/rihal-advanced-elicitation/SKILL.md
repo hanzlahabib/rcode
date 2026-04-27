@@ -13,6 +13,8 @@ triggers:
   - "first principles"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

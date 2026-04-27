@@ -6,6 +6,7 @@ After identifying issues, spawn one debug agent per issue. Each agent investigat
 Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize findings.
 </purpose>
 
+@.rihal/references/karpathy-guidelines.md
 
 ## Step 0 — Usage check
 

@@ -4,6 +4,8 @@ description: 'Perform a Cynical Review and produce a findings report. Use when t
 triggers:
   - "review adversarial general"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Adversarial Review (General)
 

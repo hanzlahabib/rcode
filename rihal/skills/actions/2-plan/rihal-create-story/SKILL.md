@@ -15,6 +15,8 @@ triggers:
   - "get next story ready for dev"
   - "assemble story context"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

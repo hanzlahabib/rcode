@@ -4,6 +4,8 @@ auto-fixable vs manual-only, spawns executor agents for fixable issues, runs tes
 after each fix, and commits atomically with finding IDs for traceability.
 </purpose>
 
+@.rihal/references/karpathy-guidelines.md
+
 <available_agent_types>
 - rihal-executor — executes a specific, scoped code change
 </available_agent_types>

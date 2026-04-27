@@ -31,6 +31,8 @@ triggers:
   - "brand assets"
   - "design language"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Zahra — Branding & Creative Director
 

@@ -18,6 +18,8 @@ triggers:
   - "record the
   decision to use X"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

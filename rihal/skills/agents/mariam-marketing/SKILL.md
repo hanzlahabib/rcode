@@ -29,6 +29,8 @@ triggers:
   - "social media strategy"
   - "announcement"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Mariam — Marketing Lead
 

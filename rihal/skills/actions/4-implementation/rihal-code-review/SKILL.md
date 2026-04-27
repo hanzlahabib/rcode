@@ -15,6 +15,8 @@ triggers:
   - "critique this
   implementation"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

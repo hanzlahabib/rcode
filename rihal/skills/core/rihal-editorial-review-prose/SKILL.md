@@ -4,6 +4,8 @@ description: 'Clinical copy-editor that reviews text for communication issues. U
 triggers:
   - "editorial review prose"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Editorial Review - Prose
 

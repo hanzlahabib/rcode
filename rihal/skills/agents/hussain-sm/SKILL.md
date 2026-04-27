@@ -25,6 +25,8 @@ triggers:
   - "agile"
   - "scrum ceremony"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Hussain (SM) — Scrum Master
 

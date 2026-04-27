@@ -14,6 +14,8 @@ triggers:
   - "revise requirements"
   - "change the scope in the PRD"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

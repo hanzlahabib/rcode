@@ -13,6 +13,8 @@ triggers:
   - "sprint progress"
   - "where are we in the sprint"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

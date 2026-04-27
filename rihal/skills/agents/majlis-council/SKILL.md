@@ -27,6 +27,8 @@ triggers:
   - "get consensus"
   - "bring in the team"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

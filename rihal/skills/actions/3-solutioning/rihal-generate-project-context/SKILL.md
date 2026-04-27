@@ -16,6 +16,8 @@ triggers:
   - "create
   project-context.md"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

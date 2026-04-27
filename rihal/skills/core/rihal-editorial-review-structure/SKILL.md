@@ -9,6 +9,8 @@ triggers:
   - "cut this doc down"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

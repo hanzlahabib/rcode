@@ -31,6 +31,8 @@ triggers:
   - "NLP"
   - "deep learning"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Zayd — Senior ML Engineer
 

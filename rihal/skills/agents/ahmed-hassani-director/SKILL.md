@@ -25,6 +25,8 @@ triggers:
   - "executive alignment"
   - "company roadmap"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Ahmed Al Hassani — Technology & Development Director
 

@@ -17,6 +17,8 @@ the plan → execute → verify → **ship** loop.
 - You are on a feature branch (not main/develop directly)
 - `gh` CLI is authenticated (`gh auth status`)
 
+@.rihal/references/karpathy-guidelines.md
+
 **This command is NOT for:**
 - Publishing npm packages → use `npm publish`
 - Creating git release tags → use `git tag -a vX.Y.Z && git push --tags`

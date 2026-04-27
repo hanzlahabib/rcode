@@ -12,6 +12,8 @@ triggers:
   - "reproduce the bug first"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

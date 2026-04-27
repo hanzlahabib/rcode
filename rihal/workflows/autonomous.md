@@ -42,6 +42,7 @@ interpos audit (issue #221) — DO NOT regress.
 @.rihal/references/output-realism.md
 @rihal/brain/best-practices/no-autonomous-bypass.md
 @rihal/brain/best-practices/state-sync-rule.md
+@.rihal/references/karpathy-guidelines.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 

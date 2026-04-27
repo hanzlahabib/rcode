@@ -4,6 +4,8 @@ description: 'Analyzes current state and user query to answer Rihal questions or
 triggers:
   - "help"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Rihal Help
 

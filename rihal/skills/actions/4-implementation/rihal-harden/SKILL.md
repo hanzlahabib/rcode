@@ -12,6 +12,8 @@ triggers:
   - "before we ship"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

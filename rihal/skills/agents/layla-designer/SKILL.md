@@ -26,6 +26,8 @@ triggers:
   - "user flow"
   - "Figma"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Layla — UX Designer
 

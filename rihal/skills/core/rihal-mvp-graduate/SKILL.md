@@ -12,6 +12,8 @@ triggers:
   - "ready for production"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

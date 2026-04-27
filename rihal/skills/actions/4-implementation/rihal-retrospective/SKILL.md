@@ -14,6 +14,8 @@ triggers:
   - "review completed work"
   - "extract learnings from this sprint"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

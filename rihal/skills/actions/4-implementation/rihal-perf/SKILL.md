@@ -12,6 +12,8 @@ triggers:
   - "tune this"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

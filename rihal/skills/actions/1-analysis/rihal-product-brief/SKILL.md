@@ -14,6 +14,8 @@ triggers:
   - "product briefing"
   - "create the brief"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Workflow
 

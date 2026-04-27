@@ -21,6 +21,8 @@ triggers:
   - "think outside the box"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

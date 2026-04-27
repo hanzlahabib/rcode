@@ -4,6 +4,8 @@ description: 'Walk every branching path and boundary condition in content, repor
 triggers:
   - "review edge case hunter"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Edge Case Hunter Review
 

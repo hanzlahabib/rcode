@@ -26,6 +26,8 @@ triggers:
   - "write a guide"
   - "write release notes"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Noor — Technical Writer & Presentation Lead
 

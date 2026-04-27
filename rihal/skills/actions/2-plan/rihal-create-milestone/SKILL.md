@@ -17,6 +17,8 @@ triggers:
   milestones"
   - "roadmap for this product"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

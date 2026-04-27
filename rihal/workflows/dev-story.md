@@ -138,6 +138,7 @@ fi
 @.rihal/references/checklist-story-draft.md
 @.rihal/references/checklist-story-dod.md
 @.rihal/references/commit-conventions.md
+@.rihal/references/karpathy-guidelines.md
 ```
 
 `STORY_CONTENT`, `STORY_ID`, `STORY_TITLE`, `PERSONA`, `EFFORT` are already set from Step 0.

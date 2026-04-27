@@ -30,6 +30,8 @@ triggers:
   - "database schema"
   - "server performance"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Yousef — Senior Backend Engineer
 

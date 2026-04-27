@@ -12,6 +12,8 @@ triggers:
   - "scientific method"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

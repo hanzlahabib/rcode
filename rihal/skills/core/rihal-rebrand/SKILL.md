@@ -12,6 +12,8 @@ triggers:
   - "company name change"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

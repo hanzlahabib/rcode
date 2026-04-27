@@ -28,6 +28,8 @@ triggers:
 argument-hint: "<url>"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

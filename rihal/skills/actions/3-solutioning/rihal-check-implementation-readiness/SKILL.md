@@ -15,6 +15,8 @@ triggers:
   - "IR check"
   - "can we start building"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

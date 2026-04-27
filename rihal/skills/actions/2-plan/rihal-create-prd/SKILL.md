@@ -17,6 +17,8 @@ triggers:
   - "new product spec"
   - "start a PRD"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

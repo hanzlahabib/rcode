@@ -73,6 +73,8 @@ Each party mode turn follows this pattern:
 {Response, may reference previous agent's point}
 
 ---
+@.rihal/references/karpathy-guidelines.md
+
 💬 What would you like to discuss next? (say "exit" to end party mode)
 ```
 

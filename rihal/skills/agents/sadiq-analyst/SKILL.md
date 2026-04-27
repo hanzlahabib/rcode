@@ -27,6 +27,8 @@ triggers:
   - "document this project"
   - "talk to Sadiq"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Sadiq — Strategic Business Analyst
 

@@ -9,6 +9,8 @@ triggers:
   - "compress these docs"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

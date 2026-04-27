@@ -12,6 +12,8 @@ triggers:
   - "incident summary"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

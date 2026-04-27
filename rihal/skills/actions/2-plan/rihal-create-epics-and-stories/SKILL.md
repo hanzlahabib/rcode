@@ -15,6 +15,8 @@ triggers:
   - "decompose the PRD"
   - "create the backlog"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

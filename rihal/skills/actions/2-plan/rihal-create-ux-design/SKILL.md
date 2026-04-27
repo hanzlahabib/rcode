@@ -15,6 +15,8 @@ triggers:
   - "design this screen"
   - "create the design for"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

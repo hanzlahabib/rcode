@@ -17,6 +17,8 @@ triggers:
   - "technical
   feasibility for"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

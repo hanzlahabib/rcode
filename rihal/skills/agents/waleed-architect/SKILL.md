@@ -30,6 +30,8 @@ triggers:
   - "talk to Waleed"
   - "as the CTO"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Waleed — System Architect / CTO
 

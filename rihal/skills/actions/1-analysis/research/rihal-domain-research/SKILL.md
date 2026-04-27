@@ -15,6 +15,8 @@ triggers:
   me understand X industry"
   - "domain research for"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

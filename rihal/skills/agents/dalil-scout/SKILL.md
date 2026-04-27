@@ -26,6 +26,8 @@ triggers:
   - "where is X used"
   - "what languages / what stack"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

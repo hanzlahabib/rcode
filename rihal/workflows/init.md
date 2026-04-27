@@ -194,6 +194,86 @@ This file is a journey baseline — intentionally shallow. For deep analysis run
 
 If no code detected, write a minimal RIHLA.md with just the header and a "fresh project — no code yet" note.
 
+## Step 4b — Populate context files
+
+After writing RIHLA.md, populate the two context files that every Rihal skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
+
+**`.rihal/context/active.md`** — Current task context and working state. Write it using the RIHLA.md scan data from Step 4:
+
+```markdown
+# Active Context
+
+**Last updated:** {ISO date}
+**Updated by:** /rihal-init
+
+## Current State
+
+- **Project:** {project_name}
+- **Primary stack:** {detected language + framework}
+- **Branch:** {git branch or "n/a"}
+- **Recent focus:** {summary from last 5 commit messages, or "fresh project"}
+
+## Active Work
+
+{If returning with --reset: summarize what was in progress from git log}
+{If existing-new-rihal: "Rihal just configured — no active work tracked yet."}
+{If fresh: "New project — no code yet."}
+
+## Key Decisions
+
+- Rihal configured with mode: {mode from Step 2}
+- Branching strategy: {strategy from Step 2}
+- Model profile: {profile from Step 2}
+
+## Open Questions
+
+_None yet. Use `/rihal-explore` or `/rihal-council` to surface questions._
+```
+
+**`.rihal/context/project-brief.md`** — High-level project description. Write it using the RIHLA.md scan data:
+
+```markdown
+# Project Brief
+
+**Project:** {project_name}
+**Created:** {ISO date}
+
+## Overview
+
+{If code exists: 3-5 sentence summary derived from README + package manifest — what the project does, who it's for, and the primary tech stack}
+{If fresh: "Project not yet started. Run `/rihal-new-project` to design it."}
+
+## Technical Stack
+
+- **Language:** {detected primary language}
+- **Framework:** {detected framework or "none detected"}
+- **Package manager:** {npm/pnpm/pip/cargo/etc or "none detected"}
+
+## Project Goals
+
+_To be refined. Run `/rihal-create-prd` for full requirements discovery._
+```
+
+Ensure the directory exists before writing:
+
+```bash
+mkdir -p .rihal/context
+```
+
+**Important:** If `--reset` is passed and the files already have user-written content beyond the template stub, preserve a backup before overwriting:
+
+```bash
+if [ -s .rihal/context/active.md ] && ! grep -q "Run \`/rihal" .rihal/context/active.md; then
+  cp .rihal/context/active.md .rihal/context/active.md.bak
+fi
+```
+
+After writing both files, refresh the memory bank fingerprint so staleness checks see the project as fresh:
+
+```bash
+node .rihal/bin/rihal-tools.cjs context refresh 2>/dev/null || true
+```
+
 ## Step 5 — Suggest the next step
 
 Print a contextual recommendation, **one line of copy-paste per suggestion** (per `.rihal/references/command-redirect-format.md`):
@@ -246,6 +326,8 @@ Silent if state tools fail.
 - [ ] `.rihal/config.yaml` written with user's answers
 - [ ] `.rihal/state.json` exists (created or preserved)
 - [ ] `.rihal/RIHLA.md` written (unless `--skip-scan` or no code)
+- [ ] `.rihal/context/active.md` populated with project state (not the placeholder stub)
+- [ ] `.rihal/context/project-brief.md` populated with project overview (not the placeholder stub)
 - [ ] State detected correctly (fresh / existing-new-rihal / returning)
 - [ ] Contextual next-step suggestion printed as single-line copy-paste
 

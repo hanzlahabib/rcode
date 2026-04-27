@@ -27,6 +27,8 @@ triggers:
   - "code this"
   - "debug this"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Hanzla — Senior Full-Stack Engineer
 

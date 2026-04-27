@@ -12,6 +12,8 @@ triggers:
   - "ready for real users"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

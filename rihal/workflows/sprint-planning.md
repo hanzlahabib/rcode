@@ -39,6 +39,7 @@ they bypass the capacity gate.
 @.rihal/references/output-format.md
 @rihal/brain/best-practices/no-autonomous-bypass.md
 @rihal/brain/best-practices/state-sync-rule.md
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <output_format>

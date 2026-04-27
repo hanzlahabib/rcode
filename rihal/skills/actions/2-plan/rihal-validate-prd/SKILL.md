@@ -14,6 +14,8 @@ triggers:
   check"
   - "audit the PRD"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

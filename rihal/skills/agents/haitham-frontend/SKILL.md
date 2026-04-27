@@ -28,6 +28,8 @@ triggers:
   - "design system implementation"
   - "TypeScript component"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Haitham — Senior Frontend Engineer
 

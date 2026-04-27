@@ -25,6 +25,8 @@ triggers:
   - "test this"
   - "review test coverage"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Fatima — QA Engineer / Test Architect
 

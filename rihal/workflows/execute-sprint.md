@@ -7,6 +7,7 @@ Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
 @.rihal/references/git-integration.md
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <available_agent_types>

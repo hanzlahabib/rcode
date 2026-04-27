@@ -26,6 +26,8 @@ triggers:
   - "story points"
   - "prioritize the backlog"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Hussain (PM) — Product Manager
 

@@ -4,6 +4,8 @@ description: Working Backwards PRFAQ challenge to forge product concepts. Use wh
 triggers:
   - "prfaq"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Do NOT use this skill for
 

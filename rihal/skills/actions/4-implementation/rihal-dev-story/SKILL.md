@@ -15,6 +15,8 @@ triggers:
   dev-story on"
   - "implement .rihal/phases/{phase}/stories/{file}"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

@@ -12,6 +12,8 @@ triggers:
   - "rollback ready"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

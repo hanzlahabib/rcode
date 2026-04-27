@@ -6,6 +6,8 @@ argument-hint: "[--module=module_code] [--vars=var1:default1,var2] [--skill-path
 triggers:
   - "init"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

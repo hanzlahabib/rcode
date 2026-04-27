@@ -21,6 +21,7 @@ Then verify each level against the actual codebase.
 <required_reading>
 @.rihal/references/verification-patterns.md
 @.rihal/templates/verification-report.md
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <process>

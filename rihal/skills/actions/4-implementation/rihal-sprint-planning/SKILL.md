@@ -14,6 +14,8 @@ triggers:
   - "sequence the next sprint"
   - "generate sprint N plan"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

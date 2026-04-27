@@ -12,6 +12,8 @@ triggers:
   - "delivery slipping"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

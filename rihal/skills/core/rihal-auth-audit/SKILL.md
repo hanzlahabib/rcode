@@ -12,6 +12,8 @@ triggers:
   - "session not invalidating"
 user-invocable: true
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 

@@ -4,6 +4,8 @@ description: 'Splits large markdown documents into smaller, organized files base
 triggers:
   - "shard doc"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 # Shard Document
 

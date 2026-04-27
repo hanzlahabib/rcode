@@ -49,6 +49,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 @.rihal/references/gate-prompts.md
 @.rihal/references/agent-contracts.md
 @.rihal/references/gates.md
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <available_agent_types>

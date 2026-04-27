@@ -4,6 +4,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 
 <required_reading>
 @.rihal/references/ui-brand.md
+@.rihal/references/karpathy-guidelines.md
 </required_reading>
 
 <available_agent_types>

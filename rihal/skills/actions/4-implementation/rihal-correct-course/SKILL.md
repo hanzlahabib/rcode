@@ -16,6 +16,8 @@ triggers:
   change"
   - "change story mid-way"
 ---
+@.rihal/references/karpathy-guidelines.md
+
 
 ## Overview
 
