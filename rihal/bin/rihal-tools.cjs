@@ -3242,6 +3242,40 @@ function cmdProgress(args) {
     return `[${bar}] ${completed}/${total} (${pct}%)`;
   }
 
+  /**
+   * Compute weighted progress that recognizes intermediate phase states.
+   * Weights: has_context only = 0.15, has_research = 0.25, has plan = 0.5,
+   * has verification or summary = 1.0.
+   * Returns { weighted: number (0..total), pct: number (0..100) }.
+   */
+  function computeWeightedProgress(stPhases, diskMap) {
+    if (!stPhases.length) return { weighted: 0, pct: 0 };
+    const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
+    let sum = 0;
+    for (const p of stPhases) {
+      const k = norm(phaseKey(p));
+      if (p.status === 'complete' || p.completed) { sum += 1; continue; }
+      const disk = diskMap[k] || diskMap[phaseKey(p)];
+      if (!disk) continue;
+      if (disk.summary_count > 0)       { sum += 1;    continue; }
+      if (disk.has_verification)         { sum += 0.85; continue; }
+      if (disk.plan_count > 0)           { sum += 0.5;  continue; }
+      if (disk.has_research)             { sum += 0.25; continue; }
+      if (disk.has_context)              { sum += 0.15; continue; }
+    }
+    const total = Math.max(stPhases.length, 1);
+    return { weighted: Math.round(sum * 100) / 100, pct: Math.round((sum / total) * 100) };
+  }
+
+  function buildWeightedBar(stPhases, diskMap, total) {
+    const { weighted, pct } = computeWeightedProgress(stPhases, diskMap);
+    if (!total) return '[░░░░░░░░░░░░░░░░░░░░] 0/0 (0%)';
+    const width = 20;
+    const filled = Math.min(width, Math.round((weighted / total) * width));
+    const bar = '█'.repeat(filled) + '░'.repeat(width - filled);
+    return `[${bar}] ~${pct}% weighted`;
+  }
+
   // Build the core snapshot once — all subcommands derive from it.
   const state = readState();
   const roadmapPhases = parseRoadmapPhases();
@@ -3268,6 +3302,7 @@ function cmdProgress(args) {
   const currentPhase = state && state.current_phase;
   const insights = detectInsights(state, roadmapPhases, diskByNum);
   const routes = deriveRoutes(state, roadmapPhases, diskByNum);
+  const { weighted: weightedCompleted, pct: weightedPct } = computeWeightedProgress(statePhases, diskByNum);
 
   return {
     ok: true,
@@ -3276,7 +3311,9 @@ function cmdProgress(args) {
     current_phase: currentPhase,
     phase_count: phaseCount,
     completed_count: completedCount,
+    weighted_progress: weightedPct,
     bar: buildBar(completedCount, phaseCount),
+    weighted_bar: buildWeightedBar(statePhases, diskByNum, phaseCount),
     phases: (() => {
       // Prefer ROADMAP-parsed phases when available; fall back to state.phases
       // when the roadmap doesn't use a parseable format. Normalize "07" / "7" / 7.
@@ -3472,8 +3509,8 @@ function cmdGitignore(args) {
     let sliceStart = start;
     if (sliceStart > 0 && existing[sliceStart - 1] === '\n') sliceStart -= 1;
     let sliceEnd = endIdx + END.length;
-    if (existing[sliceEnd] === '\n') sliceEnd += 1;
-    return existing.slice(0, sliceStart) + newBlock + existing.slice(sliceEnd);
+    if (existing[slice_end] === '\n') slice_end += 1;
+    return existing.slice(0, sliceStart) + newBlock + existing.slice(slice_end);
   }
 
   if (!fs.existsSync(gitignorePath)) {
@@ -3688,7 +3725,7 @@ async function main() {
         console.log('  state read                                   → print full state.json');
         console.log('  state get                                    → alias for state read');
         console.log('  state init --project <name>                  → create state.json if missing');
-        console.log('  state set-phase <name>                       → set current phase, reset plan counter');
+        console.log('  state set-phase <name>                       → set current_phase, reset current_plan, append to phases[]');
         console.log('  state advance-plan                           → increment current_plan counter');
         console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>');
         console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');

@@ -81,29 +81,52 @@ If `SKIP_FLAG=true`: print a warning that downstream workflows may produce low-q
 
 </step>
 
-<output_format>
+<step name="prepare_branch">
 
-Open with banner:
+## 1b. Prepare Branch
+
+Autonomous mode MUST NOT run directly on `main` or `master` without explicit opt-in.
+This prevents accidental commits to the default branch during long autonomous runs.
+
+```bash
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+ALLOW_MAIN=""
+if echo "$ARGUMENTS" | grep -q '\-\-allow-main'; then
+  ALLOW_MAIN="true"
+fi
+```
+
+**If `CURRENT_BRANCH` is `main` or `master` AND `ALLOW_MAIN` is NOT set:**
+
+Create a working branch:
+
+```bash
+BRANCH_NAME="rihal/autonomous-${milestone_version}-$(date +%Y%m%d-%H%M%S)"
+git checkout -b "${BRANCH_NAME}"
+```
+
+Display:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔀 Created branch: ${BRANCH_NAME}
+   (autonomous mode does not run on main/master — use --allow-main to override)
 ```
 
-Per-phase banners:
-- `RIHAL ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%`
-- `RIHAL ► AUTONOMOUS ▸ LIFECYCLE`
-- `RIHAL ► AUTONOMOUS ▸ COMPLETE 🎉`
-- `RIHAL ► AUTONOMOUS ▸ STOPPED` on blocker
-- `RIHAL ► AUTONOMOUS ▸ --to ${TO_PHASE} REACHED` on range completion
-- `RIHAL ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓` on --only
+**If `CURRENT_BRANCH` is `main` or `master` AND `ALLOW_MAIN` is set:**
 
-Use TaskCreate: one entry per phase in `todo_phases`. Mark in_progress one at a time; mark completed immediately after each phase finishes.
+Display warning:
 
-</output_format>
+```
+⚠ Running on ${CURRENT_BRANCH} — --allow-main override active
+```
 
-<process>
+Proceed without branch creation.
+
+**If `CURRENT_BRANCH` is any other branch:** Proceed silently — user intentionally set up a working branch.
+
+Store `CURRENT_BRANCH` for the lifecycle step — if autonomous created the branch, it will suggest a PR at completion.
+
+</step>
 
 <step name="initialize" priority="first">
 
@@ -242,6 +265,16 @@ Use TaskCreate to register a task per incomplete phase.
 <step name="execute_phase">
 
 ## 3. Execute Phase
+
+**Before displaying the banner, re-derive T from disk** (compaction guard — same
+logic as iterate step 4.0):
+
+```bash
+PROGRESS_REFRESH=$(node .rihal/bin/rihal-tools.cjs progress init 2>/dev/null)
+```
+
+Update `phase_count` and `completed_phases` from the refresh. This ensures
+the banner always shows the correct total, even after context compaction.
 
 For the current phase, display the progress banner:
 
@@ -799,6 +832,37 @@ Decisions captured: {count} across {area_count} areas
 
 ## 4. Iterate
 
+### 4.0. Refresh Phase Count From Disk (MANDATORY — Compaction Guard)
+
+**This step is NON-NEGOTIABLE.** LLM context compaction loses in-memory
+variables. Re-derive `phase_count` and `completed_phases` from disk at the
+START of every iteration — never rely on values held from the initialize step.
+
+```bash
+# Re-read the authoritative progress snapshot from the CLI
+PROGRESS_REFRESH=$(node .rihal/bin/rihal-tools.cjs progress init 2>/dev/null)
+```
+
+Parse `PROGRESS_REFRESH` JSON and update:
+- `phase_count` ← `PROGRESS_REFRESH.phase_count`
+- `completed_phases` ← `PROGRESS_REFRESH.completed_count`
+- `T` (for banner display) ← `phase_count`
+
+If `PROGRESS_REFRESH` fails or is empty, fall back to direct ROADMAP.md parsing:
+
+```bash
+# Fallback: count phases directly from ROADMAP.md
+PHASE_COUNT_DISK=$(grep -cE '^\|\s*\d{1,3}' .planning/ROADMAP.md 2>/dev/null || echo "0")
+COMPLETED_DISK=$(find .planning/phases/ -name '*SUMMARY.md' 2>/dev/null | wc -l)
+```
+
+**Sanity check:** If `current_phase_number > phase_count`, this is a drift
+symptom. Log a warning and re-derive from disk:
+
+```
+⚠ Phase drift detected: current phase ${N} > total ${T}. Re-reading from ROADMAP.md.
+```
+
 **If `ONLY_PHASE` is set:** Do not iterate. Proceed directly to lifecycle step (which exits cleanly per single-phase mode).
 
 **If `TO_PHASE` is set and current phase number >= `TO_PHASE`:**
@@ -963,6 +1027,17 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
  Ship it! 🚀
 ```
 
+**If autonomous created a branch** (i.e., `BRANCH_NAME` was set in the prepare_branch step):
+
+Display:
+
+```
+🔀 Branch: ${BRANCH_NAME}
+   All work is on this branch. When ready, merge to main:
+     git checkout main && git merge ${BRANCH_NAME}
+   Or create a PR for review.
+```
+
 </step>
 
 <step name="handle_blocker">
@@ -1056,4 +1131,13 @@ node .rihal/bin/rihal-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] `--interactive` waits for background agents before post-execution routing
 - [ ] `--interactive` compatible with `--only`, `--from`, and `--to` flags
 - [ ] No `git push` issued by the workflow (per AGENTS.md)
+- [ ] Branch created when on main/master (unless --allow-main override)
+- [ ] Branch name follows `rihal/autonomous-{version}-{timestamp}` pattern
+- [ ] --allow-main flag skips branch creation with warning
+- [ ] Non-main/master branches used as-is without branch creation
+- [ ] PR/merge suggestion displayed at lifecycle completion when branch was created
+- [ ] Phase count T re-derived from disk at start of every iteration (compaction guard)
+- [ ] Phase count T re-derived from disk before execute_phase banner display
+- [ ] Drift warning logged when current phase number exceeds total
+- [ ] Progress bar always accurate after LLM context compaction
 </success_criteria>

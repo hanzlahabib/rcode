@@ -44,9 +44,13 @@ Then stop.
 │ Milestone:  {SNAPSHOT.milestone or "—"}                 │
 │ Phase:      {SNAPSHOT.current_phase or "none started"}  │
 │ Progress:   {SNAPSHOT.bar}                              │
+│ Weighted:   {SNAPSHOT.weighted_bar}                     │
 │ Updated:    {relative_time(SNAPSHOT.updated)}           │
 ╰─────────────────────────────────────────────────────────╯
 ```
+
+If `SNAPSHOT.weighted_progress > 0` but `SNAPSHOT.completed_count === 0`, display
+the weighted bar as the primary progress indicator to avoid a misleading `0/N (0%)`.
 
 ## Step 3 — Phases section
 
@@ -54,14 +58,18 @@ For each entry in `SNAPSHOT.phases[]`:
 
 - `▶` if `phase.number === SNAPSHOT.current_phase`
 - `✓` if `phase.disk.summary_count > 0` AND matches `phase.disk.plan_count` (complete)
-- `◆` if `phase.disk.plan_count > phase.disk.summary_count` (in progress)
-- `○` otherwise (planned)
+- `◆` if `phase.disk.plan_count > phase.disk.summary_count` (executing — has plans, not all summarized)
+- `◇` if `phase.disk.has_context && !phase.disk.plan_count` (discussing — CONTEXT.md exists but no plan yet)
+- `◈` if `phase.disk.has_research && !phase.disk.plan_count` (researched — RESEARCH.md but no plan)
+- `○` otherwise (planned — no artifacts on disk)
 
 ```
 Phases:
-  ▶ [04] Component compaction — in progress (1/3 plans)
+  ▶ [04] Component compaction — executing (1/3 plans)
   ✓ [03] Auth hardening — complete
-  ○ [05] Billing rewrite — planned
+  ◇ [05] Billing rewrite — discussing
+  ◈ [06] API optimization — researched
+  ○ [07] Final cleanup — planned
 ```
 
 If a phase number starts with `999.`, render with a `🅿` marker and the label `(parking lot)`.
