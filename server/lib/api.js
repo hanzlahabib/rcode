@@ -25,6 +25,55 @@ function handleApiFiles(req, res, projectRoot) {
 
   for (const dir of ARTIFACT_DIRS) {
     const full = path.join(PLANNING_DIR, dir);
+
+    // For 'phases', create sub-groups per phase directory
+    if (dir === 'phases') {
+      let phaseDirs;
+      try { phaseDirs = fs.readdirSync(full, { withFileTypes: true }); } catch { continue; }
+      const subGroups = [];
+      for (const pd of phaseDirs) {
+        if (!pd.isDirectory() || pd.name.startsWith('.')) continue;
+        const phaseDir = path.join(full, pd.name);
+        const phaseLabel = pd.name.replace(/^\d+-/, '').replace(/-/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase());
+        const phaseFiles = [];
+        function walkPhase(d, prefix, depth) {
+          if (depth > 3) return;
+          let entries;
+          try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+          for (const e of entries) {
+            if (e.name.startsWith('.')) continue;
+            const rel = prefix + '/' + e.name;
+            if (e.isDirectory()) walkPhase(path.join(d, e.name), rel, depth + 1);
+            else if (e.isFile() && e.name.endsWith('.md')) {
+              const base = e.name.replace('.md', '');
+              const sprintMatch = base.match(/^\d{2}-(\d{2})-([A-Z]+)$/);
+              const dateMatch   = base.match(/^\d{4}-\d{2}-\d{2}-(.+)$/);
+              let fileLabel;
+              if (sprintMatch) {
+                fileLabel = sprintMatch[2].charAt(0) + sprintMatch[2].slice(1).toLowerCase() + ' ' + parseInt(sprintMatch[1], 10);
+              } else if (dateMatch) {
+                fileLabel = dateMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              } else if (base === base.toUpperCase() && /^[A-Z_-]+$/.test(base)) {
+                fileLabel = base.charAt(0) + base.slice(1).toLowerCase();
+              } else {
+                fileLabel = base.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              }
+              phaseFiles.push({ label: fileLabel, path: '.planning/phases/' + pd.name + rel });
+            }
+          }
+        }
+        walkPhase(phaseDir, '', 0);
+        if (phaseFiles.length) {
+          subGroups.push({ subGroup: phaseLabel, files: phaseFiles });
+        }
+      }
+      if (subGroups.length) {
+        groups.push({ group: 'Phases', subGroups });
+      }
+      continue;
+    }
+
     const files = [];
     function walkArtifacts(d, prefix, depth) {
       if (depth > 3) return;

@@ -299,20 +299,19 @@ function detectIdeSignals(target) {
  * actually wanted cursor or gemini.
  */
 async function resolveIde(opts) {
-  if (opts.ideProvided) return opts.ide;            // user passed --ide, respect it
-  if (opts.yes || !process.stdin.isTTY) return opts.ide || 'claude';
+  if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
+  if (opts.yes || !process.stdin.isTTY) return [opts.ide || 'claude'];
 
   const signals = detectIdeSignals(opts.target);
   const detected = ['claude', 'cursor', 'gemini', 'vscode'].filter(k => signals[k]);
 
-  // Pick a default: prefer the single detected IDE; otherwise claude
-  let defaultValue = 'claude';
-  if (detected.length === 1) defaultValue = detected[0];
+  // Pre-select detected IDEs, or default to claude
+  const initialValues = detected.length > 0 ? detected : ['claude'];
 
-  // Use @clack/prompts for arrow-key navigation. Closes #449 / #450.
-  const choice = await clack.select({
-    message: '🎯 Which editor will you use rcode with?',
-    initialValue: defaultValue,
+  // Use @clack/prompts multiselect for multi-editor support. Closes #449 / #450.
+  const choices = await clack.multiselect({
+    message: '🎯 Which editor(s) will you use rcode with?',
+    initialValues,
     options: [
       { value: 'claude',     label: 'Claude Code',  hint: signals.claude ? '(detected)' : undefined },
       { value: 'cursor',     label: 'Cursor',       hint: signals.cursor ? '(detected)' : undefined },
@@ -320,15 +319,16 @@ async function resolveIde(opts) {
       { value: 'vscode',     label: 'VS Code',      hint: signals.vscode ? '(detected)' : '(via Continue / Copilot extensions)' },
       { value: 'antigravity', label: 'Antigravity', hint: '(experimental — installs to .antigravity/)' },
     ],
+    required: true,
   });
 
   // Handle Ctrl-C cleanly
-  if (clack.isCancel(choice)) {
+  if (clack.isCancel(choices)) {
     clack.cancel('Install cancelled.');
     process.exit(0);
   }
 
-  return choice;
+  return choices;
 }
 
 /**
@@ -1226,7 +1226,7 @@ async function install(opts) {
   if (isInteractive) printInstallHeader(pkgVersion);
 
   // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
-  opts.ide = await resolveIde(opts);
+  opts.ides = await resolveIde(opts);
 
   // Resolve commit-planning preference (interactive prompt or flag) — #189.
   opts.commitPlanning = await resolveCommitPlanning(opts);
@@ -1255,9 +1255,11 @@ async function install(opts) {
     return 1;
   }
 
-  // Validate IDE — structured error for unsupported editors (#197).
-  if (!['claude', 'cursor', 'gemini', 'vscode', 'antigravity'].includes(opts.ide)) {
-    console.error(`✖ --ide ${opts.ide} is not supported in v${readPackageVersion()}.`);
+  // Validate IDE(s) — structured error for unsupported editors (#197).
+  const SUPPORTED_IDES = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'];
+  const unsupported = opts.ides.filter(ide => !SUPPORTED_IDES.includes(ide));
+  if (unsupported.length > 0) {
+    console.error(`✖ --ide ${unsupported.join(', ')} is not supported in v${readPackageVersion()}.`);
     console.error('');
     console.error('  Currently supported:');
     console.error('    claude       — Claude Code native (recommended)');
@@ -1274,21 +1276,23 @@ async function install(opts) {
   }
 
   // VS Code installs to .claude/ paths (extension reads from there). Inform the user.
-  if (opts.ide === 'vscode') {
+  if (opts.ides.includes('vscode')) {
     console.log('  ' + dim('VS Code → installing to .claude/ paths (read by Claude Code / Continue / Copilot extensions).'));
   }
 
   // Gemini IDE support deferred
-  if (opts.ide === 'gemini') {
+  if (opts.ides.includes('gemini')) {
     console.log(`\n⚠️  Gemini CLI install not yet implemented\n`);
     console.log(`Gemini IDE requires aggregating all agents and commands into a single GEMINI.md file.`);
     console.log(`This feature is planned but not yet available.\n`);
     console.log(`For now, use: --ide claude or --ide cursor\n`);
-    return 1;
+    // Remove gemini from the list so install can continue for other IDEs
+    opts.ides = opts.ides.filter(e => e !== 'gemini');
+    if (opts.ides.length === 0) return 1;
   }
 
   // Antigravity install is experimental — best-effort path, user may need to adjust
-  if (opts.ide === 'antigravity') {
+  if (opts.ides.includes('antigravity')) {
     console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rihal/{agents,commands}/.'));
     console.log('  ' + dim('If Antigravity expects a different path, adjust .rihal/config.yaml and re-run.'));
   }
@@ -1304,7 +1308,7 @@ async function install(opts) {
     }
   }
 
-  const fullPlan = buildInstallPlan(opts.ide, opts.target);
+  const fullPlan = buildInstallPlan(opts.ides, opts.target);
   const plan = filterPlanByModules(fullPlan, opts.modules);
   if (plan.length === 0) {
     console.error('✖ Nothing to install — install plan is empty.');
@@ -1719,7 +1723,8 @@ async function install(opts) {
   // Count installed agents + commands dynamically (#190). Reads from the
   // IDE-specific install paths so cursor/gemini/vscode/antigravity don't
   // false-fail the health check.
-  const idePaths = getPathsForIde(opts.ide, opts.target);
+  const primaryIde = opts.ides[0];
+  const idePaths = getPathsForIde(primaryIde, opts.target);
   const agentsDir = idePaths.agentsDir;
   const commandsDir = idePaths.commandsDir;
   let agentCount = 0, commandCount = 0;
@@ -1735,7 +1740,7 @@ async function install(opts) {
   const version = readPackageVersion();
   console.log('');
   console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
-  console.log(`  ${bold('IDE:')}       ${opts.ide}`);
+  console.log(`  ${bold('IDE:')}       ${opts.ides.join(', ')}`);
   console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rihal/config.yaml)')}`);
   console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
   console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rihal-tools gitignore refresh)')}`);
@@ -1898,7 +1903,7 @@ async function main() {
  * Mutates opts in-place. Exits 0 on cancel.
  */
 async function runInstallWizard(opts) {
-  const { intro, outro, text, select, confirm, isCancel, cancel, note } = clack;
+  const { intro, outro, text, select, multiselect, confirm, isCancel, cancel, note } = clack;
   const pkgVersion = readPackageVersion();
 
   console.log('');
@@ -1919,17 +1924,20 @@ async function runInstallWizard(opts) {
   }
 
   // ── 2. Editor / LLM ──────────────────────────────────────────────────
-  const editorChoice = await select({
-    message: 'Which editor are you installing for?',
+  const editorChoices = await multiselect({
+    message: 'Which editor(s) are you installing for?',
     options: [
       { value: 'claude',  label: 'Claude Code',  hint: 'recommended' },
       { value: 'cursor',  label: 'Cursor' },
       { value: 'gemini',  label: 'Gemini CLI',   hint: 'coming soon' },
+      { value: 'vscode',  label: 'VS Code',      hint: 'via Continue / Copilot extensions' },
+      { value: 'antigravity', label: 'Antigravity', hint: 'experimental' },
     ],
-    initialValue: opts.ide || 'claude',
+    initialValues: opts.ide ? [opts.ide] : ['claude'],
+    required: true,
   });
-  if (isCancel(editorChoice)) { cancel('Installation cancelled.'); process.exit(0); }
-  opts.ide = editorChoice;
+  if (isCancel(editorChoices)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.ides = editorChoices;
 
   // ── 3. Communication language ─────────────────────────────────────────
   const langChoice = await select({
@@ -1984,7 +1992,7 @@ async function runInstallWizard(opts) {
   note(
     [
       `${pc.dim('Directory:')}   ${opts.target}`,
-      `${pc.dim('Editor:')}      ${opts.ide}`,
+      `${pc.dim('Editor:')}      ${opts.ides.join(', ')}`,
       `${pc.dim('Language:')}    ${opts.language}`,
       `${pc.dim('Mode:')}        ${opts.mode}`,
       `${pc.dim('Planning:')}    ${opts.commitPlanning ? 'committed to git' : 'kept local (gitignored)'}`,

@@ -32,7 +32,7 @@ function chip(s) {
   return '<span class="status-chip ' + c + '">● ' + s + '</span>';
 }
 function tag(t) { return '<span class="tag">' + t + '</span>'; }
-function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function pct(d, t) { return t > 0 ? Math.round(d/t*100) + '%' : '—'; }
 function pctNum(d, t) { return t > 0 ? Math.round(d/t*100) : 0; }
 function dateStr(s) { return s ? String(s).slice(0,10) : null; }
@@ -197,15 +197,54 @@ function sprintCard(s) {
 
 function taskCard(t) {
   const done = t.status === 'done' || t.status === 'completed';
-  return '<div class="item" data-status="' + (t.status||'') + '" style="' + (done ? 'opacity:.65' : '') + '">' +
+  const tid = 'task-' + (t.id || t.title || '').replace(/[^a-zA-Z0-9]/g, '-').slice(0, 40) + '-' + Math.random().toString(36).slice(2, 6);
+  // Build detail rows from all available context
+  var rows = '';
+  if (t.id) rows += '<div class="task-detail-row"><strong>ID:</strong> <code>' + esc(t.id) + '</code></div>';
+  if (t.points) rows += '<div class="task-detail-row"><strong>Points:</strong> ' + t.points + '</div>';
+  rows += '<div class="task-detail-row"><strong>Status:</strong> ' + chip(t.status || 'unknown') + '</div>';
+  if (t.sprintId) rows += '<div class="task-detail-row"><strong>Sprint:</strong> ' + esc(t.sprintId) + '</div>';
+  if (t.sprintGoal) rows += '<div class="task-detail-row"><strong>Sprint Goal:</strong> ' + esc(t.sprintGoal) + '</div>';
+  if (t.phaseId) rows += '<div class="task-detail-row"><strong>Phase:</strong> P' + esc(t.phaseId) + (t.phaseName ? ' — ' + esc(t.phaseName) : '') + '</div>';
+  if (t.acceptance) rows += '<div class="task-detail-row"><strong>Acceptance:</strong> ' + esc(t.acceptance) + '</div>';
+  if (t.assignee) rows += '<div class="task-detail-row"><strong>Assignee:</strong> ' + esc(t.assignee) + '</div>';
+  // Context-aware commands for this specific task
+  var cmds = '';
+  if (t.id) {
+    var taskCmds = [];
+    if (!done) {
+      taskCmds.push(cmdHint('/rihal-dev-story ' + t.id, 'Implement this story'));
+      taskCmds.push(cmdHint('/rihal-create-story ' + (t.sprintId || ''), 'Add related story'));
+    } else {
+      taskCmds.push(cmdHint('/rihal-verify-work ' + t.id, 'Verify this story'));
+      taskCmds.push(cmdHint('/rihal-code-review ' + t.id, 'Review code for this story'));
+    }
+    if (t.sprintId) {
+      taskCmds.push(cmdHint('/rihal-sprint-status ' + t.sprintId, 'Sprint ' + t.sprintId + ' status'));
+    }
+    cmds = '<div class="task-detail-cmds">' + taskCmds.join('') + '</div>';
+  }
+  return '<div class="item item-clickable" data-status="' + (t.status||'') + '" style="' + (done ? 'opacity:.65' : '') + '"' +
+    ' onclick="toggleTaskDetail(\\'' + tid + '\\')">' +
     '<div class="item-title" style="' + (done ? 'text-decoration:line-through' : '') + '">' +
-    (done ? '✓ ' : '') + esc(t.title) + chip(t.status) + '</div>' +
+    (done ? '✓ ' : '') + esc(t.title) + chip(t.status) +
+    '<span class="task-expand-icon" id="icon-' + tid + '">▶</span></div>' +
     '<div class="item-meta">' +
     (t.points ? tag(t.points + 'pts') : '') +
+    (t.id ? tag(t.id) : '') +
     (t.sprintId ? tag('Sprint ' + t.sprintId) : '') +
     (t.phaseId ? tag('Phase ' + t.phaseId) : '') + '</div>' +
-    (t.acceptance ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">✓ ' + esc(t.acceptance) + '</div>' : '') +
+    '<div class="task-detail" id="' + tid + '" style="display:none;">' +
+    rows + cmds + '</div>' +
     '</div>';
+}
+function toggleTaskDetail(id) {
+  const el = document.getElementById(id);
+  const icon = document.getElementById('icon-' + id);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (icon) icon.textContent = open ? '▶' : '▼';
 }
 
 // ---- View renderers ----
@@ -464,7 +503,8 @@ function renderSprints(subId) {
   if (subId) {
     const s = sprints.find(sp => sp.id === subId);
     if (!s) { el.innerHTML = breadcrumb('All Sprints','sprints') + '<div class="empty">Sprint not found.</div>'; return; }
-    const stories = Array.isArray(s.stories) ? s.stories : [];
+    const rawStories = Array.isArray(s.stories) ? s.stories : [];
+    const stories = rawStories.map(function(t) { return Object.assign({}, t, {sprintId: s.id, sprintGoal: s.goal || '', phaseId: s.phaseId, phaseName: s.phaseName}); });
     const done = stories.filter(t => t.status==='done'||t.status==='completed').length;
     // #290: acceptance criteria
     let acHtml = '';
@@ -783,9 +823,20 @@ function filterItems(input, listId) {
   let h = '<div style="padding:0 var(--space-2) var(--space-2);"><input class="filter-input" style="width:100%;max-width:none;" type="text" placeholder="Search files…" id="file-tree-search" oninput="filterFileTree(this.value)"></div>';
   h += '<div class="file-tree" id="file-tree-items">';
   h += groups.map(function(g) {
+    // Support sub-groups (e.g. Phases with per-phase sub-groups)
+    if (g.subGroups) {
+      return '<details class="file-tree-group" open><summary>' + g.group + '</summary>' +
+        g.subGroups.map(function(sg) {
+          return '<details class="file-tree-subgroup" open style="margin-left:var(--space-2);margin-bottom:var(--space-1);">' +
+            '<summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) 0;user-select:none;">' + sg.subGroup + ' <span style="color:var(--text-muted);font-weight:400;">(' + sg.files.length + ')</span></summary>' +
+            sg.files.map(function(f) {
+              return '<span class="file-tree-item" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path + ' ' + sg.subGroup).toLowerCase() + '" style="padding-left:var(--space-4);">' + esc(f.label) + '</span>';
+            }).join('') + '</details>';
+        }).join('') + '</details>';
+    }
     return '<details class="file-tree-group" open><summary>' + g.group + '</summary>' +
       g.files.map(function(f) {
-        return '<span class="file-tree-item" data-path="' + f.path + '" data-filter-text="' + (f.label + ' ' + f.path).toLowerCase() + '">' + f.label + '</span>';
+        return '<span class="file-tree-item" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path).toLowerCase() + '">' + esc(f.label) + '</span>';
       }).join('') + '</details>';
   }).join('');
   h += '</div>';
@@ -799,6 +850,8 @@ function filterItems(input, listId) {
     var fv = document.getElementById('file-view');
     // #315: loading skeleton
     fv.innerHTML = '<div class="skeleton"></div><div class="skeleton" style="height:200px;"></div>';
+    // Scroll file content into view
+    fv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try {
       var resp = await fetch('/api/file?path=' + encodeURIComponent(item.dataset.path));
       if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Failed to load file.</div>'; return; }
@@ -819,12 +872,30 @@ function filterItems(input, listId) {
   if (!el) return;
   let h = '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Search files…" oninput="filterInlineFiles(this.value)"></div>';
   h += '<div id="inline-file-items" class="phase-list">';
+
+  function renderFileItem(f, extraFilterText) {
+    var filterText = esc(f.label + ' ' + f.path + (extraFilterText ? ' ' + extraFilterText : '')).toLowerCase();
+    return '<div class="item item-clickable inline-file-entry" data-path="' + esc(f.path) + '" data-filter-text="' + filterText + '" onclick="loadInlineFile(this)" style="padding:var(--space-2) var(--space-3);font-family:\\'SF Mono\\',Monaco,Consolas,monospace;font-size:var(--text-xs);">' + esc(f.label) + '</div>';
+  }
+
   groups.forEach(function(g) {
     h += '<div class="inline-file-group" style="margin-bottom:var(--space-3);">';
-    h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) 0;">' + g.group + '</div>';
-    g.files.forEach(function(f) {
-      h += '<div class="item item-clickable inline-file-entry" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path).toLowerCase() + '" onclick="loadInlineFile(this)" style="padding:var(--space-2) var(--space-3);font-family:\\'SF Mono\\',Monaco,Consolas,monospace;font-size:var(--text-xs);">' + esc(f.label) + '</div>';
-    });
+    h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) 0;">' + esc(g.group) + '</div>';
+    if (g.subGroups) {
+      // Render expandable sub-groups (e.g. per-phase)
+      g.subGroups.forEach(function(sg) {
+        h += '<details class="inline-subgroup" open style="margin-left:var(--space-2);margin-bottom:var(--space-1);">';
+        h += '<summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) 0;user-select:none;">' + esc(sg.subGroup) + ' <span style="color:var(--text-muted);font-weight:400;">(' + sg.files.length + ')</span></summary>';
+        sg.files.forEach(function(f) {
+          h += renderFileItem(f, sg.subGroup);
+        });
+        h += '</details>';
+      });
+    } else if (g.files) {
+      g.files.forEach(function(f) {
+        h += renderFileItem(f, '');
+      });
+    }
     h += '</div>';
   });
   h += '</div>';
@@ -840,6 +911,8 @@ async function loadInlineFile(el) {
   var fv = document.getElementById('file-view');
   if (!fv) return;
   fv.innerHTML = '<div class="skeleton"></div><div class="skeleton" style="height:200px;"></div>';
+  // Scroll file content into view immediately
+  fv.scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.querySelectorAll('.inline-file-entry').forEach(function(e) { e.style.borderLeftColor = ''; });
   el.style.borderLeftColor = 'var(--accent-blue)';
   // Also sync sidebar selection
@@ -1022,6 +1095,23 @@ function updateTitle() {
   document.title = (viewNames[view] || 'Overview') + ' — Majlis';
 }
 window.addEventListener('hashchange', updateTitle);
+
+// Sidebar toggle (hamburger menu)
+function toggleSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  var backdrop = document.getElementById('sidebar-backdrop');
+  if (!sidebar) return;
+  var open = sidebar.classList.toggle('sidebar-open');
+  if (backdrop) backdrop.classList.toggle('active', open);
+  document.body.classList.toggle('sidebar-visible', open);
+}
+function closeSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  var backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('sidebar-open');
+  if (backdrop) backdrop.classList.remove('active');
+  document.body.classList.remove('sidebar-visible');
+}
 
 // ---- Boot ----
 route();

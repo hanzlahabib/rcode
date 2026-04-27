@@ -186,6 +186,36 @@ function renderCss() {
   .item .item-meta { color: var(--text-muted); font-size: var(--text-xs); margin-bottom: var(--space-2); }
   .item-clickable { cursor: pointer; }
   .item-clickable:hover { background: var(--bg-hover); border-color: var(--accent-blue); }
+
+  /* Task expandable detail */
+  .task-expand-icon {
+    float: right; font-size: 10px; color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+  .task-detail {
+    margin-top: var(--space-3); padding-top: var(--space-3);
+    border-top: 1px solid var(--border); font-size: var(--text-sm);
+  }
+  .task-detail-row { margin-bottom: var(--space-2); color: var(--text-secondary); line-height: 1.5; }
+  .task-detail-row strong { color: var(--text-primary); }
+
+  /* Hamburger & sidebar toggle */
+  .hamburger-btn {
+    display: none; background: none; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 8px; cursor: pointer;
+    flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+  }
+  .hamburger-btn span {
+    display: block; width: 18px; height: 2px; background: var(--text-primary);
+    border-radius: 1px; transition: 0.2s;
+  }
+  .hamburger-btn:hover { background: var(--bg-hover); }
+  #sidebar-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+  #sidebar-backdrop.active { display: block; }
+
   .empty { color: var(--text-muted); text-align: center; padding: var(--space-8); font-style: italic; }
   /* #316 Actionable empty states */
   .empty-action {
@@ -332,6 +362,17 @@ function renderCss() {
     cursor: pointer; font-size: var(--text-xs); font-family: inherit;
   }
   .file-path-header .copy-btn:hover { color: var(--text-primary); }
+  /* File view layout */
+  #view-files { display: flex; flex-direction: column; }
+  #file-list-inline { margin-bottom: var(--space-4); }
+  #file-view { min-height: 200px; }
+  .inline-subgroup summary { list-style: none; cursor: pointer; }
+  .inline-subgroup summary::-webkit-details-marker { display: none; }
+  .inline-subgroup summary:hover { color: var(--text-primary); }
+  .file-tree-subgroup summary { list-style: none; cursor: pointer; }
+  .file-tree-subgroup summary::-webkit-details-marker { display: none; }
+  .file-tree-subgroup > summary::before { content: '▶ '; font-size: 9px; display: inline-block; }
+  .file-tree-subgroup[open] > summary::before { content: '▼ '; }
   /* Footer */
   footer {
     text-align: center; padding: var(--space-8); color: var(--text-muted); font-size: var(--text-sm);
@@ -361,7 +402,13 @@ function renderCss() {
   }
   /* #323 Responsive */
   @media (max-width: 768px) {
-    .sidebar { display: none; }
+    .hamburger-btn { display: flex; }
+    .sidebar {
+      display: flex; position: fixed; left: -260px; top: 0; bottom: 0;
+      z-index: 100; transition: left 0.25s ease;
+      background: var(--bg-sidebar); box-shadow: 2px 0 12px rgba(0,0,0,0.3);
+    }
+    .sidebar.sidebar-open { left: 0; }
     .content-area { width: 100%; }
     .view { padding: var(--space-4); }
     header { padding: var(--space-3) var(--space-4); flex-wrap: wrap; gap: var(--space-2); }
@@ -370,6 +417,12 @@ function renderCss() {
     .stats { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
     .agents { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
     .attr-grid { grid-template-columns: 1fr 1fr; }
+  }
+  /* Desktop sidebar toggle */
+  @media (min-width: 769px) {
+    .hamburger-btn { display: flex; }
+    .sidebar { transition: margin-left 0.25s ease, opacity 0.25s ease; }
+    body.sidebar-visible .sidebar { margin-left: 0; opacity: 1; }
   }
   /* Command hints accordion */
   .cmd-hints {
@@ -402,6 +455,16 @@ function renderCss() {
     font-size: 10px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s; margin-left: auto;
   }
   .cmd-hint-item:hover .cmd-copy { opacity: 1; }
+  /* Task detail inline commands */
+  .task-detail-cmds {
+    margin-top: var(--space-3); padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+  }
+  .task-detail-cmds::before {
+    content: '💡 Quick Commands'; display: block; font-size: var(--text-xs);
+    color: var(--text-muted); font-weight: 600; margin-bottom: var(--space-2);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
   /* Toast notification (for copy feedback) */
   .toast {
     position: fixed; bottom: 20px; right: 20px; background: var(--accent-green);

@@ -39,9 +39,7 @@ temp/
 
 # Installed methodology files (regenerate with: npx @hanzlaa/rcode install)
 .claude/
-.rihal/agents/
 .rihal/bin/
-.rihal/context/
 .rihal/workflows/
 .rihal/references/
 .rihal/commands/

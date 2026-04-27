@@ -34,4 +34,4 @@ A headless API for {{use_case}}. Consumers are other services, internal apps, or
 - Early API shape locks in; expensive to change once consumers integrate
 
 ## Evolution
-_(Updated after each phase completion by `/rihal:execute`.)_
+_(Updated after each phase completion by `/rihal-execute`.)_

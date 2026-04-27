@@ -85,13 +85,19 @@ ${renderCss()}
     </nav>
     <div id="sidebar-file-tree" style="margin-top:var(--space-4);padding:0 var(--space-2);"></div>
   </aside>
+  <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
   <div class="content-area" id="main-content">
     <header>
-      <div class="brand">
-        <div class="icon">🕌</div>
-        <div>
-          <h1>Majlis — The Council</h1>
-          <div class="arabic">مجلس · ${esc(projectName)}</div>
+      <div style="display:flex;align-items:center;gap:var(--space-3);">
+        <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="brand">
+          <div class="icon">🕌</div>
+          <div>
+            <h1>Majlis — The Council</h1>
+            <div class="arabic">مجلس · ${esc(projectName)}</div>
+          </div>
         </div>
       </div>
       <div class="header-actions">
