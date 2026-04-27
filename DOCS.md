@@ -1,6 +1,6 @@
 # rcode — Complete Documentation
 
-The single document covering everything you need to use, customise, and contribute to rcode. For the brand voice, see [`BRAND.md`](BRAND.md). For the upgrade path from older versions, see [`MIGRATIONS.md`](MIGRATIONS.md). For the Memory Bank specification, see [`MEMORY_BANK.md`](MEMORY_BANK.md).
+The single document covering everything you need to use, customise, and contribute to rcode. For the brand voice, see [`BRAND.md`](BRAND.md). For the upgrade path from older versions, see [`MIGRATIONS.md`](MIGRATIONS.md). For the Memory Bank specification, see [`MEMORY_BANK.md`](MEMORY_BANK.md). For the competitive positioning, see [`docs/USP.md`](docs/USP.md).
 
 ---
 
