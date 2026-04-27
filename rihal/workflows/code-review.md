@@ -18,15 +18,15 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2] [--karpathy]
+/rihal-code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2] [--karpathy]
 ```
 
 **Examples:**
 ```
-/rihal:code-review 01
-/rihal:code-review 02.1 --depth=deep
-/rihal:code-review 03 --files=src/auth.js,src/db.js
-/rihal:code-review HEAD~5..HEAD --karpathy
+/rihal-code-review 01
+/rihal-code-review 02.1 --depth=deep
+/rihal-code-review 03 --files=src/auth.js,src/db.js
+/rihal-code-review HEAD~5..HEAD --karpathy
 ```
 
 ## Step 0a — Karpathy mode delegation
@@ -84,7 +84,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /rihal:status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /rihal-status to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -261,7 +261,7 @@ if [ ${#REVIEW_FILES[@]} -eq 0 ]; then
   else
     # Fail closed — no reliable diff base found. Do not use arbitrary HEAD~N.
     echo "Warning: No phase commits found for '${PADDED_PHASE}'. Cannot determine reliable diff scope."
-    echo "Use --files flag to specify files explicitly: /rihal:code-review ${PHASE_ARG} --files=file1,file2,..."
+    echo "Use --files flag to specify files explicitly: /rihal-code-review ${PHASE_ARG} --files=file1,file2,..."
   fi
 fi
 ```
@@ -406,7 +406,7 @@ If the Task() call fails (agent error, timeout, or exception):
 ```
 Error: Code review agent failed: ${error_message}
 
-No REVIEW.md created. You can retry with /rihal:code-review ${PHASE_ARG} or check agent logs.
+No REVIEW.md created. You can retry with /rihal-code-review ${PHASE_ARG} or check agent logs.
 ```
 
 Do NOT proceed to commit_review step. Do NOT create a partial or empty REVIEW.md. Exit workflow.
@@ -479,7 +479,7 @@ if [ -f "${REVIEW_PATH}" ]; then
   fi
 else
   echo "Warning: Agent completed but REVIEW.md not found at ${REVIEW_PATH}. This may indicate an agent issue."
-  echo "No REVIEW.md to commit. Please retry with /rihal:code-review ${PHASE_ARG}"
+  echo "No REVIEW.md to commit. Please retry with /rihal-code-review ${PHASE_ARG}"
 fi
 ```
 </step>
@@ -538,7 +538,7 @@ If total findings > 0:
 Full report: ${REVIEW_PATH}
 
 Next steps:
-  /rihal:code-review-fix ${PHASE_NUMBER}  — Auto-fix issues
+  /rihal-code-review-fix ${PHASE_NUMBER}  — Auto-fix issues
   cat ${REVIEW_PATH}                       — View full report
 ```
 

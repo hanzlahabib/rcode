@@ -44,7 +44,7 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 **Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
 
-> **v2.0 — Rihal Brain.** v1 was a generic AI-engineering methodology. v2 keeps all of that and adds the Rihal context layer on top: standards, guides, and institutional knowledge pulled fresh from Rihal's own repos on install and on `/rihal:update`. See [`CHANGELOG.md`](CHANGELOG.md) and the [v2.0 milestone](https://github.com/hanzlahabib/rihal-code/milestone/4).
+> **v2.0 — Rihal Brain.** v1 was a generic AI-engineering methodology. v2 keeps all of that and adds the Rihal context layer on top: standards, guides, and institutional knowledge pulled fresh from Rihal's own repos on install and on `/rihal-update`. See [`CHANGELOG.md`](CHANGELOG.md) and the [v2.0 milestone](https://github.com/hanzlahabib/rihal-code/milestone/4).
 
 ---
 
@@ -56,7 +56,7 @@ Most AI tools give you one assistant pretending to be everything. **Rihal Code g
 - **95 slash commands** covering research, planning, execution, verification, and recovery
 - **80 skills** including Memory Bank primitives, 11 engineering-rigor skills (TDD, harden, perf, debug, trim, etc.), and 8 real-pain skills (auth-audit, mvp-graduate, deploy-unify, etc.)
 - **Persistent project memory** at `.rihal/memory/` — checked into git, visible in the Diwan dashboard, lossless distillates for fast LLM hydration
-- **3 execution modes**: parallel debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), and quick-sync (`/rihal:discuss`)
+- **3 execution modes**: parallel debate (`/rihal-council`), sequential pipelines (`/rihal-chain`), and quick-sync (`/rihal-discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
 - **Intent guards** on every workflow — catch wrong commands early with copy-paste redirects
 - **Karpathy-inspired coding guidelines** wired into every code-writing agent
@@ -90,14 +90,14 @@ One unified installer. Pure file shipping, no runtime dependencies. Installs int
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
-Restart Claude Code (or your IDE), type `/`, and every `rihal:*` command appears.
+Restart Claude Code (or your IDE), type `/`, and every `rihal-*` command appears.
 
-Update anytime with `npx @hanzlaa/rcode update` (or `/rihal:update` inside a Claude session).
+Update anytime with `npx @hanzlaa/rcode update` (or `/rihal-update` inside a Claude session).
 
 ### Then begin the rihla
 
 ```
-/rihal:init
+/rihal-init
 ```
 
 Detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, and routes you to the right first action.
@@ -123,14 +123,14 @@ npx @hanzlaa/rcode install --ide gemini
 ## 90-second tour
 
 ```
-/rihal:do                                    → interactive router
-/rihal:council should I rewrite auth?        → 5 agents debate in parallel, 2 rounds
-/rihal:discuss waleed what stack for saas?   → single expert, fast
-/rihal:chain research-plan dubai affiliate   → Mariam → Hussain-PM → Planner pipeline
-/rihal:plan --research build a rental app    → researcher grounds, plan-checker verifies
-/rihal:execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
-/rihal:status                                → phases, decisions, blockers, sessions
-/rihal:code-review HEAD~5..HEAD --karpathy   → audit changes vs 4 coding principles
+/rihal-do                                    → interactive router
+/rihal-council should I rewrite auth?        → 5 agents debate in parallel, 2 rounds
+/rihal-discuss waleed what stack for saas?   → single expert, fast
+/rihal-chain research-plan dubai affiliate   → Mariam → Hussain-PM → Planner pipeline
+/rihal-plan --research build a rental app    → researcher grounds, plan-checker verifies
+/rihal-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
+/rihal-status                                → phases, decisions, blockers, sessions
+/rihal-code-review HEAD~5..HEAD --karpathy   → audit changes vs 4 coding principles
 ```
 
 ---
@@ -160,7 +160,7 @@ npx @hanzlaa/rcode install --ide gemini
   phases/01-name/PLAN.md       — plans organized by phase number (01, 02, 02.1, etc.)
   council-sessions/            — debate artifacts
   chains/                       — pipeline outputs (RESEARCH.md → SCOPE.md → PLAN.md)
-  notes/                        — quick notes from /rihal:note
+  notes/                        — quick notes from /rihal-note
   HANDOFF.json                  — pause-work checkpoint
   .continue-here.md            — human-readable handoff summary
 ```
@@ -193,38 +193,38 @@ npx @hanzlaa/rcode install --ide gemini
 
 ## Three modes, three mental models
 
-### 🏛️ `/rihal:council` — Parallel debate
+### 🏛️ `/rihal-council` — Parallel debate
 
 3-5 agents answer simultaneously in Round 1, then Round 2 lets each agent challenge the others' Round 1 responses. Result: one session artifact with all voices + orchestrator note flagging the sharpest disagreement.
 
 **Best for:** strategic decisions where you want disagreement, not consensus.
 
 ```
-/rihal:council should we migrate from monolith to microservices?
+/rihal-council should we migrate from monolith to microservices?
 ```
 
-### 🔗 `/rihal:chain` — Sequential pipeline
+### 🔗 `/rihal-chain` — Sequential pipeline
 
 Each agent runs after the previous one finishes, reading that agent's artifact as input. Result: a typed artifact per stage (RESEARCH.md → SCOPE.md → PLAN.md) in `.planning/chains/`.
 
 **Best for:** when you know roughly what you want and each specialist needs to do their part in order.
 
 ```
-/rihal:chain research-plan dubai affiliate site for mobile accessories
-/rihal:chain feasibility migrate postgres to neon serverless
-/rihal:chain gtm-to-build saas bookkeeping in oman
+/rihal-chain research-plan dubai affiliate site for mobile accessories
+/rihal-chain feasibility migrate postgres to neon serverless
+/rihal-chain gtm-to-build saas bookkeeping in oman
 ```
 
-Presets: `research-plan` · `feasibility` · `gtm-to-build` · `full-discovery`. Or custom: `/rihal:chain mariam,waleed,fatima "your topic"`.
+Presets: `research-plan` · `feasibility` · `gtm-to-build` · `full-discovery`. Or custom: `/rihal-chain mariam,waleed,fatima "your topic"`.
 
-### 💬 `/rihal:discuss` — Single agent, quick-sync
+### 💬 `/rihal-discuss` — Single agent, quick-sync
 
 One agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague.
 
 ```
-/rihal:discuss waleed can we use postgres jsonb for this?
-/rihal:discuss fatima is this release ready?
-/rihal:discuss what's the kill criterion for this project?
+/rihal-discuss waleed can we use postgres jsonb for this?
+/rihal-discuss fatima is this release ready?
+/rihal-discuss what's the kill criterion for this project?
 ```
 
 If no agent named, the panel scorer picks the top match.
@@ -238,10 +238,10 @@ If no agent named, the panel scorer picks the top match.
 Run the wrong command and you get a single-line copy-paste redirect — not a useless output.
 
 ```
-/rihal:plan should we use postgres or mongo?
+/rihal-plan should we use postgres or mongo?
 ⚠ That's a decision question, not a planning input.
 Copy-paste this to ask the council instead:
-/rihal:council should we use postgres or mongo?
+/rihal-council should we use postgres or mongo?
 ```
 
 Every workflow has a Step 0.5 intent detector.
@@ -251,19 +251,19 @@ Every workflow has a Step 0.5 intent detector.
 The classifier recognizes `dubai`, `affiliate`, `bnanai`, `karobar`, `site banana`, `دبئی`, `مارکیٹ`, `کاروبار` and many more. Mariam leads for GCC/MENA market questions.
 
 ```
-/rihal:council yar affiliate site bnanai hai dubai ma for quick bucks
+/rihal-council yar affiliate site bnanai hai dubai ma for quick bucks
 → panel: [mariam, hussain-pm, sadiq]
 ```
 
 ### PRFAQ — validate before you build
 
-Amazon's "Working Backwards" method: write the finished-product press release *before* writing a line of code. If you can't write a compelling press release, the product isn't ready. `/rihal:prfaq` runs a 5-stage coaching gauntlet — Ignition → Press Release → Customer FAQ → Internal FAQ → Verdict — and outputs a battle-hardened concept document plus a PRD distillate ready for `/rihal:create-prd`.
+Amazon's "Working Backwards" method: write the finished-product press release *before* writing a line of code. If you can't write a compelling press release, the product isn't ready. `/rihal-prfaq` runs a 5-stage coaching gauntlet — Ignition → Press Release → Customer FAQ → Internal FAQ → Verdict — and outputs a battle-hardened concept document plus a PRD distillate ready for `/rihal-create-prd`.
 
 **When to use it:** Any time a PM or engineer wants to validate whether an idea is worth building before committing sprint capacity. The skill challenges vague thinking, enforces customer-first framing, and gives a build/refine/kill verdict.
 
 ```
-/rihal:prfaq                                         → interactive gauntlet
-/rihal:prfaq --headless --customer "..." --problem "..." --solution "..."   → autonomous first draft
+/rihal-prfaq                                         → interactive gauntlet
+/rihal-prfaq --headless --customer "..." --problem "..." --solution "..."   → autonomous first draft
 ```
 
 ### Karpathy coding guidelines
@@ -275,23 +275,23 @@ Amazon's "Working Backwards" method: write the finished-product press release *b
 3. **Surgical changes** — touch only what's needed, match existing style
 4. **Goal-driven execution** — define verifiable success criteria
 
-`/rihal:code-review --karpathy` runs these 4 principles as a post-hoc audit against any diff or phase. Use it after implementation to catch bloated, over-engineered, or scope-creeping changes before they land in a PR.
+`/rihal-code-review --karpathy` runs these 4 principles as a post-hoc audit against any diff or phase. Use it after implementation to catch bloated, over-engineered, or scope-creeping changes before they land in a PR.
 
 ```
-/rihal:code-review HEAD~5..HEAD --karpathy
-/rihal:code-review 03 --files=src/auth/ --karpathy
+/rihal-code-review HEAD~5..HEAD --karpathy
+/rihal-code-review 03 --files=src/auth/ --karpathy
 ```
 
 ### Plan verification + post-execute gates
 
-`/rihal:plan` runs `rihal-plan-checker` after the planner writes PLAN.md. On failure, loops back to planner with feedback (max 2 retries).
+`/rihal-plan` runs `rihal-plan-checker` after the planner writes PLAN.md. On failure, loops back to planner with feedback (max 2 retries).
 
-`/rihal:execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion. Both append to SUMMARY.md.
+`/rihal-execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion. Both append to SUMMARY.md.
 
 ### Model profiles
 
 ```bash
-/rihal:settings       # interactive config
+/rihal-settings       # interactive config
 ```
 
 - **quality** — opus/sonnet-4.6 for reasoning agents
@@ -302,8 +302,8 @@ Amazon's "Working Backwards" method: write the finished-product press release *b
 ### Session handoff
 
 ```
-/rihal:pause-work    → writes .rihal/HANDOFF.json + .continue-here.md
-/rihal:resume-work   → reads HANDOFF, surfaces blocking constraints
+/rihal-pause-work    → writes .rihal/HANDOFF.json + .continue-here.md
+/rihal-resume-work   → reads HANDOFF, surfaces blocking constraints
 ```
 
 ---
@@ -315,16 +315,16 @@ Recent additions in this session:
 - **69 slash commands** across 3 modes and 3 modules (up from 64)
 - **Numeric ID system** — milestones (M1, M2), phases (01, 02, 02.1), plans (01.01, 02.03), tasks (01.01.01) with decimal insertion for urgent inserts
 - **Intent guards** (`Step 0.5`) — every workflow detects mismatched intent and redirects instead of failing
-- **Plan-checker loop** — `/rihal:plan` now verifies file existence and symbol definitions; loops back to planner on validation failure
-- **Post-execute gates** — `/rihal:execute` runs integration-checker (E2E) and nyquist-auditor (coverage) as hard gates
+- **Plan-checker loop** — `/rihal-plan` now verifies file existence and symbol definitions; loops back to planner on validation failure
+- **Post-execute gates** — `/rihal-execute` runs integration-checker (E2E) and nyquist-auditor (coverage) as hard gates
 - **Multilingual classifier** — Roman Urdu, Arabic, English with cultural signal routing (Mariam leads GCC/MENA)
 - **Karpathy guidelines enforcement** — 4 coding principles baked into every code-writing agent
 - **Global agents** — customize agents in `~/.rihal/agents/` without forking the repo
 - **Multi-IDE installer** — support for Claude Code, Cursor, Gemini CLI
 - **Hooks system** — opt-in pre-edit, pre-workflow, post-commit enforcement
-- **Session pause/resume** — `/rihal:pause-work` + `/rihal:resume-work` with HANDOFF.json
-- **Workspace isolation** — `/rihal:new-workspace` for parallel tracks
-- **Decimal phase insertion** — `/rihal:insert-phase` for urgent mid-cycle work
+- **Session pause/resume** — `/rihal-pause-work` + `/rihal-resume-work` with HANDOFF.json
+- **Workspace isolation** — `/rihal-new-workspace` for parallel tracks
+- **Decimal phase insertion** — `/rihal-insert-phase` for urgent mid-cycle work
 
 ---
 
@@ -370,7 +370,7 @@ Recent additions in this session:
 
 ## Configuration
 
-`.rihal/config.yaml` — edit directly or run `/rihal:settings`:
+`.rihal/config.yaml` — edit directly or run `/rihal-settings`:
 
 ```yaml
 user_name: "Hanzla"
@@ -402,7 +402,7 @@ View formatted:
 ```bash
 node .rihal/bin/rihal-tools.cjs state read
 # or
-/rihal:status
+/rihal-status
 ```
 
 ---
@@ -410,7 +410,7 @@ node .rihal/bin/rihal-tools.cjs state read
 ## Hooks (opt-in)
 
 ```bash
-/rihal:enable-hooks
+/rihal-enable-hooks
 ```
 
 Installs 3 opt-in hooks into `.claude/settings.json`:
@@ -424,9 +424,9 @@ Installs 3 opt-in hooks into `.claude/settings.json`:
 
 | Module | Contents |
 |--------|----------|
-| **core** | 5 council agents, `/rihal:council`, `/rihal:discuss`, `/rihal:status`, `/rihal:do`, `/rihal:help`, state management |
-| **execution** | Executor, planner, verifier + checker agents, `/rihal:execute`, `/rihal:plan`, `/rihal:quick`, `/rihal:debug`, `/rihal:audit-fix`, `/rihal:undo` |
-| **discovery** | Codebase-mapper, project-researcher, roadmapper, `/rihal:new-project`, `/rihal:map-codebase`, `/rihal:scan`, `/rihal:explore`, `/rihal:code-review`, `/rihal:docs-update` |
+| **core** | 5 council agents, `/rihal-council`, `/rihal-discuss`, `/rihal-status`, `/rihal-do`, `/rihal-help`, state management |
+| **execution** | Executor, planner, verifier + checker agents, `/rihal-execute`, `/rihal-plan`, `/rihal-quick`, `/rihal-debug`, `/rihal-audit-fix`, `/rihal-undo` |
+| **discovery** | Codebase-mapper, project-researcher, roadmapper, `/rihal-new-project`, `/rihal-map-codebase`, `/rihal-scan`, `/rihal-explore`, `/rihal-code-review`, `/rihal-docs-update` |
 
 Full install = all 3 modules = 201 files.
 

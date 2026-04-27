@@ -109,7 +109,7 @@ Patch release closing the 9 bugs surfaced during the 2026-04-27 pipeline integri
 
 - **#441:** Planner now verifies every file in `files_modified` actually exists on disk before committing it to a plan. Plans referencing fictional file names are rejected.
 - **#442:** New `12.5. Wave Parallelism File-Overlap Check` in `plan.md`. Calls `rihal-tools plan check-wave-overlaps`; auto-corrects same-wave plans with overlapping files to `sequential: true`.
-- **#443 / #448:** New `executed` → `complete` state transition. Phase moves to `executed` after work is done; only a passing VERIFICATION.md promotes to `complete`. `/rihal:next` refuses to advance from `executed`. Closes the gap where phases reached `complete` without UAT.
+- **#443 / #448:** New `executed` → `complete` state transition. Phase moves to `executed` after work is done; only a passing VERIFICATION.md promotes to `complete`. `/rihal-next` refuses to advance from `executed`. Closes the gap where phases reached `complete` without UAT.
 - **#446:** Removed `git commit --no-verify` recommendation from parallel-execution mode in `execute.md`. AGENTS.md forbids `--no-verify`. Replaced with file-based commit lock (`.rihal/.commit-lock`) so hooks run normally per commit.
 
 ### Fixed — documentation drift
@@ -209,11 +209,11 @@ Encoded from verified Rihal incidents — no other tool has these because they r
 
 | Old | New |
 |---|---|
-| `/rihal:report` | `/rihal:session-report` (was a pure alias) |
-| `/rihal:karpathy-audit <args>` | `/rihal:code-review <args> --karpathy` |
-| `/rihal:review-adversarial <args>` | `/rihal:code-review <args> --attack` (plain English) |
-| `/rihal:review-edge-case-hunter <args>` | `/rihal:code-review <args> --edge-cases` |
-| `/rihal:discuss-phase-power <args>` | `/rihal:discuss-phase <args> --power` |
+| `/rihal-report` | `/rihal-session-report` (was a pure alias) |
+| `/rihal-karpathy-audit <args>` | `/rihal-code-review <args> --karpathy` |
+| `/rihal-review-adversarial <args>` | `/rihal-code-review <args> --attack` (plain English) |
+| `/rihal-review-edge-case-hunter <args>` | `/rihal-code-review <args> --edge-cases` |
+| `/rihal-discuss-phase-power <args>` | `/rihal-discuss-phase <args> --power` |
 
 Underlying workflow files retained — `code-review` delegates to them on flag match.
 
@@ -238,8 +238,8 @@ Underlying workflow files retained — `code-review` delegates to them on flag m
 
 ### Removed (user-facing slashes only — internal workflows preserved)
 
-- `/rihal:report`, `/rihal:new-project-research`, `/rihal:new-project-roadmap`, `/rihal:check-implementation-readiness`
-- `/rihal:discuss-phase-power`, `/rihal:karpathy-audit`, `/rihal:review-adversarial`, `/rihal:review-edge-case-hunter`
+- `/rihal-report`, `/rihal-new-project-research`, `/rihal-new-project-roadmap`, `/rihal-check-implementation-readiness`
+- `/rihal-discuss-phase-power`, `/rihal-karpathy-audit`, `/rihal-review-adversarial`, `/rihal-review-edge-case-hunter`
 
 ### Notable decisions
 
@@ -266,7 +266,7 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 
 ### Fixed
 - `doctor` no longer reports `actions 0/4 missing: 1-analysis, 2-plan, ...` — manifest builder now walks action bucket dirs recursively (matching `installSkills` behavior) instead of adding bucket directory names that never appear in `.claude/skills/`
-- `doctor` no longer reports `Memory bank: never initialized` immediately after fresh install — `install` now seeds empty `.rihal/context/active.md` and `.rihal/context/project-brief.md` stubs so the "never" state is skipped; message reads "run /rihal:init in your editor to populate project context"
+- `doctor` no longer reports `Memory bank: never initialized` immediately after fresh install — `install` now seeds empty `.rihal/context/active.md` and `.rihal/context/project-brief.md` stubs so the "never" state is skipped; message reads "run /rihal-init in your editor to populate project context"
 
 ---
 
@@ -331,7 +331,7 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 ### Added
 
 - Auto-sync state on commit (pre-commit hook writes `.rihal/state.json` on every `git commit`)
-- `/rihal:brainstorm` skill — structured ideation with reverse-brainstorm, SCAMPER, and 6-hats modes
+- `/rihal-brainstorm` skill — structured ideation with reverse-brainstorm, SCAMPER, and 6-hats modes
 - 24 tactical sub-agents registered in `team.yaml` (partial — full registration in v2.3.1)
 - Dashboard: hierarchical nav (milestones → phases → sprints → tasks), file browser, auto-refresh, blocker banner, design system, dark/light toggle, keyboard shortcuts
 
@@ -385,7 +385,7 @@ Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the 
 - **Binary aliases:** `rcode` (primary) + `rihal-code` (legacy alias — existing commands keep working).
 - **`docs/install.md`** — dedicated install guide covering flavors (module subsets, IDE options, version pinning), yolo mode, troubleshooting, uninstall.
 - **M2.5 CLI subcommands** (via PR #166):
-  - `rihal-tools progress init` — single pre-computed snapshot for `/rihal:progress` rendering.
+  - `rihal-tools progress init` — single pre-computed snapshot for `/rihal-progress` rendering.
   - `rihal-tools progress bar --raw` — ASCII bar string only.
   - `rihal-tools progress insights` — drift / undercount / between-milestones detection.
   - `rihal-tools progress routes` — intent-tree for Route A/B/C Next Up menu.
@@ -399,7 +399,7 @@ Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the 
 ### Changed
 
 - **Workflow shrinkage:** `rihal/workflows/progress.md` dropped from 573 to 184 lines (68% reduction) — CLI does the thinking, workflow renders.
-- **`/rihal:status`** and **`/rihal:progress`** both call the same CLI subcommand — guaranteed consistency, closes the seam from issue #131.
+- **`/rihal-status`** and **`/rihal-progress`** both call the same CLI subcommand — guaranteed consistency, closes the seam from issue #131.
 - **README** install command updated to `npx @hanzlaa/rcode install`.
 
 ### Fixed
@@ -437,7 +437,7 @@ Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/miles
 ### Changed
 
 - **README.md** — new top section leads with the brain-in-a-box framing. Tier structure and methodology docs unchanged beneath it.
-- **`/rihal:update`** — now also runs `brain pull`, supports version pinning (`/rihal:update v1.3.0`).
+- **`/rihal-update`** — now also runs `brain pull`, supports version pinning (`/rihal-update v1.3.0`).
 
 ### Documentation
 
@@ -465,7 +465,7 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 ### Added
 
 - **Unified installer** — installs v2 agents/commands/workflows AND v1 phrase-activated skills in one command. 93 slash commands + 44 agents + 58 skills.
-- **`/rihal:dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
+- **`/rihal-dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
 - **`rihal-scaffold-project`** skill — bootstraps a new Rihalian project from `github.com/rihal-om/template`. Fresh clone, no cache, safety checks on non-empty dirs.
 - **Tier-based docs** — `docs/TIERS.md`, `docs/STANDARDS.md`. Skills organized into Starter / Advanced / Ultra Advanced / Standards.
 - **`npx rihal-code tiers`** CLI command — prints the tier map.
@@ -513,30 +513,30 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   - Decimal phase insertion (02.1) for urgent mid-cycle work
   - Hierarchical IDs used throughout for cross-referencing
 - **Multi-agent modes:**
-  - `/rihal:council` — parallel debate (Round 1 + Round 2)
-  - `/rihal:chain` — sequential pipeline with typed outputs per stage
-  - `/rihal:discuss` — single expert, conversational tone
+  - `/rihal-council` — parallel debate (Round 1 + Round 2)
+  - `/rihal-chain` — sequential pipeline with typed outputs per stage
+  - `/rihal-discuss` — single expert, conversational tone
 
 #### Planning & Execution
-- `/rihal:plan` with **plan-verification loop** — rihal-plan-checker validates file/symbol references; loops back on failure
-- `/rihal:chain` with preset pipelines: research-plan, feasibility, gtm-to-build, full-discovery
-- `/rihal:execute` with **post-execute gates:**
+- `/rihal-plan` with **plan-verification loop** — rihal-plan-checker validates file/symbol references; loops back on failure
+- `/rihal-chain` with preset pipelines: research-plan, feasibility, gtm-to-build, full-discovery
+- `/rihal-execute` with **post-execute gates:**
   - rihal-integration-checker (cross-phase E2E verification)
   - rihal-nyquist-auditor (test coverage audit)
   - Both append findings to SUMMARY.md
-- `/rihal:quick` — trivial task execution without ceremony
-- `/rihal:autonomous` — run all remaining phases with token/phase budget
+- `/rihal-quick` — trivial task execution without ceremony
+- `/rihal-autonomous` — run all remaining phases with token/phase budget
 
 #### Intent Guards & Safety
 - **Step 0.5** on every workflow — detects mismatched intent and redirects with copy-paste fix
 - No more confusing output; wrong command → single-line redirect
-- Examples: "That's a decision question, not a planning input. Copy-paste this instead: /rihal:council ..."
+- Examples: "That's a decision question, not a planning input. Copy-paste this instead: /rihal-council ..."
 
 #### Multilingual Support
 - **Multilingual classifier** — recognizes Roman Urdu, Arabic, English
 - Auto-routes to Mariam for GCC/MENA questions
 - Keywords: `dubai`, `affiliate`, `bnanai`, `karobar`, `site banana`, `دبئی`, `مارکیٹ`, `کاروبار`, and 20+ more
-- Example: `/rihal:council yar affiliate site bnanai hai dubai ma` → picks [mariam, hussain-pm, sadiq]
+- Example: `/rihal-council yar affiliate site bnanai hai dubai ma` → picks [mariam, hussain-pm, sadiq]
 
 #### Code Quality
 - **Karpathy coding guidelines** enforcement — 4 principles wired into every code-writing agent:
@@ -544,7 +544,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   2. Simplicity first (no speculative abstractions)
   3. Surgical changes (touch only what's needed)
   4. Goal-driven execution (define verifiable success criteria)
-- `/rihal:karpathy-audit HEAD~5..HEAD` — audit recent changes vs. guidelines
+- `/rihal-karpathy-audit HEAD~5..HEAD` — audit recent changes vs. guidelines
 - Karpathy-guidelines.md in references/ loaded by all executor/planner agents
 
 #### State Management & Recovery
@@ -552,21 +552,21 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   - Phases, executions, decisions, blockers
   - Council sessions and chain runs
   - Workstreams and milestones
-- `/rihal:status` — formatted state viewer
-- `/rihal:pause-work` → creates `.rihal/HANDOFF.json` + `.planning/.continue-here.md`
-- `/rihal:resume-work` → re-surfaces blocking constraints + last context
-- `/rihal:health --fix` → recovers from corrupted state
+- `/rihal-status` — formatted state viewer
+- `/rihal-pause-work` → creates `.rihal/HANDOFF.json` + `.planning/.continue-here.md`
+- `/rihal-resume-work` → re-surfaces blocking constraints + last context
+- `/rihal-health --fix` → recovers from corrupted state
 
 #### Observability & Debugging
-- `/rihal:show <id>` — display artifact by numeric ID
-- `/rihal:why <topic>` — explain why agent was picked (panel scoring breakdown)
-- `/rihal:rerun <id>` — re-execute previous command/session
-- `/rihal:diff <id1> <id2>` — compare phases/plans/artifacts
-- `/rihal:report <phase>` — generate phase report (decisions, blockers, time)
-- `/rihal:session-report` — comprehensive session summary
+- `/rihal-show <id>` — display artifact by numeric ID
+- `/rihal-why <topic>` — explain why agent was picked (panel scoring breakdown)
+- `/rihal-rerun <id>` — re-execute previous command/session
+- `/rihal-diff <id1> <id2>` — compare phases/plans/artifacts
+- `/rihal-report <phase>` — generate phase report (decisions, blockers, time)
+- `/rihal-session-report` — comprehensive session summary
 
 #### Hooks System (opt-in)
-- `/rihal:enable-hooks` — installs 3 opt-in hooks into `.claude/settings.json`
+- `/rihal-enable-hooks` — installs 3 opt-in hooks into `.claude/settings.json`
 - **pre-edit** — enforces read-before-edit
 - **pre-workflow** — soft intent warnings on mismatched commands
 - **post-commit** — validates commit format, blocks AI attribution
@@ -577,30 +577,30 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - Same commands across all IDEs
 
 #### Phase Management
-- `/rihal:insert-phase 02 "urgent fix"` — creates 02.1 between 02 and 03
-- `/rihal:new-milestone` — start new milestone cycle
-- `/rihal:complete-milestone` — mark milestone complete + generate summary
-- `/rihal:audit-milestone` — verify milestone completeness
+- `/rihal-insert-phase 02 "urgent fix"` — creates 02.1 between 02 and 03
+- `/rihal-new-milestone` — start new milestone cycle
+- `/rihal-complete-milestone` — mark milestone complete + generate summary
+- `/rihal-audit-milestone` — verify milestone completeness
 
 #### Workspace Isolation
-- `/rihal:new-workspace "experimental-auth"` — create isolated parallel track
-- `/rihal:list-workspaces` — list all workspaces and active one
-- `/rihal:remove-workspace` — delete a workspace
+- `/rihal-new-workspace "experimental-auth"` — create isolated parallel track
+- `/rihal-list-workspaces` — list all workspaces and active one
+- `/rihal-remove-workspace` — delete a workspace
 - Useful for A/B testing, parallel R&D, feature branches
 
 #### Miscellaneous Commands
-- `/rihal:diff` — compare phases/plans/artifacts
-- `/rihal:config` — view/edit config directly
-- `/rihal:init` — initialize project with Arabic greeting + setup
-- `/rihal:do` — interactive router (guides you to next action)
-- `/rihal:health` — diagnose state/artifacts/locks
-- `/rihal:forensics` — post-mortem analysis
-- `/rihal:next` — advance to next phase
-- `/rihal:correct-course` — recover from failed phase
-- `/rihal:undo` — safely revert last phase
-- `/rihal:note` — zero-friction idea capture
-- `/rihal:add-todo` — add task to backlog
-- `/rihal:inbox` — review + process captured notes/todos
+- `/rihal-diff` — compare phases/plans/artifacts
+- `/rihal-config` — view/edit config directly
+- `/rihal-init` — initialize project with Arabic greeting + setup
+- `/rihal-do` — interactive router (guides you to next action)
+- `/rihal-health` — diagnose state/artifacts/locks
+- `/rihal-forensics` — post-mortem analysis
+- `/rihal-next` — advance to next phase
+- `/rihal-correct-course` — recover from failed phase
+- `/rihal-undo` — safely revert last phase
+- `/rihal-note` — zero-friction idea capture
+- `/rihal-add-todo` — add task to backlog
+- `/rihal-inbox` — review + process captured notes/todos
 
 #### Documentation & References
 - 35+ reference documents in `rihal/references/`
@@ -619,7 +619,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 
 #### Token & Cost Tracking
 - Token cost footer on heavy workflows
-- `/rihal:stats` — displays token usage by model
+- `/rihal-stats` — displays token usage by model
 - Model profiles: quality, balanced, budget, inherit
 
 #### Configuration
@@ -628,7 +628,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   - mode (guided/yolo), model_profile
   - workflow toggles (plan_checker, post_execute_gates)
   - git branching_strategy
-- `/rihal:settings` — interactive configuration editor
+- `/rihal-settings` — interactive configuration editor
 
 #### Testing & Validation
 - 95+ compliance tests verify:
@@ -668,7 +668,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - 13 missing subagent files created (rihal-executor, rihal-planner, rihal-verifier, etc.)
 - 25 orphaned commands wired into module YAMLs
 - Pre-workflow intent gates now respect multiline input
-- `/rihal:init` no longer drops global saves in TTY
+- `/rihal-init` no longer drops global saves in TTY
 - Backspace in TTY-based prompts preserves prompt text
 - Multi-IDE installer no longer conflicts with existing .claude/ structure
 - Workstream flag conflicts resolved
@@ -680,7 +680,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 ### Removed
 
 #### Deprecated
-- `/rihal:generate-project-context` (replaced by `/rihal:init`)
+- `/rihal-generate-project-context` (replaced by `/rihal-init`)
 - Hardcoded agent lists (now derived from installed_agents.yaml)
 - Old cross-system path references and branding leaks
 
@@ -719,7 +719,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - Global agents (`~/.rihal/agents/`) not yet supported (roadmap for v2.1)
 - Mariam and Hussain-PM not installed as first-class council agents (workaround: copy and customize)
 - Worktree isolation removed (auto-branch isolation available instead)
-- Token budgeting on `/rihal:autonomous` is advisory (soft limit, not hard)
+- Token budgeting on `/rihal-autonomous` is advisory (soft limit, not hard)
 
 #### Experimental
 - Decimal phase insertion (02.1) is new; test coverage in progress

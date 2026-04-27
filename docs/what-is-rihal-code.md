@@ -29,10 +29,10 @@ Rihal Code fixes that. One install, and the AI now knows. Every session. Every r
 
 Running `npx @hanzlaa/rcode install` into a project produces:
 
-- **55+ phrase-activated skills** (from `/rihal:create-prd` to `/rihal:sprint-planning` to `/rihal:dev-story`) that route your request to the right workflow.
+- **55+ phrase-activated skills** (from `/rihal-create-prd` to `/rihal-sprint-planning` to `/rihal-dev-story`) that route your request to the right workflow.
 - **35+ agents** — Rihal's team in AI form: Sadiq for strategy, Waleed for architecture, Hussain for product, Layla for UX, Fatima for QA, and more. Each has a hard scope boundary, so you know which one to talk to.
 - **File-based state** at `.rihal/` that every workflow reads and writes — project status, decisions, blockers, roadmap, sprints.
-- **The Rihal brain** at `rihal/brain/` (pulled fresh on install, refreshable with `/rihal:update`):
+- **The Rihal brain** at `rihal/brain/` (pulled fresh on install, refreshable with `/rihal-update`):
   - PR / issue / commit standards from the Rihal GitHub org
   - Architecture docs and internal guides from the Rihal docs repo
   - Coding best practices accumulated from real Rihal projects
@@ -57,7 +57,7 @@ The brain is not baked into the package at build time. It is pulled live from th
 2. **Rihal docs repo** — architecture decisions, internal guides, role playbooks.
 3. **In-repo best practices** — accumulated from real project experience and owned inside this repo under `rihal/skills/_shared/`.
 
-Run `/rihal:update` any time to pull the latest. The pulled content is the single source of truth — local edits to installed brain files are overwritten on update (by design). If a Rihalian wants to change the standard, they contribute upstream to the Rihal docs repo or here — where every Rihalian benefits.
+Run `/rihal-update` any time to pull the latest. The pulled content is the single source of truth — local edits to installed brain files are overwritten on update (by design). If a Rihalian wants to change the standard, they contribute upstream to the Rihal docs repo or here — where every Rihalian benefits.
 
 ---
 
@@ -74,7 +74,7 @@ Rihal Code v2 keeps all of that — and adds the Rihal brain layer on top. The r
 - **v2.0** — Brain in a box, static + semi-dynamic pull (where we are).
 - **v2.1** — Full per-role ownership: PM updates PM skills, CTO updates CTO skills. CODEOWNERS enforces. Contributing is one command, one PR.
 - **v2.5** — Progress/status UX overhaul: AI-friendly CLI output, intent-based "next-up" menus, drift detection.
-- **v3.0** — Live MCP server. No more `/rihal:update` needed. The brain is queried live; every Rihalian's AI always sees the latest Rihal standard the moment it's published.
+- **v3.0** — Live MCP server. No more `/rihal-update` needed. The brain is queried live; every Rihalian's AI always sees the latest Rihal standard the moment it's published.
 - **v3.x** — Internal Rihal package registry replaces GitHub release as the distribution channel.
 
 See `docs/ROADMAP.md` for the full roadmap.

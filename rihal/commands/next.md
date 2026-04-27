@@ -1,5 +1,5 @@
 ---
-name: rihal:next
+name: rihal-next
 description: Automatically advance to the next logical step — zero friction, auto-invoke
 argument-hint: "[--force]"
 allowed-tools: Bash, Read, Grep, Glob

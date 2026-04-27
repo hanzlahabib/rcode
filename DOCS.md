@@ -43,7 +43,7 @@ rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that instal
 - **Persistent project memory** at `.rihal/memory/` — checked into git, browsable in any IDE, visible in the Diwan dashboard
 - **45 distinctive engineering personas** with Arabic-named brand vocabulary (Sadiq, Waleed, Fatima, Dalil, Majlis…)
 - **80 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from Rihal's actual production incidents
-- **95 slash commands** for parallel agent debate (`/rihal:council`), sequential pipelines (`/rihal:chain`), quick consultation (`/rihal:discuss`), and end-to-end automation (`/rihal:autonomous`)
+- **95 slash commands** for parallel agent debate (`/rihal-council`), sequential pipelines (`/rihal-chain`), quick consultation (`/rihal-discuss`), and end-to-end automation (`/rihal-autonomous`)
 - **A view-only dashboard** (Diwan) at port 7717 that renders project state, decision logs, and Memory Bank content
 - **Zero runtime dependencies** — pure Node.js with built-in test runner
 
@@ -114,7 +114,7 @@ Updates the installed methodology files in place. Local edits to `rihal/skills/_
 After installing, restart your AI IDE so the new commands and skills are picked up. Then:
 
 ```
-/rihal:init
+/rihal-init
 ```
 
 This is the first command for every project. It detects state (fresh / existing-with-no-rihal / returning), asks a few config questions (model profile, language, branching strategy), and routes you to the right next action.
@@ -122,13 +122,13 @@ This is the first command for every project. It detects state (fresh / existing-
 ### The Golden Path (7 commands, end-to-end)
 
 ```
-1. /rihal:init                    # configure for this project
-2. /rihal:new-project             # idea → research → REQUIREMENTS → ROADMAP
-3. /rihal:plan 1                  # produce SPRINT.md for phase 1
-4. /rihal:execute 1               # ship phase 1 with atomic commits
-5. /rihal:next                    # auto-route to the next step
-6. /rihal:status                  # see current state
-7. /rihal:ship                    # open PR with auto-generated body
+1. /rihal-init                    # configure for this project
+2. /rihal-new-project             # idea → research → REQUIREMENTS → ROADMAP
+3. /rihal-plan 1                  # produce SPRINT.md for phase 1
+4. /rihal-execute 1               # ship phase 1 with atomic commits
+5. /rihal-next                    # auto-route to the next step
+6. /rihal-status                  # see current state
+7. /rihal-ship                    # open PR with auto-generated body
 ```
 
 ### Bootstrap your Memory Bank
@@ -181,9 +181,9 @@ This isn't a waterfall — it's a vocabulary. You can jump between phases freely
 
 | Mode | Command | Use when |
 |---|---|---|
-| **Parallel debate** | `/rihal:council` | Strategic decision needs multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
-| **Sequential pipeline** | `/rihal:chain` | Pipeline of agents where each reads the previous output (research → scope → plan → build) |
-| **Quick consultation** | `/rihal:discuss` | Single expert, fast, conversational, no mandatory artefact |
+| **Parallel debate** | `/rihal-council` | Strategic decision needs multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
+| **Sequential pipeline** | `/rihal-chain` | Pipeline of agents where each reads the previous output (research → scope → plan → build) |
+| **Quick consultation** | `/rihal-discuss` | Single expert, fast, conversational, no mandatory artefact |
 
 ### Brand vocabulary
 
@@ -457,7 +457,7 @@ Workflows are referenced from command files via `@`-include:
 ```markdown
 # rihal/commands/plan.md
 ---
-name: rihal:plan
+name: rihal-plan
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion
 ---
 
@@ -532,7 +532,7 @@ End-to-end test: `node --test test/dashboard-e2e.test.cjs` — 9 assertions cove
 
 ### `.rihal/config.yaml`
 
-Project-level preferences. Created by `/rihal:init`.
+Project-level preferences. Created by `/rihal-init`.
 
 ```yaml
 project_name: my-app
@@ -583,26 +583,26 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 ### Starting a new project
 
 ```
-/rihal:init
-/rihal:new-project build a saas rental platform for Oman
-/rihal:plan 1
-/rihal:execute 1
-/rihal:next
+/rihal-init
+/rihal-new-project build a saas rental platform for Oman
+/rihal-plan 1
+/rihal-execute 1
+/rihal-next
 ```
 
 ### Onboarding to an existing project
 
 ```
-/rihal:init
+/rihal-init
 /rcode:memory-init       # bootstrap memory bank from current state
-/rihal:scan              # codebase audit (Dalil)
-/rihal:status            # current phase + decisions
+/rihal-scan              # codebase audit (Dalil)
+/rihal-status            # current phase + decisions
 ```
 
 ### Cross-domain decision
 
 ```
-/rihal:council should we migrate auth from Firebase to Keycloak?
+/rihal-council should we migrate auth from Firebase to Keycloak?
 ```
 
 5 agents debate in parallel; output saved to `.planning/council-sessions/`.
@@ -610,30 +610,30 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 ### Pre-launch security pass
 
 ```
-/rihal:harden          # invoke the security checklist skill
-/rihal:secure-phase 4  # threat-model verify phase 4
+/rihal-harden          # invoke the security checklist skill
+/rihal-secure-phase 4  # threat-model verify phase 4
 /rcode:memory-update remember: tenant isolation now enforced via RLS
 ```
 
 ### Code review before merge
 
 ```
-/rihal:code-review HEAD~5..HEAD                  # standard
-/rihal:code-review HEAD~5..HEAD --karpathy       # Karpathy 4-principle audit
-/rihal:code-review HEAD~5..HEAD --attack         # adversarial / red-team mode
-/rihal:code-review HEAD~5..HEAD --edge-cases     # boundary enumeration
+/rihal-code-review HEAD~5..HEAD                  # standard
+/rihal-code-review HEAD~5..HEAD --karpathy       # Karpathy 4-principle audit
+/rihal-code-review HEAD~5..HEAD --attack         # adversarial / red-team mode
+/rihal-code-review HEAD~5..HEAD --edge-cases     # boundary enumeration
 ```
 
 ### MVP-to-production planning
 
 ```
-/rihal:mvp-graduate    # 8-check gap report + 5-phase plan
+/rihal-mvp-graduate    # 8-check gap report + 5-phase plan
 ```
 
 ### Incident post-mortem
 
 ```
-/rihal:incident-record   # generate change-record + post-mortem from context
+/rihal-incident-record   # generate change-record + post-mortem from context
 ```
 
 ---
@@ -717,7 +717,7 @@ If you've made meaningful local edits, prefer Path A. If your install is mostly 
 
 ### `node --test` fails after install
 
-Likely cause: `cli/install.js` couldn't create one of the target directories. Run `/rihal:health` for a 6-point diagnostic:
+Likely cause: `cli/install.js` couldn't create one of the target directories. Run `/rihal-health` for a 6-point diagnostic:
 
 ```bash
 npx @hanzlaa/rcode doctor
@@ -744,7 +744,7 @@ The scanner looks for `.rihal/memory/INDEX.md`. If you copied templates manually
 
 Check `rihal/skills/<name>/SKILL.md` frontmatter — the `triggers:` list controls phrase activation. Add or refine your phrase. Compatible IDEs (Claude Code, Cursor, Gemini) honour these triggers; plain ChatGPT does not.
 
-### Old slash command (`/rihal:karpathy-audit`, etc.) doesn't work
+### Old slash command (`/rihal-karpathy-audit`, etc.) doesn't work
 
 These were folded in v3.0. See [`MIGRATIONS.md`](MIGRATIONS.md) for the new flag-based equivalent. Compatibility window: **none** — old slashes return "command not found" rather than silently rerouting (deliberate; surprise reroutes were rejected).
 
@@ -823,7 +823,7 @@ The installer is **idempotent** — re-running it is safe and updates files in p
 ### Data flow
 
 ```
-User types /rihal:plan
+User types /rihal-plan
    │
    ▼
 .claude/commands/rihal/plan.md   (slash command shell)

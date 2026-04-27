@@ -19,7 +19,7 @@
  *   --delete-state                                    Also delete .rihal/ (skip prompt)
  *   --purge / --all                                   Wipe everything — editor files,
  *                                                       .rihal/, .planning/, gitignore block.
- *                                                       Use when you want /rihal:init to
+ *                                                       Use when you want /rihal-init to
  *                                                       report "fresh" on next install.
  *   --yes / -y                                        Skip the main confirmation
  */
@@ -49,7 +49,7 @@ function parseArgs(args) {
       opts.yes = true;
     } else if (arg === '--purge' || arg === '--all') {
       // --purge implies --delete-state and removes .planning/ + gitignore block.
-      // Use this when you want a clean slate so /rihal:init reports "fresh" next time.
+      // Use this when you want a clean slate so /rihal-init reports "fresh" next time.
       opts.purge = true;
       opts.deleteState = true;
     }
@@ -596,7 +596,7 @@ async function runUninstall(args) {
       console.log(`   - phases, decisions, progress, artifacts, context`);
       console.log(`   - ${plan.stateDir.files} files total`);
       console.log();
-      console.log(`   If you keep it: /rihal:init will report "already configured"`);
+      console.log(`   If you keep it: /rihal-init will report "already configured"`);
       console.log(`     and reuse your existing config + history on next install.`);
       console.log(`   If you delete it: next install starts fresh — no carry-over.`);
       console.log();
@@ -652,10 +652,10 @@ async function runUninstall(args) {
   }
 
   // Hint about the purge flag if the user kept state — closes the user's
-  // most common confusion: "I uninstalled but /rihal:init still says configured."
+  // most common confusion: "I uninstalled but /rihal-init still says configured."
   if (plan.stateDir && fs.existsSync(path.join(cwd, '.rihal'))) {
     console.log();
-    console.log(`ℹ  .rihal/ state was preserved. /rihal:init will detect this on reinstall.`);
+    console.log(`ℹ  .rihal/ state was preserved. /rihal-init will detect this on reinstall.`);
     console.log(`   For a fully clean slate next time, use: rcode uninstall --purge`);
   }
 

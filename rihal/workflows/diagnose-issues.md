@@ -1,7 +1,7 @@
-# Workflow: rihal:diagnose-issues
+# Workflow: rihal-diagnose-issues
 
 <purpose>
-Reusable diagnosis subroutine called from /rihal:verify-work when
+Reusable diagnosis subroutine called from /rihal-verify-work when
 verification fails. Walks symptom → hypothesis → evidence → minimal
 repro and returns a structured finding. Not a top-level command.
 </purpose>

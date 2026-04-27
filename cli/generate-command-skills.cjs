@@ -78,18 +78,18 @@ function discoverRealSkills(packageRoot) {
 }
 
 function generateStub(cmdName, commandFm, version) {
-  const desc = commandFm.description || `Slash command shortcut for /rihal:${cmdName}.`;
+  const desc = commandFm.description || `Slash command shortcut for /rihal-${cmdName}.`;
   const triggers = [
     `rihal ${cmdName}`,
-    `rihal:${cmdName}`,
-    `/rihal:${cmdName}`,
+    `rihal-${cmdName}`,
+    `/rihal-${cmdName}`,
   ];
 
   return `---
 name: rihal-${cmdName}
 description: >
   ${desc.replace(/\n/g, ' ')}
-  Sidebar entry — invokes the same workflow as /rihal:${cmdName}.
+  Sidebar entry — invokes the same workflow as /rihal-${cmdName}.
 triggers:
 ${triggers.map((t) => `  - "${t}"`).join('\n')}
 user-invocable: true
@@ -105,27 +105,27 @@ install or update. To customise, create a sibling \`.local.md\` file (which
 is preserved across installs) or modify the source command at
 rihal/commands/${cmdName}.md.
 
-This stub exists so the slash command /rihal:${cmdName} appears in VS Code's
+This stub exists so the slash command /rihal-${cmdName} appears in VS Code's
 Claude Code sidebar (which lists skills only, not slash commands). The
-behaviour is identical to /rihal:${cmdName} — both invoke the workflow at
+behaviour is identical to /rihal-${cmdName} — both invoke the workflow at
 .rihal/workflows/${cmdName}.md.
 -->
 
 ## Overview
 
-Sidebar entry for the \`/rihal:${cmdName}\` slash command. Phrase-activated alternative invocation route.
+Sidebar entry for the \`/rihal-${cmdName}\` slash command. Phrase-activated alternative invocation route.
 
 ## Workflow
 
-Read and execute \`@.rihal/workflows/${cmdName}.md\` end-to-end. The behaviour is the same as invoking \`/rihal:${cmdName}\` directly.
+Read and execute \`@.rihal/workflows/${cmdName}.md\` end-to-end. The behaviour is the same as invoking \`/rihal-${cmdName}\` directly.
 
 ## Output Format
 
-Identical to \`/rihal:${cmdName}\`. See the workflow file for the canonical output spec.
+Identical to \`/rihal-${cmdName}\`. See the workflow file for the canonical output spec.
 
 ## Examples
 
-**Happy path** — say "rihal ${cmdName}" or "/rihal:${cmdName}" → workflow runs identically either way.
+**Happy path** — say "rihal ${cmdName}" or "/rihal-${cmdName}" → workflow runs identically either way.
 
 **Negative — looking for the canonical command file** — see \`rihal/commands/${cmdName}.md\` (the source of truth) and \`rihal/workflows/${cmdName}.md\` (the orchestration logic).
 

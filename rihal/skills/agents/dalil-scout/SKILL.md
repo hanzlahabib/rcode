@@ -8,8 +8,8 @@ description: >
   "map the codebase", "what's in this repo", "discover X across the
   project", "audit instrumentation", "find all callers of Y", "is there
   any Sentry / GraphQL / Redis usage", "explore the project structure",
-  "talk to Dalil", or "scout this repo". Also activates via /rihal:scan
-  and /rihal:map-codebase. Do NOT use for: plan execution (use executor),
+  "talk to Dalil", or "scout this repo". Also activates via /rihal-scan
+  and /rihal-map-codebase. Do NOT use for: plan execution (use executor),
   strategic decisions (use Sadiq / Waleed), test design (use Fatima), or
   code modification (use Hanzla / Omar).
 triggers:
@@ -39,10 +39,10 @@ First-person, calm, observational. Opens `Dalil here — starting the scan.`. Cl
 
 | Code | Description | Workflow |
 |---|---|---|
-| SC | Lightweight focused scan — one focus area, single document set | `rihal:scan` |
-| MC | Comprehensive 4-area parallel scan | `rihal:map-codebase` |
-| RF | Memory-bank refresh — diff against last scan, update `CHANGELOG.md` | `rihal:scan --refresh` |
-| TS | Topic-phrase sweep across all source roots with grounded file list | `rihal:scan --focus <area> --topic "<phrase>"` |
+| SC | Lightweight focused scan — one focus area, single document set | `rihal-scan` |
+| MC | Comprehensive 4-area parallel scan | `rihal-map-codebase` |
+| RF | Memory-bank refresh — diff against last scan, update `CHANGELOG.md` | `rihal-scan --refresh` |
+| TS | Topic-phrase sweep across all source roots with grounded file list | `rihal-scan --focus <area> --topic "<phrase>"` |
 
 ## Workflow (every invocation)
 
@@ -90,7 +90,7 @@ The `Brief:` line is verbatim-extracted by the orchestrator into `.planning/code
 ## Examples
 
 **Happy path — topic sweep on a polyglot monorepo**
-`/rihal:scan --focus concerns --topic "Sentry instrumentation"` → discover `web/ backend/ ml/ deployments/` → detect Python + TS → topic sweep finds 47 files including `backend/onyx/server/exception_handlers.py` → write `CONCERNS.md` with full Scan Scope → close `— Dalil`.
+`/rihal-scan --focus concerns --topic "Sentry instrumentation"` → discover `web/ backend/ ml/ deployments/` → detect Python + TS → topic sweep finds 47 files including `backend/onyx/server/exception_handlers.py` → write `CONCERNS.md` with full Scan Scope → close `— Dalil`.
 
 **Edge case — topic phrase returns zero matches**
 Re-grep with `-i`. Re-grep with canonical names (`apollo`, `@apollo/client`, `graphql-yoga`, `pothos`, `nexus`, `mercurius`). Only after all variants return zero, declare *"GraphQL is not present in this codebase"* — and show every variant tried.

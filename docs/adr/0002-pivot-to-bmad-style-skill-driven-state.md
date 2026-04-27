@@ -82,7 +82,7 @@ Justification per command:
 
 ### Replacement pattern for deleted commands
 
-Every state-mutation slash command was rewritten to instruct Claude directly. Example migration for `/rihal:preserve`:
+Every state-mutation slash command was rewritten to instruct Claude directly. Example migration for `/rihal-preserve`:
 
 **Before (commit A):**
 ```bash

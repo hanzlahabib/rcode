@@ -1,7 +1,7 @@
 # Subworkflow: new-project — Requirements & Roadmap
 
 <purpose>
-Requirements + roadmap phase of /rihal:new-project. Loaded from new-project.md via @-reference after setup (and optionally research) complete. Produces PROJECT.md requirements, ROADMAP.md, and the 'Done' signoff.
+Requirements + roadmap phase of /rihal-new-project. Loaded from new-project.md via @-reference after setup (and optionally research) complete. Produces PROJECT.md requirements, ROADMAP.md, and the 'Done' signoff.
 
 **Invariants from parent:** {project_name}, {planning_artifacts}, research artifacts (if any), PROJECT.md skeleton. Set in new-project.md Steps 1–5.5 (and optionally new-project-research.md).
 </purpose>
@@ -339,7 +339,7 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke SlashCommand("/rihal:discuss-phase 1 --auto")
+Exit skill and invoke SlashCommand("/rihal-discuss-phase 1 --auto")
 
 **If interactive mode:**
 
@@ -359,15 +359,15 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 **Phase 1: [Phase Name]** — [Goal from ROADMAP.md]
 
-/rihal:discuss-phase 1 — gather context and clarify approach
+/rihal-discuss-phase 1 — gather context and clarify approach
 
 <sub>/clear first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- /rihal:ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /rihal:plan-phase 1 — skip discussion, plan directly
+- /rihal-ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /rihal-plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -381,14 +381,14 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 **Phase 1: [Phase Name]** — [Goal from ROADMAP.md]
 
-/rihal:discuss-phase 1 — gather context and clarify approach
+/rihal-discuss-phase 1 — gather context and clarify approach
 
 <sub>/clear first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- /rihal:plan-phase 1 — skip discussion, plan directly
+- /rihal-plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -431,7 +431,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
 - [ ] CLAUDE.md generated with Rihal workflow guidance
-- [ ] User knows next step is `/rihal:discuss-phase 1`
+- [ ] User knows next step is `/rihal-discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.
 

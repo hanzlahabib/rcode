@@ -1,4 +1,4 @@
-# Workflow: rihal:discuss-phase-power
+# Workflow: rihal-discuss-phase-power
 
 <purpose>
 Power user mode for discuss-phase. Generates ALL questions upfront into a JSON state file and an HTML companion UI, then waits for the user to answer at their own pace. When the user signals readiness, processes all answers in one pass and generates CONTEXT.md.
@@ -12,19 +12,19 @@ Power user mode for discuss-phase. Generates ALL questions upfront into a JSON s
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:discuss-phase --power <argument-here>
+/rihal-discuss-phase --power <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:discuss-phase --power example 1
-/rihal:discuss-phase --power example 2
+/rihal-discuss-phase --power example 1
+/rihal-discuss-phase --power example 2
 ```
 
 STOP — do not proceed.
 
 <trigger>
-This workflow executes when `--power` flag is present in ARGUMENTS to `/rihal:discuss-phase`.
+This workflow executes when `--power` flag is present in ARGUMENTS to `/rihal-discuss-phase`.
 
 The caller (discuss-phase.md) has already:
 - Validated the phase exists
@@ -284,7 +284,7 @@ Process all answered questions from the JSON file and generate CONTEXT.md.
 ```
 Warning: Only {answered}/{total} questions answered ({pct}%).
 CONTEXT.md generated with available decisions. Unanswered questions listed as deferred.
-Consider running /rihal:discuss-phase {N} again to refine before planning.
+Consider running /rihal-discuss-phase {N} again to refine before planning.
 ```
 
 7. Print completion message:
@@ -294,7 +294,7 @@ CONTEXT.md written: {phase_dir}/{padded_phase}-CONTEXT.md
   Decisions captured: {answered}
   Deferred:          {remaining}
 
-Next step: /rihal:plan-phase {N}
+Next step: /rihal-plan-phase {N}
 ```
 </step>
 

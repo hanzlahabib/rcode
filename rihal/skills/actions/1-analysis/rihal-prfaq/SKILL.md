@@ -124,7 +124,7 @@ When the user gets stuck, offer concrete suggestions based on what they've share
 **Expected:** Gauntlet mode questioning → press release → customer FAQ → internal FAQ → verdict + distillate. Saved to planning_artifacts/.
 
 ### Headless Mode
-**Input:** `/rihal:prfaq --headless --customer "{persona}" --problem "{problem}" --stakes "{why}" --solution "{concept}"`
+**Input:** `/rihal-prfaq --headless --customer "{persona}" --problem "{problem}" --stakes "{why}" --solution "{concept}"`
 **Expected:** First-draft PRFAQ generated autonomously via artifact-analyzer + web-researcher subagents.
 
 ### Negative Test

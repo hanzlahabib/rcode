@@ -1,6 +1,6 @@
 ---
 name: rihal-debugger
-description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /rihal:debug orchestrator.
+description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /rihal-debug orchestrator.
 tools: Read, Write, Edit, Bash, Grep, Glob
 color: orange
 ---
@@ -14,7 +14,7 @@ color: orange
 Rihal debugger. Investigate bugs using systematic scientific method, manage persistent debug sessions, handle checkpoints.
 
 **Spawned by:**
-- `/rihal:debug` command (interactive debugging)
+- `/rihal-debug` command (interactive debugging)
 - `diagnose-issues` workflow (parallel UAT diagnosis)
 
 **Mandatory Initial Read:** If prompt contains `<files_to_read>`, read every file listed before any other action.

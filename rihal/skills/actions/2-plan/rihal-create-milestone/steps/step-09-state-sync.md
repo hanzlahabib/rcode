@@ -8,7 +8,7 @@ Call the state-sync CLI so `.rihal/state.json` reflects every milestone and phas
 
 ## MANDATORY RULES
 
-- 🛑 This step MUST run. Skipping it leaves `/rihal:status` and `/rihal:progress` showing stale data.
+- 🛑 This step MUST run. Skipping it leaves `/rihal-status` and `/rihal-progress` showing stale data.
 - 🛑 Report the sync result (pulled phases, existing phases updated, any errors) to the user.
 
 ## SEQUENCE
@@ -43,7 +43,7 @@ State sync complete:
   Milestones:       3
   Phases:          10
   Phases upserted: 10 (new)
-  Epics:            0 (none yet — run /rihal:create-epics-and-stories next)
+  Epics:            0 (none yet — run /rihal-create-epics-and-stories next)
 ```
 
 ### 3. Verify drift closed

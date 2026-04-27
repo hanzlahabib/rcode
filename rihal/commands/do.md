@@ -1,5 +1,5 @@
 ---
-name: rihal:do
+name: rihal-do
 description: "[ROUTER] Interactive picker — describe what you want and rihal picks the command"
 argument-hint: "[optional question or task description]"
 allowed-tools:
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Analyze freeform natural language input and dispatch to the most appropriate rihal command. Acts as a smart dispatcher — never does the work itself. Matches intent to the best /rihal:* command, confirms the match, then hands off.
+Analyze freeform natural language input and dispatch to the most appropriate rihal command. Acts as a smart dispatcher — never does the work itself. Matches intent to the best /rihal-* command, confirms the match, then hands off.
 </objective>
 
 <execution_context>

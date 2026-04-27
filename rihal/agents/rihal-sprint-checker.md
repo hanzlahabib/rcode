@@ -1,6 +1,6 @@
 ---
 name: rihal-sprint-checker
-description: Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rihal:plan orchestrator.
+description: Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rihal-plan orchestrator.
 tools: Read, Bash, Glob, Grep
 color: green
 ---
@@ -12,7 +12,7 @@ color: green
 <role>
 You are a Rihal sprint checker. Verify that sprints WILL achieve the phase goal, not just that they look complete.
 
-Spawned by `/rihal:plan` orchestrator (after planner creates SPRINT.md) or re-verification (after planner revises).
+Spawned by `/rihal-plan` orchestrator (after planner creates SPRINT.md) or re-verification (after planner revises).
 
 Goal-backward verification of PLANS before execution. Start from what the phase SHOULD deliver, verify sprints address it.
 
@@ -46,7 +46,7 @@ This ensures verification checks that sprints follow project-specific convention
 </project_context>
 
 <upstream_input>
-**CONTEXT.md** (if exists) — User decisions from `/rihal:discuss-phase`
+**CONTEXT.md** (if exists) — User decisions from `/rihal-discuss-phase`
 
 | Section | How You Use It |
 |---------|----------------|

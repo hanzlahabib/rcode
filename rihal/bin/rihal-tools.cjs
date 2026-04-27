@@ -505,7 +505,7 @@ function cmdClassifyQuestion(raw) {
 }
 
 /**
- * init execute — returns context blob for the /rihal:execute workflow.
+ * init execute — returns context blob for the /rihal-execute workflow.
  * Resolves plan_path (single file or phase directory), reads the plan
  * frontmatter, and returns dependency wave groupings.
  */
@@ -738,7 +738,7 @@ function cmdState(subArgs) {
   if (sub === 'read' || sub === 'get') {
     if (!fs.existsSync(statePath)) {
       // Auto-init with defaults if config.yaml exists (install happened).
-      // Removes the "run /rihal:init first" friction — any workflow can
+      // Removes the "run /rihal-init first" friction — any workflow can
       // call `state read` and get a usable state back.
       const configPath = path.join(RIHAL_DIR, 'config.yaml');
       if (fs.existsSync(configPath)) {
@@ -754,7 +754,7 @@ function cmdState(subArgs) {
       }
       return {
         ok: false,
-        error: 'No state.json yet. Run /rihal:install to set up this project, or `state init --project <name>` directly.'
+        error: 'No state.json yet. Run /rihal-install to set up this project, or `state init --project <name>` directly.'
       };
     }
     const state = readState();
@@ -2229,7 +2229,7 @@ function classifyScope(input) {
   return 'feature';
 }
 
-/** init plan — context blob for /rihal:plan workflow. */
+/** init plan — context blob for /rihal-plan workflow. */
 function cmdInitPlan(rawArgs) {
   const config = readConfig();
   const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
@@ -2322,7 +2322,7 @@ function cmdInitPlan(rawArgs) {
       workflow: 'plan',
       input_type: 'executable_plan',
       resolved_path: resolvedPath,
-      suggestion: `This file is already an executable plan. Run: /rihal:execute ${path.relative(PROJECT_ROOT, resolvedPath)}`,
+      suggestion: `This file is already an executable plan. Run: /rihal-execute ${path.relative(PROJECT_ROOT, resolvedPath)}`,
       config,
       paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
     };
@@ -2355,7 +2355,7 @@ function cmdPlanList() {
   };
 }
 
-/** init chain — context blob for /rihal:chain workflow. */
+/** init chain — context blob for /rihal-chain workflow. */
 function cmdInitChain(rawArgs) {
   const config = readConfig();
   const installedAgents = listInstalledAgents();
@@ -2427,7 +2427,7 @@ function cmdInitChain(rawArgs) {
   };
 }
 
-/** init discuss — context blob for /rihal:discuss workflow. */
+/** init discuss — context blob for /rihal-discuss workflow. */
 function cmdInitDiscuss(rawArgs) {
   const config = readConfig();
   const installedAgents = listInstalledAgents();
@@ -2460,9 +2460,9 @@ function cmdModule(subArgs) {
     // Hardcoded available modules (known at build time)
     return {
       modules: [
-        { name: 'core', description: 'Council agents, /rihal:council, /rihal:discuss, /rihal:status, /rihal:do router, /rihal:help, and state management' },
-        { name: 'execution', description: 'Plan execution — /rihal:execute, /rihal:plan, /rihal:quick, /rihal:debug, /rihal:audit-fix, /rihal:undo' },
-        { name: 'discovery', description: 'Project discovery — /rihal:new-project, /rihal:map-codebase, /rihal:scan, /rihal:explore, /rihal:code-review, /rihal:docs-update' },
+        { name: 'core', description: 'Council agents, /rihal-council, /rihal-discuss, /rihal-status, /rihal-do router, /rihal-help, and state management' },
+        { name: 'execution', description: 'Plan execution — /rihal-execute, /rihal-plan, /rihal-quick, /rihal-debug, /rihal-audit-fix, /rihal-undo' },
+        { name: 'discovery', description: 'Project discovery — /rihal-new-project, /rihal-map-codebase, /rihal-scan, /rihal-explore, /rihal-code-review, /rihal-docs-update' },
       ]
     };
   }
@@ -2609,7 +2609,7 @@ function cmdConfigSet(subArgs) {
  *   --title <t>   required headline
  *   --body <b>    optional detail text
  *   --event <e>   optional short event tag (e.g. "execute-done", "council-done")
- *   --only slack|discord|teams   restrict to one platform (for /rihal:notify-test)
+ *   --only slack|discord|teams   restrict to one platform (for /rihal-notify-test)
  *
  * Returns: { sent: [...], skipped: [...], failed: [...] }
  * Never throws on webhook failure — this runs at the tail of workflows and
@@ -3016,7 +3016,7 @@ function cmdBrain(args) {
  * cmdProgress — single pre-computed progress blob (issue #159).
  *
  * Subcommands:
- *   progress init          Full snapshot — everything /rihal:progress needs.
+ *   progress init          Full snapshot — everything /rihal-progress needs.
  *   progress bar --raw     ASCII bar only (e.g. "[████░░░░] 50%").
  *   progress insights      insights[] array (drift warnings, between-milestone detection).
  *   progress routes        intent-tree routes[] for Next Up menu.
@@ -3162,7 +3162,7 @@ function cmdProgress(args) {
         insights.push({
           kind: 'between-milestones',
           severity: 'info',
-          message: 'All registered phases complete — effectively between milestones. Consider /rihal:audit-milestone or /rihal:new-milestone.',
+          message: 'All registered phases complete — effectively between milestones. Consider /rihal-audit-milestone or /rihal-new-milestone.',
         });
       }
     }
@@ -3184,7 +3184,7 @@ function cmdProgress(args) {
       routes.push({
         letter: 'A',
         label: `Execute phase ${k} — unfinished plans`,
-        command: `/rihal:execute-phase ${k}`,
+        command: `/rihal-execute-phase ${k}`,
       });
     }
 
@@ -3196,7 +3196,7 @@ function cmdProgress(args) {
       routes.push({
         letter: 'B',
         label: `Plan phase ${num} — researched, awaiting plan`,
-        command: `/rihal:plan-phase ${num}`,
+        command: `/rihal-plan-phase ${num}`,
       });
     }
 
@@ -3213,21 +3213,21 @@ function cmdProgress(args) {
       routes.push({
         letter: 'B',
         label: `Plan phase ${k} — in progress without SPRINT.md`,
-        command: `/rihal:plan ${k}`,
+        command: `/rihal-plan ${k}`,
       });
     }
 
     // Route C — close out milestone if everything seems done
     const allDone = statePhases.length > 0 && statePhases.every(p => p.status === 'complete' || p.completed);
     if (allDone) {
-      routes.push({ letter: 'C', label: 'Audit current milestone', command: '/rihal:audit-milestone' });
-      routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal:complete-milestone' });
+      routes.push({ letter: 'C', label: 'Audit current milestone', command: '/rihal-audit-milestone' });
+      routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal-complete-milestone' });
     }
 
     // Fallback — nothing obvious: offer status
     if (routes.length === 0) {
-      routes.push({ letter: 'A', label: 'Check progress detail', command: '/rihal:progress' });
-      routes.push({ letter: 'B', label: 'Start a council on what to do next', command: '/rihal:council' });
+      routes.push({ letter: 'A', label: 'Check progress detail', command: '/rihal-progress' });
+      routes.push({ letter: 'B', label: 'Start a council on what to do next', command: '/rihal-council' });
     }
 
     return routes;

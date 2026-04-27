@@ -52,13 +52,13 @@ End with closure banner + top findings summary:
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:map-codebase <argument-here>
+/rihal-map-codebase <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:map-codebase example 1
-/rihal:map-codebase example 2
+/rihal-map-codebase example 1
+/rihal-map-codebase example 2
 ```
 
 STOP — do not proceed.
@@ -404,14 +404,14 @@ Created .planning/codebase/:
 
 **Initialize project** — use codebase context for planning
 
-`/rihal:new-project`
+`/rihal-new-project`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- Re-run mapping: `/rihal:map-codebase`
+- Re-run mapping: `/rihal-map-codebase`
 - Review specific file: `cat .planning/codebase/STACK.md`
 - Edit any document before proceeding
 

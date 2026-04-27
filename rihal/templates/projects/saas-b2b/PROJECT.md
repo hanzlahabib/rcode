@@ -37,4 +37,4 @@ _(Market timing, regulatory shift, technology enabler, etc.)_
 - **Regulatory:** PII/data-residency constraints depending on target market
 
 ## Evolution
-_(Updated after each phase completion by `/rihal:execute`.)_
+_(Updated after each phase completion by `/rihal-execute`.)_

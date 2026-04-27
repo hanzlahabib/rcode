@@ -25,7 +25,7 @@ After the command completes, your project has:
 |------|---------------|
 | `.rihal/` | Config, workflows, references, binary CLI (`rihal-tools.cjs`) |
 | `.claude/agents/` | 44 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
-| `.claude/commands/rihal/` | 93 slash commands (`/rihal:create-prd`, `/rihal:council`, ...) |
+| `.claude/commands/rihal/` | 93 slash commands (`/rihal-create-prd`, `/rihal-council`, ...) |
 | `.claude/skills/` | 58 phrase-activated skills |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
 | `rihal/brain/` | Rihal standards pulled from upstream (M5 in-progress, currently scaffolds with placeholders) |
@@ -147,22 +147,22 @@ claude   # or open the project in the Cursor / Gemini variant
 Then try any of these to kick the tires:
 
 ```
-/rihal:status           — one-line dashboard
-/rihal:progress         — full progress view with Route A/B/C next-up
-/rihal:council what should we build first?
-/rihal:create-prd for a task management feature
+/rihal-status           — one-line dashboard
+/rihal-progress         — full progress view with Route A/B/C next-up
+/rihal-council what should we build first?
+/rihal-create-prd for a task management feature
 ```
 
 If this is a new project, start with:
 
 ```
-/rihal:scaffold-project      — guided project init
-/rihal:create-prd            — PRD through structured facilitation
-/rihal:create-milestone      — design the M1..Mn roadmap from the PRD
-/rihal:create-epics-and-stories   — break M1 into sprint-ready stories
-/rihal:sprint-planning       — capacity-gated sprint plan
-/rihal:dev-story             — implement one story end-to-end
-/rihal:progress              — see where you are, what's next
+/rihal-scaffold-project      — guided project init
+/rihal-create-prd            — PRD through structured facilitation
+/rihal-create-milestone      — design the M1..Mn roadmap from the PRD
+/rihal-create-epics-and-stories   — break M1 into sprint-ready stories
+/rihal-sprint-planning       — capacity-gated sprint plan
+/rihal-dev-story             — implement one story end-to-end
+/rihal-progress              — see where you are, what's next
 ```
 
 ---
@@ -178,7 +178,7 @@ That pulls the latest methodology + refreshes the brain content (see `rihal/brai
 To pin to a specific version on update:
 
 ```bash
-/rihal:update v2.0.0   # inside a Claude session
+/rihal-update v2.0.0   # inside a Claude session
 ```
 
 ---

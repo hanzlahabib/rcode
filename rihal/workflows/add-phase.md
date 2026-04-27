@@ -11,15 +11,15 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="parse_arguments">
 Parse the command arguments:
 - All arguments become the phase description
-- Example: `/rihal:add-phase Add authentication` → description = "Add authentication"
-- Example: `/rihal:add-phase Fix critical performance issues` → description = "Fix critical performance issues"
+- Example: `/rihal-add-phase Add authentication` → description = "Add authentication"
+- Example: `/rihal-add-phase Fix critical performance issues` → description = "Fix critical performance issues"
 
 If no arguments provided:
 
 ```
 ERROR: Phase description required
-Usage: /rihal:add-phase <description>
-Example: /rihal:add-phase Add authentication system
+Usage: /rihal-add-phase <description>
+Example: /rihal-add-phase Add authentication system
 ```
 
 Exit.
@@ -36,13 +36,13 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 Check `roadmap_exists` from init JSON. If false:
 ```
 ERROR: No roadmap found (.planning/ROADMAP.md)
-Run /rihal:new-project to initialize.
+Run /rihal-new-project to initialize.
 ```
 Exit.
 </step>
 
 <step name="detect_task_list">
-**Detect bulk-task input** — when /rihal:quick or /rihal:do auto-routes a multi-task input here, the entire bug list arrives as `${description}`. Don't put it all in the phase title; extract structure.
+**Detect bulk-task input** — when /rihal-quick or /rihal-do auto-routes a multi-task input here, the entire bug list arrives as `${description}`. Don't put it all in the phase title; extract structure.
 
 Match if `${description}` contains ANY of:
 - 5+ numbered list items (`/^\s*\d+\.\s/m` ≥ 5)
@@ -59,12 +59,12 @@ If matched:
    ```markdown
    # Phase {N} — {phase name} — Tasks
 
-   *Auto-extracted from /rihal:quick or /rihal:do bulk auto-route on {ISO date}.*
+   *Auto-extracted from /rihal-quick or /rihal-do bulk auto-route on {ISO date}.*
 
    {original body, preserved verbatim}
    ```
 
-4. Note in the completion message: "TASKS.md written with N tasks". The downstream /rihal:plan workflow consumes TASKS.md as the input to SPRINT.md generation — no manual re-paste needed.
+4. Note in the completion message: "TASKS.md written with N tasks". The downstream /rihal-plan workflow consumes TASKS.md as the input to SPRINT.md generation — no manual re-paste needed.
 
 If NOT matched (single task), proceed normally — `${description}` is the phase name as-is.
 
@@ -123,12 +123,12 @@ Roadmap updated: .planning/ROADMAP.md
 
 `/clear` then:
 
-`/rihal:plan {N}`
+`/rihal-plan {N}`
 
 ---
 
 **Also available:**
-- `/rihal:add-phase <description>` — add another phase
+- `/rihal-add-phase <description>` — add another phase
 - Review roadmap
 
 ---

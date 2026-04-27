@@ -12,13 +12,13 @@ Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:debug <argument-here>
+/rihal-debug <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:debug example 1
-/rihal:debug example 2
+/rihal-debug example 1
+/rihal-debug example 2
 ```
 
 STOP — do not proceed.
@@ -48,10 +48,10 @@ With diagnosis: "Feature doesn't work" → "missing error handler" → precise f
 If input contains "should we", "what is the best way to", "how do I implement" — these are not bugs, they are how-to or strategy questions.
 
 ```
-⚠ /rihal:debug investigates broken behavior, not how-to questions.
+⚠ /rihal-debug investigates broken behavior, not how-to questions.
 
-For implementation guidance: /rihal:discuss waleed $ARGUMENTS
-For a strategic decision: /rihal:council $ARGUMENTS
+For implementation guidance: /rihal-discuss waleed $ARGUMENTS
+For a strategic decision: /rihal-council $ARGUMENTS
 ```
 
 Only proceed past this step if the input describes broken or unexpected behavior (e.g., "error X occurs", "feature Y doesn't work", "API returns wrong data").

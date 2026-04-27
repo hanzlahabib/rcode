@@ -1,4 +1,4 @@
-# Workflow: rihal:ui-review
+# Workflow: rihal-ui-review
 
 <purpose>
 Retroactively audit completed UI work against the UI-SPEC.md contract. Validates across 6 pillars: color consistency, typography compliance, component inventory coverage, accessibility requirements, responsive behavior, and design coherence. Produces audit report with pass/fail per pillar.
@@ -10,13 +10,13 @@ Retroactively audit completed UI work against the UI-SPEC.md contract. Validates
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:ui-review <argument-here>
+/rihal-ui-review <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:ui-review example 1
-/rihal:ui-review example 2
+/rihal-ui-review example 1
+/rihal-ui-review example 2
 ```
 
 STOP — do not proceed.
@@ -45,7 +45,7 @@ test -f ".rihal/UI-SPEC.md"
 
 **If missing:**
 ```
-⚠ UI-SPEC.md not found. Run /rihal:ui-phase first to create design contract.
+⚠ UI-SPEC.md not found. Run /rihal-ui-phase first to create design contract.
 ```
 
 Exit.

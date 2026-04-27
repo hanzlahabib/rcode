@@ -61,7 +61,7 @@ Check config mode first:
 CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
-**If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rihal:settings set mode guided to change.`
+**If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rihal-settings set mode guided to change.`
 
 Otherwise, offer three modes via AskUserQuestion. Each option names the tradeoff explicitly:
 
@@ -117,7 +117,7 @@ Closure:
  RIHAL ► PHASE {NN} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-End with Next Up block routing to /rihal:verify-work or /rihal:next.
+End with Next Up block routing to /rihal-verify-work or /rihal-next.
 </output_format>
 
 <core_principle>
@@ -236,7 +236,7 @@ fi
 </step>
 
 <step name="create_phase_snapshot" priority="first">
-**Create a pre-execution git tag so `/rihal:undo --phase NN --to-snapshot` can restore to this exact state.**
+**Create a pre-execution git tag so `/rihal-undo --phase NN --to-snapshot` can restore to this exact state.**
 
 Only runs when inside a git repository with a valid HEAD (skip silently for fresh/empty repos).
 
@@ -847,13 +847,13 @@ If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty (no SECURITY.md yet):
 Include in the next-steps routing output:
 ```
 ⚠ Security enforcement enabled — run before advancing:
-  /rihal:secure-phase {PHASE} ${Rihal_WS}
+  /rihal-secure-phase {PHASE} ${Rihal_WS}
 ```
 
 If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_open`. If > 0:
 ```
 ⚠ Security gate: {threats_open} threats open
-  /rihal:secure-phase {PHASE} — resolve before advancing
+  /rihal-secure-phase {PHASE} — resolve before advancing
 ```
 </step>
 
@@ -879,8 +879,8 @@ Apply the same "incomplete" filtering rules as earlier:
 
 Selected wave finished successfully. This phase still has incomplete plans, so phase-level verification and completion were intentionally skipped.
 
-/rihal:execute {phase} ${Rihal_WS}                # Continue remaining waves
-/rihal:execute {phase} --wave {next} ${Rihal_WS}  # Run the next wave explicitly
+/rihal-execute {phase} ${Rihal_WS}                # Continue remaining waves
+/rihal-execute {phase} --wave {next} ${Rihal_WS}  # Run the next wave explicitly
 ```
 
 **If no incomplete plans remain after the selected wave finishes:**
@@ -969,7 +969,7 @@ Verifier is blocked until critical/high findings are resolved.
 ```
 
 AskUserQuestion with options:
-1. **"Run /rihal:code-review-fix first (recommended)"** — Stop. Print next command: `/rihal:code-review-fix ${PHASE_NUMBER} ${Rihal_WS}`. Do NOT spawn verifier.
+1. **"Run /rihal-code-review-fix first (recommended)"** — Stop. Print next command: `/rihal-code-review-fix ${PHASE_NUMBER} ${Rihal_WS}`. Do NOT spawn verifier.
 2. **"Proceed to verifier anyway (high findings unresolved)"** — Log override and continue to `close_parent_artifacts` → `regression_gate` → `verify_phase_goal`.
 3. **"Cancel execution"** — Stop. Report partial completion.
 
@@ -979,7 +979,7 @@ If `CRITICAL_COUNT == 0` AND `HIGH_COUNT == 0` AND (`MEDIUM_COUNT > 0` OR `LOW_C
 ```
 ⚠ Code review found non-blocking findings (medium: ${MEDIUM_COUNT}, low: ${LOW_COUNT}).
   Report: ${REVIEW_FILE}
-  Consider: /rihal:code-review-fix ${PHASE_NUMBER}
+  Consider: /rihal-code-review-fix ${PHASE_NUMBER}
 ```
 Then continue to `close_parent_artifacts`.
 
@@ -1209,7 +1209,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Present items for human testing, get approval or feedback |
-| `gaps_found` | Present gap summary, offer `/rihal:plan {phase} --gaps ${Rihal_WS}` |
+| `gaps_found` | Present gap summary, offer `/rihal-plan {phase} --gaps ${Rihal_WS}` |
 
 **If human_needed:**
 
@@ -1264,12 +1264,12 @@ All automated checks passed. {N} items need human testing:
 
 {From VERIFICATION.md human_verification section}
 
-Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/rihal:progress` and `/rihal:audit-uat`.
+Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/rihal-progress` and `/rihal-audit-uat`.
 
 "approved" → continue | Report issues → gap closure
 ```
 
-**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/rihal:verify-work` on it.
+**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/rihal-verify-work` on it.
 
 **If user reports issues:** Proceed to gap closure as currently implemented.
 
@@ -1288,13 +1288,13 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/rihal:progre
 
 `/clear` then:
 
-`/rihal:plan {X} --gaps ${Rihal_WS}`
+`/rihal-plan {X} --gaps ${Rihal_WS}`
 
 Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
-Also: `/rihal:verify-work {X} ${Rihal_WS}` — manual testing first
+Also: `/rihal-verify-work {X} ${Rihal_WS}` — manual testing first
 ```
 
-Gap closure cycle: `/rihal:plan {X} --gaps ${Rihal_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rihal:execute {X} --gaps-only ${Rihal_WS}` → verifier re-runs.
+Gap closure cycle: `/rihal-plan {X} --gaps ${Rihal_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rihal-execute {X} --gaps-only ${Rihal_WS}` → verifier re-runs.
 </step>
 
 <step name="uat_gate" priority="blocker">
@@ -1331,20 +1331,20 @@ fi
 
    {list AC items from SPRINT.md}
 
-   Run /rihal:verify-work {X} to perform UAT and produce VERIFICATION.md.
-   /rihal:next will refuse to advance until this gate passes.
+   Run /rihal-verify-work {X} to perform UAT and produce VERIFICATION.md.
+   /rihal-next will refuse to advance until this gate passes.
    ```
 3. STOP the workflow. Do NOT proceed to `update_roadmap`. Do NOT call `phase complete`.
 
 **If `VERIFICATION_STATUS` is `fail`:**
 
-1. Mark the phase as `status: executed` (so /rihal:plan --gaps can run a closure cycle).
+1. Mark the phase as `status: executed` (so /rihal-plan --gaps can run a closure cycle).
 2. Surface the failed AC items.
 3. STOP. Don't mark complete on a failing verification.
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
 
-The previous behaviour (printing "Next Up: /rihal:verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
+The previous behaviour (printing "Next Up: /rihal-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
 </step>
 
 <step name="update_roadmap">
@@ -1370,7 +1370,7 @@ Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings
 
 {list each warning}
 
-These items are tracked and will appear in `/rihal:progress` and `/rihal:audit-uat`.
+These items are tracked and will appear in `/rihal-progress` and `/rihal-audit-uat`.
 ```
 
 ```bash
@@ -1443,12 +1443,12 @@ discord_webhook_url: "https://discord.com/api/webhooks/..."
 teams_webhook_url: "https://outlook.office.com/webhook/..."
 ```
 
-Then verify with `/rihal:notify-test`.
+Then verify with `/rihal-notify-test`.
 </step>
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rihal:plan {X} --gaps`). No additional routing needed — skip auto-advance.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rihal-plan {X} --gaps`). No additional routing needed — skip auto-advance.
 
 **No-transition check (spawned by auto-advance chain):**
 
@@ -1499,15 +1499,15 @@ Read and follow `.rihal/workflows/transition.md`, passing through the `--auto` f
 
 **STOP. Do not auto-advance. Do not execute transition. Do not plan next phase. Present options to the user and wait.**
 
-**IMPORTANT: There is NO `/rihal:transition` command. Never suggest it. The transition workflow is internal only.**
+**IMPORTANT: There is NO `/rihal-transition` command. Never suggest it. The transition workflow is internal only.**
 
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/rihal:progress ${Rihal_WS} — see updated roadmap
-/rihal:discuss-phase {next} ${Rihal_WS} — discuss next phase before planning
-/rihal:plan {next} ${Rihal_WS} — plan next phase
-/rihal:execute {next} ${Rihal_WS} — execute next phase
+/rihal-progress ${Rihal_WS} — see updated roadmap
+/rihal-discuss-phase {next} ${Rihal_WS} — discuss next phase before planning
+/rihal-plan {next} ${Rihal_WS} — plan next phase
+/rihal-execute {next} ${Rihal_WS} — execute next phase
 ```
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.
@@ -1534,7 +1534,7 @@ For 1M+ context models, consider:
 </failure_handling>
 
 <resumption>
-Re-run `/rihal:execute {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
+Re-run `/rihal-execute {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
 
 STATE.md tracks: last completed plan, current wave, pending checkpoints.
 </resumption>

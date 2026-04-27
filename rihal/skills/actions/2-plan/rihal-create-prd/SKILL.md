@@ -63,4 +63,4 @@ When fast-pathing: confirm detected fields in one line ("Got it — building {na
 
 ### Negative Example: Request to Bypass the Interview
 **Input:** "use research skills and create the best PRD ready to execute" / "skip the questions and write it autonomously" / "just generate the full PRD"
-**Expected behavior:** DO NOT invent an "autonomous mode". DO NOT generate a PRD without running discovery. Respond: "The discovery interview is mandatory unless `.rihal/config.yaml` has `mode: yolo` or you re-invoke via `/rihal:do --auto`. Here is the step-01 menu — I will drive each step concisely." Then present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.
+**Expected behavior:** DO NOT invent an "autonomous mode". DO NOT generate a PRD without running discovery. Respond: "The discovery interview is mandatory unless `.rihal/config.yaml` has `mode: yolo` or you re-invoke via `/rihal-do --auto`. Here is the step-01 menu — I will drive each step concisely." Then present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.

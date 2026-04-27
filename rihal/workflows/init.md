@@ -1,9 +1,9 @@
-# Workflow: rihal:init
+# Workflow: rihal-init
 
 <purpose>
 Begin the rihla. This is the first command a user runs after dropping Rihal files into a project. It detects project state, asks a handful of configuration questions, scans existing context (if any), writes `.rihal/RIHLA.md` as the journey baseline, and routes to the right next command.
 
-This replaces the older `/rihal:generate-project-context` workflow — init is the single entry point for configuring Rihal in a project.
+This replaces the older `/rihal-generate-project-context` workflow — init is the single entry point for configuring Rihal in a project.
 </purpose>
 
 ## Step 0 — Usage check
@@ -11,15 +11,15 @@ This replaces the older `/rihal:generate-project-context` workflow — init is t
 If `$ARGUMENTS` contains only `--help` or `-h`:
 
 ```
-Usage: /rihal:init [--reset] [--skip-scan]
+Usage: /rihal-init [--reset] [--skip-scan]
 
   --reset        overwrite existing .rihal/config.yaml and RIHLA.md
   --skip-scan    skip the codebase scan step
 
 Examples:
-  /rihal:init                  # first-time setup for this project
-  /rihal:init --reset          # reconfigure from scratch
-  /rihal:init --skip-scan      # config only, no codebase read
+  /rihal-init                  # first-time setup for this project
+  /rihal-init --reset          # reconfigure from scratch
+  /rihal-init --skip-scan      # config only, no codebase read
 ```
 
 STOP here if just help was requested.
@@ -56,9 +56,9 @@ Classify project into one of four states:
 
 | State | Signal | Suggested next step |
 |-------|--------|---------------------|
-| `fresh` | No code, no git, no rihal | `/rihal:new-project` — let's design it |
-| `existing-new-rihal` | Has code + git, no rihal | `/rihal:scan` or `/rihal:council` — understand before changing |
-| `returning` | Rihal already configured | `/rihal:resume-work` or `/rihal:next` |
+| `fresh` | No code, no git, no rihal | `/rihal-new-project` — let's design it |
+| `existing-new-rihal` | Has code + git, no rihal | `/rihal-scan` or `/rihal-council` — understand before changing |
+| `returning` | Rihal already configured | `/rihal-resume-work` or `/rihal-next` |
 | `reset` | User passed `--reset` flag | Proceed with full reconfigure |
 
 Print one-line state summary:
@@ -73,9 +73,9 @@ If `state === "returning"` and `--reset` not passed:
 ✓ Rihal is already configured here.
 
 What next?
-  /rihal:resume-work    — pick up where you left off
-  /rihal:status         — see the dashboard
-  /rihal:next           — suggested next action
+  /rihal-resume-work    — pick up where you left off
+  /rihal-status         — see the dashboard
+  /rihal-next           — suggested next action
 
 Or run with --reset to reconfigure.
 ```
@@ -126,9 +126,9 @@ test -f .rihal/state.json || node .rihal/bin/rihal-tools.cjs state init --projec
 
 ## Step 4 — Scan existing context (skip if `--skip-scan`)
 
-If the project has code (from Step 1 detection), produce `.rihal/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal:map-codebase` or `/rihal:scan` later for deep analysis.
+If the project has code (from Step 1 detection), produce `.rihal/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal-map-codebase` or `/rihal-scan` later for deep analysis.
 
-**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rihal:scan --refresh --focus tech+arch` immediately after writing RIHLA.md. The refresh path:
+**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rihal-scan --refresh --focus tech+arch` immediately after writing RIHLA.md. The refresh path:
 
 - Captures pre-state (commits since last doc mtime, manifest hashes, top-level dirs).
 - Briefs the user on what changed since the last scan.
@@ -160,7 +160,7 @@ Write `.rihal/RIHLA.md` following this template (don't over-interpret — just r
 <!-- RIHLA (رحلة) = "the journey". Not a typo of RIHAL (رحّال) = "the traveler" / the tool itself. Same root, different word. This file documents your project's journey; Rihal is the tool that walks it with you. -->
 # RIHLA — Project journey baseline
 
-**Written by:** /rihal:init
+**Written by:** /rihal-init
 **Date:** {ISO date}
 **Project:** {project_name}
 **Detected state:** {fresh | existing-new-rihal | returning}
@@ -187,9 +187,9 @@ Write `.rihal/RIHLA.md` following this template (don't over-interpret — just r
 ## Not scanned
 
 This file is a journey baseline — intentionally shallow. For deep analysis run:
-- `/rihal:map-codebase` — structured codebase documents per focus area
-- `/rihal:scan` — rapid codebase assessment
-- `/rihal:explore` — socratic ideation against the codebase
+- `/rihal-map-codebase` — structured codebase documents per focus area
+- `/rihal-scan` — rapid codebase assessment
+- `/rihal-explore` — socratic ideation against the codebase
 ```
 
 If no code detected, write a minimal RIHLA.md with just the header and a "fresh project — no code yet" note.
@@ -204,11 +204,11 @@ Print a contextual recommendation, **one line of copy-paste per suggestion** (pe
 
 Ready to design a new project? Try:
 
-/rihal:new-project {your-project-name}
+/rihal-new-project {your-project-name}
 
 Or think through an idea first:
 
-/rihal:explore what should I build?
+/rihal-explore what should I build?
 ```
 
 **If `existing-new-rihal`:**
@@ -217,11 +217,11 @@ Or think through an idea first:
 
 Recommended first move — understand before changing:
 
-/rihal:scan
+/rihal-scan
 
 Or strategic question about the codebase:
 
-/rihal:council {your question}
+/rihal-council {your question}
 ```
 
 **If `returning` with `--reset`:**
@@ -230,7 +230,7 @@ Or strategic question about the codebase:
 
 Pick up where you left off:
 
-/rihal:resume-work
+/rihal-resume-work
 ```
 
 ## Step 6 — Update state

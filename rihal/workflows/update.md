@@ -1,4 +1,4 @@
-# Workflow: rihal:update
+# Workflow: rihal-update
 
 <purpose>
 Pull the latest rcode from npm and install it **non-destructively** —
@@ -29,16 +29,16 @@ Per-project state is ALWAYS preserved (never touched by either mode):
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:update                       # pull latest, preserve user-modified files
-/rihal:update v2.4.0                # pin to a specific version
-/rihal:update --force-overwrite     # discard local edits, overwrite all rcode files
+/rihal-update                       # pull latest, preserve user-modified files
+/rihal-update v2.4.0                # pin to a specific version
+/rihal-update --force-overwrite     # discard local edits, overwrite all rcode files
 ```
 
 **Examples:**
 ```
-/rihal:update
-/rihal:update v2.4.0
-/rihal:update --force-overwrite
+/rihal-update
+/rihal-update v2.4.0
+/rihal-update --force-overwrite
 ```
 
 ## Step 1 — Locate installed package
@@ -154,7 +154,7 @@ when they intentionally want to discard their customizations):
 npx @hanzlaa/rcode@latest install . --force-overwrite --yes
 ```
 
-**Version pinning** — if the user passed `/rihal:update v2.4.0`, pass
+**Version pinning** — if the user passed `/rihal-update v2.4.0`, pass
 the version through:
 
 ```bash
@@ -189,8 +189,8 @@ when relevant. Capture it and re-print as a callout so users notice:
    - rihal/workflows/sprint-planning.md
    - .rihal/references/output-format.md
 
-These will not auto-update on future /rihal:update calls. To force
-their update next time, run /rihal:update --force-overwrite.
+These will not auto-update on future /rihal-update calls. To force
+their update next time, run /rihal-update --force-overwrite.
 ```
 
 ## Step 8 — Pull Rihal brain content (v2.0)
@@ -206,7 +206,7 @@ Parse the JSON output. Report counts to the user:
 - `skipped[]` — sources with `<PLACEHOLDER>` URLs (waiting on issue #162 / M5)
 - `errors[]` — sources that failed (network, auth, etc.)
 
-If the user passed a version argument (`/rihal:update v1.3.0`), pass it through to `brain pull` as `--version v1.3.0`. When supported, `brain pull` will pin each source to the commit recorded in that release's `sources.yaml`. Unknown versions: treat as latest and warn.
+If the user passed a version argument (`/rihal-update v1.3.0`), pass it through to `brain pull` as `--version v1.3.0`. When supported, `brain pull` will pin each source to the commit recorded in that release's `sources.yaml`. Unknown versions: treat as latest and warn.
 
 ## Step 9 — Success summary
 
@@ -224,7 +224,7 @@ Rihal brain: M sources pulled, K skipped (placeholder URLs)
 
 New version available at: .rihal/
 
-Run /rihal:status to verify installation.
+Run /rihal-status to verify installation.
 ```
 
 ## Success Criteria

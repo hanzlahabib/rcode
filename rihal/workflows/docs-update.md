@@ -1,4 +1,4 @@
-# Workflow: rihal:docs-update
+# Workflow: rihal-docs-update
 
 <purpose>
 Generate, update, and verify project documentation — both canonical doc types and existing hand-written docs. The orchestrator detects the project's doc structure, assembles a work manifest tracking every item, dispatches parallel doc-writer and doc-verifier agents across waves, reviews existing docs for accuracy, identifies documentation gaps, and fixes inaccuracies via a bounded fix loop. All state is persisted in a work manifest so no work item is lost between steps. Output: Complete, structure-aware documentation verified against the live codebase.
@@ -18,13 +18,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:docs-update [phase]
+/rihal-docs-update [phase]
 ```
 
 **Examples:**
 ```
-/rihal:docs-update
-/rihal:docs-update 02
+/rihal-docs-update
+/rihal-docs-update 02
 ```
 
 <process>
@@ -224,10 +224,10 @@ ${ISSUES:+
 Issues to fix:
 {list}
 
-Run /rihal:docs-update --fix to auto-correct found issues.
+Run /rihal-docs-update --fix to auto-correct found issues.
 }
 
-Next: Review docs in your editor or run verification again with /rihal:docs-update
+Next: Review docs in your editor or run verification again with /rihal-docs-update
 ```
 
 </process>

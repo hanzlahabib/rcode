@@ -1,4 +1,4 @@
-# Workflow: rihal:insert-phase
+# Workflow: rihal-insert-phase
 
 <purpose>
 Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (2.1, 2.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering subsequent phases. Maintains phase array in `.rihal/state.json` in sort order.
@@ -12,14 +12,14 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:insert-phase <N.M> <name>
+/rihal-insert-phase <N.M> <name>
 ```
 
 **Examples:**
 ```
-/rihal:insert-phase 2.1 urgent-fix
-/rihal:insert-phase 3.2 critical-security-patch
-/rihal:insert-phase 1.1 blocking-issue
+/rihal-insert-phase 2.1 urgent-fix
+/rihal-insert-phase 3.2 critical-security-patch
+/rihal-insert-phase 1.1 blocking-issue
 ```
 
 Only after the user provides arguments, proceed to Step 0.5.
@@ -33,7 +33,7 @@ Validate using regex: `^\d+\.\d+$`
 If validation fails:
 ```
 ERROR: Phase number must be in N.M format (e.g., 2.1, 3.2)
-Usage: /rihal:insert-phase <N.M> <name>
+Usage: /rihal-insert-phase <N.M> <name>
 ```
 
 Exit.
@@ -77,8 +77,8 @@ Present completion summary:
   Status: Ready for planning
 
 Next steps:
-  /rihal:discuss-phase {phase_number}   — gather context
-  /rihal:plan {phase_number}            — create detailed plan
+  /rihal-discuss-phase {phase_number}   — gather context
+  /rihal-plan {phase_number}            — create detailed plan
 
 Or continue with current work and return to this phase later.
 ```
@@ -87,7 +87,7 @@ Or continue with current work and return to this phase later.
 
 - Don't insert before Phase 1 (decimal 0.1 makes no sense)
 - Don't renumber existing phases
-- Don't create plans yet (that's `/rihal:plan`)
+- Don't create plans yet (that's `/rihal-plan`)
 - Don't commit changes (user decides when to commit)
 - Don't duplicate phase numbers (state insert-phase prevents this)
 

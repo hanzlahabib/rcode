@@ -1,4 +1,4 @@
-# Workflow: rihal:stats
+# Workflow: rihal-stats
 
 <purpose>
 Read .rihal/state.json and display project statistics: phases, plans, council sessions, decisions, blockers, timeline, and git stats.
@@ -10,13 +10,13 @@ Read .rihal/state.json and display project statistics: phases, plans, council se
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:stats <argument-here>
+/rihal-stats <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:stats example 1
-/rihal:stats example 2
+/rihal-stats example 1
+/rihal-stats example 2
 ```
 
 STOP — do not proceed.
@@ -32,7 +32,7 @@ cat .rihal/state.json 2>/dev/null || echo '{}'
 Parse as JSON. If parse fails or file doesn't exist, print:
 ```
 ℹ️ No rihal state found in this project yet.
-Run /rihal:help to get started.
+Run /rihal-help to get started.
 ```
 Exit.
 
@@ -82,7 +82,7 @@ If `.git/` does not exist, set `rihal_commits` = 0 and omit recent_commits from 
 Print a human-readable stats block:
 
 ```
-📊 rihal:stats — Project Timeline
+📊 rihal-stats — Project Timeline
 
 Project: $PROJECT_NAME
 Created: $TIMELINE_START

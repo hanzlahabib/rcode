@@ -1,5 +1,5 @@
 <purpose>
-Create all phases necessary to close gaps identified by `/rihal:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/rihal:add-phase` per gap.
+Create all phases necessary to close gaps identified by `/rihal-audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/rihal-add-phase` per gap.
 </purpose>
 
 <required_reading>
@@ -22,7 +22,7 @@ Parse YAML frontmatter to extract structured gaps:
 
 If no audit file exists or has no gaps, error:
 ```
-No audit gaps found. Run `/rihal:audit-milestone` first.
+No audit gaps found. Run `/rihal-audit-milestone` first.
 ```
 
 ## 2. Prioritize Gaps
@@ -165,20 +165,20 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(roadmap): add gap closure phases 
 
 `/clear` then:
 
-`/rihal:plan {N}`
+`/rihal-plan {N}`
 
 ---
 
 **Also available:**
-- `/rihal:execute-phase {N}` — if plans already exist
+- `/rihal-execute-phase {N}` — if plans already exist
 - `cat .planning/ROADMAP.md` — see updated roadmap
 
 ---
 
 **After all gap phases complete:**
 
-`/rihal:audit-milestone` — re-audit to verify gaps closed
-`/rihal:complete-milestone {version}` — archive when audit passes
+`/rihal-audit-milestone` — re-audit to verify gaps closed
+`/rihal-complete-milestone {version}` — archive when audit passes
 ```
 
 </process>
@@ -269,5 +269,5 @@ becomes:
 - [ ] Coverage count updated in REQUIREMENTS.md
 - [ ] Phase directories created
 - [ ] Changes committed (includes REQUIREMENTS.md)
-- [ ] User knows to run `/rihal:plan` next
+- [ ] User knows to run `/rihal-plan` next
 </success_criteria>

@@ -34,4 +34,4 @@ _(Describe the repeatable loop — 2-4 steps — that drives retention.)_
 - **Push opt-in rate:** <30% is common; design core loop to work without push
 
 ## Evolution
-_(Updated after each phase completion by `/rihal:execute`.)_
+_(Updated after each phase completion by `/rihal-execute`.)_

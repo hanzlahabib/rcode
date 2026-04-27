@@ -79,14 +79,14 @@ Type: {human-verify | decision}
 {For human-verify:}
 Please verify: {what to check}
 URL/path: {where to look}
-Resume with: /rihal:execute {plan} --continue
+Resume with: /rihal-execute {plan} --continue
 
 {For decision:}
 Problem: {what the plan assumed that isn't true}
 Option A: {approach} — {trade-off}
 Option B: {approach} — {trade-off}
 Recommendation: {which one and why}
-Resume with: /rihal:execute {plan} --continue --option=A
+Resume with: /rihal-execute {plan} --continue --option=A
 ---
 ```
 

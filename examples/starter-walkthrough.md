@@ -17,7 +17,7 @@ npx @hanzlaa/rcode install
 ## 2. Initialize a new project
 
 ```
-/rihal:new-project employee leave tracker for an Omani government ministry
+/rihal-new-project employee leave tracker for an Omani government ministry
 ```
 
 The agent asks 5–10 questions about scope, users, constraints, then produces:
@@ -28,7 +28,7 @@ The agent asks 5–10 questions about scope, users, constraints, then produces:
 ## 3. Plan the first sprint
 
 ```
-/rihal:plan 01
+/rihal-plan 01
 ```
 
 Produces `.planning/phases/01-*/SPRINT.md` with stories, acceptance criteria, and dependency waves.
@@ -36,7 +36,7 @@ Produces `.planning/phases/01-*/SPRINT.md` with stories, acceptance criteria, an
 ## 4. Execute the sprint
 
 ```
-/rihal:execute 01
+/rihal-execute 01
 ```
 
 The executor agent works through each story — writes code, runs tests, commits atomically.
@@ -44,13 +44,13 @@ The executor agent works through each story — writes code, runs tests, commits
 ## 5. Check status
 
 ```
-/rihal:status
+/rihal-status
 ```
 
 Shows progress, blockers, and next actions.
 
 ## What's next?
 
-- `/rihal:code-review` — review changes before merging
-- `/rihal:sprint-status` — detailed sprint progress
-- `/rihal:retrospective` — run a retro after the sprint
+- `/rihal-code-review` — review changes before merging
+- `/rihal-sprint-status` — detailed sprint progress
+- `/rihal-retrospective` — run a retro after the sprint

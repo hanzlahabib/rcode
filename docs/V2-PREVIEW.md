@@ -7,7 +7,7 @@
 Rihal Code originally had two parallel systems:
 
 - **v1** — Phrase-activated skills (e.g. "create a PRD" → rihal-create-prd). Conversational AI helpers.
-- **v2** — Slash-command methodology (`/rihal:council`, `/rihal:plan`, `/rihal:execute`). Structured plan-execute-verify harness with council + karpathy-audit.
+- **v2** — Slash-command methodology (`/rihal-council`, `/rihal-plan`, `/rihal-execute`). Structured plan-execute-verify harness with council + karpathy-audit.
 
 They lived side-by-side, with separate installers (`cli/init.js` vs `cli/install-v2.js`) and duplicate concepts (agents, workflows, team.yaml in both trees).
 

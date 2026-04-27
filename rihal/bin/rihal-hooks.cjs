@@ -4,7 +4,7 @@
  *
  * Subcommands:
  *   pre-edit    — verify file was Read before Edit/Write (exit 2 if not)
- *   pre-workflow — soft warning for rihal:* commands with suspicious args
+ *   pre-workflow — soft warning for rihal-* commands with suspicious args
  *   post-commit — verify commit format and no forbidden patterns
  *
  * All subcommands read stdin JSON from the hook execution context.
@@ -61,7 +61,7 @@ async function preEdit() {
 }
 
 /**
- * pre-workflow: Soft warning for rihal:* commands with suspicious args.
+ * pre-workflow: Soft warning for rihal-* commands with suspicious args.
  * Does not block (exit 0), but prints warning.
  */
 async function preWorkflow() {
@@ -70,8 +70,8 @@ async function preWorkflow() {
     const command = input.command || '';
     const args = input.args || '';
 
-    // Only check rihal:* commands
-    if (!command.startsWith('rihal:')) {
+    // Only check rihal-* commands
+    if (!command.startsWith('rihal-')) {
       process.exit(0);
     }
 
@@ -94,8 +94,8 @@ async function preWorkflow() {
       }
     }
 
-    if (hasSuspiciousPattern && (command === 'rihal:plan' || command === 'rihal:discuss')) {
-      console.warn(`⚠ "${command}" with args: "${args}". Did you mean /rihal:do or /rihal:council?`);
+    if (hasSuspiciousPattern && (command === 'rihal-plan' || command === 'rihal-discuss')) {
+      console.warn(`⚠ "${command}" with args: "${args}". Did you mean /rihal-do or /rihal-council?`);
     }
 
     process.exit(0);

@@ -1,7 +1,7 @@
 ---
 name: rihal-yousef
 description: |
-  Senior Backend Engineer — spawned by /rihal:council, /rihal:plan, and any
+  Senior Backend Engineer — spawned by /rihal-council, /rihal-plan, and any
   backend dispatch (API design, queries, services, queues, perf, integrations).
   Activates for: API design, schema design, query optimization, p50/p95/p99
   latency, throughput tuning, BullMQ / Celery / SQS / RabbitMQ, webhooks,
@@ -113,7 +113,7 @@ Always read on activation:
 **Negative routing** — Out of scope
 > *"What's the React component for the leads table?"*
 >
-> ⚙️ **Yousef:** Frontend — Haitham's lane. Hand off via `/rihal:discuss haitham`.
+> ⚙️ **Yousef:** Frontend — Haitham's lane. Hand off via `/rihal-discuss haitham`.
 
 ## Redirects
 

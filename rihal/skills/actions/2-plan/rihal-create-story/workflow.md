@@ -371,7 +371,7 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
     1. Review the comprehensive story in {{story_file}}
     2. Run dev agents `dev-story` for optimized implementation
     3. Run `code-review` when complete (auto-marks done)
-    4. Optional: If Test Architect module installed, run `/rihal:tea:automate` after `dev-story` to generate guardrail tests
+    4. Optional: If Test Architect module installed, run `/rihal-tea:automate` after `dev-story` to generate guardrail tests
 
     **The developer now has everything needed for flawless implementation!**
   </output>

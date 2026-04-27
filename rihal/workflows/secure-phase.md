@@ -19,13 +19,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:secure-phase <phase>
+/rihal-secure-phase <phase>
 ```
 
 **Examples:**
 ```
-/rihal:secure-phase 01
-/rihal:secure-phase 02.1
+/rihal-secure-phase 01
+/rihal-secure-phase 02.1
 ```
 
 <process>
@@ -45,7 +45,7 @@ AUDITOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-security-a
 SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
-If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal:settings."
+If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal-settings."
 
 Display banner: `Rihal > SECURE PHASE {N}: {name}`
 
@@ -59,7 +59,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`SECURITY_FILE` non-empty): Audit existing
 - **State B** (`SECURITY_FILE` empty, `PLAN_FILES` and `SUMMARY_FILES` non-empty): Run from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal:execute {N} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal-execute {N} first."
 
 ## 2. Discovery
 
@@ -140,7 +140,7 @@ Handle return:
 ```
 Rihal > PHASE {N} SECURITY BLOCKED
 {K} threats open — phase advancement blocked until threats_open: 0
-▶ Fix mitigations then re-run: /rihal:secure-phase {N}
+▶ Fix mitigations then re-run: /rihal-secure-phase {N}
 ▶ Or document accepted risks in SECURITY.md and re-run.
 ```
 
@@ -158,8 +158,8 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update secur
 ```
 Rihal > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
-▶ /rihal:validate {N}    validate test coverage
-▶ /rihal:verify-work {N}       run UAT
+▶ /rihal-validate {N}    validate test coverage
+▶ /rihal-verify-work {N}       run UAT
 ```
 
 Display `/clear` reminder.

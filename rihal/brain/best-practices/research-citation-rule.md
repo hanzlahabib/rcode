@@ -28,7 +28,7 @@ This pattern is forbidden. A citation block without `WebFetch` evidence is a lie
 
 ## If the User Is Running Autonomously
 
-`mode: yolo` and `/rihal:do --auto` bypass halt-at-menu, but they do **not** bypass this rule. A fully-autonomous run still has to fetch every cited URL before writing the claim.
+`mode: yolo` and `/rihal-do --auto` bypass halt-at-menu, but they do **not** bypass this rule. A fully-autonomous run still has to fetch every cited URL before writing the claim.
 
 ## Checklist Before Writing a Citation
 

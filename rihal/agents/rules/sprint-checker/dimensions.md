@@ -189,7 +189,7 @@ issue:
 
 ## Dimension 7: Context Compliance (if CONTEXT.md exists)
 
-**Question:** Do plans honor user decisions from /rihal:discuss-phase?
+**Question:** Do plans honor user decisions from /rihal-discuss-phase?
 
 **Only check if CONTEXT.md was provided in the verification context.**
 
@@ -244,7 +244,7 @@ Before running checks 8a-8d, verify VALIDATION.md exists:
 ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null
 ```
 
-**If missing:** **BLOCKING FAIL** — "VALIDATION.md not found for phase {N}. Re-run `/rihal:plan {N} --research` to regenerate."
+**If missing:** **BLOCKING FAIL** — "VALIDATION.md not found for phase {N}. Re-run `/rihal-plan {N} --research` to regenerate."
 Skip checks 8a-8d entirely. Report Dimension 8 as FAIL with this single issue.
 
 **If exists:** Proceed to checks 8a-8d.
@@ -406,7 +406,7 @@ issue:
   missing_symbols:
     - "imaginary_function"
   verified_ratio: 0.2
-  fix_hint: "Plan was built on hallucinated findings. Re-run /rihal:debug to verify actual code state before replanning."
+  fix_hint: "Plan was built on hallucinated findings. Re-run /rihal-debug to verify actual code state before replanning."
 ```
 
 </verification_dimensions>

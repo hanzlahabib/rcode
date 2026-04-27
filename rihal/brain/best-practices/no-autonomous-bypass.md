@@ -13,7 +13,7 @@ Phrases like *"just write it autonomously"*, *"create the full thing ready to ex
 There are exactly two ways to legitimately run a skill without halting at menus:
 
 1. **Project-wide:** `.rihal/config.yaml` → `mode: yolo`. The config loader flags `yoloMode=true` in the runtime context; step files check this flag and may auto-advance.
-2. **Per-invocation:** `/rihal:do --auto <question>` on the router. The router sets `autoMode=true` and passes it to the dispatched skill.
+2. **Per-invocation:** `/rihal-do --auto <question>` on the router. The router sets `autoMode=true` and passes it to the dispatched skill.
 
 If **neither** flag is set, halt is mandatory regardless of what the user's prompt text says.
 
@@ -34,4 +34,4 @@ That response invents a mode that does not exist and violates the halt invariant
 
 ## Correct Response
 
-> ✅ Agent: *"I hear you want the PRD written end-to-end. The halt rule applies unless you set `mode: yolo` in `.rihal/config.yaml` or re-invoke via `/rihal:do --auto`. Here is the step-01 menu — pick Continue and I will drive each step concisely."*
+> ✅ Agent: *"I hear you want the PRD written end-to-end. The halt rule applies unless you set `mode: yolo` in `.rihal/config.yaml` or re-invoke via `/rihal-do --auto`. Here is the step-01 menu — pick Continue and I will drive each step concisely."*

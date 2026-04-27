@@ -34,7 +34,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `version`
 **Type:** string  
 **Example:** `"1"`  
-**Written by:** `/rihal:install` (initialization)  
+**Written by:** `/rihal-install` (initialization)  
 **Purpose:** Schema version for compatibility checks. Change if fields added/removed.
 
 ---
@@ -42,7 +42,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `project`
 **Type:** string  
 **Example:** `"Rihal v2"`  
-**Written by:** `/rihal:install` (reads from config.yaml)  
+**Written by:** `/rihal-install` (reads from config.yaml)  
 **Purpose:** Project name for context and reports.
 
 ---
@@ -50,7 +50,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `created`
 **Type:** ISO date string  
 **Example:** `"2026-04-01T10:30:00Z"`  
-**Written by:** `/rihal:install` (first session)  
+**Written by:** `/rihal-install` (first session)  
 **Purpose:** Timestamp of project creation, never changes.
 
 ---
@@ -66,7 +66,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `current_phase`
 **Type:** string or null  
 **Example:** `"Phase 2: Authentication"` or `null`  
-**Written by:** `/rihal:do`, `/rihal:next`, `/rihal:resume-work`  
+**Written by:** `/rihal-do`, `/rihal-next`, `/rihal-resume-work`  
 **Purpose:** Name of active phase, null if no phase active.
 
 ---
@@ -74,7 +74,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `current_plan`
 **Type:** number  
 **Example:** `2`  
-**Written by:** `/rihal:do --execute` (incremented after each phase completion)  
+**Written by:** `/rihal-do --execute` (incremented after each phase completion)  
 **Purpose:** Counter for plan versions. Increments 1→2→3 as phases complete.
 
 ---
@@ -120,7 +120,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:do --execute`, `/rihal:next`, sprint/story state tools  
+**Written by:** `/rihal-do --execute`, `/rihal-next`, sprint/story state tools  
 **Purpose:** Tracks phases with nested sprints and stories.
 
 **Sprint fields:**
@@ -176,7 +176,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:execute` (after each plan completes)  
+**Written by:** `/rihal-execute` (after each plan completes)  
 **Purpose:** Log of each plan execution. The `plan` field is the plan ID string (e.g., "01.02"), not a number.
 
 ---
@@ -194,7 +194,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:council`, `/rihal:discuss`  
+**Written by:** `/rihal-council`, `/rihal-discuss`  
 **Purpose:** Records architectural/strategic decisions for history.
 
 ---
@@ -213,7 +213,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:do`, `/rihal:health`  
+**Written by:** `/rihal-do`, `/rihal-health`  
 **Purpose:** Tracks blockers, when identified, which phase, and resolution time.
 
 ---
@@ -231,7 +231,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:council`  
+**Written by:** `/rihal-council`  
 **Purpose:** History of council deliberations, panelists, output artifacts.
 
 ---
@@ -249,7 +249,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:chain`  
+**Written by:** `/rihal-chain`  
 **Purpose:** History of multi-agent chains, participants, work artifacts.
 
 ---
@@ -258,7 +258,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 **Type:** ISO date string  
 **Example:** `"2026-04-12T15:45:30Z"`  
 **Written by:** Every subcommand that runs (updates at session end)  
-**Purpose:** Enables `/rihal:resume-work` to find context from last session.
+**Purpose:** Enables `/rihal-resume-work` to find context from last session.
 
 ---
 
@@ -283,7 +283,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal:workstream --create`, `/rihal:do --execute`  
+**Written by:** `/rihal-workstream --create`, `/rihal-do --execute`  
 **Purpose:** Tracks parallel workstreams, which phases belong to each.
 
 ---
@@ -291,7 +291,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `active_workstream`
 **Type:** string or null  
 **Example:** `"Frontend"` or `null`  
-**Written by:** `/rihal:workstream --activate`, `/rihal:do`  
+**Written by:** `/rihal-workstream --activate`, `/rihal-do`  
 **Purpose:** Currently active workstream; null if no workstream focus.
 
 ---
@@ -299,7 +299,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `model_profile`
 **Type:** string  
 **Example:** `"balanced"` (options: `quality`, `balanced`, `budget`, `inherit`)  
-**Written by:** `/rihal:set-profile`  
+**Written by:** `/rihal-set-profile`  
 **Purpose:** Model selection for council agents. Affects token spend and quality.
 
 ---

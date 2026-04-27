@@ -1,4 +1,4 @@
-# Workflow: rihal:from-template
+# Workflow: rihal-from-template
 
 <purpose>
 Seed a fresh project's `.planning/` directory from a canonical starter template (saas-b2b, api-backend, mobile-app). Replaces the blank-page moment after `rihal init` with a PROJECT.md skeleton, a ROADMAP.md with typical phases for this kind of project, and a REQUIREMENTS.md of common REQ-IDs.
@@ -28,7 +28,7 @@ End with a file summary and Next Up routing.
 If `$ARGUMENTS` is empty, contains `--help`, `-h`, or `list` — print the catalog:
 
 ```
-/rihal:from-template <template-name> [--project-name "<name>"] [--force]
+/rihal-from-template <template-name> [--project-name "<name>"] [--force]
 
 Available templates:
   saas-b2b      Multi-tenant B2B SaaS — auth, orgs, billing, RBAC, admin
@@ -50,7 +50,7 @@ TEMPLATE_DIR=".rihal/templates/projects/${TEMPLATE}"
 
 if [ ! -d "$TEMPLATE_DIR" ]; then
   echo "Unknown template: ${TEMPLATE}"
-  echo "Run: /rihal:from-template --help  for the catalog."
+  echo "Run: /rihal-from-template --help  for the catalog."
   exit 0
 fi
 ```
@@ -88,7 +88,7 @@ If `EXISTING` is non-empty and `--force` was NOT passed:
 Refusing to overwrite. Options:
   - Pass --force to overwrite (destructive)
   - Delete the existing files first, then re-run
-  - Use /rihal:new-project for the interactive discovery flow instead
+  - Use /rihal-new-project for the interactive discovery flow instead
 ```
 
 STOP.
@@ -131,7 +131,7 @@ node .rihal/bin/rihal-tools.cjs state add-decision \
   "Seeded .planning/ from template '${TEMPLATE}' (project: ${PROJECT_NAME})" 2>/dev/null || true
 ```
 
-This surfaces the seeding both in local state AND `/rihal:decisions` cross-project memory.
+This surfaces the seeding both in local state AND `/rihal-decisions` cross-project memory.
 
 ## Step 6 — Commit
 
@@ -154,8 +154,8 @@ Next Up (from template.yaml.next_steps):
   {next_steps_block}
 
 Also consider:
-  /rihal:discuss-phase 01   — adapt phase 01 to your specifics
-  /rihal:council            — sanity-check the starter phases before committing to them
+  /rihal-discuss-phase 01   — adapt phase 01 to your specifics
+  /rihal-council            — sanity-check the starter phases before committing to them
 ```
 </process>
 
@@ -169,5 +169,5 @@ Also consider:
 
 ## On Error
 
-- Missing `.rihal/templates/projects/` directory → tell the user their install is missing the module; suggest `rihal:install`
+- Missing `.rihal/templates/projects/` directory → tell the user their install is missing the module; suggest `rihal-install`
 - `sed` substitution failure (unusual characters in project name) → fall back to literal-string `awk` substitution, or ask the user to pass a simpler name via `--project-name`

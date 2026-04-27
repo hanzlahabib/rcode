@@ -1,4 +1,4 @@
-# Workflow: rihal:brainstorm
+# Workflow: rihal-brainstorm
 
 <purpose>
 Guided brainstorming session using structured methods. User provides a challenge; the workflow presents available methods, applies the selected one, and generates ideas in a structured format. Output is a brainstorm artifact stored in `.planning/brainstorms/` with the chosen method, raw ideas, and synthesis.
@@ -9,14 +9,14 @@ Guided brainstorming session using structured methods. User provides a challenge
 If `$ARGUMENTS` is empty or only contains `--help` or `-h`:
 
 ```
-/rihal:brainstorm <challenge> [--method=METHOD] [--people=N] [--personas=LIST]
+/rihal-brainstorm <challenge> [--method=METHOD] [--people=N] [--personas=LIST]
 ```
 
 **Examples:**
 ```
-/rihal:brainstorm how to improve user onboarding
-/rihal:brainstorm --method=SCAMPER reduce API latency
-/rihal:brainstorm --method=Rolestorming --personas=competitor,child reduce churn
+/rihal-brainstorm how to improve user onboarding
+/rihal-brainstorm --method=SCAMPER reduce API latency
+/rihal-brainstorm --method=Rolestorming --personas=competitor,child reduce churn
 ```
 
 STOP — do not proceed. Only proceed when the user provides a challenge.
@@ -182,8 +182,8 @@ After method execution:
 ## Next Steps
 
 To turn ideas into features/tickets:
-- `/rihal:plan <idea description>` — for detailed implementation plan
-- `/rihal:council is this idea worth pursuing?` — for strategic discussion
+- `/rihal-plan <idea description>` — for detailed implementation plan
+- `/rihal-council is this idea worth pursuing?` — for strategic discussion
 ```
 
 4. Print summary: "{N} ideas generated using {METHOD_NAME}"

@@ -17,9 +17,9 @@ interpos audit (issue #221) — DO NOT regress.
 
 2. **NEVER skip the methodology chain on greenfield projects.** Before
    the phase loop runs, the prerequisite check (next step) MUST verify:
-   - `.planning/prd.md` exists (else halt → /rihal:create-prd)
-   - ROADMAP.md has milestone structure (else halt → /rihal:create-milestone)
-   - `.planning/epics.md` exists (else halt → /rihal:create-epics-and-stories)
+   - `.planning/prd.md` exists (else halt → /rihal-create-prd)
+   - ROADMAP.md has milestone structure (else halt → /rihal-create-milestone)
+   - `.planning/epics.md` exists (else halt → /rihal-create-epics-and-stories)
    See issue #219 + #229.
 
 3. **NEVER write SPRINT.md directly.** Sprint creation MUST go through
@@ -66,15 +66,15 @@ If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with a clear message:
 ⚠ Cannot run autonomous: missing prerequisite — {what}.
 
 The autonomous flow assumes a project that has already gone through:
-  1. /rihal:create-prd               → produces .planning/prd.md
-  2. /rihal:create-milestone         → produces ROADMAP.md with M1..Mn
-  3. /rihal:create-epics-and-stories → produces .planning/epics.md
-  4. THEN /rihal:autonomous           ← you are here
+  1. /rihal-create-prd               → produces .planning/prd.md
+  2. /rihal-create-milestone         → produces ROADMAP.md with M1..Mn
+  3. /rihal-create-epics-and-stories → produces .planning/epics.md
+  4. THEN /rihal-autonomous           ← you are here
 
-Suggested first step: /rihal:{first-missing-command}
+Suggested first step: /rihal-{first-missing-command}
 
 If you genuinely want to skip these (rare — usually inverted methodology),
-re-invoke with: /rihal:autonomous --skip-prerequisites
+re-invoke with: /rihal-autonomous --skip-prerequisites
 ```
 
 If `SKIP_FLAG=true`: print a warning that downstream workflows may produce low-quality output without upstream artifacts, then proceed.
@@ -148,8 +148,8 @@ STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`.
 
-**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/rihal:new-milestone` first."
-**If `state_exists` is false:** Error — "No STATE.md found. Run `/rihal:new-milestone` first."
+**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/rihal-new-milestone` first."
+**If `state_exists` is false:** Error — "No STATE.md found. Run `/rihal-new-milestone` first."
 
 Display startup banner:
 
@@ -349,7 +349,7 @@ The discuss step in autonomous mode MUST NOT loop. If CONTEXT.md already exists 
 **If `INTERACTIVE` is set:** Run the standard discuss-phase skill inline (asks interactive questions, waits for user answers):
 
 ```
-Skill(skill="rihal:discuss-phase", args="${PHASE_NUM}")
+Skill(skill="rihal-discuss-phase", args="${PHASE_NUM}")
 ```
 
 **If `INTERACTIVE` is NOT set:** Execute the smart_discuss step for this phase (batch table proposals, auto-optimized — see smart_discuss step below).
@@ -377,7 +377,7 @@ Phase ${PHASE_NUM}: Frontend phase detected — generating UI design contract...
 ```
 
 ```
-Skill(skill="rihal:ui-phase", args="${PHASE_NUM}")
+Skill(skill="rihal-ui-phase", args="${PHASE_NUM}")
 ```
 
 Verify UI-SPEC was created. If still empty after ui-phase, display a non-blocking warning and proceed to 3b.
@@ -393,7 +393,7 @@ Task(
   description="Plan phase ${PHASE_NUM}: ${PHASE_NAME}",
   subagent_type="rihal-planner",
   run_in_background=true,
-  prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal:plan\", args=\"${PHASE_NUM}\")"
+  prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-plan\", args=\"${PHASE_NUM}\")"
 )
 ```
 
@@ -402,7 +402,7 @@ Store the agent task_id. After discuss for the next phase completes (or if no ne
 **If `INTERACTIVE` is NOT set (default):** Run plan inline as before.
 
 ```
-Skill(skill="rihal:plan", args="${PHASE_NUM}")
+Skill(skill="rihal-plan", args="${PHASE_NUM}")
 ```
 
 Verify plan produced output — check `${PHASE_DIR}` for `*-PLAN.md` or `SPRINT.md`. If none → go to handle_blocker: "Plan phase ${PHASE_NUM} did not produce any plans."
@@ -416,7 +416,7 @@ Task(
   description="Execute phase ${PHASE_NUM}: ${PHASE_NAME}",
   subagent_type="rihal-executor",
   run_in_background=true,
-  prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal:execute\", args=\"${PHASE_NUM} --no-transition\")"
+  prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-execute\", args=\"${PHASE_NUM} --no-transition\")"
 )
 ```
 
@@ -425,7 +425,7 @@ Store the agent task_id. The workflow can now start discussing the next phase wh
 **If `INTERACTIVE` is NOT set (default):** Run execute inline as before.
 
 ```
-Skill(skill="rihal:execute", args="${PHASE_NUM} --no-transition")
+Skill(skill="rihal-execute", args="${PHASE_NUM} --no-transition")
 ```
 
 ### 3c.5. Code Review and Fix
@@ -439,12 +439,12 @@ CODE_REVIEW_ENABLED=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep 
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
 ```
-Skill(skill="rihal:code-review", args="${PHASE_NUM}")
+Skill(skill="rihal-code-review", args="${PHASE_NUM}")
 ```
 
 Parse status from REVIEW.md frontmatter. If "clean" or "skipped": proceed to 3d. If findings found: auto-invoke:
 ```
-Skill(skill="rihal:code-review-fix", args="${PHASE_NUM} --auto")
+Skill(skill="rihal-code-review-fix", args="${PHASE_NUM} --auto")
 ```
 
 **Error handling:** If either Skill fails, catch the error, display as non-blocking, and proceed to 3d.
@@ -505,14 +505,14 @@ Ask user via AskUserQuestion:
 On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt):
 
 ```
-Skill(skill="rihal:plan", args="${PHASE_NUM} --gaps")
+Skill(skill="rihal-plan", args="${PHASE_NUM} --gaps")
 ```
 
 Verify gap plans were created. If none → go to handle_blocker: "Gap closure planning for phase ${PHASE_NUM} did not produce plans."
 
 Re-execute:
 ```
-Skill(skill="rihal:execute", args="${PHASE_NUM} --no-transition")
+Skill(skill="rihal-execute", args="${PHASE_NUM} --no-transition")
 ```
 
 Re-read verification status. If `passed` or `human_needed`: route normally. If still `gaps_found` after this retry: ask via AskUserQuestion:
@@ -542,7 +542,7 @@ Phase ${PHASE_NUM}: Frontend phase with UI-SPEC — running UI review audit...
 ```
 
 ```
-Skill(skill="rihal:ui-review", args="${PHASE_NUM}")
+Skill(skill="rihal-ui-review", args="${PHASE_NUM}")
 ```
 
 Display the review result summary (score from UI-REVIEW.md if produced). Continue to iterate step regardless of score — UI review is advisory, not blocking.
@@ -811,7 +811,7 @@ Decisions captured: {count} across {area_count} areas
  Completed through phase ${TO_PHASE} as requested.
  Remaining phases were not executed.
 
- Resume with: /rihal:autonomous --from ${next_incomplete_phase}
+ Resume with: /rihal-autonomous --from ${next_incomplete_phase}
 ```
 
 Proceed directly to lifecycle step (which handles partial completion). Exit cleanly.
@@ -860,7 +860,7 @@ If all phases complete, proceed to lifecycle step.
  Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
  Mode: Single phase (--only)
 
- Lifecycle skipped — run /rihal:autonomous without --only
+ Lifecycle skipped — run /rihal-autonomous without --only
  after all phases complete to trigger audit/complete/cleanup.
 ```
 
@@ -882,7 +882,7 @@ Display lifecycle transition banner:
 ### 5a. Audit
 
 ```
-Skill(skill="rihal:audit-milestone")
+Skill(skill="rihal-audit-milestone")
 ```
 
 After audit completes, detect the result:
@@ -930,7 +930,7 @@ On **"Stop"**: Go to handle_blocker.
 ### 5b. Complete Milestone
 
 ```
-Skill(skill="rihal:complete-milestone", args="${milestone_version}")
+Skill(skill="rihal-complete-milestone", args="${milestone_version}")
 ```
 
 After complete-milestone returns, verify archive output:
@@ -944,7 +944,7 @@ If the archive file does not exist, go to handle_blocker: "Complete milestone di
 ### 5c. Cleanup
 
 ```
-Skill(skill="rihal:cleanup")
+Skill(skill="rihal-cleanup")
 ```
 
 Cleanup shows its own dry-run and asks user for approval internally — this is an acceptable pause since it's an explicit decision about file deletion.
@@ -999,7 +999,7 @@ Proceed to iterate.
  Skipped: {list of skipped phases}
  Remaining: {list of remaining phases}
 
- Resume with: /rihal:autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
+ Resume with: /rihal-autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
 ```
 
 Record blocker in state:
@@ -1029,7 +1029,7 @@ node .rihal/bin/rihal-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] Final completion or stop summary displayed
 - [ ] After all phases complete, lifecycle step is invoked (not manual suggestion)
 - [ ] Lifecycle transition banner displayed before audit
-- [ ] Audit invoked via Skill(skill="rihal:audit-milestone")
+- [ ] Audit invoked via Skill(skill="rihal-audit-milestone")
 - [ ] Audit result routing: passed → auto-continue, gaps_found → user decides, tech_debt → user decides
 - [ ] Complete-milestone invoked via Skill() with ${milestone_version} arg
 - [ ] Cleanup invoked via Skill() — internal confirmation is acceptable

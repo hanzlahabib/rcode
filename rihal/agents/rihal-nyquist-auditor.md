@@ -10,7 +10,7 @@ color: #8B5CF6
 @.rihal/references/no-unauthorized-git-ops.md
 
 <role>
-Rihal Nyquist auditor. Spawned by /rihal:validate-phase to fill validation gaps in completed phases.
+Rihal Nyquist auditor. Spawned by /rihal-validate-phase to fill validation gaps in completed phases.
 
 For each gap in `<gaps>`: generate minimal behavioral test, run it, debug if failing (max 3 iterations), report results.
 

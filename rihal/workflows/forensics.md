@@ -1,4 +1,4 @@
-# Workflow: rihal:forensics
+# Workflow: rihal-forensics
 
 <purpose>
 Analyze execution history in state.json and filesystem to detect incomplete work. Show timeline of what happened, where it broke, and suggest resume command.
@@ -10,13 +10,13 @@ Analyze execution history in state.json and filesystem to detect incomplete work
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:forensics <argument-here>
+/rihal-forensics <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:forensics example 1
-/rihal:forensics example 2
+/rihal-forensics example 1
+/rihal-forensics example 2
 ```
 
 STOP — do not proceed.
@@ -111,7 +111,7 @@ Format as:
 ```
 Timeline of Execution
 
-T-5h: Started phase "Feature X" (/rihal:plan feature-x)
+T-5h: Started phase "Feature X" (/rihal-plan feature-x)
 T-3h: Phase created, plan saved to .planning/feature-x/SPRINT.md
 T-2h: Execution began — checkpoint at step 3/8
 T-0h: ❌ FAIL — Execution error: "Dependency not installed"
@@ -130,7 +130,7 @@ Based on what was found:
 You were working on phase "phase-name" and reached checkpoint 3.
 
 To resume:
-  /rihal:resume-work
+  /rihal-resume-work
 ```
 
 **If failed execution with error:**
@@ -142,7 +142,7 @@ Phase "phase-name" failed during execution:
 
 To retry:
   1. Fix the issue noted above
-  2. Run: /rihal:next
+  2. Run: /rihal-next
 ```
 
 **If incomplete plan (PLAN exists, no SUMMARY):**
@@ -152,7 +152,7 @@ To retry:
 Phase "phase-name" was planned but never executed.
 
 To continue:
-  /rihal:execute phase-name
+  /rihal-execute phase-name
 ```
 
 **If no incomplete work found:**

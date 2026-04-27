@@ -13,9 +13,9 @@ If invalid args: Show usage
 
 ```
 Usage:
-  /rihal:diff              # Diff HEAD~1 to HEAD
-  /rihal:diff --last       # Diff against last session
-  /rihal:diff abc123 def456  # Diff between commits
+  /rihal-diff              # Diff HEAD~1 to HEAD
+  /rihal-diff --last       # Diff against last session
+  /rihal-diff abc123 def456  # Diff between commits
 ```
 
 ## Step 1: Parse Arguments

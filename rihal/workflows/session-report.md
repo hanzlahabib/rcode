@@ -1,4 +1,4 @@
-# Workflow: rihal:session-report
+# Workflow: rihal-session-report
 
 <purpose>
 Generate a comprehensive session report covering work done, token usage estimation, commits, decisions, blockers, and council sessions. Writes SESSION-REPORT-{date}.md to .planning/ directory.
@@ -10,13 +10,13 @@ Generate a comprehensive session report covering work done, token usage estimati
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:session-report <argument-here>
+/rihal-session-report <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:session-report example 1
-/rihal:session-report example 2
+/rihal-session-report example 1
+/rihal-session-report example 2
 ```
 
 STOP — do not proceed.
@@ -32,7 +32,7 @@ test -f .rihal/state.json && echo "exists" || echo "missing"
 If missing, print and stop:
 
 ```
-No state found. Run /rihal:council or execute a plan to initialize state.
+No state found. Run /rihal-council or execute a plan to initialize state.
 ```
 
 ## Step 2 — Read state
@@ -153,7 +153,7 @@ Write `.planning/SESSION-REPORT-{YYYY-MM-DD-HHmmss}.md` with this structure:
 ## Next Steps
 
 - Address {count} open blocker(s) before proceeding
-- Plan next phase with `/rihal:plan-phase {next_phase}`
+- Plan next phase with `/rihal-plan-phase {next_phase}`
 ```
 
 ## Step 8 — Print confirmation

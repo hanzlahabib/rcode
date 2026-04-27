@@ -39,16 +39,16 @@ Hard deadline:  {deadline or "none specified"}
 What's next?
 
   [A] Decompose M1 into epics + stories
-      → /rihal:create-epics-and-stories
+      → /rihal-create-epics-and-stories
 
   [B] Plan the first phase in detail
-      → /rihal:plan-phase 01
+      → /rihal-plan-phase 01
 
   [C] Review the roadmap with the team
-      → /rihal:council "Is this roadmap realistic?"
+      → /rihal-council "Is this roadmap realistic?"
 
   [D] Park and review later
-      → Roadmap is saved; pick up with /rihal:progress anytime
+      → Roadmap is saved; pick up with /rihal-progress anytime
 ```
 
 ### 4. HALT

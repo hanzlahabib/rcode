@@ -1,5 +1,5 @@
 ---
-name: rihal:verify-work
+name: rihal-verify-work
 description: Conversational acceptance testing — verify sprint stories against acceptance criteria
 argument-hint: "[--phase <NN>]"
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion

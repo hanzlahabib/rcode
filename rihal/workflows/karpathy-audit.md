@@ -14,15 +14,15 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:code-review --karpathy <phase> [--files=path1,path2]
-/rihal:code-review --karpathy <git-ref>..HEAD
+/rihal-code-review --karpathy <phase> [--files=path1,path2]
+/rihal-code-review --karpathy <git-ref>..HEAD
 ```
 
 **Examples:**
 ```
-/rihal:code-review --karpathy 03
-/rihal:code-review --karpathy 02 --files=src/
-/rihal:code-review --karpathy HEAD~5..HEAD
+/rihal-code-review --karpathy 03
+/rihal-code-review --karpathy 02 --files=src/
+/rihal-code-review --karpathy HEAD~5..HEAD
 ```
 
 <process>
@@ -44,7 +44,7 @@ Parse: `phase_found`, `phase_dir`, `phase_number`, `padded_phase`.
 
 If phase_found is false:
 ```
-Error: Phase ${PHASE_ARG} not found. Try /rihal:code-review --karpathy HEAD~5..HEAD to audit recent commits instead.
+Error: Phase ${PHASE_ARG} not found. Try /rihal-code-review --karpathy HEAD~5..HEAD to audit recent commits instead.
 ```
 
 If git ref format (contains ".." or has no digit at start):
@@ -343,7 +343,7 @@ Aggregate all findings into a structured report:
 ---
 
 **Generated:** {date}
-**Run:** /rihal:code-review --karpathy {original_arguments}
+**Run:** /rihal-code-review --karpathy {original_arguments}
 ```
 
 Write report to stdout and optionally to file `{phase_dir}/{padded_phase}-KARPATHY-AUDIT.md` if phase mode.
@@ -369,14 +369,14 @@ If FAIL:
 
 {list top 3 critical findings}
 
-Review the full report above. Use /rihal:code-review-fix to auto-fix some issues.
+Review the full report above. Use /rihal-code-review-fix to auto-fix some issues.
 ```
 
 **Next steps:**
 ```
 View full report: {report file path}
-Rerun: /rihal:code-review --karpathy {arguments}
-Auto-fix some issues: /rihal:code-review-fix {phase}
+Rerun: /rihal-code-review --karpathy {arguments}
+Auto-fix some issues: /rihal-code-review-fix {phase}
 ```
 </step>
 
@@ -395,7 +395,7 @@ Auto-fix some issues: /rihal:code-review-fix {phase}
 
 ## On Error
 
-- **Phase not found:** suggest `/rihal:code-review --karpathy HEAD~5..HEAD` as the git-ref fallback.
+- **Phase not found:** suggest `/rihal-code-review --karpathy HEAD~5..HEAD` as the git-ref fallback.
 - **No source files in diff:** report "no auditable changes in range" and STOP — do not invent findings.
 - **karpathy-guidelines.md missing:** print "Reference doc missing. Run: npx @hanzlaa/rcode install ." and STOP.
 - **Empty diff:** STOP gracefully, do not run principle checks against an empty input.

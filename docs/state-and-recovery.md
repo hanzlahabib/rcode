@@ -12,7 +12,7 @@ How Rihal tracks project state, survives interruptions, and resumes work.
 
 **Readable format:**
 ```bash
-/rihal:status
+/rihal-status
 # or
 node .rihal/bin/rihal-tools.cjs state read
 ```
@@ -200,7 +200,7 @@ node .rihal/bin/rihal-tools.cjs state read
 ### Pause: Save context for later
 
 ```
-/rihal:pause-work
+/rihal-pause-work
 ```
 
 Creates two files:
@@ -246,7 +246,7 @@ Currently on plan 02.01: User authentication flow
    - Action: Ping review queue tomorrow
 
 ## What's next
-1. Run `/rihal:resume-work` to load saved context
+1. Run `/rihal-resume-work` to load saved context
 2. Resolve SSL blocker or confirm workaround sufficient
 3. Review 02.02 plan: Admin authentication
 4. Execute 02.02
@@ -269,7 +269,7 @@ Currently on plan 02.01: User authentication flow
 ### Resume: Reload context
 
 ```
-/rihal:resume-work
+/rihal-resume-work
 ```
 
 Reads HANDOFF.json and surfaces:
@@ -287,11 +287,11 @@ Reads HANDOFF.json and surfaces:
    2. Database migration awaiting review
 
 📋 Suggested next action:
-   /rihal:plan 02.02 implement admin authentication
+   /rihal-plan 02.02 implement admin authentication
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Ready to continue? Type /rihal:plan 02.02 or /rihal:do
+Ready to continue? Type /rihal-plan 02.02 or /rihal-do
 ```
 
 The handoff re-surfaces:
@@ -307,7 +307,7 @@ The handoff re-surfaces:
 ### Health check
 
 ```
-/rihal:health
+/rihal-health
 ```
 
 Detects:
@@ -318,7 +318,7 @@ Detects:
 
 **Auto-fix safe issues:**
 ```
-/rihal:health --fix
+/rihal-health --fix
 ```
 
 Recovers from:
@@ -331,8 +331,8 @@ Recovers from:
 ### Forensics: Post-mortem analysis
 
 ```
-/rihal:forensics --last
-/rihal:forensics 2026-04-12
+/rihal-forensics --last
+/rihal-forensics 2026-04-12
 ```
 
 Analyzes:
@@ -346,7 +346,7 @@ Analyzes:
 ### Undo last phase
 
 ```
-/rihal:undo
+/rihal-undo
 ```
 
 Reverts:
@@ -355,7 +355,7 @@ Reverts:
 - Removes phase from state (but keeps artifacts)
 
 ```
-/rihal:undo --keep-artifacts
+/rihal-undo --keep-artifacts
 ```
 
 Also keeps artifacts for reference.
@@ -365,7 +365,7 @@ Also keeps artifacts for reference.
 ### Correct course
 
 ```
-/rihal:correct-course
+/rihal-correct-course
 ```
 
 Suggests recovery options:
@@ -383,7 +383,7 @@ Interactive prompt helps choose.
 Run parallel experiments without conflicts:
 
 ```
-/rihal:new-workspace "experimental-auth"
+/rihal-new-workspace "experimental-auth"
 ```
 
 Creates isolated:
@@ -394,8 +394,8 @@ Creates isolated:
 
 Switch workspaces:
 ```
-/rihal:list-workspaces
-/rihal:switch-workspace experimental-auth
+/rihal-list-workspaces
+/rihal-switch-workspace experimental-auth
 ```
 
 Useful for:
@@ -418,7 +418,7 @@ Rihal creates temporary lock files to prevent concurrent access:
 
 **Stale locks:** If a command crashes, lock may persist. Fix with:
 ```
-/rihal:health --fix
+/rihal-health --fix
 ```
 
 ---
@@ -429,7 +429,7 @@ State changes are **not** automatically committed. You control commits:
 
 ```
 # Rihal writes to state.json
-/rihal:plan build auth module
+/rihal-plan build auth module
 
 # You commit explicitly
 git add .rihal/state.json .planning/phases/01/
@@ -473,16 +473,16 @@ git checkout HEAD~1 -- .rihal/state.json
 ## Best practices
 
 1. **Commit state frequently** — After each phase/plan completes.
-2. **Pause before context-switch** — Use `/rihal:pause-work` if stopping mid-phase.
+2. **Pause before context-switch** — Use `/rihal-pause-work` if stopping mid-phase.
 3. **Use workspaces for experiments** — Don't fork main state for R&D.
-4. **Document blockers in state** — Use `/rihal:add-blocker` or directly edit.
+4. **Document blockers in state** — Use `/rihal-add-blocker` or directly edit.
 5. **Review HANDOFF.md before resuming** — Refresh on context before continuing.
-6. **Run health checks regularly** — Especially after crashes: `/rihal:health`.
+6. **Run health checks regularly** — Especially after crashes: `/rihal-health`.
 
 ---
 
 ## See also
 
 - `docs/numbering.md` — Understanding numeric IDs in state
-- `docs/commands.md` — `/rihal:pause-work`, `/rihal:resume-work`, `/rihal:health`
+- `docs/commands.md` — `/rihal-pause-work`, `/rihal-resume-work`, `/rihal-health`
 - `docs/getting-started.md` — First run initialization

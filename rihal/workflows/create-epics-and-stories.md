@@ -1,7 +1,7 @@
-# Workflow: rihal:create-epics-and-stories
+# Workflow: rihal-create-epics-and-stories
 
 <purpose>
-Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rihal:sprint-planning`.
+Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rihal-sprint-planning`.
 </purpose>
 
 
@@ -38,7 +38,7 @@ done
 ```
 No PRD or PROJECT.md found. How should we proceed?
 
-1. Initialize the project first — run /rihal:new-project to capture goals, stack, 
+1. Initialize the project first — run /rihal-new-project to capture goals, stack, 
    milestones, and generate PROJECT.md. Recommended if this is a new project.
 
 2. Gather context from codebase + GitHub issues — I'll scan the repo, read open 
@@ -48,7 +48,7 @@ No PRD or PROJECT.md found. How should we proceed?
    generate stories from that description directly.
 ```
 
-- If **1**: invoke `/rihal:new-project` and stop.
+- If **1**: invoke `/rihal-new-project` and stop.
 - If **2**: set `CONTEXT_MODE=codebase`
 - If **3**: capture description → set `CONTEXT_MODE=interactive`, `DESCRIPTION=$response`
 
@@ -234,7 +234,7 @@ If any story fails, ask roadmapper to fix before continuing.
     2.1.md
 ```
 
-**Why split:** Epic files are kept lean so GitHub API updates only rewrite one small story file instead of the full epic. Token cost per `/rihal:dev-story` is proportional to one story, not the whole epic.
+**Why split:** Epic files are kept lean so GitHub API updates only rewrite one small story file instead of the full epic. Token cost per `/rihal-dev-story` is proportional to one story, not the whole epic.
 
 ```bash
 mkdir -p .planning/epics/stories
@@ -294,7 +294,7 @@ As a {persona}, I want to {action} so that {outcome}.
 {Exact file paths, function names, line-level hints}
 
 ---
-*Start: `/rihal:dev-story {N}.{M}`*
+*Start: `/rihal-dev-story {N}.{M}`*
 ```
 
 ## Step 5 — Write INDEX.md
@@ -325,7 +325,7 @@ Generated: {ISO date} | Source: {input filename}
 
 ---
 *Update story status: edit `.planning/epics/stories/{N}.{M}.md` → change `Status:` line*
-*Next: `/rihal:sprint-planning` or `/rihal:dev-story {N}.{M}`*
+*Next: `/rihal-sprint-planning` or `/rihal-dev-story {N}.{M}`*
 ```
 
 ## Step 6 — Commit
@@ -346,8 +346,8 @@ Index:   .planning/epics/INDEX.md
 Effort:  ~{weeks} total
 
 Next:
-  /rihal:sprint-planning          organise into sprints
-  /rihal:dev-story {N}.{M}        start working on a story
+  /rihal-sprint-planning          organise into sprints
+  /rihal-dev-story {N}.{M}        start working on a story
 ```
 
 ## Errors

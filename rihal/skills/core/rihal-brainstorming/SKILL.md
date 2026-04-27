@@ -95,7 +95,7 @@ Follow the instructions in ./workflow.md.
 
 ### Negative boundary
 **User:** "brainstorm which tech stack to use"
-**Result:** Redirects to `/rihal:council` or Waleed (CTO) — architecture decisions need structured ADR evaluation, not open ideation.
+**Result:** Redirects to `/rihal-council` or Waleed (CTO) — architecture decisions need structured ADR evaluation, not open ideation.
 
 ## Memory Bank Hooks
 

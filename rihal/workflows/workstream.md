@@ -1,4 +1,4 @@
-# Workflow: rihal:workstream
+# Workflow: rihal-workstream
 
 <purpose>
 Manage parallel workstreams (milestone tracks) in Rihal. A workstream is an independent execution path with its own phases and tasks. Multiple workstreams can run in parallel, sharing decisions, blockers, and council sessions. This workflow handles creation, switching, listing, and completion of workstreams stored in state.json.
@@ -16,20 +16,20 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:workstream create --name <name>
-/rihal:workstream switch --name <name>
-/rihal:workstream list
-/rihal:workstream status
-/rihal:workstream complete --name <name>
+/rihal-workstream create --name <name>
+/rihal-workstream switch --name <name>
+/rihal-workstream list
+/rihal-workstream status
+/rihal-workstream complete --name <name>
 ```
 
 **Examples:**
 ```
-/rihal:workstream create --name "Frontend Redesign"
-/rihal:workstream switch --name "Frontend Redesign"
-/rihal:workstream list
-/rihal:workstream status
-/rihal:workstream complete --name "Backend Migration"
+/rihal-workstream create --name "Frontend Redesign"
+/rihal-workstream switch --name "Frontend Redesign"
+/rihal-workstream list
+/rihal-workstream status
+/rihal-workstream complete --name "Backend Migration"
 ```
 
 Only after the user provides arguments, proceed to Step 1.

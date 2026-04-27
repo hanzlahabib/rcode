@@ -29,7 +29,7 @@ Use for major workflow transitions.
 
 ---
 
-## Routing Output (for /rihal:do, /rihal:next, /rihal:progress)
+## Routing Output (for /rihal-do, /rihal-next, /rihal-progress)
 
 Use this when a router command dispatches to another command:
 
@@ -42,7 +42,7 @@ Input: {user's question or intent}
 Scope: {one-line summary of detected scope}
 {optional: Blocker: {any blockers detected}}
 
-Routing to: /rihal:{target-command}
+Routing to: /rihal-{target-command}
 Reason: {one-line why this command fits}
 
 Handing off to the workflow now.
@@ -253,8 +253,8 @@ Always at end of major completions.
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/rihal:alternative-1` — description
-- `/rihal:alternative-2` — description
+- `/rihal-alternative-1` — description
+- `/rihal-alternative-2` — description
 
 ───────────────────────────────────────────────────────────────
 ```

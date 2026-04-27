@@ -14,13 +14,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:import --from <path>
+/rihal-import --from <path>
 ```
 
 **Examples:**
 ```
-/rihal:import --from ./external-plan.md
-/rihal:import --from ../other-project/SPRINT.md
+/rihal-import --from ./external-plan.md
+/rihal-import --from ../other-project/SPRINT.md
 ```
 
 ---
@@ -49,7 +49,7 @@ Parse `$ARGUMENTS` to determine the execution mode:
 - If neither flag is found: display usage and exit:
 
 ```
-Usage: /rihal:import --from <path>
+Usage: /rihal-import --from <path>
 
   --from <path>   Import an external plan file into Rihal format
 ```

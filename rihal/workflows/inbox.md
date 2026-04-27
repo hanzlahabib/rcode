@@ -1,4 +1,4 @@
-# Workflow: rihal:inbox
+# Workflow: rihal-inbox
 
 <purpose>
 Triage and review all open GitHub issues and PRs against project contribution templates.
@@ -12,13 +12,13 @@ required fields, identifies label gaps, and optionally takes action (label, comm
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:inbox <argument-here>
+/rihal-inbox <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:inbox example 1
-/rihal:inbox example 2
+/rihal-inbox example 1
+/rihal-inbox example 2
 ```
 
 STOP — do not proceed.
@@ -386,10 +386,10 @@ Next steps:
 <offer_next>
 After triage:
 
-- /rihal:review — Run cross-AI peer review on a specific phase plan
-- /rihal:ship — Create a PR from completed work
-- /rihal:progress — See overall project state
-- /rihal:inbox --label — Re-run with auto-labeling enabled
+- /rihal-review — Run cross-AI peer review on a specific phase plan
+- /rihal-ship — Create a PR from completed work
+- /rihal-progress — See overall project state
+- /rihal-inbox --label — Re-run with auto-labeling enabled
 </offer_next>
 
 <success_criteria>

@@ -9,10 +9,10 @@
  *
  * This module detects staleness programmatically by comparing a project
  * fingerprint (git HEAD, package manifest hash, top-level structure hash)
- * against one stored in .rihal/state.json at the last /rihal:init run.
+ * against one stored in .rihal/state.json at the last /rihal-init run.
  *
  * It is intentionally READ-ONLY + write-fingerprint. The actual scan and
- * rewrite of the memory bank is done by Claude when /rihal:init runs —
+ * rewrite of the memory bank is done by Claude when /rihal-init runs —
  * this library only tells callers WHEN to refresh, not HOW.
  */
 
@@ -186,7 +186,7 @@ function readState(cwd) {
 
 /**
  * Persist the init fingerprint into .rihal/state.json under `memory_bank`.
- * Called by /rihal:init (via rihal-code context --refresh) after a scan
+ * Called by /rihal-init (via rihal-code context --refresh) after a scan
  * rewrites context/active.md + context/project-brief.md.
  */
 function writeFingerprint(cwd) {
@@ -238,7 +238,7 @@ function checkStaleness(cwd) {
   if (!context_files.active && !context_files.brief) {
     return {
       status: 'never',
-      reasons: ['memory bank has never been initialized — run /rihal:init'],
+      reasons: ['memory bank has never been initialized — run /rihal-init'],
       current,
       stored,
       context_files,
@@ -264,7 +264,7 @@ function checkStaleness(cwd) {
   if (!stored) {
     return {
       status: 'stale',
-      reasons: ['run /rihal:init in your editor to populate project context'],
+      reasons: ['run /rihal-init in your editor to populate project context'],
       current,
       stored,
       context_files,

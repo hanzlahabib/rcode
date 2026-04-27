@@ -88,7 +88,7 @@ grep -nE "Next Up|Suggest|Recommend" rihal/workflows/*.md
 
 **Affected:** #443 (UAT gate), #448 (general pattern).
 
-**Fix:** Use intermediate states: `status: executed` (work done) vs `status: complete` (work done AND verified). `/rihal:next` and autonomous mode advance only from `complete`. Verify-work and similar gates promote from `executed` → `complete`.
+**Fix:** Use intermediate states: `status: executed` (work done) vs `status: complete` (work done AND verified). `/rihal-next` and autonomous mode advance only from `complete`. Verify-work and similar gates promote from `executed` → `complete`.
 
 **Prevention:** Audit every workflow that writes a terminal state — does it actually verify the prerequisite gate ran?
 

@@ -12,8 +12,8 @@ the plan → execute → verify → **ship** loop.
 6. Updates STATE.md with shipping status
 
 **Preconditions (all must be true before running):**
-- `/rihal:execute <phase>` completed
-- `/rihal:verify-phase <phase>` passed (VERIFICATION.md exists with `status: passed`)
+- `/rihal-execute <phase>` completed
+- `/rihal-verify-phase <phase>` passed (VERIFICATION.md exists with `status: passed`)
 - You are on a feature branch (not main/develop directly)
 - `gh` CLI is authenticated (`gh auth status`)
 
@@ -25,10 +25,10 @@ the plan → execute → verify → **ship** loop.
 
 **Typical usage:**
 ```
-/rihal:plan 1          → plan the phase
-/rihal:execute 1       → build it
-/rihal:verify-phase 1  → prove it works
-/rihal:ship 1          → PR it ← you are here
+/rihal-plan 1          → plan the phase
+/rihal-execute 1       → build it
+/rihal-verify-phase 1  → prove it works
+/rihal-ship 1          → PR it ← you are here
 ```
 </purpose>
 
@@ -241,8 +241,8 @@ Requirements: {N} REQ-IDs addressed
 Next steps:
 - Review/approve PR
 - Merge when CI passes
-- /rihal:complete-milestone (if last phase in milestone)
-- /rihal:progress (to see what's next)
+- /rihal-complete-milestone (if last phase in milestone)
+- /rihal-progress (to see what's next)
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -253,9 +253,9 @@ Next steps:
 <offer_next>
 After shipping:
 
-- /rihal:complete-milestone — if all phases in milestone are done
-- /rihal:progress — see overall project state
-- /rihal:execute-phase {next} — continue to next phase
+- /rihal-complete-milestone — if all phases in milestone are done
+- /rihal-progress — see overall project state
+- /rihal-execute-phase {next} — continue to next phase
 </offer_next>
 
 <success_criteria>

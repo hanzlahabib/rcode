@@ -1,4 +1,4 @@
-# Workflow: rihal:profile-user
+# Workflow: rihal-profile-user
 
 <purpose>
 Classify developer on 4 dimensions: communication style, autonomy preference, domain depth, and iteration speed. Spawn a profiler subagent to ask questions and produce a USER-PROFILE.md artifact with YAML frontmatter + structured classification.
@@ -10,13 +10,13 @@ Classify developer on 4 dimensions: communication style, autonomy preference, do
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:profile-user <argument-here>
+/rihal-profile-user <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:profile-user
-/rihal:profile-user --json '{"communication":"Direct & dense","autonomy":"Autonomous","domain_depth":"Advanced","iteration_speed":"Fast"}'
+/rihal-profile-user
+/rihal-profile-user --json '{"communication":"Direct & dense","autonomy":"Autonomous","domain_depth":"Advanced","iteration_speed":"Fast"}'
 ```
 
 STOP — do not proceed.
@@ -145,7 +145,7 @@ Dimensions:
   • Domain Depth: {domain_depth}
   • Iteration Speed: {iteration_speed}
 
-This profile will personalize future /rihal:council and /rihal:execute responses.
+This profile will personalize future /rihal-council and /rihal-execute responses.
 ```
 
 ## Success Criteria

@@ -1,5 +1,5 @@
 ---
-name: rihal:init
+name: rihal-init
 description: "[START HERE] Configure Rihal for this project — first command after install"
 argument-hint: "[--reset] [--skip-scan]"
 allowed-tools:

@@ -10,11 +10,11 @@
 
 ## Context
 
-Rihal Code v2.0 delivers Rihal's institutional context to every Rihalian's project through a **static + semi-dynamic** model: `rihal/brain/sources.yaml` lists upstream repos (GitHub org, Rihal docs repo, in-repo best-practices); `rihal-tools brain pull` clones those sources via sparse checkout; the pulled content sits under `rihal/brain/` until the next `/rihal:update`.
+Rihal Code v2.0 delivers Rihal's institutional context to every Rihalian's project through a **static + semi-dynamic** model: `rihal/brain/sources.yaml` lists upstream repos (GitHub org, Rihal docs repo, in-repo best-practices); `rihal-tools brain pull` clones those sources via sparse checkout; the pulled content sits under `rihal/brain/` until the next `/rihal-update`.
 
 This works for v2.0 but has three known limits:
 
-1. **Staleness between updates.** A Rihalian who runs `/rihal:update` on Monday sees Monday's standards all week, even if a critical PR-review rule is updated on Tuesday morning.
+1. **Staleness between updates.** A Rihalian who runs `/rihal-update` on Monday sees Monday's standards all week, even if a critical PR-review rule is updated on Tuesday morning.
 2. **Pull cost compounds.** As Rihal's doc corpus grows, `brain pull` time grows linearly. The v2.0 kill criterion is 10s on fresh install — we will hit that.
 3. **No audit trail.** There is no record of which Rihalian's project is on which brain version, no telemetry on which standards are actually surfaced to the AI, no way to hot-fix a mistaken standard across all installations.
 
@@ -107,7 +107,7 @@ When a Rihal PM edits the PRD-review checklist in the Rihal docs repo and merges
 ## Consequences
 
 ### Positive
-- Rihalians always see current Rihal standards without running `/rihal:update`.
+- Rihalians always see current Rihal standards without running `/rihal-update`.
 - Rihal can push hot-fixes to mistaken standards within minutes.
 - Aggregate telemetry on what the AI actually surfaces to Rihalians — feedback loop for standards that are not landing.
 - Eliminates the 10s `brain pull` cost on every install.

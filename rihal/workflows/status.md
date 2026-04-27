@@ -1,9 +1,9 @@
-# Workflow: rihal:status
+# Workflow: rihal-status
 
 <purpose>
 Render a human-readable project status dashboard. All data comes from a single `rihal-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rihal-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
 
-**SSOT:** `.rihal/state.json`. `/rihal:status` and `/rihal:progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
+**SSOT:** `.rihal/state.json`. `/rihal-status` and `/rihal-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
 
 <required_reading>
@@ -21,7 +21,7 @@ VERBOSE=$(node .rihal/bin/rihal-tools.cjs config-get output.verbose 2>/dev/null 
 
 Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
 
-**Slim mode** (default when `VERBOSE != "true"`): Output Steps 2–3 only (banner + phases list). Skip decisions, blockers detail, and route menu — just print the top route as a single "Next: `/rihal:X`" line. Append `(run /rihal:status --verbose for full detail)`.
+**Slim mode** (default when `VERBOSE != "true"`): Output Steps 2–3 only (banner + phases list). Skip decisions, blockers detail, and route menu — just print the top route as a single "Next: `/rihal-X`" line. Append `(run /rihal-status --verbose for full detail)`.
 
 **Verbose mode** (`VERBOSE == "true"` or `$ARGUMENTS` contains `--verbose`): Full Steps 2–6 output.
 

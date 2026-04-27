@@ -20,16 +20,16 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:scan [--focus tech|arch|quality|concerns|tech+arch] [--refresh] [--reset]
+/rihal-scan [--focus tech|arch|quality|concerns|tech+arch] [--refresh] [--reset]
 ```
 
 **Examples:**
 ```
-/rihal:scan --focus tech
-/rihal:scan --focus arch
-/rihal:scan --focus tech+arch
-/rihal:scan --refresh                 # auto-update stale docs, brief diff, log to CHANGELOG.md
-/rihal:scan --reset --focus tech+arch # silent overwrite (CI / autonomous)
+/rihal-scan --focus tech
+/rihal-scan --focus arch
+/rihal-scan --focus tech+arch
+/rihal-scan --refresh                 # auto-update stale docs, brief diff, log to CHANGELOG.md
+/rihal-scan --reset --focus tech+arch # silent overwrite (CI / autonomous)
 ```
 
 **Refresh flag — memory-bank pattern.** When `--refresh` is passed AND existing docs are present, the orchestrator:
@@ -327,21 +327,21 @@ Insert at the TOP of the file body (newest-first), under any pre-existing `# Cha
 ```markdown
 # Changelog — Codebase Memory Bank
 
-This file tracks structural changes between scans. Each entry is auto-written by `/rihal:scan --refresh`. Newest entries first.
+This file tracks structural changes between scans. Each entry is auto-written by `/rihal-scan --refresh`. Newest entries first.
 
 ---
 
 {first entry here}
 ```
 
-This file is **read by future `/rihal:scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
+This file is **read by future `/rihal-scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
 
 ## Step 7: Final cue (orchestrator-level, after RETURNED banner)
 
 The RETURNED banner above is Dalil's voice. After it, the orchestrator may add ONE neutral cue line if the user might want a deeper scan:
 
 ```
-Tip: `/rihal:map-codebase` runs a 4-area parallel scan if you want broader coverage.
+Tip: `/rihal-map-codebase` runs a 4-area parallel scan if you want broader coverage.
 ```
 
 Skip this cue if the user already asked for a focused scan — don't push an upsell.

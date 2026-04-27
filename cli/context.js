@@ -13,7 +13,7 @@
  *                                         prints a warning when stale
  *
  * The refresh does NOT rewrite active.md or project-brief.md — that's
- * /rihal:init's job (the scan requires an LLM). --refresh just stores the
+ * /rihal-init's job (the scan requires an LLM). --refresh just stores the
  * current fingerprint so the next check sees things as fresh.
  */
 
@@ -117,7 +117,7 @@ function printReport(cwd) {
   console.log();
 
   if (report.status !== 'fresh') {
-    console.log(`   ➡ Refresh with: /rihal:init (in your editor)`);
+    console.log(`   ➡ Refresh with: /rihal-init (in your editor)`);
     console.log();
   }
 }
@@ -125,7 +125,7 @@ function printReport(cwd) {
 /**
  * --refresh: recompute and save the fingerprint to .rihal/state.json.
  * Only use this when you know the memory bank was actually refreshed
- * (e.g. by /rihal:init running end-to-end). Does NOT rewrite context files.
+ * (e.g. by /rihal-init running end-to-end). Does NOT rewrite context files.
  */
 function doRefresh(cwd) {
   ensureRihalDir(cwd);
@@ -161,7 +161,7 @@ if command -v rcode >/dev/null 2>&1; then
   output=$(rcode context --check 2>&1)
   if [ $? -ne 0 ]; then
     echo ""
-    echo "⚠ Rihal memory bank is stale — run /rihal:init in your editor to refresh."
+    echo "⚠ Rihal memory bank is stale — run /rihal-init in your editor to refresh."
     echo "   $(echo "$output" | grep '•' | head -1 | sed 's/^ *//')"
   fi
 fi

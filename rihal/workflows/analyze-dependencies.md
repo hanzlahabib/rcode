@@ -1,7 +1,7 @@
-# Workflow: rihal:analyze-dependencies
+# Workflow: rihal-analyze-dependencies
 
 <purpose>
-Analyze ROADMAP.md phases for dependency relationships before execution. Detect file overlap between phases, semantic API/data-flow dependencies, and suggest `Depends on` entries to prevent merge conflicts during parallel execution by `/rihal:manager`.
+Analyze ROADMAP.md phases for dependency relationships before execution. Detect file overlap between phases, semantic API/data-flow dependencies, and suggest `Depends on` entries to prevent merge conflicts during parallel execution by `/rihal-manager`.
 </purpose>
 
 
@@ -10,13 +10,13 @@ Analyze ROADMAP.md phases for dependency relationships before execution. Detect 
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:analyze-dependencies <argument-here>
+/rihal-analyze-dependencies <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:analyze-dependencies example 1
-/rihal:analyze-dependencies example 2
+/rihal-analyze-dependencies example 1
+/rihal-analyze-dependencies example 2
 ```
 
 STOP — do not proceed.
@@ -26,7 +26,7 @@ STOP — do not proceed.
 **Action:** Read `.planning/ROADMAP.md` and extract all phases.
 
 ```bash
-test -f .planning/ROADMAP.md || echo "No ROADMAP.md found — run /rihal:new-project first."
+test -f .planning/ROADMAP.md || echo "No ROADMAP.md found — run /rihal-new-project first."
 ```
 
 For each phase, capture:
@@ -119,7 +119,7 @@ When writing:
 - Preserve all other phase content unchanged
 - Do not reorder phases
 
-After applying: "ROADMAP.md updated. Run `/rihal:manager` to execute phases in the correct order."
+After applying: "ROADMAP.md updated. Run `/rihal-manager` to execute phases in the correct order."
 
 ## Success Criteria
 

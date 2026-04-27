@@ -12,10 +12,10 @@
  *
  * Affects:
  *   - Workflow step files ("halt at menu" vs "pick default and continue")
- *   - /rihal:kickoff next-step menu (interactive vs auto-continue)
+ *   - /rihal-kickoff next-step menu (interactive vs auto-continue)
  *   - github-sync confirmation prompts (yolo still requires --force-yolo
  *     for github mutations — see docs/adr/0001-github-sync-as-cli.md)
- *   - /rihal:pause and /rihal:resume (yolo skips the confirmation prompt
+ *   - /rihal-pause and /rihal-resume (yolo skips the confirmation prompt
  *     on resume; guided always asks)
  *   - All agent skill files that read communication_mode from config
  */

@@ -1,4 +1,4 @@
-# Workflow: rihal:audit
+# Workflow: rihal-audit
 
 <purpose>
 Single entry point for every kind of audit. Asks the user *what* to audit
@@ -17,20 +17,20 @@ and auto-picks the most-relevant target based on project state. In
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:audit                       # interactive — asks what to audit
-/rihal:audit phase [<NN>]          # → /rihal:verify-phase
-/rihal:audit milestone [--strict]  # → /rihal:audit-milestone (with synth fallback)
-/rihal:audit uat                   # → /rihal:audit-uat
-/rihal:audit code [--scope=...]    # → /rihal:code-review --karpathy
-/rihal:audit fix                   # → /rihal:audit-fix
-/rihal:audit work                  # → /rihal:verify-work
+/rihal-audit                       # interactive — asks what to audit
+/rihal-audit phase [<NN>]          # → /rihal-verify-phase
+/rihal-audit milestone [--strict]  # → /rihal-audit-milestone (with synth fallback)
+/rihal-audit uat                   # → /rihal-audit-uat
+/rihal-audit code [--scope=...]    # → /rihal-code-review --karpathy
+/rihal-audit fix                   # → /rihal-audit-fix
+/rihal-audit work                  # → /rihal-verify-work
 ```
 
 **Examples:**
 ```
-/rihal:audit
-/rihal:audit milestone --strict
-/rihal:audit phase 03
+/rihal-audit
+/rihal-audit milestone --strict
+/rihal-audit phase 03
 ```
 
 ## Step 1 — Resolve mode + arguments
@@ -94,11 +94,11 @@ sub-workflow.
 
 | target | precondition | failure message |
 |---|---|---|
-| phase | at least one `.planning/phases/*/PLAN.md` | `No PLAN.md found. Run /rihal:plan first.` |
-| milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal:new-milestone first.` |
-| uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal:execute on a phase first.` |
+| phase | at least one `.planning/phases/*/PLAN.md` | `No PLAN.md found. Run /rihal-plan first.` |
+| milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
+| uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal-execute on a phase first.` |
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
-| fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal:audit first.` |
+| fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
@@ -112,7 +112,7 @@ if [ "$TARGET" = "milestone" ] && [ "$SUMMARIES" -eq 0 ] && [ "$PLANS" -gt 0 ]; 
   echo "  Phases were executed but never formally closed."
   # Offer (yolo: auto-pick 1; guided: ask):
   #   1. Synthesize SUMMARY.md per phase from PLAN.md + git log    [recommended]
-  #   2. Run /rihal:verify-phase per phase (manual close)
+  #   2. Run /rihal-verify-phase per phase (manual close)
   #   3. Continue audit anyway (will only assess what's documented)
   #   0. Cancel
 fi
@@ -135,12 +135,12 @@ Run the target's slash command, forwarding remaining args:
 
 | target | dispatch |
 |---|---|
-| phase | `/rihal:verify-phase $REST_ARGS` |
-| milestone | `/rihal:audit-milestone $REST_ARGS` |
-| uat | `/rihal:audit-uat $REST_ARGS` |
-| code | `/rihal:code-review $REST_ARGS --karpathy` |
-| fix | `/rihal:audit-fix $REST_ARGS` |
-| work | `/rihal:verify-work $REST_ARGS` |
+| phase | `/rihal-verify-phase $REST_ARGS` |
+| milestone | `/rihal-audit-milestone $REST_ARGS` |
+| uat | `/rihal-audit-uat $REST_ARGS` |
+| code | `/rihal-code-review $REST_ARGS --karpathy` |
+| fix | `/rihal-audit-fix $REST_ARGS` |
+| work | `/rihal-verify-work $REST_ARGS` |
 
 ## Step 6 — Closing summary
 
@@ -153,20 +153,20 @@ Report: {report_path or "(stdout only)"}
 Findings: {count}
 
 Next:
-  /rihal:audit fix         — auto-fix findings classified as auto-fixable
-  /rihal:audit code        — drill into code-quality issues
-  /rihal:settings show     — review which audit gates are enabled
+  /rihal-audit fix         — auto-fix findings classified as auto-fixable
+  /rihal-audit code        — drill into code-quality issues
+  /rihal-settings show     — review which audit gates are enabled
 ```
 
 ## Success Criteria
 
-- [ ] `/rihal:audit` (no args) presents menu in guided mode, auto-picks in yolo
-- [ ] `/rihal:audit milestone` short-circuits the menu
+- [ ] `/rihal-audit` (no args) presents menu in guided mode, auto-picks in yolo
+- [ ] `/rihal-audit milestone` short-circuits the menu
 - [ ] When SUMMARY.md absent but PLAN.md present, milestone offers synthesize/verify/skip — does not dead-halt
 - [ ] Sub-workflow's closing report is surfaced unchanged
 
 ## On Error
 
-- **Sub-workflow not installed** (slash file missing): `Audit subroute '/rihal:{target}' not found. Run: npx @hanzlaa/rcode install .`
+- **Sub-workflow not installed** (slash file missing): `Audit subroute '/rihal-{target}' not found. Run: npx @hanzlaa/rcode install .`
 - **Precondition failed**: print the message from Step 4's table, suggest the unblocking command, STOP.
 - **`.rihal/config.yaml` missing**: treat as `mode: guided`, continue.

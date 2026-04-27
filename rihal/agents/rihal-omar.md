@@ -1,7 +1,7 @@
 ---
 name: rihal-omar
 description: |
-  Software Engineer (generalist) — spawned by /rihal:council, story execution
+  Software Engineer (generalist) — spawned by /rihal-council, story execution
   pairings, and any cross-stack implementation work.
   Activates for: implementing stories that span frontend + backend, picking
   up small subtasks delegated by Hanzla, bug-fix runs, regression tests,

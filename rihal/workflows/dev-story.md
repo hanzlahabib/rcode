@@ -1,4 +1,4 @@
-# Workflow: rihal:dev-story
+# Workflow: rihal-dev-story
 
 <purpose>
 Wrap a STORY.md file for AI-coder consumption. Produces:
@@ -57,14 +57,14 @@ elif [[ "$ARGS" =~ ^[Ee]pic[[:space:]]+([0-9]+)$ ]] || [[ "$ARGS" =~ ^[Ee][Pp][I
   EPIC_FILE=".planning/epics/EPIC-$(printf '%02d' $EPIC_NUM).md"
 
 else
-  echo "Usage: /rihal:dev-story <epic-ref> [--branch]"
+  echo "Usage: /rihal-dev-story <epic-ref> [--branch]"
   echo ""
   echo "Examples:"
-  echo "  /rihal:dev-story epic 1             # list stories in EPIC-01"
-  echo "  /rihal:dev-story epic 1 story 3     # work on EPIC-01, story 3"
-  echo "  /rihal:dev-story EPIC-01.3          # same as above"
-  echo "  /rihal:dev-story 1.3 --branch       # with new git branch"
-  echo "  /rihal:dev-story .planning/epics/stories/1.3.md  # direct path"
+  echo "  /rihal-dev-story epic 1             # list stories in EPIC-01"
+  echo "  /rihal-dev-story epic 1 story 3     # work on EPIC-01, story 3"
+  echo "  /rihal-dev-story EPIC-01.3          # same as above"
+  echo "  /rihal-dev-story 1.3 --branch       # with new git branch"
+  echo "  /rihal-dev-story .planning/epics/stories/1.3.md  # direct path"
   echo ""
   echo "Story files live in: .planning/epics/stories/"
   STOP
@@ -89,7 +89,7 @@ if [[ -z "$STORY_NUMBER" ]]; then
   AVAILABLE=$(ls .planning/epics/stories/${EPIC_NUM}.*.md 2>/dev/null)
   if [[ -z "$AVAILABLE" ]]; then
     echo "Error: No stories found for Epic ${EPIC_NUM} in .planning/epics/stories/"
-    echo "Run /rihal:create-epics-and-stories first."
+    echo "Run /rihal-create-epics-and-stories first."
     STOP
   fi
   echo "Stories in Epic ${EPIC_NUM}:"
@@ -334,7 +334,7 @@ This story is "Done" when all items in checklist-story-dod.md are checked:
 To execute with an AI coder:
 
 ```bash
-/rihal:code .planning/dev-sessions/{story-id}-dev-prompt.md
+/rihal-code .planning/dev-sessions/{story-id}-dev-prompt.md
 ```
 
 ---
@@ -383,7 +383,7 @@ Acceptance Criteria: {count}
 
 Context file: {path to dev-prompt.md}
 
-Next: /rihal:code {path to dev-prompt.md}
+Next: /rihal-code {path to dev-prompt.md}
 
 Or, continue the current session to:
   - Ask clarifying questions
@@ -397,7 +397,7 @@ If user says "start coding" or "let's build", spawn the code execution workflow:
 
 ```bash
 # User says "let's go" or "start", then:
-/rihal:code "$DEV_PROMPT_FILE"
+/rihal-code "$DEV_PROMPT_FILE"
 ```
 
 Otherwise, offer:
@@ -405,7 +405,7 @@ Otherwise, offer:
 ```
 Ready to code this story?
 
-/rihal:code {dev-prompt-file}
+/rihal-code {dev-prompt-file}
 ```
 
 Stop and wait for user to proceed. Do NOT auto-spawn.

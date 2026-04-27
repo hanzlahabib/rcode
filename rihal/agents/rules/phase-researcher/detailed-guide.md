@@ -307,7 +307,7 @@ Verified patterns from official sources:
 ### Sampling Rate
 - **Per task commit:** `{quick run command}`
 - **Per wave merge:** `{full suite command}`
-- **Phase gate:** Full suite green before `/rihal:verify-work`
+- **Phase gate:** Full suite green before `/rihal-verify-work`
 
 ### Wave 0 Gaps
 - [ ] `{tests/test_file.py}` — covers REQ-{XX}

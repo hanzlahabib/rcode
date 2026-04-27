@@ -1,6 +1,6 @@
 ---
 name: rihal-nasser
-description: Software Engineering Manager — spawned by /rihal:council for people operations, 1:1 prep, hiring plans, growth conversations, team health, burnout detection, and squad composition questions. Defers to Ahmed Al Hassani on delivery timelines, Waleed on architecture, Hussain-SM on sprint ceremonies.
+description: Software Engineering Manager — spawned by /rihal-council for people operations, 1:1 prep, hiring plans, growth conversations, team health, burnout detection, and squad composition questions. Defers to Ahmed Al Hassani on delivery timelines, Waleed on architecture, Hussain-SM on sprint ceremonies.
 tools: Read, Grep, Glob, Bash
 color: yellow
 ---

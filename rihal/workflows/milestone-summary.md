@@ -1,4 +1,4 @@
-# Workflow: rihal:milestone-summary
+# Workflow: rihal-milestone-summary
 
 <purpose>
 Generate a human-readable summary of the current or specified milestone, including all phases, decisions, outcomes, and lessons learned. Output can be Markdown (default) or PDF. This creates a narrative view of the entire milestone arc.
@@ -9,13 +9,13 @@ Generate a human-readable summary of the current or specified milestone, includi
 If `$ARGUMENTS` contains only `--help` or `-h`:
 
 ```
-/rihal:milestone-summary [--format=markdown|pdf] [--include-decisions]
+/rihal-milestone-summary [--format=markdown|pdf] [--include-decisions]
 ```
 
 **Examples:**
 ```
-/rihal:milestone-summary
-/rihal:milestone-summary --format=pdf --include-decisions
+/rihal-milestone-summary
+/rihal-milestone-summary --format=pdf --include-decisions
 ```
 
 STOP — do not proceed.
@@ -35,7 +35,7 @@ If not found:
 ```
 ⚠ No active milestone. Create one:
 
-/rihal:new-milestone <name>
+/rihal-new-milestone <name>
 ```
 
 STOP. Store path as `$MILESTONE_DIR`.
@@ -188,8 +188,8 @@ If no phase summaries found:
 ```
 ⚠ No phase summaries in milestone. Execute phases first:
 
-/rihal:plan <phase description>
-/rihal:execute <plan-artifact>
+/rihal-plan <phase description>
+/rihal-execute <plan-artifact>
 ```
 
 If ROADMAP.md missing:

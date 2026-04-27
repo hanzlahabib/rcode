@@ -1,4 +1,4 @@
-# Workflow: rihal:new-workspace
+# Workflow: rihal-new-workspace
 
 <purpose>
 Create an isolated workspace for parallel work. Workspaces are independent planning directories with their own ROADMAP, STATE, and phases. Use when multiple concurrent initiatives need to run without interfering (e.g., "Q2 Platform Work" + "Bug Fix Sprint" in parallel).
@@ -9,13 +9,13 @@ Create an isolated workspace for parallel work. Workspaces are independent plann
 If `$ARGUMENTS` is empty or only `--help` or `-h`:
 
 ```
-/rihal:new-workspace <workspace-name> [--from-current]
+/rihal-new-workspace <workspace-name> [--from-current]
 ```
 
 **Examples:**
 ```
-/rihal:new-workspace Bug Fix Sprint
-/rihal:new-workspace --from-current Emergency Hotfix
+/rihal-new-workspace Bug Fix Sprint
+/rihal-new-workspace --from-current Emergency Hotfix
 ```
 
 STOP — do not proceed.
@@ -136,10 +136,10 @@ Print:
   Location: {WORKSPACE_DIR}
   
 Start work:
-  /rihal:plan <task> --workspace={WORKSPACE_NAME}
+  /rihal-plan <task> --workspace={WORKSPACE_NAME}
   
 Switch context:
-  /rihal:workspace {WORKSPACE_NAME}
+  /rihal-workspace {WORKSPACE_NAME}
 ```
 
 ## Success Criteria
@@ -156,7 +156,7 @@ If workspace with that name already exists:
 
 ```
 ⚠ Workspace '{WORKSPACE_NAME}' already exists.
-  Use a different name or: /rihal:remove-workspace {WORKSPACE_NAME}
+  Use a different name or: /rihal-remove-workspace {WORKSPACE_NAME}
 ```
 
 If permissions prevent directory creation:

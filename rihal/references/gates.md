@@ -18,7 +18,7 @@ Defines 4 gate types used in rihal workflows to control execution flow, validate
 **Example:** Phase execution gate
 ```
 Gate: Check phase.md exists and has required sections
-Block: "Phase {N} has no SPRINT.md. Create with /rihal:help"
+Block: "Phase {N} has no SPRINT.md. Create with /rihal-help"
 Warn: "Phase overdue by {days}. Review roadmap?"
 ```
 
@@ -77,14 +77,14 @@ Ask: "Pattern A is faster but less flexible. Pattern B is extensible but slower.
 - Exit cleanly without recovery attempt
 - Suggest manual recovery path
 
-**Recovery:** Manual repair via `/rihal:health` or `/rihal:forensics`
+**Recovery:** Manual repair via `/rihal-health` or `/rihal-forensics`
 
 **Example:** Corrupted state gate
 ```
 Gate: Validate state.json integrity
 Fail: "state.json corrupted (invalid JSON at line 42).
        Aborting to prevent further damage.
-       Recovery: /rihal:health --repair"
+       Recovery: /rihal-health --repair"
 ```
 
 ---

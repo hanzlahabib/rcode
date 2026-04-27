@@ -1,5 +1,5 @@
 ---
-name: rihal:discuss-phase
+name: rihal-discuss-phase
 description: Gather context through adaptive questioning before sprint planning. Creates CONTEXT.md with decisions, discretion areas, deferred ideas.
 argument-hint: "<phase-number> [--auto] [--chain]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion

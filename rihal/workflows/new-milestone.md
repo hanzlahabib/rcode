@@ -30,12 +30,12 @@ Read these files in parallel:
 - `.planning/PROJECT.md` — existing project, validated requirements, decisions
 - `.planning/MILESTONES.md` — what shipped previously (may not exist on first milestone)
 - `.planning/STATE.md` — pending todos, blockers
-- `.planning/MILESTONE-CONTEXT.md` — if it exists (from a prior `/rihal:discuss` about the next milestone)
+- `.planning/MILESTONE-CONTEXT.md` — if it exists (from a prior `/rihal-discuss` about the next milestone)
 
 If `.planning/PROJECT.md` does not exist, STOP and redirect:
 
 ```
-⚠ No project initialized. Run /rihal:new-project first.
+⚠ No project initialized. Run /rihal-new-project first.
 ```
 
 ## 2. Gather milestone goals
@@ -132,7 +132,7 @@ This document evolves at phase transitions and milestone boundaries.
 4. Decisions to log? → add to Key Decisions
 5. "What This Is" still accurate? → update if drifted
 
-**After each milestone (via `/rihal:complete-milestone`):**
+**After each milestone (via `/rihal-complete-milestone`):**
 1. Full review of all sections
 2. Core Value check
 3. Audit Out of Scope — reasons still valid?
@@ -182,7 +182,7 @@ Delete `MILESTONE-CONTEXT.md` if it exists (consumed):
 rm -f .planning/MILESTONE-CONTEXT.md
 ```
 
-Clear leftover phase directories from the previous milestone only if the previous milestone was archived (check `.planning/archive/` exists and contains the prior milestone's dir). If not archived, do NOT delete — prompt user to run `/rihal:complete-milestone` on the prior milestone first.
+Clear leftover phase directories from the previous milestone only if the previous milestone was archived (check `.planning/archive/` exists and contains the prior milestone's dir). If not archived, do NOT delete — prompt user to run `/rihal-complete-milestone` on the prior milestone first.
 
 Load commit conventions (see `@.rihal/references/commit-conventions.md` — run the project-local scan before writing the commit message):
 
@@ -236,7 +236,7 @@ fi
 If the previous milestone has not been completed/archived, STOP:
 
 ```
-⚠ Prior milestone not archived. Run /rihal:complete-milestone v[prev] before --reset-phase-numbers.
+⚠ Prior milestone not archived. Run /rihal-complete-milestone v[prev] before --reset-phase-numbers.
 ```
 
 ## 8. Research decision
@@ -253,7 +253,7 @@ If `research_enabled=false`:
 - "Skip research (current default)" — go straight to requirements
 - "Research first" — discover patterns, features, architecture for NEW capabilities
 
-**Do NOT persist this choice.** To change the default, the user runs `/rihal:settings`.
+**Do NOT persist this choice.** To change the default, the user runs `/rihal-settings`.
 
 **If "Research first":**
 
@@ -580,9 +580,9 @@ node ".rihal/bin/rihal-tools.cjs" state add-decision \
 
 `/clear` then:
 
-`/rihal:discuss-phase [N]` — gather context and clarify approach
+`/rihal-discuss-phase [N]` — gather context and clarify approach
 or
-`/rihal:plan [N]` — skip discussion, plan directly
+`/rihal-plan [N]` — skip discussion, plan directly
 ```
 
 </process>
@@ -601,13 +601,13 @@ or
 - [ ] User approval captured before commit
 - [ ] Phase numbering mode respected (continued or reset)
 - [ ] All commits made (or gracefully skipped if .planning/ gitignored)
-- [ ] User shown next command: `/rihal:discuss-phase [N]`
+- [ ] User shown next command: `/rihal-discuss-phase [N]`
 </success_criteria>
 
 <on_error>
 - **Empty `$ARGUMENTS` with no conversational context:** ask for milestone name; do not invent one.
-- **No `.planning/PROJECT.md`:** redirect to `/rihal:new-project`.
-- **Prior milestone not archived + `--reset-phase-numbers`:** stop, tell user to run `/rihal:complete-milestone` first.
+- **No `.planning/PROJECT.md`:** redirect to `/rihal-new-project`.
+- **Prior milestone not archived + `--reset-phase-numbers`:** stop, tell user to run `/rihal-complete-milestone` first.
 - **Roadmapper returns ROADMAP BLOCKED:** surface the blocker, collect resolution, re-spawn.
 - **`rihal-tools.cjs state` fails:** continue — state tracking is optional, file artifacts are mandatory.
 - **`.planning/` is gitignored:** write files, print ℹ notice, do not error.

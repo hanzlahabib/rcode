@@ -6,7 +6,7 @@ Answers to common questions about Rihal Code.
 
 ## Installation & Setup
 
-### Q: Why doesn't `/rihal:do` appear after installing?
+### Q: Why doesn't `/rihal-do` appear after installing?
 
 **A:** Restart your IDE.
 
@@ -28,7 +28,7 @@ node /tmp/rihal-src/cli/install-v2.js . --yes --module core
 
 This gives you:
 - 5 council agents
-- `/rihal:council`, `/rihal:discuss`, `/rihal:status`
+- `/rihal-council`, `/rihal-discuss`, `/rihal-status`
 - State management
 
 Then add execution later:
@@ -64,13 +64,13 @@ Your existing agents stay untouched. Rihal agents are namespaced under `rihal-*`
 - **Chain** — Building something step-by-step (research → scope → plan)
 - **Discuss** — Quick question for one expert
 
-Start with `/rihal:do` — it routes you based on state.
+Start with `/rihal-do` — it routes you based on state.
 
 ---
 
 ### Q: How do I know which command to run next?
 
-**A:** Run `/rihal:do`.
+**A:** Run `/rihal-do`.
 
 It's the interactive router. Based on your project state, it suggests what you should do next:
 - Fresh project? → Suggest new-project or research
@@ -87,10 +87,10 @@ It's the interactive router. Based on your project state, it suggests what you s
 Every Rihal workflow has a "Step 0.5" that detects mismatched intent. If you run the wrong command, you get a single-line copy-paste redirect:
 
 ```
-/rihal:plan should we use postgres or mongo?
+/rihal-plan should we use postgres or mongo?
 ⚠ That's a decision question, not a planning input.
 Copy-paste this instead:
-/rihal:council should we use postgres or mongo?
+/rihal-council should we use postgres or mongo?
 ```
 
 ---
@@ -101,12 +101,12 @@ Copy-paste this instead:
 
 **Option 1: Override panel for one council**
 ```
-/rihal:council --agents=waleed,fatima,sadiq should we migrate to serverless?
+/rihal-council --agents=waleed,fatima,sadiq should we migrate to serverless?
 ```
 
 **Option 2: See scoring breakdown (why agents were picked)**
 ```
-/rihal:council --explain "should we hire a DevOps person?"
+/rihal-council --explain "should we hire a DevOps person?"
 ```
 
 Shows which agents scored highest and why. Used this to tune scoring.
@@ -118,9 +118,9 @@ Shows which agents scored highest and why. Used this to tune scoring.
 **A:** Step 0.5 of every workflow detects if you're asking the wrong command.
 
 Examples:
-- Ask `/rihal:plan` a decision question → redirects to `/rihal:council`
-- Ask `/rihal:council` "how do I implement X?" → redirects to `/rihal:discuss` or `/rihal:chain`
-- Ask `/rihal:execute` without a plan → redirects to `/rihal:plan`
+- Ask `/rihal-plan` a decision question → redirects to `/rihal-council`
+- Ask `/rihal-council` "how do I implement X?" → redirects to `/rihal-discuss` or `/rihal-chain`
+- Ask `/rihal-execute` without a plan → redirects to `/rihal-plan`
 
 Catches mistakes early with a copy-paste fix.
 
@@ -167,8 +167,8 @@ When someone asks you something, [how you respond].
 
 Then use it:
 ```
-/rihal:discuss my-expert should we use this library?
-/rihal:chain my-expert,waleed,planner "your topic"
+/rihal-discuss my-expert should we use this library?
+/rihal-chain my-expert,waleed,planner "your topic"
 ```
 
 ---
@@ -211,10 +211,10 @@ The panel scorer may suggest them, but they're not installed as subagents yet. R
 
 ### Q: How do I save my progress if I have to stop?
 
-**A:** Use `/rihal:pause-work`:
+**A:** Use `/rihal-pause-work`:
 
 ```
-/rihal:pause-work
+/rihal-pause-work
 ```
 
 Creates:
@@ -223,7 +223,7 @@ Creates:
 
 Later, resume with:
 ```
-/rihal:resume-work
+/rihal-resume-work
 ```
 
 ---
@@ -233,7 +233,7 @@ Later, resume with:
 **A:** Run health check:
 
 ```
-/rihal:health --fix
+/rihal-health --fix
 ```
 
 Detects and auto-fixes:
@@ -252,10 +252,10 @@ git show HEAD~1:.rihal/state.json
 
 ### Q: Can I undo the last execution?
 
-**A:** Yes, use `/rihal:undo`:
+**A:** Yes, use `/rihal-undo`:
 
 ```
-/rihal:undo
+/rihal-undo
 ```
 
 Reverts:
@@ -269,10 +269,10 @@ Reverts:
 
 ### Q: How do I recover from a failed phase?
 
-**A:** Run `/rihal:correct-course`:
+**A:** Run `/rihal-correct-course`:
 
 ```
-/rihal:correct-course
+/rihal-correct-course
 ```
 
 Analyzes the failure and suggests:
@@ -287,19 +287,19 @@ Interactive prompt helps choose.
 
 ## Planning & Execution
 
-### Q: What's the difference between `/rihal:plan` and `/rihal:chain`?
+### Q: What's the difference between `/rihal-plan` and `/rihal-chain`?
 
 **A:**
 
-- **`/rihal:plan`** — Write a plan for one phase. You know what you want; just need the breakdown.
+- **`/rihal-plan`** — Write a plan for one phase. You know what you want; just need the breakdown.
   ```
-  /rihal:plan 02 build user authentication
+  /rihal-plan 02 build user authentication
   ```
   Output: PLAN.md with tasks + success criteria
 
-- **`/rihal:chain`** — Discover what to build step-by-step. Research → Scope → Plan.
+- **`/rihal-chain`** — Discover what to build step-by-step. Research → Scope → Plan.
   ```
-  /rihal:chain research-plan build a rental app for dubai
+  /rihal-chain research-plan build a rental app for dubai
   ```
   Output: RESEARCH.md, SCOPE.md, PLAN.md
 
@@ -309,7 +309,7 @@ If you're uncertain, use chain first, then plan. If you know what to build, use 
 
 ### Q: What happens when I execute a plan?
 
-**A:** `/rihal:execute` does this:
+**A:** `/rihal-execute` does this:
 
 1. Load the plan's tasks
 2. Create feature branch (if configured)
@@ -346,7 +346,7 @@ If you're uncertain, use chain first, then plan. If you know what to build, use 
 Executor doesn't care where plan came from. Point it at any PLAN.md:
 
 ```
-/rihal:execute ./some-other-plan.md
+/rihal-execute ./some-other-plan.md
 ```
 
 ---
@@ -359,13 +359,13 @@ Executor doesn't care where plan came from. Point it at any PLAN.md:
 ❌ Task 02.01.02 failed: "npm install stripe" failed with: no npm
 Blocked: Can't proceed to next task (depends on stripe installed)
 Recommendation: Install Node.js and npm, then rerun
-/rihal:rerun 02.01.02
+/rihal-rerun 02.01.02
 ```
 
 Fix the blocker manually, then rerun:
 
 ```
-/rihal:rerun 02.01.02
+/rihal-rerun 02.01.02
 ```
 
 ---
@@ -382,7 +382,7 @@ Mariam auto-triggers for:
 
 Example:
 ```
-/rihal:council yar affiliate site bnanai hai dubai ma
+/rihal-council yar affiliate site bnanai hai dubai ma
 → Panel: [mariam, hussain-pm, sadiq]
 ```
 
@@ -395,7 +395,7 @@ Mariam picked because "dubai", "affiliate", "bnanai" are in her keyword list.
 **A:** Yes, via config:
 
 ```bash
-/rihal:settings
+/rihal-settings
 # or edit directly:
 nano .rihal/config.yaml
 ```
@@ -445,7 +445,7 @@ etc.
 Wired into every code-writing agent as hard constraints. Audit recent changes:
 
 ```
-/rihal:code-review HEAD~5..HEAD --karpathy
+/rihal-code-review HEAD~5..HEAD --karpathy
 ```
 
 ---
@@ -486,10 +486,10 @@ Varies based on question complexity and agent verbosity.
 
 ### Q: How do I see token usage?
 
-**A:** Run `/rihal:stats`:
+**A:** Run `/rihal-stats`:
 
 ```
-/rihal:stats
+/rihal-stats
 ```
 
 Shows:
@@ -505,7 +505,7 @@ Shows:
 **A:** Yes, via model profile:
 
 ```
-/rihal:settings
+/rihal-settings
 ```
 
 Profiles:
@@ -516,7 +516,7 @@ Profiles:
 
 Change with:
 ```
-/rihal:config --set=model_profile=budget
+/rihal-config --set=model_profile=budget
 ```
 
 ---
@@ -539,10 +539,10 @@ git commit -m "feat(phase-02): user authentication (02.01, 02.02)"
 
 ### Q: Can I see what changed in a phase?
 
-**A:** Yes, use `/rihal:diff`:
+**A:** Yes, use `/rihal-diff`:
 
 ```
-/rihal:diff 01 02
+/rihal-diff 01 02
 ```
 
 Shows what changed between phases. Or compare commits:
@@ -563,7 +563,7 @@ git:
 ```
 
 - **none** — Rihal doesn't touch git
-- **feature-branch** — `/rihal:execute` creates `feature/phase-{N}` branches
+- **feature-branch** — `/rihal-execute` creates `feature/phase-{N}` branches
 - **worktree-isolation** — Uses git worktrees (experimental)
 
 ---
@@ -576,18 +576,18 @@ git:
 
 1. **Pause and resume:**
    ```
-   /rihal:pause-work
-   /rihal:resume-work
+   /rihal-pause-work
+   /rihal-resume-work
    ```
 
 2. **Reduce scope:**
    ```
-   /rihal:quick fix just this one thing
+   /rihal-quick fix just this one thing
    ```
 
 3. **Use simpler model:**
    ```
-   /rihal:config --set=model_profile=budget
+   /rihal-config --set=model_profile=budget
    ```
 
 ---
@@ -632,7 +632,7 @@ ls .claude/agents/rihal-*.md
 
 Or run:
 ```
-/rihal:help
+/rihal-help
 ```
 
 ---
@@ -645,19 +645,19 @@ Or run:
 
 1. **Reduce panel size:**
    ```
-   /rihal:council --agents=waleed,sadiq "your question"
+   /rihal-council --agents=waleed,sadiq "your question"
    ```
    Smaller panel = faster parallel execution
 
 2. **Use discuss instead:**
    ```
-   /rihal:discuss waleed "your question"
+   /rihal-discuss waleed "your question"
    ```
    Single agent is much faster
 
 3. **Use budget model:**
    ```
-   /rihal:config --set=model_profile=budget
+   /rihal-config --set=model_profile=budget
    ```
 
 4. **Simpler question:**
@@ -684,7 +684,7 @@ If you try parallel commands, the second one will wait for the first to complete
 
 Still stuck? Check:
 ```
-/rihal:help <command>
-/rihal:forensics --last
-/rihal:health
+/rihal-help <command>
+/rihal-forensics --last
+/rihal-health
 ```

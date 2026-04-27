@@ -1,12 +1,12 @@
 ---
-name: rihal:progress
-description: Alias of /rihal:status --verbose — full project state dashboard with decisions, blockers, and next-step routes
+name: rihal-progress
+description: Alias of /rihal-status --verbose — full project state dashboard with decisions, blockers, and next-step routes
 argument-hint: ""
 allowed-tools: bash, read, grep
 ---
 
 <objective>
-Alias of `/rihal:status --verbose`. Produces the verbose project state dashboard — phase, sprint progress, recent decisions, blockers, last council session, and a Next Up route tree.
+Alias of `/rihal-status --verbose`. Produces the verbose project state dashboard — phase, sprint progress, recent decisions, blockers, last council session, and a Next Up route tree.
 </objective>
 
 <execution_context>

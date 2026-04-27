@@ -498,7 +498,7 @@ function copyDirRecursive(source, dest) {
 
 /**
  * Seed .planning/ with starter ROADMAP.md + STATE.md + PROJECT.md so
- * workflows work immediately after install. User can /rihal:sprint-planning
+ * workflows work immediately after install. User can /rihal-sprint-planning
  * on a fresh install without manual setup.
  *
  * Only seeds if .planning/ROADMAP.md doesn't already exist (preserves user data).
@@ -548,7 +548,7 @@ function seedStarterPlanning(target, projectName) {
     `---\n\n` +
     `## Decisions\n\n_None yet._\n\n` +
     `## Blockers\n\n_None._\n\n` +
-    `## Next Action\n\nSay "plan a sprint" or run \`/rihal:sprint-planning\` to break Phase 01 into stories.\n`
+    `## Next Action\n\nSay "plan a sprint" or run \`/rihal-sprint-planning\` to break Phase 01 into stories.\n`
   );
 
   // Also pre-seed .rihal/state.json with Phase 01 so sprint tools work
@@ -845,7 +845,7 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
   }
 
-  // .rihal/templates/projects/  — starter templates consumed by /rihal:from-template
+  // .rihal/templates/projects/  — starter templates consumed by /rihal-from-template
   const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
   const relProjectTemplates = path.relative(target, path.join(target, '.rihal', 'templates', 'projects'));
   for (const f of walkFiles(projectTemplatesSrc)) {
@@ -1572,7 +1572,7 @@ async function install(opts) {
       console.log('');
       console.log('  ' + warn('config.yaml has validation errors:'));
       for (const e of validation.errors) console.log(pc.yellow(e));
-      console.log(dim('  → Edit .rihal/config.yaml to fix, then run /rihal:status'));
+      console.log(dim('  → Edit .rihal/config.yaml to fix, then run /rihal-status'));
     }
   } catch { /* best-effort */ }
 
@@ -1593,16 +1593,16 @@ async function install(opts) {
   ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
 
   // .rihal/context/ — seed stub files so doctor doesn't report "never initialized"
-  // The /rihal:init slash command populates these with real project content.
+  // The /rihal-init slash command populates these with real project content.
   const contextDir = path.join(opts.target, '.rihal', 'context');
   ensureDir(contextDir);
   const activeCtx = path.join(contextDir, 'active.md');
   const briefCtx = path.join(contextDir, 'project-brief.md');
   if (!fs.existsSync(activeCtx)) {
-    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rihal:init` inside your AI editor to populate this file._\n');
+    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rihal-init` inside your AI editor to populate this file._\n');
   }
   if (!fs.existsSync(briefCtx)) {
-    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rihal:init` inside your AI editor to populate this file._\n');
+    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rihal-init` inside your AI editor to populate this file._\n');
   }
 
   // ~/.rihal/agents/ global agents directory
@@ -1754,13 +1754,13 @@ async function install(opts) {
   console.log(`  ${bold('Next:')}`);
   console.log(`    cd ${opts.target}`);
   console.log('    claude              # start Claude Code (reload window if already open)');
-  console.log('    /rihal:progress     # where you are, what\'s next');
-  console.log('    /rihal:do           # interactive command picker');
-  console.log('    /rihal:council <q>  # multi-agent strategic answer');
+  console.log('    /rihal-progress     # where you are, what\'s next');
+  console.log('    /rihal-do           # interactive command picker');
+  console.log('    /rihal-council <q>  # multi-agent strategic answer');
   console.log('');
   console.log(dim('  Refresh anytime:'));
   console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
-  console.log(dim(`    /rihal:update v${version}              # pin rcode to a specific version`));
+  console.log(dim(`    /rihal-update v${version}              # pin rcode to a specific version`));
   console.log('');
   console.log(dim('  Customize without losing changes on update:'));
   console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rihal-waleed.local.md)'));

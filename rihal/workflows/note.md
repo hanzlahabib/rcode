@@ -1,4 +1,4 @@
-# Workflow: rihal:note
+# Workflow: rihal-note
 
 <purpose>
 Capture inline notes instantly without friction. Appends text to a dated note file with YAML frontmatter. No subagents, no user questions, no bash chains — single Write operation.
@@ -10,13 +10,13 @@ Capture inline notes instantly without friction. Appends text to a dated note fi
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:note <argument-here>
+/rihal-note <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:note example 1
-/rihal:note example 2
+/rihal-note example 1
+/rihal-note example 2
 ```
 
 STOP — do not proceed.
@@ -38,8 +38,8 @@ fi
 
 If `NOTE_TEXT` is empty:
 ```
-❌ Usage: /rihal:note <text>
-   Example: /rihal:note refactor auth module to use async/await
+❌ Usage: /rihal-note <text>
+   Example: /rihal-note refactor auth module to use async/await
    
    Flags:
    --global  Save to ~/.rihal-notes/ instead of .rihal/notes/
@@ -111,7 +111,7 @@ promoted: false
 refactor auth module to use async/await
 ```
 
-## Step 5 — List subcommand: /rihal:note list
+## Step 5 — List subcommand: /rihal-note list
 
 If ARGUMENTS contains `list`:
 

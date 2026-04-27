@@ -190,7 +190,7 @@ function runPreflight(cwd, packageRoot) {
       checks.push({
         label: 'Memory bank',
         status: 'warn',
-        message: 'never initialized (run /rihal:init to populate)',
+        message: 'never initialized (run /rihal-init to populate)',
       });
     } else {
       checks.push({

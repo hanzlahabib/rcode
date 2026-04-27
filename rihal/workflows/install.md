@@ -1,4 +1,4 @@
-# Workflow: rihal:install
+# Workflow: rihal-install
 
 <purpose>
 Install a Rihal module into the current project. Modules are capability bundles (agents + workflows + commands + references). This workflow validates the module exists, checks dependencies, runs the installer, and updates the manifest.
@@ -38,7 +38,7 @@ CHECK=$(node .rihal/bin/rihal-tools.cjs module check-requires {name})
 If `ok` is false:
 ```
 Module '{name}' requires '{missing_module}' to be installed first.
-Run: /rihal:install {missing_module}
+Run: /rihal-install {missing_module}
 ```
 And stop.
 
@@ -65,7 +65,7 @@ fi
    {description from module manifest}
 
 New commands available:
-  /rihal:{command} — {description}
+  /rihal-{command} — {description}
 ```
 
 ## Success Criteria

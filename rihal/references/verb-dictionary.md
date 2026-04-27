@@ -76,19 +76,19 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 
 | Scope noun | Aliases (English + Urdu) | Maps to (workflow) |
 |---|---|---|
-| milestone | `milestone`, `milestones`, `release`, `version`, `cycle` | `/rihal:new-milestone` |
-| phase | `phase`, `phases` (singular intent — "add a phase") | `/rihal:add-phase` |
-| story | `story`, `stories`, `user story`, `kahani` | `/rihal:create-story` |
-| epic | `epic`, `epics`, `epics and stories` | `/rihal:create-epics-and-stories` |
-| sprint | `sprint`, `iteration` | `/rihal:sprint-planning` |
-| PRD | `PRD`, `requirements doc`, `product requirements` | `/rihal:create-prd` |
-| roadmap | `roadmap`, `plan` (top-level) | `/rihal:create-milestone` |
-| council | `council`, `majlis`, `panel`, `mashwara`, `salah` | `/rihal:council` |
-| plan (verb form — "plan phase N") | `plan` | `/rihal:plan` |
-| story (impl) | `dev story`, `implement story`, `build story` | `/rihal:dev-story` |
-| brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna` | `/rihal:brainstorm` |
-| review (code) | `code review`, `karpathy`, `check my diff` | `/rihal:code-review [--karpathy]` |
-| debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek` | `/rihal:debug` |
+| milestone | `milestone`, `milestones`, `release`, `version`, `cycle` | `/rihal-new-milestone` |
+| phase | `phase`, `phases` (singular intent — "add a phase") | `/rihal-add-phase` |
+| story | `story`, `stories`, `user story`, `kahani` | `/rihal-create-story` |
+| epic | `epic`, `epics`, `epics and stories` | `/rihal-create-epics-and-stories` |
+| sprint | `sprint`, `iteration` | `/rihal-sprint-planning` |
+| PRD | `PRD`, `requirements doc`, `product requirements` | `/rihal-create-prd` |
+| roadmap | `roadmap`, `plan` (top-level) | `/rihal-create-milestone` |
+| council | `council`, `majlis`, `panel`, `mashwara`, `salah` | `/rihal-council` |
+| plan (verb form — "plan phase N") | `plan` | `/rihal-plan` |
+| story (impl) | `dev story`, `implement story`, `build story` | `/rihal-dev-story` |
+| brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna` | `/rihal-brainstorm` |
+| review (code) | `code review`, `karpathy`, `check my diff` | `/rihal-code-review [--karpathy]` |
+| debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek` | `/rihal-debug` |
 
 ---
 
@@ -106,8 +106,8 @@ table above, dispatch directly to the mapped workflow without an
 ambiguity prompt.
 
 Example: "milestone bnao" → §Create matches "bnao", scope matches
-"milestone" → /rihal:new-milestone (with state-aware redirect to
-/rihal:add-phase if a milestone is already active).
+"milestone" → /rihal-new-milestone (with state-aware redirect to
+/rihal-add-phase if a milestone is already active).
 ```
 
 **From an agent file (e.g. `rihal-codebase-mapper.md`) when interpreting the orchestrator prompt:**

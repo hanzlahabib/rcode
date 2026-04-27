@@ -28,7 +28,7 @@
 
 ## Step 10: Structure Gap Output (If Gaps Found)
 
-Structure gaps in YAML frontmatter for `/rihal:plan --gaps`:
+Structure gaps in YAML frontmatter for `/rihal-plan --gaps`:
 
 ```yaml
 gaps:

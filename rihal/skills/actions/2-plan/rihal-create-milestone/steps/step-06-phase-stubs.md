@@ -4,12 +4,12 @@
 
 ## STEP GOAL
 
-For each milestone, list the phases it contains as **stubs** (number + name + one-line goal). No plan detail — phases get full plans via `/rihal:plan` later.
+For each milestone, list the phases it contains as **stubs** (number + name + one-line goal). No plan detail — phases get full plans via `/rihal-plan` later.
 
 ## MANDATORY RULES
 
 - 🛑 Phase numbers follow Rihal's NN convention (01, 02, ..., 99, then 999.x for parking lot).
-- 🛑 Do NOT generate plan content here. That's `/rihal:plan-phase`.
+- 🛑 Do NOT generate plan content here. That's `/rihal-plan-phase`.
 - 🛑 Each phase has one-sentence goal, max.
 - ⏸️ HALT at menu.
 

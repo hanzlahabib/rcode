@@ -106,26 +106,26 @@ function sprintHints(s) {
   const pid = s.phaseId || '';
   const h = [];
   if (st === 'completed' || st === 'complete' || st === 'done') {
-    h.push(cmdHint('/rihal:verify-work', 'Verify UAT for Sprint ' + sid));
-    h.push(cmdHint('/rihal:audit', 'Audit completed Sprint ' + sid));
-    h.push(cmdHint('/rihal:session-report', 'Generate session report'));
-    h.push(cmdHint('/rihal:code-review', 'Review code from Sprint ' + sid));
+    h.push(cmdHint('/rihal-verify-work', 'Verify UAT for Sprint ' + sid));
+    h.push(cmdHint('/rihal-audit', 'Audit completed Sprint ' + sid));
+    h.push(cmdHint('/rihal-session-report', 'Generate session report'));
+    h.push(cmdHint('/rihal-code-review', 'Review code from Sprint ' + sid));
   } else if (st === 'active' || st === 'in_progress') {
-    h.push(cmdHint('/rihal:progress', 'Check Sprint ' + sid + ' progress'));
-    h.push(cmdHint('/rihal:sprint-status', 'Status report for Sprint ' + sid));
-    h.push(cmdHint('/rihal:pause-work', 'Pause and save context'));
+    h.push(cmdHint('/rihal-progress', 'Check Sprint ' + sid + ' progress'));
+    h.push(cmdHint('/rihal-sprint-status', 'Status report for Sprint ' + sid));
+    h.push(cmdHint('/rihal-pause-work', 'Pause and save context'));
   } else if (st === 'blocked') {
-    h.push(cmdHint('/rihal:debug', 'Debug blocker in Sprint ' + sid));
-    h.push(cmdHint('/rihal:correct-course', 'Course-correct Sprint ' + sid));
+    h.push(cmdHint('/rihal-debug', 'Debug blocker in Sprint ' + sid));
+    h.push(cmdHint('/rihal-correct-course', 'Course-correct Sprint ' + sid));
   } else {
     if (!stories.length) {
-      h.push(cmdHint('/rihal:sprint-planning', 'Groom Sprint ' + sid + ' — add stories'));
-      h.push(cmdHint('/rihal:create-story', 'Create a story for Sprint ' + sid));
-      h.push(cmdHint('/rihal:discuss-phase', 'Discuss approach before planning'));
+      h.push(cmdHint('/rihal-sprint-planning', 'Groom Sprint ' + sid + ' — add stories'));
+      h.push(cmdHint('/rihal-create-story', 'Create a story for Sprint ' + sid));
+      h.push(cmdHint('/rihal-discuss-phase', 'Discuss approach before planning'));
     } else {
-      h.push(cmdHint('/rihal:execute', 'Execute Sprint ' + sid));
-      h.push(cmdHint('/rihal:discuss-phase', 'Discuss before executing'));
-      h.push(cmdHint('/rihal:sprint-planning', 'Refine Sprint ' + sid + ' plan'));
+      h.push(cmdHint('/rihal-execute', 'Execute Sprint ' + sid));
+      h.push(cmdHint('/rihal-discuss-phase', 'Discuss before executing'));
+      h.push(cmdHint('/rihal-sprint-planning', 'Refine Sprint ' + sid + ' plan'));
     }
   }
   return h;
@@ -136,21 +136,21 @@ function phaseHints(p) {
   const pid = p.id || '';
   const h = [];
   if (st === 'completed' || st === 'complete' || st === 'done') {
-    h.push(cmdHint('/rihal:validate-phase', 'Validate Phase ' + pid + ' deliverables'));
-    h.push(cmdHint('/rihal:audit', 'Audit Phase ' + pid + ' completion'));
-    h.push(cmdHint('/rihal:code-review', 'Review Phase ' + pid + ' code'));
+    h.push(cmdHint('/rihal-validate-phase', 'Validate Phase ' + pid + ' deliverables'));
+    h.push(cmdHint('/rihal-audit', 'Audit Phase ' + pid + ' completion'));
+    h.push(cmdHint('/rihal-code-review', 'Review Phase ' + pid + ' code'));
   } else if (st === 'active' || st === 'in_progress') {
-    h.push(cmdHint('/rihal:progress', 'Check Phase ' + pid + ' progress'));
-    h.push(cmdHint('/rihal:sprint-status', 'Current sprint status'));
-    h.push(cmdHint('/rihal:code-review', 'Review code in Phase ' + pid));
+    h.push(cmdHint('/rihal-progress', 'Check Phase ' + pid + ' progress'));
+    h.push(cmdHint('/rihal-sprint-status', 'Current sprint status'));
+    h.push(cmdHint('/rihal-code-review', 'Review code in Phase ' + pid));
   } else {
     if (!sps.length) {
-      h.push(cmdHint('/rihal:plan', 'Create sprint plan for Phase ' + pid));
-      h.push(cmdHint('/rihal:discuss-phase', 'Discuss Phase ' + pid + ' approach'));
-      h.push(cmdHint('/rihal:research-phase', 'Research Phase ' + pid + ' before planning'));
+      h.push(cmdHint('/rihal-plan', 'Create sprint plan for Phase ' + pid));
+      h.push(cmdHint('/rihal-discuss-phase', 'Discuss Phase ' + pid + ' approach'));
+      h.push(cmdHint('/rihal-research-phase', 'Research Phase ' + pid + ' before planning'));
     } else {
-      h.push(cmdHint('/rihal:execute', 'Start executing Phase ' + pid));
-      h.push(cmdHint('/rihal:sprint-planning', 'Plan next sprint in Phase ' + pid));
+      h.push(cmdHint('/rihal-execute', 'Start executing Phase ' + pid));
+      h.push(cmdHint('/rihal-sprint-planning', 'Plan next sprint in Phase ' + pid));
     }
   }
   return h;
@@ -277,7 +277,7 @@ function renderOverview() {
 
   const el = document.getElementById('view-overview-dynamic');
   // Overview hints
-  var oHints = [cmdHint('/rihal:next', 'What should I do next?'), cmdHint('/rihal:status', 'Quick project status'), cmdHint('/rihal:council', 'Ask the team a question')];
+  var oHints = [cmdHint('/rihal-next', 'What should I do next?'), cmdHint('/rihal-status', 'Quick project status'), cmdHint('/rihal-council', 'Ask the team a question')];
   if (curSprint) { oHints = sprintHints(curSprint).concat(oHints); }
   if (el) el.innerHTML = sprintProgressHtml + velocityHtml + councilHtml + chainsHtml + lastSessionHtml + cmdAccordion(oHints);
 }
@@ -334,9 +334,9 @@ function renderRoadmap() {
   }
   h += '</div></div></div>';
   // Roadmap hints
-  var rmHints = [cmdHint('/rihal:add-phase', 'Add a new phase'), cmdHint('/rihal:milestone-summary', 'View milestone summary'), cmdHint('/rihal:new-milestone', 'Start a new milestone')];
+  var rmHints = [cmdHint('/rihal-add-phase', 'Add a new phase'), cmdHint('/rihal-milestone-summary', 'View milestone summary'), cmdHint('/rihal-new-milestone', 'Start a new milestone')];
   var allPDone = _phases.length > 0 && _phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
-  if (allPDone) { rmHints.push(cmdHint('/rihal:audit-milestone', 'Audit milestone completion')); rmHints.push(cmdHint('/rihal:complete-milestone', 'Complete and archive milestone')); }
+  if (allPDone) { rmHints.push(cmdHint('/rihal-audit-milestone', 'Audit milestone completion')); rmHints.push(cmdHint('/rihal-complete-milestone', 'Complete and archive milestone')); }
   document.getElementById('view-roadmap').innerHTML = h + cmdAccordion(rmHints);
 }
 
@@ -446,15 +446,15 @@ function renderPhases(subId) {
       velocityHtml +
       '<div class="view-title" style="margin-top:var(--space-6)">Sprints</div>' +
       '<div class="phase-list">' + (sps.length ? sps.map(s => sprintCard(Object.assign({},s,{phaseId:p.id,phaseName:p.name}))).join('') :
-        '<div class="empty">No sprints in this phase yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>' +
+        '<div class="empty">No sprints in this phase yet.<div class="empty-action">Run /rihal-plan to create sprints</div></div>') + '</div>' +
       cmdAccordion(phaseHints(p));
   } else {
-    var plHints = [cmdHint('/rihal:add-phase', 'Add a new phase'), cmdHint('/rihal:stats', 'Project statistics'), cmdHint('/rihal:progress', 'Overall progress')];
+    var plHints = [cmdHint('/rihal-add-phase', 'Add a new phase'), cmdHint('/rihal-stats', 'Project statistics'), cmdHint('/rihal-progress', 'Overall progress')];
     var allComplete = _phases.length > 0 && _phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
-    if (allComplete) { plHints.push(cmdHint('/rihal:audit-milestone', 'Audit milestone completion')); plHints.push(cmdHint('/rihal:complete-milestone', 'Complete and archive milestone')); plHints.push(cmdHint('/rihal:ship', 'Create PR and ship')); }
+    if (allComplete) { plHints.push(cmdHint('/rihal-audit-milestone', 'Audit milestone completion')); plHints.push(cmdHint('/rihal-complete-milestone', 'Complete and archive milestone')); plHints.push(cmdHint('/rihal-ship', 'Create PR and ship')); }
     el.innerHTML = '<div class="view-title">Phases</div>' + filterInput('phases-inner') +
       '<div id="phases-inner" class="phase-list">' +
-      (_phases.length ? _phases.map(phaseCard).join('') : '<div class="empty">No phases yet.<div class="empty-action">Run /rihal:new-project to start</div></div>') + '</div>' + cmdAccordion(plHints);
+      (_phases.length ? _phases.map(phaseCard).join('') : '<div class="empty">No phases yet.<div class="empty-action">Run /rihal-new-project to start</div></div>') + '</div>' + cmdAccordion(plHints);
   }
 }
 
@@ -492,16 +492,16 @@ function renderSprints(subId) {
       '<div style="margin-bottom:var(--space-6);">' + progressBar(done, stories.length) + '</div>' +
       '<div class="view-title" style="margin-top:var(--space-6)">Tasks</div>' +
       '<div class="phase-list">' + (stories.length ? stories.map(taskCard).join('') :
-        '<div class="empty">No tasks in this sprint yet.<div class="empty-action">Run /rihal:create-story to add tasks</div></div>') + '</div>' +
+        '<div class="empty">No tasks in this sprint yet.<div class="empty-action">Run /rihal-create-story to add tasks</div></div>') + '</div>' +
       acHtml + cmdAccordion(sprintHints(s));
   } else {
-    var slHints = [cmdHint('/rihal:sprint-planning', 'Plan a new sprint'), cmdHint('/rihal:stats', 'Project statistics')];
+    var slHints = [cmdHint('/rihal-sprint-planning', 'Plan a new sprint'), cmdHint('/rihal-stats', 'Project statistics')];
     var curSp = sprints.find(sp => sp.id === S.currentSprint);
-    if (curSp) { slHints.push(cmdHint('/rihal:execute', 'Execute current sprint ' + curSp.id)); slHints.push(cmdHint('/rihal:sprint-status', 'Status of Sprint ' + curSp.id)); }
+    if (curSp) { slHints.push(cmdHint('/rihal-execute', 'Execute current sprint ' + curSp.id)); slHints.push(cmdHint('/rihal-sprint-status', 'Status of Sprint ' + curSp.id)); }
     el.innerHTML = '<div class="view-title">Sprints</div>' + filterInput('sprints-inner') +
       '<div id="sprints-inner" class="phase-list">' +
       (sprints.length ? sprints.map(sprintCard).join('') :
-        '<div class="empty">No sprints yet.<div class="empty-action">Run /rihal:plan to create sprints</div></div>') + '</div>' + cmdAccordion(slHints);
+        '<div class="empty">No sprints yet.<div class="empty-action">Run /rihal-plan to create sprints</div></div>') + '</div>' + cmdAccordion(slHints);
   }
 }
 
@@ -529,16 +529,16 @@ function renderTasks() {
     '<div id="tasks-inner" class="phase-list">' +
     renderTasksGrouped(tasks) + '</div>';
   // Task hints accordion
-  var tHints = [cmdHint('/rihal:create-story', 'Add a new story/task'), cmdHint('/rihal:sprint-planning', 'Plan the next sprint')];
+  var tHints = [cmdHint('/rihal-create-story', 'Add a new story/task'), cmdHint('/rihal-sprint-planning', 'Plan the next sprint')];
   var allDone = tasks.length > 0 && tasks.every(t => t.status === 'done' || t.status === 'completed');
   var hasBlocked = tasks.some(t => t.status === 'blocked');
-  if (allDone) { tHints.push(cmdHint('/rihal:verify-work', 'Verify all tasks pass UAT')); tHints.push(cmdHint('/rihal:audit-uat', 'Audit UAT coverage')); }
-  if (hasBlocked) { tHints.push(cmdHint('/rihal:debug', 'Debug blocked tasks')); tHints.push(cmdHint('/rihal:correct-course', 'Course-correct blockers')); }
+  if (allDone) { tHints.push(cmdHint('/rihal-verify-work', 'Verify all tasks pass UAT')); tHints.push(cmdHint('/rihal-audit-uat', 'Audit UAT coverage')); }
+  if (hasBlocked) { tHints.push(cmdHint('/rihal-debug', 'Debug blocked tasks')); tHints.push(cmdHint('/rihal-correct-course', 'Course-correct blockers')); }
   el.innerHTML += cmdAccordion(tHints);
 }
 
 function renderTasksGrouped(tasks) {
-  if (!tasks.length) return '<div class="empty">No tasks yet.<div class="empty-action">Run /rihal:create-story to add tasks</div></div>';
+  if (!tasks.length) return '<div class="empty">No tasks yet.<div class="empty-action">Run /rihal-create-story to add tasks</div></div>';
   const groups = {};
   for (const t of tasks) {
     const key = t.sprintId || 'unassigned';
@@ -720,7 +720,7 @@ function renderDecisions() {
   const decisions = S.decisions || [];
   if (!decisions.length) {
     el.innerHTML = '<div class="view-title">Decisions (ADRs)</div>' +
-      '<div class="empty">No decisions recorded yet.<div class="empty-action">Decisions made during /rihal:council appear here</div></div>';
+      '<div class="empty">No decisions recorded yet.<div class="empty-action">Decisions made during /rihal-council appear here</div></div>';
     return;
   }
   // #307: group by phase
@@ -753,9 +753,9 @@ function renderDecisions() {
   }
   h += '</div>';
   el.innerHTML = h + cmdAccordion([
-    cmdHint('/rihal:council', 'Convene the council for a new decision'),
-    cmdHint('/rihal:discuss [agent] \"topic\"', 'Discuss with a specific expert'),
-    cmdHint('/rihal:decisions', 'View decision log')
+    cmdHint('/rihal-council', 'Convene the council for a new decision'),
+    cmdHint('/rihal-discuss [agent] \"topic\"', 'Discuss with a specific expert'),
+    cmdHint('/rihal-decisions', 'View decision log')
   ]);
 }
 

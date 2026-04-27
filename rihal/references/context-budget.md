@@ -59,7 +59,7 @@ Estimation rule: **1 token ≈ 4 characters**. Use this to predict token cost of
 - 🚨 **Emergency mode**
 - 🛑 Read ONLY what's strictly required to unblock next action
 - 🛑 No exploratory reads, no documentation
-- 🛑 Suggest `/rihal:pause-work` if task requires more context
+- 🛑 Suggest `/rihal-pause-work` if task requires more context
 - 🛑 Warn user: **"Context critical ({percent}%). Resume work to continue."**
 
 **Behavior:** Survival — preserve tokens for final output only.
@@ -76,7 +76,7 @@ def check_budget(current_tokens, config):
     used_pct = (current_tokens / budget) * 100
     
     if used_pct >= 80:
-        return 'POOR', "Context critical. Suggest /rihal:pause-work"
+        return 'POOR', "Context critical. Suggest /rihal-pause-work"
     elif used_pct >= 60:
         return 'DEGRADING', "Context at {used_pct}%. Read frontmatter only."
     elif used_pct >= 30:

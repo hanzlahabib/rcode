@@ -37,7 +37,7 @@ Closure:
  RIHAL ► PLAN READY ✓  ({N} stories, {M} points)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-End with Next Up routing to /rihal:execute.
+End with Next Up routing to /rihal-execute.
 </output_format>
 
 <required_reading>
@@ -81,7 +81,7 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 **File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
 
-**If `planning_exists` is false:** Error — run `/rihal:new-project` first.
+**If `planning_exists` is false:** Error — run `/rihal-new-project` first.
 
 ## 2. Parse and Normalize Arguments
 
@@ -111,7 +111,7 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
-**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rihal:add-phase` from a bulk `/rihal:quick` or `/rihal:do` route), read it now:
+**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rihal-add-phase` from a bulk `/rihal-quick` or `/rihal-do` route), read it now:
 
 ```bash
 TASKS_FILE=".planning/phases/${padded_phase}-${phase_slug}/TASKS.md"
@@ -121,7 +121,7 @@ HAS_TASKS=$([ -f "$TASKS_FILE" ] && echo true || echo false)
 When `HAS_TASKS=true`:
 - Pass the TASKS.md content to the planner agent as authoritative phase scope. The planner uses it as the input list — each entry becomes a candidate sprint task in SPRINT.md.
 - Surface this in the opening banner: *"Phase scope source: TASKS.md ({N} entries auto-extracted from bulk route on {date})"*.
-- Do NOT re-prompt the user for scope when TASKS.md is present — they already provided the list once at the /rihal:quick or /rihal:do entry point. The whole point of the auto-route chain is that the user doesn't paste the same content multiple times.
+- Do NOT re-prompt the user for scope when TASKS.md is present — they already provided the list once at the /rihal-quick or /rihal-do entry point. The whole point of the auto-route chain is that the user doesn't paste the same content multiple times.
 
 ## 2.5. Validate `--reviews` Prerequisite
 
@@ -135,9 +135,9 @@ Error:
 ```
 No REVIEWS.md found for Phase {N}. Run reviews first:
 
-/rihal:review --phase {N}
+/rihal-review --phase {N}
 
-Then re-run /rihal:sprint-plan {N} --reviews
+Then re-run /rihal-sprint-plan {N} --reviews
 ```
 Exit workflow.
 
@@ -276,7 +276,7 @@ VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
 Error: No VERIFICATION.md found for Phase {X}. Gap-closure planning requires the phase to have run through the verifier first.
 
 Try:
-  /rihal:execute {X} ${Rihal_WS}      # run or re-run execution + verification
+  /rihal-execute {X} ${Rihal_WS}      # run or re-run execution + verification
 ```
 Exit workflow.
 
@@ -384,9 +384,9 @@ If "Run discuss-phase first":
   does not work correctly in nested subcontexts (#1009). Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
-  Run this command first, then re-run /rihal:sprint-plan {X} ${Rihal_WS}:
+  Run this command first, then re-run /rihal-sprint-plan {X} ${Rihal_WS}:
 
-  /rihal:discuss-phase {X} ${Rihal_WS}
+  /rihal-discuss-phase {X} ${Rihal_WS}
   ```
   **Exit the sprint-plan workflow. Do not continue.**
 
@@ -454,7 +454,7 @@ Answer: "What do I need to know to PLAN this phase well?"
 </objective>
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {context_path} (USER DECISIONS from /rihal-discuss-phase)
 - {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>
@@ -598,7 +598,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list:
 ```
 Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?
 
-1. Generate UI-SPEC first — Run /rihal:ui-phase {N} then re-run /rihal:sprint-plan {N}
+1. Generate UI-SPEC first — Run /rihal-ui-phase {N} then re-run /rihal-sprint-plan {N}
 2. Continue without UI-SPEC
 3. Not a frontend phase
 
@@ -609,7 +609,7 @@ Otherwise use AskUserQuestion:
 - header: "UI Design Contract"
 - question: "Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?"
 - options:
-  - "Generate UI-SPEC first" → Display: "Run `/rihal:ui-phase {N} ${Rihal_WS}` then re-run `/rihal:sprint-plan {N} ${Rihal_WS}`". Exit workflow.
+  - "Generate UI-SPEC first" → Display: "Run `/rihal-ui-phase {N} ${Rihal_WS}` then re-run `/rihal-sprint-plan {N} ${Rihal_WS}`". Exit workflow.
   - "Continue without UI-SPEC" → Continue to step 6.
   - "Not a frontend phase" → Continue to step 6.
 
@@ -719,7 +719,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 ```
 
 If missing and Nyquist is still enabled/applicable — ask user:
-1. Re-run: `/rihal:sprint-plan {PHASE} --research ${Rihal_WS}`
+1. Re-run: `/rihal-sprint-plan {PHASE} --research ${Rihal_WS}`
 2. Disable Nyquist with the exact command:
    `node ".rihal/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
@@ -798,7 +798,7 @@ Planner prompt:
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {context_path} (USER DECISIONS from /rihal-discuss-phase)
 - {research_path} (Technical Research)
 - {verification_path} (Verification Gaps - if --gaps)
 - {uat_path} (UAT Gaps - if --gaps)
@@ -821,7 +821,7 @@ ${AGENT_SKILLS_PLANNER}
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /rihal:execute-phase. Plans need:
+Output consumed by /rihal-execute-phase. Plans need:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
 - Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
 - Verification criteria
@@ -914,7 +914,7 @@ rest become a follow-up phase
 
 Use AskUserQuestion with these 3 options.
 
-**If "Split":** Use `/rihal:insert-phase` to create the sub-phases, then replan each.
+**If "Split":** Use `/rihal-insert-phase` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
 
@@ -940,7 +940,7 @@ Checker prompt:
 - {PHASE_DIR}/*-SPRINT.md (Plans to verify)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {context_path} (USER DECISIONS from /rihal-discuss-phase)
 - {research_path} (Technical Research — includes Validation Architecture)
 </files_to_read>
 
@@ -1013,7 +1013,7 @@ If NONE of these evidence markers are present, the checker malfunctioned (return
 ```
 Display: "Sprint-checker returned without evidence of tool use — likely
          malfunctioned (cf. issue #440). Refusing to advance the plan
-         on unverified output. Re-run /rihal:plan or inspect the agent."
+         on unverified output. Re-run /rihal-plan or inspect the agent."
 Halt the workflow with a non-zero exit signal.
 ```
 
@@ -1036,7 +1036,7 @@ Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} 
   **If `stall_reentry_count >= 2`:**
     Display: `Stall persists after 2 re-planning attempts. The following issues could not be resolved automatically:`
     List the remaining issues from the checker.
-    Suggest: "Consider resolving these issues manually or running `/rihal:debug` to investigate root causes."
+    Suggest: "Consider resolving these issues manually or running `/rihal-debug` to investigate root causes."
     Options: "Proceed anyway" | "Abandon"
     If "Proceed anyway": accept current plans and continue to step 13.
     If "Abandon": stop workflow.
@@ -1052,7 +1052,7 @@ Revision prompt:
 
 <files_to_read>
 - {PHASE_DIR}/*-SPRINT.md (Existing plans)
-- {context_path} (USER DECISIONS from /rihal:discuss-phase)
+- {context_path} (USER DECISIONS from /rihal-discuss-phase)
 </files_to_read>
 
 ${AGENT_SKILLS_PLANNER}
@@ -1245,14 +1245,14 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 
   Auto-advance pipeline finished.
 
-  Next: /rihal:discuss-phase ${NEXT_PHASE} --auto ${Rihal_WS}
+  Next: /rihal-discuss-phase ${NEXT_PHASE} --auto ${Rihal_WS}
   ```
 - **GAPS FOUND / VERIFICATION FAILED** → Display result, stop chain:
   ```
   Auto-advance stopped: Execution needs review.
 
   Review the output above and continue manually:
-  /rihal:execute-phase ${PHASE} ${Rihal_WS}
+  /rihal-execute-phase ${PHASE} ${Rihal_WS}
   ```
 
 **If neither `--auto` nor config enabled:**
@@ -1285,15 +1285,15 @@ Verification: {Passed | Passed with override | Skipped}
 
 /clear then:
 
-/rihal:execute-phase {X} ${Rihal_WS}
+/rihal-execute-phase {X} ${Rihal_WS}
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
 - cat .planning/phases/{phase-dir}/*-SPRINT.md — review plans
-- /rihal:sprint-plan {X} --research — re-research first
-- /rihal:review --phase {X} --all — peer review plans with external AIs
-- /rihal:sprint-plan {X} --reviews — replan incorporating review feedback
+- /rihal-sprint-plan {X} --research — re-research first
+- /rihal-review --phase {X} --all — peer review plans with external AIs
+- /rihal-sprint-plan {X} --reviews — replan incorporating review feedback
 
 ───────────────────────────────────────────────────────────────
 </offer_next>
@@ -1314,11 +1314,11 @@ stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-cod
    Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
    ```
 4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
-5. **Retry:** Restart Claude Code and run `/rihal:sprint-plan` again
+5. **Retry:** Restart Claude Code and run `/rihal-sprint-plan` again
 
 If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
 ```
-/rihal:sprint-plan N --skip-research
+/rihal-sprint-plan N --skip-research
 ```
 </windows_troubleshooting>
 

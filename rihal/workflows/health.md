@@ -1,4 +1,4 @@
-# Workflow: rihal:health
+# Workflow: rihal-health
 
 <purpose>
 Run 6-point compliance check on rihal installation. Each check is pass/fail. Summary at the end.
@@ -10,13 +10,13 @@ Run 6-point compliance check on rihal installation. Each check is pass/fail. Sum
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:health <argument-here>
+/rihal-health <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:health example 1
-/rihal:health example 2
+/rihal-health example 1
+/rihal-health example 2
 ```
 
 STOP — do not proceed.
@@ -40,7 +40,7 @@ test -d .rihal && test -w .rihal
 
 **Output on fail:**
 ```
-❌ FAIL — .rihal/ does not exist or is not writable. Run: /rihal:update to repair
+❌ FAIL — .rihal/ does not exist or is not writable. Run: /rihal-update to repair
 ```
 
 ## Step 1 — Verify file manifest exists and is valid CSV
@@ -64,7 +64,7 @@ Verify:
 
 **Output on fail:**
 ```
-❌ FAIL — files-manifest.csv is missing or corrupted. Run: /rihal:update to repair
+❌ FAIL — files-manifest.csv is missing or corrupted. Run: /rihal-update to repair
 ```
 
 ## Step 2 — Verify all manifest files exist and hashes match
@@ -89,7 +89,7 @@ Detect drift: files that exist but hash doesn't match.
 ❌ FAIL — File drift detected: N files changed or missing
   Modified: file1.md, file2.js
   Missing: file3.md
-Run: /rihal:update to repair
+Run: /rihal-update to repair
 ```
 
 ## Step 3 — Verify state.json exists and is valid
@@ -118,7 +118,7 @@ Parse as JSON. Verify top-level keys present:
 
 **Output on fail:**
 ```
-❌ FAIL — state.json is missing or invalid. Run: /rihal:update to repair
+❌ FAIL — state.json is missing or invalid. Run: /rihal-update to repair
 ```
 
 ## Step 4 — Verify agent-manifest.csv is present and populated
@@ -141,7 +141,7 @@ Verify:
 
 **Output on fail:**
 ```
-❌ FAIL — agent-manifest.csv is missing or empty. Run: /rihal:update to repair
+❌ FAIL — agent-manifest.csv is missing or empty. Run: /rihal-update to repair
 ```
 
 ## Step 5 — Verify rihal-tools.cjs is executable and responsive
@@ -160,7 +160,7 @@ node .rihal/bin/rihal-tools.cjs version
 
 **Output on fail:**
 ```
-❌ FAIL — rihal-tools.cjs is missing or broken. Run: /rihal:update to repair
+❌ FAIL — rihal-tools.cjs is missing or broken. Run: /rihal-update to repair
 ```
 
 ## Step 6 — Count results and print final summary
@@ -177,7 +177,7 @@ If all 6 pass:
 If fewer than 6 pass:
 ```
 ⚠️ {N}/6 checks passed — {M} issue(s) found
-Run: /rihal:update to repair
+Run: /rihal-update to repair
 ```
 
 ## Success Criteria

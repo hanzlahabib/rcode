@@ -76,14 +76,14 @@ test('every command referenced in help.md exists as a .md file', () => {
   assert.ok(fs.existsSync(helpFile), 'help.md exists');
 
   const helpContent = fs.readFileSync(helpFile, 'utf8');
-  // Look for `/rihal:` patterns in help.md
-  const cmdMatches = helpContent.match(/\/rihal:[\w-]+/g) || [];
+  // Look for `/rihal-` patterns in help.md
+  const cmdMatches = helpContent.match(/\/rihal-[\w-]+/g) || [];
   const uniqueCmds = [...new Set(cmdMatches)].map((m) => m.slice(1)); // remove leading /
 
   const commandFiles = getMdFiles(COMMANDS_DIR).map((f) => path.basename(f, '.md'));
 
   for (const cmd of uniqueCmds) {
-    const cmdName = cmd.slice(6); // remove 'rihal:' prefix
+    const cmdName = cmd.slice(6); // remove 'rihal-' prefix
     assert.ok(
       commandFiles.includes(cmdName),
       `Command ${cmd} referenced in help.md but ${cmdName}.md not found`

@@ -39,7 +39,7 @@ No external AI CLIs found. Install at least one:
 - claude: https://github.com/anthropics/claude-code
 - opencode: https://opencode.ai (leverages GitHub Copilot subscription models)
 
-Then run /rihal:review again.
+Then run /rihal-review again.
 ```
 Exit.
 
@@ -135,7 +135,7 @@ Focus on:
 Output your review in markdown format.
 ```
 
-Write to a temp file: `/tmp/rihal:review-prompt-{phase}.md`
+Write to a temp file: `/tmp/rihal-review-prompt-{phase}.md`
 </step>
 
 <step name="invoke_reviewers">
@@ -143,17 +143,17 @@ For each selected CLI, invoke in sequence (not parallel — avoid rate limits):
 
 **Gemini:**
 ```bash
-gemini -p "$(cat /tmp/rihal:review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal:review-gemini-{phase}.md
+gemini -p "$(cat /tmp/rihal-review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal-review-gemini-{phase}.md
 ```
 
 **Claude (separate session):**
 ```bash
-claude -p "$(cat /tmp/rihal:review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal:review-claude-{phase}.md
+claude -p "$(cat /tmp/rihal-review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal-review-claude-{phase}.md
 ```
 
 **Codex:**
 ```bash
-codex exec --skip-git-repo-check "$(cat /tmp/rihal:review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal:review-codex-{phase}.md
+codex exec --skip-git-repo-check "$(cat /tmp/rihal-review-prompt-{phase}.md)" 2>/dev/null > /tmp/rihal-review-codex-{phase}.md
 ```
 
 **CodeRabbit:**
@@ -161,14 +161,14 @@ codex exec --skip-git-repo-check "$(cat /tmp/rihal:review-prompt-{phase}.md)" 2>
 Note: CodeRabbit reviews the current git diff/working tree — it does not accept a prompt. It may take up to 5 minutes. Use `timeout: 360000` on the Bash tool call.
 
 ```bash
-coderabbit review --prompt-only 2>/dev/null > /tmp/rihal:review-coderabbit-{phase}.md
+coderabbit review --prompt-only 2>/dev/null > /tmp/rihal-review-coderabbit-{phase}.md
 ```
 
 **OpenCode (via GitHub Copilot):**
 ```bash
-cat /tmp/rihal:review-prompt-{phase}.md | opencode run - 2>/dev/null > /tmp/rihal:review-opencode-{phase}.md
-if [ ! -s /tmp/rihal:review-opencode-{phase}.md ]; then
-  echo "OpenCode review failed or returned empty output." > /tmp/rihal:review-opencode-{phase}.md
+cat /tmp/rihal-review-prompt-{phase}.md | opencode run - 2>/dev/null > /tmp/rihal-review-opencode-{phase}.md
+if [ ! -s /tmp/rihal-review-opencode-{phase}.md ]; then
+  echo "OpenCode review failed or returned empty output." > /tmp/rihal-review-opencode-{phase}.md
 fi
 ```
 
@@ -264,7 +264,7 @@ Consensus concerns:
 Full review: {padded_phase}-REVIEWS.md
 
 To incorporate feedback into planning:
-  /rihal:plan {N} --reviews
+  /rihal-plan {N} --reviews
 ```
 
 Clean up temp files.
@@ -277,5 +277,5 @@ Clean up temp files.
 - [ ] REVIEWS.md written with structured feedback
 - [ ] Consensus summary synthesized from multiple reviewers
 - [ ] Temp files cleaned up
-- [ ] User knows how to use feedback (/rihal:plan --reviews)
+- [ ] User knows how to use feedback (/rihal-plan --reviews)
 </success_criteria>

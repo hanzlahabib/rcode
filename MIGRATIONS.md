@@ -12,24 +12,24 @@ Every renamed, merged, or dropped surface across the rcode improvement programme
 
 | Old | Replacement |
 |---|---|
-| `/rihal:report` | `/rihal:session-report` (this was always the canonical workflow) |
+| `/rihal-report` | `/rihal-session-report` (this was always the canonical workflow) |
 
 ### Dropped (self-declared internal)
 
 | Old | Replacement |
 |---|---|
-| `/rihal:new-project-research` | Use `/rihal:new-project` (which calls this internally as a sub-workflow) |
-| `/rihal:new-project-roadmap` | Use `/rihal:new-project` (same — internal sub-workflow) |
-| `/rihal:check-implementation-readiness` | Internal guard called by `/rihal:plan` and `/rihal:execute`; no user-facing slash |
+| `/rihal-new-project-research` | Use `/rihal-new-project` (which calls this internally as a sub-workflow) |
+| `/rihal-new-project-roadmap` | Use `/rihal-new-project` (same — internal sub-workflow) |
+| `/rihal-check-implementation-readiness` | Internal guard called by `/rihal-plan` and `/rihal-execute`; no user-facing slash |
 
 ### Folded into flags
 
 | Old | Replacement |
 |---|---|
-| `/rihal:discuss-phase-power` | `/rihal:discuss-phase --power` |
-| `/rihal:karpathy-audit` | `/rihal:code-review --karpathy` |
-| `/rihal:review-adversarial` | `/rihal:code-review --attack` (plain English; "adversarial" was jargon) |
-| `/rihal:review-edge-case-hunter` | `/rihal:code-review --edge-cases` |
+| `/rihal-discuss-phase-power` | `/rihal-discuss-phase --power` |
+| `/rihal-karpathy-audit` | `/rihal-code-review --karpathy` |
+| `/rihal-review-adversarial` | `/rihal-code-review --attack` (plain English; "adversarial" was jargon) |
+| `/rihal-review-edge-case-hunter` | `/rihal-code-review --edge-cases` |
 
 The underlying workflow files remain — `code-review` delegates to them when the corresponding flag is set. This means existing automation that calls those workflows directly still works; only the user-facing slash invocations changed.
 
@@ -133,12 +133,12 @@ The key `tech-writer` was renamed to `noor` in all 5 profile blocks (`fast`, `ba
 
 If you are running rcode from before this programme:
 
-1. Replace any `/rihal:report ...` calls with `/rihal:session-report ...`
-2. Replace any `/rihal:karpathy-audit ...` with `/rihal:code-review ... --karpathy`
-3. Replace any `/rihal:review-adversarial ...` with `/rihal:code-review ... --attack`
-4. Replace any `/rihal:review-edge-case-hunter ...` with `/rihal:code-review ... --edge-cases`
-5. Replace any `/rihal:discuss-phase-power ...` with `/rihal:discuss-phase ... --power`
-6. Stop calling `/rihal:check-implementation-readiness`, `/rihal:new-project-research`, `/rihal:new-project-roadmap` directly — they are internal sub-workflows now
+1. Replace any `/rihal-report ...` calls with `/rihal-session-report ...`
+2. Replace any `/rihal-karpathy-audit ...` with `/rihal-code-review ... --karpathy`
+3. Replace any `/rihal-review-adversarial ...` with `/rihal-code-review ... --attack`
+4. Replace any `/rihal-review-edge-case-hunter ...` with `/rihal-code-review ... --edge-cases`
+5. Replace any `/rihal-discuss-phase-power ...` with `/rihal-discuss-phase ... --power`
+6. Stop calling `/rihal-check-implementation-readiness`, `/rihal-new-project-research`, `/rihal-new-project-roadmap` directly — they are internal sub-workflows now
 7. Anywhere your project references `rihal-tech-writer`, swap to `rihal-noor`
 8. Anywhere your project references `rihal-architect`, swap to `rihal-waleed`
 9. Run `/rcode:memory-init` to bootstrap the new Memory Bank for your project

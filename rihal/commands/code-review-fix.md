@@ -1,5 +1,5 @@
 ---
-name: rihal:code-review-fix
+name: rihal-code-review-fix
 description: Auto-fix issues found by code review.
 argument-hint: "<phase> [--all] [--auto]"
 allowed-tools:

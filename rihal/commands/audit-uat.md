@@ -1,5 +1,5 @@
 ---
-name: rihal:audit-uat
+name: rihal-audit-uat
 description: Cross-phase audit of all UAT and verification files. Finds every outstanding item (pending, skipped, blocked, human_need
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent

@@ -1,4 +1,4 @@
-# Workflow: rihal:check-implementation-readiness
+# Workflow: rihal-check-implementation-readiness
 
 <purpose>
 Pre-execution gate: verify PRD approved, architecture approved, external dependencies identified, and no blocking assumptions remain. Return pass/fail report. Used as guard in plan.md Step 0.8 and execute.md Step 0.
@@ -10,13 +10,13 @@ Pre-execution gate: verify PRD approved, architecture approved, external depende
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:check-implementation-readiness <argument-here>
+/rihal-check-implementation-readiness <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:check-implementation-readiness example 1
-/rihal:check-implementation-readiness example 2
+/rihal-check-implementation-readiness example 1
+/rihal-check-implementation-readiness example 2
 ```
 
 STOP — do not proceed.

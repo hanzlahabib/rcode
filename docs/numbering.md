@@ -32,9 +32,9 @@ Additionally:
 
 **Commands:**
 ```
-/rihal:new-milestone "M2: Scaling Phase"
-/rihal:complete-milestone M1
-/rihal:audit-milestone M2
+/rihal-new-milestone "M2: Scaling Phase"
+/rihal-complete-milestone M1
+/rihal-audit-milestone M2
 ```
 
 **Files:**
@@ -72,9 +72,9 @@ M1
 
 **Commands:**
 ```
-/rihal:plan build auth module           # Creates 02/PLAN.md
-/rihal:insert-phase 02 "fix ssl bug"    # Creates 02.1, renumbers
-/rihal:next                              # Advances to next phase
+/rihal-plan build auth module           # Creates 02/PLAN.md
+/rihal-insert-phase 02 "fix ssl bug"    # Creates 02.1, renumbers
+/rihal-next                              # Advances to next phase
 ```
 
 **Files:**
@@ -102,9 +102,9 @@ M1
 
 **Commands:**
 ```
-/rihal:plan 02.01 implement payment gateway   # Creates 02.01/PLAN.md
-/rihal:execute .planning/phases/02/02.01.PLAN.md
-/rihal:show 02.01                             # Display that plan
+/rihal-plan 02.01 implement payment gateway   # Creates 02.01/PLAN.md
+/rihal-execute .planning/phases/02/02.01.PLAN.md
+/rihal-show 02.01                             # Display that plan
 ```
 
 **Files:**
@@ -150,8 +150,8 @@ M1
 
 **Commands:**
 ```
-/rihal:show 02.01.02              # Display that task
-/rihal:why 02.01.02               # Explain why task was created
+/rihal-show 02.01.02              # Display that task
+/rihal-why 02.01.02               # Explain why task was created
 ```
 
 ---
@@ -162,16 +162,16 @@ M1
 
 ```
 # Reference a phase
-/rihal:execute 02
-/rihal:plan 02                    # Plans in phase 02
-/rihal:show 02
+/rihal-execute 02
+/rihal-plan 02                    # Plans in phase 02
+/rihal-show 02
 
 # Reference a specific plan
-/rihal:show 02.01
-/rihal:execute .planning/phases/02/02.01.PLAN.md
+/rihal-show 02.01
+/rihal-execute .planning/phases/02/02.01.PLAN.md
 
 # Reference a task (usually just in viewing/documentation)
-/rihal:show 02.01.02
+/rihal-show 02.01.02
 ```
 
 ### In markdown
@@ -268,7 +268,7 @@ After:
 
 **Command:**
 ```
-/rihal:insert-phase 02 "fix database connection pooling"
+/rihal-insert-phase 02 "fix database connection pooling"
 ```
 
 **Behavior:**
@@ -331,7 +331,7 @@ Your `.rihal/state.json` tracks:
 
 View with:
 ```
-/rihal:status
+/rihal-status
 node .rihal/bin/rihal-tools.cjs state read
 ```
 
@@ -341,11 +341,11 @@ node .rihal/bin/rihal-tools.cjs state read
 
 | Level | When | Command |
 |-------|------|---------|
-| Milestone | Completing major cycle (1+ months) | `/rihal:new-milestone` |
-| Phase | Completing phase (1-2 weeks) | `/rihal:next` |
+| Milestone | Completing major cycle (1+ months) | `/rihal-new-milestone` |
+| Phase | Completing phase (1-2 weeks) | `/rihal-next` |
 | Plan | Breaking phase into work chunks | Automatic when planning |
 | Task | Within a plan | Automatic when executor runs |
-| Decimal | Emergency work mid-phase | `/rihal:insert-phase` |
+| Decimal | Emergency work mid-phase | `/rihal-insert-phase` |
 
 ---
 
@@ -360,9 +360,9 @@ node .rihal/bin/rihal-tools.cjs state read
    ```
 5. **Query by ID** — Reference system supports:
    ```
-   /rihal:show 02.01.02
-   /rihal:why 02.01
-   /rihal:diff 01 02
+   /rihal-show 02.01.02
+   /rihal-why 02.01
+   /rihal-diff 01 02
    ```
 
 ---

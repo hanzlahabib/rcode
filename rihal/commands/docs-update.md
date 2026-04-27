@@ -1,5 +1,5 @@
 ---
-name: rihal:docs-update
+name: rihal-docs-update
 description: Generate and update project documentation verified against codebase.
 argument-hint: "[--force] [--fix]"
 allowed-tools:

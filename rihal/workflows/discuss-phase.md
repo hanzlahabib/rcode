@@ -124,7 +124,7 @@ This is required for Claude Code remote sessions (`/rc` mode) where the Claude A
 cannot forward TUI menu selections back to the host.
 
 Enable text mode:
-- Per-session: pass `--text` flag to any command (e.g., `/rihal:discuss-phase --text`)
+- Per-session: pass `--text` flag to any command (e.g., `/rihal-discuss-phase --text`)
 - Per-project: `rihal-tools config-set workflow.text_mode true`
 
 Text mode applies to ALL workflows in the session, not just discuss-phase.
@@ -132,7 +132,7 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 
 <process>
 
-**Express path available:** If you already have a PRD or acceptance criteria document, use `/rihal:plan {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
+**Express path available:** If you already have a PRD or acceptance criteria document, use `/rihal-plan {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
 
 <step name="initialize" priority="first">
 Phase number from argument (required).
@@ -151,7 +151,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /rihal:progress ${Rihal_WS} to see available phases.
+Use /rihal-progress ${Rihal_WS} to see available phases.
 ```
 Exit workflow.
 
@@ -252,7 +252,7 @@ Check `has_plans` and `plan_count` from init. **If `has_plans` is true:**
 - header: "Plans exist"
 - question: "Phase [X] already has {plan_count} plan(s) created without user context. Your decisions here won't affect existing plans unless you replan."
 - options:
-  - "Continue and replan after" — Capture context, then run /rihal:plan {X} ${Rihal_WS} to replan
+  - "Continue and replan after" — Capture context, then run /rihal-plan {X} ${Rihal_WS} to replan
   - "View existing plans" — Show plans before deciding
   - "Cancel" — Skip discuss-phase
 
@@ -554,7 +554,7 @@ After user selects gray areas in present_gray_areas, spawn parallel research age
 2. For EACH user-selected gray area, spawn a Task() in parallel:
 
    Task(
-     prompt="First, read @$HOME/.claude/agents/rihal:advisor-researcher.md for your role and instructions.
+     prompt="First, read @$HOME/.claude/agents/rihal-advisor-researcher.md for your role and instructions.
 
      <gray_area>{area_name}: {area_description from gray area identification}</gray_area>
      <phase_context>{phase_goal and description from ROADMAP.md}</phase_context>
@@ -833,7 +833,7 @@ Write after each area:
 }
 ```
 
-This is a structured checkpoint, not the final CONTEXT.md — the `write_context` step still produces the canonical output. But if the session dies, the next `/rihal:discuss-phase` invocation can detect this checkpoint and offer to resume from it instead of starting from scratch.
+This is a structured checkpoint, not the final CONTEXT.md — the `write_context` step still produces the canonical output. But if the session dies, the next `/rihal-discuss-phase` invocation can detect this checkpoint and offer to resume from it instead of starting from scratch.
 
 **On session resume:** In the `check_existing` step, also check for `*-DISCUSS-CHECKPOINT.json`. If found and no CONTEXT.md exists:
 - Display: "Found interrupted discussion checkpoint ({N} areas completed). Resume from checkpoint?"
@@ -999,14 +999,14 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/rihal:plan ${PHASE} ${Rihal_WS}`
+`/rihal-plan ${PHASE} ${Rihal_WS}`
 
 ---
 
 **Also available:**
-- `/rihal:discuss-phase ${PHASE} --chain ${Rihal_WS}` — re-run with auto plan+execute after
-- `/rihal:plan ${PHASE} --skip-research ${Rihal_WS}` — plan without research
-- `/rihal:ui-phase ${PHASE} ${Rihal_WS}` — generate UI design contract before planning (if phase has frontend work)
+- `/rihal-discuss-phase ${PHASE} --chain ${Rihal_WS}` — re-run with auto plan+execute after
+- `/rihal-plan ${PHASE} --skip-research ${Rihal_WS}` — plan without research
+- `/rihal-ui-phase ${PHASE} ${Rihal_WS}` — generate UI design contract before planning (if phase has frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -1139,22 +1139,22 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 
   /clear then:
 
-  Next: /rihal:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${Rihal_WS}
+  Next: /rihal-discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${Rihal_WS}
   ```
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /rihal:execute-phase ${PHASE} ${Rihal_WS}
+  Continue: /rihal-execute-phase ${PHASE} ${Rihal_WS}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```
   Auto-advance stopped: Planning needs input.
-  Continue: /rihal:plan ${PHASE} ${Rihal_WS}
+  Continue: /rihal-plan ${PHASE} ${Rihal_WS}
   ```
 - **GAPS FOUND** → Stop chain:
   ```
   Auto-advance stopped: Gaps found during execution.
-  Continue: /rihal:plan ${PHASE} --gaps ${Rihal_WS}
+  Continue: /rihal-plan ${PHASE} --gaps ${Rihal_WS}
   ```
 
 **If none of `--auto`, `--chain`, nor config enabled:**

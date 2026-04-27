@@ -130,7 +130,7 @@ Then print a fresh DISPATCH banner.
 
 ## Concurrency: parallel dispatches
 
-If a workflow spawns multiple agents in parallel (e.g. `/rihal:council` summons 4 specialists), print ONE combined banner:
+If a workflow spawns multiple agents in parallel (e.g. `/rihal-council` summons 4 specialists), print ONE combined banner:
 
 ```
 ╭─────────────────────────────────────────────────────────╮

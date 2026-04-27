@@ -4,15 +4,15 @@ Explain the reasoning behind a Rihal decision: why this panel was selected, why 
 
 ## Step 0: Usage Check
 
-Verify non-empty argument: `/rihal:why <topic-or-question>`
+Verify non-empty argument: `/rihal-why <topic-or-question>`
 
 Examples:
-- `/rihal:why should I use waleed for this question`
-- `/rihal:why did it classify as codebase`
-- `/rihal:why did we deviate from the plan`
-- `/rihal:why choose this tech stack`
+- `/rihal-why should I use waleed for this question`
+- `/rihal-why did it classify as codebase`
+- `/rihal-why did we deviate from the plan`
+- `/rihal-why choose this tech stack`
 
-If empty: `Usage: /rihal:why <topic-or-question>`
+If empty: `Usage: /rihal-why <topic-or-question>`
 
 ## Step 1: Detect What User Is Asking About
 
@@ -114,7 +114,7 @@ If found:
 **Next decision point:** {decision.next_checkpoint}
 ```
 
-If not found: `No recorded decision matches "{ARGUMENTS}". Use /rihal:progress to see recent context.`
+If not found: `No recorded decision matches "{ARGUMENTS}". Use /rihal-progress to see recent context.`
 
 ## Success Criteria
 
@@ -126,5 +126,5 @@ If not found: `No recorded decision matches "{ARGUMENTS}". Use /rihal:progress t
 ## On Error
 
 - rihal-tools error → Show error message
-- state.json missing → `State not initialized. Run /rihal:new-project first.`
-- No match found → Suggest `/rihal:progress` for context
+- state.json missing → `State not initialized. Run /rihal-new-project first.`
+- No match found → Suggest `/rihal-progress` for context

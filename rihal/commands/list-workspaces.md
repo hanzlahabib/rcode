@@ -1,5 +1,5 @@
 ---
-name: rihal:list-workspaces
+name: rihal-list-workspaces
 description: List all active workspaces with status, start date, and current phase
 argument-hint: "[--detail]"
 allowed-tools:

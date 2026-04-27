@@ -9,7 +9,7 @@ You're deciding whether to build a mobile app or a PWA for your product.
 ## Invoke the council
 
 ```
-/rihal:council Should we build a native mobile app or a PWA for our leave tracker?
+/rihal-council Should we build a native mobile app or a PWA for our leave tracker?
 ```
 
 ## What happens
@@ -50,4 +50,4 @@ Dissent: Mariam notes perception risk with government stakeholders
 
 ## Decision logged
 
-The council decision is automatically saved to `.rihal/decisions.jsonl` and can be browsed with `/rihal:decisions`.
+The council decision is automatically saved to `.rihal/decisions.jsonl` and can be browsed with `/rihal-decisions`.

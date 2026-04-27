@@ -1,5 +1,5 @@
 ---
-name: rihal:explore
+name: rihal-explore
 description: Socratic ideation workflow — think through ideas before committing.
 argument-hint: "[topic]"
 allowed-tools:

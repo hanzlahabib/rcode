@@ -1,7 +1,7 @@
 # Subworkflow: new-project — Research Phase
 
 <purpose>
-Research phase of /rihal:new-project. Loaded from new-project.md via @-reference when user opts into research. Produces research artifacts that feed into Step 7 (Define Requirements) and Step 8 (Create Roadmap).
+Research phase of /rihal-new-project. Loaded from new-project.md via @-reference when user opts into research. Produces research artifacts that feed into Step 7 (Define Requirements) and Step 8 (Create Roadmap).
 
 **Invariants from parent:** {project_name}, {planning_artifacts}, {researcher_model}, {synthesizer_model}, {user_preference_research}. Set in new-project.md Steps 1–5.5 before this loads.
 </purpose>

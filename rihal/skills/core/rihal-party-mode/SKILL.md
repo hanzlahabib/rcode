@@ -88,7 +88,7 @@ Each party mode turn follows this pattern:
 
 ### Negative boundary
 **User:** "party mode — approve this PR"
-**Result:** Redirects to `/rihal:code-review` — code review needs structured evaluation, not open discussion.
+**Result:** Redirects to `/rihal-code-review` — code review needs structured evaluation, not open discussion.
 
 ## Memory Bank Hooks
 

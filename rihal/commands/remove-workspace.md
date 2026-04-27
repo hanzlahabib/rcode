@@ -1,5 +1,5 @@
 ---
-name: rihal:remove-workspace
+name: rihal-remove-workspace
 description: Remove a workspace and clean up its artifacts — no recovery
 argument-hint: "<workspace-name> [--archive] [--force]"
 allowed-tools:

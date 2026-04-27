@@ -522,7 +522,7 @@ After incorporating user feedback and updating files:
 
 ### Ready for Planning
 
-Next: `/rihal:plan 1`
+Next: `/rihal-plan 1`
 ```
 
 ## Roadmap Blocked

@@ -1,5 +1,5 @@
 ---
-name: rihal:help
+name: rihal-help
 description: "[REFERENCE] Show all commands organized by purpose"
 argument-hint: ""
 allowed-tools: []

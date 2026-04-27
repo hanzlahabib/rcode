@@ -1,4 +1,4 @@
-# Workflow: rihal:enable-hooks
+# Workflow: rihal-enable-hooks
 
 <purpose>
 Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
@@ -10,13 +10,13 @@ Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Cr
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:enable-hooks <argument-here>
+/rihal-enable-hooks <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:enable-hooks example 1
-/rihal:enable-hooks example 2
+/rihal-enable-hooks example 1
+/rihal-enable-hooks example 2
 ```
 
 STOP — do not proceed.
@@ -79,7 +79,7 @@ Print success message:
 
 Enabled guardrails:
   • pre-edit: Verifies files are Read() before Edit/Write
-  • pre-workflow: Warns if rihal:* commands look suspicious
+  • pre-workflow: Warns if rihal-* commands look suspicious
   • post-commit: Validates commit format and bans "Generated with Claude" patterns
 
 To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.

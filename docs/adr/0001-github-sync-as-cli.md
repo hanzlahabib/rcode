@@ -25,7 +25,7 @@ Both approaches can technically create the same issues. The question is which is
 
 ## Decision
 
-**We keep the CLI as the single path for GitHub mutations.** Claude slash commands (`/rihal:push-sprint`, `/rihal:push-epic`, `/rihal:push-story`) are thin wrappers that invoke the CLI. Claude never calls `gh` directly for issue creation.
+**We keep the CLI as the single path for GitHub mutations.** Claude slash commands (`/rihal-push-sprint`, `/rihal-push-epic`, `/rihal-push-story`) are thin wrappers that invoke the CLI. Claude never calls `gh` directly for issue creation.
 
 Division of responsibility:
 
@@ -35,7 +35,7 @@ Division of responsibility:
 | **Idempotency** — sync map, SHA-256 content hashing, duplicate prevention | CLI | Requires persistent state Claude can't reliably manage across sessions |
 | **Content judgment** — writing good acceptance criteria, splitting stories, enhancing briefs | Claude | Language work Claude is designed for |
 | **Workflow orchestration** — "dry-run first, confirm, then execute" | Slash commands | Claude reads state, asks user, calls CLI |
-| **Artifact preparation** — turning requirements into story files | Claude (`/rihal:generate-sprint`, `rihal-create-epics-and-stories`) | Semantic work; CLI would be a glorified template engine |
+| **Artifact preparation** — turning requirements into story files | Claude (`/rihal-generate-sprint`, `rihal-create-epics-and-stories`) | Semantic work; CLI would be a glorified template engine |
 
 ---
 
@@ -79,7 +79,7 @@ The CLI is ~700 lines. Prompt engineering for an equivalent Claude slash command
 It can, but the CLI already reads story file content verbatim (3000-char slice) into the issue body. The surrounding scaffolding (Meta block, Parent Epic link, acceptance criteria stub) is minimal. If a team wants a different scaffold, we plan to extract templates to `.rihal/templates/github/*.md` — editable without shipping code.
 
 ### "You still need Claude for semantic work"
-Yes — that's why the slash commands exist. `/rihal:push-epic` is a Claude-driven command that reads the epic, optionally offers improvements, then delegates to the CLI for the actual posting. The plumbing is deterministic; the judgment is LLM-driven. The split is the point.
+Yes — that's why the slash commands exist. `/rihal-push-epic` is a Claude-driven command that reads the epic, optionally offers improvements, then delegates to the CLI for the actual posting. The plumbing is deterministic; the judgment is LLM-driven. The split is the point.
 
 ---
 
@@ -121,7 +121,7 @@ Use a **Claude slash command** when:
 
 Use **both together** when:
 - You're pushing semantic work to a remote service. Claude prepares, CLI posts.
-- Examples: `/rihal:push-sprint`, `/rihal:push-epic`, `/rihal:push-story`
+- Examples: `/rihal-push-sprint`, `/rihal-push-epic`, `/rihal-push-story`
 
 ---
 

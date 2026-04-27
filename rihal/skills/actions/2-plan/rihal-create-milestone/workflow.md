@@ -33,7 +33,7 @@ This uses **step-file architecture** for disciplined execution:
 - 💾 **ALWAYS** update frontmatter of output files when writing
 - 🎯 **ALWAYS** follow the exact instructions in the step file
 - 📋 **NEVER** create mental todo lists from future steps
-- 🚷 **NEVER** invent an "autonomous mode" or self-declared bypass. The only sanctioned paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`. See `../../_shared/no-autonomous-bypass.md`.
+- 🚷 **NEVER** invent an "autonomous mode" or self-declared bypass. The only sanctioned paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md`.
 - 🔗 **NEVER** cite external sources without `WebFetch`. See `../../_shared/research-citation-rule.md`.
 - 🗂️ **ALWAYS** sync every milestone/phase into `.rihal/state.json` after writing to ROADMAP.md. See `../../_shared/state-sync-rule.md`.
 
@@ -56,7 +56,7 @@ Load and read full config from `{main_config}` and resolve:
 
 Verify `{inputFile}` (PRD) exists and is non-empty. If missing:
 
-- Respond: *"I need an approved PRD first. Run `/rihal:create-prd` or point me at the existing brief."*
+- Respond: *"I need an approved PRD first. Run `/rihal-create-prd` or point me at the existing brief."*
 - HALT. Do not create ROADMAP.md.
 
 If PRD frontmatter shows `status: draft`, warn the user and ask whether to proceed.
@@ -80,7 +80,7 @@ Steps (loaded one at a time):
 7. `step-07-backlog.md` — Capture parking-lot items.
 8. `step-08-write-roadmap.md` — Append all milestones to ROADMAP.md.
 9. `step-09-state-sync.md` — Upsert milestones + phases into `.rihal/state.json`.
-10. `step-10-complete.md` — Summary, next-step hand-off (`/rihal:create-epics-and-stories` for M1).
+10. `step-10-complete.md` — Summary, next-step hand-off (`/rihal-create-epics-and-stories` for M1).
 
 Each step halts at a menu: [A]ccept / [P]ropose change / [C]ontinue. Only on `C` does the workflow advance.
 
@@ -89,5 +89,5 @@ Each step halts at a menu: [A]ccept / [P]ropose change / [C]ontinue. Only on `C`
 ## HAND-OFF
 
 On completion, recommend the user run:
-- `/rihal:create-epics-and-stories` to decompose M1 into epics + stories.
-- `/rihal:sprint-planning` once the first epic is scoped.
+- `/rihal-create-epics-and-stories` to decompose M1 into epics + stories.
+- `/rihal-sprint-planning` once the first epic is scoped.

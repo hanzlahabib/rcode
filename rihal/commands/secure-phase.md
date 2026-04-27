@@ -1,5 +1,5 @@
 ---
-name: rihal:secure-phase
+name: rihal-secure-phase
 description: Retroactively verify threat mitigations for a completed phase.
 argument-hint: "<phase>"
 allowed-tools:

@@ -1,4 +1,4 @@
-# Workflow: rihal:correct-course
+# Workflow: rihal-correct-course
 
 <purpose>
 Load original PRD and architecture docs, compare against current codebase implementation. Identify deviations, classify by type (scope drift, wrong architecture, missing acceptance criteria, tech debt), and produce ordered remediation plan with updated story file.
@@ -10,13 +10,13 @@ Load original PRD and architecture docs, compare against current codebase implem
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:correct-course <argument-here>
+/rihal-correct-course <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:correct-course example 1
-/rihal:correct-course example 2
+/rihal-correct-course example 1
+/rihal-correct-course example 2
 ```
 
 STOP — do not proceed.
@@ -126,7 +126,7 @@ Task tool call:
     - Rollback risk
     - Acceptance criteria for "fixed"
     
-    Output: SPRINT.md that can be executed with /rihal:execute
+    Output: SPRINT.md that can be executed with /rihal-execute
 ```
 
 ## Step 4 — Generate Report and Plan
@@ -155,7 +155,7 @@ Add section to story file:
 ### Tech Debt
 - {list}
 
-Remediation: See /rihal:correct-course for ordered fix plan
+Remediation: See /rihal-correct-course for ordered fix plan
 ```
 
 Print:
@@ -173,7 +173,7 @@ Reports:
   • Remediation plan: {remediation_plan_path}
 
 Run remediation with:
-/rihal:execute {remediation_plan_path}
+/rihal-execute {remediation_plan_path}
 ```
 
 ## Success Criteria

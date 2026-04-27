@@ -1,7 +1,7 @@
-# Workflow: rihal:create-story
+# Workflow: rihal-create-story
 
 <purpose>
-Convert a single story from an EPIC file into a self-contained STORY.md file. This story is ready for `/rihal:dev-story` to be wrapped for AI-coder execution. Entry is gated by checklist-story-draft.md.
+Convert a single story from an EPIC file into a self-contained STORY.md file. This story is ready for `/rihal-dev-story` to be wrapped for AI-coder execution. Entry is gated by checklist-story-draft.md.
 </purpose>
 
 
@@ -10,13 +10,13 @@ Convert a single story from an EPIC file into a self-contained STORY.md file. Th
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:create-story <argument-here>
+/rihal-create-story <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:create-story example 1
-/rihal:create-story example 2
+/rihal-create-story example 1
+/rihal-create-story example 2
 ```
 
 STOP — do not proceed.
@@ -26,11 +26,11 @@ STOP — do not proceed.
 **If no arguments:**
 
 ```
-Usage: /rihal:create-story <EPIC-file.md> [--story <id>]
+Usage: /rihal-create-story <EPIC-file.md> [--story <id>]
 
 Examples:
-  /rihal:create-story .planning/epics/EPIC-01.md
-  /rihal:create-story .planning/epics/EPIC-01.md --story EPIC-01.1
+  /rihal-create-story .planning/epics/EPIC-01.md
+  /rihal-create-story .planning/epics/EPIC-01.md --story EPIC-01.1
 ```
 
 Stop and wait for arguments.
@@ -243,7 +243,7 @@ Use checklist-story-dod.md. A story is "Done" when:
 
 **Before you start:** Review this story, dev notes, and dependencies.
 
-**During development:** See `/rihal:dev-story` to wrap this STORY.md for AI-coder execution.
+**During development:** See `/rihal-dev-story` to wrap this STORY.md for AI-coder execution.
 
 **After complete:** Run checklist-story-dod.md to verify done.
 
@@ -251,7 +251,7 @@ Use checklist-story-dod.md. A story is "Done" when:
 
 **Created:** {ISO date}
 
-**Ready for:** /rihal:dev-story → /rihal:code → Definition of Done verification
+**Ready for:** /rihal-dev-story → /rihal-code → Definition of Done verification
 ```
 
 ## Step 6 — Commit Story File
@@ -272,7 +272,7 @@ Title: {Story title}
 Effort: {Estimate}
 Persona: {Persona}
 
-Next step: /rihal:dev-story .planning/stories/{story-id}.md
+Next step: /rihal-dev-story .planning/stories/{story-id}.md
 ```
 
 ## Errors

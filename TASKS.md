@@ -29,8 +29,8 @@ Single source of truth for the rcode improvement programme. Every task here corr
 
 ## Phase 2 — Verified Safe Drops ✅ done
 
-- [x] Drop `/rihal:report` slash (alias of session-report)
-- [x] Drop `/rihal:new-project-research` and `/rihal:new-project-roadmap` (self-declared internal)
+- [x] Drop `/rihal-report` slash (alias of session-report)
+- [x] Drop `/rihal-new-project-research` and `/rihal-new-project-roadmap` (self-declared internal)
 - [x] Drop `rihal-architect` agent (folded into Waleed)
 
 ---
@@ -56,7 +56,7 @@ Single source of truth for the rcode improvement programme. Every task here corr
 ### Group 1 — Folded slash drops
 - [x] Fold `discuss-phase-power` → `discuss-phase --power` flag
 - [x] Fold `karpathy-audit` → `code-review --karpathy` flag
-- [x] Drop user-facing `/rihal:check-implementation-readiness` slash (workflow remains internal)
+- [x] Drop user-facing `/rihal-check-implementation-readiness` slash (workflow remains internal)
 - [x] Path B alignment — rename memory skill folders to `rihal-memory-*` for installer compatibility
 
 ### Group 2 — Review folds

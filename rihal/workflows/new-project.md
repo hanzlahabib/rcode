@@ -47,7 +47,7 @@ Existing {stack} code found in {path}. Mapping it first will save
 duplication during planning.
 ```
 
-Then AskUserQuestion to route to /rihal:map-codebase before proceeding.
+Then AskUserQuestion to route to /rihal-map-codebase before proceeding.
 
 **Exiting to map-codebase handoff:**
 ```
@@ -56,9 +56,9 @@ Then AskUserQuestion to route to /rihal:map-codebase before proceeding.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Per the workflow, mapping runs first. After it finishes I'll re-enter
-/rihal:new-project automatically with the map in hand.
+/rihal-new-project automatically with the map in hand.
 
-Handing off to /rihal:map-codebase now.
+Handing off to /rihal-map-codebase now.
 ```
 </output_format>
 
@@ -68,14 +68,14 @@ Handing off to /rihal:map-codebase now.
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:new-project <argument-here>
+/rihal-new-project <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:new-project employee leave request tracker for an Omani government ministry
-/rihal:new-project car rental marketplace SEO site for Dubai
-/rihal:new-project tasbeeh app with Arabic RTL support for Android
+/rihal-new-project employee leave request tracker for an Omani government ministry
+/rihal-new-project car rental marketplace SEO site for Dubai
+/rihal-new-project tasbeeh app with Arabic RTL support for Android
 ```
 
 STOP — do not proceed.
@@ -100,9 +100,9 @@ If `$EXISTING` is non-empty (project already initialized):
 ```
 ⚠ A rihal project already exists here.
 
-To check current state: /rihal:status
-To find next action: /rihal:next
-To start a fresh phase instead: /rihal:add-phase
+To check current state: /rihal-status
+To find next action: /rihal-next
+To start a fresh phase instead: /rihal-add-phase
 ```
 
 Only proceed past this step if no project exists (`$EXISTING` is empty).
@@ -127,7 +127,7 @@ Check if `--auto` flag is present in $ARGUMENTS.
 **Document requirement:**
 Auto mode requires an idea document — either:
 
-- File reference: `/rihal:new-project --auto @prd.md`
+- File reference: `/rihal-new-project --auto @prd.md`
 - Pasted/written text in the prompt
 
 If no document content provided, error:
@@ -136,8 +136,8 @@ If no document content provided, error:
 Error: --auto requires an idea document.
 
 Usage:
-  /rihal:new-project --auto @your-idea.md
-  /rihal:new-project --auto [paste or write your idea here]
+  /rihal-new-project --auto @your-idea.md
+  /rihal-new-project --auto [paste or write your idea here]
 
 The document should describe what you want to build.
 ```
@@ -186,7 +186,7 @@ if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION
 
 All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
 
-**If `project_exists` is true:** Error — project already initialized. Use `/rihal:progress`.
+**If `project_exists` is true:** Error — project already initialized. Use `/rihal-progress`.
 
 **If `has_git` is false:** Initialize git:
 
@@ -216,13 +216,13 @@ Use AskUserQuestion:
 - header: "Codebase"
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
-  - "Map codebase first" — Run /rihal:map-codebase to understand existing architecture (Recommended)
+  - "Map codebase first" — Run /rihal-map-codebase to understand existing architecture (Recommended)
   - "Skip mapping" — Proceed with targeted discovery
 
 **If "Map codebase first":**
 
 ```
-Run `/rihal:map-codebase` first, then return to `/rihal:new-project`
+Run `/rihal-map-codebase` first, then return to `/rihal-new-project`
 ```
 
 Exit command.
@@ -585,14 +585,14 @@ Synthesize all context into `.planning/PROJECT.md`. If `.rihal/templates/project
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/rihal:discuss-phase` + `/rihal:plan`):
+**After each phase transition** (via `/rihal-discuss-phase` + `/rihal-plan`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/rihal:complete-milestone`):
+**After each milestone** (via `/rihal-complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -761,7 +761,7 @@ cat > .planning/config.json <<EOF
 EOF
 ```
 
-**Note:** Run `/rihal:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
+**Note:** Run `/rihal-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
@@ -1342,12 +1342,12 @@ The rihal-tools CLI does not expose a `generate-claude-md` subcommand. Instead, 
 This project uses Rihal for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
 
 Common commands:
-- /rihal:progress — check status and next action
-- /rihal:discuss-phase N — gather context before planning phase N
-- /rihal:plan N — create a SPRINT.md for phase N
-- /rihal:execute N — execute a SPRINT.md
-- /rihal:verify-work — conversational UAT
-- /rihal:complete-milestone — archive milestone and reset
+- /rihal-progress — check status and next action
+- /rihal-discuss-phase N — gather context before planning phase N
+- /rihal-plan N — create a SPRINT.md for phase N
+- /rihal-execute N — execute a SPRINT.md
+- /rihal-verify-work — conversational UAT
+- /rihal-complete-milestone — archive milestone and reset
 
 Rules:
 - Never run `git push` without explicit user authorization.
@@ -1403,7 +1403,7 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke `/rihal:discuss-phase 1 --auto`.
+Exit skill and invoke `/rihal-discuss-phase 1 --auto`.
 
 **If interactive mode:**
 
@@ -1425,13 +1425,13 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 
 /clear then:
 
-/rihal:discuss-phase 1 — gather context and clarify approach
+/rihal-discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /rihal:ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /rihal:plan 1 — skip discussion, plan directly
+- /rihal-ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /rihal-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1447,12 +1447,12 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 
 /clear then:
 
-/rihal:discuss-phase 1 — gather context and clarify approach
+/rihal-discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /rihal:plan 1 — skip discussion, plan directly
+- /rihal-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1495,7 +1495,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
 - [ ] `$INSTRUCTION_FILE` generated (if missing) with rihal workflow guidance
-- [ ] User knows next step is `/rihal:discuss-phase 1`
+- [ ] User knows next step is `/rihal-discuss-phase 1`
 - [ ] No `git push` issued by the workflow (per AGENTS.md)
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist. When `.planning/` is gitignored, files are written but commit is skipped gracefully.

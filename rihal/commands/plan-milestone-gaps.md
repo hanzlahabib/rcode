@@ -1,12 +1,12 @@
 ---
-name: rihal:plan-milestone-gaps
-description: Create all phases necessary to close gaps identified by `/rihal:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps 
+name: rihal-plan-milestone-gaps
+description: Create all phases necessary to close gaps identified by `/rihal-audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps 
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---
 
 <objective>
-Create all phases necessary to close gaps identified by `/rihal:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps 
+Create all phases necessary to close gaps identified by `/rihal-audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps 
 </objective>
 
 <execution_context>

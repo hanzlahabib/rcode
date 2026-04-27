@@ -1,5 +1,5 @@
 ---
-name: rihal:audit-milestone
+name: rihal-audit-milestone
 description: Cross-phase audit — verify milestone completion against original goals
 argument-hint: "[--strict] [--report]"
 allowed-tools:

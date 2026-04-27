@@ -1,6 +1,6 @@
 # UI/Brand Questions
 
-When exploring the UI design phase (/rihal:ui-phase), ask structured questions across these eight dimensions: **color palette**, **typography**, **voice/tone**, **accessibility**, **component inventory**, **responsive behavior**, **interaction patterns**, and **visual hierarchy**. These questions build the design contract.
+When exploring the UI design phase (/rihal-ui-phase), ask structured questions across these eight dimensions: **color palette**, **typography**, **voice/tone**, **accessibility**, **component inventory**, **responsive behavior**, **interaction patterns**, and **visual hierarchy**. These questions build the design contract.
 
 ---
 

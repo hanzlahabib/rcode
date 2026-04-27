@@ -1,5 +1,5 @@
 ---
-name: rihal:import
+name: rihal-import
 description: Ingest external plans with conflict detection against project decisions
 argument-hint: "--from <path>"
 allowed-tools:

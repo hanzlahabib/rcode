@@ -5,7 +5,7 @@ Print a specific SPRINT.md file or all plans in a phase, with execution status f
 ## Step 0: Usage Check
 
 Verify argument was provided:
-- If empty: `Usage: /rihal:show <phase-id|plan-id> (e.g., /rihal:show 01 or /rihal:show 01-01)`
+- If empty: `Usage: /rihal-show <phase-id|plan-id> (e.g., /rihal-show 01 or /rihal-show 01-01)`
 - Proceed to Step 1
 
 ## Step 1: Resolve ID
@@ -21,7 +21,7 @@ Expected output:
 }
 ```
 
-If `type === "unknown"`: Return error `ID not found: $ARGUMENTS. Try /rihal:show 01 for phase, 01-01 for specific plan.`
+If `type === "unknown"`: Return error `ID not found: $ARGUMENTS. Try /rihal-show 01 for phase, 01-01 for specific plan.`
 
 ## Step 2: Phase or Plan?
 

@@ -162,7 +162,7 @@ console.log(JSON.stringify(result, null, 2));
 
 Check result:
 - If `summary.ratio < 0.5`: **BLOCKER** — "Plan references files/symbols that don't exist. Plan was built on hallucinated findings."
-- If `summary.ratio >= 0.5 AND < 0.8`: **WARNING** — List missing files/symbols, suggest re-planning with /rihal:debug
+- If `summary.ratio >= 0.5 AND < 0.8`: **WARNING** — List missing files/symbols, suggest re-planning with /rihal-debug
 - If `summary.ratio >= 0.8`: **INFO** — Most references verified, proceed
 
 Append to verification output:
@@ -288,7 +288,7 @@ Return all issues as a structured `issues:` YAML list (see dimension examples fo
 | 01   | 3     | 5     | 1    | Valid  |
 | 02   | 2     | 4     | 2    | Valid  |
 
-Plans verified. Run `/rihal:execute {phase}` to proceed.
+Plans verified. Run `/rihal-execute {phase}` to proceed.
 ```
 
 ## ISSUES FOUND

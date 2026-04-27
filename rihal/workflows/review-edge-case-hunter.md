@@ -1,4 +1,4 @@
-# Workflow: rihal:review-edge-case-hunter
+# Workflow: rihal-review-edge-case-hunter
 
 <purpose>
 Systematically enumerate edge cases by category (input, state, concurrency, network) with severity (critical/high/medium/low). Callable during code-review.md workflow. Output feeds into story AC or subtasks. Focuses on "what breaks?" rather than security.
@@ -10,13 +10,13 @@ Systematically enumerate edge cases by category (input, state, concurrency, netw
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:review-edge-case-hunter <argument-here>
+/rihal-review-edge-case-hunter <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:review-edge-case-hunter example 1
-/rihal:review-edge-case-hunter example 2
+/rihal-review-edge-case-hunter example 1
+/rihal-review-edge-case-hunter example 2
 ```
 
 STOP — do not proceed.
@@ -196,7 +196,7 @@ AskUserQuestion([
 
 If "Yes, find edge cases":
 ```
-/rihal:review-edge-case-hunter --phase {current_phase}
+/rihal-review-edge-case-hunter --phase {current_phase}
 ```
 
 ## Success Criteria

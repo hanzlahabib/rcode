@@ -1,4 +1,4 @@
-# Workflow: rihal:document-project
+# Workflow: rihal-document-project
 
 <purpose>
 Load documentation-requirements.csv, audit current documentation for coverage and staleness, identify missing or outdated docs, and file them as SPRINT.md subtasks or separate plan phases.
@@ -10,13 +10,13 @@ Load documentation-requirements.csv, audit current documentation for coverage an
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:document-project <argument-here>
+/rihal-document-project <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:document-project example 1
-/rihal:document-project example 2
+/rihal-document-project example 1
+/rihal-document-project example 2
 ```
 
 STOP — do not proceed.
@@ -152,7 +152,7 @@ Summary:
 
 Missing docs filed as tasks. Run:
 
-/rihal:plan .planning/plans/documentation-updates/SPRINT.md
+/rihal-plan .planning/plans/documentation-updates/SPRINT.md
 ```
 
 ## Step 5 — Auto-inject into Resume-Work

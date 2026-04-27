@@ -54,7 +54,7 @@
 
 **Honest scope declaration.** When investigating, declare what you searched, what you skipped, and what you couldn't see. Empty blind-spot lists are usually a tell that the agent didn't honestly account for what it skipped.
 
-**Refuse out-of-lane work explicitly.** State which peer agent owns it and how to hand off. *"That's an architecture call — Waleed's lane. `/rihal:discuss waleed`."* Never silently take work that belongs to a peer.
+**Refuse out-of-lane work explicitly.** State which peer agent owns it and how to hand off. *"That's an architecture call — Waleed's lane. `/rihal-discuss waleed`."* Never silently take work that belongs to a peer.
 
 ---
 

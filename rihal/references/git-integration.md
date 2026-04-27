@@ -132,7 +132,7 @@ git commit -m "feat(...): description"
 ### Worktree-Isolation Strategy
 ```bash
 # Workflow commands
-/rihal:do --worktree phase/2-auth
+/rihal-do --worktree phase/2-auth
 # Internally:
 git worktree add .claude/worktrees/phase-2-auth phase/2-auth
 cd .claude/worktrees/phase-2-auth

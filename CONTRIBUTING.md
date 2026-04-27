@@ -30,7 +30,7 @@ A command file is tiny. It registers a slash command in Claude Code's UI and poi
 
 ```markdown
 ---
-name: rihal:prfaq
+name: rihal-prfaq
 description: Working Backwards PRFAQ challenge
 allowed-tools: [Read, Write, Agent, AskUserQuestion, WebSearch]
 ---
@@ -40,14 +40,14 @@ allowed-tools: [Read, Write, Agent, AskUserQuestion, WebSearch]
 
 That `@-include` line tells Claude to load the target file's contents as context. Without a command file, a skill is unreachable via `/` — it can only be triggered by describing the task in natural language.
 
-**Rule:** Every capability intended to be user-typed as `/rihal:something` needs a matching `rihal/commands/something.md`.
+**Rule:** Every capability intended to be user-typed as `/rihal-something` needs a matching `rihal/commands/something.md`.
 
 ### Workflows — orchestration logic
 
 Workflows are prose instructions — markdown files Claude reads as a script to follow. They handle control flow: read state, ask a question, dispatch to a sub-workflow, report results. Most slash commands point to a workflow:
 
 ```
-/rihal:audit  →  commands/audit.md  →  @workflows/audit.md
+/rihal-audit  →  commands/audit.md  →  @workflows/audit.md
 ```
 
 Workflows are the right tool when the task is a sequence of steps that Claude drives (check state → ask user → run something → report). They should not contain deep domain knowledge — that belongs in skills.
@@ -74,7 +74,7 @@ rihal/skills/actions/1-analysis/rihal-prfaq/
 Skills are the right tool when the task has multiple stages, needs sub-agent parallelism, or carries domain-specific coaching logic (e.g., how to run a PRFAQ gauntlet, how to do a Karpathy code review).
 
 Skills have **two activation paths**:
-1. **Via command** — `/rihal:prfaq` loads the SKILL.md directly
+1. **Via command** — `/rihal-prfaq` loads the SKILL.md directly
 2. **Phrase-activated** — when a user describes the task, Claude picks up the skill from its `description` field in the YAML frontmatter
 
 ### Agents — focused specialists
@@ -85,12 +85,12 @@ There are two kinds:
 
 **Sub-agents** live inside skill folders (`rihal/skills/agents/*/SKILL.md`). They're invoked by their parent skill, not by the user directly. Example: the PRFAQ skill spawns `artifact-analyzer` and `web-researcher` in parallel during Stage 1.
 
-**Council agents** live in `rihal/agents/*.md`. They're the named characters (Waleed, Hanzla, Fatima, Sadiq…) that `/rihal:council` assembles into a panel. These are installed to `.claude/agents/` and can be spawned from any workflow.
+**Council agents** live in `rihal/agents/*.md`. They're the named characters (Waleed, Hanzla, Fatima, Sadiq…) that `/rihal-council` assembles into a panel. These are installed to `.claude/agents/` and can be spawned from any workflow.
 
 ### How they chain for a real request
 
 ```
-User types:  /rihal:council "Should we use Redis?"
+User types:  /rihal-council "Should we use Redis?"
                    │
          commands/council.md          ← slash command entry
                    │ @-includes
@@ -108,7 +108,7 @@ User types:  /rihal:council "Should we use Redis?"
 A more complex chain involving a skill:
 
 ```
-User types:  /rihal:prfaq
+User types:  /rihal-prfaq
                    │
          commands/prfaq.md
                    │ @-includes
@@ -128,10 +128,10 @@ User types:  /rihal:prfaq
 
 | I want to… | Edit this |
 |-----------|-----------|
-| Add a new `/rihal:something` slash command | Create `rihal/commands/something.md` pointing to a workflow or skill |
+| Add a new `/rihal-something` slash command | Create `rihal/commands/something.md` pointing to a workflow or skill |
 | Change the steps in an existing command | Edit the workflow it points to |
 | Improve how a persona thinks (Hanzla, Waleed, etc.) | Edit `rihal/skills/agents/<name>/SKILL.md` or `rihal/agents/<name>.md` |
-| Add a new agent to `/rihal:council` | Edit `rihal/agents/team.yaml` + add agent file |
+| Add a new agent to `/rihal-council` | Edit `rihal/agents/team.yaml` + add agent file |
 | Improve a complex multi-stage task (PRFAQ, code review, etc.) | Edit the skill's stage reference files |
 | Add a new skill triggered by natural language | Create `rihal/skills/actions/<category>/<name>/SKILL.md` — no command file needed if slash is not required |
 | Fix a broken `@-include` reference | Check that the target file exists at `.rihal/<path>` after install |

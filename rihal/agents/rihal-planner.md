@@ -1,6 +1,6 @@
 ---
 name: rihal-planner
-description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rihal:plan orchestrator.
+description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rihal-plan orchestrator.
 tools: Read, Write, Bash, Glob, Grep, WebFetch
 color: green
 ---

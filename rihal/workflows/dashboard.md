@@ -1,4 +1,4 @@
-# Workflow: rihal:dashboard
+# Workflow: rihal-dashboard
 
 <purpose>
 Start the Diwan view-only dashboard — a local web UI that visualizes .rihal/state.json, .planning/ artifacts, phases, decisions, and council sessions. The dashboard is read-only (no write endpoints) and runs dep-free on Node stdlib.
@@ -9,14 +9,14 @@ Start the Diwan view-only dashboard — a local web UI that visualizes .rihal/st
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:dashboard [--port <N>] [--no-open]
+/rihal-dashboard [--port <N>] [--no-open]
 ```
 
 **Examples:**
 ```
-/rihal:dashboard                  # start on port 7717, open browser
-/rihal:dashboard --port 8080      # use a different port
-/rihal:dashboard --no-open        # don't auto-open the browser
+/rihal-dashboard                  # start on port 7717, open browser
+/rihal-dashboard --port 8080      # use a different port
+/rihal-dashboard --no-open        # don't auto-open the browser
 ```
 
 STOP — do not proceed.
@@ -121,13 +121,13 @@ The server runs until the user kills it. The slash command returns after announc
 ## Examples
 
 ### Happy Path
-**Input:** `/rihal:dashboard`
+**Input:** `/rihal-dashboard`
 **Expected:** Server starts on 7717, browser opens, confirmation printed.
 
 ### Edge Case: Port in use
-**Input:** `/rihal:dashboard` (when 7717 is taken)
+**Input:** `/rihal-dashboard` (when 7717 is taken)
 **Expected:** Server reports EADDRINUSE. Suggest `--port` flag with alternative.
 
 ### Negative Test
-**Input:** `/rihal:dashboard --write something`
+**Input:** `/rihal-dashboard --write something`
 **Expected:** Dashboard is view-only. Reject unknown write-related flags.

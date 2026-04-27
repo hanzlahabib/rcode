@@ -19,13 +19,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:code-review-fix <phase> [--auto]
+/rihal-code-review-fix <phase> [--auto]
 ```
 
 **Examples:**
 ```
-/rihal:code-review-fix 01
-/rihal:code-review-fix 02.1 --auto
+/rihal-code-review-fix 01
+/rihal-code-review-fix 02.1 --auto
 ```
 
 <process>
@@ -53,7 +53,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /rihal:status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /rihal-status to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -110,7 +110,7 @@ Verify that REVIEW.md exists:
 
 ```bash
 if [ ! -f "${REVIEW_PATH}" ]; then
-  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /rihal:code-review ${PHASE_ARG} first."
+  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /rihal-code-review ${PHASE_ARG} first."
   exit 1
 fi
 ```
@@ -238,7 +238,7 @@ Check if FIX_REPORT_PATH exists:
 Either way:
 ```
 Some fix commits may already exist in git history — check git log for fix(${PADDED_PHASE}) commits.
-You can retry with /rihal:code-review-fix ${PHASE_ARG}.
+You can retry with /rihal-code-review-fix ${PHASE_ARG}.
 ```
 
 Exit workflow (skip auto loop).
@@ -411,7 +411,7 @@ if [ ! -f "${FIX_REPORT_PATH}" ]; then
   echo "The fixer agent may have failed before completing."
   echo "Check git log for any fix(${PADDED_PHASE}) commits."
   echo ""
-  echo "Retry: /rihal:code-review-fix ${PHASE_ARG}"
+  echo "Retry: /rihal-code-review-fix ${PHASE_ARG}"
   echo ""
   echo "═══════════════════════════════════════════════════════════════"
   exit 1
@@ -468,7 +468,7 @@ if [ "$FIX_STATUS" = "all_fixed" ]; then
   echo "Full report: ${FIX_REPORT_PATH}"
   echo ""
   echo "Next step:"
-  echo "  /rihal:verify-work  — Verify phase completion"
+  echo "  /rihal-verify-work  — Verify phase completion"
   echo ""
 fi
 ```
@@ -482,8 +482,8 @@ if [ "$FIX_STATUS" = "partial" ] || [ "$FIX_STATUS" = "none_fixed" ]; then
   echo ""
   echo "Next steps:"
   echo "  cat ${FIX_REPORT_PATH}                     — View fix report"
-  echo "  /rihal:code-review ${PHASE_NUMBER}         — Re-review code"
-  echo "  /rihal:verify-work                         — Verify phase completion"
+  echo "  /rihal-code-review ${PHASE_NUMBER}         — Re-review code"
+  echo "  /rihal-verify-work                         — Verify phase completion"
   echo ""
 fi
 ```

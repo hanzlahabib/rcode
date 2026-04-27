@@ -1,4 +1,4 @@
-# Workflow: rihal:ui-phase
+# Workflow: rihal-ui-phase
 
 <purpose>
 Produce UI-SPEC.md with formalized design contract: color tokens, typography system, component inventory, interaction states, accessibility requirements. Detects frontend keywords (React, Next.js, Vue, Tailwind, CSS, UI) and suggests this workflow early if UI-SPEC.md is absent.
@@ -10,13 +10,13 @@ Produce UI-SPEC.md with formalized design contract: color tokens, typography sys
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal:ui-phase <argument-here>
+/rihal-ui-phase <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal:ui-phase example 1
-/rihal:ui-phase example 2
+/rihal-ui-phase example 1
+/rihal-ui-phase example 2
 ```
 
 STOP — do not proceed.
@@ -114,7 +114,7 @@ If enabled, print:
 ```
 ⚠ Frontend project detected. Before planning, create a design contract:
 
-/rihal:ui-phase
+/rihal-ui-phase
 
 This ensures consistent UI patterns, accessibility, and design tokens across all components.
 ```
@@ -124,13 +124,13 @@ Offer via AskUserQuestion:
 header: "UI Safety Gate"
 question: "Should we define UI-SPEC.md before planning component development?"
 options:
-  - "Yes, run /rihal:ui-phase first"
+  - "Yes, run /rihal-ui-phase first"
   - "Skip for now, continue planning"
 ```
 
-If "Yes, run /rihal:ui-phase first":
+If "Yes, run /rihal-ui-phase first":
 ```
-Run /rihal:ui-phase, then return to /rihal:plan
+Run /rihal-ui-phase, then return to /rihal-plan
 ```
 
 ## Success Criteria

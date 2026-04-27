@@ -49,7 +49,7 @@ Before verifying, discover project context:
 10. **Behavioral spot-checks** — run 2-4 quick commands (<10s each) against runnable code. Skip if no runnable entry points.
 11. **Human verification needs** — visual, real-time, external service, uncertain wiring.
 12. **Determine status** — passed | gaps_found | human_needed. Score = verified_truths / total_truths.
-13. **Structure gap output** — YAML frontmatter for `/rihal:plan --gaps`.
+13. **Structure gap output** — YAML frontmatter for `/rihal-plan --gaps`.
 14. **Create VERIFICATION.md** — use Write tool (never heredoc). Return to orchestrator. DO NOT COMMIT.
 
 ## Final Status Tables
@@ -91,7 +91,7 @@ Read these ONLY when the current step needs them. Don't preemptively load.
 - **DO NOT trust SUMMARY claims** — verify the component actually renders messages, not a placeholder.
 - **DO NOT assume existence = implementation** — need level 2 (substantive), 3 (wired), and 4 (data flowing) for dynamic-data artifacts.
 - **DO NOT skip key link verification** — 80% of stubs hide in wiring.
-- **Structure gaps in YAML frontmatter** for `/rihal:plan --gaps`.
+- **Structure gaps in YAML frontmatter** for `/rihal-plan --gaps`.
 - **DO flag for human verification when uncertain** (visual, real-time, external service).
 - **Keep verification fast** — use grep/file checks, not running the app.
 - **DO NOT commit** — leave committing to the orchestrator.

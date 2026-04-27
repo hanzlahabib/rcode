@@ -48,7 +48,7 @@ Follow the instructions in ./workflow.md.
 
 ### Edge Case: No PRD Exists
 **Input:** "Create milestones for social-poster-x" (no prd.md)
-**Expected behavior:** DO NOT invent milestones. Respond: "I need an approved PRD first. Run `/rihal:create-prd` or point me at an existing brief."
+**Expected behavior:** DO NOT invent milestones. Respond: "I need an approved PRD first. Run `/rihal-create-prd` or point me at an existing brief."
 
 ### Edge Case: PRD Marked Draft
 **Input:** PRD exists but frontmatter shows `status: draft`
@@ -56,4 +56,4 @@ Follow the instructions in ./workflow.md.
 
 ### Negative Example: Request to Bypass the Interview
 **Input:** "just generate the full roadmap autonomously"
-**Expected behavior:** DO NOT invent an "autonomous mode". Point the user to the two sanctioned bypass paths (`.rihal/config.yaml` → `mode: yolo` or `/rihal:do --auto`) and present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.
+**Expected behavior:** DO NOT invent an "autonomous mode". Point the user to the two sanctioned bypass paths (`.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`) and present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.

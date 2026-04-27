@@ -47,7 +47,7 @@ test('no-source-command-skill-dupes: no source skill duplicates a sidebar comman
   for (const cmd of SIDEBAR_COMMANDS) {
     const expectedStub = `rihal-${cmd}`;
     if (skillNames.has(expectedStub)) {
-      dupes.push(`${expectedStub} (mirrors /rihal:${cmd})`);
+      dupes.push(`${expectedStub} (mirrors /rihal-${cmd})`);
     }
   }
   // Some commands legitimately have real skills (init, help, code-review,

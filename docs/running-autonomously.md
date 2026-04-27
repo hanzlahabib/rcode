@@ -27,7 +27,7 @@ mode: guided
 ## Sanctioned Path 2 — Per-invocation: `--auto`
 
 ```
-/rihal:do --auto <question>
+/rihal-do --auto <question>
 ```
 
 The router passes an `autoMode=true` flag to the dispatched skill. Same semantics as `mode: yolo` but scoped to the single invocation.

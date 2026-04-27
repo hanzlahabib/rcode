@@ -1,5 +1,5 @@
 ---
-name: rihal:check-todos
+name: rihal-check-todos
 description: List all pending todos, allow selection, load full context for the selected todo, and route to appropriate action.
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent

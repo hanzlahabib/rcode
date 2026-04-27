@@ -1,5 +1,5 @@
 ---
-name: rihal:milestone-summary
+name: rihal-milestone-summary
 description: Generate human-readable summary of all milestone phases, decisions, and outcomes
 argument-hint: "[--format=markdown|pdf] [--include-decisions]"
 allowed-tools:

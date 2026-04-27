@@ -12,13 +12,13 @@ The seven skills you actually need to ship your first Rihal project, in order:
 
 | # | Skill | What it does | Say this to activate |
 |---|-------|--------------|----------------------|
-| 1 | `rihal-scaffold-project` | Clone the Rihal template into a new folder | "scaffold a new project" or `/rihal:install` |
-| 2 | `rihal-create-prd` | Interview you and write a Product Requirements Document | "create a PRD" or `/rihal:do` |
+| 1 | `rihal-scaffold-project` | Clone the Rihal template into a new folder | "scaffold a new project" or `/rihal-install` |
+| 2 | `rihal-create-prd` | Interview you and write a Product Requirements Document | "create a PRD" or `/rihal-do` |
 | 3 | `rihal-create-story` | Break the PRD into implementable stories | "create a story" |
-| 4 | `rihal-sprint-planning` | Plan a sprint with the team | "plan a sprint" or `/rihal:sprint-planning` |
-| 5 | `rihal-dev-story` | Implement a story (code + tests + PR) | "dev this story" or `/rihal:dev-story` |
-| 6 | `rihal-code-review` | Review changes before merging | "review this code" or `/rihal:code-review` |
-| 7 | `rihal-sprint-status` | Check sprint progress + blockers | "sprint status" or `/rihal:sprint-status` |
+| 4 | `rihal-sprint-planning` | Plan a sprint with the team | "plan a sprint" or `/rihal-sprint-planning` |
+| 5 | `rihal-dev-story` | Implement a story (code + tests + PR) | "dev this story" or `/rihal-dev-story` |
+| 6 | `rihal-code-review` | Review changes before merging | "review this code" or `/rihal-code-review` |
+| 7 | `rihal-sprint-status` | Check sprint progress + blockers | "sprint status" or `/rihal-sprint-status` |
 
 **Starter agents (3):** Sadiq (strategy) · Hussain (PM) · Nasser (engineering manager).
 

@@ -59,7 +59,7 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
   <action>Try {sprint_status_file}</action>
   <check if="file not found">
     <output>❌ sprint-status.yaml not found.
-Run `/rihal:workflows:sprint-planning` to generate it, then rerun sprint-status.</output>
+Run `/rihal-workflows:sprint-planning` to generate it, then rerun sprint-status.</output>
     <action>Exit workflow</action>
   </check>
   <action>Continue to Step 2</action>
@@ -112,9 +112,9 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 
 <action>Detect risks:</action>
 
-- IF any story has status "review": suggest `/rihal:workflows:code-review`
+- IF any story has status "review": suggest `/rihal-workflows:code-review`
 - IF any story has status "in-progress" AND no stories have status "ready-for-dev": recommend staying focused on active story
-- IF all epics have status "backlog" AND no stories have status "ready-for-dev": prompt `/rihal:workflows:create-story`
+- IF all epics have status "backlog" AND no stories have status "ready-for-dev": prompt `/rihal-workflows:create-story`
 - IF `last_updated` timestamp is more than 7 days old (or `last_updated` is missing, fall back to `generated`): warn "sprint-status.yaml may be stale"
 - IF any story key doesn't match an epic pattern (e.g., story "5-1-..." but no "epic-5"): warn "orphaned story detected"
 - IF any epic has status in-progress but has no associated stories: warn "in-progress epic has no stories"
@@ -144,7 +144,7 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 
 **Epics:** backlog {{epic_backlog}}, in-progress {{epic_in_progress}}, done {{epic_done}}
 
-**Next Recommendation:** /rihal:workflows:{{next_workflow_id}} ({{next_story_id}})
+**Next Recommendation:** /rihal-workflows:{{next_workflow_id}} ({{next_story_id}})
 
 {{#if risks}}
 **Risks:**
@@ -166,7 +166,7 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 Choice:</ask>
 
   <check if="choice == 1">
-    <output>Run `/rihal:workflows:{{next_workflow_id}}`.
+    <output>Run `/rihal-workflows:{{next_workflow_id}}`.
 If the command targets a story, set `story_key={{next_story_id}}` when prompted.</output>
   </check>
 

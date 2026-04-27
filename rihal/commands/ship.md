@@ -1,5 +1,5 @@
 ---
-name: rihal:ship
+name: rihal-ship
 description: "After a phase is verified, create a PR: push branch, auto-generate PR body from planning artifacts (ROADMAP, VERIFICATION, SUMMARY), and optionally request review. Closes the plan→execute→verify→ship loop."
 argument-hint: "[<phase>] [--draft]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
@@ -10,7 +10,7 @@ Ship a completed, verified phase by pushing its feature branch and opening a
 pull request with an auto-generated body drawn from planning artifacts.
 
 **When to use:**
-- You have finished `/rihal:execute <phase>` and `/rihal:verify-phase <phase>` passed
+- You have finished `/rihal-execute <phase>` and `/rihal-verify-phase <phase>` passed
 - You want to open a PR from your feature branch into main/develop
 - You want the PR body auto-filled with phase goal, changes, requirements addressed, and verification status
 

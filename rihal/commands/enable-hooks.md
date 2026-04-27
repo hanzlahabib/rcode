@@ -1,5 +1,5 @@
 ---
-name: rihal:enable-hooks
+name: rihal-enable-hooks
 description: Install optional Rihal hooks into .claude/settings.json for edit, workflow, and commit guardrails
 argument-hint: ""
 allowed-tools:

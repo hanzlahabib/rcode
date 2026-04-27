@@ -21,7 +21,7 @@ That's it. After install you'll have:
 - `.claude/skills/` — 39 phrase-activated skills
 - `.planning/` — starter ROADMAP.md, STATE.md, PROJECT.md with Phase 01 scaffolded
 
-Restart Claude Code and type `/` to see all `rihal:*` commands.
+Restart Claude Code and type `/` to see all `rihal-*` commands.
 
 ---
 
@@ -30,7 +30,7 @@ Restart Claude Code and type `/` to see all `rihal:*` commands.
 ### 1. Know where you are
 
 ```
-/rihal:progress
+/rihal-progress
 ```
 
 Shows current phase, sprint status, velocity, recent work, and suggests the next action.
@@ -46,7 +46,7 @@ plan a sprint for Phase 01
 
 **Slash command:**
 ```
-/rihal:sprint-planning --phase 01 --goal "First deliverable"
+/rihal-sprint-planning --phase 01 --goal "First deliverable"
 ```
 
 This will:
@@ -61,7 +61,7 @@ This will:
 ### 3. Execute the sprint
 
 ```
-/rihal:execute .planning/phases/01-setup-scaffolding/SPRINT.md
+/rihal-execute .planning/phases/01-setup-scaffolding/SPRINT.md
 ```
 
 Rihal spawns `rihal-executor` to work through stories one by one, committing each, pausing at checkpoints for your input.
@@ -69,7 +69,7 @@ Rihal spawns `rihal-executor` to work through stories one by one, committing eac
 ### 4. Check progress any time
 
 ```
-/rihal:sprint-status
+/rihal-sprint-status
 ```
 
 Compact board: stories by status (todo/in_progress/review/done), points done vs remaining, velocity trend.
@@ -79,7 +79,7 @@ Compact board: stories by status (todo/in_progress/review/done), points done vs 
 When all stories are done:
 
 ```
-/rihal:verify-work
+/rihal-verify-work
 ```
 
 Runs conversational UAT against sprint acceptance criteria. Auto-completes the sprint and records velocity.
@@ -87,7 +87,7 @@ Runs conversational UAT against sprint acceptance criteria. Auto-completes the s
 ### 6. Auto-advance to whatever's next
 
 ```
-/rihal:next
+/rihal-next
 ```
 
 Zero-friction: reads state, applies routing rules (plan → execute → verify → complete → next phase), invokes the right command immediately.
@@ -98,16 +98,16 @@ Zero-friction: reads state, applies routing rules (plan → execute → verify �
 
 | Scenario | Command |
 |----------|---------|
-| "Where am I?" | `/rihal:progress` |
-| "What's next?" | `/rihal:next` |
-| "Plan a sprint" | `/rihal:sprint-planning` (or say "plan a sprint") |
-| "Run the sprint" | `/rihal:execute <sprint-file>` |
-| "How's the sprint going?" | `/rihal:sprint-status` |
-| "Check the sprint completed properly" | `/rihal:verify-work` |
-| "Convene the team for a decision" | `/rihal:council <question>` |
-| "Quick sync with one expert" | `/rihal:discuss <agent-name> <question>` |
-| "Just pick what I need" | `/rihal:do <natural language>` |
-| "Run everything end-to-end" | `/rihal:autonomous` |
+| "Where am I?" | `/rihal-progress` |
+| "What's next?" | `/rihal-next` |
+| "Plan a sprint" | `/rihal-sprint-planning` (or say "plan a sprint") |
+| "Run the sprint" | `/rihal-execute <sprint-file>` |
+| "How's the sprint going?" | `/rihal-sprint-status` |
+| "Check the sprint completed properly" | `/rihal-verify-work` |
+| "Convene the team for a decision" | `/rihal-council <question>` |
+| "Quick sync with one expert" | `/rihal-discuss <agent-name> <question>` |
+| "Just pick what I need" | `/rihal-do <natural language>` |
+| "Run everything end-to-end" | `/rihal-autonomous` |
 
 ---
 
@@ -251,9 +251,9 @@ Rihal Code is opinionated on purpose:
 
 ## Next steps
 
-1. **Install in one of your projects** and run `/rihal:progress`
-2. **Plan a sprint** with `/rihal:sprint-planning`
-3. **Execute** and see `/rihal:sprint-status` update as stories complete
+1. **Install in one of your projects** and run `/rihal-progress`
+2. **Plan a sprint** with `/rihal-sprint-planning`
+3. **Execute** and see `/rihal-sprint-status` update as stories complete
 4. **Iterate** — each completed sprint builds velocity history for better planning
 
 For skill/command tier breakdown, see [`TIERS.md`](./TIERS.md).

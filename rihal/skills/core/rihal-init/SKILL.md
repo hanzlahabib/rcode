@@ -124,7 +124,7 @@ JSON config vars returned to the calling skill. When init path runs, interactive
 
 ### Negative boundary
 **User:** "initialize my project"
-**Result:** rihal-init is internal — user should use `rihal-scaffold-project` or `/rihal:install` instead
+**Result:** rihal-init is internal — user should use `rihal-scaffold-project` or `/rihal-install` instead
 
 ## Memory Bank Hooks
 

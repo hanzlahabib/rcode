@@ -16,14 +16,14 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal:audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
+/rihal-audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
 ```
 
 **Examples:**
 ```
-/rihal:audit-fix
-/rihal:audit-fix --max 10 --severity high
-/rihal:audit-fix --dry-run
+/rihal-audit-fix
+/rihal-audit-fix --max 10 --severity high
+/rihal-audit-fix --dry-run
 ```
 
 <process>

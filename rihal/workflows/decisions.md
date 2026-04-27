@@ -1,4 +1,4 @@
-# Workflow: rihal:decisions
+# Workflow: rihal-decisions
 
 <purpose>
 Surface recent decisions across every Rihal project on this machine. Decisions are mirrored to `~/.rihal/decisions.jsonl` whenever a project runs `state add-decision`. Use this to see what was decided elsewhere, find precedent for a similar call you are about to make, or answer "what did I commit to last week?".
@@ -26,7 +26,7 @@ Newest decisions first. One row per decision with project, date, phase, and summ
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal:decisions [--limit N] [--project <name>] [--since <ISO-date>] [--this-project]
+/rihal-decisions [--limit N] [--project <name>] [--since <ISO-date>] [--this-project]
 
   --limit N         Max rows to show (default 20, max 500)
   --project <name>  Filter to one project name (as recorded in state.project)
@@ -61,7 +61,7 @@ The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:
 ```
 No decisions logged yet.
 
-Decisions are mirrored to ~/.rihal/decisions.jsonl whenever /rihal:execute or /rihal:council records one. Run a council or complete a sprint to populate this log.
+Decisions are mirrored to ~/.rihal/decisions.jsonl whenever /rihal-execute or /rihal-council records one. Run a council or complete a sprint to populate this log.
 ```
 
 STOP.
@@ -90,8 +90,8 @@ Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01
 
 ## Step 5 — Next Up routing
 
-- If `--this-project` was used and results look thin (fewer than 3) → `Next: /rihal:council "<open question>"  (then decisions flow back here)`
-- Otherwise → `Next: /rihal:decisions --project <name>  for deeper history on one project`
+- If `--this-project` was used and results look thin (fewer than 3) → `Next: /rihal-council "<open question>"  (then decisions flow back here)`
+- Otherwise → `Next: /rihal-decisions --project <name>  for deeper history on one project`
 </process>
 
 ## Success Criteria

@@ -86,21 +86,21 @@ If `$QUESTION` is empty, present the main menu via AskUserQuestion:
 ```
 What would you like to do?
 
-1. Quick chat with one expert (/rihal:discuss)
-2. Convene the council (/rihal:council)
-3. Discuss an unlocked phase (/rihal:discuss-phase)
-4. Plan a phase (/rihal:plan)
-5. Execute a phase (/rihal:execute)
-6. Sprint planning (/rihal:sprint-planning)
-7. Execute a sprint (/rihal:execute-sprint)
-8. Check sprint status (/rihal:sprint-status)
-9. Break milestone into epics & stories (/rihal:create-epics-and-stories)
-10. Implement a story (/rihal:dev-story)
-11. Check progress (/rihal:progress)
-12. Auto-advance to next step (/rihal:next)
-13. Debug an issue (/rihal:debug)
-14. Resume paused work (/rihal:resume-work)
-15. Add a note (/rihal:note)
+1. Quick chat with one expert (/rihal-discuss)
+2. Convene the council (/rihal-council)
+3. Discuss an unlocked phase (/rihal-discuss-phase)
+4. Plan a phase (/rihal-plan)
+5. Execute a phase (/rihal-execute)
+6. Sprint planning (/rihal-sprint-planning)
+7. Execute a sprint (/rihal-execute-sprint)
+8. Check sprint status (/rihal-sprint-status)
+9. Break milestone into epics & stories (/rihal-create-epics-and-stories)
+10. Implement a story (/rihal-dev-story)
+11. Check progress (/rihal-progress)
+12. Auto-advance to next step (/rihal-next)
+13. Debug an issue (/rihal-debug)
+14. Resume paused work (/rihal-resume-work)
+15. Add a note (/rihal-note)
 16. Something else — describe it
 ```
 
@@ -136,18 +136,18 @@ Apply this guard BEFORE the routing table below:
 
 | Intent contains... | AND state shows... | Then re-route to... | Why |
 |--------------------|---------------------|----------------------|-----|
-| "draft phases", "all phases", "build all phases", "groom phases", "auto mode" + "phases" | `HAS_PRD=false` | `/rihal:create-prd` first | Phases need a PRD foundation. Without one, the autonomous flow hallucinates requirements. |
-| "execute phase", "build phase N", "run phase N" | `HAS_PHASES=false` OR PLAN.md missing for phase N | `/rihal:plan N` first (or `/rihal:create-prd` if no PRD) | Can't execute what hasn't been planned. |
-| "sprint planning", "plan the sprint" | `HAS_EPICS=false` | `/rihal:create-epics-and-stories` first | Sprints draw stories from epics. No epics = no stories to schedule. |
-| "create stories", "epics" | `HAS_PRD=false` | `/rihal:create-prd` first | Epics decompose a milestone. Milestone needs PRD. |
-| "create milestones", "roadmap" | `HAS_PRD=false` | `/rihal:create-prd` first | Roadmap is derived from PRD success metrics. |
+| "draft phases", "all phases", "build all phases", "groom phases", "auto mode" + "phases" | `HAS_PRD=false` | `/rihal-create-prd` first | Phases need a PRD foundation. Without one, the autonomous flow hallucinates requirements. |
+| "execute phase", "build phase N", "run phase N" | `HAS_PHASES=false` OR PLAN.md missing for phase N | `/rihal-plan N` first (or `/rihal-create-prd` if no PRD) | Can't execute what hasn't been planned. |
+| "sprint planning", "plan the sprint" | `HAS_EPICS=false` | `/rihal-create-epics-and-stories` first | Sprints draw stories from epics. No epics = no stories to schedule. |
+| "create stories", "epics" | `HAS_PRD=false` | `/rihal-create-prd` first | Epics decompose a milestone. Milestone needs PRD. |
+| "create milestones", "roadmap" | `HAS_PRD=false` | `/rihal-create-prd` first | Roadmap is derived from PRD success metrics. |
 
 When the guard fires, print a clear message:
 
 ```
 ⚠ Cannot {requested action}: missing prerequisite — {what's missing}.
 
-Re-routing to: /rihal:{prerequisite-command}
+Re-routing to: /rihal-{prerequisite-command}
 Once that completes, re-run your original request.
 ```
 
@@ -159,7 +159,7 @@ The guard never silently rejects intent — it always either dispatches to a sen
 <step name="external_data_guard" priority="first-match">
 **Block code-only routing when the actionable signal lives in an external system.**
 
-Some tasks reference systems whose data is NOT in the repo — observability platforms, issue trackers, analytics, and product dashboards. A pure codebase scan can map *instrumentation* but cannot classify *what is actually firing*. Routing such requests to `/rihal:scan` or `/rihal:map-codebase` without first establishing a data source produces theoretical output (violates the codebase-first rule).
+Some tasks reference systems whose data is NOT in the repo — observability platforms, issue trackers, analytics, and product dashboards. A pure codebase scan can map *instrumentation* but cannot classify *what is actually firing*. Routing such requests to `/rihal-scan` or `/rihal-map-codebase` without first establishing a data source produces theoretical output (violates the codebase-first rule).
 
 **External-data signals** — match if `$QUESTION` contains any of:
 
@@ -185,9 +185,9 @@ How should we access the external data?
 ```
 
 Then route accordingly:
-- **Option 1:** Continue to `route` step but tag the chosen command with a note to use the external data source. If no Rihal command natively reads the external system, route to `/rihal:discuss` and have the agent guide MCP/API setup.
-- **Option 2:** Route to `/rihal:discuss` so the user can paste data into a focused conversation, OR `/rihal:note` to capture, then re-run.
-- **Option 3:** Continue to `route` step normally (likely `/rihal:scan` or `/rihal:map-codebase`) but display a clear caveat: *"Output will be an instrumentation map only — it cannot classify which errors are noisy vs critical."*
+- **Option 1:** Continue to `route` step but tag the chosen command with a note to use the external data source. If no Rihal command natively reads the external system, route to `/rihal-discuss` and have the agent guide MCP/API setup.
+- **Option 2:** Route to `/rihal-discuss` so the user can paste data into a focused conversation, OR `/rihal-note` to capture, then re-run.
+- **Option 3:** Continue to `route` step normally (likely `/rihal-scan` or `/rihal-map-codebase`) but display a clear caveat: *"Output will be an instrumentation map only — it cannot classify which errors are noisy vs critical."*
 - **Option 4:** Stop. Print the original input back so the user can rephrase.
 
 Skip this guard when `AUTO_MODE=true` AND the input explicitly contains `--codebase-only` or `instrumentation map` — those signal the user already accepted the limitation.
@@ -198,7 +198,7 @@ Skip this guard when `AUTO_MODE=true` AND the input explicitly contains `--codeb
 
 When the user uses a literal create/make/start verb paired with a scope-noun (milestone, phase, story, epic, sprint, plan, PRD, roadmap, council), dispatch IMMEDIATELY. Do not present a multi-route ambiguity menu. The user already chose.
 
-This was a real bug: `/rihal:do "milestone bnao aur ... list down karo"` triggered an ambiguity prompt offering new-milestone vs add-phase vs create-epics-and-stories — even though the user literally said "milestone bnao" (= "create a milestone" in Roman Urdu). That second-guessing wasted the user's time and broke trust.
+This was a real bug: `/rihal-do "milestone bnao aur ... list down karo"` triggered an ambiguity prompt offering new-milestone vs add-phase vs create-epics-and-stories — even though the user literally said "milestone bnao" (= "create a milestone" in Roman Urdu). That second-guessing wasted the user's time and broke trust.
 
 **Verb + scope detection — sourced from `@.rihal/references/verb-dictionary.md`.**
 
@@ -208,15 +208,15 @@ The full mapping is in the dictionary's "Scope nouns" table. Pre-conditions enfo
 
 | Scope noun | Direct route | Pre-condition (this workflow only) |
 |---|---|---|
-| milestone | `/rihal:new-milestone` | none — methodology chain assumed when greenfield_guard cleared |
-| phase | `/rihal:add-phase` | HAS_PHASES OR HAS_PRD true |
-| story | `/rihal:create-story` | HAS_EPICS true |
-| epic | `/rihal:create-epics-and-stories` | HAS_PRD true |
-| sprint | `/rihal:sprint-planning` | HAS_EPICS true |
-| PRD | `/rihal:create-prd` | none |
-| roadmap | `/rihal:create-milestone` | HAS_PRD true |
-| council | `/rihal:council` | none |
-| plan (verb) | `/rihal:plan` | HAS_PHASES true |
+| milestone | `/rihal-new-milestone` | none — methodology chain assumed when greenfield_guard cleared |
+| phase | `/rihal-add-phase` | HAS_PHASES OR HAS_PRD true |
+| story | `/rihal-create-story` | HAS_EPICS true |
+| epic | `/rihal-create-epics-and-stories` | HAS_PRD true |
+| sprint | `/rihal-sprint-planning` | HAS_EPICS true |
+| PRD | `/rihal-create-prd` | none |
+| roadmap | `/rihal-create-milestone` | HAS_PRD true |
+| council | `/rihal-council` | none |
+| plan (verb) | `/rihal-plan` | HAS_PHASES true |
 
 **Behavior:**
 1. If both a verb AND a scope-noun match, fire this step.
@@ -231,10 +231,10 @@ The naive route is "user said milestone bnao → dispatch new-milestone". But if
 
 | Verb + scope | State signal | Redirect | Banner message |
 |---|---|---|---|
-| create + milestone | `$ACTIVE_MILESTONE` is non-empty AND user did NOT pass `--force-new-milestone` | `/rihal:add-phase` | `$ACTIVE_MILESTONE is active — adding as a phase to it instead of opening a new milestone. Override: add `--force-new-milestone` to the original input.` |
-| create + milestone | No active milestone | `/rihal:new-milestone $NEXT_VERSION` (auto-derived from `$LAST_SHIPPED_VERSION` + 0.1) | `Auto-versioned $NEXT_VERSION based on last shipped $LAST_SHIPPED_VERSION.` |
-| create + phase | `$HAS_PHASES=false` AND `$HAS_PRD=false` | `/rihal:create-prd` | greenfield_guard already covers this; this row is for completeness. |
-| create + story | `$HAS_EPICS=false` | `/rihal:create-epics-and-stories` (greenfield_guard) | likewise. |
+| create + milestone | `$ACTIVE_MILESTONE` is non-empty AND user did NOT pass `--force-new-milestone` | `/rihal-add-phase` | `$ACTIVE_MILESTONE is active — adding as a phase to it instead of opening a new milestone. Override: add `--force-new-milestone` to the original input.` |
+| create + milestone | No active milestone | `/rihal-new-milestone $NEXT_VERSION` (auto-derived from `$LAST_SHIPPED_VERSION` + 0.1) | `Auto-versioned $NEXT_VERSION based on last shipped $LAST_SHIPPED_VERSION.` |
+| create + phase | `$HAS_PHASES=false` AND `$HAS_PRD=false` | `/rihal-create-prd` | greenfield_guard already covers this; this row is for completeness. |
+| create + story | `$HAS_EPICS=false` | `/rihal-create-epics-and-stories` (greenfield_guard) | likewise. |
 
 **Auto-version computation when no milestone is active:**
 
@@ -251,7 +251,7 @@ fi
 
 Pass `$NEXT_VERSION` as the dispatch arg. The user is NOT prompted to pick a version — the workflow just chose the right one based on history.
 
-**Edge case — multiple scope-nouns in one input** (e.g. "milestone bnao aur usmy phase 1 banao"): take the OUTER/PARENT scope. "Milestone bnao aur usmy phase X" → state-aware-redirect kicks in. If active milestone exists → `/rihal:add-phase` (the inner phase becomes the dispatched action directly). If not → `/rihal:new-milestone $NEXT_VERSION` (the dispatched workflow will create phase 1 internally).
+**Edge case — multiple scope-nouns in one input** (e.g. "milestone bnao aur usmy phase 1 banao"): take the OUTER/PARENT scope. "Milestone bnao aur usmy phase X" → state-aware-redirect kicks in. If active milestone exists → `/rihal-add-phase` (the inner phase becomes the dispatched action directly). If not → `/rihal-new-milestone $NEXT_VERSION` (the dispatched workflow will create phase 1 internally).
 
 **Edge case — verb without scope-noun** (e.g. "kuch karo", "do something"): do NOT fire this step. Fall through to the normal routing table which can ask for clarification.
 
@@ -269,37 +269,37 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 
 | If the text describes... | Route to | Why |
 |--------------------------|----------|-----|
-| Starting a new project, "set up", "initialize" | `/rihal:new-project` | Needs full project initialization |
-| Mapping or analyzing an existing codebase | `/rihal:map-codebase` | Codebase discovery |
-| A bug, error, crash, failure, or something broken | `/rihal:debug` | Needs systematic investigation |
-| Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rihal:prfaq` | Stress-test concept before committing sprint capacity |
-| Brainstorm, generate ideas, "explore options", "what could we do" | `/rihal:brainstorm` | Structured ideation before planning |
-| Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rihal:code-review --karpathy` | 4-principle code audit against recent diff |
-| Walk through a change, "checkpoint", "explain this diff", "human review" | `/rihal:checkpoint-preview` | Human-in-the-loop diff walkthrough |
-| Exploring, researching, comparing, or "how does X work" | `/rihal:research-phase` | Domain research before planning |
-| Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rihal:discuss-phase` | Decisions not yet locked — gather before planning |
-| A complex task: refactoring, migration, multi-file architecture, system redesign | `/rihal:add-phase` | Needs a full phase with plan/build cycle |
-| Planning a specific phase, "plan phase N" | `/rihal:plan` | Direct phase-level planning |
-| "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rihal:sprint-planning` | Sprint-level scope/capacity planning |
-| Executing a sprint, "run the sprint", "start sprint", "work on sprint" | `/rihal:execute-sprint` | Sprint execution with wave batching |
-| Sprint status, "how is the sprint going", "sprint board", "sprint progress" | `/rihal:sprint-status` | Current sprint state |
-| "Create milestones", "plan milestones", "create roadmap", "what milestones do I need", "break project into milestones" | `/rihal:create-milestone` | Roadmap-level planning — designs M1..Mn from the PRD. Do NOT route to `create-epics-and-stories`; that skill decomposes a single milestone into epics |
-| Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal:create-epics-and-stories` | Milestone → epic → story decomposition (assumes roadmap already exists) |
-| Create a single story, "add story", "write a story for X" | `/rihal:create-story` | Single story addition |
-| Implement a story, "work on story", "dev story", "build story" | `/rihal:dev-story` | Story-level implementation |
-| Find gaps in milestone plans, "gaps in plans", "missing plan", "unplanned phases" | `/rihal:plan-milestone-gaps` | Identify and fill planning gaps |
-| Executing a phase, "build phase N", "run phase N", "implement phase" | `/rihal:execute` | Direct phase execution request |
-| Running all remaining phases automatically | `/rihal:autonomous` | Full autonomous execution |
-| A review or quality concern about existing work | `/rihal:verify-work` | Needs verification |
-| "Council", "discuss strategy", "should we" | `/rihal:council` | Multi-agent strategic discussion |
-| List plans across phases, "all plans", "show plans" | `/rihal:list-plans` | Cross-phase plan table |
-| Checking progress, status, "where am I", "board" | `/rihal:progress` | Status check |
-| Resuming work, "pick up where I left off" | `/rihal:resume-work` | Session restoration |
-| A note, idea, or "remember to..." | `/rihal:note` | Capture for later |
-| Adding tests, "write tests", "test coverage" | `/rihal:add-tests` | Test generation |
-| Completing a milestone, shipping, releasing | `/rihal:complete-milestone` | Milestone lifecycle |
-| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal:quick` | Self-contained, single executor |
-| Market/discovery/greenfield question (from classify) | `/rihal:council` | Needs multi-perspective discovery |
+| Starting a new project, "set up", "initialize" | `/rihal-new-project` | Needs full project initialization |
+| Mapping or analyzing an existing codebase | `/rihal-map-codebase` | Codebase discovery |
+| A bug, error, crash, failure, or something broken | `/rihal-debug` | Needs systematic investigation |
+| Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rihal-prfaq` | Stress-test concept before committing sprint capacity |
+| Brainstorm, generate ideas, "explore options", "what could we do" | `/rihal-brainstorm` | Structured ideation before planning |
+| Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rihal-code-review --karpathy` | 4-principle code audit against recent diff |
+| Walk through a change, "checkpoint", "explain this diff", "human review" | `/rihal-checkpoint-preview` | Human-in-the-loop diff walkthrough |
+| Exploring, researching, comparing, or "how does X work" | `/rihal-research-phase` | Domain research before planning |
+| Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rihal-discuss-phase` | Decisions not yet locked — gather before planning |
+| A complex task: refactoring, migration, multi-file architecture, system redesign | `/rihal-add-phase` | Needs a full phase with plan/build cycle |
+| Planning a specific phase, "plan phase N" | `/rihal-plan` | Direct phase-level planning |
+| "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rihal-sprint-planning` | Sprint-level scope/capacity planning |
+| Executing a sprint, "run the sprint", "start sprint", "work on sprint" | `/rihal-execute-sprint` | Sprint execution with wave batching |
+| Sprint status, "how is the sprint going", "sprint board", "sprint progress" | `/rihal-sprint-status` | Current sprint state |
+| "Create milestones", "plan milestones", "create roadmap", "what milestones do I need", "break project into milestones" | `/rihal-create-milestone` | Roadmap-level planning — designs M1..Mn from the PRD. Do NOT route to `create-epics-and-stories`; that skill decomposes a single milestone into epics |
+| Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal-create-epics-and-stories` | Milestone → epic → story decomposition (assumes roadmap already exists) |
+| Create a single story, "add story", "write a story for X" | `/rihal-create-story` | Single story addition |
+| Implement a story, "work on story", "dev story", "build story" | `/rihal-dev-story` | Story-level implementation |
+| Find gaps in milestone plans, "gaps in plans", "missing plan", "unplanned phases" | `/rihal-plan-milestone-gaps` | Identify and fill planning gaps |
+| Executing a phase, "build phase N", "run phase N", "implement phase" | `/rihal-execute` | Direct phase execution request |
+| Running all remaining phases automatically | `/rihal-autonomous` | Full autonomous execution |
+| A review or quality concern about existing work | `/rihal-verify-work` | Needs verification |
+| "Council", "discuss strategy", "should we" | `/rihal-council` | Multi-agent strategic discussion |
+| List plans across phases, "all plans", "show plans" | `/rihal-list-plans` | Cross-phase plan table |
+| Checking progress, status, "where am I", "board" | `/rihal-progress` | Status check |
+| Resuming work, "pick up where I left off" | `/rihal-resume-work` | Session restoration |
+| A note, idea, or "remember to..." | `/rihal-note` | Capture for later |
+| Adding tests, "write tests", "test coverage" | `/rihal-add-tests` | Test generation |
+| Completing a milestone, shipping, releasing | `/rihal-complete-milestone` | Milestone lifecycle |
+| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal-quick` | Self-contained, single executor |
+| Market/discovery/greenfield question (from classify) | `/rihal-council` | Needs multi-perspective discovery |
 
 If no rule matches, fall back to the classifier:
 
@@ -307,9 +307,9 @@ If no rule matches, fall back to the classifier:
 CLASSIFY=$(node ".rihal/bin/rihal-tools.cjs" classify-question "$QUESTION")
 ```
 
-Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`. Default: `/rihal:discuss`.
+Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`. Default: `/rihal-discuss`.
 
-**Requires `.planning/` directory:** All routes except `/rihal:new-project`, `/rihal:map-codebase`, `/rihal:help`, `/rihal:discuss`, `/rihal:council`. If the project doesn't exist and the route requires it, suggest `/rihal:new-project` first.
+**Requires `.planning/` directory:** All routes except `/rihal-new-project`, `/rihal-map-codebase`, `/rihal-help`, `/rihal-discuss`, `/rihal-council`. If the project doesn't exist and the route requires it, suggest `/rihal-new-project` first.
 
 **Ambiguity handling:** If the text could reasonably match multiple routes, ask the user via AskUserQuestion with the top 2-3 options. Prefer `discuss-phase` over `plan`/`add-phase` when scope-uncertainty signals are present ("confusion", "not sure", "which one", "better way", "how should", ≥2 conflicting UIs/options mentioned).
 
@@ -317,9 +317,9 @@ Example:
 
 ```
 "Refactor the auth system" could be:
-1. /rihal:add-phase — Full planning cycle (recommended for multi-file refactors)
-2. /rihal:discuss-phase — Gather decisions first (recommended if scope is fuzzy)
-3. /rihal:quick — Quick execution (if scope is small and clear)
+1. /rihal-add-phase — Full planning cycle (recommended for multi-file refactors)
+2. /rihal-discuss-phase — Gather decisions first (recommended if scope is fuzzy)
+3. /rihal-quick — Quick execution (if scope is small and clear)
 
 Which approach fits better?
 ```
@@ -346,13 +346,13 @@ Reason: {one-line why}
 If `AUTO_MODE` is true OR routing is unambiguous, invoke immediately:
 
 ```
-/rihal:{command} {arguments}
+/rihal-{command} {arguments}
 ```
 
 Otherwise show suggestion and ask via AskUserQuestion:
 
 ```
-Based on your request, I'd use: /rihal:{command} {arguments}
+Based on your request, I'd use: /rihal-{command} {arguments}
 
 1. Yes, run it
 2. Pick a different route
@@ -370,7 +370,7 @@ After invoking the command, stop. The dispatched command handles everything from
 - [ ] Input validated (not empty)
 - [ ] Intent matched to exactly one Rihal command
 - [ ] Ambiguity resolved via user question (if needed)
-- [ ] Scope-uncertainty signals steer to `/rihal:discuss-phase` over planning routes
+- [ ] Scope-uncertainty signals steer to `/rihal-discuss-phase` over planning routes
 - [ ] Project existence checked for routes that require it
 - [ ] Routing decision displayed before dispatch
 - [ ] Command invoked with appropriate arguments

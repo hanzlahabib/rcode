@@ -28,7 +28,7 @@ AUDITOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-nyquist-au
 NYQUIST_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.nyquist_validation --raw)
 ```
 
-If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal:settings."
+If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal-settings."
 
 Display banner: `Rihal > VALIDATE PHASE {N}: {name}`
 
@@ -41,7 +41,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`VALIDATION_FILE` non-empty): Audit existing
 - **State B** (`VALIDATION_FILE` empty, `SUMMARY_FILES` non-empty): Reconstruct from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal:execute-phase {N} ${Rihal_WS} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal-execute-phase {N} ${Rihal_WS} first."
 
 ## 2. Discovery
 
@@ -98,7 +98,7 @@ Otherwise call AskUserQuestion with gap table and options:
 
 ```
 Task(
-  prompt="Read $HOME/.claude/agents/rihal:nyquist-auditor.md for instructions.\n\n" +
+  prompt="Read $HOME/.claude/agents/rihal-nyquist-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, VALIDATION.md}</files_to_read>" +
     "<gaps>{gap list}</gaps>" +
     "<test_infrastructure>{framework, config, commands}</test_infrastructure>" +
@@ -150,14 +150,14 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update valid
 ```
 Rihal > PHASE {N} IS NYQUIST-COMPLIANT
 All requirements have automated verification.
-▶ Next: /rihal:audit-milestone ${Rihal_WS}
+▶ Next: /rihal-audit-milestone ${Rihal_WS}
 ```
 
 **Partial:**
 ```
 Rihal > PHASE {N} VALIDATED (PARTIAL)
 {M} automated, {K} manual-only.
-▶ Retry: /rihal:validate-phase {N} ${Rihal_WS}
+▶ Retry: /rihal-validate-phase {N} ${Rihal_WS}
 ```
 
 Display `/clear` reminder.
