@@ -817,6 +817,22 @@ function parseFrontmatter(text) {
  * For cursor IDE, converts command files from .md to .mdc format.
  */
 function buildInstallPlan(ide = 'claude', target = process.cwd()) {
+  // Support array of IDEs — merge plans with deduplication (#449/#450 multi-IDE).
+  if (Array.isArray(ide)) {
+    const seen = new Set();
+    const merged = [];
+    for (const i of ide) {
+      for (const entry of buildInstallPlan(i, target)) {
+        const key = entry.rel;
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(entry);
+        }
+      }
+    }
+    return merged;
+  }
+
   const plan = [];
   const paths = getPathsForIde(ide, target);
 
