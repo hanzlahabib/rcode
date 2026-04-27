@@ -2,9 +2,17 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **rcode is the memory bank for AI-driven SaaS teams — your project's context, structured, visible, and never lost.**
->
-> Built by Rihal. Designed for solo devs, startup teams, and SaaS builders. Install once, and your AI assistant gets a persistent project brain: structured memory, decisions log, distinctive personas, and phase-based workflows. Works in Claude Code, Cursor, and any compatible AI IDE.
+> **The AI team that never forgets.** Persistent memory, 45 specialist agents, 95 commands — install once, and your AI IDE gets a project brain that survives every session reset.
+
+```bash
+npx @hanzlaa/rcode install    # one command, zero dependencies
+```
+
+[![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
+[![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
+
+<!-- TODO: Replace with actual demo GIF once recorded (story 05.1.03) -->
+<!-- ![rcode demo](docs/assets/demo.gif) -->
 
 ---
 
@@ -27,8 +35,6 @@ Every project carries unwritten context — how the team reviews PRs, what "done
 
 **rcode fixes that.** One install, and the AI knows. Every session. Every repo. Every contributor.
 
-See [`docs/what-is-rihal-code.md`](docs/what-is-rihal-code.md) for the full story, and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where this is going (next: live MCP server in v3.0).
-
 ---
 
 ## 🚦 Start Here
@@ -44,7 +50,7 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 **Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
 
-> **v2.0 — Rihal Brain.** v1 was a generic AI-engineering methodology. v2 keeps all of that and adds the Rihal context layer on top: standards, guides, and institutional knowledge pulled fresh from Rihal's own repos on install and on `/rihal-update`. See [`CHANGELOG.md`](CHANGELOG.md) and the [v2.0 milestone](https://github.com/hanzlahabib/rihal-code/milestone/4).
+> **v3 — Rihal Brain.** v1 was a generic AI-engineering methodology. v2 added the Rihal context layer. v3 ships it as a single npm package with a Memory Bank, live dashboard, and 134 automated tests. See [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
@@ -54,7 +60,8 @@ Most AI tools give you one assistant pretending to be everything. **Rihal Code g
 
 - **45 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
 - **95 slash commands** covering research, planning, execution, verification, and recovery
-- **80 skills** including Memory Bank primitives, 11 engineering-rigor skills (TDD, harden, perf, debug, trim, etc.), and 8 real-pain skills (auth-audit, mvp-graduate, deploy-unify, etc.)
+- **105 skills** including Memory Bank primitives, 11 engineering-rigor skills (TDD, harden, perf, debug, trim, etc.), and 8 real-pain skills (auth-audit, mvp-graduate, deploy-unify, etc.)
+- **102 workflows** — the execution backbone behind every slash command
 - **Persistent project memory** at `.rihal/memory/` — checked into git, visible in the Diwan dashboard, lossless distillates for fast LLM hydration
 - **3 execution modes**: parallel debate (`/rihal-council`), sequential pipelines (`/rihal-chain`), and quick-sync (`/rihal-discuss`)
 - **File-based state** in `.rihal/` that every workflow reads and updates
@@ -79,14 +86,14 @@ In any project directory (existing codebase OR empty folder):
 npx @hanzlaa/rcode install
 ```
 
-[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode` · current version `v2.1.0`. See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE options, version pinning, yolo mode).
+[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode`. See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE options, version pinning, yolo mode).
 
 One unified installer. Pure file shipping, no runtime dependencies. Installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
 - `.claude/agents/` — 45 first-class subagents
 - `.claude/commands/rihal/` — 95 slash commands
-- `.claude/skills/` — 80 phrase-activated skills (scaffold-project, create-prd, prfaq, memory-init, retrospective, etc.)
+- `.claude/skills/` — 105 phrase-activated skills (scaffold-project, create-prd, prfaq, memory-init, retrospective, etc.)
 - `rihal/brain/` — Rihal standards pulled from upstream (PR / commit / architecture docs)
 - `.planning/` — where your artifacts land (council sessions, plans, chains, summaries)
 
@@ -148,7 +155,7 @@ npx @hanzlaa/rcode install --ide gemini
   bin/
     rihal-tools.cjs            — CLI helper (state read/write, panel scoring, etc.)
     lib/council-panel.cjs      — deterministic panel scorer
-  workflows/                   — 69 slash command workflows
+  workflows/                   — 102 slash command workflows
   references/                  — shared contracts (council-protocol, gates, karpathy-guidelines, etc.)
   agents-rules/                — lazy-loaded agent rule files (planner, executor, debugger)
 ```
@@ -308,26 +315,6 @@ Amazon's "Working Backwards" method: write the finished-product press release *b
 
 ---
 
-## What's new in v2-prototype
-
-Recent additions in this session:
-
-- **69 slash commands** across 3 modes and 3 modules (up from 64)
-- **Numeric ID system** — milestones (M1, M2), phases (01, 02, 02.1), plans (01.01, 02.03), tasks (01.01.01) with decimal insertion for urgent inserts
-- **Intent guards** (`Step 0.5`) — every workflow detects mismatched intent and redirects instead of failing
-- **Plan-checker loop** — `/rihal-plan` now verifies file existence and symbol definitions; loops back to planner on validation failure
-- **Post-execute gates** — `/rihal-execute` runs integration-checker (E2E) and nyquist-auditor (coverage) as hard gates
-- **Multilingual classifier** — Roman Urdu, Arabic, English with cultural signal routing (Mariam leads GCC/MENA)
-- **Karpathy guidelines enforcement** — 4 coding principles baked into every code-writing agent
-- **Global agents** — customize agents in `~/.rihal/agents/` without forking the repo
-- **Multi-IDE installer** — support for Claude Code, Cursor, Gemini CLI
-- **Hooks system** — opt-in pre-edit, pre-workflow, post-commit enforcement
-- **Session pause/resume** — `/rihal-pause-work` + `/rihal-resume-work` with HANDOFF.json
-- **Workspace isolation** — `/rihal-new-workspace` for parallel tracks
-- **Decimal phase insertion** — `/rihal-insert-phase` for urgent mid-cycle work
-
----
-
 ## Full command surface (95 commands)
 
 ### Router + lifecycle
@@ -428,18 +415,18 @@ Installs 3 opt-in hooks into `.claude/settings.json`:
 | **execution** | Executor, planner, verifier + checker agents, `/rihal-execute`, `/rihal-plan`, `/rihal-quick`, `/rihal-debug`, `/rihal-audit-fix`, `/rihal-undo` |
 | **discovery** | Codebase-mapper, project-researcher, roadmapper, `/rihal-new-project`, `/rihal-map-codebase`, `/rihal-scan`, `/rihal-explore`, `/rihal-code-review`, `/rihal-docs-update` |
 
-Full install = all 3 modules = 201 files.
+Full install = all 3 modules = 700+ files.
 
 ---
 
 ## Testing
 
 ```bash
-node --test          # full suite (95 tests, ~1s)
+node --test          # full suite (134 tests, ~2s)
 node --test --test-reporter=spec   # verbose output with test names
 ```
 
-**95 tests · 0 failures · pure Node stdlib (no test runner install needed)**
+**134 tests · pure Node stdlib (no test runner install needed)**
 
 ### Test scenarios
 
@@ -466,7 +453,7 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ .rihal/config.yaml present — 412 bytes
     ✓ .rihal/state.json parses — valid JSON
     ✓ agents installed — 45
-    ✓ skills + commands installed — 80 skills + 95 commands
+    ✓ skills + commands installed — 105 skills + 95 commands
 ```
 
 A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
@@ -508,12 +495,10 @@ node --test test/lib/manifest.test.cjs   # install verification only
 
 ## License
 
-MIT
+UNLICENSED — proprietary. All rights reserved.
 
 ---
 
 ## Roadmap
 
-See [GitHub Issues](https://github.com/hanzlahabib/rihal-code/issues) for tracked work. Current branch: `v2-prototype` — under active development. Main branch will track stable releases.
-
-**This branch is pre-release.** For production, wait for `v0.2.0` on main.
+See [GitHub Issues](https://github.com/hanzlahabib/rihal-code/issues) for tracked work. Current focus: marketing launch, MCP server, dashboard enhancements.

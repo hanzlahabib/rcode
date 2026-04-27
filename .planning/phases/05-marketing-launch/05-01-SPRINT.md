@@ -7,7 +7,7 @@ requirements: [REQ-LAUNCH]
 
 must_haves:
   truths:
-    - "Package published on npm as @hanzlahabib/rihal-code"
+    - "Package published on npm as @hanzlaa/rcode"
     - "README has install command, demo, feature highlights"
     - "At least 1 demo asset exists (GIF or video)"
     - "Launch announced on at least 2 channels"
@@ -22,7 +22,7 @@ must_haves:
       via: "npm publish"
 ---
 
-# Sprint 06.1 — Marketing + Launch
+# Sprint 05.1 — Marketing + Launch
 
 **Goal:** Publish to npm, polish README, demo video, first 10 external installs
 
@@ -30,12 +30,12 @@ must_haves:
 
 | ID | Title | Points | Status | Acceptance |
 |----|-------|--------|--------|------------|
-| 06.1.01 | Publish @hanzlahabib/rihal-code to npm registry (public) | 2 | todo | `npm info @hanzlahabib/rihal-code` returns valid |
-| 06.1.02 | Polish README — install command, demo GIF, feature highlights | 3 | todo | README has demo, tier table, install one-liner |
-| 06.1.03 | Record 90-second terminal demo (asciinema or GIF) | 3 | todo | Demo asset in repo or linked |
-| 06.1.04 | Post launch thread on X (English + Arabic) | 2 | todo | Tweet posted with link |
-| 06.1.05 | Post on MENA dev communities (Reddit, Discord) | 2 | todo | At least 2 communities posted |
-| 06.1.06 | Track first 10 external npm installs | 1 | todo | npm stats show 10+ downloads |
+| 05.1.01 | Publish @hanzlaa/rcode to npm registry (public) | 2 | done | `npm info @hanzlaa/rcode` returns valid |
+| 05.1.02 | Polish README — install command, demo GIF, feature highlights | 3 | done | README has demo, tier table, install one-liner |
+| 05.1.03 | Record 90-second terminal demo (asciinema or GIF) | 3 | todo | Demo asset in repo or linked |
+| 05.1.04 | Post launch thread on X (English + Arabic) | 2 | todo | Tweet posted with link |
+| 05.1.05 | Post on MENA dev communities (Reddit, Discord) | 2 | todo | At least 2 communities posted |
+| 05.1.06 | Track first 10 external npm installs | 1 | done | npm stats show 10+ downloads |
 
 ## Capacity
 
@@ -45,17 +45,17 @@ must_haves:
 
 ## Dependencies
 
-- Sprint 04.1 + 05.1 should complete first (template + dashboard ready for demo)
+- Sprint 04.1 should complete first (dashboard ready for demo)
 - npm account access required for publish
 
 ## Risks
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| npm publish requires 2FA | Blocks 06.1.01 | Verify auth before sprint start |
+| npm publish requires 2FA | Blocks 05.1.01 | Verify auth before sprint start |
 | Demo recording quality | Poor impression | Practice 2-3 takes, keep terminal clean |
 
 ## Checkpoints
 
-**Story 06.1.01:** checkpoint:human-action — npm login + publish requires manual 2FA
-**Story 06.1.04:** checkpoint:human-action — posting on social requires manual auth
+**Story 05.1.01:** checkpoint:human-action — npm login + publish requires manual 2FA
+**Story 05.1.04:** checkpoint:human-action — posting on social requires manual auth
