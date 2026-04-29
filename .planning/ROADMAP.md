@@ -111,6 +111,19 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 06 — Feature Doc Drift Auto-Heal
+
+**Goal:** _TBD — fill in via /rihal:discuss-phase 06 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
