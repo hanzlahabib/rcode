@@ -54,6 +54,7 @@ Files seeded from your answers:
 
 Files still empty (fill as you go):
   • project/glossary.md
+  • project/design-system.md   — visual tokens + components (read by ui-phase / frontend-design)
   • people/team.md
   • change-records/
 

@@ -2230,8 +2230,8 @@ function cmdState(subArgs) {
     if (!/^999\.\d+$/.test(from)) {
       throw new Error(`Source must be 999.x parking-lot number, got: ${from}`);
     }
-    if (!/^\d{1,3}(\.\d+)?$/.test(to)) {
-      throw new Error(`Target must be NN or NN.M, got: ${to}`);
+    if (!/^\d+(\.\d+)?$/.test(to)) {
+      throw new Error(`Target must be N or N.M (any non-negative integer; high numbers like 1001 are valid for hot-track phases), got: ${to}`);
     }
     const state = readState() || defaultState();
     if (!state.phases) state.phases = [];
@@ -2335,14 +2335,16 @@ function cmdState(subArgs) {
       };
 
       // Format A — pipe tables
-      const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      // Phase number: \d+ (not \d{1,3}) — high numbers like 1001 are valid for
+      // hot-track parking-lot phases per parking-lot-convention.md.
+      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
       let m;
       while ((m = rowRe.exec(roadmap)) !== null) {
         upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
       }
 
       // Format B — heading style
-      const headRe = /^#{2,4}\s*Phase\s+(\d{1,3}(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
+      const headRe = /^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
       while ((m = headRe.exec(roadmap)) !== null) {
         const num = m[1].trim();
         const name = m[2].trim();
@@ -2423,7 +2425,7 @@ function cmdState(subArgs) {
       for (const phaseEntry of fs.readdirSync(sprintRoot)) {
         const phaseDir = path.join(sprintRoot, phaseEntry);
         if (!fs.statSync(phaseDir).isDirectory()) continue;
-        const phaseNumMatch = phaseEntry.match(/^(\d{1,3}(?:\.\d+)?)/);
+        const phaseNumMatch = phaseEntry.match(/^(\d+(?:\.\d+)?)/);
         const phaseNum = phaseNumMatch ? phaseNumMatch[1] : phaseEntry;
         for (const file of fs.readdirSync(phaseDir)) {
           const sprintMatch = file.match(/^sprint-(\d+)\.md$/);
@@ -2519,12 +2521,15 @@ function cmdPhase(subArgs) {
     }
     if (fs.existsSync(roadmapPath)) {
       const text = fs.readFileSync(roadmapPath, 'utf8');
-      const pipeRe = /^\|\s*(\d{1,3})\s*\|/gm;
+      // Phase 14 / #476 — \d+ (not \d{1,3}). High numbers like 1001 are valid
+      // for hot-track phases. The cap was silently dropping them from maxNum
+      // computation, causing the next phase to collide with an existing one.
+      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
       let m;
       while ((m = pipeRe.exec(text)) !== null) {
         maxNum = Math.max(maxNum, parseInt(m[1], 10));
       }
-      const headRe = /^#{2,4}\s*Phase\s+(\d{1,3})\b/gm;
+      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
       while ((m = headRe.exec(text)) !== null) {
         maxNum = Math.max(maxNum, parseInt(m[1], 10));
       }
@@ -2817,6 +2822,7 @@ When creating, planning, or modifying a phase, you MUST go through the rihal too
 - **Writing SPRINT.md / PLAN.md** → run \`/rihal-plan <N>\`. Spawns \`rihal-planner\` + \`rihal-sprint-checker\`. Do NOT \`Write\` SPRINT.md files directly.
 - **Discussing phase scope** → run \`/rihal-discuss-phase <N>\` for medium-risk phases. Writes \`<N>-CONTEXT.md\` with locked decisions.
 - **Use canonical artifact names**: \`<N>-CONTEXT.md\`, \`<N>-RESEARCH.md\`, \`<N>-PLAN.md\` or \`<N>-NN-SPRINT.md\`, \`<N>-VERIFICATION.md\`, \`<N>-SUMMARY.md\`. Do NOT invent \`SCOPE.md\` / \`REVIEW.md\` / \`EDGE-CASES.md\` as phase artifacts — those belong elsewhere or as agent outputs.
+- **Phase numbering** — sequential integers (\`/rihal-add-phase\`) for new phases; decimal sub-phases (\`100.1\`, \`100.2\` via \`/rihal-insert-phase\`) for hot-fixes branched from a parent. **Do NOT use 1000+ as a hot-track convention** — see [\`docs/phase-numbering.md\`](docs/phase-numbering.md) for the four supported options and when to use each.
 
 **Why this is enforced**: every direct \`Write\` to \`.planning/phases/**/SPRINT.md\` without registration is a silent state divergence. Future \`/rihal-status\` reports under-count work. \`/rihal-execute\` can't find the plan. \`/rihal-progress\` shows wrong percentages.
 
@@ -3971,7 +3977,8 @@ function cmdProgress(args) {
     const seen = new Set();
 
     // Format A — markdown pipe tables: | 07 | Name | Goal |
-    const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+    // Phase 14 / #476 — \d+ supports high-N phases (1000+, hot-track).
+    const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
     let m;
     while ((m = rowRe.exec(text)) !== null) {
       const num = m[1].trim();
@@ -3985,7 +3992,8 @@ function cmdProgress(args) {
     }
 
     // Format B — heading style: ## Phase 07 — Name  /  ### Phase 07: Name  /  ## Phase 07 - Name
-    const headRe = /^#{2,4}\s*Phase\s+(\d{1,3}(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
+    // Phase 14 / #476 — \d+ supports high-N phases (1000+, hot-track).
+    const headRe = /^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
     while ((m = headRe.exec(text)) !== null) {
       const num = m[1].trim();
       const name = m[2].trim();
@@ -4035,7 +4043,8 @@ function cmdProgress(args) {
     for (const entry of fs.readdirSync(phasesDir)) {
       const full = path.join(phasesDir, entry);
       if (!fs.statSync(full).isDirectory()) continue;
-      const numMatch = entry.match(/^(\d{1,3}(?:\.\d+)?)/);
+      // Phase 14 / #476 — \d+ supports high-N phase dirs (1000+).
+      const numMatch = entry.match(/^(\d+(?:\.\d+)?)/);
       if (!numMatch) continue;
       const num = numMatch[1];
       const files = fs.readdirSync(full);

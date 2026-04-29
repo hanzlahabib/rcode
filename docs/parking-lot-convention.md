@@ -87,3 +87,7 @@ Backlog items need a stable home that won't conflict with active phase numbers. 
 - `roadmap list-phases` filters them visually — they sort to the bottom and signal "not active work"
 
 The convention has been validated across dozens of projects over a year of practical use.
+
+## Not for hot-fixes
+
+Parking lot is for **promotable backlog** — work that *might* be picked up. For **active hot-fixes** (urgent fixes that need their own scope while a phase is mid-flight), use **decimal sub-phases** (e.g. `100.1`, `100.2`) — see [`docs/phase-numbering.md`](phase-numbering.md).

@@ -13,6 +13,7 @@
 | [`project/stack.md`](project/stack.md) | Languages, frameworks, services in use |
 | [`project/decisions.md`](project/decisions.md) | Append-only architectural decision log |
 | [`project/glossary.md`](project/glossary.md) | Domain terms, internal names, acronyms |
+| [`project/design-system.md`](project/design-system.md) | Visual tokens, canonical components, conventions — read by `ui-phase`, `frontend-design`, `clone-website` |
 | [`people/stakeholders.md`](people/stakeholders.md) | External contacts, decision authority, comms |
 | [`people/team.md`](people/team.md) | Internal team, ownership, availability |
 | [`milestones/current.md`](milestones/current.md) | Active milestone — goal, phase, blockers |
