@@ -1,47 +1,41 @@
 # Rihal Code — State
 
-**Last updated:** 2026-04-16
+**Last updated:** 2026-04-29
 **Milestone:** M1 — Ship v2 + Tier Docs
-**Version:** 1.0.0-beta.0
-**Current phase:** 04 — Dashboard Refresh (active)
+**Version:** 3.4.4
+**Current phase:** 13 — Parser + Walker Consolidation (in flight, separate session)
 **Branch:** main
 
 ---
 
-## Completed
+## Completed (M1)
 
-### Phase 01 — Tier-based Documentation Reorg ✅ (2026-04-15)
-- TIERS.md, STANDARDS.md, V2-PREVIEW.md
-- README "Start Here" block + `rihal-code tiers` command + grouped help
+| # | Name | Date |
+|---|---|---|
+| 01 | Tier-based Documentation Reorg | 2026-04-15 |
+| 02 | Scaffold Project Skill | 2026-04-15 |
+| 03 | V2 Stabilization | 2026-04-15/16 |
+| 04 | Dashboard Refresh | 2026-04-29 (closed during phase-status drift audit) |
+| 06 | Feature Doc Drift Auto-Heal | 2026-04-29 |
+| 08 | Auto-Heal Cadence + Hooks | 2026-04-29 |
+| 09 | Dogfood Audit Pass | 2026-04-29 |
+| 10 | Close Auto-Heal Tooling Gaps | 2026-04-29 |
+| 11 | CLI Subcommand Sweep — high-impact #465 items | 2026-04-29 |
+| 12 | Init Shape Completion — full agent context contract | 2026-04-29 |
 
-### Phase 02 — Scaffold Project Skill ✅ (2026-04-15)
-- `rihal-scaffold-project` (4-step workflow)
-- GH issue #101 for template improvements
-
-### Phase 03 — V2 Stabilization ✅ (2026-04-15/16)
-- v1/v2 merged into single `rihal/` root (v2 folder eliminated)
-- Unified installer: `cli/install.js` (70 cmd + 34 agents + 39 skills)
-- Ghost v1 agents purged (model-profiles, 14 orphan digests)
-- 5 bloated agents slim-split (#103-#107)
-- Docs agents consolidated — 2 aliases deleted (#108)
-- new-project.md split to 3 files (#102)
-- BMAD/GSD history rewrite (95 commits)
-- output-realism.md reference added
-- Version bumped to 1.0.0-beta.0
-- Clean sweep: zero broken refs, 95/95 tests
-
-### Additional work (not in original roadmap)
-- 8 GH issues created and 7 closed (#102-#109)
-- #110 created: Phase → Sprint → Story/Task hierarchy (future milestone)
-- Sprint-planning workflow added (was missing)
-- SKILLS_INDEX cleaned (2 bogus v1 refs removed)
-- CHANGELOG v1.0.0-beta.0 release notes written
+Phase 05 (Marketing + Launch) split: eng-side shipped (npm + README), GTM-side moved to Phase 7.
 
 ---
 
 ## In Progress
 
-None.
+- **Phase 13** — Parser + Walker Consolidation (#469). SPRINT files drafted in another session, not yet merged.
+
+---
+
+## Planned (M1 remaining)
+
+- **Phase 7** — Marketing Push v2 (demo video, X / MENA dev channels, first 10 install verification)
 
 ---
 
@@ -49,11 +43,13 @@ None.
 
 - **v1/v2 merged.** Single `rihal/` root. No more v2-prototype branch. `cli/install.js` is the only installer.
 - **`.planning/` stays separate from `.rihal/`.** User artifacts vs system infra. Confirmed 2026-04-16.
+- **`.rihal/bin/` ↔ `rihal/bin/` auto-sync** via PostToolUse hook (#470). Three layers: hook (proactive), dogfood gate (reactive), `scripts/sync-bin.sh` (escape hatch).
+- **Drift detection opt-in strict mode** via `--strict` / `RIHAL_STRICT_STATE=true` (#200). Default unchanged.
+- **Multi-IDE install on `--yes`** (#182). Detects every signal and installs into all of `.claude/`, `.cursor/`, `.antigravity/`, `.vscode/` when found.
+- **CWD-vs-PROJECT_ROOT guard** (#473) refuses to operate when CWD has its own `.rihal/` but doesn't match the binary's resolved root.
 - **Phase → Sprint → Story/Task hierarchy change** → deferred to future milestone (#110). Current NN.MM.TT numbering stays for now.
-- **Force-push authorized one-time** (2026-04-15) for history rewrite. Not blanket auth.
 - **Template repo stays external.** `rihal-scaffold-project` always clones fresh.
 - **Tier doc is canonical.** `docs/TIERS.md` is single source of truth.
-- **Fresh install command:** `git clone --depth 1 ... /tmp/rihal-src && node /tmp/rihal-src/cli/install.js . && rm -rf /tmp/rihal-src`
 
 ---
 
@@ -63,17 +59,22 @@ None.
 
 ---
 
-## Open GH Issues
+## Open GH Issues (high-priority)
 
 | # | Title | Priority |
 |---|-------|----------|
-| #101 | Template improvements (pnpm, .rihal/config, Node 20+, gitignore) | p2 |
-| #110 | Phase → Sprint → Story/Task hierarchy (remove Plan level) | p2 |
+| #469 | Phase 13 — parser + walker consolidation | p1 (in flight) |
+| #226 | /rihal:new-project doesn't trigger create-prd | p2 (workflow refactor) |
+| #110 | Phase → Sprint → Story/Task hierarchy refactor | p3 (future milestone) |
+| #173 | MCP server | p3 (depends on #171/#172) |
+| #379, #380 | 40 agent files quality + best-practice template | p3 (own phase) |
+| #465 | 9 remaining missing CLI subcommands | p3 (Phase 14+ if consumed) |
 
 ---
 
 ## Next Action
 
-Phase 04 (Dashboard Refresh) — in progress. Sprint 04.2 active.
+- **Phase 13** — let the in-flight session land its SPRINT files
+- **Phase 7** — Marketing Push v2 (GTM half of original Phase 05)
 
-Phase 05 (Marketing + Launch) — next after Phase 04 completes.
+State authoritative source: `.rihal/state.json` (machine-readable). This file is the human-readable narrative companion.
