@@ -2274,7 +2274,11 @@ function cmdPhase(subArgs) {
         maxNum = Math.max(maxNum, parseInt(m[1], 10));
       }
     }
-    const statePath = path.join(PLANNING_DIR, 'state.json');
+    // State lives in .rihal/state.json — same path used by cmdState (line ~634)
+    // and every other state-writing subcommand. Phase 6 dogfood surfaced this:
+    // earlier drafts wrote to .planning/state.json, creating an orphan file
+    // invisible to `state sync` / `state set-phase` / etc. Closes #462.
+    const statePath = path.join(RIHAL_DIR, 'state.json');
     let state;
     if (fs.existsSync(statePath)) {
       try {
@@ -2340,8 +2344,10 @@ function cmdPhase(subArgs) {
       plan_count: 0,
     });
     state.updated = new Date().toISOString();
-    if (!fs.existsSync(PLANNING_DIR)) {
-      fs.mkdirSync(PLANNING_DIR, { recursive: true });
+    // Ensure the directory holding statePath (RIHAL_DIR) exists.
+    const stateDir = path.dirname(statePath);
+    if (!fs.existsSync(stateDir)) {
+      fs.mkdirSync(stateDir, { recursive: true });
     }
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
