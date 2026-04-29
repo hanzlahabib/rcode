@@ -1,0 +1,16 @@
+{
+  "$comment": "Project-level Claude Code settings. Checked in. PostToolUse hook closes #470 — auto-sync rihal/bin/ → .rihal/bin/ so runtime copy stays current after source edits.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/sync-bin-on-edit.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
