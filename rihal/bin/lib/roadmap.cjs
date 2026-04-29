@@ -19,7 +19,11 @@ function roadmapPathFor(projectRoot) {
  *   number, name, goal, section (raw markdown slice), headerIndex, sectionEnd
  */
 function extractPhases(content) {
-  const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:\s*([^\n]+)/gi;
+  // Accept any of: ":", "—" (em-dash), "-" (hyphen) between phase number and name.
+  // Pre-#464 the regex required ":" only, which silently rejected heading-style
+  // ROADMAP using em-dash ("## Phase 6 — Name") and broke roadmap list-phases
+  // and roadmap get-phase. Same drift family as #455.
+  const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*[—\-:]\s*([^\n]+)/gi;
   const hits = [];
   let m;
   while ((m = phasePattern.exec(content)) !== null) {
