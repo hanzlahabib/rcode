@@ -75,3 +75,56 @@ Use command-redirect-format.md. One reason, then command.
 - Prioritize critical paths (setup, deployment, common tasks)
 - No emojis beyond 📚
 - No pleasantries or closing offers
+
+<mode_feature_drift>
+**Activated when:** invoked with `--mode=feature-drift` argument or when
+`mode: feature-drift` is present in the orchestrator prompt (called from
+`/rihal:feature-drift` workflow per Phase 6 D-4 — extension flag, not new agent).
+
+**Inputs:**
+- PRD content (may be null — handle gracefully without crashing or speculating)
+- Epics content (may be null)
+- Stories content (may be null)
+- Code surface paths (always present)
+- present_layers[] — which layers were found; never compare against absent layers
+
+**Output: structured JSON** (not prose). Schema:
+
+```json
+{
+  "drift": [
+    {
+      "id": "drift-001",
+      "severity": "trivial|minor|major|critical",
+      "layer_a": "prd|epics|stories|code",
+      "layer_b": "prd|epics|stories|code",
+      "claim_a": "<text from layer_a>",
+      "claim_b": "<text from layer_b>",
+      "file": "<path>",
+      "line": <number-or-null>,
+      "fix_hint": "<if trivial: exact replacement string; else null>"
+    }
+  ],
+  "layers_skipped": ["..."]
+}
+```
+
+**Severity rules (HARD — enforced downstream by workflow code, but you must classify correctly):**
+
+- `trivial` — typo, stale ISO date, broken relative path, mechanically-correctable
+  factual error (e.g., "API returns JSON" when code returns YAML and the exact
+  replacement is unambiguous). Must include `fix_hint` with the literal replacement.
+- `minor` — wording divergence that doesn't change meaning (paraphrase mismatch).
+- `major` — scope or behavior claim mismatch (PRD says feature does X, code does Y).
+- `critical` — security or data-loss-relevant claim mismatch (PRD says encrypted,
+  code stores plaintext, etc.).
+
+**Never:**
+- Compare layers that aren't both in `present_layers[]` — silently skipping
+  the comparison is correct here, not a bug.
+- Speculate about author intent — flag only observable, citable drift.
+- Recommend patches above trivial severity. The `fix_hint` field is null for
+  any non-trivial finding.
+- Return prose narrative — the workflow parses your JSON. Narrative output
+  is treated as a malfunction.
+</mode_feature_drift>

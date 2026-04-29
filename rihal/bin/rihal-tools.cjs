@@ -477,6 +477,20 @@ function cmdClassifyQuestion(raw) {
       // Arabic execution signals
       'إصلاح', 'كود', 'برنامج', 'نفذ', 'شغل',
     ],
+    // Phase 6 — drift / audit / re-audit / extend-existing-artifact signals.
+    // Routes /rihal:do toward /rihal:feature-drift instead of falling
+    // through to inline execution. Reinforces classifyScope's drift branch.
+    drift: [
+      'drift', 'redrift', 're-audit', 'reaudit', 'audit feature', 'audit docs',
+      'audit the docs', 'audit the prd', 'audit feature docs',
+      'fill out existing', 'fill out the existing', 'fill out this',
+      'extend audit', 'extend the audit', 'extend plan', 'extend the plan',
+      'expand audit', 'expand the audit',
+      'verify docs vs code', 'verify claims vs code', 'docs vs reality', 'docs vs code',
+      'stale docs', 'out of date docs', 'out-of-date docs',
+      // Roman Urdu drift signals
+      'docs purane hai', 'docs purani hain', 'docs stale hain', 'audit dobara',
+    ],
   };
 
   const matchedSignals = (signals) => signals.filter((s) => normalized.includes(s));
@@ -485,8 +499,8 @@ function cmdClassifyQuestion(raw) {
     matched[type] = matchedSignals(signals);
   }
 
-  // Weights per type
-  const WEIGHTS = { discovery: 3, market: 2, greenfield: 2, team: 3, release: 3, design: 3, codebase: 3 };
+  // Weights per type — drift gets weight 3 same as other concrete-intent types.
+  const WEIGHTS = { discovery: 3, market: 2, greenfield: 2, team: 3, release: 3, design: 3, codebase: 3, drift: 3 };
   const scores = {};
   for (const [type, hits] of Object.entries(matched)) {
     scores[type] = hits.length * WEIGHTS[type];
@@ -2345,20 +2359,28 @@ function cmdPhase(subArgs) {
 
 /**
  * Classify the scope of input based on keywords and length.
- * Returns one of: 'ticket', 'feature', 'phase', 'initiative'
+ * Returns one of: 'ticket', 'feature', 'phase', 'initiative', 'drift'
  *
  * Priority order:
- * 1. Initiative keywords (highest)
- * 2. Phase keywords
- * 3. Feature keywords (add, implement, build)
- * 4. Ticket keywords
- * 5. Length-based fallback
+ * 1. Drift / audit / re-audit / extend-existing-artifact intent (Phase 6)
+ * 2. Initiative keywords
+ * 3. Phase keywords
+ * 4. Feature keywords (add, implement, build)
+ * 5. Ticket keywords
+ * 6. Length-based fallback
  */
 function classifyScope(input) {
   const text = (input || '').toLowerCase();
   const len = text.length;
 
-  // Initiative signals — highest priority
+  // Drift / audit / re-audit / extend-existing-artifact intent.
+  // Routes /rihal:do to /rihal:feature-drift instead of falling through to
+  // inline execution (closes the residual edge case from #458).
+  if (/\b(drift|re-?audit|stale|out[- ]of[- ]date|fill out (the|this|existing)|extend (audit|plan|phase)|verify (docs|claims) vs (code|reality))\b/i.test(text)) {
+    return 'drift';
+  }
+
+  // Initiative signals — highest priority among scope tiers
   if (/\b(milestone|initiative|roadmap|multi-team|multi-sprint|q[1-4]\s*\d{4})\b/.test(text)) {
     return 'initiative';
   }

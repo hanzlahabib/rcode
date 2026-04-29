@@ -298,7 +298,8 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | A note, idea, or "remember to..." | `/rihal-note` | Capture for later |
 | Adding tests, "write tests", "test coverage" | `/rihal-add-tests` | Test generation |
 | Completing a milestone, shipping, releasing | `/rihal:complete-milestone` | Milestone lifecycle |
-| Audit / re-audit / extend / fill out / expand an existing artifact (audit doc, plan, phase list) | `/rihal:audit` | Unified audit entry — picks artifact type and re-runs |
+| Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rihal:feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
+| General audit / re-audit / extend / fill out / expand an existing artifact | `/rihal:audit` | Unified audit entry — picks artifact type and re-runs |
 | A specific, actionable, small task (add feature, fix typo, update config) | `/rihal:quick` | Self-contained, single executor |
 | Market/discovery/greenfield question (from classify) | `/rihal:council` | Needs multi-perspective discovery |
 
@@ -308,7 +309,7 @@ If no rule matches, fall back to the classifier:
 CLASSIFY=$(node ".rihal/bin/rihal-tools.cjs" classify-question "$QUESTION")
 ```
 
-Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`. Default: `/rihal:discuss`.
+Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`; drift → `/rihal:feature-drift`. Default: `/rihal:discuss`.
 
 **No-route exit (issue #458):** If neither the routing table nor the classifier yields a confident match, you MUST STOP. Print this disambiguation menu via AskUserQuestion and wait:
 
