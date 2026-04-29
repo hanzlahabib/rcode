@@ -101,6 +101,62 @@ function readConfig() {
 }
 
 /**
+ * Read .rihal/config.yaml as a nested object (workflow.*, features.*, etc.).
+ * Phase 12 / #468 — used by cmdInit to surface workflow feature flags into
+ * the init JSON so workflow agents don't re-shell config-get per field.
+ * Returns {} when config absent or unreadable.
+ */
+function readNestedConfig() {
+  try {
+    const configPath = path.join(RIHAL_DIR, 'config.yaml');
+    if (!fs.existsSync(configPath)) return {};
+    const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+    return cfg.parseNestedYaml(fs.readFileSync(configPath, 'utf8')) || {};
+  } catch { return {}; }
+}
+
+/**
+ * Resolve the model string for an agent under the current profile.
+ * Phase 12 / #468 — returns just the model id (or null when the agent isn't
+ * installed or the profile inherits). Wraps cmdResolveModel so cmdInit can
+ * surface researcher_model / planner_model / checker_model without throwing
+ * when an agent isn't shipped.
+ */
+function resolveModelString(agentId) {
+  try {
+    const installed = listInstalledAgents();
+    // Manifest ids are stored bare (e.g. "planner") while workflows reference
+    // them with the rihal- prefix. Try both forms before giving up.
+    const bare = agentId.replace(/^rihal-/, '');
+    const candidate = installed.includes(agentId) ? agentId
+                    : installed.includes(bare) ? bare
+                    : null;
+    if (!candidate) return null;
+    const r = cmdResolveModel(candidate);
+    return (r && r.model) ? r.model : null;
+  } catch { return null; }
+}
+
+/**
+ * Extract REQ-IDs (REQ-FOO, REQ-FOO-BAR) from a ROADMAP requirements list.
+ * Phase 12 / #468 — feeds plan.md's `phase_req_ids` field. Returns deduped
+ * array in source order. Empty array when no IDs match.
+ */
+function extractReqIds(requirements) {
+  if (!Array.isArray(requirements) || requirements.length === 0) return [];
+  const seen = new Set();
+  const out = [];
+  const re = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
+  for (const line of requirements) {
+    const matches = String(line).match(re) || [];
+    for (const m of matches) {
+      if (!seen.has(m)) { seen.add(m); out.push(m); }
+    }
+  }
+  return out;
+}
+
+/**
  * Parse CSV with quoted-field support. Expects the first row to be headers.
  * Returns array of objects keyed by header.
  */
@@ -390,12 +446,17 @@ function cmdInit(workflowName, rawArgs) {
         out.has_verification = files.some(f => /(?:^|-)VERIFICATION\.md$/i.test(f));
         out.has_plans = files.some(f => /(?:^|-)(PLAN|SPRINT)\.md$/i.test(f));
         out.plan_count = files.filter(f => /(?:^|-)(PLAN|SPRINT)\.md$/i.test(f)).length;
+        // Phase 12 / #468 — REVIEWS.md + UAT.md presence (referenced by plan.md).
+        out.has_reviews = files.some(f => /(?:^|-)REVIEWS\.md$/i.test(f));
+        out.has_uat = files.some(f => /(?:^|-)UAT\.md$/i.test(f));
       } else {
         out.has_research = false;
         out.has_context = false;
         out.has_verification = false;
         out.has_plans = false;
         out.plan_count = 0;
+        out.has_reviews = false;
+        out.has_uat = false;
       }
 
       // Source-of-truth path getters for the fields workflows reference.
@@ -408,6 +469,13 @@ function cmdInit(workflowName, rawArgs) {
       out.verification_path = (out.phase_dir && out.has_verification)
         ? path.join(out.phase_dir, files0(out.phase_dir, /VERIFICATION\.md$/i))
         : null;
+      // Phase 12 / #468 — REVIEWS.md / UAT.md paths (null when absent).
+      out.reviews_path = (out.phase_dir && out.has_reviews)
+        ? path.join(out.phase_dir, files0(out.phase_dir, /REVIEWS\.md$/i))
+        : null;
+      out.uat_path = (out.phase_dir && out.has_uat)
+        ? path.join(out.phase_dir, files0(out.phase_dir, /UAT\.md$/i))
+        : null;
       out.state_path = path.join(RIHAL_DIR, 'state.json');
       out.roadmap_path = roadmapPath;
       out.requirements_path = fs.existsSync(path.join(PLANNING_DIR, 'REQUIREMENTS.md'))
@@ -417,6 +485,46 @@ function cmdInit(workflowName, rawArgs) {
       // Defaults consumed by /rihal:plan and /rihal:discuss-phase.
       out.commit_docs = String(config.commit_docs || 'true') !== 'false';
       out.response_language = config.response_language || config.language || null;
+
+      // Phase 12 / #468 — close the agent-context contract.
+      // Reads nested config (workflow.*, features.*) via lib/config.cjs and
+      // surfaces every field that plan.md/discuss-phase.md reference today.
+      const nestedCfg = readNestedConfig();
+      const wf = nestedCfg.workflow || {};
+      const features = nestedCfg.features || {};
+
+      // Workflow feature flags (top-level for direct workflow consumption).
+      // Defaults match the inline `config-get … || echo "X"` calls in the workflows.
+      out.research_enabled = String(wf.research_by_default ?? 'false') === 'true';
+      out.plan_checker_enabled = String(wf.plan_checker ?? 'true') !== 'false';
+      out.nyquist_validation_enabled = String(wf.nyquist_validation ?? 'true') !== 'false';
+      out.text_mode = String(wf.text_mode ?? 'false') === 'true';
+
+      // Model resolution per active profile. The researcher agent ships as
+      // `phase-researcher` in this codebase; resolveModelString falls back to
+      // that when the prefixed/bare `researcher` ids aren't present.
+      out.researcher_model = resolveModelString('rihal-researcher')
+        || resolveModelString('rihal-phase-researcher');
+      out.planner_model = resolveModelString('rihal-planner');
+      out.checker_model = resolveModelString('rihal-sprint-checker');
+
+      // Phase requirement IDs — extracted from ROADMAP requirements block.
+      out.phase_req_ids = extractReqIds(roadmapPhase ? roadmapPhase.requirements : []);
+
+      // Deeper config flags (grouped to keep top-level lean).
+      // Defaults documented in the workflows' inline config-get fallbacks.
+      out.features = {
+        thinking_partner: String(features.thinking_partner ?? 'false') === 'true',
+      };
+      out.workflow_flags = {
+        discuss_mode: wf.discuss_mode ?? 'adaptive',
+        research_before_questions: String(wf.research_before_questions ?? 'true') !== 'false',
+        max_discuss_passes: parseInt(wf.max_discuss_passes ?? '3', 10) || 3,
+        security_enforcement: String(wf.security_enforcement ?? 'true') !== 'false',
+        security_asvs_level: parseInt(wf.security_asvs_level ?? '1', 10) || 1,
+        ui_phase: String(wf.ui_phase ?? 'true') !== 'false',
+        ui_safety_gate: String(wf.ui_safety_gate ?? 'true') !== 'false',
+      };
     }
   }
 

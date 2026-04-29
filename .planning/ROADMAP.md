@@ -210,11 +210,11 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 12 — Init Shape Completion — full agent context contract
+## Phase 12 — Init Shape Completion — full agent context contract ✅
 
 **Goal:** _TBD — fill in via /rihal:discuss-phase 12 or edit directly._
 
-**Status:** Planned
+**Status:** Complete (2026-04-29)
 
 **Plans:**
 - _TBD_
