@@ -43,6 +43,29 @@ const WORKFLOWS_DIR = path.join(RIHAL_DIR, 'workflows');
 const PLANNING_DIR = path.join(PROJECT_ROOT, '.planning');
 const SESSIONS_DIR = path.join(PLANNING_DIR, 'council-sessions');
 
+// #473 guard: if CWD has its own .rihal/ but doesn't match the resolved
+// PROJECT_ROOT, the user is invoking this binary from a different project.
+// Without this guard, every state-writing subcommand silently targets the
+// installer's repo instead of the user's CWD — surfaced during Phase 12
+// smoke tests when `phase add` polluted the rihal-code repo's ROADMAP
+// while running from /tmp. Refuse to operate with a clear error.
+function assertCwdMatchesProjectRoot() {
+  try {
+    const cwd = process.cwd();
+    const cwdRihal = path.join(cwd, '.rihal');
+    if (!fs.existsSync(cwdRihal)) return; // no local install — fine
+    if (path.resolve(cwd) === path.resolve(PROJECT_ROOT)) return; // same project — fine
+    // CWD has its own .rihal/ but is NOT this binary's project. Refuse.
+    process.stderr.write(
+      `Refusing to operate: this binary lives at ${path.dirname(__dirname)}/bin/ ` +
+      `but CWD ${cwd} has its own .rihal/ — running from here would silently ` +
+      `target the wrong project (#473). Use the CWD's installed CLI: ` +
+      `node "${cwdRihal}/bin/rihal-tools.cjs" <args>\n`
+    );
+    process.exit(2);
+  } catch { /* never crash startup on diagnostic logic */ }
+}
+
 /**
  * Return the first file in `dir` matching `pattern`, or null.
  * Used by cmdInit's phase-aware fields branch (Phase 10 / #466) to resolve
@@ -4454,6 +4477,12 @@ function cmdFindFiles(rawArgs) {
 
 async function main() {
   const [, , subcommand, ...args] = process.argv;
+  // #473 guard runs before any subcommand. Skipped for read-only inspection
+  // so 'rihal-tools version' / 'help' / 'list-agents' work outside the project.
+  const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills']);
+  if (!READ_ONLY_SUBCOMMANDS.has(subcommand)) {
+    assertCwdMatchesProjectRoot();
+  }
   try {
     let result;
     switch (subcommand) {
