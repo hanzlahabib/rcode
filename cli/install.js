@@ -300,7 +300,16 @@ function detectIdeSignals(target) {
  */
 async function resolveIde(opts) {
   if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
-  if (opts.yes || !process.stdin.isTTY) return [opts.ide || 'claude'];
+  if (opts.yes || !process.stdin.isTTY) {
+    // #182 — non-interactive mode: install into every detected IDE, not just
+    // the default claude. The interactive flow already preselects detected
+    // ones; --yes should match that intent. Falls back to ['claude'] when
+    // nothing detected. (Note: opts.ide defaults to 'claude' from parseArgs,
+    // so check opts.ideProvided not opts.ide to honor real --ide overrides.)
+    const signals = detectIdeSignals(opts.target);
+    const detected = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'].filter(k => signals[k]);
+    return detected.length > 0 ? detected : ['claude'];
+  }
 
   const signals = detectIdeSignals(opts.target);
   const detected = ['claude', 'cursor', 'gemini', 'vscode'].filter(k => signals[k]);
