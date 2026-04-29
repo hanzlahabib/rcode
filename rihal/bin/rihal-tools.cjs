@@ -565,8 +565,38 @@ function cmdSelectPanel(rawArgs) {
   };
 }
 
+// Canonical aliases for short workflow-side ids that don't match manifest ids.
+// Workflows historically use shorter names (researcher, checker, advisor) that
+// map to longer manifest ids. Keep the alias table small and explicit — if a
+// new agent needs an alias, add it here, don't add fuzzy matching. (#472)
+const AGENT_ID_ALIASES = {
+  researcher: 'phase-researcher',
+  checker: 'sprint-checker',
+  advisor: 'advisor-researcher',
+};
+
+function resolveAgentId(rawId, manifest) {
+  if (!rawId) return null;
+  // 1. Exact match on raw id
+  let row = manifest.find((r) => r.id === rawId);
+  if (row) return row;
+  // 2. Strip leading rihal- prefix (workflows use prefixed form, manifest is bare)
+  const stripped = rawId.replace(/^rihal-/, '');
+  if (stripped !== rawId) {
+    row = manifest.find((r) => r.id === stripped);
+    if (row) return row;
+  }
+  // 3. Apply canonical aliases (e.g. researcher → phase-researcher)
+  const aliased = AGENT_ID_ALIASES[stripped];
+  if (aliased) {
+    row = manifest.find((r) => r.id === aliased);
+    if (row) return row;
+  }
+  return null;
+}
+
 function cmdAgentInfo(agentId) {
-  const row = readAgentManifest().find((r) => r.id === agentId);
+  const row = resolveAgentId(agentId, readAgentManifest());
   if (!row) {
     console.error(`Unknown agent: ${agentId}`);
     process.exit(1);
