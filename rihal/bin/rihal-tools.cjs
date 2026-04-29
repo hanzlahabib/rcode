@@ -3932,6 +3932,11 @@ function cmdBrain(args) {
 function cmdProgress(args) {
   const sub = args[0] || 'init';
   const rawMode = args.includes('--raw');
+  // #200 — opt-in strict mode: exit 1 when insights contain drift/undercount.
+  // Off by default (warning preserves the soft-surface UX). Toggle via --strict
+  // flag or RIHAL_STRICT_STATE=true env var. Used by CI / pre-deploy gates.
+  const strictMode = args.includes('--strict')
+    || /^(true|1|yes)$/i.test(process.env.RIHAL_STRICT_STATE || '');
 
   // Resolve paths — workflow files may run this from any subdirectory.
   const statePath = path.join(RIHAL_DIR, 'state.json');
@@ -4030,6 +4035,21 @@ function cmdProgress(args) {
       };
     }
     return byNum;
+  }
+
+  // #200 — opt-in strict gate. Walks insights for drift/undercount kinds and
+  // exits 1 with the failure list to stderr. No-op when strictMode=false.
+  function enforceStrictGate(insightsList) {
+    if (!strictMode) return;
+    const blocking = (insightsList || []).filter(i =>
+      i && (i.kind === 'drift' || i.kind === 'undercount') && i.severity !== 'info'
+    );
+    if (blocking.length === 0) return;
+    process.stderr.write('✖ State drift detected — state.json is out of sync with disk.\n');
+    for (const i of blocking) process.stderr.write(`  • ${i.message}\n`);
+    process.stderr.write('\n  Auto-fix:  node .rihal/bin/rihal-tools.cjs state sync --from-disk\n');
+    process.stderr.write('  Inspect:   node .rihal/bin/rihal-tools.cjs state read\n');
+    process.exit(1);
   }
 
   function detectInsights(state, roadmapPhases, diskByNum) {
@@ -4196,7 +4216,9 @@ function cmdProgress(args) {
   }
 
   if (sub === 'insights') {
-    return { ok: true, insights: detectInsights(state, roadmapPhases, diskByNum) };
+    const insightsList = detectInsights(state, roadmapPhases, diskByNum);
+    enforceStrictGate(insightsList);
+    return { ok: true, insights: insightsList };
   }
 
   if (sub === 'routes') {
@@ -4206,6 +4228,7 @@ function cmdProgress(args) {
   // sub === 'init' (default) — full snapshot
   const currentPhase = state && state.current_phase;
   const insights = detectInsights(state, roadmapPhases, diskByNum);
+  enforceStrictGate(insights);
   const routes = deriveRoutes(state, roadmapPhases, diskByNum);
   const { weighted: weightedCompleted, pct: weightedPct } = computeWeightedProgress(statePhases, diskByNum);
 
