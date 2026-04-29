@@ -84,10 +84,13 @@ for ref in $WORKFLOW_REFS; do
     # This is one of the known-missing subcommands from #465. Don't fail the
     # gate on those — they're already filed and tracked. But fail on NEW drift.
     case "$ref" in
-      audit-uat|check-implementation-readiness|classify-tech|commit-to-subrepo|context|find-phase|frontmatter|generate-claude-md|learnings|phase-plan-index|phases|requirements|todo|uat)
+      audit-uat|find-phase|frontmatter|learnings|phase-plan-index|phases|requirements|todo|uat)
         # Known-tracked drift (#465). Don't count.
-        # NOTE: 'commit' was implemented in Phase 10 / #466 — removed from
-        # this allowlist so any future regression of cmdCommit fails the gate.
+        # NOTES on what's been removed from this allowlist:
+        # - 'commit' implemented in Phase 10 / #466
+        # - 'check-implementation-readiness', 'classify-tech', 'commit-to-subrepo',
+        #   'context', 'generate-claude-md' implemented in Phase 11 / #467
+        # 9 subcommands remain in #465 backlog.
         ;;
       *)
         DRIFT_COUNT=$((DRIFT_COUNT + 1))
