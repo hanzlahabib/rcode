@@ -19,15 +19,32 @@ loop pattern established by `docs-update`.
 <step name="parse_args">
 Extract from $ARGUMENTS:
 - `--fix` flag — opt-in auto-fix for trivial items only (severity allowlist enforced in code)
+- `--quick` flag — fast-mode for hooks (Phase 8). Skips deep verifier loop, runs the auditor scan only. Target runtime <2s. **QUICK_MODE always implies report-only — never patches even if `--fix` is also passed.**
 - `--scope <phase|project>` — phase scope reads phase-local docs; project scope reads root docs
+- `--mode <feature|phase-status>` — drift dimension. `feature` (default) compares PRD↔epics↔stories↔code. `phase-status` (Phase 8 / #461) compares ROADMAP claim against shipping reality (SUMMARY.md presence, SPRINT.md presence, git log).
 - Optional positional phase number (only required when scope=phase)
 
-Default scope: project (root `.planning/PRD.md`, `.planning/epics/`, `.planning/stories/`).
+Default scope: project (root `.planning/PRD.md`, `.planning/epics/`, `.planning/stories/`). Default mode: feature.
 
 ```bash
 FIX_MODE=false
+QUICK_MODE=false
+MODE="feature"
+
 if [[ "$ARGUMENTS" =~ (^|[[:space:]])--fix($|[[:space:]]) ]]; then
   FIX_MODE=true
+fi
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--quick($|[[:space:]]) ]]; then
+  QUICK_MODE=true
+  # Safety: --quick forces report-only regardless of --fix.
+  # Hooks must never auto-modify files.
+  FIX_MODE=false
+fi
+if [[ "$ARGUMENTS" =~ --mode[[:space:]]+(feature|phase-status) ]]; then
+  MODE="${BASH_REMATCH[1]}"
+fi
+if [[ "$ARGUMENTS" =~ --mode=(feature|phase-status) ]]; then
+  MODE="${BASH_REMATCH[1]}"
 fi
 ```
 </step>
@@ -159,6 +176,8 @@ fi
 - Bounded fix loop: max 3 passes. If trivial findings remain after 3 passes, abort the loop and report them as unresolvable
 - If `layers_skipped` is non-empty, the report MUST clearly state which drift could not be detected (so the absence of findings doesn't read as "no drift exists")
 - The hard severity allowlist (trivial only for --fix) is enforced in this workflow's code path, not delegated to the agent. Do not move the check into the agent.
+- **`--quick` and `--fix` interaction (Phase 8):** when `QUICK_MODE=true`, `FIX_MODE` is forced to false in parse_args. Hooks must never auto-modify files. If a user explicitly invokes `feature-drift --quick --fix`, the workflow runs in report-only and prints a notice that `--fix` was suppressed by `--quick`. Do not weaken this rule.
+- **`--mode=phase-status` (Phase 8 / #461):** detector reads ROADMAP.md `**Status:**` lines and compares against shipping signals (SUMMARY.md, SPRINT.md, git log on phase scope). Severity rules: trivial = missing ✅ marker; partial = N of M acceptance items shipped; major = entirely-incorrect-status (e.g., Complete with no SUMMARY, Planned with all artifacts shipped). `--fix` patches only the trivial tier (✅ marker addition + missing date). NEVER auto-flip Active→Complete or Planned→Complete — those are decisions, not corrections.
 </guardrails>
 
 <success_criteria>
