@@ -297,9 +297,10 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Resuming work, "pick up where I left off" | `/rihal-resume-work` | Session restoration |
 | A note, idea, or "remember to..." | `/rihal-note` | Capture for later |
 | Adding tests, "write tests", "test coverage" | `/rihal-add-tests` | Test generation |
-| Completing a milestone, shipping, releasing | `/rihal-complete-milestone` | Milestone lifecycle |
-| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal-quick` | Self-contained, single executor |
-| Market/discovery/greenfield question (from classify) | `/rihal-council` | Needs multi-perspective discovery |
+| Completing a milestone, shipping, releasing | `/rihal:complete-milestone` | Milestone lifecycle |
+| Audit / re-audit / extend / fill out / expand an existing artifact (audit doc, plan, phase list) | `/rihal:audit` | Unified audit entry — picks artifact type and re-runs |
+| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal:quick` | Self-contained, single executor |
+| Market/discovery/greenfield question (from classify) | `/rihal:council` | Needs multi-perspective discovery |
 
 If no rule matches, fall back to the classifier:
 
@@ -307,7 +308,20 @@ If no rule matches, fall back to the classifier:
 CLASSIFY=$(node ".rihal/bin/rihal-tools.cjs" classify-question "$QUESTION")
 ```
 
-Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`. Default: `/rihal-discuss`.
+Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`. Default: `/rihal:discuss`.
+
+**No-route exit (issue #458):** If neither the routing table nor the classifier yields a confident match, you MUST STOP. Print this disambiguation menu via AskUserQuestion and wait:
+
+```
+I can't route this cleanly. Pick one:
+  1. /rihal:add-phase — if it's a new phase
+  2. /rihal:plan — if scope is clear, jump to plan
+  3. /rihal:discuss-phase — if you want to think through it first
+  4. /rihal:audit — if you want to extend an existing audit/plan
+  5. Describe more specifically what you want
+```
+
+Do NOT execute the work yourself. Do NOT run grep, find, Read, Bash, or Write to "investigate before routing." If you feel the urge to investigate, the dispatcher contract has already failed — STOP and ask.
 
 **Requires `.planning/` directory:** All routes except `/rihal-new-project`, `/rihal-map-codebase`, `/rihal-help`, `/rihal-discuss`, `/rihal-council`. If the project doesn't exist and the route requires it, suggest `/rihal-new-project` first.
 
@@ -374,16 +388,30 @@ If the chosen command expects a phase number and one wasn't provided in the text
 
 </process>
 
+<guardrails>
+**Hard prohibitions during /rihal:do execution (issue #458):**
+
+- MUST NOT call Bash, Read, Grep, Glob, Write, or Edit tools. The dispatcher does not investigate, read code, or write files. Period.
+- MUST NOT spawn Task / Agent / subagents. Dispatch is a Skill tool call to a routed command — nothing else.
+- MUST NOT "do a quick check" before routing. If you feel the urge to grep or read a file to "figure out the right route," the dispatcher contract has already failed — STOP and use the no-route exit.
+- The ONLY tools allowed inside /rihal:do are: AskUserQuestion (for disambiguation), Skill (for dispatch), and the one Bash call to the classifier (`classify-question`). Nothing else.
+- If the user's input doesn't match any route and the classifier is ambiguous: invoke the no-route exit menu. Do not "be helpful" by executing the work yourself.
+
+Why this is hard: do.md is a router. The moment it does work, two failure modes appear: (a) the work is duplicated when the user re-invokes the proper command, or (b) the work happens in the wrong context with the wrong subagent and produces inferior output. Both are worse than a 1-second routing prompt.
+</guardrails>
+
 <success_criteria>
 - [ ] Input validated (not empty)
 - [ ] Intent matched to exactly one Rihal command
 - [ ] Ambiguity resolved via user question (if needed)
-- [ ] Scope-uncertainty signals steer to `/rihal-discuss-phase` over planning routes
+- [ ] Scope-uncertainty signals steer to `/rihal:discuss-phase` over planning routes
 - [ ] Project existence checked for routes that require it
 - [ ] Routing decision displayed before dispatch (exactly once)
 - [ ] Command invoked via the Skill tool — NOT printed as text
 - [ ] Dispatch banner not repeated (single emission only)
 - [ ] No work done directly — dispatcher only
+- [ ] No Bash/Read/Grep/Write/Edit/Task tool calls during execution (only AskUserQuestion + Skill + classifier Bash)
+- [ ] On no-route, exit cleanly with the disambiguation menu — never silently fall through to inline work
 </success_criteria>
 </content>
 </invoke>
