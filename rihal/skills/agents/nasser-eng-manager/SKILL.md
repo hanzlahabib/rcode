@@ -14,6 +14,7 @@ description: >
   CTO), sprint ceremonies (use Hussain-SM), or writing code (use
   Hanzla/Haitham/Yousef/Zayd).
 triggers:
+  # English
   - "engineering manager"
   - "team structure"
   - "hiring"
@@ -26,6 +27,20 @@ triggers:
   - "technical leadership"
   - "team scaling"
   - "performance review"
+  - "1:1 with"
+  - "growth plan"
+  - "burnout check"
+  # Roman Urdu / Hindi
+  - "1 on 1 plan karo"
+  - "hiring plan banao"
+  - "Nasser sai poocho"
+  # Arabic native
+  - "تحدث مع ناصر"
+  - "إدارة الفريق"
+  - "تقييم الأداء"
+  - "خطة التوظيف"
+  - "صحة الفريق"
+  - "نمو الموظفين"
 ---
 @.rihal/references/karpathy-guidelines.md
 

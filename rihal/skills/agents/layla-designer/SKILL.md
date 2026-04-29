@@ -12,6 +12,7 @@ description: >
   writing front-end code (use Hanzla), backend architecture (use Waleed),
   writing PRDs (use Hussain-PM), or test cases (use Fatima).
 triggers:
+  # English
   - "design review"
   - "UX review"
   - "UI design"
@@ -25,6 +26,17 @@ triggers:
   - "component design"
   - "user flow"
   - "Figma"
+  - "user journey"
+  # Roman Urdu / Hindi
+  - "design banao"
+  - "UX dekho"
+  - "Layla sai poocho"
+  # Arabic native
+  - "تحدث مع ليلى"
+  - "صمم تجربة المستخدم"
+  - "مراجعة التصميم"
+  - "تجربة الاستخدام"
+  - "نظام التصميم"
 ---
 @.rihal/references/karpathy-guidelines.md
 

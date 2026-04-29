@@ -13,6 +13,7 @@ description: >
   questions where the specialist is obvious, or running the dashboard
   (use Diwan).
 triggers:
+  # English
   - "orchestrate"
   - "coordinate agents"
   - "run workflow"
@@ -24,6 +25,19 @@ triggers:
   - "coordinate this"
   - "spawn agents"
   - "orchestrate this task"
+  - "dispatch this"
+  - "who should do this"
+  - "sequence the work"
+  # Roman Urdu / Hindi
+  - "kaam ko route karo"
+  - "Raees sai poocho"
+  - "kis ko bheju"
+  # Arabic native
+  - "تحدث مع رئيس"
+  - "تنسيق الفرق"
+  - "توجيه المهمة"
+  - "ترتيب التنفيذ"
+  - "من يتولى"
 ---
 @.rihal/references/karpathy-guidelines.md
 

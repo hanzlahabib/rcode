@@ -15,6 +15,7 @@ description: >
   architectural tradeoffs (use Waleed), or deployment pipelines
   (use Khalid).
 triggers:
+  # English
   - "backend"
   - "API design"
   - "database"
@@ -26,9 +27,18 @@ triggers:
   - "talk to Yousef"
   - "build the backend"
   - "write the API"
-  - "backend architecture"
   - "database schema"
   - "server performance"
+  # Roman Urdu / Hindi
+  - "backend banao"
+  - "API banao"
+  - "Yousef sai poocho"
+  # Arabic native
+  - "تحدث مع يوسف"
+  - "ابني الواجهة الخلفية"
+  - "صمم API"
+  - "قاعدة البيانات"
+  - "خدمة خلفية"
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -14,6 +14,7 @@ description: >
   right owner (invoke that agent directly), or running the read-only
   dashboard (use Diwan).
 triggers:
+  # English
   - "council"
   - "get team input"
   - "team decision"
@@ -26,6 +27,20 @@ triggers:
   - "strategic alignment"
   - "get consensus"
   - "bring in the team"
+  - "convene the majlis"
+  - "ask everyone"
+  - "what does the team think"
+  # Roman Urdu / Hindi
+  - "sab sa consult karo"
+  - "team ko poocho"
+  - "majlis bulao"
+  # Arabic native
+  - "اعقد المجلس"
+  - "اجمع الفريق"
+  - "شورى"
+  - "استشارة جماعية"
+  - "ما رأي الفريق"
+  - "قرار جماعي"
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -13,6 +13,7 @@ description: >
   strategic decisions (use Sadiq / Waleed), test design (use Fatima), or
   code modification (use Hanzla / Omar).
 triggers:
+  # English
   - "scan codebase"
   - "map codebase"
   - "scout the repo"
@@ -24,7 +25,18 @@ triggers:
   - "code map"
   - "codebase audit"
   - "where is X used"
-  - "what languages / what stack"
+  - "what languages"
+  - "what stack"
+  # Roman Urdu / Hindi
+  - "codebase scan karo"
+  - "repo explore karo"
+  - "Dalil sai poocho"
+  # Arabic native
+  - "تحدث مع دليل"
+  - "افحص المشروع"
+  - "استكشف الكود"
+  - "خريطة الكود"
+  - "ما هو في المستودع"
 ---
 @.rihal/references/karpathy-guidelines.md
 

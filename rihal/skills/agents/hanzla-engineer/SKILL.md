@@ -14,6 +14,7 @@ description: >
   testing strategy design (use Fatima), deployment (use Khalid), or
   writing product requirements (use Hussain-PM).
 triggers:
+  # English
   - "implement this"
   - "write the code"
   - "build this feature"
@@ -26,6 +27,17 @@ triggers:
   - "pair program"
   - "code this"
   - "debug this"
+  # Roman Urdu / Hindi
+  - "code likho"
+  - "feature banao"
+  - "bug fix karo"
+  - "Hanzla sai poocho"
+  # Arabic native
+  - "تحدث مع حنظلة"
+  - "اكتب الكود"
+  - "ابني هذه الميزة"
+  - "أصلح الخطأ"
+  - "إعادة هيكلة"
 ---
 @.rihal/references/karpathy-guidelines.md
 

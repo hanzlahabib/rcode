@@ -13,17 +13,31 @@ description: >
   (use Nasser, Engineering Manager), writing code (use Hanzla/Haitham/
   Yousef/Zayd), or sprint ceremonies (use Hussain-SM).
 triggers:
+  # English
   - "director review"
   - "executive decision"
   - "board level"
   - "strategic direction"
   - "company strategy"
   - "talk to Ahmed"
+  - "talk to Ahmed Al Hassani"
   - "C-suite"
   - "leadership decision"
   - "org design"
   - "executive alignment"
   - "company roadmap"
+  - "DORA metrics"
+  - "RACI matrix"
+  - "delivery timeline"
+  # Roman Urdu / Hindi
+  - "delivery plan banao"
+  - "Ahmed sai poocho"
+  # Arabic native
+  - "تحدث مع أحمد الحسني"
+  - "خطة التسليم"
+  - "معايير الهندسة"
+  - "تنسيق الفرق"
+  - "مقاييس التسليم"
 ---
 @.rihal/references/karpathy-guidelines.md
 

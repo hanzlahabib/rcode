@@ -15,6 +15,7 @@ description: >
   (use Sadiq — strategic research), writing technical docs (use
   Noor), or product requirements (use Hussain-PM).
 triggers:
+  # English
   - "marketing"
   - "go-to-market"
   - "GTM"
@@ -28,6 +29,18 @@ triggers:
   - "copywriting"
   - "social media strategy"
   - "announcement"
+  - "GCC market"
+  # Roman Urdu / Hindi
+  - "GTM banao"
+  - "marketing plan banao"
+  - "Mariam sai poocho"
+  # Arabic native
+  - "تحدث مع مريم"
+  - "خطة التسويق"
+  - "استراتيجية الإطلاق"
+  - "محتوى تسويقي"
+  - "السوق الخليجي"
+  - "تحديد الجمهور"
 ---
 @.rihal/references/karpathy-guidelines.md
 

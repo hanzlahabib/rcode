@@ -12,8 +12,10 @@ description: >
   (use Hussain-PM), market research (use Sadiq), architecture (use Waleed),
   implementation (use Hanzla), or testing (use Fatima).
 triggers:
+  # English
   - "scrum master"
   - "retrospective"
+  - "retro"
   - "standup"
   - "sprint review"
   - "remove blockers"
@@ -24,6 +26,17 @@ triggers:
   - "facilitate"
   - "agile"
   - "scrum ceremony"
+  - "course correct"
+  # Roman Urdu / Hindi
+  - "retro karo"
+  - "sprint review karo"
+  - "Hussain SM sai poocho"
+  # Arabic native
+  - "تحدث مع حسين-SM"
+  - "اجتماع المراجعة"
+  - "مراجعة السباق"
+  - "إزالة العوائق"
+  - "حالة السباق"
 ---
 @.rihal/references/karpathy-guidelines.md
 

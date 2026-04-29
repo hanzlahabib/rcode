@@ -13,6 +13,7 @@ description: >
   Hussain-PM), code implementation (use Hanzla), market research (use
   Sadiq), or test cases (use Fatima).
 triggers:
+  # English
   - "write documentation"
   - "docs"
   - "README"
@@ -25,6 +26,19 @@ triggers:
   - "document this"
   - "write a guide"
   - "write release notes"
+  - "Mermaid diagram"
+  - "pitch deck"
+  # Roman Urdu / Hindi
+  - "docs likho"
+  - "README banao"
+  - "Noor sai poocho"
+  # Arabic native
+  - "تحدث مع نور"
+  - "اكتب التوثيق"
+  - "وثائق API"
+  - "اكتب README"
+  - "دليل المستخدم"
+  - "ملاحظات الإصدار"
 ---
 @.rihal/references/karpathy-guidelines.md
 

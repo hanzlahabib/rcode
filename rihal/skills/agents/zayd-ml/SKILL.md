@@ -15,6 +15,7 @@ description: >
   Haitham), architecture of non-ML systems (use Waleed), or testing
   strategy (use Fatima).
 triggers:
+  # English
   - "machine learning"
   - "ML model"
   - "AI"
@@ -30,6 +31,17 @@ triggers:
   - "vector database"
   - "NLP"
   - "deep learning"
+  - "Arabic NLP"
+  # Roman Urdu / Hindi
+  - "model train karo"
+  - "ML feature banao"
+  - "Zayd sai poocho"
+  # Arabic native
+  - "تحدث مع زيد"
+  - "تعلم الآلة"
+  - "نموذج ذكاء اصطناعي"
+  - "هندسة الموجهات"
+  - "معالجة اللغة العربية"
 ---
 @.rihal/references/karpathy-guidelines.md
 

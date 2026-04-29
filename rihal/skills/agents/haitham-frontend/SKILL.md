@@ -14,6 +14,7 @@ description: >
   for: UX design decisions (use Layla), backend APIs (use Yousef),
   ML/data integration (use Zayd), or architecture decisions (use Waleed).
 triggers:
+  # English
   - "frontend"
   - "React"
   - "Next.js"
@@ -27,6 +28,17 @@ triggers:
   - "Tailwind"
   - "design system implementation"
   - "TypeScript component"
+  - "Arabic RTL layout"
+  # Roman Urdu / Hindi
+  - "UI banao"
+  - "frontend banao"
+  - "Haitham sai poocho"
+  # Arabic native
+  - "تحدث مع هيثم"
+  - "ابني الواجهة"
+  - "تصميم RTL"
+  - "صفحة Next"
+  - "مكون React"
 ---
 @.rihal/references/karpathy-guidelines.md
 

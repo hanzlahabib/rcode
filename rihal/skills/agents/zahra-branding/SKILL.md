@@ -17,6 +17,7 @@ description: >
   marketing copy (use Mariam), or technical documentation
   (use Noor).
 triggers:
+  # English
   - "branding"
   - "brand identity"
   - "logo"
@@ -30,6 +31,19 @@ triggers:
   - "typography"
   - "brand assets"
   - "design language"
+  - "Arabic typography"
+  - "type pair"
+  # Roman Urdu / Hindi
+  - "branding banao"
+  - "logo design karo"
+  - "Zahra sai poocho"
+  # Arabic native
+  - "تحدث مع زهرة"
+  - "هوية العلامة"
+  - "نظام الألوان"
+  - "خطوط عربية"
+  - "إرشادات العلامة"
+  - "صوت العلامة"
 ---
 @.rihal/references/karpathy-guidelines.md
 
