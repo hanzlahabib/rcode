@@ -197,6 +197,45 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 11 — CLI Subcommand Sweep — high-impact #465 items ✅
+
+**Goal:** _TBD — fill in via /rihal:discuss-phase 11 or edit directly._
+
+**Status:** Complete (2026-04-29)
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 12 — Init Shape Completion — full agent context contract
+
+**Goal:** _TBD — fill in via /rihal:discuss-phase 12 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 13 — Parser + Walker Consolidation
+
+**Goal:** _TBD — fill in via /rihal:discuss-phase 13 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
