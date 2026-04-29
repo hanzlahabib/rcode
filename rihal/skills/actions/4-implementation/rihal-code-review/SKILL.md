@@ -7,13 +7,25 @@ description: >
   implementation", or "CR". Do NOT use for documentation review (use
   rihal-validate-prd or editorial skills).
 triggers:
+  # English
   - "review this code"
-  - "run
-  code review"
+  - "run code review"
   - "do a PR review"
   - "review the diff"
-  - "critique this
-  implementation"
+  - "critique this implementation"
+  - "find bad code practices"
+  - "code smells"
+  - "code quality check"
+  # Roman Urdu / Hindi
+  - "code check karo"
+  - "code review karo"
+  - "kharab code dekho"
+  # Arabic native
+  - "راجع الكود"
+  - "مراجعة الكود"
+  - "افحص الكود"
+  - "تدقيق الكود"
+  - "جودة الكود"
 ---
 @.rihal/references/karpathy-guidelines.md
 

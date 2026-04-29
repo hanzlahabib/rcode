@@ -2,6 +2,7 @@
 name: rihal-debug
 description: Root-cause debugging via the scientific method. Use when a test fails, a build breaks, behaviour doesn't match expectations, or any "it's broken and I don't know why" moment. Forces hypothesis → experiment → observation → narrow → repeat — never guessing or shotgunning fixes. Default observability layer is Sentry; the skill knows how to read Sentry traces if available.
 triggers:
+  # English
   - "debug this"
   - "why is this broken"
   - "find the root cause"
@@ -10,6 +11,18 @@ triggers:
   - "track this down"
   - "narrow down the bug"
   - "scientific method"
+  # Roman Urdu / Hindi
+  - "kharab kyu hai"
+  - "bug dhoondo"
+  - "fix karo bug"
+  - "theek karo"
+  # Arabic native
+  - "صحّح هذا"
+  - "ما المشكلة"
+  - "ابحث عن السبب"
+  - "حقّق في الخطأ"
+  - "أصلح الخطأ"
+  - "تتبّع السبب"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md

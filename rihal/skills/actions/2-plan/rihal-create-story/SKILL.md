@@ -7,13 +7,23 @@ description: >
   "assemble story context". Do NOT use to execute a story (use
   rihal-dev-story).
 triggers:
+  # English
   - "create the next story"
   - "prepare a story"
-  - "create
-  story {id}"
+  - "create story"
   - "write the story for"
   - "get next story ready for dev"
   - "assemble story context"
+  # Roman Urdu / Hindi
+  - "story banao"
+  - "kahani banao"
+  - "agli story tayyar karo"
+  # Arabic native
+  - "أنشئ القصة"
+  - "اكتب القصة"
+  - "حضّر القصة"
+  - "القصة التالية"
+  - "جهّز القصة للتنفيذ"
 ---
 @.rihal/references/karpathy-guidelines.md
 

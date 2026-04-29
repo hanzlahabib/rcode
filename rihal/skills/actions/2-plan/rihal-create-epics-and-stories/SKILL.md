@@ -7,13 +7,23 @@ description: >
   "create the backlog". Do NOT use to prepare a single story for dev (use
   rihal-create-story).
 triggers:
+  # English
   - "create epics"
   - "break this into stories"
-  - "generate
-  the epic list"
+  - "generate the epic list"
   - "epic and story breakdown"
   - "decompose the PRD"
   - "create the backlog"
+  # Roman Urdu / Hindi
+  - "epics banao"
+  - "stories banao"
+  - "backlog banao"
+  # Arabic native
+  - "أنشئ ملاحم"
+  - "أنشئ القصص"
+  - "قسّم المتطلبات"
+  - "ابني القائمة"
+  - "تحليل وثيقة المتطلبات"
 ---
 @.rihal/references/karpathy-guidelines.md
 

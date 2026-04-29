@@ -2,7 +2,23 @@
 name: rihal-review-edge-case-hunter
 description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
 triggers:
+  # English
+  - "find edge cases"
+  - "edge case hunt"
+  - "edge cases in this"
   - "review edge case hunter"
+  - "corner cases"
+  - "boundary conditions"
+  - "what could break"
+  # Roman Urdu / Hindi
+  - "edge cases dhoondo"
+  - "edge cases nikalo"
+  # Arabic native
+  - "حالات استثنائية"
+  - "حالات حدية"
+  - "ابحث عن الحالات الاستثنائية"
+  - "افحص الحالات الحدية"
+  - "ما قد يفشل"
 ---
 @.rihal/references/karpathy-guidelines.md
 

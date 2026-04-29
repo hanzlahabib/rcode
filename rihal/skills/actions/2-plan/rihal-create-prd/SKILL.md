@@ -8,14 +8,24 @@ description: >
   for updating an existing PRD (use rihal-edit-prd), or validating an
   existing PRD (use rihal-validate-prd).
 triggers:
+  # English
   - "create a PRD"
-  - "write product
-  requirements document"
+  - "write product requirements document"
   - "lets make a PRD"
   - "I want to create a new PRD"
   - "draft requirements for"
   - "new product spec"
   - "start a PRD"
+  # Roman Urdu / Hindi
+  - "PRD banao"
+  - "requirements likh do"
+  - "spec banao"
+  # Arabic native
+  - "أنشئ وثيقة المتطلبات"
+  - "اكتب متطلبات المنتج"
+  - "وثيقة المتطلبات"
+  - "ابدأ PRD"
+  - "صمم المتطلبات"
 ---
 @.rihal/references/karpathy-guidelines.md
 

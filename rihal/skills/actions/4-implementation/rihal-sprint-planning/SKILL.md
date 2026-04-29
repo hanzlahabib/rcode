@@ -7,12 +7,23 @@ description: >
   Do NOT use for epic breakdown (use rihal-create-epics-and-stories) or
   status reporting (use rihal-sprint-status).
 triggers:
+  # English
   - "plan the sprint"
   - "create sprint plan"
-  - "run
-  sprint planning"
+  - "run sprint planning"
   - "sequence the next sprint"
-  - "generate sprint N plan"
+  - "generate sprint plan"
+  - "schedule the sprint"
+  # Roman Urdu / Hindi
+  - "sprint plan karo"
+  - "sprint banao"
+  - "agla sprint plan karo"
+  # Arabic native
+  - "خطّط السباق"
+  - "خطط السبرنت"
+  - "أنشئ خطة السباق"
+  - "السباق التالي"
+  - "جدولة السبرنت"
 ---
 @.rihal/references/karpathy-guidelines.md
 
