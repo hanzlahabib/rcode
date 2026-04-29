@@ -2208,6 +2208,139 @@ function cmdState(subArgs) {
 }
 
 /**
+ * cmdPhase — top-level phase operations.
+ *
+ * Subcommands:
+ *   add <name>   Add an integer phase to end of current milestone.
+ *                Computes next phase number from disk + ROADMAP + state.json,
+ *                creates .planning/phases/{NN}-{slug}/, inserts a Goal/Status/
+ *                Plans/Acceptance entry into ROADMAP.md before "## Backlog"
+ *                (or at end if absent), and upserts state.phases[].
+ *
+ * Closes #460. Replaces the broken `phase add` invocation referenced by
+ * .rihal/workflows/add-phase.md, which previously hit the dispatcher's
+ * "Unknown subcommand: phase" path.
+ */
+function cmdPhase(subArgs) {
+  const sub = subArgs[0];
+
+  if (sub === 'add') {
+    const phaseName = subArgs.slice(1).join(' ').trim();
+    if (!phaseName) throw new Error('phase add requires <name>');
+
+    const slug = phaseName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (!slug) {
+      throw new Error('Phase name must contain at least one alphanumeric character');
+    }
+
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        const m = entry.match(/^(\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const pipeRe = /^\|\s*(\d{1,3})\s*\|/gm;
+      let m;
+      while ((m = pipeRe.exec(text)) !== null) {
+        maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+      const headRe = /^#{2,4}\s*Phase\s+(\d{1,3})\b/gm;
+      while ((m = headRe.exec(text)) !== null) {
+        maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    const statePath = path.join(PLANNING_DIR, 'state.json');
+    let state;
+    if (fs.existsSync(statePath)) {
+      try {
+        state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      } catch (e) {
+        throw new Error(`Invalid JSON in state.json: ${e.message}`);
+      }
+    } else {
+      state = { phases: [], decisions: [], blockers: [] };
+    }
+    if (!state.phases) state.phases = [];
+    for (const p of state.phases) {
+      const n = parseInt(String(p.number || ''), 10);
+      if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+    }
+
+    const next = maxNum + 1;
+    const padded = String(next).padStart(2, '0');
+
+    if (state.phases.some(p => String(p.number) === padded || String(p.number) === String(next))) {
+      throw new Error(`Phase ${padded} already exists in state.json`);
+    }
+
+    const dirName = `${padded}-${slug}`;
+    const directory = path.join(phasesDir, dirName);
+    if (fs.existsSync(directory)) {
+      throw new Error(`Phase directory already exists: ${path.relative(PROJECT_ROOT, directory)}`);
+    }
+    fs.mkdirSync(directory, { recursive: true });
+
+    const entry = `## Phase ${padded} — ${phaseName}\n\n` +
+      `**Goal:** _TBD — fill in via /rihal:discuss-phase ${padded} or edit directly._\n\n` +
+      `**Status:** Planned\n\n` +
+      `**Plans:**\n- _TBD_\n\n` +
+      `**Acceptance:** _TBD_\n\n---\n`;
+
+    if (fs.existsSync(roadmapPath)) {
+      let text = fs.readFileSync(roadmapPath, 'utf8');
+      const backlogMatch = text.match(/^##\s+Backlog\b/m);
+      if (backlogMatch) {
+        const backlogIdx = backlogMatch.index;
+        text = text.slice(0, backlogIdx) + entry + '\n' + text.slice(backlogIdx);
+      } else {
+        if (!text.endsWith('\n')) text += '\n';
+        text += '\n' + entry;
+      }
+      fs.writeFileSync(roadmapPath, text);
+    }
+
+    state.phases.push({
+      number: padded,
+      name: phaseName,
+      slug,
+      goal: '',
+      status: 'planned',
+      created: new Date().toISOString(),
+      started: null,
+      completed: null,
+      plan_count: 0,
+    });
+    state.updated = new Date().toISOString();
+    if (!fs.existsSync(PLANNING_DIR)) {
+      fs.mkdirSync(PLANNING_DIR, { recursive: true });
+    }
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+
+    return {
+      ok: true,
+      phase_number: padded,
+      padded,
+      name: phaseName,
+      slug,
+      directory: path.relative(PROJECT_ROOT, directory),
+    };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add`);
+}
+
+/**
  * Classify the scope of input based on keywords and length.
  * Returns one of: 'ticket', 'feature', 'phase', 'initiative'
  *
@@ -3643,6 +3776,9 @@ async function main() {
       case 'state':
         result = cmdState(args);
         break;
+      case 'phase':
+        result = cmdPhase(args);
+        break;
       case 'module':
         result = cmdModule(args);
         break;
@@ -3739,6 +3875,7 @@ async function main() {
         console.log('  agent-skills <name>                          → alias for agent-info');
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
+        console.log('  phase add <name>                             → add integer phase to current milestone (creates dir + ROADMAP entry + state)');
         console.log('  module <subcommand> [args]                   → module system helpers');
         console.log('  plan <subcommand> [args]                     → phase/plan operations');
         console.log('  notes <subcommand> [args]                    → manage project notes');
