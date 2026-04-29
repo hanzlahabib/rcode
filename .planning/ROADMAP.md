@@ -115,7 +115,7 @@ Started: 2026-03 · Current
 
 **Goal:** _TBD — fill in via /rihal:discuss-phase 6 or edit directly._
 
-**Status:** Planned
+**Status:** Complete
 
 **Plans:**
 - _TBD_
