@@ -341,27 +341,35 @@ Reason: {one-line why}
 </step>
 
 <step name="dispatch">
-**Invoke the chosen command.**
+**Invoke the chosen command via the Skill tool — do NOT just print it as text.**
 
-If `AUTO_MODE` is true OR routing is unambiguous, invoke immediately:
+CRITICAL: The dispatch step is an *action*, not a *display*. You must call the `Skill` tool with `skill: "rihal:{command}"` (and `args:` for any arguments). Printing the slash-command in a code block, in a banner, or in a "Dispatching..." message is NOT dispatch — it is just text rendering, and the routed command will never run. Past failure: model emitted the dispatch banner three times in a row without ever invoking the Skill tool, then stalled.
+
+Canonical form: skills are namespaced with a colon, e.g. `rihal:discuss-phase`, `rihal:plan`, `rihal:status`. The hyphen form `rihal-discuss-phase` is NOT a registered slash command — do not display it to users or pass it to the Skill tool.
+
+Rules:
+- One Skill tool call per `/rihal:do` invocation. Never emit the same dispatch banner twice.
+- Do NOT print `/rihal:{command}` inside a fenced code block as your "action" — that is display-only.
+- The routing banner from the `display` step is the ONLY user-facing summary of the dispatch. After it, the very next thing you do is the Skill tool call.
+
+If `AUTO_MODE` is true OR routing is unambiguous:
+1. Confirm the routing banner has been shown once (from the `display` step).
+2. Immediately call the Skill tool: `Skill(skill: "rihal:{command}", args: "{arguments}")`.
+3. Stop. The dispatched command handles everything from here.
+
+Otherwise (ambiguous, non-auto), use AskUserQuestion to confirm:
 
 ```
-/rihal-{command} {arguments}
-```
-
-Otherwise show suggestion and ask via AskUserQuestion:
-
-```
-Based on your request, I'd use: /rihal-{command} {arguments}
+Based on your request, I'd use: /rihal:{command} {arguments}
 
 1. Yes, run it
 2. Pick a different route
 3. Cancel
 ```
 
-If the chosen command expects a phase number and one wasn't provided in the text, extract it from context or ask via AskUserQuestion.
+On "Yes" → call Skill tool as above. On "Pick a different route" → restart routing. On "Cancel" → stop.
 
-After invoking the command, stop. The dispatched command handles everything from here.
+If the chosen command expects a phase number and one wasn't provided in the text, extract it from context or ask via AskUserQuestion BEFORE the Skill call.
 </step>
 
 </process>
@@ -372,8 +380,9 @@ After invoking the command, stop. The dispatched command handles everything from
 - [ ] Ambiguity resolved via user question (if needed)
 - [ ] Scope-uncertainty signals steer to `/rihal-discuss-phase` over planning routes
 - [ ] Project existence checked for routes that require it
-- [ ] Routing decision displayed before dispatch
-- [ ] Command invoked with appropriate arguments
+- [ ] Routing decision displayed before dispatch (exactly once)
+- [ ] Command invoked via the Skill tool — NOT printed as text
+- [ ] Dispatch banner not repeated (single emission only)
 - [ ] No work done directly — dispatcher only
 </success_criteria>
 </content>
