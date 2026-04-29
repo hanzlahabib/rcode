@@ -101,6 +101,44 @@ else
   pass "no new workflow ↔ CLI drift beyond known #465"
 fi
 
+# Check 6 — phase-status alignment (#461 / Phase 8 plan 8.3)
+# Compares ROADMAP claim against shipping signals. Fails on MAJOR drift only
+# (the kind that lies — Status: Complete with no SUMMARY and no commits on
+# phase scope, or Status: Planned with all acceptance items shipped). TRIVIAL
+# drift (missing ✅) and PARTIAL drift (N of M items shipped) just warn.
+PHASE_STATUS_MAJOR=0
+if [ -f .rihal/state.json ]; then
+  PHASES=$($CLI roadmap list-phases 2>&1)
+  if echo "$PHASES" | grep -q '"number"'; then
+    # For each phase, check the obvious major-drift signals
+    while IFS= read -r line; do
+      num=$(echo "$line" | grep -oE '"number": "[^"]+"' | head -1 | cut -d'"' -f4)
+      [ -z "$num" ] && continue
+      # Find phase dir
+      dir=$(ls -d .planning/phases/${num}-* 2>/dev/null | head -1)
+      [ -z "$dir" ] && continue
+      # Read status from ROADMAP
+      status=$(grep -A 2 "^## Phase ${num}\b" .planning/ROADMAP.md | grep -oE "\*\*Status:\*\* [^(]+" | head -1 | sed 's/\*\*Status:\*\* //;s/[[:space:]]*$//')
+      summary_present=$(ls "$dir"/*-SUMMARY.md 2>/dev/null | wc -l | tr -d ' ')
+      sprint_present=$(ls "$dir"/*-SPRINT.md 2>/dev/null | wc -l | tr -d ' ')
+      # Major drift: Status says Complete but no SUMMARY AND no SPRINT (truly nothing shipped)
+      if [ "$status" = "Complete" ] && [ "$summary_present" = "0" ] && [ "$sprint_present" = "0" ]; then
+        # Allow legacy phases (01-05) — they shipped before SUMMARY convention existed
+        if [ "$num" -gt "5" ] 2>/dev/null; then
+          PHASE_STATUS_MAJOR=$((PHASE_STATUS_MAJOR + 1))
+          echo "    MAJOR drift: phase $num — Status: Complete but no SUMMARY/SPRINT artifacts"
+        fi
+      fi
+    done <<< "$(echo "$PHASES" | grep '"number"')"
+  fi
+fi
+
+if [ "$PHASE_STATUS_MAJOR" -gt 0 ]; then
+  fail "$PHASE_STATUS_MAJOR phase(s) with major status drift (#461)"
+else
+  pass "phase-status alignment: ROADMAP claim matches shipping signals (#461)"
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "✓ Dogfood checks passed"

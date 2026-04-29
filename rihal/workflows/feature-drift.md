@@ -72,6 +72,8 @@ Track `present_layers[]` (subset of `["prd","epics","stories","code"]`).
 </step>
 
 <step name="scan_drift">
+**If `MODE=feature` (default):**
+
 Spawn `rihal-docs-auditor` with `--mode=feature-drift`. Pass:
 - artifact contents (from previous step)
 - `present_layers[]` so the auditor doesn't claim drift between absent layers
@@ -98,9 +100,42 @@ Auditor returns structured JSON:
 }
 ```
 
-Parse the JSON. If parsing fails or the `drift` field is absent, treat the
-auditor's response as a malfunction and abort with a clear error pointing
-the user at the agent definition.
+**If `MODE=phase-status` (Phase 8 / #461):**
+
+Spawn `rihal-docs-auditor` with `--mode=phase-status`. Pass:
+- `roadmap_phases[]` — output of `node rihal/bin/rihal-tools.cjs roadmap list-phases` (post-#464 fix)
+- `phase_dirs[]` — output of `node rihal/bin/rihal-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
+- For each phase, the most recent commit hash that touches files in `${phase_dir}/` (used as a freshness signal)
+
+Auditor returns structured JSON:
+
+```json
+{
+  "drift": [
+    {
+      "id": "phase-status-drift-001",
+      "severity": "trivial|partial|major",
+      "phase_number": "<N>",
+      "claimed_status": "Complete|Active|Planned",
+      "shipping_signals": {
+        "has_summary": true,
+        "has_sprint": true,
+        "last_commit_iso": "<YYYY-MM-DD>",
+        "phase_dir_present": true
+      },
+      "evidence": "<one-line summary of why this is drift>",
+      "fix_hint": "<for trivial: exact ROADMAP edit (e.g., add ✅ marker); for partial/major: null>"
+    }
+  ]
+}
+```
+
+**Severity rules (HARD, enforced in this workflow not delegated):**
+- `trivial` — missing `✅` marker on heading even though Status says Complete; or missing date on Status: Complete line. `fix_hint` carries the exact insertion.
+- `partial` — N of M acceptance items shipped per phase ROADMAP entry; status doesn't reflect partial state. `fix_hint` is null — humans must decide whether to flip status or update acceptance.
+- `major` — entirely-incorrect status. Examples: Status: Complete with NO SUMMARY.md and NO commits on phase scope; Status: Planned but ALL acceptance items shipped (the Phase 4 case from this session). `fix_hint` always null — humans must decide.
+
+Parse the JSON. If parsing fails or the `drift` field is absent, treat the auditor's response as a malfunction and abort with a clear error pointing the user at the agent definition.
 </step>
 
 <step name="severity_classify">
