@@ -2278,21 +2278,25 @@ function cmdPhase(subArgs) {
     }
 
     const next = maxNum + 1;
-    const padded = String(next).padStart(2, '0');
+    // No leading zeros — phases use plain integer identifiers (6, not 06).
+    // Per Hanzla feedback: leading zeros add visual clutter without disambiguation
+    // value at the scales we operate. Applies to phases, sprints, epics, stories,
+    // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
+    const number = String(next);
 
-    if (state.phases.some(p => String(p.number) === padded || String(p.number) === String(next))) {
-      throw new Error(`Phase ${padded} already exists in state.json`);
+    if (state.phases.some(p => String(p.number) === number)) {
+      throw new Error(`Phase ${number} already exists in state.json`);
     }
 
-    const dirName = `${padded}-${slug}`;
+    const dirName = `${number}-${slug}`;
     const directory = path.join(phasesDir, dirName);
     if (fs.existsSync(directory)) {
       throw new Error(`Phase directory already exists: ${path.relative(PROJECT_ROOT, directory)}`);
     }
     fs.mkdirSync(directory, { recursive: true });
 
-    const entry = `## Phase ${padded} — ${phaseName}\n\n` +
-      `**Goal:** _TBD — fill in via /rihal:discuss-phase ${padded} or edit directly._\n\n` +
+    const entry = `## Phase ${number} — ${phaseName}\n\n` +
+      `**Goal:** _TBD — fill in via /rihal:discuss-phase ${number} or edit directly._\n\n` +
       `**Status:** Planned\n\n` +
       `**Plans:**\n- _TBD_\n\n` +
       `**Acceptance:** _TBD_\n\n---\n`;
@@ -2311,7 +2315,7 @@ function cmdPhase(subArgs) {
     }
 
     state.phases.push({
-      number: padded,
+      number,
       name: phaseName,
       slug,
       goal: '',
@@ -2329,8 +2333,7 @@ function cmdPhase(subArgs) {
 
     return {
       ok: true,
-      phase_number: padded,
-      padded,
+      phase_number: number,
       name: phaseName,
       slug,
       directory: path.relative(PROJECT_ROOT, directory),

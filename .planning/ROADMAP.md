@@ -111,9 +111,9 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 06 — Feature Doc Drift Auto-Heal
+## Phase 6 — Feature Doc Drift Auto-Heal
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 06 or edit directly._
+**Goal:** _TBD — fill in via /rihal:discuss-phase 6 or edit directly._
 
 **Status:** Planned
 

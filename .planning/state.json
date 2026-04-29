@@ -1,7 +1,7 @@
 {
   "phases": [
     {
-      "number": "06",
+      "number": "6",
       "name": "Feature Doc Drift Auto-Heal",
       "slug": "feature-doc-drift-auto-heal",
       "goal": "",
