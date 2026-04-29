@@ -1,12 +1,27 @@
 # Workflow: rcode-memory-audit
 
-Read-only audit of the Memory Bank. Produces a severity-tagged report. Never modifies files.
+Audit the Memory Bank. Default mode is read-only (severity-tagged report).
+Optional `--fix` flag patches trivial items in place per Phase 6 D-1 / D-2.
 
 ---
 
 ## Inputs
 
-None required. Optional `--severity {critical|warn|info}` to filter output.
+None required.
+
+Optional flags:
+- `--severity {critical|warn|info}` — filter report output
+- `--fix` — opt-in auto-fix mode. Patches only items the auditor classifies
+  as severity=trivial (typos, stale ISO dates, broken relative paths,
+  factually-wrong-and-mechanically-correctable values). Hard-allowlisted
+  in code: items above trivial are never patched. Default OFF.
+
+```bash
+FIX_MODE=false
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--fix($|[[:space:]]) ]]; then
+  FIX_MODE=true
+fi
+```
 
 ## Preconditions
 
@@ -71,13 +86,56 @@ If `--severity` filter passed, hide findings below the threshold.
 
 If zero findings: print `✓ Memory Bank is healthy. 0 findings.`
 
+### Step 9 — Apply fixes (only when `--fix` is set)
+
+<step name="apply_fixes">
+Skip if `FIX_MODE` is false.
+
+For each finding from the audit:
+- If severity is `trivial` (typo, stale ISO date, dead relative path,
+  provably-wrong factual value with an unambiguous replacement), patch in place.
+- For all other severities (`info`, `warn`, `critical`), leave for human review
+  and keep them in the report — never patch.
+
+Patching rule (HARD): use file Read+Edit (NOT regex sed) so fixes are exact
+string replacements that fail loudly on ambiguity. Sed-based mass-replace is
+forbidden because it silently rewrites unintended occurrences.
+
+Atomic commit per fix:
+
+```bash
+git add <file>
+git commit -m "fix(memory): <what was stale> → <what's true now>"
+```
+
+After the loop, log: `Memory --fix applied {N} trivial corrections across {M} commits.`
+
+If a finding marked trivial fails to patch (file changed mid-flight, ambiguous
+replacement, etc.), log it under "Skipped fixes" in the final report and
+continue with the next finding — never abort the whole run on a single failure.
+</step>
+
 ---
+
+## Guardrails
+
+- `--fix` NEVER patches above trivial severity, even with a `--force` flag (don't accept --force here)
+- `--fix` uses Read+Edit, not regex sed
+- `--fix` commits each correction atomically (no batched commits)
+- Default behavior (no `--fix`) is unchanged: report-only
 
 ## Post-conditions
 
-- No files modified
-- Report printed to stdout
+- When `--fix` is OFF: no files modified; report printed to stdout
+- When `--fix` is ON: only trivial items modified; each as its own commit; report still printed
 
 ## Reversibility
 
-Read-only — no state to revert.
+- Default mode: read-only — no state to revert.
+- `--fix` mode: each fix is its own atomic git commit, so individual fixes can be reverted with `git revert <hash>`.
+
+## Success criteria
+
+- [ ] Default behavior unchanged — `--fix` off by default; report-only path preserved
+- [ ] `--fix` patches only trivial items, each as atomic commit prefixed `fix(memory):`
+- [ ] Report still printed even in `--fix` mode (so user sees what was/wasn't patched)

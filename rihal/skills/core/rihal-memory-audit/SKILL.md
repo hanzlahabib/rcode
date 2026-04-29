@@ -6,6 +6,8 @@ description: >
   findings and one-line fix suggestions. Activates when the user says
   "audit memory bank", "check memory bank", "/rcode:memory-audit",
   "memory bank ka audit", "find stale entries", "is my memory bank healthy".
+  Optional --fix flag patches trivial items (typos, stale dates, broken paths)
+  atomically; non-trivial findings always report-only.
   Do NOT use for: bootstrap (use rcode-memory-init), surgical updates
   (use rcode-memory-update), or distillate regeneration (use rcode-memory-distill).
 triggers:
@@ -15,6 +17,10 @@ triggers:
   - "is my memory bank healthy"
   - "memory bank ka audit"
   - "/rcode:memory-audit"
+  - "auto-fix memory bank"
+  - "memory bank --fix"
+  - "memory bank ka --fix"
+  - "patch trivial memory drift"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
