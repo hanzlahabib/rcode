@@ -1,6 +1,6 @@
 # rihal/brain — The Rihal Context Layer
 
-This directory is populated on install (and on every `/rihal-update`) by `rihal-tools brain pull`. Its job is simple: pull Rihal's institutional knowledge — PR/commit/issue standards, architecture decisions, internal guides — into every Rihalian's project so their AI assistant already knows how Rihal builds.
+This directory is populated on install (and on every `/rihal:update`) by `rihal-tools brain pull`. Its job is simple: pull Rihal's institutional knowledge — PR/commit/issue standards, architecture decisions, internal guides — into every Rihalian's project so their AI assistant already knows how Rihal builds.
 
 ## Structure
 
@@ -22,7 +22,7 @@ Content is pulled from three kinds of source:
 
 ## Update policy
 
-- Local edits to any file under `rihal/brain/` are **overwritten** on every `/rihal-update`. Rihal Code treats the upstream sources as the single source of truth. If the Rihal standard needs to change, the change happens upstream — then every Rihalian benefits.
+- Local edits to any file under `rihal/brain/` are **overwritten** on every `/rihal:update`. Rihal Code treats the upstream sources as the single source of truth. If the Rihal standard needs to change, the change happens upstream — then every Rihalian benefits.
 - Per-invocation: `node .rihal/bin/rihal-tools.cjs brain pull`.
 - Per project: runs automatically as part of `npx rihal-code install`.
 

@@ -14,5 +14,5 @@ phases:
   - "06 — Launch readiness (SLA, docs, support)"
 next_steps: |
   Seeded. Common follow-ups:
-    /rihal-council what's the first customer segment we should focus on?
-    /rihal-plan phase 01
+    /rihal:council what's the first customer segment we should focus on?
+    /rihal:plan phase 01

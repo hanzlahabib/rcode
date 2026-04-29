@@ -20,7 +20,7 @@ Domain terms specific to this project: internal names, acronyms, business concep
 
 **Brief** — closing one-line summary returned by Dalil; piped into `.planning/codebase/CHANGELOG.md` in refresh mode.
 
-**Council** — synonym for Majlis when invoked through the slash command (`/rihal-council`).
+**Council** — synonym for Majlis when invoked through the slash command (`/rihal:council`).
 
 **Dalil** (دليل) — the codebase scout persona. Reads the repo and reports honestly, with a mandatory Scan Scope block.
 
