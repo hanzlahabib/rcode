@@ -342,8 +342,8 @@ async function resolveIde(opts) {
 
 /**
  * Resolve commit-planning preference — CLI flag wins, then interactive
- * prompt (when TTY + not --yes), else GSD-style default: true.
- * #189.
+ * prompt (when TTY + not --yes), else default to true (commit planning
+ * artifacts so they version with the code). #189.
  */
 async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;

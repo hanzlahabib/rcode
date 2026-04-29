@@ -6,7 +6,7 @@ All notable changes to Rihal Code are documented here.
 
 ## v3.3.0 — sidebar discoverability: install-time skill stubs for slash commands (2026-04-27)
 
-VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rihal/` are reachable only via the `/` autocomplete picker. Users coming from GSD (which ships a skill per command) expected `rihal-do` to appear in the sidebar like `gsd-do` does.
+VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rihal/` are reachable only via the `/` autocomplete picker. Users expected `rihal-do` to appear in the sidebar alongside other rcode skills.
 
 This release closes the gap **without duplicating files in the source codebase** — sidebar stubs are generated only at install destination.
 
@@ -21,7 +21,7 @@ This release closes the gap **without duplicating files in the source codebase**
 
 ### Fixed
 
-- Issue users reported after upgrading to v3.2.1: VS Code sidebar showed `gsd-do` (skill) but not `rihal-do` (command). Now both appear, sourced from a single command file.
+- Issue users reported after upgrading to v3.2.1: VS Code sidebar didn't list `rihal-do` even though the command existed. Now it appears as a sidebar skill stub, sourced from the same single command file.
 
 ### Counts
 
@@ -341,7 +341,7 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 - Dashboard: project name showing `.` instead of `rihal-code`
 - Dashboard: auto-refresh re-renders active view without page reload
 - Dashboard: modularized monolithic 1200-line file into `server/lib/` modules
-- Planning: aligned `.planning/` structure with GSD standard (phases 01–05 dirs, PLAN.md, VERIFICATION.md)
+- Planning: aligned `.planning/` structure with the rcode standard layout (phases 01–05 dirs, PLAN.md, VERIFICATION.md)
 - Config: `project_name: '.'` → `rihal-code`; stale `rihal_source_path` cleared
 
 ---
@@ -377,7 +377,7 @@ Users already on v2.1.0 who accidentally committed `.claude/` etc. will need a o
 
 **Shipping release.** Live on npm at [@hanzlaa/rcode](https://www.npmjs.com/package/@hanzlaa/rcode). Previously only installable by cloning the repo; now available as `npx @hanzlaa/rcode install` from any project anywhere.
 
-Also bundles M2.5 (GSD-parity `/progress` and `/status` rebuild, PR #166) + the orphan fixes (#135 story-level state sync, #136 verification matrix, #137 create-milestone compliance audit, PR #167 + #168).
+Also bundles M2.5 (rebuilt `/progress` and `/status`, PR #166) + the orphan fixes (#135 story-level state sync, #136 verification matrix, #137 create-milestone compliance audit, PR #167 + #168).
 
 ### Added
 
@@ -441,12 +441,12 @@ Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/miles
 
 ### Documentation
 
-- Public roadmap surfaces M2.5 (progress/status UX overhaul matching GSD-parity), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
+- Public roadmap surfaces M2.5 (progress/status UX overhaul), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
 
 ### Deferred to follow-up releases
 
 - **Full skill-folder reorganization under role owners** — CODEOWNERS ships in v2.0 covering the current folder layout; deeper reorg is a v2.1 scope.
-- **Elegant /progress and /status rebuild** (GSD-parity) — tracked as issue #159, landing in v2.5.
+- **Elegant /progress and /status rebuild** — tracked as issue #159, landing in v2.5.
 - **Live MCP server** — v3.0 (design doc only in v2.0).
 
 ---
@@ -485,7 +485,7 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 - `rihal/agents/*.agent.md` — 14 v1 persona agents (superseded by v2's 36).
 - `rihal/workflows/` (v1 — 13 files). Replaced by v2's 68 workflows.
 - `rihal/v2/` directory entirely (contents promoted).
-- All `BMAD` / `GSD` references from commit history (rewritten in 95 commits).
+- All inspiration-source references from commit history (rewritten in 95 commits).
 
 ### Fixed
 

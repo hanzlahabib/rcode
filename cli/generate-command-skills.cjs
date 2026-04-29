@@ -4,9 +4,9 @@
  *
  * WHY: VS Code's Claude Code extension lists `.claude/skills/` in its
  * sidebar, but slash commands at `.claude/commands/rihal/` are only
- * reachable via the `/` autocomplete. Users coming from GSD (which ships
- * a skill per command) expect to see lifecycle commands like `rihal-do`
- * in the sidebar.
+ * reachable via the `/` autocomplete. Users expect to see lifecycle
+ * commands like `rihal-do` in the sidebar — generating a thin skill
+ * stub per command makes them browsable without duplicating real skills.
  *
  * This script creates ONE skill stub per slash command at install time,
  * unless a real skill with the same name already exists at the source.

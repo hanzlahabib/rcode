@@ -57,7 +57,7 @@ Append-only. Newest at top. Each entry: date, decision, rationale, alternatives 
 
 ### 2026-04-26 — Build Memory Bank as the rcode product moat
 
-**Decision:** Make persistent project memory (`.rihal/memory/`) the primary differentiator vs bmad/GSD/agent-skills.
+**Decision:** Make persistent project memory (`.rihal/memory/`) the primary differentiator vs other agent-orchestration tools.
 **Rationale:** AI agents losing context is a universal pain. Existing tools rely on `CLAUDE.md` files that go stale. Structured + visible + versioned + dashboard-rendered context is uniquely useful and hard to copy because it requires Memory Bank schema design + dashboard work + skill plumbing.
 **Alternatives considered:** Just slim/rename existing skills (rejected: doesn't add new value), build a chat memory layer (rejected: invisible to humans, can't be reviewed in PRs).
 **Who decided:** During positioning conversation that became `BRAND.md` and `MEMORY_BANK.md`.

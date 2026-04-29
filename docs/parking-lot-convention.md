@@ -78,6 +78,12 @@ Because parking-lot items become active phases. Keeping them in the same data st
 
 ---
 
-## Inspiration
+## Why 999.x
 
-This convention is adopted from the GSD (Get Shit Done) sibling project, which uses `999.1`, `999.5` etc. for promotable backlog phases and has proven durable across dozens of GSD projects over a year of use.
+Backlog items need a stable home that won't conflict with active phase numbers. `999.1`, `999.5` etc. work because:
+
+- 999 is far above any realistic milestone phase count, so no collisions
+- Decimal-suffixed (`999.1`) keeps backlog items orderable and promotable to a real phase number when prioritised
+- `roadmap list-phases` filters them visually — they sort to the bottom and signal "not active work"
+
+The convention has been validated across dozens of projects over a year of practical use.

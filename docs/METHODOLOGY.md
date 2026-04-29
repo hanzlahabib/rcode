@@ -349,17 +349,17 @@ Because CRUD is where projects break:
 
 These give you one assistant. Rihal Code gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want Rihal Code.
 
-### vs BMAD-method
+### vs other skill-file-driven AI agent frameworks
 
-BMAD is the inspiration. What's different in Rihal Code:
+What's distinctive in Rihal Code:
 
-- **Zero npm dependencies** — BMAD pulls `@clack/prompts` and friends; Rihal's installer is pure Node stdlib
-- **Multi-editor native** — BMAD is Claude-focused; Rihal installs to Claude, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously
+- **Zero npm dependencies** — Rihal's installer is pure Node stdlib; no transitive packages to audit
+- **Multi-editor native** — installs to Claude, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously
 - **Atomic writes + verification** — Rihal writes state files atomically (tempfile + fsync + rename) and verifies the manifest after install to catch partial installs
-- **Timestamped uninstall backup** — Rihal creates a tar.gz before any destructive operation
-- **Config cascade with user-level** — Rihal has `~/.rihal-code/defaults.json` so you configure identity once per machine
-- **Cultural framing** — Rihal is bilingual Arabic-English from day one
-- **Pipeline streaming protocol** — Rihal shows each agent's response live with handoff lines; no batched wall of text
+- **Timestamped uninstall backup** — creates a tar.gz before any destructive operation
+- **Config cascade with user-level** — `~/.rihal-code/defaults.json` so you configure identity once per machine
+- **Cultural framing** — bilingual Arabic-English from day one; Roman Urdu / Hindi verb dictionaries shipped
+- **Pipeline streaming protocol** — shows each agent's response live with handoff lines; no batched wall of text
 
 ### vs generic AI agent frameworks (LangGraph, CrewAI, AutoGen)
 

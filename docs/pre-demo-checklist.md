@@ -17,10 +17,10 @@ Open `rihal/brain/sources.yaml`. Replace the two `<PLACEHOLDER>` entries with th
 ## Tag the current state
 
 ### ☐ 3. Tag `v2.1.0`
-M2.5 (GSD-parity /progress) is on main but untagged. Run:
+M2.5 (rebuilt /progress and /status) is on main but untagged. Run:
 ```bash
 git checkout main && git pull
-git tag -a v2.1.0 -m "v2.1.0 — GSD-parity /progress and /status"
+git tag -a v2.1.0 -m "v2.1.0 — rebuilt /progress and /status"
 git push origin v2.1.0
 ```
 Once #165 is fixed, `release.yml` will auto-publish. If #165 isn't fixed, publish manually with `gh release create v2.1.0 ...` (see how v2.0.0 was done).
@@ -52,7 +52,7 @@ Demo flow, in this order:
 4. `/rihal-create-epics-and-stories` — decompose M1 into stories
 5. `/rihal-sprint-planning` — demo the capacity gate (asks for devs/PTO/velocity — #127 in action)
 6. `/rihal-dev-story` — implement one story
-7. `/rihal-progress` — show the Route A/B/C next-up menu (M2.5 / GSD-parity)
+7. `/rihal-progress` — show the Route A/B/C next-up menu (M2.5 rebuild)
 
 ### ☐ 7. Show the brain
 ```bash
