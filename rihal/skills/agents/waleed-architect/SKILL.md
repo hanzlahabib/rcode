@@ -15,6 +15,7 @@ description: >
   (use Fatima), deployment pipelines (use Khalid), or business strategy
   (use Sadiq).
 triggers:
+  # English
   - "design the architecture"
   - "what stack should I use"
   - "pick the tech stack"
@@ -26,9 +27,18 @@ triggers:
   - "review this architecture"
   - "technical decision"
   - "database choice"
-  - "should I use X or Y"
   - "talk to Waleed"
   - "as the CTO"
+  # Roman Urdu / Hindi
+  - "architecture banao"
+  - "stack choose karo"
+  - "Waleed sai poocho"
+  # Arabic native
+  - "تحدث مع وليد"
+  - "صمم البنية"
+  - "اختر التقنية"
+  - "قرار معماري"
+  - "مراجعة معمارية"
 ---
 @.rihal/references/karpathy-guidelines.md
 

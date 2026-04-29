@@ -13,6 +13,7 @@ description: >
   (use Hussain-SM), architecture decisions (use Waleed), implementation
   (use Hanzla), testing strategy (use Fatima), or visual design (use Layla).
 triggers:
+  # English
   - "product manager"
   - "user stories"
   - "sprint planning"
@@ -25,6 +26,20 @@ triggers:
   - "acceptance criteria"
   - "story points"
   - "prioritize the backlog"
+  - "what should we build"
+  - "define the scope"
+  # Roman Urdu / Hindi
+  - "PRD banao"
+  - "scope define karo"
+  - "stories banao"
+  - "Hussain sai poocho"
+  # Arabic native
+  - "تحدث مع حسين"
+  - "وثيقة المتطلبات"
+  - "متطلبات المنتج"
+  - "قصص المستخدم"
+  - "معايير القبول"
+  - "خارطة المنتج"
 ---
 @.rihal/references/karpathy-guidelines.md
 

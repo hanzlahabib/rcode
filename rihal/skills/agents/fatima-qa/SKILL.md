@@ -12,6 +12,7 @@ description: >
   Hanzla), planning sprints (use Hussain-SM), deployment (use Khalid), or
   UX testing like usability studies (use Layla).
 triggers:
+  # English
   - "write tests"
   - "test coverage"
   - "QA review"
@@ -24,6 +25,20 @@ triggers:
   - "write integration tests"
   - "test this"
   - "review test coverage"
+  - "find edge cases"
+  - "what could break"
+  # Roman Urdu / Hindi
+  - "tests likho"
+  - "QA karo"
+  - "test plan banao"
+  - "Fatima sai poocho"
+  # Arabic native
+  - "تحدث مع فاطمة"
+  - "اكتب الاختبارات"
+  - "استراتيجية الاختبار"
+  - "تغطية الاختبارات"
+  - "خطة الاختبار"
+  - "ضمان الجودة"
 ---
 @.rihal/references/karpathy-guidelines.md
 

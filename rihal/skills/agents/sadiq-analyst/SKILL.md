@@ -13,6 +13,7 @@ description: >
   Hussain-PM), architecture decisions (use Waleed), implementation (use
   Hanzla), sprint planning (use Hussain-SM), or design (use Layla).
 triggers:
+  # English
   - "market research"
   - "competitive analysis"
   - "SWOT"
@@ -24,8 +25,17 @@ triggers:
   - "prioritize these ideas"
   - "RICE framework"
   - "opportunity analysis"
-  - "document this project"
   - "talk to Sadiq"
+  # Roman Urdu / Hindi
+  - "market research karo"
+  - "strategy banao"
+  - "Sadiq sai poocho"
+  # Arabic native
+  - "تحدث مع صادق"
+  - "بحث السوق"
+  - "تحليل تنافسي"
+  - "استراتيجية المنتج"
+  - "ماذا نبني"
 ---
 @.rihal/references/karpathy-guidelines.md
 
