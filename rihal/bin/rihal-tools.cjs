@@ -2021,28 +2021,33 @@ function cmdState(subArgs) {
       epics_exists: fs.existsSync(epicsPath),
     };
 
-    // Parse ROADMAP.md for phase tables.
-    // Expected row format:  | 01 | Phase Name | Goal text | ... |
-    // First cell is phase number (1-3 chars of digits or digits+letter).
+    // Parse ROADMAP.md for phases. Supports two formats (issue #455):
+    //   Format A — pipe tables:    | 01 | Phase Name | Goal text | ... |
+    //   Format B — heading style:   ## Phase 01 — Name  /  ### Phase 01: Name
+    // Milestone heading is also matched in any of: "## Milestone M1", "## Milestone v1.0 — Name",
+    // "**Milestone: v1.0 — Name**".
     if (parsed.roadmap_exists) {
       const roadmap = fs.readFileSync(roadmapPath, 'utf8');
-      parsed.milestones_found = (roadmap.match(/^##\s+Milestone\s+M\d+/gim) || []).length;
-      const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
-      let m;
+      const milestoneMatches = [
+        ...(roadmap.match(/^##\s+Milestone\s+M\d+/gim) || []),
+        ...(roadmap.match(/^#{1,4}\s+Milestone\s*:?\s*[^\n]+$/gim) || []),
+        ...(roadmap.match(/\*\*\s*Milestone\s*:?\s*[^\n*]+\*\*/gi) || []),
+      ];
+      parsed.milestones_found = new Set(milestoneMatches.map(s => s.trim().toLowerCase())).size;
+
       if (!state.phases) state.phases = [];
-      while ((m = rowRe.exec(roadmap)) !== null) {
-        const phaseNum = m[1].trim();
-        const phaseName = m[2].trim();
-        const phaseGoal = m[3].trim();
-        // Skip header rows like "| # | Phase | Goal |"
-        if (!/^\d/.test(phaseNum)) continue;
-        if (phaseName.toLowerCase() === 'phase') continue;
+      const seenNums = new Set();
+
+      const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
+        if (!/^\d/.test(phaseNum)) return;
+        if (phaseName.toLowerCase() === 'phase') return;
+        if (seenNums.has(phaseNum)) return;
+        seenNums.add(phaseNum);
         parsed.phases_found += 1;
         const existingIdx = state.phases.findIndex(p =>
           String(p.number) === phaseNum || p.name === phaseName
         );
         if (existingIdx >= 0) {
-          // Preserve existing status fields; update metadata.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
@@ -2058,6 +2063,23 @@ function cmdState(subArgs) {
           });
           parsed.phases_upserted += 1;
         }
+      };
+
+      // Format A — pipe tables
+      const rowRe = /^\|\s*(\d{1,3}(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      let m;
+      while ((m = rowRe.exec(roadmap)) !== null) {
+        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
+      }
+
+      // Format B — heading style
+      const headRe = /^#{2,4}\s*Phase\s+(\d{1,3}(?:\.\d+)?)\s*[—\-:]\s*([^\n]+)$/gm;
+      while ((m = headRe.exec(roadmap)) !== null) {
+        const num = m[1].trim();
+        const name = m[2].trim();
+        const after = roadmap.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
+        const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
+        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '');
       }
     }
 
@@ -2169,8 +2191,17 @@ function cmdState(subArgs) {
       throw new Error(`state sync --from-disk: no ROADMAP.md, epics.md, or sprint files found`);
     }
 
+    // Issue #455 — surface silent no-op when ROADMAP exists but parser found nothing.
+    const warnings = [];
+    if (parsed.roadmap_exists && parsed.phases_found === 0) {
+      warnings.push('ROADMAP.md exists but no phases parsed — check format (expected pipe-table rows or "## Phase NN — Name" headings).');
+    }
+    if (parsed.epics_exists && parsed.epics_found === 0) {
+      warnings.push('epics.md exists but no epics parsed — check "## EPIC-NN" or "## Epic N" heading format.');
+    }
+
     writeState(state);
-    return { ok: true, synced: true, ...parsed };
+    return { ok: true, synced: true, ...parsed, ...(warnings.length ? { warnings } : {}) };
   }
 
   throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, promote-backlog\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
