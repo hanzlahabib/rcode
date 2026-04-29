@@ -44,6 +44,19 @@ const PLANNING_DIR = path.join(PROJECT_ROOT, '.planning');
 const SESSIONS_DIR = path.join(PLANNING_DIR, 'council-sessions');
 
 /**
+ * Return the first file in `dir` matching `pattern`, or null.
+ * Used by cmdInit's phase-aware fields branch (Phase 10 / #466) to resolve
+ * specific artifact paths (CONTEXT.md, RESEARCH.md, VERIFICATION.md) from
+ * a phase directory that may use either zero-padded (06-name) or plain
+ * (6-name) prefix conventions.
+ */
+function files0(dir, pattern) {
+  if (!fs.existsSync(dir)) return null;
+  const matches = fs.readdirSync(dir).filter(f => pattern.test(f));
+  return matches.length > 0 ? matches[0] : null;
+}
+
+/**
  * Parse a minimal YAML subset for our flat config.yaml shape.
  * Only supports `key: value` lines — no nesting, no lists, no flow syntax.
  */
@@ -326,6 +339,87 @@ function cmdInit(workflowName, rawArgs) {
     },
     state_exists: fs.existsSync(path.join(RIHAL_DIR, 'state.json')),
   };
+
+  // Phase 10 / #466 — phase-aware fields for phase-op + sprint-plan workflows.
+  // Closes the third part of #464 (workflows expect these fields per their
+  // documented init contract; before this they were silently absent).
+  if ((workflowName === 'phase-op' || workflowName === 'sprint-plan') && question) {
+    const phaseInput = question.trim().split(/\s+/)[0];
+    const phaseNum = parseInt(phaseInput, 10);
+    if (!Number.isNaN(phaseNum) && phaseNum > 0) {
+      const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+      const phasesDir = path.join(PLANNING_DIR, 'phases');
+      out.roadmap_exists = fs.existsSync(roadmapPath);
+      out.planning_exists = fs.existsSync(PLANNING_DIR);
+
+      // Find phase entry in ROADMAP via the now-fixed parser.
+      let roadmapPhase = null;
+      if (out.roadmap_exists) {
+        try {
+          const roadmap = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+          const r = roadmap.dispatch(PROJECT_ROOT, ['get-phase', String(phaseNum)]);
+          if (r && r.found) roadmapPhase = r;
+        } catch { /* parser failure shouldn't break init */ }
+      }
+
+      // Find phase directory on disk (matches both '6-name' and legacy '06-name').
+      let phaseDirEntry = null;
+      if (fs.existsSync(phasesDir)) {
+        const padded = String(phaseNum).padStart(2, '0');
+        for (const entry of fs.readdirSync(phasesDir)) {
+          if (entry === String(phaseNum) || entry.startsWith(`${phaseNum}-`) || entry.startsWith(`${padded}-`)) {
+            phaseDirEntry = entry;
+            break;
+          }
+        }
+      }
+
+      out.phase_found = roadmapPhase !== null;
+      out.phase_number = String(phaseNum);
+      out.padded_phase = String(phaseNum).padStart(2, '0');
+      out.phase_name = roadmapPhase ? roadmapPhase.name : null;
+      out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
+      out.phase_dir = phaseDirEntry ? path.join(PLANNING_DIR, 'phases', phaseDirEntry) : null;
+
+      // Disk artifacts — same shape as walkPhaseDirs() but inlined.
+      if (phaseDirEntry) {
+        const dirFull = path.join(phasesDir, phaseDirEntry);
+        const files = fs.readdirSync(dirFull);
+        out.has_research = files.some(f => /(?:^|-)RESEARCH\.md$/i.test(f));
+        out.has_context = files.some(f => /(?:^|-)CONTEXT\.md$/i.test(f));
+        out.has_verification = files.some(f => /(?:^|-)VERIFICATION\.md$/i.test(f));
+        out.has_plans = files.some(f => /(?:^|-)(PLAN|SPRINT)\.md$/i.test(f));
+        out.plan_count = files.filter(f => /(?:^|-)(PLAN|SPRINT)\.md$/i.test(f)).length;
+      } else {
+        out.has_research = false;
+        out.has_context = false;
+        out.has_verification = false;
+        out.has_plans = false;
+        out.plan_count = 0;
+      }
+
+      // Source-of-truth path getters for the fields workflows reference.
+      out.context_path = (out.phase_dir && out.has_context)
+        ? path.join(out.phase_dir, files0(out.phase_dir, /CONTEXT\.md$/i))
+        : null;
+      out.research_path = (out.phase_dir && out.has_research)
+        ? path.join(out.phase_dir, files0(out.phase_dir, /RESEARCH\.md$/i))
+        : null;
+      out.verification_path = (out.phase_dir && out.has_verification)
+        ? path.join(out.phase_dir, files0(out.phase_dir, /VERIFICATION\.md$/i))
+        : null;
+      out.state_path = path.join(RIHAL_DIR, 'state.json');
+      out.roadmap_path = roadmapPath;
+      out.requirements_path = fs.existsSync(path.join(PLANNING_DIR, 'REQUIREMENTS.md'))
+        ? path.join(PLANNING_DIR, 'REQUIREMENTS.md')
+        : null;
+
+      // Defaults consumed by /rihal:plan and /rihal:discuss-phase.
+      out.commit_docs = String(config.commit_docs || 'true') !== 'false';
+      out.response_language = config.response_language || config.language || null;
+    }
+  }
+
 
   return out;
 }
@@ -2364,6 +2458,124 @@ function cmdPhase(subArgs) {
 }
 
 /**
+ * cmdCommit — atomic git commit with conventional-commits validation.
+ *
+ * Closes #465 (the highest-impact missing subcommand from the Phase 9
+ * dogfood audit). Used by execute-sprint, map-codebase, and
+ * new-project-roadmap workflows.
+ *
+ * Signature:
+ *   rihal-tools.cjs commit "<message>" [--files <path1> <path2> ...]
+ *
+ * Validates:
+ * - conventional-commits format (type(scope): subject)
+ * - non-empty subject
+ * - rejects AI-attribution lines (Co-Authored-By: Claude, etc.)
+ * - rejects --no-verify flag explicitly
+ *
+ * Does NOT push (per project rule: never push without explicit human approval).
+ */
+function cmdCommit(rawArgs) {
+  const tokens = (rawArgs || '').match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+  // First positional = message (may be quoted)
+  let message = null;
+  const files = [];
+  let inFiles = false;
+
+  for (const t of tokens) {
+    if (t === '--files') { inFiles = true; continue; }
+    if (t === '--no-verify') {
+      throw new Error('rihal-tools commit does not bypass hooks. Fix the underlying issue, then re-commit.');
+    }
+    if (inFiles) {
+      files.push(t.replace(/^["']|["']$/g, ''));
+      continue;
+    }
+    if (message === null) {
+      message = t.replace(/^["']|["']$/g, '');
+    } else {
+      // Anything after the first token but before --files is part of the message
+      message += ' ' + t.replace(/^["']|["']$/g, '');
+    }
+  }
+
+  if (!message || !message.trim()) {
+    throw new Error('commit requires a message: rihal-tools.cjs commit "type(scope): subject"');
+  }
+
+  // AI attribution rejection (project rule)
+  const aiPatterns = [
+    /co-authored-by:\s*claude/i,
+    /generated with \[?claude/i,
+    /🤖\s*generated/i,
+    /co-authored-by:\s*ai/i,
+  ];
+  for (const re of aiPatterns) {
+    if (re.test(message)) {
+      throw new Error('AI attribution forbidden in commit messages (project rule). Remove "Co-Authored-By: Claude" / "Generated with Claude Code" / etc.');
+    }
+  }
+
+  // Conventional-commits validation: type(scope): subject
+  // Types per .github/workflows/semantic.yaml: feat, fix, docs, style, refactor, test, chore, perf, revert
+  // Plus our extensions: plan, audit (used during this session)
+  const subjectLine = message.split('\n')[0];
+  const ccRe = /^(feat|fix|docs|style|refactor|test|chore|perf|revert|plan|audit)(\([^)]+\))?:\s+\S/;
+  if (!ccRe.test(subjectLine)) {
+    throw new Error(
+      `Subject must follow conventional commits: type(scope): subject. Got: "${subjectLine.slice(0, 80)}".\n` +
+      `Valid types: feat, fix, docs, style, refactor, test, chore, perf, revert, plan, audit.`
+    );
+  }
+  if (subjectLine.length > 100) {
+    throw new Error(`Subject too long (${subjectLine.length} chars > 100). Move detail to body.`);
+  }
+
+  // Stage files if --files provided; otherwise commit whatever is staged.
+  const { execSync } = require('child_process');
+  if (files.length > 0) {
+    // Validate each path exists before staging
+    for (const f of files) {
+      if (!fs.existsSync(path.join(PROJECT_ROOT, f)) && !fs.existsSync(f)) {
+        throw new Error(`File not found: ${f}`);
+      }
+    }
+    execSync(`git add ${files.map(f => `"${f.replace(/"/g, '\\"')}"`).join(' ')}`, {
+      cwd: PROJECT_ROOT,
+      stdio: 'pipe',
+    });
+  }
+
+  // Verify there's something to commit
+  const status = execSync('git diff --cached --name-only', { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
+  if (!status) {
+    throw new Error('Nothing staged to commit. Use --files <path> or stage with git add first.');
+  }
+
+  // Use HEREDOC-style approach: write message to temp file, commit -F
+  const tmpMsgPath = path.join(require('os').tmpdir(), `rihal-commit-msg-${Date.now()}.txt`);
+  fs.writeFileSync(tmpMsgPath, message);
+  try {
+    execSync(`git commit -F "${tmpMsgPath}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+  } finally {
+    try { fs.unlinkSync(tmpMsgPath); } catch {}
+  }
+
+  // Capture the new HEAD SHA for return value
+  const sha = execSync('git rev-parse HEAD', { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
+  const filesChanged = execSync(`git show --stat --format="" ${sha}`, { cwd: PROJECT_ROOT, encoding: 'utf8' })
+    .trim().split('\n').filter(Boolean);
+
+  return {
+    ok: true,
+    sha: sha.slice(0, 7),
+    full_sha: sha,
+    subject: subjectLine,
+    files_changed: filesChanged.length > 0 ? filesChanged.length - 1 : 0,
+  };
+}
+
+/**
  * Classify the scope of input based on keywords and length.
  * Returns one of: 'ticket', 'feature', 'phase', 'initiative', 'drift'
  *
@@ -3810,6 +4022,9 @@ async function main() {
       case 'phase':
         result = cmdPhase(args);
         break;
+      case 'commit':
+        result = cmdCommit(args.join(' '));
+        break;
       case 'module':
         result = cmdModule(args);
         break;
@@ -3907,6 +4122,7 @@ async function main() {
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
         console.log('  phase add <name>                             → add integer phase to current milestone (creates dir + ROADMAP entry + state)');
+        console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  module <subcommand> [args]                   → module system helpers');
         console.log('  plan <subcommand> [args]                     → phase/plan operations');
         console.log('  notes <subcommand> [args]                    → manage project notes');

@@ -36,10 +36,26 @@ function extractPhases(content) {
     const section = content.slice(h.headerIndex, end).trim();
     const goalMatch = section.match(/\*\*Goal(?::\*\*|\*\*:)\s*([^\n]+)/i);
     const goal = goalMatch ? goalMatch[1].trim() : null;
+
+    // Status parsing (Phase 10 / #466 / closes secondary part of #464).
+    // Maps the literal **Status:** line to a canonical enum.
+    const statusMatch = section.match(/\*\*Status(?::\*\*|\*\*:)\s*([^\n]+)/i);
+    const statusRaw = statusMatch ? statusMatch[1].trim() : null;
+    let status = 'unknown';
+    if (statusRaw) {
+      const s = statusRaw.toLowerCase();
+      if (s.startsWith('complete')) status = 'complete';
+      else if (s.startsWith('active') || s.startsWith('in progress') || s.includes('sprint')) status = 'active';
+      else if (s.startsWith('planned')) status = 'planned';
+      else if (s.startsWith('closed')) status = 'closed';
+    }
+
     phases.push({
       number: h.number,
       name: h.name,
       goal,
+      status,
+      status_raw: statusRaw,
       section,
       headerIndex: h.headerIndex,
       sectionEnd: end,
@@ -133,10 +149,15 @@ function cmdListPhases(projectRoot) {
   const rp = roadmapPathFor(projectRoot);
   if (!fs.existsSync(rp)) return [];
   const content = fs.readFileSync(rp, 'utf8');
+  // Phase 10 / #466 — prefer the parsed Status field from extractPhases over
+  // the legacy phaseStatus() heuristic, which only matched literal "completed"
+  // in the header and missed our **Status:** Complete convention. Fall back to
+  // phaseStatus() only when extractPhases couldn't parse a Status line.
   return extractPhases(content).map((p) => ({
     number: p.number,
     name: p.name,
-    status: phaseStatus(p.section),
+    status: p.status === 'unknown' ? phaseStatus(p.section) : p.status,
+    status_raw: p.status_raw,
   }));
 }
 
