@@ -2809,6 +2809,21 @@ This file is loaded by Claude Code, Codex, and compatible AI coding tools at the
 
 ---
 
+## Phase Workflow Rules (#475 — non-negotiable)
+
+When creating, planning, or modifying a phase, you MUST go through the rihal toolchain. Direct file writes to \`.planning/phases/\` produce planning artifacts that are invisible to \`/rihal-status\`, \`/rihal-execute\`, \`/rihal-progress\`, and \`roadmap list-phases\`.
+
+- **Creating a new phase** → run \`/rihal-add-phase\` (or \`node .rihal/bin/rihal-tools.cjs phase add "<name>"\`). Do NOT \`mkdir .planning/phases/NN-...\` directly.
+- **Writing SPRINT.md / PLAN.md** → run \`/rihal-plan <N>\`. Spawns \`rihal-planner\` + \`rihal-sprint-checker\`. Do NOT \`Write\` SPRINT.md files directly.
+- **Discussing phase scope** → run \`/rihal-discuss-phase <N>\` for medium-risk phases. Writes \`<N>-CONTEXT.md\` with locked decisions.
+- **Use canonical artifact names**: \`<N>-CONTEXT.md\`, \`<N>-RESEARCH.md\`, \`<N>-PLAN.md\` or \`<N>-NN-SPRINT.md\`, \`<N>-VERIFICATION.md\`, \`<N>-SUMMARY.md\`. Do NOT invent \`SCOPE.md\` / \`REVIEW.md\` / \`EDGE-CASES.md\` as phase artifacts — those belong elsewhere or as agent outputs.
+
+**Why this is enforced**: every direct \`Write\` to \`.planning/phases/**/SPRINT.md\` without registration is a silent state divergence. Future \`/rihal-status\` reports under-count work. \`/rihal-execute\` can't find the plan. \`/rihal-progress\` shows wrong percentages.
+
+If you have a real reason to bypass (e.g. retroactively documenting a phase that already shipped), put \`<!-- rihal-bypass: <one-line reason> -->\` at the top of the file so it's auditable later. The PreToolUse hook will allow the write through.
+
+---
+
 ## Communication
 
 - Report progress honestly — do not claim work is done if it isn't

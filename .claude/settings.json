@@ -1,6 +1,17 @@
 {
-  "$comment": "Project-level Claude Code settings. Checked in. PostToolUse hook closes #470 — auto-sync rihal/bin/ → .rihal/bin/ so runtime copy stays current after source edits.",
+  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rihal/bin → .rihal/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475).",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-unregistered-phase-writes.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
