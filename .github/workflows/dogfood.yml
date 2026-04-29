@@ -1,0 +1,36 @@
+name: dogfood
+
+# Runs the dogfood smoke checks on every push + pull request.
+# Fails the build if any of the closed Phase 9 audit issues regress:
+#   #455 — sync silent no-op on heading-style ROADMAP
+#   #460 — phase add CLI missing
+#   #462 — phase add wrote to wrong state file
+#   #464 — roadmap parser only handled pipe-table format
+#   #465 — workflows reference non-existent CLI subcommands (15 known, gate
+#          fails on any NEW drift beyond the tracked baseline)
+#
+# Designed to run in <30s. Zero deps — Node's built-ins + bash only.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dogfood:
+    name: dogfood smoke checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: run dogfood checks
+        run: bash scripts/dogfood-check.sh

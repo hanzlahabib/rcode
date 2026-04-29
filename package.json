@@ -14,7 +14,8 @@
     "test:ci": "node --test --test-reporter=spec",
     "postinstall": "node cli/postinstall.js",
     "build:cli": "node scripts/build.cjs",
-    "build": "node scripts/build.cjs"
+    "build": "node scripts/build.cjs",
+    "dogfood": "bash scripts/dogfood-check.sh"
   },
   "files": [
     "cli/",
