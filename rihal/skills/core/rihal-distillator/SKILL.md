@@ -16,7 +16,7 @@ user-invocable: true
 
 Compresses source documents into a dense, lossless distillate optimised for LLM context loading. Output is one (or several semantically split) markdown files containing every fact, decision, named entity, and relationship from the sources — but no prose connectives, decoration, or repetition. A downstream LLM can use the distillate as sole context with no information loss.
 
-## Process
+## Workflow
 
 1. **Validate inputs.** Required: `source_documents`. Optional: `downstream_consumer` (judges signal vs noise; if omitted, preserve everything), `token_budget` (triggers split when exceeded), `output_path` (default: adjacent to primary source with `-distillate.md` suffix), `--validate` flag (round-trip reconstruction test).
 2. **Stage 1 — Analyze.** Run `scripts/analyze_sources.py` on the source paths. Use its routing recommendation (`single` / `fan-out`) and grouping output. Do not read sources yourself.

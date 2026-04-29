@@ -35,7 +35,7 @@ user-invocable: true
 
 Reverse-engineer a target URL into a working Next.js + shadcn/ui + Tailwind clone. The skill is **foreman-style**: extract a section, write a spec file, dispatch a builder agent in a worktree, move on to the next section. Extraction is meticulous (computed CSS, real assets, both static and behavioral) — building runs in parallel. Detailed principles, scripts, and templates live in [`references.md`](references.md).
 
-## Process
+## Workflow
 
 1. **Pre-flight** — Chrome MCP available, Next.js + shadcn scaffold builds clean, output dirs exist.
 2. **Phase 1 — Reconnaissance** — full-page screenshots (desktop + mobile), global extraction (fonts, colors, favicons), mandatory interaction sweep (scroll, click, hover, responsive), page topology map.

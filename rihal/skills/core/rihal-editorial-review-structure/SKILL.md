@@ -25,7 +25,7 @@ Structural editor focused on high-value density. Reviews a document's organisati
 - `reader_type` (optional, default `humans`) — `humans` preserves comprehension aids; `llm` optimises for precision and density
 - `length_target` (optional) — e.g. "30% shorter", "no limit"
 
-## Process
+## Workflow
 
 1. **Validate input.** HALT if content is fewer than 3 words or `reader_type` is invalid. Note current word and section counts.
 2. **Understand purpose.** Use provided `purpose` and `target_audience` or infer them. Pick the structure model that fits (Tutorial / Reference / Explanation / Prompt / Pyramid — see references).

@@ -20,7 +20,7 @@ user-invocable: true
 
 Iterative menu-driven enhancement of recently-generated content. Presents 5 contextually-chosen elicitation methods (from `methods.csv`), runs the user's pick against the current content, shows the improvement, and re-offers the menu until the user picks `x` to proceed. Designed to be invoked indirectly from a parent prompt that just produced a section, then return the enhanced version. Detailed method registry, response cases, and execution rules live in [`references.md`](references.md).
 
-## Process
+## Workflow
 
 1. **Method registry loading.** Read `./methods.csv` and `{agent_party}` from `.rihal/team.yaml`.
 2. **Context analysis.** Use conversation history to detect content type, complexity, stakeholder needs, risk level, creative potential.
