@@ -144,6 +144,34 @@ else
   pass "phase-status alignment: ROADMAP claim matches shipping signals (#461)"
 fi
 
+# Check 7 — installed CLI matches source (Phase 12 dogfood gap).
+# .rihal/bin/ is gitignored and seeded by `rihal-code install`. When developing
+# rihal-code itself, edits to rihal/bin/ don't auto-propagate to .rihal/bin/,
+# so workflows (which call .rihal/bin/) silently run stale code. Phase 12's
+# new init fields shipped in source but the running session called the stale
+# installed copy and got the pre-Phase-10 shape. This gate fails on drift.
+BIN_DRIFT=0
+if [ -d .rihal/bin ]; then
+  for src in rihal/bin/*.cjs rihal/bin/lib/*.cjs; do
+    [ -f "$src" ] || continue
+    rel="${src#rihal/bin/}"
+    dst=".rihal/bin/${rel}"
+    if [ ! -f "$dst" ]; then
+      BIN_DRIFT=$((BIN_DRIFT + 1))
+      echo "    DRIFT: $dst missing (source: $src)"
+    elif ! cmp -s "$src" "$dst"; then
+      BIN_DRIFT=$((BIN_DRIFT + 1))
+      echo "    DRIFT: $dst stale vs $src"
+    fi
+  done
+fi
+
+if [ "$BIN_DRIFT" -gt 0 ]; then
+  fail "$BIN_DRIFT file(s) drifted between rihal/bin/ and .rihal/bin/ — run: cp -r rihal/bin/. .rihal/bin/"
+else
+  pass "rihal/bin/ ↔ .rihal/bin/ in sync (no installed-CLI drift)"
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "✓ Dogfood checks passed"
