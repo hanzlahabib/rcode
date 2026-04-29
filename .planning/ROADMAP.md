@@ -155,11 +155,11 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 8 — Auto-Heal Cadence + Hooks
+## Phase 8 — Auto-Heal Cadence + Hooks ✅
 
 **Goal:** Layer scheduled + edit-time triggers on top of the manual-invoke auto-heal tools shipped in Phase 6. Add the third drift dimension (phase-status drift) to round out the auto-heal portfolio.
 
-**Status:** Planned
+**Status:** Complete (2026-04-29)
 
 **Plans:**
 - `/loop` + `/schedule` cadence docs for auto-heal tools — recommended cadences for `/rihal:docs-update`, `/rihal:health`, `/rihal:feature-drift`, `/rihal:memory-audit --fix`
