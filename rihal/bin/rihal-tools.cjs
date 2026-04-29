@@ -4095,6 +4095,39 @@ function cmdProgress(args) {
       });
     }
 
+    // Phantom-complete: phase claimed Complete (in ROADMAP or state) but missing
+    // PLAN.md AND SUMMARY.md on disk. User-visible bug: /rihal:status would
+    // happily report 'all complete' while /rihal:audit correctly flagged the
+    // gap because the two read different sources of truth.
+    // Surfaced 2026-04-29 in a real session — siraaj phases 07-12 had ROADMAP
+    // markers but zero artifacts.
+    const phantomCompletes = [];
+    const claimedComplete = (p) => {
+      if (!p) return false;
+      const s = String(p.status ?? '').toLowerCase();
+      return p.completed || s === 'complete' || s === 'completed' || s === 'done';
+    };
+    // Walk ROADMAP-claimed completes and state-claimed completes, both directions.
+    const completeKeys = new Set();
+    for (const p of roadmapPhases) if (claimedComplete(p)) completeKeys.add(norm(phaseKey(p)));
+    for (const p of statePhases) if (claimedComplete(p)) completeKeys.add(norm(phaseKey(p)));
+    for (const k of completeKeys) {
+      const disk = diskByNum[k] || diskByNum[k.padStart(2, '0')];
+      // Only flag when the phase dir EXISTS — purely-state-only entries are a
+      // separate problem (drift/undercount above). Here we want claim-vs-files.
+      if (!disk) continue;
+      if (disk.plan_count === 0 && disk.summary_count === 0) {
+        phantomCompletes.push(k);
+      }
+    }
+    if (phantomCompletes.length > 0) {
+      insights.push({
+        kind: 'phantom-complete',
+        severity: 'warn',
+        message: `${phantomCompletes.length} phase(s) marked Complete but missing both PLAN.md and SUMMARY.md on disk: ${phantomCompletes.slice(0, 5).join(', ')}. The completion claim is unsupported. Run /rihal-audit phase <N> to inspect.`,
+      });
+    }
+
     // Between-milestones heuristic: no current_phase + previous milestone's last phase is complete
     if (state && state.current_phase === null && statePhases.length > 0) {
       const allComplete = statePhases.every(p => p.status === 'complete' || p.completed);
