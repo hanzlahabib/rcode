@@ -97,7 +97,7 @@ Covers:
 
 ## 🧪 Preview — v2
 
-`rihal/v2/` has been unified into the main methodology. All 43 agents, 99 commands, and 56 skills are now available through the single installer. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) for migration notes.
+v2 has been merged into the main methodology — there is no separate `rihal/v2/` directory anymore. All 41 agents, 96 commands, and 80 skills ship through the single `cli/install.js` installer. See [`V2-PREVIEW.md`](./V2-PREVIEW.md) for migration notes.
 
 ---
 
