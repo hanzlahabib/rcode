@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-yousef
+name: rihal-yousef-backend
 description: >
   Senior backend engineer for APIs, databases, services, auth, data
   pipelines, integrations, and production backend work at Rihal scale.

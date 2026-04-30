@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-haitham
+name: rihal-haitham-frontend
 description: >
   Senior frontend engineer for React, Next.js, Tailwind, shadcn/ui,
   Arabic RTL layouts, pixel-perfect UIs, website clones, and production

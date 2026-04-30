@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-majlis
+name: rihal-majlis-council
 description: >
   Multi-agent consulting council that convenes the Rihal team to discuss
   any topic, collects perspectives from all relevant specialists, and

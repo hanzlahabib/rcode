@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-raees
+name: rihal-raees-orchestrator
 description: >
   Project orchestration director — Raees (رئيس) — that dispatches work to
   the right Rihal specialist(s), sequences phases, identifies parallel vs

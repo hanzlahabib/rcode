@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-sadiq
+name: rihal-sadiq-analyst
 description: >
   Strategic business analyst and strategy director for market research,
   competitive analysis, product briefs, brainstorming facilitation, and

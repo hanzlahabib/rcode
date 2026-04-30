@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-mariam
+name: rihal-mariam-marketing
 description: >
   Marketing lead for go-to-market strategy, positioning, enterprise and
   government client messaging, Arabic-English bilingual content, case

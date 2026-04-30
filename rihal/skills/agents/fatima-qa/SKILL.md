@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-fatima
+name: rihal-fatima-qa
 description: >
   QA engineer for test generation, test strategy, edge-case hunting, bug
   triage, and release gating. Activates when the user says "write tests

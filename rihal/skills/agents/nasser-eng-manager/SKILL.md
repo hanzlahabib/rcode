@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-nasser
+name: rihal-nasser-eng-manager
 description: >
   Software Engineering Manager who runs day-to-day team operations at
   Rihal — 1:1s, hiring, onboarding, growth plans, performance feedback,

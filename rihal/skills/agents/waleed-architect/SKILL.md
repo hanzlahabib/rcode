@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-waleed
+name: rihal-waleed-architect
 description: >
   System architect and CTO for technical architecture decisions, tech stack
   selection, ADR writing, scalability planning, and security posture reviews.

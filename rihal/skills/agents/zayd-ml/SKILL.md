@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-zayd
+name: rihal-zayd-ml
 description: >
   Senior ML engineer for machine learning model selection, training,
   evaluation, feature engineering, LLM integration, retrieval systems,

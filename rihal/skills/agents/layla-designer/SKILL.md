@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-layla
+name: rihal-layla-designer
 description: >
   UX Designer and UI specialist for interaction design, user flows, design
   systems, accessibility audits, and visual craft reviews. Activates when

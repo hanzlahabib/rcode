@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-noor
+name: rihal-noor-writer
 description: >
   Technical writer, scribe, and presentation lead for documentation,
   README files, API docs, architecture diagrams (Mermaid), pitch decks,

@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-hussain-sm
+name: rihal-hussain-sm
 description: >
   Scrum master for sprint planning, story preparation, sprint status
   reporting, retrospectives, and mid-sprint course correction. Activates

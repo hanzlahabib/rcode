@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-hanzla
+name: rihal-hanzla-engineer
 description: >
   Senior full-stack software engineer for story execution, code
   implementation, bug fixes, refactoring, and hands-on development work.

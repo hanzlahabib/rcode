@@ -25,7 +25,7 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(PROJECT_ROOT, '.claude', 'skills');
-const BASELINE_MISMATCHES = 19;
+const BASELINE_MISMATCHES = 0;
 
 function findMismatches() {
   if (!fs.existsSync(SKILLS_DIR)) return [];

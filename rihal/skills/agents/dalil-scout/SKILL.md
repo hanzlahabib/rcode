@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-dalil-scout
+name: rihal-dalil-scout
 description: >
   Codebase Scout — Dalil (دليل) — for repository discovery, multi-root
   exploration, focused topic sweeps, and producing structured codebase
