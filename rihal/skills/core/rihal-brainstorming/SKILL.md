@@ -8,17 +8,28 @@ description: >
   "lateral thinking", or "think outside the box". Do NOT use for strategic
   analysis (use rihal-sadiq-analyst) or product requirements (use rihal-create-prd).
 triggers:
+  # English
   - "brainstorm"
   - "help me brainstorm"
   - "help me ideate"
   - "ideation session"
-  - "creative
-  thinking"
+  - "creative thinking"
   - "generate ideas"
   - "idea generation"
   - "divergent thinking"
   - "lateral thinking"
   - "think outside the box"
+  # Roman Urdu / Hindi
+  - "brainstorm karo"
+  - "ideas socho"
+  - "naye ideas chahiye"
+  - "soch lo"
+  # Arabic native
+  - "عصف ذهني"
+  - "ولّد أفكارًا"
+  - "أفكار جديدة"
+  - "تفكير إبداعي"
+  - "ساعدني أفكر"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md

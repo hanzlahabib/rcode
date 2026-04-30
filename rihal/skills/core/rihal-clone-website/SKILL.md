@@ -13,6 +13,7 @@ description: >
   brief (use rihal-dev-story with Hanzla), or inspiration-only references
   without rebuild intent.
 triggers:
+  # English
   - "clone this website"
   - "clone this site"
   - "rebuild this page"
@@ -22,9 +23,18 @@ triggers:
   - "copy this site"
   - "reverse engineer this site"
   - "build me a clone of"
+  # Roman Urdu / Hindi
   - "aisi website banao"
   - "yeh site clone karo"
   - "exact same UI chahiye like [URL]"
+  - "yeh website ki copy banao"
+  - "site ko clone karo"
+  # Arabic native
+  - "استنسخ هذا الموقع"
+  - "أعد بناء هذه الصفحة"
+  - "موقع مطابق تمامًا"
+  - "انسخ هذا الموقع"
+  - "هندسة عكسية للموقع"
 argument-hint: "<url>"
 user-invocable: true
 ---

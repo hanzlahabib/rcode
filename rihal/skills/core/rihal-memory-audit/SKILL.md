@@ -11,16 +11,27 @@ description: >
   Do NOT use for: bootstrap (use rcode-memory-init), surgical updates
   (use rcode-memory-update), or distillate regeneration (use rcode-memory-distill).
 triggers:
+  # English
   - "audit memory bank"
   - "check memory bank"
   - "find stale entries"
   - "is my memory bank healthy"
-  - "memory bank ka audit"
-  - "/rcode:memory-audit"
   - "auto-fix memory bank"
   - "memory bank --fix"
-  - "memory bank ka --fix"
   - "patch trivial memory drift"
+  - "/rcode:memory-audit"
+  - "/rihal-memory-audit"
+  # Roman Urdu / Hindi
+  - "memory bank ka audit"
+  - "memory bank ka --fix"
+  - "memory check karo"
+  - "purani entries dhoondo"
+  # Arabic native
+  - "افحص بنك الذاكرة"
+  - "تدقيق الذاكرة"
+  - "ابحث عن إدخالات قديمة"
+  - "هل بنك الذاكرة سليم"
+  - "أصلح الذاكرة"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md

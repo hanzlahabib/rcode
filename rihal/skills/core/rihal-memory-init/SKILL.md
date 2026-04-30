@@ -11,13 +11,24 @@ description: >
   distillates (use rcode-memory-distill), or finding stale entries (use
   rcode-memory-audit).
 triggers:
+  # English
   - "init memory bank"
   - "bootstrap memory"
   - "set up memory bank"
   - "create memory bank"
   - "memory bank initialise"
-  - "memory bank kaise banayen"
   - "/rcode:memory-init"
+  - "/rihal-memory-init"
+  # Roman Urdu / Hindi
+  - "memory bank kaise banayen"
+  - "memory bank banao"
+  - "memory bank shuru karo"
+  - "memory init karo"
+  # Arabic native
+  - "هيّئ ذاكرة المشروع"
+  - "أنشئ بنك الذاكرة"
+  - "ابدأ ذاكرة ريحال"
+  - "إعداد بنك الذاكرة"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md

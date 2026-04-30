@@ -2,7 +2,24 @@
 name: rihal-help
 description: 'Analyzes current state and user query to answer Rihal questions or recommend the next skill(s) to use. Use when user asks for help, Rihal help, what to do next, or what to start with in Rihal.'
 triggers:
+  # English
   - "help"
+  - "rihal help"
+  - "what should I do next"
+  - "what can rihal do"
+  - "show me my options"
+  # Roman Urdu / Hindi
+  - "madad karo"
+  - "madad chahiye"
+  - "rihal mein kya karu"
+  - "agla kadam kya hai"
+  - "kya karu rihal mein"
+  # Arabic native
+  - "ساعدني"
+  - "مساعدة"
+  - "ما الخطوة التالية"
+  - "ماذا أفعل في ريحال"
+  - "كيف أبدأ"
 ---
 @.rihal/references/karpathy-guidelines.md
 

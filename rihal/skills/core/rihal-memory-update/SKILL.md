@@ -11,13 +11,25 @@ description: >
   (use rcode-memory-init), regenerating distillates (use rcode-memory-distill),
   or general note-taking (use the existing rihal-note workflow).
 triggers:
+  # English
   - "remember this decision"
   - "log this decision"
   - "add this to memory bank"
   - "update memory bank"
   - "save this to memory"
-  - "yeh memory mein add karo"
   - "/rcode:memory-update"
+  - "/rihal-memory-update"
+  # Roman Urdu / Hindi
+  - "yeh memory mein add karo"
+  - "memory mein save karo"
+  - "yeh decision yaad rakho"
+  - "memory bank update karo"
+  # Arabic native
+  - "احفظ هذا القرار"
+  - "أضف إلى الذاكرة"
+  - "تذكّر هذا"
+  - "حدّث بنك الذاكرة"
+  - "سجّل هذا القرار"
 user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
