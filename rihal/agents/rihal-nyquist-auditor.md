@@ -2,7 +2,7 @@
 name: rihal-nyquist-auditor
 description: Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements
 tools: Read, Grep, Glob, Bash
-color: #8B5CF6
+color: purple
 ---
 
 @.rihal/references/response-style.md

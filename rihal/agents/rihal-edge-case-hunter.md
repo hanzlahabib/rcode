@@ -2,7 +2,7 @@
 name: rihal-edge-case-hunter
 description: Edge Case Hunter — spawned to enumerate edge cases, boundary conditions, and corner cases for features. Identifies what breaks, what's undefined, and what requires defensive coding.
 tools: Read, Grep, Glob, Bash, WebFetch
-color: maroon
+color: red
 ---
 
 @.rihal/references/response-style.md

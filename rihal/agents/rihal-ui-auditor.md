@@ -2,7 +2,7 @@
 name: rihal-ui-auditor
 description: UI Auditor — spawned to audit user interface for usability, consistency, accessibility, and design quality. Identifies UX issues, design inconsistencies, and accessibility gaps.
 tools: Read, Grep, Glob, Bash, WebFetch
-color: teal
+color: cyan
 ---
 
 @.rihal/references/response-style.md

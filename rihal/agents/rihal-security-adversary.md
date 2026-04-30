@@ -2,7 +2,7 @@
 name: rihal-security-adversary
 description: Security Adversary — spawned for adversarial security review, threat modeling, attack surface analysis, and identifying exploitation paths. Thinks like an attacker to find vulnerabilities.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
-color: darkred
+color: red
 ---
 
 @.rihal/references/response-style.md

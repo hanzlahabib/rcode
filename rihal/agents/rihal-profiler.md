@@ -2,7 +2,7 @@
 name: rihal-profiler
 description: User Behavior Profiler — spawned to analyze user behavior patterns, create personas, identify usage flows, and understand user needs from data and feedback.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
-color: indigo
+color: purple
 ---
 
 @.rihal/references/response-style.md

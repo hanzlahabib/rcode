@@ -2,7 +2,7 @@
 name: rihal-docs-auditor
 description: Documentation Auditor — spawned to audit documentation completeness, accuracy, and quality. Identifies missing docs, outdated content, and gaps between code and documentation.
 tools: Read, Grep, Glob, Bash
-color: gold
+color: yellow
 ---
 
 @.rihal/references/response-style.md
