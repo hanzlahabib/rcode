@@ -1,5 +1,9 @@
 # Workflow: rcode-memory-update
 
+<purpose>
+Append-only surgical update to a single Memory Bank file. Adds a decision, known issue, stakeholder note, or milestone update from current conversation context. Never rewrites, never deletes — pure append.
+</purpose>
+
 Append-only surgical update to a single Memory Bank file. Never rewrites, never deletes.
 
 ---

@@ -1,5 +1,9 @@
 # Workflow: rcode-memory-distill
 
+<purpose>
+Regenerate Memory Bank distillates with lossless compression — token-optimized snapshots of source files for fast LLM context loading. Idempotent: re-running on already-distilled content produces identical output.
+</purpose>
+
 Regenerate Memory Bank distillates with lossless compression. Idempotent.
 
 ---

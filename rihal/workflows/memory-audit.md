@@ -1,5 +1,9 @@
 # Workflow: rcode-memory-audit
 
+<purpose>
+Audit the Memory Bank for stale entries, contradictions, missing sections, and content that should be archived. Read-only by default with severity-tagged report; `--fix` patches trivial items per Phase 6 D-1 / D-2.
+</purpose>
+
 Audit the Memory Bank. Default mode is read-only (severity-tagged report).
 Optional `--fix` flag patches trivial items in place per Phase 6 D-1 / D-2.
 

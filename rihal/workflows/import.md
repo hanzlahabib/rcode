@@ -1,5 +1,9 @@
 # Import Workflow
 
+<purpose>
+External plan ingestion with conflict detection and agent delegation. Imports an externally-authored plan, detects conflicts against existing project decisions, writes SPRINT.md, and validates via rihal-sprint-checker.
+</purpose>
+
 External plan ingestion with conflict detection and agent delegation.
 
 - **--from**: Import external plan → conflict detection → write SPRINT.md → validate via rihal-sprint-checker
