@@ -1,6 +1,6 @@
 ---
 name: rihal-code-reviewer
-description: Code Review Specialist — spawned for architectural review, code quality assessment, test coverage analysis, and best practices validation. Evaluates code against standards, maintainability, and security.
+description: Code Review Specialist — spawned for architectural review, code quality assessment, test coverage analysis, and best-practices validation.
 tools: Read, Grep, Glob, Bash
 color: purple
 ---

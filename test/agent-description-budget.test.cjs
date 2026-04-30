@@ -26,7 +26,7 @@ const path = require('node:path');
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const AGENTS_DIR = path.join(PROJECT_ROOT, 'rihal', 'agents');
 const HARD_CAP_CHARS = 200;
-const BASELINE_OFFENDERS = 11;
+const BASELINE_OFFENDERS = 0;
 
 function findOffenders() {
   if (!fs.existsSync(AGENTS_DIR)) return [];

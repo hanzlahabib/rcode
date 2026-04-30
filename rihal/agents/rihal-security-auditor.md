@@ -1,6 +1,6 @@
 ---
 name: rihal-security-auditor
-description: Security Auditor — spawned for comprehensive security audit, compliance verification, security posture assessment, and remediation verification. Ensures systems meet security standards and best practices.
+description: Security Auditor — spawned for security audits, compliance verification, posture assessment, and remediation verification against security standards and best practices.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 color: purple
 ---

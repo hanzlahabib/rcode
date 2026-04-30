@@ -1,6 +1,6 @@
 ---
 name: rihal-ux-designer
-description: User Experience & Design Specialist — spawned for UI/UX reviews, design system work, accessibility audits, usability testing strategy, and design-driven decisions. Ensures products are usable, delightful, and accessible.
+description: UX & Design Specialist — spawned for UI/UX reviews, design system work, accessibility audits, usability testing strategy, and design-driven decisions.
 tools: Read, Grep, Glob, WebFetch
 color: cyan
 ---
