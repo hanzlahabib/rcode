@@ -116,9 +116,10 @@ init → new-project → plan → execute → next → status → ship
 | Command | When to use |
 |---------|-------------|
 | `/rihal-show <id>` | Print a phase or plan in full with execution status. |
-| `/rihal-add-phase <name>` | Append a new phase to the active milestone. |
-| `/rihal-insert-phase <after> <name>` | Insert urgent decimal phase (e.g. 7.1) without renumbering. |
-| `/rihal-remove-phase <n>` | Remove a future phase and renumber. |
+| `/rihal-phase <name> [--insert \| --remove]` | **Unified phase CRUD.** Default: append next integer phase. `--insert <parent>` slots a decimal phase. `--remove <id>` deletes an unstarted future phase. |
+| `/rihal-add-phase <name>` | Alias for `/rihal-phase <name>`. |
+| `/rihal-insert-phase <after> <name>` | Alias for `/rihal-phase --insert <after> <name>`. |
+| `/rihal-remove-phase <n>` | Alias for `/rihal-phase --remove <n>`. |
 | `/rihal-quick [flags]` | Small ad-hoc tasks with Rihal guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
 | `/rihal-fast "<task>"` | Trivial inline task — typo, gitignore tweak, etc. No subagents, ≤3 file edits. *Not yet implemented (#482-B).* |
 
@@ -126,10 +127,11 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | When to use |
 |---------|-------------|
-| `/rihal-note "<text>"` | Zero-friction idea capture — appends to dated note file. |
-| `/rihal-add-todo [desc]` | Capture an idea or task as a todo (infers from conversation if no arg). |
-| `/rihal-check-todos [area]` | List pending todos and pick one to work on. |
-| `/rihal-plant-seed "<idea>"` | Capture a forward-looking idea with trigger conditions — surfaces at the right milestone. |
+| `/rihal-capture "<text>" [--note \| --seed \| --list]` | **Unified capture.** Default: todo. `--note` for passive observation. `--seed` for forward-looking idea with trigger conditions. `--list` to show pending todos. |
+| `/rihal-add-todo [desc]` | Alias for `/rihal-capture` (default mode). |
+| `/rihal-note "<text>"` | Alias for `/rihal-capture --note`. |
+| `/rihal-plant-seed "<idea>"` | Alias for `/rihal-capture --seed`. |
+| `/rihal-check-todos [area]` | Alias for `/rihal-capture --list`. |
 | `/rihal-resume-work` | Restore project context after a break. |
 | `/rihal-pause-work` | Create HANDOFF.json and continue-here.md before stopping mid-phase. |
 | `/rihal-session-report` | Work summary, decisions, open blockers from this session. |
