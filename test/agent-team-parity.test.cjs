@@ -83,3 +83,37 @@ test('every team.yaml entry resolves to a source or installed agent file', () =>
       `\nEither create the agent file, fix file_path, or remove the entry.`,
   );
 });
+
+function walkMd(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const f = path.join(dir, e.name);
+    if (e.isDirectory()) walkMd(f, out);
+    else if (e.isFile() && f.endsWith('.md')) out.push(f);
+  }
+  return out;
+}
+
+test('every workflow subagent_type= reference resolves to an agent file', () => {
+  const re = /subagent_type\s*[:=]\s*['"](rihal-[a-z-]+)['"]/g;
+  const refs = new Set();
+  for (const f of walkMd(path.join(PROJECT_ROOT, 'rihal', 'workflows'))) {
+    const t = fs.readFileSync(f, 'utf8');
+    let m;
+    while ((m = re.exec(t)) !== null) refs.add(m[1]);
+  }
+  const installed = fs.existsSync(INSTALLED_AGENTS)
+    ? new Set(fs.readdirSync(INSTALLED_AGENTS).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')))
+    : new Set();
+  const src = fs.existsSync(SRC_AGENTS)
+    ? new Set(fs.readdirSync(SRC_AGENTS).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')))
+    : new Set();
+  const missing = [...refs].filter((r) => !installed.has(r) && !src.has(r)).sort();
+  assert.deepEqual(
+    missing,
+    [],
+    `workflow subagent_type refs with no agent file:\n` +
+      missing.map((r) => `  - ${r}`).join('\n') +
+      `\nEither rename the ref to a real agent or create the agent.`,
+  );
+});

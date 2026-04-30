@@ -24,7 +24,7 @@ If all pass: `RIHAL ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
 - rihal-planner — Creates detailed plans from phase scope
-- rihal-plan-checker — Reviews plan quality before execution
+- rihal-sprint-checker — Reviews plan quality before execution
 </available_agent_types>
 
 <philosophy>
@@ -547,7 +547,7 @@ Display:
 
 Initialize: `iteration_count = 1`
 
-Spawn rihal-plan-checker:
+Spawn rihal-sprint-checker:
 
 ```
 Task(
@@ -571,7 +571,7 @@ Return one of:
 - ## ISSUES FOUND — structured issue list
 </expected_output>
 """,
-  subagent_type="rihal-plan-checker",
+  subagent_type="rihal-sprint-checker",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
 )
@@ -711,7 +711,7 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] Committed on completion
 - [ ] If issues: parallel debug agents diagnose root causes
 - [ ] If issues: rihal-planner creates fix plans (gap_closure mode)
-- [ ] If issues: rihal-plan-checker verifies fix plans
+- [ ] If issues: rihal-sprint-checker verifies fix plans
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
 - [ ] Ready for `/rihal-execute --gaps-only` when complete
 </success_criteria>
