@@ -257,7 +257,7 @@ After shipping:
 
 - /rihal-complete-milestone — if all phases in milestone are done
 - /rihal-progress — see overall project state
-- /rihal-execute-phase {next} — continue to next phase
+- /rihal-execute {next} — continue to next phase
 </offer_next>
 
 <success_criteria>

@@ -7,8 +7,8 @@ Execute all plans in a phase using wave-based parallel execution. Orchestrator s
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.
 
-1. **Init state**: `node .rihal/bin/rihal-tools.cjs init execute-phase {N}`
-2. **Phase index**: list all plans via `state phase-plan-index {N}` — extract
+1. **Init state**: `node .rihal/bin/rihal-tools.cjs init execute {N}`
+2. **Phase index**: list all plans via `phase-plan-index {N}` — extract
    plan count, wave count, autonomy flag per plan, files_modified overlaps
 3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
    error flag, existing VERIFICATION.md with FAIL items without overrides

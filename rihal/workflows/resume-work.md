@@ -200,7 +200,7 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/rihal-execute-phase {phase} ${Rihal_WS})
+1. Execute phase (/rihal-execute {phase} ${Rihal_WS})
    OR
 1. Discuss Phase 3 context (/rihal-discuss-phase 3 ${Rihal_WS}) [if CONTEXT.md missing]
    OR
@@ -237,7 +237,7 @@ Based on user selection, route to appropriate workflow:
 
   `/clear` then:
 
-  `/rihal-execute-phase {phase} ${Rihal_WS}`
+  `/rihal-execute {phase} ${Rihal_WS}`
 
   ---
   ```

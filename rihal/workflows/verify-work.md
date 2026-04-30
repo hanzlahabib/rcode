@@ -443,7 +443,7 @@ All tests passed. Ready to continue.
 
 - `/rihal-secure-phase {phase}` — security review (required before advancing)
 - `/rihal-plan {next}` — Plan next phase
-- `/rihal-execute-phase {next}` — Execute next phase
+- `/rihal-execute {next}` — Execute next phase
 - `/rihal-ui-review {phase}` — visual quality audit (if frontend files were modified)
 ```
 
@@ -458,7 +458,7 @@ If `SECURITY_CFG` is `false` OR (`SECURITY_FILE` exists AND `threats_open` is `0
 All tests passed. Ready to continue.
 
 - `/rihal-plan {next}` — Plan next phase
-- `/rihal-execute-phase {next}` — Execute next phase
+- `/rihal-execute {next}` — Execute next phase
 - `/rihal-secure-phase {phase}` — security review
 - `/rihal-ui-review {phase}` — visual quality audit (if frontend files were modified)
 ```
@@ -518,7 +518,7 @@ ${AGENT_SKILLS_PLANNER}
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /rihal-execute-phase
+Output consumed by /rihal-execute
 Plans must be executable prompts.
 </downstream_consumer>
 """,
@@ -659,7 +659,7 @@ Plans verified and ready for execution.
 
 **Execute fixes** — run fix plans
 
-`/clear` then `/rihal-execute-phase {phase} --gaps-only`
+`/clear` then `/rihal-execute {phase} --gaps-only`
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -713,5 +713,5 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] If issues: rihal-planner creates fix plans (gap_closure mode)
 - [ ] If issues: rihal-plan-checker verifies fix plans
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
-- [ ] Ready for `/rihal-execute-phase --gaps-only` when complete
+- [ ] Ready for `/rihal-execute --gaps-only` when complete
 </success_criteria>

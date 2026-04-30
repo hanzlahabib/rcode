@@ -822,7 +822,7 @@ ${AGENT_SKILLS_PLANNER}
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /rihal-execute-phase. Plans need:
+Output consumed by /rihal-execute. Plans need:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
 - Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
 - Verification criteria
@@ -1232,7 +1232,7 @@ Plans ready. Launching execute-phase...
 
 Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
 ```
-Skill(skill="rihal-execute-phase", args="${PHASE} --auto --no-transition ${Rihal_WS}")
+Skill(skill="rihal-execute", args="${PHASE} --auto --no-transition ${Rihal_WS}")
 ```
 
 The `--no-transition` flag tells execute-phase to return status after verification instead of chaining further. This keeps the auto-advance chain flat — each phase runs at the same nesting level rather than spawning deeper Task agents.
@@ -1253,7 +1253,7 @@ The `--no-transition` flag tells execute-phase to return status after verificati
   Auto-advance stopped: Execution needs review.
 
   Review the output above and continue manually:
-  /rihal-execute-phase ${PHASE} ${Rihal_WS}
+  /rihal-execute ${PHASE} ${Rihal_WS}
   ```
 
 **If neither `--auto` nor config enabled:**
@@ -1286,7 +1286,7 @@ Verification: {Passed | Passed with override | Skipped}
 
 /clear then:
 
-/rihal-execute-phase {X} ${Rihal_WS}
+/rihal-execute {X} ${Rihal_WS}
 
 ───────────────────────────────────────────────────────────────
 

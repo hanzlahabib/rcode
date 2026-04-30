@@ -55,7 +55,7 @@ Write updated state.json back
 
 ## Step 3: Invoke Execute
 
-Route to `/rihal-execute-phase {target.id}`
+Route to `/rihal-execute {target.id}`
 
 The executor will:
 - See status=pending in state.json

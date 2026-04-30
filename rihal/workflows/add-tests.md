@@ -55,7 +55,7 @@ Read the phase artifacts (in order of priority):
 If no SUMMARY.md exists:
 ```
 ERROR: No SUMMARY.md found for phase ${PHASE_ARG}
-This command works on completed phases. Run /rihal-execute-phase first.
+This command works on completed phases. Run /rihal-execute first.
 ```
 Exit.
 

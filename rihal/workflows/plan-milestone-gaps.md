@@ -170,7 +170,7 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(roadmap): add gap closure phases 
 ---
 
 **Also available:**
-- `/rihal-execute-phase {N}` — if plans already exist
+- `/rihal-execute {N}` — if plans already exist
 - `cat .planning/ROADMAP.md` — see updated roadmap
 
 ---

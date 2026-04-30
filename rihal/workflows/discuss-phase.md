@@ -1144,7 +1144,7 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /rihal-execute-phase ${PHASE} ${Rihal_WS}
+  Continue: /rihal-execute ${PHASE} ${Rihal_WS}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```

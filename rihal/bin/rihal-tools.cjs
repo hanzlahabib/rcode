@@ -3344,6 +3344,61 @@ function cmdPlanList() {
   };
 }
 
+/** phase-plan-index — JSON inventory of plans (SPRINT.md) under a phase, with wave grouping and summary detection. */
+function cmdPhasePlanIndex(rawArgs) {
+  const phaseArg = String(rawArgs || '').trim();
+  if (!phaseArg) {
+    console.error('Usage: phase-plan-index <phase-number>');
+    process.exit(1);
+  }
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  if (!fs.existsSync(phasesDir)) return { phase: phaseArg, plans: [], waves: {}, incomplete: 0, has_checkpoints: false };
+  const norm = phaseArg.replace(/^0+/, '') || '0';
+  const dirs = fs.readdirSync(phasesDir).filter((d) => {
+    const m = d.match(/^(\d+)(?:[-.])/);
+    if (!m) return false;
+    const n = m[1].replace(/^0+/, '') || '0';
+    return n === norm;
+  });
+  if (dirs.length === 0) return { phase: phaseArg, plans: [], waves: {}, incomplete: 0, has_checkpoints: false, phase_dir: null };
+  const phaseDir = path.join(phasesDir, dirs[0]);
+  const all = fs.readdirSync(phaseDir);
+  const sprintFiles = all.filter((f) => /-SPRINT\.md$/i.test(f)).sort();
+  const summarySet = new Set(all.filter((f) => /-SUMMARY\.md$/i.test(f)).map((f) => f.replace(/-SUMMARY\.md$/i, '')));
+  let hasCheckpoints = false;
+  const plans = sprintFiles.map((file) => {
+    const stem = file.replace(/-SPRINT\.md$/i, '');
+    const text = fs.readFileSync(path.join(phaseDir, file), 'utf8');
+    const { frontmatter, body } = parseFrontmatter(text);
+    const id = frontmatter.sprint || frontmatter.plan || stem;
+    const wave = parseInt(frontmatter.wave || '1', 10) || 1;
+    const autonomous = String(frontmatter.autonomous || '').toLowerCase() === 'true';
+    const gapClosure = String(frontmatter.gap_closure || frontmatter.type || '').toLowerCase() === 'gap_closure';
+    const objMatch = body.match(/^##\s+(?:Objective|Goal)\s*\n+([^\n]+)/mi);
+    const objective = objMatch ? objMatch[1].trim() : (frontmatter.goal || '').replace(/^["']|["']$/g, '');
+    const taskCount = (body.match(/^[-*]\s+\[[ xX]\]/gm) || []).length;
+    const filesModified = (body.match(/^\s*-\s*path:\s*["']?([^"'\n]+)/gm) || []).length;
+    const hasSummary = summarySet.has(stem);
+    if (/checkpoint/i.test(body)) hasCheckpoints = true;
+    return { id, wave, autonomous, gap_closure: gapClosure, objective, task_count: taskCount, files_modified: filesModified, has_summary: hasSummary, file: path.relative(PROJECT_ROOT, path.join(phaseDir, file)) };
+  });
+  const waves = {};
+  for (const p of plans) {
+    const k = String(p.wave);
+    if (!waves[k]) waves[k] = [];
+    waves[k].push(p.id);
+  }
+  const incomplete = plans.filter((p) => !p.has_summary).length;
+  return {
+    phase: phaseArg,
+    phase_dir: path.relative(PROJECT_ROOT, phaseDir),
+    plans,
+    waves,
+    incomplete,
+    has_checkpoints: hasCheckpoints,
+  };
+}
+
 /** init chain — context blob for /rihal-chain workflow. */
 function cmdInitChain(rawArgs) {
   const config = readConfig();
@@ -4229,7 +4284,7 @@ function cmdProgress(args) {
       routes.push({
         letter: 'A',
         label: `Execute phase ${k} — unfinished plans`,
-        command: `/rihal-execute-phase ${k}`,
+        command: `/rihal-execute ${k}`,
       });
     }
 
@@ -4646,6 +4701,9 @@ async function main() {
         if (args[0] === 'list') { result = cmdPlanList(); }
         else { console.error('Unknown plan subcommand. Valid: list'); process.exit(1); }
         break;
+      case 'phase-plan-index':
+        result = cmdPhasePlanIndex(args.join(' '));
+        break;
       case 'notes':
         if (args[0] === 'list') { result = cmdNotesList(); }
         else if (args[0] === 'count') { result = cmdNotesCount(); }
@@ -4797,6 +4855,7 @@ async function main() {
         console.log('  context refresh                              → refresh .rihal/context/ cache from .rihal/sources.yaml');
         console.log('  module <subcommand> [args]                   → module system helpers');
         console.log('  plan <subcommand> [args]                     → phase/plan operations');
+        console.log('  phase-plan-index <N>                         → JSON inventory of plans under phase N (waves, summary status, task counts)');
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
