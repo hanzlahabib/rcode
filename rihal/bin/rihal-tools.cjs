@@ -1948,10 +1948,12 @@ function cmdState(subArgs) {
           const slug = match[2];
           const phaseDir = path.join(phasesDir, entry);
 
-          // Add phase if not already present
-          if (!state.phases.some(p => p.id === phaseId)) {
+          // Add phase if not already present (check both id and number per #482-A
+          // schema-drift fix — different writers use different field names).
+          if (!state.phases.some(p => String(p.id) === phaseId || String(p.number) === phaseId)) {
             state.phases.push({
               id: phaseId,
+              number: phaseId,
               slug,
               path: phaseDir,
               created: new Date().toISOString(),
@@ -2305,6 +2307,31 @@ function cmdState(subArgs) {
       parsed.milestones_found = new Set(milestoneMatches.map(s => s.trim().toLowerCase())).size;
 
       if (!state.phases) state.phases = [];
+
+      // One-time normalization: drop null/garbage entries and merge duplicates
+      // by id/number across the schema-drift boundary (#482-A). Sync is the
+      // safe place to do this because we re-derive truth from disk anyway.
+      const beforeClean = state.phases.length;
+      const seenKeys = new Map();
+      const cleaned = [];
+      for (const ph of state.phases) {
+        if (!ph) continue;
+        const key = String(ph.id || ph.number || '').trim();
+        if (!key || !/^\d+(\.\d+)?$/.test(key)) continue;
+        if (seenKeys.has(key)) {
+          // Merge into the kept entry: prefer non-null values from this duplicate.
+          const keptIdx = seenKeys.get(key);
+          for (const k of Object.keys(ph)) {
+            if (cleaned[keptIdx][k] == null && ph[k] != null) cleaned[keptIdx][k] = ph[k];
+          }
+          continue;
+        }
+        seenKeys.set(key, cleaned.length);
+        cleaned.push({ id: key, number: key, ...ph, id: key, number: key });
+      }
+      parsed.phases_normalized = beforeClean - cleaned.length;
+      state.phases = cleaned;
+
       const seenNums = new Set();
 
       const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
@@ -2313,15 +2340,27 @@ function cmdState(subArgs) {
         if (seenNums.has(phaseNum)) return;
         seenNums.add(phaseNum);
         parsed.phases_found += 1;
+        // Dedup against id, number, AND name — schema drift between writers means
+        // older entries carry .id while newer carry .number. Checking only one
+        // field caused duplicate entries (e.g. issue #482-A: phases 10-13 each
+        // appeared twice after a re-sync because the .id-only entries were not
+        // matched against the .number-only writer).
         const existingIdx = state.phases.findIndex(p =>
-          String(p.number) === phaseNum || p.name === phaseName
+          String(p.number) === phaseNum ||
+          String(p.id) === phaseNum ||
+          p.name === phaseName
         );
         if (existingIdx >= 0) {
+          // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
+          state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
         } else {
+          // Write both id and number on every new entry so dedup works regardless
+          // of which schema future readers expect.
           state.phases.push({
+            id: phaseNum,
             number: phaseNum,
             name: phaseName,
             goal: phaseGoal,
