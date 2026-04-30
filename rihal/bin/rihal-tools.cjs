@@ -2496,7 +2496,22 @@ function cmdPhase(subArgs) {
   const sub = subArgs[0];
 
   if (sub === 'add') {
-    const phaseName = subArgs.slice(1).join(' ').trim();
+    // Extract --decimal <parent> if present (closes #477 item C). The flag may
+    // appear before or after the phase name; we splice it out before joining.
+    const remaining = subArgs.slice(1);
+    let decimalParent = null;
+    const decimalIdx = remaining.findIndex(a => a === '--decimal');
+    if (decimalIdx !== -1) {
+      decimalParent = remaining[decimalIdx + 1];
+      if (!decimalParent || decimalParent.startsWith('--')) {
+        throw new Error('--decimal requires a parent phase number (e.g., --decimal 13)');
+      }
+      if (!/^\d+$/.test(decimalParent)) {
+        throw new Error(`--decimal parent must be a positive integer, got: ${decimalParent}`);
+      }
+      remaining.splice(decimalIdx, 2);
+    }
+    const phaseName = remaining.join(' ').trim();
     if (!phaseName) throw new Error('phase add requires <name>');
 
     const slug = phaseName
@@ -2512,28 +2527,6 @@ function cmdPhase(subArgs) {
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
 
-    let maxNum = 0;
-    if (fs.existsSync(phasesDir)) {
-      for (const entry of fs.readdirSync(phasesDir)) {
-        const m = entry.match(/^(\d+)/);
-        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
-      }
-    }
-    if (fs.existsSync(roadmapPath)) {
-      const text = fs.readFileSync(roadmapPath, 'utf8');
-      // Phase 14 / #476 — \d+ (not \d{1,3}). High numbers like 1001 are valid
-      // for hot-track phases. The cap was silently dropping them from maxNum
-      // computation, causing the next phase to collide with an existing one.
-      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
-      let m;
-      while ((m = pipeRe.exec(text)) !== null) {
-        maxNum = Math.max(maxNum, parseInt(m[1], 10));
-      }
-      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
-      while ((m = headRe.exec(text)) !== null) {
-        maxNum = Math.max(maxNum, parseInt(m[1], 10));
-      }
-    }
     // State lives in .rihal/state.json — same path used by cmdState (line ~634)
     // and every other state-writing subcommand. Phase 6 dogfood surfaced this:
     // earlier drafts wrote to .planning/state.json, creating an orphan file
@@ -2550,17 +2543,87 @@ function cmdPhase(subArgs) {
       state = { phases: [], decisions: [], blockers: [] };
     }
     if (!state.phases) state.phases = [];
-    for (const p of state.phases) {
-      const n = parseInt(String(p.number || ''), 10);
-      if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
-    }
 
-    const next = maxNum + 1;
-    // No leading zeros — phases use plain integer identifiers (6, not 06).
-    // Per Hanzla feedback: leading zeros add visual clutter without disambiguation
-    // value at the scales we operate. Applies to phases, sprints, epics, stories,
-    // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
-    const number = String(next);
+    let number;
+    if (decimalParent !== null) {
+      // Verify parent exists somewhere (state, dir, or ROADMAP) before slotting under it.
+      const parentNum = parseInt(decimalParent, 10);
+      let parentExists = state.phases.some(p => parseInt(String(p.number), 10) === parentNum);
+      if (!parentExists && fs.existsSync(phasesDir)) {
+        parentExists = fs.readdirSync(phasesDir).some(e => {
+          const m = e.match(/^(\d+)(?:[.-]|$)/);
+          return m && parseInt(m[1], 10) === parentNum;
+        });
+      }
+      if (!parentExists && fs.existsSync(roadmapPath)) {
+        const text = fs.readFileSync(roadmapPath, 'utf8');
+        const re = new RegExp(`(^|\\n)(?:##+\\s*Phase\\s+|\\|\\s*)${parentNum}\\b`);
+        parentExists = re.test(text);
+      }
+      if (!parentExists) {
+        throw new Error(`--decimal parent ${parentNum} not found (no state entry, directory, or ROADMAP row matches)`);
+      }
+
+      // Find max minor across phases dir, ROADMAP, and state for `<parent>.M`.
+      let maxMinor = 0;
+      if (fs.existsSync(phasesDir)) {
+        for (const entry of fs.readdirSync(phasesDir)) {
+          const m = entry.match(new RegExp(`^${parentNum}\\.(\\d+)`));
+          if (m) maxMinor = Math.max(maxMinor, parseInt(m[1], 10));
+        }
+      }
+      if (fs.existsSync(roadmapPath)) {
+        const text = fs.readFileSync(roadmapPath, 'utf8');
+        const pipeRe = new RegExp(`^\\|\\s*${parentNum}\\.(\\d+)\\s*\\|`, 'gm');
+        let m;
+        while ((m = pipeRe.exec(text)) !== null) {
+          maxMinor = Math.max(maxMinor, parseInt(m[1], 10));
+        }
+        const headRe = new RegExp(`^#{2,4}\\s*Phase\\s+${parentNum}\\.(\\d+)\\b`, 'gm');
+        while ((m = headRe.exec(text)) !== null) {
+          maxMinor = Math.max(maxMinor, parseInt(m[1], 10));
+        }
+      }
+      for (const p of state.phases) {
+        const m = String(p.number || '').match(new RegExp(`^${parentNum}\\.(\\d+)$`));
+        if (m) maxMinor = Math.max(maxMinor, parseInt(m[1], 10));
+      }
+      number = `${parentNum}.${maxMinor + 1}`;
+    } else {
+      let maxNum = 0;
+      if (fs.existsSync(phasesDir)) {
+        for (const entry of fs.readdirSync(phasesDir)) {
+          const m = entry.match(/^(\d+)/);
+          if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+        }
+      }
+      if (fs.existsSync(roadmapPath)) {
+        const text = fs.readFileSync(roadmapPath, 'utf8');
+        // Phase 14 / #476 — \d+ (not \d{1,3}). High numbers like 1001 are valid
+        // for hot-track phases. The cap was silently dropping them from maxNum
+        // computation, causing the next phase to collide with an existing one.
+        const pipeRe = /^\|\s*(\d+)\s*\|/gm;
+        let m;
+        while ((m = pipeRe.exec(text)) !== null) {
+          maxNum = Math.max(maxNum, parseInt(m[1], 10));
+        }
+        const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
+        while ((m = headRe.exec(text)) !== null) {
+          maxNum = Math.max(maxNum, parseInt(m[1], 10));
+        }
+      }
+      for (const p of state.phases) {
+        const n = parseInt(String(p.number || ''), 10);
+        if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+      }
+
+      const next = maxNum + 1;
+      // No leading zeros — phases use plain integer identifiers (6, not 06).
+      // Per Hanzla feedback: leading zeros add visual clutter without disambiguation
+      // value at the scales we operate. Applies to phases, sprints, epics, stories,
+      // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
+      number = String(next);
+    }
 
     if (state.phases.some(p => String(p.number) === number)) {
       throw new Error(`Phase ${number} already exists in state.json`);
@@ -4725,7 +4788,7 @@ async function main() {
         console.log('  agent-skills <name>                          → alias for agent-info');
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
-        console.log('  phase add <name>                             → add integer phase to current milestone (creates dir + ROADMAP entry + state)');
+        console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
         console.log('  generate-claude-md [--force]                 → bootstrap a project CLAUDE.md scaffold (refuses to overwrite without --force)');
