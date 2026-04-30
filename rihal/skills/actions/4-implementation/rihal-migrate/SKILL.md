@@ -1,6 +1,6 @@
 ---
 name: rihal-migrate
-description: Plan and execute the move from MVP to production-grade infrastructure without rewriting from scratch. Use when an MVP works but the next round of features hits a wall — flaky deploys, manual ops, no observability, no tests, hand-rolled auth. Specifically addresses the documented Rihal pain ("MVP delivered, hard to revamp"). Pairs with rihal-harden for security pass and rihal-ci for the new pipeline.
+description: Plan and execute the move from MVP to production-grade infrastructure without rewriting from.
 triggers:
   - "graduate the mvp"
   - "production grade infra"

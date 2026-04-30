@@ -1,6 +1,6 @@
 ---
 name: rihal-browser-verify
-description: Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests, performance traces, screenshot diffs. Use when implementing or debugging any browser-runtime feature, especially Three.js scenes, scroll-driven UI, or frontend perf concerns. Closes the gap between "the build passes" and "the user actually sees what we intended".
+description: Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests,.
 triggers:
   - "verify in browser"
   - "check the dom"

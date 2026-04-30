@@ -1,6 +1,6 @@
 ---
 name: rihal-debug
-description: Root-cause debugging via the scientific method. Use when a test fails, a build breaks, behaviour doesn't match expectations, or any "it's broken and I don't know why" moment. Forces hypothesis → experiment → observation → narrow → repeat — never guessing or shotgunning fixes. Default observability layer is Sentry; the skill knows how to read Sentry traces if available.
+description: Root-cause debugging via the scientific method.
 triggers:
   # English
   - "debug this"

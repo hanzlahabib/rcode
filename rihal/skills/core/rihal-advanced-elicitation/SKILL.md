@@ -1,6 +1,6 @@
 ---
 name: rihal-advanced-elicitation
-description: Push the LLM to reconsider, refine, and improve its recent output through structured methods like socratic questioning, first principles, pre-mortem, and red-teaming. Use when the user asks for deeper critique, says "push harder on this", "go deeper", "challenge this", "stress-test this section", or names a specific elicitation method. For prose editing use rihal-editorial-review-prose; for structural review use rihal-editorial-review-structure.
+description: Push the LLM to reconsider, refine, and improve its recent output through structured methods like.
 agent_party: '{project-root}/.rihal/team.yaml'
 triggers:
   - "advanced elicitation"

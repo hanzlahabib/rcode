@@ -1,6 +1,6 @@
 ---
 name: rihal-incremental
-description: Ship code in small, atomic, verifiable steps. Use when implementing any feature, fixing any bug, or refactoring any module. Forces one logical change per commit, build-and-test gate after each step, and a rollback-ready trail. Pairs with rihal-prove-it (TDD) and rihal-code-review.
+description: Ship code in small, atomic, verifiable steps.
 triggers:
   - "ship incrementally"
   - "atomic commits"

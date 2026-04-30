@@ -1,6 +1,6 @@
 ---
 name: rihal-source-truth
-description: Cite official documentation before writing or recommending any framework, library, or API code. Use when working with Next.js, React, Strapi, Postgres, or any third-party tool. Forces the agent to fetch the upstream doc page (or local docs in `node_modules`) and quote the version-specific API rather than relying on training-data memory. Catches "the API changed in v15" foot-guns.
+description: Cite official documentation before writing or recommending any framework, library, or API code.
 triggers:
   - "cite the docs"
   - "official source"

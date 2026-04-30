@@ -1,6 +1,6 @@
 ---
 name: rihal-git-flow
-description: Branching, commits, conflicts, parallel work — aligned with the Rihal Epic→Feature→Task hierarchy from GITHUB_WORKFLOW.md. Use when starting a new feature, opening a PR, resolving a merge conflict, or coordinating multi-developer work. Enforces Conventional Commits, no AI attribution lines, no force-push to main.
+description: Branching, commits, conflicts, parallel work — aligned with the Rihal Epic→Feature→Task hierarchy.
 triggers:
   - "git flow"
   - "branching strategy"

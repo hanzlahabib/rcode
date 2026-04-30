@@ -1,6 +1,6 @@
 ---
 name: rihal-ocr-consistency
-description: OCR pipeline determinism + ground-truth validation. Use when running an OCR pipeline (text extraction from PDFs, scanned documents, government forms) and seeing inconsistent output across runs, language-routing mistakes, or accuracy regressions. Specifically encodes Rihal's OCR pain — Arabic/English routing failures, Triton inconsistencies, missing ground-truth checks.
+description: OCR pipeline determinism + ground-truth validation.
 triggers:
   - "ocr inconsistency"
   - "ocr pipeline"

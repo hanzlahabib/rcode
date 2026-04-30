@@ -1,6 +1,6 @@
 ---
 name: rihal-ci
-description: CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix, Helm charts for K8s deployment, Docker Compose for dev environments. Use when standing up CI for a new repo, adding a quality gate, debugging a flaky workflow, or migrating dev-compose to production Helm. Opinionated about zero-runtime-dep invariants and pre-merge gates.
+description: CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix,.
 triggers:
   - "set up ci"
   - "github actions"

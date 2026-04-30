@@ -1,6 +1,6 @@
 ---
 name: rihal-theme-system
-description: Audit a frontend's design tokens BEFORE launch. Catches inconsistent colours, scattered hex values, hardcoded spacing, font drift, and missing dark/RTL mode support. Specifically encodes Rihal's "had to do complete rebranding mid-project" pain — themes accumulated drift until a full pass was the only fix. Pairs with rihal-rebrand if a rebrand becomes unavoidable.
+description: Audit a frontend's design tokens BEFORE launch.
 triggers:
   - "theme audit"
   - "design tokens"

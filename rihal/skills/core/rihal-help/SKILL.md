@@ -1,6 +1,6 @@
 ---
 name: rihal-help
-description: 'Analyzes current state and user query to answer Rihal questions or recommend the next skill(s) to use. Use when user asks for help, Rihal help, what to do next, or what to start with in Rihal.'
+description: "Answers Rihal questions and recommends the next skill to run, based on current project state."
 triggers:
   # English
   - "help"

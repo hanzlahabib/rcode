@@ -1,6 +1,6 @@
 ---
 name: rihal-deploy-unify
-description: Detect and unify multiple deployment paths in a single project. Use when a repo has accumulated overlapping deploy mechanisms (Docker Compose + Helm + manual scripts + Vercel + Jenkins) and "which one runs in production" is unclear. Specifically encodes the Siraaj deployment chaos lesson — multiple deploy paths cost a week of debugging and broke Keycloak more than once.
+description: Detect and unify multiple deployment paths in a single project.
 triggers:
   - "deploy unify"
   - "multiple deploy paths"

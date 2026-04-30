@@ -1,6 +1,6 @@
 ---
 name: rihal-incident-record
-description: Generate a change record + post-mortem in one flow. Use after resolving any production incident, deploying any non-trivial change, or making any decision that future-you will need to retrace. Implements the verified Rihal change-record format from `template/docs/change_records/`. Pairs with rihal-debug — once the bug is rooted-out, this skill writes the record.
+description: Generate a change record + post-mortem in one flow.
 triggers:
   - "incident record"
   - "post mortem"

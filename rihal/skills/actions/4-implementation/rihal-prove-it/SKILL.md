@@ -1,6 +1,6 @@
 ---
 name: rihal-prove-it
-description: Test-first development. Use when implementing any new behaviour, fixing any bug, or changing existing logic. Writes a failing test first, then the minimum code to pass it, then refactors. For UI flows uses Playwright; for unit logic uses Jest or node:test. The phrase "prove it" is the activation — every claim of "this works" must have a test backing it.
+description: Test-first development.
 triggers:
   - "prove it"
   - "tdd"

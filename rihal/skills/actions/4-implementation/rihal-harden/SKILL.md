@@ -1,6 +1,6 @@
 ---
 name: rihal-harden
-description: Security hardening checklist for SaaS applications. Use before launching any feature that touches authentication, authorization, tenant data, file upload, or external integrations. Specifically opinionated about Keycloak/Active Directory sync (rcode learned this the hard way), JWT validation pitfalls, and tenant isolation in multi-org Postgres.
+description: Security hardening checklist for SaaS applications.
 triggers:
   - "harden this"
   - "security check"

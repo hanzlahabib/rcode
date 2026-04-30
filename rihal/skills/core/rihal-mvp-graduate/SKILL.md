@@ -1,6 +1,6 @@
 ---
 name: rihal-mvp-graduate
-description: Move an MVP to production-grade infrastructure incrementally. Use when an MVP has shipped, has real users, and "the next round of features" is hitting walls — flaky deploys, no observability, manual ops, hand-rolled auth. Specifically addresses Rihal's "MVPs delivered, hard to revamp" pain. Companion to rihal-migrate (the engineering skill); this one is the strategic / sequenced version specifically scoped to MVP→prod.
+description: Move an MVP to production-grade infrastructure incrementally.
 triggers:
   - "graduate this mvp"
   - "mvp to prod plan"

@@ -28,7 +28,7 @@ const HARD_CAP_CHARS = 100;
 // Snapshot: current count of skills exceeding HARD_CAP_CHARS, captured
 // 2026-04-30 against 105 installed skills. Drop this number whenever
 // you trim a description; never raise it.
-const BASELINE_OFFENDERS = 30;
+const BASELINE_OFFENDERS = 0;
 
 function countOffenders() {
   if (!fs.existsSync(SKILLS_DIR)) return { total: 0, offenders: [] };

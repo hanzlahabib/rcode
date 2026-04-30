@@ -1,6 +1,6 @@
 ---
 name: rihal-auth-audit
-description: Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres. Use when seeing authentication weirdness — users disappearing, tokens accepted post-deactivation, "phantom" sessions, or tenant data leaking across orgs. Specifically encodes the lessons from the Rihal Keycloak data-loss incident — sync drift between Keycloak and AD silently broke logins.
+description: Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres.
 triggers:
   - "auth audit"
   - "keycloak ad sync"

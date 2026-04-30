@@ -1,6 +1,6 @@
 ---
 name: rihal-client-gate
-description: Client requirement freeze gates and async-comm patterns to stop late requirements from derailing delivery. Use when a project keeps slipping because the client adds requirements mid-sprint, or when the client takes a week to respond to a blocking question. Specifically encodes Rihal's "client late requirements caused project delays" pain — the fix isn't to "communicate better", it's structural gates that the project actually enforces.
+description: Client requirement freeze gates and async-comm patterns to stop late requirements from derailing.
 triggers:
   - "client gate"
   - "freeze requirements"

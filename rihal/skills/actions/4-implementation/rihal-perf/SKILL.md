@@ -1,6 +1,6 @@
 ---
 name: rihal-perf
-description: Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration), Three.js (frame budget, draw calls, geometry uploads), Postgres (query plans, indexes), and Vercel/K8s (cold starts, memory). Use when Lighthouse scores regress, fps drops, queries get slow, or a deploy gets OOM-killed. Pairs with rihal-browser-verify for runtime measurement.
+description: Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration),.
 triggers:
   - "optimize performance"
   - "page is slow"

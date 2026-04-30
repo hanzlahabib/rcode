@@ -1,6 +1,6 @@
 ---
 name: rihal-editorial-review-structure
-description: Structural editor that proposes cuts, reorganization, and consolidation while preserving comprehension. Use when the user requests structural review, "review the structure of this doc", or "tighten this document". Run before copy editing. For prose-level fixes (typos, grammar, word choice) use rihal-editorial-review-prose instead.
+description: Structural editor that proposes cuts, reorganization, and consolidation while preserving.
 triggers:
   - "editorial review structure"
   - "structural review"

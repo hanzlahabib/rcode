@@ -1,6 +1,6 @@
 ---
 name: rihal-rebrand
-description: Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names. Use when a project's brand changes mid-flight and the rename has to ripple through dozens of files without breaking anything. Specifically encodes the Rihal "had to do complete rebranding" pain — the rename touched 100+ files and broke 3 deploys before we got it right.
+description: Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names.
 triggers:
   - "rebrand"
   - "stack-wide rename"

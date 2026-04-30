@@ -1,6 +1,6 @@
 ---
 name: rihal-trim
-description: Code simplification. Reduce lines, remove dead branches, collapse abstractions, delete commented-out code. Use when a file has grown past comprehension, a function takes more than 80 lines, or a class has accumulated "while I'm here" features. Applies the rcode Distillator philosophy — lossless compression — to source code rather than documents.
+description: Code simplification.
 triggers:
   - "trim this"
   - "simplify this code"

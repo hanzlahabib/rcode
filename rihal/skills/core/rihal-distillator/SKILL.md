@@ -1,6 +1,6 @@
 ---
 name: rihal-distillator
-description: Lossless LLM-optimized compression of source documents. Use when the user requests to "distill documents" or "create a distillate". Distillates preserve every fact, decision, constraint, and relationship while stripping prose overhead — designed as drop-in LLM context. Not summarisation (summaries are lossy). For Memory Bank distillates specifically, use rcode-memory-distill.
+description: Lossless LLM-optimized compression of source documents.
 argument-hint: "<source-paths> [--validate <distillate-path>] [--token-budget <N>] [--consumer <name>]"
 triggers:
   - "distillator"
