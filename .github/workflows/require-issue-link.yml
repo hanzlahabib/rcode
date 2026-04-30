@@ -1,0 +1,76 @@
+name: Require issue link
+
+# Every pull request must reference at least one issue in the body
+# (e.g. "Closes #123", "Refs #456", "Fixes #789"). PRs without an issue
+# link are auto-flagged with a comment so contributors can fix or close.
+#
+# This is the AGENTS.md scope-discipline rule enforced in CI:
+# untracked PRs cause scope drift; every change should map to a tracked
+# issue or be closed back at the contributor.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  require-issue-link:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for issue reference
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const re = /\b(?:closes|close|fixes|fix|resolves|resolve|refs|ref)\s+#\d+/i;
+            const hasLink = re.test(body);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const num = context.payload.pull_request.number;
+            const marker = '<!-- require-issue-link -->';
+
+            // Find existing bot comment with our marker
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: num,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (hasLink) {
+              // Clean up any stale warning comment
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner, repo, comment_id: existing.id,
+                });
+              }
+              return;
+            }
+
+            const message = [
+              marker,
+              '## Missing issue link',
+              '',
+              'This PR does not reference an issue in its body. Per AGENTS.md scope discipline, every change should map to a tracked issue.',
+              '',
+              'Add one of:',
+              '- `Closes #N` — for bug fixes / feature completions',
+              '- `Refs #N` — for partial work toward a larger issue',
+              '- `Fixes #N` — alias for Closes',
+              '',
+              'If this is a chore PR (typo, formatting, etc.), file a quick issue first or use `Refs #0` and explain in the body.',
+              '',
+              '_This comment auto-deletes once the body is updated._',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body: message,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: num, body: message,
+              });
+            }
+
+            core.setFailed('PR body must reference an issue (Closes / Refs / Fixes #N).');
