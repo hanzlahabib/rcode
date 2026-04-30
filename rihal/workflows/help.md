@@ -201,7 +201,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-install <module>` | Install a Rihal capability bundle into the project. |
 | `/rihal-enable-hooks` | Install optional Rihal hooks into `.claude/settings.json`. |
 | `/rihal-scaffold-project` | Scaffold a new project from the official Rihal template. |
-| `/rihal-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. |
+| `/rihal-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. *Not yet implemented (#481).* |
 
 ## Story-level epics workflow
 
