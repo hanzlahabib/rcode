@@ -10,7 +10,7 @@
 Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concrete fixes:
 
 1. Implement `commit` CLI subcommand (#465 — most-used missing subcommand across workflows)
-2. Add phase-aware fields to `cmdInit` (#464 part 3 — unblocks /rihal:plan + /rihal:discuss-phase agent flows)
+2. Add phase-aware fields to `cmdInit` (#464 part 3 — unblocks /rihal-plan + /rihal-discuss-phase agent flows)
 3. Read **Status:** field in `lib/roadmap.cjs` so `roadmap list-phases` reports actual status
 
 **Out of scope:**

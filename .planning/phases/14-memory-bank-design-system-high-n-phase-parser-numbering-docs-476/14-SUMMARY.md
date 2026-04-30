@@ -59,7 +59,7 @@ Single atomic commit grouping all 3 sub-scopes (the integration is tight — des
 
 ## Deferred to follow-ups
 
-- **Skill-name resolver** (`Skill(rihal-ui-phase)` rejected, must be `Skill(rihal:ui-phase)`) — Claude Code namespacing issue, not a rihal-code bug per se. File separately.
+- **Skill-name resolver** (`Skill(rihal-ui-phase)` rejected, must be `Skill(rihal-ui-phase)`) — Claude Code namespacing issue, not a rihal-code bug per se. File separately.
 - **siraaj `1001-*` rename** — siraaj owner's call, after this lands. Migration steps are documented in `docs/phase-numbering.md`.
 - **`phase add --decimal <parent>` flag** — explicit decimal-phase creation via CLI; nice-to-have.
 - **#469 (parser/walker consolidation)** — structural fix (lift to module scope); this phase is the tactical fix that unblocks high-N usage today.

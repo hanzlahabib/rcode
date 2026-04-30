@@ -8,7 +8,7 @@ estimated_effort: large
 
 ## Objective
 
-Rihal v2 installs one monolithic `core` module. As the agent roster grows (executor, planner, new specialists), users shouldn't have to install everything. This plan introduces a lightweight module system where capabilities are grouped into installable bundles, and `/rihal:install <module>` adds them to an existing project.
+Rihal v2 installs one monolithic `core` module. As the agent roster grows (executor, planner, new specialists), users shouldn't have to install everything. This plan introduces a lightweight module system where capabilities are grouped into installable bundles, and `/rihal-install <module>` adds them to an existing project.
 
 ## Context
 
@@ -22,8 +22,8 @@ Rihal v2 installs one monolithic `core` module. As the agent roster grows (execu
 
 | Module | Contents | Installs |
 |---|---|---|
-| `core` | council agents (5), /rihal:council, /rihal:discuss, /rihal:status | Always installed |
-| `execution` | rihal-executor, rihal-planner, /rihal:execute, /rihal:plan | Opt-in |
+| `core` | council agents (5), /rihal-council, /rihal-discuss, /rihal-status | Always installed |
+| `execution` | rihal-executor, rihal-planner, /rihal-execute, /rihal-plan | Opt-in |
 | `research` | Mariam (enhanced), research workflow extensions | Opt-in |
 
 For now: define `core` and `execution`. `research` is a placeholder.
@@ -97,13 +97,13 @@ type: auto
 **Done when:** `node cli/install-v2.js` reads from `core.yaml` and produces the same files as before
 **Commit:** `refactor(install): drive install-v2 from module YAML manifests`
 
-### Task 3 — Add /rihal:install slash command
+### Task 3 — Add /rihal-install slash command
 type: auto
 **Steps:**
 1. Create `rihal/v2/commands/install.md`:
    ```yaml
    ---
-   name: rihal:install
+   name: rihal-install
    description: Install a Rihal module into the current project
    argument-hint: "<module-name>"
    allowed-tools: [Read, Bash]
@@ -115,7 +115,7 @@ type: auto
 
    **Step 1:** Check `manifest.yaml` — is the module already installed? If yes: print "Module {name} already installed." and exit.
 
-   **Step 2:** Check `requires` — are required modules installed? If not: print "Module {name} requires {dep} to be installed first. Run /rihal:install {dep}." and exit.
+   **Step 2:** Check `requires` — are required modules installed? If not: print "Module {name} requires {dep} to be installed first. Run /rihal-install {dep}." and exit.
 
    **Step 3:** Run install:
    ```bash
@@ -132,14 +132,14 @@ type: auto
    Added {n} agents, {n} workflows, {n} commands
 
    New commands available:
-   /rihal:execute — {description}
-   /rihal:plan — {description}
+   /rihal-execute — {description}
+   /rihal-plan — {description}
    ```
 
 3. Note: this workflow requires the rihal-code package to be accessible. Document the requirement.
-4. Add to install-v2.js: copy `install.md` command and workflow as part of core install (so users can always run /rihal:install after initial setup)
+4. Add to install-v2.js: copy `install.md` command and workflow as part of core install (so users can always run /rihal-install after initial setup)
 **Done when:** workflow and command files exist
-**Commit:** `feat(workflows): add /rihal:install module management command`
+**Commit:** `feat(workflows): add /rihal-install module management command`
 
 ### Task 4 — Extend rihal-tools.cjs with module subcommands
 type: auto
@@ -152,20 +152,20 @@ type: auto
 
 ### Task 5 — Integration test: install execution module on a fresh project
 type: checkpoint:human-verify
-**What executor does:** Runs fresh install (core only), then `/rihal:install execution`, then checks installed files.
+**What executor does:** Runs fresh install (core only), then `/rihal-install execution`, then checks installed files.
 **Verify:**
 - Before: `.claude/agents/rihal-executor.md` does not exist
-- After `/rihal:install execution`: `.claude/agents/rihal-executor.md` exists
+- After `/rihal-install execution`: `.claude/agents/rihal-executor.md` exists
 - After: `.claude/commands/rihal/execute.md` exists
 - After: `manifest.yaml` contains `execution` in modules list
-- After: `/rihal:execute` is accessible as a slash command
-- Core commands (`/rihal:council`, `/rihal:status`) still work after module install
+- After: `/rihal-execute` is accessible as a slash command
+- Core commands (`/rihal-council`, `/rihal-status`) still work after module install
 
 ## Success criteria
 - [ ] `core.yaml` and `execution.yaml` module manifests exist and are internally consistent
 - [ ] `install-v2.js` reads from module YAML instead of hardcoded lists
 - [ ] `node cli/install-v2.js --module execution` installs only the execution module files
-- [ ] `/rihal:install execution` works end-to-end in an installed project
+- [ ] `/rihal-install execution` works end-to-end in an installed project
 - [ ] `manifest.yaml` is updated after module install
 - [ ] Installing a module a second time is a no-op (idempotent)
 - [ ] Installing a module whose `requires` are not met prints a clear error

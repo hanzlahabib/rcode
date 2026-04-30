@@ -1,6 +1,6 @@
 ---
 plan: "05"
-title: /rihal:discuss — lightweight single-agent quick-sync
+title: /rihal-discuss — lightweight single-agent quick-sync
 priority: medium
 depends_on: ["01", "02"]
 estimated_effort: small
@@ -8,19 +8,19 @@ estimated_effort: small
 
 ## Objective
 
-Add `/rihal:discuss` as a lightweight alternative to `/rihal:council`. Council is heavyweight — 2 rounds, 3-5 agents, session artifact saved. Sometimes Hanzla just wants to think something through with one agent quickly. Discuss is that: one agent, conversational, no artifact unless asked.
+Add `/rihal-discuss` as a lightweight alternative to `/rihal-council`. Council is heavyweight — 2 rounds, 3-5 agents, session artifact saved. Sometimes Hanzla just wants to think something through with one agent quickly. Discuss is that: one agent, conversational, no artifact unless asked.
 
 ## Context
 
 - The v1 rihal apparently had a `strategy-session` and `majlis-sequential` workflow — check `rihal/workflows/` for patterns to learn from
 - The key difference from council: single agent, no Round 2, no mandatory session save, faster
-- Routing: `rihal:discuss sadiq what's the kill criterion for this idea` → spawns only Sadiq
+- Routing: `rihal-discuss sadiq what's the kill criterion for this idea` → spawns only Sadiq
 - If no agent specified: route to the most relevant agent using classify-question (same scorer, pick top 1)
-- `/rihal:discuss` should feel like texting one colleague, not calling a board meeting
+- `/rihal-discuss` should feel like texting one colleague, not calling a board meeting
 
 ## Discuss vs Council comparison
 
-| Feature | /rihal:discuss | /rihal:council |
+| Feature | /rihal-discuss | /rihal-council |
 |---|---|---|
 | Agents | 1 | 3-5 |
 | Rounds | 1 | 2 (with cross-talk) |
@@ -42,14 +42,14 @@ type: auto
 **Done when:** you understand what v1 did and can describe what to keep vs discard
 **Commit:** none (read-only)
 
-### Task 2 — Create /rihal:discuss command and workflow
+### Task 2 — Create /rihal-discuss command and workflow
 type: auto
 **Steps:**
 1. Create `rihal/v2/commands/discuss.md`:
    ```yaml
    ---
-   name: rihal:discuss
-   description: Quick sync with one Rihal agent. Lighter than /rihal:council — one agent, no cross-talk, optional save.
+   name: rihal-discuss
+   description: Quick sync with one Rihal agent. Lighter than /rihal-council — one agent, no cross-talk, optional save.
    argument-hint: "[agent-name] <question>"
    allowed-tools: [Read, Bash, Agent, AskUserQuestion]
    ---
@@ -96,7 +96,7 @@ type: auto
 
 3. Register in skills manifest.
 **Done when:** workflow and command files exist and cover all steps
-**Commit:** `feat(workflows): add /rihal:discuss lightweight single-agent command`
+**Commit:** `feat(workflows): add /rihal-discuss lightweight single-agent command`
 
 ### Task 3 — Extend rihal-tools.cjs with init discuss and select-panel --top N
 type: auto
@@ -112,18 +112,18 @@ type: auto
 **Done when:** both work from command line
 **Commit:** `feat(cli): add init discuss and select-panel --top flag`
 
-### Task 4 — Wire /rihal:discuss into install-v2.js
+### Task 4 — Wire /rihal-discuss into install-v2.js
 type: auto
 **Steps:**
 1. Add `discuss.md` to command copy step → `.claude/commands/rihal/discuss.md`
 2. Add `discuss.md` to workflow copy step → `.rihal/workflows/discuss.md`
-3. Add skills manifest entry for `/rihal:discuss`
+3. Add skills manifest entry for `/rihal-discuss`
 **Done when:** fresh install includes the discuss command
-**Commit:** `feat(install): wire /rihal:discuss into install pipeline`
+**Commit:** `feat(install): wire /rihal-discuss into install pipeline`
 
 ## Success criteria
-- [ ] `/rihal:discuss sadiq should I pivot this idea?` spawns only Sadiq with the question
-- [ ] `/rihal:discuss what stack should I use?` auto-routes to Waleed (CTO) via scorer
+- [ ] `/rihal-discuss sadiq should I pivot this idea?` spawns only Sadiq with the question
+- [ ] `/rihal-discuss what stack should I use?` auto-routes to Waleed (CTO) via scorer
 - [ ] Response is printed verbatim with no round labels or orchestrator note
 - [ ] In guided mode, user is offered to save; in yolo mode, save is skipped
 - [ ] `state.json` `last_session` is updated after discuss

@@ -17,11 +17,11 @@ Plan 06 → depends on all above
 | File | Title | Priority | Depends on | Effort |
 |------|-------|----------|------------|--------|
 | [plan-01-executor-wiring.md](./plan-01-executor-wiring.md) | Wire rihal-executor into install pipeline | critical | — | medium |
-| [plan-02-state-json.md](./plan-02-state-json.md) | state.json + /rihal:status dashboard | critical | 01 | medium |
-| [plan-03-rihal-planner.md](./plan-03-rihal-planner.md) | rihal-planner + /rihal:plan command | high | 01, 02 | large |
+| [plan-02-state-json.md](./plan-02-state-json.md) | state.json + /rihal-status dashboard | critical | 01 | medium |
+| [plan-03-rihal-planner.md](./plan-03-rihal-planner.md) | rihal-planner + /rihal-plan command | high | 01, 02 | large |
 | [plan-04-classifier-fix.md](./plan-04-classifier-fix.md) | Fix question classifier (multilingual) | high | — | small |
-| [plan-05-discuss-command.md](./plan-05-discuss-command.md) | /rihal:discuss lightweight single-agent | medium | 01, 02 | small |
-| [plan-06-module-system.md](./plan-06-module-system.md) | Module system + /rihal:install | low | all above | large |
+| [plan-05-discuss-command.md](./plan-05-discuss-command.md) | /rihal-discuss lightweight single-agent | medium | 01, 02 | small |
+| [plan-06-module-system.md](./plan-06-module-system.md) | Module system + /rihal-install | low | all above | large |
 
 ## How to use these plans
 
@@ -50,7 +50,7 @@ An agent reading these should:
 
 - [ ] Plan 01: fresh `install-v2` includes executor agent + execute workflow
 - [ ] Plan 02: `.rihal/state.json` created on install, updated after council + execute
-- [ ] Plan 03: `/rihal:plan <session>` produces runnable PLAN.md files
+- [ ] Plan 03: `/rihal-plan <session>` produces runnable PLAN.md files
 - [ ] Plan 04: Roman Urdu question correctly classified, Mariam included in market panels
-- [ ] Plan 05: `/rihal:discuss sadiq <question>` works in under 30 seconds
-- [ ] Plan 06: `/rihal:install execution` adds executor capability to a core-only install
+- [ ] Plan 05: `/rihal-discuss sadiq <question>` works in under 30 seconds
+- [ ] Plan 06: `/rihal-install execution` adds executor capability to a core-only install

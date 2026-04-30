@@ -23,7 +23,7 @@ Internal team. Who owns which area, who reviews what, who is on holiday this wee
 ### Hanzla Habib — maintainer
 
 - **Owns:** everything — solo project
-- **Reviews:** all PRs (cross-AI peer reviews via `/rihal:review` for second opinions)
+- **Reviews:** all PRs (cross-AI peer reviews via `/rihal-review` for second opinions)
 - **Pairs with:** AI agents (Claude Code is the primary IDE)
 - **Time zone:** GMT+5 (Pakistan)
 - **Notes:** founder; ships rcode as a personal side-project that doubles as Rihal's institutional brain

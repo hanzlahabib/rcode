@@ -24,7 +24,7 @@ Three closely-related gaps surfaced in the same 2026-04-30 session, bundled here
 - **D-4:** Replace ALL 9 `\d{1,3}` occurrences in `rihal-tools.cjs` with `\d+(?:\.\d+)?`. Reason: canonical parser in `lib/roadmap.cjs` already uses `\d+`; the duplicates are drift (will be fully resolved by #469 lifting walkers/parsers to module scope, but THIS phase fixes the bug class without waiting for that refactor).
 - **D-5:** Recommended phase-numbering convention is **decimal sub-phases for hot-fixes** (`100.1`, `100.2`) since `/rihal-insert-phase --number 100.1` already supports them and `lib/roadmap.cjs` already parses them. Document the four options in `docs/phase-numbering.md` with tradeoffs, name the recommendation, cross-link from CLAUDE.md template + parking-lot-convention.md.
 - **D-6:** Do NOT change siraaj's existing `1001-*` phase dir as part of this phase. That's a separate cleanup decision the siraaj owner makes.
-- **D-7:** Do NOT fix the `Skill(rihal-ui-phase)` vs `Skill(rihal:ui-phase)` resolver gap here. That's a Claude Code namespacing issue — file as a follow-up, not bundled.
+- **D-7:** Do NOT fix the `Skill(rihal-ui-phase)` vs `Skill(rihal-ui-phase)` resolver gap here. That's a Claude Code namespacing issue — file as a follow-up, not bundled.
 - **D-8:** Auto-include `design-system.md` in `/rcode-memory-init` template copy logic. New project installs ship it by default.
 
 </decisions>

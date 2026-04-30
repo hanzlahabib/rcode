@@ -31,7 +31,7 @@
 | #472 | `agent-skills rihal-X` always returned "Unknown agent" — every workflow got empty skills context | New `resolveAgentId` helper: exact → strip `rihal-` prefix → canonical alias |
 | #473 | `phase add` from a foreign dir polluted parent project's ROADMAP | `assertCwdMatchesProjectRoot` guard, exit 2 with remediation |
 | #475 | LLMs bypassing `/rihal-add-phase` and writing SPRINT.md directly | PreToolUse hook blocks unregistered phase writes; bypass marker for retroactive docs; CLAUDE.md template guidance |
-| **runtime-vs-audit contradiction** | `/rihal:status` said "all complete" while `/rihal:audit` flagged missing PLAN.md | New `phantom-complete` insight cross-checks completion claim against disk artifacts |
+| **runtime-vs-audit contradiction** | `/rihal-status` said "all complete" while `/rihal-audit` flagged missing PLAN.md | New `phantom-complete` insight cross-checks completion claim against disk artifacts |
 | **High-N parsers** | 9 sites in rihal-tools.cjs capped phase numbers at 999 via `\d{1,3}` | All 9 replaced with `\d+`; 1000+ phases now visible in list-phases / get-phase / progress / state-sync |
 
 ---

@@ -1,6 +1,6 @@
 ---
 plan: "02"
-title: state.json — project memory and /rihal:status dashboard
+title: state.json — project memory and /rihal-status dashboard
 priority: critical
 depends_on: ["01"]
 estimated_effort: medium
@@ -8,7 +8,7 @@ estimated_effort: medium
 
 ## Objective
 
-Create `.rihal/state.json` as the canonical project memory store and a `/rihal:status` slash command that prints a readable dashboard from it. Right now every council session starts blind — no memory of decisions, phases, or what's been executed.
+Create `.rihal/state.json` as the canonical project memory store and a `/rihal-status` slash command that prints a readable dashboard from it. Right now every council session starts blind — no memory of decisions, phases, or what's been executed.
 
 ## Context
 
@@ -123,13 +123,13 @@ type: auto
 **Done when:** council workflow file contains the state update step after artifact save
 **Commit:** `feat(workflows): wire council session save to state.json update`
 
-### Task 4 — Create /rihal:status slash command and workflow
+### Task 4 — Create /rihal-status slash command and workflow
 type: auto
 **Steps:**
 1. Create `rihal/v2/commands/status.md` — the slash command definition:
    ```yaml
    ---
-   name: rihal:status
+   name: rihal-status
    description: Print current project state — phase, plan progress, recent decisions, blockers, last council session
    allowed-tools: [Read, Bash]
    ---
@@ -160,9 +160,9 @@ type: auto
    **Step 4:** If any open blockers exist, end with: "⚠ {n} unresolved blockers. Address before proceeding."
 
 3. Add `status.md` to `install-v2.js` copy steps (→ `.claude/commands/rihal/status.md` and `.rihal/workflows/status.md`)
-4. Register `/rihal:status` in skills manifest (same pattern as council and execute)
-**Done when:** `/rihal:status` prints the dashboard from a real state.json
-**Commit:** `feat(workflows): add /rihal:status dashboard command`
+4. Register `/rihal-status` in skills manifest (same pattern as council and execute)
+**Done when:** `/rihal-status` prints the dashboard from a real state.json
+**Commit:** `feat(workflows): add /rihal-status dashboard command`
 
 ### Task 5 — Wire execute workflow to update state after plan completion
 type: auto
@@ -186,5 +186,5 @@ type: auto
 - [ ] `rihal-tools.cjs state record-council` appends to `council_sessions[]`
 - [ ] Council workflow auto-updates state after session save
 - [ ] Execute workflow auto-updates state after plan completion
-- [ ] `/rihal:status` prints readable dashboard from state.json
-- [ ] `/rihal:status` on missing state.json prints a clean "no state" message, not an error
+- [ ] `/rihal-status` prints readable dashboard from state.json
+- [ ] `/rihal-status` on missing state.json prints a clean "no state" message, not an error

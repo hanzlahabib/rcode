@@ -129,13 +129,13 @@ Started: 2026-03 · Current
 **Status:** Complete (2026-04-29)
 
 **Delivered:**
-- `/rihal:feature-drift` workflow + slash command (`rihal/workflows/feature-drift.md`, `rihal/commands/feature-drift.md`)
+- `/rihal-feature-drift` workflow + slash command (`rihal/workflows/feature-drift.md`, `rihal/commands/feature-drift.md`)
 - `rihal-docs-auditor` extended with `<mode_feature_drift>` section (no new agent — D-4 honored)
 - Classifier `drift` type + `do.md` routing-table row + classifier fallback
-- `/rihal:memory-audit --fix` for trivial memory bank staleness (atomic commits, severity allowlist)
+- `/rihal-memory-audit --fix` for trivial memory bank staleness (atomic commits, severity allowlist)
 - 5 prerequisite tooling bugs fixed during scaffolding: #455 #456 #457 #458 #460
 
-**Acceptance:** ✅ `/rihal:feature-drift` invocable; classifier returns `"type":"drift"` for audit/drift phrases; `--fix` enforces trivial-only severity allowlist in code (not agent discretion); SUMMARY.md committed.
+**Acceptance:** ✅ `/rihal-feature-drift` invocable; classifier returns `"type":"drift"` for audit/drift phrases; `--fix` enforces trivial-only severity allowlist in code (not agent discretion); SUMMARY.md committed.
 
 ---
 
@@ -162,9 +162,9 @@ Started: 2026-03 · Current
 **Status:** Complete (2026-04-29)
 
 **Plans:**
-- `/loop` + `/schedule` cadence docs for auto-heal tools — recommended cadences for `/rihal:docs-update`, `/rihal:health`, `/rihal:feature-drift`, `/rihal:memory-audit --fix`
-- PostToolUse hook on `docs/`, `prd/`, `epics/` edits — settings.json hook fires `feature-drift --quick`; opt-in via `/rihal:enable-hooks`
-- **Phase-status drift detector** (closes #461) — `/rihal:phase-status-drift` (or `feature-drift --mode=phase-status`); compares ROADMAP claim against shipping signals (SUMMARY.md, SPRINT.md, git log on plan files); severity-tags drift; `--fix` flips trivial-only items (✅ marker, missing date)
+- `/loop` + `/schedule` cadence docs for auto-heal tools — recommended cadences for `/rihal-docs-update`, `/rihal-health`, `/rihal-feature-drift`, `/rihal-memory-audit --fix`
+- PostToolUse hook on `docs/`, `prd/`, `epics/` edits — settings.json hook fires `feature-drift --quick`; opt-in via `/rihal-enable-hooks`
+- **Phase-status drift detector** (closes #461) — `/rihal-phase-status-drift` (or `feature-drift --mode=phase-status`); compares ROADMAP claim against shipping signals (SUMMARY.md, SPRINT.md, git log on plan files); severity-tags drift; `--fix` flips trivial-only items (✅ marker, missing date)
 
 **Acceptance:** All three drift dimensions covered (project-doc, feature-content, phase-status); cadence docs published; PostToolUse hook installable.
 
@@ -173,7 +173,7 @@ Started: 2026-03 · Current
 
 ## Phase 9 — Dogfood Audit Pass ✅
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 9 or edit directly._
+**Goal:** _TBD — fill in via /rihal-discuss-phase 9 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -186,7 +186,7 @@ Started: 2026-03 · Current
 
 ## Phase 10 — Close Auto-Heal Tooling Gaps ✅
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 10 or edit directly._
+**Goal:** _TBD — fill in via /rihal-discuss-phase 10 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -199,7 +199,7 @@ Started: 2026-03 · Current
 
 ## Phase 11 — CLI Subcommand Sweep — high-impact #465 items ✅
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 11 or edit directly._
+**Goal:** _TBD — fill in via /rihal-discuss-phase 11 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -212,7 +212,7 @@ Started: 2026-03 · Current
 
 ## Phase 12 — Init Shape Completion — full agent context contract ✅
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 12 or edit directly._
+**Goal:** _TBD — fill in via /rihal-discuss-phase 12 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -225,7 +225,7 @@ Started: 2026-03 · Current
 
 ## Phase 13 — Parser + Walker Consolidation
 
-**Goal:** _TBD — fill in via /rihal:discuss-phase 13 or edit directly._
+**Goal:** _TBD — fill in via /rihal-discuss-phase 13 or edit directly._
 
 **Status:** Planned
 

@@ -18,7 +18,7 @@
 | **D-2: Severity threshold for auto-fix** | A: trivial only (typos/dates) · B: + low-risk text edits · C: + structural changes | **A** |
 
 **User's choice:** Accepted both recommended options.
-**Rationale:** Conservative defaults match `/rihal:audit-fix` precedent. `--fix` opt-in earns trust through use; trivial-only allowlist makes the safety promise enforceable in code rather than reliant on agent judgment.
+**Rationale:** Conservative defaults match `/rihal-audit-fix` precedent. `--fix` opt-in earns trust through use; trivial-only allowlist makes the safety promise enforceable in code rather than reliant on agent judgment.
 
 ---
 

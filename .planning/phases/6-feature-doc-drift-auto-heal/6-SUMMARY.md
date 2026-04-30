@@ -8,13 +8,13 @@
 
 | Plan | Files | Outcome |
 |---|---|---|
-| 6.1 | `rihal/workflows/feature-drift.md` (new), `rihal/commands/feature-drift.md` (new), `rihal/agents/rihal-docs-auditor.md` (extended) | `/rihal:feature-drift` workflow + slash command + `<mode_feature_drift>` section on docs-auditor agent |
-| 6.2 | `rihal/bin/rihal-tools.cjs`, `rihal/workflows/do.md` | `classifyScope` returns `'drift'`; `cmdClassifyQuestion` has new `drift` signal group; `do.md` routing table + classifier fallback both route drift intent to `/rihal:feature-drift` |
+| 6.1 | `rihal/workflows/feature-drift.md` (new), `rihal/commands/feature-drift.md` (new), `rihal/agents/rihal-docs-auditor.md` (extended) | `/rihal-feature-drift` workflow + slash command + `<mode_feature_drift>` section on docs-auditor agent |
+| 6.2 | `rihal/bin/rihal-tools.cjs`, `rihal/workflows/do.md` | `classifyScope` returns `'drift'`; `cmdClassifyQuestion` has new `drift` signal group; `do.md` routing table + classifier fallback both route drift intent to `/rihal-feature-drift` |
 | 6.3 | `rihal/workflows/memory-audit.md`, `rihal/skills/core/rihal-memory-audit/SKILL.md` | Opt-in `--fix` flag on memory-audit; hard severity allowlist (trivial only); atomic commits per fix; SKILL triggers updated |
 
 ## Decisions honored
 
-- **D-1:** `--fix` is opt-in across both `/rihal:feature-drift` and `/rihal:memory-audit` — never default.
+- **D-1:** `--fix` is opt-in across both `/rihal-feature-drift` and `/rihal-memory-audit` — never default.
 - **D-2:** Severity allowlist for `--fix` is enforced in workflow code, not agent discretion.
 - **D-3:** Missing PRD/epics/stories layers → warn + continue with partial scope.
 - **D-4:** `rihal-docs-auditor` extended via `<mode_feature_drift>` section. No new agent.
@@ -40,11 +40,11 @@ While scaffolding Phase 6 we surfaced and closed 4 systemic workflow bugs that t
 
 - #455 — `state sync --from-disk` parser drift (heading-style ROADMAP)
 - #456 — refs migration regression (`/rihal-command` form doesn't exist)
-- #457 — `/rihal:do` dispatch ambiguity → triple-banner stall
-- #458 — `/rihal:do` executes inline when routing fails
-- #460 — `/rihal:add-phase` called non-existent CLI subcommand
+- #457 — `/rihal-do` dispatch ambiguity → triple-banner stall
+- #458 — `/rihal-do` executes inline when routing fails
+- #460 — `/rihal-add-phase` called non-existent CLI subcommand
 
 ## Next steps
 
-- `/rihal:feature-drift` is now invocable. First production run will exercise the verifier-loop pattern.
-- Phase 7 picks up cadence docs + PostToolUse hook. Recommend running `/rihal:feature-drift --fix` on this repo before opening Phase 7 to baseline drift state.
+- `/rihal-feature-drift` is now invocable. First production run will exercise the verifier-loop pattern.
+- Phase 7 picks up cadence docs + PostToolUse hook. Recommend running `/rihal-feature-drift --fix` on this repo before opening Phase 7 to baseline drift state.

@@ -10,9 +10,9 @@
 Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal tools shipped in Phase 6. Add the third drift dimension (phase-status drift, #461) to round out the auto-heal portfolio. Mirror Phase 6's extend-existing-tool pattern.
 
 **In scope:**
-- Cadence docs — recommended schedules for `/rihal:docs-update`, `/rihal:health`, `/rihal:feature-drift`, `/rihal:memory-audit --fix`
-- PostToolUse hook on `docs/`, `prd/`, `.planning/` edits — fires `/rihal:feature-drift --quick`
-- `/rihal:feature-drift --mode=phase-status` — extends existing workflow with a third drift dimension (closes #461)
+- Cadence docs — recommended schedules for `/rihal-docs-update`, `/rihal-health`, `/rihal-feature-drift`, `/rihal-memory-audit --fix`
+- PostToolUse hook on `docs/`, `prd/`, `.planning/` edits — fires `/rihal-feature-drift --quick`
+- `/rihal-feature-drift --mode=phase-status` — extends existing workflow with a third drift dimension (closes #461)
 
 **Not in scope:**
 - Real-time file-watcher daemon (rejected — overkill)
@@ -26,11 +26,11 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
 ### Cadence
 
 - **D-1:** Recommended cadences as a doc, not enforced infra. Users opt in via `/loop` or external cron — we ship guidance and the underlying scripts. Cadence per tool:
-  - `/rihal:health` — weekly (Monday 9am)
-  - `/rihal:feature-drift` — on push (already in CI dogfood gate)
-  - `/rihal:memory-audit` (read-only) — weekly
-  - `/rihal:memory-audit --fix` — monthly (so trivial drift accumulates a bit before sweep, easier to review the diff)
-  - `/rihal:phase-status-drift` (this phase) — daily during active development, weekly otherwise
+  - `/rihal-health` — weekly (Monday 9am)
+  - `/rihal-feature-drift` — on push (already in CI dogfood gate)
+  - `/rihal-memory-audit` (read-only) — weekly
+  - `/rihal-memory-audit --fix` — monthly (so trivial drift accumulates a bit before sweep, easier to review the diff)
+  - `/rihal-phase-status-drift` (this phase) — daily during active development, weekly otherwise
 - **D-2:** Doc lives at `docs/AUTO-HEAL-CADENCE.md` — referenced from README's "Auto-heal" section.
 
 ### Hooks
@@ -41,12 +41,12 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
   - `prd/**/*.md`
   - `epics/**/*.md`
   - `stories/**/*.md`
-- **D-4:** Hook runs `/rihal:feature-drift --quick` (a fast-mode flag we'll add to the existing workflow). `--quick` skips the deep verifier-loop, just runs the auditor scan in report-only mode. Full `--fix` mode is never auto-triggered by hooks (D-1 from Phase 6: never default).
-- **D-5:** Hook is opt-in via `/rihal:enable-hooks` (referenced in existing skill). User must explicitly opt in.
+- **D-4:** Hook runs `/rihal-feature-drift --quick` (a fast-mode flag we'll add to the existing workflow). `--quick` skips the deep verifier-loop, just runs the auditor scan in report-only mode. Full `--fix` mode is never auto-triggered by hooks (D-1 from Phase 6: never default).
+- **D-5:** Hook is opt-in via `/rihal-enable-hooks` (referenced in existing skill). User must explicitly opt in.
 
 ### Phase-status drift detector
 
-- **D-6:** Extends `/rihal:feature-drift` with `--mode=phase-status` rather than creating a new `/rihal:phase-status-drift` slash command. Consistent with Phase 6 D-4 (extend, don't proliferate).
+- **D-6:** Extends `/rihal-feature-drift` with `--mode=phase-status` rather than creating a new `/rihal-phase-status-drift` slash command. Consistent with Phase 6 D-4 (extend, don't proliferate).
 - **D-7:** Compares ROADMAP claim (Status: Complete | Active | Planned) against shipping signals:
   - Presence of `*-SUMMARY.md` in phase dir → suggests Complete
   - Presence of `*-SPRINT.md` without summary → suggests In Progress

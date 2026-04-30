@@ -1,6 +1,6 @@
 ---
 plan: "03"
-title: rihal-planner agent + /rihal:plan command — council follow-ups → PLAN.md files
+title: rihal-planner agent + /rihal-plan command — council follow-ups → PLAN.md files
 priority: high
 depends_on: ["01", "02"]
 estimated_effort: large
@@ -16,7 +16,7 @@ Close the council → execution loop. Right now council sessions produce follow-
 - They contain a `## Follow-ups` section with `- [ ] {action item}` checkboxes
 - The PLAN.md schema is defined in `rihal/v2/references/execution-protocol.md`
 - `rihal-planner` is a subagent (like rihal-executor) — it does one job and exits
-- The orchestrator is `/rihal:plan` — it resolves the input, spawns rihal-planner, prints output
+- The orchestrator is `/rihal-plan` — it resolves the input, spawns rihal-planner, prints output
 - Plans should be written to `.planning/plans/{phase-slug}/PLAN.md` (or a path the user specifies)
 
 ## rihal-planner agent design
@@ -24,7 +24,7 @@ Close the council → execution loop. Right now council sessions produce follow-
 ```
 name: rihal-planner
 description: Converts council follow-ups or freeform task descriptions into
-             executable PLAN.md files. Spawned by /rihal:plan.
+             executable PLAN.md files. Spawned by /rihal-plan.
 tools: Read, Write, Glob, Grep, Bash
 model: claude-opus-4-6
 ```
@@ -50,12 +50,12 @@ type: auto
 1. Create `rihal/v2/agents/rihal-planner.md`
 2. Include these sections:
 
-   **`<role>`** — You are the Rihal plan writer. You convert council follow-up items into executable PLAN.md files. You are spawned by /rihal:plan. You do not execute plans, advise strategy, or ask questions.
+   **`<role>`** — You are the Rihal plan writer. You convert council follow-up items into executable PLAN.md files. You are spawned by /rihal-plan. You do not execute plans, advise strategy, or ask questions.
 
    **`<input_formats>`** — Three input types this agent handles:
-   - Council session artifact path: `rihal:plan .planning/council-sessions/council-2026-04-12-foo.md`
+   - Council session artifact path: `rihal-plan .planning/council-sessions/council-2026-04-12-foo.md`
    - Raw follow-up text passed directly in the prompt
-   - Phase name + loose description: `rihal:plan "set up Next.js project"`
+   - Phase name + loose description: `rihal-plan "set up Next.js project"`
 
    **`<planning_rules>`**
    - One PLAN.md per distinct work stream (not per follow-up item — group related items)
@@ -74,7 +74,7 @@ type: auto
      {path} — {objective one-liner} ({task count} tasks)
      {path} — ...
 
-     Run with: /rihal:execute {phase-slug}
+     Run with: /rihal-execute {phase-slug}
      ```
 
    **`<assumption_documentation>`**
@@ -85,13 +85,13 @@ type: auto
 **Done when:** `rihal/v2/agents/rihal-planner.md` exists and is complete
 **Commit:** `feat(agents): add rihal-planner agent definition`
 
-### Task 2 — Create /rihal:plan slash command and workflow
+### Task 2 — Create /rihal-plan slash command and workflow
 type: auto
 **Steps:**
 1. Create `rihal/v2/commands/plan.md`:
    ```yaml
    ---
-   name: rihal:plan
+   name: rihal-plan
    description: Convert council follow-ups or task descriptions into executable PLAN.md files
    argument-hint: "<council-session-path|phase-description> [--phase <name>] [--output <dir>]"
    allowed-tools: [Read, Write, Glob, Grep, Bash, Agent]
@@ -124,9 +124,9 @@ type: auto
    ```bash
    node .rihal/bin/rihal-tools.cjs state record-session
    ```
-3. Register `/rihal:plan` in skills manifest
+3. Register `/rihal-plan` in skills manifest
 **Done when:** workflow and command files exist
-**Commit:** `feat(workflows): add /rihal:plan command and workflow`
+**Commit:** `feat(workflows): add /rihal-plan command and workflow`
 
 ### Task 3 — Extend rihal-tools.cjs with init plan subcommand
 type: auto
@@ -149,13 +149,13 @@ type: auto
 2. Add `plan.md` command to slash-command copy step
 3. Add `plan.md` workflow to workflow copy step
 4. Add planner row to agent-manifest template:
-   `planner,.claude/agents/rihal-planner.md,rihal-planner,"Plan writer — spawned by /rihal:plan to convert council follow-ups or task descriptions into executable PLAN.md files.",cyan`
-**Done when:** fresh install includes rihal-planner agent and /rihal:plan command
-**Commit:** `feat(install): wire rihal-planner and /rihal:plan into install pipeline`
+   `planner,.claude/agents/rihal-planner.md,rihal-planner,"Plan writer — spawned by /rihal-plan to convert council follow-ups or task descriptions into executable PLAN.md files.",cyan`
+**Done when:** fresh install includes rihal-planner agent and /rihal-plan command
+**Commit:** `feat(install): wire rihal-planner and /rihal-plan into install pipeline`
 
 ### Task 5 — Validate: plan from today's council session
 type: checkpoint:human-verify
-**What executor does:** Runs `/rihal:plan .planning/council-sessions/council-2026-04-12-yar-aik-affiliate-site-bnanai.md` against the test project.
+**What executor does:** Runs `/rihal-plan .planning/council-sessions/council-2026-04-12-yar-aik-affiliate-site-bnanai.md` against the test project.
 **Verify:**
 - At least 2 PLAN.md files are written to `.planning/plans/`
 - Each file has valid frontmatter (phase, plan, type, depends_on fields present)
@@ -165,8 +165,8 @@ type: checkpoint:human-verify
 
 ## Success criteria
 - [ ] `rihal-planner.md` agent exists and is installed by `install-v2.js`
-- [ ] `/rihal:plan <session-path>` produces valid PLAN.md files from a council artifact
-- [ ] `/rihal:plan "set up a Next.js project"` produces a valid PLAN.md from plain text
+- [ ] `/rihal-plan <session-path>` produces valid PLAN.md files from a council artifact
+- [ ] `/rihal-plan "set up a Next.js project"` produces a valid PLAN.md from plain text
 - [ ] All produced PLAN.md files pass the execution-protocol.md schema (can be manually checked)
 - [ ] `rihal-tools.cjs plan list` returns the generated plans
-- [ ] Produced plans can be run by `/rihal:execute` without schema errors
+- [ ] Produced plans can be run by `/rihal-execute` without schema errors

@@ -1,6 +1,6 @@
 # PostToolUse Hooks for Auto-Heal
 
-Layer real-time drift detection on top of the manual auto-heal tools. When you edit a doc, story, or spec, a hook fires `/rihal:feature-drift --quick` automatically. Findings show up in your conversation. The hook **never modifies files** — it's strictly report-only.
+Layer real-time drift detection on top of the manual auto-heal tools. When you edit a doc, story, or spec, a hook fires `/rihal-feature-drift --quick` automatically. Findings show up in your conversation. The hook **never modifies files** — it's strictly report-only.
 
 ## What the hook does
 
@@ -14,7 +14,7 @@ epics/**/*.md
 stories/**/*.md
 ```
 
-Runs `/rihal:feature-drift --quick` against the project, surfaces any drift the audit finds. Target runtime: **<2 seconds**. Designed not to block your edit flow.
+Runs `/rihal-feature-drift --quick` against the project, surfaces any drift the audit finds. Target runtime: **<2 seconds**. Designed not to block your edit flow.
 
 ## Why PostToolUse, not PreToolUse
 
@@ -37,9 +37,9 @@ fi
 
 If you want auto-fix behavior, run `feature-drift --fix` manually outside the hook context. Never configure `--fix` in any settings.json hook.
 
-## Opt-in via `/rihal:enable-hooks`
+## Opt-in via `/rihal-enable-hooks`
 
-The hook is **off by default**. To enable, run `/rihal:enable-hooks` (or paste the JSON block below into your `.claude/settings.json` manually).
+The hook is **off by default**. To enable, run `/rihal-enable-hooks` (or paste the JSON block below into your `.claude/settings.json` manually).
 
 ### settings.json block
 
@@ -73,7 +73,7 @@ Add this to `.claude/settings.json` under the `"hooks"` key:
 The hook command resolves to a small wrapper at `.claude/hooks/feature-drift-quick.js` that invokes the workflow. The wrapper:
 
 1. Verifies the touched file matches one of the listed patterns (defense-in-depth — `filePatterns` is the primary gate but the wrapper double-checks).
-2. Spawns `/rihal:feature-drift --quick` via the same Skill mechanism Claude Code uses internally.
+2. Spawns `/rihal-feature-drift --quick` via the same Skill mechanism Claude Code uses internally.
 3. Prints findings to stdout. Claude Code surfaces them as a tool result in the conversation.
 4. Returns exit 0 even on findings — the hook reports, it doesn't fail builds.
 
@@ -81,9 +81,9 @@ The hook command resolves to a small wrapper at `.claude/hooks/feature-drift-qui
 
 Either:
 - Remove the `PostToolUse` block from `.claude/settings.json`
-- Or run `/rihal:enable-hooks --disable` (if the skill exposes a teardown path)
+- Or run `/rihal-enable-hooks --disable` (if the skill exposes a teardown path)
 
-Disabling is reversible — re-running `/rihal:enable-hooks` puts it back.
+Disabling is reversible — re-running `/rihal-enable-hooks` puts it back.
 
 ## When to enable vs skip
 
@@ -93,7 +93,7 @@ Disabling is reversible — re-running `/rihal:enable-hooks` puts it back.
 - Your workflow has a habit of "I'll fix the doc later" (the hook won't let later happen silently)
 
 **Skip** if:
-- You're a solo dev with a small project — manual `/rihal:feature-drift` weekly is enough
+- You're a solo dev with a small project — manual `/rihal-feature-drift` weekly is enough
 - Your repo is mostly code with minimal docs — false-positive rate will be high
 - You're not opted into Claude Code's hook system at all
 
@@ -118,7 +118,7 @@ Findings ≥ minor are surfaced inline. Trivial-only runs are usually quiet (jus
 
 ## Cadence relationship
 
-The hook complements `/rihal:feature-drift` on its scheduled cadence (see [AUTO-HEAL-CADENCE.md](AUTO-HEAL-CADENCE.md)):
+The hook complements `/rihal-feature-drift` on its scheduled cadence (see [AUTO-HEAL-CADENCE.md](AUTO-HEAL-CADENCE.md)):
 
 - **Hook** — fires on every doc edit, `--quick`, surfaces drift introduced by THIS edit
 - **CI dogfood gate** — fires on every push, full mode (no `--quick`), surfaces drift accumulated since last push

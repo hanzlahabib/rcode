@@ -64,7 +64,7 @@ None.
 | # | Title | Priority |
 |---|-------|----------|
 | #469 | Phase 13 — parser + walker consolidation | p1 (in flight) |
-| #226 | /rihal:new-project doesn't trigger create-prd | p2 (workflow refactor) |
+| #226 | /rihal-new-project doesn't trigger create-prd | p2 (workflow refactor) |
 | #110 | Phase → Sprint → Story/Task hierarchy refactor | p3 (future milestone) |
 | #173 | MCP server | p3 (depends on #171/#172) |
 | #379, #380 | 40 agent files quality + best-practice template | p3 (own phase) |

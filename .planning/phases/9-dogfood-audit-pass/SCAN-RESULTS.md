@@ -114,7 +114,7 @@
 
 ---
 
-## /rihal:feature-drift (workflow + agent — static check)
+## /rihal-feature-drift (workflow + agent — static check)
 
 **Claimed:** Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix for trivial only.
 
@@ -129,7 +129,7 @@
 
 ---
 
-## /rihal:memory-audit (read-only + --fix support)
+## /rihal-memory-audit (read-only + --fix support)
 
 **Claimed:** Audit Memory Bank, optionally `--fix` trivial staleness.
 
@@ -153,8 +153,8 @@
 | init phase-op | breaking | open in #464 |
 | init sprint-plan | breaking | open in #464 |
 | help | none | passing |
-| /rihal:feature-drift (static) | none | passing |
-| /rihal:memory-audit (static) | none | passing |
+| /rihal-feature-drift (static) | none | passing |
+| /rihal-memory-audit (static) | none | passing |
 
 **Filed this session:** #464 — umbrella for the 3 ROADMAP-parser drifts surfaced.
 **Fixed this session:** regex in `lib/roadmap.cjs` (closed 2/3 of #464).

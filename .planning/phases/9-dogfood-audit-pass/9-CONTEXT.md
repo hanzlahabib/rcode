@@ -16,7 +16,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 - Plan 4: CI dogfood gate — fail-on-regression check on push to main
 
 **Deferred:**
-- Plan 5 (stretch): `/rihal:dogfood-scan` slash-command wrapper — wait for Plan 1 to land first; if scan-results.md proves stable, then wrap. Tracked in deferred section.
+- Plan 5 (stretch): `/rihal-dogfood-scan` slash-command wrapper — wait for Plan 1 to land first; if scan-results.md proves stable, then wrap. Tracked in deferred section.
 
 **Not in scope:**
 - Phase-status drift detector (#461) — Phase 8 owns it
@@ -35,7 +35,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 ### Workflow drift sweep
 
 - **D-3:** Pattern to detect: `rihal-tools.cjs <subcommand>` referenced in any `.md` workflow → confirm the subcommand exists in `rihal/bin/rihal-tools.cjs` AND accepts the expected flags AND returns the JSON shape the workflow consumes. The detector grep + verifier loop runs in plan 2.
-- **D-4:** Drift findings classify into severity: `breaking` (subcommand doesn't exist — like #460 #462), `shape` (subcommand exists but flags or output mismatched), `cosmetic` (workflow refers to `/rihal-x` form when canonical is `/rihal:x` — already cleaned in #456 but verify no recurrence).
+- **D-4:** Drift findings classify into severity: `breaking` (subcommand doesn't exist — like #460 #462), `shape` (subcommand exists but flags or output mismatched), `cosmetic` (workflow refers to `/rihal-x` form when canonical is `/rihal-x` — already cleaned in #456 but verify no recurrence).
 
 ### State path audit
 
@@ -113,7 +113,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 <deferred>
 ## Deferred Ideas
 
-- **Plan 5 — `/rihal:dogfood-scan` slash command** — wrap plan 1 into a one-shot invocation. Defer to follow-up phase (10 or 11) once SCAN-RESULTS.md format stabilizes.
+- **Plan 5 — `/rihal-dogfood-scan` slash command** — wrap plan 1 into a one-shot invocation. Defer to follow-up phase (10 or 11) once SCAN-RESULTS.md format stabilizes.
 - **Scheduled dogfood runs** — `/loop` or `/schedule` agent that runs the audit daily and auto-files issues — Phase 8 territory (cadence docs).
 - **Cross-project dogfood** — running rihal-code's tools on schedule-manager / siraaj after package release. Out of scope for Phase 9 since those projects aren't this repo.
 

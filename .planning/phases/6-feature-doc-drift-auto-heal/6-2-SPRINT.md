@@ -13,12 +13,12 @@ requirements: [phase-6-routing]
 ---
 
 <objective>
-Extend the question classifier so `/rihal:do` routes "audit / drift / re-audit / extend artifact" intent correctly to `/rihal:feature-drift` instead of falling through to inline execution (which #458 already partially mitigated). Adds the missing intent type.
+Extend the question classifier so `/rihal-do` routes "audit / drift / re-audit / extend artifact" intent correctly to `/rihal-feature-drift` instead of falling through to inline execution (which #458 already partially mitigated). Adds the missing intent type.
 </objective>
 
 <must_haves>
 - `cmdClassifyQuestion` (or `classifyScope`) recognizes "drift", "audit", "re-audit", "extend artifact", "fill out", "verify docs vs code" as a distinct type
-- `/rihal:do` routing table has an entry mapping that intent to `/rihal:feature-drift`
+- `/rihal-do` routing table has an entry mapping that intent to `/rihal-feature-drift`
 - The new intent type is documented in the classifier function's JSDoc
 </must_haves>
 
@@ -36,7 +36,7 @@ After the initial `text` lowercase normalization and BEFORE the `if (/\b(milesto
 
 ```js
   // Drift / audit / re-audit / extend-existing-artifact intent.
-  // Routes /rihal:do to /rihal:feature-drift instead of falling through to
+  // Routes /rihal-do to /rihal-feature-drift instead of falling through to
   // inline execution (closes #458's edge case).
   if (/\b(drift|re-?audit|stale|out[- ]of[- ]date|fill out (the|this|existing)|extend (audit|plan|phase)|verify (docs|claims) vs (code|reality))\b/i.test(text)) {
     return 'drift';
@@ -57,27 +57,27 @@ Also update `cmdClassifyQuestion` (line ~394) — find the spot where it returns
 </task>
 
 <task id="6.2.2">
-<title>Add /rihal:feature-drift entry to do.md routing table</title>
+<title>Add /rihal-feature-drift entry to do.md routing table</title>
 <read_first>
 - rihal/workflows/do.md (specifically the routing table starting at line ~270 and the audit entry I added in #458 fix)
 </read_first>
 
 <action>
-In `rihal/workflows/do.md`, find the existing line that maps audit/extend intent to `/rihal:audit`:
+In `rihal/workflows/do.md`, find the existing line that maps audit/extend intent to `/rihal-audit`:
 
-`| Audit / re-audit / extend / fill out / expand an existing artifact (audit doc, plan, phase list) | \`/rihal:audit\` | Unified audit entry — picks artifact type and re-runs |`
+`| Audit / re-audit / extend / fill out / expand an existing artifact (audit doc, plan, phase list) | \`/rihal-audit\` | Unified audit entry — picks artifact type and re-runs |`
 
 Replace it with TWO rows so feature-drift gets its own primary route:
 
-`| Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | \`/rihal:feature-drift\` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |`
-`| General audit / re-audit / extend / fill out / expand an existing artifact | \`/rihal:audit\` | Unified audit entry — picks artifact type and re-runs |`
+`| Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | \`/rihal-feature-drift\` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |`
+`| General audit / re-audit / extend / fill out / expand an existing artifact | \`/rihal-audit\` | Unified audit entry — picks artifact type and re-runs |`
 
-Also update the classifier-fallback section (line ~310) where it says "Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`. Default: `/rihal:discuss`." Add: `; drift → /rihal:feature-drift`.
+Also update the classifier-fallback section (line ~310) where it says "Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`. Default: `/rihal-discuss`." Add: `; drift → /rihal-feature-drift`.
 </action>
 
 <acceptance_criteria>
-- File `rihal/workflows/do.md` contains literal string `/rihal:feature-drift`
+- File `rihal/workflows/do.md` contains literal string `/rihal-feature-drift`
 - File contains both rows: drift-specific and general-audit
-- File classifier-fallback section includes `drift → /rihal:feature-drift`
+- File classifier-fallback section includes `drift → /rihal-feature-drift`
 </acceptance_criteria>
 </task>

@@ -1,6 +1,6 @@
 ---
 name: rihal-feature-drift
-description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rihal:docs-update."
+description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rihal-docs-update."
 argument-hint: "[--fix] [--scope phase|project] [phase-number]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Task, AskUserQuestion
 ---

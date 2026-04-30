@@ -297,11 +297,11 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Resuming work, "pick up where I left off" | `/rihal-resume-work` | Session restoration |
 | A note, idea, or "remember to..." | `/rihal-note` | Capture for later |
 | Adding tests, "write tests", "test coverage" | `/rihal-add-tests` | Test generation |
-| Completing a milestone, shipping, releasing | `/rihal:complete-milestone` | Milestone lifecycle |
-| Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rihal:feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
-| General audit / re-audit / extend / fill out / expand an existing artifact | `/rihal:audit` | Unified audit entry — picks artifact type and re-runs |
-| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal:quick` | Self-contained, single executor |
-| Market/discovery/greenfield question (from classify) | `/rihal:council` | Needs multi-perspective discovery |
+| Completing a milestone, shipping, releasing | `/rihal-complete-milestone` | Milestone lifecycle |
+| Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rihal-feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
+| General audit / re-audit / extend / fill out / expand an existing artifact | `/rihal-audit` | Unified audit entry — picks artifact type and re-runs |
+| A specific, actionable, small task (add feature, fix typo, update config) | `/rihal-quick` | Self-contained, single executor |
+| Market/discovery/greenfield question (from classify) | `/rihal-council` | Needs multi-perspective discovery |
 
 If no rule matches, fall back to the classifier:
 
@@ -309,16 +309,16 @@ If no rule matches, fall back to the classifier:
 CLASSIFY=$(node ".rihal/bin/rihal-tools.cjs" classify-question "$QUESTION")
 ```
 
-Parse `type` from JSON — map codebase/team/release → `/rihal:discuss`; market/discovery/greenfield → `/rihal:council`; drift → `/rihal:feature-drift`. Default: `/rihal:discuss`.
+Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`; drift → `/rihal-feature-drift`. Default: `/rihal-discuss`.
 
 **No-route exit (issue #458):** If neither the routing table nor the classifier yields a confident match, you MUST STOP. Print this disambiguation menu via AskUserQuestion and wait:
 
 ```
 I can't route this cleanly. Pick one:
-  1. /rihal:add-phase — if it's a new phase
-  2. /rihal:plan — if scope is clear, jump to plan
-  3. /rihal:discuss-phase — if you want to think through it first
-  4. /rihal:audit — if you want to extend an existing audit/plan
+  1. /rihal-add-phase — if it's a new phase
+  2. /rihal-plan — if scope is clear, jump to plan
+  3. /rihal-discuss-phase — if you want to think through it first
+  4. /rihal-audit — if you want to extend an existing audit/plan
   5. Describe more specifically what you want
 ```
 
@@ -358,24 +358,24 @@ Reason: {one-line why}
 <step name="dispatch">
 **Invoke the chosen command via the Skill tool — do NOT just print it as text.**
 
-CRITICAL: The dispatch step is an *action*, not a *display*. You must call the `Skill` tool with `skill: "rihal:{command}"` (and `args:` for any arguments). Printing the slash-command in a code block, in a banner, or in a "Dispatching..." message is NOT dispatch — it is just text rendering, and the routed command will never run. Past failure: model emitted the dispatch banner three times in a row without ever invoking the Skill tool, then stalled.
+CRITICAL: The dispatch step is an *action*, not a *display*. You must call the `Skill` tool with `skill: "rihal-{command}"` (and `args:` for any arguments). Printing the slash-command in a code block, in a banner, or in a "Dispatching..." message is NOT dispatch — it is just text rendering, and the routed command will never run. Past failure: model emitted the dispatch banner three times in a row without ever invoking the Skill tool, then stalled.
 
-Canonical form: skills are namespaced with a colon, e.g. `rihal:discuss-phase`, `rihal:plan`, `rihal:status`. The hyphen form `rihal-discuss-phase` is NOT a registered slash command — do not display it to users or pass it to the Skill tool.
+Canonical form: skills are namespaced with a hyphen, e.g. `rihal-discuss-phase`, `rihal-plan`, `rihal-status`. The colon form `rihal:discuss-phase` is NOT used in this project (avoided for cross-IDE compatibility) — do not display it to users or pass it to the Skill tool.
 
 Rules:
-- One Skill tool call per `/rihal:do` invocation. Never emit the same dispatch banner twice.
-- Do NOT print `/rihal:{command}` inside a fenced code block as your "action" — that is display-only.
+- One Skill tool call per `/rihal-do` invocation. Never emit the same dispatch banner twice.
+- Do NOT print `/rihal-{command}` inside a fenced code block as your "action" — that is display-only.
 - The routing banner from the `display` step is the ONLY user-facing summary of the dispatch. After it, the very next thing you do is the Skill tool call.
 
 If `AUTO_MODE` is true OR routing is unambiguous:
 1. Confirm the routing banner has been shown once (from the `display` step).
-2. Immediately call the Skill tool: `Skill(skill: "rihal:{command}", args: "{arguments}")`.
+2. Immediately call the Skill tool: `Skill(skill: "rihal-{command}", args: "{arguments}")`.
 3. Stop. The dispatched command handles everything from here.
 
 Otherwise (ambiguous, non-auto), use AskUserQuestion to confirm:
 
 ```
-Based on your request, I'd use: /rihal:{command} {arguments}
+Based on your request, I'd use: /rihal-{command} {arguments}
 
 1. Yes, run it
 2. Pick a different route
@@ -390,12 +390,12 @@ If the chosen command expects a phase number and one wasn't provided in the text
 </process>
 
 <guardrails>
-**Hard prohibitions during /rihal:do execution (issue #458):**
+**Hard prohibitions during /rihal-do execution (issue #458):**
 
 - MUST NOT call Bash, Read, Grep, Glob, Write, or Edit tools. The dispatcher does not investigate, read code, or write files. Period.
 - MUST NOT spawn Task / Agent / subagents. Dispatch is a Skill tool call to a routed command — nothing else.
 - MUST NOT "do a quick check" before routing. If you feel the urge to grep or read a file to "figure out the right route," the dispatcher contract has already failed — STOP and use the no-route exit.
-- The ONLY tools allowed inside /rihal:do are: AskUserQuestion (for disambiguation), Skill (for dispatch), and the one Bash call to the classifier (`classify-question`). Nothing else.
+- The ONLY tools allowed inside /rihal-do are: AskUserQuestion (for disambiguation), Skill (for dispatch), and the one Bash call to the classifier (`classify-question`). Nothing else.
 - If the user's input doesn't match any route and the classifier is ambiguous: invoke the no-route exit menu. Do not "be helpful" by executing the work yourself.
 
 Why this is hard: do.md is a router. The moment it does work, two failure modes appear: (a) the work is duplicated when the user re-invokes the proper command, or (b) the work happens in the wrong context with the wrong subagent and produces inferior output. Both are worse than a 1-second routing prompt.
@@ -405,7 +405,7 @@ Why this is hard: do.md is a router. The moment it does work, two failure modes 
 - [ ] Input validated (not empty)
 - [ ] Intent matched to exactly one Rihal command
 - [ ] Ambiguity resolved via user question (if needed)
-- [ ] Scope-uncertainty signals steer to `/rihal:discuss-phase` over planning routes
+- [ ] Scope-uncertainty signals steer to `/rihal-discuss-phase` over planning routes
 - [ ] Project existence checked for routes that require it
 - [ ] Routing decision displayed before dispatch (exactly once)
 - [ ] Command invoked via the Skill tool — NOT printed as text

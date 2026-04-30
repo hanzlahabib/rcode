@@ -505,7 +505,7 @@ function cmdInit(workflowName, rawArgs) {
         ? path.join(PLANNING_DIR, 'REQUIREMENTS.md')
         : null;
 
-      // Defaults consumed by /rihal:plan and /rihal:discuss-phase.
+      // Defaults consumed by /rihal-plan and /rihal-discuss-phase.
       out.commit_docs = String(config.commit_docs || 'true') !== 'false';
       out.response_language = config.response_language || config.language || null;
 
@@ -733,7 +733,7 @@ function cmdClassifyQuestion(raw) {
       'إصلاح', 'كود', 'برنامج', 'نفذ', 'شغل',
     ],
     // Phase 6 — drift / audit / re-audit / extend-existing-artifact signals.
-    // Routes /rihal:do toward /rihal:feature-drift instead of falling
+    // Routes /rihal-do toward /rihal-feature-drift instead of falling
     // through to inline execution. Reinforces classifyScope's drift branch.
     drift: [
       'drift', 'redrift', 're-audit', 'reaudit', 'audit feature', 'audit docs',
@@ -2574,7 +2574,7 @@ function cmdPhase(subArgs) {
     fs.mkdirSync(directory, { recursive: true });
 
     const entry = `## Phase ${number} — ${phaseName}\n\n` +
-      `**Goal:** _TBD — fill in via /rihal:discuss-phase ${number} or edit directly._\n\n` +
+      `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
       `**Status:** Planned\n\n` +
       `**Plans:**\n- _TBD_\n\n` +
       `**Acceptance:** _TBD_\n\n---\n`;
@@ -2870,7 +2870,7 @@ function cmdCheckImplementationReadiness(rawArgs) {
 
   // Check 1 — .planning/ exists
   if (!fs.existsSync(PLANNING_DIR)) {
-    blockers.push({ severity: 'major', issue: '.planning/ directory missing — run /rihal:new-project first' });
+    blockers.push({ severity: 'major', issue: '.planning/ directory missing — run /rihal-new-project first' });
   }
 
   // Check 2 — ROADMAP exists
@@ -3111,7 +3111,7 @@ function classifyScope(input) {
   const len = text.length;
 
   // Drift / audit / re-audit / extend-existing-artifact intent.
-  // Routes /rihal:do to /rihal:feature-drift instead of falling through to
+  // Routes /rihal-do to /rihal-feature-drift instead of falling through to
   // inline execution (closes the residual edge case from #458).
   if (/\b(drift|re-?audit|stale|out[- ]of[- ]date|fill out (the|this|existing)|extend (audit|plan|phase)|verify (docs|claims) vs (code|reality))\b/i.test(text)) {
     return 'drift';
@@ -4105,8 +4105,8 @@ function cmdProgress(args) {
     }
 
     // Phantom-complete: phase claimed Complete (in ROADMAP or state) but missing
-    // PLAN.md AND SUMMARY.md on disk. User-visible bug: /rihal:status would
-    // happily report 'all complete' while /rihal:audit correctly flagged the
+    // PLAN.md AND SUMMARY.md on disk. User-visible bug: /rihal-status would
+    // happily report 'all complete' while /rihal-audit correctly flagged the
     // gap because the two read different sources of truth.
     // Surfaced 2026-04-29 in a real session — siraaj phases 07-12 had ROADMAP
     // markers but zero artifacts.

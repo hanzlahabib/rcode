@@ -6,12 +6,12 @@ Recommended schedules for rihal-code's auto-heal tools. Pick the cadence that ma
 
 | Tool | What it checks | Recommended cadence | Mode |
 |---|---|---|---|
-| `/rihal:health` | 6-point installation compliance (manifest hashes, dirs, configs) | Weekly (Mon 9am) | report-only |
-| `/rihal:feature-drift` | PRD ↔ epics ↔ stories ↔ code drift | On every push (CI dogfood gate) + on doc edits (PostToolUse hook, opt-in) | `--quick` for hooks; full for CI; `--fix` manual only |
-| `/rihal:feature-drift --mode=phase-status` | ROADMAP claim vs shipping reality | Daily during active development; weekly otherwise | report-only by default; `--fix` patches only `✅` markers + missing dates |
-| `/rihal:memory-audit` | Memory Bank staleness, contradictions, broken refs | Weekly | report-only |
-| `/rihal:memory-audit --fix` | Trivial memory bank corrections (typos, stale ISO dates, broken paths) | Monthly | mutating — atomic commits per fix |
-| `/rihal:docs-update` | Project docs vs live codebase | On major release prep, ad-hoc | mutating (writer + verifier loop) |
+| `/rihal-health` | 6-point installation compliance (manifest hashes, dirs, configs) | Weekly (Mon 9am) | report-only |
+| `/rihal-feature-drift` | PRD ↔ epics ↔ stories ↔ code drift | On every push (CI dogfood gate) + on doc edits (PostToolUse hook, opt-in) | `--quick` for hooks; full for CI; `--fix` manual only |
+| `/rihal-feature-drift --mode=phase-status` | ROADMAP claim vs shipping reality | Daily during active development; weekly otherwise | report-only by default; `--fix` patches only `✅` markers + missing dates |
+| `/rihal-memory-audit` | Memory Bank staleness, contradictions, broken refs | Weekly | report-only |
+| `/rihal-memory-audit --fix` | Trivial memory bank corrections (typos, stale ISO dates, broken paths) | Monthly | mutating — atomic commits per fix |
+| `/rihal-docs-update` | Project docs vs live codebase | On major release prep, ad-hoc | mutating (writer + verifier loop) |
 
 ## Why these cadences
 
@@ -35,10 +35,10 @@ These rules apply across every auto-heal tool:
 If you're in an interactive Claude Code session and want a tool to run on a fixed cadence within the conversation:
 
 ```
-/loop 1d /rihal:feature-drift --mode=phase-status
-/loop 1w /rihal:health
-/loop 1w /rihal:memory-audit
-/loop 1mo /rihal:memory-audit --fix
+/loop 1d /rihal-feature-drift --mode=phase-status
+/loop 1w /rihal-health
+/loop 1w /rihal-memory-audit
+/loop 1mo /rihal-memory-audit --fix
 ```
 
 `/loop` is in-session only — it stops when the conversation ends. For persistent scheduling, use crontab (below) or the `/schedule` skill.
@@ -51,17 +51,17 @@ For schedules that survive across sessions (recommended for any cadence ≥ dail
 /schedule create
   name: "weekly-health"
   cron: "0 9 * * 1"          # Mon 9am
-  command: /rihal:health
+  command: /rihal-health
 
 /schedule create
   name: "daily-phase-status"
   cron: "0 18 * * *"          # 6pm daily during active development
-  command: /rihal:feature-drift --mode=phase-status
+  command: /rihal-feature-drift --mode=phase-status
 
 /schedule create
   name: "monthly-memory-fix"
   cron: "0 9 1 * *"           # 1st of month, 9am
-  command: /rihal:memory-audit --fix
+  command: /rihal-memory-audit --fix
 ```
 
 `/schedule list` shows what's currently active. `/schedule delete <name>` to remove.
@@ -86,7 +86,7 @@ If you'd rather run these from the ops layer (no Claude session needed), here's 
   >> .rihal/logs/memory.log 2>&1
 ```
 
-> Crontab examples are illustrative — actual `/rihal:` slash commands require a Claude session. The CLI subcommands (`pnpm dogfood`, `state sync`, `roadmap list-phases`) are the parts that work standalone.
+> Crontab examples are illustrative — actual `/rihal-` slash commands require a Claude session. The CLI subcommands (`pnpm dogfood`, `state sync`, `roadmap list-phases`) are the parts that work standalone.
 
 ## CI integration
 
@@ -108,12 +108,12 @@ jobs:
 Lightest-touch starter pack — recommended for solo devs and small teams:
 
 - CI dogfood gate on every push (already in place)
-- Weekly `/rihal:health` via `/schedule`
+- Weekly `/rihal-health` via `/schedule`
 
 Add as you grow:
 
 - Daily `feature-drift --mode=phase-status` once you have ≥5 active phases
 - Monthly `memory-audit --fix` once your memory bank exceeds 20 entries
-- PostToolUse hook (`/rihal:enable-hooks`) once your team is ≥3 people editing docs concurrently
+- PostToolUse hook (`/rihal-enable-hooks`) once your team is ≥3 people editing docs concurrently
 
 The honest test: if your auto-heal cadence isn't catching real drift in your reports, it's noise. Cut frequency until findings are signal-only.

@@ -6,12 +6,12 @@
 <domain>
 ## Phase Boundary
 
-Build a drift detector that reads the PRD → epics → stories → code chain, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items only. Closes the gap between feature documentation layers that no existing rihal tool currently spans (`/rihal:docs-update` covers project docs, `/rihal:correct-course` covers PRD-vs-code, `/rihal:memory-audit` reports but doesn't fix — the chain in between is uncovered).
+Build a drift detector that reads the PRD → epics → stories → code chain, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items only. Closes the gap between feature documentation layers that no existing rihal tool currently spans (`/rihal-docs-update` covers project docs, `/rihal-correct-course` covers PRD-vs-code, `/rihal-memory-audit` reports but doesn't fix — the chain in between is uncovered).
 
 **In scope:**
-- New `/rihal:feature-drift` workflow + verifier agent
-- Classifier extension so `/rihal:do` correctly routes "audit / drift / re-audit" intent
-- `--fix` mode on `/rihal:memory-audit` (surgical updates of trivial staleness only)
+- New `/rihal-feature-drift` workflow + verifier agent
+- Classifier extension so `/rihal-do` correctly routes "audit / drift / re-audit" intent
+- `--fix` mode on `/rihal-memory-audit` (surgical updates of trivial staleness only)
 
 **Out of scope (deferred — see deferred section):**
 - Cadence docs (`/loop` + `/schedule` integration) — Phase 7
@@ -26,7 +26,7 @@ Build a drift detector that reads the PRD → epics → stories → code chain, 
 
 ### Severity & Action Model
 
-- **D-1:** Auto-fix is opt-in via `--fix` flag, never default. Reports flag-only by default. Matches `/rihal:audit-fix` precedent — trust earned through use, not assumed.
+- **D-1:** Auto-fix is opt-in via `--fix` flag, never default. Reports flag-only by default. Matches `/rihal-audit-fix` precedent — trust earned through use, not assumed.
 - **D-2:** Severity threshold for `--fix` is "trivial only" — typo-class corrections, stale dates, broken relative paths, factually-wrong-and-mechanically-correctable. Anything structural (rephrasing, deleting claims, changing scope statements) stays flag-only and requires human review.
 
 ### Failure Modes
@@ -72,7 +72,7 @@ None — no pending todos matched Phase 6 scope.
 
 ### Classifier
 - `rihal/bin/rihal-tools.cjs` — `cmdClassifyQuestion` (line ~394) and `classifyScope` (line ~2340) are the extension points for D-1's intent routing
-- `rihal/workflows/do.md` — routing table line 270-303 needs the new "audit / re-audit / extend artifact" entry (already added in #458 fix to point at `/rihal:audit`; feature-drift slots underneath that)
+- `rihal/workflows/do.md` — routing table line 270-303 needs the new "audit / re-audit / extend artifact" entry (already added in #458 fix to point at `/rihal-audit`; feature-drift slots underneath that)
 
 ### Issues / decisions tracked
 - `#459` — umbrella issue for this phase
@@ -96,9 +96,9 @@ None — no pending todos matched Phase 6 scope.
 - **Atomic commit per fix in `--fix` modes:** `code-review-fix.md` and `audit-fix.md` both commit each fix individually. Feature-drift `--fix` does the same.
 
 ### Integration Points
-- **`/rihal:do` routing table** (already updated in #458 to mention `/rihal:audit`) — needs a sub-route for `/rihal:feature-drift`.
+- **`/rihal-do` routing table** (already updated in #458 to mention `/rihal-audit`) — needs a sub-route for `/rihal-feature-drift`.
 - **`rihal-tools.cjs` classifier** — new intent type so router can pick this up automatically.
-- **`/rihal:memory-audit` workflow** — accepts new `--fix` flag, routes to writer agent for trivial-tier corrections only.
+- **`/rihal-memory-audit` workflow** — accepts new `--fix` flag, routes to writer agent for trivial-tier corrections only.
 
 </code_context>
 
@@ -115,8 +115,8 @@ None — no pending todos matched Phase 6 scope.
 <deferred>
 ## Deferred Ideas
 
-- **Plan 4 — `/loop` + `/schedule` cadence docs** (Phase 7). How-to docs + recommended cadences for `/rihal:docs-update`, `/rihal:health`, `/rihal:feature-drift`. No new infra, just a reference doc.
-- **Plan 5 — PostToolUse hook on `docs/`, `prd/`, `epics/` edits** (Phase 7). Settings.json hook fires `feature-drift --quick` on Edit. Opt-in via `/rihal:enable-hooks`.
+- **Plan 4 — `/loop` + `/schedule` cadence docs** (Phase 7). How-to docs + recommended cadences for `/rihal-docs-update`, `/rihal-health`, `/rihal-feature-drift`. No new infra, just a reference doc.
+- **Plan 5 — PostToolUse hook on `docs/`, `prd/`, `epics/` edits** (Phase 7). Settings.json hook fires `feature-drift --quick` on Edit. Opt-in via `/rihal-enable-hooks`.
 - **Real-time file-watcher daemon** — overkill. Skipped indefinitely.
 - **Sweep migration of existing zero-padded phases 01-05** → plain integers — chosen forward-only by Hanzla; legacy stays.
 

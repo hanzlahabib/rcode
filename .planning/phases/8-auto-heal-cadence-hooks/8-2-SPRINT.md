@@ -14,7 +14,7 @@ requirements: [phase-8-hooks]
 ---
 
 <objective>
-Add `--quick` flag to feature-drift workflow + ship a PostToolUse hook installable via `/rihal:enable-hooks` that fires drift detection on doc edits.
+Add `--quick` flag to feature-drift workflow + ship a PostToolUse hook installable via `/rihal-enable-hooks` that fires drift detection on doc edits.
 </objective>
 
 <must_haves>
@@ -49,7 +49,7 @@ In `rihal/workflows/feature-drift.md` parse_args step, add detection for `--quic
 </read_first>
 
 <action>
-Write a doc explaining the PostToolUse hook config + opt-in via `/rihal:enable-hooks`. Include the literal `.claude/settings.json` JSON block users can paste, the file-pattern matchers (docs/, prd/, epics/, stories/, .planning/), and the safety promise that `--quick` never modifies files.
+Write a doc explaining the PostToolUse hook config + opt-in via `/rihal-enable-hooks`. Include the literal `.claude/settings.json` JSON block users can paste, the file-pattern matchers (docs/, prd/, epics/, stories/, .planning/), and the safety promise that `--quick` never modifies files.
 </action>
 
 <acceptance_criteria>

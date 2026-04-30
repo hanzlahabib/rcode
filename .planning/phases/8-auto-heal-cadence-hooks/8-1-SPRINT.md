@@ -13,7 +13,7 @@ requirements: [phase-8-cadence]
 ---
 
 <objective>
-Ship `docs/AUTO-HEAL-CADENCE.md` — recommended schedules for `/rihal:health`, `/rihal:feature-drift`, `/rihal:memory-audit`, `/rihal:phase-status-drift`. Include both `/loop` invocations (for in-session use) and crontab entries (for ops-side scheduling). Linked from README.
+Ship `docs/AUTO-HEAL-CADENCE.md` — recommended schedules for `/rihal-health`, `/rihal-feature-drift`, `/rihal-memory-audit`, `/rihal-phase-status-drift`. Include both `/loop` invocations (for in-session use) and crontab entries (for ops-side scheduling). Linked from README.
 </objective>
 
 <must_haves>

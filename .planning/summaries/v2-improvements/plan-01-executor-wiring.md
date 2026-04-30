@@ -17,7 +17,7 @@ Make `rihal-executor` a first-class installed agent — registered in `agent-man
 - Draft workflows: `rihal/v2/workflows/execute.md`, `rihal/v2/commands/execute.md`
 - Install pipeline: `cli/install-v2.js` — this copies files from `rihal/v2/` into the project
 - Agent manifest template: look at how the 5 council agents are registered and copy that pattern exactly
-- The `/rihal:execute` slash command needs to land at `.claude/commands/rihal/execute.md` in the installed project
+- The `/rihal-execute` slash command needs to land at `.claude/commands/rihal/execute.md` in the installed project
 
 ## Tasks
 
@@ -38,7 +38,7 @@ type: auto
 **Steps:**
 1. Find where the agent-manifest.csv template/seed lives in the repo (check `cli/`, `rihal/v2/`, `.rihal-template/`)
 2. Add executor row in the same CSV format as the existing 5 agents:
-   `executor,.claude/agents/rihal-executor.md,rihal-executor,"Plan executor — spawned by /rihal:execute to run a single PLAN.md file. Executes tasks atomically, commits after each completed task, handles deviations via 4 rules, pauses at checkpoints, and writes a SUMMARY file. Never runs git push.",yellow`
+   `executor,.claude/agents/rihal-executor.md,rihal-executor,"Plan executor — spawned by /rihal-execute to run a single PLAN.md file. Executes tasks atomically, commits after each completed task, handles deviations via 4 rules, pauses at checkpoints, and writes a SUMMARY file. Never runs git push.",yellow`
 3. Verify the row order — executor should come before the advisory agents alphabetically or at top, whichever pattern the file uses
 **Done when:** agent-manifest template/seed contains the executor row
 **Commit:** `chore(agents): register rihal-executor in agent-manifest template`
@@ -80,15 +80,15 @@ type: auto
 **Done when:** `node .rihal/bin/rihal-tools.cjs init execute path/to/PLAN.md` returns valid JSON
 **Commit:** `feat(cli): add init execute and state commands to rihal-tools`
 
-### Task 5 — Register /rihal:execute slash command in skills list
+### Task 5 — Register /rihal-execute slash command in skills list
 type: auto
 **Steps:**
-1. Check where the `/rihal:council` skill entry is defined (likely in a skills manifest or the package itself — search for "rihal:council" string in the repo)
-2. Add `/rihal:execute` entry with the same format
+1. Check where the `/rihal-council` skill entry is defined (likely in a skills manifest or the package itself — search for "rihal-council" string in the repo)
+2. Add `/rihal-execute` entry with the same format
 3. Description: "Execute one or more PLAN.md files. Spawns rihal-executor subagents per plan, handles checkpoints, collects results."
 4. argument-hint: `"<phase-name|path/to/PLAN.md> [--interactive] [--wave N]"`
-**Done when:** skill entry exists for rihal:execute matching council's format
-**Commit:** `feat(skills): register /rihal:execute slash command`
+**Done when:** skill entry exists for rihal-execute matching council's format
+**Commit:** `feat(skills): register /rihal-execute slash command`
 
 ### Task 6 — Smoke test: install into temp dir and verify
 type: checkpoint:human-verify
@@ -103,8 +103,8 @@ type: checkpoint:human-verify
 
 ## Success criteria
 - [ ] `rihal-executor` appears in `agent-manifest.csv` on fresh install
-- [ ] `/rihal:execute` slash command is installed into `.claude/commands/rihal/`
+- [ ] `/rihal-execute` slash command is installed into `.claude/commands/rihal/`
 - [ ] `execution-protocol.md` is installed into `.rihal/references/`
 - [ ] `rihal-tools.cjs init execute` returns valid JSON without error
 - [ ] `rihal-tools.cjs state advance-plan` creates/updates `state.json`
-- [ ] No existing council functionality broken (spot-check `/rihal:council` init still works)
+- [ ] No existing council functionality broken (spot-check `/rihal-council` init still works)

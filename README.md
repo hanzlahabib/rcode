@@ -501,7 +501,7 @@ UNLICENSED — proprietary. All rights reserved.
 
 ## Auto-heal cadence
 
-rihal-code ships continuous auto-heal tools — `/rihal:feature-drift`, `/rihal:memory-audit`, `/rihal:health` — plus a CI dogfood gate that runs them against this repo on every push. See [docs/AUTO-HEAL-CADENCE.md](docs/AUTO-HEAL-CADENCE.md) for recommended schedules, `/loop` examples, crontab entries, and the safety rules around `--fix` modes.
+rihal-code ships continuous auto-heal tools — `/rihal-feature-drift`, `/rihal-memory-audit`, `/rihal-health` — plus a CI dogfood gate that runs them against this repo on every push. See [docs/AUTO-HEAL-CADENCE.md](docs/AUTO-HEAL-CADENCE.md) for recommended schedules, `/loop` examples, crontab entries, and the safety rules around `--fix` modes.
 
 ---
 

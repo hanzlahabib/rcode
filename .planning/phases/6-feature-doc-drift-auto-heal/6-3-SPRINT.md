@@ -13,7 +13,7 @@ requirements: [phase-6-memfix]
 ---
 
 <objective>
-Extend `/rihal:memory-audit` with an opt-in `--fix` flag that surgically updates trivial staleness in the Memory Bank (typos, stale dates, broken paths). All non-trivial findings stay report-only per D-2. Mirrors the safety constraints of `/rihal:feature-drift` so behavior is consistent across auto-heal tools.
+Extend `/rihal-memory-audit` with an opt-in `--fix` flag that surgically updates trivial staleness in the Memory Bank (typos, stale dates, broken paths). All non-trivial findings stay report-only per D-2. Mirrors the safety constraints of `/rihal-feature-drift` so behavior is consistent across auto-heal tools.
 </objective>
 
 <must_haves>

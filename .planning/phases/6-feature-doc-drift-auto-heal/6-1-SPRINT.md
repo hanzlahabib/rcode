@@ -14,12 +14,12 @@ requirements: [phase-6-core]
 ---
 
 <objective>
-Ship the core auto-heal capability: a `/rihal:feature-drift` workflow that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items. Reuses the verifier-loop pattern from `docs-update.md` and extends `rihal-docs-auditor` with `--mode=feature-drift` per D-4.
+Ship the core auto-heal capability: a `/rihal-feature-drift` workflow that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items. Reuses the verifier-loop pattern from `docs-update.md` and extends `rihal-docs-auditor` with `--mode=feature-drift` per D-4.
 </objective>
 
 <must_haves>
 - New file `rihal/workflows/feature-drift.md` exists with sections: purpose, required_reading, process (steps: parse_args, load_artifacts, scan_drift, severity_classify, report_or_fix, commit), success_criteria, guardrails
-- New file `rihal/commands/feature-drift.md` registers slash command `/rihal:feature-drift` with execution_context pointing at the workflow
+- New file `rihal/commands/feature-drift.md` registers slash command `/rihal-feature-drift` with execution_context pointing at the workflow
 - `rihal/agents/rihal-docs-auditor.md` accepts `--mode=feature-drift` and routes to drift-specific instructions
 - Workflow handles `--fix` flag: only patches items with severity `trivial`; refuses higher severities with clear message
 - Workflow handles missing PRD/epics/stories per D-3: warn and continue with partial scope
@@ -160,7 +160,7 @@ Write `rihal/commands/feature-drift.md` with this exact content:
 ```markdown
 ---
 name: rihal-feature-drift
-description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rihal:docs-update."
+description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rihal-docs-update."
 argument-hint: "[--fix] [--scope phase|project] [phase-number]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Task, AskUserQuestion
 ---

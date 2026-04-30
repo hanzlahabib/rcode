@@ -12,12 +12,12 @@ requirements: [phase-9-scan]
 ---
 
 <objective>
-Run every user-facing rihal tool (`/rihal:health`, `/rihal:status`, `/rihal:audit`, `/rihal:feature-drift`, `/rihal:memory-audit`, `/rihal:scan`, `/rihal:progress`, `/rihal:stats`, `state sync --from-disk`) against rihal-code itself. Capture each tool's output, compare to its declared purpose, surface drift. File a GH issue for every gap found.
+Run every user-facing rihal tool (`/rihal-health`, `/rihal-status`, `/rihal-audit`, `/rihal-feature-drift`, `/rihal-memory-audit`, `/rihal-scan`, `/rihal-progress`, `/rihal-stats`, `state sync --from-disk`) against rihal-code itself. Capture each tool's output, compare to its declared purpose, surface drift. File a GH issue for every gap found.
 </objective>
 
 <must_haves>
 - Single artifact: `.planning/phases/9-dogfood-audit-pass/SCAN-RESULTS.md`
-- One section per tool: `## /rihal:<name>`, with subsections "Claimed purpose", "Observed output (truncated)", "Drift / gaps", "Severity" (breaking | shape | cosmetic | none)
+- One section per tool: `## /rihal-<name>`, with subsections "Claimed purpose", "Observed output (truncated)", "Drift / gaps", "Severity" (breaking | shape | cosmetic | none)
 - For every drift with severity ≥ shape: GH issue filed with reproducer, linked from the report
 - Tools that PASS get listed as "no drift" — visible green-row evidence the audit is complete
 </must_haves>
@@ -72,7 +72,7 @@ Skip any tool that requires Skill-tool invocation (those are interactive); docum
 </task>
 
 <task id="9.1.2">
-<title>Run /rihal:feature-drift and /rihal:memory-audit on rihal-code itself (read-only)</title>
+<title>Run /rihal-feature-drift and /rihal-memory-audit on rihal-code itself (read-only)</title>
 <read_first>
 - rihal/workflows/feature-drift.md (just shipped)
 - rihal/workflows/memory-audit.md (Phase 6 extended)
@@ -88,7 +88,7 @@ Document findings in SCAN-RESULTS.md under the same 4-subheading structure. If `
 </action>
 
 <acceptance_criteria>
-- SCAN-RESULTS.md gains two new sections: `## /rihal:feature-drift` and `## /rihal:memory-audit`
+- SCAN-RESULTS.md gains two new sections: `## /rihal-feature-drift` and `## /rihal-memory-audit`
 - Each documents observed status (workflow parseable, agent extension present, memory bank existence)
 - File any gaps as new GH issues; the issue numbers appear in the report
 </acceptance_criteria>
