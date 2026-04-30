@@ -258,6 +258,16 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `namespace` — namespace standardization across files
 - `planning` — `.planning/` artifacts (STATE.md, ROADMAP.md, REQUIREMENTS.md)
 - `insights` — runtime insight surfaces
+- `help` — help.md content
+- `roadmap` — `.planning/ROADMAP.md` edits
+- `session` — session reports / closing notes
+- `audits` — `.planning/audits/` artifacts
+- `execute` — execute workflow
+- `executor` — executor agent
+- `plan` — plan workflow
+- `planner` — planner agent
+- `readme` — README.md
+- `sync` — install/state sync flows
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
