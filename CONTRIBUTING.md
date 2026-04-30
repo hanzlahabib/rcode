@@ -233,11 +233,33 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `agents` — agent persona files
 - `skills` — action or agent skills
 - `workflows` — multi-step workflows
+- `commands` — `rihal/commands/*.md` slash command files
 - `templates` — memory bank or pitch templates
 - `dashboard` — Majlis/Diwan server
-- `docs` — README, METHODOLOGY, SKILLS_INDEX
+- `docs` — README, METHODOLOGY, SKILLS_INDEX, USER-GUIDE, FAQ
 - `config` — team.yaml, config.yaml
 - `github` — CI/CD, issue templates, PR templates
+- `cli` — `cli/*.js` and `rihal/bin/rihal-tools.cjs`
+- `state` — `.rihal/state.json` and state-manipulation code paths
+- `refs` — files inside `rihal/references/`
+- `hooks` — `.claude/hooks/*` and install-time hook wiring
+- `install` — installer flow, manifest, side-effects
+- `memory` — Memory Bank distillates and templates
+- `brand` — branding/voice across surfaces
+- `ci` — CI workflow YAML and gating logic
+- `release` — version bumps, CHANGELOG, npm publish artifacts
+- `meta` — repo-level files (AGENTS.md, CONTRIBUTING.md, this list)
+- `tasks` — TaskCreate/TaskUpdate-shaped task tracking
+- `migrations` — schema/data migrations between versions
+- `parity` — drift gate / parity test additions
+- `triggers` — multilingual trigger phrase additions
+- `dogfood` — `scripts/dogfood-check.sh` and self-test gates
+- `state` — state.json schema or sync logic
+- `namespace` — namespace standardization across files
+- `planning` — `.planning/` artifacts (STATE.md, ROADMAP.md, REQUIREMENTS.md)
+- `insights` — runtime insight surfaces
+- `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
+- `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
 ### Subject rules
 - Lowercase first letter (enforced by `semantic-pull-request`)

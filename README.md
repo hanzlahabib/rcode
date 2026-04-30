@@ -58,8 +58,8 @@ Rihal Code packages a lot. To keep things approachable, everything is organized 
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
 
-- **45 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
-- **95 slash commands** covering research, planning, execution, verification, and recovery
+- **44 agents** with clear roles, cultural identity (Arabic names), and hard scope boundaries
+- **96 slash commands** covering research, planning, execution, verification, and recovery
 - **105 skills** including Memory Bank primitives, 11 engineering-rigor skills (TDD, harden, perf, debug, trim, etc.), and 8 real-pain skills (auth-audit, mvp-graduate, deploy-unify, etc.)
 - **102 workflows** — the execution backbone behind every slash command
 - **Persistent project memory** at `.rihal/memory/` — checked into git, visible in the Diwan dashboard, lossless distillates for fast LLM hydration
