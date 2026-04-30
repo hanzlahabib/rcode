@@ -162,6 +162,25 @@ Write the report grouped by severity (critical / major / minor / trivial),
 each section listing the findings with: layer pair, claim mismatch, file:line.
 Print summary: `{N} drift findings — {trivial}/{minor}/{major}/{critical}`.
 
+**Phase ID convention for "proposed phase" / "Phase candidate" columns.**
+If the report includes a column suggesting where a finding should land
+(e.g. for downstream `/rihal-plan-milestone-gaps`), use the project's
+real numeric phase numbering — never invent English-letter labels like
+`P-NEW-AI-1` or `P-FIX-N`. Resolve the next free integer with:
+
+```bash
+HIGHEST=$(node ".rihal/bin/rihal-tools.cjs" phases list --pick "directories[-1]")
+# Extract leading number; next candidate = N + 1, N + 2, ...
+```
+
+Or for a related cluster of findings, propose decimals under the most
+relevant existing phase (e.g. 14.1, 14.2) — the CLI auto-resolves the
+next free `parent.M` via `phase add --decimal <parent>` (#477 item C).
+
+This convention follows the `feedback-no-leading-zeros` rule from the
+Memory Bank: phase 6 not 06, phase 14.1 not 14-01, never letter-prefixed
+ad-hoc IDs.
+
 **If `FIX_MODE=true`:**
 
 Bounded fix loop, max 3 passes:
