@@ -8,7 +8,7 @@
  * package's source skills against what was written to the project.
  *
  * Reused by:
- *   - cli/init.js  — post-install verification with friendly report
+ *   - cli/index.js  — post-install verification with friendly report
  *   - cli/doctor.js — preflight/healthcheck
  */
 
