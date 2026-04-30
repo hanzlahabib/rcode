@@ -4,6 +4,33 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.4 — current pinned version (2026-04-27)
+
+Release-train backfill — entries for v3.3.1 → v3.4.4 captured below as a block. Each `chore(release):` commit was a bump-only ship; the underlying changes landed in the feature/fix commit between bumps.
+
+### v3.4.4 (commit `714369f`)
+- Bump-only release.
+
+### v3.4.3 (commit `3c89802`) — preceded by `c5eeac4`
+- **fix(cli):** handle multi-IDE array in buildInstallPlan.
+
+### v3.4.2 (commit `d208f26`)
+- Bump-only release.
+
+### v3.4.1 (commit `7d16b83`) — preceded by `615a17b`
+- **fix(refs):** migrate `rihal:command` to `rihal-command` slash syntax.
+
+### v3.4.0 (commit `cc5b46a`)
+- **feat(cli):** multi-IDE install, dashboard phase browser, agent cards. Detects every Claude Code-compatible IDE on the machine and offers an install picker.
+
+### v3.3.2 (commit `12aaca6`) — preceded by `3eb9fa5`
+- **fix(workflows):** resolve three autonomous-execution bugs (#454).
+
+### v3.3.1 (no separate release commit found in main; npm version exists)
+- Likely shipped from a tag-only push or hotfix branch. No content delta in source between v3.3.0 and v3.3.2.
+
+---
+
 ## v3.3.0 — sidebar discoverability: install-time skill stubs for slash commands (2026-04-27)
 
 VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rihal/` are reachable only via the `/` autocomplete picker. Users expected `rihal-do` to appear in the sidebar alongside other rcode skills.

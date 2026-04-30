@@ -22,7 +22,6 @@
     "rihal/",
     "server/",
     "dist/",
-    ".rihal-template/",
     "README.md",
     "AGENTS.md",
     "CLAUDE.md",
