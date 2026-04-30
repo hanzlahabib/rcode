@@ -69,11 +69,21 @@ None.
 | #173 | MCP server | p3 (depends on #171/#172) |
 | #379, #380 | 40 agent files quality + best-practice template | p3 (own phase) |
 | #465 | 9 remaining missing CLI subcommands | p3 (Phase 14+ if consumed) |
+| #479 | 3 phantom commands surfaced by /rihal-status | closed in `a091be6` |
+| #480 | install drift (.rihal v3.3.2 vs package v3.4.4) | deferred |
+| #481 | 8 more phantom CLI subcommands found via sweep | **Phase 15 — in flight** |
+
+---
+
+## Roadmap Evolution
+
+- Phase 15 added (2026-04-30): fix 8 phantom CLI subcommands per #481 — phases list, find-phase, uat render-checkpoint, audit-uat, requirements mark-complete, todo match-phase, learnings copy, docs-audit. Goal: zero diff between called and implemented top-level subcommands.
 
 ---
 
 ## Next Action
 
+- **Phase 15** — implement the 8 phantom subcommands per priority order in #481
 - **Phase 13** — let the in-flight session land its SPRINT files
 - **Phase 7** — Marketing Push v2 (GTM half of original Phase 05)
 

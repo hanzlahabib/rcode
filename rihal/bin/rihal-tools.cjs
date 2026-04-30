@@ -3399,6 +3399,296 @@ function cmdPhasePlanIndex(rawArgs) {
   };
 }
 
+/** phases list — directory inventory under .planning/phases with optional --type filter and --pick path. */
+function cmdPhasesList(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  let type = 'all';
+  let pick = null;
+  let raw = false;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--type') type = argv[++i];
+    else if (argv[i] === '--pick') pick = argv[++i];
+    else if (argv[i] === '--raw') raw = true;
+  }
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  const directories = fs.existsSync(phasesDir)
+    ? fs.readdirSync(phasesDir)
+        .filter((d) => fs.statSync(path.join(phasesDir, d)).isDirectory() && /^\d/.test(d))
+        .sort((a, b) => {
+          const na = parseFloat(a.match(/^(\d+(?:\.\d+)?)/)?.[1] || '0');
+          const nb = parseFloat(b.match(/^(\d+(?:\.\d+)?)/)?.[1] || '0');
+          return na - nb;
+        })
+    : [];
+  const summaries = [];
+  const sprints = [];
+  for (const d of directories) {
+    const dirPath = path.join(phasesDir, d);
+    for (const f of fs.readdirSync(dirPath)) {
+      const rel = path.relative(PROJECT_ROOT, path.join(dirPath, f));
+      if (/-SUMMARY\.md$/i.test(f) || /^SUMMARY\.md$/i.test(f)) summaries.push(rel);
+      if (/-SPRINT\.md$/i.test(f)) sprints.push(rel);
+    }
+  }
+  const result = { directories, summaries, sprints };
+  if (pick) {
+    const m = pick.match(/^([a-z_]+)\[(-?\d+)\]$/i);
+    if (m) {
+      const arr = result[m[1]] || [];
+      const idx = parseInt(m[2], 10);
+      const val = arr[idx < 0 ? arr.length + idx : idx];
+      console.log(val == null ? '' : val);
+      return;
+    }
+    const v = result[pick];
+    if (Array.isArray(v)) console.log(v.join('\n'));
+    else if (v != null) console.log(v);
+    return;
+  }
+  if (type === 'summaries') return { summaries };
+  if (type === 'sprints') return { sprints };
+  if (type === 'directories') return { directories };
+  return result;
+}
+
+/** find-phase — resolve a phase number (with or without leading zero) to its directory and metadata. */
+function cmdFindPhase(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  const target = argv.find((a) => !a.startsWith('--'));
+  if (!target) {
+    console.error('Usage: find-phase <N> [--raw]');
+    process.exit(1);
+  }
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  if (!fs.existsSync(phasesDir)) return { number: target, exists: false, dir: null, slug: null, decimal_children: [] };
+  const norm = target.replace(/^0+/, '') || '0';
+  const all = fs.readdirSync(phasesDir).filter((d) => fs.statSync(path.join(phasesDir, d)).isDirectory());
+  const exact = all.find((d) => {
+    const m = d.match(/^(\d+(?:\.\d+)?)(?:[-.])/) || d.match(/^(\d+(?:\.\d+)?)$/);
+    if (!m) return false;
+    return (m[1].replace(/^0+/, '') || '0') === norm;
+  });
+  const decimal_children = all
+    .filter((d) => {
+      const m = d.match(/^(\d+)\.(\d+)[-.]/);
+      return m && (m[1].replace(/^0+/, '') || '0') === norm;
+    })
+    .map((d) => path.relative(PROJECT_ROOT, path.join(phasesDir, d)));
+  if (!exact) return { number: target, exists: false, dir: null, slug: null, decimal_children };
+  const slugMatch = exact.match(/^\d+(?:\.\d+)?[-](.+)$/);
+  return {
+    number: target,
+    exists: true,
+    dir: path.relative(PROJECT_ROOT, path.join(phasesDir, exact)),
+    slug: slugMatch ? slugMatch[1] : '',
+    decimal_children,
+  };
+}
+
+/** audit-uat — walk all UAT files under .planning/phases/ and return inventory + status counts. */
+function cmdAuditUat(args) {
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  const counts = { pending: 0, passed: 0, failed: 0, skipped: 0, blocked: 0, human_uat: 0, resolved: 0 };
+  const files = [];
+  if (fs.existsSync(phasesDir)) {
+    for (const d of fs.readdirSync(phasesDir)) {
+      const dp = path.join(phasesDir, d);
+      if (!fs.statSync(dp).isDirectory()) continue;
+      for (const f of fs.readdirSync(dp)) {
+        if (!/UAT.*\.md$|VERIFICATION\.md$/i.test(f)) continue;
+        const fp = path.join(dp, f);
+        const text = fs.readFileSync(fp, 'utf8');
+        const fileCounts = { pending: 0, passed: 0, failed: 0, skipped: 0, blocked: 0, human_uat: 0, resolved: 0 };
+        const items = [];
+        const statusRe = /^[\s-]*status:\s*([a-z_]+)/gim;
+        let m;
+        while ((m = statusRe.exec(text)) !== null) {
+          const s = m[1].toLowerCase();
+          if (s in fileCounts) fileCounts[s]++;
+          if (s in counts) counts[s]++;
+          items.push({ status: s });
+        }
+        const checkRe = /^[-*]\s+\[([ xX!?])\]\s+(.+)$/gm;
+        while ((m = checkRe.exec(text)) !== null) {
+          const mark = m[1];
+          if (mark === ' ') { fileCounts.pending++; counts.pending++; items.push({ status: 'pending', text: m[2].trim() }); }
+          else if (mark === 'x' || mark === 'X') { fileCounts.passed++; counts.passed++; items.push({ status: 'passed', text: m[2].trim() }); }
+          else if (mark === '!') { fileCounts.blocked++; counts.blocked++; items.push({ status: 'blocked', text: m[2].trim() }); }
+          else if (mark === '?') { fileCounts.human_uat++; counts.human_uat++; items.push({ status: 'human_uat', text: m[2].trim() }); }
+        }
+        files.push({ path: path.relative(PROJECT_ROOT, fp), status_counts: fileCounts, items });
+      }
+    }
+  }
+  const total_items = Object.values(counts).reduce((a, b) => a + b, 0);
+  return {
+    summary: {
+      total_files: files.length,
+      total_items,
+      phase_count: new Set(files.map((f) => f.path.match(/phases\/([^/]+)/)?.[1])).size,
+      ...counts,
+    },
+    results: files,
+  };
+}
+
+/** uat render-checkpoint — render a markdown checkpoint block from a UAT file. */
+function cmdUatRenderCheckpoint(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  let file = null;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--file') file = argv[++i];
+  }
+  if (!file || !fs.existsSync(file)) {
+    console.error('Usage: uat render-checkpoint --file <path>');
+    process.exit(1);
+  }
+  const text = fs.readFileSync(file, 'utf8');
+  const { frontmatter } = parseFrontmatter(text);
+  const phase = frontmatter.phase || '';
+  const lines = [];
+  lines.push(`## UAT Checkpoint — Phase ${phase}`);
+  lines.push('');
+  const pendingRe = /^[-*]\s+\[ \]\s+(.+)$/gm;
+  const pending = [];
+  let m;
+  while ((m = pendingRe.exec(text)) !== null) pending.push(m[1].trim());
+  if (pending.length === 0) {
+    lines.push('No pending UAT items. ✅');
+  } else {
+    lines.push(`**${pending.length} pending item(s):**`);
+    lines.push('');
+    pending.slice(0, 20).forEach((p, i) => lines.push(`${i + 1}. ${p}`));
+    if (pending.length > 20) lines.push(`...and ${pending.length - 20} more`);
+  }
+  lines.push('');
+  lines.push('Reply: `pass`, `fail <reason>`, `skip`, or `block <reason>`.');
+  return { __raw: lines.join('\n') };
+}
+
+/** requirements mark-complete — flip status to complete for given requirement IDs in REQUIREMENTS.md. */
+function cmdRequirementsMarkComplete(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  const ids = argv.filter((a) => !a.startsWith('--'));
+  if (ids.length === 0) return { updated: [], not_found: [] };
+  const reqPath = path.join(PLANNING_DIR, 'REQUIREMENTS.md');
+  if (!fs.existsSync(reqPath)) return { updated: [], not_found: ids, reason: 'REQUIREMENTS.md not found' };
+  let text = fs.readFileSync(reqPath, 'utf8');
+  const updated = [];
+  const notFound = [];
+  for (const id of ids) {
+    const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(\\| *${escaped} *\\|[^\\n]*?\\| *)([^|\\n]+)( *\\|)`, 'g');
+    let matched = false;
+    text = text.replace(re, (full, pre, status, post) => {
+      matched = true;
+      return `${pre}complete${post}`;
+    });
+    if (matched) updated.push(id); else notFound.push(id);
+  }
+  if (updated.length > 0) fs.writeFileSync(reqPath, text);
+  return { updated, not_found: notFound };
+}
+
+/** todo match-phase — return todos whose phase tag matches N. */
+function cmdTodoMatchPhase(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  const phase = argv.find((a) => !a.startsWith('--'));
+  if (!phase) {
+    console.error('Usage: todo match-phase <N>');
+    process.exit(1);
+  }
+  const todoDirs = [
+    path.join(PLANNING_DIR, 'notes', 'todos'),
+    path.join(PLANNING_DIR, 'todos'),
+    path.join(PLANNING_DIR, 'notes'),
+  ];
+  const matches = [];
+  for (const dir of todoDirs) {
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.md')) continue;
+      const fp = path.join(dir, f);
+      const text = fs.readFileSync(fp, 'utf8');
+      const { frontmatter, body } = parseFrontmatter(text);
+      const tagMatch = frontmatter.phase === phase
+        || (frontmatter.tags || '').split(',').map((t) => t.trim()).includes(`phase-${phase}`)
+        || new RegExp(`\\bphase[\\s-]?${phase}\\b`, 'i').test(body);
+      if (!tagMatch) continue;
+      const titleMatch = body.match(/^#\s+(.+)$/m);
+      matches.push({
+        file: path.relative(PROJECT_ROOT, fp),
+        title: titleMatch ? titleMatch[1].trim() : f.replace(/\.md$/, ''),
+        area: frontmatter.area || frontmatter.tags || '',
+        score: 1.0,
+        reasons: [`phase tag matched ${phase}`],
+      });
+    }
+  }
+  return { phase, todo_count: matches.length, matches };
+}
+
+/** learnings copy — soft-fail copy of a phase's LEARNINGS.md to the global store. */
+function cmdLearningsCopy(args) {
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  if (!fs.existsSync(phasesDir)) return { copied: 0, reason: 'no phases dir' };
+  const dirs = fs.readdirSync(phasesDir).filter((d) => fs.statSync(path.join(phasesDir, d)).isDirectory());
+  const learnings = dirs
+    .map((d) => path.join(phasesDir, d, 'LEARNINGS.md'))
+    .filter((p) => fs.existsSync(p));
+  if (learnings.length === 0) return { copied: 0, reason: 'no LEARNINGS.md found in any phase' };
+  const globalDir = path.join(process.env.HOME || '', '.rihal', 'learnings');
+  if (!fs.existsSync(globalDir)) fs.mkdirSync(globalDir, { recursive: true });
+  const project = path.basename(PROJECT_ROOT);
+  let copied = 0;
+  for (const src of learnings) {
+    const phase = src.match(/phases\/([^/]+)\//)?.[1] || 'unknown';
+    const dest = path.join(globalDir, `${project}__${phase}.md`);
+    fs.copyFileSync(src, dest);
+    copied++;
+  }
+  return { copied, project, store: globalDir };
+}
+
+/** frontmatter get — extract a single field from a markdown file's YAML frontmatter. */
+function cmdFrontmatterGet(args) {
+  const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
+  let file = null;
+  let field = null;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--field') field = argv[++i];
+    else if (!argv[i].startsWith('--') && !file) file = argv[i];
+  }
+  if (!file || !field) {
+    console.error('Usage: frontmatter get <file> --field <name>');
+    process.exit(1);
+  }
+  if (!fs.existsSync(file)) {
+    console.error(`File not found: ${file}`);
+    process.exit(1);
+  }
+  const text = fs.readFileSync(file, 'utf8');
+  const { frontmatter } = parseFrontmatter(text);
+  const val = frontmatter[field];
+  if (val === undefined) { console.log(''); return; }
+  console.log(val);
+  return;
+}
+
+/** docs-audit — placeholder inventory of documentation gaps; non-fatal. */
+function cmdDocsAudit(args) {
+  const reqPath = path.join(PLANNING_DIR, 'documentation-requirements.csv');
+  if (!fs.existsSync(reqPath)) {
+    return { has_requirements: false, gaps: [], reason: 'no documentation-requirements.csv — nothing to audit' };
+  }
+  const text = fs.readFileSync(reqPath, 'utf8');
+  const rows = text.split('\n').slice(1).filter((l) => l.trim()).map((l) => l.split(','));
+  const gaps = rows
+    .filter((cols) => cols[1] && !fs.existsSync(path.join(PROJECT_ROOT, cols[1].trim())))
+    .map((cols) => ({ doc: cols[0]?.trim(), expected_path: cols[1]?.trim() }));
+  return { has_requirements: true, total: rows.length, gaps };
+}
+
 /** init chain — context blob for /rihal-chain workflow. */
 function cmdInitChain(rawArgs) {
   const config = readConfig();
@@ -4704,6 +4994,41 @@ async function main() {
       case 'phase-plan-index':
         result = cmdPhasePlanIndex(args.join(' '));
         break;
+      case 'phases':
+        if (args[0] === 'list') { result = cmdPhasesList(args.slice(1)); if (result === undefined) return; }
+        else { console.error('Unknown phases subcommand. Valid: list'); process.exit(1); }
+        break;
+      case 'find-phase':
+        result = cmdFindPhase(args);
+        break;
+      case 'audit-uat':
+        result = cmdAuditUat(args);
+        break;
+      case 'uat':
+        if (args[0] === 'render-checkpoint') {
+          const r = cmdUatRenderCheckpoint(args.slice(1));
+          if (r && r.__raw) { console.log(r.__raw); return; }
+          result = r;
+        } else { console.error('Unknown uat subcommand. Valid: render-checkpoint'); process.exit(1); }
+        break;
+      case 'requirements':
+        if (args[0] === 'mark-complete') { result = cmdRequirementsMarkComplete(args.slice(1)); }
+        else { console.error('Unknown requirements subcommand. Valid: mark-complete'); process.exit(1); }
+        break;
+      case 'todo':
+        if (args[0] === 'match-phase') { result = cmdTodoMatchPhase(args.slice(1)); }
+        else { console.error('Unknown todo subcommand. Valid: match-phase'); process.exit(1); }
+        break;
+      case 'learnings':
+        if (args[0] === 'copy') { result = cmdLearningsCopy(args.slice(1)); }
+        else { console.error('Unknown learnings subcommand. Valid: copy'); process.exit(1); }
+        break;
+      case 'docs-audit':
+        result = cmdDocsAudit(args);
+        break;
+      case 'frontmatter':
+        if (args[0] === 'get') { cmdFrontmatterGet(args.slice(1)); return; }
+        else { console.error('Unknown frontmatter subcommand. Valid: get'); process.exit(1); }
       case 'notes':
         if (args[0] === 'list') { result = cmdNotesList(); }
         else if (args[0] === 'count') { result = cmdNotesCount(); }
@@ -4856,6 +5181,15 @@ async function main() {
         console.log('  module <subcommand> [args]                   → module system helpers');
         console.log('  plan <subcommand> [args]                     → phase/plan operations');
         console.log('  phase-plan-index <N>                         → JSON inventory of plans under phase N (waves, summary status, task counts)');
+        console.log('  phases list [--type X] [--pick path]         → directory inventory of .planning/phases (--type: summaries|sprints|directories|all; --pick: e.g. directories[-1])');
+        console.log('  find-phase <N> [--raw]                       → resolve phase number to dir/slug + decimal children');
+        console.log('  audit-uat [--raw]                            → walk all UAT files, return inventory + status counts');
+        console.log('  uat render-checkpoint --file <p>             → render markdown UAT checkpoint block from file');
+        console.log('  requirements mark-complete <ID> [<ID>...]    → flip status to complete in REQUIREMENTS.md');
+        console.log('  todo match-phase <N>                         → return todos with matching phase tag');
+        console.log('  learnings copy                               → soft-fail copy of phase LEARNINGS.md to ~/.rihal/learnings/');
+        console.log('  docs-audit                                   → list docs missing per documentation-requirements.csv');
+        console.log('  frontmatter get <file> --field <name>        → print one frontmatter field value (empty if absent)');
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
