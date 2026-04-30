@@ -123,7 +123,7 @@ If all validations pass:
 
 After saving `.planning/epics.md`, you MUST sync state so `.rihal/state.json` reflects the new epics. Without this, downstream workflows (`/rihal-status`, `/rihal-progress`, `/rihal-execute`) see a divergent picture.
 
-Per `@.rihal/skills/_shared/state-sync-rule.md`:
+Per `@rihal/skills/_shared/state-sync-rule.md`:
 
 ```bash
 node .rihal/bin/rihal-tools.cjs state sync --from-disk
