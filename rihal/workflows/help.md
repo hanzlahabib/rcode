@@ -207,15 +207,15 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | Use |
 |---------|-----|
-| `/rihal-create-prd` | Create a PRD from scratch through guided facilitation. *Not yet implemented (#482-B).* |
-| `/rihal-edit-prd` | Update an existing PRD with revisions or clarifications. *Not yet implemented (#482-B).* |
-| `/rihal-validate-prd` | Validate an existing PRD for completeness and consistency. *Not yet implemented (#482-B).* |
+| `/rihal-create-prd` | Create a PRD from scratch through guided facilitation. |
+| `/rihal-edit-prd` | Update an existing PRD with revisions or clarifications. |
+| `/rihal-validate-prd` | Validate an existing PRD for completeness and consistency. |
 | `/rihal-create-epics-and-stories` | Parse a PRD into numbered epic + story files. |
 | `/rihal-create-story` | Prepare a dev-ready STORY.md with full implementation context. |
 | `/rihal-dev-story <file>` | Execute an approved STORY by writing tests + code per AC. |
 | (internal) `check-implementation-readiness` | Guard called by `/rihal-plan` and `/rihal-execute` to verify PRD + architecture aligned before build. |
-| `/rihal-create-architecture` | Write an Architecture Decision Record (ADR). *Not yet implemented (#482-B).* |
-| `/rihal-create-ux-design` | Realize a UX design that informs architecture and implementation. *Not yet implemented (#482-B).* |
+| `/rihal-create-architecture` | Write an Architecture Decision Record (ADR). |
+| `/rihal-create-ux-design` | Realize a UX design that informs architecture and implementation. |
 | `/rihal-correct-course` | Course-correct mid-sprint when major change is discovered. |
 | `/rihal-sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal-sprint-status` | Sprint progress — stories, points, velocity, burndown. |
