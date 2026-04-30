@@ -249,6 +249,19 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 15 — fix 8 phantom CLI subcommands per #481
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 15 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
