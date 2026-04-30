@@ -249,16 +249,20 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 15 — fix 8 phantom CLI subcommands per #481
+## Phase 15 — fix 8 phantom CLI subcommands per #481 ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 15 or edit directly._
+**Goal:** Eliminate phantom CLI subcommands enumerated in #481 by implementing each handler in `rihal/bin/rihal-tools.cjs` with a contract derived from how the workflow callsite consumes the output.
 
-**Status:** Planned
+**Status:** Complete (2026-04-30)
 
 **Plans:**
-- _TBD_
+- 15-1-SPRINT.md → SUMMARY shipped (4a217c2)
 
-**Acceptance:** _TBD_
+**Acceptance:**
+- [x] 9 subcommands implemented (8 from #481 + 1 bonus `frontmatter get` found during smoke)
+- [x] `comm -23` of called-vs-implemented top-level subcommands returns only 3 prose false positives
+- [x] `test/cli-subcommand-parity.test.cjs` locks the win against future regression
+- [x] Issue #481 closed by `4a217c2`
 
 ---
 
