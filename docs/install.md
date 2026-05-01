@@ -1,7 +1,7 @@
 # Installing Rihal Code
 
 Package: [`@hanzlaa/rcode`](https://www.npmjs.com/package/@hanzlaa/rcode) on npm.
-Current version: **v2.1.0** (2026-04-24).
+Current version: **v3.4.4** (2026-04-27).
 
 ---
 
