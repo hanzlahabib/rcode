@@ -799,7 +799,7 @@ Planner prompt:
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /rihal-discuss-phase)
+- {context_path} (USER DECISIONS from /rihal-discuss-phase — read `<decisions>` for locked choices AND `<code_context>` for existing code patterns, reusable assets, and architectural notes gathered during discuss-phase)
 - {research_path} (Technical Research)
 - {verification_path} (Verification Gaps - if --gaps)
 - {uat_path} (UAT Gaps - if --gaps)
@@ -824,7 +824,7 @@ ${AGENT_SKILLS_PLANNER}
 <downstream_consumer>
 Output consumed by /rihal-execute. Plans need:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
-- Tasks in XML format with read_first, files, acceptance_criteria, and verify fields (MANDATORY on every task)
+- Tasks in XML format with read_first, files, acceptance_criteria, verify (with `<automated>` child), and done fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
 </downstream_consumer>
@@ -855,17 +855,28 @@ Every task MUST include these fields — they are NOT optional:
      - Docs: `README.md contains '## Installation'` / `API.md lists all endpoints`
      - Infra: `deploy.yml has rollback step` / `docker-compose.yml has healthcheck for db`
 
-4. **`<verify>`** — Shell commands that PROVE the acceptance criteria are met. Run by executor after task completes and by verifier during post-execution check. Rules:
-   - Each command must exit 0 on success, non-zero on failure
+4. **`<verify>`** — Shell commands that PROVE the acceptance criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
+   - `<automated>` commands must exit 0 on success, non-zero on failure
    - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
    - Keep commands short and composable — one check per line
-   - Examples:
-     - `grep -q 'def verify_token' src/auth.py`
-     - `python -m pytest tests/test_auth.py -x -q 2>&1 | grep -q 'passed'`
-     - `test -f src/components/Button.tsx`
-     - `node -e "require('./dist/index.js')" 2>&1 | grep -qv 'Error'`
+   - If test file doesn't exist yet (TDD tasks), write `<automated>MISSING</automated>` and add a Wave 0 task to create the test
+   - Example structure:
+     ```xml
+     <verify>
+       <automated>
+         grep -q 'def verify_token' src/auth.py
+         python -m pytest tests/test_auth.py -x -q 2>&1 | grep -q 'passed'
+         test -f src/components/Button.tsx
+       </automated>
+     </verify>
+     ```
 
-5. **`<action>`** — Must include CONCRETE values, not references. Rules:
+5. **`<done>`** — Observable acceptance state: a single sentence describing what is TRUE when this task is complete. Must be user/output-observable, not implementation-focused. Examples:
+   - `auth.py exports verify_token() and tests pass`
+   - `Button.tsx renders with correct className, no inline styles`
+   - `.env.example contains DATABASE_URL and REDIS_URL entries`
+
+6. **`<action>`** — Must include CONCRETE values, not references. Rules:
    - NEVER say "align X with Y", "match X to Y", "update to be consistent" without specifying the exact target state
    - ALWAYS include the actual values: config keys, function signatures, SQL statements, class names, import paths, env vars, etc.
    - If CONTEXT.md has a comparison table or expected values, copy them into the action verbatim
@@ -873,7 +884,7 @@ Every task MUST include these fields — they are NOT optional:
 
 **Optional — use when the task extends or implements existing code:**
 
-6. **`<interfaces>`** — Relevant class/function/type signatures from existing code that this task must implement, extend, or call. Embed the actual signatures here so the executor does not burn tool calls re-reading files.
+7. **`<interfaces>`** — Relevant class/function/type signatures from existing code that this task must implement, extend, or call. Embed the actual signatures here so the executor does not burn tool calls re-reading files.
    - Extract from `<read_first>` files during planning (planner already reads them)
    - Include only what the executor needs: method signatures, interface definitions, relevant types
    - Do NOT include full file contents — only the contract boundary
@@ -896,7 +907,8 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Every task has `<read_first>` with at least the file being modified
 - [ ] Every task has `<files>` listing exact files this task will modify or create
 - [ ] Every task has `<acceptance_criteria>` with grep-verifiable conditions
-- [ ] Every task has `<verify>` with at least one shell command
+- [ ] Every task has `<verify>` with an `<automated>` child containing at least one shell command (Dimension 8 blocker)
+- [ ] Every task has `<done>` with a single observable acceptance sentence (Dimension 2 requirement)
 - [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
 - [ ] Tasks extending existing code have `<interfaces>` with relevant signatures
 - [ ] Dependencies correctly identified

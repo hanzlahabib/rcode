@@ -284,6 +284,27 @@ If a requirement specifies a quantity of test cases (e.g., "30 calculations"), c
 **Impact on status:** Any BLOCKER from test quality audit ��� overall status = `gaps_found`, regardless of other checks passing.
 </step>
 
+<step name="check_code_review_findings">
+Check if a REVIEW.md exists for this phase. If it does, parse critical and high severity counts before writing the verdict:
+
+```bash
+REVIEW_FILE=$(ls "$PHASE_DIR"/*-REVIEW.md 2>/dev/null | head -1)
+if [[ -n "$REVIEW_FILE" ]]; then
+  CRITICAL_COUNT=$(grep -c "severity.*critical\|🔴.*critical\|critical.*🔴" "$REVIEW_FILE" 2>/dev/null || echo 0)
+  HIGH_COUNT=$(grep -c "severity.*high\|🟠.*high\|high.*🟠" "$REVIEW_FILE" 2>/dev/null || echo 0)
+  echo "Code review: ${CRITICAL_COUNT} critical, ${HIGH_COUNT} high findings"
+fi
+```
+
+**If CRITICAL_COUNT > 0:** Add a blocker gap — "Code review found ${CRITICAL_COUNT} critical finding(s) in REVIEW.md — must be resolved before phase passes."
+
+**If HIGH_COUNT > 0:** Add a warning — "Code review found ${HIGH_COUNT} high-severity finding(s) in REVIEW.md — review before shipping."
+
+**If REVIEW.md does not exist:** Skip silently — code review is optional (agent may not have been run).
+
+Record findings in VERIFICATION.md under `## Code Review Integration` section.
+</step>
+
 <step name="identify_human_verification">
 **Always needs human:** Visual appearance, user flow completion, real-time behavior (WebSocket/SSE), external service integration, performance feel, error message clarity.
 
@@ -295,7 +316,7 @@ Format each as: Test Name → What to do → Expected result → Why can't verif
 <step name="determine_status">
 Classify status using this decision tree IN ORDER (most restrictive first):
 
-1. IF any truth FAILED, artifact MISSING/STUB, key link NOT_WIRED, blocker found, **or test quality audit found blockers (disabled requirement tests, circular tests)**:
+1. IF any truth FAILED, artifact MISSING/STUB, key link NOT_WIRED, blocker found, **test quality audit found blockers (disabled requirement tests, circular tests)**, **or code review found critical findings**:
    → **gaps_found**
 
 2. IF the previous step produced ANY human verification items:
@@ -367,6 +388,7 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] Requirements coverage assessed (if applicable)
 - [ ] Anti-patterns scanned and categorized
 - [ ] Test quality audited (disabled tests, circular patterns, assertion strength, provenance)
+- [ ] Code review findings checked (REVIEW.md critical/high counts surfaced if file exists)
 - [ ] Human verification items identified
 - [ ] Overall status determined
 - [ ] Deferred items filtered against later milestone phases (if gaps found)

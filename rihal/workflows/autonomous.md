@@ -343,6 +343,13 @@ All implementation choices are at Claude's discretion — discuss phase was skip
 
 </decisions>
 
+<canonical_refs>
+## Canonical References
+
+No external specs pre-gathered — discuss phase skipped. Planner will extract canonical refs from ROADMAP.md during research.
+
+</canonical_refs>
+
 <code_context>
 ## Existing Code Insights
 
