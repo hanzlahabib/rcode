@@ -506,7 +506,9 @@ function cmdInit(workflowName, rawArgs) {
         : null;
 
       // Defaults consumed by /rihal-plan and /rihal-discuss-phase.
-      out.commit_docs = String(config.commit_docs || 'true') !== 'false';
+      // Accept both bare commit_docs and nested git.commit_docs (settings.md uses git.commit_docs).
+      const _rawCommitDocs = config.git?.commit_docs ?? config.commit_docs;
+      out.commit_docs = _rawCommitDocs === undefined ? true : String(_rawCommitDocs) !== 'false';
       out.response_language = config.response_language || config.language || null;
 
       // Phase 12 / #468 — close the agent-context contract.
