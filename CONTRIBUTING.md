@@ -184,6 +184,31 @@ gh pr create --title "feat(skills): sharper PRD discovery on pricing models"
 
 ---
 
+## Adding a New Agent — Registration Checklist
+
+When you add a new agent to `rihal/team.yaml`, update **all** of these locations to keep parity tests green:
+
+| File | What to add |
+|------|-------------|
+| `rihal/team.yaml` | Agent entry with `id`, `name`, `role`, `domain_keywords` |
+| `rihal/agents/rihal-<id>.md` | Agent persona stub |
+| `rihal/skills/agents/<slug>/SKILL.md` | Full skill definition (5-component standard) |
+| `.claude/skills/rihal-<id>/SKILL.md` | Installed skill copy (or let install sync it) |
+| `rihal/workflows/do.md` | Routing alias row in the persona table |
+| `rihal/workflows/discuss.md` | Add to single-agent dispatch list |
+| `rihal/bin/rihal-tools.cjs` `QUALITY_AGENTS` | Add model assignment if the agent is `quality` tier |
+| `README.md` team table | Add a row for the new persona |
+| `server/dashboard.js` roster | Add to dashboard display roster |
+
+**Parity tests that will fail if you miss a location:**
+- `agent-team-parity.test.cjs` — team.yaml ↔ agent files
+- `agents-registry.test.cjs` — agent registry consistency
+- `help-md-parity.test.cjs` — any new command stubs
+
+Run `node --test` before opening a PR.
+
+---
+
 ## 🚨 Critical Rule — Never Auto-Push
 
 **AI agents and automation tools working on this repository MUST NEVER push to any remote without explicit, interactive user approval on every push.**
