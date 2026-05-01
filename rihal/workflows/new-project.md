@@ -1370,6 +1370,12 @@ git add \
 
 # Fallback: also try committing just the instruction file if .planning was ignored
 git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project instruction file" 2>/dev/null || true
+
+# Sync all roadmapper-created phases into state.json.
+# rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
+# state.json is empty after this step unless we sync it. Without this, every
+# /rihal-status shows "N phases not registered" warnings immediately after init.
+node ".rihal/bin/rihal-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 
 ## 9. Done

@@ -549,11 +549,16 @@ git add .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md 2>/dev
   echo "ℹ .planning/ gitignored — roadmap written, not committed"
 ```
 
-Also record the milestone start in state:
+Also record the milestone start in state and sync roadmapper phases:
 
 ```bash
 node ".rihal/bin/rihal-tools.cjs" state add-decision \
   --summary "Started milestone v[X.Y] [Name]: [N] phases, [X] requirements" 2>/dev/null || true
+
+# Sync all roadmapper-created phases into state.json.
+# rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
+# state.json has no phase entries until this runs. Closes #504.
+node ".rihal/bin/rihal-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 
 ## 11. Done
