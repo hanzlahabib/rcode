@@ -178,3 +178,9 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 - If subagent fails: provide template adversarial review structure
 - If files too large: split review across multiple components
 - If no findings: report "No vulnerabilities found" (document assumptions)
+
+## On Completion
+
+/rihal-plan {phase} --reviews — incorporate findings into next plan
+/rihal-code-review-fix — apply suggested fixes
+/rihal-council — escalate contested findings to the full council

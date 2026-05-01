@@ -195,3 +195,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## On Completion
+
+/rihal-plan {next_phase} — plan next phase in this workstream
+/rihal-next — get suggested next action
+/rihal-progress — see all workstreams and phases

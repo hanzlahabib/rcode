@@ -179,3 +179,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## On Completion
+
+/rihal-check-todos — review all open todos
+/rihal-next — get suggested next action
+/rihal-progress — see overall roadmap status

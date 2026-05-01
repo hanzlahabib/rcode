@@ -177,6 +177,10 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-audit-uat` | Cross-phase audit of all outstanding UAT items. |
 | `/rihal-audit-fix` | Autonomous audit-to-fix pipeline — find, classify, fix, test, commit. |
 | `/rihal-code-review --karpathy` | Audit recent code against Karpathy's 4 LLM coding principles. |
+| `/rihal-karpathy-audit` | Full Karpathy engineering principles audit across the codebase. |
+| `/rihal-check-implementation-readiness` | Verify a feature is fully ready to implement before writing code. |
+| `/rihal-review-edge-case-hunter` | Hunt for edge cases and boundary conditions before execution. |
+| `/rihal-diagnose-issues` | Triage and diagnose systemic issues before a debug session. |
 | `/rihal-ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
 | `/rihal-ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
 | `/rihal-code-review --attack` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |
@@ -188,6 +192,7 @@ init → new-project → plan → execute → next → status → ship
 | Command | Use |
 |---------|-----|
 | `/rihal-discuss-phase --power` | Bulk question generation with async UI for context-heavy phases. |
+| `/rihal-discuss-phase-power` | Standalone deep-dive phase discussion with full research + assumptions. |
 | `/rihal-chain <preset> <topic>` | Sequential agent pipeline (research → scope → build), typed artifacts. |
 | `/rihal-brainstorm` | Guided brainstorming — pick a method, generate ideas systematically. |
 | `/rihal-why <decision>` | Explain reasoning behind a decision, classification, or panel pick. |
@@ -228,6 +233,17 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-notify-test` | Verify Slack/Discord/MS Teams webhook wiring — posts a test message. |
 | `/rihal-from-template <type>` | Seed .planning/ from a starter template (saas-b2b, api-backend, mobile-app). |
 | `/rihal-retrospective` | Run an epic retrospective and produce owned action items. |
+| `/rihal-new-project-research` | Research subcommand — deep research before new project roadmap creation. |
+| `/rihal-new-project-roadmap` | Roadmap subcommand — generate phase roadmap from new project research. |
+
+## Memory
+
+| Command | Use |
+|---------|-----|
+| `/rihal-memory-init` | Initialize the memory bank for a project (first-time setup). |
+| `/rihal-memory-update` | Update a specific memory entry with new information. |
+| `/rihal-memory-audit` | Audit all memory files for staleness and coverage gaps. |
+| `/rihal-memory-distill` | Distill verbose memory into concise, LLM-friendly summaries. |
 
 ## Operational / rare
 

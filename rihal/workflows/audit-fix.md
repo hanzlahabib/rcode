@@ -190,3 +190,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## On Completion
+
+/rihal-audit — re-run audit to verify fixes applied correctly
+/rihal-code-review — review the auto-applied changes
+/rihal-progress — see overall project state

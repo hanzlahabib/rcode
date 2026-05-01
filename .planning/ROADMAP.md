@@ -266,6 +266,19 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 17 — Workflow Dead-End & Broken-Ref Fix
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 17 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)

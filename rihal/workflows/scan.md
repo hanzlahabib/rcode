@@ -370,3 +370,10 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## On Completion
+
+/rihal-council {your question} — strategic question about what was found
+/rihal-plan {N} — plan fixes for discovered issues
+/rihal-explore — go deeper with socratic analysis
+/rihal-next — get suggested next action

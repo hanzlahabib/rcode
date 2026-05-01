@@ -185,3 +185,9 @@ Then print summary:
 - **Git not available:** report gracefully ("Git not available, skipping commit history.").
 - **Write permission denied to .planning/:** print error and stop.
 - **Insufficient readable history:** report gracefully and skip that section.
+
+## On Completion
+
+/rihal-progress — see full roadmap status
+/rihal-next — get suggested next action
+/rihal-resume-work — pick up where you left off

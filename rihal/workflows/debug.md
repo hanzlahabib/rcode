@@ -262,3 +262,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## On Completion
+
+/rihal-code-review {phase} — review the fix before committing
+/rihal-verify-work {phase} — re-run UAT after the fix
+/rihal-execute {phase} --gaps-only — re-run just the failing plans

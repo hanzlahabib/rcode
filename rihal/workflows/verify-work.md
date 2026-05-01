@@ -715,3 +715,14 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
 - [ ] Ready for `/rihal-execute --gaps-only` when complete
 </success_criteria>
+
+## On Completion
+
+When gaps found and fix plans generated:
+  /rihal-execute {phase} --gaps-only — re-execute just the gap plans
+  /rihal-progress — see updated phase status
+
+When all tests pass:
+  /rihal-add-tests {phase} — generate unit + E2E tests for this phase
+  /rihal-next — advance to next phase
+  /rihal-plan {next} — plan the next phase

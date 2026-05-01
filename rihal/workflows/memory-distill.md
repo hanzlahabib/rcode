@@ -105,3 +105,9 @@ Print per-target:
 ## Reversibility
 
 Distillates are derived artefacts. Reverting a regeneration: `git checkout .rihal/memory/distillates/`.
+
+## On Completion
+
+/rihal-memory-audit — audit all memory files for staleness
+/rihal-next — get suggested next action
+/rihal-resume-work — continue with current work context

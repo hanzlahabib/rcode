@@ -72,3 +72,9 @@ State changes — .rihal/state.json
 - Git error (invalid SHAs, not a repo) → Show git error
 - state.json missing for `--last` → "Cannot find session info. Use explicit SHAs or no args."
 - No changes → Return message "No changes between {shas}"
+
+## On Completion
+
+/rihal-plan {phase} — plan fixes for changes seen in the diff
+/rihal-execute {phase} — execute the phase
+/rihal-progress — see full roadmap status

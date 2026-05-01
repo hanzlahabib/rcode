@@ -61,3 +61,9 @@ Separate multiple plans with `---\n`
 - ID unresolvable → Show resolve-id error message
 - SPRINT.md missing → "File not found: {path}"
 - state.json corrupt → Omit execution status, continue
+
+## On Completion
+
+/rihal-execute {phase} — execute this phase
+/rihal-plan {phase} — revise the plan
+/rihal-progress — see full roadmap
