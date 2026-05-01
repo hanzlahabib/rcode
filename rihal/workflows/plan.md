@@ -44,7 +44,8 @@ End with Next Up routing to /rihal-execute.
 @.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@.rihal/references/ui-brand.md
+<!-- ui-brand.md (254 lines): only load when phase goal/CONTEXT.md contains UI signals (frontend|ui|component|design|style|brand) -->
+${PHASE_GOAL_HAS_UI ? '@.rihal/references/ui-brand.md' : ''}
 @.rihal/references/revision-loop.md
 @.rihal/references/gate-prompts.md
 @.rihal/references/agent-contracts.md
@@ -72,6 +73,11 @@ AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-r
 AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
 AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
 CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+
+# Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
+PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
+  .planning/phases/*${PHASE_NUMBER}*/*-CONTEXT.md \
+  .planning/ROADMAP.md 2>/dev/null | head -1)
 ```
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes prior phase CONTEXT.md files so cross-phase decisions are consistent (e.g., "use library X for all data fetching" from Phase 2 is visible to Phase 5's planner).

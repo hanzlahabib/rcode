@@ -206,6 +206,10 @@ Read context window size for adaptive prompt enrichment:
 
 ```bash
 CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+
+# Detect if any SPRINT.md in this phase references a checkpoint — used to lazy-load checkpoints.md
+SPRINT_HAS_CHECKPOINT=$(grep -rl "checkpoint" "${phase_dir}"/*-SPRINT.md 2>/dev/null | head -1)
+PRIOR_WAVE_FAILED=false  # set to true by wave failure handler if a prior wave errored
 ```
 
 When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include richer context:
@@ -524,8 +528,9 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        <execution_context>
        @.rihal/workflows/execute-sprint.md
        @.rihal/templates/summary.md
-       @.rihal/references/checkpoints.md
        @.rihal/references/tdd.md
+       <!-- checkpoints.md (778 lines) loaded only when a task contains "checkpoint" or a prior wave failed -->
+       ${SPRINT_HAS_CHECKPOINT || PRIOR_WAVE_FAILED ? '@.rihal/references/checkpoints.md' : ''}
        </execution_context>
 
        <files_to_read>
