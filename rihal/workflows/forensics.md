@@ -54,7 +54,7 @@ Store as `$FAILED_EXECS`.
 Scan `.planning/` directory for:
 
 ```bash
-find .planning/ -name "SPRINT.md" -type f
+find .planning/ -maxdepth 5 -name "SPRINT.md" -type f | head -50
 ```
 
 For each SPRINT.md found, check if a corresponding SUMMARY.md exists:
