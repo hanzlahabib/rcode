@@ -557,8 +557,16 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        Check tool availability first — if MCP tools are not accessible, fall back to Grep/Glob.
        </mcp_tools>
 
+       <done_field_protocol>
+       For every task that contains a `<done>` field: treat it as the acceptance
+       criterion for that task. Before committing, verify every condition in `<done>`
+       is met (use grep, file reads, or CLI commands). If any condition fails, fix
+       the implementation before committing. Do NOT skip or defer `<done>` checks.
+       </done_field_protocol>
+
        <success_criteria>
        - [ ] All tasks executed
+       - [ ] Each task's <done> criteria verified before commit
        - [ ] Each task committed individually
        - [ ] SUMMARY.md created in plan directory
        </success_criteria>
