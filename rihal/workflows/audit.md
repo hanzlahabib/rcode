@@ -52,7 +52,7 @@ Probe what's audit-able right now:
 ```bash
 ROADMAP=$([ -f .planning/ROADMAP.md ] && echo yes || echo no)
 PHASES=$(ls -d .planning/phases/*/ 2>/dev/null | wc -l)
-PLANS=$(find .planning/phases -name PLAN.md 2>/dev/null | wc -l)
+PLANS=$(find .planning/phases \( -name PLAN.md -o -name '*-SPRINT.md' \) 2>/dev/null | wc -l)
 SUMMARIES=$(find .planning/phases -name SUMMARY.md 2>/dev/null | wc -l)
 UAT_FILES=$(find .planning -name 'UAT*.md' 2>/dev/null | wc -l)
 ON_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -94,7 +94,7 @@ sub-workflow.
 
 | target | precondition | failure message |
 |---|---|---|
-| phase | at least one `.planning/phases/*/PLAN.md` | `No PLAN.md found. Run /rihal-plan first.` |
+| phase | at least one `.planning/phases/*/PLAN.md` or `*-SPRINT.md` | `No plan file found. Run /rihal-plan first.` |
 | milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
 | uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal-execute on a phase first.` |
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |

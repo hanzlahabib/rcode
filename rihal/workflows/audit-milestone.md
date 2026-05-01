@@ -144,7 +144,7 @@ If no SUMMARY.md files found, **do not dead-halt** (closes #234). Probe
 for executed-phase signals and offer recovery options:
 
 ```bash
-PLANS=$(find "$MILESTONE_DIR" -name PLAN.md 2>/dev/null | wc -l)
+PLANS=$(find "$MILESTONE_DIR" \( -name PLAN.md -o -name '*-SPRINT.md' \) 2>/dev/null | wc -l)
 GIT_FEAT=$(git log --oneline --grep='^feat' 2>/dev/null | wc -l)
 APPS=$(ls -d apps packages src 2>/dev/null | wc -l)
 ```
