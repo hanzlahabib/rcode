@@ -70,4 +70,15 @@ Questions that surfaced during research and stay open. The planner can ask the u
 
 ---
 
+## Validation Architecture
+
+<!-- MANDATORY — absence of this section disables Dimension 8 (Nyquist Compliance) in the plan checker. -->
+<!-- If no automated tests are feasible, state that explicitly with a reason. -->
+
+| Concern | Test File | Command | When (Wave) |
+|---------|-----------|---------|-------------|
+| {{feature/requirement}} | {{path/to/test.ts}} | {{run command}} | Wave {{N}} |
+
+---
+
 *Phase {{N}} research artifact. Consumed by `rihal-planner` per the [`@.rihal/workflows/plan.md`](../workflows/plan.md) sequence.*

@@ -472,6 +472,25 @@ ${AGENT_SKILLS_RESEARCHER}
 
 <output>
 Write to: {phase_dir}/{phase_num}-RESEARCH.md
+
+**MANDATORY section — include even if brief:**
+
+```markdown
+## Validation Architecture
+
+| Concern | Test File | Command | When (Wave) |
+|---------|-----------|---------|-------------|
+| {feature} | {path/to/test.ts} | {run command} | Wave {N} |
+```
+
+This section is required to enable Dimension 8 (Nyquist Compliance) in the plan checker. If no automated tests are feasible for this phase, write:
+
+```markdown
+## Validation Architecture
+
+Manual verification only — no automated test files planned for this phase.
+Reason: {explain why}
+```
 </output>
 ```
 
@@ -806,9 +825,9 @@ Planner prompt:
 - {reviews_path} (Cross-AI Review Feedback - if --reviews)
 - {UI_SPEC_PATH} (UI Design Contract — visual/interaction specs, if exists)
 ${CONTEXT_WINDOW >= 500000 ? `
-**Cross-phase context (1M model enrichment):**
-- Prior phase CONTEXT.md files (locked decisions from earlier phases — maintain consistency)
-- Prior phase SUMMARY.md files (what was actually built — reuse patterns, avoid duplication). Specifically check **Provides** sections: these list functions, APIs, and models from earlier phases that this phase can reuse without rebuilding.
+**Cross-phase context (1M model enrichment — most recent 5 phases only to avoid context overflow):**
+- Prior phase CONTEXT.md files (locked decisions from earlier phases — maintain consistency). Cap: read the 5 most recent phases by phase number only.
+- Prior phase SUMMARY.md files (what was actually built — reuse patterns, avoid duplication). Cap: read the 5 most recent phases by phase number only. Specifically check **Provides** sections: these list functions, APIs, and models from earlier phases that this phase can reuse without rebuilding.
 ` : ''}
 </files_to_read>
 
@@ -823,7 +842,7 @@ ${AGENT_SKILLS_PLANNER}
 
 <downstream_consumer>
 Output consumed by /rihal-execute. Plans need:
-- Frontmatter (wave, depends_on, files_modified, autonomous)
+- Frontmatter (wave, depends_on, autonomous, **files_modified** — aggregated list of all file paths from `<files>` blocks across every task; used by executor for intra-wave parallel-safety overlap detection)
 - Tasks in XML format with read_first, files, acceptance_criteria, verify (with `<automated>` child), and done fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
@@ -902,7 +921,7 @@ Every task MUST include these fields — they are NOT optional:
 
 <quality_gate>
 - [ ] SPRINT.md files created in phase directory
-- [ ] Each plan has valid frontmatter
+- [ ] Each plan has valid frontmatter including `files_modified:` array aggregating all `<files>` paths across tasks (consumed by execute.md intra-wave overlap checker)
 - [ ] Tasks are specific and actionable
 - [ ] Every task has `<read_first>` with at least the file being modified
 - [ ] Every task has `<files>` listing exact files this task will modify or create

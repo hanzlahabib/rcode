@@ -279,13 +279,13 @@ Extract from these:
 - **REQUIREMENTS.md** — Acceptance criteria, constraints, must-haves vs nice-to-haves
 - **STATE.md** — Current progress, any flags or session notes
 
-**Step 2: Read all prior CONTEXT.md files**
+**Step 2: Read prior CONTEXT.md files (most recent 5 phases — cap prevents context overflow)**
 ```bash
-# Find all CONTEXT.md files from phases before current
-(find .planning/phases -name "*-CONTEXT.md" 2>/dev/null || true) | sort
+# Find CONTEXT.md files from phases before current, limit to 5 most recent
+(find .planning/phases -name "*-CONTEXT.md" 2>/dev/null || true) | sort | tail -5
 ```
 
-For each CONTEXT.md where phase number < current phase:
+For each CONTEXT.md where phase number < current phase (max 5):
 - Read the `<decisions>` section — these are locked preferences
 - Read `<specifics>` — particular references or "I want it like X" moments
 - Note any patterns (e.g., "user consistently prefers minimal UI", "user rejected single-key shortcuts")

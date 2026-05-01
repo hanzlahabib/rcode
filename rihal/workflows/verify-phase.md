@@ -185,7 +185,7 @@ For each requirement: parse description → identify supporting truths/artifacts
 </step>
 
 <step name="scan_antipatterns">
-Extract files modified in this phase from SUMMARY.md, scan each:
+Extract files modified in this phase from SUMMARY.md YAML frontmatter fields `key-files.created` and `key-files.modified` (parse the block between the opening and closing `---` delimiters). Scan each listed file:
 
 | Pattern | Search | Severity |
 |---------|--------|----------|
