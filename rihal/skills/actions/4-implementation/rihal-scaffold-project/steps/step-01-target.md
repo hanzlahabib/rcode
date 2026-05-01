@@ -9,6 +9,12 @@ Determine the target directory for the new project.
 - Accept either a bare name (`my-app`) or a full path (`/home/user/projects/my-app`).
 - If bare name: resolve to `{cwd}/{name}` where `{cwd}` is the directory the user is currently in.
 - Store resolved path as `{target_path}` and project name as `{project_name}`.
+- **Security:** Reject paths containing `..` traversal sequences before proceeding:
+  ```bash
+  case "{target_path}" in
+    *..* ) echo "Error: path contains traversal sequence — choose a different location"; exit 1 ;;
+  esac
+  ```
 
 ## Output
 Confirm back to the user:

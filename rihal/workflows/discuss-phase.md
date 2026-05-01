@@ -5,10 +5,22 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@.rihal/references/domain-probes.md
-@.rihal/references/gate-prompts.md
 @.rihal/references/universal-anti-patterns.md
 </required_reading>
+
+<conditional_reading>
+Load these only when the phase involves user-facing features or product decisions:
+- If phase goal contains UI/product/design/integration signals: `@.rihal/references/domain-probes.md` (213 lines of domain-specific question banks)
+- At the final approval step only: `@.rihal/references/gate-prompts.md` (212 lines of quality gate decision trees)
+
+To detect phase type before loading:
+```bash
+PHASE_GOAL=$(grep -A5 "^## Phase ${PHASE_NUMBER}" .planning/ROADMAP.md 2>/dev/null | head -5)
+echo "$PHASE_GOAL" | grep -iE "UI|UX|product|feature|integration|API|user|screen|flow|dashboard" > /dev/null 2>&1
+HAS_PRODUCT_SIGNALS=$?
+```
+Only include domain-probes.md when `HAS_PRODUCT_SIGNALS` is 0.
+</conditional_reading>
 
 <downstream_awareness>
 **CONTEXT.md feeds into:**

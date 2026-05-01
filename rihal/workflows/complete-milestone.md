@@ -150,7 +150,14 @@ Calculate milestone statistics:
 ```bash
 git log --oneline --grep="feat(" | head -20
 git diff --stat FIRST_COMMIT..LAST_COMMIT | tail -1
-find . -name "*.swift" -o -name "*.ts" -o -name "*.py" -o -name "*.tsx" -o -name "*.js" | xargs wc -l 2>/dev/null || true
+find . \
+  -not -path '*/node_modules/*' \
+  -not -path '*/dist/*' \
+  -not -path '*/.next/*' \
+  -not -path '*/.venv/*' \
+  -not -path '*/__pycache__/*' \
+  \( -name "*.swift" -o -name "*.ts" -o -name "*.py" -o -name "*.tsx" -o -name "*.js" \) \
+  | head -500 | xargs wc -l 2>/dev/null | tail -1 || true
 git log --format="%ai" FIRST_COMMIT | tail -1
 git log --format="%ai" LAST_COMMIT | head -1
 ```

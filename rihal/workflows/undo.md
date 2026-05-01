@@ -20,8 +20,6 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <required_reading>
-@.rihal/references/ui-brand.md
-@.rihal/references/gate-prompts.md
 </required_reading>
 
 <process>

@@ -3908,15 +3908,15 @@ function cmdResolveModel(agentId) {
     throw new Error(`Unknown agent: ${agentId}. Valid agents: ${installedAgents.join(', ')}`);
   }
 
-  // Model assignments per profile
+  // Model assignments per profile (Claude 4 family: opus-4-7, sonnet-4-6, haiku-4-5)
   const QUALITY_AGENTS = {
-    'rihal-sadiq': 'claude-3-5-opus-20241022',
-    'rihal-waleed': 'claude-3-5-opus-20241022',
-    'rihal-planner': 'claude-3-5-opus-20241022',
-    'rihal-sprint-checker': 'claude-3-5-opus-20241022',
-    'rihal-fatima': 'claude-3-5-sonnet-20241022',
-    'rihal-executor': 'claude-3-5-sonnet-20241022',
-    'rihal-verifier': 'claude-3-5-sonnet-20241022',
+    'rihal-sadiq': 'claude-opus-4-7',
+    'rihal-waleed': 'claude-opus-4-7',
+    'rihal-planner': 'claude-opus-4-7',
+    'rihal-sprint-checker': 'claude-opus-4-7',
+    'rihal-fatima': 'claude-sonnet-4-6',
+    'rihal-executor': 'claude-sonnet-4-6',
+    'rihal-verifier': 'claude-sonnet-4-6',
   };
 
   if (profile === 'inherit') {
@@ -3924,20 +3924,20 @@ function cmdResolveModel(agentId) {
   }
 
   if (profile === 'budget') {
-    return { model: 'claude-3-5-haiku-20241022', profile: 'budget', agent: agentId };
+    return { model: 'claude-haiku-4-5-20251001', profile: 'budget', agent: agentId };
   }
 
   if (profile === 'balanced') {
-    return { model: 'claude-3-5-sonnet-20241022', profile: 'balanced', agent: agentId };
+    return { model: 'claude-sonnet-4-6', profile: 'balanced', agent: agentId };
   }
 
   if (profile === 'quality') {
-    const model = QUALITY_AGENTS[agentId] || 'claude-3-5-haiku-20241022';
+    const model = QUALITY_AGENTS[agentId] || 'claude-sonnet-4-6';
     return { model, profile: 'quality', agent: agentId };
   }
 
   // Unknown profile, default to balanced
-  return { model: 'claude-3-5-sonnet-20241022', profile: 'balanced', agent: agentId, warning: `Unknown profile '${profile}'; using balanced` };
+  return { model: 'claude-sonnet-4-6', profile: 'balanced', agent: agentId, warning: `Unknown profile '${profile}'; using balanced` };
 }
 
 /**

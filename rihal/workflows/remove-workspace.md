@@ -94,6 +94,12 @@ echo "✓ Workspace archived: $ARCHIVE_PATH"
 ## Step 5 — Delete workspace directory
 
 ```bash
+PROJECT_ROOT="$(pwd)"
+REAL_WS="$(realpath "$WORKSPACE_PATH" 2>/dev/null || echo "")"
+if [[ -z "$REAL_WS" || "$REAL_WS" != "$PROJECT_ROOT"/* ]]; then
+  echo "⚠ SECURITY: workspace path '$WORKSPACE_PATH' escapes project root — aborting"
+  exit 1
+fi
 rm -rf "$WORKSPACE_PATH"
 ```
 
