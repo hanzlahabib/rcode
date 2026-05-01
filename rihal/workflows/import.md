@@ -247,12 +247,22 @@ Task({
 })
 ```
 
-If the checker returns errors:
+**If the Task() call itself fails** (subagent could not start, tool error, or unexpected exception):
+
+Display:
+```
+⚠  Sprint-checker could not run (subagent error). The plan file was written but validation was skipped.
+   You can validate manually later with: /rihal-discuss fatima review .planning/phases/{phase}/{plan}-SPRINT.md
+```
+
+Proceed to plan_finalize — do NOT abort the import over a validator failure.
+
+**If the checker returns errors:**
 - Display the errors to the user
 - Ask the user to resolve issues before the plan is considered imported
 - Do not delete the written file — the user can fix and re-validate manually
 
-If the checker returns clean:
+**If the checker returns clean:**
 - Display: "Plan validation passed"
 
 </step>
