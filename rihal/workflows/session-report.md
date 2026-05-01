@@ -91,7 +91,12 @@ Calculate estimated tokens (note: this is an estimate, not actual measurement):
 Get commits touching rihal paths since state creation:
 
 ```bash
-git log --since="$(date -d '$(cat .rihal/state.json | jq -r .created)' '+%Y-%m-%dT%H:%M:%S')" --oneline -- .rihal rihal/ .planning 2>/dev/null || git log --all --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
+SINCE_DATE=$(node -e "try{const s=require('fs').readFileSync('.rihal/state.json','utf8');console.log(JSON.parse(s).created||'')}catch(e){}" 2>/dev/null)
+if [[ -n "$SINCE_DATE" ]]; then
+  git log --since="$SINCE_DATE" --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
+else
+  git log --all --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
+fi
 ```
 
 Extract commit hashes and subjects. If git errors, report gracefully (project may not be git-based).
