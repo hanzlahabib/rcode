@@ -23,3 +23,9 @@ Skill not installed — run: npx @hanzlaa/rcode install
 /rihal-init — configure Rihal for the scaffolded project
 /rihal-new-project {name} — design the project with full facilitation
 /rihal-create-prd — write the product requirements document
+
+## ▶ Next Up
+
+- **Project scaffolded:** `/rihal-create-prd` — define what you're building
+- **Already have requirements:** `/rihal-create-milestone` — jump straight to roadmap
+- **Quick start:** `/rihal-do` — interactive router shows your next best step

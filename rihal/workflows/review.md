@@ -279,3 +279,9 @@ Clean up temp files.
 - [ ] Temp files cleaned up
 - [ ] User knows how to use feedback (/rihal-plan --reviews)
 </success_criteria>
+
+## ▶ Next Up
+
+- **Issues found:** Fix identified problems, then re-run `/rihal-review`
+- **Review passed:** `/rihal-ship {phase}` — package phase for shipping
+- **Security concern:** `/rihal-secure-phase {phase}` — targeted security review

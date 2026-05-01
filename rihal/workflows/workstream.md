@@ -201,3 +201,9 @@ If arguments are invalid, missing files, or subagent fails:
 /rihal-plan {next_phase} — plan next phase in this workstream
 /rihal-next — get suggested next action
 /rihal-progress — see all workstreams and phases
+
+## ▶ Next Up
+
+- **Workstream created:** `/rihal-execute {workstream-phase}` — begin execution
+- **View all workstreams:** `/rihal-progress` — see parallel workstream status
+- **Stuck:** `/rihal-forensics` — diagnose any blocked workstream

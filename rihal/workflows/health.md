@@ -192,3 +192,9 @@ Run: /rihal-update to repair
 - **Directory not readable:** Print error and suggest filesystem check
 - **CSV parsing fails:** Print error and suggest re-running update
 - **JSON corruption:** Print error and suggest state.json reset
+
+## ▶ Next Up
+
+- **Issues found:** `/rihal-forensics` — deep diagnostic on specific failures
+- **Ready to continue:** `/rihal-do` — interactive router guides next step
+- **Fix specific phase:** `/rihal-correct-course {phase}` — targeted correction

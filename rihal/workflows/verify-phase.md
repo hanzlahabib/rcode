@@ -396,3 +396,9 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] VERIFICATION.md created with complete report
 - [ ] Results returned to orchestrator
 </success_criteria>
+
+## ▶ Next Up
+
+- **Verification passed:** `/rihal-complete-milestone` (if all phases done) or `/rihal-execute` for next phase
+- **Gaps found:** `/rihal-plan --gaps {phase}` — plan gap-closure tasks
+- **Re-verify after fixes:** `/rihal-verify-phase {phase}`

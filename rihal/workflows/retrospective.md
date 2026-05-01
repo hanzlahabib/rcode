@@ -23,3 +23,9 @@ Skill not installed — run: npx @hanzlaa/rcode install
 /rihal-correct-course — act on retrospective findings
 /rihal-plan {next} — plan the next phase with retro learnings applied
 /rihal-note — capture retro summary in project memory
+
+## ▶ Next Up
+
+- **Retrospective complete:** `/rihal-new-milestone` — start the next milestone
+- **Review project state:** `/rihal-progress` — see current roadmap position
+- **Archive milestone:** `/rihal-complete-milestone` — if not already done

@@ -184,3 +184,9 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 /rihal-plan {phase} --reviews — incorporate findings into next plan
 /rihal-code-review-fix — apply suggested fixes
 /rihal-council — escalate contested findings to the full council
+
+## ▶ Next Up
+
+- **Vulnerabilities found:** Address security findings, re-run `/rihal-review-adversarial`
+- **Clean report:** `/rihal-verify-phase {phase}` — full verification
+- **Ship:** `/rihal-ship {phase}` — package the phase

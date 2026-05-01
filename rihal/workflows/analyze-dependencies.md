@@ -136,3 +136,9 @@ After applying: "ROADMAP.md updated. Run `/rihal-manager` to execute phases in t
 - **ROADMAP.md missing:** Print error and suggest creating project first
 - **Phase parsing fails:** Print which phase and why parsing failed
 - **File write fails:** Print error and suggest manual update
+
+## ▶ Next Up
+
+- **Circular deps found:** Fix dependency cycle, then re-run analysis
+- **Ready to execute:** `/rihal-execute {phase}` — run with dependency awareness
+- **Review roadmap:** `/rihal-progress` — see full project state

@@ -178,3 +178,9 @@ If .rihal/DOCS-AUDIT.md exists, check for missing/stale docs:
 - If CSV malformed: use template
 - If audit agent fails: provide manual audit template
 - If state write fails: skip task filing, report audit only
+
+## ▶ Next Up
+
+- **Documentation updated:** `/rihal-progress` — see current project state
+- **Proceed to planning:** `/rihal-plan {phase}` — create executable plans
+- **Review with council:** `/rihal-council {question}` — debate approach

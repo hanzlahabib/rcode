@@ -188,3 +188,9 @@ Run remediation with:
 - If PRD missing: skip scope/AC analysis, focus on architecture
 - If architecture missing: skip architecture analysis, focus on features
 - If agents fail: provide template deviation/remediation structure
+
+## ▶ Next Up
+
+- **Course corrected:** `/rihal-execute {phase}` — resume execution with updated direction
+- **Plan needs updating:** `/rihal-plan {phase}` — re-plan affected phase
+- **Check project state:** `/rihal-progress` — verify deviation was contained

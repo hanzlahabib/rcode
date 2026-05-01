@@ -23,3 +23,9 @@ Skill not installed — run: npx @hanzlaa/rcode install
 /rihal-plan — plan implementation phases from the architecture
 /rihal-council — review the architecture with the full council
 /rihal-discuss — discuss architectural tradeoffs
+
+## ▶ Next Up
+
+- **Architecture created:** `/rihal-plan {phase}` — break it into executable plans
+- **Review with team:** `/rihal-council {architecture-question}` — debate the design
+- **PRD needed first:** `/rihal-create-prd` — define requirements before architecture

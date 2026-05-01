@@ -194,3 +194,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## ▶ Next Up
+
+- **Issues found:** Address security findings, then re-run `/rihal-secure-phase {phase}`
+- **Clean report:** `/rihal-verify-phase {phase}` — run full verification
+- **Continue execution:** `/rihal-execute {next-phase}` — proceed to next phase

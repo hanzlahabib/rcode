@@ -199,3 +199,11 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## ▶ Next Up
+
+After reviewing the diagnostic report, pick your recovery path:
+
+- **Phase stuck mid-execution:** `/rihal-resume-work`
+- **Phase planned but not executed:** `/rihal-execute {phase-number}`
+- **No incomplete work found:** `/rihal-progress` — view current state
