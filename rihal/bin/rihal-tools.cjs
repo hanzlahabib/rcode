@@ -2172,6 +2172,10 @@ function cmdState(subArgs) {
       entry = { number: phaseKey, name: flags.name || phaseKey, plans: Number(flags.plans || 0) };
       state.phases.push(entry);
     }
+    // Transition guard: reject complete → executing unless --force
+    if (previousStatus === 'complete' && !flags.force) {
+      throw new Error(`Phase ${phaseKey} is already complete. Use --force to re-execute.`);
+    }
     entry.status = 'executing';
     if (flags.name) entry.name = flags.name;
     if (flags.plans !== undefined) entry.plans = Number(flags.plans);
@@ -2190,6 +2194,10 @@ function cmdState(subArgs) {
     const entry = state.phases.find((p) => String(p.number || p.id || p.name) === phaseKey);
     if (!entry) throw new Error(`Phase ${phaseKey} not found in state`);
     const previousStatus = entry.status || null;
+    // Transition guard: warn if completing from planned (skipped executing)
+    if (previousStatus === 'planned') {
+      process.stderr.write(`Warning: completing phase ${phaseKey} from 'planned' without executing.\n`);
+    }
     entry.status = 'complete';
     entry.completed = new Date().toISOString();
     writeState(state);
