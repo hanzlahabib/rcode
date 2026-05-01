@@ -147,7 +147,8 @@ EOF
   exit 0
 fi
 
-mapfile -t COMMITS < <(git log --pretty=format:%H --no-merges "${SNAPSHOT_TAG}..HEAD")
+COMMITS=()
+while IFS= read -r line; do [[ -n "$line" ]] && COMMITS+=("$line"); done < <(git log --pretty=format:%H --no-merges "${SNAPSHOT_TAG}..HEAD")
 ```
 
 If the range is empty (HEAD is already at the snapshot):

@@ -46,7 +46,7 @@ else
   if [ -z "$DASHBOARD" ]; then
     for BIN in rcode rihal rihal-code; do
       BIN_PATH="$(command -v $BIN 2>/dev/null)" || continue
-      REAL_BIN="$(readlink -f "$BIN_PATH" 2>/dev/null)"
+      REAL_BIN="$(readlink -f "$BIN_PATH" 2>/dev/null || python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$BIN_PATH" 2>/dev/null)"
       [ -z "$REAL_BIN" ] && continue
       # Walk up from dist/rcode.js → package root → server/dashboard.js
       PKG_ROOT="$(dirname "$(dirname "$REAL_BIN")")"

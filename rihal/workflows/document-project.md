@@ -72,7 +72,7 @@ For each row in CSV, check if document exists and assess staleness:
 ```bash
 for doc in $(cut -d',' -f1 .rihal/documentation-requirements.csv | tail -n +2); do
   if [ -f "$doc" ]; then
-    MTIME=$(stat -c %Y "$doc")
+    MTIME=$(stat -c %Y "$doc" 2>/dev/null || stat -f %m "$doc" 2>/dev/null)
     NOW=$(date +%s)
     AGE_DAYS=$(( ($NOW - $MTIME) / 86400 ))
     if [ $AGE_DAYS -gt 90 ]; then echo "STALE"; fi
