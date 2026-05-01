@@ -400,6 +400,13 @@ One-liner SUBSTANTIVE: "JWT auth with refresh rotation using jose library" not "
 
 Include: duration, start/end times, task count, file count.
 
+**Fill the knowledge-transfer sections (omit any with nothing substantive to say):**
+
+- **Patterns Established** — Any new architectural/coding patterns introduced. Future plans should follow these. Example: "All service errors now wrap in ServiceError(code, message)". If none, omit.
+- **Provides** — Specific functions, APIs, models, config keys, or contracts this plan exposes for future plans to build on. Be concrete: function names and file paths.
+- **Requires** — What this plan consumed from prior phases. Helps trace dependency chains.
+- **Affects** — Later phases or components that may need re-verification because of what changed here.
+
 Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready for next step".
 </step>
 

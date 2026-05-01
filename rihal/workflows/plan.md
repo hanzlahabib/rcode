@@ -808,7 +808,7 @@ Planner prompt:
 ${CONTEXT_WINDOW >= 500000 ? `
 **Cross-phase context (1M model enrichment):**
 - Prior phase CONTEXT.md files (locked decisions from earlier phases — maintain consistency)
-- Prior phase SUMMARY.md files (what was actually built — reuse patterns, avoid duplication)
+- Prior phase SUMMARY.md files (what was actually built — reuse patterns, avoid duplication). Specifically check **Provides** sections: these list functions, APIs, and models from earlier phases that this phase can reuse without rebuilding.
 ` : ''}
 </files_to_read>
 
@@ -824,7 +824,7 @@ ${AGENT_SKILLS_PLANNER}
 <downstream_consumer>
 Output consumed by /rihal-execute. Plans need:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
-- Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
+- Tasks in XML format with read_first, files, acceptance_criteria, and verify fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
 </downstream_consumer>
@@ -839,7 +839,13 @@ Every task MUST include these fields — they are NOT optional:
    - Any "source of truth" file referenced in CONTEXT.md (reference implementations, existing patterns, config files, schemas)
    - Any file whose patterns, signatures, types, or conventions must be replicated or respected
 
-2. **`<acceptance_criteria>`** — Verifiable conditions that prove the task was done correctly. Rules:
+2. **`<files>`** — Exact files this task will modify or create. One path per line. Used by:
+   - Wave conflict checker (detects parallel tasks touching the same file)
+   - Verifier (confirms per-task file changes were actually made)
+   - Executor checkpoint (knows what to stage after each task)
+   - Example: `src/auth/auth.service.ts`, `tests/auth/auth.service.test.ts`
+
+3. **`<acceptance_criteria>`** — Verifiable conditions that prove the task was done correctly. Rules:
    - Every criterion must be checkable with grep, file read, test command, or CLI output
    - NEVER use subjective language ("looks correct", "properly configured", "consistent with")
    - ALWAYS include exact strings, patterns, values, or command outputs that must be present
@@ -849,13 +855,38 @@ Every task MUST include these fields — they are NOT optional:
      - Docs: `README.md contains '## Installation'` / `API.md lists all endpoints`
      - Infra: `deploy.yml has rollback step` / `docker-compose.yml has healthcheck for db`
 
-3. **`<action>`** — Must include CONCRETE values, not references. Rules:
+4. **`<verify>`** — Shell commands that PROVE the acceptance criteria are met. Run by executor after task completes and by verifier during post-execution check. Rules:
+   - Each command must exit 0 on success, non-zero on failure
+   - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
+   - Keep commands short and composable — one check per line
+   - Examples:
+     - `grep -q 'def verify_token' src/auth.py`
+     - `python -m pytest tests/test_auth.py -x -q 2>&1 | grep -q 'passed'`
+     - `test -f src/components/Button.tsx`
+     - `node -e "require('./dist/index.js')" 2>&1 | grep -qv 'Error'`
+
+5. **`<action>`** — Must include CONCRETE values, not references. Rules:
    - NEVER say "align X with Y", "match X to Y", "update to be consistent" without specifying the exact target state
    - ALWAYS include the actual values: config keys, function signatures, SQL statements, class names, import paths, env vars, etc.
    - If CONTEXT.md has a comparison table or expected values, copy them into the action verbatim
    - The executor should be able to complete the task from the action text alone, without needing to read CONTEXT.md or reference files (read_first is for verification, not discovery)
 
-**Why this matters:** Executor agents work from the plan text. Vague instructions like "update the config to match production" produce shallow one-line changes. Concrete instructions like "add DATABASE_URL=postgresql://... , set POOL_SIZE=20, add REDIS_URL=redis://..." produce complete work. The cost of verbose plans is far less than the cost of re-doing shallow execution.
+**Optional — use when the task extends or implements existing code:**
+
+6. **`<interfaces>`** — Relevant class/function/type signatures from existing code that this task must implement, extend, or call. Embed the actual signatures here so the executor does not burn tool calls re-reading files.
+   - Extract from `<read_first>` files during planning (planner already reads them)
+   - Include only what the executor needs: method signatures, interface definitions, relevant types
+   - Do NOT include full file contents — only the contract boundary
+   - Example:
+     ```typescript
+     // src/services/auth.service.ts
+     interface AuthService {
+       verifyToken(token: string): Promise<User>
+       refreshSession(userId: string): Promise<Session>
+     }
+     ```
+
+**Why this matters:** Executor agents work from the plan text. Vague instructions like "update the config to match production" produce shallow one-line changes. Concrete instructions with `<files>`, `<verify>` commands, and embedded `<interfaces>` give the executor everything needed to do complete, correct work without extra tool calls.
 </deep_work_rules>
 
 <quality_gate>
@@ -863,8 +894,11 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Each plan has valid frontmatter
 - [ ] Tasks are specific and actionable
 - [ ] Every task has `<read_first>` with at least the file being modified
+- [ ] Every task has `<files>` listing exact files this task will modify or create
 - [ ] Every task has `<acceptance_criteria>` with grep-verifiable conditions
+- [ ] Every task has `<verify>` with at least one shell command
 - [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
+- [ ] Tasks extending existing code have `<interfaces>` with relevant signatures
 - [ ] Dependencies correctly identified
 - [ ] Waves assigned for parallel execution
 - [ ] must_haves derived from phase goal

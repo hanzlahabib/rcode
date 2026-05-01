@@ -889,6 +889,48 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 - this means the selected wave happened to be the last remaining work in the phase
 </step>
 
+<step name="run_verify_commands">
+**Run per-task `<verify>` shell commands from all completed SPRINT.md plans.**
+
+After all executor agents finish, extract and run any `<verify>` blocks defined in plan tasks. These are the machine-executable counterpart to `<acceptance_criteria>` prose.
+
+```bash
+# Extract all <verify> blocks from all SPRINT.md files for this phase
+for plan in "${PHASE_DIR}"/*-SPRINT.md; do
+  python3 -c "
+import re, sys
+content = open('$plan').read()
+verifies = re.findall(r'<verify>(.*?)</verify>', content, re.DOTALL)
+for v in verifies:
+    for line in v.strip().splitlines():
+        line = line.strip()
+        if line:
+            print(line)
+" 2>/dev/null
+done
+```
+
+Run each extracted command. Collect results:
+- Exit 0 → `✅ PASS`
+- Non-zero → `❌ FAIL: {command}`
+
+**If any verify command fails:**
+```
+⚠ Task verify commands failed:
+
+  ❌ {command}
+  Output: {stderr/stdout}
+
+These are task-level acceptance checks. Fix before proceeding to code review.
+/rihal-debug "verify command failed: {command}" — diagnose the failure
+```
+STOP — do not proceed to `code_review_gate` until all verify commands pass or the user explicitly overrides.
+
+**If all pass (or no `<verify>` blocks exist):** proceed to `code_review_gate` silently.
+
+**Skip if:** `--skip-verify` flag is set.
+</step>
+
 <step name="code_review_gate" required="true">
 **This step is REQUIRED and must not be skipped.** Spawn `rihal-code-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
 
