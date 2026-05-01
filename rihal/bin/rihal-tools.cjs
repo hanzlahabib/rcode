@@ -2137,6 +2137,57 @@ function cmdState(subArgs) {
   }
 
   // =====================================================================
+  // state migrate-schema: normalise phases array to current schema
+  // Handles 3 known schema variants in the wild:
+  //   Schema A (v1 old) — phases[N] has {id, goal, ...} but no status
+  //   Schema B (v1 mid) — phases[N] has {number, name, status?, ...}
+  //   Schema C (v2)     — phases[N] has {number, name, status, planned_at?, ...}
+  // After migration every entry has: number, name, status (defaulting to 'complete'
+  // for entries that have a SUMMARY.md path or missing status).
+  // =====================================================================
+  if (sub === 'migrate-schema') {
+    const state = readState();
+    if (!state) return { ok: false, error: 'state.json not found or empty' };
+    if (!Array.isArray(state.phases)) return { ok: false, error: 'state.phases is not an array' };
+
+    let changed = 0;
+    state.phases = state.phases.map((p) => {
+      const updated = Object.assign({}, p);
+
+      // Normalise identifier: prefer number, fall back to id or name
+      if (!updated.number && (updated.id || updated.name)) {
+        updated.number = String(updated.id || updated.name);
+        changed++;
+      }
+
+      // Normalise name
+      if (!updated.name && updated.goal) {
+        updated.name = String(updated.goal).slice(0, 60);
+        changed++;
+      }
+
+      // Normalise status: missing → infer from completion markers
+      if (!updated.status) {
+        if (updated.completed || updated.summary_path) {
+          updated.status = 'complete';
+        } else if (updated.started) {
+          updated.status = 'executing';
+        } else {
+          updated.status = 'planned';
+        }
+        changed++;
+      }
+
+      return updated;
+    });
+
+    if (changed > 0) {
+      writeState(state);
+    }
+    return { ok: true, changed, message: `Schema migration complete — ${changed} field(s) normalised across ${state.phases.length} phase entries` };
+  }
+
+  // =====================================================================
   // Execution-lifecycle phase state
   // =====================================================================
 
@@ -5292,7 +5343,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
         if (stateSubs.includes(subcommand)) {
           console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
         } else {
