@@ -29,8 +29,13 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${target}")
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${target}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
 Extract: `phase_found`, `phase_dir`, `phase_number`, `commit_docs`, `roadmap_exists`.

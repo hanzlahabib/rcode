@@ -33,9 +33,14 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_AUDITOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.

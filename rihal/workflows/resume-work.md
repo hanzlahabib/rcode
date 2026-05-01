@@ -20,8 +20,13 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init resume)
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init resume 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rihal-tools init failed. Is .rihal/ installed? Run: npx @hanzlaa/rcode install
 ```
 
 Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `has_interrupted_agent`, `interrupted_agent_id`, `commit_docs`.

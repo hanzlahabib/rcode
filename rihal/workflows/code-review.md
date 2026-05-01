@@ -66,8 +66,13 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
 Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`.

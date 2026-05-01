@@ -30,8 +30,13 @@ Then verify each level against the actual codebase.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `has_plans`, `plan_count`.
