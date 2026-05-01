@@ -170,7 +170,9 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
 ```
 
-Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`.
+Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 **If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/rihal-new-milestone` first."
 **If `state_exists` is false:** Error — "No STATE.md found. Run `/rihal-new-milestone` first."

@@ -43,7 +43,9 @@ If `INIT` is empty or `INIT.ok` is false, print error and exit:
 Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
-Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
+Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 ```bash
 AUDITOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-security-auditor --raw)

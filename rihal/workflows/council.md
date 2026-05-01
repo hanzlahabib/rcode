@@ -160,8 +160,11 @@ Parse the JSON for:
 - `paths` — `{ state, planning_root, sessions_dir, references_dir }`
 - `state_exists` — boolean, `.rihal/state.json` present
 - `installed_agents` — the authoritative list of installed agent ids (for validation)
+- `response_language` — output language from config (null = English)
 
 **If the panel contains any id not in `installed_agents`:** stop, print `Unknown agent: {id}. Installed: {installed_agents.join(', ')}`, exit.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in every subagent prompt so all panelist output stays in the configured language.
 
 ## Step 2 — Pre-consultation context gathering
 

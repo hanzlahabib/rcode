@@ -77,6 +77,8 @@ INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init scan 2>/dev/null || 
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
+Extract `response_language` from INIT JSON. If set, include `Respond in {response_language}.` in all spawned subagent prompts.
+
 Look up which documents would be produced for the selected focus (from the mapping table above).
 
 For each target document, check if it already exists in `.planning/codebase/`:

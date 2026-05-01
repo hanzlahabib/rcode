@@ -93,7 +93,9 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_MAPPER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-codebase-mapper 2>/dev/null)
 ```
 
-Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`.
+Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 </step>
 
 <step name="check_existing">

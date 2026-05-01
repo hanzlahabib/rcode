@@ -75,7 +75,9 @@ If `INIT` is empty or `INIT.ok` is false, print error and exit:
 Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
 ```
 
-Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`.
+Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 **Input sanitization (defense-in-depth):**
 ```bash

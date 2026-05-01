@@ -49,6 +49,7 @@ fi
 Extract from project analysis:
 - `doc_writer_model` — model string from agent manifest (never hardcode a model name)
 - `commit_docs` — whether to commit generated files when done (read from `.planning/config.json` if exists)
+- `response_language` — output language from `.rihal/config.yaml` (null = English); if set, include `Respond in {value}.` in all spawned subagent prompts
 - `existing_docs` — find all existing Markdown files with `find docs -name "*.md" 2>/dev/null`
 - `project_type` — detect from: `package.json`, `src/pages/api` or `pages/api`, `bin/` or `cli/`, `LICENSE`, `vercel.json` or `netlify.toml`, `lerna.json` or `pnpm-workspace.yaml`, `test/` or `__tests__/`
 - `doc_tooling` — detect from: `docusaurus.config.js`, `vitepress.config.js`, `mkdocs.yml`, `storybook.js`
