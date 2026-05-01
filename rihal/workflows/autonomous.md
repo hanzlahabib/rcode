@@ -201,10 +201,10 @@ Parse ROADMAP.md directly (rihal-tools does not expose `roadmap analyze`):
 
 ```bash
 cat .planning/ROADMAP.md
-# For per-phase detail, inspect .planning/phases/<phase_slug>/ directory for PLAN.md, SPRINT.md, SUMMARY.md presence
+# For per-phase detail, inspect .planning/phases/<phase_slug>/ directory for SPRINT.md, SUMMARY.md presence
 ```
 
-Build an internal `phases` array with: `number`, `name`, `goal`, `disk_status` (complete if SUMMARY.md exists, partial if PLAN.md exists without SUMMARY.md, planned if neither), `has_ui_hint`.
+Build an internal `phases` array with: `number`, `name`, `goal`, `disk_status` (complete if SUMMARY.md exists, partial if SPRINT.md exists without SUMMARY.md, planned if neither), `has_ui_hint`.
 
 **Filter to incomplete phases:** Keep only phases where `disk_status !== "complete"`.
 

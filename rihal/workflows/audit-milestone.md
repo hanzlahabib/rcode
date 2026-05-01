@@ -156,7 +156,7 @@ If `PLANS > 0` AND (`GIT_FEAT > 0` OR `APPS > 0`):
   Phases were executed but never formally closed.
 
   Options:
-    1. Synthesize SUMMARY.md per phase from PLAN.md + git log [recommended]
+    1. Synthesize SUMMARY.md per phase from SPRINT.md + git log [recommended]
        (groups commits by phase tag like "feat(03-1):", writes a
         first-pass SUMMARY.md the user can edit)
     2. Run /rihal-verify-phase NN per phase (manual close path)

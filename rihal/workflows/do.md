@@ -137,7 +137,7 @@ Apply this guard BEFORE the routing table below:
 | Intent contains... | AND state shows... | Then re-route to... | Why |
 |--------------------|---------------------|----------------------|-----|
 | "draft phases", "all phases", "build all phases", "groom phases", "auto mode" + "phases" | `HAS_PRD=false` | `/rihal-create-prd` first | Phases need a PRD foundation. Without one, the autonomous flow hallucinates requirements. |
-| "execute phase", "build phase N", "run phase N" | `HAS_PHASES=false` OR PLAN.md missing for phase N | `/rihal-plan N` first (or `/rihal-create-prd` if no PRD) | Can't execute what hasn't been planned. |
+| "execute phase", "build phase N", "run phase N" | `HAS_PHASES=false` OR SPRINT.md missing for phase N | `/rihal-plan N` first (or `/rihal-create-prd` if no PRD) | Can't execute what hasn't been planned. |
 | "sprint planning", "plan the sprint" | `HAS_EPICS=false` | `/rihal-create-epics-and-stories` first | Sprints draw stories from epics. No epics = no stories to schedule. |
 | "create stories", "epics" | `HAS_PRD=false` | `/rihal-create-prd` first | Epics decompose a milestone. Milestone needs PRD. |
 | "create milestones", "roadmap" | `HAS_PRD=false` | `/rihal-create-prd` first | Roadmap is derived from PRD success metrics. |

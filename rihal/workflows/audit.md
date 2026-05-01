@@ -127,7 +127,7 @@ audit.
 
 A native `phase synthesize-summaries` CLI subcommand is tracked separately
 (see #234 follow-ups) — until it lands, the LLM performs the synthesis
-inline using `git log` + `Read PLAN.md` + `Write SUMMARY.md`.
+inline using `git log` + `Read SPRINT.md` + `Write SUMMARY.md`.
 
 ## Step 5 — Dispatch
 
@@ -162,7 +162,7 @@ Next:
 
 - [ ] `/rihal-audit` (no args) presents menu in guided mode, auto-picks in yolo
 - [ ] `/rihal-audit milestone` short-circuits the menu
-- [ ] When SUMMARY.md absent but PLAN.md present, milestone offers synthesize/verify/skip — does not dead-halt
+- [ ] When SUMMARY.md absent but SPRINT.md present, milestone offers synthesize/verify/skip — does not dead-halt
 - [ ] Sub-workflow's closing report is surfaced unchanged
 
 ## On Error

@@ -64,7 +64,7 @@ Read `.planning/ROADMAP.md` directly and parse phase statuses. Use this to verif
 
 ```bash
 ls -1 .planning/phases/*/SUMMARY.md 2>/dev/null | wc -l
-ls -1 .planning/phases/*/PLAN.md .planning/phases/*/*-PLAN.md 2>/dev/null | wc -l
+ls -1 .planning/phases/*/*-SPRINT.md 2>/dev/null | wc -l
 ```
 
 **Requirements completion check (REQUIRED before presenting):**

@@ -107,7 +107,7 @@ else
 fi
 ```
 
-When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-PLAN.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
+When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-SPRINT.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
 
 **If no phase number:** Detect next unplanned phase from roadmap.
 
@@ -306,10 +306,10 @@ Exit workflow.
 **Step 3: Determine next plan number**
 
 ```bash
-EXISTING_PLAN_COUNT=$(ls "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | wc -l | tr -d ' ')
+EXISTING_PLAN_COUNT=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | wc -l | tr -d ' ')
 NEXT_PLAN_NUMBER=$(printf "%02d" $((EXISTING_PLAN_COUNT + 1)))
 PADDED_PHASE=$(printf "%02d" "${PHASE}")
-GAP_PLAN_FILENAME="${PADDED_PHASE}-${NEXT_PLAN_NUMBER}-PLAN.md"
+GAP_PLAN_FILENAME="${PADDED_PHASE}-${NEXT_PLAN_NUMBER}-SPRINT.md"
 GAP_PLAN_PATH="${PHASE_DIR}/${GAP_PLAN_FILENAME}"
 ```
 
@@ -318,7 +318,7 @@ If `EXISTING_PLAN_COUNT == 0`, there is no prior execution to reference. Display
 **Step 4: Gather prior plans for planner context**
 
 ```bash
-EXISTING_PLAN_FILES=$(ls "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | tr '\n' ' ')
+EXISTING_PLAN_FILES=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | tr '\n' ' ')
 EXISTING_SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null | tr '\n' ' ')
 ```
 
