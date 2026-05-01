@@ -304,6 +304,20 @@ Spawn all at once:
 
 All in the same assistant response block so they execute concurrently.
 
+**Partial panel failure handling:** After all Round 1 Tasks return, check for failures:
+
+- **If ALL panelists failed** (every Task returned an error or empty response):
+  Display:
+  ```
+  ✗ Council session failed — no panelists returned a response. Check agent configuration.
+  ```
+  Exit without producing an artifact.
+
+- **If some panelists failed (partial failure):**
+  Display a brief note: `⚠ {N} panelist(s) did not respond: {agent_ids}. Proceeding with {M} responses.`
+  Continue to Round 2 evaluation and presentation using only the agents that responded.
+  Do NOT abort — a partial council is more useful than no council.
+
 ### Round 2 — Cross-talk
 
 After Round 1 completes, spawn all panelists again in a single response. Pass each agent the full set of Round 1 responses and ask them to react:
