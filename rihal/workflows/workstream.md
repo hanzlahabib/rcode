@@ -55,7 +55,7 @@ If validation fails, print error and STOP.
 
 **Execute:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state workstream-create --name "$NAME"
+node .rihal/bin/rihal-tools.cjs state workstream-create --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-create failed"}'
 ```
 
 **Output:**
@@ -74,7 +74,7 @@ Set it as active unless user specifies `--no-activate` (not currently supported 
 
 **Execute:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state workstream-switch --name "$NAME"
+node .rihal/bin/rihal-tools.cjs state workstream-switch --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-switch failed"}'
 ```
 
 **Output:**
@@ -88,7 +88,7 @@ node .rihal/bin/rihal-tools.cjs state workstream-switch --name "$NAME"
 
 **Execute:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state workstream-list
+node .rihal/bin/rihal-tools.cjs state workstream-list 2>/dev/null || echo '[]'
 ```
 
 **Output (formatted table):**
@@ -104,7 +104,7 @@ API Refactor             ✗       ✗          1       2026-04-09
 
 **Execute:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state workstream-status
+node .rihal/bin/rihal-tools.cjs state workstream-status 2>/dev/null || echo '{"ok":false,"error":"no active workstream"}'
 ```
 
 **Output:**
@@ -128,7 +128,7 @@ Recent phases:
 
 **Execute:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state workstream-complete --name "$NAME"
+node .rihal/bin/rihal-tools.cjs state workstream-complete --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-complete failed"}'
 ```
 
 **Output:**

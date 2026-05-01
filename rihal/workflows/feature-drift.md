@@ -169,7 +169,7 @@ real numeric phase numbering — never invent English-letter labels like
 `P-NEW-AI-1` or `P-FIX-N`. Resolve the next free integer with:
 
 ```bash
-HIGHEST=$(node ".rihal/bin/rihal-tools.cjs" phases list --pick "directories[-1]")
+HIGHEST=$(node ".rihal/bin/rihal-tools.cjs" phases list --pick "directories[-1]" 2>/dev/null || echo "")
 # Extract leading number; next candidate = N + 1, N + 2, ...
 ```
 

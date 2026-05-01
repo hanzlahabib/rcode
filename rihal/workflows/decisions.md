@@ -53,7 +53,7 @@ QUERY_ARGS=()
 [ -n "$LIMIT" ]    && QUERY_ARGS+=(--limit "$LIMIT")
 [ -n "$PROJECT" ]  && QUERY_ARGS+=(--project "$PROJECT")
 [ -n "$SINCE" ]    && QUERY_ARGS+=(--since "$SINCE")
-RESULT=$(node .rihal/bin/rihal-tools.cjs state decisions-global "${QUERY_ARGS[@]}")
+RESULT=$(node .rihal/bin/rihal-tools.cjs state decisions-global "${QUERY_ARGS[@]}" 2>/dev/null || echo '{"decisions":[],"total":0}')
 ```
 
 The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:

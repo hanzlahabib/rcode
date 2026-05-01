@@ -47,7 +47,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If $ARGUMENTS contains a phase number, load context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init verify-work "${PHASE_ARG}")
+INIT=$(node ".rihal/bin/rihal-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
 AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
@@ -250,7 +250,7 @@ Proceed to `present_test`.
 Render the checkpoint from the structured UAT file instead of composing it freehand:
 
 ```bash
-CHECKPOINT=$(node ".rihal/bin/rihal-tools.cjs" uat render-checkpoint --file "$uat_path" --raw)
+CHECKPOINT=$(node ".rihal/bin/rihal-tools.cjs" uat render-checkpoint --file "$uat_path" --raw 2>/dev/null || echo "")
 if [[ "$CHECKPOINT" == @file:* ]]; then CHECKPOINT=$(cat "${CHECKPOINT#@file:}"); fi
 ```
 
