@@ -1089,7 +1089,7 @@ Run prior phases' test suites to catch cross-phase regressions BEFORE verificati
 **Step 1: Discover prior phases' test files**
 ```bash
 # Find all VERIFICATION.md files from prior phases in current milestone
-PRIOR_VERIFICATIONS=$(find .planning/phases/ -name "*-VERIFICATION.md" ! -path "*${PHASE_NUMBER}*" 2>/dev/null)
+PRIOR_VERIFICATIONS=$(find .planning/phases/ -name "*-VERIFICATION.md" ! -path "*${PHASE_NUMBER}*" 2>/dev/null | sort | tail -5)
 ```
 
 **Step 2: Extract test file lists from prior verifications**
@@ -1233,7 +1233,7 @@ Read these files before verification:
 - .planning/REQUIREMENTS.md (Requirement traceability)
 ${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — verify they were honored)
 - {phase_dir}/*-RESEARCH.md (Known pitfalls — check for traps)
-- Prior VERIFICATION.md files from earlier phases (regression check)
+- Prior VERIFICATION.md files from earlier phases — most recent 5 phases only (regression check)
 ` : ''}
 </files_to_read>
 

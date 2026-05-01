@@ -101,7 +101,7 @@ Load project context for conflict detection:
    **If REQUIREMENTS.md does not exist:** skip requirement conflict checks and continue.
 4. Glob for all CONTEXT.md files across phase directories:
    ```bash
-   find .planning/phases/ -name "*-CONTEXT.md" -o -name "CONTEXT.md" 2>/dev/null
+   find .planning/phases/ -name "*-CONTEXT.md" -o -name "CONTEXT.md" 2>/dev/null | sort | tail -5
    ```
    Read each CONTEXT.md found — extract locked decisions (any decision in a `<decisions>` block)
 
