@@ -41,12 +41,12 @@ STOP — do not proceed.
 ## Step 1 — Load sprint data
 
 ```bash
-SPRINT_STATUS=$(node .rihal/bin/rihal-tools.cjs state sprint status)
-VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity)
-STORIES=$(node .rihal/bin/rihal-tools.cjs state story list)
+SPRINT_STATUS=$(node .rihal/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo "")
+VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo "0")
+STORIES=$(node .rihal/bin/rihal-tools.cjs state story list 2>/dev/null || echo "")
 ```
 
-If no current sprint:
+If `SPRINT_STATUS` is empty:
 ```
 No active sprint. Run /rihal-sprint-planning to create one.
 ```
