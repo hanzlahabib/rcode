@@ -596,6 +596,16 @@ After user selects gray areas in present_gray_areas, spawn parallel research age
 
 4. Store synthesized tables for use in discuss_areas.
 
+**All-fail fallback:** If ALL Task() calls returned errors or empty results (no agent produced a usable table):
+
+Display:
+```
+⚠  Advisor research failed for all {N} selected areas (subagent errors).
+   Falling back to direct discussion without pre-researched comparison tables.
+```
+
+Set ADVISOR_MODE=false for discuss_areas — proceed with unstructured discussion flow instead of table-first flow. Do NOT abort the overall discuss-phase workflow.
+
 **If ADVISOR_MODE is false:** Skip this step entirely — proceed directly from present_gray_areas to discuss_areas.
 </step>
 
