@@ -69,18 +69,28 @@ Print one-line state summary:
 
 If `state === "returning"` and `--reset` not passed:
 
-```
-✓ Rihal is already configured here.
+- If `rihla-present: yes` — print the standard returning message and STOP:
 
-What next?
-  /rihal-resume-work    — pick up where you left off
-  /rihal-status         — see the dashboard
-  /rihal-next           — suggested next action
+  ```
+  ✓ Rihal is already configured here.
 
-Or run with --reset to reconfigure.
-```
+  What next?
+    /rihal-resume-work    — pick up where you left off
+    /rihal-status         — see the dashboard
+    /rihal-next           — suggested next action
 
-STOP here unless `--reset` was passed.
+  Or run with --reset to reconfigure.
+  ```
+
+- If `rihla-present: no` — RIHLA.md is missing from a partial prior init. Do NOT stop. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
+
+  ```
+  ✓ Rihal is already configured here.
+
+  RIHLA.md baseline is missing — completing the scan step now...
+  ```
+
+  Skip Steps 2 and 3 (config already exists). Jump directly to Step 4.
 
 ## Step 2 — Ask the questions
 
