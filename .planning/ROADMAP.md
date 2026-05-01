@@ -266,16 +266,28 @@ Started: 2026-03 · Current
 
 ---
 
-## Phase 17 — Workflow Dead-End & Broken-Ref Fix
+## Phase 17 — Workflow Dead-End & Broken-Ref Fix ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 17 or edit directly._
+**Goal:** Close all dead-end, broken-ref, and orphan gaps across rihal/workflows/ — every workflow should offer a next step, broken command references should resolve, and orphaned workflows should be discoverable.
 
-**Status:** Planned
+**Status:** Complete (2026-05-01)
+
+**Delivered:**
+- 9 dead-end workflows fixed with `On Completion` sections
+- scan.md and verify-work.md missing chains added
+- 6 thin workflow stubs created (create-prd, edit-prd, validate-prd, create-architecture, scaffold-project, retrospective)
+- help.md updated with 11 orphaned workflow entries
+- Also: init.md RIHLA.md recovery + execute.md add-tests offer (pre-phase fixes)
 
 **Plans:**
-- _TBD_
+- 17-1-SPRINT.md → da5bf5a
 
-**Acceptance:** _TBD_
+**Acceptance:**
+- [x] All 9 dead-end workflows have `On Completion` sections
+- [x] scan.md and verify-work.md have updated routing
+- [x] 6 thin stubs created and verified
+- [x] help.md has 11 new entries for previously orphaned workflows
+- [x] No existing workflow logic altered — additions only
 
 ---
 
