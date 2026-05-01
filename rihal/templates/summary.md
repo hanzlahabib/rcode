@@ -1,10 +1,16 @@
+---
+phase: "{{phase_id}}"
+status: complete
+closed_at: "{{closed_at}}"
+---
+
 # Phase Summary — {{phase_name}}
 
 <!-- P2: Omit any section that has nothing substantive to say. An empty section is worse than no section. -->
 
 **Phase ID:** {{phase_id}}
 **Closed:** {{closed_at}}
-**Plan:** PLAN.md
+**Sprint:** SPRINT.md
 
 ## Outcomes
 
@@ -12,13 +18,13 @@
 
 ## Decisions Made
 
-<!-- Omit if no decisions were made that aren't already in PLAN.md -->
+<!-- Omit if no decisions were made that aren't already in SPRINT.md -->
 - {{key choices and their rationale}}
 
 ## Deviations from Plan
 
 <!-- Omit if execution matched the plan exactly -->
-- {{anything that diverged from PLAN.md and why}}
+- {{anything that diverged from SPRINT.md and why}}
 
 ## Issues Encountered
 
