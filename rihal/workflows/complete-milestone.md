@@ -249,10 +249,12 @@ Write with the Write tool (append-preserving — Read MILESTONES.md first if it 
 
 Full PROJECT.md evolution review at milestone completion.
 
-Read all phase summaries:
+Read all phase summaries (capped to first 30 lines each, max 20 files):
 
 ```bash
-cat .planning/phases/*/*-SUMMARY.md .planning/phases/*/SUMMARY.md 2>/dev/null
+find .planning/phases/ -maxdepth 3 \( -name '*-SUMMARY.md' -o -name 'SUMMARY.md' \) | head -20 | while IFS= read -r f; do
+  echo "=== $f ===" && head -30 "$f"
+done
 ```
 
 **Full review checklist:**
