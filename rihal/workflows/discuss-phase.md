@@ -793,14 +793,17 @@ If you have already written and committed CONTEXT.md, the discuss step is comple
 
 4. **After all initially-selected areas complete:**
    - Summarize what was captured from the discussion so far
-   - AskUserQuestion:
+   - Increment internal PASS_COUNT (starts at 1 for the initial area set)
+   - If PASS_COUNT >= MAX_PASSES: display "Max discussion passes ({MAX_PASSES}) reached — proceeding to write context." and go directly to write_context WITHOUT prompting.
+   - Otherwise, AskUserQuestion:
      - header: "Done"
-     - question: "We've discussed [list areas]. Which gray areas remain unclear?"
+     - question: "We've discussed [list areas]. Which gray areas remain unclear? ({MAX_PASSES - PASS_COUNT} pass(es) remaining)"
      - options: "Explore more gray areas" / "I'm ready for context"
    - If "Explore more gray areas":
      - Identify 2-4 additional gray areas based on what was learned
      - Return to present_gray_areas logic with these new areas
-     - Loop: discuss new areas, then prompt again
+     - Increment PASS_COUNT; if PASS_COUNT >= MAX_PASSES, skip the end-of-set prompt and go directly to write_context after this round
+     - Loop: discuss new areas, then prompt again (if passes remain)
    - If "I'm ready for context": Proceed to write_context
 
 **Canonical ref accumulation during discussion:**
