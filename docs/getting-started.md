@@ -9,8 +9,7 @@ A 5-minute guide to installing and running your first command.
 In any project directory:
 
 ```bash
-git clone --branch v2-prototype --depth 1 https://github.com/hanzlahabib/rihal-code.git /tmp/rihal-src && \
-node /tmp/rihal-src/cli/install-v2.js . --yes --user "$(whoami)" --project "$(basename $(pwd))"
+npx @hanzlaa/rcode install
 ```
 
 Restart your IDE (Claude Code, Cursor, or Gemini CLI). All `/rihal-*` commands now appear when you type `/`.
