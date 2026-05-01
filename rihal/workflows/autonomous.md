@@ -600,10 +600,10 @@ Display the review result summary (score from UI-REVIEW.md if produced). Continu
 
 Run smart discuss for the current phase. Proposes grey area answers in batch tables — the user accepts or overrides per area. Produces identical CONTEXT.md output to regular discuss-phase.
 
-**Inputs:** `PHASE_NUM` from execute_phase. Resolve phase paths:
+**Inputs:** `PHASE_NUM` (local loop alias for `PHASE_NUMBER` from the iterate loop) from execute_phase. Resolve phase paths:
 
 ```bash
-PHASE_NUM="${PHASE_NUM}"
+PHASE_NUM="${PHASE_NUM}"  # local alias; other workflows use PHASE_NUMBER from init JSON
 PADDED_PHASE=$(printf "%02d" "${PHASE_NUM%.*}")
 PHASE_DIR=".planning/phases/${PADDED_PHASE}-${PHASE_SLUG}"
 ```

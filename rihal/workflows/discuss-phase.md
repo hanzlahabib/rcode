@@ -839,7 +839,7 @@ After each area is resolved (user says "Next area" or area auto-resolves in `--a
 Write after each area:
 ```json
 {
-  "phase": "{PHASE_NUM}",
+  "phase": "{PHASE_NUMBER}",
   "phase_name": "{phase_name}",
   "timestamp": "{ISO timestamp}",
   "areas_completed": ["Area 1", "Area 2"],

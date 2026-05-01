@@ -183,7 +183,7 @@ Record status and evidence for each key link.
 <step name="verify_requirements">
 If REQUIREMENTS.md exists:
 ```bash
-grep -E "Phase ${PHASE_NUM}" .planning/REQUIREMENTS.md 2>/dev/null || true
+grep -E "Phase ${PHASE_NUMBER}" .planning/REQUIREMENTS.md 2>/dev/null || true
 ```
 
 For each requirement: parse description → identify supporting truths/artifacts → status: ✓ SATISFIED / ✗ BLOCKED / ? NEEDS HUMAN.
@@ -366,7 +366,7 @@ If gaps_found:
 
 <step name="create_report">
 ```bash
-REPORT_PATH="$PHASE_DIR/${PHASE_NUM}-VERIFICATION.md"
+REPORT_PATH="$PHASE_DIR/${PHASE_NUMBER}-VERIFICATION.md"
 ```
 
 Fill template sections: frontmatter (phase/timestamp/status/score), goal achievement, artifact table, wiring table, requirements coverage, anti-patterns, human verification, gaps summary, fix plans (if gaps_found), metadata.
