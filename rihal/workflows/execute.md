@@ -1332,8 +1332,11 @@ fi
 
    {list AC items from SPRINT.md}
 
-   Run /rihal-verify-work {X} to perform UAT and produce VERIFICATION.md.
-   /rihal-next will refuse to advance until this gate passes.
+   Recommended next steps:
+   /rihal-add-tests {X} — generate unit + E2E tests before UAT
+   /rihal-verify-work {X} — perform UAT and produce VERIFICATION.md
+
+   /rihal-next will refuse to advance until the UAT gate passes.
    ```
 3. STOP the workflow. Do NOT proceed to `update_roadmap`. Do NOT call `phase complete`.
 
@@ -1447,6 +1450,33 @@ teams_webhook_url: "https://outlook.office.com/webhook/..."
 Then verify with `/rihal-notify-test`.
 </step>
 
+<step name="generate_tests">
+**Offer test generation for the completed phase.**
+
+After verification passes and the roadmap is updated, check whether tests were already written as part of the phase plans:
+
+```bash
+TEST_FILES=$(find "${PHASE_DIR}" -name "*test*" -o -name "*spec*" 2>/dev/null | wc -l)
+```
+
+If `TEST_FILES` is 0 — no test artifacts were produced during execution. Present the test generation offer:
+
+```
+## ✓ Phase {X}: {Name} — Add Tests?
+
+No test files were generated during this phase.
+Run /rihal-add-tests to generate unit + E2E tests from the SUMMARY:
+
+/rihal-add-tests {X} ${Rihal_WS}
+
+Skip if tests are out of scope for this phase (infra, config, docs-only).
+```
+
+If `TEST_FILES` is > 0 — tests were written inline. Skip this step silently.
+
+**This step is advisory only — it never blocks phase completion.**
+</step>
+
 <step name="offer_next">
 
 **Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rihal-plan {X} --gaps`). No additional routing needed — skip auto-advance.
@@ -1505,6 +1535,7 @@ Read and follow `.rihal/workflows/transition.md`, passing through the `--auto` f
 ```
 ## ✓ Phase {X}: {Name} Complete
 
+/rihal-add-tests {X} ${Rihal_WS} — generate unit + E2E tests for this phase
 /rihal-progress ${Rihal_WS} — see updated roadmap
 /rihal-discuss-phase {next} ${Rihal_WS} — discuss next phase before planning
 /rihal-plan {next} ${Rihal_WS} — plan next phase
