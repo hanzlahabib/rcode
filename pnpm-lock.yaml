@@ -12,8 +12,8 @@ importers:
         specifier: ^0.9.1
         version: 0.9.1
       diff:
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^8.0.4
+        version: 8.0.4
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12
@@ -213,8 +213,8 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  diff@7.0.0:
-    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
+  diff@8.0.4:
+    resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
 
   esbuild@0.25.12:
@@ -399,7 +399,7 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  diff@7.0.0: {}
+  diff@8.0.4: {}
 
   esbuild@0.25.12:
     optionalDependencies:

@@ -26,8 +26,9 @@ function commitScopes(n = 100) {
   const found = new Set();
   let m;
   while ((m = re.exec(out)) !== null) {
-    // Skip purely numeric scopes (phase/sprint ids)
+    // Skip numeric scopes and named phase/sprint scopes (e.g. phase-17, sprint-3)
     if (/^\d/.test(m[1])) continue;
+    if (/^phase-\d+$|^sprint-\d+$/.test(m[1])) continue;
     found.add(m[1]);
   }
   return found;

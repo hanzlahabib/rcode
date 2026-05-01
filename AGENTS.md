@@ -24,7 +24,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) format: `type(scope): subject`
 - Types allowed: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `revert`
-- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `commands`, `memory`, `brand`, `cli`, `ci`, `release`, `meta`, `tasks`, `migrations`, `refs`, `state`, `hooks`, `install`, `parity`, `triggers`, `dogfood`, `namespace`, `planning`, `insights`, `help`, `roadmap`, `session`, `audits`, `execute`, `executor`, `plan`, `planner`, `readme`, `sync`, plus numeric phase/sprint scopes (e.g. `docs(15)`, `feat(8.3)`)
+- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `commands`, `memory`, `brand`, `cli`, `ci`, `release`, `meta`, `tasks`, `migrations`, `refs`, `state`, `hooks`, `install`, `parity`, `triggers`, `dogfood`, `namespace`, `planning`, `insights`, `help`, `roadmap`, `session`, `audits`, `execute`, `executor`, `plan`, `planner`, `readme`, `sync`, `sprint`, plus numeric phase/sprint scopes (e.g. `docs(15)`, `feat(8.3)`)
 - Subject: lowercase first letter, imperative mood, no trailing period, under 72 chars
 - **NEVER add Claude/AI attribution to commit messages.** No "Generated with Claude Code", no "Co-Authored-By: Claude", no "🤖 Generated". The user does not want this.
 - **NEVER use `--no-verify`** to bypass hooks. If hooks fail, fix the underlying issue.

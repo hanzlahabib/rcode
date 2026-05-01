@@ -268,6 +268,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `planner` — planner agent
 - `readme` — README.md
 - `sync` — install/state sync flows
+- `sprint` — sprint-level workflow additions and fixes
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
