@@ -1106,7 +1106,7 @@ function cmdState(subArgs) {
         : phaseIdx + 1;
     if (!phase.sprints) phase.sprints = [];
     const sprintNum = phase.sprints.length + 1;
-    const padPhase = String(phaseNum).padStart(2, '0');
+    const padPhase = String(phaseNum); // no leading zeros
     const sprintId = `${padPhase}.${sprintNum}`;
 
     const sprint = {
@@ -1246,7 +1246,7 @@ function cmdState(subArgs) {
         if (s.id === sprintId) {
           if (!s.stories) s.stories = [];
           const storyNum = s.stories.length + 1;
-          const storyId = `${sprintId}.${String(storyNum).padStart(2, '0')}`;
+          const storyId = `${sprintId}.${String(storyNum)}`;
           const story = {
             id: storyId,
             title: flags.title,
@@ -1679,14 +1679,14 @@ function cmdState(subArgs) {
     if (fs.existsSync(phasesDir)) {
       const entries = fs.readdirSync(phasesDir);
       for (const entry of entries) {
-        const match = entry.match(/^(\d{2})-/);
+        const match = entry.match(/^(\d+)-/);
         if (match) {
           const num = parseInt(match[1], 10);
           maxNum = Math.max(maxNum, num);
         }
       }
     }
-    const nextId = String(maxNum + 1).padStart(2, '0');
+    const nextId = String(maxNum + 1);
     return { ok: true, next_phase_id: nextId };
   }
 
@@ -1694,52 +1694,52 @@ function cmdState(subArgs) {
   if (sub === 'next-plan-id') {
     const phaseId = subArgs[1];
     if (!phaseId) throw new Error('next-plan-id requires a phase ID argument (NN format)');
-    const phaseMatch = phaseId.match(/^(\d{2})(?:\.(\d+))?$/);
-    if (!phaseMatch) throw new Error(`Invalid phase ID format: ${phaseId}. Expected NN or NN.M`);
+    const phaseMatch = phaseId.match(/^(\d+)(?:\.(\d+))?$/);
+    if (!phaseMatch) throw new Error(`Invalid phase ID format: ${phaseId}. Expected N or N.M`);
 
     const phasePart = phaseMatch[1];
     const phasesDir = path.join(PLANNING_DIR, 'phases');
 
-    // Find the phase directory matching NN-*
+    // Find the phase directory matching NN-* (directories may be zero-padded for sorting)
     let phaseDir = null;
     if (fs.existsSync(phasesDir)) {
       const entries = fs.readdirSync(phasesDir);
       for (const entry of entries) {
-        const match = entry.match(/^(\d{2})(?:\.\d+)?-/);
-        if (match && match[1] === phasePart) {
+        const match = entry.match(/^(\d+)(?:\.\d+)?-/);
+        if (match && parseInt(match[1], 10) === parseInt(phasePart, 10)) {
           phaseDir = path.join(phasesDir, entry);
           break;
         }
       }
     }
 
-    // If no phase dir found, default to 01 plan
+    // If no phase dir found, default to 1st plan
     if (!phaseDir) {
-      return { ok: true, next_plan_id: `${phasePart}.01` };
+      return { ok: true, next_plan_id: `${phasePart}.1` };
     }
 
     // Scan phase dir for numbered subdirs (MM-*) to find max plan number
     let maxPlanNum = 0;
     const entries = fs.readdirSync(phaseDir);
     for (const entry of entries) {
-      const match = entry.match(/^(\d{2})-/);
+      const match = entry.match(/^(\d+)-/);
       if (match && fs.statSync(path.join(phaseDir, entry)).isDirectory()) {
         const num = parseInt(match[1], 10);
         maxPlanNum = Math.max(maxPlanNum, num);
       }
     }
 
-    const nextPlanNum = String(maxPlanNum + 1).padStart(2, '0');
-    // First plan in empty phase gets .01 not .02
-    return { ok: true, next_plan_id: maxPlanNum === 0 ? `${phasePart}.01` : `${phasePart}.${nextPlanNum}` };
+    const nextPlanNum = String(maxPlanNum + 1);
+    // First plan in empty phase gets .1 not .2
+    return { ok: true, next_plan_id: maxPlanNum === 0 ? `${phasePart}.1` : `${phasePart}.${nextPlanNum}` };
   }
 
   // --- next-task-id <plan-id> ---
   if (sub === 'next-task-id') {
     const planId = subArgs[1];
     if (!planId) throw new Error('next-task-id requires a plan ID argument (NN.MM format)');
-    const match = planId.match(/^(\d{2})\.(\d{2})$/);
-    if (!match) throw new Error(`Invalid plan ID format: ${planId}. Expected NN.MM`);
+    const match = planId.match(/^(\d+)\.(\d+)$/);
+    if (!match) throw new Error(`Invalid plan ID format: ${planId}. Expected N.M`);
 
     const phasePart = match[1];
     const planPart = match[2];
@@ -1751,15 +1751,15 @@ function cmdState(subArgs) {
     if (fs.existsSync(phasesDir)) {
       const entries = fs.readdirSync(phasesDir);
       for (const entry of entries) {
-        const phaseMatch = entry.match(/^(\d{2})(?:\.\d+)?-/);
-        if (phaseMatch && phaseMatch[1] === phasePart) {
+        const phaseMatch = entry.match(/^(\d+)(?:\.\d+)?-/);
+        if (phaseMatch && parseInt(phaseMatch[1], 10) === parseInt(phasePart, 10)) {
           const phaseDir = path.join(phasesDir, entry);
 
           // Check for subdirectory named planPart-*
           const subentries = fs.readdirSync(phaseDir);
           for (const subentry of subentries) {
-            const subMatch = subentry.match(/^(\d{2})-/);
-            if (subMatch && subMatch[1] === planPart) {
+            const subMatch = subentry.match(/^(\d+)-/);
+            if (subMatch && parseInt(subMatch[1], 10) === parseInt(planPart, 10)) {
               const planDir = path.join(phaseDir, subentry);
               const candidate = path.join(planDir, 'SPRINT.md');
               if (fs.existsSync(candidate)) {
@@ -1770,7 +1770,7 @@ function cmdState(subArgs) {
           }
 
           // If no subdir found, check phase-level PLAN.md
-          if (!planFile && planPart === '01') {
+          if (!planFile && parseInt(planPart, 10) === 1) {
             const candidate = path.join(phaseDir, 'SPRINT.md');
             if (fs.existsSync(candidate)) {
               planFile = candidate;
@@ -1788,7 +1788,7 @@ function cmdState(subArgs) {
     // Read PLAN.md and count existing tasks
     const planContent = fs.readFileSync(planFile, 'utf8');
     const taskMatches = planContent.match(/^### Task \d+\.\d+\.\d+ —/gm) || [];
-    const nextTaskNum = String(taskMatches.length + 1).padStart(2, '0');
+    const nextTaskNum = String(taskMatches.length + 1);
 
     return { ok: true, next_task_id: `${planId}.${nextTaskNum}` };
   }
@@ -1805,10 +1805,10 @@ function cmdState(subArgs) {
     if (/^M\d+$/.test(id)) {
       idType = 'milestone';
       milestoneId = id;
-    } else if (/^\d{2}$/.test(id)) {
+    } else if (/^\d+$/.test(id)) {
       idType = 'phase';
       phaseId = id;
-    } else if (/^\d{2}\.\d+$/.test(id)) {
+    } else if (/^\d+\.\d+$/.test(id)) {
       const parts = id.split('.');
       phaseId = parts[0];
 
@@ -1819,7 +1819,7 @@ function cmdState(subArgs) {
       if (fs.existsSync(phasesDir)) {
         const entries = fs.readdirSync(phasesDir);
         for (const entry of entries) {
-          if (entry.match(/^\d{2}\.\d+-/)) {
+          if (entry.match(/^\d+\.\d+-/)) {
             isDecimalPhase = true;
             break;
           }
@@ -1832,7 +1832,7 @@ function cmdState(subArgs) {
         idType = 'plan';
         planId = id;
       }
-    } else if (/^\d{2}\.\d+\.\d+$/.test(id)) {
+    } else if (/^\d+\.\d+\.\d+$/.test(id)) {
       idType = 'task';
       const parts = id.split('.');
       phaseId = parts[0];
@@ -1862,8 +1862,8 @@ function cmdState(subArgs) {
       if (fs.existsSync(phasesDir)) {
         const entries = fs.readdirSync(phasesDir);
         for (const entry of entries) {
-          const match = entry.match(/^(\d{2})-/);
-          if (match && match[1] === phaseId) {
+          const match = entry.match(/^(\d+)-/);
+          if (match && parseInt(match[1], 10) === parseInt(phaseId, 10)) {
             const phaseDir = path.join(phasesDir, entry);
             result.phase_dir = phaseDir;
 
@@ -1874,8 +1874,8 @@ function cmdState(subArgs) {
               // Check for subdirectory
               const subentries = fs.readdirSync(phaseDir);
               for (const subentry of subentries) {
-                const subMatch = subentry.match(/^(\d{2})-/);
-                if (subMatch && subMatch[1] === planNum) {
+                const subMatch = subentry.match(/^(\d+)-/);
+                if (subMatch && parseInt(subMatch[1], 10) === parseInt(planNum, 10)) {
                   const planDir = path.join(phaseDir, subentry);
                   const planPath = path.join(planDir, 'SPRINT.md');
                   if (fs.existsSync(planPath)) {
@@ -1886,8 +1886,8 @@ function cmdState(subArgs) {
                 }
               }
 
-              // If no subdir and planNum is 01, check phase-level PLAN.md
-              if (!result.path && planNum === '01') {
+              // If no subdir and planNum is 1, check phase-level PLAN.md
+              if (!result.path && parseInt(planNum, 10) === 1) {
                 const candidate = path.join(phaseDir, 'SPRINT.md');
                 if (fs.existsSync(candidate)) {
                   result.plan_dir = phaseDir;
@@ -1944,15 +1944,15 @@ function cmdState(subArgs) {
     if (fs.existsSync(phasesDir)) {
       const entries = fs.readdirSync(phasesDir);
       for (const entry of entries) {
-        const match = entry.match(/^(\d{2})(?:\.\d+)?-(.+)$/);
+        const match = entry.match(/^(\d+)(?:\.\d+)?-(.+)$/);
         if (match) {
-          const phaseId = match[1];
+          const phaseId = String(parseInt(match[1], 10)); // strip leading zeros
           const slug = match[2];
           const phaseDir = path.join(phasesDir, entry);
 
           // Add phase if not already present (check both id and number per #482-A
           // schema-drift fix — different writers use different field names).
-          if (!state.phases.some(p => String(p.id) === phaseId || String(p.number) === phaseId)) {
+          if (!state.phases.some(p => String(parseInt(p.id, 10)) === phaseId || String(parseInt(p.number, 10)) === phaseId)) {
             state.phases.push({
               id: phaseId,
               number: phaseId,
@@ -1965,9 +1965,9 @@ function cmdState(subArgs) {
           // Scan for plans within phase
           const subentries = fs.readdirSync(phaseDir);
           for (const subentry of subentries) {
-            const subMatch = subentry.match(/^(\d{2})-(.+)$/);
+            const subMatch = subentry.match(/^(\d+)-(.+)$/);
             if (subMatch && fs.statSync(path.join(phaseDir, subentry)).isDirectory()) {
-              const planNum = subMatch[1];
+              const planNum = String(parseInt(subMatch[1], 10)); // strip leading zeros
               const planId = `${phaseId}.${planNum}`;
               const planSlug = subMatch[2];
               const planDir = path.join(phaseDir, subentry);
@@ -2042,7 +2042,7 @@ function cmdState(subArgs) {
       let phaseNum = 1;
 
       for (const entry of entries) {
-        const match = entry.match(/^(\d{2})-/);
+        const match = entry.match(/^(\d+)-/);
         if (match) {
           phaseNum = parseInt(match[1], 10);
         }
@@ -2054,7 +2054,7 @@ function cmdState(subArgs) {
         if (fs.existsSync(phasePlanPath)) {
           try {
             let content = fs.readFileSync(phasePlanPath, 'utf8');
-            const phaseIdStr = String(phaseNum).padStart(2, '0');
+            const phaseIdStr = String(phaseNum); // no leading zeros
 
             // Check if it has frontmatter with phase/plan fields
             const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
@@ -2062,9 +2062,9 @@ function cmdState(subArgs) {
               const fm = frontmatterMatch[1];
               if (!fm.match(/^id:/m)) {
                 // Only add id if missing; preserve existing phase/plan if present
-                let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.01"`;
+                let newFrontmatter = fm.trimEnd() + `\nid: "${phaseIdStr}.1"`;
                 if (!fm.match(/^phase:/m)) newFrontmatter += `\nphase: "${phaseIdStr}"`;
-                if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "01"`;
+                if (!fm.match(/^plan:/m)) newFrontmatter += `\nplan: "1"`;
                 newFrontmatter += '\n';
                 content = content.replace(/^---\n([\s\S]*?)\n---\n/, `---\n${newFrontmatter}---\n`);
                 const tmp = phasePlanPath + '.tmp';
@@ -2074,8 +2074,8 @@ function cmdState(subArgs) {
               }
             } else {
               // No frontmatter found — prepend minimal frontmatter
-              const assignedId = `${phaseIdStr}.01`;
-              const minimal = `---\nid: "${assignedId}"\nphase: "${phaseIdStr}"\nplan: "01"\ntype: auto\n---\n`;
+              const assignedId = `${phaseIdStr}.1`;
+              const minimal = `---\nid: "${assignedId}"\nphase: "${phaseIdStr}"\nplan: "1"\ntype: auto\n---\n`;
               fs.writeFileSync(phasePlanPath, minimal + content);
               migratedCount++;
             }
@@ -2089,7 +2089,7 @@ function cmdState(subArgs) {
         const subentries = fs.readdirSync(phaseDir);
         let planNum = 1;
         for (const subentry of subentries) {
-          const subMatch = subentry.match(/^(\d{2})-/);
+          const subMatch = subentry.match(/^(\d+)-/);
           if (subMatch && fs.statSync(path.join(phaseDir, subentry)).isDirectory()) {
             planNum = parseInt(subMatch[1], 10);
             const planDir = path.join(phaseDir, subentry);
@@ -2098,8 +2098,8 @@ function cmdState(subArgs) {
             if (fs.existsSync(planPath)) {
               try {
                 let content = fs.readFileSync(planPath, 'utf8');
-                const phaseIdStr = String(phaseNum).padStart(2, '0');
-                const planIdStr = String(planNum).padStart(2, '0');
+                const phaseIdStr = String(phaseNum); // no leading zeros
+                const planIdStr = String(planNum);   // no leading zeros
 
                 const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
                 if (frontmatterMatch) {
@@ -2478,12 +2478,12 @@ function cmdState(subArgs) {
         const body = epicBlocks[i + 1] || '';
         const numMatch = header.match(/(\d+)/);
         if (!numMatch) continue;
-        const epicNum = numMatch[1].padStart(2, '0');
+        const epicNum = String(parseInt(numMatch[1], 10)); // strip leading zeros
         const nameMatch = header.match(/[—\-:]\s*(.+?)\s*$/);
         const epicName = nameMatch ? nameMatch[1].trim() : `Epic ${epicNum}`;
 
         // Upsert epic with story-level preservation.
-        let epicEntry = state.epics.find(e => String(e.number) === epicNum);
+        let epicEntry = state.epics.find(e => String(parseInt(e.number, 10)) === epicNum);
         if (!epicEntry) {
           epicEntry = { number: epicNum, name: epicName, status: 'planned', stories: [] };
           state.epics.push(epicEntry);
