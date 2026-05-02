@@ -82,7 +82,7 @@ PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes prior phase CONTEXT.md files so cross-phase decisions are consistent (e.g., "use library X for all data fetching" from Phase 2 is visible to Phase 5's planner).
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -714,7 +714,20 @@ ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null || true
 
 **If exists AND `--reviews` flag:** Skip prompt — go straight to replanning (the purpose of `--reviews` is to replan with review feedback).
 
-**If exists AND no `--reviews` flag:** Offer: 1) Add more plans, 2) View existing, 3) Replan from scratch.
+**If exists AND no `--reviews` flag:** Ask the user what they'd like to do. Tailor the message to context — do NOT say "as per the workflow" or expose implementation details. Examples:
+
+- If `phase_status` is `complete` or `executed`:
+  > "Phase {N} ({name}) already shipped {plan_count} plans and is marked {status}. Do you want to review those plans, add more, or replan from scratch?"
+
+- If `phase_status` is `in_progress` or `planned` (or null):
+  > "Phase {N} ({name}) already has {plan_count} plan(s). Want to add more, review what's there, or start fresh?"
+
+Always offer exactly three numbered options:
+1. Add more plans
+2. View existing plans
+3. Replan from scratch
+
+Wait for the user's choice before proceeding. Do not auto-select.
 
 ## 7. Use Context Paths from INIT
 

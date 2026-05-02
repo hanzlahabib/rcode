@@ -460,6 +460,20 @@ function cmdInit(workflowName, rawArgs) {
       out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
       out.phase_dir = phaseDirEntry ? path.join(PLANNING_DIR, 'phases', phaseDirEntry) : null;
 
+      // Phase status from state.json (complete/executed/in_progress/planned/null).
+      // Used by plan.md to show context-aware messaging when plans already exist.
+      try {
+        const stateFilePath = path.join(RIHAL_DIR, 'state.json');
+        const rawState = fs.existsSync(stateFilePath)
+          ? JSON.parse(fs.readFileSync(stateFilePath, 'utf8'))
+          : null;
+        const stPhase = (rawState?.phases || []).find(p => {
+          const k = String(p.id || p.number || '').replace(/^0+/, '') || String(p.id || p.number || '');
+          return k === String(phaseNum);
+        });
+        out.phase_status = stPhase ? (stPhase.status || null) : null;
+      } catch { out.phase_status = null; }
+
       // Disk artifacts — same shape as walkPhaseDirs() but inlined.
       if (phaseDirEntry) {
         const dirFull = path.join(phasesDir, phaseDirEntry);
