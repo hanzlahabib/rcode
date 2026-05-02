@@ -541,11 +541,14 @@ Read gap summary from VERIFICATION.md (score and missing items). Display:
 Score: {N}/{M} must-haves verified
 ```
 
-Ask user via AskUserQuestion:
+**If `INTERACTIVE` is set:** Ask via AskUserQuestion:
 - **question:** "Gaps found in phase ${PHASE_NUM}. How to proceed?"
 - **options:** "Run gap closure" / "Continue without fixing" / "Stop autonomous mode"
+- On "Stop": go to handle_blocker
 
-On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt):
+**If `INTERACTIVE` is NOT set (default autonomous):** Auto-select "Run gap closure" — display `⚙ Phase ${PHASE_NUM}: auto-running gap closure` and proceed.
+
+Execute gap closure cycle (limit: 1 attempt):
 
 ```
 Skill(skill="rihal-plan", args="${PHASE_NUM} --gaps")
@@ -558,14 +561,11 @@ Re-execute:
 Skill(skill="rihal-execute", args="${PHASE_NUM} --no-transition")
 ```
 
-Re-read verification status. If `passed` or `human_needed`: route normally. If still `gaps_found` after this retry: ask via AskUserQuestion:
-- **options:** "Continue anyway" / "Stop autonomous mode"
+Re-read verification status. If `passed` or `human_needed`: route normally. If still `gaps_found` after this retry:
+- **If `INTERACTIVE`:** ask "Continue anyway / Stop autonomous mode"
+- **Otherwise:** display `⏭ Phase ${PHASE_NUM}: gaps persist after closure — continuing` and proceed to iterate step.
 
 This limits gap closure to 1 automatic retry to prevent infinite loops.
-
-On **"Continue without fixing"**: Display `Phase ${PHASE_NUM} ⏭ Gaps deferred` and proceed to iterate step.
-
-On **"Stop autonomous mode"**: Go to handle_blocker with "User stopped — gaps remain in phase ${PHASE_NUM}".
 
 ### 3d.5. UI Review (Frontend Phases)
 
@@ -762,22 +762,22 @@ Read the gaps summary from the audit file. Display:
 ⚠ Audit: Gaps Found
 ```
 
-Ask user via AskUserQuestion:
+**If `INTERACTIVE`:** Ask via AskUserQuestion:
 - **question:** "Milestone audit found gaps. How to proceed?"
 - **options:** "Continue anyway — accept gaps" / "Stop — fix gaps manually"
+- On "Stop": Go to handle_blocker.
 
-On **"Continue anyway"**: Display `Audit ⏭ Gaps accepted` and proceed to 5b.
-
-On **"Stop"**: Go to handle_blocker.
+**Otherwise (autonomous):** Display `Audit ⏭ Gaps accepted — continuing` and proceed to 5b.
 
 **If `tech_debt`:**
 
-Show the summary, then ask user via AskUserQuestion:
+Show the summary, then:
+
+**If `INTERACTIVE`:** Ask via AskUserQuestion:
 - **options:** "Continue with tech debt" / "Stop — address debt first"
+- On "Stop": Go to handle_blocker.
 
-On **"Continue with tech debt"**: Proceed to 5b.
-
-On **"Stop"**: Go to handle_blocker.
+**Otherwise (autonomous):** Display `Tech debt noted — continuing` and proceed to 5b.
 
 ### 5b. Complete Milestone
 
