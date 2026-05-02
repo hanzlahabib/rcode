@@ -17,13 +17,14 @@ and auto-picks the most-relevant target based on project state. In
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-audit                       # interactive — asks what to audit
-/rihal-audit phase [<NN>]          # → /rihal-verify-phase
-/rihal-audit milestone [--strict]  # → /rihal-audit-milestone (with synth fallback)
-/rihal-audit uat                   # → /rihal-audit-uat
-/rihal-audit code [--scope=...]    # → /rihal-code-review --karpathy
-/rihal-audit fix                   # → /rihal-audit-fix
-/rihal-audit work                  # → /rihal-verify-work
+/rihal-audit                           # interactive — asks what to audit
+/rihal-audit phase [<NN>]              # → /rihal-verify-phase
+/rihal-audit milestone [--strict]      # → /rihal-audit-milestone (with synth fallback)
+/rihal-audit uat                       # → /rihal-audit-uat
+/rihal-audit code [--scope=...]        # → /rihal-code-review --karpathy
+/rihal-audit fix                       # → /rihal-audit-fix
+/rihal-audit work                      # → /rihal-verify-work
+/rihal-audit lens [<1-15> | all]       # → /rihal-lens-audit (15-lens methodology)
 ```
 
 **Examples:**
@@ -31,6 +32,8 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 /rihal-audit
 /rihal-audit milestone --strict
 /rihal-audit phase 03
+/rihal-audit lens security
+/rihal-audit lens all
 ```
 
 ## Step 1 — Resolve mode + arguments
@@ -42,7 +45,7 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
 
 Parse `$ARGUMENTS`:
-- First word ∈ {phase, milestone, uat, code, fix, work} → set `$TARGET`, drop it from args, jump to Step 4.
+- First word ∈ {phase, milestone, uat, code, fix, work, lens} → set `$TARGET`, drop it from args, jump to Step 4.
 - Empty or unrecognised → continue to Step 2.
 
 ## Step 2 — Detect project state
@@ -81,6 +84,7 @@ Options:
   4. code-quality    — Karpathy 4-principle code review        (current diff)
   5. auto-fix        — audit then auto-fix findings            (uses #1–4 output)
   6. work            — verify current branch / WIP             ({ON_BRANCH}, dirty={DIRTY})
+  7. lens            — 15-lens methodology audit               (security, perf, tests…)
   0. cancel
 ```
 
@@ -100,6 +104,7 @@ sub-workflow.
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
 | fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
+| lens | `rihal/` or `.rihal/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
 (closes #234 audit-milestone halt):
@@ -139,6 +144,7 @@ Run the target's slash command, forwarding remaining args:
 | milestone | `/rihal-audit-milestone $REST_ARGS` |
 | uat | `/rihal-audit-uat $REST_ARGS` |
 | code | `/rihal-code-review $REST_ARGS --karpathy` |
+| lens | `/rihal-lens-audit $REST_ARGS` |
 | fix | `/rihal-audit-fix $REST_ARGS` |
 | work | `/rihal-verify-work $REST_ARGS` |
 
@@ -155,6 +161,7 @@ Findings: {count}
 Next:
   /rihal-audit fix         — auto-fix findings classified as auto-fixable
   /rihal-audit code        — drill into code-quality issues
+  /rihal-audit lens        — 15-lens methodology audit
   /rihal-settings show     — review which audit gates are enabled
 ```
 
@@ -162,6 +169,8 @@ Next:
 
 - [ ] `/rihal-audit` (no args) presents menu in guided mode, auto-picks in yolo
 - [ ] `/rihal-audit milestone` short-circuits the menu
+- [ ] `/rihal-audit lens` dispatches to `/rihal-lens-audit` interactive picker
+- [ ] `/rihal-audit lens security` passes `security` directly to `/rihal-lens-audit`
 - [ ] When SUMMARY.md absent but SPRINT.md present, milestone offers synthesize/verify/skip — does not dead-halt
 - [ ] Sub-workflow's closing report is surfaced unchanged
 
