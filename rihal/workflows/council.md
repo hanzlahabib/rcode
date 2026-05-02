@@ -92,15 +92,8 @@ After Step 0.6 confirmation, proceed to load references by Reading:
 <available_agent_types>
 Read the `installed_agents` array from INIT_JSON. Every entry can be invoked as
 `subagent_type: "rihal-{id}"`. The classifier and panel scorer will surface only
-agents present in this list.
-
-Currently registered council agents (always available if installed):
-- rihal-sadiq, rihal-waleed, rihal-fatima, rihal-mariam, rihal-hussain-pm
-
-Specialist agents that may be installed (add to panel if scorer surfaces them):
-- rihal-ux-designer, rihal-noor
-- rihal-codebase-mapper, rihal-project-researcher, rihal-roadmapper
-- (and any other rihal-* agent in installed_agents)
+agents present in this list — **do not hardcode agent names here**, use the live
+list from INIT_JSON so new agents added to team.yaml are automatically available.
 
 Do not invoke `general-purpose` or any agent type not present in
 `installed_agents`. If the scorer surfaces an unknown agent, drop it
