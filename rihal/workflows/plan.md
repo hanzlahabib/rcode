@@ -329,41 +329,33 @@ Wait for the user's choice before proceeding. Do not auto-select.
 
 Display a sprint summary table (sprint id → one-line goal).
 
-Then immediately run a **codebase overlap check** before showing the execute prompt — Closes #596:
+Then run a **best-effort codebase overlap check** before showing the execute prompt — Closes #596.
 
-```bash
-# Extract file paths and component/model names from all SPRINT.md files
-SPRINT_FILES=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null)
+**This check is always informational. It never blocks, never errors, never fails the workflow.** If any step below cannot complete for any reason, skip it silently and proceed straight to the execute prompt.
 
-# Check which files_modified already exist
-EXISTING=()
-MISSING=()
-for sprint in $SPRINT_FILES; do
-  # grep for files_modified block and check each path
-  grep -E '^\s+-\s+\S+\.(tsx?|py|prisma|sql|css|json)' "$sprint" 2>/dev/null | \
-    awk '{print $NF}' | while read -r f; do
-      [ -f "$f" ] && echo "EXISTS: $f" || echo "NEW: $f"
-    done
-done
-```
-
-Show a compact overlap report inline with the sprint table:
+1. Read the SPRINT.md files for this phase (they are already on disk — no tool calls needed beyond `Read`).
+2. From each sprint's `files_modified:` frontmatter list, note which paths already exist on disk vs. which are new.
+3. Separately, look at the sprint *goals* and compare against modules/components the codebase already has. Use your knowledge from any files already read this session; do NOT spawn new reads just for this check.
+4. Report what you found — one compact block:
 
 ```
-Codebase overlap check:
-  ✓ 3 files already exist (plans will extend them)
-  + 12 files are new (will be created)
-  ⚠ 1 component overlap: TemplateManager.tsx does similar work to Sprint 112-04's planned Templates tab
+Codebase overlap check (best-effort):
+  ✓ N files already exist — plans will extend them
+  + M files are new — will be created
+  ⚠ Possible overlap: [file A] in the codebase may already cover [sprint X goal] — worth checking before executing
 ```
 
-Rules:
-- **Green / no action required:** file exists and sprint's intent is to extend it → note "extends existing"
-- **Warning / flag for user:** a *different* component in the codebase already implements the same feature → name both files and let the user decide
-- **New:** file doesn't exist → no annotation needed, silent
-- If no conflicts detected: one line "No codebase conflicts detected." and proceed
-- Never block execution — this is information, not a gate
+If nothing notable: one line — `No obvious conflicts detected.`
 
-Only after showing overlap results, show the execute prompt.
+**Hard rules (dead-ends — nothing here can cause failure):**
+- If a SPRINT.md can't be read → skip it, don't error
+- If files_modified is empty or absent → skip the file check, move on
+- If you're uncertain whether an overlap is real → don't mention it (false positives are noise)
+- If the whole check produces nothing → omit the block entirely, go straight to execute prompt
+- **Never ask a follow-up question about the overlap** — state it and move on
+- **Never refuse to show the execute prompt** because of an overlap finding
+
+Only after showing overlap results (or skipping them), show the execute prompt.
 
 ## 7. Use Context Paths from INIT
 
