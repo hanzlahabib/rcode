@@ -78,11 +78,42 @@ function scanState(rihalDir) {
     const phasesDir = path.join(projectDir, '.planning', 'phases');
     state.phases = state.raw.phases.map(p => {
       const sprints    = Array.isArray(p.sprints) ? p.sprints : [];
-      const allStories = sprints.flatMap(s => Array.isArray(s.stories) ? s.stories : []);
+      let   allStories = sprints.flatMap(s => Array.isArray(s.stories) ? s.stories : []);
+
+      // #590 fallback: when state.json has no stories but a SPRINT.md exists, parse task lines
+      // so the Tasks view is not empty. Synthetic entries carry _source:'sprint-md-fallback'.
+      if (allStories.length === 0) {
+        const phasesDir2 = path.join(projectDir, '.planning', 'phases');
+        try {
+          const intIdFb  = String(p.id || p.number || '').split('.')[0];
+          const paddedFb = intIdFb.padStart(2, '0');
+          const dirsFb   = fs.readdirSync(phasesDir2, { withFileTypes: true });
+          const matchFb  = dirsFb.find(d => d.isDirectory() && d.name.startsWith(paddedFb + '-'));
+          if (matchFb) {
+            const allMdFb    = fs.readdirSync(path.join(phasesDir2, matchFb.name)).filter(f => f.endsWith('.md'));
+            const numberedFb = allMdFb.filter(f => /^\d{2}-\d{2}-/.test(f)).sort().reverse();
+            const chosenFb   = numberedFb.length ? numberedFb[0] : allMdFb.sort().reverse()[0];
+            if (chosenFb) {
+              const mdText = safeReadText(path.join(phasesDir2, matchFb.name, chosenFb));
+              if (mdText) {
+                const taskLines = mdText.split('\n').filter(l => /^[-*]\s+\[[ xX]\]/.test(l.trim()));
+                allStories = taskLines.map((l, i) => ({
+                  id:      (p.id || p.number || 'p') + '-task-' + (i + 1),
+                  title:   l.replace(/^[-*]\s+\[[ xX]\]\s*/, '').trim() || ('Task ' + (i + 1)),
+                  status:  /\[[xX]\]/.test(l) ? 'done' : 'todo',
+                  _source: 'sprint-md-fallback',
+                }));
+              }
+            }
+          }
+        } catch { /* phasesDir missing or unreadable */ }
+      }
+
       const done  = allStories.filter(s => s.status === 'done' || s.status === 'completed').length;
       const total = allStories.length;
 
-      const padded = String(p.id || p.number || '').padStart(2, '0');
+      const intId  = String(p.id || p.number || '').split('.')[0];
+      const padded = intId.padStart(2, '0');
       let phaseDir = null, sprintFile = null;
       try {
         const dirs = fs.readdirSync(phasesDir, { withFileTypes: true });

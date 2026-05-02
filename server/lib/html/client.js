@@ -161,7 +161,7 @@ function phaseCard(p) {
   const sps = p.sprints || [];
   const stories = sps.flatMap(s => s.stories || []);
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
-  const isCur = p.id === S.currentPhase;
+  const isCur = String(p.id) === String(S.currentPhase);
   return '<div class="item item-clickable" onclick="navTo(\\'phases/' + p.id + '\\')"' +
     (isCur ? ' style="border-left-color:var(--accent-amber)"' : '') + '>' +
     '<div class="item-title">Phase ' + esc(p.id) + ' — ' + esc(p.name) +
@@ -453,7 +453,7 @@ function renderMilestones(subId) {
 function renderPhases(subId) {
   const el = document.getElementById('view-phases');
   if (subId) {
-    const p = _phases.find(ph => ph.id === subId || ph.number === subId);
+    const p = _phases.find(ph => String(ph.id) === String(subId) || String(ph.number) === String(subId));
     // Fix #319: guard against missing sprints key
     if (!p) { el.innerHTML = breadcrumb('Phases','phases') + '<div class="empty">Phase not found.</div>'; return; }
     const sps = Array.isArray(p.sprints) ? p.sprints : [];
@@ -503,7 +503,7 @@ function renderSprints(subId) {
   const el = document.getElementById('view-sprints');
   const sprints = allSprints();
   if (subId) {
-    const s = sprints.find(sp => sp.id === subId);
+    const s = sprints.find(sp => String(sp.id) === String(subId));
     if (!s) { el.innerHTML = breadcrumb('All Sprints','sprints') + '<div class="empty">Sprint not found.</div>'; return; }
     const rawStories = Array.isArray(s.stories) ? s.stories : [];
     const stories = rawStories.map(function(t) { return Object.assign({}, t, {sprintId: s.id, sprintGoal: s.goal || '', phaseId: s.phaseId, phaseName: s.phaseName}); });
