@@ -4,6 +4,73 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## Unreleased — post v3.4.4 (2026-04-27 → present)
+
+50 commits since v3.4.4. Grouped by area.
+
+### Dashboard (Phases 20–21)
+- **fix(dashboard):** phase 20 UX quick-wins — remove sidebar file tree, add empty states with `/rihal-plan` hints, deduplicate `/api/files` fetch (`125ebff`)
+- **fix(dashboard):** phase 21 data pipeline — decimal phase IDs (split `.` before `padStart`), SPRINT.md fallback task parser, `String()` coercion on phase ID comparisons (`c0d681b`)
+- **feat(dashboard):** add phases 20–21 in ROADMAP and state (`6a082f5`)
+
+### Plan / Tools (`rihal-tools.cjs`)
+- **fix(plan,tools):** researcher skip when CONTEXT.md exists (`--research` to force), ghost phase number sanity guard, two-layer gitignore commit guard — closes #588 #583 #566 (`20c3a3e`)
+
+### Lens Audit
+- **feat(lens-audit):** rewrite `lens-audit.md` — all 15 lenses dispatched via skill subagents (`3031b2b`)
+- **feat(skills):** add 4 gap audit skills for lenses 5, 8, 10, 13 (`a1a7370`)
+- **feat(workflows):** add 15-lens audit workflow + wire into `/rihal-audit` (`66ccd33`)
+
+### Config / State
+- **feat(config):** `state migrate-schema` subcommand normalises phases to current schema — closes #558 (`79b0d27`)
+- **fix(config):** phase transition guards in `begin-phase` and `complete-phase` — closes #559 (`3ba0b6d`)
+- **fix(config):** read `commit_docs` from both bare and `git.commit_docs` keys — closes #511 (`93505bd`)
+
+### Workflow Resilience & Error Handling
+- **fix(workflows):** add `.ok` guard after `INIT` in 7 workflows — closes #518 (`8728330`)
+- **fix(workflows):** add partial panel failure handler in council Round 1 — closes #556 (`ae96ed3`)
+- **fix(workflows):** all-fail fallback in `discuss-phase` advisor_research — closes #555 (`37515fb`)
+- **fix(workflows):** Task() failure handler in import sprint-checker step — closes #554 (`3adf7bf`)
+- **fix(workflows):** cap `SUMMARY.md` reads in `complete-milestone` evolve step — closes #512 (`ec0f50e`)
+- **fix(workflows):** cap SPRINT.md find with `maxdepth 5 + head -50` in forensics — closes #517 (`5b0e4c8`)
+- **fix(workflows):** `sprint-status.md` guard 3 state calls with `2>/dev/null` — closes #557 (`a438888`)
+
+### Workflow Consistency & i18n
+- **fix(workflows):** add `response_language` handling to 8 subagent-spawning workflows — closes #560 (`6fc849b`)
+- **fix(workflows):** standardize `PHASE_NUM → PHASE_NUMBER` — closes #523 (`84ad704`)
+- **fix(workflows):** add `2>/dev/null` guards to top 10 unguarded rihal-tools calls — closes #516 (`de55229`)
+- **fix(workflows):** enforce `MAX_PASSES` cap in `discuss-phase` loop — closes #534 (`19215e8`)
+- **fix(workflows):** replace stale `PLAN.md` refs with `SPRINT.md` in 6 workflows — closes #522 (`271dda9`)
+- **fix(workflows):** add `done_field_protocol` to executor prompt in `execute.md` — closes #514 (`a3bd4d1`)
+- **fix(workflows):** add Next Up footers to 17 dead-end workflows — closes #513 (`613d978`)
+- **fix(workflows):** add `<purpose>` block to 5 workflows + lock with parity test (`a366417`)
+- **fix(workflows):** macOS compat — `stat -c` fallback, `readlink -f` fallback, `mapfile→while-read` — closes #564 (`177c3e6`)
+- **fix(workflows):** session-report.md broken nested command substitution + `date -d` — closes #565 (`e4a04f2`)
+- **fix(workflows):** close dead-end, broken-ref, and orphan gaps — phase 17 (`da5bf5a`)
+
+### Templates & References
+- **fix(templates):** add YAML frontmatter to `summary.md` template; fix `PLAN.md → SPRINT.md` — closes #510 (`dcf66b3`)
+- **fix(references):** add RTL/Arabic output safety guidance to `output-format.md` — closes #561
+
+### Agents & Skills
+- **fix(agents):** create `rihal-deviation-analyzer` skill stub — closes #515 (`ec882e3`)
+- **fix(skills):** close 19 agent persona name/dir mismatches (`f1b30ac`)
+- **fix(agents):** normalize 7 non-standard colors to safe palette (`8de6220`)
+- **feat(skills):** add 4 gap audit skills for lens-audit lenses 5, 8, 10, 13 (`a1a7370`)
+
+### Commands & GitHub
+- **feat(commands):** add `/rihal-capture` + `/rihal-phase` unified entries — refs #484 (`e10a567`)
+- **feat(github):** require-issue-link CI gate — flag PRs without `Closes/Refs/Fixes #N` (`281429d`)
+
+### Performance
+- **perf(plan,autonomous):** 3 token-burn guards — sprint cap, revision limit, `/clear` offer (`6ee9f1a`)
+
+### Docs
+- **fix(docs):** `getting-started.md` replace stale `git clone + install-v2.js` path — closes #531 (`4d22cc4`)
+- **fix(docs):** update `install.md` version `v2.1.0 → v3.4.4` — closes #527 (`842a7f6`)
+
+---
+
 ## v3.4.4 — current pinned version (2026-04-27)
 
 Release-train backfill — entries for v3.3.1 → v3.4.4 captured below as a block. Each `chore(release):` commit was a bump-only ship; the underlying changes landed in the feature/fix commit between bumps.

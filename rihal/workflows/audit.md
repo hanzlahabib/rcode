@@ -116,7 +116,7 @@ if [ "$TARGET" = "milestone" ] && [ "$SUMMARIES" -eq 0 ] && [ "$PLANS" -gt 0 ]; 
   echo "⚠ $PLANS phases planned, 0 SUMMARY.md, $GIT_FEAT_COMMITS feat commits."
   echo "  Phases were executed but never formally closed."
   # Offer (yolo: auto-pick 1; guided: ask):
-  #   1. Synthesize SUMMARY.md per phase from PLAN.md + git log    [recommended]
+  #   1. Synthesize SUMMARY.md per phase from SPRINT.md + git log    [recommended]
   #   2. Run /rihal-verify-phase per phase (manual close)
   #   3. Continue audit anyway (will only assess what's documented)
   #   0. Cancel
@@ -126,7 +126,7 @@ fi
 In `mode: yolo`, auto-pick option 1: group `git log --oneline` output by
 phase tag (e.g. commits matching `^feat\(0?(\d+)`) and write a first-pass
 `SUMMARY.md` per phase under `.planning/phases/<phase>/SUMMARY.md`
-containing the goal (from PLAN.md), the commit list, and a `# TODO:
+containing the goal (from SPRINT.md), the commit list, and a `# TODO:
 expand outcomes` marker. The user can then refine before re-running the
 audit.
 

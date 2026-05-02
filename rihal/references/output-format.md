@@ -307,6 +307,50 @@ Use agent emoji + bilingual name prefix once per turn. No repeat in same respons
 
 ---
 
+## RTL / Arabic Output Safety
+
+When `response_language` is Arabic or another RTL language, bidi-unaware terminals
+corrupt fixed-width ASCII art (banners, progress bars) when Arabic text is embedded
+inside them. Follow these rules to avoid visual corruption:
+
+**Banner stage names:** Always keep stage names in **English** even when
+`response_language` is Arabic. The `━━━` border lines are width-sensitive; mixed
+RTL characters inside them break alignment. Place the Arabic description **below**
+the banner, not inside it.
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIHAL ► PLANNING SPRINT 01.1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+التخطيط للسباق 01.1 — يرجى الانتظار
+```
+
+**Progress bars:** Keep the bar characters (`█░`) and percentages on their own line.
+Put the Arabic label on a separate preceding line:
+
+```
+التقدم:
+████████░░ 80%
+```
+
+Do **not** embed Arabic text inside the bar line — it reverses the order of `%` and digits in bidi terminals.
+
+**Checkpoint boxes:** The `╔ ═ ╚` box characters are LTR-anchored. Place Arabic
+content in the body paragraph below the box, not as the box heading:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  CHECKPOINT: Verification Required                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+هل تمت المراجعة؟ اكتب "approved" للمتابعة.
+```
+
+**General rule:** ASCII-art structure (borders, bars, arrows) stays in LTR. All
+translated prose goes outside the art, on its own line(s).
+
+---
+
 ## Anti-Patterns
 
 - Varying box/banner widths within same output
@@ -315,5 +359,6 @@ Use agent emoji + bilingual name prefix once per turn. No repeat in same respons
 - Random emoji (`🚀`, `✨`, `💫`) outside the approved set
 - Missing Next Up block after workflow completions
 - Hardcoding references to other methodologies in rihal's UX
+- Embedding Arabic/RTL text inside fixed-width ASCII banners or progress bars
 
 </ui_patterns>
