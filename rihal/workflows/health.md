@@ -1,7 +1,7 @@
 # Workflow: rihal-health
 
 <purpose>
-Run 6-point compliance check on rihal installation. Each check is pass/fail. Summary at the end.
+Run 9-point health check: 6 installation checks + 3 project-state checks. Each check is pass/fail. Summary at the end.
 </purpose>
 
 
@@ -163,26 +163,69 @@ node .rihal/bin/rihal-tools.cjs version
 ❌ FAIL — rihal-tools.cjs is missing or broken. Run: /rihal-update to repair
 ```
 
-## Step 6 — Count results and print final summary
+## Step 6 — Project state health checks (3 checks)
 
-**Action:** Count all pass/fail results and display overall status.
+Run these after installation checks. Skip if `.rihal/state.json` doesn't exist.
 
-Total: `{N}/6 checks passed`
+**Check 7 — state.json phase count matches ROADMAP.md**
 
-If all 6 pass:
+```bash
+ROADMAP_PHASES=$(grep -c '^## Phase\|^### Phase\|^- Phase' .planning/ROADMAP.md 2>/dev/null || echo 0)
+STATE_PHASES=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('phases',[])) if d else 0)" 2>/dev/null || echo 0)
+```
+
+If counts match: `✓ PASS — {N} phases in ROADMAP.md and state.json are in sync`
+If they differ: `⚠ WARN — ROADMAP.md has ${ROADMAP_PHASES} phases, state.json has ${STATE_PHASES}. Run: /rihal-status to investigate`
+
+**Check 8 — current phase has a SPRINT.md or CONTEXT.md**
+
+```bash
+CURRENT=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('current_phase',''))" 2>/dev/null)
+find .planning/phases/*${CURRENT}* -name "*-SPRINT.md" -o -name "*-CONTEXT.md" 2>/dev/null | head -1
+```
+
+If current_phase is null or empty: skip this check (not started).
+If file found: `✓ PASS — current phase ${CURRENT} has planning artifacts`
+If no file: `⚠ WARN — current phase ${CURRENT} has no SPRINT.md or CONTEXT.md. Run: /rihal-plan ${CURRENT}`
+
+**Check 9 — no phantom-complete phases (ROADMAP says complete but no artifacts)**
+
+```bash
+node .rihal/bin/rihal-tools.cjs state snapshot 2>/dev/null | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+insights = d.get('insights', [])
+phantom = [i for i in insights if i.get('kind') == 'phantom-complete']
+print(len(phantom))
+" 2>/dev/null || echo 0
+```
+
+If 0 phantoms: `✓ PASS — no phantom-complete phases detected`
+If any: `⚠ WARN — {N} phantom-complete phase(s) detected. Run: /rihal-audit to inspect`
+
+---
+
+## Step 7 — Count results and print final summary
+
+**Action:** Count all pass/fail/warn results and display overall status.
+
+Total: `{N}/9 checks passed`
+
+If all 9 pass:
 ```
 ✓ All systems nominal — rihal is healthy
 ```
 
-If fewer than 6 pass:
+If fewer than 9 pass:
 ```
-⚠️ {N}/6 checks passed — {M} issue(s) found
-Run: /rihal-update to repair
+⚠ {N}/9 checks passed — {M} issue(s) found
+Run: /rihal-update to repair installation issues
+Run: /rihal-status for project-state issues
 ```
 
 ## Success Criteria
 
-- [ ] All 6 checks executed
+- [ ] All 9 checks executed (skip state checks if no state.json)
 - [ ] Each check result printed clearly
 - [ ] Final summary shows pass/fail count
 - [ ] Repair instructions shown if any checks fail

@@ -549,9 +549,9 @@ Print the artifact path to the user at the end:
 
 (Use the footer format from `.rihal/references/response-style.md#session-cost-footer`)
 
-### Step 6b — Update state (silent)
+### Step 6b — Update state (MANDATORY — do not skip)
 
-After the artifact is written, update `.rihal/state.json` with the council session record and session timestamp. These commands run silently — do not print output to the user for this step.
+After the artifact is written, update `.rihal/state.json` with the council session record and session timestamp. **This step is mandatory — skipping it causes council_sessions[] to remain empty in state.json.** Run silently (no user output for this step).
 
 ```bash
 node .rihal/bin/rihal-tools.cjs state record-council \

@@ -77,14 +77,28 @@ Extract counts:
 
 ## Step 5 — Estimate token usage
 
-Calculate estimated tokens (note: this is an estimate, not actual measurement):
+Calculate estimated tokens (note: these are rough approximations, not actual measurements).
 
-- **Council sessions:** count × 50,000 tokens (5 agents × 2 rounds × ~5K avg per agent)
-- **Chains:** count × 30,000 tokens (3-5 stages × ~8K avg per stage)
-- **Discusses:** count × 10,000 tokens (single agent, focused conversation)
-- **Execute:** (executions count) × 20,000 tokens (estimation only)
+Read context_window from config to calibrate multipliers:
 
-**Total estimate:** sum of above (with disclaimer)
+```bash
+CW=$(node .rihal/bin/rihal-tools.cjs config-get context_window 2>/dev/null || echo "200000")
+```
+
+Scale multipliers: if `CW >= 500000`, multiply by 2× (larger context windows → more content read per agent turn).
+
+| Artifact type | Base tokens | Rationale |
+|---------------|-------------|-----------|
+| Council session | 50,000 | 5 agents × 2 rounds × ~5K avg |
+| Chain | 30,000 | 3–5 stages × ~8K avg |
+| Discuss | 10,000 | single agent, focused |
+| Execute | 20,000 | executor + verifier per plan |
+
+Apply context window scale: `estimate = base × max(1, CW / 200000)`
+
+**Total estimate:** sum of above, rounded to nearest 1K (with clear disclaimer: "Rough estimate — actual usage depends on codebase size, plan length, and model")
+
+**Note for accuracy:** actual token counts require the `/usage` endpoint or Claude Code session logs. These multipliers are 2024 baselines updated for 1M-context models.
 
 ## Step 6 — List commits
 
