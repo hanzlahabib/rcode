@@ -115,6 +115,7 @@ For each issue, fill the debug-subagent-prompt template and spawn:
 Task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rihal/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
   subagent_type="rihal-debugger",
+  model="sonnet",
   description="Debug: {truth_short}"
 )
 ```

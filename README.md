@@ -11,8 +11,7 @@ npx @hanzlaa/rcode install    # one command, zero dependencies
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
-<!-- TODO: Replace with actual demo GIF once recorded (story 05.1.03) -->
-<!-- ![rcode demo](docs/assets/demo.gif) -->
+**Quick look:** `npx @hanzlaa/rcode install` → `/rihal-council` → `/rihal-plan 1` → `/rihal-execute 1` — that's the full loop in three commands.
 
 ---
 

@@ -143,6 +143,7 @@ Never halt the whole audit because one lens's skill fails.
 ```
 PRIMARY = Task(
   subagent_type="rihal-security-auditor",
+  model="sonnet",
   prompt="Audit-only — do NOT fix anything. {CONTEXT}
   
   Run Lens 1 (Security) audit. Check:
@@ -160,6 +161,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rihal-security-adversary",
+  model="sonnet",
   prompt="Adversarial security review. {CONTEXT}
   
   Think like an attacker. Find exploitation paths in:
@@ -181,6 +183,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rihal-perf",
+  model="sonnet",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
   Run Lens 2 (Performance) audit. Check:
@@ -206,6 +209,7 @@ FINDINGS[performance] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rihal-fatima",
+  model="sonnet",
   prompt="Audit-only — do NOT write tests. {CONTEXT}
   
   Run Lens 3 (Testability) audit. Check:
@@ -223,6 +227,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rihal-edge-case-hunter",
+  model="sonnet",
   prompt="Enumerate edge cases and boundary conditions. {CONTEXT}
   
   Find:
@@ -244,6 +249,7 @@ FINDINGS[testability] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rihal-waleed",
+  model="sonnet",
   prompt="Architecture audit — do NOT redesign anything. {CONTEXT}
   
   Run Lens 4 (Extensibility) audit. Check:
@@ -269,6 +275,7 @@ FINDINGS[extensibility] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-dep-auditor",
+  model="sonnet",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
   Run Lens 5 (Dep Health) audit:
@@ -294,6 +301,7 @@ FINDINGS[dep-health] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-debugger",
+  model="sonnet",
   prompt="Error recovery audit — do NOT fix anything. {CONTEXT}
   
   Run Lens 6 (Error Recovery) audit. Find missing error handling:
@@ -320,6 +328,7 @@ FINDINGS[error-recovery] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-deviation-analyzer",
+  model="sonnet",
   prompt="State machine audit — do NOT modify state. {CONTEXT}
   
   Run Lens 7 (State Machine) audit. Check:
@@ -345,6 +354,7 @@ FINDINGS[state-machine] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-i18n-auditor",
+  model="sonnet",
   prompt="i18n audit — do NOT add translations. {CONTEXT}
   
   Run Lens 8 (i18n) audit. Check:
@@ -370,6 +380,7 @@ FINDINGS[i18n] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-docs-auditor",
+  model="sonnet",
   prompt="Documentation audit — do NOT write docs. {CONTEXT}
   
   Run Lens 9 (Documentation) audit. Check:
@@ -395,6 +406,7 @@ FINDINGS[documentation] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-cross-platform-auditor",
+  model="sonnet",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
   Run Lens 10 (Cross-platform) audit. Check:
@@ -421,6 +433,7 @@ FINDINGS[cross-platform] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rihal-code-reviewer",
+  model="sonnet",
   prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
   
   Run Lens 11 (Karpathy) audit against recent changes (HEAD~20..HEAD):
@@ -436,6 +449,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rihal-hanzla",
+  model="sonnet",
   prompt="Implementation quality audit — do NOT refactor. {CONTEXT}
   
   Review recent code (HEAD~10..HEAD) for:
@@ -458,6 +472,7 @@ FINDINGS[karpathy] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rihal-layla",
+  model="sonnet",
   prompt="UX flow audit — do NOT redesign flows. {CONTEXT}
   
   Run Lens 12 (SXO/UX) audit on rihal workflows. Check:
@@ -483,6 +498,7 @@ FINDINGS[sxo] = RESULT
 ```
 RESULT = Task(
   subagent_type="rihal-observability-auditor",
+  model="sonnet",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
   Run Lens 13 (Observability) audit. Check:
@@ -509,6 +525,7 @@ FINDINGS[observability] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rihal-codebase-mapper",
+  model="sonnet",
   prompt="Naming consistency audit — do NOT rename anything. {CONTEXT}
   
   Run Lens 14 (Naming) audit. Produce a CONVENTIONS scan:
@@ -524,6 +541,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rihal-code-reviewer",
+  model="sonnet",
   prompt="Variable naming audit in recent code changes. {CONTEXT}
   
   Review HEAD~10..HEAD for:
@@ -545,6 +563,7 @@ FINDINGS[naming] = merge(PRIMARY, SECONDARY)
 ```
 PRIMARY = Task(
   subagent_type="rihal-nyquist-auditor",
+  model="sonnet",
   prompt="Coverage audit — do NOT generate tests. {CONTEXT}
   
   Run Lens 15 (Coverage) audit. Fill Nyquist gaps:
@@ -560,6 +579,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rihal-fatima",
+  model="sonnet",
   prompt="Release gate — coverage quality check. {CONTEXT}
   
   Review test strategy gaps:

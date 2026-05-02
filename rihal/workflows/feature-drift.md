@@ -124,14 +124,14 @@ Auditor returns structured JSON:
         "phase_dir_present": true
       },
       "evidence": "<one-line summary of why this is drift>",
-      "fix_hint": "<for trivial: exact ROADMAP edit (e.g., add ✅ marker); for partial/major: null>"
+      "fix_hint": "<for trivial: exact ROADMAP edit (e.g., add ✓ marker); for partial/major: null>"
     }
   ]
 }
 ```
 
 **Severity rules (HARD, enforced in this workflow not delegated):**
-- `trivial` — missing `✅` marker on heading even though Status says Complete; or missing date on Status: Complete line. `fix_hint` carries the exact insertion.
+- `trivial` — missing `✓` marker on heading even though Status says Complete; or missing date on Status: Complete line. `fix_hint` carries the exact insertion.
 - `partial` — N of M acceptance items shipped per phase ROADMAP entry; status doesn't reflect partial state. `fix_hint` is null — humans must decide whether to flip status or update acceptance.
 - `major` — entirely-incorrect status. Examples: Status: Complete with NO SUMMARY.md and NO commits on phase scope; Status: Planned but ALL acceptance items shipped (the Phase 4 case from this session). `fix_hint` always null — humans must decide.
 
@@ -231,7 +231,7 @@ fi
 - If `layers_skipped` is non-empty, the report MUST clearly state which drift could not be detected (so the absence of findings doesn't read as "no drift exists")
 - The hard severity allowlist (trivial only for --fix) is enforced in this workflow's code path, not delegated to the agent. Do not move the check into the agent.
 - **`--quick` and `--fix` interaction (Phase 8):** when `QUICK_MODE=true`, `FIX_MODE` is forced to false in parse_args. Hooks must never auto-modify files. If a user explicitly invokes `feature-drift --quick --fix`, the workflow runs in report-only and prints a notice that `--fix` was suppressed by `--quick`. Do not weaken this rule.
-- **`--mode=phase-status` (Phase 8 / #461):** detector reads ROADMAP.md `**Status:**` lines and compares against shipping signals (SUMMARY.md, SPRINT.md, git log on phase scope). Severity rules: trivial = missing ✅ marker; partial = N of M acceptance items shipped; major = entirely-incorrect-status (e.g., Complete with no SUMMARY, Planned with all artifacts shipped). `--fix` patches only the trivial tier (✅ marker addition + missing date). NEVER auto-flip Active→Complete or Planned→Complete — those are decisions, not corrections.
+- **`--mode=phase-status` (Phase 8 / #461):** detector reads ROADMAP.md `**Status:**` lines and compares against shipping signals (SUMMARY.md, SPRINT.md, git log on phase scope). Severity rules: trivial = missing ✓ marker; partial = N of M acceptance items shipped; major = entirely-incorrect-status (e.g., Complete with no SUMMARY, Planned with all artifacts shipped). `--fix` patches only the trivial tier (✓ marker addition + missing date). NEVER auto-flip Active→Complete or Planned→Complete — those are decisions, not corrections.
 </guardrails>
 
 <success_criteria>

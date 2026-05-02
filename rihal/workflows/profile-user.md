@@ -137,7 +137,7 @@ node .rihal/bin/rihal-tools.cjs state set-user-profile --json '{json-string}'
 
 Print:
 ```
-✅ Profile saved: {profile_path}
+✓ Profile saved: {profile_path}
 
 Dimensions:
   • Communication: {communication}

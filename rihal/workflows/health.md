@@ -35,7 +35,7 @@ test -d .rihal && test -w .rihal
 
 **Output on pass:**
 ```
-✅ PASS — .rihal/ directory exists and is writable
+✓ PASS — .rihal/ directory exists and is writable
 ```
 
 **Output on fail:**
@@ -59,7 +59,7 @@ Verify:
 
 **Output on pass:**
 ```
-✅ PASS — files-manifest.csv is valid (N files tracked)
+✓ PASS — files-manifest.csv is valid (N files tracked)
 ```
 
 **Output on fail:**
@@ -81,7 +81,7 @@ Detect drift: files that exist but hash doesn't match.
 
 **Output on pass:**
 ```
-✅ PASS — All files match manifest (no drift detected)
+✓ PASS — All files match manifest (no drift detected)
 ```
 
 **Output on fail (drift found):**
@@ -113,7 +113,7 @@ Parse as JSON. Verify top-level keys present:
 
 **Output on pass:**
 ```
-✅ PASS — state.json is valid and initialized
+✓ PASS — state.json is valid and initialized
 ```
 
 **Output on fail:**
@@ -136,7 +136,7 @@ Verify:
 
 **Output on pass:**
 ```
-✅ PASS — agent-manifest.csv is valid (N agents installed)
+✓ PASS — agent-manifest.csv is valid (N agents installed)
 ```
 
 **Output on fail:**
@@ -155,7 +155,7 @@ node .rihal/bin/rihal-tools.cjs version
 
 **Output on pass:**
 ```
-✅ PASS — rihal-tools.cjs is executable and responsive
+✓ PASS — rihal-tools.cjs is executable and responsive
 ```
 
 **Output on fail:**
@@ -171,7 +171,7 @@ Total: `{N}/6 checks passed`
 
 If all 6 pass:
 ```
-✅ All systems nominal — rihal is healthy
+✓ All systems nominal — rihal is healthy
 ```
 
 If fewer than 6 pass:

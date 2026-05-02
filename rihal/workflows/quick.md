@@ -142,7 +142,7 @@ Common blocker types:
 At the end of the loop, summarise:
 
 ```
-✅ Loop complete: {N} done · {M} skipped · {K} blocked
+✓ Loop complete: {N} done · {M} skipped · {K} blocked
    Done:    {bullet list with commit hashes}
    Skipped: {bullet list with reasons}
    Blocked: {bullet list with what info is needed}
@@ -165,7 +165,7 @@ If `.planning/STATE.md` exists with a "Quick Tasks Completed" table, append:
 
 ```bash
 if grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
-  echo "| $(date +%Y-%m-%d) | quick | $TASK | ✅ |" >> .planning/STATE.md
+  echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
 fi
 ```
 
@@ -176,7 +176,7 @@ Skip silently if the table doesn't exist.
 Report completion:
 
 ```
-✅ Done: {what was changed}
+✓ Done: {what was changed}
    Commit: {short hash}
    Files:  {list of changed files}
 ```

@@ -37,6 +37,15 @@ Output the matching `<tier-N>` block below verbatim. For `all`, output all three
 > **Rihal** is council-driven project automation built for solo agentic work in Claude Code.
 > Tier 1 is everything you need to ship a small project end-to-end. **8 commands.**
 
+## Not installed yet?
+
+```bash
+npx @hanzlaa/rcode install    # install into current project
+```
+
+Run this once from your project root. Then open a new Claude Code session and use the commands below.
+Need help? See `docs/getting-started.md` or run `/rihal-help` after install.
+
 ## The loop
 
 ```

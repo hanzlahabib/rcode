@@ -157,7 +157,7 @@ To continue:
 
 **If no incomplete work found:**
 ```
-✅ No incomplete executions detected. All phases complete or active.
+✓ No incomplete executions detected. All phases complete or active.
 ```
 
 ## Step 8 — Print full diagnostic report

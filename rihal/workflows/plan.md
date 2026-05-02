@@ -506,6 +506,7 @@ Reason: {explain why}
 Task(
   prompt=research_prompt,
   subagent_type="rihal-phase-researcher",
+  model="sonnet",
   model="{researcher_model}",
   description="Research Phase {phase}"
 )
@@ -948,6 +949,7 @@ Every task MUST include these fields — they are NOT optional:
 Task(
   prompt=filled_prompt,
   subagent_type="rihal-planner",
+  model="sonnet",
   model="{planner_model}",
   description="Plan Phase {phase}"
 )
@@ -1064,6 +1066,7 @@ ${AGENT_SKILLS_CHECKER}
 Task(
   prompt=checker_prompt,
   subagent_type="rihal-sprint-checker",
+  model="sonnet",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
 )
@@ -1183,6 +1186,7 @@ Return what changed.
 Task(
   prompt=revision_prompt,
   subagent_type="rihal-planner",
+  model="sonnet",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

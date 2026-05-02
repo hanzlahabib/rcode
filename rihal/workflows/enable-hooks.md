@@ -62,7 +62,7 @@ Verify that the hook binary exists and is executable:
 ```bash
 if [ ! -f .rihal/bin/rihal-hooks.cjs ]; then
   echo "⚠ Hook binary missing at .rihal/bin/rihal-hooks.cjs"
-  echo "  Run: node /tmp/rihal-src/cli/install-v2.js . --force --yes"
+  echo "  Run: npx @hanzlaa/rcode install --force --yes"
   exit 1
 fi
 node .rihal/bin/rihal-hooks.cjs --help 2>&1 || true

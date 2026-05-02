@@ -60,7 +60,7 @@ node .rihal/bin/rihal-tools.cjs state workstream-create --name "$NAME" 2>/dev/nu
 
 **Output:**
 ```
-✅ Workstream created: {name}
+✓ Workstream created: {name}
    ID: {id}
    Active: false
    Phases: 0
@@ -79,7 +79,7 @@ node .rihal/bin/rihal-tools.cjs state workstream-switch --name "$NAME" 2>/dev/nu
 
 **Output:**
 ```
-✅ Switched to workstream: {name}
+✓ Switched to workstream: {name}
    Previous: {old_name}
    Phases in this workstream: {count}
 ```
@@ -133,7 +133,7 @@ node .rihal/bin/rihal-tools.cjs state workstream-complete --name "$NAME" 2>/dev/
 
 **Output:**
 ```
-✅ Marked workstream complete: {name}
+✓ Marked workstream complete: {name}
    Completed at: {ISO date}
    All phases: {count}
    Commits in this workstream: {count}

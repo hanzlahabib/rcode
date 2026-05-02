@@ -23,7 +23,7 @@ Rihal installs commands by writing to `.claude/commands/rihal/` and `.claude/set
 **A:** Yes, use the `core` module:
 
 ```bash
-node /tmp/rihal-src/cli/install.js . --yes --module core
+npx @hanzlaa/rcode install --module core
 ```
 
 This gives you:
@@ -33,7 +33,7 @@ This gives you:
 
 Then add execution later:
 ```bash
-node /tmp/rihal-src/cli/install.js . --yes --module execution --force
+npx @hanzlaa/rcode install --module execution --force
 ```
 
 ---
@@ -42,7 +42,7 @@ node /tmp/rihal-src/cli/install.js . --yes --module execution --force
 
 **A:** No. Rihal ships as pure files (Markdown, YAML, Node.js binary). Zero npm dependency.
 
-The installer is a single Node.js script (`cli/install.js`) that copies files. You don't `npm install` anything.
+Rihal installs via `npx @hanzlaa/rcode install` — it copies files into your project. You don't `npm install` anything.
 
 ---
 

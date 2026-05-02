@@ -146,7 +146,7 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs: plant seed — {$IDEA}" --files 
 
 <step name="confirm">
 ```
-✅ Seed planted: SEED-{PADDED}
+✓ Seed planted: SEED-{PADDED}
 
 "{$IDEA}"
 Trigger: {$TRIGGER}

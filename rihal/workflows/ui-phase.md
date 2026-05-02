@@ -81,7 +81,7 @@ node .rihal/bin/rihal-tools.cjs state set --ui-spec-path ".rihal/UI-SPEC.md"
 
 Print:
 ```
-✅ UI-SPEC.md generated: {ui_spec_path}
+✓ UI-SPEC.md generated: {ui_spec_path}
 
 Contains:
   • Color Tokens

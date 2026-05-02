@@ -100,7 +100,7 @@ EOF
 
 Print:
 ```
-✅ Note saved: {target_dir}/{filename}
+✓ Note saved: {target_dir}/{filename}
 
 ---
 date: 2026-04-12

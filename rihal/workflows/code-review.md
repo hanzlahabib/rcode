@@ -388,7 +388,8 @@ done
 Spawn the rihal-code-reviewer agent:
 
 ```
-Task(subagent_type="rihal-code-reviewer", prompt="
+Task(subagent_type="rihal-code-reviewer",
+  model="sonnet", prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>

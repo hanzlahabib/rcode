@@ -510,7 +510,7 @@ Go to handle_blocker: "Execute phase ${PHASE_NUM} did not produce verification r
 
 Display:
 ```
-Phase ${PHASE_NUM} ✅ ${PHASE_NAME} — Verification passed
+Phase ${PHASE_NUM} ✓ ${PHASE_NAME} — Verification passed
 ```
 
 Proceed to iterate step.
@@ -527,7 +527,7 @@ On **"Validate now"**: Present the specific items from VERIFICATION.md. After us
 - **question:** "Validation result?"
 - **options:** "All good — continue" / "Found issues"
 
-On "All good — continue": Display `Phase ${PHASE_NUM} ✅ Human validation passed` and proceed to iterate step.
+On "All good — continue": Display `Phase ${PHASE_NUM} ✓ Human validation passed` and proceed to iterate step.
 
 On "Found issues": Go to handle_blocker with the user's reported issues as the description.
 
@@ -714,7 +714,7 @@ Present grey areas **one at a time**. For each area (M of N), display a table:
 ```
 ### Grey Area {M}/{N}: {Area Name}
 
-| # | Question | ✅ Recommended | Alternative(s) |
+| # | Question | ✓ Recommended | Alternative(s) |
 |---|----------|---------------|-----------------|
 | 1 | {question} | {answer} — {rationale} | {alt1}; {alt2} |
 | 2 | {question} | {answer} — {rationale} | {alt1} |
@@ -914,7 +914,7 @@ If incomplete phases remain: proceed to next phase, loop back to execute_phase.
 After each phase completes, display a cost summary:
 
 ```
-Phase {N} ✅ {name} — {sprint_count} sprints, {revision_count} revision(s)
+Phase {N} ✓ {name} — {sprint_count} sprints, {revision_count} revision(s)
 ```
 
 Track `PHASES_COMPLETED` (increment after each iterate). Every 3 completed phases:
@@ -991,7 +991,7 @@ AUDIT_STATUS=$(grep "^status:" "${AUDIT_FILE}" 2>/dev/null | head -1 | cut -d: -
 **If `passed`:**
 
 ```
-Audit ✅ passed — proceeding to complete milestone
+Audit ✓ passed — proceeding to complete milestone
 ```
 
 Proceed to 5b.
@@ -1050,8 +1050,8 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
- Status: Complete ✅
- Lifecycle: audit ✅ → complete ✅ → cleanup ✅
+ Status: Complete ✓
+ Lifecycle: audit ✓ → complete ✓ → cleanup ✓
 
  Ship it! 🚀
 ```

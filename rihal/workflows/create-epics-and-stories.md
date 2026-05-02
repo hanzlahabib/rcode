@@ -129,7 +129,7 @@ Generate a structured set of epics. Each epic covers ONE coherent concern or pha
 ## Epic decomposition rules (MANDATORY)
 
 1. One epic = one coherent theme. Examples of correct splits:
-   - ✅ "Web Search Investigation" + "Toggle Bug Fixes" + "Provider Improvements" = 3 epics
+   - ✓ "Web Search Investigation" + "Toggle Bug Fixes" + "Provider Improvements" = 3 epics
    - ❌ "Web Search (everything)" with 10 stories = 1 bloated epic (WRONG)
    
 2. Each epic has 3–5 stories MAX. If you have 8+ stories for one theme, split into 2 epics.

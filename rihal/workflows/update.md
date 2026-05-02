@@ -94,7 +94,7 @@ Count each category. Store results in `$ADDED`, `$CHANGED`, `$REMOVED` (arrays o
 
 If all three lists are empty:
 ```
-✅ rihal-code is up to date (no changes detected)
+✓ rihal-code is up to date (no changes detected)
 ```
 Exit.
 
@@ -213,7 +213,7 @@ If the user passed a version argument (`/rihal-update v1.3.0`), pass it through 
 Print:
 
 ```
-✅ rihal-code updated successfully
+✓ rihal-code updated successfully
 
 Updated files: N
   - file-path-1

@@ -4729,6 +4729,35 @@ function cmdProgress(args) {
       }
     }
 
+    // Stuck-phase: in_progress phase with no commits touching its .planning dir in 7+ days
+    try {
+      const inProgressPhases = statePhases.filter(p => {
+        const s = String(p.status ?? '').toLowerCase();
+        return s === 'in_progress' || s === 'in-progress' || s === 'executing';
+      });
+      for (const p of inProgressPhases) {
+        const key = norm(phaseKey(p));
+        const disk = diskByNum[key] || diskByNum[key.padStart(2, '0')];
+        if (!disk) continue;
+        const dirName = disk.dirName;
+        const gitArgs = ['log', '--oneline', '--since=7 days ago', '--', `.planning/phases/${dirName}/`];
+        let recentCommits = '';
+        try {
+          recentCommits = require('child_process').execSync(
+            `git ${gitArgs.join(' ')}`,
+            { cwd: PROJECT_ROOT, stdio: 'pipe', timeout: 5000 }
+          ).toString().trim();
+        } catch { /* git not available or no history */ }
+        if (recentCommits === '') {
+          insights.push({
+            kind: 'stuck-phase',
+            severity: 'warn',
+            message: `Phase ${key} is in progress but has no commits in the last 7 days. It may be stuck. Run /rihal-status or /rihal-audit phase ${key} to investigate.`,
+          });
+        }
+      }
+    } catch { /* non-fatal — git unavailable or project root not set */ }
+
     return insights;
   }
 

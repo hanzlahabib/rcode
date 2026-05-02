@@ -416,7 +416,7 @@ status: completed
 
 ```
 
-Verify: `✅ Milestone archived to .planning/milestones/`
+Verify: `✓ Milestone archived to .planning/milestones/`
 
 **Phase archival (optional):** Ask the user via AskUserQuestion:
 
@@ -434,7 +434,7 @@ mkdir -p "$ARCHIVE_DIR"
 find .planning/phases -mindepth 1 -maxdepth 1 -type d -exec mv {} "$ARCHIVE_DIR/" \;
 ```
 
-Verify: `✅ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
+Verify: `✓ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
 
 If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/rihal-cleanup` later to archive retroactively.
 
@@ -453,14 +453,14 @@ After archival, reorganize ROADMAP.md with milestone groupings, then delete orig
 
 ## Milestones
 
-- ✅ **v1.0 MVP** — Phases 1-4 (shipped YYYY-MM-DD)
+- ✓ **v1.0 MVP** — Phases 1-4 (shipped YYYY-MM-DD)
 - 🚧 **v1.1 Security** — Phases 5-6 (in progress)
 - 📋 **v2.0 Redesign** — Phases 7-10 (planned)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 MVP (Phases 1-4) — SHIPPED YYYY-MM-DD</summary>
+<summary>✓ v1.0 MVP (Phases 1-4) — SHIPPED YYYY-MM-DD</summary>
 
 - [x] Phase 1: Foundation (2/2 plans) — completed YYYY-MM-DD
 - [x] Phase 2: Authentication (2/2 plans) — completed YYYY-MM-DD

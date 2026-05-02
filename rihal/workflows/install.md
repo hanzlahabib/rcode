@@ -47,21 +47,13 @@ And stop.
 The installer needs to be called with the `--module` flag. Detect the rihal-code package location:
 
 ```bash
-# Try local dev first, then global
-if [ -f ./cli/install-v2.js ]; then
-  node ./cli/install-v2.js . --module {name} --force --yes
-elif [ -f "$(npm root -g)/@hanzlaa/rcode/cli/install-v2.js" ]; then
-  node "$(npm root -g)/@hanzlaa/rcode/cli/install-v2.js" . --module {name} --force --yes
-else
-  echo "Cannot find rihal-code package. Install it globally or run from the repo."
-  exit 1
-fi
+npx @hanzlaa/rcode install --module {name} --force --yes
 ```
 
 ## Step 4 — Print summary
 
 ```
-✅ Module installed: {name}
+✓ Module installed: {name}
    {description from module manifest}
 
 New commands available:

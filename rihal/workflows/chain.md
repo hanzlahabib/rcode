@@ -116,7 +116,7 @@ If missing, the stage failed — print which stage, stop the chain, allow user t
 
 ### Print stage summary
 ```
-✅ Stage {N}/{total} — {agent}: {artifact filename}
+✓ Stage {N}/{total} — {agent}: {artifact filename}
 ```
 
 ## Step 3 — Final output

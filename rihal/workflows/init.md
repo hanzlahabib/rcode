@@ -346,5 +346,5 @@ Silent if state tools fail.
 - **AskUserQuestion unavailable:** fall back to reading defaults from env / existing config and skip the interactive step.
 - **config.yaml write fails:** print permission error and stop.
 - **git not installed:** skip git detection, still proceed.
-- **rihal-tools.cjs not found:** this command requires the installer to have run — point user to `install-v2.js`.
+- **rihal-tools.cjs not found:** this command requires the installer to have run — point user to `npx @hanzlaa/rcode install`.
 - **Existing RIHLA.md without `--reset`:** do NOT overwrite; note it in Step 4 output.

@@ -57,7 +57,7 @@ the weighted bar as the primary progress indicator to avoid a misleading `0/N (0
 For each entry in `SNAPSHOT.phases[]`:
 
 - `▶` if `phase.number === SNAPSHOT.current_phase`
-- `✓` if `phase.disk.summary_count > 0` AND matches `phase.disk.plan_count` (complete)
+- `✓` if `phase.disk.summary_count > 0` AND matches `phase.disk.plan_count` AND `phase.disk.has_verification` (complete + verified; if VERIFICATION.md absent, use `◎` and label "complete-unverified")
 - `◆` if `phase.disk.plan_count > phase.disk.summary_count` (executing — has plans, not all summarized)
 - `◇` if `phase.disk.has_context && !phase.disk.plan_count` (discussing — CONTEXT.md exists but no plan yet)
 - `◈` if `phase.disk.has_research && !phase.disk.plan_count` (researched — RESEARCH.md but no plan)
@@ -89,7 +89,7 @@ Do NOT hide insights. They exist because the CLI noticed something the workflow 
 ## Step 5 — Recent decisions + blockers
 
 - If `SNAPSHOT.decisions.length > 0`, print the last 3 (most recent first).
-- If `SNAPSHOT.blockers.length > 0`, render each with ⚠ and the blocker description.
+- If `SNAPSHOT.blockers.length > 0`, render each with ⚠, the blocker description, and its age. Compute age from `blocker.date` to now: if > 7 days, append `(⚡ {N} days old)` in amber; if > 30 days, append `(🔥 {N} days — stale)`. If no `date` field, render `(age unknown)`.
 
 Omit a section entirely when its array is empty.
 
