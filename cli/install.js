@@ -408,7 +408,7 @@ function getPathsForIde(ide, target) {
     case 'claude':
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands', 'rihal'),
+        commandsDir: path.join(target, '.claude', 'commands'),
         workflowsDir: path.join(target, '.rihal', 'workflows'),
         referencesDir: path.join(target, '.rihal', 'references'),
         binDir: path.join(target, '.rihal', 'bin'),
@@ -971,10 +971,15 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   }
 
   // Commands — IDE-specific
+  // Claude: output as .claude/commands/rihal-{name}.md (hyphen namespace → /rihal-name)
+  // Cursor/Gemini: keep original flat name inside their rihal/ subdirectory
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
     const ext = ide === 'cursor' ? '.mdc' : '.md';
-    const outName = path.basename(f, '.md') + ext;
+    const baseName = path.basename(f, '.md');
+    const outName = ide === 'claude'
+      ? `rihal-${baseName}${ext}`
+      : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
   }
 
@@ -1050,7 +1055,7 @@ function filterPlanByModules(plan, moduleNames) {
     if (!mod) { console.warn(`  ⚠ Unknown module: ${modName}`); continue; }
     for (const a of mod.agents) allowed.add(path.join('.claude', 'agents', a));
     for (const w of mod.workflows) allowed.add(path.join('.rihal', 'workflows', w));
-    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', 'rihal', c));
+    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', `rihal-${c}`));
     for (const r of mod.references) allowed.add(path.join('.rihal', 'references', r));
   }
   // Always include bin/ (shared infrastructure, not module-specific)
@@ -1858,7 +1863,12 @@ async function install(opts) {
       agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
     }
     if (fs.existsSync(commandsDir)) {
-      commandCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') || f.endsWith('.mdc')).length;
+      commandCount = fs.readdirSync(commandsDir).filter(f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
+    }
+    // Clean up legacy .claude/commands/rihal/ colon-namespace directory if it exists
+    const legacyColonDir = path.join(opts.target, '.claude', 'commands', 'rihal');
+    if (primaryIde === 'claude' && fs.existsSync(legacyColonDir)) {
+      fs.rmSync(legacyColonDir, { recursive: true, force: true });
     }
   } catch {}
 

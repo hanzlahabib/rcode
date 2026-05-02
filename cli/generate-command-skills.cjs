@@ -32,11 +32,23 @@ const path = require('path');
  * lifecycle verbs. Internal sub-commands stay slash-only.
  */
 const SIDEBAR_COMMANDS = new Set([
-  'do', 'status', 'progress', 'next', 'plan', 'execute',
-  'council', 'discuss', 'ship', 'audit', 'autonomous',
-  'session-report', 'forensics', 'health', 'debug',
-  'verify-phase', 'verify-work', 'review', 'code-review',
+  // Navigation & status
+  'do', 'status', 'progress', 'next', 'health',
+  // Core planning & execution
+  'plan', 'execute', 'add-phase', 'discuss-phase', 'complete-milestone',
+  'plan-milestone-gaps', 'autonomous',
+  // Project setup
   'new-project', 'new-milestone', 'milestone-summary',
+  // Sprint workflow
+  'sprint-planning', 'sprint-status', 'execute-sprint', 'dev-story',
+  'create-story', 'create-epics-and-stories',
+  // Discussion & council
+  'council', 'discuss', 'prfaq',
+  // Quality & review
+  'ship', 'audit', 'verify-phase', 'verify-work', 'review', 'code-review',
+  'feature-drift', 'ui-phase', 'ui-review',
+  // Utility
+  'debug', 'session-report', 'forensics', 'map-codebase', 'quick',
   'note', 'add-todo', 'check-todos', 'pause-work', 'resume-work',
 ]);
 
