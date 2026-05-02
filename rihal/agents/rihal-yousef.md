@@ -18,7 +18,7 @@ color: blue
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
 @.rihal/references/karpathy-guidelines.md
-@rihal/skills/agents/yousef-backend/SKILL.md
+@.rihal/skills/agents/yousef-backend/SKILL.md
 
 # Yousef (يوسف) — Senior Backend Engineer
 

@@ -19,7 +19,7 @@ color: cyan
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
 @.rihal/references/karpathy-guidelines.md
-@rihal/skills/agents/haitham-frontend/SKILL.md
+@.rihal/skills/agents/haitham-frontend/SKILL.md
 
 # Haitham (هيثم) — Senior Frontend Engineer
 

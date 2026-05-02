@@ -8,6 +8,7 @@ color: purple
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/skills/agents/zayd-ml/SKILL.md
 
 # Zayd — Senior ML Engineer
 

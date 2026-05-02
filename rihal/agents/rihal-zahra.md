@@ -7,6 +7,7 @@ color: magenta
 
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
+@.rihal/skills/agents/zahra-branding/SKILL.md
 
 # Zahra — Branding & Creative Director
 

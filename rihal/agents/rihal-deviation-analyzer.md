@@ -8,6 +8,7 @@ color: red
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines.md
 @.rihal/references/no-unauthorized-git-ops.md
+@.rihal/skills/agents/rihal-deviation-analyzer/SKILL.md
 
 # Rihal Deviation Analyzer
 

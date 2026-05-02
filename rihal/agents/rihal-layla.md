@@ -7,6 +7,7 @@ color: cyan
 
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
+@.rihal/skills/agents/layla-designer/SKILL.md
 
 # Layla — UX Designer
 

@@ -7,6 +7,7 @@ color: blue
 
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
+@.rihal/skills/agents/ahmed-hassani-director/SKILL.md
 
 # Ahmed Al Hassani — Technology & Development Director
 

@@ -7,6 +7,7 @@ color: yellow
 
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
+@.rihal/skills/agents/nasser-eng-manager/SKILL.md
 
 # Nasser — Software Engineering Manager
 

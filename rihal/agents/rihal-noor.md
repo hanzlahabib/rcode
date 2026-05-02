@@ -8,6 +8,7 @@ color: cyan
 @.rihal/references/response-style.md
 @.rihal/references/codebase-grounding.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/skills/agents/noor-writer/SKILL.md
 
 # Noor — Technical Writer & Presentation Lead
 
