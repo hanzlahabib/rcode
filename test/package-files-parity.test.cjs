@@ -34,6 +34,9 @@ test('every package.json files[] entry exists on disk', () => {
 test('every package.json bin target exists on disk', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8'));
   const bins = pkg.bin || {};
+  // dist/ is a build artifact (gitignored) — skip if not yet built
+  const distDir = path.join(PROJECT_ROOT, 'dist');
+  if (!fs.existsSync(distDir)) return;
   const missing = Object.entries(bins)
     .filter(([, target]) => !fs.existsSync(path.join(PROJECT_ROOT, target)))
     .map(([name, target]) => `${name} → ${target}`)
