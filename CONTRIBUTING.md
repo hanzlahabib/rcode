@@ -294,6 +294,10 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `readme` — README.md
 - `sync` — install/state sync flows
 - `sprint` — sprint-level workflow additions and fixes
+- `agent-exp` — agent experience improvements
+- `extensibility` — extensibility and plugin hooks
+- `lens-audit` — 15-lens audit system and lenses
+- `tiers` — TIERS.md and tier-related documentation
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

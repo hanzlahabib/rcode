@@ -182,7 +182,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rihal-perf",
+  subagent_type="rihal-code-reviewer",
   model="sonnet",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
@@ -274,7 +274,7 @@ FINDINGS[extensibility] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-dep-auditor",
+  subagent_type="rihal-code-reviewer",
   model="sonnet",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
@@ -405,7 +405,7 @@ FINDINGS[documentation] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-cross-platform-auditor",
+  subagent_type="rihal-code-reviewer",
   model="sonnet",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
@@ -497,7 +497,7 @@ FINDINGS[sxo] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-observability-auditor",
+  subagent_type="rihal-code-reviewer",
   model="sonnet",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
