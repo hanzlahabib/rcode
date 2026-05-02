@@ -12,7 +12,8 @@ Open with banner:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Question: {$ARGUMENTS}
-Panel: {N} agents selected by keyword scoring
+Domain:   {domain from scores — fe / be / ml / deploy / strategic / market / general}
+Panel:    {N} agents selected by intent scoring
 ```
 TaskCreate: "Classify question type", "Select panel ({N} agents)", "Spawn agents in parallel", "Collect + synthesize responses", "Write artifact to council-sessions/".
 Per-agent spawn indicator:
@@ -166,10 +167,11 @@ Parse the JSON for:
 
 **Branch on `question_type`** (returned by `rihal-tools.cjs init` as `question_type`):
 
-- `codebase` — existing code question → codebase scan
+- `frontend` — React/UI/a11y/RTL → codebase scan + scan component dirs (`src/components/`, `src/app/`, `src/pages/`)
+- `backend` — API/DB/queue → codebase scan + scan server dirs (`src/api/`, `server/`, `prisma/`)
+- `codebase` — general existing code question → codebase scan
 - `performance` — latency/p95/throughput → codebase scan + read `baseline-metrics.md` if present
 - `ml` — OCR/retrieval/LLM → codebase scan + read ML service paths
-- `frontend` — React/UI/a11y/RTL → codebase scan + read component dirs
 - `team` — people/process question → codebase scan (for team context from README/state) + no external research
 - `release` — shipping/incident → codebase scan
 - `design` — UX/brand → codebase scan
@@ -178,12 +180,12 @@ Parse the JSON for:
 - `greenfield` — starting from scratch → research pre-step
 
 **Context grounding is mandatory for concrete technical categories.** For
-`codebase`, `performance`, `ml`, `frontend`, `release` — the orchestrator
+`frontend`, `backend`, `codebase`, `performance`, `ml`, `release` — the orchestrator
 MUST pass the full "Observed context" block into each subagent's prompt so
 panelists start grounded, not speculating. Subagents then Read/Grep/Bash
 specific files to deepen their answer.
 
-### If `question_type` is `"codebase"`, `"team"`, `"release"`, or `"design"` — run the codebase scan
+### If `question_type` is `"frontend"`, `"backend"`, `"codebase"`, `"team"`, `"release"`, or `"design"` — run the codebase scan
 
 Run this block ONCE. Target < 2k tokens output. Do not read files not listed here.
 
@@ -244,12 +246,13 @@ This is the factual baseline every subagent will be briefed on. It replaces the 
 **If `flags.explain` is true:** print the panel scoring table before proceeding:
 
 ```
-Panel scoring:
-  sadiq    [score]  — [top matched keyword or "padded"]
-  waleed   [score]  — ...
-  fatima   [score]  — ...
+Panel scoring (domain: {domain}):
+  haitham  [score]  — [top matched keyword or "padded"]
+  yousef   [score]  — ...
+  ...
 
-Selected: sadiq, waleed, fatima
+Selected: {panel agents}
+Excluded (0 score): {agents with score=0, comma-separated}
 ```
 
 **If `config.mode === 'guided'`:** confirm with the user:

@@ -731,16 +731,34 @@ function cmdClassifyQuestion(raw) {
       'design system', 'component library', 'accessibility', 'a11y', 'ui design',
       'redesign', 'onboarding flow', 'landing page', 'interface', 'layout',
     ],
+    frontend: [
+      'react', 'component', 'frontend', 'front-end', 'next.js', 'nextjs',
+      'tailwind', 'tsx', 'jsx', 'rtl', 'a11y',
+      'css', 'html', 'layout', 'responsive', 'animation', 'hydration',
+      'bundle size', 'lighthouse', 'cls', 'lcp', 'tbt', 'ui component',
+      'page render', 'client side', 'browser render',
+      // Roman Urdu FE signals
+      'front end', 'fe issue', 'ui fix',
+    ],
+    backend: [
+      'backend', 'back-end', 'api endpoint', 'server side', 'prisma',
+      'database query', 'db query', 'sql query', 'orm', 'db migration',
+      'queue', 'webhook', 'graphql', 'rest api', 'n+1',
+      'redis', 'postgres', 'mysql', 'mongodb', 'bullmq',
+      'cron job', 'rate limit', 'auth middleware',
+      // Roman Urdu BE signals
+      'be issue', 'api slow', 'db slow',
+    ],
     codebase: [
       'rewrite', 'refactor', 'migrate', 'this code', 'this function', 'this file',
       'this component', 'this api', 'this service', 'this database', 'this schema',
       'the auth', 'the tests', 'the build', 'the deploy', 'the pipeline',
       'production ready', 'ready to ship', 'test coverage', 'bug', 'error',
-      'performance', 'should i rewrite', 'auth layer', 'db migration',
+      'performance', 'should i rewrite', 'auth layer',
       'pull request', 'code review', 'technical debt', 'tech debt',
       'feature', 'ci/cd', 'cicd', 'pipeline', 'documentation', 'docs',
       // Tech choice signals
-      'astro', 'nextjs', 'next.js', 'remix', 'nuxt', 'svelte', 'vue', 'angular',
+      'astro', 'remix', 'nuxt', 'svelte', 'vue', 'angular',
       'should i use', 'which framework', 'compare framework',
       // Roman Urdu codebase/fix signals
       'fix karo', 'theek karo', 'sahi karo',
@@ -770,8 +788,8 @@ function cmdClassifyQuestion(raw) {
     matched[type] = matchedSignals(signals);
   }
 
-  // Weights per type — drift gets weight 3 same as other concrete-intent types.
-  const WEIGHTS = { discovery: 3, market: 2, greenfield: 2, team: 3, release: 3, design: 3, codebase: 3, drift: 3 };
+  // Weights per type — frontend/backend get weight 4 (most specific signals).
+  const WEIGHTS = { discovery: 3, market: 2, greenfield: 2, team: 3, release: 3, design: 3, codebase: 3, drift: 3, frontend: 4, backend: 4 };
   const scores = {};
   for (const [type, hits] of Object.entries(matched)) {
     scores[type] = hits.length * WEIGHTS[type];

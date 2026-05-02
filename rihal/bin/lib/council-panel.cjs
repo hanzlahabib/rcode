@@ -1,6 +1,6 @@
 /**
- * Council panel selection — pure function that picks the right 3-5 agents
- * for a given strategic question.
+ * Council panel selection — pure function that picks the right agents
+ * for a given question.
  *
  * This is the v2 version of the scorer, installed alongside rihal-tools.cjs
  * at {project-root}/.rihal/bin/lib/council-panel.cjs. The helper binary
@@ -16,6 +16,8 @@
  *   - Auditable: `explainSelection()` returns per-agent scores so users
  *     running with `--explain` can see why each agent was picked.
  *   - Cheap: zero LLM calls before the council starts.
+ *   - Intent-matched: domain-specific panels. FE question → Haitham leads.
+ *     BE question → Yousef leads. No strategic padding for technical work.
  *   - Optional team.yaml: If team.yaml exists at project root, reads
  *     domain_keywords from it. Fallback: hardcoded keywords below.
  *
@@ -25,16 +27,17 @@
  *      else use hardcoded KEYWORDS below.
  *   2. Normalize the question (lowercase, strip punctuation).
  *   3. For each agent, sum the weight of every keyword that appears.
- *   4. Apply priority boosts (Sadiq for strategic triggers, Hussain-PM
- *      for scope triggers).
+ *   4. Apply priority boosts (Sadiq for strategic triggers, domain
+ *      boosts for FE/BE/ML/deploy questions).
  *   5. Named-agent mentions get +20 (overrides topic score).
- *   6. Sort by score desc. Tiebreaker: STRATEGIC_PADDING_ORDER for
- *      strategic questions, AGENT_IDS for others.
- *   7. Take top K (default maxPanel = 5). Pad to minPanel (default 3) if
- *      fewer agents scored non-zero, using STRATEGIC_PADDING_ORDER (or
- *      AGENT_IDS for non-strategic) as the fill pool.
- *   8. If opts.full, return AGENT_IDS (canonical order).
- *   9. If opts.agents, return that exact list (validated).
+ *   6. Detect domain from top-scoring agents: fe / be / ml / deploy /
+ *      quality / strategic / market.
+ *   7. Sort by score desc. Tiebreaker: domain-specific padding order.
+ *   8. maxPanel=3 for technical domains (fe/be/ml/deploy/quality),
+ *      maxPanel=4 for strategic/market. minPanel=1 always — no forced
+ *      lame padding for specific technical questions.
+ *   9. If opts.full, return AGENT_IDS (canonical order).
+ *   10. If opts.agents, return that exact list (validated).
  *
  * The orchestrator is responsible for filtering the result to installed
  * agents. This module returns the "ideal" panel; the workflow validates
@@ -307,6 +310,75 @@ const STRATEGIC_PADDING_ORDER = [
   'zahra', 'zayd', 'mariam', 'noor',
 ];
 
+// Domain-specific padding orders — used when a technical domain is clearly detected.
+// These put the right specialists first and keep PM/strategy out unless asked.
+const FRONTEND_PADDING_ORDER = [
+  'haitham', 'layla', 'zahra', 'yousef', 'waleed',
+  'fatima', 'sadiq', 'hussain-pm', 'zayd', 'khalid',
+  'nasser', 'ahmed-hassani', 'mariam', 'noor',
+];
+
+const BACKEND_PADDING_ORDER = [
+  'yousef', 'waleed', 'khalid', 'fatima', 'haitham',
+  'zayd', 'ahmed-hassani', 'sadiq', 'hussain-pm', 'layla',
+  'nasser', 'zahra', 'mariam', 'noor',
+];
+
+const ML_PADDING_ORDER = [
+  'zayd', 'yousef', 'waleed', 'fatima', 'khalid',
+  'haitham', 'sadiq', 'hussain-pm', 'ahmed-hassani', 'layla',
+  'nasser', 'zahra', 'mariam', 'noor',
+];
+
+const DEPLOY_PADDING_ORDER = [
+  'khalid', 'waleed', 'yousef', 'ahmed-hassani', 'fatima',
+  'sadiq', 'haitham', 'zayd', 'hussain-pm', 'nasser',
+  'layla', 'zahra', 'mariam', 'noor',
+];
+
+const QUALITY_PADDING_ORDER = [
+  'fatima', 'waleed', 'yousef', 'haitham', 'khalid',
+  'sadiq', 'zayd', 'ahmed-hassani', 'hussain-pm', 'layla',
+  'nasser', 'zahra', 'mariam', 'noor',
+];
+
+// Domain trigger arrays — when these fire, the question is clearly technical
+// and should NOT be padded with PM/strategy agents.
+const FE_TRIGGERS = [
+  'react', 'component', 'frontend', 'front-end', 'next.js', 'nextjs',
+  'tailwind', 'css', 'html', 'tsx', 'jsx', 'rtl', 'a11y', 'accessibility',
+  'ui ', 'ux ', 'layout', 'responsive', 'animation', 'hydration',
+  'bundle size', 'lighthouse', 'cls', 'lcp', 'tbt',
+  // Roman Urdu FE signals
+  'fe ', 'front end', 'button', 'page ', 'screen ', 'form ',
+];
+
+const BE_TRIGGERS = [
+  'backend', 'back-end', 'api', 'endpoint', 'server', 'prisma', 'database',
+  'query', 'schema', 'migration', 'queue', 'webhook', 'rest', 'graphql',
+  'n+1', 'index', 'latency', 'timeout', 'caching', 'redis', 'postgres',
+  'mysql', 'mongodb', 'bullmq', 'celery', 'worker', 'job', 'cron',
+  // Roman Urdu BE signals
+  'be ', 'db ', 'api call', 'server side',
+];
+
+const ML_TRIGGERS = [
+  'llm', 'model', 'embedding', 'rag', 'retrieval', 'vector', 'ocr',
+  'prompt', 'inference', 'fine-tun', 'dataset', 'eval', 'nlp',
+  'openai', 'anthropic', 'gemini', 'gpt', 'claude', 'mistral',
+];
+
+const DEPLOY_TRIGGERS = [
+  'deploy', 'docker', 'kubernetes', 'k8s', 'ci/cd', 'cicd', 'pipeline',
+  'rollback', 'incident', 'outage', 'monitoring', 'alert', 'sre',
+  'infra', 'cloud', 'aws', 'gcp', 'azure', 'vps',
+];
+
+const QUALITY_TRIGGERS = [
+  'test coverage', 'qa ', 'regression', 'flaky', 'production ready',
+  'ready to ship', 'release ready', 'perf test', 'load test', 'benchmark',
+];
+
 const AGENT_NAMES = {
   sadiq: ['sadiq'],
   'hussain-pm': ['hussain', 'hussain-pm', 'hussain pm'],
@@ -357,7 +429,62 @@ function applyPriorityBoosts(scores, normalizedQuestion) {
     scores.mariam = (scores.mariam || 0) + 6; // Mariam leads market questions
     scores['hussain-pm'] = (scores['hussain-pm'] || 0) + 3; // PM follows for scoping
   }
+  // Domain boosts — lift the right technical expert when signal is clear
+  if (FE_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.haitham = (scores.haitham || 0) + 4;
+  }
+  if (BE_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.yousef = (scores.yousef || 0) + 4;
+  }
+  if (ML_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.zayd = (scores.zayd || 0) + 4;
+  }
+  if (DEPLOY_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.khalid = (scores.khalid || 0) + 4;
+  }
+  if (QUALITY_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+    scores.fatima = (scores.fatima || 0) + 4;
+  }
   return scores;
+}
+
+/**
+ * Detect the primary domain of a question from its normalized text and scores.
+ * Returns: 'fe' | 'be' | 'ml' | 'deploy' | 'quality' | 'market' | 'strategic' | 'general'
+ */
+function detectDomain(normalizedQuestion, scores) {
+  const isMarket = MARKET_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  if (isMarket) return 'market';
+
+  const isStrategic = SADIQ_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+
+  const feTrigger = FE_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const beTrigger = BE_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const mlTrigger = ML_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const deployTrigger = DEPLOY_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const qualityTrigger = QUALITY_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+
+  // Multiple technical domains present — fall back to top-scoring agent
+  const technicalCount = [feTrigger, beTrigger, mlTrigger, deployTrigger, qualityTrigger].filter(Boolean).length;
+  if (technicalCount >= 2) {
+    // Resolve by whichever technical expert scored highest
+    const techLeaders = [
+      { domain: 'fe', agent: 'haitham', score: scores.haitham || 0 },
+      { domain: 'be', agent: 'yousef', score: scores.yousef || 0 },
+      { domain: 'ml', agent: 'zayd', score: scores.zayd || 0 },
+      { domain: 'deploy', agent: 'khalid', score: scores.khalid || 0 },
+      { domain: 'quality', agent: 'fatima', score: scores.fatima || 0 },
+    ].sort((a, b) => b.score - a.score);
+    if (techLeaders[0].score > 0) return techLeaders[0].domain;
+  }
+
+  if (feTrigger) return 'fe';
+  if (beTrigger) return 'be';
+  if (mlTrigger) return 'ml';
+  if (deployTrigger) return 'deploy';
+  if (qualityTrigger) return 'quality';
+  if (isStrategic) return 'strategic';
+  return 'general';
 }
 
 function validateAgents(agents) {
@@ -368,34 +495,59 @@ function validateAgents(agents) {
   return agents;
 }
 
+const DOMAIN_PADDING = {
+  fe:       FRONTEND_PADDING_ORDER,
+  be:       BACKEND_PADDING_ORDER,
+  ml:       ML_PADDING_ORDER,
+  deploy:   DEPLOY_PADDING_ORDER,
+  quality:  QUALITY_PADDING_ORDER,
+  market:   MARKET_PADDING_ORDER,
+  strategic: STRATEGIC_PADDING_ORDER,
+  general:  STRATEGIC_PADDING_ORDER,
+};
+
+// Technical domains keep panels small — 1 right expert beats 3 wrong ones.
+const DOMAIN_MAX_PANEL = {
+  fe: 3, be: 3, ml: 3, deploy: 3, quality: 3,
+  market: 4, strategic: 4, general: 3,
+};
+
+// minPanel=1: never force-pad with irrelevant agents.
+const DOMAIN_MIN_PANEL = {
+  fe: 1, be: 1, ml: 1, deploy: 1, quality: 1,
+  market: 2, strategic: 2, general: 1,
+};
+
 function selectPanel(question, opts = {}) {
   if (opts.full) return [...AGENT_IDS];
   if (opts.agents && opts.agents.length > 0) return validateAgents(opts.agents);
 
-  const maxPanel = opts.maxPanel || 5;
-  const minPanel = opts.minPanel || 3;
   const normalized = normalize(question);
-  if (!normalized) return STRATEGIC_PADDING_ORDER.slice(0, minPanel);
+  if (!normalized) return STRATEGIC_PADDING_ORDER.slice(0, 2);
 
   const scores = {};
   for (const agentId of AGENT_IDS) scores[agentId] = scoreAgent(agentId, normalized);
   applyPriorityBoosts(scores, normalized);
 
-  const isStrategic = SADIQ_TRIGGERS.some((t) => normalized.includes(t));
-  const isMarket = MARKET_TRIGGERS.some((t) => normalized.includes(t));
-  const tiebreakOrder = isMarket ? MARKET_PADDING_ORDER : isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
+  const domain = detectDomain(normalized, scores);
+  const maxPanel = opts.maxPanel || DOMAIN_MAX_PANEL[domain];
+  const minPanel = opts.minPanel || DOMAIN_MIN_PANEL[domain];
+  const paddingPool = DOMAIN_PADDING[domain];
+
   const ranked = [...AGENT_IDS]
     .map((id) => ({ id, score: scores[id] }))
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      return tiebreakOrder.indexOf(a.id) - tiebreakOrder.indexOf(b.id);
+      return paddingPool.indexOf(a.id) - paddingPool.indexOf(b.id);
     });
 
   const scored = ranked.filter((a) => a.score > 0).slice(0, maxPanel);
+
+  // If we have at least minPanel scored agents, return them — no padding needed.
   if (scored.length >= minPanel) return scored.map((a) => a.id);
 
+  // Pad only up to minPanel using domain-appropriate agents.
   const alreadyPicked = new Set(scored.map((a) => a.id));
-  const paddingPool = isMarket ? MARKET_PADDING_ORDER : isStrategic ? STRATEGIC_PADDING_ORDER : AGENT_IDS;
   const padding = [];
   for (const id of paddingPool) {
     if (alreadyPicked.has(id)) continue;
@@ -410,11 +562,16 @@ function explainSelection(question, opts = {}) {
   const scores = {};
   for (const agentId of AGENT_IDS) scores[agentId] = scoreAgent(agentId, normalized);
   applyPriorityBoosts(scores, normalized);
+  const domain = detectDomain(normalized, scores);
   const panel = selectPanel(question, opts);
   return {
-    question, normalized, scores, panel,
+    question, normalized, scores, panel, domain,
     sadiq_triggered: SADIQ_TRIGGERS.some((t) => normalized.includes(t)),
     pm_triggered: PM_TRIGGERS.some((t) => normalized.includes(t)),
+    fe_triggered: FE_TRIGGERS.some((t) => normalized.includes(t)),
+    be_triggered: BE_TRIGGERS.some((t) => normalized.includes(t)),
+    ml_triggered: ML_TRIGGERS.some((t) => normalized.includes(t)),
+    deploy_triggered: DEPLOY_TRIGGERS.some((t) => normalized.includes(t)),
   };
 }
 
@@ -494,8 +651,13 @@ function loadTeamConfig(projectRoot) {
 }
 
 module.exports = {
-  AGENT_IDS, KEYWORDS, SADIQ_TRIGGERS, PM_TRIGGERS, MARKET_TRIGGERS, AGENT_NAMES,
+  AGENT_IDS, KEYWORDS, AGENT_NAMES,
+  SADIQ_TRIGGERS, PM_TRIGGERS, MARKET_TRIGGERS,
+  FE_TRIGGERS, BE_TRIGGERS, ML_TRIGGERS, DEPLOY_TRIGGERS, QUALITY_TRIGGERS,
   STRATEGIC_PADDING_ORDER, MARKET_PADDING_ORDER,
-  normalize, scoreAgent, applyPriorityBoosts, selectPanel, explainSelection,
-  loadTeamConfig,
+  FRONTEND_PADDING_ORDER, BACKEND_PADDING_ORDER, ML_PADDING_ORDER,
+  DEPLOY_PADDING_ORDER, QUALITY_PADDING_ORDER,
+  DOMAIN_PADDING, DOMAIN_MAX_PANEL, DOMAIN_MIN_PANEL,
+  normalize, scoreAgent, applyPriorityBoosts, detectDomain,
+  selectPanel, explainSelection, loadTeamConfig,
 };
