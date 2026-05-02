@@ -2562,6 +2562,21 @@ function cmdState(subArgs) {
       throw new Error(`state sync --from-disk: no ROADMAP.md, epics.md, or sprint files found`);
     }
 
+    // Issue #478 — prune state phases not present in ROADMAP.
+    // After upserting ROADMAP → state, seenNums holds every number the ROADMAP
+    // parser found. Any state entry whose id/number is NOT in seenNums is stale
+    // (e.g. from renumbering, manual edits, or partial removals). Prune them,
+    // but only when we successfully parsed at least 1 phase from ROADMAP.
+    parsed.phases_pruned = 0;
+    if (parsed.roadmap_exists && seenNums.size > 0) {
+      const before = state.phases.length;
+      state.phases = state.phases.filter(p => {
+        const key = String(p.id || p.number || '').trim();
+        return !key || seenNums.has(key);
+      });
+      parsed.phases_pruned = before - state.phases.length;
+    }
+
     // Issue #455 — surface silent no-op when ROADMAP exists but parser found nothing.
     const warnings = [];
     if (parsed.roadmap_exists && parsed.phases_found === 0) {
