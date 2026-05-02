@@ -163,6 +163,11 @@ Deviations are normal — handle via rules below.
    - **MANDATORY read_first gate:** If the task has a `<read_first>` field, you MUST read every listed file BEFORE making any edits. This is not optional. Do not skip files because you "already know" what's in them — read them. The read_first files establish ground truth for the task.
    - `type="auto"`: if `tdd="true"` → TDD execution. Implement with deviation rules + auth gates. Verify done criteria. Commit (see task_commit). Track hash for Summary.
    - `type="checkpoint:*"`: STOP → checkpoint_protocol → wait for user → continue only after confirmation.
+   - **Task completion precedence (when signals conflict):**
+     1. `<verify><automated>` — machine-executable shell commands. **Highest authority.** If these pass, the task is done. If these fail, the task is NOT done — regardless of what `<acceptance_criteria>` says.
+     2. `<done>` — single observable sentence. Use as the human-readable confirmation once automated checks pass.
+     3. `<acceptance_criteria>` — prose checklist. **Lowest authority.** Use as a guide during implementation, but automated results override prose judgments.
+     - If `<verify><automated>` is absent: fall back to `<done>`, then `<acceptance_criteria>`.
    - **MANDATORY acceptance_criteria check:** After completing each task, if it has `<acceptance_criteria>`, verify EVERY criterion before moving to the next task. Use grep, file reads, or CLI commands to confirm each criterion. If any criterion fails, fix the implementation before proceeding. Do not skip criteria or mark them as "will verify later".
 3. Run `<verification>` checks
 4. Confirm `<success_criteria>` met
