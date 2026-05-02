@@ -134,6 +134,9 @@ function parseArgs(argv) {
     noUpdateCheck: false,
     // #381 — skip backup tarball on --force-overwrite (CI escape hatch)
     noBackup: false,
+    // #199 — git pre-commit hook. null = install if .git/ present (default).
+    // Set false by --no-git-hooks, true by --git-hooks.
+    gitHooks: null,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -157,6 +160,8 @@ function parseArgs(argv) {
     else if (arg === '--accept-all') opts.acceptAll = true;     // #251 overwrite all preserved
     else if (arg === '--no-update-check') opts.noUpdateCheck = true; // #252
     else if (arg === '--no-backup') opts.noBackup = true;             // #381
+    else if (arg === '--no-git-hooks') opts.gitHooks = false;         // #199
+    else if (arg === '--git-hooks') opts.gitHooks = true;             // #199
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -690,6 +695,85 @@ function ensureRcodeGitignore(target, options = {}) {
       return { action: 'already-present' };
     }
     fs.writeFileSync(gitignorePath, existing + BLOCK);
+    return { action: 'appended' };
+  } catch (err) {
+    return { action: 'skipped-error', error: err.message };
+  }
+}
+
+/**
+ * Ensure .git/hooks/pre-commit includes the rcode-managed block that auto-syncs
+ * state.json when .planning/ or .rihal/brain/sources.yaml files change.
+ *
+ * Idempotent via sentinels — existing user hook content is preserved.
+ * Respects opts.gitHooks: false → skip entirely (--no-git-hooks flag).
+ *
+ * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-no-git' | 'skipped-flag' | 'skipped-error' }
+ */
+function ensureRcodePreCommitHook(target, options = {}) {
+  if (options.gitHooks === false) return { action: 'skipped-flag' };
+
+  const gitDir = path.join(target, '.git');
+  if (!fs.existsSync(gitDir) || !fs.statSync(gitDir).isDirectory()) {
+    return { action: 'skipped-no-git' };
+  }
+
+  const BEGIN = '# ===== rcode-managed pre-commit block =====';
+  const END   = '# ===== end rcode pre-commit block =====';
+
+  const BLOCK = [
+    '',
+    BEGIN,
+    '# Auto-syncs .rihal/state.json when planning files change.',
+    '# Added by rcode install — safe to re-run (idempotent).',
+    'if git diff --cached --name-only | grep -qE "^\\.planning/|^\\.rihal/brain/sources\\.yaml$"; then',
+    '  if [ -x .rihal/bin/rihal-tools.cjs ]; then',
+    '    node .rihal/bin/rihal-tools.cjs state sync --from-disk > /dev/null 2>&1 || true',
+    '    git add .rihal/state.json 2>/dev/null || true',
+    '  fi',
+    'fi',
+    END,
+    '',
+  ].join('\n');
+
+  const hooksDir = path.join(gitDir, 'hooks');
+  const hookPath = path.join(hooksDir, 'pre-commit');
+
+  try {
+    fs.mkdirSync(hooksDir, { recursive: true });
+
+    if (!fs.existsSync(hookPath)) {
+      fs.writeFileSync(hookPath, `#!/bin/sh\n${BLOCK}`);
+      fs.chmodSync(hookPath, 0o755);
+      return { action: 'created' };
+    }
+
+    const existing = fs.readFileSync(hookPath, 'utf8');
+
+    function spliceBlock(text, newBlock) {
+      const start = text.indexOf(BEGIN);
+      if (start < 0) return null;
+      const endIdx = text.indexOf(END, start);
+      if (endIdx < 0) return null;
+      let sliceStart = start;
+      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+      let sliceEnd = endIdx + END.length;
+      if (text[sliceEnd] === '\n') sliceEnd += 1;
+      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
+    }
+
+    if (existing.includes(BEGIN)) {
+      const rewritten = spliceBlock(existing, BLOCK);
+      if (rewritten !== null && rewritten !== existing) {
+        fs.writeFileSync(hookPath, rewritten);
+        fs.chmodSync(hookPath, 0o755);
+        return { action: 'updated' };
+      }
+      return { action: 'already-present' };
+    }
+
+    fs.writeFileSync(hookPath, existing + BLOCK);
+    fs.chmodSync(hookPath, 0o755);
     return { action: 'appended' };
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
@@ -1678,6 +1762,10 @@ async function install(opts) {
   // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
   const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
 
+  // Install pre-commit hook that auto-syncs state.json when planning files change.
+  // Respects --no-git-hooks flag; skips silently when .git/ is absent.
+  const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
+
   // Pull Rihal brain content (v2.0 — issue #158).
   // Runs rihal-tools brain pull as a child process. Placeholder URLs
   // are skipped gracefully so this does not fail a fresh install.
@@ -1721,6 +1809,18 @@ async function install(opts) {
       'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
     }[gitignoreReport.action] || '.gitignore unchanged';
     console.log('  ' + dim(gitMsg));
+  }
+  if (hookReport) {
+    const hookMsg = {
+      'created': 'pre-commit hook installed (.git/hooks/pre-commit)',
+      'appended': 'pre-commit hook updated — rcode block appended',
+      'already-present': 'pre-commit hook rcode block already present',
+      'updated': 'pre-commit hook rcode block refreshed',
+      'skipped-flag': 'pre-commit hook skipped (--no-git-hooks)',
+      'skipped-no-git': 'pre-commit hook skipped (no .git/ directory)',
+      'skipped-error': `pre-commit hook skipped (${hookReport.error})`,
+    }[hookReport.action] || 'pre-commit hook unchanged';
+    console.log('  ' + dim(hookMsg));
   }
   if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
 
