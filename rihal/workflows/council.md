@@ -28,6 +28,7 @@ Closure: `RIHAL ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 
 <required_reading>
 @.rihal/references/output-format.md
+@.rihal/references/council-protocol.md
 </required_reading>
 
 <process>

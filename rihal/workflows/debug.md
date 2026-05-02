@@ -7,6 +7,7 @@ Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize
 </purpose>
 
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/thinking-models-debug.md
 
 ## Step 0 — Usage check
 

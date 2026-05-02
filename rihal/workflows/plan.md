@@ -51,6 +51,7 @@ ${PHASE_GOAL_HAS_UI ? '@.rihal/references/ui-brand.md' : ''}
 @.rihal/references/agent-contracts.md
 @.rihal/references/gates.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/thinking-models-planning.md
 </required_reading>
 
 <available_agent_types>

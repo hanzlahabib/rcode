@@ -5,6 +5,7 @@ Analyze freeform text from the user and route to the most appropriate Rihal comm
 <required_reading>
 @.rihal/references/output-format.md
 @.rihal/references/verb-dictionary.md
+@.rihal/references/dispatch-banner.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 

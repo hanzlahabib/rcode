@@ -150,6 +150,7 @@ Read STATE.md before any operation to load project context.
 @.rihal/references/context-budget.md
 @.rihal/references/gates.md
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/execution-protocol.md
 </required_reading>
 
 <available_agent_types>
