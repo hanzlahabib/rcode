@@ -304,6 +304,50 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 19 — deep-gap-fixes-review-code-context-done-field-validation-verify-schema-canonical-refs
+
+**Goal:** Close 6 deep structural gaps where artifact producer/consumer contracts were misaligned — code review findings not feeding verification, code_context not read by planner, `<done>` field missing from spec, VALIDATION.md gate unblocked, `<automated>` verify schema enforced, and canonical_refs present in autonomous minimal context.
+
+**Status:** ✅ Complete
+
+**Delivered:**
+- `verify-phase.md` reads REVIEW.md critical/high counts and fails verdict on critical findings (closes #492)
+- `plan.md` planner prompt reads `<code_context>` from CONTEXT.md (closes #493)
+- `plan.md` adds `<done>` as mandatory task field in planner spec + quality gate (closes #494)
+- `rihal/templates/VALIDATION.md` created — unblocks Dimension 8e gate (closes #495)
+- `plan.md` `<verify>` spec requires `<automated>` child element; quality gate updated (closes #496)
+- `autonomous.md` minimal CONTEXT.md template now includes `<canonical_refs>` section (closes #497)
+
+**Acceptance:** All 6 contract mismatches resolved; commit `3f632ee`
+
+---
+
+## Phase 20 — dashboard-ux-quick-wins
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 20 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 21 — dashboard-data-pipeline
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 21 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
