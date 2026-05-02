@@ -291,8 +291,15 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
        # Detect files deleted on main but re-added by worktree merge
        # (e.g., archived phase directories that were intentionally removed)
+       # IMPORTANT: skip executor-created planning artifacts (SUMMARY, SPRINT, RESEARCH,
+       # CONTEXT) — these are brand-new files, not resurrections of previously-deleted ones.
+       # Deleting them here would cause phases to stay stuck in "executing". (#604)
        DELETED_FILES=$(git diff --diff-filter=A --name-only HEAD~1 -- .planning/ 2>/dev/null || true)
        for RESURRECTED in $DELETED_FILES; do
+         # Never remove executor-created planning artifacts
+         case "$RESURRECTED" in
+           *-SUMMARY.md|*-SPRINT.md|*-RESEARCH.md|*-CONTEXT.md|*-PLAN.md) continue ;;
+         esac
          # Check if this file was NOT in main's pre-merge tree
          if ! echo "$PRE_MERGE_FILES" | grep -qxF "$RESURRECTED"; then
            git rm -f "$RESURRECTED" 2>/dev/null || true
