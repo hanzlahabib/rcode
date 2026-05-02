@@ -2980,11 +2980,21 @@ function cmdCommit(argv) {
     // #566 extra guard: verify all --files paths actually appear in the staged index.
     // git add on a gitignored file may silently succeed (exit 0) but not stage the
     // file, causing a later commit to include unrelated already-staged changes.
+    // Exception: a tracked file that is unchanged won't appear in the staged diff —
+    // that is OK (e.g. STATE.md listed in worktree mode but not modified). Only
+    // error for files that are both not-staged AND not tracked (gitignored case).
     const stagedAfterAdd = execSync('git diff --cached --name-only', { cwd: PROJECT_ROOT, encoding: 'utf8' })
       .trim().split('\n').filter(Boolean);
     const notStaged = files.filter(f => {
       const norm = f.replace(/^\.\//, '');
-      return !stagedAfterAdd.some(s => s === norm || s.endsWith('/' + norm) || norm.endsWith(s));
+      if (stagedAfterAdd.some(s => s === norm || s.endsWith('/' + norm) || norm.endsWith(s))) return false;
+      // Not in staged diff — check if it's tracked (unchanged) vs untracked/gitignored
+      try {
+        execSync(`git ls-files --error-unmatch "${f}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+        return false; // tracked and unchanged — that's fine
+      } catch {
+        return true; // not tracked — likely gitignored
+      }
     });
     if (notStaged.length > 0) {
       throw new Error(
