@@ -325,6 +325,46 @@ Always offer exactly three numbered options:
 
 Wait for the user's choice before proceeding. Do not auto-select.
 
+**If user picks option 2 (View existing plans):**
+
+Display a sprint summary table (sprint id → one-line goal).
+
+Then immediately run a **codebase overlap check** before showing the execute prompt — Closes #596:
+
+```bash
+# Extract file paths and component/model names from all SPRINT.md files
+SPRINT_FILES=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null)
+
+# Check which files_modified already exist
+EXISTING=()
+MISSING=()
+for sprint in $SPRINT_FILES; do
+  # grep for files_modified block and check each path
+  grep -E '^\s+-\s+\S+\.(tsx?|py|prisma|sql|css|json)' "$sprint" 2>/dev/null | \
+    awk '{print $NF}' | while read -r f; do
+      [ -f "$f" ] && echo "EXISTS: $f" || echo "NEW: $f"
+    done
+done
+```
+
+Show a compact overlap report inline with the sprint table:
+
+```
+Codebase overlap check:
+  ✓ 3 files already exist (plans will extend them)
+  + 12 files are new (will be created)
+  ⚠ 1 component overlap: TemplateManager.tsx does similar work to Sprint 112-04's planned Templates tab
+```
+
+Rules:
+- **Green / no action required:** file exists and sprint's intent is to extend it → note "extends existing"
+- **Warning / flag for user:** a *different* component in the codebase already implements the same feature → name both files and let the user decide
+- **New:** file doesn't exist → no annotation needed, silent
+- If no conflicts detected: one line "No codebase conflicts detected." and proceed
+- Never block execution — this is information, not a gate
+
+Only after showing overlap results, show the execute prompt.
+
 ## 7. Use Context Paths from INIT
 
 Extract from INIT JSON:
