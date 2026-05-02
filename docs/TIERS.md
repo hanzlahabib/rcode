@@ -34,17 +34,17 @@ For teams running multiple sprints with formal ceremonies and design work.
 
 | Skill | What it does | Say this to activate |
 |-------|--------------|----------------------|
-| `rihal-product-brief` | 1–2 page executive brief (input to PRD) | "create a product brief" |
-| `rihal-prfaq` | Amazon Working Backwards PRFAQ challenge | "create a PRFAQ" or "work backwards" |
-| `rihal-edit-prd` | Revise an existing PRD | "edit the PRD" |
-| `rihal-validate-prd` | Check PRD completeness and consistency | "validate the PRD" |
-| `rihal-create-epics-and-stories` | Expand PRD → epics → stories batch | "create epics" |
-| `rihal-create-architecture` | Write an Architecture Decision Record (ADR) | "write an ADR" |
-| `rihal-create-ux-design` | UX flows, wireframes, design system | "create UX design" |
-| `rihal-frontend-design` | Typography, colours, motion, spatial design | "design this UI" |
-| `rihal-qa-generate-e2e-tests` | Generate end-to-end test cases | "generate e2e tests" |
-| `rihal-retrospective` | Run a retro, capture action items | "run retrospective" |
-| `rihal-create-milestone` | Create milestone definition | "create a milestone" |
+| `rihal-product-brief` | 1–2 page executive brief (input to PRD) | "create a product brief" or `/rihal-product-brief` |
+| `rihal-prfaq` | Amazon Working Backwards PRFAQ challenge | "create a PRFAQ" or `/rihal-prfaq` |
+| `rihal-edit-prd` | Revise an existing PRD | "edit the PRD" or `/rihal-edit-prd` |
+| `rihal-validate-prd` | Check PRD completeness and consistency | "validate the PRD" or `/rihal-validate-prd` |
+| `rihal-create-epics-and-stories` | Expand PRD → epics → stories batch | "create epics" or `/rihal-create-epics-and-stories` |
+| `rihal-create-architecture` | Write an Architecture Decision Record (ADR) | "write an ADR" or `/rihal-create-architecture` |
+| `rihal-create-ux-design` | UX flows, wireframes, design system | "create UX design" or `/rihal-create-ux-design` |
+| `rihal-frontend-design` | Typography, colours, motion, spatial design | "design this UI" or `/rihal-frontend-design` |
+| `rihal-qa-generate-e2e-tests` | Generate end-to-end test cases | "generate e2e tests" or `/rihal-qa-generate-e2e-tests` |
+| `rihal-retrospective` | Run a retro, capture action items | "run retrospective" or `/rihal-retrospective` |
+| `rihal-create-milestone` | Create milestone definition | "create a milestone" or `/rihal-create-milestone` |
 
 ### Agents (8)
 
@@ -60,14 +60,14 @@ For multi-agent consultation, reverse engineering, project recovery, and deep co
 
 | Skill | What it does | Say this to activate |
 |-------|--------------|----------------------|
-| `rihal-check-implementation-readiness` | Verify alignment before dev | "check implementation readiness" |
-| `rihal-correct-course` | Pivot mid-project with minimal disruption | "course correct" |
-| `rihal-clone-website` | Reverse-engineer a website (CSS + content + layout) | "clone this website" |
-| `rihal-document-project` | Auto-generate full project docs for AI agents | "document this project" |
-| `rihal-generate-project-context` | Extract conventions, stack, patterns → `.rihal/project-context.md` | "generate project context" |
-| `rihal-checkpoint-preview` | LLM-assisted human-in-the-loop review | "checkpoint" or "walk me through this change" |
+| `rihal-check-implementation-readiness` | Verify alignment before dev | "check implementation readiness" or `/rihal-check-implementation-readiness` |
+| `rihal-correct-course` | Pivot mid-project with minimal disruption | "course correct" or `/rihal-correct-course` |
+| `rihal-clone-website` | Reverse-engineer a website (CSS + content + layout) | "clone this website" or `/rihal-clone-website` |
+| `rihal-document-project` | Auto-generate full project docs for AI agents | "document this project" or `/rihal-document-project` |
+| `rihal-generate-project-context` | Extract conventions, stack, patterns → `.rihal/project-context.md` | "generate project context" or `/rihal-generate-project-context` |
+| `rihal-checkpoint-preview` | LLM-assisted human-in-the-loop review | "checkpoint" or `/rihal-checkpoint-preview` |
 | `research` | Generic multi-source research skill | "research [topic]" |
-| `rihal-brainstorming` | Structured brainstorming workflow | "brainstorm" |
+| `rihal-brainstorming` | Structured brainstorming workflow | "brainstorm" or `/rihal-brainstorming` |
 
 ### Agents (7)
 
