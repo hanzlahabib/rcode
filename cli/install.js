@@ -137,6 +137,12 @@ function parseArgs(argv) {
     // #199 — git pre-commit hook. null = install if .git/ present (default).
     // Set false by --no-git-hooks, true by --git-hooks.
     gitHooks: null,
+    // global install mode — targets ~/.claude/, skips per-project artifacts
+    global: false,
+    // silent — suppress non-error output (used by postinstall auto-run)
+    silent: false,
+    // noPrompt — skip all interactive prompts (used by postinstall auto-run)
+    noPrompt: false,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -162,6 +168,9 @@ function parseArgs(argv) {
     else if (arg === '--no-backup') opts.noBackup = true;             // #381
     else if (arg === '--no-git-hooks') opts.gitHooks = false;         // #199
     else if (arg === '--git-hooks') opts.gitHooks = true;             // #199
+    else if (arg === '--global') opts.global = true;
+    else if (arg === '--silent') opts.silent = true;
+    else if (arg === '--no-prompt') opts.noPrompt = true;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -305,6 +314,7 @@ function detectIdeSignals(target) {
  */
 async function resolveIde(opts) {
   if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
+  if (opts.noPrompt || opts.global) return ['claude']; // auto-install: always claude
   if (opts.yes || !process.stdin.isTTY) {
     // #182 — non-interactive mode: install into every detected IDE, not just
     // the default claude. The interactive flow already preselects detected
@@ -352,6 +362,7 @@ async function resolveIde(opts) {
  */
 async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
+  if (opts.noPrompt || opts.global) return false; // global install: no planning artifacts
   if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
 
   const choice = await clack.select({
@@ -1652,6 +1663,27 @@ async function install(opts) {
       console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
     }
     console.log('');
+  }
+
+  // In global install mode (~/.claude/), skip per-project artifacts — those are
+  // created by `rcode install` inside each project directory at project-init time.
+  // Global install only ships the read-only tooling: commands, skills, workflows, bin.
+  if (opts.global) {
+    // Still write the manifest so the global install is traceable/upgradeable
+    const configDir = path.join(opts.target, '.rihal', '_config');
+    ensureDir(configDir);
+    fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
+    // Install skills + sidebar stubs globally
+    let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+    try {
+      const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
+      const stubsDir = path.join(opts.target, '.claude', 'skills');
+      const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion());
+      skillsInstalled += result.generated;
+    } catch { /* non-fatal */ }
+    console.log('');
+    console.log(`  ${dim(`${skillsInstalled} skills installed globally`)}`);
+    return 0;
   }
 
   // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
