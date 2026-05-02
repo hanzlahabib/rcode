@@ -60,6 +60,23 @@ PLAN_START_EPOCH=$(date +%s)
 ```
 </step>
 
+<step name="create_phase_snapshot">
+Create a pre-execution git tag so `/rihal-undo --phase NN --to-snapshot` can restore to this exact state.
+Only runs when inside a git repository (skip silently otherwise).
+
+```bash
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  SNAPSHOT_TAG="rihal/snapshot/phase-${PHASE_NUMBER}"
+  if git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
+    git tag -d "${SNAPSHOT_TAG}" >/dev/null 2>&1
+  fi
+  git tag -a "${SNAPSHOT_TAG}" -m "Pre-execution snapshot for phase ${PHASE_NUMBER}" HEAD 2>/dev/null \
+    && echo "✓ Snapshot: ${SNAPSHOT_TAG} @ $(git rev-parse --short HEAD)" \
+    || echo "⚠ Could not create snapshot tag (non-fatal)"
+fi
+```
+</step>
+
 <step name="parse_segments">
 ```bash
 grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md

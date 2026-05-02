@@ -69,9 +69,9 @@ Load all context in one call (paths only to minimize orchestrator context):
 ```bash
 INIT=$(node ".rihal/bin/rihal-tools.cjs" init sprint-plan "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-researcher 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
 AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
 CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)

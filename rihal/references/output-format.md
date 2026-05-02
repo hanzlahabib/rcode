@@ -1,5 +1,39 @@
 <ui_patterns>
 
+## Workflow Step Heading (canonical format)
+
+All workflows MUST use `## Step N — {Name}` for top-level steps. No other format.
+
+```
+## Step 1 — Parse arguments
+## Step 2 — Load state
+## Step 3 — Spawn agents
+```
+
+**Deprecated forms (do not use in new or updated workflows):**
+- `<step name="...">` — XML-tag format (legacy, still accepted by agents but not for new workflows)
+- `### Step N` — wrong heading level
+- `**Step N:**` — bold-text format
+
+When refactoring a workflow, convert its steps to `## Step N — {Name}` incrementally. Do not leave a mix of formats within the same workflow.
+
+---
+
+## Subagent Output Format Contract
+
+When spawning a subagent with `Task()`, the spawning prompt MUST include a brief expected output section so the sub-agent produces machine-parseable results. Minimal template:
+
+```
+## Expected output format
+{One of: JSON object / Markdown report / Plain text / VERIFICATION.md schema}
+Return exactly this format — no extra commentary before or after.
+```
+
+Workflows that omit this cause silent format mismatches where the orchestrator cannot parse the sub-agent's response.
+
+---
+
+
 Visual patterns for user-facing Rihal output. Orchestrators @-reference this file.
 
 ## Stage Banners

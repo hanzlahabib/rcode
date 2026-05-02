@@ -112,12 +112,24 @@ function setAt(config, dottedKey, value) {
  * Returns a string (or null for missing) the caller should print with console.log
  * WITHOUT JSON-wrapping.
  */
+// Aliases: bare key → namespaced key (and reverse). When the primary lookup
+// returns null, the alias is tried automatically — fixes namespace-mix issues.
+const KEY_ALIASES = {
+  'commit_docs':          'git.commit_docs',
+  'git.commit_docs':      'commit_docs',
+  'discuss_mode':         'workflow.discuss_mode',
+  'workflow.discuss_mode': 'discuss_mode',
+};
+
 function cmdGet(projectRoot, dottedKey) {
   if (!dottedKey) throw new Error('Usage: config-get <dotted.key>');
   const cp = configPathFor(projectRoot);
   if (!fs.existsSync(cp)) return null;
   const config = parseNestedYaml(fs.readFileSync(cp, 'utf8'));
-  const val = getAt(config, dottedKey);
+  let val = getAt(config, dottedKey);
+  if ((val === undefined || val === null) && KEY_ALIASES[dottedKey]) {
+    val = getAt(config, KEY_ALIASES[dottedKey]);
+  }
   if (val === undefined || val === null) return null;
   if (typeof val === 'object') return JSON.stringify(val);
   return String(val);
