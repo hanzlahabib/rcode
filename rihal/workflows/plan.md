@@ -958,6 +958,34 @@ Task(
 - **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
 - **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
 
+**Sprint count guard (token cost protection — closes #584):**
+
+After planner returns `## PLANNING COMPLETE`, immediately count sprint files:
+
+```bash
+MAX_SPRINTS=$($TOOL config-get workflow.max_sprints_per_phase 2>/dev/null || echo "4")
+SPRINT_COUNT=$(find "${PHASE_DIR}" -maxdepth 1 -name "*-SPRINT.md" | wc -l | tr -d ' ')
+```
+
+If `SPRINT_COUNT > MAX_SPRINTS`:
+
+```
+⚠ Phase {N}: Planner created {SPRINT_COUNT} sprint files (limit: {MAX_SPRINTS}).
+  This phase is too large — the sprint-checker will be expensive and revision
+  loops will multiply the cost.
+
+  Recommended: split this phase into two using /rihal-plan --split {N}
+
+Options:
+  1. Split phase now (recommended)
+  2. Continue anyway (accept higher token cost)
+  3. Re-plan with explicit 4-sprint limit
+```
+
+In `mode: yolo` / autonomous: auto-select option 3 (re-plan with limit). Do not halt or ask.
+
+Re-plan prompt appended: `"IMPORTANT: Create at most {MAX_SPRINTS} SPRINT.md files. Merge smaller tasks into the nearest related sprint instead of creating new ones."`
+
 ## 9b. Handle Phase Split Recommendation
 
 When the planner returns `## PHASE SPLIT RECOMMENDED`, it means the phase has too many decisions to implement at full fidelity within the plan budget. The planner proposes groupings.
@@ -1063,13 +1091,23 @@ Apply this to the revision? [Yes] / [No, I'll decide]
 If yes: include the recommendation in the revision prompt. If no: proceed to revision loop as normal.
 If thinking_partner disabled: skip this block entirely.
 
-## 12. Revision Loop (Max 3 Iterations)
+## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
+
+**Mode-based iteration cap (token cost protection — closes #585):**
+
+```bash
+MAX_ITERATIONS=$($TOOL config-get workflow.max_checker_iterations 2>/dev/null || echo "")
+if [ -z "$MAX_ITERATIONS" ]; then
+  # Default: 1 in yolo/autonomous, 3 in guided
+  [ "$MODE" = "yolo" ] || [ -n "$AUTONOMOUS" ] && MAX_ITERATIONS=1 || MAX_ITERATIONS=3
+fi
+```
 
 Track `iteration_count` (starts at 1 after initial plan + check).
 Track `prev_issue_count` (initialized to `Infinity` before the loop begins).
 Track `stall_reentry_count` (starts at 0; incremented each time "Adjust approach" re-enters step 8).
 
-**If iteration_count < 3:**
+**If iteration_count < MAX_ITERATIONS:**
 
 **Sprint-checker malfunction guard (BLOCKER-class — added in v3.1.0 after #440):**
 

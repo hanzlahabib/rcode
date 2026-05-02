@@ -477,7 +477,7 @@ Auto-invoke code review and fix chain. Autonomous mode chains both review and fi
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "true")
+CODE_REVIEW_ENABLED=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "false")
 ```
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
@@ -908,6 +908,25 @@ node .rihal/bin/rihal-tools.cjs state read
 Check for blockers in the Blockers/Concerns section. If blockers are found, go to handle_blocker.
 
 If incomplete phases remain: proceed to next phase, loop back to execute_phase.
+
+**Token cost report and /clear offer (closes #586):**
+
+After each phase completes, display a cost summary:
+
+```
+Phase {N} ✅ {name} — {sprint_count} sprints, {revision_count} revision(s)
+```
+
+Track `PHASES_COMPLETED` (increment after each iterate). Every 3 completed phases:
+
+```
+⚠ Context growing — {PHASES_COMPLETED} phases done in this session.
+  Tip: /clear now and resume to keep remaining phases lean:
+  /rihal-autonomous --from {next_phase} --to {TO_PHASE}
+  Continue anyway? [Yes, keep going] / [I'll clear now — show resume command]
+```
+
+In `mode: yolo`: skip the offer and just print the resume command as an info line.
 
 **Interactive mode overlap:** When `INTERACTIVE` is set, the iterate step enables pipeline parallelism:
 1. After discuss completes for Phase N, dispatch plan+execute as background agents
