@@ -1417,6 +1417,16 @@ The previous behaviour (printing "Next Up: /rihal-verify-work" without state-gat
 COMPLETION=$(node ".rihal/bin/rihal-tools.cjs" phase complete "${PHASE_NUMBER}")
 ```
 
+Record execution telemetry (plan count + latest commit hash):
+```bash
+EXEC_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "")
+node ".rihal/bin/rihal-tools.cjs" state record-execution \
+  --plan "${PHASE_NUMBER}" \
+  --tasks "${PLAN_COUNT}" \
+  --hash "${EXEC_HASH}" \
+  2>/dev/null || true
+```
+
 The CLI handles:
 - Marking phase checkbox `[x]` with completion date
 - Updating Progress table (Status → Complete, date)
