@@ -4,6 +4,7 @@ Initialize a new project through unified flow: questioning, research (optional),
 </purpose>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.

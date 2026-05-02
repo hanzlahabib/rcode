@@ -7,6 +7,7 @@ Render a human-readable project status dashboard. All data comes from a single `
 </purpose>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 </required_reading>
 

@@ -3,6 +3,7 @@ Analyze freeform text from the user and route to the most appropriate Rihal comm
 </purpose>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 @.rihal/references/verb-dictionary.md
 @.rihal/references/dispatch-banner.md
@@ -10,6 +11,11 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <process>
+
+<step name="auto_init_check">
+Run the auto-init guard from `@.rihal/references/auto-init-guard.md` before anything else.
+If the project is not initialized, complete the inline init flow, then continue.
+</step>
 
 <step name="parse_args">
 Extract `$ARGUMENTS`, detect `--auto` flag, and check config mode:

@@ -41,6 +41,7 @@ End with Next Up routing to /rihal-execute.
 </output_format>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 

@@ -143,6 +143,7 @@ via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 Read STATE.md before any operation to load project context.
 

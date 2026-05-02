@@ -28,6 +28,7 @@ Closure: `RIHAL ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 </output_format>
 
 <required_reading>
+@.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
 @.rihal/references/council-protocol.md
 </required_reading>

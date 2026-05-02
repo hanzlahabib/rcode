@@ -1,9 +1,9 @@
 # Workflow: rihal-init
 
 <purpose>
-Begin the rihla. This is the first command a user runs after dropping Rihal files into a project. It detects project state, asks a handful of configuration questions, scans existing context (if any), writes `.rihal/RIHLA.md` as the journey baseline, and routes to the right next command.
+Begin the rihla. This is the entry point for configuring Rihal in a project. Runs automatically on first use of any rihal command (via auto-init-guard in do.md), or explicitly via /rihal-init for a full setup with codebase scan.
 
-This replaces the older `/rihal-generate-project-context` workflow — init is the single entry point for configuring Rihal in a project.
+No manual "rcode install" needed per project — just use any /rihal-* command and this triggers automatically when config is missing.
 </purpose>
 
 ## Step 0 — Usage check
