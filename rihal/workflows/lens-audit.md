@@ -1,12 +1,31 @@
 # Workflow: rihal-lens-audit
 
 <purpose>
-Run a structured 15-lens code audit against the current project. Each lens is an
-independent inspection angle (security, performance, testability, etc.). The user
-picks one lens or all 15; the workflow runs every selected lens, prints labelled
-findings, and outputs ready-to-paste GitHub issue bodies — one per lens. Never
-fixes anything; audit-first, fix-second is the rule.
+Run a structured 15-lens code audit against the current project. Each lens
+delegates to its mapped primary skill via Task() subagent dispatch — the skill
+provides domain expertise; this workflow handles orchestration, aggregation,
+and GH issue body generation. Never fixes anything; audit-first, fix-second.
 </purpose>
+
+## Skill Mapping
+
+| Lens | Name | Primary Skill | Secondary |
+|------|------|--------------|-----------|
+| 1 | Security | `rihal-security-auditor` | `rihal-security-adversary` |
+| 2 | Performance | `rihal-perf` | — |
+| 3 | Testability | `rihal-fatima` | `rihal-edge-case-hunter` |
+| 4 | Extensibility | `rihal-waleed` | — |
+| 5 | Dep Health | `rihal-dep-auditor` | — |
+| 6 | Error Recovery | `rihal-debugger` | — |
+| 7 | State Machine | `rihal-deviation-analyzer` | — |
+| 8 | i18n | `rihal-i18n-auditor` | — |
+| 9 | Documentation | `rihal-docs-auditor` | — |
+| 10 | Cross-platform | `rihal-cross-platform-auditor` | — |
+| 11 | Karpathy | `rihal-code-reviewer` | `rihal-hanzla` |
+| 12 | SXO/UX | `rihal-layla` | — |
+| 13 | Observability | `rihal-observability-auditor` | — |
+| 14 | Naming | `rihal-codebase-mapper` | `rihal-code-reviewer` |
+| 15 | Coverage | `rihal-nyquist-auditor` | `rihal-fatima` |
 
 ## Step 0 — Usage check
 
@@ -18,22 +37,22 @@ If `$ARGUMENTS` is `--help` or `-h`:
 /rihal-lens-audit <N>            # run lens N (1-15) only
 /rihal-lens-audit <name>         # run by name, e.g. "security", "performance"
 
-Lenses:
-  1.  security         — injection, secrets, path traversal, auth
-  2.  performance      — unbounded reads, missing guards, wasted passes
-  3.  testability      — untested code paths, missing assertions
-  4.  extensibility    — hardcoded values, no extension points
-  5.  dep-health       — outdated deps, CVEs, unused packages
-  6.  error-recovery   — missing fallbacks, swallowed errors
-  7.  state-machine    — invalid transitions, schema drift
-  8.  i18n             — hardcoded strings, missing response_language
-  9.  documentation    — missing Next Up, stale references, dead links
-  10. cross-platform   — bash-isms, macOS-only flags, Windows gaps
-  11. karpathy         — overengineering, stubs, unclear assumptions
-  12. sxo              — dead-end flows, missing guidance
-  13. observability    — unguarded tool calls, silent failures
-  14. naming           — variable/file naming drift across workflows
-  15. coverage         — untested commands, missing parity checks
+Lenses and their primary skills:
+  1.  security         — rihal-security-auditor + rihal-security-adversary
+  2.  performance      — rihal-perf
+  3.  testability      — rihal-fatima + rihal-edge-case-hunter
+  4.  extensibility    — rihal-waleed
+  5.  dep-health       — rihal-dep-auditor
+  6.  error-recovery   — rihal-debugger
+  7.  state-machine    — rihal-deviation-analyzer
+  8.  i18n             — rihal-i18n-auditor
+  9.  documentation    — rihal-docs-auditor
+  10. cross-platform   — rihal-cross-platform-auditor
+  11. karpathy         — rihal-code-reviewer + rihal-hanzla
+  12. sxo              — rihal-layla
+  13. observability    — rihal-observability-auditor
+  14. naming           — rihal-codebase-mapper + rihal-code-reviewer
+  15. coverage         — rihal-nyquist-auditor + rihal-fatima
 ```
 
 STOP after printing help.
@@ -44,6 +63,12 @@ STOP after printing help.
 TOOL="node .rihal/bin/rihal-tools.cjs"
 INIT=$($TOOL init 2>/dev/null || echo '{"ok":false}')
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
+RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "english")
+```
+
+If INIT is empty or INIT.ok is false, print error and exit:
+```
+rihal-tools not found. Run: npx @hanzlaa/rcode install .
 ```
 
 Parse `$ARGUMENTS`:
@@ -51,6 +76,11 @@ Parse `$ARGUMENTS`:
 - digit 1–15 → `LENSES=(<N>)`
 - known lens name → map to number → `LENSES=(<N>)`
 - empty → continue to Step 2 (interactive picker)
+
+Name → number mapping:
+`security=1, performance=2, testability=3, extensibility=4, dep-health=5,`
+`error-recovery=6, state-machine=7, i18n=8, documentation=9, cross-platform=10,`
+`karpathy=11, sxo=12, observability=13, naming=14, coverage=15`
 
 ## Step 2 — Interactive picker (when no argument given)
 
@@ -61,22 +91,22 @@ Question:
 Kaun sa lens run karna hai? (Which lens to run?)
 
 Options:
-  1.  security         — injection, secrets, path traversal, auth
-  2.  performance      — unbounded reads, missing guards, wasted passes
-  3.  testability      — untested code paths, missing assertions
-  4.  extensibility    — hardcoded values, no extension points
-  5.  dep-health       — outdated deps, CVEs, unused packages
-  6.  error-recovery   — missing fallbacks, swallowed errors
-  7.  state-machine    — invalid transitions, schema drift
-  8.  i18n             — hardcoded strings, missing response_language
-  9.  documentation    — missing Next Up, stale references, dead links
-  10. cross-platform   — bash-isms, macOS-only flags, Windows gaps
-  11. karpathy         — overengineering, stubs, unclear assumptions
-  12. sxo              — dead-end flows, missing guidance
-  13. observability    — unguarded tool calls, silent failures
-  14. naming           — variable/file naming drift across workflows
-  15. coverage         — untested commands, missing parity checks
-  16. all              — run all 15 lenses (files issues for each)
+  1.  security         — rihal-security-auditor (injection, secrets, auth)
+  2.  performance      — rihal-perf (unbounded reads, wasted passes)
+  3.  testability      — rihal-fatima (coverage gaps, untested paths)
+  4.  extensibility    — rihal-waleed (hardcoded values, scalability)
+  5.  dep-health       — rihal-dep-auditor (CVEs, unused, loose pins)
+  6.  error-recovery   — rihal-debugger (swallowed errors, missing fallbacks)
+  7.  state-machine    — rihal-deviation-analyzer (transitions, schema drift)
+  8.  i18n             — rihal-i18n-auditor (hardcoded strings, RTL, response_language)
+  9.  documentation    — rihal-docs-auditor (Next Up, dead links, 5-component)
+  10. cross-platform   — rihal-cross-platform-auditor (bash-isms, macOS flags)
+  11. karpathy         — rihal-code-reviewer + rihal-hanzla (overengineering, stubs)
+  12. sxo              — rihal-layla (dead-end flows, missing guidance)
+  13. observability    — rihal-observability-auditor (unguarded calls, silent fails)
+  14. naming           — rihal-codebase-mapper (naming drift, PLAN.md vs SPRINT.md)
+  15. coverage         — rihal-nyquist-auditor (parity gaps, untested commands)
+  16. all              — run all 15 lenses
   0.  cancel
 ```
 
@@ -85,447 +115,463 @@ Set `LENSES` from the choice.
 ## Step 3 — Determine scope
 
 ```bash
-# Default: rihal/workflows/ + rihal/skills/ + rihal/bin/ + rihal/commands/
-SCOPE_DIRS="rihal/workflows rihal/skills rihal/bin rihal/commands rihal/templates"
-# Override if .rihal/ already installed:
-[ -d .rihal ] && SCOPE_DIRS="$SCOPE_DIRS .rihal/workflows .rihal/skills .rihal/bin"
+# Collect scope context for skill prompts
+SCOPE_DIRS="rihal/ .rihal/"
+[ -d src ] && SCOPE_DIRS="$SCOPE_DIRS src/"
+[ -d lib ] && SCOPE_DIRS="$SCOPE_DIRS lib/"
+SCOPE_SUMMARY="Scope: $SCOPE_DIRS. Response language: $RESPONSE_LANGUAGE."
+
+# Collect project context for richer prompts
+PROJECT_NAME=$($TOOL config-get project.name 2>/dev/null || basename "$PWD")
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+CONTEXT="Project: $PROJECT_NAME. Branch: $GIT_BRANCH ($GIT_SHA). $SCOPE_SUMMARY"
 ```
 
-## Step 4 — Run each lens
+## Step 4 — Dispatch each lens to its primary skill
 
-For each lens in `LENSES`, run the corresponding checks below. Accumulate findings
-into `FINDINGS[<lens_name>]`. A finding = one-liner: `<file>:<line> — <description>`.
+For each lens number in `LENSES`:
+
+**Partial-fail protocol:** if a subagent Task() call errors, log
+`Lens N ({name}): subagent error — skipping` and continue with remaining lenses.
+Never halt the whole audit because one lens's skill fails.
 
 ---
 
 ### Lens 1 — Security
 
-Check for:
+```
+PRIMARY = Task(
+  subagent_type="rihal-security-auditor",
+  prompt="Audit-only — do NOT fix anything. {CONTEXT}
+  
+  Run Lens 1 (Security) audit. Check:
+  - Hardcoded secrets / tokens / passwords in any file
+  - Path traversal: unsanitised user input in file read paths
+  - Shell injection: unquoted variables in exec/spawn/execSync calls
+  - Auth bypass: skipAuth, bypassAuth, noAuth patterns
+  - Insecure defaults in config files
+  
+  Apply OWASP Top 10 and Semgrep security rule patterns.
+  
+  Return findings as: file:line — description [severity: critical|warn|info]
+  If no findings: respond with exactly PASS"
+)
 
-```bash
-# Hardcoded secrets / tokens
-grep -rn "password\s*=\s*['\"][^'\"]\|api_key\s*=\s*['\"][^'\"]\|secret\s*=\s*['\"][^'\"]" \
-  $SCOPE_DIRS --include="*.md" --include="*.cjs" --include="*.js" --include="*.ts" \
-  --include="*.yaml" --include="*.json" 2>/dev/null | grep -v ".env.example\|PLACEHOLDER\|YOUR_"
+SECONDARY = Task(
+  subagent_type="rihal-security-adversary",
+  prompt="Adversarial security review. {CONTEXT}
+  
+  Think like an attacker. Find exploitation paths in:
+  - Input validation gaps
+  - Trust boundary violations
+  - Privilege escalation opportunities
+  
+  Return: file:line — attack vector [critical|warn]
+  If clean: PASS"
+)
 
-# Path traversal: unsanitised user input used in file reads
-grep -rn "\.\./\|readFileSync.*\$\|fs\.read.*\$" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" --include="*.ts" 2>/dev/null
-
-# Shell injection: unquoted variables in exec/spawn calls
-grep -rn "exec(\`\|spawn(\`\|execSync(\`" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" --include="*.ts" 2>/dev/null | grep '\$'
-
-# Auth bypass patterns
-grep -rn "skipAuth\|bypassAuth\|noAuth\|auth.*false\|auth.*skip" \
-  $SCOPE_DIRS 2>/dev/null
+FINDINGS[security] = merge(PRIMARY, SECONDARY)
 ```
 
 ---
 
 ### Lens 2 — Performance
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-perf",
+  prompt="Audit-only — do NOT optimize anything. {CONTEXT}
+  
+  Run Lens 2 (Performance) audit. Check:
+  - Unbounded file reads (find without -maxdepth, cat without head)
+  - readFileSync / fs.readFileSync inside loops
+  - JSON.parse on large blobs without size guard or try/catch
+  - Synchronous operations blocking the event loop
+  - Missing pagination or limit on list operations
+  
+  Reference: Lighthouse CI thresholds, Node.js clinic.js flame graph patterns.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Unbounded file reads (no head/limit)
-grep -rn "find\s\+\.\|find\s\+/\|cat\s\+\." \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  grep -v "maxdepth\|head\s\+-\|2>/dev/null\|# example"
-
-# Missing -maxdepth on recursive find
-grep -rn "find\s.*-name\|find\s.*-type" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "\-maxdepth"
-
-# readFileSync inside loops (blocking I/O in hot paths)
-grep -rn "readFileSync" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" 2>/dev/null
-
-# Synchronous JSON.parse on large unknown blobs (no try/catch guard)
-grep -rn "JSON\.parse" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" 2>/dev/null | grep -v "try\|catch"
+FINDINGS[performance] = RESULT
 ```
 
 ---
 
 ### Lens 3 — Testability
 
-Check for:
+```
+PRIMARY = Task(
+  subagent_type="rihal-fatima",
+  prompt="Audit-only — do NOT write tests. {CONTEXT}
+  
+  Run Lens 3 (Testability) audit. Check:
+  - Code paths with no test coverage
+  - Functions/workflows with no corresponding test or parity check
+  - Missing assertions (tests that never assert)
+  - Test files that import from production but never call the function
+  - Success criteria sections with no verifiable acceptance check
+  
+  Reference: Istanbul/c8 coverage thresholds, mutation testing patterns.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Commands with no matching test/parity check
-COMMAND_NAMES=$(ls rihal/commands/*.md 2>/dev/null | \
-  xargs -I{} basename {} .md | grep -v "^_")
-PARITY_FILE="rihal/tests/parity.sh"
-[ ! -f "$PARITY_FILE" ] && PARITY_FILE=$(find . -name "parity*" -maxdepth 5 | head -1)
+SECONDARY = Task(
+  subagent_type="rihal-edge-case-hunter",
+  prompt="Enumerate edge cases and boundary conditions. {CONTEXT}
+  
+  Find:
+  - Boundary values not tested (off-by-one, empty input, null)
+  - Undefined state transitions
+  - Race conditions in parallel subagent spawns
+  
+  Return: file:line — edge case description [critical|warn|info]
+  If clean: PASS"
+)
 
-for cmd in $COMMAND_NAMES; do
-  grep -q "$cmd" "$PARITY_FILE" 2>/dev/null || \
-    echo "rihal/commands/${cmd}.md — no parity test entry"
-done
-
-# Workflows that spawn subagents but have no success_criteria section
-grep -rL "## Success Criteria\|success_criteria" \
-  rihal/workflows/*.md 2>/dev/null
-
-# Subagents referenced in workflows that have no SKILL.md directory
-grep -rn "subagent_type:" rihal/workflows/*.md 2>/dev/null | \
-  sed 's/.*subagent_type:\s*"\?//' | sed 's/"\?.*//' | sort -u | \
-  while read -r agent; do
-    [ -d "rihal/skills/agents/$agent" ] || \
-      echo "rihal/workflows — subagent_type '$agent' has no SKILL.md"
-  done
+FINDINGS[testability] = merge(PRIMARY, SECONDARY)
 ```
 
 ---
 
 ### Lens 4 — Extensibility
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-waleed",
+  prompt="Architecture audit — do NOT redesign anything. {CONTEXT}
+  
+  Run Lens 4 (Extensibility) audit. Check:
+  - Hardcoded mode/target lists that require source edits to extend
+  - Dispatch chains with >10 branches (missing strategy pattern)
+  - Hardcoded model IDs / API endpoints without config fallback
+  - Missing ADR for significant architectural decisions
+  - Scalability ceilings: N+1 patterns, unbounded collections
+  
+  Reference: SOLID principles (Open/Closed), Strategy pattern, ADR format.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Hardcoded lens/mode lists in workflows (not driven by config)
-grep -rn "lens[_-]1\|lens[_-]2\|lens[_-]3" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "lens-audit.md"
-
-# Hardcoded phase number ceilings (max_phases = N)
-grep -rn "max_phases\|MAX_PHASES\|phases.*<.*[0-9]\{2\}" \
-  $SCOPE_DIRS 2>/dev/null
-
-# Hardcoded model names/IDs without config fallback
-grep -rn "claude-\|gpt-4\|gemini-" \
-  $SCOPE_DIRS --include="*.md" --include="*.yaml" 2>/dev/null | \
-  grep -v "config\|default_model\|model_id\|#"
-
-# Extension-point-less dispatch tables (plain if/elif chains > 10 branches)
-grep -rn "elif.*TARGET\|elif.*MODE\|elif.*LENS" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  awk -F: '{print $1}' | sort | uniq -c | awk '$1 > 10 {print $2 " — dispatch chain > 10 branches"}'
+FINDINGS[extensibility] = RESULT
 ```
 
 ---
 
 ### Lens 5 — Dependency Health
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-dep-auditor",
+  prompt="Audit-only — do NOT install or update packages. {CONTEXT}
+  
+  Run Lens 5 (Dep Health) audit:
+  - Run pnpm audit or npm audit and report CVEs
+  - Detect unused packages (imported nowhere in source)
+  - Flag loose version pins (^ or ~ prefix)
+  - Check for lock file presence (pnpm-lock.yaml / package-lock.json)
+  - Check engines.node field matches .nvmrc
+  
+  Reference: Snyk severity scoring, OWASP Dependency-Check, Renovate pin policies.
+  
+  Return: dep-name — issue [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Package.json version pins — find ^ or ~ (loose) vs exact
-if [ -f package.json ]; then
-  grep -n '"\^[0-9]\|"~[0-9]' package.json | \
-    while read -r line; do echo "package.json:${line} — loose version pin"; done
-fi
-
-# Deps installed but not imported anywhere
-if [ -f package.json ]; then
-  node -e "
-    const pkg = JSON.parse(require('fs').readFileSync('package.json','utf8'));
-    const deps = Object.keys({...pkg.dependencies,...pkg.devDependencies});
-    deps.forEach(d => {
-      const { execSync } = require('child_process');
-      try {
-        const count = parseInt(execSync(
-          'grep -rn \"' + d + '\" rihal/ --include=\"*.cjs\" --include=\"*.js\" 2>/dev/null | wc -l'
-        ).toString().trim());
-        if (count === 0) console.log('package.json — dep unused: ' + d);
-      } catch(e) {}
-    });
-  " 2>/dev/null
-fi
-
-# Lock file missing (no package-lock.json / pnpm-lock.yaml)
-[ ! -f pnpm-lock.yaml ] && [ ! -f package-lock.json ] && \
-  echo ". — no lock file (non-reproducible installs)"
+FINDINGS[dep-health] = RESULT
 ```
 
 ---
 
 ### Lens 6 — Error Recovery
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-debugger",
+  prompt="Error recovery audit — do NOT fix anything. {CONTEXT}
+  
+  Run Lens 6 (Error Recovery) audit. Find missing error handling:
+  - Shell calls ($(...)) without 2>/dev/null or try/catch
+  - Task() subagent calls with no failure branch in the workflow
+  - JSON.parse without try/catch wrapping
+  - INIT= assignments with no .ok check in next 15 lines
+  - 2>/dev/null lines with no || fallback value
+  - Missing graceful-degrade paths when an optional subagent fails
+  
+  Reference: Bash set -euo pipefail patterns, Node.js error-first callbacks.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Unguarded rihal-tools calls (no 2>/dev/null fallback)
-grep -rn "rihal-tools\.cjs\b\|rihal-tools\b" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  grep -v "2>/dev/null\|#\|example"
-
-# Silent JSON.parse (no try/catch)
-grep -rn "JSON\.parse" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" 2>/dev/null | grep -v "try\|catch"
-
-# Subagent Task() calls with no failure branch documented
-grep -rn "Task(" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "fail\|error\|fallback\|abort"
-
-# Missing .ok checks after init calls
-grep -rn "INIT=\$(" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  while read -r line; do
-    file="${line%%:*}"
-    lineno=$(echo "$line" | cut -d: -f2)
-    # Look for .ok check within 10 lines after INIT assignment
-    if ! sed -n "$((lineno+1)),$((lineno+10))p" "$file" 2>/dev/null | grep -q "\.ok\|ok.*false"; then
-      echo "$file:$lineno — INIT= but no .ok check follows"
-    fi
-  done
+FINDINGS[error-recovery] = RESULT
 ```
 
 ---
 
 ### Lens 7 — State Machine
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-deviation-analyzer",
+  prompt="State machine audit — do NOT modify state. {CONTEXT}
+  
+  Run Lens 7 (State Machine) audit. Check:
+  - Phase transitions without guards (complete→executing without --force)
+  - state.json schema drift (phases missing number/name/status fields)
+  - Workflows writing to .planning/ without checking if directory exists
+  - Workflows that auto-insert phantom phase stubs (number corruption)
+  - Missing migrate-schema call before reading phase state
+  
+  Reference: XState finite state machine patterns, event sourcing invariants.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Phase transitions without guard (begin-phase called on already-complete phase)
-grep -rn "begin-phase\|complete-phase\|begin_phase\|complete_phase" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "guard\|--force\|precondition"
-
-# state.json schema fields that may be missing (no migrate-schema call before reads)
-grep -rn "state get\|state phase\|state phases" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "migrate-schema\|2>/dev/null"
-
-# Multiple incompatible state.json formats co-existing
-node .rihal/bin/rihal-tools.cjs state list 2>/dev/null | \
-  python3 -c "
-import sys, json
-data = json.load(sys.stdin) if sys.stdin.read(1) == '{' else None
-" 2>/dev/null || echo "state.json — parse error or incompatible schema"
-
-# Workflows that write to .planning/ without checking if directory exists
-grep -rn "Write.*\.planning/\|echo.*>.*\.planning/" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "mkdir\|-p\|exists"
+FINDINGS[state-machine] = RESULT
 ```
 
 ---
 
 ### Lens 8 — i18n
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-i18n-auditor",
+  prompt="i18n audit — do NOT add translations. {CONTEXT}
+  
+  Run Lens 8 (i18n) audit. Check:
+  - Workflows that spawn subagents without passing response_language
+  - Hardcoded English strings in output/echo/print blocks
+  - AskUserQuestion prompts that are English-only (no RTL/Arabic variant)
+  - ASCII box-drawing banners that will break with Arabic text
+  - config-get calls that skip the response_language key
+  
+  Reference: i18next namespace patterns, formatjs ICU messages, rtlcss flip rules.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Hardcoded English output strings (not templated with response_language)
-grep -rn "echo \"[A-Z].*\"\|print(\"[A-Z]" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | head -30
-
-# Workflows that spawn subagents but never pass response_language
-grep -rn "subagent_type:\|Task(" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  while read -r line; do
-    file="${line%%:*}"
-    grep -q "response_language" "$file" 2>/dev/null || \
-      echo "$file — spawns subagents without passing response_language"
-  done | sort -u
-
-# AskUserQuestion calls that have English-only prompts
-grep -rn "AskUserQuestion" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null
-# (manual review required — flag files for human inspection)
+FINDINGS[i18n] = RESULT
 ```
 
 ---
 
 ### Lens 9 — Documentation
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-docs-auditor",
+  prompt="Documentation audit — do NOT write docs. {CONTEXT}
+  
+  Run Lens 9 (Documentation) audit. Check:
+  - Workflows missing a '## Next Up' or 'Next Up' footer
+  - Dead @.rihal/ references (file path does not exist in rihal/)
+  - README.md referencing /rihal-<command> that has no command file
+  - Skills (SKILL.md) missing required sections: Overview, Workflow, Output Format, Examples
+  - CHANGELOG.md more than 5 commits behind HEAD
+  
+  Reference: Divio documentation system (tutorial/how-to/reference/explanation).
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Workflows missing a "Next Up" footer
-grep -rL "Next Up\|## Next\|next_up" \
-  rihal/workflows/*.md 2>/dev/null
-
-# Dead internal links — @.rihal/ references to files that don't exist in rihal/
-grep -rn "@\.rihal/" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  sed 's/.*@\.rihal\///' | sed 's/[^a-zA-Z0-9/_.-].*//' | sort -u | \
-  while read -r ref; do
-    src="rihal/$ref"
-    [ -f "$src" ] || echo "rihal/ — dead reference: @.rihal/$ref"
-  done
-
-# ROADMAP.md or README.md referencing deleted commands/skills
-if [ -f README.md ]; then
-  grep -oP '/rihal-[a-z\-]+' README.md | sort -u | \
-    while read -r cmd; do
-      name="${cmd#/rihal-}"
-      [ -f "rihal/commands/${name}.md" ] || \
-        echo "README.md — dead command reference: $cmd"
-    done
-fi
-
-# Skills missing required 5-component structure
-for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
-  [ -f "$f" ] || continue
-  grep -q "^## Output Format" "$f" || echo "$f — missing '## Output Format'"
-  grep -q "^## Examples" "$f" || echo "$f — missing '## Examples'"
-done
+FINDINGS[documentation] = RESULT
 ```
 
 ---
 
 ### Lens 10 — Cross-platform
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-cross-platform-auditor",
+  prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
+  
+  Run Lens 10 (Cross-platform) audit. Check:
+  - BSD sed -i '' vs GNU sed -i divergence
+  - macOS-only tools: greadlink, gsed, gfind, gawk, gdate
+  - Bash-isms in #!/bin/sh scripts: [[ ]], arrays, mapfile, process substitution
+  - Hardcoded absolute Unix paths (/home/, /usr/, /etc/) in Node.js source
+  - CRLF line endings in .md/.yaml/.sh files
+  - npm scripts using Unix-only && chains (use cross-env / shx instead)
+  
+  Reference: ShellCheck POSIX rules, cross-env ★6.2k, shx ★1.6k.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# macOS-only flags (BSD sed -i without extension, greadlink, etc.)
-grep -rn "sed -i ''" \
-  $SCOPE_DIRS --include="*.md" --include="*.sh" --include="*.cjs" 2>/dev/null
-grep -rn "greadlink\|gsed\|gfind\|gawk" \
-  $SCOPE_DIRS 2>/dev/null
-
-# Bash-isms in sh scripts (arrays, [[ ]], etc.)
-grep -rn "\[\[ \|declare -a\|local -a\|read -a" \
-  $SCOPE_DIRS --include="*.sh" 2>/dev/null
-
-# Hardcoded Unix paths (absolute /home/, /usr/, /etc/)
-grep -rn "'/home/\|'/usr/\|'/etc/" \
-  $SCOPE_DIRS --include="*.cjs" --include="*.js" 2>/dev/null | \
-  grep -v "# example\|PLACEHOLDER"
-
-# CRLF line endings
-find $SCOPE_DIRS -name "*.md" -o -name "*.yaml" 2>/dev/null | \
-  xargs grep -lP "\r$" 2>/dev/null | \
-  while read -r f; do echo "$f — CRLF line endings"; done
+FINDINGS[cross-platform] = RESULT
 ```
 
 ---
 
 ### Lens 11 — Karpathy
 
-Dispatch to the existing workflow:
-
 ```
-/rihal-code-review --karpathy HEAD~20..HEAD
-```
+PRIMARY = Task(
+  subagent_type="rihal-code-reviewer",
+  prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
+  
+  Run Lens 11 (Karpathy) audit against recent changes (HEAD~20..HEAD):
+  
+  Principle 1 (Think Before Coding): unclear assumptions, magic numbers without comment
+  Principle 2 (Simplicity First): dead code, unused imports, speculative abstractions
+  Principle 3 (Surgical Changes): whitespace-only diffs, reformatting unrelated code
+  Principle 4 (Goal-Driven Execution): TODOs, stubs, not-implemented errors, mock data
+  
+  Return: file:line — principle N violation — description [critical|warn|info]
+  If clean: PASS"
+)
 
-Capture output and fold into this lens's findings.
+SECONDARY = Task(
+  subagent_type="rihal-hanzla",
+  prompt="Implementation quality audit — do NOT refactor. {CONTEXT}
+  
+  Review recent code (HEAD~10..HEAD) for:
+  - Overengineered abstractions that add complexity without clear benefit
+  - Code that could be 3 lines but is 30
+  - Unclear variable/function names
+  - Missing error messages that would help debug production failures
+  
+  Return: file:line — description [warn|info]
+  If clean: PASS"
+)
+
+FINDINGS[karpathy] = merge(PRIMARY, SECONDARY)
+```
 
 ---
 
-### Lens 12 — SXO / UX
+### Lens 12 — SXO/UX
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-layla",
+  prompt="UX flow audit — do NOT redesign flows. {CONTEXT}
+  
+  Run Lens 12 (SXO/UX) audit on rihal workflows. Check:
+  - Dead-end workflows (no Next Up footer, no forward dispatch)
+  - AskUserQuestion prompts with no cancel/exit option (option 0)
+  - Error-exit paths that print an error but suggest no recovery command
+  - Dispatch table rows that reference non-existent commands
+  - Menus with >8 options (cognitive overload — flag for splitting)
+  
+  Reference: Nielsen 10 usability heuristics, WCAG 2.1 AA error messages.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Dead-end workflows (no Next Up footer, no dispatch back)
-grep -rL "Next Up\|## Next\|/rihal-" rihal/workflows/*.md 2>/dev/null
-
-# AskUserQuestion with no cancel / escape option
-grep -rn "AskUserQuestion" $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  while read -r line; do
-    file="${line%%:*}"
-    grep -q "cancel\|0\.\|exit\|quit" "$file" 2>/dev/null || \
-      echo "$file — AskUserQuestion with no cancel option"
-  done | sort -u
-
-# Workflows that error-exit without a suggested recovery command
-grep -rn "STOP\|exit 1\|Error:" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  grep -v "Run\|Try\|Use\|See\|→\|npx"
-
-# Menu options that lead nowhere (dispatch table has a row with no target)
-grep -rn "| .* | /rihal-" $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  sed "s/.*| \/rihal-//" | sed "s/ .*//" | sort -u | \
-  while read -r cmd; do
-    [ -f "rihal/commands/${cmd}.md" ] || \
-      echo "rihal/ — dispatch table references missing command: /rihal-${cmd}"
-  done
+FINDINGS[sxo] = RESULT
 ```
 
 ---
 
 ### Lens 13 — Observability
 
-Check for:
+```
+RESULT = Task(
+  subagent_type="rihal-observability-auditor",
+  prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
+  
+  Run Lens 13 (Observability) audit. Check:
+  - rihal-tools calls without 2>/dev/null or error guard
+  - Task() calls where result is never captured or checked
+  - Bare 2>/dev/null at end of line with no || fallback echo
+  - INIT= assignments with no .ok check within next 15 lines
+  - console.log/error/warn in production Node.js code (not test files)
+  - Shell scripts missing set -euo pipefail
+  
+  Reference: OpenTelemetry structured logging, Pino ★13k, Winston ★22k.
+  
+  Return: file:line — description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# rihal-tools calls without 2>/dev/null guard
-grep -rn "\$($TOOL\|node.*rihal-tools" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "2>/dev/null"
-
-# Subagent spawns with no output validation (Task() result not checked)
-grep -rn "Task(" $SCOPE_DIRS --include="*.md" 2>/dev/null | \
-  while read -r line; do
-    file="${line%%:*}"
-    lineno=$(echo "$line" | cut -d: -f2)
-    if ! sed -n "$lineno,$((lineno+5))p" "$file" 2>/dev/null | \
-        grep -q "result\|output\|error\|fail"; then
-      echo "$file:$lineno — Task() result not captured or checked"
-    fi
-  done
-
-# Silent failures: error output discarded without fallback
-grep -rn "2>/dev/null$" \
-  $SCOPE_DIRS --include="*.md" 2>/dev/null | grep -v "|| echo\||| true\||| exit"
+FINDINGS[observability] = RESULT
 ```
 
 ---
 
 ### Lens 14 — Naming Consistency
 
-Check for:
+```
+PRIMARY = Task(
+  subagent_type="rihal-codebase-mapper",
+  prompt="Naming consistency audit — do NOT rename anything. {CONTEXT}
+  
+  Run Lens 14 (Naming) audit. Produce a CONVENTIONS scan:
+  - PLAN.md references that should be SPRINT.md (stale naming)
+  - rihal: namespace (colon) that should be rihal- (hyphen)
+  - Agent directory names that do not match their SKILL.md name: field
+  - PHASE_NUM variable used where PHASE_NUMBER is the standard
+  - CamelCase vs snake_case drift in config keys
+  
+  Return: file:line — drift description [warn|info]
+  If clean: PASS"
+)
 
-```bash
-# PLAN.md references that should now be SPRINT.md
-grep -rn "PLAN\.md\b" \
-  rihal/workflows rihal/commands rihal/templates rihal/skills \
-  --include="*.md" 2>/dev/null
+SECONDARY = Task(
+  subagent_type="rihal-code-reviewer",
+  prompt="Variable naming audit in recent code changes. {CONTEXT}
+  
+  Review HEAD~10..HEAD for:
+  - Inconsistent naming style within the same file (camelCase vs snake_case mixed)
+  - Unclear abbreviations (tgt, tmp, obj, val without context)
+  - Boolean variables not prefixed with is/has/should/can
+  
+  Return: file:line — description [warn|info]
+  If clean: PASS"
+)
 
-# Mixed rihal: vs rihal- namespace (colons should be hyphens)
-grep -rn "rihal:[a-z]" \
-  $SCOPE_DIRS --include="*.md" --include="*.yaml" 2>/dev/null
-
-# Agent directory names not matching their YAML name: field
-for dir in rihal/skills/agents/*/; do
-  agent=$(basename "$dir")
-  skill_file="$dir/SKILL.md"
-  [ -f "$skill_file" ] || continue
-  yaml_name=$(grep -m1 "^name:" "$skill_file" | sed 's/name:\s*//')
-  [ "$yaml_name" = "$agent" ] || \
-    echo "$skill_file — dir '$agent' != YAML name '$yaml_name'"
-done
-
-# Variable naming drift in workflows (PHASE_NUM vs PHASE_NUMBER)
-grep -rn "PHASE_NUM\b" rihal/workflows/*.md 2>/dev/null | grep -v "PHASE_NUMBER"
-grep -rn "PLAN_FILE\b\|SPRINT_FILE\b" rihal/workflows/*.md 2>/dev/null
+FINDINGS[naming] = merge(PRIMARY, SECONDARY)
 ```
 
 ---
 
 ### Lens 15 — Coverage
 
-Check for:
+```
+PRIMARY = Task(
+  subagent_type="rihal-nyquist-auditor",
+  prompt="Coverage audit — do NOT generate tests. {CONTEXT}
+  
+  Run Lens 15 (Coverage) audit. Fill Nyquist gaps:
+  - Commands in rihal/commands/ with no parity test entry
+  - Subagent types referenced in workflows but no SKILL.md directory
+  - Workflows referenced in commands that do not exist in rihal/workflows/
+  - Skills in team.yaml with no corresponding skills/agents/ directory
+  - Acceptance criteria rows with no verifiable check (vague 'should work')
+  
+  Return: file:line — gap description [critical|warn|info]
+  If clean: PASS"
+)
 
-```bash
-# Commands with no corresponding workflow file
-for cmd_file in rihal/commands/*.md; do
-  cmd=$(basename "$cmd_file" .md)
-  # Extract @.rihal/workflows/ reference from command
-  wf=$(grep -m1 "@\.rihal/workflows/" "$cmd_file" 2>/dev/null | sed 's/.*@\.rihal\/workflows\///' | sed 's/\s.*//')
-  if [ -n "$wf" ]; then
-    [ -f "rihal/workflows/$wf" ] || \
-      echo "$cmd_file — references missing workflow: rihal/workflows/$wf"
-  fi
-done
+SECONDARY = Task(
+  subagent_type="rihal-fatima",
+  prompt="Release gate — coverage quality check. {CONTEXT}
+  
+  Review test strategy gaps:
+  - Critical workflows with no behavioral regression test
+  - Integration points between workflows that have no end-to-end test
+  - Config keys that are read but never validated
+  
+  Return: gap description [critical|warn]
+  If clean: PASS"
+)
 
-# Skills in team.yaml that have no SKILL.md directory
-if [ -f rihal/config/team.yaml ]; then
-  grep "^  - id:" rihal/config/team.yaml | sed 's/.*id:\s*//' | \
-    while read -r id; do
-      [ -d "rihal/skills/agents/$id" ] || \
-        echo "rihal/config/team.yaml — agent '$id' has no skill directory"
-    done
-fi
-
-# Parity test completeness
-PARITY=$(find . -name "parity*.sh" -o -name "parity*.cjs" 2>/dev/null | head -3)
-if [ -n "$PARITY" ]; then
-  COMMAND_COUNT=$(ls rihal/commands/*.md 2>/dev/null | wc -l)
-  PARITY_LINES=$(wc -l < "$PARITY" 2>/dev/null || echo 0)
-  echo "Coverage check: $COMMAND_COUNT commands vs $PARITY_LINES parity lines"
-fi
+FINDINGS[coverage] = merge(PRIMARY, SECONDARY)
 ```
 
 ---
@@ -536,27 +582,28 @@ For each lens that was run, print:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Lens {N}: {NAME}
+Lens {N}: {NAME}  (primary: {skill})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Findings: {count}
 
-{file:line — description}
+{file:line — description [severity]}
 ...
 
 Status: PASS (0) | WARN ({n}) | FAIL ({n critical})
 ```
 
-If `FINDINGS[lens]` is empty: print `✓ Lens {N} ({name}): no findings`.
+If `FINDINGS[lens]` is `PASS` or empty: print `✓ Lens {N} ({name}): PASS`.
 
 ## Step 6 — Output GitHub issue bodies
 
-For each lens with findings ≥ 1, print a foldable issue template:
+For each lens with findings ≥ 1, print a ready-to-file issue template:
 
 ```markdown
 ---
 ### Issue: [lens-audit] Lens {N} ({name}) — {count} findings
 
 **Labels:** `lens-audit`, `{lens-name}`
+**Skill used:** `{primary-skill}`
 
 **Body:**
 ## Findings — Lens {N}: {name}
@@ -565,15 +612,14 @@ For each lens with findings ≥ 1, print a foldable issue template:
 |------|------|-------------|----------|
 {rows}
 
-## Steps to reproduce
+## Reproduce
 Run: `/rihal-audit lens {N}` on commit `{git rev-parse --short HEAD}`
 
 ## Suggested fix
-{one-line suggestion per finding}
+{one-line fix suggestion per critical finding}
 ```
 
-**Do not create the issues automatically.** Print the bodies to stdout only.
-User runs `/rihal-audit fix` or files them manually via `gh issue create`.
+Print to stdout only — do NOT create issues automatically.
 
 ## Step 7 — Summary banner
 
@@ -581,34 +627,36 @@ User runs `/rihal-audit fix` or files them manually via `gh issue create`.
 ╔══════════════════════════════════════════════════════╗
 ║  LENS AUDIT COMPLETE                                 ║
 ╠══════════════════════════════════════════════════════╣
-║  Lenses run:   {count}                               ║
+║  Lenses run:     {count}                             ║
 ║  Total findings: {total}                             ║
-║  Critical:     {critical}                            ║
-║  Warnings:     {warnings}                            ║
+║  Critical:       {critical}                          ║
+║  Warnings:       {warnings}                          ║
 ╚══════════════════════════════════════════════════════╝
 
-Lenses with findings:
-{  N. name — count findings (critical: X, warn: Y)}
+{N}. {lens-name} — {count} findings (primary: {skill})
+...
 
 Next: file the GH issues above, then run /rihal-audit fix to address them.
 ```
 
 ## Success Criteria
 
-- [ ] Lens picker shown when no argument given
-- [ ] `all` runs all 15 lenses sequentially without halting on empty results
-- [ ] Each lens prints its own labelled block
-- [ ] Findings include `file:line — description` format
-- [ ] GH issue bodies printed to stdout (not auto-filed)
-- [ ] Summary banner shows per-lens counts
-- [ ] Workflow exits cleanly when a lens finds nothing (PASS, no error)
+- [ ] Skill mapping table is shown at top of output
+- [ ] Each lens dispatches to its primary skill via Task(subagent_type=...)
+- [ ] Secondary skills run in parallel where applicable (L1, L3, L11, L14, L15)
+- [ ] Partial-fail: one skill error does not abort remaining lenses
+- [ ] PASS case handled cleanly (no spurious findings printed)
+- [ ] GH issue bodies printed to stdout only
+- [ ] Summary banner shows per-lens skill attribution
+- [ ] response_language passed through to all subagent prompts
 
 ## On Error
 
-- **rihal-tools not installed**: print `rihal-tools not found. Run: npx @hanzlaa/rcode install .` and STOP.
-- **Lens N out of range**: print valid range (1-15) and STOP.
-- **Karpathy dispatch fails** (Lens 11): note the failure, continue with remaining lenses.
-- **Scope dirs not found**: skip silently, note `(no source files in scope)` for that lens.
+- **rihal-tools not found**: print `Run: npx @hanzlaa/rcode install .` and STOP.
+- **Lens N out of range (not 1–15)**: print valid range and STOP.
+- **Subagent skill not installed**: note `(skill not available — skipping)`, continue.
+- **Scope dirs empty**: note `(no source files in scope)` per lens, still run dispatch.
+- **Karpathy dispatch fails** (Lens 11): note failure, continue with remaining lenses.
 
 ## Next Up
 
