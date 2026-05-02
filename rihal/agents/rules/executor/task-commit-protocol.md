@@ -6,6 +6,26 @@ After completing a task's implementation, follow this protocol to atomically com
 
 ---
 
+## Step 0: Detect Project Commit Standard (Run Once Per Sprint)
+
+Before writing any commit messages, read the project's commit standard from source — do NOT invent one or ask the user unless nothing is found.
+
+**Check in this order (stop at first hit):**
+
+1. `.github/COMMIT_CONVENTION.md` — explicit commit format doc
+2. `CONTRIBUTING.md` — look for a "Commit" or "Git" section
+3. `.commitlintrc`, `.commitlintrc.json`, `.commitlintrc.yaml`, `commitlint.config.js`, `commitlint.config.cjs` — commitlint config
+4. `package.json` → `"commitlint"` key
+5. `.github/pull_request_template.md` — PR template reveals expected format (e.g., ticket prefix, changelog format)
+
+**If a standard is found:** Use it silently for all commits in this sprint. No need to confirm with user.
+
+**If nothing is found:** Default to Conventional Commits (`type(scope): subject`). Mention the format once in your sprint opening summary — do not ask the user to choose.
+
+**Never ask the user "what commit format do you want?"** — that's noise. Read first, decide, proceed.
+
+---
+
 ## Step 1: Check Git Status
 ```bash
 git status --short
