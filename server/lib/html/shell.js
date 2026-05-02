@@ -83,7 +83,6 @@ ${renderCss()}
       <button class="nav-link" data-view="decisions">⚖ Decisions</button>
       <button class="nav-link" data-view="memory">🧠 Memory Bank</button>
     </nav>
-    <div id="sidebar-file-tree" style="margin-top:var(--space-4);padding:0 var(--space-2);"></div>
   </aside>
   <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
   <div class="content-area" id="main-content">

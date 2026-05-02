@@ -180,6 +180,7 @@ function sprintCard(s) {
   const stories = s.stories || [];
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const isCur = s.id === S.currentSprint;
+  const phaseId = s.phaseId || s.id || '';
   return '<div class="item item-clickable' + (isCur ? ' sprint-current' : '') + '" onclick="navTo(\\'sprints/' + s.id + '\\')"' +
     (isCur ? ' style="border-left-color:var(--accent-amber);background:rgba(245,158,11,0.04)"' : '') + '>' +
     '<div class="item-title">Sprint ' + esc(s.id) + ' — ' + esc(s.goal || 'No goal') +
@@ -190,6 +191,7 @@ function sprintCard(s) {
     (s.velocity_target != null ? tag('Target: ' + s.velocity_target + 'pts') : '') +
     (s.velocity_actual != null ? tag('Actual: ' + s.velocity_actual + 'pts') : '') + '</div>' +
     '<div style="margin-top:6px;">' + progressBar(done, stories.length) + '</div>' +
+    (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rihal-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
     (s.started_at ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">' +
       humanDate(s.started_at) + (s.completed_at ? ' → ' + humanDate(s.completed_at) : ' → ongoing') + '</div>' : '') +
     '</div>';
@@ -578,7 +580,11 @@ function renderTasks() {
 }
 
 function renderTasksGrouped(tasks) {
-  if (!tasks.length) return '<div class="empty">No tasks yet.<div class="empty-action">Run /rihal-create-story to add tasks</div></div>';
+  if (!tasks.length) {
+    var phaseHint = S.currentPhase ? ' ' + S.currentPhase : '';
+    return '<div class="empty">No tasks yet.' +
+      '<div class="empty-action">Run <code>/rihal-plan' + phaseHint + '</code> to generate tasks for this project.</div></div>';
+  }
   const groups = {};
   for (const t of tasks) {
     const key = t.sprintId || 'unassigned';
@@ -813,61 +819,13 @@ function filterItems(input, listId) {
   });
 }
 
-// ---- File tree (sidebar) ----
-(async function() {
-  let groups = [];
-  try { const r = await fetch('/api/files'); groups = await r.json(); } catch { return; }
-  const tree = document.getElementById('sidebar-file-tree');
-  if (!tree) return;
-  // #301: search input
-  let h = '<div style="padding:0 var(--space-2) var(--space-2);"><input class="filter-input" style="width:100%;max-width:none;" type="text" placeholder="Search files…" id="file-tree-search" oninput="filterFileTree(this.value)"></div>';
-  h += '<div class="file-tree" id="file-tree-items">';
-  h += groups.map(function(g) {
-    // Support sub-groups (e.g. Phases with per-phase sub-groups)
-    if (g.subGroups) {
-      return '<details class="file-tree-group" open><summary>' + g.group + '</summary>' +
-        g.subGroups.map(function(sg) {
-          return '<details class="file-tree-subgroup" open style="margin-left:var(--space-2);margin-bottom:var(--space-1);">' +
-            '<summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) 0;user-select:none;">' + sg.subGroup + ' <span style="color:var(--text-muted);font-weight:400;">(' + sg.files.length + ')</span></summary>' +
-            sg.files.map(function(f) {
-              return '<span class="file-tree-item" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path + ' ' + sg.subGroup).toLowerCase() + '" style="padding-left:var(--space-4);">' + esc(f.label) + '</span>';
-            }).join('') + '</details>';
-        }).join('') + '</details>';
-    }
-    return '<details class="file-tree-group" open><summary>' + g.group + '</summary>' +
-      g.files.map(function(f) {
-        return '<span class="file-tree-item" data-path="' + esc(f.path) + '" data-filter-text="' + esc(f.label + ' ' + f.path).toLowerCase() + '">' + esc(f.label) + '</span>';
-      }).join('') + '</details>';
-  }).join('');
-  h += '</div>';
-  tree.innerHTML = h;
-  tree.addEventListener('click', async function(e) {
-    var item = e.target.closest('.file-tree-item');
-    if (!item) return;
-    tree.querySelectorAll('.file-tree-item').forEach(function(el) { el.classList.remove('selected'); });
-    item.classList.add('selected');
-    navTo('files');
-    var fv = document.getElementById('file-view');
-    // #315: loading skeleton
-    fv.innerHTML = '<div class="skeleton"></div><div class="skeleton" style="height:200px;"></div>';
-    // Scroll file content into view
-    fv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    try {
-      var resp = await fetch('/api/file?path=' + encodeURIComponent(item.dataset.path));
-      if (!resp.ok) { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Failed to load file.</div>'; return; }
-      var text = await resp.text();
-      // #298: show file path + #299: copy path button
-      fv.innerHTML = '<div class="file-path-header"><span>' + esc(item.dataset.path) + '</span>' +
-        '<button class="copy-btn" onclick="navigator.clipboard.writeText(\\'' + item.dataset.path.replace(/'/g, "\\\\'") + '\\');showToast(\\'Path copied!\\')">📋 Copy</button></div>' +
-        '<div class="md-render">' + renderMd(text) + '</div>';
-    } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>'; }
-  });
-})();
+// ---- Shared file-list fetch (single request for all consumers) ----
+const _filesPromise = fetch('/api/files').then(function(r) { return r.json(); }).catch(function() { return []; });
 
 // Inline file list inside Files view
 (async function() {
   let groups = [];
-  try { const r = await fetch('/api/files'); groups = await r.json(); } catch { return; }
+  try { groups = await _filesPromise; } catch { return; }
   const el = document.getElementById('file-list-inline');
   if (!el) return;
   let h = '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Search files…" oninput="filterInlineFiles(this.value)"></div>';
@@ -927,14 +885,6 @@ async function loadInlineFile(el) {
       '<button class="copy-btn" onclick="navigator.clipboard.writeText(\\'' + el.dataset.path.replace(/'/g, "\\\\'") + '\\');showToast(\\'Path copied!\\')">📋 Copy</button></div>' +
       '<div class="md-render">' + renderMd(text) + '</div>';
   } catch { fv.innerHTML = '<div style="color:var(--accent-red);padding:16px;">Network error.</div>'; }
-}
-
-// #301: filter file tree
-function filterFileTree(q) {
-  q = q.toLowerCase().trim();
-  document.querySelectorAll('#file-tree-items .file-tree-item').forEach(function(item) {
-    item.style.display = !q || (item.dataset.filterText || '').includes(q) ? '' : 'none';
-  });
 }
 
 // ---- Markdown + frontmatter ----
