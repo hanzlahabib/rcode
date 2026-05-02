@@ -62,14 +62,16 @@ Match the change to a conventional commit type:
 
 ## Step 4: Choose Scope
 
-Scope is the area affected, in parentheses:
+Scope is the **subsystem or domain** affected, in parentheses — NOT the phase/sprint number.
 
 - `feat(auth)` - authentication feature
 - `fix(payments)` - payments bug fix
 - `test(api)` - API tests
 - `refactor(ui)` - UI code cleanup
 
-Scope should match the PLAN task name or subsystem.
+**NEVER use a phase or sprint number as the scope.** `fix(114):` or `feat(114-03):` are wrong.
+Use the name of the subsystem the task touches (e.g., `sequence-builder`, `auth`, `dashboard`, `api`).
+If no obvious subsystem exists, omit the scope: `fix: correct delay type in email templates`.
 
 ---
 
@@ -210,6 +212,8 @@ Bad:
 feat(auth): Adds JWT refresh tokens.
 fix: I fixed the payment thing
 Updated auth code
+fix(114): correct delay type       ← phase number as scope — WRONG
+feat(114-03): add drag-and-drop    ← sprint ID as scope — WRONG
 ```
 
 ---
