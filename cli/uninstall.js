@@ -659,6 +659,14 @@ async function runUninstall(args) {
     console.log(`   For a fully clean slate next time, use: rcode uninstall --purge`);
   }
 
+  // IDE cache reload hint — Claude Code caches the slash-command list in memory.
+  // Without a window reload the removed commands remain visible.
+  console.log();
+  console.log(`💡 IDE reload required:`);
+  console.log(`   VS Code / Cursor: Cmd+Shift+P → "Developer: Reload Window"`);
+  console.log(`   If commands still appear after reload, check ~/.claude/commands/ for`);
+  console.log(`   any globally-installed rihal-* items (rcode does not touch global installs).`);
+
   // Hint about reinstalling
   console.log(`\nTo reinstall later:`);
   console.log(`   rcode install`);
