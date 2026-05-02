@@ -726,9 +726,9 @@ VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
 
 if [ -z "$VERIFICATION_FILE" ]; then
   VERIFICATION_STATUS="missing"
-elif grep -q "^status:\s*pass\b" "$VERIFICATION_FILE" 2>/dev/null; then
+elif grep -qE "^status:[[:space:]]*passed" "$VERIFICATION_FILE" 2>/dev/null; then
   VERIFICATION_STATUS="pass"
-elif grep -q "^status:\s*fail\b" "$VERIFICATION_FILE" 2>/dev/null; then
+elif grep -qE "^status:[[:space:]]*(gaps_found|fail)" "$VERIFICATION_FILE" 2>/dev/null; then
   VERIFICATION_STATUS="fail"
 else
   VERIFICATION_STATUS="indeterminate"
