@@ -403,6 +403,8 @@ If "Run discuss-phase first":
 
 **If `has_research` is true (from init) AND no `--research` flag:** Use existing, skip to step 6.
 
+**If RESEARCH.md missing AND `has_context` is true AND no `--research` flag:** Skip research silently and proceed to step 6. CONTEXT.md already captures the user's design decisions — re-researching adds tokens without new signal. Display: `Research skipped — CONTEXT.md found (use --research to force)`. This closes #588.
+
 **If RESEARCH.md missing OR `--research` flag:**
 
 **If no explicit flag (`--research` or `--skip-research`) and not `--auto`:**

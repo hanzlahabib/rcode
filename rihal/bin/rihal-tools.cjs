@@ -2611,6 +2611,19 @@ function cmdPhase(subArgs) {
       }
       remaining.splice(decimalIdx, 2);
     }
+
+    // #583 --number N flag: explicit phase number override, bypasses auto-computation.
+    let forcedNumber = null;
+    const numberIdx = remaining.findIndex(a => a === '--number');
+    if (numberIdx !== -1) {
+      const nVal = remaining[numberIdx + 1];
+      if (!nVal || nVal.startsWith('--') || !/^\d+$/.test(nVal)) {
+        throw new Error('--number requires a positive integer (e.g., --number 22)');
+      }
+      forcedNumber = parseInt(nVal, 10);
+      remaining.splice(numberIdx, 2);
+    }
+
     const phaseName = remaining.join(' ').trim();
     if (!phaseName) throw new Error('phase add requires <name>');
 
@@ -2645,7 +2658,13 @@ function cmdPhase(subArgs) {
     if (!state.phases) state.phases = [];
 
     let number;
-    if (decimalParent !== null) {
+    if (forcedNumber !== null) {
+      // --number N: explicit override. Validate it doesn't already exist.
+      number = String(forcedNumber);
+      if (state.phases.some(p => String(p.number) === number)) {
+        throw new Error(`Phase ${number} already exists in state.json (--number override)`);
+      }
+    } else if (decimalParent !== null) {
       // Verify parent exists somewhere (state, dir, or ROADMAP) before slotting under it.
       const parentNum = parseInt(decimalParent, 10);
       let parentExists = state.phases.some(p => parseInt(String(p.number), 10) === parentNum);
@@ -2722,6 +2741,26 @@ function cmdPhase(subArgs) {
       // Per Hanzla feedback: leading zeros add visual clutter without disambiguation
       // value at the scales we operate. Applies to phases, sprints, epics, stories,
       // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
+
+      // #583 sanity guard: prevent phantom phase numbers caused by stale high-number
+      // entries in ROADMAP.md or phases/ (e.g. a prior phantom "## Phase 1009" left
+      // in ROADMAP triggers the next add to produce 1010). If computed next is more
+      // than 50 above the count of currently tracked phases, the maxNum source is
+      // suspect. Abort and require an explicit --number N to override.
+      const trackedCount = state.phases.filter(p => {
+        const n = parseInt(String(p.number || ''), 10);
+        return !Number.isNaN(n) && n > 0;
+      }).length;
+      if (next > trackedCount + 50) {
+        throw new Error(
+          `Computed phase number ${next} is unexpectedly large ` +
+          `(only ${trackedCount} phases tracked in state.json). ` +
+          `ROADMAP.md or the phases/ directory may contain a stale high-number entry. ` +
+          `Inspect with: node rihal-tools.cjs phases list\n` +
+          `Then retry with an explicit number: rihal-tools.cjs phase add "${phaseName}" --number ${trackedCount + 1}`
+        );
+      }
+
       number = String(next);
     }
 
@@ -2870,10 +2909,43 @@ function cmdCommit(argv) {
         throw new Error(`File not found: ${f}`);
       }
     }
-    execSync(`git add ${files.map(f => `"${f.replace(/"/g, '\\"')}"`).join(' ')}`, {
-      cwd: PROJECT_ROOT,
-      stdio: 'pipe',
+    // git add may exit 0 with a warning (not error) for gitignored files on some
+    // git versions — file never gets staged but execSync doesn't throw. Capture
+    // stderr to detect the gitignore warning explicitly (#566).
+    let gitAddStderr = '';
+    try {
+      const addResult = execSync(
+        `git add ${files.map(f => `"${f.replace(/"/g, '\\"')}"`).join(' ')}`,
+        { cwd: PROJECT_ROOT, stdio: 'pipe' }
+      );
+    } catch (e) {
+      gitAddStderr = (e.stderr ? e.stderr.toString() : '') + (e.stdout ? e.stdout.toString() : '');
+      if (gitAddStderr.includes('ignored by one of your .gitignore') || gitAddStderr.includes('use -f if')) {
+        throw new Error(
+          `Cannot stage files — one or more paths are gitignored:\n${gitAddStderr.trim()}\n\n` +
+          `Fix: remove the .gitignore entry for the planning directory, or run:\n` +
+          `  node rihal-tools.cjs gitignore status`
+        );
+      }
+      throw e; // re-throw any other git error
+    }
+
+    // #566 extra guard: verify all --files paths actually appear in the staged index.
+    // git add on a gitignored file may silently succeed (exit 0) but not stage the
+    // file, causing a later commit to include unrelated already-staged changes.
+    const stagedAfterAdd = execSync('git diff --cached --name-only', { cwd: PROJECT_ROOT, encoding: 'utf8' })
+      .trim().split('\n').filter(Boolean);
+    const notStaged = files.filter(f => {
+      const norm = f.replace(/^\.\//, '');
+      return !stagedAfterAdd.some(s => s === norm || s.endsWith('/' + norm) || norm.endsWith(s));
     });
+    if (notStaged.length > 0) {
+      throw new Error(
+        `The following files were not staged after git add — likely gitignored:\n` +
+        notStaged.map(f => `  ${f}`).join('\n') + '\n\n' +
+        `Refusing to commit unrelated staged changes. Fix .gitignore or use git add -f.`
+      );
+    }
   }
 
   // Verify there's something to commit
