@@ -405,6 +405,20 @@ ${CONFIG_FILES}
 
 Review the listed source files at ${REVIEW_DEPTH} depth. Write findings to ${REVIEW_PATH}.
 Do NOT commit the output — the orchestrator handles that.
+
+The REVIEW.md file MUST begin with YAML frontmatter in exactly this format:
+---
+status: clean | issues_found | skipped
+phase: <phase_number or HEAD~N..HEAD>
+files_reviewed: <count>
+critical: <count>
+high: <count>
+medium: <count>
+low: <count>
+generated: <ISO timestamp>
+---
+
+Use severity: critical (must fix, security/data-loss/broken), high (should fix, correctness/coverage), medium (consider, poor patterns), low (optional, style/naming).
 ")
 ```
 
@@ -504,10 +518,11 @@ FRONTMATTER=$(sed -n '2,/^---$/p' "${REVIEW_PATH}" 2>/dev/null | head -n -1)
 # Parse fields from frontmatter only (not full file)
 STATUS=$(echo "$FRONTMATTER" | grep "^status:" | cut -d: -f2 | xargs)
 FILES_REVIEWED=$(echo "$FRONTMATTER" | grep "^files_reviewed:" | cut -d: -f2 | xargs)
-CRITICAL=$(echo "$FRONTMATTER" | grep "critical:" | head -1 | cut -d: -f2 | xargs)
-WARNING=$(echo "$FRONTMATTER" | grep "warning:" | head -1 | cut -d: -f2 | xargs)
-INFO=$(echo "$FRONTMATTER" | grep "info:" | head -1 | cut -d: -f2 | xargs)
-TOTAL=$(echo "$FRONTMATTER" | grep "total:" | head -1 | cut -d: -f2 | xargs)
+CRITICAL=$(echo "$FRONTMATTER" | grep "^critical:" | head -1 | cut -d: -f2 | xargs)
+HIGH=$(echo "$FRONTMATTER" | grep "^high:" | head -1 | cut -d: -f2 | xargs)
+MEDIUM=$(echo "$FRONTMATTER" | grep "^medium:" | head -1 | cut -d: -f2 | xargs)
+LOW=$(echo "$FRONTMATTER" | grep "^low:" | head -1 | cut -d: -f2 | xargs)
+TOTAL=$(( ${CRITICAL:-0} + ${HIGH:-0} + ${MEDIUM:-0} + ${LOW:-0} ))
 ```
 
 Display inline summary to user:
@@ -524,8 +539,9 @@ Display inline summary to user:
   
   Findings:
     Critical:  ${CRITICAL}
-    Warning:   ${WARNING}
-    Info:      ${INFO}
+    High:      ${HIGH}
+    Medium:    ${MEDIUM}
+    Low:       ${LOW}
     ──────────
     Total:     ${TOTAL}
 
@@ -550,7 +566,7 @@ Next steps:
   cat ${REVIEW_PATH}                       — View full report
 ```
 
-If critical > 0 or warning > 0, list top 3 issues inline:
+If critical > 0 or high > 0, list top 3 issues inline:
 ```bash
 echo "Top issues:"
 grep -A 3 "^### CR-\|^### WR-" "${REVIEW_PATH}" | head -n 12

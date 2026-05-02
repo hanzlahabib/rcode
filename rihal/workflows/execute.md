@@ -569,7 +569,8 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 
 **Resolve reviewer model:**
 ```bash
-REVIEWER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "")
+REVIEWER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
+REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
 REVIEWER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
 PADDED=$(printf "%02d" "${PHASE_NUMBER}")
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
@@ -602,7 +603,6 @@ Group findings by severity. For each finding include: file path, line reference,
 
 ${REVIEWER_SKILLS}",
   subagent_type="rihal-code-reviewer",
-  model="sonnet",
   model="${REVIEWER_MODEL}"
 )
 ```
