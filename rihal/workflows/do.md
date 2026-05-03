@@ -296,6 +296,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Implement a story, "work on story", "dev story", "build story" | `/rihal-dev-story` | Story-level implementation |
 | Find gaps in milestone plans, "gaps in plans", "missing plan", "unplanned phases" | `/rihal-plan-milestone-gaps` | Identify and fill planning gaps |
 | Executing a phase, "build phase N", "run phase N", "implement phase" | `/rihal-execute` | Direct phase execution request |
+| `/rihal-phase <number>` where number matches an existing phase dir | `/rihal-execute <N>` | User mistyped phase instead of execute — detect bare integer + existing dir, route to execute |
 | Running all remaining phases automatically | `/rihal-autonomous` | Full autonomous execution |
 | A review or quality concern about existing work | `/rihal-verify-work` | Needs verification |
 | "Council", "discuss strategy", "should we" | `/rihal-council` | Multi-agent strategic discussion |

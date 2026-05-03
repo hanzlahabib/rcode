@@ -14,7 +14,42 @@ If `$ARGUMENTS` is empty AND no flag is set:
 
 STOP — do not proceed.
 
-## Step 1 — Parse mode flags
+## Step 1 — Disambiguate numeric arguments BEFORE routing
+
+If `$ARGUMENTS` is a bare integer (e.g. `116`, `20`, `7`) with no other words or flags:
+
+```bash
+# Check if a phase directory matching this number already exists
+PHASE_NUM="$ARGUMENTS"
+EXISTING=$(find .planning/phases -maxdepth 1 -type d -name "${PHASE_NUM}-*" 2>/dev/null | head -1)
+```
+
+If `$EXISTING` is non-empty, the user typed a phase number that already exists — they almost certainly meant to operate on it, not create a new one. Stop and ask:
+
+```
+Phase {N} already exists: {directory name}
+
+What did you mean to do?
+
+  /rihal-execute {N}   — execute the sprint plan for this phase
+  /rihal-plan {N}      — re-plan or view the plan for this phase
+  /rihal-status        — see overall project status
+
+  /rihal-phase "{description}"   — add a NEW phase (put the description in quotes)
+```
+
+Do NOT proceed to add/insert/remove. Wait for the user to clarify.
+
+If `$ARGUMENTS` is a bare integer and `$EXISTING` is empty, it's an ambiguous but plausible new-phase name. Proceed to Step 2 but warn:
+
+```
+Note: "{N}" looks like a number. If you meant to execute/plan phase {N}, use /rihal-execute {N} or /rihal-plan {N}.
+Adding a new phase named "{N}" — press Ctrl+C to cancel, or continue.
+```
+
+Then proceed to Step 2.
+
+## Step 1b — Parse mode flags
 
 Inspect `$ARGUMENTS`:
 
@@ -24,7 +59,7 @@ Inspect `$ARGUMENTS`:
 
 Strip the mode flag and pass remaining args to the underlying workflow.
 
-## Step 2 — Dispatch to underlying workflow
+## Step 2 — Dispatch to underlying workflow (after disambiguation)
 
 Each mode is implemented by an existing workflow:
 
