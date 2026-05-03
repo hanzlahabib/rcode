@@ -103,8 +103,8 @@ Auditor returns structured JSON:
 **If `MODE=phase-status` (Phase 8 / #461):**
 
 Spawn `rihal-docs-auditor` with `--mode=phase-status`. Pass:
-- `roadmap_phases[]` — output of `node rihal/bin/rihal-tools.cjs roadmap list-phases` (post-#464 fix)
-- `phase_dirs[]` — output of `node rihal/bin/rihal-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
+- `roadmap_phases[]` — output of `node .rihal/bin/rihal-tools.cjs roadmap list-phases` (post-#464 fix)
+- `phase_dirs[]` — output of `node .rihal/bin/rihal-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
 - For each phase, the most recent commit hash that touches files in `${phase_dir}/` (used as a freshness signal)
 
 Auditor returns structured JSON:

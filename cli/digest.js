@@ -12,7 +12,12 @@ const fs = require('fs');
 const path = require('path');
 
 function normalize(name) {
-  return name.replace(/^rihal-/, '');
+  const stripped = name.replace(/^rihal-/, '');
+  // Reject path traversal attempts — names must be simple identifiers
+  if (stripped.includes('..') || stripped.includes('/') || stripped.includes('\\')) {
+    throw new Error(`Invalid agent name: '${name}'`);
+  }
+  return stripped;
 }
 
 function listAvailable(digestDir, agentsDir) {

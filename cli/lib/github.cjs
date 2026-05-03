@@ -18,6 +18,14 @@ const { execSync, spawnSync } = require('child_process');
 
 // ---------- Utility: run gh commands safely ----------
 
+function sanitizeGhOutput(text) {
+  if (!text) return '';
+  // Strip anything that looks like a token (ghp_*, ghs_*, github_pat_*)
+  return text
+    .replace(/\b(ghp_|ghs_|github_pat_)[A-Za-z0-9_]{10,}\b/g, '[REDACTED]')
+    .slice(0, 2000);
+}
+
 function runGh(args, { input = null, allowFailure = false } = {}) {
   const result = spawnSync('gh', args, {
     encoding: 'utf8',
@@ -26,9 +34,8 @@ function runGh(args, { input = null, allowFailure = false } = {}) {
   });
 
   if (result.status !== 0 && !allowFailure) {
-    throw new Error(
-      `gh ${args.join(' ')} failed:\n${result.stderr || result.stdout || '(no output)'}`
-    );
+    const detail = sanitizeGhOutput(result.stderr || result.stdout || '(no output)');
+    throw new Error(`gh ${args.join(' ')} failed:\n${detail}`);
   }
 
   return {

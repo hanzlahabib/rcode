@@ -51,7 +51,7 @@ Usage:
 
 📦 PROJECT
   install        Install Rihal Code into the current project
-                 (sets up .rihal/, .claude/skills/, .claude/commands/rihal/,
+                 (sets up .rihal/, .claude/skills/, .claude/commands/,
                  .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
   init           Alias for install
   update         Refresh skill files (backs up .rihal/ state first)

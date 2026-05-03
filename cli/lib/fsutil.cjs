@@ -43,7 +43,7 @@ function writeFileAtomic(filePath, content, opts = {}) {
 
   let fd;
   try {
-    fd = fs.openSync(tmpPath, 'w', mode ?? 0o644);
+    fd = fs.openSync(tmpPath, 'wx', mode ?? 0o644);
     fs.writeSync(fd, content, 0, encoding);
     // fsync the data to disk before rename — otherwise a crash between
     // write() and rename() could leave the target renamed but with zero
