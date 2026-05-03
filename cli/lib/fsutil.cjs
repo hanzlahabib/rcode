@@ -9,6 +9,7 @@
  * a partial truncation.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -34,10 +35,10 @@ function writeFileAtomic(filePath, content, opts = {}) {
   const dir = path.dirname(filePath);
   fs.mkdirSync(dir, { recursive: true });
 
-  // Include pid + rand so concurrent processes don't stomp each other's tmp.
+  // Include pid + crypto random so concurrent processes don't collide on tmp.
   const tmpPath = path.join(
     dir,
-    `.${path.basename(filePath)}.tmp-${process.pid}-${Math.random().toString(36).slice(2, 8)}`
+    `.${path.basename(filePath)}.tmp-${process.pid}-${crypto.randomBytes(8).toString('hex')}`
   );
 
   let fd;

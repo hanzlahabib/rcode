@@ -10,13 +10,15 @@ After completing a task's implementation, follow this protocol to atomically com
 
 Before writing any commit messages, read the project's commit standard from source — do NOT invent one or ask the user unless nothing is found.
 
-**Check in this order (stop at first hit):**
+**Check in this order — enforcement configs first, docs last (stop at first hit):**
 
-1. `.github/COMMIT_CONVENTION.md` — explicit commit format doc
-2. `CONTRIBUTING.md` — look for a "Commit" or "Git" section
-3. `.commitlintrc`, `.commitlintrc.json`, `.commitlintrc.yaml`, `commitlint.config.js`, `commitlint.config.cjs` — commitlint config
-4. `package.json` → `"commitlint"` key
-5. `.github/pull_request_template.md` — PR template reveals expected format (e.g., ticket prefix, changelog format)
+1. `.git/hooks/commit-msg` — the active enforcement hook (if exists and non-empty, read it to detect the validator)
+2. `.husky/commit-msg` — husky-managed commit hook
+3. `.commitlintrc`, `.commitlintrc.json`, `.commitlintrc.yaml`, `.commitlintrc.js`, `commitlint.config.js`, `commitlint.config.cjs` — commitlint config
+4. `package.json` → `"commitlint"` or `"config.commitizen"` key — commitizen config
+5. `.czrc` — commitizen standalone config
+6. `.github/COMMIT_CONVENTION.md` — explicit doc (lower priority than machine configs)
+7. `CONTRIBUTING.md` — look for a "Commit" or "Git" section (lowest priority)
 
 **If a standard is found:** Use it silently for all commits in this sprint. No need to confirm with user.
 

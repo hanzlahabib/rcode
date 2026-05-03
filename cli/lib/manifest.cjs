@@ -108,24 +108,22 @@ function verifyClaudeInstall(cwd, packageRoot) {
   const pkg = readPackageManifest(packageRoot);
   const skillsDir = path.join(cwd, '.claude/skills');
 
-  // Agents are installed as rihal-{name}
+  // Agents are installed as rihal-{name} — strip prefix to match pkg.agents keys
   const installedAgents = readInstalledDirs(skillsDir, 'rihal-');
-  // Agents come back with the 'rihal-' stripped; filter out action skills that
-  // happen to also start with 'rihal-' (they end up in the agents set too).
-  // We resolve this by intersecting: an entry is an agent only if the package
-  // manifest has it as an agent.
-  const agentsInstalled = new Set(
-    [...installedAgents].filter((n) => pkg.agents.has(n))
-  );
+  // Do NOT pre-filter against pkg.agents: we want stale entries (installed but
+  // not in current package) to appear in the `extra` list of diffSet so that
+  // `rcode doctor` can flag them as stale and `rcode uninstall` can remove them.
+  // The old intersection filter was hiding orphaned agent dirs after version bumps.
 
-  // Action skills: installed with their bare name (no rihal- prefix)
+  // Action skills: installed with their bare name (no rihal- prefix).
+  // Exclude known agent dirs (rihal-prefixed) so actions and agents don't bleed.
   const allInstalled = readInstalledDirs(skillsDir);
   const actionsInstalled = new Set(
-    [...allInstalled].filter((n) => pkg.actions.has(n))
+    [...allInstalled].filter((n) => !n.startsWith('rihal-'))
   );
 
   return [
-    diffSet('claude', 'agents', pkg.agents, agentsInstalled),
+    diffSet('claude', 'agents', pkg.agents, installedAgents),
     diffSet('claude', 'actions', pkg.actions, actionsInstalled),
   ];
 }

@@ -24,10 +24,22 @@ const isGlobalInstall = (() => {
   try {
     // npm sets npm_config_global=true for global installs
     if (process.env.npm_config_global === 'true') return true;
-    // Fallback: check if the install prefix is a global npm prefix
-    const prefix = process.env.npm_config_prefix || '';
-    const home = os.homedir();
-    if (prefix && !prefix.startsWith(home) && !prefix.includes('node_modules')) return true;
+    // pnpm sets npm_config_global too, but check PNPM_HOME as a fallback
+    if (process.env.PNPM_HOME && __dirname.startsWith(process.env.PNPM_HOME)) return true;
+    // Check if __dirname is inside a known global node_modules path.
+    // Covers: /usr/local/lib, /usr/lib, ~/.nvm/.../lib, ~/.pnpm/..., ~/.yarn/...
+    const globalPatterns = [
+      /\/node_modules\/@hanzlaa\/rcode/,  // any global node_modules
+      /[/\\]lib[/\\]node_modules[/\\]/,   // /usr/local/lib/node_modules
+      /\.nvm[/\\]versions[/\\]/,           // nvm
+      /\.pnpm[/\\]/,                       // pnpm global store
+      /\.yarn[/\\]global/,                 // yarn global
+    ];
+    if (globalPatterns.some((re) => re.test(__dirname))) return true;
+    // Last resort: package is NOT inside a project's local node_modules
+    // (local installs have .../project/node_modules/@hanzlaa/rcode/cli)
+    const localNodeModules = path.join(process.cwd(), 'node_modules');
+    if (!__dirname.startsWith(localNodeModules)) return true;
     return false;
   } catch {
     return false;

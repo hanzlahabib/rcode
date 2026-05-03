@@ -690,7 +690,13 @@ function ensureRcodeGitignore(target, options = {}) {
       const start = text.indexOf(BEGIN);
       if (start < 0) return null;
       const endIdx = text.indexOf(END, start);
-      if (endIdx < 0) return null;
+      // If BEGIN exists but END is missing (manual edit removed it), strip
+      // everything from BEGIN to EOF and rewrite — avoids duplicate blocks.
+      if (endIdx < 0) {
+        let sliceStart = start;
+        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+        return text.slice(0, sliceStart) + newBlock;
+      }
       let sliceStart = start;
       if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
       let sliceEnd = endIdx + END.length;
@@ -765,7 +771,12 @@ function ensureRcodePreCommitHook(target, options = {}) {
       const start = text.indexOf(BEGIN);
       if (start < 0) return null;
       const endIdx = text.indexOf(END, start);
-      if (endIdx < 0) return null;
+      // If BEGIN exists but END is missing, strip from BEGIN to EOF and rewrite.
+      if (endIdx < 0) {
+        let sliceStart = start;
+        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+        return text.slice(0, sliceStart) + newBlock;
+      }
       let sliceStart = start;
       if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
       let sliceEnd = endIdx + END.length;
@@ -1131,14 +1142,41 @@ function generateAgentManifest(plan, target) {
  * Generate files-manifest.csv with SHA256 per installed file. Used by
  * update/doctor to detect drift. Columns: rel, sha256, size.
  */
-function generateFilesManifest(plan, target) {
+function generateFilesManifest(plan, target, { mergeExistingManifest = false } = {}) {
   const rows = [['rel', 'sha256', 'size']];
+  const newRels = new Set();
+
   for (const entry of plan) {
     const filePath = path.join(target, entry.rel);
     if (!fs.existsSync(filePath)) continue;
     const buf = fs.readFileSync(filePath);
-    rows.push([entry.rel.split(path.sep).join('/'), sha256(buf), String(buf.length)]);
+    const rel = entry.rel.split(path.sep).join('/');
+    rows.push([rel, sha256(buf), String(buf.length)]);
+    newRels.add(rel);
   }
+
+  // Merge old manifest entries that are still on disk but not in the current
+  // plan — this keeps orphaned files traceable by doctor/uninstall even when
+  // --force sweep was not run. Without this, a re-install without --force
+  // silently drops stale files from the manifest, making them invisible.
+  if (mergeExistingManifest) {
+    const manifestPath = path.join(target, '.rihal', '_config', 'files-manifest.csv');
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const oldRows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
+        for (const row of oldRows) {
+          const [rel] = row.split(',');
+          if (!rel || newRels.has(rel)) continue;
+          const full = path.join(target, rel);
+          if (!fs.existsSync(full)) continue; // already gone — don't re-add
+          const buf = fs.readFileSync(full);
+          rows.push([rel, sha256(buf), String(buf.length)]);
+          newRels.add(rel);
+        }
+      } catch { /* best-effort */ }
+    }
+  }
+
   return rows.map((r) => r.join(',')).join('\n') + '\n';
 }
 
@@ -1764,7 +1802,7 @@ async function install(opts) {
   // self-referential nonsense).
   fs.writeFileSync(
     path.join(configDir, 'files-manifest.csv'),
-    generateFilesManifest(plan, opts.target),
+    generateFilesManifest(plan, opts.target, { mergeExistingManifest: !opts.force }),
   );
 
   // Install v1-style phrase-activated skills (scaffold-project, create-prd,

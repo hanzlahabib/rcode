@@ -54,7 +54,9 @@ function isWritable(dir) {
 }
 
 function commandAvailable(cmd) {
-  const result = spawnSync('which', [cmd], { stdio: 'ignore' });
+  // 'which' is POSIX-only; 'where' is Windows. Try both so this works cross-platform.
+  const checker = process.platform === 'win32' ? 'where' : 'which';
+  const result = spawnSync(checker, [cmd], { stdio: 'ignore' });
   return result.status === 0;
 }
 

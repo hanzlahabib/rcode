@@ -22,16 +22,29 @@ Tell the user:
 Rihal isn't configured for this project yet. Let me set it up — takes 30 seconds.
 ```
 
-**1. Bootstrap local tooling** — copy bin and workflows from the global install:
+**1. Bootstrap local tooling** — copy bin from the global install:
 
 ```bash
 GLOBAL_RIHAL="$HOME/.rihal"
-if [ -d "$GLOBAL_RIHAL/bin" ]; then
-  mkdir -p .rihal/bin .rihal/workflows .rihal/references
-  cp "$GLOBAL_RIHAL/bin/rihal-tools.cjs" .rihal/bin/ 2>/dev/null || true
-  # workflows and references are read from ~/.rihal at runtime via @.rihal/ resolution
+TOOLS_SRC="$GLOBAL_RIHAL/bin/rihal-tools.cjs"
+
+if [ ! -f "$TOOLS_SRC" ]; then
+  echo "ERROR: Global rihal tools not found at $TOOLS_SRC"
+  echo "Run: npm install -g @hanzlaa/rcode"
+  echo "Then retry this command."
+  # STOP — do not continue without tools; writing config.yaml alone is not enough
+  exit 1
+fi
+
+mkdir -p .rihal/bin
+cp "$TOOLS_SRC" .rihal/bin/rihal-tools.cjs
+if [ $? -ne 0 ]; then
+  echo "ERROR: Could not copy rihal-tools.cjs to .rihal/bin/ (permission denied?)"
+  exit 1
 fi
 ```
+
+Note: workflows and references are resolved from `~/.rihal/` at runtime — only the bin needs to be local.
 
 **2. Ask the 5 config questions** using AskUserQuestion:
 
@@ -99,6 +112,6 @@ Continuing with your original request...
 ## Notes
 
 - This guard is **non-blocking** — it asks questions but does not stop the session; once config is written it resumes the original request automatically.
-- If `AskUserQuestion` is unavailable (non-interactive mode), use all defaults and skip the questions.
+- If `AskUserQuestion` is unavailable (non-interactive mode), use all defaults and skip the questions. Always derive `project_name` from `basename $(pwd)` — never leave it as a placeholder.
 - If the bootstrap `cp` fails (global rihal not found), print a warning and attempt to continue — some workflows work without local rihal-tools if they only need config.
 - On **subsequent runs**, the guard exits immediately (config exists) with zero overhead.

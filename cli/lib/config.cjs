@@ -109,6 +109,10 @@ function projectLevelPath(cwd) {
   return path.join(cwd, '.rihal', 'config.json');
 }
 
+function projectYamlPath(cwd) {
+  return path.join(cwd, '.rihal', 'config.yaml');
+}
+
 // ---------- Loaders ----------
 
 function readJsonSafe(filePath) {
@@ -126,8 +130,33 @@ function loadUserDefaults() {
   return readJsonSafe(userLevelPath()) || {};
 }
 
+// YAML key → JSON key remapping (install.js writes YAML with some different names)
+const YAML_KEY_MAP = {
+  mode: 'communication_mode',
+};
+
+function readYamlFlat(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    const result = {};
+    for (const raw of fs.readFileSync(filePath, 'utf8').split('\n')) {
+      const m = raw.match(/^([a-zA-Z_]+):\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/);
+      if (!m) continue;
+      const key = YAML_KEY_MAP[m[1].trim()] || m[1].trim();
+      const val = m[2].trim();
+      result[key] = val === 'true' ? true : val === 'false' ? false : val;
+    }
+    return Object.keys(result).length ? result : null;
+  } catch {
+    return null;
+  }
+}
+
 function loadProjectConfig(cwd) {
-  return readJsonSafe(projectLevelPath(cwd)) || {};
+  const json = readJsonSafe(projectLevelPath(cwd));
+  if (json) return json;
+  // Fall back to config.yaml written by installer — migrate keys on the fly
+  return readYamlFlat(projectYamlPath(cwd)) || {};
 }
 
 /**
@@ -330,5 +359,6 @@ module.exports = {
   loadProjectConfig,
   userLevelPath,
   projectLevelPath,
+  projectYamlPath,
   suggestClosest,
 };

@@ -649,6 +649,7 @@ async function main(args) {
         results.errors.push(`label ${label.name}: ${result.error}`);
       } else if (!result.dryRun) {
         if (!syncMap.labels.includes(label.name)) syncMap.labels.push(label.name);
+        if (opts.execute) saveSyncMap(cwd, syncMap);
         console.log(`   ✓ ${result.existed ? 'exists' : 'created'}: ${label.name}`);
       }
     }
@@ -670,6 +671,7 @@ async function main(args) {
           url: result.url,
           synced_at: new Date().toISOString(),
         };
+        if (opts.execute) saveSyncMap(cwd, syncMap);
         console.log(`   ✓ created: ${phase.id} → milestone #${result.number}`);
       }
     }
@@ -686,7 +688,7 @@ async function main(args) {
         ``,
         `## 📋 Source Content`,
         ``,
-        epic.content.slice(0, 3000),
+        epic.content.slice(0, 60000),
         ``,
         `---`,
         ``,
@@ -727,6 +729,7 @@ async function main(args) {
           content_hash: contentHash(epic.content),
           child_story_issues: [],
         };
+        if (opts.execute) saveSyncMap(cwd, syncMap);
         console.log(`   ✓ created: ${epic.id} → #${result.number}`);
       }
     }
@@ -766,7 +769,7 @@ async function main(args) {
         ``,
         `## 📋 Source Content`,
         ``,
-        story.content.slice(0, 3000),
+        story.content.slice(0, 60000),
         ``,
         `---`,
         ``,
@@ -807,6 +810,7 @@ async function main(args) {
           synced_at: new Date().toISOString(),
           content_hash: contentHash(story.content),
         };
+        if (opts.execute) saveSyncMap(cwd, syncMap);
         // Remember this child on the parent epic so we can update the
         // epic body with a task list after all stories have been created.
         if (parentEpicEntry) {
@@ -885,7 +889,7 @@ async function main(args) {
         ``,
         `## 📋 Source Content`,
         ``,
-        epic.content.slice(0, 3000),
+        epic.content.slice(0, 60000),
         ``,
         `---`,
         ``,
@@ -930,7 +934,7 @@ async function main(args) {
         ``,
         `## 📋 Source Content`,
         ``,
-        story.content.slice(0, 3000),
+        story.content.slice(0, 60000),
         ``,
         `---`,
         ``,
