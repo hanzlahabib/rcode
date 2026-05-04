@@ -1920,10 +1920,11 @@ async function install(opts) {
     console.log('');
   }
 
-  // Count installed agents + commands dynamically (#190). Reads from the
-  // IDE-specific install paths so cursor/gemini/vscode/antigravity don't
-  // false-fail the health check.
-  const primaryIde = opts.ides[0];
+  // Count installed agents + commands dynamically (#190).
+  // Prefer the 'claude' IDE paths for counting when claude is in the selected list —
+  // that's what actually matters for Claude Code slash command availability.
+  // Fall back to the first selected IDE only when claude isn't included.
+  const primaryIde = opts.ides.includes('claude') ? 'claude' : opts.ides[0];
   const idePaths = getPathsForIde(primaryIde, opts.target);
   const agentsDir = idePaths.agentsDir;
   const commandsDir = idePaths.commandsDir;
@@ -1933,12 +1934,11 @@ async function install(opts) {
       agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
     }
     if (fs.existsSync(commandsDir)) {
-      commandCount = fs.readdirSync(commandsDir).filter(f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
-    }
-    // Clean up legacy .claude/commands/rihal/ colon-namespace directory if it exists
-    const legacyColonDir = path.join(opts.target, '.claude', 'commands', 'rihal');
-    if (primaryIde === 'claude' && fs.existsSync(legacyColonDir)) {
-      fs.rmSync(legacyColonDir, { recursive: true, force: true });
+      // claude IDE names commands rihal-*.md; other IDEs use plain {name}.md inside a rihal/ subdir
+      const commandFilter = primaryIde === 'claude'
+        ? f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))
+        : f => f.endsWith('.md') || f.endsWith('.mdc');
+      commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
     }
   } catch {}
 
