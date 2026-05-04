@@ -100,6 +100,11 @@ Restart Claude Code (or your IDE), type `/`, and every `rihal-*` command appears
 
 Update anytime with `npx @hanzlaa/rcode update` (or `/rihal-update` inside a Claude session).
 
+> **Want `rcode` on your PATH?** `npx @hanzlaa/rcode install` sets up the project files but doesn't put `rcode` in your shell. For the `rcode` CLI command (e.g. `rcode version`, `rcode update`), install globally once:
+> ```bash
+> npm install -g @hanzlaa/rcode
+> ```
+
 ### Then begin the rihla
 
 ```

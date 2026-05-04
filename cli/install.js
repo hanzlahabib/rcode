@@ -1972,6 +1972,10 @@ async function install(opts) {
   console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
   console.log(dim(`    /rihal-update v${version}              # pin rcode to a specific version`));
   console.log('');
+  console.log(dim('  Want the rcode CLI on your PATH? (optional — needed for rcode version / rcode update):'));
+  console.log(dim('    npm install -g @hanzlaa/rcode       # installs rcode, rihal, rihal-code commands'));
+  console.log(dim('    rcode version                       # verify'));
+  console.log('');
   console.log(dim('  Customize without losing changes on update:'));
   console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rihal-waleed.local.md)'));
   console.log(dim('    *.local.md files are NEVER touched by install / --force-overwrite / uninstall.'));
