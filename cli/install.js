@@ -1724,6 +1724,61 @@ async function install(opts) {
     return 0;
   }
 
+  // Duplicate-prevention: if rihal commands already exist globally in ~/.claude/commands/,
+  // skip writing agents/commands to the project's .claude/ directory. Without this,
+  // running `npx rcode install` in the home dir AND then in a project creates two sets
+  // of identical files — Claude Code shows both as duplicate slash commands.
+  const globalClaudeCommands = path.join(os.homedir(), '.claude', 'commands');
+  const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
+  const isProjectInstall = opts.target !== os.homedir();
+  if (isProjectInstall && !opts.force && !opts.forceOverwrite) {
+    try {
+      const globalHasRihal = fs.existsSync(globalClaudeCommands) &&
+        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+      const projectHasRihal = fs.existsSync(projectClaudeCommands) &&
+        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+      if (globalHasRihal && !projectHasRihal) {
+        // Global commands exist, project has none yet — filter them out of the plan
+        // so we don't create duplicates. Project gets .rihal/ state only.
+        const before = plan.length;
+        const filtered = plan.filter(e => {
+          const rel = e.rel.split(path.sep).join('/');
+          return !rel.startsWith('.claude/commands/') && !rel.startsWith('.claude/agents/');
+        });
+        if (filtered.length < before) {
+          plan.length = 0;
+          filtered.forEach(e => plan.push(e));
+          console.log('  ' + dim('Global rihal commands detected in ~/.claude/ — skipping project-level agent/command install to avoid duplicates.'));
+          console.log('  ' + dim('Use --force-overwrite to install locally anyway.'));
+        }
+      } else if (globalHasRihal && projectHasRihal) {
+        // Both exist — project commands are duplicates. Remove project-level ones.
+        try {
+          const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
+            .filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+          for (const f of projectCommandFiles) {
+            fs.unlinkSync(path.join(projectClaudeCommands, f));
+          }
+          const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
+          if (fs.existsSync(projectAgentsDir)) {
+            const agentFiles = fs.readdirSync(projectAgentsDir)
+              .filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+            for (const f of agentFiles) {
+              fs.unlinkSync(path.join(projectAgentsDir, f));
+            }
+          }
+          console.log('  ' + dim('Removed duplicate project-level rihal commands (global ones in ~/.claude/ take precedence).'));
+        } catch { /* non-fatal */ }
+        const filtered = plan.filter(e => {
+          const rel = e.rel.split(path.sep).join('/');
+          return !rel.startsWith('.claude/commands/') && !rel.startsWith('.claude/agents/');
+        });
+        plan.length = 0;
+        filtered.forEach(e => plan.push(e));
+      }
+    } catch { /* non-fatal — skip detection on permission errors */ }
+  }
+
   // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
   const configDir = path.join(opts.target, '.rihal', '_config');
   ensureDir(configDir);
