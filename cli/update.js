@@ -142,9 +142,19 @@ function removeOldSkillFiles(cwd, editors) {
         }
       }
     }
-    const commandsDir = path.join(cwd, '.claude/commands/rihal');
-    if (fs.existsSync(commandsDir)) {
-      fs.rmSync(commandsDir, { recursive: true, force: true });
+    // Remove vscode-style subdir .claude/commands/rihal/
+    const commandsSubdir = path.join(cwd, '.claude/commands/rihal');
+    if (fs.existsSync(commandsSubdir)) {
+      fs.rmSync(commandsSubdir, { recursive: true, force: true });
+    }
+    // Remove claude-style root-level .claude/commands/rihal-*.md files
+    const commandsRoot = path.join(cwd, '.claude/commands');
+    if (fs.existsSync(commandsRoot)) {
+      for (const f of fs.readdirSync(commandsRoot)) {
+        if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+          fs.unlinkSync(path.join(commandsRoot, f));
+        }
+      }
     }
   }
 
@@ -322,10 +332,15 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   // ------ Re-run unified installer ------
   // Delegates to cli/install.js which handles all IDE-specific file shipping
   // (agents, commands, skills, workflows, references, bin). install.js is
-  // the single source of truth — update.js reuses it with --force.
+  // the single source of truth — call once with the full IDE array so that
+  // buildInstallPlan can deduplicate across IDEs (e.g. claude+vscode).
   console.log();
-  for (const ide of editors) {
-    if (!['claude', 'cursor', 'gemini'].includes(ide)) continue;
+  const supportedIdes = editors.filter(ide => ['claude', 'cursor', 'gemini'].includes(ide));
+  if (supportedIdes.length > 0) {
+    if (editors.some(ide => !['claude', 'cursor', 'gemini'].includes(ide))) {
+      const unsupported = editors.filter(ide => !['claude', 'cursor', 'gemini'].includes(ide));
+      console.log(`   ⚠ ${unsupported.join(', ')} refresh not yet supported by installer — skipping`);
+    }
     install.install({
       target: cwd,
       force: true,
@@ -334,11 +349,11 @@ async function runUpdate(args, { packageRoot, packageJson }) {
       projectName: config.project_name || require('path').basename(cwd),
       language: config.language || 'English',
       mode: config.mode || 'guided',
-      ide,
+      ides: supportedIdes,
       modules: [],
       help: false,
     });
-    console.log(`   ✓ ${ide} → refreshed via install.js`);
+    console.log(`   ✓ [${supportedIdes.join(', ')}] → refreshed via install.js`);
   }
 
   // ------ Update installed_version in config.json (atomic) ------

@@ -138,9 +138,17 @@ function buildPlan(cwd, editors) {
         .readdirSync(skillsDir)
         .filter((name) => name.startsWith('rihal-') || isKnownSkillName(name));
     }
-    const commandsDir = path.join(cwd, '.claude/commands/rihal');
-    if (fs.existsSync(commandsDir)) {
-      plan.claude.commands = fs.readdirSync(commandsDir);
+    // Collect commands from vscode-style subdir (.claude/commands/rihal/) and
+    // claude-style root-level files (.claude/commands/rihal-*.md).
+    const commandsSubdir = path.join(cwd, '.claude/commands/rihal');
+    if (fs.existsSync(commandsSubdir)) {
+      plan.claude.commands = fs.readdirSync(commandsSubdir);
+    }
+    const commandsRoot = path.join(cwd, '.claude/commands');
+    if (fs.existsSync(commandsRoot)) {
+      const rootFiles = fs.readdirSync(commandsRoot)
+        .filter(f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc')));
+      plan.claude.commands = [...plan.claude.commands, ...rootFiles];
     }
     // v2 installs agents to .claude/agents/rihal-*.md — scan for them
     const agentsDir = path.join(cwd, '.claude/agents');
@@ -499,11 +507,26 @@ async function runUninstall(args) {
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Claude skills`);
 
+    // Remove vscode-style subdir .claude/commands/rihal/
     const commandsDir = path.join(cwd, '.claude/commands/rihal');
     if (fs.existsSync(commandsDir)) {
       fs.rmSync(commandsDir, { recursive: true, force: true });
-      removed += plan.claude.commands.length;
-      console.log(`   ✓ removed .claude/commands/rihal/ (${plan.claude.commands.length} slash commands)`);
+    }
+    // Remove claude-style root-level rihal-*.md files
+    const commandsRoot = path.join(cwd, '.claude/commands');
+    let commandsRemoved = 0;
+    if (fs.existsSync(commandsRoot)) {
+      for (const f of fs.readdirSync(commandsRoot)) {
+        if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+          fs.unlinkSync(path.join(commandsRoot, f));
+          commandsRemoved++;
+        }
+      }
+    }
+    const totalCommandsRemoved = plan.claude.commands.length;
+    removed += totalCommandsRemoved;
+    if (totalCommandsRemoved > 0) {
+      console.log(`   ✓ removed ${totalCommandsRemoved} slash commands from .claude/commands/`);
     }
 
     // v2: .claude/agents/rihal-*.md

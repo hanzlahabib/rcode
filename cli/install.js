@@ -945,6 +945,26 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
         }
       }
     }
+    // When both claude and vscode are in the IDE list, vscode writes commands to
+    // .claude/commands/rihal/{name}.md (subdirectory) while claude writes them to
+    // .claude/commands/rihal-{name}.md (root). Claude Code reads the full tree
+    // recursively, so both sets appear as slash commands — duplicates in the UI.
+    // Drop the vscode-style subdir entries when claude entries already cover them.
+    if (ide.includes('claude') && ide.includes('vscode')) {
+      const claudeCommandRels = new Set(
+        merged
+          .filter(e => e.ide === 'claude' && e.rel.split(path.sep).join('/').startsWith('.claude/commands/'))
+          .map(e => path.basename(e.rel, '.md').replace(/^rihal-/, ''))
+      );
+      return merged.filter(e => {
+        const rel = e.rel.split(path.sep).join('/');
+        if (e.ide === 'vscode' && rel.startsWith('.claude/commands/rihal/')) {
+          const baseName = path.basename(e.rel, path.extname(e.rel));
+          return !claudeCommandRels.has(baseName);
+        }
+        return true;
+      });
+    }
     return merged;
   }
 
@@ -1731,12 +1751,18 @@ async function install(opts) {
   const globalClaudeCommands = path.join(os.homedir(), '.claude', 'commands');
   const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
   const isProjectInstall = opts.target !== os.homedir();
-  if (isProjectInstall && !opts.force && !opts.forceOverwrite) {
+  // Run dedup even when force:true — only forceOverwrite skips it.
+  if (isProjectInstall && !opts.forceOverwrite) {
     try {
-      const globalHasRihal = fs.existsSync(globalClaudeCommands) &&
-        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
-      const projectHasRihal = fs.existsSync(projectClaudeCommands) &&
-        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+      // Check both root-level rihal-*.md AND the rihal/ subdirectory (vscode-style).
+      const globalHasRihal = fs.existsSync(globalClaudeCommands) && (
+        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(globalClaudeCommands, 'rihal'))
+      );
+      const projectHasRihal = fs.existsSync(projectClaudeCommands) && (
+        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(projectClaudeCommands, 'rihal'))
+      );
       if (globalHasRihal && !projectHasRihal) {
         // Global commands exist, project has none yet — filter them out of the plan
         // so we don't create duplicates. Project gets .rihal/ state only.
@@ -1754,10 +1780,16 @@ async function install(opts) {
       } else if (globalHasRihal && projectHasRihal) {
         // Both exist — project commands are duplicates. Remove project-level ones.
         try {
+          // Remove root-level rihal-*.md files
           const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
             .filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
           for (const f of projectCommandFiles) {
             fs.unlinkSync(path.join(projectClaudeCommands, f));
+          }
+          // Remove rihal/ subdirectory (vscode-style commands)
+          const rihalSubdir = path.join(projectClaudeCommands, 'rihal');
+          if (fs.existsSync(rihalSubdir)) {
+            fs.rmSync(rihalSubdir, { recursive: true, force: true });
           }
           const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
           if (fs.existsSync(projectAgentsDir)) {
