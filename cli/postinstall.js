@@ -49,18 +49,16 @@ const isGlobalInstall = (() => {
 const globalTarget = path.join(os.homedir(), '.claude');
 
 if (isGlobalInstall) {
-  // Run the global install in the background so npm output isn't blocked
-  const { install } = require('./install.js');
-  install({
-    target: globalTarget,
-    ides: ['claude'],
-    ide: 'claude',
-    yes: true,
-    noPrompt: true,
-    commitPlanning: false,
-    global: true,        // signal: skip per-project artifacts (STATE.md, ROADMAP.md, .planning/)
-    silent: false,
-  }).then((code) => {
+  // Spawn dist/rcode.js (fully bundled — no devDep requires) to do the global
+  // install. Calling cli/install.js directly fails in global npm installs because
+  // devDependencies (picocolors, semver, etc.) are not installed for global packages.
+  const { spawn } = require('child_process');
+  const distCli = path.join(__dirname, '..', 'dist', 'rcode.js');
+  const child = spawn(process.execPath, [distCli, 'install', '--global', '--yes', '--no-prompt'], {
+    stdio: 'inherit',
+    env: { ...process.env },
+  });
+  child.on('close', (code) => {
     if (code === 0) {
       console.log(`\n✓ Rihal commands + skills installed globally → ${globalTarget}`);
       console.log('  All /rihal-* commands are now available in every project.\n');
@@ -68,7 +66,8 @@ if (isGlobalInstall) {
       console.warn(`\n⚠ Global auto-install exited with code ${code}. Run 'rcode install' manually if needed.\n`);
     }
     printWelcome();
-  }).catch((err) => {
+  });
+  child.on('error', (err) => {
     console.warn(`\n⚠ Global auto-install failed: ${err.message}`);
     console.warn('  Run "rcode install" manually to set up rihal commands.\n');
     printWelcome();
