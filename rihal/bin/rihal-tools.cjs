@@ -4688,11 +4688,11 @@ function cmdProgress(args) {
       byNum[num] = {
         path: full,
         dirName: entry,
-        plan_count: files.filter(f => /PLAN\.md$|-PLAN\.md$|SPRINT\.md$/.test(f)).length,
+        plan_count: files.filter(f => /-SPRINT\.md$/i.test(f)).length,
         summary_count: files.filter(f => /SUMMARY\.md$|-SUMMARY\.md$/.test(f)).length,
         has_research: files.includes('RESEARCH.md'),
         has_context: files.includes('CONTEXT.md'),
-        has_verification: files.includes('VERIFICATION.md'),
+        has_verification: files.some(f => /VERIFICATION\.md$/i.test(f)),
       };
     }
     return byNum;
