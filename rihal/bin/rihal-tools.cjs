@@ -4829,8 +4829,19 @@ function cmdProgress(args) {
     const routes = [];
     const statePhases = (state && (state.state?.phases || state.phases)) || [];
 
-    // Route A — phases with pending plans (ready to execute)
+    // Route A — phases with pending plans (ready to execute).
+    // Issue #653 — never recommend executing a phase whose state.json status
+    // is already complete/done/verified, even if its on-disk plan_count >
+    // summary_count. Missing second summary file is not the canonical
+    // completion signal; state.json is. Run /rihal-audit phase <N> for
+    // disk-vs-state drift, but stop steering users into re-executing
+    // finished work.
+    const isPhaseDone = (p) => {
+      const s = String((p && p.status) || '').toLowerCase();
+      return s === 'complete' || s === 'completed' || s === 'done' || s === 'verified' || Boolean(p && p.completed);
+    };
     const pendingExec = statePhases.filter(p => {
+      if (isPhaseDone(p)) return false;
       const disk = diskByNum[phaseKey(p)];
       return disk && disk.plan_count > disk.summary_count;
     }).slice(0, 3);
