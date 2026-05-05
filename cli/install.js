@@ -177,6 +177,13 @@ function parseArgs(argv) {
     opts.target = path.resolve(positional[0]);
     opts.targetProvided = true;
   }
+  // --global without an explicit target means "install to ~/.claude/" — i.e.
+  // home dir. Without this, running `rcode install --global` from inside a
+  // project directory wrote rihal artifacts to that project, not to the user's
+  // home where Claude Code reads global commands from.
+  if (opts.global && !opts.targetProvided) {
+    opts.target = os.homedir();
+  }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hanzlaa/rcode",
-  "version": "3.4.17",
+  "version": "3.4.18",
   "description": "rcode — the memory bank for AI-driven SaaS teams. Persistent project context, distinctive engineering personas, and phase-based workflows. Built by Rihal. Works in Claude Code, Cursor, Gemini, VS Code, and Antigravity.",
   "main": "cli/index.js",
   "bin": {

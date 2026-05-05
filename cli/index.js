@@ -91,8 +91,55 @@ Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
 }
 
+/**
+ * npm 10+ suppresses postinstall script output during global installs, so users
+ * who run `npm install -g @hanzlaa/rcode` see only "added 1 package" with no
+ * confirmation that 100+ commands and skills were installed. We detect a fresh
+ * install on the first `rcode <anything>` invocation by checking for a marker
+ * file under ~/.rihal/, print a one-time welcome banner, then drop the marker.
+ */
+function maybeShowFirstRunBanner() {
+  const os = require('os');
+  const home = os.homedir();
+  const markerDir = path.join(home, '.rihal');
+  const marker = path.join(markerDir, '.welcome-shown');
+  if (fs.existsSync(marker)) return;
+
+  // Only show banner if global install actually ran — i.e. ~/.claude/commands/
+  // has rihal-*.md files. Otherwise this is a developer running from source.
+  const globalCommands = path.join(home, '.claude', 'commands');
+  let hasGlobalRihal = false;
+  try {
+    hasGlobalRihal = fs.existsSync(globalCommands) &&
+      fs.readdirSync(globalCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+  } catch { /* unreadable */ }
+  if (!hasGlobalRihal) return;
+
+  console.log(`\n🕌 Rihal Code v${PACKAGE_JSON.version} — first run detected.\n`);
+  console.log(`   ✓ ${countGlobalRihal(globalCommands)} slash commands installed → ~/.claude/commands/`);
+  console.log(`   ✓ All /rihal-* commands available in every Claude Code project.`);
+  console.log(`\n   To set up a project:  cd my-project && rcode install`);
+  console.log(`   Show all commands:    rcode help`);
+  console.log(`   Diagnose issues:      rcode doctor\n`);
+
+  try {
+    fs.mkdirSync(markerDir, { recursive: true });
+    fs.writeFileSync(marker, `installed ${PACKAGE_JSON.version} at ${new Date().toISOString()}\n`);
+  } catch { /* if we can't write the marker, banner shows again next time — annoying but not broken */ }
+}
+
+function countGlobalRihal(dir) {
+  try {
+    return fs.readdirSync(dir).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+  } catch { return 0; }
+}
+
 async function main() {
   const [, , command = 'help', ...args] = process.argv;
+
+  // Show first-run banner before dispatching — npm hides postinstall output,
+  // so this is the user's first visible confirmation that the install worked.
+  maybeShowFirstRunBanner();
 
   const handler = COMMANDS[command];
   if (!handler) {
