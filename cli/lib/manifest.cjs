@@ -100,23 +100,32 @@ function diffSet(editor, kind, expected, installed) {
 }
 
 /**
- * Verify a Claude install: checks .claude/skills/rihal-<agent> and
- * .claude/skills/<action> (action skills keep their bare name) against the
- * package manifest. Returns an array of diff reports.
+ * Verify a Claude install. Agents live at .claude/agents/rihal-<name>.md.
+ * Action skills live at .claude/skills/<name>/ (bare name, no rihal- prefix).
+ *
+ * Note: .claude/skills/ ALSO contains rihal-<name>/ directories that are
+ * auto-generated command stubs by generate-command-skills.cjs (so commands
+ * appear in the IDE sidebar). Those are NOT agents — counting them as agents
+ * makes doctor report drift like "agents 119/23" when nothing is wrong.
+ * That's why the agent count comes from .claude/agents/, not .claude/skills/.
  */
 function verifyClaudeInstall(cwd, packageRoot) {
   const pkg = readPackageManifest(packageRoot);
+  const agentsDir = path.join(cwd, '.claude/agents');
   const skillsDir = path.join(cwd, '.claude/skills');
 
-  // Agents are installed as rihal-{name} — strip prefix to match pkg.agents keys
-  const installedAgents = readInstalledDirs(skillsDir, 'rihal-');
-  // Do NOT pre-filter against pkg.agents: we want stale entries (installed but
-  // not in current package) to appear in the `extra` list of diffSet so that
-  // `rcode doctor` can flag them as stale and `rcode uninstall` can remove them.
-  // The old intersection filter was hiding orphaned agent dirs after version bumps.
+  // Agents: .claude/agents/rihal-<name>.md (file-based, not dir-based).
+  const installedAgents = new Set();
+  if (fs.existsSync(agentsDir)) {
+    for (const f of fs.readdirSync(agentsDir)) {
+      if (f.startsWith('rihal-') && f.endsWith('.md')) {
+        installedAgents.add(f.replace(/^rihal-/, '').replace(/\.md$/, ''));
+      }
+    }
+  }
 
-  // Action skills: installed with their bare name (no rihal- prefix).
-  // Exclude known agent dirs (rihal-prefixed) so actions and agents don't bleed.
+  // Actions: .claude/skills/<bare-name>/ — exclude rihal-* dirs (those are
+  // either agent stubs or command stubs, never action skills).
   const allInstalled = readInstalledDirs(skillsDir);
   const actionsInstalled = new Set(
     [...allInstalled].filter((n) => !n.startsWith('rihal-'))
