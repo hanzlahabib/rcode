@@ -1356,18 +1356,25 @@ function cmdState(subArgs) {
 
   // --- add-decision ---
   if (sub === 'add-decision') {
-    const summary = subArgs.slice(1).join(' ');
+    // Issue #658 — caller can scope explicitly with --phase <N>; otherwise we
+    // infer from state.current_phase (which can mis-fire mid-orchestration).
+    const flagStart = (() => {
+      for (let i = 1; i < subArgs.length; i++) if (subArgs[i].startsWith('--')) return i;
+      return subArgs.length;
+    })();
+    const summary = subArgs.slice(1, flagStart).join(' ');
+    const flags = parseFlags(flagStart);
     if (!summary) throw new Error('add-decision requires a summary argument');
     const state = readState() || defaultState();
     if (!state.decisions) state.decisions = [];
     const record = {
       summary,
-      phase: state.current_phase,
-      plan: state.current_plan,
+      phase: flags.phase ? String(flags.phase) : state.current_phase,
+      plan: flags.plan ? String(flags.plan) : state.current_plan,
       date: new Date().toISOString(),
     };
     state.decisions.push(record);
-    const result = writeState(state);
+    writeState(state);
     // Mirror to cross-project store (best-effort, never fails the local write).
     try {
       appendGlobalDecision({
@@ -1379,7 +1386,14 @@ function cmdState(subArgs) {
         summary: record.summary,
       });
     } catch (_) { /* silent — local commit must not break on home-dir issues */ }
-    return result;
+    // Issue #658 — return the appended record so callers can confirm the
+    // phase scope and ID without re-reading state.json.
+    return {
+      ok: true,
+      decision: record,
+      decision_index: state.decisions.length - 1,
+      total_decisions: state.decisions.length,
+    };
   }
 
   // --- decisions-global: query ~/.rihal/decisions.jsonl across all projects ---
@@ -1416,12 +1430,38 @@ function cmdState(subArgs) {
 
   // --- resolve-blocker ---
   if (sub === 'resolve-blocker') {
-    const index = parseInt(subArgs[1], 10);
-    const flags = parseFlags(2);
     const state = readState();
     if (!state) throw new Error('No state.json found');
-    if (!state.blockers || index < 0 || index >= state.blockers.length) {
-      throw new Error(`Invalid blocker index: ${subArgs[1]}. Valid range: 0-${(state.blockers || []).length - 1}`);
+    if (!state.blockers || state.blockers.length === 0) {
+      throw new Error('No blockers to resolve');
+    }
+    // Issue #656 — support --all and --phase <N> for batch resolution.
+    const flagStart = subArgs[1] && /^--/.test(subArgs[1]) ? 1 : 2;
+    const flags = parseFlags(flagStart);
+    const indices = [];
+    if (flags.all === true || flags.all === 'true') {
+      for (let i = 0; i < state.blockers.length; i++) {
+        if (!state.blockers[i].resolved) indices.push(i);
+      }
+    } else if (flags.phase) {
+      const ph = String(flags.phase).replace(/^[Pp]hase\s*/, '');
+      for (let i = 0; i < state.blockers.length; i++) {
+        const b = state.blockers[i];
+        if (b.resolved) continue;
+        const matchesPhase = String(b.phase || '') === ph ||
+          (b.description || '').includes(`Phase ${ph}`) ||
+          (b.description || '').includes(`[Phase ${ph}]`);
+        if (matchesPhase) indices.push(i);
+      }
+    } else {
+      const index = parseInt(subArgs[1], 10);
+      if (Number.isNaN(index) || index < 0 || index >= state.blockers.length) {
+        throw new Error(`Invalid blocker index: ${subArgs[1]}. Valid range: 0-${state.blockers.length - 1}, or use --all / --phase <N>`);
+      }
+      indices.push(index);
+    }
+    if (indices.length === 0) {
+      throw new Error('No matching unresolved blockers found');
     }
     // Issue #654 — tickets-first. Resolution must reference an issue, a
     // commit SHA, or be explicitly marked as internal with --noref. Silent
@@ -1437,11 +1477,15 @@ function cmdState(subArgs) {
         `  --noref                       acknowledge no external reference (audit trail will say "internal")`
       );
     }
-    state.blockers[index].resolved = new Date().toISOString();
-    if (hasIssue) state.blockers[index].resolved_issue = String(flags.issue).replace(/^#/, '');
-    if (hasCommit) state.blockers[index].resolved_commit = String(flags.commit).slice(0, 40);
-    if (noref && !hasIssue && !hasCommit) state.blockers[index].resolved_ref = 'internal';
-    return writeState(state);
+    const now = new Date().toISOString();
+    for (const idx of indices) {
+      state.blockers[idx].resolved = now;
+      if (hasIssue) state.blockers[idx].resolved_issue = String(flags.issue).replace(/^#/, '');
+      if (hasCommit) state.blockers[idx].resolved_commit = String(flags.commit).slice(0, 40);
+      if (noref && !hasIssue && !hasCommit) state.blockers[idx].resolved_ref = 'internal';
+    }
+    const result = writeState(state);
+    return { ...result, resolved_count: indices.length, resolved_indices: indices };
   }
 
   // --- record-session ---
@@ -5505,7 +5549,7 @@ async function main() {
         console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');
         console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rihal/decisions.jsonl across all projects');
         console.log('  state add-blocker "<description>"            → append to blockers[]');
-        console.log('  state resolve-blocker <index> --issue <N>|--commit <sha>|--noref  → mark blocker as resolved (audit ref required, #654)');
+        console.log('  state resolve-blocker <index>|--all|--phase <N>  --issue <N>|--commit <sha>|--noref  → mark blocker(s) resolved (#654, #656)');
         console.log('  state record-session                         → update last_session timestamp');
         console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
         console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
@@ -5538,10 +5582,40 @@ async function main() {
         return;
       default: {
         const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
+        // Issue #656 — top-level aliases for intuitive guesses.
+        const intuitionAliases = {
+          blocker: 'state resolve-blocker',
+          blockers: 'state resolve-blocker',
+          decision: 'state add-decision',
+          decisions: 'state decisions-global',
+          sync: 'state sync',
+        };
         if (stateSubs.includes(subcommand)) {
           console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
+        } else if (intuitionAliases[subcommand]) {
+          console.error(`'${subcommand}' is not a top-level command. Did you mean: ${intuitionAliases[subcommand]}?`);
         } else {
-          console.error(`Unknown subcommand: ${subcommand}. Run 'rihal-tools.cjs help' for full usage.`);
+          // Fuzzy hint — suggest top 2 closest state subcommands by simple substring/edit-distance.
+          const lev = (a, b) => {
+            const m = Array.from({length: a.length+1}, (_,i) => Array(b.length+1).fill(0));
+            for (let i=0; i<=a.length; i++) m[i][0]=i;
+            for (let j=0; j<=b.length; j++) m[0][j]=j;
+            for (let i=1; i<=a.length; i++) for (let j=1; j<=b.length; j++) {
+              m[i][j] = a[i-1]===b[j-1] ? m[i-1][j-1] : 1 + Math.min(m[i-1][j], m[i][j-1], m[i-1][j-1]);
+            }
+            return m[a.length][b.length];
+          };
+          const candidates = stateSubs.concat(Object.keys(intuitionAliases));
+          const scored = candidates
+            .map(c => ({ c, d: c.includes(subcommand) || subcommand.includes(c) ? 0.5 : lev(c, subcommand) }))
+            .sort((a, b) => a.d - b.d)
+            .slice(0, 2)
+            .filter(x => x.d <= Math.max(2, subcommand.length / 2));
+          if (scored.length > 0) {
+            console.error(`Unknown subcommand: ${subcommand}. Closest matches: ${scored.map(s => s.c).join(', ')}. Run 'rihal-tools.cjs help' for full usage.`);
+          } else {
+            console.error(`Unknown subcommand: ${subcommand}. Run 'rihal-tools.cjs help' for full usage.`);
+          }
         }
         process.exit(1);
       }

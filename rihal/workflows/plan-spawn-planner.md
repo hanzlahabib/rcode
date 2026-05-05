@@ -2,6 +2,15 @@
 Sub-step of plan.md — Step 8 Spawn rihal-planner Agent. Spawns rihal-planner with full context to generate SPRINT.md plans. Includes deep-work rules and downstream consumer spec.
 </purpose>
 
+<filename_convention>
+Issue #657 — every SPRINT.md, including the first plan in a phase, uses the
+sequence-numbered form `{phase}-{plan}-SPRINT.md` (no leading zeros per #652).
+Examples: `8-1-SPRINT.md`, `8-2-SPRINT.md`. Do NOT emit a bare `{phase}-SPRINT.md`
+or `{phase}-PLAN.md` for the first plan — that creates an inconsistent series
+when a second plan is added later. The plan-number computation in plan.md uses
+`NEXT_PLAN_NUMBER=$((EXISTING_PLAN_COUNT + 1))` and starts at 1 for new phases.
+</filename_convention>
+
 ## 8. Spawn rihal-planner Agent
 
 Display banner:

@@ -86,7 +86,11 @@ Task tool call:
     
     **Audit 6 pillars (pass/fail + findings):**
     
-    1. Color Consistency — All text/backgrounds match color tokens, contrast ratios >= WCAG AA
+    1. Color Consistency — All text/backgrounds match color tokens, contrast ratios >= WCAG AA.
+       **Hex literal scan (issue #660):** run `rg -n '#[0-9A-Fa-f]{3,6}\b' <css/tailwind paths>` —
+       any hex outside the `:root { ... }` token block in globals.css (or equivalent token
+       definition file) is a regression flag. If a token is missing for the stated semantic
+       role, the fix is to ADD the token, never to inline the hex. Cite the exact file:line.
     2. Typography Compliance — Font sizes, weights, line heights match typography scales
     3. Component Inventory — All specified components present, all variants implemented
     4. Accessibility — aria-labels, roles, keyboard navigation, focus rings per WCAG 2.1 AA

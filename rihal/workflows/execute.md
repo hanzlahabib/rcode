@@ -12,8 +12,23 @@ route back to the user.
    plan count, wave count, autonomy flag per plan, files_modified overlaps
 3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
    error flag, existing VERIFICATION.md with FAIL items without overrides
-4. **Branch check**: confirm current git branch matches milestone's expected
-   branch (from config or roadmap)
+4. **Branch check** (issue #659): confirm current git branch is appropriate
+   for the work. Two checks, both blocking:
+
+   a. **Not on main/master without consent**: if `git branch --show-current`
+      returns `main` or `master`, refuse to execute. Suggest:
+      `git switch -c <phase>-<plan>-<slug>` (e.g. `git switch -c 8-1-aria`).
+      User can override only by passing `--allow-main` to /rihal-execute and
+      explicitly typing the override on this turn.
+
+   b. **Working tree clean enough**: if `git status --porcelain` shows
+      modified files unrelated to this phase's `files_modified` frontmatter,
+      surface them and ask whether to commit, stash, or proceed. Real-session
+      repro: P0 CSS fixes landed loose in a dirty tree with no commit
+      boundary.
+
+   The branch name should align with the phase/plan IDs from state — check
+   `workflow.branch_pattern` config (default `<phase>-<plan>-<slug>`).
 5. **Worktree config**: read `workflow.use_worktrees` — if true + parallelization
    is true + no file overlaps, plans in a wave run parallel via worktrees
 </pre_flight>
