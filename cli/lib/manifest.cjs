@@ -124,6 +124,25 @@ function verifyClaudeInstall(cwd, packageRoot) {
     }
   }
 
+  // Issue #664 — global precedence fallback.
+  // The installer (cli/install.js ~line 1773) intentionally removes project-
+  // level .claude/agents/rihal-*.md when the user's ~/.claude/ already has
+  // them, to avoid duplicate commands. Without this fallback the verifier
+  // reports 0 agents on every successful install in that scenario.
+  if (installedAgents.size === 0) {
+    try {
+      const os = require('os');
+      const globalAgentsDir = path.join(os.homedir(), '.claude/agents');
+      if (fs.existsSync(globalAgentsDir)) {
+        for (const f of fs.readdirSync(globalAgentsDir)) {
+          if (f.startsWith('rihal-') && f.endsWith('.md')) {
+            installedAgents.add(f.replace(/^rihal-/, '').replace(/\.md$/, ''));
+          }
+        }
+      }
+    } catch { /* non-fatal — permission errors etc. */ }
+  }
+
   // Actions: .claude/skills/<bare-name>/ — exclude rihal-* dirs (those are
   // either agent stubs or command stubs, never action skills).
   const allInstalled = readInstalledDirs(skillsDir);

@@ -275,7 +275,7 @@ function printInstallHeader(targetVersion) {
     pc.cyan('│') + '   ' + dim('A persistent context-brain for your editor') + '             ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
-    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzla-habib/rihal-code              ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzlahabib/rihal-code               ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('╰───────────────────────────────────────────────────────────╯'),
     '',
@@ -2023,6 +2023,7 @@ async function install(opts) {
   const agentsDir = idePaths.agentsDir;
   const commandsDir = idePaths.commandsDir;
   let agentCount = 0, commandCount = 0;
+  let agentsFromGlobal = false, commandsFromGlobal = false;
   try {
     if (fs.existsSync(agentsDir)) {
       agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
@@ -2033,6 +2034,22 @@ async function install(opts) {
         ? f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))
         : f => f.endsWith('.md') || f.endsWith('.mdc');
       commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
+    }
+    // Issue #669 — when global precedence applied (project copies were
+    // intentionally removed), count from ~/.claude/ instead so the summary
+    // doesn't lie about the install state.
+    if (agentCount === 0 || commandCount === 0) {
+      const os = require('os');
+      const homeAgents = path.join(os.homedir(), '.claude/agents');
+      const homeCommands = path.join(os.homedir(), '.claude/commands');
+      if (agentCount === 0 && fs.existsSync(homeAgents)) {
+        const n = fs.readdirSync(homeAgents).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        if (n > 0) { agentCount = n; agentsFromGlobal = true; }
+      }
+      if (commandCount === 0 && fs.existsSync(homeCommands)) {
+        const n = fs.readdirSync(homeCommands).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        if (n > 0) { commandCount = n; commandsFromGlobal = true; }
+      }
     }
   } catch {}
 
@@ -2047,8 +2064,8 @@ async function install(opts) {
   // Show the actual install paths so cursor/gemini/antigravity output is accurate
   const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
   const relCommands = path.relative(opts.target, idePaths.commandsDir) || idePaths.commandsDir;
-  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${relAgents}/`);
-  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${relCommands}/`);
+  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${agentsFromGlobal ? '~/.claude/agents/ (global)' : relAgents + '/'}`);
+  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${commandsFromGlobal ? '~/.claude/commands/ (global)' : relCommands + '/'}`);
   if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated`);
   console.log('');
   if (starterSeeded) {
