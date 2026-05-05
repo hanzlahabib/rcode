@@ -209,8 +209,9 @@ Exit workflow.
 
 ```bash
 EXISTING_PLAN_COUNT=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | wc -l | tr -d ' ')
-NEXT_PLAN_NUMBER=$(printf "%02d" $((EXISTING_PLAN_COUNT + 1)))
-PADDED_PHASE=$(printf "%02d" "${PHASE}")
+# Issue #652 — no leading zeros in planning artifacts. Phase 8 not 08, plan 2 not 02.
+NEXT_PLAN_NUMBER=$((EXISTING_PLAN_COUNT + 1))
+PADDED_PHASE="${PHASE}"
 GAP_PLAN_FILENAME="${PADDED_PHASE}-${NEXT_PLAN_NUMBER}-SPRINT.md"
 GAP_PLAN_PATH="${PHASE_DIR}/${GAP_PLAN_FILENAME}"
 ```

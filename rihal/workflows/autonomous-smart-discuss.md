@@ -12,7 +12,8 @@ Run smart discuss for the current phase. Proposes grey area answers in batch tab
 
 ```bash
 PHASE_NUM="${PHASE_NUM}"  # local alias; other workflows use PHASE_NUMBER from init JSON
-PADDED_PHASE=$(printf "%02d" "${PHASE_NUM%.*}")
+# Issue #652 — no leading zeros. Variable name kept for backward compat.
+PADDED_PHASE="${PHASE_NUM%.*}"
 PHASE_DIR=".planning/phases/${PADDED_PHASE}-${PHASE_SLUG}"
 ```
 

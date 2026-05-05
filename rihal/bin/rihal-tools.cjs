@@ -455,7 +455,11 @@ function cmdInit(workflowName, rawArgs) {
 
       out.phase_found = roadmapPhase !== null;
       out.phase_number = String(phaseNum);
-      out.padded_phase = String(phaseNum).padStart(2, '0');
+      // Issue #652 — no leading zeros in planning artifacts. The field name
+      // 'padded_phase' is kept for workflow backward compat but the value is
+      // now the canonical (unpadded) phase number. The resolver above still
+      // accepts legacy '06-name' directories for older projects.
+      out.padded_phase = String(phaseNum);
       out.phase_name = roadmapPhase ? roadmapPhase.name : null;
       out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
       out.phase_dir = phaseDirEntry ? path.join(PLANNING_DIR, 'phases', phaseDirEntry) : null;

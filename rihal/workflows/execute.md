@@ -573,7 +573,8 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 REVIEWER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
 REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
 REVIEWER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
-PADDED=$(printf "%02d" "${PHASE_NUMBER}")
+# Issue #652 — no leading zeros. Variable name kept for backward compat in this workflow.
+PADDED="${PHASE_NUMBER}"
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
 ```
 

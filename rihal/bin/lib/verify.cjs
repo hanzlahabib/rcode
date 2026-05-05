@@ -22,8 +22,13 @@ function commitsForPhase(projectRoot, phaseNum) {
   // Look for commit subjects starting with NN- or NNN- matching the phase.
   const log = git(`log --pretty=format:%H%x09%s`, projectRoot);
   if (!log) return [];
-  const prefix = String(phaseNum).padStart(2, '0');
-  const re = new RegExp(`(^|[^0-9])${prefix}-\\d+`);
+  // Issue #652 — accept both unpadded ('8-1') and legacy padded ('08-01')
+  // commit prefixes so verify still works on projects that were created
+  // before the no-leading-zeros rule.
+  const num = String(phaseNum);
+  const padded = num.padStart(2, '0');
+  const alt = num === padded ? num : `(?:${num}|${padded})`;
+  const re = new RegExp(`(^|[^0-9])${alt}-\\d+`);
   const commits = [];
   for (const line of log.split('\n')) {
     const [hash, ...rest] = line.split('\t');
