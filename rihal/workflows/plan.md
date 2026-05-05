@@ -327,6 +327,30 @@ Always offer exactly three numbered options:
 
 Wait for the user's choice before proceeding. Do not auto-select.
 
+**If user picks option 1 (Add more plans) — issue #650:**
+
+This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down the
+normal pipeline exactly as if no plans existed yet:
+
+1. Proceed to Step 7 (context-paths) and Step 7.5 (Nyquist verification) as normal.
+2. Spawn `rihal-planner` via `@rihal/workflows/plan-spawn-planner.md` (Step 8). The
+   planner subagent is mandatory — the orchestrator must NOT write SPRINT.md
+   directly via the `Write` tool. Pass the existing plan list to the planner so
+   it picks the next plan number and avoids re-covering shipped tasks.
+3. After the planner returns, run sprint-checker (Step 10) the same as a
+   first-time plan. The "PLANNED ✓" banner is gated on a passing CHECK.md.
+
+A run that emits a SPRINT.md without a corresponding planner Task() invocation
+in the same turn is a malfunction — see issue #650. Stop and report instead of
+shipping a hand-rolled plan.
+
+**If user picks option 3 (Replan from scratch):**
+
+Same as option 1, but pass the existing plans to the planner with a `replace:
+true` directive. Existing PLAN.md files are renamed to `*-SUPERSEDED.md` (do
+not delete) before the planner writes the new ones. Subagent invocation is
+still mandatory.
+
 **If user picks option 2 (View existing plans):**
 
 Display a sprint summary table (sprint id → one-line goal).
