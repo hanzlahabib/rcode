@@ -106,7 +106,11 @@ Each dimension has pass/partial/fail criteria, remediation guidance, and output 
 
 1. **Load context** — Read phase SCOPE.md, CONTEXT.md (if present), RESEARCH.md, and all SPRINT.md files.
 2. **Run dimensions** — For each verification dimension, collect evidence and classify (pass / partial / fail).
-3. **Spot-check evidence (issue #649)** — for at least 2 randomly-chosen tasks per sprint, re-run the grep cited in `<evidence>` and confirm the hit count matches within ±10%. If a task lacks `<evidence>` entirely, that is an automatic BLOCKER under dimension 12 (Evidence Grounding).
+3. **Programmatic evidence check (issue #649)** — call:
+   ```
+   node .rihal/bin/rihal-tools.cjs plan validate-evidence <phase> --spot-check
+   ```
+   Exit code 0 = pass, 1 = at least one task violation. Inline the JSON `violations[]` into dimension 12 of CHECK.md verbatim — these are authoritative and must not be paraphrased away.
 4. **Synthesize** — Produce CHECK.md with overall verdict, per-dimension scores, remediation asks.
 5. **Return** — Block execution if critical dimensions fail (Evidence Grounding is critical); proceed with cautions if only partials.
 

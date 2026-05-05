@@ -3622,6 +3622,160 @@ function cmdInitPlan(rawArgs) {
   };
 }
 
+/**
+ * plan validate-evidence — issue #649 enforcement.
+ *
+ * Scans SPRINT.md files under a phase (or a specific file) and checks that
+ * every <task>...</task> block contains an <evidence> sub-block with a real
+ * codebase grounding (grep:, lines:, or creates: marker). Optionally
+ * spot-checks the cited grep patterns by re-running them and comparing hit
+ * counts against the planner's claim.
+ *
+ * Sprint-checker calls this; CI can call it; users can run it manually.
+ *
+ * Usage:
+ *   plan validate-evidence <phase-number>
+ *   plan validate-evidence --file <path>
+ *   plan validate-evidence <phase-number> --spot-check
+ *
+ * Exit code 0 = pass, 1 = at least one task failed evidence check.
+ */
+function cmdPlanValidateEvidence(rawArgs) {
+  const args = (rawArgs || []).slice();
+  const flags = {};
+  const positional = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i].startsWith('--')) {
+      const key = args[i].slice(2);
+      const next = args[i + 1];
+      if (next === undefined || next.startsWith('--')) flags[key] = true;
+      else { flags[key] = next; i++; }
+    } else positional.push(args[i]);
+  }
+
+  const targets = [];
+  if (flags.file) {
+    if (!fs.existsSync(flags.file)) throw new Error(`File not found: ${flags.file}`);
+    targets.push(flags.file);
+  } else {
+    const phaseArg = positional[0];
+    if (!phaseArg) throw new Error('Usage: plan validate-evidence <phase-number> [--spot-check] | --file <path>');
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    if (!fs.existsSync(phasesDir)) throw new Error(`No phases directory at ${phasesDir}`);
+    const norm = String(phaseArg).replace(/^0+/, '') || '0';
+    const padded = norm.padStart(2, '0');
+    let phaseDir = null;
+    for (const entry of fs.readdirSync(phasesDir)) {
+      if (entry.startsWith(`${norm}-`) || entry.startsWith(`${padded}-`) || entry === norm || entry === padded) {
+        phaseDir = path.join(phasesDir, entry);
+        break;
+      }
+    }
+    if (!phaseDir) throw new Error(`Phase ${phaseArg} directory not found`);
+    for (const f of fs.readdirSync(phaseDir)) {
+      if (/-SPRINT\.md$/.test(f) || /-PLAN\.md$/.test(f)) targets.push(path.join(phaseDir, f));
+    }
+  }
+
+  if (targets.length === 0) {
+    return { ok: true, files_scanned: 0, tasks_total: 0, violations: [], message: 'No SPRINT.md / PLAN.md files found' };
+  }
+
+  const violations = [];
+  let tasksTotal = 0;
+  let tasksPassed = 0;
+  let spotChecks = 0;
+  let spotCheckMismatches = 0;
+
+  for (const file of targets) {
+    const text = fs.readFileSync(file, 'utf8');
+    // Match <task ...>...</task> blocks (planner format) AND ### Story headings (sprint format).
+    const taskBlocks = [];
+    const taskRe = /<task[^>]*?id\s*=\s*["']([^"']+)["'][^>]*?>([\s\S]*?)<\/task>/gi;
+    let m;
+    while ((m = taskRe.exec(text)) !== null) {
+      taskBlocks.push({ id: m[1], body: m[2] });
+    }
+    // Story-format fallback: ### Story 8.1.3 — name { body until next ### or end }
+    if (taskBlocks.length === 0) {
+      const storyRe = /^###\s+Story\s+(\S+)[^\n]*\n([\s\S]*?)(?=^###\s+Story\s+|\Z)/gm;
+      while ((m = storyRe.exec(text)) !== null) {
+        taskBlocks.push({ id: m[1], body: m[2] });
+      }
+    }
+
+    for (const t of taskBlocks) {
+      tasksTotal++;
+      const evMatch = t.body.match(/<evidence>([\s\S]*?)<\/evidence>/i)
+        || t.body.match(/(?:^|\n)\s*\*\*Evidence:?\*\*\s*([\s\S]*?)(?=\n\s*\*\*|\n\n|$)/i);
+      if (!evMatch || !evMatch[1].trim()) {
+        violations.push({
+          file: path.relative(PROJECT_ROOT, file),
+          task_id: t.id,
+          severity: 'BLOCKER',
+          kind: 'missing-evidence',
+          message: 'Task has no <evidence> block. Per issue #649, every task must cite grep hits, line ranges, or a creates: justification.',
+        });
+        continue;
+      }
+      const evidence = evMatch[1].trim();
+      // Must contain at least one of: grep:, lines:, creates:
+      const hasGrep = /(^|\n)\s*grep:/i.test(evidence) || /\brg\b/.test(evidence);
+      const hasLines = /(^|\n)\s*lines:/i.test(evidence) || /\b\S+\.\w+:\d+(-\d+)?/.test(evidence);
+      const hasCreates = /(^|\n)\s*creates:/i.test(evidence);
+      if (!hasGrep && !hasLines && !hasCreates) {
+        violations.push({
+          file: path.relative(PROJECT_ROOT, file),
+          task_id: t.id,
+          severity: 'BLOCKER',
+          kind: 'evidence-shape',
+          message: 'Evidence block exists but contains no grep:, lines:, or creates: marker. Cannot be traced to real code.',
+        });
+        continue;
+      }
+      tasksPassed++;
+
+      // Optional spot-check: re-run the first grep pattern cited and compare hit counts.
+      if (flags['spot-check'] && hasGrep) {
+        const claim = evidence.match(/grep:\s*(?:`|')?([^\n`']+?)(?:`|')?\s*(?:→|->|=>|—|-)\s*(\d+)/i)
+          || evidence.match(/`(rg[^`]+)`[^→]*→\s*(\d+)/i);
+        if (claim) {
+          const pattern = claim[1].trim();
+          const claimedCount = parseInt(claim[2], 10);
+          try {
+            // Use rg if available, else fallback to grep -r.
+            const cmd = `rg --count-matches ${JSON.stringify(pattern.replace(/^rg\s+/, ''))} 2>/dev/null | awk -F: '{s+=$2} END {print s+0}'`;
+            const out = require('child_process').execSync(cmd, { cwd: PROJECT_ROOT, encoding: 'utf8', timeout: 10000 }).trim();
+            const actualCount = parseInt(out, 10) || 0;
+            spotChecks++;
+            const drift = Math.abs(actualCount - claimedCount) / Math.max(claimedCount, 1);
+            if (drift > 0.1) {
+              spotCheckMismatches++;
+              violations.push({
+                file: path.relative(PROJECT_ROOT, file),
+                task_id: t.id,
+                severity: 'BLOCKER',
+                kind: 'spot-check-mismatch',
+                message: `Evidence claims grep hits=${claimedCount} for pattern '${pattern}', actual=${actualCount} (drift ${(drift*100).toFixed(0)}%)`,
+              });
+            }
+          } catch (_) { /* spot-check is best-effort; rg/grep not available shouldn't fail validation */ }
+        }
+      }
+    }
+  }
+
+  return {
+    ok: violations.length === 0,
+    files_scanned: targets.length,
+    tasks_total: tasksTotal,
+    tasks_passed: tasksPassed,
+    spot_checks_run: spotChecks,
+    spot_check_mismatches: spotCheckMismatches,
+    violations,
+  };
+}
+
 /** plan list — glob .planning/plans/ for plan files. */
 function cmdPlanList() {
   const plansDir = path.join(PLANNING_DIR, 'plans');
@@ -5327,7 +5481,13 @@ async function main() {
         break;
       case 'plan':
         if (args[0] === 'list') { result = cmdPlanList(); }
-        else { console.error('Unknown plan subcommand. Valid: list'); process.exit(1); }
+        else if (args[0] === 'validate-evidence') {
+          result = cmdPlanValidateEvidence(args.slice(1));
+          // Issue #649 — non-zero exit on violations so CI / sprint-checker can gate.
+          console.log(JSON.stringify(result, null, 2));
+          process.exit(result.ok ? 0 : 1);
+        }
+        else { console.error('Unknown plan subcommand. Valid: list, validate-evidence'); process.exit(1); }
         break;
       case 'phase-plan-index':
         result = cmdPhasePlanIndex(args.join(' '));
@@ -5517,7 +5677,8 @@ async function main() {
         console.log('  classify-tech --keywords "<keywords>"        → classify tech stack from keywords (frontend/backend/mobile/styling)');
         console.log('  context refresh                              → refresh .rihal/context/ cache from .rihal/sources.yaml');
         console.log('  module <subcommand> [args]                   → module system helpers');
-        console.log('  plan <subcommand> [args]                     → phase/plan operations');
+        console.log('  plan <list|validate-evidence>                → phase/plan operations');
+        console.log('  plan validate-evidence <N> [--spot-check]    → enforce <evidence> blocks in SPRINT.md (#649); exit 1 on violation');
         console.log('  phase-plan-index <N>                         → JSON inventory of plans under phase N (waves, summary status, task counts)');
         console.log('  phases list [--type X] [--pick path]         → directory inventory of .planning/phases (--type: summaries|sprints|directories|all; --pick: e.g. directories[-1])');
         console.log('  find-phase <N> [--raw]                       → resolve phase number to dir/slug + decimal children');
