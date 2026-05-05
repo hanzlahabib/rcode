@@ -259,6 +259,77 @@ function runCompliance(packageRoot) {
   return failing;
 }
 
+// ---------- Duplicate-installation check ----------
+
+/**
+ * Detect rcode/rihal-code installations across all known package managers.
+ * Multiple installs cause duplicate slash commands in Claude Code (#637-#644).
+ * Returns { count, installs[], warnings[] }.
+ */
+function checkDuplicateInstalls() {
+  const os = require('os');
+  const home = os.homedir();
+  const installs = [];
+
+  // Resolve every global node_modules dir we know about.
+  const dirs = [];
+  for (const cmd of [['npm', ['root', '-g']], ['pnpm', ['root', '-g']]]) {
+    try {
+      const r = spawnSync(cmd[0], cmd[1], { encoding: 'utf8' });
+      if (r.status === 0 && r.stdout.trim()) dirs.push({ manager: cmd[0], dir: r.stdout.trim() });
+    } catch { /* not installed */ }
+  }
+  // Also scan all nvm node versions — npm root -g only covers the active one.
+  const nvmRoot = path.join(home, '.nvm', 'versions', 'node');
+  if (fs.existsSync(nvmRoot)) {
+    for (const v of fs.readdirSync(nvmRoot)) {
+      const dir = path.join(nvmRoot, v, 'lib', 'node_modules');
+      if (fs.existsSync(dir) && !dirs.some(d => d.dir === dir)) {
+        dirs.push({ manager: `nvm/${v}`, dir });
+      }
+    }
+  }
+
+  for (const { manager, dir } of dirs) {
+    for (const scope of ['@hanzlaa', '@hanzlahabib']) {
+      const scopeDir = path.join(dir, scope);
+      if (!fs.existsSync(scopeDir)) continue;
+      for (const pkg of fs.readdirSync(scopeDir)) {
+        if (pkg === 'rcode' || pkg === 'rihal-code' || pkg.startsWith('rihal')) {
+          let version = 'unknown';
+          try {
+            const pkgJson = JSON.parse(fs.readFileSync(path.join(scopeDir, pkg, 'package.json'), 'utf8'));
+            version = pkgJson.version;
+          } catch {}
+          installs.push({ manager, scope, pkg, version, dir: path.join(scopeDir, pkg) });
+        }
+      }
+    }
+  }
+
+  return { count: installs.length, installs };
+}
+
+function printDuplicateChecks(result) {
+  if (result.count === 0) {
+    console.log(`   ✓ No global rcode installs found`);
+    return 0;
+  }
+  if (result.count === 1) {
+    const i = result.installs[0];
+    console.log(`   ✓ Single global install: [${i.manager}] ${i.scope}/${i.pkg}@${i.version}`);
+    return 0;
+  }
+  // Multiple installs — DUPLICATE — this causes the duplicate-commands bug.
+  console.log(`   ✗ ${result.count} global installs detected — this causes duplicate slash commands!`);
+  for (const i of result.installs) {
+    console.log(`     [${i.manager}] ${i.scope}/${i.pkg}@${i.version}`);
+    console.log(`       ${i.dir}`);
+  }
+  console.log(`\n     Fix: rcode nuke --yes && npm install -g @hanzlaa/rcode`);
+  return 1;
+}
+
 // ---------- Entrypoint ----------
 
 module.exports = function doctor(args, { packageRoot }) {
@@ -270,10 +341,14 @@ module.exports = function doctor(args, { packageRoot }) {
   const checks = runPreflight(cwd, packageRoot);
   const preflightFailures = printChecks(checks);
 
+  console.log(`\nDuplicate installations:`);
+  const dupResult = checkDuplicateInstalls();
+  const duplicateFailures = printDuplicateChecks(dupResult);
+
   console.log(`\nPackage compliance:`);
   const complianceFailures = runCompliance(packageRoot);
 
-  const totalFailures = preflightFailures + complianceFailures;
+  const totalFailures = preflightFailures + complianceFailures + duplicateFailures;
   console.log();
   if (totalFailures === 0) {
     console.log(`✅ All checks passed.`);

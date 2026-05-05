@@ -25,6 +25,7 @@ const COMMANDS = {
   update: require('./update'),
   uninstall: require('./uninstall'),
   remove: require('./uninstall'),  // alias
+  nuke: require('./nuke'),         // full cleanup across all package managers + global state
   dashboard: require('./dashboard'),
   serve: require('./dashboard'),
   digest: require('./digest'),
@@ -57,6 +58,10 @@ Usage:
   update         Refresh skill files (backs up .rihal/ state first)
   uninstall      Remove Rihal Code from the current project
   remove         Alias for uninstall
+  nuke           Wipe ALL rihal/rcode installs everywhere (global packages,
+                 binaries, ~/.claude/* rihal artifacts, ~/.rihal/, project artifacts)
+                 Default = dry-run. Pass --yes to remove. Pass --include-planning
+                 to also remove .planning/ in CWD.
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Memory bank freshness (--check | --refresh | --install-hook)
   github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
