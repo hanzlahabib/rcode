@@ -846,6 +846,36 @@ Route to `<offer_next>` (existing behavior).
 
 </process>
 
+<banner_emission_gate>
+Issue #655 — the success banner is gated on real verification, not vibes.
+Before emitting `PLANNED ✓`, confirm one of these is true:
+
+1. A passing CHECK.md exists at `${PHASE_DIR}/*-CHECK.md` from rihal-sprint-checker
+   in this run AND its overall verdict is `pass` (or `pass-with-cautions`).
+2. The user has explicitly said "skip verification" / "override" this run AND that
+   override is recorded in the offer-next output's `Verification:` field as
+   `Passed with override`.
+3. `plan_checker_enabled` is false in config — recorded as `Verification: Skipped
+   (config-disabled)`.
+
+If none of the three holds (sprint-checker was never spawned, or it returned a
+fail verdict, or its CHECK.md is missing) — DO NOT emit `PLANNED ✓`. Emit:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Rihal ► PHASE {X} PLANNED ⚠ (gates skipped)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Plans were written but rihal-sprint-checker did not return a passing
+CHECK.md. Run /rihal-plan {X} --reviews to gate the plans before
+executing, or pass --skip-verify if you accept the risk.
+```
+
+The same rule applies to `VERIFIED ✓` (after /rihal-verify-phase) and
+`DONE ✓` (after /rihal-execute) — the success-tick is reserved for
+gate-passed states.
+</banner_emission_gate>
+
 <offer_next>
 Output this markdown directly (not as a code block):
 
