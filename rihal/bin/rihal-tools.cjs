@@ -2390,6 +2390,11 @@ function cmdState(subArgs) {
     //   Format B — heading style:   ## Phase 01 — Name  /  ### Phase 01: Name
     // Milestone heading is also matched in any of: "## Milestone M1", "## Milestone v1.0 — Name",
     // "**Milestone: v1.0 — Name**".
+
+    // Issue #651 — must be declared in outer scope. The prune step at end of
+    // sync references seenNums even when roadmap_exists is false (no-op prune
+    // path), causing 'seenNums is not defined' crash.
+    const seenNums = new Set();
     if (parsed.roadmap_exists) {
       const roadmap = fs.readFileSync(roadmapPath, 'utf8');
       const milestoneMatches = [
@@ -2424,8 +2429,6 @@ function cmdState(subArgs) {
       }
       parsed.phases_normalized = beforeClean - cleaned.length;
       state.phases = cleaned;
-
-      const seenNums = new Set();
 
       const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
         if (!/^\d/.test(phaseNum)) return;
