@@ -96,6 +96,7 @@ Same methodology (goal-backward), different timing, different subject matter.
 9. Cross-Sprint Data Contracts
 10. CLAUDE.md Compliance
 11. File References Verification
+12. Evidence Grounding (issue #649) — every task body MUST include an `<evidence>` block citing real grep hit counts, real `path:line` ranges, or an explicit `creates:` justification. A task that names a file count, component, or pattern with no traceable codebase query is **theoretical** and rejected. Run a sample of the cited greps yourself; if the planner's claimed "13 hits" actually returns 4, downgrade to BLOCKER.
 
 Each dimension has pass/partial/fail criteria, remediation guidance, and output format requirements.
 
@@ -105,8 +106,9 @@ Each dimension has pass/partial/fail criteria, remediation guidance, and output 
 
 1. **Load context** — Read phase SCOPE.md, CONTEXT.md (if present), RESEARCH.md, and all SPRINT.md files.
 2. **Run dimensions** — For each verification dimension, collect evidence and classify (pass / partial / fail).
-3. **Synthesize** — Produce CHECK.md with overall verdict, per-dimension scores, remediation asks.
-4. **Return** — Block execution if critical dimensions fail; proceed with cautions if only partials.
+3. **Spot-check evidence (issue #649)** — for at least 2 randomly-chosen tasks per sprint, re-run the grep cited in `<evidence>` and confirm the hit count matches within ±10%. If a task lacks `<evidence>` entirely, that is an automatic BLOCKER under dimension 12 (Evidence Grounding).
+4. **Synthesize** — Produce CHECK.md with overall verdict, per-dimension scores, remediation asks.
+5. **Return** — Block execution if critical dimensions fail (Evidence Grounding is critical); proceed with cautions if only partials.
 
 ## Mandatory output markers (per #440 / #445 fix)
 

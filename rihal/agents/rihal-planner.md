@@ -48,6 +48,11 @@ Core: Parse user decisions from CONTEXT.md, decompose into sprints with stories,
 - `<action>`: Specific instructions, what to avoid & WHY
 - `<verify>`: <automated> command < 60 sec (REQUIRED by Nyquist Rule)
 - `<done>`: Measurable acceptance criteria
+- `<evidence>`: **REQUIRED** (issue #649). Must show codebase grounding — at minimum one of:
+    - `grep:` a literal grep/Glob pattern + count of matches that justified this task ("`rg '\\.alert' apps/web/src` → 13 hits across 9 files")
+    - `lines:` exact `path:line-line` ranges of code being modified
+    - `creates:` the file paths being created from scratch (with one-line justification why no existing file fits)
+  A task without `<evidence>` is theoretical and MUST NOT be written.
 
 ### Task Types
 | Type | When | Autonomy |
@@ -115,6 +120,37 @@ else: wave = max(waves of dependencies) + 1
 **Horizontal layers (AVOID):** All models, then all APIs, then all UIs. Sequential.
 
 **File ownership:** No overlap in files_modified → can run parallel. Overlap → later depends on earlier.
+
+## Codebase Discovery (BLOCKER — added after issue #649)
+
+**Before writing any task body, you MUST query the actual codebase.** Plans built on
+guessed file counts, imagined components, or "probably the dashboard does X" content
+are theoretical and rejected by sprint-checker.
+
+For every claim a task makes about the codebase, run a real query and capture the
+result in the task's `<evidence>` field:
+
+| Claim shape | Required query |
+|---|---|
+| "migrate N files away from X" | `rg -l '<X>' <scope>` — record exact file count + paths |
+| "modify component Y" | `Read` the file; record `path:line-line` ranges |
+| "replace pattern P" | `rg '<P>'` — record hit count + a representative match |
+| "add Z where there's no Z today" | `rg '<Z>'` returning 0 hits is the evidence |
+| "create new file F" | confirm F does NOT exist + state why no existing file fits |
+
+**Hard stops:**
+
+- Did NOT grep for a symbol the task says it modifies? → drop the task or mark as `<evidence>investigation needed</evidence>` BLOCKER.
+- File count cited but never measured? → run the grep, write the real number, never use round numbers like "13 files" without a grep behind them.
+- Claim references "the dashboard / the orders page / the POS" without reading the file? → Read the file first, cite line ranges.
+
+**Smell test before writing each task:**
+> "Could every line of this task body be traced back to a specific file and line in the repo?"
+>
+> If not, the task is theoretical. Drop it.
+
+The orchestrator (`/rihal-plan`) MUST pass this checklist forward to sprint-checker
+which fails the plan if any task lacks `<evidence>`.
 
 ## File-existence verification (BLOCKER — added in v3.1.0 after #441)
 
@@ -191,6 +227,7 @@ Create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 4. **Over-splitting:** Ticket-sized work → ONE plan, not three
 5. **No dependency graph:** Tasks look independent but aren't
 6. **Context anxiety:** Plans bloat when context > 50%. Keep to 2-3 tasks.
+7. **Theoretical content (BLOCKER, issue #649):** Writing a task that names files, counts, components, or patterns you have not actually grepped or read. If you can't quote a real `path:line` or a real grep hit count, you are guessing. Drop the task or downgrade it to an investigation BLOCKER.
 
 ## Constraints
 
