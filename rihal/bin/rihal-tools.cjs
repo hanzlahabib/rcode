@@ -1417,12 +1417,30 @@ function cmdState(subArgs) {
   // --- resolve-blocker ---
   if (sub === 'resolve-blocker') {
     const index = parseInt(subArgs[1], 10);
+    const flags = parseFlags(2);
     const state = readState();
     if (!state) throw new Error('No state.json found');
     if (!state.blockers || index < 0 || index >= state.blockers.length) {
       throw new Error(`Invalid blocker index: ${subArgs[1]}. Valid range: 0-${(state.blockers || []).length - 1}`);
     }
+    // Issue #654 — tickets-first. Resolution must reference an issue, a
+    // commit SHA, or be explicitly marked as internal with --noref. Silent
+    // resolution drops the audit trail.
+    const hasIssue = flags.issue && /^#?\d+$/.test(String(flags.issue));
+    const hasCommit = flags.commit && /^[0-9a-f]{7,40}$/i.test(String(flags.commit));
+    const noref = flags.noref === true || flags.noref === 'true';
+    if (!hasIssue && !hasCommit && !noref) {
+      throw new Error(
+        `resolve-blocker [${index}] requires an audit reference. Pass one of:\n` +
+        `  --issue <gh-issue-number>     e.g. --issue 654\n` +
+        `  --commit <sha>                7-40 hex chars\n` +
+        `  --noref                       acknowledge no external reference (audit trail will say "internal")`
+      );
+    }
     state.blockers[index].resolved = new Date().toISOString();
+    if (hasIssue) state.blockers[index].resolved_issue = String(flags.issue).replace(/^#/, '');
+    if (hasCommit) state.blockers[index].resolved_commit = String(flags.commit).slice(0, 40);
+    if (noref && !hasIssue && !hasCommit) state.blockers[index].resolved_ref = 'internal';
     return writeState(state);
   }
 
@@ -5487,7 +5505,7 @@ async function main() {
         console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');
         console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rihal/decisions.jsonl across all projects');
         console.log('  state add-blocker "<description>"            → append to blockers[]');
-        console.log('  state resolve-blocker <index>                → mark blocker as resolved');
+        console.log('  state resolve-blocker <index> --issue <N>|--commit <sha>|--noref  → mark blocker as resolved (audit ref required, #654)');
         console.log('  state record-session                         → update last_session timestamp');
         console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
         console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
