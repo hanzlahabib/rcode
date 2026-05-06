@@ -104,29 +104,14 @@ case " $ARGUMENTS " in
   *" --force "*|*" --reinit "*) FORCE=true ;;
 esac
 
-# Read state and classify
-STATE_JSON=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null)
-STATE_EXISTS=$([ -n "$STATE_JSON" ] && echo true || echo false)
-SEEDED_STUB=$(echo "$STATE_JSON" | grep -c '"_seeded_stub"[[:space:]]*:[[:space:]]*true')
-PROJECT_FIELD=$(echo "$STATE_JSON" | grep -E '"project"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1)
-PHASE_COUNT=$(echo "$STATE_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log((JSON.parse(s).phases||[]).length)}catch{console.log(0)}})" 2>/dev/null || echo 0)
-FIRST_PHASE_NAME=$(echo "$STATE_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=(JSON.parse(s).phases||[])[0];console.log(p?(p.name||''):'')}catch{console.log('')}})" 2>/dev/null || echo "")
-
-# Real-project signals (any one → real)
-REAL=false
-[ -f .planning/REQUIREMENTS.md ] && REAL=true
-[ -d .planning/research ] && REAL=true
-[ "$PHASE_COUNT" -gt 1 ] && REAL=true
-[ -n "$FIRST_PHASE_NAME" ] && [ "$FIRST_PHASE_NAME" != "Setup & Scaffolding" ] && REAL=true
-
-# Classify
-if [ "$STATE_EXISTS" = false ] || [ -z "$PROJECT_FIELD" ]; then
-  PROJECT_STATE="none"
-elif [ "$SEEDED_STUB" -gt 0 ] || [ "$REAL" = false ]; then
-  PROJECT_STATE="stub"
-else
-  PROJECT_STATE="real"
-fi
+# Single source of truth: rihal-tools project-status returns one of
+#   uninstalled | uninitialized | stub | real
+# (see issue #675 for the contract). Falls back to `none` when
+# rihal-tools is unavailable so the workflow still proceeds.
+PROJECT_STATE=$(node .rihal/bin/rihal-tools.cjs project-status 2>/dev/null \
+  | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).status||'none')}catch{console.log('none')}})" \
+  || echo "none")
+[ "$PROJECT_STATE" = "uninstalled" ] || [ "$PROJECT_STATE" = "uninitialized" ] && PROJECT_STATE="none"
 ```
 
 **If `PROJECT_STATE=real` and `FORCE=false`:** show the guard:

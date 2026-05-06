@@ -5278,6 +5278,62 @@ function cmdSummaryExtract(args) {
  * Hides internal machinery (lock metadata, full history) from callers
  * that only need a render-ready summary.
  */
+/**
+ * cmdProjectStatus — classify project lifecycle state into one of:
+ *   uninstalled    — no .rihal/config.yaml
+ *   uninitialized  — config present, no state.json
+ *   stub           — install-seeded scaffolding only (issue #670)
+ *   real           — /rihal-new-project has run
+ *
+ * Real-project signals (any → real):
+ *   - .planning/REQUIREMENTS.md exists
+ *   - .planning/research/ directory exists
+ *   - state.phases.length > 1
+ *   - first phase name ≠ "Setup & Scaffolding"
+ *
+ * Closes #675 — single source of truth for "is this project initialized."
+ */
+function cmdProjectStatus() {
+  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const planningDir = path.join(PROJECT_ROOT, '.planning');
+
+  if (!fs.existsSync(configPath)) return { ok: true, status: 'uninstalled' };
+  if (!fs.existsSync(statePath)) return { ok: true, status: 'uninitialized' };
+
+  let state;
+  try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+  catch (e) { return { ok: false, error: `invalid state.json: ${e.message}` }; }
+
+  const hasRequirements = fs.existsSync(path.join(planningDir, 'REQUIREMENTS.md'));
+  const hasResearch = fs.existsSync(path.join(planningDir, 'research'));
+  const phases = state.phases || [];
+  const phaseCountReal = phases.length > 1;
+  const firstPhaseName = phases[0]?.name || '';
+  const phaseNameReal = firstPhaseName && firstPhaseName !== 'Setup & Scaffolding';
+
+  const isReal = hasRequirements || hasResearch || phaseCountReal || phaseNameReal;
+  const isStub = state._seeded_stub === true || !state.project || !isReal;
+
+  let status;
+  if (isReal) status = 'real';
+  else if (isStub) status = 'stub';
+  else status = 'uninitialized';
+
+  return {
+    ok: true,
+    status,
+    signals: {
+      project: state.project || null,
+      seeded_stub: state._seeded_stub === true,
+      has_requirements: hasRequirements,
+      has_research: hasResearch,
+      phase_count: phases.length,
+      first_phase_name: firstPhaseName || null,
+    },
+  };
+}
+
 function cmdStateSnapshot() {
   const statePath = path.join(RIHAL_DIR, 'state.json');
   if (!fs.existsSync(statePath)) return { ok: true, state: null };
@@ -5651,6 +5707,9 @@ async function main() {
       }
       case 'agent-skills':
         result = cmdAgentInfo(args[0]);
+        break;
+      case 'project-status':
+        result = cmdProjectStatus();
         break;
       case 'version':
         console.log(readPackageVersion());
