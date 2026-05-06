@@ -88,25 +88,82 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
-## Step 0.5 — Detect existing project (redirect)
+## Step 0.5 — Detect existing project (stub-aware redirect)
 
-Before any processing, check if a project already exists in this directory:
+Before any processing, classify the project state into one of:
+
+- **none** — no `.rihal/state.json`, no `.planning/` → proceed
+- **stub** — install-seeded scaffolding only (issue #670) → proceed (overwrite stub)
+- **real** — a previous `/rihal-new-project` ran here → guard, unless `--force`
 
 ```bash
-EXISTING=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | grep '"project"' | head -1)
+# --force / --reinit bypasses the guard entirely (issue #672).
+# --auto implies --force on stub state (issue #674).
+FORCE=false
+case " $ARGUMENTS " in
+  *" --force "*|*" --reinit "*) FORCE=true ;;
+esac
+
+# Read state and classify
+STATE_JSON=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null)
+STATE_EXISTS=$([ -n "$STATE_JSON" ] && echo true || echo false)
+SEEDED_STUB=$(echo "$STATE_JSON" | grep -c '"_seeded_stub"[[:space:]]*:[[:space:]]*true')
+PROJECT_FIELD=$(echo "$STATE_JSON" | grep -E '"project"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1)
+PHASE_COUNT=$(echo "$STATE_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log((JSON.parse(s).phases||[]).length)}catch{console.log(0)}})" 2>/dev/null || echo 0)
+FIRST_PHASE_NAME=$(echo "$STATE_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=(JSON.parse(s).phases||[])[0];console.log(p?(p.name||''):'')}catch{console.log('')}})" 2>/dev/null || echo "")
+
+# Real-project signals (any one → real)
+REAL=false
+[ -f .planning/REQUIREMENTS.md ] && REAL=true
+[ -d .planning/research ] && REAL=true
+[ "$PHASE_COUNT" -gt 1 ] && REAL=true
+[ -n "$FIRST_PHASE_NAME" ] && [ "$FIRST_PHASE_NAME" != "Setup & Scaffolding" ] && REAL=true
+
+# Classify
+if [ "$STATE_EXISTS" = false ] || [ -z "$PROJECT_FIELD" ]; then
+  PROJECT_STATE="none"
+elif [ "$SEEDED_STUB" -gt 0 ] || [ "$REAL" = false ]; then
+  PROJECT_STATE="stub"
+else
+  PROJECT_STATE="real"
+fi
 ```
 
-If `$EXISTING` is non-empty (project already initialized):
+**If `PROJECT_STATE=real` and `FORCE=false`:** show the guard:
 
 ```
 ⚠ A rihal project already exists here.
 
-To check current state: /rihal-status
-To find next action: /rihal-next
-To start a fresh phase instead: /rihal-add-phase
+Quick actions:
+  /rihal-status            check current state
+  /rihal-next              find next action
+  /rihal-add-phase         add a phase to the current milestone
+
+To start over (overwrites .planning/* and .rihal/state.json):
+  /rihal-new-project --force <description>
+  rcode install --reset                        nuclear option — wipes config + state
 ```
 
-Only proceed past this step if no project exists (`$EXISTING` is empty).
+STOP — do not proceed.
+
+**If `PROJECT_STATE=stub` (issue #670 install scaffolding):** print a one-liner and proceed:
+
+```
+ℹ Install stub detected — overwriting with real project setup.
+```
+
+**If `PROJECT_STATE=none`:** proceed silently.
+
+**If `PROJECT_STATE=real` and `FORCE=true`:** create a rollback tag, then proceed:
+
+```bash
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  TAG="pre-rihal-rewrite-$(date +%Y%m%d-%H%M%S)"
+  git tag "$TAG" 2>/dev/null && echo "ℹ Rollback tag created: $TAG"
+fi
+```
+
+In interactive mode (not `--auto`), confirm via AskUserQuestion before overwriting. In `--auto` or YOLO mode, proceed without confirmation.
 
 <auto_mode>
 
