@@ -324,6 +324,11 @@ function detectIdeSignals(target) {
  * actually wanted cursor or gemini.
  */
 async function resolveIde(opts) {
+  // Issue #692: when the wizard has already collected opts.ides (interactive
+  // run from main()), resolveIde was re-prompting because it only checked
+  // opts.ideProvided (set by --ide flag, not by the wizard). Honor any
+  // pre-existing array result so we don't double-prompt.
+  if (Array.isArray(opts.ides) && opts.ides.length > 0) return opts.ides;
   if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
   if (opts.noPrompt || opts.global) return ['claude']; // auto-install: always claude
   if (opts.yes || !process.stdin.isTTY) {
@@ -1491,6 +1496,86 @@ async function install(opts) {
     return 2;
   }
 
+  // Issue #691: file lock prevents concurrent installs from racing on the
+  // same .rihal/_config/manifest.yaml + files-manifest.csv. Without it, two
+  // parallel runs (two terminals, postinstall + manual install, etc.) can
+  // each write a manifest the OTHER doesn't see → orphan sweep on the next
+  // install deletes files the other run considered legit.
+  let releaseLock = () => {};
+  if (!opts.global) {
+    const lockResult = acquireInstallLock(opts.target);
+    if (!lockResult.ok) {
+      console.log('');
+      console.log('  ' + warn(`Another install is already running here (PID ${lockResult.pid}).`));
+      console.log('  ' + dim(`  Lock: ${lockResult.lockPath}`));
+      console.log('  ' + dim('  If the other process crashed, delete the lock file and retry:'));
+      console.log('  ' + dim(`    rm ${lockResult.lockPath}`));
+      console.log('');
+      return 3;
+    }
+    releaseLock = lockResult.release;
+    // Make sure the lock is released even if install throws unexpectedly.
+    process.on('exit', releaseLock);
+  }
+
+  try {
+    return await installInner(opts);
+  } finally {
+    releaseLock();
+    process.removeListener('exit', releaseLock);
+  }
+}
+
+/**
+ * Acquire an exclusive install lock at .rihal/.install.lock (issue #691).
+ *
+ * Returns:
+ *   { ok: true, release: () => void }                 lock acquired
+ *   { ok: false, pid: number, lockPath: string }      another process holds it
+ *
+ * Stale-lock detection: if the recorded PID is not alive, the lock is
+ * reclaimed automatically.
+ */
+function acquireInstallLock(target) {
+  const lockDir = path.join(target, '.rihal');
+  const lockPath = path.join(lockDir, '.install.lock');
+  try {
+    fs.mkdirSync(lockDir, { recursive: true });
+  } catch { /* fall through; openSync will fail with a clearer error */ }
+
+  function isAlive(pid) {
+    try { process.kill(pid, 0); return true; } catch { return false; }
+  }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const fd = fs.openSync(lockPath, 'wx'); // exclusive create
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      return {
+        ok: true,
+        release: () => {
+          try { fs.unlinkSync(lockPath); } catch {}
+        },
+      };
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err;
+      // Lock exists — check if holder is alive.
+      let pid = 0;
+      try { pid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10); } catch {}
+      if (pid && !isAlive(pid)) {
+        // Stale lock — remove and retry once.
+        try { fs.unlinkSync(lockPath); } catch {}
+        continue;
+      }
+      return { ok: false, pid, lockPath };
+    }
+  }
+  // Should be unreachable, but degrade gracefully.
+  return { ok: false, pid: 0, lockPath };
+}
+
+async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
   // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
@@ -2423,6 +2508,11 @@ async function runInstallWizard(opts) {
   });
   if (isCancel(editorChoices)) { cancel('Installation cancelled.'); process.exit(0); }
   opts.ides = editorChoices;
+  // Issue #692: keep opts.ide and opts.ides consistent so downstream callers
+  // that historically read either field see the same answer. Mark provided
+  // so any later resolveIde call exits early.
+  opts.ide = editorChoices[0];
+  opts.ideProvided = true;
 
   // ── 3. Communication language ─────────────────────────────────────────
   const langChoice = await select({
