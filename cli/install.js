@@ -324,6 +324,11 @@ function detectIdeSignals(target) {
  * actually wanted cursor or gemini.
  */
 async function resolveIde(opts) {
+  // Issue #692: when the wizard has already collected opts.ides (interactive
+  // run from main()), resolveIde was re-prompting because it only checked
+  // opts.ideProvided (set by --ide flag, not by the wizard). Honor any
+  // pre-existing array result so we don't double-prompt.
+  if (Array.isArray(opts.ides) && opts.ides.length > 0) return opts.ides;
   if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
   if (opts.noPrompt || opts.global) return ['claude']; // auto-install: always claude
   if (opts.yes || !process.stdin.isTTY) {
@@ -2503,6 +2508,11 @@ async function runInstallWizard(opts) {
   });
   if (isCancel(editorChoices)) { cancel('Installation cancelled.'); process.exit(0); }
   opts.ides = editorChoices;
+  // Issue #692: keep opts.ide and opts.ides consistent so downstream callers
+  // that historically read either field see the same answer. Mark provided
+  // so any later resolveIde call exits early.
+  opts.ide = editorChoices[0];
+  opts.ideProvided = true;
 
   // ── 3. Communication language ─────────────────────────────────────────
   const langChoice = await select({
