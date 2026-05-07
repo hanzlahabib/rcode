@@ -4,6 +4,14 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.24 (2026-05-07) — install/uninstall safety batch 2 (closes #687 #688 #689)
+
+- **fix(install):** Use `writeFileAtomic` for state.json, config.yaml, .gitignore, and pre-commit hook (#687). 11 critical writes converted; Ctrl+C / OOM / disk-full mid-write no longer truncates user state or silently destroys lines below the rcode .gitignore block.
+- **fix(install,uninstall):** Symlink-traversal guard on `fs.rmSync` (#688). New `safeRmSync` helper refuses to recurse into a top-level symlink and refuses paths whose realpath escapes the project root. 7 call sites converted across install.js and uninstall.js. Verified: `rcode uninstall --purge` with `.planning` symlinked to `/tmp/outside` leaves the target intact.
+- **fix(install):** Health-check thresholds derive from the package manifest (#689) instead of hardcoded `<20`. Skills count gets a global fallback to mirror the agents/commands fallback (#664/#666/#669) — necessary now that #679 dedup means project skills folder may have only sidebar stubs while `~/.claude/skills/` holds the real ones.
+
+---
+
 ## v3.4.23 (2026-05-07) — hotfix
 
 - **fix(build):** Add `prepack` lifecycle script so `npm publish` always rebuilds `dist/rcode.js` from current `cli/` source. 3.4.22 shipped a stale `dist/` (built from an older checkout), so the slash-picker dedup fix in #679 was not actually delivered to npm users. 3.4.23 has the correct bundle.
