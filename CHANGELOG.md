@@ -4,6 +4,12 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.23 (2026-05-07) — hotfix
+
+- **fix(build):** Add `prepack` lifecycle script so `npm publish` always rebuilds `dist/rcode.js` from current `cli/` source. 3.4.22 shipped a stale `dist/` (built from an older checkout), so the slash-picker dedup fix in #679 was not actually delivered to npm users. 3.4.23 has the correct bundle.
+
+---
+
 ## v3.4.22 (2026-05-07)
 
 ### Install / uninstall / update flow audit — Wave 1+2 (closes #679 #680 #681 #682 #683 #684 #685)

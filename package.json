@@ -1,6 +1,6 @@
 {
   "name": "@hanzlaa/rcode",
-  "version": "3.4.22",
+  "version": "3.4.23",
   "description": "rcode — the memory bank for AI-driven SaaS teams. Persistent project context, distinctive engineering personas, and phase-based workflows. Built by Rihal. Works in Claude Code, Cursor, Gemini, VS Code, and Antigravity.",
   "main": "cli/index.js",
   "bin": {
@@ -15,6 +15,7 @@
     "postinstall": "node cli/postinstall.js",
     "build:cli": "node scripts/build.cjs",
     "build": "node scripts/build.cjs",
+    "prepack": "node scripts/build.cjs",
     "dogfood": "bash scripts/dogfood-check.sh"
   },
   "files": [
