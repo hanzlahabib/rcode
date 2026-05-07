@@ -1456,6 +1456,18 @@ function convertToCursorMdc(sourceText) {
 async function install(opts) {
   if (opts.help) { printHelp(); return 0; }
 
+  // Issue #680: --reset alone is a footgun — silently does nothing. Fail
+  // fast with a clear message before any work happens.
+  if (opts.reset && !opts.force) {
+    console.log('');
+    console.log('  ' + warn('--reset has no effect without --force.'));
+    console.log('  ' + dim('  --reset wipes config.yaml and state.json. To prevent accidental data loss,'));
+    console.log('  ' + dim('  it must be paired with --force. Re-run as:'));
+    console.log('  ' + dim('    rcode install --reset --force'));
+    console.log('');
+    return 2;
+  }
+
   const pkgVersion = readPackageVersion();
 
   // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
@@ -1889,6 +1901,7 @@ async function install(opts) {
   } else if (opts.force && (fs.existsSync(configPath) || fs.existsSync(stateDest))) {
     existedBefore = true;
   }
+  // Note: --reset without --force is rejected at the top of install() (#680).
 
   // Write .rihal/config.yaml (user_name, project_name, language, mode)
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)

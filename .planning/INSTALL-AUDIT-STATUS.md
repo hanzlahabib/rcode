@@ -23,9 +23,9 @@ This MD only tracks items we're acting on this session. Everything else is filed
 
 | # | Issue | Commit | Status |
 |---|-------|--------|--------|
-| W1.1 | [#679](https://github.com/hanzlahabib/rihal-code/issues/679) skills/ dedup missing — picker shows everything twice | — | 🟡 in progress |
-| W1.2 | `--reset` alone silently does nothing (must pair with `--force`) | — | ⚪ pending |
-| W1.3 | `_seeded_stub:true` set on install but never cleared | — | ⚪ pending |
+| W1.1 | [#679](https://github.com/hanzlahabib/rihal-code/issues/679) skills/ dedup missing — picker shows everything twice | `cli/install.js`, `cli/generate-command-skills.cjs` | ✅ done — verified 0 overlap |
+| W1.2 | [#680](https://github.com/hanzlahabib/rihal-code/issues/680) `--reset` alone silently does nothing | `cli/install.js` | ✅ done — fail-fast at install() entry, exit 2 |
+| W1.3 | `_seeded_stub:true` set on install but never cleared | — | 🟡 in progress |
 | W1.4 | Package-name drift `@hanzlaa/rcode` vs `@hanzlahabib/rihal-code` in user-facing strings | — | ⚪ pending |
 
 ## Wave 2 — Safety fixes (may not finish this session)
