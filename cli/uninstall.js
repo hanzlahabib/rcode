@@ -230,7 +230,7 @@ function buildPlan(cwd, editors) {
  */
 function discoverKnownActionSkills() {
   try {
-    const { readPackageManifest } = require(path.join(__dirname, 'lib', 'manifest.cjs'));
+    const { readPackageManifest } = require('./lib/manifest.cjs');
     const packageRoot = path.resolve(__dirname, '..');
     const pkg = readPackageManifest(packageRoot);
     if (pkg && pkg.actions instanceof Set && pkg.actions.size > 0) {

@@ -57,7 +57,7 @@ const os = require('os');
 
 // Atomic write helper (#687) + symlink-safe rmSync (#688) — protect against
 // Ctrl+C mid-write and malicious symlink-traversal during dedup/cleanup.
-const { writeFileAtomic, safeRmSync } = require(path.join(__dirname, 'lib', 'fsutil.cjs'));
+const { writeFileAtomic, safeRmSync } = require('./lib/fsutil.cjs');
 
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
@@ -2359,7 +2359,7 @@ function runInstallHealthCheck(target, counts) {
   // in cli/lib/manifest.cjs already does this; we mirror its result here.
   let expected = { agents: 20, skills: 20, commands: 20 };
   try {
-    const { readPackageManifest } = require(path.join(__dirname, 'lib', 'manifest.cjs'));
+    const { readPackageManifest } = require('./lib/manifest.cjs');
     const pkgManifest = readPackageManifest(PACKAGE_ROOT);
     if (pkgManifest && pkgManifest.agents instanceof Set && pkgManifest.actions instanceof Set) {
       // Tolerate ~10% loss vs source — global precedence, .local.md

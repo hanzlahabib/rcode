@@ -4,6 +4,12 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.26 (2026-05-07) — hotfix
+
+- **fix(build):** Replace dynamic `require(path.join(__dirname, 'lib', X))` with static `require('./lib/X.cjs')` so esbuild resolves them at bundle time. 3.4.24 + 3.4.25 shipped a bundle that hit `MODULE_NOT_FOUND` at runtime when `npm exec`-launched (the bundled `dist/rcode.js` has no `lib/` siblings). Static paths fix all three sites (install.js × 2, uninstall.js × 1).
+
+---
+
 ## v3.4.25 (2026-05-07) — install/uninstall batch 3 (closes #691 #692 #693 #694)
 
 - **fix(install):** PID-based exclusive lock at `.rihal/.install.lock` (#691). Concurrent installs no longer corrupt the manifest. Stale locks (dead PID) auto-reclaimed; live locks exit 3 with a clear message and the lock path.
