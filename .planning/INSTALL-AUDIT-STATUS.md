@@ -26,7 +26,9 @@ This MD only tracks items we're acting on this session. Everything else is filed
 | W1.1 | [#679](https://github.com/hanzlahabib/rihal-code/issues/679) skills/ dedup missing — picker shows everything twice | `cli/install.js`, `cli/generate-command-skills.cjs` | ✅ done — verified 0 overlap |
 | W1.2 | [#680](https://github.com/hanzlahabib/rihal-code/issues/680) `--reset` alone silently does nothing | `cli/install.js` | ✅ done — fail-fast at install() entry, exit 2 |
 | W1.3 | [#681](https://github.com/hanzlahabib/rihal-code/issues/681) `_seeded_stub` never cleared | `rihal/bin/rihal-tools.cjs` | ✅ done — auto-clear in writeState + explicit `state clear-stub` |
-| W1.4 | Package-name drift `@hanzlaa/rcode` vs `@hanzlahabib/rihal-code` in user-facing strings | — | 🟡 in progress |
+| W1.4 | [#682](https://github.com/hanzlahabib/rihal-code/issues/682) Package-name drift in CLI JSDocs | `cli/index.js`, `cli/set-profile.js`, `cli/show-model.js` | ✅ done — 16 stale refs replaced; `nuke.js` left alone (legacy migration) |
+
+**Wave 1 complete.** Commits on branch: 4 (skills dedup, --reset fast-fail, _seeded_stub clear, package-name normalization). Issues filed: #679, #680, #681, #682.
 
 ## Wave 2 — Safety fixes (may not finish this session)
 
