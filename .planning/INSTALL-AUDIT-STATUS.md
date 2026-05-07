@@ -34,7 +34,7 @@ This MD only tracks items we're acting on this session. Everything else is filed
 
 | # | Finding | File:line | Severity |
 |---|---------|-----------|----------|
-| W2.1 | `--purge` backup never includes `.rihal/` — total data loss possible | `uninstall.js:493,633` | critical |
+| W2.1 | [#683](https://github.com/hanzlahabib/rihal-code/issues/683) `--purge` backup never includes `.rihal/`, deleted with rmSync | `uninstall.js` | ✅ done — backup includes .rihal/+.planning/ when purging, written to .rihal-backups/ sibling so rmSync can't kill it |
 | W2.2 | `# rcode` gitignore regex over-matches user comments | `uninstall.js:660` | critical |
 | W2.3 | `fs.rmSync` recursive without symlink guard (3 sites) | `install.js:1815`, `uninstall.js:513,633` | critical |
 | W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | critical |
