@@ -4,6 +4,15 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.27 (2026-05-07) — install/uninstall batch 4 (closes #696 #697)
+
+- **test(uninstall,postinstall,update):** 38 new tests for the previously-untested CLI modules (#696). Closes Wave 3 W3.2/W3.3/W3.4 from `.planning/INSTALL-AUDIT-STATUS.md`. Refactors three files for testability: `cli/postinstall.js` now wraps top-level effect in `require.main === module` so importing it doesn't fire the postinstall logic; `cli/uninstall.js` extracts the gitignore-strip regex into pure `stripRihalGitignoreBlock`; `cli/update.js` adds named exports for `parseArgs` and `detectInstalledEditors`.
+- **refactor(install,uninstall):** Single `SUPPORTED_IDES` source of truth (#697). Promotes the canonical IDE list to a frozen module-level constant in `cli/install.js`, exported and imported by `cli/uninstall.js`. Drift guard test fails CI if anyone re-introduces a local copy or a hardcoded literal of the same shape.
+
+12 + 14 + 12 + 4 = 42 new tests covering every fix from Wave 1+2 plus the post-fix coverage gaps.
+
+---
+
 ## v3.4.26 (2026-05-07) — hotfix
 
 - **fix(build):** Replace dynamic `require(path.join(__dirname, 'lib', X))` with static `require('./lib/X.cjs')` so esbuild resolves them at bundle time. 3.4.24 + 3.4.25 shipped a bundle that hit `MODULE_NOT_FOUND` at runtime when `npm exec`-launched (the bundled `dist/rcode.js` has no `lib/` siblings). Static paths fix all three sites (install.js × 2, uninstall.js × 1).

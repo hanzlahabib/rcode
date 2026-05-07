@@ -69,6 +69,25 @@ function isLocalOverride(name) {
 }
 
 /**
+ * Strip the rcode-managed block from a .gitignore string.
+ *
+ * Pure function (no fs) so it can be unit-tested independently. Issue #684
+ * fixed the over-broad legacy regex; this helper centralises the logic so
+ * any future shape change has exactly one site to update.
+ *
+ * Both supported shapes require BOTH the opener AND the closer to match —
+ * user comments starting with "# rcode" are safe.
+ */
+function stripRihalGitignoreBlock(text) {
+  return text
+    // Current shape (install.js BEGIN/END markers — exact match).
+    .replace(/\n?# ===== rcode-managed gitignore block[\s\S]*?# ===== end rcode-managed gitignore block =====\n?/g, '\n')
+    // Legacy >>> / <<< fenced shape.
+    .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+/**
  * Walk a directory and remove all files/subdirs whose name matches a predicate.
  * Returns the number of entries removed. Always skips local overrides (#382).
  */
@@ -419,15 +438,13 @@ async function runUninstall(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
 
-  // Issue #693: keep the IDE list in sync with the installer. The installer
-  // ships claude/cursor/gemini/vscode/antigravity. The previous uninstaller
-  // list (claude/cursor/windsurf/antigravity) was missing gemini + vscode
-  // and included windsurf (which the installer never writes). Result: a
-  // user with vscode-style commands could never `rcode uninstall`.
-  const SUPPORTED_EDITORS = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'];
+  // Issue #693 + #697 (W4.3): keep the IDE list in sync with the installer
+  // by importing the single source of truth. Adding an IDE to install.js
+  // SUPPORTED_IDES is now the only edit needed for parity.
+  const { SUPPORTED_IDES } = require('./install.js');
   const editors = opts.editor
-    ? (opts.editor === 'all' ? SUPPORTED_EDITORS : [opts.editor])
-    : SUPPORTED_EDITORS;
+    ? (opts.editor === 'all' ? Array.from(SUPPORTED_IDES) : [opts.editor])
+    : Array.from(SUPPORTED_IDES);
 
   console.log(`\n🕌 Rihal Code — Uninstall\n`);
   console.log(`   Project: ${cwd}`);
@@ -731,12 +748,7 @@ async function runUninstall(args) {
     if (fs.existsSync(gitignorePath)) {
       try {
         const before = fs.readFileSync(gitignorePath, 'utf8');
-        const stripped = before
-          // Current shape (install.js BEGIN/END markers — exact match).
-          .replace(/\n?# ===== rcode-managed gitignore block[\s\S]*?# ===== end rcode-managed gitignore block =====\n?/g, '\n')
-          // Legacy >>> / <<< fenced shape.
-          .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
-          .replace(/\n{3,}/g, '\n\n');
+        const stripped = stripRihalGitignoreBlock(before);
         if (stripped !== before) {
           fs.writeFileSync(gitignorePath, stripped);
           console.log(`   ✓ stripped rcode block from .gitignore (--purge)`);
@@ -772,6 +784,14 @@ async function runUninstall(args) {
   console.log(`\nTo reinstall later:`);
   console.log(`   rcode install`);
 }
+
+// Re-exports for unit tests (W3.2 — issue #694 follow-up). The default
+// export remains the async runner; these are attached afterwards so pure
+// functions can be exercised without spawning a child process.
+module.exports.isLocalOverride = isLocalOverride;
+module.exports.planToPathList = planToPathList;
+module.exports.discoverKnownActionSkills = discoverKnownActionSkills;
+module.exports.stripRihalGitignoreBlock = stripRihalGitignoreBlock;
 
 // Direct invocation — allow `node cli/uninstall.js [flags]` to run end-to-end.
 // When called via cli/index.js, module.exports is invoked directly.

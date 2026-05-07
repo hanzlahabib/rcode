@@ -383,3 +383,7 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   }
   console.log();
 }
+
+// Re-exports for unit tests (W3.4 — issue #694 follow-up).
+module.exports.parseArgs = parseArgs;
+module.exports.detectInstalledEditors = detectInstalledEditors;
