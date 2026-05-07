@@ -13,42 +13,52 @@
 const os = require('os');
 const path = require('path');
 
-// Skip in CI or test environments
-if (process.env.CI || process.env.NODE_ENV === 'test') {
-  process.exit(0);
-}
-
-// Only auto-install when invoked as a global package (npm install -g).
-// A local devDependency install should not touch the user's ~/.claude/.
-const isGlobalInstall = (() => {
+/**
+ * Decide whether the current postinstall invocation represents a GLOBAL
+ * `npm install -g @hanzlaa/rcode` (true) or a transitive devDep install
+ * inside someone's project (false).
+ *
+ * Pure function — takes its inputs explicitly so tests can drive every
+ * branch without needing to mutate process.env / __dirname / process.cwd.
+ *
+ * @param {object} env  process.env-like
+ * @param {string} dirname  __dirname of the postinstall script
+ * @param {string} cwd  process.cwd() at invocation time
+ */
+function isGlobalInstall(env, dirname, cwd) {
   try {
-    // npm sets npm_config_global=true for global installs
-    if (process.env.npm_config_global === 'true') return true;
-    // pnpm sets npm_config_global too, but check PNPM_HOME as a fallback
-    if (process.env.PNPM_HOME && __dirname.startsWith(process.env.PNPM_HOME)) return true;
-    // Check if __dirname is inside a known global node_modules path.
-    // Covers: /usr/local/lib, /usr/lib, ~/.nvm/.../lib, ~/.pnpm/..., ~/.yarn/...
+    if (env.npm_config_global === 'true') return true;
+    if (env.PNPM_HOME && dirname.startsWith(env.PNPM_HOME)) return true;
     const globalPatterns = [
-      /\/node_modules\/@hanzlaa\/rcode/,  // any global node_modules
-      /[/\\]lib[/\\]node_modules[/\\]/,   // /usr/local/lib/node_modules
-      /\.nvm[/\\]versions[/\\]/,           // nvm
-      /\.pnpm[/\\]/,                       // pnpm global store
-      /\.yarn[/\\]global/,                 // yarn global
+      /\/node_modules\/@hanzlaa\/rcode/,
+      /[/\\]lib[/\\]node_modules[/\\]/,
+      /\.nvm[/\\]versions[/\\]/,
+      /\.pnpm[/\\]/,
+      /\.yarn[/\\]global/,
     ];
-    if (globalPatterns.some((re) => re.test(__dirname))) return true;
-    // Last resort: package is NOT inside a project's local node_modules
-    // (local installs have .../project/node_modules/@hanzlaa/rcode/cli)
-    const localNodeModules = path.join(process.cwd(), 'node_modules');
-    if (!__dirname.startsWith(localNodeModules)) return true;
+    if (globalPatterns.some((re) => re.test(dirname))) return true;
+    const localNodeModules = path.join(cwd, 'node_modules');
+    if (!dirname.startsWith(localNodeModules)) return true;
     return false;
   } catch {
     return false;
   }
-})();
+}
+
+// Skip in CI or test environments. Tests that import this module bypass
+// the top-level effect by checking require.main !== module.
+if (require.main === module) {
+  if (process.env.CI || process.env.NODE_ENV === 'test') {
+    process.exit(0);
+  }
+  runPostInstall();
+}
+
+function runPostInstall() {
 
 const globalTarget = path.join(os.homedir(), '.claude');
 
-if (isGlobalInstall) {
+if (isGlobalInstall(process.env, __dirname, process.cwd())) {
   // Spawn dist/rcode.js (fully bundled — no devDep requires) to do the global
   // install. Calling cli/install.js directly fails in global npm installs because
   // devDependencies (picocolors, semver, etc.) are not installed for global packages.
@@ -101,3 +111,7 @@ More:
 Docs: https://github.com/hanzlahabib/rihal-code
 `);
 }
+
+} // end runPostInstall
+
+module.exports = { isGlobalInstall };
