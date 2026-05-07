@@ -438,15 +438,13 @@ async function runUninstall(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
 
-  // Issue #693: keep the IDE list in sync with the installer. The installer
-  // ships claude/cursor/gemini/vscode/antigravity. The previous uninstaller
-  // list (claude/cursor/windsurf/antigravity) was missing gemini + vscode
-  // and included windsurf (which the installer never writes). Result: a
-  // user with vscode-style commands could never `rcode uninstall`.
-  const SUPPORTED_EDITORS = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'];
+  // Issue #693 + #697 (W4.3): keep the IDE list in sync with the installer
+  // by importing the single source of truth. Adding an IDE to install.js
+  // SUPPORTED_IDES is now the only edit needed for parity.
+  const { SUPPORTED_IDES } = require('./install.js');
   const editors = opts.editor
-    ? (opts.editor === 'all' ? SUPPORTED_EDITORS : [opts.editor])
-    : SUPPORTED_EDITORS;
+    ? (opts.editor === 'all' ? Array.from(SUPPORTED_IDES) : [opts.editor])
+    : Array.from(SUPPORTED_IDES);
 
   console.log(`\n🕌 Rihal Code — Uninstall\n`);
   console.log(`   Project: ${cwd}`);

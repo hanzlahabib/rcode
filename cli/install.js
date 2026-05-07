@@ -79,6 +79,18 @@ const bold = (s) => pc.bold(s);
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
 
+/**
+ * Single source of truth for supported IDEs (#697 — W4.3).
+ *
+ * Order matters: this is the order used in detection, prompts, and error
+ * messages. Anywhere code used to inline `['claude','cursor','gemini',
+ * 'vscode','antigravity']` it now references this constant. Adding a new
+ * IDE is now: append here, add a case to getPathsForIde, add a signal to
+ * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
+ * sites instead of ten.
+ */
+const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity']);
+
 // Zod schema for .rihal/config.yaml validation (#250).
 const ConfigSchema = z.object({
   user_name: z.string().min(1),
@@ -338,12 +350,16 @@ async function resolveIde(opts) {
     // nothing detected. (Note: opts.ide defaults to 'claude' from parseArgs,
     // so check opts.ideProvided not opts.ide to honor real --ide overrides.)
     const signals = detectIdeSignals(opts.target);
-    const detected = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'].filter(k => signals[k]);
+    const detected = SUPPORTED_IDES.filter(k => signals[k]);
     return detected.length > 0 ? detected : ['claude'];
   }
 
   const signals = detectIdeSignals(opts.target);
-  const detected = ['claude', 'cursor', 'gemini', 'vscode'].filter(k => signals[k]);
+  // Antigravity is intentionally excluded from the interactive auto-detect
+  // because it's experimental and we don't want to opt-in users without
+  // explicit consent. Use SUPPORTED_IDES.filter(k => k !== 'antigravity')
+  // to keep the inclusion criteria self-documenting.
+  const detected = SUPPORTED_IDES.filter(k => k !== 'antigravity' && signals[k]);
 
   // Pre-select detected IDEs, or default to claude
   const initialValues = detected.length > 0 ? detected : ['claude'];
@@ -1613,7 +1629,7 @@ async function installInner(opts) {
   }
 
   // Validate IDE(s) — structured error for unsupported editors (#197).
-  const SUPPORTED_IDES = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'];
+  // SUPPORTED_IDES is the module-level constant (#697 / W4.3).
   const unsupported = opts.ides.filter(ide => !SUPPORTED_IDES.includes(ide));
   if (unsupported.length > 0) {
     console.error(`✖ --ide ${unsupported.join(', ')} is not supported in v${readPackageVersion()}.`);
@@ -2597,3 +2613,4 @@ module.exports = runFromCli;
 module.exports.parseArgs = parseArgs;
 module.exports.buildInstallPlan = buildInstallPlan;
 module.exports.install = install;
+module.exports.SUPPORTED_IDES = SUPPORTED_IDES;
