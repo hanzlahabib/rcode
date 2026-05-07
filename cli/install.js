@@ -873,22 +873,39 @@ function installBrainScaffold(packageRoot, target) {
  *
  * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
  */
-function installSkills(packageRoot, target) {
+function installSkills(packageRoot, target, options = {}) {
   const skillsSource = path.join(packageRoot, 'rihal/skills');
   const skillsDest = path.join(target, '.claude/skills');
   const internalDest = path.join(target, '.rihal/skills');
 
-  if (!fs.existsSync(skillsSource)) return 0;
+  if (!fs.existsSync(skillsSource)) return { count: 0, skippedGlobal: 0 };
   fs.mkdirSync(skillsDest, { recursive: true });
   fs.mkdirSync(internalDest, { recursive: true });
 
+  // Issue #679: when ~/.claude/skills/<name>/ already exists with the rihal-
+  // prefix, Claude Code reads from BOTH global and project, showing every
+  // /rihal-* twice in the slash picker. Skip the project copy for any rihal-*
+  // skill that already lives in the global skills dir.
+  const globalSkillsDir = path.join(os.homedir(), '.claude', 'skills');
+  const globalRihalSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
+    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rihal-')))
+    : new Set();
+
   let count = 0;
+  let skippedGlobal = 0;
 
   function isInternalSkill(skillDir) {
     const skillMd = path.join(skillDir, 'SKILL.md');
     if (!fs.existsSync(skillMd)) return false;
     const text = fs.readFileSync(skillMd, 'utf8');
     return /^internal:\s*true\s*$/m.test(text);
+  }
+
+  function hasLocalOverride(destDir) {
+    if (!fs.existsSync(destDir)) return false;
+    try {
+      return fs.readdirSync(destDir).some(f => f.endsWith('.local.md'));
+    } catch { return false; }
   }
 
   function walkForSkills(dir) {
@@ -901,9 +918,23 @@ function installSkills(packageRoot, target) {
         const destName = entry.name.startsWith('rihal-')
           ? entry.name
           : `rihal-${entry.name}`;
-        const dest = isInternalSkill(src)
+        const internal = isInternalSkill(src);
+        const dest = internal
           ? path.join(internalDest, destName)   // internal → .rihal/skills/
           : path.join(skillsDest, destName);     // user-facing → .claude/skills/
+
+        // Skip user-facing (non-internal) rihal-* skills when the same name
+        // exists globally — UNLESS the user has a *.local.md override on the
+        // project copy, in which case we always preserve their customization.
+        if (!internal && globalRihalSkills.has(destName) && !hasLocalOverride(dest)) {
+          // Also remove the existing project copy (left over from previous
+          // installs that didn't dedup) so it stops showing in the picker.
+          if (fs.existsSync(dest)) {
+            try { fs.rmSync(dest, { recursive: true, force: true }); } catch { /* non-fatal */ }
+          }
+          skippedGlobal++;
+          continue;
+        }
         copyDirRecursive(src, dest);
         count++;
       } else {
@@ -916,7 +947,7 @@ function installSkills(packageRoot, target) {
     walkForSkills(path.join(skillsSource, bucket));
   }
 
-  return count;
+  return { count, skippedGlobal };
 }
 
 /**
@@ -1754,8 +1785,10 @@ async function install(opts) {
     const configDir = path.join(opts.target, '.rihal', '_config');
     ensureDir(configDir);
     fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
-    // Install skills + sidebar stubs globally
-    let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+    // Install skills + sidebar stubs globally — never dedup against globals,
+    // because in --global mode the target IS the global dir.
+    const skillsResult = installSkills(PACKAGE_ROOT, opts.target);
+    let skillsInstalled = skillsResult.count;
     try {
       const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
       const stubsDir = path.join(opts.target, '.claude', 'skills');
@@ -1831,6 +1864,7 @@ async function install(opts) {
         plan.length = 0;
         filtered.forEach(e => plan.push(e));
       }
+
     } catch { /* non-fatal — skip detection on permission errors */ }
   }
 
@@ -1917,7 +1951,16 @@ async function install(opts) {
 
   // Install v1-style phrase-activated skills (scaffold-project, create-prd,
   // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
-  let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+  // Issue #679: skip rihal-* skills that already exist in ~/.claude/skills/
+  // (global precedence) so the slash picker doesn't show every command twice.
+  // Reuse the isProjectInstall flag declared earlier in this scope.
+  const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
+    skipGlobalDuplicates: isProjectInstall,
+  });
+  let skillsInstalled = skillsResult.count;
+  if (skillsResult.skippedGlobal > 0) {
+    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rihal skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
+  }
 
   // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
   // Source codebase stays clean — these stubs only exist at the install
@@ -1926,10 +1969,15 @@ async function install(opts) {
   try {
     const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
     const stubsDir = path.join(opts.target, '.claude', 'skills');
-    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion());
+    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
+      skipGlobalDuplicates: isProjectInstall,
+    });
     if (result.generated > 0) {
       console.log('  ' + dim(`${result.generated} sidebar skill stub${result.generated === 1 ? '' : 's'} generated for command discoverability`));
       skillsInstalled += result.generated;
+    }
+    if (result.skippedGlobal > 0) {
+      console.log('  ' + dim(`Skipped ${result.skippedGlobal} sidebar stub${result.skippedGlobal === 1 ? '' : 's'} that duplicate global ~/.claude/skills/ — closes #679.`));
     }
   } catch (err) {
     // Non-fatal: install succeeds without sidebar stubs

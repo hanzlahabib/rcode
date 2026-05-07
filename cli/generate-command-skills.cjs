@@ -149,7 +149,7 @@ Identical to \`/rihal-${cmdName}\`. See the workflow file for the canonical outp
 `;
 }
 
-function main(packageRoot, targetSkillsDir, version) {
+function main(packageRoot, targetSkillsDir, version, options = {}) {
   if (!fs.existsSync(targetSkillsDir)) {
     fs.mkdirSync(targetSkillsDir, { recursive: true });
   }
@@ -158,11 +158,20 @@ function main(packageRoot, targetSkillsDir, version) {
   const commandsDir = path.join(packageRoot, 'rihal', 'commands');
   if (!fs.existsSync(commandsDir)) {
     console.warn(`[generate-command-skills] commands dir not found: ${commandsDir}`);
-    return { generated: 0, skipped: 0 };
+    return { generated: 0, skipped: 0, skippedGlobal: 0 };
   }
+
+  // Issue #679: skip stubs whose name already exists in ~/.claude/skills/.
+  // Otherwise the slash picker shows the same /rihal-* twice.
+  const os = require('os');
+  const globalSkillsDir = path.join(os.homedir(), '.claude', 'skills');
+  const globalSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
+    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rihal-')))
+    : new Set();
 
   let generated = 0;
   let skipped = 0;
+  let skippedGlobal = 0;
 
   for (const file of fs.readdirSync(commandsDir)) {
     if (!file.endsWith('.md')) continue;
@@ -174,6 +183,28 @@ function main(packageRoot, targetSkillsDir, version) {
     if (realSkills.has(skillName)) {
       // A real skill with this name exists in the source tree — don't shadow it
       skipped++;
+      continue;
+    }
+
+    if (globalSkills.has(skillName)) {
+      // Global skill of same name exists — installing a sidebar stub here would
+      // duplicate the entry in Claude Code's slash picker. Also clean up any
+      // previously-generated stub with the same name.
+      const existingStub = path.join(targetSkillsDir, skillName);
+      if (fs.existsSync(existingStub)) {
+        try {
+          const existingFile = path.join(existingStub, 'SKILL.md');
+          if (fs.existsSync(existingFile)) {
+            const text = fs.readFileSync(existingFile, 'utf8');
+            // Only delete previously-generated stubs (marker present) — never
+            // user customizations.
+            if (/^generated:\s*true/m.test(text)) {
+              fs.rmSync(existingStub, { recursive: true, force: true });
+            }
+          }
+        } catch { /* non-fatal */ }
+      }
+      skippedGlobal++;
       continue;
     }
 
