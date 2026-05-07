@@ -81,15 +81,41 @@ const FORBIDDEN_PATTERNS = [
 // We don't assert on the exact set (new commands can be added) — we just
 // walk the directory and scan every `.md` file under it.
 function listSlashCommands(cwd) {
-  const dir = path.join(cwd, '.claude', 'commands', 'rihal');
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((name) => name.endsWith('.md'))
-    .map((name) => ({
-      name,
-      full: path.join(dir, name),
-    }));
+  const out = [];
+
+  // VS Code-style layout: .claude/commands/rihal/<name>.md
+  const subdir = path.join(cwd, '.claude', 'commands', 'rihal');
+  if (fs.existsSync(subdir)) {
+    for (const name of fs.readdirSync(subdir)) {
+      if (!name.endsWith('.md')) continue;
+      out.push({ name, full: path.join(subdir, name) });
+    }
+  }
+
+  // Claude Code layout: .claude/commands/rihal-<name>.md (flat)
+  const flatDir = path.join(cwd, '.claude', 'commands');
+  if (fs.existsSync(flatDir)) {
+    for (const name of fs.readdirSync(flatDir)) {
+      if (!name.startsWith('rihal-') || !name.endsWith('.md')) continue;
+      out.push({ name, full: path.join(flatDir, name) });
+    }
+  }
+
+  // After #679/#664 dedup, project commands may be removed when ~/.claude/
+  // already has the rihal-* set. Fall back to reading installed-template
+  // content from rihal/commands/ in the source repo so the cross-project-
+  // path lint can still run.
+  if (out.length === 0) {
+    const sourceDir = path.resolve(__dirname, '..', '..', 'rihal', 'commands');
+    if (fs.existsSync(sourceDir)) {
+      for (const name of fs.readdirSync(sourceDir)) {
+        if (!name.endsWith('.md') || name.startsWith('_')) continue;
+        out.push({ name: `rihal-${name}`, full: path.join(sourceDir, name) });
+      }
+    }
+  }
+
+  return out;
 }
 
 function findMatches(content, pattern) {

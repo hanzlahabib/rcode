@@ -109,7 +109,12 @@ function diffSet(editor, kind, expected, installed) {
  * makes doctor report drift like "agents 119/23" when nothing is wrong.
  * That's why the agent count comes from .claude/agents/, not .claude/skills/.
  */
-function verifyClaudeInstall(cwd, packageRoot) {
+function verifyClaudeInstall(cwd, packageRoot, options = {}) {
+  // Issue #698: tests assert against an isolated tempdir cwd. The global
+  // fallback (#664) makes that impossible because it reads the contributor's
+  // real ~/.claude/. Tests can pass { globalFallback: false } to disable it.
+  // Default remains true to preserve the runtime behavior introduced in #664.
+  const globalFallback = options.globalFallback !== false;
   const pkg = readPackageManifest(packageRoot);
   const agentsDir = path.join(cwd, '.claude/agents');
   const skillsDir = path.join(cwd, '.claude/skills');
@@ -129,7 +134,7 @@ function verifyClaudeInstall(cwd, packageRoot) {
   // level .claude/agents/rihal-*.md when the user's ~/.claude/ already has
   // them, to avoid duplicate commands. Without this fallback the verifier
   // reports 0 agents on every successful install in that scenario.
-  if (installedAgents.size === 0) {
+  if (installedAgents.size === 0 && globalFallback) {
     try {
       const os = require('os');
       const globalAgentsDir = path.join(os.homedir(), '.claude/agents');
@@ -143,12 +148,13 @@ function verifyClaudeInstall(cwd, packageRoot) {
     } catch { /* non-fatal — permission errors etc. */ }
   }
 
-  // Actions: .claude/skills/<bare-name>/ — exclude rihal-* dirs (those are
-  // either agent stubs or command stubs, never action skills).
+  // Actions: .claude/skills/rihal-<name>/. installSkills (cli/install.js)
+  // prefixes every action with rihal-, and readPackageManifest does the
+  // same — so both sides are normalized. The previous version filtered OUT
+  // rihal-* dirs which excluded ALL real actions and made the diff always
+  // report "everything missing." Compare directly against the prefixed set.
   const allInstalled = readInstalledDirs(skillsDir);
-  const actionsInstalled = new Set(
-    [...allInstalled].filter((n) => !n.startsWith('rihal-'))
-  );
+  const actionsInstalled = new Set([...allInstalled].filter((n) => pkg.actions.has(n)));
 
   return [
     diffSet('claude', 'agents', pkg.agents, installedAgents),

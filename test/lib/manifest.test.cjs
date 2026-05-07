@@ -45,7 +45,7 @@ test('verifyClaudeInstall reports all agents missing when install dir is empty',
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
 
-  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT);
+  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT, { globalFallback: false });
   const agentReport = reports.find((r) => r.kind === 'agents');
   assert.ok(agentReport);
   assert.strictEqual(agentReport.installedCount, 0);
@@ -58,19 +58,21 @@ test('verifyClaudeInstall reports zero drift when all expected dirs exist', (t) 
   t.after(() => cleanup(cwd));
 
   const manifest = readPackageManifest(PACKAGE_ROOT);
+  const agentsDir = path.join(cwd, '.claude/agents');
   const skillsDir = path.join(cwd, '.claude/skills');
+  fs.mkdirSync(agentsDir, { recursive: true });
   fs.mkdirSync(skillsDir, { recursive: true });
 
-  // Create a stub dir for each expected agent (rihal-{name})
+  // Agents live in .claude/agents/rihal-<name>.md as files (post-v3 layout).
   for (const agent of manifest.agents) {
-    fs.mkdirSync(path.join(skillsDir, `rihal-${agent}`));
+    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.md`), '');
   }
-  // And each expected action (bare name)
+  // Actions still live in .claude/skills/<bare-name>/ as dirs.
   for (const action of manifest.actions) {
     fs.mkdirSync(path.join(skillsDir, action));
   }
 
-  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT);
+  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT, { globalFallback: false });
   const agentReport = reports.find((r) => r.kind === 'agents');
   const actionReport = reports.find((r) => r.kind === 'actions');
 
@@ -85,17 +87,17 @@ test('verifyClaudeInstall detects drift when one agent dir is deleted', (t) => {
   t.after(() => cleanup(cwd));
 
   const manifest = readPackageManifest(PACKAGE_ROOT);
-  const skillsDir = path.join(cwd, '.claude/skills');
-  fs.mkdirSync(skillsDir, { recursive: true });
+  const agentsDir = path.join(cwd, '.claude/agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
 
-  // Install every agent except the first one
+  // Install every agent except the first one (post-v3 file-based layout).
   const agents = [...manifest.agents];
   const skipped = agents[0];
   for (const agent of agents.slice(1)) {
-    fs.mkdirSync(path.join(skillsDir, `rihal-${agent}`));
+    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.md`), '');
   }
 
-  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT);
+  const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT, { globalFallback: false });
   const agentReport = reports.find((r) => r.kind === 'agents');
   assert.deepStrictEqual(agentReport.missing, [skipped]);
 });

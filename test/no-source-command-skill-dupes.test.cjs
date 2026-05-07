@@ -50,12 +50,23 @@ test('no-source-command-skill-dupes: no source skill duplicates a sidebar comman
       dupes.push(`${expectedStub} (mirrors /rihal-${cmd})`);
     }
   }
-  // Some commands legitimately have real skills (init, help, code-review,
-  // debug have full skills). Those are exempted by the generator at install
-  // time. Here, list explicit exemptions matching the generator's logic.
+  // Some commands legitimately have real skills. Those are exempted by the
+  // generator at install time (cli/generate-command-skills.cjs:174 — when
+  // realSkills.has(skillName), the stub is skipped). The list below mirrors
+  // that runtime behavior so the source-tree check stays in sync with what
+  // actually ships.
   const ALLOWED_OVERLAPS = new Set([
-    'rihal-debug',         // real skill at actions/4-implementation/rihal-debug
-    'rihal-code-review',   // real skill at actions/4-implementation/rihal-code-review
+    'rihal-debug',                       // actions/4-implementation/rihal-debug
+    'rihal-code-review',                 // actions/4-implementation/rihal-code-review
+    // Phase-flow commands that ship full skills + sidebar entries — both
+    // forms are intentional. The skill is the in-IDE workflow; the command
+    // is the slash-picker shortcut. Sidebar generator skips these at install.
+    'rihal-sprint-planning',
+    'rihal-sprint-status',
+    'rihal-dev-story',
+    'rihal-create-story',
+    'rihal-create-epics-and-stories',
+    'rihal-prfaq',
   ]);
   const filtered = dupes.filter((d) => {
     const name = d.split(' ')[0];

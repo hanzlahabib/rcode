@@ -22,21 +22,42 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const AGENTS_DIR = path.join(PROJECT_ROOT, '.claude', 'agents');
+const PROJECT_AGENTS_DIR = path.join(PROJECT_ROOT, '.claude', 'agents');
+const GLOBAL_AGENTS_DIR = path.join(os.homedir(), '.claude', 'agents');
 
 const XL_HARD_CAP = 1600; // fail
 const L_WARN = 1000;       // log
 const M_WARN = 500;        // log
 
+/**
+ * Resolve which agents directory to read from. After #679 dedup, the
+ * project's .claude/agents/ may be empty when ~/.claude/agents/ already
+ * has the rihal-* set (global precedence). Mirror the runtime fallback.
+ */
+function resolveAgentsDir() {
+  if (fs.existsSync(PROJECT_AGENTS_DIR)) {
+    const has = fs.readdirSync(PROJECT_AGENTS_DIR).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    if (has) return PROJECT_AGENTS_DIR;
+  }
+  if (fs.existsSync(GLOBAL_AGENTS_DIR)) {
+    const has = fs.readdirSync(GLOBAL_AGENTS_DIR).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    if (has) return GLOBAL_AGENTS_DIR;
+  }
+  return null;
+}
+
 function classify() {
-  if (!fs.existsSync(AGENTS_DIR)) return { entries: [] };
+  const dir = resolveAgentsDir();
+  if (!dir) return { entries: [] };
   const entries = [];
-  for (const f of fs.readdirSync(AGENTS_DIR)) {
+  for (const f of fs.readdirSync(dir)) {
     if (!f.endsWith('.md')) continue;
-    const text = fs.readFileSync(path.join(AGENTS_DIR, f), 'utf8');
+    if (!f.startsWith('rihal-')) continue; // skip non-rihal agents in global dir
+    const text = fs.readFileSync(path.join(dir, f), 'utf8');
     const lines = text.split('\n').length;
     let tier = 'OK';
     if (lines > XL_HARD_CAP) tier = 'XL';

@@ -69,10 +69,45 @@ function registerCleanup(t, dir) {
   t.after(() => cleanup(dir));
 }
 
+/**
+ * Mirror the runtime global-precedence fallback that install.js uses
+ * (#664/#666/#669 for agents/commands, #689 for skills). When the project
+ * .claude/ dir is empty because globals shadow it (#679 dedup), tests that
+ * count installed rihal-* artifacts should look at ~/.claude/ instead.
+ *
+ * Returns the count from project first; falls back to global only if
+ * project has 0. Returns 0 when neither has anything.
+ */
+function countRihalArtifacts(projectRoot, kind) {
+  // kind: 'agents' (.md files) | 'skills' (dirs) | 'commands' (.md files)
+  const projectDir = path.join(projectRoot, '.claude', kind);
+  const globalDir = path.join(os.homedir(), '.claude', kind);
+
+  function countAt(dir) {
+    if (!fs.existsSync(dir)) return 0;
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      if (kind === 'skills') {
+        return entries.filter(e => e.isDirectory() && e.name.startsWith('rihal-')).length;
+      }
+      return entries.filter(e =>
+        e.isFile() && e.name.startsWith('rihal-') && e.name.endsWith('.md'),
+      ).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  const projectCount = countAt(projectDir);
+  if (projectCount > 0) return projectCount;
+  return countAt(globalDir);
+}
+
 module.exports = {
   makeTempDir,
   cleanup,
   initRihalDir,
   seedPhase,
   registerCleanup,
+  countRihalArtifacts,
 };
