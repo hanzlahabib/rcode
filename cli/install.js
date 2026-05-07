@@ -55,6 +55,10 @@ const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
 
+// Atomic write helper (#687) — protects state.json, config.yaml, .gitignore,
+// and pre-commit hook from Ctrl+C / disk-full mid-write truncation.
+const { writeFileAtomic } = require(path.join(__dirname, 'lib', 'fsutil.cjs'));
+
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
 const { createSpinner } = require('nanospinner');
@@ -649,7 +653,7 @@ function seedStarterPlanning(target, projectName) {
       velocity_history: [],
     };
     fs.mkdirSync(path.dirname(rihalStateJson), { recursive: true });
-    fs.writeFileSync(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
+    writeFileAtomic(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
   }
 
   return true;
@@ -724,7 +728,7 @@ function ensureRcodeGitignore(target, options = {}) {
   const gitignorePath = path.join(target, '.gitignore');
   try {
     if (!fs.existsSync(gitignorePath)) {
-      fs.writeFileSync(gitignorePath, BLOCK);
+      writeFileAtomic(gitignorePath, BLOCK);
       return { action: 'created' };
     }
     const existing = fs.readFileSync(gitignorePath, 'utf8');
@@ -750,12 +754,12 @@ function ensureRcodeGitignore(target, options = {}) {
     if (existing.includes(BEGIN)) {
       const rewritten = spliceBlock(existing, BLOCK);
       if (rewritten !== null && rewritten !== existing) {
-        fs.writeFileSync(gitignorePath, rewritten);
+        writeFileAtomic(gitignorePath, rewritten);
         return { action: 'updated' };
       }
       return { action: 'already-present' };
     }
-    fs.writeFileSync(gitignorePath, existing + BLOCK);
+    writeFileAtomic(gitignorePath, existing + BLOCK);
     return { action: 'appended' };
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
@@ -804,8 +808,7 @@ function ensureRcodePreCommitHook(target, options = {}) {
     fs.mkdirSync(hooksDir, { recursive: true });
 
     if (!fs.existsSync(hookPath)) {
-      fs.writeFileSync(hookPath, `#!/bin/sh\n${BLOCK}`);
-      fs.chmodSync(hookPath, 0o755);
+      writeFileAtomic(hookPath, `#!/bin/sh\n${BLOCK}`, { mode: 0o755 });
       return { action: 'created' };
     }
 
@@ -831,15 +834,13 @@ function ensureRcodePreCommitHook(target, options = {}) {
     if (existing.includes(BEGIN)) {
       const rewritten = spliceBlock(existing, BLOCK);
       if (rewritten !== null && rewritten !== existing) {
-        fs.writeFileSync(hookPath, rewritten);
-        fs.chmodSync(hookPath, 0o755);
+        writeFileAtomic(hookPath, rewritten, { mode: 0o755 });
         return { action: 'updated' };
       }
       return { action: 'already-present' };
     }
 
-    fs.writeFileSync(hookPath, existing + BLOCK);
-    fs.chmodSync(hookPath, 0o755);
+    writeFileAtomic(hookPath, existing + BLOCK, { mode: 0o755 });
     return { action: 'appended' };
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
@@ -1927,7 +1928,7 @@ async function install(opts) {
   // Write .rihal/config.yaml (user_name, project_name, language, mode)
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, generateConfigYaml(opts));
+    writeFileAtomic(configPath, generateConfigYaml(opts));
   } else {
     // Issue #685: re-install path. config.yaml is preserved BUT if the user
     // just changed commit_planning via the prompt/flag, .gitignore will be
@@ -1942,12 +1943,12 @@ async function install(opts) {
       const currentInFile = match ? match[1] === 'true' : null;
       if (match && currentInFile !== desired) {
         const updated = before.replace(re, `commit_planning: ${desired}`);
-        fs.writeFileSync(configPath, updated);
+        writeFileAtomic(configPath, updated);
         console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
       } else if (!match) {
         // Older config without the key — append it so the next read finds it.
         const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
-        fs.writeFileSync(configPath, appended);
+        writeFileAtomic(configPath, appended);
       }
     } catch { /* best-effort — never fail install on this */ }
   }
@@ -1973,7 +1974,7 @@ async function install(opts) {
         .replace(/__PROJECT_NAME__/g, opts.projectName)
         .replace(/__INSTALL_DATE__/g, now);
       ensureDir(path.dirname(stateDest));
-      fs.writeFileSync(stateDest, stateContent);
+      writeFileAtomic(stateDest, stateContent);
     }
   }
 
