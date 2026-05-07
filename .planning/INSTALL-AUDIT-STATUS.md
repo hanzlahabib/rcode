@@ -40,7 +40,7 @@ This MD only tracks items we're acting on this session. Everything else is filed
 | W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | critical |
 | W2.5 | Atomic-writes helper exists but unused for `.gitignore`, `state.json`, `config.yaml`, hooks | `install.js:706,732,…` | warn |
 | W2.6 | No file lock — concurrent installs corrupt manifest | `install.js` (whole) | critical |
-| W2.7 | `commit_planning` two-source-of-truth drift between `.gitignore` and `config.yaml` on re-install | `install.js:1862,1346,1948` | critical |
+| W2.7 | [#685](https://github.com/hanzlahabib/rihal-code/issues/685) commit_planning drift between .gitignore and config.yaml on re-install | `install.js` | ✅ done — resolveCommitPlanning reads existing config; surgical key update on change |
 | W2.8 | Health-check thresholds hardcoded `<20` instead of using package manifest | `install.js:2182-2192` | warn |
 
 ## Wave 3 — Test coverage (separate phase)

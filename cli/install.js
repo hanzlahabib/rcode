@@ -370,11 +370,32 @@ async function resolveIde(opts) {
 async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
   if (opts.noPrompt || opts.global) return false; // global install: no planning artifacts
-  if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
 
+  // Issue #685: on re-install, read the existing .rihal/config.yaml and use
+  // its commit_planning value as the default. Otherwise the new prompt
+  // answer overwrites .gitignore but NOT config.yaml, leaving two sources of
+  // truth that silently diverge. Users on re-install almost always want to
+  // KEEP their existing setting unless they explicitly pass --commit-planning.
+  let existingValue = null;
+  try {
+    const cfgPath = path.join(opts.target, '.rihal', 'config.yaml');
+    if (fs.existsSync(cfgPath)) {
+      const cfg = fs.readFileSync(cfgPath, 'utf8');
+      const m = cfg.match(/^commit_planning:\s*(true|false)\s*$/m);
+      if (m) existingValue = m[1] === 'true';
+    }
+  } catch { /* fall through to prompt */ }
+
+  if (opts.yes || !process.stdin.isTTY) {
+    return existingValue !== null ? existingValue : true; // honor existing on re-install
+  }
+
+  const initialValue = existingValue === false ? 'gitignore' : 'commit';
   const choice = await clack.select({
-    message: '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
-    initialValue: 'commit',
+    message: existingValue !== null
+      ? '📋 .planning/ tracking — current setting preserved unless you change it.'
+      : '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
+    initialValue,
     options: [
       { value: 'commit',    label: 'Commit',    hint: 'collaborators see the same plans (recommended)' },
       { value: 'gitignore', label: 'Gitignore', hint: 'planning stays local (good for sensitive PRDs)' },
@@ -1907,6 +1928,28 @@ async function install(opts) {
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
+  } else {
+    // Issue #685: re-install path. config.yaml is preserved BUT if the user
+    // just changed commit_planning via the prompt/flag, .gitignore will be
+    // rewritten with the new value while config.yaml keeps the old one,
+    // creating a silent drift. Update only commit_planning in-place
+    // (preserve everything else the user may have customized).
+    try {
+      const before = fs.readFileSync(configPath, 'utf8');
+      const desired = opts.commitPlanning !== false;
+      const re = /^commit_planning:\s*(true|false)\s*$/m;
+      const match = before.match(re);
+      const currentInFile = match ? match[1] === 'true' : null;
+      if (match && currentInFile !== desired) {
+        const updated = before.replace(re, `commit_planning: ${desired}`);
+        fs.writeFileSync(configPath, updated);
+        console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
+      } else if (!match) {
+        // Older config without the key — append it so the next read finds it.
+        const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
+        fs.writeFileSync(configPath, appended);
+      }
+    } catch { /* best-effort — never fail install on this */ }
   }
   // Validate config.yaml with zod schema (#250) — warn but never block install.
   try {
