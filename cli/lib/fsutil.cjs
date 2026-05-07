@@ -71,7 +71,73 @@ function writeJsonAtomic(filePath, obj, opts = {}) {
   writeFileAtomic(filePath, content, opts);
 }
 
+/**
+ * Safe recursive remove (issue #688).
+ *
+ * `fs.rmSync(path, { recursive: true, force: true })` is fine when `path`
+ * is a directory we control, but if it has been replaced with a symlink to
+ * `/`, `~/`, or any directory outside the project root, the recursive walk
+ * follows it and deletes outside the intended scope. Three sites in the
+ * installer / uninstaller pass user-controlled paths to that pattern.
+ *
+ * This wrapper:
+ *   1. lstats the path. If it is a symlink, unlinks the link only — never
+ *      traverses it.
+ *   2. realpaths it and asserts the resolved path is INSIDE `projectRoot`.
+ *      If not, refuses and returns { ok: false, reason: 'outside-root' }.
+ *   3. otherwise calls fs.rmSync recursively.
+ *
+ * Symlinks INSIDE the directory are still followed by Node's rmSync — that
+ * is unavoidable with the recursive flag. The threat model addressed here
+ * is a single top-level symlink swap (e.g. `.rihal -> /`), not deep nested
+ * symlinks. Defense in depth, not a sandbox.
+ *
+ * @param {string} targetPath path to remove
+ * @param {string} projectRoot absolute path that the target must be inside
+ * @returns {{ok: boolean, reason?: string}}
+ */
+function safeRmSync(targetPath, projectRoot) {
+  let stats;
+  try {
+    stats = fs.lstatSync(targetPath);
+  } catch (err) {
+    if (err.code === 'ENOENT') return { ok: true, reason: 'missing' };
+    return { ok: false, reason: `lstat: ${err.message}` };
+  }
+
+  // Top-level symlink? Just unlink the link, never traverse.
+  if (stats.isSymbolicLink()) {
+    try {
+      fs.unlinkSync(targetPath);
+      return { ok: true, reason: 'symlink-unlinked' };
+    } catch (err) {
+      return { ok: false, reason: `unlink: ${err.message}` };
+    }
+  }
+
+  // Real path must stay inside the project root.
+  const root = path.resolve(projectRoot);
+  let resolved;
+  try {
+    resolved = fs.realpathSync(targetPath);
+  } catch (err) {
+    return { ok: false, reason: `realpath: ${err.message}` };
+  }
+  const relative = path.relative(root, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    return { ok: false, reason: 'outside-root' };
+  }
+
+  try {
+    fs.rmSync(resolved, { recursive: true, force: true });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, reason: `rmSync: ${err.message}` };
+  }
+}
+
 module.exports = {
   writeFileAtomic,
   writeJsonAtomic,
+  safeRmSync,
 };

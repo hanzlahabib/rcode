@@ -55,9 +55,9 @@ const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
 
-// Atomic write helper (#687) — protects state.json, config.yaml, .gitignore,
-// and pre-commit hook from Ctrl+C / disk-full mid-write truncation.
-const { writeFileAtomic } = require(path.join(__dirname, 'lib', 'fsutil.cjs'));
+// Atomic write helper (#687) + symlink-safe rmSync (#688) — protect against
+// Ctrl+C mid-write and malicious symlink-traversal during dedup/cleanup.
+const { writeFileAtomic, safeRmSync } = require(path.join(__dirname, 'lib', 'fsutil.cjs'));
 
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
@@ -952,7 +952,8 @@ function installSkills(packageRoot, target, options = {}) {
           // Also remove the existing project copy (left over from previous
           // installs that didn't dedup) so it stops showing in the picker.
           if (fs.existsSync(dest)) {
-            try { fs.rmSync(dest, { recursive: true, force: true }); } catch { /* non-fatal */ }
+            // #688 — safeRmSync refuses to traverse symlinks pointing outside target.
+            try { safeRmSync(dest, target); } catch { /* non-fatal */ }
           }
           skippedGlobal++;
           continue;
@@ -1876,10 +1877,11 @@ async function install(opts) {
           for (const f of projectCommandFiles) {
             fs.unlinkSync(path.join(projectClaudeCommands, f));
           }
-          // Remove rihal/ subdirectory (vscode-style commands)
+          // Remove rihal/ subdirectory (vscode-style commands).
+          // #688 — safeRmSync refuses to traverse out-of-target symlinks.
           const rihalSubdir = path.join(projectClaudeCommands, 'rihal');
           if (fs.existsSync(rihalSubdir)) {
-            fs.rmSync(rihalSubdir, { recursive: true, force: true });
+            safeRmSync(rihalSubdir, opts.target);
           }
           const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
           if (fs.existsSync(projectAgentsDir)) {
