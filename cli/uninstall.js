@@ -220,35 +220,29 @@ function buildPlan(cwd, editors) {
 }
 
 /**
- * List of action-skill names the installer places in .claude/skills/.
- * These do NOT start with `rihal-` (e.g., `rihal-domain-research` does, but
- * for safety we also keep a known list).
+ * Names of action-skill directories the installer places under .claude/skills/.
+ *
+ * Issue #693: this used to be a hardcoded array of 23 names that drifted from
+ * the source the moment anyone added or removed a skill in `rihal/skills/`.
+ * We now derive it from the package's own manifest (cli/lib/manifest.cjs)
+ * with a static fallback for the rare case where the manifest module isn't
+ * resolvable from the uninstall context.
  */
-const KNOWN_ACTION_SKILLS = [
-  'rihal-check-implementation-readiness',
-  'rihal-code-review',
-  'rihal-correct-course',
-  'rihal-create-architecture',
-  'rihal-create-epics-and-stories',
-  'rihal-create-prd',
-  'rihal-create-story',
-  'rihal-create-ux-design',
-  'rihal-dev-story',
-  'rihal-document-project',
-  'rihal-domain-research',
-  'rihal-edit-prd',
-  'rihal-frontend-design',
-  'rihal-generate-project-context',
-  'rihal-market-research',
-  'rihal-product-brief',
-  'rihal-qa-generate-e2e-tests',
-  'rihal-retrospective',
-  'rihal-sprint-planning',
-  'rihal-sprint-status',
-  'rihal-technical-research',
-  'rihal-validate-prd',
-  'rihal-clone-website',
-];
+function discoverKnownActionSkills() {
+  try {
+    const { readPackageManifest } = require(path.join(__dirname, 'lib', 'manifest.cjs'));
+    const packageRoot = path.resolve(__dirname, '..');
+    const pkg = readPackageManifest(packageRoot);
+    if (pkg && pkg.actions instanceof Set && pkg.actions.size > 0) {
+      return Array.from(pkg.actions);
+    }
+  } catch { /* fall through to static list */ }
+  // Static fallback — kept minimal, only the names that don't start with
+  // 'rihal-' would actually need this list since we already match
+  // 'rihal-*' via prefix. This is defensive only.
+  return [];
+}
+const KNOWN_ACTION_SKILLS = discoverKnownActionSkills();
 
 function isKnownSkillName(name) {
   return KNOWN_ACTION_SKILLS.includes(name);
@@ -425,9 +419,15 @@ async function runUninstall(args) {
   const opts = parseArgs(args);
   const cwd = process.cwd();
 
+  // Issue #693: keep the IDE list in sync with the installer. The installer
+  // ships claude/cursor/gemini/vscode/antigravity. The previous uninstaller
+  // list (claude/cursor/windsurf/antigravity) was missing gemini + vscode
+  // and included windsurf (which the installer never writes). Result: a
+  // user with vscode-style commands could never `rcode uninstall`.
+  const SUPPORTED_EDITORS = ['claude', 'cursor', 'gemini', 'vscode', 'antigravity'];
   const editors = opts.editor
-    ? (opts.editor === 'all' ? ['claude', 'cursor', 'windsurf', 'antigravity'] : [opts.editor])
-    : ['claude', 'cursor', 'windsurf', 'antigravity'];
+    ? (opts.editor === 'all' ? SUPPORTED_EDITORS : [opts.editor])
+    : SUPPORTED_EDITORS;
 
   console.log(`\n🕌 Rihal Code — Uninstall\n`);
   console.log(`   Project: ${cwd}`);
