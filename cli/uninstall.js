@@ -687,15 +687,29 @@ async function runUninstall(args) {
 
     // Strip the rcode-managed block from .gitignore. The installer writes
     // a fenced block; we remove it cleanly without touching user lines.
+    //
+    // Issue #684: previous regex `/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g` was a
+    // footgun — it matched ANY user line starting with "# rcode" (e.g.
+    // "# rcode notes", "# rcode is great") and greedily consumed everything
+    // up to the next blank line, silently nuking user content.
+    //
+    // Three shapes have ever shipped:
+    //   1. Current (install.js:653-654): "# ===== rcode-managed gitignore block ... =====" ... "# ===== end rcode-managed gitignore block ====="
+    //   2. Old fenced markers: "# >>> rihal-code >>>" ... "# <<< rihal-code <<<"
+    //   3. Hypothetical legacy single-line "# rcode" — never actually
+    //      committed by any installer version we can find. Removed.
+    //
+    // Both kept patterns require BOTH sentinel markers to be present —
+    // user content with "# rcode" prefix is now safe.
     const gitignorePath = path.join(cwd, '.gitignore');
     if (fs.existsSync(gitignorePath)) {
       try {
         const before = fs.readFileSync(gitignorePath, 'utf8');
-        // Match either fenced markers or the legacy "# rcode" header through to
-        // the next blank line — both shapes the installer has used historically.
         const stripped = before
+          // Current shape (install.js BEGIN/END markers — exact match).
+          .replace(/\n?# ===== rcode-managed gitignore block[\s\S]*?# ===== end rcode-managed gitignore block =====\n?/g, '\n')
+          // Legacy >>> / <<< fenced shape.
           .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
-          .replace(/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g, '\n')
           .replace(/\n{3,}/g, '\n\n');
         if (stripped !== before) {
           fs.writeFileSync(gitignorePath, stripped);
