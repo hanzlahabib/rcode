@@ -2161,10 +2161,13 @@ async function install(opts) {
     // Issue #669 — when global precedence applied (project copies were
     // intentionally removed), count from ~/.claude/ instead so the summary
     // doesn't lie about the install state.
-    if (agentCount === 0 || commandCount === 0) {
-      const os = require('os');
+    // Issue #689: skills count gets the same fallback. After dedup (#679)
+    // the project skills folder may have only sidebar stubs while ~/.claude/
+    // has the real skills — health check should see those.
+    if (agentCount === 0 || commandCount === 0 || skillsInstalled < 20) {
       const homeAgents = path.join(os.homedir(), '.claude/agents');
       const homeCommands = path.join(os.homedir(), '.claude/commands');
+      const homeSkills = path.join(os.homedir(), '.claude/skills');
       if (agentCount === 0 && fs.existsSync(homeAgents)) {
         const n = fs.readdirSync(homeAgents).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
         if (n > 0) { agentCount = n; agentsFromGlobal = true; }
@@ -2172,6 +2175,13 @@ async function install(opts) {
       if (commandCount === 0 && fs.existsSync(homeCommands)) {
         const n = fs.readdirSync(homeCommands).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
         if (n > 0) { commandCount = n; commandsFromGlobal = true; }
+      }
+      if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
+        try {
+          const globalSkillCount = fs.readdirSync(homeSkills, { withFileTypes: true })
+            .filter(d => d.isDirectory() && d.name.startsWith('rihal-')).length;
+          if (globalSkillCount > skillsInstalled) skillsInstalled = globalSkillCount;
+        } catch { /* non-fatal */ }
       }
     }
   } catch {}
@@ -2253,6 +2263,36 @@ function runInstallHealthCheck(target, counts) {
   const { execFileSync } = require('child_process');
   let fails = 0;
 
+  // Issue #689: thresholds were hardcoded at 20 ("expected ≥ 20 agents",
+  // "expected ≥ 20 skills", "expected ≥ 20 commands"). If the package ever
+  // ships fewer than 20 of any kind, the health check fails on every install
+  // even when the install actually succeeded. Worse: if the package ships
+  // 22 agents and an install lands 21 (one corrupt copy), the >= 20 threshold
+  // passes — false green.
+  //
+  // Source the expected counts from the package manifest itself. The verifier
+  // in cli/lib/manifest.cjs already does this; we mirror its result here.
+  let expected = { agents: 20, skills: 20, commands: 20 };
+  try {
+    const { readPackageManifest } = require(path.join(__dirname, 'lib', 'manifest.cjs'));
+    const pkgManifest = readPackageManifest(PACKAGE_ROOT);
+    if (pkgManifest && pkgManifest.agents instanceof Set && pkgManifest.actions instanceof Set) {
+      // Tolerate ~10% loss vs source — global precedence, .local.md
+      // overrides, and intentionally-skipped sidebar stubs all reduce the
+      // count without indicating a failure.
+      const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
+      expected.agents = tolerate(pkgManifest.agents.size);
+      expected.skills = tolerate(pkgManifest.actions.size);
+      // Commands count comes from rihal/commands/. No bundled enumerator
+      // exists; reuse the agents threshold as a proxy floor.
+      const commandsDir = path.join(PACKAGE_ROOT, 'rihal', 'commands');
+      if (fs.existsSync(commandsDir)) {
+        const cmdCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') && !f.startsWith('_')).length;
+        expected.commands = tolerate(cmdCount);
+      }
+    }
+  } catch { /* keep hardcoded fallback */ }
+
   function check(label, fn) {
     try {
       const out = fn();
@@ -2286,14 +2326,16 @@ function runInstallHealthCheck(target, counts) {
   });
 
   check('agents installed', () => {
-    if ((counts.agentCount || 0) < 20) throw new Error(`only ${counts.agentCount} agents (expected ≥ 20)`);
+    if ((counts.agentCount || 0) < expected.agents) {
+      throw new Error(`only ${counts.agentCount} agents (expected ≥ ${expected.agents})`);
+    }
     return `${counts.agentCount}`;
   });
 
   check('skills + commands installed', () => {
     const issues = [];
-    if ((counts.skillsInstalled || 0) < 20) issues.push(`${counts.skillsInstalled} skills`);
-    if ((counts.commandCount || 0) < 20) issues.push(`${counts.commandCount} commands`);
+    if ((counts.skillsInstalled || 0) < expected.skills) issues.push(`${counts.skillsInstalled} skills (expected ≥ ${expected.skills})`);
+    if ((counts.commandCount || 0) < expected.commands) issues.push(`${counts.commandCount} commands (expected ≥ ${expected.commands})`);
     if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
     return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
   });
