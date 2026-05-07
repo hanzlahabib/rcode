@@ -28,7 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
-const { writeFileAtomic } = require('./lib/fsutil.cjs');
+const { writeFileAtomic, safeRmSync } = require('./lib/fsutil.cjs');
 
 function parseArgs(args) {
   const opts = {
@@ -75,11 +75,18 @@ function isLocalOverride(name) {
 function removeMatching(dir, predicate) {
   if (!fs.existsSync(dir)) return 0;
   let count = 0;
+  // Issue #688: project root for symlink-traversal guard. Anything we
+  // remove from inside the project must resolve to within the project.
+  const projectRoot = path.resolve(process.cwd());
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (isLocalOverride(entry.name)) continue; // #382 — never remove user overrides
     if (!predicate(entry.name)) continue;
     const full = path.join(dir, entry.name);
-    fs.rmSync(full, { recursive: true, force: true });
+    const result = safeRmSync(full, projectRoot);
+    if (!result.ok && result.reason === 'outside-root') {
+      console.log(`   ⚠ refused to remove ${full} — symlink resolves outside project root`);
+      continue;
+    }
     count++;
   }
   return count;
@@ -548,7 +555,10 @@ async function runUninstall(args) {
     // Remove vscode-style subdir .claude/commands/rihal/
     const commandsDir = path.join(cwd, '.claude/commands/rihal');
     if (fs.existsSync(commandsDir)) {
-      fs.rmSync(commandsDir, { recursive: true, force: true });
+      const r = safeRmSync(commandsDir, path.resolve(cwd));
+      if (!r.ok && r.reason === 'outside-root') {
+        console.log(`   ⚠ refused to remove ${commandsDir} — symlink resolves outside project root`);
+      }
     }
     // Remove claude-style root-level rihal-*.md files
     const commandsRoot = path.join(cwd, '.claude/commands');
@@ -641,8 +651,12 @@ async function runUninstall(args) {
   // not user data. Refreshed by `brain pull` on next install.
   const brainDir = path.join(cwd, '.rihal', 'brain');
   if (fs.existsSync(brainDir)) {
-    fs.rmSync(brainDir, { recursive: true, force: true });
-    console.log(`   ✓ removed .rihal/brain/ (pulled content, will refresh on reinstall)`);
+    const r = safeRmSync(brainDir, path.resolve(cwd));
+    if (r.ok) {
+      console.log(`   ✓ removed .rihal/brain/ (pulled content, will refresh on reinstall)`);
+    } else if (r.reason === 'outside-root') {
+      console.log(`   ⚠ refused to remove .rihal/brain/ — symlink resolves outside project root`);
+    }
   }
 
   // Handle .rihal/ state directory
@@ -668,8 +682,14 @@ async function runUninstall(args) {
     }
 
     if (shouldDeleteState) {
-      fs.rmSync(rihalDir, { recursive: true, force: true });
-      console.log(`   ✓ removed .rihal/ state directory`);
+      const r = safeRmSync(rihalDir, path.resolve(cwd));
+      if (r.ok) {
+        console.log(`   ✓ removed .rihal/ state directory`);
+      } else if (r.reason === 'outside-root') {
+        console.log(`   ⚠ refused to remove .rihal/ — symlink resolves outside project root`);
+      } else {
+        console.log(`   ⚠ could not remove .rihal/: ${r.reason}`);
+      }
     } else {
       console.log(`   ℹ kept .rihal/ state directory (your project data is preserved)`);
     }
@@ -681,8 +701,14 @@ async function runUninstall(args) {
   if (opts.purge) {
     const planningDir = path.join(cwd, '.planning');
     if (fs.existsSync(planningDir)) {
-      fs.rmSync(planningDir, { recursive: true, force: true });
-      console.log(`   ✓ removed .planning/ (--purge)`);
+      const r = safeRmSync(planningDir, path.resolve(cwd));
+      if (r.ok) {
+        console.log(`   ✓ removed .planning/ (--purge)`);
+      } else if (r.reason === 'outside-root') {
+        console.log(`   ⚠ refused to remove .planning/ — symlink resolves outside project root`);
+      } else {
+        console.log(`   ⚠ could not remove .planning/: ${r.reason}`);
+      }
     }
 
     // Strip the rcode-managed block from .gitignore. The installer writes

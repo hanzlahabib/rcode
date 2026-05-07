@@ -55,6 +55,10 @@ const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
 
+// Atomic write helper (#687) + symlink-safe rmSync (#688) — protect against
+// Ctrl+C mid-write and malicious symlink-traversal during dedup/cleanup.
+const { writeFileAtomic, safeRmSync } = require(path.join(__dirname, 'lib', 'fsutil.cjs'));
+
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
 const { createSpinner } = require('nanospinner');
@@ -649,7 +653,7 @@ function seedStarterPlanning(target, projectName) {
       velocity_history: [],
     };
     fs.mkdirSync(path.dirname(rihalStateJson), { recursive: true });
-    fs.writeFileSync(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
+    writeFileAtomic(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
   }
 
   return true;
@@ -724,7 +728,7 @@ function ensureRcodeGitignore(target, options = {}) {
   const gitignorePath = path.join(target, '.gitignore');
   try {
     if (!fs.existsSync(gitignorePath)) {
-      fs.writeFileSync(gitignorePath, BLOCK);
+      writeFileAtomic(gitignorePath, BLOCK);
       return { action: 'created' };
     }
     const existing = fs.readFileSync(gitignorePath, 'utf8');
@@ -750,12 +754,12 @@ function ensureRcodeGitignore(target, options = {}) {
     if (existing.includes(BEGIN)) {
       const rewritten = spliceBlock(existing, BLOCK);
       if (rewritten !== null && rewritten !== existing) {
-        fs.writeFileSync(gitignorePath, rewritten);
+        writeFileAtomic(gitignorePath, rewritten);
         return { action: 'updated' };
       }
       return { action: 'already-present' };
     }
-    fs.writeFileSync(gitignorePath, existing + BLOCK);
+    writeFileAtomic(gitignorePath, existing + BLOCK);
     return { action: 'appended' };
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
@@ -804,8 +808,7 @@ function ensureRcodePreCommitHook(target, options = {}) {
     fs.mkdirSync(hooksDir, { recursive: true });
 
     if (!fs.existsSync(hookPath)) {
-      fs.writeFileSync(hookPath, `#!/bin/sh\n${BLOCK}`);
-      fs.chmodSync(hookPath, 0o755);
+      writeFileAtomic(hookPath, `#!/bin/sh\n${BLOCK}`, { mode: 0o755 });
       return { action: 'created' };
     }
 
@@ -831,15 +834,13 @@ function ensureRcodePreCommitHook(target, options = {}) {
     if (existing.includes(BEGIN)) {
       const rewritten = spliceBlock(existing, BLOCK);
       if (rewritten !== null && rewritten !== existing) {
-        fs.writeFileSync(hookPath, rewritten);
-        fs.chmodSync(hookPath, 0o755);
+        writeFileAtomic(hookPath, rewritten, { mode: 0o755 });
         return { action: 'updated' };
       }
       return { action: 'already-present' };
     }
 
-    fs.writeFileSync(hookPath, existing + BLOCK);
-    fs.chmodSync(hookPath, 0o755);
+    writeFileAtomic(hookPath, existing + BLOCK, { mode: 0o755 });
     return { action: 'appended' };
   } catch (err) {
     return { action: 'skipped-error', error: err.message };
@@ -951,7 +952,8 @@ function installSkills(packageRoot, target, options = {}) {
           // Also remove the existing project copy (left over from previous
           // installs that didn't dedup) so it stops showing in the picker.
           if (fs.existsSync(dest)) {
-            try { fs.rmSync(dest, { recursive: true, force: true }); } catch { /* non-fatal */ }
+            // #688 — safeRmSync refuses to traverse symlinks pointing outside target.
+            try { safeRmSync(dest, target); } catch { /* non-fatal */ }
           }
           skippedGlobal++;
           continue;
@@ -1875,10 +1877,11 @@ async function install(opts) {
           for (const f of projectCommandFiles) {
             fs.unlinkSync(path.join(projectClaudeCommands, f));
           }
-          // Remove rihal/ subdirectory (vscode-style commands)
+          // Remove rihal/ subdirectory (vscode-style commands).
+          // #688 — safeRmSync refuses to traverse out-of-target symlinks.
           const rihalSubdir = path.join(projectClaudeCommands, 'rihal');
           if (fs.existsSync(rihalSubdir)) {
-            fs.rmSync(rihalSubdir, { recursive: true, force: true });
+            safeRmSync(rihalSubdir, opts.target);
           }
           const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
           if (fs.existsSync(projectAgentsDir)) {
@@ -1927,7 +1930,7 @@ async function install(opts) {
   // Write .rihal/config.yaml (user_name, project_name, language, mode)
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, generateConfigYaml(opts));
+    writeFileAtomic(configPath, generateConfigYaml(opts));
   } else {
     // Issue #685: re-install path. config.yaml is preserved BUT if the user
     // just changed commit_planning via the prompt/flag, .gitignore will be
@@ -1942,12 +1945,12 @@ async function install(opts) {
       const currentInFile = match ? match[1] === 'true' : null;
       if (match && currentInFile !== desired) {
         const updated = before.replace(re, `commit_planning: ${desired}`);
-        fs.writeFileSync(configPath, updated);
+        writeFileAtomic(configPath, updated);
         console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
       } else if (!match) {
         // Older config without the key — append it so the next read finds it.
         const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
-        fs.writeFileSync(configPath, appended);
+        writeFileAtomic(configPath, appended);
       }
     } catch { /* best-effort — never fail install on this */ }
   }
@@ -1973,7 +1976,7 @@ async function install(opts) {
         .replace(/__PROJECT_NAME__/g, opts.projectName)
         .replace(/__INSTALL_DATE__/g, now);
       ensureDir(path.dirname(stateDest));
-      fs.writeFileSync(stateDest, stateContent);
+      writeFileAtomic(stateDest, stateContent);
     }
   }
 
@@ -2158,10 +2161,13 @@ async function install(opts) {
     // Issue #669 — when global precedence applied (project copies were
     // intentionally removed), count from ~/.claude/ instead so the summary
     // doesn't lie about the install state.
-    if (agentCount === 0 || commandCount === 0) {
-      const os = require('os');
+    // Issue #689: skills count gets the same fallback. After dedup (#679)
+    // the project skills folder may have only sidebar stubs while ~/.claude/
+    // has the real skills — health check should see those.
+    if (agentCount === 0 || commandCount === 0 || skillsInstalled < 20) {
       const homeAgents = path.join(os.homedir(), '.claude/agents');
       const homeCommands = path.join(os.homedir(), '.claude/commands');
+      const homeSkills = path.join(os.homedir(), '.claude/skills');
       if (agentCount === 0 && fs.existsSync(homeAgents)) {
         const n = fs.readdirSync(homeAgents).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
         if (n > 0) { agentCount = n; agentsFromGlobal = true; }
@@ -2169,6 +2175,13 @@ async function install(opts) {
       if (commandCount === 0 && fs.existsSync(homeCommands)) {
         const n = fs.readdirSync(homeCommands).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
         if (n > 0) { commandCount = n; commandsFromGlobal = true; }
+      }
+      if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
+        try {
+          const globalSkillCount = fs.readdirSync(homeSkills, { withFileTypes: true })
+            .filter(d => d.isDirectory() && d.name.startsWith('rihal-')).length;
+          if (globalSkillCount > skillsInstalled) skillsInstalled = globalSkillCount;
+        } catch { /* non-fatal */ }
       }
     }
   } catch {}
@@ -2250,6 +2263,36 @@ function runInstallHealthCheck(target, counts) {
   const { execFileSync } = require('child_process');
   let fails = 0;
 
+  // Issue #689: thresholds were hardcoded at 20 ("expected ≥ 20 agents",
+  // "expected ≥ 20 skills", "expected ≥ 20 commands"). If the package ever
+  // ships fewer than 20 of any kind, the health check fails on every install
+  // even when the install actually succeeded. Worse: if the package ships
+  // 22 agents and an install lands 21 (one corrupt copy), the >= 20 threshold
+  // passes — false green.
+  //
+  // Source the expected counts from the package manifest itself. The verifier
+  // in cli/lib/manifest.cjs already does this; we mirror its result here.
+  let expected = { agents: 20, skills: 20, commands: 20 };
+  try {
+    const { readPackageManifest } = require(path.join(__dirname, 'lib', 'manifest.cjs'));
+    const pkgManifest = readPackageManifest(PACKAGE_ROOT);
+    if (pkgManifest && pkgManifest.agents instanceof Set && pkgManifest.actions instanceof Set) {
+      // Tolerate ~10% loss vs source — global precedence, .local.md
+      // overrides, and intentionally-skipped sidebar stubs all reduce the
+      // count without indicating a failure.
+      const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
+      expected.agents = tolerate(pkgManifest.agents.size);
+      expected.skills = tolerate(pkgManifest.actions.size);
+      // Commands count comes from rihal/commands/. No bundled enumerator
+      // exists; reuse the agents threshold as a proxy floor.
+      const commandsDir = path.join(PACKAGE_ROOT, 'rihal', 'commands');
+      if (fs.existsSync(commandsDir)) {
+        const cmdCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') && !f.startsWith('_')).length;
+        expected.commands = tolerate(cmdCount);
+      }
+    }
+  } catch { /* keep hardcoded fallback */ }
+
   function check(label, fn) {
     try {
       const out = fn();
@@ -2283,14 +2326,16 @@ function runInstallHealthCheck(target, counts) {
   });
 
   check('agents installed', () => {
-    if ((counts.agentCount || 0) < 20) throw new Error(`only ${counts.agentCount} agents (expected ≥ 20)`);
+    if ((counts.agentCount || 0) < expected.agents) {
+      throw new Error(`only ${counts.agentCount} agents (expected ≥ ${expected.agents})`);
+    }
     return `${counts.agentCount}`;
   });
 
   check('skills + commands installed', () => {
     const issues = [];
-    if ((counts.skillsInstalled || 0) < 20) issues.push(`${counts.skillsInstalled} skills`);
-    if ((counts.commandCount || 0) < 20) issues.push(`${counts.commandCount} commands`);
+    if ((counts.skillsInstalled || 0) < expected.skills) issues.push(`${counts.skillsInstalled} skills (expected ≥ ${expected.skills})`);
+    if ((counts.commandCount || 0) < expected.commands) issues.push(`${counts.commandCount} commands (expected ≥ ${expected.commands})`);
     if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
     return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
   });
