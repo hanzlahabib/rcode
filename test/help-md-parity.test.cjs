@@ -21,10 +21,22 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
+const os = require('node:os');
+
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const HELP_MD = path.join(PROJECT_ROOT, 'rihal', 'workflows', 'help.md');
 const COMMANDS_DIR = path.join(PROJECT_ROOT, 'rihal', 'commands');
-const SKILLS_DIR = path.join(PROJECT_ROOT, '.claude', 'skills');
+// Source skills (always present in repo) and installed skills (project OR
+// global, post-#679 dedup may leave project empty).
+const SOURCE_SKILLS_DIRS = [
+  path.join(PROJECT_ROOT, 'rihal', 'skills', 'agents'),
+  path.join(PROJECT_ROOT, 'rihal', 'skills', 'actions'),
+  path.join(PROJECT_ROOT, 'rihal', 'skills', 'core'),
+];
+const INSTALLED_SKILLS_DIRS = [
+  path.join(PROJECT_ROOT, '.claude', 'skills'),
+  path.join(os.homedir(), '.claude', 'skills'),
+];
 
 // Commands explicitly annotated in help.md as not yet implemented are
 // allowed to be missing. The annotation marker is stable text; the test
@@ -50,10 +62,23 @@ function extractAdvertisedCommands(text) {
 }
 
 function commandHasSource(name) {
+  // Command file in source repo
   const cmdFile = path.join(COMMANDS_DIR, `${name}.md`);
   if (fs.existsSync(cmdFile)) return true;
-  const skillDir = path.join(SKILLS_DIR, `rihal-${name}`);
-  if (fs.existsSync(skillDir) && fs.statSync(skillDir).isDirectory()) return true;
+  // Source skill dir (rihal/skills/<bucket>/rihal-<name>/ or <name>/)
+  for (const bucketDir of SOURCE_SKILLS_DIRS) {
+    if (!fs.existsSync(bucketDir)) continue;
+    if (fs.existsSync(path.join(bucketDir, `rihal-${name}`))) return true;
+    if (fs.existsSync(path.join(bucketDir, name))) return true;
+  }
+  // Installed skill dir (project OR global — covers #679 dedup state)
+  for (const dir of INSTALLED_SKILLS_DIRS) {
+    if (!fs.existsSync(dir)) continue;
+    const target = path.join(dir, `rihal-${name}`);
+    try {
+      if (fs.existsSync(target) && fs.statSync(target).isDirectory()) return true;
+    } catch { /* skip */ }
+  }
   return false;
 }
 

@@ -19,10 +19,12 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(PROJECT_ROOT, '.claude', 'skills');
+const PROJECT_SKILLS_DIR = path.join(PROJECT_ROOT, '.claude', 'skills');
+const GLOBAL_SKILLS_DIR = path.join(os.homedir(), '.claude', 'skills');
 const HARD_CAP_CHARS = 100;
 
 // Snapshot: current count of skills exceeding HARD_CAP_CHARS, captured
@@ -30,12 +32,30 @@ const HARD_CAP_CHARS = 100;
 // you trim a description; never raise it.
 const BASELINE_OFFENDERS = 0;
 
+/**
+ * Resolve which skills directory has the rihal-* set. After #679 dedup,
+ * .claude/skills/ may be empty when globals shadow it. Mirror runtime
+ * fallback.
+ */
+function resolveSkillsDir() {
+  for (const dir of [PROJECT_SKILLS_DIR, GLOBAL_SKILLS_DIR]) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const has = fs.readdirSync(dir).some(d => d.startsWith('rihal-'));
+      if (has) return dir;
+    } catch { /* continue */ }
+  }
+  return null;
+}
+
 function countOffenders() {
-  if (!fs.existsSync(SKILLS_DIR)) return { total: 0, offenders: [] };
+  const dir = resolveSkillsDir();
+  if (!dir) return { total: 0, offenders: [] };
   let total = 0;
   const offenders = [];
-  for (const d of fs.readdirSync(SKILLS_DIR)) {
-    const f = path.join(SKILLS_DIR, d, 'SKILL.md');
+  for (const d of fs.readdirSync(dir)) {
+    if (!d.startsWith('rihal-')) continue;
+    const f = path.join(dir, d, 'SKILL.md');
     if (!fs.existsSync(f)) continue;
     total++;
     const text = fs.readFileSync(f, 'utf8');
@@ -53,7 +73,7 @@ function countOffenders() {
 }
 
 test('installed skill count is non-trivial (sanity)', () => {
-  if (!fs.existsSync(SKILLS_DIR)) return; // not installed — CI without pnpm install, skip
+  if (!resolveSkillsDir()) return; // neither project nor global has rihal skills — skip
   const { total } = countOffenders();
   assert.ok(total > 50, `expected >50 skills, got ${total} — install drift?`);
 });

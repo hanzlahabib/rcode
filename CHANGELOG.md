@@ -4,6 +4,19 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.28 (2026-05-07) — green test suite (closes #698)
+
+- **fix(test):** Make pre-existing test failures aware of the #679 dedup reality. After globals shadow project skills, tests that count `./.claude/skills/` etc. would erroneously fail with "0 found". Fall back to `~/.claude/` mirroring the runtime behavior. Touches `agent-size-budget`, `skill-description-budget`, `help-md-parity`, `no-absolute-home-paths`.
+- **fix(lib/manifest):** `verifyClaudeInstall` had a pre-existing bug where the actions filter `!n.startsWith('rihal-')` excluded ALL real installed actions (since `installSkills` prefixes every action with `rihal-`). Rewrote to compare against the prefixed package set directly. Drift detection now actually works.
+- **fix(test):** `manifest.test.cjs` was seeding `.claude/skills/rihal-X` for agents — but the post-v3 layout puts agents at `.claude/agents/rihal-X.md`. Updated the two drift tests to match.
+- **feat(lib/manifest):** Added `{ globalFallback: false }` option to `verifyClaudeInstall` so tests can isolate from the contributor's real `~/.claude/`. Default remains true to preserve runtime behavior.
+- **fix(test):** `no-source-command-skill-dupes` now exempts the 6 phase-flow commands (`rihal-sprint-planning`, `rihal-dev-story`, etc.) that legitimately ship as both real skills and sidebar entries — matching the generator's runtime behavior.
+- **fix(meta):** AGENTS.md + CONTRIBUTING.md scope lists synced. New scopes added: `build`, `council`, `doctor`, `postinstall`, `progress`, `security`, `test`, `tools`, `uninstall` (all already used in commits).
+
+**Net: full suite goes from 231/241 → 241/241 passing.**
+
+---
+
 ## v3.4.27 (2026-05-07) — install/uninstall batch 4 (closes #696 #697)
 
 - **test(uninstall,postinstall,update):** 38 new tests for the previously-untested CLI modules (#696). Closes Wave 3 W3.2/W3.3/W3.4 from `.planning/INSTALL-AUDIT-STATUS.md`. Refactors three files for testability: `cli/postinstall.js` now wraps top-level effect in `require.main === module` so importing it doesn't fire the postinstall logic; `cli/uninstall.js` extracts the gitignore-strip regex into pure `stripRihalGitignoreBlock`; `cli/update.js` adds named exports for `parseArgs` and `detectInstalledEditors`.
