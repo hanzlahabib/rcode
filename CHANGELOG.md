@@ -4,6 +4,23 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.21 (2026-05-07)
+
+### Fixes carried over from 3.4.20 main (commit b3428c1 missed the 3.4.20 release window — closes #677)
+
+- **fix(install):** health check + summary respect global precedence (#664, #666, #669) — when project install removes local agent/command copies in favor of `~/.claude/` globals, the summary and verifier now fall back to counting from `~/.claude/agents/` and `~/.claude/commands/` instead of reporting `0`.
+
+### `/rihal-new-project` first-run gaps (closes #670 #671 #672 #673 #674 #675 #676)
+
+- **fix(install):** `seedStarterPlanning()` no longer pre-seeds `.rihal/state.json` with a fake `Setup & Scaffolding` phase (#670). State is seeded as `{_seeded_stub: true, project: null, phases: []}` so Step 0.5 can detect the stub.
+- **fix(install):** stub `.planning/PROJECT.md`, `ROADMAP.md`, `STATE.md` now carry an `INSTALL STUB` HTML banner so users (and downstream tooling) can tell them apart from real planning artifacts (#676).
+- **fix(workflows):** `/rihal-new-project` Step 0.5 rewritten with stub-vs-real classification (#671). Real-project signals: `REQUIREMENTS.md`, `research/`, >1 phase, or first-phase-name ≠ "Setup & Scaffolding".
+- **feat(workflows):** `/rihal-new-project` accepts `--force` / `--reinit` (#672). Creates a `pre-rihal-rewrite-<timestamp>` git tag for rollback before overwriting.
+- **fix(workflows):** Step 0.5 error message now lists the escape hatches: `--force`, `rcode install --reset` (#673).
+- **fix(workflows):** `--auto` no longer blocked on stub state (#674) — the new stub classification proceeds without prompting.
+
+---
+
 ## Unreleased — post v3.4.4 (2026-04-27 → present)
 
 50 commits since v3.4.4. Grouped by area.

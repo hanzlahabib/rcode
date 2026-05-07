@@ -275,7 +275,7 @@ function printInstallHeader(targetVersion) {
     pc.cyan('│') + '   ' + dim('A persistent context-brain for your editor') + '             ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
-    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzla-habib/rihal-code              ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzlahabib/rihal-code               ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('╰───────────────────────────────────────────────────────────╯'),
     '',
@@ -548,7 +548,15 @@ function seedStarterPlanning(target, projectName) {
   const today = new Date().toISOString().slice(0, 10);
   const name = projectName || path.basename(target);
 
+  // Stub planning files: clearly marked as install templates so users (and
+  // /rihal-new-project Step 0.5 detection) can tell them apart from real
+  // planning artifacts. See issues #670 #671 #676.
+  const STUB_BANNER =
+    `<!-- INSTALL STUB — overwritten by /rihal-new-project. Delete this file or run\n` +
+    `     /rihal-new-project before committing. See https://github.com/hanzlahabib/rihal-code/issues/670 -->\n\n`;
+
   fs.writeFileSync(projectPath,
+    STUB_BANNER +
     `# ${name}\n\n` +
     `**One-line:** Describe what this project is in one sentence.\n\n` +
     `## Vision\n\n` +
@@ -558,6 +566,7 @@ function seedStarterPlanning(target, projectName) {
   );
 
   fs.writeFileSync(roadmapPath,
+    STUB_BANNER +
     `# ${name} — Roadmap\n\n` +
     `**Milestone: M1 — Initial Delivery** (v1.0)\n` +
     `Started: ${today} · Current\n\n` +
@@ -572,6 +581,7 @@ function seedStarterPlanning(target, projectName) {
   );
 
   fs.writeFileSync(statePath,
+    STUB_BANNER +
     `# ${name} — State\n\n` +
     `**Last updated:** ${today}\n` +
     `**Milestone:** M1 — Initial Delivery\n` +
@@ -580,27 +590,33 @@ function seedStarterPlanning(target, projectName) {
     `---\n\n` +
     `## Decisions\n\n_None yet._\n\n` +
     `## Blockers\n\n_None._\n\n` +
-    `## Next Action\n\nSay "plan a sprint" or run \`/rihal-sprint-planning\` to break Phase 01 into stories.\n`
+    `## Next Action\n\nRun \`/rihal-new-project <description>\` to bootstrap, or \`/rihal-sprint-planning\` once a real phase exists.\n`
   );
 
-  // Also pre-seed .rihal/state.json with Phase 01 so sprint tools work
-  // immediately (otherwise auto-init in rihal-tools.cjs creates state with
-  // empty phases[], requiring manual set-phase before sprint add).
+  // Issue #670: do NOT pre-seed .rihal/state.json with a fake project +
+  // "Setup & Scaffolding" phase. That made every fresh install look like a
+  // real initialized project and broke /rihal-new-project Step 0.5 detection.
+  //
+  // Write a minimal shell with _seeded_stub:true so:
+  //   - rihal-tools doesn't have to re-init on first call (avoids race)
+  //   - /rihal-new-project Step 0.5 (issue #671) can detect "stub" reliably
+  //   - sprint tools that previously relied on phase 01 will surface a clear
+  //     "no phases yet — run /rihal-new-project first" error instead of
+  //     silently operating on a fake phase
   const rihalStateJson = path.join(target, '.rihal', 'state.json');
   if (!fs.existsSync(rihalStateJson)) {
     const now = new Date().toISOString();
     const state = {
       version: '1',
-      project: name,
+      project: null,
+      _seeded_stub: true,
       created: now,
       updated: now,
-      current_phase: '01',
+      current_phase: null,
       current_plan: 0,
       current_sprint: null,
-      milestone: 'M1 — Initial Delivery',
-      phases: [
-        { id: '01', name: 'Setup & Scaffolding', status: 'planned' }
-      ],
+      milestone: null,
+      phases: [],
       executions: [],
       decisions: [],
       blockers: [],
@@ -2023,6 +2039,7 @@ async function install(opts) {
   const agentsDir = idePaths.agentsDir;
   const commandsDir = idePaths.commandsDir;
   let agentCount = 0, commandCount = 0;
+  let agentsFromGlobal = false, commandsFromGlobal = false;
   try {
     if (fs.existsSync(agentsDir)) {
       agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
@@ -2033,6 +2050,22 @@ async function install(opts) {
         ? f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))
         : f => f.endsWith('.md') || f.endsWith('.mdc');
       commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
+    }
+    // Issue #669 — when global precedence applied (project copies were
+    // intentionally removed), count from ~/.claude/ instead so the summary
+    // doesn't lie about the install state.
+    if (agentCount === 0 || commandCount === 0) {
+      const os = require('os');
+      const homeAgents = path.join(os.homedir(), '.claude/agents');
+      const homeCommands = path.join(os.homedir(), '.claude/commands');
+      if (agentCount === 0 && fs.existsSync(homeAgents)) {
+        const n = fs.readdirSync(homeAgents).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        if (n > 0) { agentCount = n; agentsFromGlobal = true; }
+      }
+      if (commandCount === 0 && fs.existsSync(homeCommands)) {
+        const n = fs.readdirSync(homeCommands).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        if (n > 0) { commandCount = n; commandsFromGlobal = true; }
+      }
     }
   } catch {}
 
@@ -2047,8 +2080,8 @@ async function install(opts) {
   // Show the actual install paths so cursor/gemini/antigravity output is accurate
   const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
   const relCommands = path.relative(opts.target, idePaths.commandsDir) || idePaths.commandsDir;
-  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${relAgents}/`);
-  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${relCommands}/`);
+  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${agentsFromGlobal ? '~/.claude/agents/ (global)' : relAgents + '/'}`);
+  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${commandsFromGlobal ? '~/.claude/commands/ (global)' : relCommands + '/'}`);
   if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated`);
   console.log('');
   if (starterSeeded) {

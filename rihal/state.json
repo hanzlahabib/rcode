@@ -1,15 +1,14 @@
 {
   "version": "1",
-  "project": "__PROJECT_NAME__",
+  "project": null,
+  "_seeded_stub": true,
   "created": "__INSTALL_DATE__",
   "updated": "__INSTALL_DATE__",
-  "current_phase": "01",
+  "current_phase": null,
   "current_plan": 0,
   "current_sprint": null,
-  "milestone": "M1 — Initial Delivery",
-  "phases": [
-    { "id": "01", "name": "Setup & Scaffolding", "status": "planned" }
-  ],
+  "milestone": null,
+  "phases": [],
   "executions": [],
   "decisions": [],
   "blockers": [],

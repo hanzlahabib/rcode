@@ -88,25 +88,67 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 - rihal-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
-## Step 0.5 — Detect existing project (redirect)
+## Step 0.5 — Detect existing project (stub-aware redirect)
 
-Before any processing, check if a project already exists in this directory:
+Before any processing, classify the project state into one of:
+
+- **none** — no `.rihal/state.json`, no `.planning/` → proceed
+- **stub** — install-seeded scaffolding only (issue #670) → proceed (overwrite stub)
+- **real** — a previous `/rihal-new-project` ran here → guard, unless `--force`
 
 ```bash
-EXISTING=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | grep '"project"' | head -1)
+# --force / --reinit bypasses the guard entirely (issue #672).
+# --auto implies --force on stub state (issue #674).
+FORCE=false
+case " $ARGUMENTS " in
+  *" --force "*|*" --reinit "*) FORCE=true ;;
+esac
+
+# Single source of truth: rihal-tools project-status returns one of
+#   uninstalled | uninitialized | stub | real
+# (see issue #675 for the contract). Falls back to `none` when
+# rihal-tools is unavailable so the workflow still proceeds.
+PROJECT_STATE=$(node .rihal/bin/rihal-tools.cjs project-status 2>/dev/null \
+  | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).status||'none')}catch{console.log('none')}})" \
+  || echo "none")
+[ "$PROJECT_STATE" = "uninstalled" ] || [ "$PROJECT_STATE" = "uninitialized" ] && PROJECT_STATE="none"
 ```
 
-If `$EXISTING` is non-empty (project already initialized):
+**If `PROJECT_STATE=real` and `FORCE=false`:** show the guard:
 
 ```
 ⚠ A rihal project already exists here.
 
-To check current state: /rihal-status
-To find next action: /rihal-next
-To start a fresh phase instead: /rihal-add-phase
+Quick actions:
+  /rihal-status            check current state
+  /rihal-next              find next action
+  /rihal-add-phase         add a phase to the current milestone
+
+To start over (overwrites .planning/* and .rihal/state.json):
+  /rihal-new-project --force <description>
+  rcode install --reset                        nuclear option — wipes config + state
 ```
 
-Only proceed past this step if no project exists (`$EXISTING` is empty).
+STOP — do not proceed.
+
+**If `PROJECT_STATE=stub` (issue #670 install scaffolding):** print a one-liner and proceed:
+
+```
+ℹ Install stub detected — overwriting with real project setup.
+```
+
+**If `PROJECT_STATE=none`:** proceed silently.
+
+**If `PROJECT_STATE=real` and `FORCE=true`:** create a rollback tag, then proceed:
+
+```bash
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  TAG="pre-rihal-rewrite-$(date +%Y%m%d-%H%M%S)"
+  git tag "$TAG" 2>/dev/null && echo "ℹ Rollback tag created: $TAG"
+fi
+```
+
+In interactive mode (not `--auto`), confirm via AskUserQuestion before overwriting. In `--auto` or YOLO mode, proceed without confirmation.
 
 <auto_mode>
 
