@@ -2,11 +2,11 @@
  * rihal-code set-profile — change the model profile for the current project
  *
  * Usage:
- *   npx @hanzlahabib/rihal-code set-profile balanced
- *   npx @hanzlahabib/rihal-code set-profile quality
- *   npx @hanzlahabib/rihal-code set-profile budget
- *   npx @hanzlahabib/rihal-code set-profile inherit
- *   npx @hanzlahabib/rihal-code set-profile                  # show current
+ *   npx @hanzlaa/rcode set-profile balanced
+ *   npx @hanzlaa/rcode set-profile quality
+ *   npx @hanzlaa/rcode set-profile budget
+ *   npx @hanzlaa/rcode set-profile inherit
+ *   npx @hanzlaa/rcode set-profile                  # show current
  *
  * This is a thin wrapper over `rihal-code config model_profile <name>`.
  * All config read/write goes through cli/lib/config.cjs, which handles

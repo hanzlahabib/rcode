@@ -370,11 +370,32 @@ async function resolveIde(opts) {
 async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
   if (opts.noPrompt || opts.global) return false; // global install: no planning artifacts
-  if (opts.yes || !process.stdin.isTTY) return true; // non-interactive default
 
+  // Issue #685: on re-install, read the existing .rihal/config.yaml and use
+  // its commit_planning value as the default. Otherwise the new prompt
+  // answer overwrites .gitignore but NOT config.yaml, leaving two sources of
+  // truth that silently diverge. Users on re-install almost always want to
+  // KEEP their existing setting unless they explicitly pass --commit-planning.
+  let existingValue = null;
+  try {
+    const cfgPath = path.join(opts.target, '.rihal', 'config.yaml');
+    if (fs.existsSync(cfgPath)) {
+      const cfg = fs.readFileSync(cfgPath, 'utf8');
+      const m = cfg.match(/^commit_planning:\s*(true|false)\s*$/m);
+      if (m) existingValue = m[1] === 'true';
+    }
+  } catch { /* fall through to prompt */ }
+
+  if (opts.yes || !process.stdin.isTTY) {
+    return existingValue !== null ? existingValue : true; // honor existing on re-install
+  }
+
+  const initialValue = existingValue === false ? 'gitignore' : 'commit';
   const choice = await clack.select({
-    message: '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
-    initialValue: 'commit',
+    message: existingValue !== null
+      ? '📋 .planning/ tracking — current setting preserved unless you change it.'
+      : '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
+    initialValue,
     options: [
       { value: 'commit',    label: 'Commit',    hint: 'collaborators see the same plans (recommended)' },
       { value: 'gitignore', label: 'Gitignore', hint: 'planning stays local (good for sensitive PRDs)' },
@@ -873,22 +894,39 @@ function installBrainScaffold(packageRoot, target) {
  *
  * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
  */
-function installSkills(packageRoot, target) {
+function installSkills(packageRoot, target, options = {}) {
   const skillsSource = path.join(packageRoot, 'rihal/skills');
   const skillsDest = path.join(target, '.claude/skills');
   const internalDest = path.join(target, '.rihal/skills');
 
-  if (!fs.existsSync(skillsSource)) return 0;
+  if (!fs.existsSync(skillsSource)) return { count: 0, skippedGlobal: 0 };
   fs.mkdirSync(skillsDest, { recursive: true });
   fs.mkdirSync(internalDest, { recursive: true });
 
+  // Issue #679: when ~/.claude/skills/<name>/ already exists with the rihal-
+  // prefix, Claude Code reads from BOTH global and project, showing every
+  // /rihal-* twice in the slash picker. Skip the project copy for any rihal-*
+  // skill that already lives in the global skills dir.
+  const globalSkillsDir = path.join(os.homedir(), '.claude', 'skills');
+  const globalRihalSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
+    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rihal-')))
+    : new Set();
+
   let count = 0;
+  let skippedGlobal = 0;
 
   function isInternalSkill(skillDir) {
     const skillMd = path.join(skillDir, 'SKILL.md');
     if (!fs.existsSync(skillMd)) return false;
     const text = fs.readFileSync(skillMd, 'utf8');
     return /^internal:\s*true\s*$/m.test(text);
+  }
+
+  function hasLocalOverride(destDir) {
+    if (!fs.existsSync(destDir)) return false;
+    try {
+      return fs.readdirSync(destDir).some(f => f.endsWith('.local.md'));
+    } catch { return false; }
   }
 
   function walkForSkills(dir) {
@@ -901,9 +939,23 @@ function installSkills(packageRoot, target) {
         const destName = entry.name.startsWith('rihal-')
           ? entry.name
           : `rihal-${entry.name}`;
-        const dest = isInternalSkill(src)
+        const internal = isInternalSkill(src);
+        const dest = internal
           ? path.join(internalDest, destName)   // internal → .rihal/skills/
           : path.join(skillsDest, destName);     // user-facing → .claude/skills/
+
+        // Skip user-facing (non-internal) rihal-* skills when the same name
+        // exists globally — UNLESS the user has a *.local.md override on the
+        // project copy, in which case we always preserve their customization.
+        if (!internal && globalRihalSkills.has(destName) && !hasLocalOverride(dest)) {
+          // Also remove the existing project copy (left over from previous
+          // installs that didn't dedup) so it stops showing in the picker.
+          if (fs.existsSync(dest)) {
+            try { fs.rmSync(dest, { recursive: true, force: true }); } catch { /* non-fatal */ }
+          }
+          skippedGlobal++;
+          continue;
+        }
         copyDirRecursive(src, dest);
         count++;
       } else {
@@ -916,7 +968,7 @@ function installSkills(packageRoot, target) {
     walkForSkills(path.join(skillsSource, bucket));
   }
 
-  return count;
+  return { count, skippedGlobal };
 }
 
 /**
@@ -1425,6 +1477,18 @@ function convertToCursorMdc(sourceText) {
 async function install(opts) {
   if (opts.help) { printHelp(); return 0; }
 
+  // Issue #680: --reset alone is a footgun — silently does nothing. Fail
+  // fast with a clear message before any work happens.
+  if (opts.reset && !opts.force) {
+    console.log('');
+    console.log('  ' + warn('--reset has no effect without --force.'));
+    console.log('  ' + dim('  --reset wipes config.yaml and state.json. To prevent accidental data loss,'));
+    console.log('  ' + dim('  it must be paired with --force. Re-run as:'));
+    console.log('  ' + dim('    rcode install --reset --force'));
+    console.log('');
+    return 2;
+  }
+
   const pkgVersion = readPackageVersion();
 
   // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
@@ -1754,8 +1818,10 @@ async function install(opts) {
     const configDir = path.join(opts.target, '.rihal', '_config');
     ensureDir(configDir);
     fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
-    // Install skills + sidebar stubs globally
-    let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+    // Install skills + sidebar stubs globally — never dedup against globals,
+    // because in --global mode the target IS the global dir.
+    const skillsResult = installSkills(PACKAGE_ROOT, opts.target);
+    let skillsInstalled = skillsResult.count;
     try {
       const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
       const stubsDir = path.join(opts.target, '.claude', 'skills');
@@ -1831,6 +1897,7 @@ async function install(opts) {
         plan.length = 0;
         filtered.forEach(e => plan.push(e));
       }
+
     } catch { /* non-fatal — skip detection on permission errors */ }
   }
 
@@ -1855,11 +1922,34 @@ async function install(opts) {
   } else if (opts.force && (fs.existsSync(configPath) || fs.existsSync(stateDest))) {
     existedBefore = true;
   }
+  // Note: --reset without --force is rejected at the top of install() (#680).
 
   // Write .rihal/config.yaml (user_name, project_name, language, mode)
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, generateConfigYaml(opts));
+  } else {
+    // Issue #685: re-install path. config.yaml is preserved BUT if the user
+    // just changed commit_planning via the prompt/flag, .gitignore will be
+    // rewritten with the new value while config.yaml keeps the old one,
+    // creating a silent drift. Update only commit_planning in-place
+    // (preserve everything else the user may have customized).
+    try {
+      const before = fs.readFileSync(configPath, 'utf8');
+      const desired = opts.commitPlanning !== false;
+      const re = /^commit_planning:\s*(true|false)\s*$/m;
+      const match = before.match(re);
+      const currentInFile = match ? match[1] === 'true' : null;
+      if (match && currentInFile !== desired) {
+        const updated = before.replace(re, `commit_planning: ${desired}`);
+        fs.writeFileSync(configPath, updated);
+        console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
+      } else if (!match) {
+        // Older config without the key — append it so the next read finds it.
+        const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
+        fs.writeFileSync(configPath, appended);
+      }
+    } catch { /* best-effort — never fail install on this */ }
   }
   // Validate config.yaml with zod schema (#250) — warn but never block install.
   try {
@@ -1917,7 +2007,16 @@ async function install(opts) {
 
   // Install v1-style phrase-activated skills (scaffold-project, create-prd,
   // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
-  let skillsInstalled = installSkills(PACKAGE_ROOT, opts.target);
+  // Issue #679: skip rihal-* skills that already exist in ~/.claude/skills/
+  // (global precedence) so the slash picker doesn't show every command twice.
+  // Reuse the isProjectInstall flag declared earlier in this scope.
+  const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
+    skipGlobalDuplicates: isProjectInstall,
+  });
+  let skillsInstalled = skillsResult.count;
+  if (skillsResult.skippedGlobal > 0) {
+    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rihal skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
+  }
 
   // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
   // Source codebase stays clean — these stubs only exist at the install
@@ -1926,10 +2025,15 @@ async function install(opts) {
   try {
     const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
     const stubsDir = path.join(opts.target, '.claude', 'skills');
-    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion());
+    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
+      skipGlobalDuplicates: isProjectInstall,
+    });
     if (result.generated > 0) {
       console.log('  ' + dim(`${result.generated} sidebar skill stub${result.generated === 1 ? '' : 's'} generated for command discoverability`));
       skillsInstalled += result.generated;
+    }
+    if (result.skippedGlobal > 0) {
+      console.log('  ' + dim(`Skipped ${result.skippedGlobal} sidebar stub${result.skippedGlobal === 1 ? '' : 's'} that duplicate global ~/.claude/skills/ — closes #679.`));
     }
   } catch (err) {
     // Non-fatal: install succeeds without sidebar stubs

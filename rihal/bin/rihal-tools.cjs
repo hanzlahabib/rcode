@@ -985,6 +985,26 @@ function cmdState(subArgs) {
       try { process.kill(pid, 0); return true; } catch { return false; }
     }
 
+    // Issue #681: auto-clear the install-time _seeded_stub marker once the
+    // state has graduated to a real project (project field set + at least one
+    // real phase OR REQUIREMENTS.md present). project-status (#675) reads
+    // _seeded_stub; if no writer ever clears it, every project stays "stub"
+    // forever and downstream workflows misroute.
+    if (state._seeded_stub === true) {
+      const phases = Array.isArray(state.phases) ? state.phases : [];
+      const firstPhaseName = phases[0]?.name || '';
+      const hasRealPhase = phases.length > 1 ||
+        (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
+      const hasRequirements = (() => {
+        try {
+          return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
+        } catch { return false; }
+      })();
+      if ((state.project && hasRealPhase) || hasRequirements) {
+        delete state._seeded_stub;
+      }
+    }
+
     state.updated = new Date().toISOString();
     fs.mkdirSync(RIHAL_DIR, { recursive: true });
     const lockPath = statePath + '.lock';
@@ -1067,6 +1087,23 @@ function cmdState(subArgs) {
     const state = readState();
     if (!state) return { state: null };
     return state;
+  }
+
+  // --- clear-stub --- (issue #681)
+  // Explicit way to flip _seeded_stub off. Useful for /rihal-new-project once
+  // PROJECT.md / REQUIREMENTS.md / ROADMAP.md are committed. The auto-clear in
+  // writeState() also handles this, but having an explicit subcommand lets
+  // workflows be self-documenting and idempotent.
+  if (sub === 'clear-stub') {
+    if (!fs.existsSync(statePath)) {
+      return { ok: false, error: 'No state.json — nothing to clear.' };
+    }
+    const state = readState();
+    if (!state) return { ok: false, error: 'state.json unreadable' };
+    const wasStub = state._seeded_stub === true;
+    if (wasStub) delete state._seeded_stub;
+    writeState(state);
+    return { ok: true, was_stub: wasStub, project: state.project || null };
   }
 
   // --- init ---

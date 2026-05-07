@@ -250,8 +250,15 @@ function isKnownSkillName(name) {
 /**
  * Build the list of files/dirs (relative to cwd) that the uninstall plan
  * will delete or mutate. Used to feed `tar --files-from=-`.
+ *
+ * @param {object} plan — uninstall plan
+ * @param {string} cwd — project root
+ * @param {object} [options]
+ * @param {boolean} [options.purge=false] — when true, also include .rihal/
+ *   and .planning/ in the backup so --purge users can recover state.json,
+ *   decisions, and planning artifacts. Issue #683.
  */
-function planToPathList(plan, cwd) {
+function planToPathList(plan, cwd, options = {}) {
   const paths = [];
 
   for (const name of plan.claude.skills) {
@@ -278,6 +285,26 @@ function planToPathList(plan, cwd) {
     paths.push('AGENTS.md');
   }
 
+  // Issue #683: --purge wipes .rihal/ AND .planning/ but the backup never
+  // included them. User loses state.json, decisions, planning artifacts with
+  // no recovery. Add them when purging — but EXCLUDE .rihal/backups/ itself
+  // (we'd be writing into the dir we're tar-ing).
+  if (options.purge) {
+    const rihalDir = path.join(cwd, '.rihal');
+    if (fs.existsSync(rihalDir)) {
+      // Walk one level deep and add everything except backups/
+      try {
+        for (const entry of fs.readdirSync(rihalDir)) {
+          if (entry === 'backups') continue;
+          paths.push(path.join('.rihal', entry));
+        }
+      } catch { /* fall through; ok=false from tar will warn */ }
+    }
+    if (fs.existsSync(path.join(cwd, '.planning'))) {
+      paths.push('.planning');
+    }
+  }
+
   return paths;
 }
 
@@ -288,8 +315,8 @@ function planToPathList(plan, cwd) {
  * (tar missing, no paths, etc.); the caller should warn the user but may
  * still proceed since the user already confirmed the destructive action.
  */
-function createBackup(cwd, plan) {
-  const paths = planToPathList(plan, cwd);
+function createBackup(cwd, plan, options = {}) {
+  const paths = planToPathList(plan, cwd, { purge: options.purge === true });
   if (paths.length === 0) {
     return { ok: false, warning: 'nothing to back up' };
   }
@@ -301,11 +328,17 @@ function createBackup(cwd, plan) {
     return { ok: false, warning: 'tar not available on this system' };
   }
 
-  const backupsDir = path.join(cwd, '.rihal/backups');
+  // Issue #683: when --purge wipes .rihal/, a backup written into
+  // .rihal/backups/ would be deleted moments later. Write to a sibling
+  // .rihal-backups/ at the project root instead so the backup survives.
+  // For non-purge runs, keep the historical .rihal/backups/ location.
+  const backupsDir = options.purge
+    ? path.join(cwd, '.rihal-backups')
+    : path.join(cwd, '.rihal/backups');
   try {
     fs.mkdirSync(backupsDir, { recursive: true });
   } catch (err) {
-    return { ok: false, warning: `could not create .rihal/backups/: ${err.message}` };
+    return { ok: false, warning: `could not create ${path.relative(cwd, backupsDir)}/: ${err.message}` };
   }
 
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -489,10 +522,15 @@ async function runUninstall(args) {
 
   // Create a timestamped backup before doing anything destructive.
   // Non-fatal on failure — the user already confirmed, we just warn.
+  // Issue #683: --purge backs up .rihal/ and .planning/ too so users can
+  // recover state.json, decisions log, and planning artifacts.
   console.log();
-  const backup = createBackup(cwd, plan);
+  const backup = createBackup(cwd, plan, { purge: opts.purge === true });
   if (backup.ok) {
     console.log(`   💾 backup created: ${backup.path}`);
+    if (opts.purge) {
+      console.log('      includes .rihal/ and .planning/ (state, decisions, planning artifacts)');
+    }
   } else {
     console.log(`   ⚠ no backup created (${backup.warning}) — continuing anyway`);
   }
@@ -649,15 +687,29 @@ async function runUninstall(args) {
 
     // Strip the rcode-managed block from .gitignore. The installer writes
     // a fenced block; we remove it cleanly without touching user lines.
+    //
+    // Issue #684: previous regex `/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g` was a
+    // footgun — it matched ANY user line starting with "# rcode" (e.g.
+    // "# rcode notes", "# rcode is great") and greedily consumed everything
+    // up to the next blank line, silently nuking user content.
+    //
+    // Three shapes have ever shipped:
+    //   1. Current (install.js:653-654): "# ===== rcode-managed gitignore block ... =====" ... "# ===== end rcode-managed gitignore block ====="
+    //   2. Old fenced markers: "# >>> rihal-code >>>" ... "# <<< rihal-code <<<"
+    //   3. Hypothetical legacy single-line "# rcode" — never actually
+    //      committed by any installer version we can find. Removed.
+    //
+    // Both kept patterns require BOTH sentinel markers to be present —
+    // user content with "# rcode" prefix is now safe.
     const gitignorePath = path.join(cwd, '.gitignore');
     if (fs.existsSync(gitignorePath)) {
       try {
         const before = fs.readFileSync(gitignorePath, 'utf8');
-        // Match either fenced markers or the legacy "# rcode" header through to
-        // the next blank line — both shapes the installer has used historically.
         const stripped = before
+          // Current shape (install.js BEGIN/END markers — exact match).
+          .replace(/\n?# ===== rcode-managed gitignore block[\s\S]*?# ===== end rcode-managed gitignore block =====\n?/g, '\n')
+          // Legacy >>> / <<< fenced shape.
           .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
-          .replace(/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g, '\n')
           .replace(/\n{3,}/g, '\n\n');
         if (stripped !== before) {
           fs.writeFileSync(gitignorePath, stripped);

@@ -3,14 +3,14 @@
  * Rihal Code CLI
  *
  * Usage:
- *   npx @hanzlahabib/rihal-code init          → scaffold .rihal/ in current project
- *   npx @hanzlahabib/rihal-code dashboard     → start the Diwan view-only dashboard
- *   npx @hanzlahabib/rihal-code serve         → alias for dashboard
- *   npx @hanzlahabib/rihal-code digest        → print compact agent digests
- *   npx @hanzlahabib/rihal-code team          → list the team roster
- *   npx @hanzlahabib/rihal-code doctor        → compliance check
- *   npx @hanzlahabib/rihal-code version       → print version
- *   npx @hanzlahabib/rihal-code help          → this message
+ *   npx @hanzlaa/rcode init          → scaffold .rihal/ in current project
+ *   npx @hanzlaa/rcode dashboard     → start the Diwan view-only dashboard
+ *   npx @hanzlaa/rcode serve         → alias for dashboard
+ *   npx @hanzlaa/rcode digest        → print compact agent digests
+ *   npx @hanzlaa/rcode team          → list the team roster
+ *   npx @hanzlaa/rcode doctor        → compliance check
+ *   npx @hanzlaa/rcode version       → print version
+ *   npx @hanzlaa/rcode help          → this message
  */
 
 const path = require('path');

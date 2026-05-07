@@ -4,6 +4,28 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.22 (2026-05-07)
+
+### Install / uninstall / update flow audit — Wave 1+2 (closes #679 #680 #681 #682 #683 #684 #685)
+
+User-blocking fix:
+
+- **fix(install):** skills/ dedup — picker no longer shows /rihal-* twice (#679). When `~/.claude/skills/<name>` exists, project install skips writing the same skill (and its sidebar stub) under `.claude/skills/`. Verified: 0 overlap on a fresh install where 119 global rihal skills exist. `*.local.md` overrides always preserved.
+
+UX correctness:
+
+- **fix(install):** `--reset` alone now fails fast (exit 2) instead of silently doing nothing (#680). `--reset` requires `--force` to confirm the destructive intent.
+- **feat(state):** `_seeded_stub:true` auto-clears on project graduation (#681). `writeState()` drops the marker once the project has REQUIREMENTS.md or a real phase. New `state clear-stub` subcommand for explicit clearing from `/rihal-new-project`.
+- **docs(cli):** Normalize package name to `@hanzlaa/rcode` in JSDoc headers (#682). 16 stale `@hanzlahabib/rihal-code` references replaced. `cli/nuke.js` keeps both names for legacy migration.
+
+Safety / data-loss fixes:
+
+- **fix(uninstall):** `--purge` backup now includes `.rihal/` + `.planning/` (#683). The previous backup tarball excluded the very directories `--purge` deletes, plus the tarball itself was written into `.rihal/backups/` and got nuked seconds later by the rmSync of `.rihal/`. Backup now writes to `.rihal-backups/` (sibling) when purging and includes `.rihal/<every entry except backups>` plus `.planning/`. Verified `state.json` and `PROJECT.md` are restorable from the post-purge tarball.
+- **fix(uninstall):** Tighten `.gitignore` strip regex — no longer eats user comments (#684). The legacy `# rcode[\s\S]*?` pattern matched any user line starting with `# rcode` and greedily consumed up to the next blank line, silently nuking user content. New regex requires both the `===== rcode-managed gitignore block =====` opener AND closer.
+- **fix(install):** Keep `commit_planning` in `config.yaml` in sync with `.gitignore` on re-install (#685). Re-install previously rewrote `.gitignore` from the new prompt answer but preserved the old `config.yaml`, leaving two sources of truth. `resolveCommitPlanning` now reads existing config as default; surgical key update on actual change.
+
+---
+
 ## v3.4.21 (2026-05-07)
 
 ### Fixes carried over from 3.4.20 main (commit b3428c1 missed the 3.4.20 release window — closes #677)
