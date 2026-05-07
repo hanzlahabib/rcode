@@ -30,7 +30,9 @@ This MD only tracks items we're acting on this session. Everything else is filed
 
 **Wave 1 complete.** Commits on branch: 4 (skills dedup, --reset fast-fail, _seeded_stub clear, package-name normalization). Issues filed: #679, #680, #681, #682.
 
-## Wave 2 — Safety fixes (may not finish this session)
+**Wave 2 partial complete (3 of 8) — highest-impact items shipped.** Remaining 5 deferred to next batch session.
+
+## Wave 2 — Safety fixes (3 done, 5 deferred)
 
 | # | Finding | File:line | Severity |
 |---|---------|-----------|----------|
