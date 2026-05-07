@@ -4,6 +4,15 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.25 (2026-05-07) — install/uninstall batch 3 (closes #691 #692 #693 #694)
+
+- **fix(install):** PID-based exclusive lock at `.rihal/.install.lock` (#691). Concurrent installs no longer corrupt the manifest. Stale locks (dead PID) auto-reclaimed; live locks exit 3 with a clear message and the lock path.
+- **fix(install):** Honor wizard's IDE selection — no double-prompt (#692). `resolveIde` early-returns if `opts.ides` is already set; wizard now also seeds `opts.ide` and `opts.ideProvided` to fix the field-shape drift between the singular and array forms.
+- **fix(uninstall):** Dynamic `KNOWN_ACTION_SKILLS` + IDE list parity with installer (#693). The hardcoded 23-entry list was 14 entries behind the source; now derived from `cli/lib/manifest.cjs` at runtime (37 actions). Editor list now matches installer's surface (claude/cursor/gemini/vscode/antigravity), so users with vscode-installed rihal can finally `rcode uninstall`.
+- **test(install):** First batch of integration tests (#694). 12 new tests covering `safeRmSync` (#688), atomic state writes (#687), `--reset` fail-fast (#680), idempotency, and the install-lock behavior (#691). Spawn-based — catches bundler-skew issues like the 3.4.22 stale-dist regression.
+
+---
+
 ## v3.4.24 (2026-05-07) — install/uninstall safety batch 2 (closes #687 #688 #689)
 
 - **fix(install):** Use `writeFileAtomic` for state.json, config.yaml, .gitignore, and pre-commit hook (#687). 11 critical writes converted; Ctrl+C / OOM / disk-full mid-write no longer truncates user state or silently destroys lines below the rcode .gitignore block.

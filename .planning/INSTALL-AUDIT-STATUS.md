@@ -39,13 +39,36 @@ This MD only tracks items we're acting on this session. Everything else is filed
 | W2.1 | [#683](https://github.com/hanzlahabib/rihal-code/issues/683) `--purge` backup never includes `.rihal/`, deleted with rmSync | `uninstall.js` | ✅ done — backup includes .rihal/+.planning/ when purging, written to .rihal-backups/ sibling so rmSync can't kill it |
 | W2.2 | [#684](https://github.com/hanzlahabib/rihal-code/issues/684) `# rcode` regex over-matches user .gitignore content | `uninstall.js` | ✅ done — regex now requires both sentinels; user `# rcode...` comments preserved |
 | W2.3 | [#688](https://github.com/hanzlahabib/rihal-code/issues/688) `fs.rmSync` symlink guard (7 sites) | `install.js`, `uninstall.js`, `lib/fsutil.cjs` | ✅ done — `safeRmSync` helper refuses outside-root |
-| W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | ⚪ deferred (low risk — target file is user's own committed code) |
+| W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | ⚪ deferred — low risk in practice (target file is user's own committed code) |
 | W2.5 | [#687](https://github.com/hanzlahabib/rihal-code/issues/687) Atomic writes for `.gitignore`, `state.json`, `config.yaml`, hooks | `install.js` (11 sites) | ✅ done — `writeFileAtomic` plumbed everywhere |
-| W2.6 | No file lock — concurrent installs corrupt manifest | `install.js` (whole) | ⚪ deferred (rare in practice) |
+| W2.6 | [#691](https://github.com/hanzlahabib/rihal-code/issues/691) No file lock — concurrent installs corrupt manifest | `install.js` | ✅ done — PID-based exclusive lock at `.rihal/.install.lock` |
 | W2.7 | [#685](https://github.com/hanzlahabib/rihal-code/issues/685) commit_planning drift between .gitignore and config.yaml on re-install | `install.js` | ✅ done — resolveCommitPlanning reads existing config; surgical key update on change |
 | W2.8 | [#689](https://github.com/hanzlahabib/rihal-code/issues/689) Health-check thresholds hardcoded `<20` + skills global fallback | `install.js` | ✅ done — manifest-driven + global fallback |
 
-**Wave 2 substantially complete (6 of 8). Remaining 2 are low-risk and deferred to a future batch.**
+**Wave 2 — 7 of 8 complete.** Only W2.4 (execFileSync integrity check) remains; deferred as low-risk.
+
+## Wave 3 — Test coverage (partial)
+
+| # | Item | Status |
+|---|------|--------|
+| W3.1 | [#694](https://github.com/hanzlahabib/rihal-code/issues/694) `safeRmSync` (5 tests) + install idempotency / lock (7 tests) | ✅ first batch — 12 new tests |
+| W3.2 | `cli/uninstall.js` end-to-end (purge backup, gitignore strip regex, isLocalOverride, planToPathList) | ⚪ pending |
+| W3.3 | `cli/postinstall.js` (isGlobalInstall heuristic, spawn behavior, error path) | ⚪ pending |
+| W3.4 | `cli/update.js` full update path | ⚪ pending |
+| W3.5 | Multi-IDE plan dedup, conflict resolution interactive flow | ⚪ pending |
+
+**Wave 3 — 1 of 5 complete.** First batch covers regressions for every Wave 1+2 fix. Remaining batches need their own session.
+
+## Wave 4 — Naming + extensibility (partial)
+
+| # | Item | Status |
+|---|------|--------|
+| W4.1 | [#692](https://github.com/hanzlahabib/rihal-code/issues/692) opts.ide vs opts.ides drift + double-prompt | ✅ done |
+| W4.2 | [#693](https://github.com/hanzlahabib/rihal-code/issues/693) KNOWN_ACTION_SKILLS dynamic + IDE list parity | ✅ done |
+| W4.3 | IDE registry (10+ duplicate switch sites in install.js) | ⚪ pending |
+| W4.4 | Function names that lie about scope (installSkills, installBrainScaffold, etc.) | ⚪ pending (low priority polish) |
+
+**Wave 4 — 2 of 4 complete (highest-impact items).**
 
 ## Wave 3 — Test coverage (separate phase)
 
