@@ -1,5 +1,6 @@
 ---
 name: rihal-sprint-status
+internal: true
 description: >
   Generate a sprint status report showing progress, blockers, and
   recommended next actions. Activates when the user says "sprint status",

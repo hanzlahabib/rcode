@@ -1,5 +1,6 @@
 ---
 name: rihal-ci
+internal: true
 description: CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix,.
 triggers:
   - "set up ci"

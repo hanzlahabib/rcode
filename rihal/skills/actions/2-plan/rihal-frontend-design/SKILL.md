@@ -1,5 +1,6 @@
 ---
 name: rihal-frontend-design
+internal: true
 description: >
   Create distinctive, production-grade frontend interfaces with a committed
   aesthetic direction — typography, colour, motion, spatial composition,

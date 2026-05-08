@@ -1,5 +1,6 @@
 ---
 name: rihal-edit-prd
+internal: true
 description: >
   Update an existing Product Requirements Document with new sections,
   revisions, or clarifications. Activates when the user says "update the

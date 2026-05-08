@@ -1,5 +1,6 @@
 ---
 name: rihal-create-story
+internal: true
 description: >
   Prepare a dev-ready user story with full implementation context. Activates
   when the user says "create the next story", "prepare a story", "create

@@ -1,5 +1,6 @@
 ---
 name: rihal-trim
+internal: true
 description: Code simplification.
 triggers:
   - "trim this"

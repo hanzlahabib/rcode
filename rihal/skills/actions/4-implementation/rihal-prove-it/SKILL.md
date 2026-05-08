@@ -1,5 +1,6 @@
 ---
 name: rihal-prove-it
+internal: true
 description: Test-first development.
 triggers:
   - "prove it"

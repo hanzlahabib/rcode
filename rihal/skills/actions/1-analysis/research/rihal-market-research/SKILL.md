@@ -1,5 +1,6 @@
 ---
 name: rihal-market-research
+internal: true
 description: >
   Analyze market size, competitive landscape, customer needs, and trends for
   a product or industry. Activates when the user says "market research",

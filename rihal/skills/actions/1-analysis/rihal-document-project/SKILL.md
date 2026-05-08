@@ -1,5 +1,6 @@
 ---
 name: rihal-document-project
+internal: true
 description: >
   Analyze an existing codebase and produce documentation for both human and
   LLM consumption (brownfield analysis). Activates when the user says

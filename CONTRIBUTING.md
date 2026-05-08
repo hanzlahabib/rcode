@@ -309,6 +309,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `uninstall` — `cli/uninstall.js` flow
 - `update` — `cli/update.js` flow
 - `changelog` — CHANGELOG.md edits
+- `scopes` — AGENTS.md / CONTRIBUTING.md scope-list maintenance
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

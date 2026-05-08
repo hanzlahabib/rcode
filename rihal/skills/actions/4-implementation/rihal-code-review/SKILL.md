@@ -1,5 +1,6 @@
 ---
 name: rihal-code-review
+internal: true
 description: >
   Review code changes using parallel adversarial review layers and produce
   actionable findings. Activates when the user says "review this code", "run

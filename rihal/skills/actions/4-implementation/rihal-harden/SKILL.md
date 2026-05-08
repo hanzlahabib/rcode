@@ -1,5 +1,6 @@
 ---
 name: rihal-harden
+internal: true
 description: Security hardening checklist for SaaS applications.
 triggers:
   - "harden this"

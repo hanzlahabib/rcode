@@ -1,5 +1,6 @@
 ---
 name: rihal-product-brief
+internal: true
 description: >
   Create a product brief through guided discovery or autonomous research.
   Activates when the user says "create a product brief", "write a product

@@ -1,5 +1,6 @@
 ---
 name: rihal-technical-research
+internal: true
 description: >
   Research technical feasibility, architecture options, and implementation
   approaches for a proposed product or feature. Activates when the user says

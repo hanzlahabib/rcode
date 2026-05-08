@@ -1,5 +1,6 @@
 ---
 name: rihal-prfaq
+internal: true
 description: Working Backwards PRFAQ challenge to forge product concepts.
 triggers:
   - "prfaq"

@@ -1,5 +1,6 @@
 ---
 name: rihal-generate-project-context
+internal: true
 description: >
   Generate a project-context.md file that summarizes project standards,
   conventions, tech stack, and key patterns for AI agents to reference.

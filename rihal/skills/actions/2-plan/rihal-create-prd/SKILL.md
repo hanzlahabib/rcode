@@ -1,5 +1,6 @@
 ---
 name: rihal-create-prd
+internal: true
 description: >
   Create a new Product Requirements Document from scratch through guided
   facilitation. Activates when the user says "create a PRD", "write product

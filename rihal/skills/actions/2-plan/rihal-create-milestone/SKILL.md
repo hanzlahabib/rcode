@@ -1,5 +1,6 @@
 ---
 name: rihal-create-milestone
+internal: true
 description: >
   Design the milestone roadmap (M1..Mn) for a project from an approved PRD.
   Activates when the user says "create milestones", "plan milestones",

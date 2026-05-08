@@ -1,5 +1,6 @@
 ---
 name: rihal-validate-prd
+internal: true
 description: >
   Validate an existing PRD for comprehensiveness, leanness, organization,
   and internal consistency. Activates when the user says "validate the PRD",
