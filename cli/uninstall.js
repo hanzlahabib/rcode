@@ -284,7 +284,23 @@ function planToPathList(plan, cwd, options = {}) {
   for (const name of plan.claude.skills) {
     paths.push(path.join('.claude/skills', name));
   }
-  if (plan.claude.commands.length > 0) {
+  // Issue #704: claude IDE installs slash commands as flat
+  // .claude/commands/rihal-*.md files (post-#697 layout). The previous
+  // backup only added the legacy '.claude/commands/rihal' subdir, so on
+  // any modern claude install the tarball was missing every slash command.
+  // Add each flat file individually if present, plus the legacy subdir.
+  for (const name of plan.claude.commands) {
+    // plan.claude.commands holds entries from BOTH layouts:
+    //   - 'rihal-foo.md' (claude flat)
+    //   - 'foo.md' (vscode subdir)
+    // Disambiguate by the rihal- prefix.
+    if (name.startsWith('rihal-') && name.endsWith('.md')) {
+      paths.push(path.join('.claude/commands', name));
+    }
+  }
+  // Legacy vscode-style subdir is added once if any subdir entries exist.
+  const hasSubdirCommand = plan.claude.commands.some(n => !n.startsWith('rihal-'));
+  if (hasSubdirCommand) {
     paths.push('.claude/commands/rihal');
   }
   for (const name of plan.claude.agents) {
