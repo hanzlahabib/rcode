@@ -649,13 +649,28 @@ function seedStarterPlanning(target, projectName) {
   //   - sprint tools that previously relied on phase 01 will surface a clear
   //     "no phases yet — run /rihal-new-project first" error instead of
   //     silently operating on a fake phase
+  //
+  // Issue #705: only mark _seeded_stub when the planning ROADMAP is also
+  // a stub. If the user manually deletes state.json but has real
+  // .planning/ROADMAP.md (no INSTALL STUB banner), seeding _seeded_stub
+  // would mis-classify a real project as fresh and let /rihal-new-project
+  // overwrite it. Guard with the banner check.
   const rihalStateJson = path.join(target, '.rihal', 'state.json');
+  function planningRoadmapIsStub() {
+    const rmPath = path.join(target, '.planning', 'ROADMAP.md');
+    if (!fs.existsSync(rmPath)) return true; // missing → fresh install case
+    try {
+      const text = fs.readFileSync(rmPath, 'utf8');
+      return text.includes('<!-- INSTALL STUB');
+    } catch { return true; }
+  }
   if (!fs.existsSync(rihalStateJson)) {
     const now = new Date().toISOString();
+    const isStubProject = planningRoadmapIsStub();
     const state = {
       version: '1',
       project: null,
-      _seeded_stub: true,
+      ...(isStubProject ? { _seeded_stub: true } : {}),
       created: now,
       updated: now,
       current_phase: null,
@@ -2107,9 +2122,28 @@ async function installInner(opts) {
     const stateSrc = path.join(SOURCE_ROOT, 'state.json');
     if (fs.existsSync(stateSrc)) {
       const now = new Date().toISOString();
-      const stateContent = fs.readFileSync(stateSrc, 'utf8')
+      let stateContent = fs.readFileSync(stateSrc, 'utf8')
         .replace(/__PROJECT_NAME__/g, opts.projectName)
         .replace(/__INSTALL_DATE__/g, now);
+
+      // Issue #705: the template ships with _seeded_stub:true. If the user
+      // already has a real planning ROADMAP (no INSTALL STUB banner) but
+      // state.json is missing (manually deleted), restoring with the stub
+      // marker would mis-classify a real project as fresh. Strip the marker
+      // when ROADMAP exists and isn't itself a stub.
+      const rmPath = path.join(opts.target, '.planning', 'ROADMAP.md');
+      if (fs.existsSync(rmPath)) {
+        try {
+          const rm = fs.readFileSync(rmPath, 'utf8');
+          if (!rm.includes('<!-- INSTALL STUB')) {
+            // Remove "_seeded_stub": true, line. JSON is small + flat enough
+            // to do this with a regex; matches whether the field is followed
+            // by a comma or sits as the last key.
+            stateContent = stateContent.replace(/^\s*"_seeded_stub":\s*true,?\s*\n/m, '');
+          }
+        } catch { /* fall through with stub marker — safe default */ }
+      }
+
       ensureDir(path.dirname(stateDest));
       writeFileAtomic(stateDest, stateContent);
     }
