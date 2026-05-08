@@ -1364,20 +1364,26 @@ function sweepStaleInstalledFiles(target, newPlan) {
 
   let removed = 0;
   const emptyCandidateDirs = new Set();
+  // Issue #703: a tampered or malformed CSV could contain a rel like
+  // '../../etc/passwd'. path.join collapses '..' segments and could escape
+  // the project root. Use safeRmSync's project-root containment check —
+  // any rel whose realpath escapes target is refused with reason='outside-root'.
+  const targetRoot = path.resolve(target);
   for (const rel of oldRels) {
     if (newRelsSet.has(rel)) continue;
     if (neverSweep.test(rel)) continue;
     if (isLocalOverride(rel)) continue; // #382 — never sweep user-owned overrides
+    // Reject relative paths that obviously try to escape before even hitting fs.
+    if (rel.includes('..') || path.isAbsolute(rel)) continue;
     const full = path.join(target, rel);
-    try {
-      if (fs.existsSync(full)) {
-        fs.rmSync(full, { force: true });
-        emptyCandidateDirs.add(path.dirname(full));
-        removed += 1;
-      }
-    } catch {
-      // ignore individual failures — sweep is best-effort
+    if (!fs.existsSync(full)) continue;
+    const result = safeRmSync(full, targetRoot);
+    if (result.ok) {
+      emptyCandidateDirs.add(path.dirname(full));
+      removed += 1;
     }
+    // outside-root / lstat / unlink failures are silently skipped — sweep is
+    // best-effort and we never want to abort the install on a single bad row.
   }
 
   // Remove any now-empty parent dirs (bottom-up, so nested emptiness cascades).
