@@ -4,6 +4,17 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.31 (2026-05-08) — picker footprint trim (closes #710)
+
+Users hit "Skill listing will be truncated — 491 descriptions dropped" on every Claude Code session because rcode shipped 85 skills with **zero** marked `internal: true`. Every action skill was picker-visible even though they're invoked via slash commands.
+
+- **fix(skills):** Mark all 37 `rihal/skills/actions/**/SKILL.md` as `internal: true`. They route to `.rihal/skills/` (private) instead of `.claude/skills/` (picker). Slash dispatch unchanged.
+- **fix(skills):** Trim `SIDEBAR_COMMANDS` from 43 → 10 daily-driver entries. Niche commands (`prfaq`, `ui-phase`, `forensics`, `map-codebase`, etc.) stay reachable via `/` autocomplete; they just don't claim sidebar slots.
+
+**Picker footprint: 82 → 57 entries (-30%).** Combined with `/plugins → uninstall` for any unused plugins (vercel adds 42 alone), most users drop below the truncation threshold without raising `skillListingBudgetFraction`.
+
+---
+
 ## v3.4.30 (2026-05-08) — regression tests for batch 5 (closes #708)
 
 17 new tests pinning every batch-5 fix so the same bugs can't silently regress. Test totals: 242 → 259 passing.
