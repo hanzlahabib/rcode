@@ -33,9 +33,50 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const clack = require('@clack/prompts');
 const { PromptAbortError } = require('./lib/prompts.cjs');
-const { writeJsonAtomic } = require('./lib/fsutil.cjs');
+const { writeFileAtomic } = require('./lib/fsutil.cjs');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const install = require('./install');
+
+/**
+ * Issue #701: update.js used to read .rihal/config.json with JSON.parse, but
+ * the installer writes .rihal/config.yaml. So `rcode update` errored on
+ * every real install. Read config.yaml with the same minimal parser the
+ * installer uses, and write it back as YAML preserving every other field.
+ */
+function readConfigYaml(configPath) {
+  const text = fs.readFileSync(configPath, 'utf8');
+  const obj = {};
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/#.*$/, '').trimEnd();
+    if (!line) continue;
+    if (line.startsWith(' ')) continue; // ignore nested keys (rare; preserved on disk via raw text path)
+    const colonAt = line.indexOf(':');
+    if (colonAt === -1) continue;
+    const key = line.slice(0, colonAt).trim();
+    let val = line.slice(colonAt + 1).trim();
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+    if (val === 'true') val = true;
+    else if (val === 'false') val = false;
+    obj[key] = val;
+  }
+  return { obj, raw: text };
+}
+
+/**
+ * Surgically update a single key in a YAML config without rewriting the
+ * whole file (preserves comments, ordering, and nested keys we don't parse).
+ * If the key doesn't exist, append it.
+ */
+function setYamlKey(rawText, key, value) {
+  const re = new RegExp(`^${key}:\\s*.*$`, 'm');
+  const replacement = typeof value === 'string'
+    ? `${key}: "${value.replace(/"/g, '\\"')}"`
+    : `${key}: ${value}`;
+  if (re.test(rawText)) {
+    return rawText.replace(re, replacement);
+  }
+  return rawText.replace(/\n*$/, '') + `\n${replacement}\n`;
+}
 
 function parseArgs(args) {
   const opts = { yes: false };
@@ -51,12 +92,29 @@ function parseArgs(args) {
  */
 function detectInstalledEditors(cwd) {
   const editors = [];
-  if (fs.existsSync(path.join(cwd, '.claude/skills'))) {
-    const hasRihal = fs
-      .readdirSync(path.join(cwd, '.claude/skills'))
-      .some((n) => n.startsWith('rihal-'));
-    if (hasRihal) editors.push('claude');
-  }
+
+  // Issue #701: post-#679 dedup leaves .claude/skills/ empty when ~/.claude/
+  // already has the rihal-* set. Detect "claude install" by looking at
+  // .rihal/config.yaml as the canonical signal — if config exists, the
+  // project ran rcode install at least once for claude. The presence of
+  // any commands/agents/skills then becomes secondary evidence.
+  const os = require('os');
+  const homeSkills = path.join(os.homedir(), '.claude/skills');
+  const projectClaude = (
+    (fs.existsSync(path.join(cwd, '.claude/skills')) &&
+      fs.readdirSync(path.join(cwd, '.claude/skills')).some(n => n.startsWith('rihal-'))) ||
+    (fs.existsSync(path.join(cwd, '.claude/agents')) &&
+      fs.readdirSync(path.join(cwd, '.claude/agents')).some(n => n.startsWith('rihal-'))) ||
+    (fs.existsSync(path.join(cwd, '.claude/commands')) &&
+      fs.readdirSync(path.join(cwd, '.claude/commands')).some(n => n.startsWith('rihal-')))
+  );
+  const globalClaude = (
+    fs.existsSync(homeSkills) &&
+    fs.readdirSync(homeSkills).some(n => n.startsWith('rihal-'))
+  );
+  const configIndicatesClaude = fs.existsSync(path.join(cwd, '.rihal/config.yaml'));
+  if (projectClaude || (configIndicatesClaude && globalClaude)) editors.push('claude');
+
   if (fs.existsSync(path.join(cwd, '.cursor/rules'))) {
     const hasRihal = fs
       .readdirSync(path.join(cwd, '.cursor/rules'))
@@ -241,7 +299,13 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   const packageVersion = packageJson?.version || '0.0.0';
 
   // ------ Sanity: must be installed ------
-  const configPath = path.join(cwd, '.rihal/config.json');
+  // Issue #701: installer writes .rihal/config.yaml, not config.json.
+  // Tolerate both shapes for users who upgrade across the rename window,
+  // but the canonical path is YAML.
+  const configYamlPath = path.join(cwd, '.rihal/config.yaml');
+  const configJsonPath = path.join(cwd, '.rihal/config.json');
+  const configPath = fs.existsSync(configYamlPath) ? configYamlPath : configJsonPath;
+
   if (!fs.existsSync(configPath)) {
     console.error(`\n❌ Rihal Code is not installed in this directory.`);
     console.error(`   To install: rcode install\n`);
@@ -249,10 +313,18 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   }
 
   let config;
+  let configRaw = '';
+  const isYaml = configPath.endsWith('.yaml');
   try {
-    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (isYaml) {
+      const parsed = readConfigYaml(configPath);
+      config = parsed.obj;
+      configRaw = parsed.raw;
+    } else {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
   } catch (err) {
-    console.error(`\n❌ .rihal/config.json is not valid JSON: ${err.message}\n`);
+    console.error(`\n❌ ${path.basename(configPath)} is not parseable: ${err.message}\n`);
     process.exit(1);
   }
 
@@ -356,10 +428,18 @@ async function runUpdate(args, { packageRoot, packageJson }) {
     console.log(`   ✓ [${supportedIdes.join(', ')}] → refreshed via install.js`);
   }
 
-  // ------ Update installed_version in config.json (atomic) ------
-  config.installed_version = packageVersion;
-  writeJsonAtomic(configPath, config);
-  console.log(`   ✓ .rihal/config.json → installed_version: ${packageVersion}`);
+  // ------ Update installed_version in config (atomic) ------
+  // Issue #701: write back in the same format we read. YAML uses surgical
+  // single-key replace so other fields, comments, ordering survive.
+  if (isYaml) {
+    const updated = setYamlKey(configRaw, 'installed_version', packageVersion);
+    writeFileAtomic(configPath, updated);
+  } else {
+    config.installed_version = packageVersion;
+    const { writeJsonAtomic } = require('./lib/fsutil.cjs');
+    writeJsonAtomic(configPath, config);
+  }
+  console.log(`   ✓ ${path.relative(cwd, configPath)} → installed_version: ${packageVersion}`);
 
   // ------ Verify manifest ------
   console.log();
