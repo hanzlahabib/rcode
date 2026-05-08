@@ -4,6 +4,18 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.30 (2026-05-08) — regression tests for batch 5 (closes #708)
+
+17 new tests pinning every batch-5 fix so the same bugs can't silently regress. Test totals: 242 → 259 passing.
+
+- 5 tests for `rcode update` YAML config handling (#701)
+- 9 tests for install manifest, sweep path-traversal guard, _seeded_stub guard, brain-pull timeout (#702/#703/#705/#706a)
+- 3 tests for vscode/gemini coverage in planToPathList (#706b)
+
+Each test names the issue it pins and emits a "regression of #N" marker so future refactors get a CI failure pointing at the original ticket.
+
+---
+
 ## v3.4.29 (2026-05-08) — install/uninstall/update batch 5 (closes #701-#706)
 
 Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had missed. All shipped.
