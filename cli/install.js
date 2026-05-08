@@ -2248,10 +2248,14 @@ async function installInner(opts) {
     const { execFileSync } = require('child_process');
     const toolsPath = path.join(opts.target, '.rihal', 'bin', 'rihal-tools.cjs');
     if (fs.existsSync(toolsPath)) {
+      // Issue #706: 60s timeout — without it, a slow upstream URL hangs the
+      // entire install indefinitely. Brain pull is best-effort, so a timeout
+      // failure is treated identically to any other pull failure (caught below).
       const out = execFileSync('node', [toolsPath, 'brain', 'pull'], {
         cwd: opts.target,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 60_000,
       });
       try { brainReport = JSON.parse(out); } catch {}
     }

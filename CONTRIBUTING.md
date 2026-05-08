@@ -307,6 +307,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `test` — test files under `test/` (test-only changes)
 - `tools` — `rihal/bin/rihal-tools.cjs` subcommands
 - `uninstall` — `cli/uninstall.js` flow
+- `update` — `cli/update.js` flow
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

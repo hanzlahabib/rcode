@@ -127,22 +127,40 @@ function emptyPlan() {
   };
 }
 
-test('planToPathList without --purge does NOT include .rihal/ or .planning/', () => {
+test('planToPathList without --purge: claude flat layout pushes individual rihal-*.md paths (#704)', () => {
   const dir = makeTempDir();
   const plan = emptyPlan();
   plan.claude.skills = ['rihal-do', 'rihal-noor'];
-  plan.claude.commands = ['rihal-status'];
+  // Flat (claude) layout: command names start with rihal-
+  plan.claude.commands = ['rihal-status.md'];
   plan.claude.agents = ['rihal-waleed.md'];
 
   const paths = uninstall.planToPathList(plan, dir, { purge: false });
 
   assert.ok(paths.includes(path.join('.claude/skills', 'rihal-do')));
   assert.ok(paths.includes(path.join('.claude/skills', 'rihal-noor')));
-  assert.ok(paths.includes('.claude/commands/rihal'));
+  // Each flat file pushed individually; legacy subdir NOT added.
+  assert.ok(paths.includes(path.join('.claude/commands', 'rihal-status.md')));
+  assert.ok(!paths.includes('.claude/commands/rihal'));
   assert.ok(paths.includes(path.join('.claude/agents', 'rihal-waleed.md')));
   // No purge → no state dirs
   assert.ok(!paths.some(p => p.startsWith('.rihal')));
   assert.ok(!paths.includes('.planning'));
+
+  cleanup(dir);
+});
+
+test('planToPathList without --purge: vscode subdir layout pushes parent dir once (#704)', () => {
+  const dir = makeTempDir();
+  const plan = emptyPlan();
+  // Subdir (vscode) layout: command names lack rihal- prefix
+  plan.claude.commands = ['status.md', 'do.md'];
+
+  const paths = uninstall.planToPathList(plan, dir, { purge: false });
+
+  // Subdir pushed once; no individual files.
+  assert.ok(paths.includes('.claude/commands/rihal'));
+  assert.ok(!paths.includes(path.join('.claude/commands', 'status.md')));
 
   cleanup(dir);
 });
