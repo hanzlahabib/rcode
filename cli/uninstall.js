@@ -152,10 +152,21 @@ function buildPlan(cwd, editors) {
     cursor: [],
     windsurf: [],
     antigravity: [],
+    gemini: [],   // #706 — added when --editor=gemini or --editor=all
+    vscode: [],   // #706 — vscode marker dir cleanup (commands share .claude/)
     agentsMd: null, // null = no section; 'present' = section present
     stateDir: null, // null = missing; { files: N } = present
     planningDir: null, // null = missing; { files: N } = present
   };
+
+  // Issue #706: vscode and gemini are in SUPPORTED_IDES but uninstall.js had
+  // no branches for them. vscode shares .claude/ for commands+agents+skills
+  // — fold into the claude branch. gemini has its own .gemini/rihal/ tree.
+  if (editors.includes('vscode')) {
+    if (!editors.includes('claude')) editors.push('claude'); // share scan
+    const markerDir = path.join(cwd, '.vscode/rihal');
+    if (fs.existsSync(markerDir)) plan.vscode.push('.vscode/rihal');
+  }
 
   if (editors.includes('claude')) {
     const skillsDir = path.join(cwd, '.claude/skills');
@@ -209,6 +220,20 @@ function buildPlan(cwd, editors) {
       plan.antigravity = fs
         .readdirSync(agDir)
         .filter((name) => name.startsWith('rihal-'));
+    }
+  }
+
+  if (editors.includes('gemini')) {
+    // #706 — gemini installs to .gemini/rihal/{agents,commands}
+    for (const sub of ['agents', 'commands']) {
+      const dir = path.join(cwd, '.gemini', 'rihal', sub);
+      if (fs.existsSync(dir)) {
+        for (const name of fs.readdirSync(dir)) {
+          if (name.startsWith('rihal-') || name.endsWith('.md')) {
+            plan.gemini.push(path.join('.gemini/rihal', sub, name));
+          }
+        }
+      }
     }
   }
 
@@ -284,7 +309,23 @@ function planToPathList(plan, cwd, options = {}) {
   for (const name of plan.claude.skills) {
     paths.push(path.join('.claude/skills', name));
   }
-  if (plan.claude.commands.length > 0) {
+  // Issue #704: claude IDE installs slash commands as flat
+  // .claude/commands/rihal-*.md files (post-#697 layout). The previous
+  // backup only added the legacy '.claude/commands/rihal' subdir, so on
+  // any modern claude install the tarball was missing every slash command.
+  // Add each flat file individually if present, plus the legacy subdir.
+  for (const name of plan.claude.commands) {
+    // plan.claude.commands holds entries from BOTH layouts:
+    //   - 'rihal-foo.md' (claude flat)
+    //   - 'foo.md' (vscode subdir)
+    // Disambiguate by the rihal- prefix.
+    if (name.startsWith('rihal-') && name.endsWith('.md')) {
+      paths.push(path.join('.claude/commands', name));
+    }
+  }
+  // Legacy vscode-style subdir is added once if any subdir entries exist.
+  const hasSubdirCommand = plan.claude.commands.some(n => !n.startsWith('rihal-'));
+  if (hasSubdirCommand) {
     paths.push('.claude/commands/rihal');
   }
   for (const name of plan.claude.agents) {
@@ -298,6 +339,13 @@ function planToPathList(plan, cwd, options = {}) {
   }
   for (const name of plan.antigravity) {
     paths.push(path.join('.antigravity/agents', name));
+  }
+  // #706 — gemini paths are already relative (built that way in buildPlan).
+  if (Array.isArray(plan.gemini)) {
+    for (const rel of plan.gemini) paths.push(rel);
+  }
+  if (Array.isArray(plan.vscode)) {
+    for (const rel of plan.vscode) paths.push(rel);
   }
   // AGENTS.md is mutated (stripped), not deleted — but we back it up so the
   // user can restore the stripped content.
@@ -636,6 +684,30 @@ async function runUninstall(args) {
     const n = removeMatching(agDir, (name) => name.startsWith('rihal-'));
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Antigravity agents`);
+  }
+
+  // #706 — gemini removal (.gemini/rihal/{agents,commands})
+  if (editors.includes('gemini')) {
+    let n = 0;
+    for (const sub of ['agents', 'commands']) {
+      const dir = path.join(cwd, '.gemini', 'rihal', sub);
+      n += removeMatching(dir, (name) => name.startsWith('rihal-') || name.endsWith('.md'));
+    }
+    removed += n;
+    if (n > 0) console.log(`   ✓ removed ${n} Gemini files`);
+  }
+
+  // #706 — vscode marker dir cleanup. Commands+skills+agents share .claude/
+  // and were already removed under the claude branch.
+  if (editors.includes('vscode')) {
+    const markerDir = path.join(cwd, '.vscode/rihal');
+    if (fs.existsSync(markerDir)) {
+      const r = safeRmSync(markerDir, path.resolve(cwd));
+      if (r.ok) {
+        removed += 1;
+        console.log(`   ✓ removed .vscode/rihal/ marker`);
+      }
+    }
   }
 
   // Strip AGENTS.md section

@@ -4,6 +4,21 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.29 (2026-05-08) — install/uninstall/update batch 5 (closes #701-#706)
+
+Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had missed. All shipped.
+
+- **fix(update):** `rcode update` was broken end-to-end — read `.rihal/config.json` and `JSON.parse`d it, but installer writes `.rihal/config.yaml` (#701). Switched to YAML parser; `detectInstalledEditors` falls back to `~/.claude/skills/` for post-#679-dedup case; surgical `setYamlKey` preserves comments + ordering.
+- **fix(install):** `files-manifest.csv` was generated BEFORE `installSkills`, so 100+ skill files never entered the manifest — orphan sweep + doctor drift detection blind to renamed/removed skills (#702). Manifest write moved to AFTER all skill installations; new `extraScanDirs` option walks `.claude/skills/` and `.rihal/skills/`.
+- **fix(install):** `sweepStaleInstalledFiles` called `fs.rmSync(path.join(target, rel))` with `rel` from the user-readable CSV — a `../../etc/passwd` entry could escape project root (#703). The whole point of #688's `safeRmSync` was bypassed in the most exposed code path. Now routes through `safeRmSync(full, targetRoot)` with a pre-check that rejects `..` segments.
+- **fix(uninstall):** Backup tarball excluded flat `.claude/commands/rihal-*.md` files (#704). Only the legacy `.claude/commands/rihal/` subdir was added; modern claude installs (post-#697) had every slash command missing from the rollback. `planToPathList` now disambiguates by `rihal-` prefix.
+- **fix(install):** `_seeded_stub:true` was seeded into state.json even when `.planning/ROADMAP.md` already had real (non-stub) phases (#705). User who manually deleted state.json had their real project mis-classified as fresh on re-install. Guard checks ROADMAP for the `INSTALL STUB` banner.
+- **fix(install,uninstall):** brain-pull `execFileSync` had no timeout — slow URL hung install indefinitely (#706a). Added `timeout: 60_000`. Plus `cli/uninstall.js` had no branches for `vscode` or `gemini` despite SUPPORTED_IDES listing both (#706b) — added marker-dir cleanup for vscode and `.gemini/rihal/{agents,commands}` removal for gemini.
+
+**Net: 242/242 tests passing. Every critical from the post-fix audit closed.**
+
+---
+
 ## v3.4.28 (2026-05-07) — green test suite (closes #698)
 
 - **fix(test):** Make pre-existing test failures aware of the #679 dedup reality. After globals shadow project skills, tests that count `./.claude/skills/` etc. would erroneously fail with "0 found". Fall back to `~/.claude/` mirroring the runtime behavior. Touches `agent-size-budget`, `skill-description-budget`, `help-md-parity`, `no-absolute-home-paths`.
