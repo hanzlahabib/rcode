@@ -1,5 +1,6 @@
 ---
 name: rihal-create-epics-and-stories
+internal: true
 description: >
   Break a PRD into epics and user stories that drive development. Activates
   when the user says "create epics", "break this into stories", "generate

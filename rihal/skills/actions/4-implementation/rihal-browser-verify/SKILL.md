@@ -1,5 +1,6 @@
 ---
 name: rihal-browser-verify
+internal: true
 description: Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests,.
 triggers:
   - "verify in browser"

@@ -1,5 +1,6 @@
 ---
 name: rihal-sprint-planning
+internal: true
 description: >
   Generate or update a sprint plan that sequences stories for dev execution.
   Activates when the user says "plan the sprint", "create sprint plan", "run

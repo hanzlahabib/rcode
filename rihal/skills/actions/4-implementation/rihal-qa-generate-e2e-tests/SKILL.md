@@ -1,5 +1,6 @@
 ---
 name: rihal-qa-generate-e2e-tests
+internal: true
 description: >
   Generate end-to-end tests for an existing feature using the project's
   standard test framework. Activates when the user says "generate e2e

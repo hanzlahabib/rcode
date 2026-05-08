@@ -1,5 +1,6 @@
 ---
 name: rihal-check-implementation-readiness
+internal: true
 description: >
   Verify that PRD, UX designs, architecture decisions, and epics/stories are
   all aligned and ready for implementation. Activates when the user says

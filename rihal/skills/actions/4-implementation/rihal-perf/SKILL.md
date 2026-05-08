@@ -1,5 +1,6 @@
 ---
 name: rihal-perf
+internal: true
 description: Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration),.
 triggers:
   - "optimize performance"

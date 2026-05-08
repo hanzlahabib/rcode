@@ -1,5 +1,6 @@
 ---
 name: rihal-domain-research
+internal: true
 description: >
   Conduct industry domain deep-dive research to build subject matter
   expertise on a specific business domain. Activates when the user says

@@ -1,5 +1,6 @@
 ---
 name: rihal-retrospective
+internal: true
 description: >
   Run an epic retrospective that reviews completed work, extracts learnings,
   and produces owned action items. Activates when the user says "run

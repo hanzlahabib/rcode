@@ -1,5 +1,6 @@
 ---
 name: rihal-create-architecture
+internal: true
 description: >
   Write an Architecture Decision Record (ADR) to lock a significant
   technical decision. Activates when the user says "write an ADR", "create

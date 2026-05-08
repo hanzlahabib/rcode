@@ -1,5 +1,6 @@
 ---
 name: rihal-incremental
+internal: true
 description: Ship code in small, atomic, verifiable steps.
 triggers:
   - "ship incrementally"

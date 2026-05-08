@@ -1,5 +1,6 @@
 ---
 name: rihal-dev-story
+internal: true
 description: >
   Execute an approved story file by writing tests and code that fulfill
   every acceptance criterion. Activates when the user says "dev this story",

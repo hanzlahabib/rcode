@@ -27,29 +27,30 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Curated list of commands that get skill stubs. Not every command
- * deserves a sidebar entry — only the user-facing entry points and
- * lifecycle verbs. Internal sub-commands stay slash-only.
+ * Curated list of commands that get skill stubs.
+ *
+ * Issue #710: sidebar-stub bloat. The picker has a token budget for skill
+ * descriptions; every stub here counts. Pre-#710 this list had 43 entries —
+ * the user hit "491 descriptions dropped" because rcode + plugins blew the
+ * budget. Trimmed to the minimum set users actually pick from the sidebar:
+ * navigation + the verb-style commands they invoke daily.
+ *
+ * Everything else stays reachable via `/` autocomplete (claude-code reads
+ * .claude/commands/ for slash dispatch — sidebar stubs are UX sugar, not
+ * functional). Power users running niche commands like /rihal-prfaq or
+ * /rihal-ui-phase still get them — they just don't show up in the sidebar.
  */
 const SIDEBAR_COMMANDS = new Set([
-  // Navigation & status
-  'do', 'status', 'progress', 'next', 'health',
-  // Core planning & execution
-  'plan', 'execute', 'add-phase', 'discuss-phase', 'complete-milestone',
-  'plan-milestone-gaps', 'autonomous',
-  // Project setup
-  'new-project', 'new-milestone', 'milestone-summary',
-  // Sprint workflow
-  'sprint-planning', 'sprint-status', 'execute-sprint', 'dev-story',
-  'create-story', 'create-epics-and-stories',
-  // Discussion & council
-  'council', 'discuss', 'prfaq',
-  // Quality & review
-  'ship', 'audit', 'verify-phase', 'verify-work', 'review', 'code-review',
-  'feature-drift', 'ui-phase', 'ui-review',
+  // Navigation & status (the daily check-in)
+  'do', 'status', 'next',
+  // Core lifecycle (the workflow loop)
+  'plan', 'execute', 'ship',
+  // Strategic
+  'council',
+  // Quality gate
+  'audit', 'verify-phase',
   // Utility
-  'debug', 'session-report', 'forensics', 'map-codebase', 'quick',
-  'note', 'add-todo', 'check-todos', 'pause-work', 'resume-work',
+  'note',
 ]);
 
 function parseFrontmatter(text) {

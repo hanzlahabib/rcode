@@ -1,5 +1,6 @@
 ---
 name: rihal-scaffold-project
+internal: true
 description: >
   Scaffold a new project for Rihalians using the official Rihal template repo.
   Activates when the user says "scaffold project", "create project", "new project",

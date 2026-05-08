@@ -1,5 +1,6 @@
 ---
 name: rihal-debug
+internal: true
 description: Root-cause debugging via the scientific method.
 triggers:
   # English

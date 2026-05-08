@@ -1,5 +1,6 @@
 ---
 name: rihal-source-truth
+internal: true
 description: Cite official documentation before writing or recommending any framework, library, or API code.
 triggers:
   - "cite the docs"

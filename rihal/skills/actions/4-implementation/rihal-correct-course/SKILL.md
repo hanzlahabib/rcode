@@ -1,5 +1,6 @@
 ---
 name: rihal-correct-course
+internal: true
 description: >
   Course-correct when major change is discovered mid-sprint or
   mid-implementation. Activates when the user says "course correct", "change

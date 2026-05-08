@@ -1,5 +1,6 @@
 ---
 name: rihal-checkpoint-preview
+internal: true
 description: "LLM-assisted human-in-the-loop review."
 triggers:
   - "checkpoint preview"

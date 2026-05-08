@@ -1,5 +1,6 @@
 ---
 name: rihal-migrate
+internal: true
 description: Plan and execute the move from MVP to production-grade infrastructure without rewriting from.
 triggers:
   - "graduate the mvp"

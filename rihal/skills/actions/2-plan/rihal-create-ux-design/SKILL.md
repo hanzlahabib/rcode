@@ -1,5 +1,6 @@
 ---
 name: rihal-create-ux-design
+internal: true
 description: >
   Guide through realizing a UX design that informs architecture and
   implementation — user flows, wireframes, design system updates. Activates

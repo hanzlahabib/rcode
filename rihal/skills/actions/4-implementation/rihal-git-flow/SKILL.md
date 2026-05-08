@@ -1,5 +1,6 @@
 ---
 name: rihal-git-flow
+internal: true
 description: Branching, commits, conflicts, parallel work — aligned with the Rihal Epic→Feature→Task hierarchy.
 triggers:
   - "git flow"
