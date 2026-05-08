@@ -123,6 +123,8 @@ function emptyPlan() {
     cursor:   [],
     windsurf: [],
     antigravity: [],
+    gemini:   [],
+    vscode:   [],
     agentsMd: false,
   };
 }
@@ -215,5 +217,62 @@ test('discoverKnownActionSkills returns the actions from the package manifest', 
   // (cli/lib/manifest.cjs:50 prefixes the bareId).
   for (const s of skills) {
     assert.ok(s.startsWith('rihal-'), `expected rihal- prefix on ${s}`);
+  }
+});
+
+// ---- #706b — gemini + vscode coverage in planToPathList ----
+
+test('#706 — planToPathList includes plan.gemini paths verbatim', () => {
+  const dir = makeTempDir();
+  try {
+    const plan = emptyPlan();
+    plan.gemini.push('.gemini/rihal/agents/rihal-waleed.md');
+    plan.gemini.push('.gemini/rihal/commands/rihal-status.md');
+
+    const paths = uninstall.planToPathList(plan, dir, { purge: false });
+
+    assert.ok(paths.includes('.gemini/rihal/agents/rihal-waleed.md'),
+      'gemini paths must be included (regression of #706b)');
+    assert.ok(paths.includes('.gemini/rihal/commands/rihal-status.md'),
+      'gemini paths must be included (regression of #706b)');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('#706 — planToPathList includes plan.vscode marker dir', () => {
+  const dir = makeTempDir();
+  try {
+    const plan = emptyPlan();
+    plan.vscode.push('.vscode/rihal');
+
+    const paths = uninstall.planToPathList(plan, dir, { purge: false });
+
+    assert.ok(paths.includes('.vscode/rihal'),
+      'vscode marker dir must be included (regression of #706b)');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('#706 — planToPathList does NOT crash when plan.gemini / plan.vscode absent (back-compat)', () => {
+  const dir = makeTempDir();
+  try {
+    // Old-shape plan without gemini/vscode keys (e.g. callers that haven't
+    // updated their plan factories).
+    const plan = {
+      claude:   { skills: [], commands: [], agents: [] },
+      cursor:   [],
+      windsurf: [],
+      antigravity: [],
+      agentsMd: false,
+    };
+
+    assert.doesNotThrow(
+      () => uninstall.planToPathList(plan, dir, { purge: false }),
+      'planToPathList must tolerate plans without gemini/vscode keys',
+    );
+  } finally {
+    cleanup(dir);
   }
 });
