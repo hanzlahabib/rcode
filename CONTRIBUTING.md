@@ -207,6 +207,23 @@ When you add a new agent to `rihal/team.yaml`, update **all** of these locations
 
 Run `node --test` before opening a PR.
 
+### Agent File Size Rule
+
+**If your agent file body exceeds 100 lines, you MUST extract the playbook to `rihal/references/`.**
+
+Pattern:
+1. Create `rihal/references/<name>-playbook.md` with the extracted content
+2. Replace the extracted content in the agent file with `@.rihal/references/<name>-playbook.md`
+3. Target: agent stub ≤100 lines (frontmatter + @-includes + short role description)
+
+This rule exists because subagent spawning loads the full agent `.md` body into the model context.
+Static playbook content (checklists, step-by-step flows, output templates) can be 70-77% of a
+heavy agent — extracting it via `@-include` saves context budget on every spawn.
+
+Accepted exceptions (document in VERIFICATION.md when you create them):
+- `rihal-nyquist-auditor.md` (176L) — load-bearing XML execution blocks
+- `rihal-docs-auditor.md` (173L) — load-bearing JSON schema for `/rihal-feature-drift`
+
 ---
 
 ## 🚨 Critical Rule — Never Auto-Push
