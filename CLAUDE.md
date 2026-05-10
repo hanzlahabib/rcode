@@ -24,7 +24,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) format: `type(scope): subject`
 - Types allowed: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `revert`
-- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`
+- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `phases`, `references`, `cli`
 - Subject: lowercase first letter, imperative mood, no trailing period, under 72 chars
 - **NEVER add Claude/AI attribution to commit messages.** No "Generated with Claude Code", no "Co-Authored-By: Claude", no "🤖 Generated". The user does not want this.
 - **NEVER use `--no-verify`** to bypass hooks. If hooks fail, fix the underlying issue.
