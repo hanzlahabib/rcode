@@ -8,6 +8,7 @@
  *   npx @hanzlaa/rcode serve         → alias for dashboard
  *   npx @hanzlaa/rcode digest        → print compact agent digests
  *   npx @hanzlaa/rcode team          → list the team roster
+ *   npx @hanzlaa/rcode agent <name>    → launch a specialist agent directly
  *   npx @hanzlaa/rcode doctor        → compliance check
  *   npx @hanzlaa/rcode version       → print version
  *   npx @hanzlaa/rcode help          → this message
@@ -30,6 +31,7 @@ const COMMANDS = {
   serve: require('./dashboard'),
   digest: require('./digest'),
   team: require('./team'),
+  agent: require('./agent'),
   doctor: require('./doctor'),
   'set-profile': require('./set-profile'),
   'set-mode': require('./set-mode'),
@@ -69,6 +71,8 @@ Usage:
 👥 TEAM
   team           List the team roster
   digest         Print compact digests for all agents
+  agent <name>   Launch a specialist agent directly (bypasses orchestration)
+                 rcode agent --list   to see available agents
   show-model     Show which model each agent uses in the current profile
   dashboard      Start the Diwan view-only dashboard (port 7717)
   serve          Alias for dashboard
