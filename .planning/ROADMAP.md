@@ -349,6 +349,71 @@ Started: 2026-03 · Current
 ---
 
 
+## Phase 22 — Agent Slim: Top-3 via References
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 22 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 23 — Agent Slim: Remaining 24 via Reference Clusters
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 23 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 24 — Resolve Agent vs Skill Persona Duplication
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 24 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 25 — rcode agent CLI Command
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 25 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 26 — Reference Index and Contributing Rule
+
+**Goal:** _TBD — fill in via /rihal-discuss-phase 26 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
