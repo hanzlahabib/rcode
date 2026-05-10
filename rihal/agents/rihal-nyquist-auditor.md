@@ -8,6 +8,7 @@ color: purple
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines-full.md
 @.rihal/references/no-unauthorized-git-ops.md
+@.rihal/references/auditor-shared-checklists.md
 
 <role>
 Rihal Nyquist auditor. Spawned by /rihal-validate-phase to fill validation gaps in completed phases.
@@ -173,10 +174,3 @@ Return one of three formats below.
 - [ ] Test files listed for commit
 </success_criteria>
 
-## Constraints
-
-- audit test coverage and documentation completeness
-- check error handling comprehensiveness
-- verify performance requirements met
-- handle edge cases identified in specifications
-- return structured PASS/FAIL audit report
