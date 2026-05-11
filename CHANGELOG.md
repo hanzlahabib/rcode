@@ -4,6 +4,19 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.33 (2026-05-11) — code-review dispatch fix (closes #720)
+
+`/rihal-code-review` was crashing with `Agent type 'rihal-review-adversarial-general' not found`. The step-02 dispatch text said "Invoke via the rihal-review-adversarial-general skill" — but that name exists as a **skill** in `rihal/skills/core/`, not a subagent. The surrounding "Launch parallel subagents" instruction made the AI dispatch `Task(subagent_type=X)` which failed.
+
+Three reviewer roles now dispatch to actual agents in `rihal/agents/`:
+- Blind Hunter → `rihal-security-adversary`
+- Edge Case Hunter → `rihal-edge-case-hunter`
+- Acceptance Auditor → `rihal-code-reviewer`
+
+Wording also switched from ambiguous "Invoke via the X skill" to explicit `Task(subagent_type=...)` so future readers can't mis-dispatch.
+
+---
+
 ## v3.4.32 (2026-05-11) — milestone discipline (closes #718)
 
 Two gaps surfaced by audit-style outputs that produced `A1-A7` / `B1-B5` phase IDs:
