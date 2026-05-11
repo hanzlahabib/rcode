@@ -95,7 +95,7 @@ function walkMd(dir, out = []) {
 }
 
 test('every workflow subagent_type= reference resolves to an agent file', () => {
-  const re = /subagent_type\s*[:=]\s*['"](rihal-[a-z-]+)['"]/g;
+  const re = /subagent_type\s*[:=]\s*['"](rihal-[a-z0-9-]+)['"]/g;
   const refs = new Set();
   for (const f of walkMd(path.join(PROJECT_ROOT, 'rihal', 'workflows'))) {
     const t = fs.readFileSync(f, 'utf8');

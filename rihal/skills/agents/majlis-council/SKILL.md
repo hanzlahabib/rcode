@@ -59,7 +59,7 @@ Majlis (مجلس) is the consulting council. Convenes specialists when a questio
 | DM | Decision matrix — walk through a specific choice with pros/cons per agent | `rihal-majlis-decision` |
 | CM | Crisis mode — rapid consultation during an incident | `rihal-majlis-crisis` |
 
-## Consultation Protocol
+## Workflow
 
 1. **Frame the question** — restate clearly so every agent answers the same question.
 2. **Determine the council** — identify which agents' domains are relevant (3 minimum, 12 maximum, 3-8 ideal).

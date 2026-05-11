@@ -39,8 +39,9 @@ module.exports = function agent(args, { packageRoot }) {
     process.exit(1);
   }
 
-  // Check claude binary is on PATH
-  const claudeCheck = spawnSync('which', ['claude'], { encoding: 'utf8' });
+  // Check claude binary is on PATH (cross-platform: 'where' on Windows, 'which' elsewhere)
+  const whichCmd = process.platform === 'win32' ? 'where' : 'which';
+  const claudeCheck = spawnSync(whichCmd, ['claude'], { encoding: 'utf8' });
   if (claudeCheck.status !== 0) {
     console.error('Error: claude binary not found. Install Claude Code: https://claude.ai/code');
     process.exit(1);

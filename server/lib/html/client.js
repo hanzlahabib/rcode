@@ -29,9 +29,9 @@ function chip(s) {
     : s === 'blocked' ? 'blocked'
     : s === 'planned' ? 'planned'
     : s === 'todo' ? 'todo' : 'other';
-  return '<span class="status-chip ' + c + '">● ' + s + '</span>';
+  return '<span class="status-chip ' + c + '">● ' + esc(s) + '</span>';
 }
-function tag(t) { return '<span class="tag">' + t + '</span>'; }
+function tag(t) { return '<span class="tag">' + esc(t) + '</span>'; }
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function pct(d, t) { return t > 0 ? Math.round(d/t*100) + '%' : '—'; }
 function pctNum(d, t) { return t > 0 ? Math.round(d/t*100) : 0; }

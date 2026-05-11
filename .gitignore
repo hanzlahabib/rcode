@@ -43,11 +43,7 @@ temp/
 # Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.
 
 # Installed methodology files (regenerate with: npx @hanzlaa/rcode install)
-.claude/*
-!.claude/settings.json
-!.claude/hooks/
-.claude/hooks/*
-!.claude/hooks/*.sh
+.claude/
 .rihal/bin/
 .rihal/workflows/
 .rihal/references/

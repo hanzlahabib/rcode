@@ -8,7 +8,7 @@ color: green
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines-full.md
 @.rihal/references/output-realism.md
-@rihal/brain/best-practices/no-theoretical-suggestions.md
+@.rihal/brain/best-practices/no-theoretical-suggestions.md
 @.rihal/references/planner-playbook.md
 
 <role>

@@ -132,6 +132,13 @@ function handleApiFile(req, res, projectRoot) {
   if (!resolved.startsWith(projectRoot + path.sep) && resolved !== projectRoot) {
     res.writeHead(403); res.end('Forbidden'); return;
   }
+  // Dereference symlinks so a symlink outside projectRoot cannot bypass the guard
+  let realResolved;
+  try { realResolved = fs.realpathSync(resolved); }
+  catch { res.writeHead(404); res.end('File not found'); return; }
+  if (!realResolved.startsWith(projectRoot + path.sep) && realResolved !== projectRoot) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
   if (!resolved.endsWith('.md')) {
     res.writeHead(403); res.end('Forbidden: only .md files'); return;
   }

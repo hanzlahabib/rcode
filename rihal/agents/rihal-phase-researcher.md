@@ -8,7 +8,7 @@ color: cyan
 
 @.rihal/references/response-style.md
 @.rihal/references/karpathy-guidelines.md
-@rihal/brain/best-practices/no-theoretical-suggestions.md
+@.rihal/brain/best-practices/no-theoretical-suggestions.md
 @.rihal/references/researcher-shared.md
 
 <role>

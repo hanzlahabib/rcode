@@ -520,3 +520,35 @@ tactical_agents:
     role: Verifier
     authority_level: quality
     description: Verifies phase goal achievement goal-backward
+
+  - id: rihal-i18n-auditor
+    name: i18n Auditor
+    file_path: rihal/agents/rihal-i18n-auditor.md
+    skill_path: rihal/skills/agents/rihal-i18n-auditor
+    role: i18n Auditor
+    authority_level: quality
+    description: Detects hardcoded English strings, missing response_language threading, and RTL layout gaps
+
+  - id: rihal-cross-platform-auditor
+    name: Cross-Platform Auditor
+    file_path: rihal/agents/rihal-cross-platform-auditor.md
+    skill_path: rihal/skills/agents/rihal-cross-platform-auditor
+    role: Cross-Platform Auditor
+    authority_level: quality
+    description: Detects bash-isms, macOS-only flags, hardcoded Unix paths, and CRLF line endings
+
+  - id: rihal-dep-auditor
+    name: Dep Auditor
+    file_path: rihal/agents/rihal-dep-auditor.md
+    skill_path: rihal/skills/agents/rihal-dep-auditor
+    role: Dependency Health Auditor
+    authority_level: quality
+    description: Scans for outdated packages, CVEs, unused dependencies, and loose version pins
+
+  - id: rihal-observability-auditor
+    name: Observability Auditor
+    file_path: rihal/agents/rihal-observability-auditor.md
+    skill_path: rihal/skills/agents/rihal-observability-auditor
+    role: Observability Auditor
+    authority_level: quality
+    description: Detects unguarded shell calls, unchecked Task() results, and missing INIT .ok checks
