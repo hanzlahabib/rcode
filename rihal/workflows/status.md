@@ -53,6 +53,25 @@ Then stop.
 If `SNAPSHOT.weighted_progress > 0` but `SNAPSHOT.completed_count === 0`, display
 the weighted bar as the primary progress indicator to avoid a misleading `0/N (0%)`.
 
+### Milestone health (issue #718)
+
+After the main dashboard, call `rihal-tools milestone-health` and surface
+a gauge when the milestone is full:
+
+```bash
+HEALTH=$(node ".rihal/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
+```
+
+Parse `recommendation`, `open_phases`, `phase_count`. Display ONLY when
+`recommendation` is not `healthy`:
+
+```
+⚠ Milestone health: {open_phases} open / {phase_count} total — {recommendation}
+   → /rihal-complete-milestone to close, or /rihal-new-milestone to fork
+```
+
+When healthy, print nothing — keeps status terse for normal projects.
+
 ## Step 3 — Phases section
 
 For each entry in `SNAPSHOT.phases[]`:
