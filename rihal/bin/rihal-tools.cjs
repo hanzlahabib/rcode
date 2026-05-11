@@ -29,13 +29,18 @@ const path = require('path');
 // When running from source (rihal/bin/), warn but allow — tests need this path.
 const _maybeRoot = path.resolve(__dirname, '..', '..');
 const _isInstalled = path.basename(path.dirname(__dirname)) === '.rihal';
-if (!_isInstalled && !process.env.RIHAL_DEV_MODE && !process.env.NODE_TEST_CONTEXT) {
+if (!_isInstalled && !process.env.RIHAL_DEV_MODE && !process.env.NODE_TEST_CONTEXT && !process.env.RIHAL_PROJECT_ROOT) {
   // Source dir, not installed location — warn but proceed (tests run from here)
   if (process.stderr.isTTY) {
     console.error('Note: rihal-tools.cjs running from source. For full features install with: node cli/install-v2.js <target> --yes');
   }
 }
-const PROJECT_ROOT = _maybeRoot;
+// Issue #718: RIHAL_PROJECT_ROOT env override lets tests (and future tooling)
+// retarget the binary at a different project root without symlinking. When
+// unset, behaves identically to before.
+const PROJECT_ROOT = process.env.RIHAL_PROJECT_ROOT
+  ? path.resolve(process.env.RIHAL_PROJECT_ROOT)
+  : _maybeRoot;
 const RIHAL_DIR = path.join(PROJECT_ROOT, '.rihal');
 const CONFIG_DIR = path.join(RIHAL_DIR, '_config');
 const REFS_DIR = path.join(RIHAL_DIR, 'references');
@@ -5371,6 +5376,119 @@ function cmdProjectStatus() {
   };
 }
 
+/**
+ * cmdValidatePhaseId — pure check that a phase ID conforms to rcode convention.
+ *
+ * Issue #718: workflows like `/rihal-plan` and `/rihal-audit` were producing
+ * freestyled IDs like "A1", "B5", "phase-x". Phase IDs must be integer
+ * (e.g. "19", "22") or decimal (e.g. "19.1", "22.3" — sub-phases under a
+ * parent integer). Anything else gets rejected loudly so the caller can fix
+ * the output before it pollutes ROADMAP.md.
+ */
+function cmdValidatePhaseId(id) {
+  if (id === undefined || id === null || id === '') {
+    return { ok: false, valid: false, error: 'no phase id provided' };
+  }
+  const str = String(id).trim();
+  // Strip leading zeros for the integer pattern check (per feedback memory:
+  // no leading zeros — phase 6 not 06). The integer pattern below already
+  // forbids them but we want a clear error when the caller passes "06".
+  if (/^0\d/.test(str)) {
+    return { ok: false, valid: false, id: str, error: `leading zeros not allowed — use ${str.replace(/^0+/, '')}` };
+  }
+  // Accepted shape: <int>(.<int>)? — e.g. "19", "19.1", "22.3"
+  const ok = /^([1-9]\d*)(\.[1-9]\d*)?$/.test(str);
+  if (!ok) {
+    return {
+      ok: false,
+      valid: false,
+      id: str,
+      error: `phase id "${str}" does not match integer or decimal pattern (e.g. 19, 19.1, 22)`,
+    };
+  }
+  return { ok: true, valid: true, id: str, kind: str.includes('.') ? 'decimal' : 'integer' };
+}
+
+/**
+ * cmdValidateRoadmap — scan .planning/ROADMAP.md for phase headings whose
+ * IDs don't conform. Returns the list of offenders with line numbers so
+ * the caller can flag them. Read-only — never modifies ROADMAP.
+ */
+function cmdValidateRoadmap() {
+  const roadmapPath = path.join(PROJECT_ROOT, '.planning', 'ROADMAP.md');
+  if (!fs.existsSync(roadmapPath)) {
+    return { ok: true, valid: true, offenders: [], note: 'no ROADMAP.md' };
+  }
+  let text;
+  try { text = fs.readFileSync(roadmapPath, 'utf8'); }
+  catch (e) { return { ok: false, error: `read failed: ${e.message}` }; }
+
+  const offenders = [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Match phase headings: "## Phase <id>" anywhere, also "### Phase <id>"
+    const m = line.match(/^#{2,3}\s+Phase\s+([^\s—:–]+)/i);
+    if (!m) continue;
+    const id = m[1].trim();
+    const r = cmdValidatePhaseId(id);
+    if (!r.valid) {
+      offenders.push({ line: i + 1, id, reason: r.error });
+    }
+  }
+  return {
+    ok: true,
+    valid: offenders.length === 0,
+    offenders,
+    scanned: lines.length,
+    roadmap: '.planning/ROADMAP.md',
+  };
+}
+
+/**
+ * cmdMilestoneHealth — gauge for the current milestone (issue #718).
+ *
+ * Counts open vs done phases under the current milestone and recommends
+ * action when the milestone is getting unwieldy. Workflows like
+ * /rihal-add-phase and /rihal-status read this to nudge users toward
+ * /rihal-complete-milestone before the phase list balloons.
+ *
+ * Thresholds (kept conservative — bump in config later if needed):
+ *   - "consider closing" when >= 8 open phases under one milestone
+ *   - "should close" when >= 12 open phases (hard nudge)
+ */
+function cmdMilestoneHealth() {
+  const statePath = path.join(RIHAL_DIR, 'state.json');
+  if (!fs.existsSync(statePath)) return { ok: true, milestone: null, note: 'no state.json' };
+  let state;
+  try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+  catch (e) { return { ok: false, error: `invalid state.json: ${e.message}` }; }
+
+  const milestone = state.milestone || null;
+  const phases = Array.isArray(state.phases) ? state.phases : [];
+  // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
+  // 'completed' | 'verified' | 'shipped'. Treat anything not in
+  // {completed, verified, shipped} as open.
+  const doneStatuses = new Set(['completed', 'verified', 'shipped']);
+  const open = phases.filter(p => !doneStatuses.has(p.status));
+  const done = phases.filter(p => doneStatuses.has(p.status));
+
+  let recommendation = 'healthy';
+  if (open.length >= 12) recommendation = 'should-close';
+  else if (open.length >= 8) recommendation = 'consider-closing';
+
+  return {
+    ok: true,
+    milestone,
+    phase_count: phases.length,
+    open_phases: open.length,
+    completed_phases: done.length,
+    recommendation,
+    threshold_consider: 8,
+    threshold_should: 12,
+  };
+}
+
 function cmdStateSnapshot() {
   const statePath = path.join(RIHAL_DIR, 'state.json');
   if (!fs.existsSync(statePath)) return { ok: true, state: null };
@@ -5747,6 +5865,15 @@ async function main() {
         break;
       case 'project-status':
         result = cmdProjectStatus();
+        break;
+      case 'validate-phase-id':
+        result = cmdValidatePhaseId(args[0]);
+        break;
+      case 'validate-roadmap':
+        result = cmdValidateRoadmap();
+        break;
+      case 'milestone-health':
+        result = cmdMilestoneHealth();
         break;
       case 'version':
         console.log(readPackageVersion());

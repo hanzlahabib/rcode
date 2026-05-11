@@ -104,6 +104,43 @@ Update STATE.md to reflect the new phase:
 If "Roadmap Evolution" section doesn't exist, create it.
 </step>
 
+<step name="milestone_health_check">
+After the phase is added, run the milestone-health gauge (issue #718):
+
+```bash
+HEALTH=$(node ".rihal/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
+RECOMMENDATION=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).recommendation||'unknown')}catch{console.log('unknown')}})")
+OPEN_COUNT=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).open_phases||0)}catch{console.log(0)}})")
+MILESTONE_NAME=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).milestone||'')}catch{console.log('')}})")
+```
+
+If `RECOMMENDATION` is `should-close` (≥12 open phases), surface a hard nudge:
+
+```
+⚠ Milestone health: {MILESTONE_NAME} has {OPEN_COUNT} open phases.
+
+Phase {N} is now in this milestone, but the milestone is well past the
+12-phase threshold for considering closure. Phases are accumulating without
+a milestone boundary — historically this is where roadmaps lose structure.
+
+Recommended next step:
+  /rihal-complete-milestone    close {MILESTONE_NAME} cleanly + archive done phases
+  /rihal-new-milestone         start a fresh milestone for ongoing work
+
+If you genuinely want a giant single-milestone roadmap, ignore this and
+continue. The threshold is conservative on purpose.
+```
+
+If `RECOMMENDATION` is `consider-closing` (8-11 open phases), softer nudge:
+
+```
+ℹ Milestone health: {MILESTONE_NAME} has {OPEN_COUNT} open phases — getting full.
+   Consider /rihal-complete-milestone before adding more.
+```
+
+If `RECOMMENDATION` is `healthy`, say nothing.
+</step>
+
 <step name="completion">
 Present completion summary:
 
