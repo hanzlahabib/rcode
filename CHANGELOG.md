@@ -4,6 +4,17 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.4.32 (2026-05-11) — milestone discipline (closes #718)
+
+Two gaps surfaced by audit-style outputs that produced `A1-A7` / `B1-B5` phase IDs:
+
+- **Phase IDs unenforced** — `/rihal-plan` and `/rihal-audit-milestone` freestyled. rcode's actual convention (integer or decimal-subphase) was undocumented + unvalidated.
+- **Milestone closure never prompted** — `/rihal-add-phase` happily appended phase #25 under M1 without nudging toward `/rihal-complete-milestone`. rcode's own state.json hit 25 open phases dogfooding the bug.
+
+3 new `rihal-tools` subcommands: `validate-phase-id`, `validate-roadmap`, `milestone-health`. Workflow wiring in `add-phase.md` + `status.md`. Convention pinned in `rihal/references/phase-id-conventions.md`. 14 new tests, 273/273 passing.
+
+---
+
 ## v3.4.31 (2026-05-08) — picker footprint trim (closes #710)
 
 Users hit "Skill listing will be truncated — 491 descriptions dropped" on every Claude Code session because rcode shipped 85 skills with **zero** marked `internal: true`. Every action skill was picker-visible even though they're invoked via slash commands.
