@@ -299,6 +299,27 @@ Amazon's "Working Backwards" method: write the finished-product press release *b
 
 `/rihal-execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion. Both append to SUMMARY.md.
 
+### Markdown-first agent design
+
+Most agent frameworks wrap their logic in Python classes, JSON schemas, and orchestration layers. rcode doesn't. Every agent is a markdown file. The model follows structured prose — it doesn't need a wrapper.
+
+The design rule: **markdown owns the logic, scripts own the boundaries.**
+
+```
+rihal/agents/rihal-waleed.md      ← what the agent knows and does (markdown)
+cli/agent.js                       ← how it gets invoked (script)
+server/lib/api.js                  ← what it can read (boundary)
+```
+
+- If your agent logic is in code, you've over-engineered it.
+- If your file I/O, git ops, or test gates are in markdown, you've under-engineered it.
+
+Heavy playbook content lives in `rihal/references/` and gets `@-include`d at spawn time — so agent files stay thin (≤100 lines) without losing context. The model gets exactly what it needs, loaded once, with no framework overhead between the instruction and the action.
+
+**Why this matters:** frameworks add complexity without adding capability. An LLM following a well-written markdown checklist outperforms the same LLM wrapped in three abstraction layers. rcode bets on clear prose over clever scaffolding.
+
+---
+
 ### Model profiles
 
 ```bash
