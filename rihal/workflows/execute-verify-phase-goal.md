@@ -9,10 +9,12 @@ Verify phase achieved its GOAL, not just completed tasks.
 VERIFIER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-verifier 2>/dev/null)
 ```
 
+If init JSON has `response_language` set, prepend `Respond in {response_language}.` to the prompt and require VERIFICATION.md prose (rationale, gap descriptions, human_verification items) to be written in that language. Status keys, file paths, and requirement IDs stay English.
+
 ```
 Task(
   description="Verify phase {phase_number} goal achievement",
-  prompt="Verify phase {phase_number} goal achievement.
+  prompt="${response_language ? `Respond in ${response_language}. Write VERIFICATION.md prose in ${response_language}; keep status keys, file paths, and requirement IDs in English.\n\n` : ''}Verify phase {phase_number} goal achievement.
 Phase directory: {phase_dir}
 Phase goal: {goal from ROADMAP.md}
 Phase requirement IDs: {phase_req_ids}

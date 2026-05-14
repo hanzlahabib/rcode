@@ -25,7 +25,9 @@ INIT=$(node ".rihal/bin/rihal-tools.cjs" init execute "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir`, `phase_number`, `plans`, `summaries`, `incomplete_plans`, `state_path`, `config_path`.
+Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir`, `phase_number`, `plans`, `summaries`, `incomplete_plans`, `state_path`, `config_path`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in every spawned subagent prompt (executor, debugger, gap-closer). VERIFICATION.md, SUMMARY.md, and any human-facing prose must be written in that language. Code, identifiers, commit messages, and file paths stay English.
 
 If `.planning/` missing: error.
 </step>

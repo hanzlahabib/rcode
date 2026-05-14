@@ -901,6 +901,11 @@ function cmdInitExecute(rawArgs) {
     plan_path: planPath,
     phase_dir: phaseDir,
     plans,
+    // Surface response_language at top level so workflows don't have to drill
+    // into config — matches cmdInit's contract (#721). null means English.
+    response_language: config.response_language || config.language || null,
+    executor_model: config.executor_model || config.model_profile || null,
+    verifier_model: config.verifier_model || config.model_profile || null,
     config,
     paths: {
       project_root: PROJECT_ROOT,

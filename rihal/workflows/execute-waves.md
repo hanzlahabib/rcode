@@ -91,7 +91,6 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    ```
    Task(
      subagent_type="rihal-executor",
-  model="sonnet",
      description="Execute plan {plan_number} of phase {phase_number}",
      model="{executor_model}",
      isolation="worktree",
@@ -101,6 +100,13 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        Commit each task atomically. Create SUMMARY.md.
        Do NOT update STATE.md or ROADMAP.md — the orchestrator owns those writes after all worktree agents in the wave complete.
        </objective>
+
+       <!--
+         #721 i18n: when init JSON's response_language is set, prepend this line
+         verbatim to the prompt before the objective. Human-facing prose in
+         SUMMARY.md must be in {response_language}; code/identifiers stay English.
+       -->
+       ${response_language ? `Respond in ${response_language}. Write SUMMARY.md prose in ${response_language}; keep code, file paths, identifiers, and commit messages in English.` : ''}
 
        <worktree_branch_check>
        FIRST ACTION before any other work: verify this worktree's branch is based on the correct commit.

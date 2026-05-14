@@ -63,7 +63,14 @@ STOP after printing help.
 TOOL="node .rihal/bin/rihal-tools.cjs"
 INIT=$($TOOL init 2>/dev/null || echo '{"ok":false}')
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
-RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "english")
+RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "")
+# Build an imperative directive only when language is explicitly set (#721).
+# Empty RESPONSE_LANGUAGE = English default, no directive injected.
+if [ -n "$RESPONSE_LANGUAGE" ] && [ "$RESPONSE_LANGUAGE" != "english" ]; then
+  LANG_DIRECTIVE="Respond in $RESPONSE_LANGUAGE. Keep finding IDs, file paths, and CLI commands in English; localise only the human-facing prose."
+else
+  LANG_DIRECTIVE=""
+fi
 ```
 
 If INIT is empty or INIT.ok is false, print error and exit:
@@ -119,7 +126,7 @@ Set `LENSES` from the choice.
 SCOPE_DIRS="rihal/ .rihal/"
 [ -d src ] && SCOPE_DIRS="$SCOPE_DIRS src/"
 [ -d lib ] && SCOPE_DIRS="$SCOPE_DIRS lib/"
-SCOPE_SUMMARY="Scope: $SCOPE_DIRS. Response language: $RESPONSE_LANGUAGE."
+SCOPE_SUMMARY="Scope: $SCOPE_DIRS.${LANG_DIRECTIVE:+ $LANG_DIRECTIVE}"
 
 # Collect project context for richer prompts
 PROJECT_NAME=$($TOOL config-get project.name 2>/dev/null || basename "$PWD")
