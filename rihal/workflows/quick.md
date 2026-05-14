@@ -161,15 +161,20 @@ git commit -m "{type}: {concise description of what changed}"
 </step>
 
 <step name="log_to_state">
-If `.planning/STATE.md` exists with a "Quick Tasks Completed" table, append:
+Append the completed task to `.planning/STATE.md`. Create the section if it
+doesn't exist — projects initialized with `/rihal-new-project` use a STATE.md
+shape that has no "Quick Tasks Completed" table by default (#601). Without
+this fallback the entry was silently dropped on every fresh repo.
 
 ```bash
-if grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
-  echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
+mkdir -p .planning
+if [ ! -f .planning/STATE.md ]; then
+  printf '# Project State\n\n## Quick Tasks Completed\n\n| Date | Type | Task | Status |\n|------|------|------|--------|\n' > .planning/STATE.md
+elif ! grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
+  printf '\n## Quick Tasks Completed\n\n| Date | Type | Task | Status |\n|------|------|------|--------|\n' >> .planning/STATE.md
 fi
+echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
 ```
-
-Skip silently if the table doesn't exist.
 </step>
 
 <step name="done">
