@@ -167,6 +167,39 @@ function scanState(rihalDir) {
   }
   if (fs.existsSync(planningDir)) walkPlanning(planningDir, '');
 
+  // #12 — surface pending handoff (.rihal/HANDOFF.json) and active context
+  // (.rihal/context/active.md) for the dashboard banner + memory-bank summary.
+  // Both are no-op when the files don't exist. View-only — no writes.
+  const handoffPath = path.join(rihalDir, 'HANDOFF.json');
+  if (fs.existsSync(handoffPath)) {
+    const ho = safeReadJson(handoffPath);
+    if (ho && !ho.__parseError) {
+      state.pendingHandoff = {
+        path: '.rihal/HANDOFF.json',
+        ts: ho.ts || ho.timestamp || null,
+        summary: ho.summary || ho.note || ho.what_was_happening || null,
+        phase: ho.phase || ho.current_phase || null,
+        sprint: ho.sprint || ho.current_sprint || null,
+        resume_hint: ho.resume_hint || ho.next || null,
+      };
+    }
+  }
+
+  const activeCtx = path.join(rihalDir, 'context', 'active.md');
+  if (fs.existsSync(activeCtx)) {
+    try {
+      const stat = fs.statSync(activeCtx);
+      const text = fs.readFileSync(activeCtx, 'utf8');
+      state.memoryBank = state.memoryBank || {};
+      state.memoryBank.active = {
+        path: '.rihal/context/active.md',
+        bytes: stat.size,
+        lines: text.split('\n').length,
+        updated: stat.mtime.toISOString(),
+      };
+    } catch { /* ignore */ }
+  }
+
   return state;
 }
 

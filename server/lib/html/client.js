@@ -14,6 +14,10 @@ function renderClientJs(state) {
     last_session:  state.raw?.last_session  || null,
     chains:        state.raw?.chains        || [],
     workstreams:   state.raw?.workstreams   || [],
+    // #12 — passthrough scanner-computed fields (absent values stay undefined,
+    // both UI blocks below guard with `if (S.pendingHandoff)` / `if (S.memoryBank…)`).
+    pendingHandoff: state.pendingHandoff || null,
+    memoryBank:     state.memoryBank     || null,
   });
 
   return `<script>
@@ -316,11 +320,40 @@ function renderOverview() {
     chainsHtml += '</div></section>';
   }
 
+  // #12 — pending handoff banner (shown only when .rihal/HANDOFF.json present).
+  // Read-only — the dashboard never resumes; user runs /rihal-resume-work.
+  let handoffHtml = '';
+  if (S.pendingHandoff) {
+    const ho = S.pendingHandoff;
+    const when = ho.ts ? humanDate(ho.ts) : '';
+    const summary = ho.summary ? ' — ' + esc(ho.summary).slice(0, 120) : '';
+    const where = ho.sprint ? ' [sprint ' + esc(ho.sprint) + ']' :
+                  ho.phase  ? ' [phase '  + esc(ho.phase)  + ']' : '';
+    handoffHtml = '<section style="border-left:4px solid var(--accent-orange,#f59e0b);padding-left:var(--space-3);">' +
+      '<h2>⚠ Pending Handoff</h2><div class="body">' +
+      '<div>' + (when ? esc(when) : '') + where + summary + '</div>' +
+      (ho.resume_hint ? '<div style="margin-top:var(--space-2);color:var(--text-secondary);font-size:var(--text-sm);">' + esc(ho.resume_hint) + '</div>' : '') +
+      '<div style="margin-top:var(--space-3);font-size:var(--text-sm);"><code>/rihal-resume-work</code></div>' +
+      '</div></section>';
+  }
+
+  // #12 — memory bank summary (shown only when .rihal/context/active.md present).
+  let memoryHtml = '';
+  if (S.memoryBank && S.memoryBank.active) {
+    const m = S.memoryBank.active;
+    memoryHtml = '<section><h2>🧠 Memory Bank</h2><div class="body">' +
+      '<div class="attr-grid">' +
+      attr('active.md', m.lines + ' lines · ' + Math.round(m.bytes / 1024 * 10) / 10 + ' KB') +
+      attr('Updated', humanDate(m.updated)) +
+      '</div></div></section>';
+  }
+
   const el = document.getElementById('view-overview-dynamic');
   // Overview hints
   var oHints = [cmdHint('/rihal-next', 'What should I do next?'), cmdHint('/rihal-status', 'Quick project status'), cmdHint('/rihal-council', 'Ask the team a question')];
   if (curSprint) { oHints = sprintHints(curSprint).concat(oHints); }
-  if (el) el.innerHTML = sprintProgressHtml + velocityHtml + councilHtml + chainsHtml + lastSessionHtml + cmdAccordion(oHints);
+  if (S.pendingHandoff) { oHints.unshift(cmdHint('/rihal-resume-work', 'Resume from the pending handoff')); }
+  if (el) el.innerHTML = handoffHtml + sprintProgressHtml + memoryHtml + velocityHtml + councilHtml + chainsHtml + lastSessionHtml + cmdAccordion(oHints);
 }
 
 function renderRoadmap() {
