@@ -628,12 +628,45 @@ ${REVIEWER_SKILLS}",
 
 **Parse severity counts:**
 ```bash
+# Fail-safe defaults — malformed/missing frontmatter must NOT bypass the gate (#602).
+# Empty string compared against an integer in bash evaluates to false, which
+# would silently let critical findings through. Default missing to a sentinel
+# that fails the gate so a bad REVIEW.md is treated as "block, ask the user".
+REVIEW_STATUS="malformed"
+CRITICAL_COUNT=0
+HIGH_COUNT=0
+MEDIUM_COUNT=0
+LOW_COUNT=0
+REVIEW_PARSE_OK=false
 if [[ -f "$REVIEW_FILE" ]]; then
-  REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
-  CRITICAL_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^critical:" | head -1 | cut -d: -f2 | tr -d ' ')
-  HIGH_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^high:" | head -1 | cut -d: -f2 | tr -d ' ')
-  MEDIUM_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^medium:" | head -1 | cut -d: -f2 | tr -d ' ')
-  LOW_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^low:" | head -1 | cut -d: -f2 | tr -d ' ')
+  FRONTMATTER=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE")
+  PARSED_STATUS=$(echo "$FRONTMATTER" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_CRIT=$(echo "$FRONTMATTER"   | grep "^critical:" | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_HIGH=$(echo "$FRONTMATTER"   | grep "^high:"     | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_MED=$(echo "$FRONTMATTER"    | grep "^medium:"   | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_LOW=$(echo "$FRONTMATTER"    | grep "^low:"      | head -1 | cut -d: -f2 | tr -d ' ')
+  # Accept the parse only when status + all four counts are present AND counts
+  # are pure digits. Anything else = malformed → block and ask.
+  if [[ -n "$PARSED_STATUS" \
+        && "$PARSED_CRIT" =~ ^[0-9]+$ \
+        && "$PARSED_HIGH" =~ ^[0-9]+$ \
+        && "$PARSED_MED"  =~ ^[0-9]+$ \
+        && "$PARSED_LOW"  =~ ^[0-9]+$ ]]; then
+    REVIEW_STATUS="$PARSED_STATUS"
+    CRITICAL_COUNT="$PARSED_CRIT"
+    HIGH_COUNT="$PARSED_HIGH"
+    MEDIUM_COUNT="$PARSED_MED"
+    LOW_COUNT="$PARSED_LOW"
+    REVIEW_PARSE_OK=true
+  fi
+fi
+
+# Malformed REVIEW.md = treat as a blocking finding. The gate must NEVER
+# silently pass when it can't read the report (#602).
+if [[ "$REVIEW_PARSE_OK" != "true" ]]; then
+  echo "⛔ Code review gate: REVIEW.md missing or malformed at ${REVIEW_FILE}."
+  echo "   Cannot determine severity counts. Treating as blocking — re-run the reviewer."
+  CRITICAL_COUNT=1   # force the gate to block; user can override below
 fi
 ```
 
