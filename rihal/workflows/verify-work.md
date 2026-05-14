@@ -523,7 +523,7 @@ Plans must be executable prompts.
 </downstream_consumer>
 """,
   subagent_type="rihal-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Plan gap fixes for Phase {phase}"
 )
@@ -573,7 +573,7 @@ Return one of:
 </expected_output>
 """,
   subagent_type="rihal-sprint-checker",
-  model="sonnet",
+  model="{model}",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
 )
@@ -618,7 +618,7 @@ Do NOT replan from scratch unless issues are fundamental.
 </instructions>
 """,
   subagent_type="rihal-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

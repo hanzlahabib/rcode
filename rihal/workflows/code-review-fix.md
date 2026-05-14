@@ -208,7 +208,7 @@ Use Task() to spawn agent:
 
 ```
 Task(subagent_type="rihal-code-fixer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -290,7 +290,7 @@ if [ "$AUTO_MODE" = "true" ]; then
     # Spawn rihal-code-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
     Task(subagent_type="rihal-code-reviewer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
 phase_dir: ${PHASE_DIR}
@@ -324,7 +324,7 @@ Do NOT commit the output — the orchestrator handles that.
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
     Task(subagent_type="rihal-code-fixer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>

@@ -111,7 +111,7 @@ Reason: {explain why}
 Task(
   prompt=research_prompt,
   subagent_type="rihal-phase-researcher",
-  model="sonnet",
+  model="{model}",
   model="{researcher_model}",
   description="Research Phase {phase}"
 )

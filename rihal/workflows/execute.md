@@ -142,7 +142,7 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-spr
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
 - **Claude Code:** Uses `Task(subagent_type="rihal-executor",
-  model="sonnet", ...)` — blocks until complete, returns result
+  model="{executor_model}", ...)` — blocks until complete, returns result
 - **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
   sequential inline execution**: read and follow execute-sprint.md directly for each plan
   instead of spawning parallel agents. Only attempt parallel spawning if the user

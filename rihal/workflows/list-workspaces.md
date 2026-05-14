@@ -93,7 +93,7 @@ Otherwise:
 ```
 ✓ {count} active workspaces
   Use --detail for full status
-  Switch: /rihal-workspace <name>
+  Switch: /rihal-workstream switch --name <name>
   Remove: /rihal-remove-workspace <name>
 ```
 

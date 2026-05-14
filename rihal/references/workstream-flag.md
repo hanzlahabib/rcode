@@ -97,10 +97,10 @@ Use workspaces (`--workspace` flag) for:
 /rihal-plan <task> --workspace=Hotfix
 
 # Switch to another workspace's context
-/rihal-workspace <name>
+/rihal-workstream switch --name <name>
 
 # Return to main planning
-/rihal-workspace main
+/rihal-workstream switch --name main
 ```
 
 ## Merging Workspaces Back

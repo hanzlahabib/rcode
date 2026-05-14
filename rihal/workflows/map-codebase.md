@@ -169,7 +169,7 @@ Use Task tool with `subagent_type="rihal-codebase-mapper"`, `model="{mapper_mode
 ```
 Task(
   subagent_type="rihal-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase tech stack",
@@ -191,7 +191,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rihal-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase architecture",
@@ -213,7 +213,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rihal-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase conventions",
@@ -235,7 +235,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rihal-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase concerns",

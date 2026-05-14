@@ -155,6 +155,12 @@ File: .planning/seeds/SEED-{PADDED}-{slug}.md
 
 This seed will surface automatically when you run /rihal-new-milestone
 and the milestone scope matches the trigger condition.
+
+▶ Next Up
+  /rihal-status                 — review current focus before context-switching
+  /rihal-note "{$IDEA}"         — capture related thoughts while fresh
+  /rihal-new-milestone           — start the milestone that will consume this seed
+  /rihal-do                      — return to the dispatcher
 ```
 </step>
 

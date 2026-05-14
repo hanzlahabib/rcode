@@ -157,7 +157,7 @@ For each doc in the queue, spawn a `rihal-noor` agent in parallel waves (up to 3
 ```
 Task(
   subagent_type="rihal-noor",
-  model="sonnet",
+  model="{model}",
   prompt="
 Generate documentation for {doc_type}.
 Output path: {resolved_path}
@@ -180,7 +180,7 @@ For each generated doc:
 ```
 Task(
   subagent_type="rihal-docs-auditor",
-  model="sonnet",
+  model="{model}",
   prompt="
 Verify this documentation file against the live codebase:
 Path: {resolved_path}

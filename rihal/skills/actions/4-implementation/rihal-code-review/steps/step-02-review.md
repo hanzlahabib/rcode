@@ -20,10 +20,10 @@ failed_layers: '' # set at runtime: comma-separated list of layers that failed o
    **Subagent mapping** (issue #720): the three reviewer roles below map to actual agents shipped in `.claude/agents/`. The skill names that used to be referenced here (`rihal-review-adversarial-general`, `rihal-review-edge-case-hunter`) are skills, not subagents, and `Task(subagent_type=...)` cannot reach them. Use the agents listed.
 
    - **Blind Hunter** — receives `{diff_output}` only. No spec, no context docs, no project access. Dispatch:
-     `Task(subagent_type="rihal-security-adversary", model="sonnet", prompt="<adversarial review of diff>")`. The security-adversary persona's cynical mindset is the right fit for an isolated diff-only review.
+     `Task(subagent_type="rihal-security-adversary", model="{review_model}", prompt="<adversarial review of diff>")`. The security-adversary persona's cynical mindset is the right fit for an isolated diff-only review.
 
    - **Edge Case Hunter** — receives `{diff_output}` and read access to the project. Dispatch:
-     `Task(subagent_type="rihal-edge-case-hunter", model="sonnet", prompt="<enumerate edge cases for diff>")`.
+     `Task(subagent_type="rihal-edge-case-hunter", model="{review_model}", prompt="<enumerate edge cases for diff>")`.
 
    - **Acceptance Auditor** (only if `{review_mode}` = `"full"`) — receives `{diff_output}`, the content of the file at `{spec_file}`, and any loaded context docs. Dispatch via `rihal-code-reviewer`. Its prompt:
      > You are an Acceptance Auditor. Review this diff against the spec and context docs. Check for: violations of acceptance criteria, deviations from spec intent, missing implementation of specified behavior, contradictions between spec constraints and actual code. Output findings as a Markdown list. Each finding: one-line title, which AC/constraint it violates, and evidence from the diff.

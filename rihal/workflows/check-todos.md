@@ -110,6 +110,7 @@ Use AskUserQuestion:
   - "Add to phase plan" — include when planning Phase [N]
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
+  - "Cancel" — exit /rihal-check-todos without changing anything
 
 **If no roadmap match:**
 
@@ -121,6 +122,9 @@ Use AskUserQuestion:
   - "Create a phase" — /rihal-add-phase with this scope
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
+  - "Cancel" — exit /rihal-check-todos without changing anything
+
+**If user picks "Cancel" (or hits Esc):** print `Cancelled — todo untouched.` and STOP. Do not proceed to execute_action.
 </step>
 
 <step name="execute_action">

@@ -89,7 +89,7 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
  * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
  * sites instead of ten.
  */
-const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity']);
+const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf']);
 
 // Zod schema for .rihal/config.yaml validation (#250).
 const ConfigSchema = z.object({
@@ -305,13 +305,14 @@ function printInstallHeader(targetVersion) {
  * Returns a set like { claude: true, cursor: false, gemini: false }.
  */
 function detectIdeSignals(target) {
-  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false };
+  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false, windsurf: false };
   // 1. Project-local install dirs (strongest signal — they already use one)
   if (fs.existsSync(path.join(target, '.claude'))) signals.claude = true;
   if (fs.existsSync(path.join(target, '.cursor'))) signals.cursor = true;
   if (fs.existsSync(path.join(target, '.gemini'))) signals.gemini = true;
   if (fs.existsSync(path.join(target, '.vscode'))) signals.vscode = true;
   if (fs.existsSync(path.join(target, '.antigravity'))) signals.antigravity = true;
+  if (fs.existsSync(path.join(target, '.windsurf'))) signals.windsurf = true;
   // 2. User-level config dirs
   const home = os.homedir();
   if (fs.existsSync(path.join(home, '.claude'))) signals.claude = true;
@@ -321,10 +322,13 @@ function detectIdeSignals(target) {
   if (fs.existsSync(path.join(home, '.vscode'))) signals.vscode = true;
   if (fs.existsSync(path.join(home, '.config', 'Code'))) signals.vscode = true;
   if (fs.existsSync(path.join(home, '.antigravity'))) signals.antigravity = true;
+  if (fs.existsSync(path.join(home, '.windsurf'))) signals.windsurf = true;
+  if (fs.existsSync(path.join(home, '.codeium', 'windsurf'))) signals.windsurf = true;
   // 3. Env vars commonly set by editor terminals
   if (process.env.CURSOR_TRACE_ID || /cursor/i.test(process.env.TERM_PROGRAM || '')) signals.cursor = true;
   if (process.env.CLAUDECODE === '1' || process.env.CLAUDE_CODE_ENTRYPOINT) signals.claude = true;
   if (process.env.VSCODE_PID || /vscode/i.test(process.env.TERM_PROGRAM || '')) signals.vscode = true;
+  if (/windsurf/i.test(process.env.TERM_PROGRAM || '')) signals.windsurf = true;
   return signals;
 }
 
@@ -518,8 +522,19 @@ function getPathsForIde(ide, target) {
         referencesDir: path.join(target, '.rihal', 'references'),
         binDir: path.join(target, '.rihal', 'bin'),
       };
+    case 'windsurf':
+      // Windsurf (Codeium's agentic IDE) — uses .windsurf/rules/ for .mdc rule
+      // files, parallel to cursor's .cursor/rules/. cli/lib/manifest.cjs already
+      // handles the rules-install verify path (#723 closes the install-side gap).
+      return {
+        agentsDir: path.join(target, '.windsurf', 'rules', 'rihal', 'agents'),
+        commandsDir: path.join(target, '.windsurf', 'rules', 'rihal', 'commands'),
+        workflowsDir: path.join(target, '.rihal', 'workflows'),
+        referencesDir: path.join(target, '.rihal', 'references'),
+        binDir: path.join(target, '.rihal', 'bin'),
+      };
     default:
-      throw new Error(`Unknown IDE: ${ide}. Supported: claude, cursor, gemini, vscode, antigravity`);
+      throw new Error(`Unknown IDE: ${ide}. Supported: ${SUPPORTED_IDES.join(', ')}`);
   }
 }
 

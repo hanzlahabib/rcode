@@ -117,11 +117,18 @@ test('state planned-phase adds a phase entry', (t) => {
 
 // ─── config-get ───────────────────────────────────────────────────────────────
 
-test('config-get returns default for missing key', (t) => {
+test('config-get returns empty/false for missing key (does not throw)', (t) => {
   const cwd = setup(t);
   const out = run(cwd, ['config-get', 'workflow.research_by_default']).trim();
-  // should not throw — returns empty or "false" default
-  assert.ok(out !== undefined);
+  // Missing key must produce an empty string OR the documented schema default
+  // ("false" for research_by_default). Anything else — including "undefined",
+  // "null", JSON output, or an error stack — is a regression. (Closes #725
+  // weak-assertion gap: previous test only asserted `out !== undefined`,
+  // which can never be false because `run()` always returns a string.)
+  assert.ok(
+    out === '' || out === 'false',
+    `expected empty or "false" for missing key, got: ${JSON.stringify(out)}`,
+  );
 });
 
 test('config-get reads nested key from config.yaml', (t) => {

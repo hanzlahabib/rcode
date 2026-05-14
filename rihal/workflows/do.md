@@ -93,25 +93,33 @@ If `$QUESTION` is empty, present the main menu via AskUserQuestion:
 ```
 What would you like to do?
 
+— Talk —
 1. Quick chat with one expert (/rihal-discuss)
 2. Convene the council (/rihal-council)
 3. Discuss an unlocked phase (/rihal-discuss-phase)
+
+— Plan & build —
 4. Plan a phase (/rihal-plan)
 5. Execute a phase (/rihal-execute)
 6. Sprint planning (/rihal-sprint-planning)
 7. Execute a sprint (/rihal-execute-sprint)
-8. Check sprint status (/rihal-sprint-status)
-9. Break milestone into epics & stories (/rihal-create-epics-and-stories)
-10. Implement a story (/rihal-dev-story)
-11. Check progress (/rihal-progress)
+8. Break milestone into epics & stories (/rihal-create-epics-and-stories)
+9. Implement a story (/rihal-dev-story)
+
+— Status & recovery —
+10. Check progress (/rihal-progress)
+11. Check sprint status (/rihal-sprint-status)
 12. Auto-advance to next step (/rihal-next)
 13. Debug an issue (/rihal-debug)
 14. Resume paused work (/rihal-resume-work)
+
+— Other —
 15. Add a note (/rihal-note)
 16. Something else — describe it
+0.  Cancel — exit without running anything
 ```
 
-If user picks 1-15, invoke that command. If 16, capture text and continue.
+If user picks 1-15, invoke that command. If 16, capture text and continue. If 0 (or empty / Esc), print `Cancelled.` and STOP — do not fall through to project-state survey.
 </step>
 
 <step name="check_project">
@@ -221,7 +229,7 @@ The full mapping is in the dictionary's "Scope nouns" table. Pre-conditions enfo
 | epic | `/rihal-create-epics-and-stories` | HAS_PRD true |
 | sprint | `/rihal-sprint-planning` | HAS_EPICS true |
 | PRD | `/rihal-create-prd` | none |
-| roadmap | `/rihal-create-milestone` | HAS_PRD true |
+| roadmap | `/rihal-new-milestone` | HAS_PRD true |
 | council | `/rihal-council` | none |
 | plan (verb) | `/rihal-plan` | HAS_PHASES true |
 
@@ -290,7 +298,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rihal-sprint-planning` | Sprint-level scope/capacity planning |
 | Executing a sprint, "run the sprint", "start sprint", "work on sprint" | `/rihal-execute-sprint` | Sprint execution with wave batching |
 | Sprint status, "how is the sprint going", "sprint board", "sprint progress" | `/rihal-sprint-status` | Current sprint state |
-| "Create milestones", "plan milestones", "create roadmap", "what milestones do I need", "break project into milestones" | `/rihal-create-milestone` | Roadmap-level planning — designs M1..Mn from the PRD. Do NOT route to `create-epics-and-stories`; that skill decomposes a single milestone into epics |
+| "Create milestones", "plan milestones", "create roadmap", "what milestones do I need", "break project into milestones" | `/rihal-new-milestone` | Roadmap-level planning — designs M1..Mn from the PRD. Do NOT route to `create-epics-and-stories`; that skill decomposes a single milestone into epics |
 | Break milestone into epics/stories, "create stories", "user stories", "epics" | `/rihal-create-epics-and-stories` | Milestone → epic → story decomposition (assumes roadmap already exists) |
 | Create a single story, "add story", "write a story for X" | `/rihal-create-story` | Single story addition |
 | Implement a story, "work on story", "dev story", "build story" | `/rihal-dev-story` | Story-level implementation |

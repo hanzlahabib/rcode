@@ -227,7 +227,7 @@ Task(
 
   This scope section is non-negotiable — the orchestrator will reject documents missing it.",
   subagent_type="rihal-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{resolved_model}"
 )
 ```

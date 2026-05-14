@@ -205,7 +205,7 @@ Every task MUST include these fields — they are NOT optional:
 Task(
   prompt=filled_prompt,
   subagent_type="rihal-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Plan Phase {phase}"
 )

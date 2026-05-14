@@ -536,7 +536,7 @@ ${AGENT_SKILLS_CHECKER}
 Task(
   prompt=checker_prompt,
   subagent_type="rihal-sprint-checker",
-  model="sonnet",
+  model="{model}",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
 )
@@ -656,7 +656,7 @@ Return what changed.
 Task(
   prompt=revision_prompt,
   subagent_type="rihal-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

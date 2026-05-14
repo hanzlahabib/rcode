@@ -139,7 +139,7 @@ Start work:
   /rihal-plan <task> --workspace={WORKSPACE_NAME}
   
 Switch context:
-  /rihal-workspace {WORKSPACE_NAME}
+  /rihal-workstream switch --name {WORKSPACE_NAME}
 ```
 
 ## Success Criteria

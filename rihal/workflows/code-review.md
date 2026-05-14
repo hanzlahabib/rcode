@@ -389,7 +389,7 @@ Spawn the rihal-code-reviewer agent:
 
 ```
 Task(subagent_type="rihal-code-reviewer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>
