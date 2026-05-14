@@ -48,7 +48,7 @@ Lenses and their primary skills:
   8.  i18n             — rihal-i18n-auditor
   9.  documentation    — rihal-docs-auditor
   10. cross-platform   — rihal-cross-platform-auditor
-  11. karpathy         — rihal-code-reviewer + rihal-hanzla
+  11. karpathy         — rihal-code-reviewer + rihal-hanzla (incl. design-token bypass)
   12. sxo              — rihal-layla
   13. observability    — rihal-observability-auditor
   14. naming           — rihal-codebase-mapper + rihal-code-reviewer
@@ -453,6 +453,9 @@ PRIMARY = Task(
   Principle 2 (Simplicity First): dead code, unused imports, speculative abstractions
   Principle 3 (Surgical Changes): whitespace-only diffs, reformatting unrelated code
   Principle 4 (Goal-Driven Execution): TODOs, stubs, not-implemented errors, mock data
+  Design-token bypass (#660): raw hex/rgb/hsl/named colors in CSS outside :root
+    or @theme blocks. Two-stage check per @.rihal/references/design-tokens.md.
+    Honor .rihal/design-tokens-allowlist.txt waivers.
   
   Return: file:line — principle N violation — description [critical|warn|info]
   If clean: PASS"
@@ -468,6 +471,8 @@ SECONDARY = Task(
   - Code that could be 3 lines but is 30
   - Unclear variable/function names
   - Missing error messages that would help debug production failures
+  - Design-token bypass: raw hex in CSS classes when a semantic role exists
+    (per @.rihal/references/design-tokens.md)
   
   Return: file:line — description [warn|info]
   If clean: PASS"

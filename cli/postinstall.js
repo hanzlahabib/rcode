@@ -70,10 +70,26 @@ if (isGlobalInstall(process.env, __dirname, process.cwd())) {
   });
   child.on('close', (code) => {
     if (code === 0) {
-      console.log(`\n✓ Rihal commands + skills installed globally → ${globalTarget}`);
-      console.log('  All /rihal-* commands are now available in every project.\n');
+      // #662 — npm 10+ hides postinstall stdout by default. Emit to stderr
+      // (npm shows it) AND write a receipt file rcode doctor/version can
+      // surface later for users who never saw the original line.
+      const receiptLine = `✓ rcode installed → ${globalTarget}  (run 'rcode install' in a project to configure)`;
+      process.stderr.write('\n' + receiptLine + '\n');
+      process.stderr.write('  All /rihal-* commands are now available in every project.\n\n');
+      try {
+        const fs = require('fs');
+        const receiptPath = path.join(globalTarget, '.rihal-install-receipt');
+        const receipt = {
+          ts: new Date().toISOString(),
+          target: globalTarget,
+          source: 'postinstall',
+          message: receiptLine,
+        };
+        fs.mkdirSync(globalTarget, { recursive: true });
+        fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
+      } catch (_) { /* receipt is best-effort, never fail postinstall */ }
     } else {
-      console.warn(`\n⚠ Global auto-install exited with code ${code}. Run 'rcode install' manually if needed.\n`);
+      process.stderr.write(`\n⚠ Global auto-install exited with code ${code}. Run 'rcode install' manually if needed.\n\n`);
     }
     printWelcome();
   });

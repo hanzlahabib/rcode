@@ -1852,6 +1852,10 @@ async function installInner(opts) {
   let copied = 0;
   let skipped = 0;
   let preserved = 0;
+  // #667 — track files the user explicitly chose to update via the conflict
+  // resolver. Without this, accepting "Take vN" for 10 files still printed
+  // "0 files installed" because `copied` only counts pre-conflict writes.
+  let updated = 0;
   const preservedFiles = [];
   const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
   const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
@@ -1924,6 +1928,10 @@ async function installInner(opts) {
   }
 
   spinner.success({ text: ok(`${copied} files installed`) });
+  // #667 — placeholder; the real count is logged AFTER the conflict resolver
+  // runs below. We re-emit a corrected summary line if the user updated files
+  // via the resolver so they don't walk away thinking "0 files installed"
+  // when they just accepted 10 vN updates.
 
   // Categorised conflict summary (#451) + interactive resolution offer (#453).
   // Replaces the per-file 'differs from package version' warning spam.
@@ -1963,6 +1971,7 @@ async function installInner(opts) {
           fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
           applied++;
         }
+        updated += applied; // #667 — surface in final summary
         console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
       } else if (action === 'review') {
         let applied = 0, kept = 0;
@@ -2009,6 +2018,7 @@ async function installInner(opts) {
             kept++;
           }
         }
+        updated += applied; // #667 — surface in final summary
         console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
       } else {
         console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
@@ -2016,6 +2026,13 @@ async function installInner(opts) {
     } else {
       console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
     }
+    console.log('');
+  }
+
+  // #667 — corrected post-resolver summary. Only re-emit when the conflict
+  // resolver actually updated files; preserves the original line otherwise.
+  if (updated > 0) {
+    console.log('  ' + ok(`Total this run: ${copied} installed · ${updated} updated · ${preserved + skipped} unchanged.`));
     console.log('');
   }
 
@@ -2412,11 +2429,17 @@ async function installInner(opts) {
       const homeCommands = path.join(os.homedir(), '.claude/commands');
       const homeSkills = path.join(os.homedir(), '.claude/skills');
       if (agentCount === 0 && fs.existsSync(homeAgents)) {
-        const n = fs.readdirSync(homeAgents).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        // #669 — count both rihal-* and rcode-* prefixes; missing rcode-
+        // branch produced "Agents: 0" alongside "Skills: 120".
+        const n = fs.readdirSync(homeAgents)
+          .filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .length;
         if (n > 0) { agentCount = n; agentsFromGlobal = true; }
       }
       if (commandCount === 0 && fs.existsSync(homeCommands)) {
-        const n = fs.readdirSync(homeCommands).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+        const n = fs.readdirSync(homeCommands)
+          .filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .length;
         if (n > 0) { commandCount = n; commandsFromGlobal = true; }
       }
       if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
@@ -2455,6 +2478,15 @@ async function installInner(opts) {
   console.log('    /rihal-do           # interactive command picker');
   console.log('    /rihal-council <q>  # multi-agent strategic answer');
   console.log('');
+  // #665 — when the install came in via npm -g (--global --no-prompt), the
+  // interactive IDE/planning prompts were skipped. Tell the user how to
+  // configure them per-project so they aren't stranded with defaults.
+  if (opts.global || opts.noPrompt) {
+    console.log(`  ${dim('Configure interactively (one-time, per project):')}`);
+    console.log(`    ${dim('rcode install         # pick IDE + planning policy for THIS project')}`);
+    console.log(`    ${dim('rcode config          # adjust defaults later')}`);
+    console.log('');
+  }
   console.log(dim('  Refresh anytime:'));
   console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
   console.log(dim(`    /rihal-update v${version}              # pin rcode to a specific version`));
