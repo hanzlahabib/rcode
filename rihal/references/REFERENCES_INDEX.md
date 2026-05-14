@@ -21,8 +21,10 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 | `code-reviewer-playbook.md` | rihal-code-reviewer |
 | `codebase-mapping-process.md` | rihal-codebase-mapper |
 | `debugger-playbook.md` | rihal-debugger |
+| `docs-auditor-playbook.md` | rihal-docs-auditor |
 | `executor-playbook.md` | rihal-executor |
 | `integration-verification-playbook.md` | rihal-integration-checker |
+| `nyquist-auditor-playbook.md` | rihal-nyquist-auditor |
 | `persona-engineer-shared.md` | rihal-haitham, rihal-omar, rihal-yousef |
 | `planner-playbook.md` | rihal-planner |
 | `remediation-planner-playbook.md` | rihal-remediation-planner |
@@ -52,16 +54,56 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 | File | Loaded by |
 |------|-----------|
 | `auto-init-guard.md` | workflows/council.md, workflows/do.md, workflows/execute.md, workflows/new-project.md, workflows/plan.md, workflows/status.md |
+| `git-preflight.md` | workflows/code-review-fix.md, workflows/dev-story.md, workflows/execute.md, workflows/quick.md |
 | `output-format.md` | workflows/autonomous.md, workflows/council.md, workflows/decisions.md, workflows/discuss.md, workflows/do.md, workflows/execute.md, workflows/export-to-github.md, workflows/feature-drift.md, workflows/from-template.md, workflows/list-plans.md, workflows/map-codebase.md, workflows/new-milestone.md, workflows/new-project.md, workflows/next.md, workflows/notify-test.md, workflows/plan.md, workflows/replay.md, workflows/sprint-planning.md, workflows/sprint-status.md, workflows/status.md, workflows/verify-work.md |
 
 ---
 
-## Agents with Accepted Size Exceptions
+## Specialist References
 
-The Agent File Size Rule (CONTRIBUTING.md) requires agents >100L to extract to references.
-Two agents have documented deviations:
+| File | Loaded by |
+|------|-----------|
+| `design-tokens.md` | rihal-haitham, workflows/lens-audit.md (Lens 11) |
 
-| Agent | Lines | Reason |
-|-------|-------|--------|
-| `rihal-nyquist-auditor.md` | 176L | Load-bearing XML execution blocks that cannot be separated from agent logic |
-| `rihal-docs-auditor.md` | 173L | Load-bearing JSON schema for /rihal-feature-drift dispatch |
+---
+
+## Persona ↔ SKILL.md Mapping (#714)
+
+Persona agents are thin pointers — the bulk of each persona's playbook lives
+in a `SKILL.md` at `rihal/skills/agents/<name>-<role>/SKILL.md` and gets pulled
+in via `@-include`. This keeps agent files dependency-free + IDE-discoverable
+while the playbook can grow without ballooning every spawn.
+
+| Persona | Agent file | Playbook |
+|---------|------------|----------|
+| Hanzla | rihal-hanzla.md | rihal/skills/agents/hanzla-engineer/SKILL.md |
+| Waleed | rihal-waleed.md | rihal/skills/agents/waleed-architect/SKILL.md |
+| Sadiq | rihal-sadiq.md | rihal/skills/agents/sadiq-analyst/SKILL.md |
+| Fatima | rihal-fatima.md | rihal/skills/agents/fatima-qa/SKILL.md |
+| Mariam | rihal-mariam.md | rihal/skills/agents/mariam-marketing/SKILL.md |
+| Layla | rihal-layla.md | rihal/skills/agents/layla-designer/SKILL.md |
+| Hussain-PM | rihal-hussain-pm.md | rihal/skills/agents/hussain-pm/SKILL.md |
+| Noor | rihal-noor.md | rihal/skills/agents/noor-writer/SKILL.md |
+| Nasser | rihal-nasser.md | rihal/skills/agents/nasser-eng-manager/SKILL.md |
+| Zahra | rihal-zahra.md | rihal/skills/agents/zahra-branding/SKILL.md |
+| Ahmed | rihal-ahmed.md | rihal/skills/agents/ahmed-hassani-director/SKILL.md |
+| Zayd | rihal-zayd.md | rihal/skills/agents/zayd-ml/SKILL.md |
+| Yousef | rihal-yousef.md | rihal/skills/agents/yousef-backend/SKILL.md |
+| Haitham | rihal-haitham.md | rihal/skills/agents/haitham-frontend/SKILL.md |
+| Khalid | rihal-khalid.md | *(inline — 99L, no separate playbook)* |
+| Omar | rihal-omar.md | *(inline — 96L, no separate playbook)* |
+
+Khalid and Omar keep their content inline because no separate playbook
+exists. Both are under the 100-line budget; extracting them to SKILL.md is
+optional scope and not required for compliance.
+
+---
+
+## Size Compliance
+
+The Agent File Size Rule (CONTRIBUTING.md:212) requires agents >100L to extract to references.
+
+**All 45 agents currently comply** (max: 99L). The previously-listed exceptions
+(`rihal-nyquist-auditor.md` at 176L, `rihal-docs-auditor.md` at 173L) were slimmed
+in #713: their playbooks live in `nyquist-auditor-playbook.md` and
+`docs-auditor-playbook.md` respectively.
