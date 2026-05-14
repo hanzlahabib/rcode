@@ -218,7 +218,7 @@ must_haves:
 If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to RIHAL `{NN}-{MM}-SPRINT.md` convention during conversion.
 
 Apply RIHAL naming convention for the output filename:
-- Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-01-SPRINT.md`)
+- Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-1-SPRINT.md`)
 - NEVER use `PLAN-01.md`, `plan-01.md`, or any other format
 - NN = phase number (zero-padded), MM = plan number within the phase (zero-padded)
 

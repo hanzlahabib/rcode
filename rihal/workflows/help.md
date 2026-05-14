@@ -85,7 +85,7 @@ init → new-project → plan → execute → next → status → ship
 ├── STATE.md              # project memory
 └── phases/
     └── 01-foundation/
-        ├── 01-01-SPRINT.md   # the plan
+        ├── 01-1-SPRINT.md   # the plan
         └── 01-01-SUMMARY.md  # what got done
 ```
 

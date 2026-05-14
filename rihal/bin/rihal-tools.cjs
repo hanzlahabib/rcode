@@ -2296,6 +2296,81 @@ function cmdState(subArgs) {
   }
 
   // =====================================================================
+  // state migrate-plan-names: normalise plan filenames to no-leading-zeros (#657)
+  //
+  // Renames <N>-0K-SPRINT.md → <N>-K-SPRINT.md so the K (plan index) honours
+  // the project's no-leading-zeros rule. The N (phase prefix) is preserved
+  // because phase directories use leading zeros for ls sort order.
+  //
+  // Reports planned actions and exits without touching disk when --dry-run.
+  // Updates state.json plan IDs if the renamed file is referenced there.
+  // Does NOT rewrite ROADMAP / SUMMARY backrefs — workflows glob *-SPRINT.md
+  // which still matches. Backref cleanup is a follow-up if needed.
+  // =====================================================================
+  if (sub === 'migrate-plan-names') {
+    const flags = parseFlags(1);
+    // parseFlags sets valueless flags to '' (empty string). Detect presence
+    // by key existence, not truthiness, so --dry-run works as a bare flag.
+    const dryRun = ('dry-run' in flags) || subArgs.includes('--dry-run');
+    const renames = [];
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    if (!fs.existsSync(phasesDir)) {
+      return { ok: true, renamed: 0, dry_run: dryRun, message: '.planning/phases not found' };
+    }
+    for (const entry of fs.readdirSync(phasesDir)) {
+      const phaseDir = path.join(phasesDir, entry);
+      if (!fs.statSync(phaseDir).isDirectory()) continue;
+      for (const file of fs.readdirSync(phaseDir)) {
+        // Match: <N>-0K-SPRINT.md where K starts with '0' AND has at least one
+        // more digit (so single-digit "0" wouldn't match — there is no plan 0).
+        const m = file.match(/^(\d+)-0(\d+)-SPRINT\.md$/);
+        if (!m) continue;
+        const phasePrefix = m[1];
+        const planNum = m[2]; // already stripped leading zero
+        const oldName = file;
+        const newName = `${phasePrefix}-${planNum}-SPRINT.md`;
+        const oldPath = path.join(phaseDir, oldName);
+        const newPath = path.join(phaseDir, newName);
+        if (fs.existsSync(newPath)) {
+          renames.push({ phase_dir: entry, from: oldName, to: newName, status: 'skip-target-exists' });
+          continue;
+        }
+        renames.push({ phase_dir: entry, from: oldName, to: newName, status: dryRun ? 'would-rename' : 'renamed' });
+        if (!dryRun) fs.renameSync(oldPath, newPath);
+      }
+    }
+    // Update state.json plan IDs (e.g., "20.01" → "20.1") if the entries exist.
+    let stateUpdates = 0;
+    if (!dryRun) {
+      const state = readState();
+      if (state && Array.isArray(state.phases)) {
+        for (const phase of state.phases) {
+          if (!Array.isArray(phase.plans)) continue;
+          for (const plan of phase.plans) {
+            if (typeof plan.id !== 'string') continue;
+            const newId = plan.id.replace(/^(\d+)\.0(\d+)$/, '$1.$2');
+            if (newId !== plan.id) {
+              plan.id = newId;
+              if (plan.plan) plan.plan = String(plan.plan).replace(/^0(\d+)$/, '$1');
+              stateUpdates++;
+            }
+          }
+        }
+        if (stateUpdates > 0) writeState(state);
+      }
+    }
+    return {
+      ok: true,
+      dry_run: dryRun,
+      renamed: renames.filter(r => r.status === 'renamed').length,
+      would_rename: renames.filter(r => r.status === 'would-rename').length,
+      skipped: renames.filter(r => r.status === 'skip-target-exists').length,
+      state_plan_ids_updated: stateUpdates,
+      details: renames,
+    };
+  }
+
+  // =====================================================================
   // state migrate-schema: normalise phases array to current schema
   // Handles 3 known schema variants in the wild:
   //   Schema A (v1 old) — phases[N] has {id, goal, ...} but no status

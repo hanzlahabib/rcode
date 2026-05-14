@@ -39,7 +39,7 @@ If no changes: Return `No changes between {sha1}..{sha2}`
 
 For each file in diff output:
 
-1. Extract filename: `.planning/phases/01-foundation/01-01-SPRINT.md`
+1. Extract filename: `.planning/phases/01-foundation/01-1-SPRINT.md`
 2. Read that file's YAML frontmatter (if .md): extract phase/plan ID
 3. Prefix the hunk with: `Phase {id} — {filename}`
 4. Show the diff +/- lines
@@ -49,7 +49,7 @@ For `.rihal/state.json`: Show raw diff (no frontmatter parsing)
 Example output:
 
 ```
-Phase 01-01 — .planning/phases/01-foundation/01-01-SPRINT.md
+Phase 01-01 — .planning/phases/01-foundation/01-1-SPRINT.md
   @@ -5,3 +5,4 @@
   - old line
   + new line
