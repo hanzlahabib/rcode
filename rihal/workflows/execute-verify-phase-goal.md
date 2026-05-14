@@ -33,14 +33,19 @@ ${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — ver
 
 ${VERIFIER_SKILLS}",
   subagent_type="rihal-verifier",
-  model="sonnet",
   model="{verifier_model}"
 )
 ```
 
-Read status:
+Read status (fail-safe: missing or empty file means verifier never produced a result):
 ```bash
-grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
+VERIFICATION_FILE=$(ls "$PHASE_DIR"/*-VERIFICATION.md 2>/dev/null | head -1)
+if [ -z "$VERIFICATION_FILE" ] || [ ! -s "$VERIFICATION_FILE" ]; then
+  VERIFY_STATUS="verifier_failed"
+else
+  VERIFY_STATUS=$(grep "^status:" "$VERIFICATION_FILE" | head -1 | cut -d: -f2 | tr -d ' ')
+  [ -z "$VERIFY_STATUS" ] && VERIFY_STATUS="verifier_failed"
+fi
 ```
 
 | Status | Action |
@@ -48,6 +53,26 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 | `passed` | → update_roadmap |
 | `human_needed` | Present items for human testing, get approval or feedback |
 | `gaps_found` | Present gap summary, offer `/rihal-plan {phase} --gaps ${Rihal_WS}` |
+| `verifier_failed` | Abort: VERIFICATION.md missing/empty/unparseable. Do NOT mark phase complete. Print the verifier-failure message below and exit 1. |
+
+**If verifier_failed:**
+
+```
+✖ Phase {X}: verifier agent did not produce a usable VERIFICATION.md.
+
+This means the rihal-verifier subagent crashed, returned no output, or wrote
+an invalid status header. The phase will NOT be marked complete.
+
+Next steps:
+  1. Re-run: /rihal-verify-phase {X}
+  2. If it fails again, check rihal-verifier prompt/skills:
+       node .rihal/bin/rihal-tools.cjs agent-skills rihal-verifier
+  3. As a last resort, manually create VERIFICATION.md and run /rihal-next.
+
+Do NOT run /rihal-next until VERIFICATION.md exists with a valid status.
+```
+
+Exit the workflow with non-zero status. Do not fall through to update_roadmap.
 
 **If human_needed:**
 

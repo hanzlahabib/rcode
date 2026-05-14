@@ -1137,7 +1137,21 @@ function cmdState(subArgs) {
     state.current_plan = 0;
     if (!state.phases) state.phases = [];
     if (!state.phases.some(p => p.name === name)) {
-      state.phases.push({ name, started: new Date().toISOString(), completed: null, plan_count: 0 });
+      // Derive a stable number from the name's leading digits (e.g., "20-foo" → 20)
+      // so downstream lookups by p.number / p.id in sprint add etc. resolve correctly.
+      // Falls back to next sequential position when name has no leading digit.
+      const leadingNum = String(name).match(/^(\d+)/);
+      const number = leadingNum
+        ? parseInt(leadingNum[1], 10)
+        : (state.phases.length + 1);
+      state.phases.push({
+        number,
+        id: String(number),
+        name,
+        started: new Date().toISOString(),
+        completed: null,
+        plan_count: 0,
+      });
     }
     return writeState(state);
   }
@@ -2980,7 +2994,42 @@ function cmdPhase(subArgs) {
     };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add`);
+  if (sub === 'set-status') {
+    const phaseRef = subArgs[1];
+    const newStatus = subArgs[2];
+    if (!phaseRef) throw new Error('phase set-status requires <phase_number> <status>');
+    if (!newStatus) throw new Error('phase set-status requires <status> (e.g., executed, complete, blocked)');
+    const validStatuses = ['planned', 'in_progress', 'executed', 'complete', 'blocked'];
+    if (!validStatuses.includes(newStatus)) {
+      throw new Error(`Invalid status "${newStatus}". Valid: ${validStatuses.join(', ')}`);
+    }
+
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+    if (!fs.existsSync(statePath)) {
+      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+    }
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
+    if (!state.phases) state.phases = [];
+
+    const phaseIdx = state.phases.findIndex(p =>
+      String(p.number) === String(phaseRef) ||
+      String(p.id) === String(phaseRef) ||
+      p.name === phaseRef
+    );
+    if (phaseIdx === -1) {
+      throw new Error(`Phase "${phaseRef}" not found in state.phases (looked up by number, id, and name)`);
+    }
+    const previous = state.phases[phaseIdx].status || null;
+    state.phases[phaseIdx].status = newStatus;
+    state.phases[phaseIdx].status_updated = new Date().toISOString();
+
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    return { ok: true, phase: phaseRef, previous_status: previous, new_status: newStatus };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status`);
 }
 
 /**

@@ -70,7 +70,7 @@ build/types pass because TypeScript types come from config, not the live databas
 **Run after execution completes but BEFORE verification marks success.**
 
 ```bash
-SCHEMA_DRIFT=$(node ".rihal/bin/rihal-tools.cjs" verify schema-drift "${PHASE_NUMBER}" 2>/dev/null)
+SCHEMA_DRIFT=$(node ".rihal/bin/rihal-tools.cjs" verify schema-drift "${PHASE_NUMBER}" 2>/dev/null || echo '{"ok":false,"drift_detected":true,"blocking":true,"message":"schema-drift command failed — treating as drift to fail safe"}')
 ```
 
 Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `unpushed_orms`, `message`.

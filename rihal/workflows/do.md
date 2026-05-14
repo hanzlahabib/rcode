@@ -120,7 +120,7 @@ If user picks 1-15, invoke that command. If 16, capture text and continue.
 Detect PRD / epics with glob — projects use either singular files (`.planning/prd.md`) OR per-milestone directories (`.planning/prds/v1.8.md`). Closes #377 — false 'create-prd first' redirects on multi-milestone repos.
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" state load 2>/dev/null)
+INIT=$(node ".rihal/bin/rihal-tools.cjs" state load 2>/dev/null || echo '{"ok":false,"error":"state_load_failed"}')
 HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
 HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
 PHASE_COUNT=$(node ".rihal/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)

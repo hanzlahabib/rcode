@@ -128,11 +128,33 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        <parallel_execution>
        You are running as a PARALLEL executor agent. To avoid pre-commit hook
        contention with other agents, acquire a file-based lock before each
-       commit and release it immediately after:
+       commit and release it immediately after. The spinlock has a 60-second
+       timeout and a stale-lock recovery (older than 5 minutes is broken):
 
-         while ! mkdir .rihal/.commit-lock 2>/dev/null; do sleep 0.5; done
+         LOCK_DIR=".rihal/.commit-lock"
+         LOCK_WAIT=0
+         LOCK_MAX=60         # seconds — abort if we never acquire
+         LOCK_STALE=300      # seconds — assume holder is dead and break
+         while ! mkdir "$LOCK_DIR" 2>/dev/null; do
+           if [ -d "$LOCK_DIR" ]; then
+             AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_DIR" 2>/dev/null || stat -f %m "$LOCK_DIR" 2>/dev/null || echo 0) ))
+             if [ "$AGE" -gt "$LOCK_STALE" ]; then
+               echo "⚠ Breaking stale commit lock (age ${AGE}s > ${LOCK_STALE}s)"
+               rmdir "$LOCK_DIR" 2>/dev/null
+               continue
+             fi
+           fi
+           if [ "$LOCK_WAIT" -ge "$LOCK_MAX" ]; then
+             echo "✖ Failed to acquire commit lock within ${LOCK_MAX}s — aborting wave" >&2
+             exit 1
+           fi
+           sleep 0.5
+           LOCK_WAIT=$(( LOCK_WAIT + 1 ))
+         done
+         trap 'rmdir "$LOCK_DIR" 2>/dev/null' EXIT
          git commit -m "..."           # hooks run normally
-         rmdir .rihal/.commit-lock
+         rmdir "$LOCK_DIR"
+         trap - EXIT
 
        Hooks run as designed for every commit. AGENTS.md forbids --no-verify;
        hook failures must be fixed at the source, not bypassed. The orchestrator
