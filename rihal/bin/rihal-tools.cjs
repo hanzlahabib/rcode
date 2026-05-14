@@ -5145,32 +5145,103 @@ function cmdBrain(args) {
     }
 
     // External git source — use sparse checkout into a tmp dir then copy.
+    // #170 — global brain cache at ~/.rihal/brain-cache/<sha1(repo+branch+paths)>/.
+    // Same source pulled from N projects = N clones today, 1 clone + N copies
+    // after this change. Cache TTL is configurable per source (defaults to 6h).
     const { execSync } = require('child_process');
+    const crypto = require('crypto');
     const os = require('os');
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-brain-'));
     const branch = s.branch || cfg.defaults?.branch || 'main';
+    const sparsePaths = Array.isArray(s.paths) ? s.paths : [];
+
+    // Cache key = sha1(repo + branch + sparsePaths joined). Changing any of
+    // those gets a fresh cache slot. Different projects pulling the same
+    // (repo, branch, paths) tuple share one cached download.
+    const cacheKey = crypto
+      .createHash('sha1')
+      .update(`${repo}\n${branch}\n${sparsePaths.sort().join(',')}`)
+      .digest('hex')
+      .slice(0, 16);
+    const cacheRoot = path.join(os.homedir(), '.rihal', 'brain-cache');
+    const cacheDir = path.join(cacheRoot, cacheKey);
+    const cacheManifest = path.join(cacheDir, '.cache-manifest.json');
+
+    // Parse cache_ttl: accept '6h', '15m', '2d', or seconds as bare number.
+    function parseTtlSeconds(raw, fallback) {
+      if (raw == null || raw === '') return fallback;
+      const s = String(raw).trim();
+      const m = s.match(/^(\d+)([smhd]?)$/i);
+      if (!m) return fallback;
+      const n = parseInt(m[1], 10);
+      switch ((m[2] || 's').toLowerCase()) {
+        case 'd': return n * 86400;
+        case 'h': return n * 3600;
+        case 'm': return n * 60;
+        default:  return n;
+      }
+    }
+    const ttlSeconds = parseTtlSeconds(s.cache_ttl || cfg.defaults?.cache_ttl, 6 * 3600);
+
+    function readCacheManifest() {
+      if (!fs.existsSync(cacheManifest)) return null;
+      try { return JSON.parse(fs.readFileSync(cacheManifest, 'utf8')); }
+      catch { return null; }
+    }
+    function isCacheFresh(manifest) {
+      if (!manifest || typeof manifest.pulled_at !== 'string') return false;
+      const ageMs = Date.now() - Date.parse(manifest.pulled_at);
+      return Number.isFinite(ageMs) && (ageMs / 1000) < ttlSeconds;
+    }
+    function copyTree(src, dst) {
+      for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+        if (e.name === '.git' || e.name === '.cache-manifest.json') continue;
+        const sp = path.join(src, e.name);
+        const dp = path.join(dst, e.name);
+        if (e.isDirectory()) { fs.mkdirSync(dp, { recursive: true }); copyTree(sp, dp); }
+        else if (e.isFile()) fs.copyFileSync(sp, dp);
+      }
+    }
+
+    const destPath = resolveDest(s.dest);
     try {
+      // Cache hit path — copy from ~/.rihal/brain-cache/<key>/ directly.
+      const cached = readCacheManifest();
+      if (cached && isCacheFresh(cached)) {
+        fs.mkdirSync(destPath, { recursive: true });
+        copyTree(cacheDir, destPath);
+        report.pulled.push({ name: s.name, kind: 'git', repo, branch, cache: 'hit', cache_key: cacheKey });
+        continue;
+      }
+
+      // Cache miss — clone, then warm the cache for next time.
       execSync(
         `git clone --depth=1 --filter=blob:none --sparse --branch="${branch}" "${repo}" "${tmp}"`,
         { stdio: 'pipe' }
       );
-      const paths = Array.isArray(s.paths) ? s.paths : [];
-      execSync(`git -C "${tmp}" sparse-checkout set ${paths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
+      execSync(`git -C "${tmp}" sparse-checkout set ${sparsePaths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
 
-      const destPath = resolveDest(s.dest);
+      // Warm cache before destination copy so a copy failure to dest still
+      // saves the next pull. Replace any stale slot atomically.
+      try {
+        fs.rmSync(cacheDir, { recursive: true, force: true });
+        fs.mkdirSync(cacheDir, { recursive: true });
+        copyTree(tmp, cacheDir);
+        const commitSha = (() => {
+          try { return execSync(`git -C "${tmp}" rev-parse HEAD`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim(); }
+          catch { return null; }
+        })();
+        fs.writeFileSync(cacheManifest, JSON.stringify({
+          repo, branch, paths: sparsePaths,
+          pulled_at: new Date().toISOString(),
+          commit_sha: commitSha,
+          ttl_seconds: ttlSeconds,
+        }, null, 2));
+      } catch (_) { /* cache warming is best-effort */ }
+
       fs.mkdirSync(destPath, { recursive: true });
-      // Copy everything the sparse checkout materialized.
-      function copyTree(src, dst) {
-        for (const e of fs.readdirSync(src, { withFileTypes: true })) {
-          if (e.name === '.git') continue;
-          const sp = path.join(src, e.name);
-          const dp = path.join(dst, e.name);
-          if (e.isDirectory()) { fs.mkdirSync(dp, { recursive: true }); copyTree(sp, dp); }
-          else if (e.isFile()) fs.copyFileSync(sp, dp);
-        }
-      }
       copyTree(tmp, destPath);
-      report.pulled.push({ name: s.name, kind: 'git', repo, branch });
+      report.pulled.push({ name: s.name, kind: 'git', repo, branch, cache: 'miss', cache_key: cacheKey });
     } catch (e) {
       report.errors.push({ name: s.name, error: String(e.message || e).slice(0, 200) });
     } finally {
