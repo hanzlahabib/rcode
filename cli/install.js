@@ -500,11 +500,12 @@ function getPathsForIde(ide, target) {
     case 'vscode':
       // VS Code's Claude Code / Continue / Copilot extensions all read from
       // .claude/ (Claude Code's canonical paths). We install there directly
-      // and additionally write a .vscode/rihal/ marker so VS Code workspace
-      // settings can pin behaviour.
+      // using the SAME layout as the claude case (prefixed-root form) so
+      // multi-IDE installs don't double up — see #723 / #635-#643 / #646.
+      // The .vscode/rihal/ marker is preserved for workspace settings.
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands', 'rihal'),
+        commandsDir: path.join(target, '.claude', 'commands'),
         workflowsDir: path.join(target, '.rihal', 'workflows'),
         referencesDir: path.join(target, '.rihal', 'references'),
         binDir: path.join(target, '.rihal', 'bin'),
@@ -1059,6 +1060,51 @@ function parseFrontmatter(text) {
  *
  * For cursor IDE, converts command files from .md to .mdc format.
  */
+/**
+ * Migrate legacy vscode-layout commands (.claude/commands/rihal/{name}.md)
+ * to the unified prefixed-root form (.claude/commands/rihal-{name}.md).
+ *
+ * Idempotent. Safe to run on every install/update — no-op when no legacy
+ * dir exists. After move, removes the now-empty rihal/ subdir.
+ *
+ * Returns { moved, removed_dir } so callers can log the migration count.
+ * Designed by Waleed for #723; closes the dual-layout cause of #635, #637,
+ * #638, #639, #640, #641, #642, #643, #646.
+ */
+function migrateVscodeCommandsLayout(target) {
+  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const newRoot = path.join(target, '.claude', 'commands');
+  if (!fs.existsSync(legacyDir) || !fs.statSync(legacyDir).isDirectory()) {
+    return { moved: 0, removed_dir: false };
+  }
+  let moved = 0;
+  for (const entry of fs.readdirSync(legacyDir)) {
+    const src = path.join(legacyDir, entry);
+    if (!fs.statSync(src).isFile() || !entry.endsWith('.md')) continue;
+    const baseName = path.basename(entry, '.md');
+    // Don't double-prefix if someone already had rihal-foo.md inside rihal/.
+    const targetName = baseName.startsWith('rihal-') ? entry : `rihal-${entry}`;
+    const dst = path.join(newRoot, targetName);
+    if (fs.existsSync(dst)) {
+      // Already migrated by an earlier pass — remove the duplicate at source.
+      fs.unlinkSync(src);
+      continue;
+    }
+    fs.renameSync(src, dst);
+    moved++;
+  }
+  // Remove the now-empty legacy dir. fs.rmdir fails if non-empty — that's
+  // a signal worth surfacing (manual user files in the dir we shouldn't touch).
+  let removedDir = false;
+  try {
+    fs.rmdirSync(legacyDir);
+    removedDir = true;
+  } catch (_) {
+    // Non-empty (user files we don't manage) — leave it alone.
+  }
+  return { moved, removed_dir: removedDir };
+}
+
 function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   // Support array of IDEs — merge plans with deduplication (#449/#450 multi-IDE).
   if (Array.isArray(ide)) {
@@ -1073,26 +1119,12 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
         }
       }
     }
-    // When both claude and vscode are in the IDE list, vscode writes commands to
-    // .claude/commands/rihal/{name}.md (subdirectory) while claude writes them to
-    // .claude/commands/rihal-{name}.md (root). Claude Code reads the full tree
-    // recursively, so both sets appear as slash commands — duplicates in the UI.
-    // Drop the vscode-style subdir entries when claude entries already cover them.
-    if (ide.includes('claude') && ide.includes('vscode')) {
-      const claudeCommandRels = new Set(
-        merged
-          .filter(e => e.ide === 'claude' && e.rel.split(path.sep).join('/').startsWith('.claude/commands/'))
-          .map(e => path.basename(e.rel, '.md').replace(/^rihal-/, ''))
-      );
-      return merged.filter(e => {
-        const rel = e.rel.split(path.sep).join('/');
-        if (e.ide === 'vscode' && rel.startsWith('.claude/commands/rihal/')) {
-          const baseName = path.basename(e.rel, path.extname(e.rel));
-          return !claudeCommandRels.has(baseName);
-        }
-        return true;
-      });
-    }
+    // Note: pre-#723 we had a dual-layout workaround here that filtered
+    // vscode subdir entries when claude+vscode were both selected. After
+    // Waleed's unification (vscode now writes the same rihal-{name}.md root
+    // form as claude), the seen-by-rel dedup above already covers it — both
+    // IDEs emit identical `rel` values and only one wins. Layout drift will
+    // resurface this filter; it's intentionally deleted, not commented out.
     return merged;
   }
 
@@ -1141,13 +1173,14 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   }
 
   // Commands — IDE-specific
-  // Claude: output as .claude/commands/rihal-{name}.md (hyphen namespace → /rihal-name)
-  // Cursor/Gemini: keep original flat name inside their rihal/ subdirectory
+  // Claude AND VSCode: output as .claude/commands/rihal-{name}.md (prefixed root).
+  // Both target the same commands dir (#723 / Waleed unification) so multi-IDE
+  // installs never duplicate. Cursor/Gemini keep the bare-name-in-rihal/-subdir form.
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
     const ext = ide === 'cursor' ? '.mdc' : '.md';
     const baseName = path.basename(f, '.md');
-    const outName = ide === 'claude'
+    const outName = (ide === 'claude' || ide === 'vscode')
       ? `rihal-${baseName}${ext}`
       : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
@@ -1742,6 +1775,15 @@ async function installInner(opts) {
       console.error(`✖ Unknown module(s): ${unknownModules.join(', ')}`);
       console.error(`  Available modules: ${available.join(', ')}`);
       return 1;
+    }
+  }
+
+  // #723 Waleed — migrate legacy vscode subdir layout BEFORE building the plan
+  // so the plan never has to reason about both forms. Idempotent + safe.
+  if (Array.isArray(opts.ides) && opts.ides.includes('vscode') || (opts.ide === 'vscode')) {
+    const migrated = migrateVscodeCommandsLayout(opts.target);
+    if (migrated.moved > 0) {
+      console.log(`  ↻ Migrated ${migrated.moved} legacy vscode-layout command(s) to .claude/commands/rihal-{name}.md`);
     }
   }
 
@@ -2714,3 +2756,5 @@ module.exports.parseArgs = parseArgs;
 module.exports.buildInstallPlan = buildInstallPlan;
 module.exports.install = install;
 module.exports.SUPPORTED_IDES = SUPPORTED_IDES;
+module.exports.migrateVscodeCommandsLayout = migrateVscodeCommandsLayout;
+module.exports.getPathsForIde = getPathsForIde;
