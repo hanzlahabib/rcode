@@ -994,6 +994,11 @@ function cmdState(subArgs) {
     function isProcessAlive(pid) {
       try { process.kill(pid, 0); return true; } catch { return false; }
     }
+    // #8 — stamp schema_version on every write so legacy state files
+    // (no field) auto-gain the explicit tag. Never demotes an existing
+    // higher version — only fills the missing case. Bumping the version
+    // is the migrator's job, not this helper.
+    if (typeof state.schema_version !== 'number') state.schema_version = 1;
 
     // Issue #681: auto-clear the install-time _seeded_stub marker once the
     // state has graduated to a real project (project field set + at least one
@@ -1053,6 +1058,11 @@ function cmdState(subArgs) {
     const now = new Date().toISOString();
     return {
       version: '1',
+      // #8 — explicit schema_version field for future migration framework.
+      // Bump when the shape changes. `state schema-status` / `state migrate-schema`
+      // read this. Existing state files without the field are treated as v1
+      // (backwards-compat — never crash on legacy state).
+      schema_version: 1,
       project: projectName || path.basename(PROJECT_ROOT),
       created: now,
       updated: now,
@@ -1220,6 +1230,178 @@ function cmdState(subArgs) {
     phase.sprints.push(sprint);
     state.current_sprint = sprintId;
     return writeStateCompact(state, { sprint_id: sprintId, phase: padPhase });
+  }
+
+  // --- logs prune [--dir <path>] [--older-than <days>] [--dry-run] ---
+  // Prune dated session-* artifacts (#13). Defaults:
+  //   dir         = .rihal/progress/
+  //   pattern     = session-*.md
+  //   older-than  = 90 days
+  //   dry-run     = true (so accidental invocation never deletes)
+  // No-op if the directory doesn't exist — prints a friendly message.
+  // File age is determined by mtime, not filename.
+  if (sub === 'logs' && subArgs[1] === 'prune') {
+    const flags = parseFlags(2);
+    const dryRun = ('dry-run' in flags) || !subArgs.includes('--no-dry-run');
+    const dir = flags.dir
+      ? path.resolve(PROJECT_ROOT, flags.dir)
+      : path.join(RIHAL_DIR, 'progress');
+    const olderDays = parseInt(flags['older-than'] || '90', 10);
+    const pattern = flags.pattern || 'session-*.md';
+    const cutoff = Date.now() - olderDays * 24 * 60 * 60 * 1000;
+
+    if (!fs.existsSync(dir)) {
+      return {
+        ok: true,
+        dry_run: dryRun,
+        pruned: 0,
+        message: `No logs directory at ${path.relative(PROJECT_ROOT, dir)} — nothing to prune.`,
+      };
+    }
+
+    // Translate the glob pattern to a RegExp (only the * wildcard for safety).
+    const reSrc = '^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$';
+    const fileRe = new RegExp(reSrc);
+
+    const toPrune = [];
+    for (const entry of fs.readdirSync(dir)) {
+      if (!fileRe.test(entry)) continue;
+      const full = path.join(dir, entry);
+      let stat;
+      try { stat = fs.statSync(full); } catch (_) { continue; }
+      if (!stat.isFile()) continue;
+      if (stat.mtimeMs < cutoff) {
+        toPrune.push({
+          file: path.relative(PROJECT_ROOT, full),
+          age_days: Math.floor((Date.now() - stat.mtimeMs) / (24 * 60 * 60 * 1000)),
+          bytes: stat.size,
+        });
+      }
+    }
+
+    if (!dryRun) {
+      for (const item of toPrune) {
+        try { fs.unlinkSync(path.join(PROJECT_ROOT, item.file)); }
+        catch (e) { item.error = e.message; }
+      }
+    }
+
+    return {
+      ok: true,
+      dry_run: dryRun,
+      dir: path.relative(PROJECT_ROOT, dir),
+      pattern,
+      older_than_days: olderDays,
+      pruned: dryRun ? 0 : toPrune.filter(t => !t.error).length,
+      would_prune: dryRun ? toPrune.length : 0,
+      details: toPrune,
+    };
+  }
+
+  // --- sprint init-all [--file <path>] [--dry-run] ---
+  // Bulk-initialize sprints by parsing .planning/sprints.md (#11).
+  // Supported formats: markdown table with `| Sprint | Phase | Goal |` columns,
+  // OR a simple "## Sprint N — Phase X — Goal" heading list. Skips rows whose
+  // sprint id already exists for that phase (idempotent). No-op when the
+  // file is absent — prints a helpful message rather than failing.
+  if (sub === 'sprint' && subArgs[1] === 'init-all') {
+    const flags = parseFlags(2);
+    const dryRun = ('dry-run' in flags) || subArgs.includes('--dry-run');
+    const filePath = flags.file || path.join(PLANNING_DIR, 'sprints.md');
+    if (!fs.existsSync(filePath)) {
+      return {
+        ok: true,
+        created: 0,
+        message: `No sprints.md found at ${path.relative(PROJECT_ROOT, filePath)}. Write one with rows like '| 1 | 3 | Migrate auth module |' to bulk-initialize sprints.`,
+      };
+    }
+    const text = fs.readFileSync(filePath, 'utf8');
+    const rows = [];
+
+    // Parse markdown-table form: skip header + separator rows, accept any
+    // row with at least 3 pipe-delimited cells (sprint, phase, goal).
+    const lines = text.split(/\r?\n/);
+    let inTable = false;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('|')) { inTable = false; continue; }
+      // Separator row like |---|---|---|
+      if (/^\|\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(trimmed)) { inTable = true; continue; }
+      const cells = trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+      if (cells.length < 3) continue;
+      // Header detection: skip if first cell is non-numeric AND we haven't seen separator yet
+      if (!inTable && !/^\d/.test(cells[0])) continue;
+      // Tolerate extra columns; first three are sprint, phase, goal.
+      const sprintNum = parseInt(cells[0], 10);
+      const phaseRef = cells[1];
+      const goal = cells[2];
+      if (!Number.isFinite(sprintNum) || !phaseRef || !goal) continue;
+      rows.push({ sprint: sprintNum, phase: phaseRef, goal });
+    }
+
+    // Fallback: parse "## Sprint N — Phase X — Goal" heading form.
+    if (rows.length === 0) {
+      const hRe = /^#{2,3}\s*Sprint\s+(\d+)\s*[—\-:]\s*Phase\s+([\d.]+)\s*[—\-:]\s*(.+)$/gim;
+      let m;
+      while ((m = hRe.exec(text)) !== null) {
+        rows.push({ sprint: parseInt(m[1], 10), phase: m[2], goal: m[3].trim() });
+      }
+    }
+
+    if (rows.length === 0) {
+      return {
+        ok: true,
+        created: 0,
+        message: `sprints.md parsed but no rows recognized. Expected '| sprint | phase | goal |' table or '## Sprint N — Phase X — Goal' headings.`,
+      };
+    }
+
+    const state = readState() || defaultState();
+    const created = [];
+    const skipped = [];
+    for (const row of rows) {
+      const phaseIdx = state.phases.findIndex(p =>
+        String(p.number) === String(row.phase) ||
+        String(p.id) === String(row.phase) ||
+        p.name === row.phase
+      );
+      if (phaseIdx === -1) {
+        skipped.push({ ...row, reason: `phase ${row.phase} not found` });
+        continue;
+      }
+      const phase = state.phases[phaseIdx];
+      if (!phase.sprints) phase.sprints = [];
+      const phaseNum = phase.number != null ? phase.number
+        : phase.id != null ? (parseInt(phase.id, 10) || (phaseIdx + 1))
+        : phaseIdx + 1;
+      const sprintId = `${phaseNum}.${row.sprint}`;
+      if (phase.sprints.some(s => s.id === sprintId || s.number === row.sprint)) {
+        skipped.push({ ...row, reason: `sprint ${sprintId} already exists` });
+        continue;
+      }
+      const sprint = {
+        id: sprintId,
+        number: row.sprint,
+        goal: row.goal,
+        status: 'planned',
+        velocity_target: null,
+        velocity_actual: null,
+        started_at: null,
+        completed_at: null,
+        stories: [],
+      };
+      if (!dryRun) phase.sprints.push(sprint);
+      created.push({ sprint_id: sprintId, phase: String(phaseNum), goal: row.goal });
+    }
+    if (!dryRun && created.length > 0) writeState(state);
+    return {
+      ok: true,
+      dry_run: dryRun,
+      created: created.length,
+      skipped: skipped.length,
+      file: path.relative(PROJECT_ROOT, filePath),
+      details: { created, skipped },
+    };
   }
 
   // --- sprint list [--phase NN] ---
@@ -2367,6 +2549,37 @@ function cmdState(subArgs) {
       skipped: renames.filter(r => r.status === 'skip-target-exists').length,
       state_plan_ids_updated: stateUpdates,
       details: renames,
+    };
+  }
+
+  // =====================================================================
+  // state schema-status: report current vs expected schema_version (#8).
+  // Read-only. Surfaces stale state files so users know when to run
+  // `state migrate-schema`.
+  // =====================================================================
+  if (sub === 'schema-status') {
+    const CURRENT_SCHEMA_VERSION = 1;
+    if (!fs.existsSync(statePath)) {
+      return { ok: false, error: 'state.json not found' };
+    }
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+    catch (e) { return { ok: false, error: `Invalid JSON: ${e.message}` }; }
+    const recorded = state.schema_version;
+    // Treat missing schema_version as v1 (legacy state files). Never crash.
+    const effective = typeof recorded === 'number' ? recorded : 1;
+    return {
+      ok: true,
+      file: path.relative(PROJECT_ROOT, statePath),
+      schema_version: effective,
+      current_version: CURRENT_SCHEMA_VERSION,
+      drift: effective !== CURRENT_SCHEMA_VERSION,
+      explicit: typeof recorded === 'number',
+      message: typeof recorded === 'number'
+        ? (effective === CURRENT_SCHEMA_VERSION
+            ? 'Up to date.'
+            : `state.json is at v${effective}, current is v${CURRENT_SCHEMA_VERSION}. Run: rihal-tools state migrate-schema`)
+        : 'state.json has no schema_version field — treated as v1. Next write will stamp the explicit field.',
     };
   }
 
