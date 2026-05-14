@@ -5,6 +5,7 @@ Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies RE
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 @.rihal/references/karpathy-guidelines.md
+@.rihal/references/git-preflight.md
 </required_reading>
 
 <available_agent_types>

@@ -160,6 +160,7 @@ via filesystem and git state.
 <required_reading>
 @.rihal/references/auto-init-guard.md
 @.rihal/references/output-format.md
+@.rihal/references/git-preflight.md
 Read STATE.md before any operation to load project context.
 
 @.rihal/references/agent-contracts.md

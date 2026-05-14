@@ -11,6 +11,10 @@ Wrap a STORY.md file for AI-coder consumption. Produces:
 This workflow creates the execution prompt for a pair-programming session with an AI coder.
 </purpose>
 
+<required_reading>
+@.rihal/references/git-preflight.md
+</required_reading>
+
 
 ## Step 0 — Parse Arguments
 

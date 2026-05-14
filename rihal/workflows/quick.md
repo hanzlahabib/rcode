@@ -9,6 +9,7 @@ Closes the gap where /rihal-quick used to refuse + show a 4-option menu when giv
 
 <required_reading>
 @.rihal/references/verb-dictionary.md
+@.rihal/references/git-preflight.md
 </required_reading>
 
 <process>
