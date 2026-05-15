@@ -112,6 +112,8 @@ async function preWorkflow() {
  */
 async function postCommit() {
   try {
+    const path = require('path');
+    const os = require('os');
     const input = await readInputJson();
     const command = input.tool_input?.command || input.command || '';
     const output = input.tool_input?.output || input.output || '';
@@ -131,11 +133,27 @@ async function postCommit() {
 
     let commitMsg = output;
 
-    // If -F flag used, try to read the message file
+    // If -F flag used, try to read the message file — but only if it resolves
+    // inside the repo working tree. An attacker-controlled commit command could
+    // otherwise point -F at e.g. ~/.ssh/id_rsa. Mirror the resolve + realpathSync
+    // + startsWith guard from server/lib/api.js:131-141 (#754).
     const fMatch = command.match(/-F\s+(\S+)/);
-    if (fMatch && fs.existsSync(fMatch[1])) {
+    if (fMatch) {
       try {
-        commitMsg += '\n' + fs.readFileSync(fMatch[1], 'utf8');
+        const repoRoot = process.cwd();
+        const resolved = path.resolve(repoRoot, fMatch[1]);
+        // Dereference symlinks so a symlink outside the repo cannot bypass the guard.
+        const realPath = fs.realpathSync(resolved);
+        const insideRepo = realPath.startsWith(repoRoot + path.sep);
+        // Exception: rihal-tools.cjs writes its commit-message tmp file to
+        // os.tmpdir() (outside the repo) — see rihal-tools.cjs:3668. That path
+        // is rihal-controlled (not attacker input), so allow it explicitly.
+        const isRihalCommitMsgTmp =
+          realPath.startsWith(fs.realpathSync(os.tmpdir()) + path.sep) &&
+          /^rihal-commit-msg-\d+\.txt$/.test(path.basename(realPath));
+        if (insideRepo || isRihalCommitMsgTmp) {
+          commitMsg += '\n' + fs.readFileSync(resolved, 'utf8');
+        }
       } catch {}
     }
 

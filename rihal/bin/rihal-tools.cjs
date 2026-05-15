@@ -3601,7 +3601,7 @@ function cmdCommit(argv) {
   }
 
   // Stage files if --files provided; otherwise commit whatever is staged.
-  const { execSync } = require('child_process');
+  const { execSync, execFileSync } = require('child_process');
   if (files.length > 0) {
     // Validate each path exists before staging
     for (const f of files) {
@@ -3614,10 +3614,9 @@ function cmdCommit(argv) {
     // stderr to detect the gitignore warning explicitly (#566).
     let gitAddStderr = '';
     try {
-      const addResult = execSync(
-        `git add ${files.map(f => `"${f.replace(/"/g, '\\"')}"`).join(' ')}`,
-        { cwd: PROJECT_ROOT, stdio: 'pipe' }
-      );
+      // execFileSync argument array: filenames pass as literal argv entries — no
+      // shell, so a filename with ; $() backticks or spaces cannot inject (#754).
+      execFileSync('git', ['add', ...files], { cwd: PROJECT_ROOT, stdio: 'pipe' });
     } catch (e) {
       gitAddStderr = (e.stderr ? e.stderr.toString() : '') + (e.stdout ? e.stdout.toString() : '');
       if (gitAddStderr.includes('ignored by one of your .gitignore') || gitAddStderr.includes('use -f if')) {
@@ -3643,7 +3642,7 @@ function cmdCommit(argv) {
       if (stagedAfterAdd.some(s => s === norm || s.endsWith('/' + norm) || norm.endsWith(s))) return false;
       // Not in staged diff — check if it's tracked (unchanged) vs untracked/gitignored
       try {
-        execSync(`git ls-files --error-unmatch "${f}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+        execFileSync('git', ['ls-files', '--error-unmatch', f], { cwd: PROJECT_ROOT, stdio: 'pipe' });
         return false; // tracked and unchanged — that's fine
       } catch {
         return true; // not tracked — likely gitignored
