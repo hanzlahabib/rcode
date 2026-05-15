@@ -8,6 +8,10 @@
           {
             "type": "command",
             "command": "node .rihal/bin/rihal-hooks.cjs pre-edit"
+          },
+          {
+            "type": "command",
+            "command": "node .rihal/bin/rihal-hooks.cjs compact-nudge"
           }
         ]
       },
@@ -37,6 +41,32 @@
           {
             "type": "command",
             "command": "node .rihal/bin/rihal-hooks.cjs post-commit"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rihal/bin/rihal-hooks.cjs pre-compact"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rihal/bin/rihal-hooks.cjs stop-verify"
+          },
+          {
+            "type": "command",
+            "command": "node .rihal/bin/rihal-hooks.cjs cost-track"
           }
         ]
       }

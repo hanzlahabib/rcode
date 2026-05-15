@@ -7,6 +7,10 @@
  *   pre-workflow — soft warning for rihal-* commands with suspicious args
  *   post-commit — verify commit format and no forbidden patterns
  *   bash-guard  — block dangerous Bash commands before they run (exit 2)
+ *   pre-compact — refresh HANDOFF.json before context compaction (#743)
+ *   stop-verify — syntax-check files changed during the response (#744)
+ *   cost-track  — append per-response token usage to cost.jsonl (#745)
+ *   compact-nudge — advise /rihal-trim or /clear after N Edit/Write calls (#749)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -317,6 +321,236 @@ async function bashGuard() {
 }
 
 /**
+ * pre-compact: Refresh HANDOFF.json before context compaction (#743).
+ *
+ * Triggered by the PreCompact hook. Reads .rihal/state.json from the current
+ * working directory and, if a phase is active, writes a HANDOFF.json pointer
+ * so a post-compaction agent can resume cleanly. No-op when no phase is
+ * active. Never blocks compaction.
+ */
+async function preCompact() {
+  try {
+    const path = require('path');
+    await readInputJson(); // drain the PreCompact event payload
+
+    const cwd = process.cwd();
+    const statePath = path.join(cwd, '.rihal', 'state.json');
+    if (!fs.existsSync(statePath)) {
+      process.exit(0);
+    }
+
+    let state;
+    try {
+      state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    } catch {
+      process.exit(0);
+    }
+
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    const hasActivePhase =
+      !!state.current_phase &&
+      phases.length > 0 &&
+      phases.some(
+        (p) =>
+          p &&
+          (p.status === 'executing' ||
+            p.name === state.current_phase ||
+            p.number === state.current_phase)
+      );
+
+    if (!hasActivePhase) {
+      process.exit(0);
+    }
+
+    const executing = phases.find((p) => p && p.status === 'executing');
+    const matched = phases.find(
+      (p) => p && (p.name === state.current_phase || p.number === state.current_phase)
+    );
+    const activePhase = executing || matched;
+    const phaseLabel = activePhase
+      ? activePhase.number || activePhase.name || state.current_phase
+      : state.current_phase;
+
+    const handoff = {
+      generated_at: new Date().toISOString(),
+      reason: 'pre-compact',
+      phase: phaseLabel,
+      current_plan: state.current_plan ?? null,
+      current_sprint: state.current_sprint ?? null,
+    };
+
+    const handoffPath = path.join(cwd, 'HANDOFF.json');
+    const tmpPath = handoffPath + '.tmp';
+    fs.writeFileSync(tmpPath, JSON.stringify(handoff, null, 2) + '\n');
+    fs.renameSync(tmpPath, handoffPath);
+
+    process.exit(0);
+  } catch (err) {
+    console.error(`Hook error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * stop-verify: Syntax-check files changed during the response (#744).
+ *
+ * Triggered by the Stop hook. Collects the files changed during the response
+ * (from the payload, falling back to `git diff --name-only`) and syntax-checks
+ * each .js/.cjs (node --check) and .json (JSON.parse). Surfaces failures to
+ * stderr with a non-zero exit. Advisory only — never auto-fixes, never blocks.
+ */
+async function stopVerify() {
+  try {
+    const path = require('path');
+    const { spawnSync } = require('child_process');
+    const input = await readInputJson();
+
+    let changed =
+      input.changed_files ||
+      input.tool_input?.changed_files ||
+      input.files_changed ||
+      null;
+
+    if (!Array.isArray(changed)) {
+      const diff = spawnSync('git', ['diff', '--name-only'], {
+        encoding: 'utf8',
+        cwd: process.cwd(),
+      });
+      changed =
+        diff.status === 0
+          ? diff.stdout.split('\n').map((l) => l.trim()).filter(Boolean)
+          : [];
+    }
+
+    if (changed.length === 0) {
+      process.exit(0);
+    }
+
+    const failures = [];
+    for (const file of changed) {
+      const abs = path.isAbsolute(file)
+        ? file
+        : path.resolve(process.cwd(), file);
+      if (!fs.existsSync(abs)) continue;
+      const ext = path.extname(abs).toLowerCase();
+      if (ext === '.js' || ext === '.cjs' || ext === '.mjs') {
+        const check = spawnSync(process.execPath, ['--check', abs], {
+          encoding: 'utf8',
+        });
+        if (check.status !== 0) {
+          failures.push(`${file}: ${(check.stderr || '').trim().split('\n')[0]}`);
+        }
+      } else if (ext === '.json') {
+        try {
+          JSON.parse(fs.readFileSync(abs, 'utf8'));
+        } catch (e) {
+          failures.push(`${file}: ${e.message}`);
+        }
+      }
+    }
+
+    if (failures.length > 0) {
+      console.error('⚠ stop-verify: changed files failed syntax check:');
+      failures.forEach((f) => console.error(`  • ${f}`));
+      process.exit(1);
+    }
+
+    process.exit(0);
+  } catch (err) {
+    console.error(`Hook error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * cost-track: Append per-response token usage to cost.jsonl (#745).
+ *
+ * Triggered by the Stop hook. Extracts the token usage block from the Stop
+ * event payload and appends one JSON line to .rihal/telemetry/cost.jsonl so
+ * session-report can report measured totals. No-op when no usage block is
+ * present. Never blocks.
+ */
+async function costTrack() {
+  try {
+    const path = require('path');
+    const input = await readInputJson();
+
+    const usage = input.usage || input.tool_input?.usage || null;
+    if (!usage || typeof usage !== 'object') {
+      process.exit(0);
+    }
+
+    const record = {
+      ts: new Date().toISOString(),
+      input_tokens: usage.input_tokens ?? 0,
+      output_tokens: usage.output_tokens ?? 0,
+    };
+    if (usage.cache_creation_input_tokens != null) {
+      record.cache_creation_input_tokens = usage.cache_creation_input_tokens;
+    }
+    if (usage.cache_read_input_tokens != null) {
+      record.cache_read_input_tokens = usage.cache_read_input_tokens;
+    }
+
+    const telemetryDir = path.join(process.cwd(), '.rihal', 'telemetry');
+    fs.mkdirSync(telemetryDir, { recursive: true });
+    fs.appendFileSync(
+      path.join(telemetryDir, 'cost.jsonl'),
+      JSON.stringify(record) + '\n'
+    );
+
+    process.exit(0);
+  } catch (err) {
+    console.error(`Hook error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * compact-nudge: Advise /rihal-trim or /clear after N Edit/Write calls (#749).
+ *
+ * Triggered by the PreToolUse:Edit|Write hook. Maintains a per-session call
+ * counter in a temp file and, once the count crosses RIHAL_NUDGE_THRESHOLD
+ * (default 50), prints an advisory to reclaim context budget. Purely
+ * advisory — always exits 0, never blocks a tool call.
+ */
+async function compactNudge() {
+  try {
+    const path = require('path');
+    const os = require('os');
+    const input = await readInputJson();
+
+    const sessionId =
+      input.session_id || input.tool_input?.session_id || 'default';
+    const counterPath = path.join(
+      os.tmpdir(),
+      'rihal-nudge-' + sessionId + '.count'
+    );
+
+    let count = 0;
+    try {
+      count = parseInt(fs.readFileSync(counterPath, 'utf8').trim(), 10) || 0;
+    } catch {}
+    count += 1;
+    try {
+      fs.writeFileSync(counterPath, String(count));
+    } catch {}
+
+    const threshold = parseInt(process.env.RIHAL_NUDGE_THRESHOLD, 10) || 50;
+    if (count >= threshold) {
+      console.error(
+        `⚠ rihal compact-nudge: ${count} edits this session. Consider /rihal-trim or /clear to reclaim context budget.`
+      );
+    }
+
+    process.exit(0);
+  } catch {
+    // Advisory hook must never break the session.
+    process.exit(0);
+  }
+}
+
+/**
  * Main entry point.
  */
 async function main() {
@@ -335,9 +569,21 @@ async function main() {
     case 'bash-guard':
       await bashGuard();
       break;
+    case 'pre-compact':
+      await preCompact();
+      break;
+    case 'stop-verify':
+      await stopVerify();
+      break;
+    case 'cost-track':
+      await costTrack();
+      break;
+    case 'compact-nudge':
+      await compactNudge();
+      break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rihal-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard');
+      console.error('Usage: rihal-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge');
       process.exit(1);
   }
 }
