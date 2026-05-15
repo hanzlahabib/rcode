@@ -280,14 +280,23 @@ ${renderCss()}
 
 <script>
 function viewAgentSkill(name) {
-  var items = document.querySelectorAll('.file-tree-item');
-  for (var i = 0; i < items.length; i++) {
-    if ((items[i].dataset.path || '').toLowerCase().includes(name)) {
-      items[i].click();
-      return;
-    }
-  }
   navTo('files');
+  // Wait for inline file tree to render (fetched async), then find the agent's skill file
+  setTimeout(function() {
+    var items = document.querySelectorAll('.inline-file-entry');
+    for (var i = 0; i < items.length; i++) {
+      if ((items[i].dataset.path || '').toLowerCase().includes(name)) {
+        items[i].click();
+        return;
+      }
+    }
+    // No exact match — pre-fill the search so the user can see related files
+    var search = document.querySelector('#file-list-inline .filter-input');
+    if (search) {
+      search.value = name;
+      search.dispatchEvent(new Event('input'));
+    }
+  }, 400);
 }
 <\/script>
 ${renderClientJs(state)}

@@ -1263,7 +1263,7 @@ function renderMemory() {
     h += '<div class="filter-bar"><span style="color:var(--text-muted);font-size:var(--text-sm);">Last scanned: ' + esc(m.lastScanned) + '</span></div>';
     h += '<div id="memory-sections">';
     for (const [section, files] of Object.entries(sections)) {
-      h += '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(section) + '</div>';
+      h += '<div class="memory-group-header">' + esc(section) + '</div>';
       h += '<div class="decision-list">';
       for (const f of files) {
         const status = f.exists ? (f.populated ? '✓' : '○') : '✗';
@@ -1277,7 +1277,7 @@ function renderMemory() {
     }
     function listGroup(label, items) {
       if (!items || !items.length) return '';
-      let g = '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(label) + ' (' + items.length + ')</div>';
+      let g = '<div class="memory-group-header">' + esc(label) + ' (' + items.length + ')</div>';
       g += '<div class="decision-list">';
       for (const f of items) {
         g += '<div class="item">' +
@@ -1323,7 +1323,7 @@ function renderDecisions() {
     '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Filter…" oninput="filterItems(this,\\'decisions-inner\\')"></div>' +
     '<div id="decisions-inner">';
   for (const [phase, decs] of Object.entries(grouped)) {
-    h += '<div style="font-size:var(--text-sm);font-weight:600;color:var(--text-muted);margin:var(--space-4) 0 var(--space-2);">' + esc(phase) + '</div>';
+    h += '<div class="memory-group-header">' + esc(phase) + '</div>';
     h += '<div class="decision-list">';
     for (const d of decs) {
       const title = typeof d === 'string' ? d : (d.title || d.summary || d.decision || JSON.stringify(d).slice(0, 80));
@@ -1382,12 +1382,12 @@ const _filesPromise = fetch('/api/files').then(function(r) { return r.json(); })
 
   groups.forEach(function(g) {
     h += '<div class="inline-file-group" style="margin-bottom:var(--space-3);">';
-    h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) 0;">' + esc(g.group) + '</div>';
+    h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) var(--space-3);">' + esc(g.group) + '</div>';
     if (g.subGroups) {
       // Render expandable sub-groups (e.g. per-phase)
       g.subGroups.forEach(function(sg) {
         h += '<details class="inline-subgroup" open style="margin-left:var(--space-2);margin-bottom:var(--space-1);">';
-        h += '<summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) 0;user-select:none;">' + esc(sg.subGroup) + ' <span style="color:var(--text-muted);font-weight:400;">(' + sg.files.length + ')</span></summary>';
+        h += '<summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) var(--space-3);user-select:none;">' + esc(sg.subGroup) + ' <span style="color:var(--text-muted);font-weight:400;">(' + sg.files.length + ')</span></summary>';
         sg.files.forEach(function(f) {
           h += renderFileItem(f, sg.subGroup);
         });

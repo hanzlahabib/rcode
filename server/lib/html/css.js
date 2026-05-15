@@ -781,8 +781,22 @@ section .body {
 .filter-select:focus { border-color: var(--accent-primary); }
 .filter-bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 
-/* ── Decisions list ─────────────────────────────────────────────── */
-.decision-list { margin-top: var(--space-3); }
+/* ── Decisions / Memory list ────────────────────────────────────── */
+.decision-list {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+.memory-group-header {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  text-transform: capitalize;
+  letter-spacing: -0.006em;
+}
 
 /* ── Markdown render ────────────────────────────────────────────── */
 .md-render {
