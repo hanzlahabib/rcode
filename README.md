@@ -520,7 +520,7 @@ node --test test/lib/manifest.test.cjs   # install verification only
 
 ## License
 
-UNLICENSED — proprietary. All rights reserved.
+Released under the [MIT License](LICENSE).
 
 ---
 
