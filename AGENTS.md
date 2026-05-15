@@ -24,7 +24,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) format: `type(scope): subject`
 - Types allowed: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `revert`
-- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `commands`, `memory`, `brand`, `cli`, `ci`, `release`, `meta`, `tasks`, `migrations`, `refs`, `state`, `hooks`, `install`, `parity`, `triggers`, `dogfood`, `namespace`, `planning`, `insights`, `help`, `roadmap`, `session`, `audits`, `execute`, `executor`, `plan`, `planner`, `readme`, `sync`, `sprint`, `agent-exp`, `extensibility`, `lens-audit`, `tiers`, `build`, `council`, `doctor`, `postinstall`, `progress`, `security`, `tools`, `uninstall`, `update`, `test`, `changelog`, `scopes`, `phases`, `references`, plus numeric phase/sprint scopes (e.g. `docs(15)`, `feat(8.3)`)
+- Scopes allowed: `agents`, `skills`, `workflows`, `templates`, `dashboard`, `docs`, `config`, `github`, `commands`, `memory`, `brand`, `cli`, `ci`, `release`, `meta`, `tasks`, `migrations`, `refs`, `state`, `hooks`, `install`, `parity`, `triggers`, `dogfood`, `namespace`, `planning`, `insights`, `help`, `roadmap`, `session`, `audits`, `execute`, `executor`, `plan`, `planner`, `readme`, `sync`, `sprint`, `agent-exp`, `extensibility`, `lens-audit`, `tiers`, `build`, `council`, `doctor`, `postinstall`, `progress`, `security`, `tools`, `uninstall`, `update`, `test`, `changelog`, `scopes`, `phases`, `references`, `kanban`, `orchestrator`, plus numeric phase/sprint scopes (e.g. `docs(15)`, `feat(8.3)`)
 - Subject: lowercase first letter, imperative mood, no trailing period, under 72 chars
 - **NEVER add Claude/AI attribution to commit messages.** No "Generated with Claude Code", no "Co-Authored-By: Claude", no "🤖 Generated". The user does not want this.
 - **NEVER use `--no-verify`** to bypass hooks. If hooks fail, fix the underlying issue.
@@ -77,12 +77,12 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 ## Testing Rules
 
-- Run the compliance check after modifying any skill:
+- Run schema validation after modifying any skill or agent — it enforces the
+  5-component skill standard (frontmatter, trigger phrases, negative boundary)
+  in place of the old grep-based check:
   ```bash
-  for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
-    grep -q "^## Output Format" "$f" || echo "MISSING: $f"
-    grep -q "^## Examples" "$f" || echo "MISSING: $f"
-  done
+  node cli/doctor.js                       # full preflight + compliance
+  node --test test/artifact-schema.test.cjs   # schema validators only
   ```
 - Run grep checks before committing renames or refactors:
   ```bash

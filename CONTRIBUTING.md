@@ -329,6 +329,8 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `scopes` — AGENTS.md / CONTRIBUTING.md scope-list maintenance
 - `phases` — `.planning/phases/` artifacts (SPRINT.md, SUMMARY.md, VERIFICATION.md)
 - `references` — files inside `rihal/references/` (extracting agent playbooks to references)
+- `kanban` — `/rihal-kanban` orchestration board workflow and surfaces
+- `orchestrator` — orchestrator panel, SSE streaming, session persistence
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
