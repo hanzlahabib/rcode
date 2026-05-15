@@ -1,0 +1,16 @@
+{
+  "artifact": "rihal/agents/rihal-planner.md",
+  "negativeBoundaries": [],
+  "routingKeywords": [
+    "rihal-tools"
+  ],
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "WebFetch",
+    "Write"
+  ],
+  "triggers": []
+}

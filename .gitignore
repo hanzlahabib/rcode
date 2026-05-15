@@ -34,6 +34,11 @@ output/
 dist/
 image.png
 
+# Agent-behavior eval harness (#746): raw/uncommitted eval output is
+# ephemeral; normalized baselines under test/eval/baselines/ ARE committed.
+test/eval/raw/
+test/eval/*.raw.json
+
 # Working scratch — external clones and plan drafts, not part of the product
 temp/agent-skills/
 temp/
