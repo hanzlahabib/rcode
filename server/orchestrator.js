@@ -28,11 +28,13 @@ const http   = require('http');
 const path   = require('path');
 const crypto = require('crypto');
 
-// node-pty is an optional native dependency. Without it the orchestrator
-// still boots, but /api/run reports a clear "not installed" error instead
-// of crashing — keeps `npx rcode` installs working on unbuildable platforms.
+// @lydell/node-pty ships prebuilt binaries and never invokes node-gyp, so a
+// plain `npm install` works on any common platform with no build toolchain.
+// It is still an optionalDependency: on an unsupported platform the require
+// throws, the orchestrator stays up, and /api/run reports a clear error
+// instead of crashing — `npx rcode` keeps working everywhere.
 let pty = null;
-try { pty = require('node-pty'); } catch { /* handled in handleRun */ }
+try { pty = require('@lydell/node-pty'); } catch { /* handled in handleRun */ }
 
 let WebSocketServer = null;
 try { ({ WebSocketServer } = require('ws')); } catch { /* handled at boot */ }
@@ -135,7 +137,7 @@ async function handleRun(req, res) {
   if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
 
   if (!pty) {
-    json(res, 503, { error: 'node-pty not installed — run: pnpm add node-pty' });
+    json(res, 503, { error: 'interactive terminal unavailable on this platform — run: pnpm add @lydell/node-pty' });
     return;
   }
 
