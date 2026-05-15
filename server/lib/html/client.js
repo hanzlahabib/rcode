@@ -758,7 +758,24 @@ function openCardTerminal(storyId) {
   if (files) files.innerHTML = '';
 }
 
-// Append a log line to a specific card's terminal
+// Append a streaming text chunk to the active text node (in-place, no new row)
+function appendCardChunk(storyId, chunk) {
+  var card = getCard(storyId);
+  if (!card) return;
+  var body = card.querySelector('.kanban-terminal-body');
+  if (!body) return;
+  // Reuse last span if it's a streaming text node, else create one
+  var last = body.lastElementChild;
+  if (!last || !last.classList.contains('kt-stream')) {
+    last = document.createElement('div');
+    last.className = 'kt-line kt-stream';
+    body.appendChild(last);
+  }
+  last.textContent += chunk;
+  body.scrollTop = body.scrollHeight;
+}
+
+// Append an event line (new row — tool calls, status, errors)
 function appendCardLog(storyId, line) {
   var card = getCard(storyId);
   if (!card) return;
@@ -834,6 +851,7 @@ function connectOrchestratorStream(storyId) {
   es.onmessage = function(e) {
     try {
       var d = JSON.parse(e.data);
+      if (d.chunk)  appendCardChunk(storyId, d.chunk);  // real-time text stream
       if (d.line)   appendCardLog(storyId, d.line);
       if (d.fileOp) appendCardFileOp(storyId, d.fileOp);
       if (d.status) {

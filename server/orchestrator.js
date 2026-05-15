@@ -58,6 +58,16 @@ function broadcast(storyId, line) {
   }
 }
 
+// Push a raw text chunk to SSE (not buffered — for streaming characters)
+function broadcastChunk(storyId, chunk) {
+  const s = sessions.get(storyId);
+  if (!s || !chunk) return;
+  const payload = 'data: ' + JSON.stringify({ chunk }) + '\n\n';
+  for (const client of s.sseClients) {
+    try { client.write(payload); } catch { s.sseClients.delete(client); }
+  }
+}
+
 // Push a file operation event to SSE clients + buffer it
 function broadcastFileOp(storyId, fileOp) {
   const s = sessions.get(storyId);
@@ -87,9 +97,9 @@ function parseStreamLine(raw, toolBuf) {
   try {
     const p = JSON.parse(raw);
 
-    // Assistant text delta
+    // Streaming text delta — send as 'chunk' so browser appends in-place
     if (p.type === 'content_block_delta' && p.delta?.type === 'text_delta') {
-      return { text: p.delta.text || null };
+      return { chunk: p.delta.text || null };
     }
 
     // Tool use start — record tool name, init buffer
@@ -153,10 +163,13 @@ function handleStatus(res) {
 
 function handleStream(req, res, storyId) {
   res.writeHead(200, {
-    'Content-Type':  'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection':    'keep-alive',
+    'Content-Type':    'text/event-stream',
+    'Cache-Control':   'no-cache',
+    'Connection':      'keep-alive',
+    'X-Accel-Buffering': 'no',   // disable nginx/proxy buffering
   });
+  // Disable Nagle — flush every write immediately to the browser
+  if (res.socket) res.socket.setNoDelay(true);
 
   const s = sessions.get(storyId);
   if (!s) {
@@ -220,8 +233,9 @@ async function handleRun(req, res) {
     for (const raw of chunk.toString().split('\n')) {
       const line = raw.trim();
       if (!line) continue;
-      const { text, fileOp } = parseStreamLine(line, s.toolBuf);
-      if (text) broadcast(storyId, text);
+      const { text, chunk, fileOp } = parseStreamLine(line, s.toolBuf);
+      if (chunk) broadcastChunk(storyId, chunk);   // streaming text — in-place append
+      if (text)  broadcast(storyId, text);          // event/status line — new row
       if (fileOp) broadcastFileOp(storyId, fileOp);
     }
   });
