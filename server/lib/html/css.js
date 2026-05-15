@@ -402,6 +402,9 @@ section h2 {
   border-radius: var(--radius-4);
   overflow: hidden;
 }
+section .body {
+  padding: var(--space-4) var(--space-5);
+}
 
 /* ── Stats ─────────────────────────────────────────────────────── */
 .stats {
