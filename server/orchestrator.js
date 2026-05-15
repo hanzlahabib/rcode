@@ -14,16 +14,22 @@
 
 'use strict';
 
-const { spawn } = require('child_process');
-const http      = require('http');
-const path      = require('path');
+const { spawn }  = require('child_process');
+const http       = require('http');
+const path       = require('path');
+const fs         = require('fs');
+const os         = require('os');
 
 const PORT         = 7718;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
+const SESSIONS_DIR = path.join(os.homedir(), '.rihal', 'sessions');
+
+// Ensure sessions directory exists
+try { fs.mkdirSync(SESSIONS_DIR, { recursive: true }); } catch {}
 
 // Map<storyId, Session>
-// Session: { pid, proc, status, logs: string[], sseClients: Set<res> }
+// Session: { pid, proc, status, logs[], fileOps[], toolBuf{}, sseClients: Set, startTime }
 const sessions = new Map();
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -151,6 +157,48 @@ function parseStreamLine(raw, toolBuf) {
   }
 }
 
+// Persist completed session to ~/.rihal/sessions/{storyId}-{date}.json
+function persistSession(storyId, exitStatus) {
+  const s = sessions.get(storyId);
+  if (!s) return;
+  try {
+    const date = new Date().toISOString().slice(0, 10);
+    const file = path.join(SESSIONS_DIR, storyId + '-' + date + '.json');
+    fs.writeFileSync(file, JSON.stringify({
+      storyId, status: exitStatus,
+      startTime: s.startTime, endTime: new Date().toISOString(),
+      logs: s.logs, fileOps: s.fileOps,
+    }), 'utf8');
+  } catch {}
+}
+
+// Load most recent persisted session for a storyId (if any)
+function loadLastSession(storyId) {
+  try {
+    const files = fs.readdirSync(SESSIONS_DIR)
+      .filter(f => f.startsWith(storyId + '-') && f.endsWith('.json'))
+      .sort()
+      .reverse();
+    if (!files.length) return null;
+    return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, files[0]), 'utf8'));
+  } catch { return null; }
+}
+
+// Clean sessions older than N days
+function cleanSessions(olderThanDays) {
+  const cutoff = Date.now() - olderThanDays * 86400000;
+  let removed = 0;
+  try {
+    for (const f of fs.readdirSync(SESSIONS_DIR)) {
+      if (!f.endsWith('.json')) continue;
+      const full = path.join(SESSIONS_DIR, f);
+      const stat = fs.statSync(full);
+      if (stat.mtimeMs < cutoff) { fs.unlinkSync(full); removed++; }
+    }
+  } catch {}
+  return removed;
+}
+
 // ── route handlers ────────────────────────────────────────────────────────────
 
 function handleStatus(res) {
@@ -173,7 +221,19 @@ function handleStream(req, res, storyId) {
 
   const s = sessions.get(storyId);
   if (!s) {
-    res.write('data: ' + JSON.stringify({ error: 'no session for ' + storyId }) + '\n\n');
+    // Try to replay last persisted session
+    const last = loadLastSession(storyId);
+    if (last) {
+      for (const line of (last.logs || [])) {
+        res.write('data: ' + JSON.stringify({ line }) + '\n\n');
+      }
+      for (const fileOp of (last.fileOps || [])) {
+        res.write('data: ' + JSON.stringify({ fileOp }) + '\n\n');
+      }
+      res.write('data: ' + JSON.stringify({ status: last.status || 'done' }) + '\n\n');
+    } else {
+      res.write('data: ' + JSON.stringify({ error: 'no session for ' + storyId }) + '\n\n');
+    }
     res.end();
     return;
   }
@@ -208,9 +268,10 @@ async function handleRun(req, res) {
   const s = {
     pid: null, proc: null, status: 'starting',
     logs: ['▶ Starting: claude -p "' + cmd + '"'],
-    fileOps: [],          // { tool, path, op } — file changes this session
-    toolBuf: {},          // index → accumulated partial JSON for tool inputs
+    fileOps: [],
+    toolBuf: {},
     sseClients: new Set(),
+    startTime: new Date().toISOString(),
   };
   sessions.set(storyId, s);
 
@@ -257,9 +318,17 @@ async function handleRun(req, res) {
     const final = code === 0 ? 'done' : (code === null ? 'stopped' : 'error');
     broadcast(storyId, final === 'done' ? '✅ Completed' : '✗ Exited with code ' + code);
     broadcastStatus(storyId, final);
+    persistSession(storyId, final);
   });
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
+}
+
+async function handleCleanSessions(req, res) {
+  const body = await parseBody(req);
+  const days = parseInt(body.olderThanDays || 7, 10);
+  const removed = cleanSessions(days);
+  json(res, 200, { removed, sessionsDir: SESSIONS_DIR });
 }
 
 async function handleStop(req, res) {
@@ -290,6 +359,7 @@ const server = http.createServer(async (req, res) => {
   }
   if (method === 'POST' && url === '/api/run')             { await handleRun(req, res);  return; }
   if (method === 'POST' && url === '/api/stop')            { await handleStop(req, res); return; }
+  if (method === 'POST' && url === '/api/clean-sessions')  { await handleCleanSessions(req, res); return; }
 
   res.writeHead(404); res.end('Not found');
 });

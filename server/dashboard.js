@@ -20,8 +20,9 @@
  * Stop: kill $(lsof -t -i:7717)
  */
 
-const http = require('http');
-const path = require('path');
+const http    = require('http');
+const path    = require('path');
+const { spawn } = require('child_process');
 
 const { scanState } = require('./lib/scanner');
 const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory } = require('./lib/api');
@@ -91,6 +92,48 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 
+// ── Auto-spawn orchestrator (port 7718) ──────────────────────────
+const ORCH_BIN = path.join(__dirname, 'orchestrator.js');
+let _orchProc = null;
+
+function spawnOrchestrator() {
+  try {
+    _orchProc = spawn(process.execPath, [ORCH_BIN], {
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env },
+      stdio: 'pipe',
+    });
+    _orchProc.stdout.on('data', chunk => {
+      const msg = chunk.toString().trim();
+      if (msg) console.log('[orch]', msg);
+    });
+    _orchProc.stderr.on('data', chunk => {
+      const msg = chunk.toString().trim();
+      if (msg && !msg.includes('no stdin')) console.error('[orch]', msg);
+    });
+    _orchProc.on('exit', (code, signal) => {
+      _orchProc = null;
+      if (signal !== 'SIGTERM' && signal !== 'SIGINT') {
+        console.log(`[orch] exited (${code}) — restarting in 3s…`);
+        setTimeout(spawnOrchestrator, 3000);
+      }
+    });
+    _orchProc.on('error', err => {
+      console.error('[orch] spawn error:', err.message);
+      _orchProc = null;
+    });
+    console.log('[orch] orchestrator started (port 7718)');
+  } catch (err) {
+    console.error('[orch] failed to start:', err.message);
+  }
+}
+
+spawnOrchestrator();
+
 // Graceful shutdown
-process.on('SIGTERM', () => server.close(() => process.exit(0)));
-process.on('SIGINT',  () => server.close(() => process.exit(0)));
+function shutdown() {
+  if (_orchProc) { try { _orchProc.kill('SIGTERM'); } catch {} }
+  server.close(() => process.exit(0));
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT',  shutdown);
