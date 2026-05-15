@@ -458,6 +458,59 @@ section h2 {
   color: var(--text-primary);
   font-weight: 500;
 }
+.item-clickable { cursor: pointer; }
+.item-clickable:hover { background: var(--bg-hover); }
+
+.item-title {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.006em;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.item-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+/* ── Tags (pill badges) ─────────────────────────────────────────── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 6px;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2);
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ── Phase list container ───────────────────────────────────────── */
+.phase-list {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+}
+.phase-list .item {
+  display: block;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.phase-list .item:last-child { border-bottom: none; }
+.phase-list .item:hover { background: var(--bg-hover); }
 
 .item-preview {
   font-family: var(--font-mono);
