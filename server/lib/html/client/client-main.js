@@ -69,16 +69,19 @@ function route() {
   // Stop the live-sessions poll when leaving the Orchestration view.
   if (view !== 'orchestration') stopOrchPoll();
 
-  if (view === 'overview')           renderOverview();
-  else if (view === 'orchestration') renderOrchestration();
+  if (view === 'overview') {
+    // Preact owns the overview view — no legacy render call needed.
+  } else if (view === 'orchestration') renderOrchestration();
   else if (view === 'roadmap')       renderRoadmap();
   else if (view === 'milestones')    renderMilestones(subId);
   else if (view === 'phases')        renderPhases(subId);
   else if (view === 'sprints')       renderSprints(subId);
   else if (view === 'tasks')         renderTasks();
   else if (view === 'kanban')        renderKanban();
-  else if (view === 'decisions')     renderDecisions();
-  else if (view === 'memory')        renderMemory();
+  else if (view === 'files')         initFileList(); // lazy — waits for Preact to create #view-files
+  else if (view === 'decisions') {
+    // Preact owns the decisions view — no legacy render call needed.
+  } else if (view === 'memory')      renderMemory();
 }
 
 function renderMemory() {
@@ -206,20 +209,34 @@ function filterItems(input, listId) {
 // ---- Shared file-list fetch (single request for all consumers) ----
 const _filesPromise = fetch('/api/files').then(function(r) { return r.json(); }).catch(function() { return []; });
 
-// Inline file list inside Files view
-(async function() {
+// Inline file list inside Files view.
+// Lazy-initialized: populated on first navigation to the Files view, not at
+// boot time. This allows the Preact mount (type=module, deferred) to create
+// the #view-files host before we try to write into #file-list-inline.
+var _fileListInitialized = false;
+async function initFileList() {
+  if (_fileListInitialized) return;
+  var host = document.getElementById('view-files');
+  if (!host) return; // host not yet mounted — retry handled by route()
+  // Ensure inner structure exists (created lazily since Preact renders #view-files empty).
+  var el = document.getElementById('file-list-inline');
+  if (!el) {
+    host.innerHTML = '<div class="view-title">Files</div>' +
+      '<div id="file-list-inline"></div><div id="file-view"></div>';
+    el = document.getElementById('file-list-inline');
+  }
+  if (!el) return;
+  _fileListInitialized = true;
   let groups = [];
   try { groups = await _filesPromise; } catch { return; }
-  const el = document.getElementById('file-list-inline');
-  if (!el) return;
-  let h = '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Search files…" oninput="filterInlineFiles(this.value)"></div>';
-  h += '<div id="inline-file-items" class="phase-list">';
 
   function renderFileItem(f, extraFilterText) {
     var filterText = esc(f.label + ' ' + f.path + (extraFilterText ? ' ' + extraFilterText : '')).toLowerCase();
     return '<div class="item item-clickable inline-file-entry" data-path="' + esc(f.path) + '" data-filter-text="' + filterText + '" onclick="loadInlineFile(this)" style="padding:var(--space-2) var(--space-3);font-family:\'SF Mono\',Monaco,Consolas,monospace;font-size:var(--text-xs);">' + esc(f.label) + '</div>';
   }
 
+  let h = '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Search files…" oninput="filterInlineFiles(this.value)"></div>';
+  h += '<div id="inline-file-items" class="phase-list">';
   groups.forEach(function(g) {
     h += '<div class="inline-file-group" style="margin-bottom:var(--space-3);">';
     h += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) var(--space-3);">' + esc(g.group) + '</div>';
@@ -242,7 +259,7 @@ const _filesPromise = fetch('/api/files').then(function(r) { return r.json(); })
   });
   h += '</div>';
   el.innerHTML = h;
-})();
+}
 function filterInlineFiles(q) {
   q = q.toLowerCase().trim();
   document.querySelectorAll('#inline-file-items .inline-file-entry').forEach(function(item) {
