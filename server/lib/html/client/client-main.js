@@ -448,13 +448,58 @@ function closeSidebar() {
 route();
 updateTitle();
 
-// ── xterm Terminal Panel ─────────────────────────────────────────────────────
+// ── xterm Terminal Panel (WebSocket ↔ node-pty) ──────────────────────────────
+// One reusable xterm.js terminal. openTermPanel() attaches it to a session's
+// live PTY over a WebSocket — fully interactive (type, resize, scrollback).
 var _term = null;
 var _termFit = null;
-var _termEvt = null;
+var _termWs = null;
 var _termStoryId = null;
 
+var ORCH_HTTP = 'http://localhost:7718';
+var ORCH_WS   = 'ws://localhost:7718';
+
 function _orchToken() { return window.__ORCH_TOKEN__ || ''; }
+
+// Fit the terminal to its container and tell the PTY the new size.
+function _termResize() {
+  if (_termFit) { try { _termFit.fit(); } catch (e) {} }
+  if (_term && _termWs && _termWs.readyState === 1) {
+    _termWs.send(JSON.stringify({ t: 'r', cols: _term.cols, rows: _term.rows }));
+  }
+}
+
+// Lazily build the single xterm instance (created once, reused per session).
+function _ensureTerm() {
+  if (_term || typeof Terminal === 'undefined') return;
+  _term = new Terminal({
+    theme: {
+      background: '#0c0c0e', foreground: '#c9d1d9',
+      cursor: '#58a6ff', selectionBackground: 'rgba(94,106,210,0.25)',
+      black: '#0c0c0e', red: '#ff4444', green: '#3fb950',
+      yellow: '#d29922', blue: '#58a6ff', magenta: '#bc8cff',
+      cyan: '#39c5cf', white: '#b1bac4', brightBlack: '#6e7681',
+    },
+    fontFamily: '"JetBrains Mono","SF Mono",Consolas,monospace',
+    fontSize: 12, lineHeight: 1.4,
+    // PTY output already carries CRLF — converting again would double lines.
+    convertEol: false,
+    scrollback: 8000, cursorBlink: true,
+  });
+  if (typeof FitAddon !== 'undefined') {
+    _termFit = new FitAddon.FitAddon();
+    _term.loadAddon(_termFit);
+  }
+  _term.open(document.getElementById('term-container'));
+  if (_termFit) { try { _termFit.fit(); } catch (e) {} }
+  // Keystrokes typed in the terminal → orchestrator PTY.
+  _term.onData(function (data) {
+    if (_termWs && _termWs.readyState === 1) {
+      _termWs.send(JSON.stringify({ t: 'i', d: data }));
+    }
+  });
+  window.addEventListener('resize', _termResize);
+}
 
 function openTermPanel(storyId, title) {
   _termStoryId = storyId;
@@ -463,73 +508,36 @@ function openTermPanel(storyId, title) {
   document.getElementById('term-backdrop').classList.add('open');
   setTermDot('connecting');
 
-  if (!_term && typeof Terminal !== 'undefined') {
-    _term = new Terminal({
-      theme: {
-        background: '#0c0c0e', foreground: '#c9d1d9',
-        cursor: '#58a6ff', selectionBackground: 'rgba(94,106,210,0.25)',
-        black: '#0c0c0e', red: '#ff4444', green: '#3fb950',
-        yellow: '#d29922', blue: '#58a6ff', magenta: '#bc8cff',
-        cyan: '#39c5cf', white: '#b1bac4', brightBlack: '#6e7681',
-      },
-      fontFamily: '"JetBrains Mono","SF Mono",Consolas,monospace',
-      fontSize: 12, lineHeight: 1.4, convertEol: true,
-      scrollback: 5000, cursorStyle: 'bar',
-    });
-    if (typeof FitAddon !== 'undefined') {
-      _termFit = new FitAddon.FitAddon();
-      _term.loadAddon(_termFit);
-    }
-    _term.open(document.getElementById('term-container'));
-    if (_termFit) _termFit.fit();
-    _term.onData(function(data) {
-      var tok = _orchToken();
-      if (!_termStoryId || !tok) return;
-      fetch('http://localhost:7718/api/message', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storyId: _termStoryId, data: data })
-      }).catch(function() {});
-    });
-    window.addEventListener('resize', function() { if (_termFit) _termFit.fit(); });
-  } else if (_term) {
-    _term.clear();
-    if (_termFit) _termFit.fit();
-  }
+  _ensureTerm();
+  if (_term) { _term.clear(); _termResize(); }
 
-  if (_termEvt) { _termEvt.close(); _termEvt = null; }
+  if (_termWs) { try { _termWs.close(); } catch (e) {} _termWs = null; }
+
   var tok = _orchToken();
   if (!tok) {
-    if (_term) _term.writeln('\r\x1b[31m✗ No orchestrator token — restart the dashboard\x1b[0m');
+    if (_term) _term.writeln('\r\n\x1b[31m✗ No orchestrator token — restart the dashboard\x1b[0m');
     return;
   }
 
-  if (_term) _term.writeln('\x1b[90m── connecting to stream: ' + storyId + ' ──\x1b[0m\r\n');
+  var url = ORCH_WS + '/ws/' + encodeURIComponent(storyId) + '?token=' + encodeURIComponent(tok);
+  var ws = new WebSocket(url);
+  _termWs = ws;
 
-  var url = 'http://localhost:7718/api/stream/' + encodeURIComponent(storyId) + '?token=' + tok;
-  _termEvt = new EventSource(url);
-  _termEvt.onmessage = function(e) {
-    try {
-      var d = JSON.parse(e.data);
-      if (d.line)   { if (_term) _term.writeln('\r' + d.line); }
-      if (d.chunk)  { if (_term) _term.write(d.chunk); }
-      if (d.fileOp) { if (_term) _term.writeln('\r\x1b[36m[' + d.fileOp.type + '] ' + d.fileOp.path + '\x1b[0m'); }
-      if (d.status) {
-        setTermDot(d.status);
-        if (d.status === 'done' || d.status === 'error' || d.status === 'stopped') {
-          if (_term) _term.writeln('\r\n\x1b[90m── session ' + d.status + ' ──\x1b[0m');
-          if (_termEvt) { _termEvt.close(); _termEvt = null; }
-        } else {
-          setTermDot(d.status);
-        }
+  ws.onopen = function () { _termResize(); };
+  ws.onmessage = function (e) {
+    var m;
+    try { m = JSON.parse(e.data); } catch (ex) { return; }
+    if (m.t === 'o' || m.t === 'hist') {
+      if (_term) _term.write(m.d);
+    } else if (m.t === 's') {
+      setTermDot(m.s);
+      if (m.s === 'done' || m.s === 'exited' || m.s === 'stopped' || m.s === 'error') {
+        if (_term) _term.writeln('\r\n\x1b[90m── session ' + m.s + ' ──\x1b[0m');
       }
-      if (d.error)  { if (_term) _term.writeln('\r\x1b[31m✗ ' + d.error + '\x1b[0m'); }
-    } catch(ex) {}
+    }
   };
-  _termEvt.onerror = function() {
-    if (_term) _term.writeln('\r\x1b[31m✗ stream disconnected\x1b[0m');
-    setTermDot('error');
-  };
+  ws.onerror = function () { setTermDot('error'); };
+  ws.onclose = function () { if (_termWs === ws) _termWs = null; };
 }
 
 function setTermDot(status) {
@@ -540,36 +548,34 @@ function setTermDot(status) {
 function closeTermPanel() {
   document.getElementById('term-panel').classList.remove('open');
   document.getElementById('term-backdrop').classList.remove('open');
-  if (_termEvt) { _termEvt.close(); _termEvt = null; }
+  if (_termWs) { try { _termWs.close(); } catch (e) {} _termWs = null; }
 }
 
 function termStop() {
   var tok = _orchToken();
   if (!_termStoryId || !tok) return;
-  fetch('http://localhost:7718/api/stop', {
+  fetch(ORCH_HTTP + '/api/stop', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId: _termStoryId })
-  }).catch(function() {});
+  }).catch(function () {});
 }
 
+// Convenience input box at the panel bottom — sends a whole line + Enter.
+// Typing directly into the terminal works too (xterm.onData above).
 function termSend() {
   var inp = document.getElementById('term-input');
   if (!inp) return;
-  var msg = (inp.value || '').trim();
+  var msg = inp.value || '';
   if (!msg) return;
   inp.value = '';
-  var tok = _orchToken();
-  if (!_termStoryId || !tok) return;
-  if (_term) _term.writeln('\r\x1b[90m[you] ' + msg + '\x1b[0m');
-  fetch('http://localhost:7718/api/message', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storyId: _termStoryId, data: msg + '\n' })
-  }).catch(function() {});
+  if (_termWs && _termWs.readyState === 1) {
+    _termWs.send(JSON.stringify({ t: 'i', d: msg + '\r' }));
+  }
+  if (_term) _term.focus();
 }
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     var panel = document.getElementById('term-panel');
     if (panel && panel.classList.contains('open')) closeTermPanel();
@@ -578,33 +584,32 @@ document.addEventListener('keydown', function(e) {
 
 var _termInputEl = document.getElementById('term-input');
 if (_termInputEl) {
-  _termInputEl.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') termSend();
+  _termInputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); termSend(); }
   });
 }
 
+// Start a PTY session, then attach the terminal to it. Run must succeed
+// before the WebSocket connects — the orchestrator only accepts a /ws/
+// connection for a session that already exists.
 function runAndOpenTerm(storyId, cmd, title) {
   var tok = _orchToken();
-  openTermPanel(storyId, title || storyId);
-  if (!tok) return;
-  fetch('http://localhost:7718/api/run', {
+  if (!tok) { openTermPanel(storyId, title || storyId); return; }
+  fetch(ORCH_HTTP + '/api/run', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId: storyId, cmd: cmd })
-  }).then(function(r) { return r.json(); })
-  .then(function(data) {
+  }).then(function (r) { return r.json(); })
+  .then(function (data) {
+    openTermPanel(storyId, title || storyId);
     if (data.error && data.error !== 'already running') {
-      if (_term) _term.writeln('\r\x1b[31m✗ ' + data.error + '\x1b[0m');
-    } else if (data.error === 'already running') {
-      if (_term) _term.writeln('\r\x1b[33m⚠ Already running (pid ' + data.pid + ') — showing live output\x1b[0m');
-      setTermDot('running');
+      setTermDot('error');
+      if (_term) _term.writeln('\r\n\x1b[31m✗ ' + data.error + '\x1b[0m');
     }
   })
-  .catch(function(err) {
-    if (_term) _term.writeln('\r\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\x1b[0m');
+  .catch(function (err) {
+    openTermPanel(storyId, title || storyId);
+    if (_term) _term.writeln('\r\n\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\x1b[0m');
   });
 }
-
-// Also fix existing kanban run/stop to use auth token
-var _origRunStory = window.runStory;
 

@@ -1,44 +1,58 @@
 /**
  * Rihal Local Orchestrator — port 7718
  *
- * Spawns `claude -p` sessions from kanban card clicks.
- * Streams stdout/stderr back to the browser via SSE.
- * Pure Node stdlib — no external dependencies.
+ * Spawns interactive `claude` sessions inside a real pseudo-terminal
+ * (node-pty) and bridges each one to the browser over a WebSocket.
+ * The browser renders the raw terminal with xterm.js, so the session
+ * is fully interactive — the user types, Claude responds, just like a
+ * local terminal.
  *
- * Endpoints:
- *   POST /api/run    { storyId, cmd? }  → spawn claude session
- *   POST /api/stop   { storyId }        → SIGTERM the process
- *   GET  /api/status                    → all session states
- *   GET  /api/stream/:storyId           → SSE log stream
+ * HTTP (control plane):
+ *   POST /api/run      { storyId, cmd? }  → spawn a PTY session
+ *   POST /api/stop     { storyId }        → SIGTERM the PTY
+ *   GET  /api/sessions                    → list all sessions
+ * WebSocket (data plane):
+ *   /ws/<storyId>?token=...               → live terminal I/O
+ *
+ * Wire protocol (JSON each frame):
+ *   server→client  { t:'o', d }            terminal output
+ *                  { t:'s', s }            status change (running|done|exited|stopped|error)
+ *                  { t:'hist', d }         scrollback replay on connect
+ *   client→server  { t:'i', d }            keystroke input
+ *                  { t:'r', cols, rows }   resize
  */
 
 'use strict';
 
-const { spawn }  = require('child_process');
-const http       = require('http');
-const path       = require('path');
-const fs         = require('fs');
-const os         = require('os');
-const crypto     = require('crypto');
+const http   = require('http');
+const path   = require('path');
+const crypto = require('crypto');
+
+// node-pty is an optional native dependency. Without it the orchestrator
+// still boots, but /api/run reports a clear "not installed" error instead
+// of crashing — keeps `npx rcode` installs working on unbuildable platforms.
+let pty = null;
+try { pty = require('node-pty'); } catch { /* handled in handleRun */ }
+
+let WebSocketServer = null;
+try { ({ WebSocketServer } = require('ws')); } catch { /* handled at boot */ }
 
 const PORT         = parseInt(process.env.ORCH_PORT || '7718', 10);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
-const SESSIONS_DIR = path.join(os.homedir(), '.rihal', 'sessions');
 
-// Per-session auth token. Use ORCH_TOKEN if set, else generate one and print
-// it on boot. The dashboard process / user must pass this token on EVERY call
-// (Authorization: Bearer header, or ?token= query param for the SSE endpoint).
+// Per-session auth token — see authed(). The dashboard passes ORCH_TOKEN in
+// via env; standalone runs generate one and print it on boot.
 const AUTH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('hex');
 
-// storyId must be a safe path segment — no separators, no traversal.
+// storyId must be a safe single path segment — no separators, no traversal.
 const STORY_ID_RE = /^[A-Za-z0-9._-]+$/;
 
-// Ensure sessions directory exists
-try { fs.mkdirSync(SESSIONS_DIR, { recursive: true }); } catch {}
+// Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
+const SCROLLBACK_MAX = 256 * 1024;
 
 // Map<storyId, Session>
-// Session: { pid, proc, status, logs[], fileOps[], toolBuf{}, sseClients: Set, startTime }
+// Session: { proc, status, startTime, cmd, cols, rows, scrollback, wsClients:Set }
 const sessions = new Map();
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -48,9 +62,9 @@ function json(res, code, body) {
   res.end(JSON.stringify(body));
 }
 
-// Constant-time token check. Accepts the token via `Authorization: Bearer`
-// header, or a `?token=` query param (the EventSource SSE client cannot set
-// headers). Returns true only on an exact match.
+// Constant-time token check. Token arrives as `Authorization: Bearer <t>`
+// (HTTP) or `?token=<t>` (WebSocket upgrade — the browser cannot set
+// headers on a WebSocket handshake).
 function authed(req) {
   let presented = null;
   const auth = req.headers && req.headers.authorization;
@@ -59,8 +73,7 @@ function authed(req) {
   } else {
     const qIdx = (req.url || '').indexOf('?');
     if (qIdx !== -1) {
-      const params = new URLSearchParams((req.url || '').slice(qIdx + 1));
-      presented = params.get('token');
+      presented = new URLSearchParams((req.url || '').slice(qIdx + 1)).get('token');
     }
   }
   if (typeof presented !== 'string') return false;
@@ -70,9 +83,6 @@ function authed(req) {
   return crypto.timingSafeEqual(a, b);
 }
 
-// Validate a storyId before it touches the filesystem. Charset blocks path
-// separators; the explicit `..` check blocks traversal even though `.` is
-// allowed in the charset.
 function validStoryId(id) {
   return typeof id === 'string'
     && id.length > 0
@@ -89,315 +99,139 @@ function parseBody(req) {
   });
 }
 
-// Push one log line to session buffer + all connected SSE clients
-function broadcast(storyId, line) {
-  const s = sessions.get(storyId);
-  if (!s || !line) return;
-  s.logs.push(line);
-  const payload = 'data: ' + JSON.stringify({ line }) + '\n\n';
-  for (const client of s.sseClients) {
-    try { client.write(payload); } catch { s.sseClients.delete(client); }
+// Send one wire frame to every WebSocket client attached to a session.
+function wsSend(s, obj) {
+  const payload = JSON.stringify(obj);
+  for (const ws of s.wsClients) {
+    try { ws.send(payload); } catch { s.wsClients.delete(ws); }
   }
 }
 
-// Push a raw text chunk to SSE (not buffered — for streaming characters)
-function broadcastChunk(storyId, chunk) {
-  const s = sessions.get(storyId);
-  if (!s || !chunk) return;
-  const payload = 'data: ' + JSON.stringify({ chunk }) + '\n\n';
-  for (const client of s.sseClients) {
-    try { client.write(payload); } catch { s.sseClients.delete(client); }
-  }
-}
-
-// Push a file operation event to SSE clients + buffer it
-function broadcastFileOp(storyId, fileOp) {
-  const s = sessions.get(storyId);
-  if (!s || !fileOp) return;
-  s.fileOps.push(fileOp);
-  const payload = 'data: ' + JSON.stringify({ fileOp }) + '\n\n';
-  for (const client of s.sseClients) {
-    try { client.write(payload); } catch { s.sseClients.delete(client); }
-  }
-}
-
-// Push a status event to all SSE clients for a session
-function broadcastStatus(storyId, status) {
-  const s = sessions.get(storyId);
-  if (!s) return;
+function setStatus(s, status) {
   s.status = status;
-  const payload = 'data: ' + JSON.stringify({ status }) + '\n\n';
-  for (const client of s.sseClients) {
-    try { client.write(payload); } catch { s.sseClients.delete(client); }
-  }
-}
-
-// Parse one stream-json line → { text?, fileOp? }
-// toolBuf = accumulated partial JSON per content block index
-function parseStreamLine(raw, toolBuf) {
-  if (!raw) return {};
-  try {
-    const p = JSON.parse(raw);
-
-    // Streaming text delta — send as 'chunk' so browser appends in-place
-    if (p.type === 'content_block_delta' && p.delta?.type === 'text_delta') {
-      return { chunk: p.delta.text || null };
-    }
-
-    // Tool use start — record tool name, init buffer
-    if (p.type === 'content_block_start' && p.content_block?.type === 'tool_use') {
-      const name = p.content_block.name || 'tool';
-      toolBuf[p.index] = { name, json: '' };
-      return { text: '⚙ ' + name };
-    }
-
-    // Tool input JSON accumulation
-    if (p.type === 'content_block_delta' && p.delta?.type === 'input_json_delta') {
-      if (toolBuf[p.index]) toolBuf[p.index].json += (p.delta.partial_json || '');
-      return {};
-    }
-
-    // Tool use complete — try to extract file path
-    if (p.type === 'content_block_stop' && toolBuf[p.index]) {
-      const { name, json: partial } = toolBuf[p.index];
-      delete toolBuf[p.index];
-      let fileOp = null;
-      try {
-        const inp = JSON.parse(partial);
-        const filePath = inp.path || inp.file_path || inp.file || inp.filename || null;
-        const isWrite = /write|edit|create|str_replace/i.test(name);
-        const isRead  = /read|view|cat/i.test(name);
-        const isBash  = /bash|exec|run|shell/i.test(name);
-        if (filePath) {
-          fileOp = { tool: name, path: filePath, op: isWrite ? 'write' : isRead ? 'read' : 'access' };
-        } else if (isBash && inp.command) {
-          fileOp = { tool: 'bash', path: null, cmd: String(inp.command).slice(0, 80), op: 'bash' };
-        }
-      } catch {}
-      return { fileOp };
-    }
-
-    // Result summary
-    if (p.type === 'result') return { text: '✓ ' + (p.subtype || 'done') };
-
-    // Legacy format
-    if (p.type === 'assistant' && Array.isArray(p.message?.content)) {
-      const text = p.message.content.filter(c => c.type === 'text').map(c => c.text).join('');
-      return { text: text || null };
-    }
-
-    return {};
-  } catch {
-    const t = raw.trim();
-    return { text: t.startsWith('{') ? null : (t || null) };
-  }
-}
-
-// Persist completed session to ~/.rihal/sessions/{storyId}-{date}.json
-function persistSession(storyId, exitStatus) {
-  const s = sessions.get(storyId);
-  if (!s) return;
-  try {
-    const date = new Date().toISOString().slice(0, 10);
-    const file = path.join(SESSIONS_DIR, storyId + '-' + date + '.json');
-    // Defense-in-depth: refuse to write outside SESSIONS_DIR.
-    if (!path.resolve(file).startsWith(SESSIONS_DIR + path.sep)) return;
-    fs.writeFileSync(file, JSON.stringify({
-      storyId, status: exitStatus,
-      startTime: s.startTime, endTime: new Date().toISOString(),
-      logs: s.logs, fileOps: s.fileOps,
-    }), 'utf8');
-  } catch {}
-}
-
-// Load most recent persisted session for a storyId (if any)
-function loadLastSession(storyId) {
-  try {
-    const files = fs.readdirSync(SESSIONS_DIR)
-      .filter(f => f.startsWith(storyId + '-') && f.endsWith('.json'))
-      .sort()
-      .reverse();
-    if (!files.length) return null;
-    const file = path.join(SESSIONS_DIR, files[0]);
-    // Defense-in-depth: refuse to read outside SESSIONS_DIR.
-    if (!path.resolve(file).startsWith(SESSIONS_DIR + path.sep)) return null;
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch { return null; }
-}
-
-// Clean sessions older than N days
-function cleanSessions(olderThanDays) {
-  const cutoff = Date.now() - olderThanDays * 86400000;
-  let removed = 0;
-  try {
-    for (const f of fs.readdirSync(SESSIONS_DIR)) {
-      if (!f.endsWith('.json')) continue;
-      const full = path.join(SESSIONS_DIR, f);
-      const stat = fs.statSync(full);
-      if (stat.mtimeMs < cutoff) { fs.unlinkSync(full); removed++; }
-    }
-  } catch {}
-  return removed;
+  wsSend(s, { t: 's', s: status });
 }
 
 // ── route handlers ────────────────────────────────────────────────────────────
 
-function handleStatus(res) {
-  const out = {};
+function handleSessions(res) {
+  const out = [];
   for (const [id, s] of sessions) {
-    out[id] = { pid: s.pid, status: s.status, lines: s.logs.length, fileOps: s.fileOps };
+    out.push({
+      storyId:   id,
+      status:    s.status,
+      pid:       s.proc ? s.proc.pid : null,
+      cmd:       s.cmd,
+      startTime: s.startTime,
+      clients:   s.wsClients.size,
+    });
   }
-  json(res, 200, out);
-}
-
-function handleStream(req, res, storyId) {
-  if (!validStoryId(storyId)) { res.writeHead(400); res.end('invalid storyId'); return; }
-  res.writeHead(200, {
-    'Content-Type':    'text/event-stream',
-    'Cache-Control':   'no-cache',
-    'Connection':      'keep-alive',
-    'X-Accel-Buffering': 'no',   // disable nginx/proxy buffering
-  });
-  // Disable Nagle — flush every write immediately to the browser
-  if (res.socket) res.socket.setNoDelay(true);
-
-  const s = sessions.get(storyId);
-  if (!s) {
-    // Try to replay last persisted session
-    const last = loadLastSession(storyId);
-    if (last) {
-      for (const line of (last.logs || [])) {
-        res.write('data: ' + JSON.stringify({ line }) + '\n\n');
-      }
-      for (const fileOp of (last.fileOps || [])) {
-        res.write('data: ' + JSON.stringify({ fileOp }) + '\n\n');
-      }
-      res.write('data: ' + JSON.stringify({ status: last.status || 'done' }) + '\n\n');
-    } else {
-      res.write('data: ' + JSON.stringify({ error: 'no session for ' + storyId }) + '\n\n');
-    }
-    res.end();
-    return;
-  }
-
-  // Replay buffered logs + file ops so late-connecting clients see history
-  for (const line of s.logs) {
-    res.write('data: ' + JSON.stringify({ line }) + '\n\n');
-  }
-  for (const fileOp of s.fileOps) {
-    res.write('data: ' + JSON.stringify({ fileOp }) + '\n\n');
-  }
-  res.write('data: ' + JSON.stringify({ status: s.status }) + '\n\n');
-
-  s.sseClients.add(res);
-  req.on('close', () => s.sseClients.delete(res));
+  json(res, 200, { sessions: out });
 }
 
 async function handleRun(req, res) {
-  const body     = await parseBody(req);
-  const storyId  = String(body.storyId || '').trim();
-  if (!storyId) { json(res, 400, { error: 'missing storyId' }); return; }
+  const body    = await parseBody(req);
+  const storyId = String(body.storyId || '').trim();
   if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
 
-  const existing = sessions.get(storyId);
-  if (existing?.status === 'running') {
-    json(res, 409, { error: 'already running', pid: existing.pid });
+  if (!pty) {
+    json(res, 503, { error: 'node-pty not installed — run: pnpm add node-pty' });
     return;
   }
 
-  // Default command: invoke the rihal-dev-story skill for the given story ID
-  const cmd = String(body.cmd || `/rihal-dev-story ${storyId}`);
+  const existing = sessions.get(storyId);
+  if (existing && existing.status === 'running') {
+    json(res, 409, { error: 'already running', pid: existing.proc && existing.proc.pid });
+    return;
+  }
+  // Replacing a finished session — drop any sockets still attached.
+  if (existing) { for (const ws of existing.wsClients) { try { ws.close(); } catch {} } }
+
+  // Initial prompt. `claude [prompt]` starts an interactive session that
+  // processes the prompt, then waits for further input — exactly the
+  // run-then-communicate flow we want.
+  const cmd  = String(body.cmd || `/rihal-dev-story ${storyId}`);
+  const cols = 120, rows = 30;
+
+  let proc;
+  try {
+    proc = pty.spawn(CLAUDE_BIN, [cmd, '--dangerously-skip-permissions'], {
+      name: 'xterm-color',
+      cols, rows,
+      cwd: PROJECT_ROOT,
+      env: process.env,
+    });
+  } catch (err) {
+    json(res, 500, { error: 'spawn failed: ' + err.message });
+    return;
+  }
 
   const s = {
-    pid: null, proc: null, status: 'starting',
-    logs: ['▶ Starting: claude -p "' + cmd + '"'],
-    fileOps: [],
-    toolBuf: {},
-    sseClients: new Set(),
-    startTime: new Date().toISOString(),
+    proc, status: 'running', cmd, cols, rows,
+    startTime:  new Date().toISOString(),
+    scrollback: '',
+    wsClients:  new Set(),
   };
   sessions.set(storyId, s);
 
-  const proc = spawn(CLAUDE_BIN, [
-    '-p', cmd,
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--dangerously-skip-permissions',
-  ], {
-    cwd: PROJECT_ROOT,
-    env: { ...process.env },
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-
-  s.proc = proc;
-  s.pid  = proc.pid;
-  s.status = 'running';
-
-  proc.stdout.on('data', chunk => {
-    for (const raw of chunk.toString().split('\n')) {
-      const line = raw.trim();
-      if (!line) continue;
-      const { text, chunk, fileOp } = parseStreamLine(line, s.toolBuf);
-      if (chunk) broadcastChunk(storyId, chunk);   // streaming text — in-place append
-      if (text)  broadcast(storyId, text);          // event/status line — new row
-      if (fileOp) broadcastFileOp(storyId, fileOp);
+  proc.onData(d => {
+    s.scrollback += d;
+    if (s.scrollback.length > SCROLLBACK_MAX) {
+      s.scrollback = s.scrollback.slice(-SCROLLBACK_MAX);
     }
+    wsSend(s, { t: 'o', d });
   });
 
-  proc.stderr.on('data', chunk => {
-    const msg = chunk.toString().trim();
-    if (msg) broadcast(storyId, '⚠ ' + msg);
-  });
-
-  proc.on('error', err => {
-    broadcast(storyId, '✗ spawn error: ' + err.message);
-    broadcastStatus(storyId, 'error');
-  });
-
-  proc.on('exit', code => {
-    const final = code === 0 ? 'done' : (code === null ? 'stopped' : 'error');
-    broadcast(storyId, final === 'done' ? '✅ Completed' : '✗ Exited with code ' + code);
-    broadcastStatus(storyId, final);
-    persistSession(storyId, final);
+  proc.onExit(({ exitCode, signal }) => {
+    const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
+    setStatus(s, status);
   });
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
-}
-
-async function handleMessage(req, res) {
-  const body    = await parseBody(req);
-  const storyId = String(body.storyId || '').trim();
-  const data    = String(body.data    || '');
-  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
-  const s = sessions.get(storyId);
-  if (!s || s.status !== 'running') { json(res, 404, { error: 'no active session' }); return; }
-  try {
-    s.proc.stdin.write(data);
-    broadcast(storyId, '[input] ' + data.trim());
-    json(res, 200, { ok: true });
-  } catch (err) {
-    json(res, 500, { error: err.message });
-  }
-}
-
-async function handleCleanSessions(req, res) {
-  const body = await parseBody(req);
-  const days = parseInt(body.olderThanDays || 7, 10);
-  const removed = cleanSessions(days);
-  json(res, 200, { removed, sessionsDir: SESSIONS_DIR });
 }
 
 async function handleStop(req, res) {
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
   if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
-  const s       = sessions.get(storyId);
+  const s = sessions.get(storyId);
   if (!s) { json(res, 404, { error: 'no session' }); return; }
-
-  try { s.proc?.kill('SIGTERM'); } catch {}
-  broadcast(storyId, '■ Stopped by user');
-  broadcastStatus(storyId, 'stopped');
+  try { s.proc.kill(); } catch {}
+  setStatus(s, 'stopped');
   json(res, 200, { storyId, status: 'stopped' });
+}
+
+// ── WebSocket data plane ───────────────────────────────────────────────────────
+
+function attachWebSocket(ws, storyId) {
+  const s = sessions.get(storyId);
+  if (!s) {
+    ws.send(JSON.stringify({ t: 's', s: 'error' }));
+    ws.close();
+    return;
+  }
+
+  s.wsClients.add(ws);
+  // Replay history so a late-joining client sees the session so far.
+  if (s.scrollback) ws.send(JSON.stringify({ t: 'hist', d: s.scrollback }));
+  ws.send(JSON.stringify({ t: 's', s: s.status }));
+
+  ws.on('message', raw => {
+    let msg;
+    try { msg = JSON.parse(raw.toString()); } catch { return; }
+    if (msg.t === 'i' && typeof msg.d === 'string' && s.status === 'running') {
+      try { s.proc.write(msg.d); } catch {}
+    } else if (msg.t === 'r' && s.status === 'running') {
+      const cols = parseInt(msg.cols, 10), rows = parseInt(msg.rows, 10);
+      if (cols > 0 && rows > 0) {
+        s.cols = cols; s.rows = rows;
+        try { s.proc.resize(cols, rows); } catch {}
+      }
+    }
+  });
+
+  ws.on('close', () => s.wsClients.delete(ws));
+  ws.on('error', () => s.wsClients.delete(ws));
 }
 
 // ── server ────────────────────────────────────────────────────────────────────
@@ -407,45 +241,44 @@ const server = http.createServer(async (req, res) => {
   const url    = req.url    || '';
 
   // CORS — the dashboard is served from a different port (7717), so every
-  // browser call here is cross-origin. Without these headers the browser
-  // blocks the request ("Failed to fetch" / SSE "stream disconnected").
-  // The loopback bind + mandatory token are what actually gate access;
-  // a wildcard origin is safe because no cookies/credentials are used.
+  // browser call here is cross-origin. The loopback bind + token are what
+  // gate access; a wildcard origin is safe with no cookies involved.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-
-  // Preflight — answered before auth (OPTIONS carries no token by design).
   if (method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  // Every route requires the token — /api/status leaks session detail too.
   if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
 
-  if (method === 'GET'  && url === '/api/status')          { handleStatus(res); return; }
-  if (method === 'GET'  && url.startsWith('/api/stream/')) {
-    const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
-    const storyId = decodeURIComponent(pathOnly.slice('/api/stream/'.length));
-    handleStream(req, res, storyId);
-    return;
-  }
-  if (method === 'POST' && url === '/api/run')             { await handleRun(req, res);  return; }
-  if (method === 'POST' && url === '/api/stop')            { await handleStop(req, res); return; }
-  if (method === 'POST' && url === '/api/message')         { await handleMessage(req, res); return; }
-  if (method === 'POST' && url === '/api/clean-sessions')  { await handleCleanSessions(req, res); return; }
+  const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
+
+  if (method === 'GET'  && pathOnly === '/api/sessions') { handleSessions(res);       return; }
+  if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
+  if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
 
   res.writeHead(404); res.end('Not found');
 });
 
+// WebSocket upgrade — authenticate, validate the storyId, then hand off.
+if (WebSocketServer) {
+  const wss = new WebSocketServer({ noServer: true });
+  server.on('upgrade', (req, socket, head) => {
+    const url      = req.url || '';
+    const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
+    if (!pathOnly.startsWith('/ws/') || !authed(req)) { socket.destroy(); return; }
+    const storyId = decodeURIComponent(pathOnly.slice('/ws/'.length));
+    if (!validStoryId(storyId)) { socket.destroy(); return; }
+    wss.handleUpgrade(req, socket, head, ws => attachWebSocket(ws, storyId));
+  });
+}
+
 server.listen(PORT, '127.0.0.1', () => {
   console.log('\n🤖 Rihal Orchestrator');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('   Port:  ' + PORT);
-  console.log('   Bind:  127.0.0.1 (loopback only)');
-  // The dashboard process / user must pass this token on every API call.
-  console.log('   Token: ' + AUTH_TOKEN);
-  console.log('   POST   /api/run    { storyId }');
-  console.log('   POST   /api/stop   { storyId }');
-  console.log('   GET    /api/status');
-  console.log('   GET    /api/stream/:storyId  (SSE)');
+  console.log('   Port:   ' + PORT + '  (127.0.0.1, loopback only)');
+  console.log('   Token:  ' + AUTH_TOKEN);
+  console.log('   PTY:    ' + (pty ? 'node-pty ready' : 'node-pty MISSING'));
+  console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));
+  console.log('   POST /api/run   GET /api/sessions   WS /ws/<id>');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 });

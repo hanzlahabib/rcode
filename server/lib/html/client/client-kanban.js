@@ -288,32 +288,14 @@ function appendCardFileOp(storyId, fileOp) {
 
 // ── Run / stop ───────────────────────────────────────────────────
 
+// Kanban "Run" funnels into the one unified WebSocket terminal panel
+// (runAndOpenTerm, defined in client-main.js) — no separate kanban panel.
 function runStory(storyId) {
   if (!storyId) return;
-  var card = getCard(storyId);
-  var title = card ? (card.querySelector('.kanban-card-title') || {}).textContent : storyId;
-  createPanelTab(storyId, title || storyId);
-  openOrchPanel(storyId);
-  appendCardLog(storyId, '▶ Starting: ' + storyId);
-
-  fetch(ORCH + '/api/run', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (window.__ORCH_TOKEN__ || '') },
-    body: JSON.stringify({ storyId }),
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.error) { appendCardLog(storyId, '✗ ' + data.error); setTabStatus(storyId, 'error'); return; }
-    appendCardLog(storyId, '▶ pid ' + data.pid);
-    setTabStatus(storyId, 'running');
-    moveKanbanCard(storyId, 'in_progress');
-    connectOrchestratorStream(storyId);
-  })
-  .catch(function(err) {
-    appendCardLog(storyId, '✗ Orchestrator unreachable — ' + err.message);
-    appendCardLog(storyId, '  Start with: node server/dashboard.js');
-    setTabStatus(storyId, 'error');
-  });
+  var card  = getCard(storyId);
+  var title = card ? ((card.querySelector('.kanban-card-title') || {}).textContent || storyId) : storyId;
+  moveKanbanCard(storyId, 'in_progress');
+  runAndOpenTerm(storyId, '/rihal-dev-story ' + storyId, title);
 }
 
 function stopStory(storyId) {
