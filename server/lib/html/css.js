@@ -389,6 +389,7 @@ section {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  margin-top: var(--space-6);
 }
 section h2 {
   font-size: var(--text-md);
@@ -406,11 +407,25 @@ section .body {
   padding: var(--space-4) var(--space-5);
 }
 
+.ctx-pre {
+  margin: 0;
+  padding: var(--space-5);
+  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  font-size: var(--text-xs);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: transparent;
+  border: none;
+}
+
 /* ── Stats ─────────────────────────────────────────────────────── */
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: var(--space-3);
+  margin-bottom: var(--space-7);
 }
 .stat {
   background: var(--bg-elev-2);

@@ -182,8 +182,8 @@ ${renderCss()}
             <h2>🎯 Active Context</h2>
             <div class="body">
               ${state.context
-                ? `<div class="item-preview" style="max-height:none;">${esc(state.context)}</div>`
-                : `<div class="empty">No active context.<div class="empty-action">run context-build workflow</div></div>`}
+                ? `<pre class="ctx-pre">${esc(state.context.replace(/^#[^\n]*\n?/, '').trim())}</pre>`
+                : `<div class="empty">No active context.<div class="empty-action">Run /rihal-init to populate</div></div>`}
             </div>
           </section>
         `}

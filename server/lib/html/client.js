@@ -516,9 +516,9 @@ function renderPhases(subId) {
       (p.completed_at ? attr('Completed', humanDate(p.completed_at)) : '') + '</div></div>' +
       '<div style="margin-bottom:var(--space-4);">' + progressBar(done, stories.length) + '</div>' +
       '<div class="term-action-bar">' +
-        '<button class="term-run-btn" onclick="runAndOpenTerm(\'phase-' + esc(p.id) + '\',\'/rihal-execute\',\'Phase ' + esc(p.id) + '\')">▶ Run Phase</button>' +
-        '<button class="term-run-btn outline" onclick="openTermPanel(\'phase-' + esc(p.id) + '\',\'Phase ' + esc(p.id) + '\')">📟 Terminal</button>' +
-        '<button class="back-btn" onclick="viewPlanFile(\\'' + esc(p.id) + '\\')">📄 View plan file →</button>' +
+        '<button class="term-run-btn" onclick="runAndOpenTerm(\\'phase-' + esc(p.id) + '\\',\\'/rihal-execute\\',\\'Phase ' + esc(p.id) + '\\')">▶ Run Phase</button>' +
+        '<button class="term-run-btn outline" onclick="openTermPanel(\\'phase-' + esc(p.id) + '\\',\\'Phase ' + esc(p.id) + '\\')">📟 Terminal</button>' +
+        '<button class="back-btn" onclick="viewPlanFile(\\\'' + esc(p.id) + '\\\')">📄 View plan file →</button>' +
       '</div>' +
       velocityHtml +
       '<div class="view-title" style="margin-top:var(--space-6)">Sprints</div>' +
@@ -569,8 +569,8 @@ function renderSprints(subId) {
       // #289: progress bar
       '<div style="margin-bottom:var(--space-4);">' + progressBar(done, stories.length) + '</div>' +
       '<div class="term-action-bar">' +
-        '<button class="term-run-btn" onclick="runAndOpenTerm(\'sprint-' + esc(s.id) + '\',\'/rihal-execute-sprint ' + esc(s.id) + '\',\'Sprint ' + esc(s.id) + '\')">▶ Run Sprint</button>' +
-        '<button class="term-run-btn outline" onclick="openTermPanel(\'sprint-' + esc(s.id) + '\',\'Sprint ' + esc(s.id) + '\')">📟 Terminal</button>' +
+        '<button class="term-run-btn" onclick="runAndOpenTerm(\\'sprint-' + esc(s.id) + '\\',\\'/rihal-execute-sprint ' + esc(s.id) + '\\',\\'Sprint ' + esc(s.id) + '\\')">▶ Run Sprint</button>' +
+        '<button class="term-run-btn outline" onclick="openTermPanel(\\'sprint-' + esc(s.id) + '\\',\\'Sprint ' + esc(s.id) + '\\')">📟 Terminal</button>' +
       '</div>' +
       '<div class="view-title" style="margin-top:var(--space-4)">Tasks</div>' +
       '<div class="phase-list">' + (stories.length ? stories.map(taskCard).join('') :
@@ -1670,34 +1670,34 @@ function openTermPanel(storyId, title) {
   if (_termEvt) { _termEvt.close(); _termEvt = null; }
   var tok = _orchToken();
   if (!tok) {
-    if (_term) _term.writeln('\r\x1b[31m✗ No orchestrator token — restart the dashboard\x1b[0m');
+    if (_term) _term.writeln('\\r\\x1b[31m✗ No orchestrator token — restart the dashboard\\x1b[0m');
     return;
   }
 
-  if (_term) _term.writeln('\x1b[90m── connecting to stream: ' + storyId + ' ──\x1b[0m\r\n');
+  if (_term) _term.writeln('\\x1b[90m── connecting to stream: ' + storyId + ' ──\\x1b[0m\\r\\n');
 
   var url = 'http://localhost:7718/api/stream/' + encodeURIComponent(storyId) + '?token=' + tok;
   _termEvt = new EventSource(url);
   _termEvt.onmessage = function(e) {
     try {
       var d = JSON.parse(e.data);
-      if (d.line)   { if (_term) _term.writeln('\r' + d.line); }
+      if (d.line)   { if (_term) _term.writeln('\\r' + d.line); }
       if (d.chunk)  { if (_term) _term.write(d.chunk); }
-      if (d.fileOp) { if (_term) _term.writeln('\r\x1b[36m[' + d.fileOp.type + '] ' + d.fileOp.path + '\x1b[0m'); }
+      if (d.fileOp) { if (_term) _term.writeln('\\r\\x1b[36m[' + d.fileOp.type + '] ' + d.fileOp.path + '\\x1b[0m'); }
       if (d.status) {
         setTermDot(d.status);
         if (d.status === 'done' || d.status === 'error' || d.status === 'stopped') {
-          if (_term) _term.writeln('\r\n\x1b[90m── session ' + d.status + ' ──\x1b[0m');
+          if (_term) _term.writeln('\\r\\n\\x1b[90m── session ' + d.status + ' ──\\x1b[0m');
           if (_termEvt) { _termEvt.close(); _termEvt = null; }
         } else {
           setTermDot(d.status);
         }
       }
-      if (d.error)  { if (_term) _term.writeln('\r\x1b[31m✗ ' + d.error + '\x1b[0m'); }
+      if (d.error)  { if (_term) _term.writeln('\\r\\x1b[31m✗ ' + d.error + '\\x1b[0m'); }
     } catch(ex) {}
   };
   _termEvt.onerror = function() {
-    if (_term) _term.writeln('\r\x1b[31m✗ stream disconnected\x1b[0m');
+    if (_term) _term.writeln('\\r\\x1b[31m✗ stream disconnected\\x1b[0m');
     setTermDot('error');
   };
 }
@@ -1731,11 +1731,11 @@ function termSend() {
   inp.value = '';
   var tok = _orchToken();
   if (!_termStoryId || !tok) return;
-  if (_term) _term.writeln('\r\x1b[90m[you] ' + msg + '\x1b[0m');
+  if (_term) _term.writeln('\\r\\x1b[90m[you] ' + msg + '\\x1b[0m');
   fetch('http://localhost:7718/api/message', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storyId: _termStoryId, data: msg + '\n' })
+    body: JSON.stringify({ storyId: _termStoryId, data: msg + '\\n' })
   }).catch(function() {});
 }
 
@@ -1764,14 +1764,14 @@ function runAndOpenTerm(storyId, cmd, title) {
   }).then(function(r) { return r.json(); })
   .then(function(data) {
     if (data.error && data.error !== 'already running') {
-      if (_term) _term.writeln('\r\x1b[31m✗ ' + data.error + '\x1b[0m');
+      if (_term) _term.writeln('\\r\\x1b[31m✗ ' + data.error + '\\x1b[0m');
     } else if (data.error === 'already running') {
-      if (_term) _term.writeln('\r\x1b[33m⚠ Already running (pid ' + data.pid + ') — showing live output\x1b[0m');
+      if (_term) _term.writeln('\\r\\x1b[33m⚠ Already running (pid ' + data.pid + ') — showing live output\\x1b[0m');
       setTermDot('running');
     }
   })
   .catch(function(err) {
-    if (_term) _term.writeln('\r\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\x1b[0m');
+    if (_term) _term.writeln('\\r\\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\\x1b[0m');
   });
 }
 
