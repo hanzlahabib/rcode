@@ -524,28 +524,32 @@ function renderCss() {
     color: var(--text-muted); padding: 2px var(--space-2); cursor: pointer;
   }
   .kanban-refresh-btn:hover { color: var(--text-primary); }
-  /* Log panel */
+  /* Log panel — fixed terminal at bottom-right, always visible */
   .kanban-log-panel {
-    margin-top: var(--space-4); background: var(--bg-card);
-    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    width: 480px; max-width: calc(100vw - 48px);
+    background: #0d0d0f; border: 1px solid var(--rihal-gold);
+    border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     overflow: hidden;
   }
   .kanban-log-head {
     display: flex; justify-content: space-between; align-items: center;
     padding: var(--space-2) var(--space-3);
-    border-bottom: 1px solid var(--border);
-    font-size: var(--text-sm); font-weight: 600;
+    background: var(--rihal-blue);
+    font-size: var(--text-sm); font-weight: 600; color: #fff;
   }
   .kanban-log-body {
     padding: var(--space-2) var(--space-3);
     font-family: monospace; font-size: var(--text-xs);
-    max-height: 240px; overflow-y: auto;
+    height: 260px; overflow-y: auto;
     background: #060608;
   }
   .kanban-log-line {
-    color: var(--accent-green); line-height: 1.6;
+    color: #4ade80; line-height: 1.7;
     white-space: pre-wrap; word-break: break-all;
   }
+  .kanban-log-line.warn { color: var(--accent-amber); }
+  .kanban-log-line.err  { color: var(--accent-red, #ef4444); }
   @media (max-width: 900px) {
     .kanban-board { grid-template-columns: 1fr; }
   }

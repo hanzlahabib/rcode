@@ -219,6 +219,18 @@ ${renderCss()}
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Kanban agent log — fixed overlay, visible from any view -->
+<div id="kanban-log-panel" class="kanban-log-panel" style="display:none;">
+  <div class="kanban-log-head">
+    <span id="kanban-log-title">🤖 Agent Log</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="kanban-log-clear" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:4px;padding:1px 8px;font-size:11px;cursor:pointer;">Clear</button>
+      <button id="kanban-log-close" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;">✕</button>
+    </div>
+  </div>
+  <div id="kanban-log-body" class="kanban-log-body"></div>
+</div>
 <script>
 // #303: view agent skill file
 function viewAgentSkill(name) {

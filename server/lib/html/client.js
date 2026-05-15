@@ -725,17 +725,9 @@ function renderKanban() {
   }
   h += '</div>';
 
-  // Log panel — shown when a session is active
-  h += '<div id="kanban-log-panel" class="kanban-log-panel" style="display:none;">' +
-    '<div class="kanban-log-head">' +
-    '<span id="kanban-log-title">🤖 Agent Log</span>' +
-    '<button onclick="closeKanbanLog()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;">✕</button>' +
-    '</div>' +
-    '<div id="kanban-log-body" class="kanban-log-body"></div>' +
-    '</div>';
-
   el.innerHTML = h;
   wireKanbanDnd();
+  wireKanbanLogButtons();
   refreshOrchestratorStatus();
 }
 
@@ -834,31 +826,42 @@ function moveKanbanCard(storyId, colId) {
   refreshKanbanCounts();
 }
 
+function wireKanbanLogButtons() {
+  var closeBtn = document.getElementById('kanban-log-close');
+  var clearBtn = document.getElementById('kanban-log-clear');
+  if (closeBtn) closeBtn.onclick = closeKanbanLog;
+  if (clearBtn) clearBtn.onclick = function() {
+    var b = document.getElementById('kanban-log-body');
+    if (b) b.innerHTML = '';
+  };
+}
+
 function openKanbanLog(storyId) {
-  const panel = document.getElementById('kanban-log-panel');
-  const title = document.getElementById('kanban-log-title');
-  const body  = document.getElementById('kanban-log-body');
+  var panel = document.getElementById('kanban-log-panel');
+  var title = document.getElementById('kanban-log-title');
+  var body  = document.getElementById('kanban-log-body');
   if (!panel) return;
-  if (title) title.textContent = '🤖 Agent Log — ' + storyId;
+  if (title) title.textContent = '🤖 Agent — ' + storyId;
   if (body)  body.innerHTML = '';
   panel.style.display = 'block';
 }
 
 function closeKanbanLog() {
-  const panel = document.getElementById('kanban-log-panel');
+  var panel = document.getElementById('kanban-log-panel');
   if (panel) panel.style.display = 'none';
 }
 
 function appendKanbanLog(line) {
-  const body = document.getElementById('kanban-log-body');
+  var body = document.getElementById('kanban-log-body');
   if (!body) return;
-  const div = document.createElement('div');
-  div.className = 'kanban-log-line';
+  var div = document.createElement('div');
+  var isWarn = line.startsWith('⚠');
+  var isErr  = line.startsWith('✗');
+  div.className = 'kanban-log-line' + (isWarn ? ' warn' : isErr ? ' err' : '');
   div.textContent = line;
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
-  // Auto-open panel if it was closed
-  const panel = document.getElementById('kanban-log-panel');
+  var panel = document.getElementById('kanban-log-panel');
   if (panel) panel.style.display = 'block';
 }
 
