@@ -405,6 +405,19 @@ async function handleStop(req, res) {
 const server = http.createServer(async (req, res) => {
   const method = req.method || '';
   const url    = req.url    || '';
+
+  // CORS — the dashboard is served from a different port (7717), so every
+  // browser call here is cross-origin. Without these headers the browser
+  // blocks the request ("Failed to fetch" / SSE "stream disconnected").
+  // The loopback bind + mandatory token are what actually gate access;
+  // a wildcard origin is safe because no cookies/credentials are used.
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+
+  // Preflight — answered before auth (OPTIONS carries no token by design).
+  if (method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+
   // Every route requires the token — /api/status leaks session detail too.
   if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
 

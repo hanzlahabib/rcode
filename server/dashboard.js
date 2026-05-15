@@ -22,8 +22,12 @@
 
 const http    = require('http');
 const path    = require('path');
+const fs      = require('fs');
 const crypto  = require('crypto');
 const { spawn } = require('child_process');
+
+// Client JS modules live here and are served verbatim at /js/<name>.js
+const CLIENT_DIR = path.join(__dirname, 'lib', 'html', 'client');
 
 const { scanState } = require('./lib/scanner');
 const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory } = require('./lib/api');
@@ -69,6 +73,21 @@ const server = http.createServer((req, res) => {
 
   if (url === '/api/memory') {
     handleApiMemory(req, res, RIHAL_DIR);
+    return;
+  }
+
+  if (url.startsWith('/js/')) {
+    const name = url.slice(4).split('?')[0];
+    // Charset blocks path separators and traversal — only flat *.js names.
+    if (!/^[\w.-]+\.js$/.test(name)) { res.writeHead(404); res.end('Not found'); return; }
+    fs.readFile(path.join(CLIENT_DIR, name), (err, data) => {
+      if (err) { res.writeHead(404); res.end('Not found'); return; }
+      res.writeHead(200, {
+        'Content-Type':  'application/javascript; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      });
+      res.end(data);
+    });
     return;
   }
 
