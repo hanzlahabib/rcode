@@ -175,6 +175,32 @@ committed at `docs/assets/`). Follow-up #760: 5 skills fail the new schema valid
 
 ---
 
+## Phase 31 — Preact migration — Majlis dashboard client
+
+**Goal:** Rebuild the Majlis dashboard client as Preact components via `htm` + ESM CDN
+(no build step), replacing the string-concatenation rendering across all dashboard
+views and the xterm terminal. Wire in `server/lib/html/icons.js` for professional
+icons. Every existing feature must keep working — orchestration, interactive terminal,
+running-session badges, file browser, drill-down navigation, auto-refresh.
+
+**Status:** Planned
+
+**Constraints:**
+- No build step — Preact + htm loaded via esm.sh ESM imports
+- View-only dashboard server boundary preserved (pure Node stdlib)
+- Incremental — preserve every shipped feature; no regressions
+
+**Plans:**
+- _TBD — run /rihal-plan 31_
+
+**Acceptance:**
+- All dashboard views render as Preact components, no string-concatenation rendering left
+- Icons sourced from `server/lib/html/icons.js`
+- Interactive terminal, orchestration Run buttons, session badges, file browser all functional
+- `node server/dashboard.js` starts clean on :7717
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)

@@ -57,6 +57,11 @@ gaps in `.planning/MILESTONES.md`. Roadmap archived to
 
 ---
 
+## Roadmap Evolution
+
+- Phase 31 added (2026-05-16): Preact migration — rebuild Majlis dashboard client as
+  Preact components via htm + ESM CDN, no build step.
+
 ## Blockers
 
 None.
