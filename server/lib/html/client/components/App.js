@@ -34,8 +34,13 @@ import { MilestonesView } from '../views/MilestonesView.js';
 import { PhasesView } from '../views/PhasesView.js';
 import { SprintsView } from '../views/SprintsView.js';
 import { TasksView } from '../views/TasksView.js';
+import { KanbanView } from '../views/KanbanView.js';
+import { FilesView } from '../views/FilesView.js';
+import { AgentsView } from '../views/AgentsView.js';
+import { MemoryView } from '../views/MemoryView.js';
 
 // Views served by Preact components (migrated)
+// Sprint 31.3: +kanban, +files, +agents, +memory → 11 of 12 views Preact.
 const PREACT_VIEWS = {
   overview:   OverviewView,
   decisions:  DecisionsView,
@@ -44,12 +49,16 @@ const PREACT_VIEWS = {
   phases:     PhasesView,
   sprints:    SprintsView,
   tasks:      TasksView,
+  kanban:     KanbanView,
+  files:      FilesView,
+  agents:     AgentsView,
+  memory:     MemoryView,
 };
 
 // Un-migrated view keys — rendered as frozen placeholder divs inside main-scroll.
-// Legacy client-main.js writes innerHTML into these; Preact MUST NOT clear them.
+// Only Orchestration remains legacy until Sprint 31.4.
 const LEGACY_VIEWS = [
-  'orchestration', 'kanban', 'files', 'agents', 'memory',
+  'orchestration',
 ];
 
 const ALL_VIEWS = Object.keys(PREACT_VIEWS).concat(LEGACY_VIEWS);

@@ -69,122 +69,18 @@ function route() {
   // Stop the live-sessions poll when leaving the Orchestration view.
   if (view !== 'orchestration') stopOrchPoll();
 
-  // Preact owns these views — no legacy render call needed.
-  const PREACT_OWNED = ['overview', 'decisions', 'roadmap', 'milestones', 'phases', 'sprints', 'tasks'];
+  // Preact owns 11 of 12 views — only orchestration remains legacy (Sprint 31.4).
+  const PREACT_OWNED = [
+    'overview', 'decisions', 'roadmap', 'milestones', 'phases', 'sprints', 'tasks',
+    'kanban', 'files', 'agents', 'memory',
+  ];
   if (PREACT_OWNED.includes(view)) {
     // Intentionally empty — Preact re-renders on hashchange via its own listener.
   } else if (view === 'orchestration') renderOrchestration();
-  else if (view === 'kanban')        renderKanban();
-  else if (view === 'files')         initFileList(); // lazy — waits for Preact to create #view-files
-  else if (view === 'memory')        renderMemory();
 }
 
-function renderMemory() {
-  const el = document.getElementById('view-memory-content');
-  if (!el) return;
-  el.innerHTML = '<div class="view-title">🧠 Memory Bank</div><div class="empty">Loading…</div>';
-  fetch('/api/memory').then(r => r.json()).then(m => {
-    if (!m.exists) {
-      el.innerHTML = '<div class="view-title">🧠 Memory Bank</div>' +
-        '<div class="empty"><h3 style="color:var(--rihal-gold);">Not initialised</h3>' +
-        '<p>The Memory Bank is rcode\'s structured project context.</p>' +
-        '<div class="empty-action">Run <code>/rcode:memory-init</code> to bootstrap</div></div>';
-      return;
-    }
-    let h = '<div class="view-title">🧠 Memory Bank</div>';
-    if (!m.initialised) {
-      h += '<div class="empty"><p>Directory exists but INDEX.md is missing — re-run <code>/rcode:memory-init</code></p></div>';
-      el.innerHTML = h;
-      return;
-    }
-    const sections = m.sections || {};
-    h += '<div class="filter-bar"><span style="color:var(--text-muted);font-size:var(--text-sm);">Last scanned: ' + esc(m.lastScanned) + '</span></div>';
-    h += '<div id="memory-sections">';
-    for (const [section, files] of Object.entries(sections)) {
-      h += '<div class="memory-group-header">' + esc(section) + '</div>';
-      h += '<div class="decision-list">';
-      for (const f of files) {
-        const status = f.exists ? (f.populated ? '✓' : '○') : '✗';
-        const meta = f.exists ? (f.populated ? 'populated' : 'template only') : 'missing';
-        h += '<div class="item">' +
-          '<div class="item-title">' + status + ' ' + esc(f.name) + '</div>' +
-          '<div class="item-meta">' + esc(meta) + ' · ' + (f.bytes || 0) + ' bytes</div>' +
-          '</div>';
-      }
-      h += '</div>';
-    }
-    function listGroup(label, items) {
-      if (!items || !items.length) return '';
-      let g = '<div class="memory-group-header">' + esc(label) + ' (' + items.length + ')</div>';
-      g += '<div class="decision-list">';
-      for (const f of items) {
-        g += '<div class="item">' +
-          '<div class="item-title">' + esc(f.name) + '</div></div>';
-      }
-      g += '</div>';
-      return g;
-    }
-    h += listGroup('Distillates', m.distillates);
-    h += listGroup('Change Records', m.changeRecords);
-    h += listGroup('Milestone Archive', m.archive);
-    h += listGroup('Post-mortems', m.postMortems);
-    h += '</div>';
-    h += cmdAccordion([
-      cmdHint('/rcode:memory-init',    'Bootstrap the Memory Bank'),
-      cmdHint('/rcode:memory-update',  'Append a decision, issue, or stakeholder entry'),
-      cmdHint('/rcode:memory-distill', 'Regenerate fast-load distillates'),
-      cmdHint('/rcode:memory-audit',   'Find stale entries and gaps')
-    ]);
-    el.innerHTML = h;
-  }).catch(err => {
-    el.innerHTML = '<div class="view-title">🧠 Memory Bank</div><div class="empty">Failed to load /api/memory: ' + esc(String(err)) + '</div>';
-  });
-}
-
-function renderDecisions() {
-  const el = document.getElementById('view-decisions');
-  if (!el) return;
-  const decisions = S.decisions || [];
-  if (!decisions.length) {
-    el.innerHTML = '<div class="view-title">Decisions (ADRs)</div>' +
-      '<div class="empty">No decisions recorded yet.<div class="empty-action">Decisions made during /rihal-council appear here</div></div>';
-    return;
-  }
-  // #307: group by phase
-  const grouped = {};
-  for (const d of decisions) {
-    const phase = (typeof d === 'object' ? d.phase : null) || 'General';
-    if (!grouped[phase]) grouped[phase] = [];
-    grouped[phase].push(d);
-  }
-  let h = '<div class="view-title">Decisions (ADRs)</div>' +
-    '<div class="filter-bar"><input class="filter-input" type="text" placeholder="Filter…" oninput="filterItems(this,\'decisions-inner\')"></div>' +
-    '<div id="decisions-inner">';
-  for (const [phase, decs] of Object.entries(grouped)) {
-    h += '<div class="memory-group-header">' + esc(phase) + '</div>';
-    h += '<div class="decision-list">';
-    for (const d of decs) {
-      const title = typeof d === 'string' ? d : (d.title || d.summary || d.decision || JSON.stringify(d).slice(0, 80));
-      const filterText = String(title).toLowerCase();
-      // #306: date and phase context
-      const dateInfo = (typeof d === 'object' && d.date) ? '<span style="color:var(--text-muted);font-size:var(--text-xs);margin-left:8px;">' + humanDate(d.date) + '</span>' : '';
-      const phaseInfo = (typeof d === 'object' && d.phase) ? tag('Phase ' + d.phase) : '';
-      h += '<div class="item" data-filter-text="' + esc(filterText) + '">' +
-        '<div class="item-title">' + esc(title) + dateInfo + '</div>' +
-        '<div class="item-meta">' + phaseInfo + '</div>' +
-        // #308: rationale
-        (typeof d === 'object' && d.rationale ? '<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">' + esc(d.rationale) + '</div>' : '') +
-        '</div>';
-    }
-    h += '</div>';
-  }
-  h += '</div>';
-  el.innerHTML = h + cmdAccordion([
-    cmdHint('/rihal-council', 'Convene the council for a new decision'),
-    cmdHint('/rihal-discuss [agent] "topic"', 'Discuss with a specific expert'),
-    cmdHint('/rihal-decisions', 'View decision log')
-  ]);
-}
+// renderMemory() removed — Sprint 31.3 migrated it to MemoryView.js.
+// renderDecisions() removed — Sprint 31.1 migrated it to DecisionsView.js.
 
 window.addEventListener('hashchange', route);
 document.querySelectorAll('.nav-link[data-view]').forEach(l =>
