@@ -38,8 +38,8 @@ Built by Rihal. Designed for solo devs, startup teams, and SaaS builders who hav
 
 | Surface | Pattern | Example |
 |---|---|---|
-| Skill name (frontmatter) | `rcode-<verb>-<noun>` | `rcode-prove-it`, `rcode-harden-auth` |
-| Slash command | `/rcode:<name>` | `/rcode:plan`, `/rcode:majlis` |
+| Skill name (folder + frontmatter) | `rihal-<verb>-<noun>` | `rihal-auth-audit`, `rihal-deploy-unify` |
+| Slash command | `/rihal-<name>` | `/rihal-plan`, `/rihal-council` |
 | Persona ID (in `team.yaml`) | Distinctive name with `rihal-` prefix retained for compatibility | `rihal-sadiq`, `rihal-waleed`, `rihal-fatima` |
 | Persona display name | Original Arabic + Latin | "Sadiq (صادق)", "Dalil (دليل)" |
 | Concept / primitive | TitleCase brand term | Memory Bank, Distillate, Majlis, Diwan |
