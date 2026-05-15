@@ -183,7 +183,7 @@ views and the xterm terminal. Wire in `server/lib/html/icons.js` for professiona
 icons. Every existing feature must keep working — orchestration, interactive terminal,
 running-session badges, file browser, drill-down navigation, auto-refresh.
 
-**Status:** Planned
+**Status:** In progress
 
 **Constraints:**
 - No build step — Preact + htm loaded via esm.sh ESM imports
@@ -191,7 +191,7 @@ running-session badges, file browser, drill-down navigation, auto-refresh.
 - Incremental — preserve every shipped feature; no regressions
 
 **Plans:**
-- _TBD — run /rihal-plan 31_
+- [x] Sprint 31.1 — Preact runtime, store, router, Sidebar, Topbar, Overview + Decisions views
 
 **Acceptance:**
 - All dashboard views render as Preact components, no string-concatenation rendering left
