@@ -3,7 +3,7 @@
 **Last updated:** 2026-05-16
 **Milestone:** M2 — Hardening & Polish (v4)
 **Version:** 3.5.0
-**Current phase:** 31 — Preact migration (sprint 31.2 complete, awaiting human verify of 31.2.6)
+**Current phase:** 31 — Preact migration (sprint 31.3 complete, awaiting human verify of 31.3.6)
 **Branch:** 31-preact-migration
 
 ---
