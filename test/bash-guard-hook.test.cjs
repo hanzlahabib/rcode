@@ -73,3 +73,21 @@ test('ordinary commands are allowed', () => {
 test('empty command is allowed', () => {
   assert.strictEqual(runGuard(''), ALLOWED);
 });
+
+test('substring RIHAL_PUSH_OK does not un-gate a push', () => {
+  assert.strictEqual(runGuard('echo RIHAL_PUSH_OK; git push'), BLOCKED);
+  assert.strictEqual(runGuard('git push # RIHAL_PUSH_OK'), BLOCKED);
+});
+
+test('+-prefixed refspec force-push is blocked', () => {
+  assert.strictEqual(runGuard('git push origin +main'), BLOCKED);
+  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push origin +main'), BLOCKED);
+  assert.strictEqual(
+    runGuard('git push origin +HEAD:refs/heads/main'),
+    BLOCKED
+  );
+});
+
+test('genuine authorized push still works', () => {
+  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push origin main'), ALLOWED);
+});

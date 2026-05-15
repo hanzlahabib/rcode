@@ -186,6 +186,10 @@ const RM_SAFE_TARGET = /^(?:\.\/)?(?:node_modules|dist|build|coverage|\.next|out
  * Enforces the repo's non-negotiable rules (AGENTS.md): no unapproved
  * `git push`, never `--force`, no `--no-verify`, no unscoped destructive
  * git/rm. An authorized push must be prefixed with `RIHAL_PUSH_OK=1`.
+ *
+ * This guard is best-effort, NOT a security boundary: a determined caller
+ * can still craft a bypass (e.g. obscure git aliases). It enforces AGENTS.md
+ * conventions, not a sandbox.
  */
 async function bashGuard() {
   try {
@@ -204,8 +208,27 @@ async function bashGuard() {
 
     const isPush = /\bgit\s+push\b/.test(command);
 
+    // A `+`-prefixed refspec (`git push origin +main`) is a force-push that
+    // matches neither `--force` nor `-f`. Detect it by scanning the tokens
+    // after `push` for a non-flag token starting with `+` (`+` is not a glob
+    // or option char, so a leading-`+` token is unambiguously a refspec).
+    const isPlusRefspecForce =
+      isPush &&
+      (() => {
+        const tokens = command.split(/\s+/);
+        const pushIdx = tokens.findIndex((t) => t === 'push');
+        if (pushIdx === -1) return false;
+        return tokens
+          .slice(pushIdx + 1)
+          .some((t) => t.startsWith('+'));
+      })();
+
     // Force-push is never permitted through an agent.
-    if (isPush && /(--force\b|--force-with-lease\b|(?:^|\s)-f\b)/.test(command)) {
+    if (
+      isPush &&
+      (/(--force\b|--force-with-lease\b|(?:^|\s)-f\b)/.test(command) ||
+        isPlusRefspecForce)
+    ) {
       block(
         'git push --force is never permitted.',
         'A human must run a force-push manually. See AGENTS.md.'
@@ -213,7 +236,9 @@ async function bashGuard() {
     }
 
     // Plain git push requires an explicit per-push authorization token.
-    if (isPush && !/RIHAL_PUSH_OK/.test(command)) {
+    // Token must be a real leading env-var assignment — substring match is
+    // bypassable via 'echo RIHAL_PUSH_OK; git push'.
+    if (isPush && !/^\s*RIHAL_PUSH_OK=1(\s|$)/.test(command)) {
       block(
         'git push requires explicit human approval.',
         'If the user authorized THIS push, prefix the command with RIHAL_PUSH_OK=1. See AGENTS.md.'
