@@ -2593,11 +2593,16 @@ function cmdState(subArgs) {
   // for entries that have a SUMMARY.md path or missing status).
   // =====================================================================
   if (sub === 'migrate-schema') {
+    // Closes #735. Full normalizer: phases array + all top-level array fields.
     const state = readState();
     if (!state) return { ok: false, error: 'state.json not found or empty' };
-    if (!Array.isArray(state.phases)) return { ok: false, error: 'state.phases is not an array' };
+    if (!Array.isArray(state.phases)) {
+      state.phases = [];
+    }
 
     let changed = 0;
+
+    // 1. Normalize phases entries
     state.phases = state.phases.map((p) => {
       const updated = Object.assign({}, p);
 
@@ -2628,10 +2633,42 @@ function cmdState(subArgs) {
       return updated;
     });
 
+    // 2. Ensure all required top-level arrays are present (never crash on legacy state).
+    const requiredArrays = [
+      'velocity_history', 'executions', 'decisions',
+      'blockers', 'council_sessions', 'workstreams',
+    ];
+    for (const key of requiredArrays) {
+      if (!Array.isArray(state[key])) {
+        state[key] = [];
+        changed++;
+      }
+    }
+
+    // 3. Ensure required scalar fields
+    if (!state.project) { state.project = path.basename(PROJECT_ROOT); changed++; }
+    if (!state.created) { state.created = state.updated || new Date().toISOString(); changed++; }
+    if (state.current_phase === undefined) { state.current_phase = null; changed++; }
+    if (state.current_plan  === undefined) { state.current_plan  = 0;    changed++; }
+    if (state.current_sprint === undefined) { state.current_sprint = null; changed++; }
+    if (state.last_session   === undefined) { state.last_session  = null; changed++; }
+    if (state.active_workstream === undefined) { state.active_workstream = null; changed++; }
+
+    // 4. Bump schema_version if still at implicit v1 and we made structural changes
+    if (typeof state.schema_version !== 'number') {
+      state.schema_version = 1;
+      changed++;
+    }
+
     if (changed > 0) {
       writeState(state);
     }
-    return { ok: true, changed, message: `Schema migration complete — ${changed} field(s) normalised across ${state.phases.length} phase entries` };
+    return {
+      ok: true, changed,
+      schema_version: state.schema_version,
+      phase_count: state.phases.length,
+      message: `Schema migration complete — ${changed} field(s) normalised (${state.phases.length} phases)`,
+    };
   }
 
   // =====================================================================
@@ -3322,7 +3359,170 @@ function cmdPhase(subArgs) {
     return { ok: true, phase: phaseRef, previous_status: previous, new_status: newStatus };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status`);
+  // =====================================================================
+  // phase next-range [count] — return next N contiguous free phase numbers.
+  // Closes #730. Enables bulk-scaffold and parallel planning workflows
+  // to reserve a block of numbers atomically before creating directories.
+  // =====================================================================
+  if (sub === 'next-range') {
+    const count = Math.max(1, parseInt(subArgs[1] || '1', 10));
+    if (Number.isNaN(count) || count < 1 || count > 200) {
+      throw new Error('phase next-range count must be a positive integer ≤ 200');
+    }
+
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        const m = entry.match(/^(\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
+      let m;
+      while ((m = pipeRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
+      while ((m = headRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+    }
+    if (fs.existsSync(statePath)) {
+      try {
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        for (const p of (state.phases || [])) {
+          const n = parseInt(String(p.number || ''), 10);
+          if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+        }
+      } catch {}
+    }
+
+    const first = maxNum + 1;
+    const last  = maxNum + count;
+    const range = [];
+    for (let i = first; i <= last; i++) range.push(i);
+    return { ok: true, first, last, count, range };
+  }
+
+  // =====================================================================
+  // phase scaffold-milestone --names "n1|n2|n3" [--start N]
+  // Closes #731. Bulk-creates phase folders for a milestone in one call.
+  // Names are pipe-separated (| avoids shell quoting issues with commas).
+  // --start N overrides the computed first number (defaults to next-range).
+  // =====================================================================
+  if (sub === 'scaffold-milestone') {
+    const remaining = subArgs.slice(1);
+    let rawNames = null;
+    let startOverride = null;
+
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i] === '--names' && remaining[i + 1]) {
+        rawNames = remaining[++i];
+      } else if (remaining[i] === '--start' && remaining[i + 1]) {
+        startOverride = parseInt(remaining[++i], 10);
+        if (Number.isNaN(startOverride)) throw new Error('--start requires an integer');
+      }
+    }
+    if (!rawNames) throw new Error('phase scaffold-milestone requires --names "name1|name2|..."');
+
+    const names = rawNames.split('|').map(n => n.trim()).filter(Boolean);
+    if (!names.length) throw new Error('--names must contain at least one non-empty name');
+
+    // Compute starting number via same logic as next-range / phase add
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        const m = entry.match(/^(\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
+      let m;
+      while ((m = pipeRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
+      while ((m = headRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+    }
+    let state = { phases: [] };
+    if (fs.existsSync(statePath)) {
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
+    }
+    if (!Array.isArray(state.phases)) state.phases = [];
+    for (const p of state.phases) {
+      const n = parseInt(String(p.number || ''), 10);
+      if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+    }
+
+    const firstNum = startOverride !== null ? startOverride : maxNum + 1;
+    const created  = [];
+
+    for (let i = 0; i < names.length; i++) {
+      const phaseName = names[i];
+      const number = String(firstNum + i);
+      const slug = phaseName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (!slug) {
+        throw new Error(`Name at index ${i} ("${phaseName}") produces an empty slug`);
+      }
+      if (state.phases.some(p => String(p.number) === number)) {
+        throw new Error(`Phase ${number} already exists in state.json (would collide at index ${i})`);
+      }
+
+      const dirName  = `${number}-${slug}`;
+      const directory = path.join(phasesDir, dirName);
+      if (fs.existsSync(directory)) {
+        throw new Error(`Directory already exists: ${path.relative(PROJECT_ROOT, directory)}`);
+      }
+      fs.mkdirSync(directory, { recursive: true });
+
+      // Append ROADMAP entry
+      if (fs.existsSync(roadmapPath)) {
+        const entry = `## Phase ${number} — ${phaseName}\n\n` +
+          `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
+          `**Status:** Planned\n\n` +
+          `**Plans:**\n- _TBD_\n\n` +
+          `**Acceptance:** _TBD_\n\n---\n`;
+        let text = fs.readFileSync(roadmapPath, 'utf8');
+        const backlogMatch = text.match(/^##\s+Backlog\b/m);
+        if (backlogMatch) {
+          text = text.slice(0, backlogMatch.index) + entry + '\n' + text.slice(backlogMatch.index);
+        } else {
+          if (!text.endsWith('\n')) text += '\n';
+          text += '\n' + entry;
+        }
+        fs.writeFileSync(roadmapPath, text);
+      }
+
+      state.phases.push({
+        number, name: phaseName, slug,
+        goal: '', status: 'planned',
+        created: new Date().toISOString(),
+        started: null, completed: null, plan_count: 0,
+      });
+      created.push({ number, name: phaseName, directory: path.relative(PROJECT_ROOT, directory) });
+    }
+
+    state.updated = new Date().toISOString();
+    if (typeof state.schema_version !== 'number') state.schema_version = 1;
+    const stateDir = path.dirname(statePath);
+    if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+
+    return { ok: true, count: created.length, phases: created };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status, next-range, scaffold-milestone`);
 }
 
 /**
@@ -4525,6 +4725,53 @@ function cmdDocsAudit(args) {
   return { has_requirements: true, total: rows.length, gaps };
 }
 
+/**
+ * cmdWorkflowConfigAudit — scan workflow files for stale config.json refs.
+ * Closes #733. Reports every workflow that references .planning/config.json
+ * (legacy location) instead of .rihal/config.yaml (current location).
+ * Read-only. Fix guidance is printed per-file.
+ */
+function cmdWorkflowConfigAudit() {
+  // Check both installed (.rihal/workflows) and source (rihal/workflows) locations
+  const candidates = [
+    path.join(RIHAL_DIR, 'workflows'),
+    path.join(PROJECT_ROOT, 'rihal', 'workflows'),
+  ];
+  const workflowsDir = candidates.find(d => fs.existsSync(d));
+  if (!workflowsDir) {
+    return { ok: true, audited: 0, hits: [], message: 'No workflows directory found (checked .rihal/workflows and rihal/workflows)' };
+  }
+  const files = fs.readdirSync(workflowsDir).filter(f => f.endsWith('.md'));
+  const JSON_RE = /\.planning\/config\.json|planning\/config\.json/g;
+  const hits = [];
+
+  for (const fname of files) {
+    const fpath = path.join(workflowsDir, fname);
+    const text  = fs.readFileSync(fpath, 'utf8');
+    const lines = text.split('\n');
+    const matches = [];
+    lines.forEach((line, idx) => {
+      if (JSON_RE.test(line)) {
+        matches.push({ line: idx + 1, content: line.trim().slice(0, 120) });
+      }
+      JSON_RE.lastIndex = 0; // reset stateful regex
+    });
+    if (matches.length) {
+      hits.push({ file: fname, count: matches.length, refs: matches });
+    }
+  }
+
+  return {
+    ok: true,
+    audited: files.length,
+    stale_count: hits.length,
+    hits,
+    fix_guidance: hits.length > 0
+      ? 'Replace .planning/config.json with .rihal/config.yaml. Use `node rihal-tools.cjs config-get <key>` or readConfig() to read values.'
+      : 'No stale config.json references found.',
+  };
+}
+
 /** init chain — context blob for /rihal-chain workflow. */
 function cmdInitChain(rawArgs) {
   const config = readConfig();
@@ -4953,6 +5200,95 @@ function cmdNotesCount() {
  * Placeholder URLs (containing `<PLACEHOLDER`) are skipped with a clear
  * message — useful in v2.0 before M5 lands real Rihal repo URLs.
  */
+
+/**
+ * cmdHandoff — cross-skill continuation token system. Closes #741.
+ *
+ * Enables one workflow to write a structured "where I left off" token
+ * that the next skill/workflow reads at startup — bridging the context
+ * gap between chained agents.
+ *
+ * Subcommands:
+ *   handoff write --from <skill> --to <skill> --phase <N> [--plan <M>] [--context "..."]
+ *       Write a handoff token to ~/.rihal/handoffs/{from}-{to}-{date}.json
+ *       and also to .rihal/handoff-latest.json for easy pickup by the next agent.
+ *
+ *   handoff read [--from <skill>]
+ *       Read the most recent handoff targeting the current (or specified) skill.
+ *       Returns JSON with: from, to, phase, plan, context, written_at.
+ *       Exits 0 even when no handoff exists (returns {found: false}).
+ *
+ *   handoff clear
+ *       Remove .rihal/handoff-latest.json (signal that the handoff was consumed).
+ */
+function cmdHandoff(args) {
+  const os_mod      = require('os');
+  const sub         = (args[0] || 'help').trim();
+  const handoffsDir = path.join(os_mod.homedir(), '.rihal', 'handoffs');
+  const latestPath  = path.join(RIHAL_DIR, 'handoff-latest.json');
+
+  if (sub === 'write') {
+    const fromVal    = args[args.indexOf('--from') + 1]    || null;
+    const toVal      = args[args.indexOf('--to') + 1]      || null;
+    const phaseVal   = args[args.indexOf('--phase') + 1]   || null;
+    const planVal    = args[args.indexOf('--plan') + 1]     || null;
+    const ctxIdx     = args.indexOf('--context');
+    const contextVal = ctxIdx !== -1 ? args.slice(ctxIdx + 1).join(' ') : null;
+    if (!fromVal || !toVal) throw new Error('handoff write requires --from <skill> and --to <skill>');
+
+    const token = {
+      from: fromVal, to: toVal,
+      phase: phaseVal || null, plan: planVal || null,
+      context: contextVal || null,
+      written_at: new Date().toISOString(),
+    };
+
+    try { fs.mkdirSync(handoffsDir, { recursive: true }); } catch {}
+    const date   = new Date().toISOString().slice(0, 10);
+    const fname  = `${fromVal}-${toVal}-${date}.json`;
+    const fpath  = path.join(handoffsDir, fname);
+    fs.writeFileSync(fpath, JSON.stringify(token, null, 2) + '\n');
+    // Also write the "latest" shortcut into the project .rihal dir
+    try {
+      fs.mkdirSync(RIHAL_DIR, { recursive: true });
+      fs.writeFileSync(latestPath, JSON.stringify(token, null, 2) + '\n');
+    } catch {}
+
+    return { ok: true, token, written_to: [path.relative(PROJECT_ROOT, fpath), path.relative(PROJECT_ROOT, latestPath)] };
+  }
+
+  if (sub === 'read') {
+    const fromFilter = args[args.indexOf('--from') + 1] || null;
+    // Prefer .rihal/handoff-latest.json (written by the most recent handoff write)
+    if (fs.existsSync(latestPath)) {
+      try {
+        const token = JSON.parse(fs.readFileSync(latestPath, 'utf8'));
+        if (!fromFilter || token.from === fromFilter) {
+          return { found: true, token, source: path.relative(PROJECT_ROOT, latestPath) };
+        }
+      } catch {}
+    }
+    // Fallback: scan ~/.rihal/handoffs/ for most recent matching file
+    try {
+      const files = fs.readdirSync(handoffsDir)
+        .filter(f => f.endsWith('.json') && (!fromFilter || f.startsWith(fromFilter + '-')))
+        .sort().reverse();
+      if (files.length) {
+        const token = JSON.parse(fs.readFileSync(path.join(handoffsDir, files[0]), 'utf8'));
+        return { found: true, token, source: files[0] };
+      }
+    } catch {}
+    return { found: false, token: null };
+  }
+
+  if (sub === 'clear') {
+    try { fs.unlinkSync(latestPath); } catch {}
+    return { ok: true, cleared: path.relative(PROJECT_ROOT, latestPath) };
+  }
+
+  return { ok: false, error: `Unknown handoff subcommand: ${sub}. Valid: write, read, clear` };
+}
+
 function cmdBrain(args) {
   const sub = args[0] || 'help';
   // sources.yaml lives under .rihal/brain/ in user installs (v2.2+).
@@ -5859,6 +6195,61 @@ function cmdValidateRoadmap() {
 }
 
 /**
+ * cmdRoadmapDetectStructure — detect monolithic vs per-milestone ROADMAP layout.
+ * Closes #734. Reports which convention is in use so workflows can branch correctly
+ * instead of assuming a single ROADMAP.md.
+ *
+ * Conventions detected:
+ *   monolithic   — .planning/ROADMAP.md (single file, all milestones)
+ *   per-milestone — .planning/ROADMAP-M{N}.md or .planning/milestones/{N}-*.md
+ *   hybrid        — both patterns present
+ *   absent        — no ROADMAP files found at all
+ */
+function cmdRoadmapDetectStructure() {
+  const planningDir = path.join(PROJECT_ROOT, '.planning');
+  const monoPath    = path.join(planningDir, 'ROADMAP.md');
+  const hasMono     = fs.existsSync(monoPath);
+
+  let perMilestoneFiles = [];
+  try {
+    const files = fs.readdirSync(planningDir);
+    // ROADMAP-M1.md, ROADMAP-M2.md, ROADMAP-milestone-name.md
+    perMilestoneFiles = files.filter(f => /^ROADMAP-[A-Za-z0-9].*\.md$/.test(f) && f !== 'ROADMAP.md');
+  } catch {}
+
+  let milestoneDirFiles = [];
+  const msDir = path.join(planningDir, 'milestones');
+  if (fs.existsSync(msDir)) {
+    try { milestoneDirFiles = fs.readdirSync(msDir).filter(f => f.endsWith('.md')); } catch {}
+  }
+
+  const hasPerMilestone = perMilestoneFiles.length > 0 || milestoneDirFiles.length > 0;
+
+  let structure;
+  if (hasMono && hasPerMilestone) structure = 'hybrid';
+  else if (hasMono)               structure = 'monolithic';
+  else if (hasPerMilestone)       structure = 'per-milestone';
+  else                            structure = 'absent';
+
+  return {
+    ok: true,
+    structure,
+    monolithic_file: hasMono ? '.planning/ROADMAP.md' : null,
+    per_milestone_files: [
+      ...perMilestoneFiles.map(f => `.planning/${f}`),
+      ...milestoneDirFiles.map(f => `.planning/milestones/${f}`),
+    ],
+    recommendation: structure === 'monolithic'
+      ? 'Standard layout. Use /rihal-plan and /rihal-execute normally.'
+      : structure === 'per-milestone'
+      ? 'Per-milestone layout detected. Pass the specific ROADMAP file to rihal-roadmapper with --roadmap <path>.'
+      : structure === 'hybrid'
+      ? 'Mixed layout. Consolidate to one convention to avoid workflow confusion.'
+      : 'No ROADMAP found. Run /rihal-new-project or /rihal-new-milestone first.',
+  };
+}
+
+/**
  * cmdMilestoneHealth — gauge for the current milestone (issue #718).
  *
  * Counts open vs done phases under the current milestone and recommends
@@ -6148,6 +6539,9 @@ async function main() {
       case 'docs-audit':
         result = cmdDocsAudit(args);
         break;
+      case 'workflow-config-audit':
+        result = cmdWorkflowConfigAudit();
+        break;
       case 'frontmatter':
         if (args[0] === 'get') { cmdFrontmatterGet(args.slice(1)); return; }
         else { console.error('Unknown frontmatter subcommand. Valid: get'); process.exit(1); }
@@ -6248,6 +6642,51 @@ async function main() {
         result = cfg.cmdSet(PROJECT_ROOT, args[0], args.slice(1).join(' '));
         break;
       }
+      case 'config-check-yolo': {
+        // Closes #739. Evaluate whether yolo mode is active for a given scope.
+        // Usage: config-check-yolo [--phase <N>] [--workflow <name>]
+        // Returns JSON: { active: bool, mode, scope, expires_at, reason }
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        const phaseArg    = args[args.indexOf('--phase') + 1]    || null;
+        const workflowArg = args[args.indexOf('--workflow') + 1] || null;
+        const mode        = cfg.cmdGet(PROJECT_ROOT, 'mode') || 'guided';
+        if (mode !== 'yolo') {
+          result = { active: false, mode, scope: null, expires_at: null, reason: 'mode is not yolo' };
+          break;
+        }
+        // Check optional yolo_scope restriction
+        const scopeRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_scope') || null;
+        if (scopeRaw) {
+          const scope = String(scopeRaw).trim();
+          // scope format: "phase:N" | "workflow:name" | "global"
+          if (scope.startsWith('phase:') && phaseArg) {
+            const allowedPhase = scope.slice('phase:'.length).trim();
+            if (String(phaseArg) !== allowedPhase) {
+              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to phase ${allowedPhase}, current is ${phaseArg}` };
+              break;
+            }
+          } else if (scope.startsWith('workflow:') && workflowArg) {
+            const allowedWf = scope.slice('workflow:'.length).trim();
+            if (workflowArg !== allowedWf) {
+              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to workflow ${allowedWf}, current is ${workflowArg}` };
+              break;
+            }
+          }
+        }
+        // Check optional TTL
+        const ttlRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_ttl') || null;
+        let expiresAt = null;
+        if (ttlRaw) {
+          expiresAt = ttlRaw;
+          const expiry = new Date(ttlRaw);
+          if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
+            result = { active: false, mode, scope: scopeRaw, expires_at: ttlRaw, reason: `yolo_ttl expired at ${ttlRaw}` };
+            break;
+          }
+        }
+        result = { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+        break;
+      }
       case 'verify': {
         const verify = require(path.join(__dirname, 'lib', 'verify.cjs'));
         result = verify.dispatch(PROJECT_ROOT, args);
@@ -6255,6 +6694,10 @@ async function main() {
       }
       case 'brain': {
         result = cmdBrain(args);
+        break;
+      }
+      case 'handoff': {
+        result = cmdHandoff(args);
         break;
       }
       case 'progress': {
@@ -6285,6 +6728,9 @@ async function main() {
       case 'validate-roadmap':
         result = cmdValidateRoadmap();
         break;
+      case 'roadmap-detect-structure':
+        result = cmdRoadmapDetectStructure();
+        break;
       case 'milestone-health':
         result = cmdMilestoneHealth();
         break;
@@ -6306,6 +6752,9 @@ async function main() {
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
         console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
+        console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
+        console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
+        console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
         console.log('  generate-claude-md [--force]                 → bootstrap a project CLAUDE.md scaffold (refuses to overwrite without --force)');
@@ -6331,6 +6780,12 @@ async function main() {
         console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
         console.log('  config-get <dotted.key>                      → read scalar from .rihal/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rihal/config.yaml');
+        console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
+        console.log('  handoff write --from <skill> --to <skill> --phase N [--context "..."] → write cross-skill handoff token (#741)');
+        console.log('  handoff read [--from <skill>]               → read most recent handoff for this skill (#741)');
+        console.log('  handoff clear                               → consume (clear) the latest handoff token (#741)');
+        console.log('    yolo_scope config keys: "global" | "phase:N" | "workflow:name"');
+        console.log('    yolo_ttl config key: ISO timestamp — yolo auto-expires after this time');
         console.log('  verify schema-drift <phase> [--block]        → detect schema vs migration drift across phase commits');
         console.log('  resolve-model <profile>                      → resolve model name from profile');
         console.log('  version                                      → print rihal-tools version');

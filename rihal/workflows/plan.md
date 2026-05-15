@@ -94,7 +94,7 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--prd <filepath>`, `--reviews`, `--text`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`).
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the Claude App.
 
@@ -110,6 +110,34 @@ fi
 ```
 
 When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-SPRINT.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
+
+**Detect from-stub mode (closes #736):**
+```bash
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--from-stub($|[[:space:]]) ]]; then
+  FROM_STUB_MODE=true
+else
+  FROM_STUB_MODE=false
+fi
+```
+
+When `FROM_STUB_MODE=true`, the workflow reads an existing stub `SPRINT.md` (or any `*-SPRINT.md`) already present in the phase directory and treats it as the authoritative task list — the researcher and CONTEXT.md gating are skipped. The stub is passed to the planner as `existing_stub_content` so it can refine, expand, and add implementation detail without rewriting the structure. This is the correct flow when a user has partially sketched a plan by hand or a prior workflow run created a skeleton.
+
+**From-stub resolution:**
+```bash
+if [[ "$FROM_STUB_MODE" == "true" ]]; then
+  STUB_FILE=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | head -1)
+  if [[ -z "$STUB_FILE" ]]; then
+    echo "Error: --from-stub requires an existing SPRINT.md in the phase directory."
+    echo "Found: ${PHASE_DIR}"
+    echo "  (create a stub manually then re-run with --from-stub)"
+    exit 1
+  fi
+  STUB_CONTENT=$(cat "$STUB_FILE")
+  echo "◆ From-stub mode: using $(basename $STUB_FILE) as planner input"
+fi
+```
+
+When `FROM_STUB_MODE=true`: skip steps 4 (CONTEXT.md), 5 (Research), 5.5 (Validation strategy). Jump directly to step 8 (Spawn rihal-planner). Pass `STUB_CONTENT` and `STUB_FILE` to the planner prompt so it refines rather than replaces the stub.
 
 **If no phase number:** Detect next unplanned phase from roadmap.
 
