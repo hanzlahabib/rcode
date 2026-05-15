@@ -497,7 +497,8 @@ function renderPhases(subId) {
         ).join('') + '</div>';
     }
     el.innerHTML = breadcrumb('All Phases','phases') +
-      '<div class="entity-header"><div class="entity-title">📋 Phase ' + esc(p.id) + ' — ' + esc(p.name) + '</div>' +
+      '<div class="entity-header"><div class="entity-title">📋 Phase ' + esc(p.id) + ' — ' + esc(p.name) +
+      runningBadge(runningInPhase(p)) + '</div>' +
       '<div class="attr-grid">' +
       attr('Status', chip(p.status)) + attr('Sprints', sps.length) +
       attr('Tasks Done', done + '/' + stories.length) + attr('Progress', pct(done,stories.length)) +
@@ -546,7 +547,8 @@ function renderSprints(subId) {
     // #292: full breadcrumb path
     el.innerHTML = '<div class="breadcrumb"><button class="back-btn" onclick="navTo(\'sprints\')">← All Sprints</button> ' +
       (s.phaseId ? '<button class="back-btn" onclick="navTo(\'phases/' + s.phaseId + '\')">← Phase ' + esc(s.phaseId) + '</button>' : '') + '</div>' +
-      '<div class="entity-header"><div class="entity-title">⚡ Sprint ' + esc(s.id) + '</div>' +
+      '<div class="entity-header"><div class="entity-title">⚡ Sprint ' + esc(s.id) +
+      runningBadge(runningInSprint(s)) + '</div>' +
       '<div class="attr-grid">' +
       attr('Goal', esc(s.goal||'—')) + attr('Status', chip(s.status)) +
       attr('Phase', 'P' + s.phaseId + ' — ' + esc(s.phaseName)) +

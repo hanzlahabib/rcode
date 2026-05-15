@@ -23,6 +23,7 @@
 const http    = require('http');
 const path    = require('path');
 const fs      = require('fs');
+const os      = require('os');
 const crypto  = require('crypto');
 const { spawn } = require('child_process');
 
@@ -38,8 +39,25 @@ const PORT = parseInt(process.env.PORT || '7717', 10);
 const RIHAL_DIR = process.env.RIHAL_DIR || path.join(process.cwd(), '.rihal');
 const PROJECT_ROOT = path.dirname(RIHAL_DIR);
 
-// Shared orchestrator token — generated once, passed to orchestrator via env and embedded in HTML
-const ORCH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('hex');
+// Shared orchestrator token — passed to the orchestrator via env and embedded
+// in the HTML. Persisted to ~/.rihal/orch-token so it stays STABLE across
+// dashboard restarts; otherwise every restart invalidates the token baked
+// into already-open browser tabs and their API calls 401.
+function loadOrchToken() {
+  if (process.env.ORCH_TOKEN) return process.env.ORCH_TOKEN;
+  const tokenFile = path.join(os.homedir(), '.rihal', 'orch-token');
+  try {
+    const existing = fs.readFileSync(tokenFile, 'utf8').trim();
+    if (existing) return existing;
+  } catch { /* not yet created */ }
+  const token = crypto.randomBytes(24).toString('hex');
+  try {
+    fs.mkdirSync(path.dirname(tokenFile), { recursive: true });
+    fs.writeFileSync(tokenFile, token, { mode: 0o600 });
+  } catch { /* non-fatal — fall back to an in-memory token */ }
+  return token;
+}
+const ORCH_TOKEN = loadOrchToken();
 
 // ---------- HTTP Server ----------
 const server = http.createServer((req, res) => {
