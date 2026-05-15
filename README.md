@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **The AI team that never forgets.** Persistent memory, 45 specialist agents, 95 commands — install once, and your AI IDE gets a project brain that survives every session reset.
+> **The AI team that never forgets.** Persistent memory, 45 specialist agents, 109 commands — install once, and your AI IDE gets a project brain that survives every session reset.
 
 ```bash
 npx @hanzlaa/rcode install    # one command, zero dependencies
@@ -56,8 +56,8 @@ npx @hanzlaa/rcode install
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
 - `.claude/agents/` — 45 first-class subagents
-- `.claude/commands/rihal/` — 95 slash commands
-- `.claude/skills/` — 105 phrase-activated skills
+- `.claude/commands/rihal/` — 109 slash commands
+- `.claude/skills/` — 85 phrase-activated skills
 - `rihal/brain/` — Rihal standards pulled from upstream
 - `.planning/` — where your artifacts land
 
