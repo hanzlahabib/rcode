@@ -2593,11 +2593,16 @@ function cmdState(subArgs) {
   // for entries that have a SUMMARY.md path or missing status).
   // =====================================================================
   if (sub === 'migrate-schema') {
+    // Closes #735. Full normalizer: phases array + all top-level array fields.
     const state = readState();
     if (!state) return { ok: false, error: 'state.json not found or empty' };
-    if (!Array.isArray(state.phases)) return { ok: false, error: 'state.phases is not an array' };
+    if (!Array.isArray(state.phases)) {
+      state.phases = [];
+    }
 
     let changed = 0;
+
+    // 1. Normalize phases entries
     state.phases = state.phases.map((p) => {
       const updated = Object.assign({}, p);
 
@@ -2628,10 +2633,42 @@ function cmdState(subArgs) {
       return updated;
     });
 
+    // 2. Ensure all required top-level arrays are present (never crash on legacy state).
+    const requiredArrays = [
+      'velocity_history', 'executions', 'decisions',
+      'blockers', 'council_sessions', 'workstreams',
+    ];
+    for (const key of requiredArrays) {
+      if (!Array.isArray(state[key])) {
+        state[key] = [];
+        changed++;
+      }
+    }
+
+    // 3. Ensure required scalar fields
+    if (!state.project) { state.project = path.basename(PROJECT_ROOT); changed++; }
+    if (!state.created) { state.created = state.updated || new Date().toISOString(); changed++; }
+    if (state.current_phase === undefined) { state.current_phase = null; changed++; }
+    if (state.current_plan  === undefined) { state.current_plan  = 0;    changed++; }
+    if (state.current_sprint === undefined) { state.current_sprint = null; changed++; }
+    if (state.last_session   === undefined) { state.last_session  = null; changed++; }
+    if (state.active_workstream === undefined) { state.active_workstream = null; changed++; }
+
+    // 4. Bump schema_version if still at implicit v1 and we made structural changes
+    if (typeof state.schema_version !== 'number') {
+      state.schema_version = 1;
+      changed++;
+    }
+
     if (changed > 0) {
       writeState(state);
     }
-    return { ok: true, changed, message: `Schema migration complete — ${changed} field(s) normalised across ${state.phases.length} phase entries` };
+    return {
+      ok: true, changed,
+      schema_version: state.schema_version,
+      phase_count: state.phases.length,
+      message: `Schema migration complete — ${changed} field(s) normalised (${state.phases.length} phases)`,
+    };
   }
 
   // =====================================================================
@@ -3322,7 +3359,170 @@ function cmdPhase(subArgs) {
     return { ok: true, phase: phaseRef, previous_status: previous, new_status: newStatus };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status`);
+  // =====================================================================
+  // phase next-range [count] — return next N contiguous free phase numbers.
+  // Closes #730. Enables bulk-scaffold and parallel planning workflows
+  // to reserve a block of numbers atomically before creating directories.
+  // =====================================================================
+  if (sub === 'next-range') {
+    const count = Math.max(1, parseInt(subArgs[1] || '1', 10));
+    if (Number.isNaN(count) || count < 1 || count > 200) {
+      throw new Error('phase next-range count must be a positive integer ≤ 200');
+    }
+
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        const m = entry.match(/^(\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
+      let m;
+      while ((m = pipeRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
+      while ((m = headRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+    }
+    if (fs.existsSync(statePath)) {
+      try {
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        for (const p of (state.phases || [])) {
+          const n = parseInt(String(p.number || ''), 10);
+          if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+        }
+      } catch {}
+    }
+
+    const first = maxNum + 1;
+    const last  = maxNum + count;
+    const range = [];
+    for (let i = first; i <= last; i++) range.push(i);
+    return { ok: true, first, last, count, range };
+  }
+
+  // =====================================================================
+  // phase scaffold-milestone --names "n1|n2|n3" [--start N]
+  // Closes #731. Bulk-creates phase folders for a milestone in one call.
+  // Names are pipe-separated (| avoids shell quoting issues with commas).
+  // --start N overrides the computed first number (defaults to next-range).
+  // =====================================================================
+  if (sub === 'scaffold-milestone') {
+    const remaining = subArgs.slice(1);
+    let rawNames = null;
+    let startOverride = null;
+
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i] === '--names' && remaining[i + 1]) {
+        rawNames = remaining[++i];
+      } else if (remaining[i] === '--start' && remaining[i + 1]) {
+        startOverride = parseInt(remaining[++i], 10);
+        if (Number.isNaN(startOverride)) throw new Error('--start requires an integer');
+      }
+    }
+    if (!rawNames) throw new Error('phase scaffold-milestone requires --names "name1|name2|..."');
+
+    const names = rawNames.split('|').map(n => n.trim()).filter(Boolean);
+    if (!names.length) throw new Error('--names must contain at least one non-empty name');
+
+    // Compute starting number via same logic as next-range / phase add
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+
+    let maxNum = 0;
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        const m = entry.match(/^(\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      }
+    }
+    if (fs.existsSync(roadmapPath)) {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
+      let m;
+      while ((m = pipeRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
+      while ((m = headRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+    }
+    let state = { phases: [] };
+    if (fs.existsSync(statePath)) {
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
+    }
+    if (!Array.isArray(state.phases)) state.phases = [];
+    for (const p of state.phases) {
+      const n = parseInt(String(p.number || ''), 10);
+      if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
+    }
+
+    const firstNum = startOverride !== null ? startOverride : maxNum + 1;
+    const created  = [];
+
+    for (let i = 0; i < names.length; i++) {
+      const phaseName = names[i];
+      const number = String(firstNum + i);
+      const slug = phaseName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (!slug) {
+        throw new Error(`Name at index ${i} ("${phaseName}") produces an empty slug`);
+      }
+      if (state.phases.some(p => String(p.number) === number)) {
+        throw new Error(`Phase ${number} already exists in state.json (would collide at index ${i})`);
+      }
+
+      const dirName  = `${number}-${slug}`;
+      const directory = path.join(phasesDir, dirName);
+      if (fs.existsSync(directory)) {
+        throw new Error(`Directory already exists: ${path.relative(PROJECT_ROOT, directory)}`);
+      }
+      fs.mkdirSync(directory, { recursive: true });
+
+      // Append ROADMAP entry
+      if (fs.existsSync(roadmapPath)) {
+        const entry = `## Phase ${number} — ${phaseName}\n\n` +
+          `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
+          `**Status:** Planned\n\n` +
+          `**Plans:**\n- _TBD_\n\n` +
+          `**Acceptance:** _TBD_\n\n---\n`;
+        let text = fs.readFileSync(roadmapPath, 'utf8');
+        const backlogMatch = text.match(/^##\s+Backlog\b/m);
+        if (backlogMatch) {
+          text = text.slice(0, backlogMatch.index) + entry + '\n' + text.slice(backlogMatch.index);
+        } else {
+          if (!text.endsWith('\n')) text += '\n';
+          text += '\n' + entry;
+        }
+        fs.writeFileSync(roadmapPath, text);
+      }
+
+      state.phases.push({
+        number, name: phaseName, slug,
+        goal: '', status: 'planned',
+        created: new Date().toISOString(),
+        started: null, completed: null, plan_count: 0,
+      });
+      created.push({ number, name: phaseName, directory: path.relative(PROJECT_ROOT, directory) });
+    }
+
+    state.updated = new Date().toISOString();
+    if (typeof state.schema_version !== 'number') state.schema_version = 1;
+    const stateDir = path.dirname(statePath);
+    if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+
+    return { ok: true, count: created.length, phases: created };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status, next-range, scaffold-milestone`);
 }
 
 /**
@@ -4523,6 +4723,53 @@ function cmdDocsAudit(args) {
     .filter((cols) => cols[1] && !fs.existsSync(path.join(PROJECT_ROOT, cols[1].trim())))
     .map((cols) => ({ doc: cols[0]?.trim(), expected_path: cols[1]?.trim() }));
   return { has_requirements: true, total: rows.length, gaps };
+}
+
+/**
+ * cmdWorkflowConfigAudit — scan workflow files for stale config.json refs.
+ * Closes #733. Reports every workflow that references .planning/config.json
+ * (legacy location) instead of .rihal/config.yaml (current location).
+ * Read-only. Fix guidance is printed per-file.
+ */
+function cmdWorkflowConfigAudit() {
+  // Check both installed (.rihal/workflows) and source (rihal/workflows) locations
+  const candidates = [
+    path.join(RIHAL_DIR, 'workflows'),
+    path.join(PROJECT_ROOT, 'rihal', 'workflows'),
+  ];
+  const workflowsDir = candidates.find(d => fs.existsSync(d));
+  if (!workflowsDir) {
+    return { ok: true, audited: 0, hits: [], message: 'No workflows directory found (checked .rihal/workflows and rihal/workflows)' };
+  }
+  const files = fs.readdirSync(workflowsDir).filter(f => f.endsWith('.md'));
+  const JSON_RE = /\.planning\/config\.json|planning\/config\.json/g;
+  const hits = [];
+
+  for (const fname of files) {
+    const fpath = path.join(workflowsDir, fname);
+    const text  = fs.readFileSync(fpath, 'utf8');
+    const lines = text.split('\n');
+    const matches = [];
+    lines.forEach((line, idx) => {
+      if (JSON_RE.test(line)) {
+        matches.push({ line: idx + 1, content: line.trim().slice(0, 120) });
+      }
+      JSON_RE.lastIndex = 0; // reset stateful regex
+    });
+    if (matches.length) {
+      hits.push({ file: fname, count: matches.length, refs: matches });
+    }
+  }
+
+  return {
+    ok: true,
+    audited: files.length,
+    stale_count: hits.length,
+    hits,
+    fix_guidance: hits.length > 0
+      ? 'Replace .planning/config.json with .rihal/config.yaml. Use `node rihal-tools.cjs config-get <key>` or readConfig() to read values.'
+      : 'No stale config.json references found.',
+  };
 }
 
 /** init chain — context blob for /rihal-chain workflow. */
@@ -6148,6 +6395,9 @@ async function main() {
       case 'docs-audit':
         result = cmdDocsAudit(args);
         break;
+      case 'workflow-config-audit':
+        result = cmdWorkflowConfigAudit();
+        break;
       case 'frontmatter':
         if (args[0] === 'get') { cmdFrontmatterGet(args.slice(1)); return; }
         else { console.error('Unknown frontmatter subcommand. Valid: get'); process.exit(1); }
@@ -6306,6 +6556,9 @@ async function main() {
         console.log('  list-agents                                  → list all available Rihal agents');
         console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
         console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
+        console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
+        console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
+        console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
         console.log('  generate-claude-md [--force]                 → bootstrap a project CLAUDE.md scaffold (refuses to overwrite without --force)');
