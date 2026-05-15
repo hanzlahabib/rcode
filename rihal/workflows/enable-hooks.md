@@ -1,7 +1,7 @@
 # Workflow: rihal-enable-hooks
 
 <purpose>
-Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), post-commit (format validation), and bash-guard (blocks dangerous commands) guardrails.
+Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables all 8 guardrails: pre-edit (read-before-edit check), pre-workflow (command hint), post-commit (format validation), bash-guard (blocks dangerous commands), pre-compact (refreshes HANDOFF.json before context compaction), stop-verify (syntax-checks files changed during the response), cost-track (logs measured token usage to .rihal/telemetry/cost.jsonl), and compact-nudge (advises /rihal-trim or /clear after many edits).
 </purpose>
 
 
@@ -82,6 +82,10 @@ Enabled guardrails:
   • pre-workflow: Warns if rihal-* commands look suspicious
   • post-commit: Validates commit format and bans "Generated with Claude" patterns
   • bash-guard: Blocks unapproved git push, --force, --no-verify, and unscoped rm -rf
+  • pre-compact: Refreshes HANDOFF.json before context compaction
+  • stop-verify: Syntax-checks files changed during the response
+  • cost-track: Logs measured token usage to .rihal/telemetry/cost.jsonl
+  • compact-nudge: Advises /rihal-trim or /clear after many edits
 
 To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.
 ```
