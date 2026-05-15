@@ -83,6 +83,10 @@ Each week is reversible: if anything goes sideways, the previous week's state sh
 
 **Negative — "let's rewrite in $NEW_FRAMEWORK"** — Refuse. A rewrite is not graduation. Graduation means filling specific gaps in the current system. Rewrites take 6 months and break what worked.
 
+## When NOT to use this skill
+
+Do NOT use this skill for greenfield projects, framework rewrites (graduation fills gaps, it does not rewrite), feature development, or CI setup alone (use rihal-ci).
+
 ## Memory Bank Hooks
 
 - **Reads:** `.rihal/memory/project/stack.md` (current state), `.rihal/memory/incidents/known-issues.md` (operational pain), `.rihal/memory/milestones/current.md`

@@ -88,6 +88,10 @@ Memory Bank update:
 
 **Negative — "we'll add security later"** — Refuse. Security retrofits are 10× the cost of building it in. Block until at least the Critical findings have a plan.
 
+## When NOT to use this skill
+
+Do NOT use this skill for CI/CD setup (use rihal-ci), performance optimization (use rihal-perf), general code review (use rihal-code-review), or MVP-to-production migration (use rihal-migrate).
+
 ## Memory Bank Hooks
 
 - **Reads:** `.rihal/memory/project/stack.md` (auth layer detection), `.rihal/memory/incidents/post-mortems/` (prior auth/security incidents)

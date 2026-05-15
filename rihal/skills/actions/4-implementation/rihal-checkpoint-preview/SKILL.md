@@ -4,6 +4,11 @@ internal: true
 description: "LLM-assisted human-in-the-loop review."
 triggers:
   - "checkpoint preview"
+  - "preview the checkpoint"
+  - "human-in-the-loop review"
+  - "review before checkpoint"
+  - "checkpoint review session"
+  - "preview changes before approval"
 ---
 
 ## Overview
@@ -63,3 +68,7 @@ Read fully and follow `./step-01-orientation.md` to begin.
 
 ### Edge Case: No changes to review
 **Expected:** Exit early, suggest the user make changes first.
+
+## When NOT to use this skill
+
+Do NOT use this skill for autonomous execution without a human (it is human-in-the-loop by design), for full code review (use rihal-code-review), or for phase verification (use rihal-verify-phase).

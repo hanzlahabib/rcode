@@ -4,6 +4,11 @@ internal: true
 description: Working Backwards PRFAQ challenge to forge product concepts.
 triggers:
   - "prfaq"
+  - "working backwards"
+  - "press release first"
+  - "create a prfaq"
+  - "product concept challenge"
+  - "forge a product idea"
 ---
 @.rihal/references/karpathy-guidelines.md
 
@@ -133,3 +138,7 @@ When the user gets stuck, offer concrete suggestions based on what they've share
 ### Negative Test
 **Input:** "Create a PRFAQ for a product that doesn't have a clear customer"
 **Expected:** Skill challenges immediately: "Who specifically buys this? Job title + decision criteria?" Refuses vague answers.
+
+## When NOT to use this skill
+
+Do NOT use this skill for writing a full PRD (use rihal-create-prd), validating an existing PRD (use rihal-validate-prd), market research (use rihal-sadiq-analyst), or sprint planning. PRFAQ is a concept-forging challenge, not a requirements document.

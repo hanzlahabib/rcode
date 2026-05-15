@@ -105,6 +105,10 @@ Next steps:
 
 **Negative — "just disable the failing check"** — Refuse. The check exists for a reason. Either fix what's broken or remove the check with a documented rationale.
 
+## When NOT to use this skill
+
+Do NOT use this skill for application code changes, deployment infrastructure beyond CI (use rihal-deploy-unify), security hardening (use rihal-harden), or MVP-to-production migration (use rihal-migrate).
+
 ## Memory Bank Hooks
 
 - **Reads:** `.rihal/memory/project/stack.md` (deploy target)
