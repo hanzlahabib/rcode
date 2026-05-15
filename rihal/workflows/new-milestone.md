@@ -22,15 +22,32 @@ Valid rihal subagent types (use exact names — do not fall back to 'general-pur
 Parse `$ARGUMENTS` before anything else:
 - `--reset-phase-numbers` flag → restart roadmap phase numbering at `1`
 - `--dry-run` flag → show what would be written, do not commit
+- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition (closes #740). When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
 - Remaining text → milestone name (optional)
 
-If the flag is absent, continue phase numbering from the previous milestone.
+If `--from-draft` is absent, continue phase numbering from the previous milestone.
+
+**From-draft mode (closes #740):**
+
+When `FROM_DRAFT_MODE=true`:
+1. Read the draft file at `DRAFT_FILE`. Accept any markdown file — MILESTONE-CONTEXT.md, a scratch doc, or a ROADMAP partial.
+2. Extract milestone name (first `# Heading` or the filename stem), goals list, and any explicit phase list.
+3. Skip the interactive goal-gathering interview (steps 2–4). Jump directly to step 5 (Requirements scoping) using the draft as the source of truth.
+4. Surface a one-line banner:
+   ```
+   ◆ From-draft mode: using {DRAFT_FILE} as milestone definition (skipping goal interview)
+   ```
+5. If `DRAFT_FILE` does not exist, abort:
+   ```
+   Error: --from-draft file not found: {DRAFT_FILE}
+   ```
 
 Read these files in parallel:
 - `.planning/PROJECT.md` — existing project, validated requirements, decisions
 - `.planning/MILESTONES.md` — what shipped previously (may not exist on first milestone)
 - `.planning/STATE.md` — pending todos, blockers
 - `.planning/MILESTONE-CONTEXT.md` — if it exists (from a prior `/rihal-discuss` about the next milestone)
+- `{DRAFT_FILE}` (if `FROM_DRAFT_MODE=true`)
 
 If `.planning/PROJECT.md` does not exist, STOP and redirect:
 

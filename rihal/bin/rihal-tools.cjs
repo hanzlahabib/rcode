@@ -6498,6 +6498,51 @@ async function main() {
         result = cfg.cmdSet(PROJECT_ROOT, args[0], args.slice(1).join(' '));
         break;
       }
+      case 'config-check-yolo': {
+        // Closes #739. Evaluate whether yolo mode is active for a given scope.
+        // Usage: config-check-yolo [--phase <N>] [--workflow <name>]
+        // Returns JSON: { active: bool, mode, scope, expires_at, reason }
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        const phaseArg    = args[args.indexOf('--phase') + 1]    || null;
+        const workflowArg = args[args.indexOf('--workflow') + 1] || null;
+        const mode        = cfg.cmdGet(PROJECT_ROOT, 'mode') || 'guided';
+        if (mode !== 'yolo') {
+          result = { active: false, mode, scope: null, expires_at: null, reason: 'mode is not yolo' };
+          break;
+        }
+        // Check optional yolo_scope restriction
+        const scopeRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_scope') || null;
+        if (scopeRaw) {
+          const scope = String(scopeRaw).trim();
+          // scope format: "phase:N" | "workflow:name" | "global"
+          if (scope.startsWith('phase:') && phaseArg) {
+            const allowedPhase = scope.slice('phase:'.length).trim();
+            if (String(phaseArg) !== allowedPhase) {
+              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to phase ${allowedPhase}, current is ${phaseArg}` };
+              break;
+            }
+          } else if (scope.startsWith('workflow:') && workflowArg) {
+            const allowedWf = scope.slice('workflow:'.length).trim();
+            if (workflowArg !== allowedWf) {
+              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to workflow ${allowedWf}, current is ${workflowArg}` };
+              break;
+            }
+          }
+        }
+        // Check optional TTL
+        const ttlRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_ttl') || null;
+        let expiresAt = null;
+        if (ttlRaw) {
+          expiresAt = ttlRaw;
+          const expiry = new Date(ttlRaw);
+          if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
+            result = { active: false, mode, scope: scopeRaw, expires_at: ttlRaw, reason: `yolo_ttl expired at ${ttlRaw}` };
+            break;
+          }
+        }
+        result = { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+        break;
+      }
       case 'verify': {
         const verify = require(path.join(__dirname, 'lib', 'verify.cjs'));
         result = verify.dispatch(PROJECT_ROOT, args);
@@ -6584,6 +6629,9 @@ async function main() {
         console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
         console.log('  config-get <dotted.key>                      → read scalar from .rihal/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rihal/config.yaml');
+        console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
+        console.log('    yolo_scope config keys: "global" | "phase:N" | "workflow:name"');
+        console.log('    yolo_ttl config key: ISO timestamp — yolo auto-expires after this time');
         console.log('  verify schema-drift <phase> [--block]        → detect schema vs migration drift across phase commits');
         console.log('  resolve-model <profile>                      → resolve model name from profile');
         console.log('  version                                      → print rihal-tools version');
