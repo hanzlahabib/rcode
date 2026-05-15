@@ -133,15 +133,21 @@ function gitModified() {
   });
 }
 
+// A running session that has produced no terminal output for this long is
+// almost certainly waiting for the user (a question, or end of a turn).
+const IDLE_THRESHOLD_MS = 20000;
+
 // ── route handlers ────────────────────────────────────────────────────────────
 
 async function handleSessions(res) {
   const current = await gitModified();
+  const now = Date.now();
   const out = [];
   for (const [id, s] of sessions) {
     const start = s.filesAtStart || new Set();
     let changed = 0;
     for (const f of current) if (!start.has(f)) changed++;
+    const idleMs = now - (s.lastDataAt || now);
     out.push({
       storyId:      id,
       status:       s.status,
@@ -150,6 +156,8 @@ async function handleSessions(res) {
       startTime:    s.startTime,
       clients:      s.wsClients.size,
       filesChanged: changed,
+      idleSeconds:  Math.floor(idleMs / 1000),
+      waiting:      s.status === 'running' && idleMs > IDLE_THRESHOLD_MS,
     });
   }
   json(res, 200, { sessions: out });
@@ -195,6 +203,7 @@ async function handleRun(req, res) {
   const s = {
     proc, status: 'running', cmd, cols, rows,
     startTime:   new Date().toISOString(),
+    lastDataAt:  Date.now(),
     scrollback:  '',
     wsClients:   new Set(),
     filesAtStart: new Set(),
@@ -205,6 +214,7 @@ async function handleRun(req, res) {
   gitModified().then(set => { s.filesAtStart = set; });
 
   proc.onData(d => {
+    s.lastDataAt = Date.now();
     s.scrollback += d;
     if (s.scrollback.length > SCROLLBACK_MAX) {
       s.scrollback = s.scrollback.slice(-SCROLLBACK_MAX);

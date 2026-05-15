@@ -2052,7 +2052,8 @@ footer {
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
-.term-status-dot.exited { background: #ff4444; animation: none; }
+.term-status-dot.exited  { background: #ff4444; animation: none; }
+.term-status-dot.waiting { background: var(--accent-amber); animation: pulse 1.2s infinite; }
 
 /* Compact ▶ Run button on phase / sprint / task list cards */
 .card-run-btn {
@@ -2099,6 +2100,11 @@ footer {
   gap: var(--space-3);
 }
 .orch-card.orch-running { border-left-color: var(--accent-green); }
+.orch-card.orch-waiting {
+  border-left-color: var(--accent-amber);
+  background: rgba(245,158,11,0.05);
+}
+.orch-card.orch-waiting .orch-card-badge { color: var(--accent-amber); }
 .orch-card.orch-error,
 .orch-card.orch-exited  { border-left-color: #ff4444; }
 .orch-card.orch-stopped { border-left-color: var(--accent-amber); }

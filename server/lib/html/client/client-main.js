@@ -659,11 +659,15 @@ function _orchElapsed(iso) {
 function _orchCard(s) {
   var id = esc(s.storyId);
   var running = s.status === 'running';
-  return '<div class="orch-card orch-' + esc(s.status) + '">' +
+  var waiting = !!s.waiting;
+  var cls   = 'orch-card orch-' + esc(s.status) + (waiting ? ' orch-waiting' : '');
+  var badge = waiting ? '⏳ waiting for input' : esc(s.status);
+  var dot   = waiting ? 'waiting' : esc(s.status);
+  return '<div class="' + cls + '">' +
     '<div class="orch-card-head">' +
-      '<span class="term-status-dot ' + esc(s.status) + '"></span>' +
+      '<span class="term-status-dot ' + dot + '"></span>' +
       '<span class="orch-card-id">' + id + '</span>' +
-      '<span class="orch-card-badge">' + esc(s.status) + '</span>' +
+      '<span class="orch-card-badge">' + badge + '</span>' +
     '</div>' +
     '<div class="orch-card-cmd">' + esc(s.cmd || '') + '</div>' +
     '<div class="orch-card-meta">' +
@@ -691,8 +695,9 @@ function _orchRender(sessions, err) {
       '<div class="empty-action">Run a phase or sprint to start one</div></div>';
     return;
   }
-  // Running sessions first, then most-recently-started.
+  // Waiting-for-input first (needs attention), then running, then recent.
   sessions.sort(function (a, b) {
+    if (!!a.waiting !== !!b.waiting) return a.waiting ? -1 : 1;
     if ((a.status === 'running') !== (b.status === 'running')) return a.status === 'running' ? -1 : 1;
     return String(b.startTime || '').localeCompare(String(a.startTime || ''));
   });
