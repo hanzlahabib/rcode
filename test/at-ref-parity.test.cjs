@@ -35,6 +35,18 @@ function walk(dir, out = []) {
   return out;
 }
 
+// `.rihal/` is the install-time mirror of the `rihal/` source tree. A
+// `@.rihal/<rest>` ref is valid if it resolves in EITHER layout — the install
+// copy OR the `rihal/<rest>` source. Checking only the install copy produces
+// false positives whenever the local install is stale (#761 / #483).
+function refResolves(ref) {
+  if (fs.existsSync(path.join(PROJECT_ROOT, ref))) return true;
+  if (ref.startsWith('.rihal/')) {
+    return fs.existsSync(path.join(PROJECT_ROOT, 'rihal/' + ref.slice('.rihal/'.length)));
+  }
+  return false;
+}
+
 function findBrokenRefs() {
   const broken = new Set();
   for (const f of walk(SCAN_DIR)) {
@@ -42,8 +54,7 @@ function findBrokenRefs() {
     let m;
     while ((m = REF_RE.exec(text)) !== null) {
       const ref = m[1];
-      const abs = path.join(PROJECT_ROOT, ref);
-      if (!fs.existsSync(abs)) broken.add(ref);
+      if (!refResolves(ref)) broken.add(ref);
     }
   }
   return [...broken].sort();
