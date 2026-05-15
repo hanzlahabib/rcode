@@ -22,12 +22,12 @@ Restart your IDE (Claude Code, Cursor, or Gemini CLI). All `/rihal-*` commands n
 /rihal-init
 ```
 
-Answers 3 quick questions:
+`/rihal-init` is **the** first command — always run this one, never anything else to start. Answers 3 quick questions:
 1. Is this a new or existing project?
 2. What's your preferred communication language? (English, Urdu, Arabic)
 3. What's your model profile? (quality, balanced, budget)
 
-Creates `.rihal/config.yaml` and `.rihal/RIHLA.md` as your project baseline, then routes you to the right first action.
+Creates `.rihal/config.yaml` and `.rihal/RIHLA.md` as your project baseline, then routes you to the right first action. For a greenfield project it routes into `/rihal-new-project` automatically — that's a sub-path `/rihal-init` calls for you, not a separate command you choose.
 
 ---
 

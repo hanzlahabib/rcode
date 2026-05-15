@@ -11,6 +11,8 @@ npx @hanzlaa/rcode install    # one command, zero dependencies
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
+Status: actively developed — published on npm as `@hanzlaa/rcode` v3.4.x, with an automated test suite covered by `node --test`.
+
 ---
 
 ## See it work
@@ -44,15 +46,23 @@ It's not a chatbot. It's a methodology.
 
 ## Quickstart
 
-### Install — one command
+### Install — two steps, one minute
 
-In any project directory (existing codebase OR empty folder):
+rcode ships in two parts. Run them both up front so nothing surfaces as an afterthought later:
+
+**Step 1 — project files (required).** In any project directory (existing codebase OR empty folder):
 
 ```bash
 npx @hanzlaa/rcode install
 ```
 
-[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode`. Pure file shipping, no runtime dependencies. Installs into:
+**Step 2 — `rcode` on your PATH (optional).** For the `rcode` CLI command (e.g. `rcode version`, `rcode update`), install globally once:
+
+```bash
+npm install -g @hanzlaa/rcode
+```
+
+[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode`. Pure file shipping, no runtime dependencies. Step 1 installs into:
 
 - `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
 - `.claude/agents/` — 45 first-class subagents
@@ -63,11 +73,6 @@ npx @hanzlaa/rcode install
 
 Restart Claude Code (or your IDE), type `/`, and every `rihal-*` command appears. Update anytime with `npx @hanzlaa/rcode update`.
 
-> **Want `rcode` on your PATH?** For the `rcode` CLI command (e.g. `rcode version`, `rcode update`), install globally once:
-> ```bash
-> npm install -g @hanzlaa/rcode
-> ```
-
 See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE options, version pinning, yolo mode).
 
 ### Then begin the rihla
@@ -76,7 +81,7 @@ See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE option
 /rihal-init
 ```
 
-Detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, and routes you to the right first action.
+`/rihal-init` is the single first command — there is no other entry point to choose. It detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, and routes you to the right first action. For a greenfield project it routes into `/rihal-new-project` automatically — you never call that directly, it's a sub-path of `/rihal-init`.
 
 ### The full loop
 
@@ -94,6 +99,19 @@ Detects your project state (fresh / existing-with-no-rihal / returning), asks a 
 ## What makes Rihal different
 
 Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
+
+How it stacks up against the tools you already know:
+
+| Dimension | Cursor / Windsurf | CrewAI / AutoGen | **Rihal Code** |
+|-----------|-------------------|------------------|----------------|
+| Per-project memory | Per-user, not git-tracked | Requires a vector DB | Git-tracked markdown in `.rihal/memory/` |
+| Specialist agents | 1 generalist with IDE context | Define your own in code | 45 shipped at install time |
+| Workflow gates | None | Build your own | Structural — refuses to run without upstream |
+| Infrastructure | Cloud API + local IDE | Python server + dependencies | Zero — pure files |
+| IDE lock-in | Cursor only | Framework-specific | Claude, Cursor, Gemini, Codex |
+| Install | IDE extension | `pip install` + config + code | `npx install` — one command |
+
+Full breakdown: [`docs/USP.md`](docs/USP.md).
 
 ### Persistent project memory
 

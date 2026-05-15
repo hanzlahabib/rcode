@@ -14,13 +14,15 @@ This walkthrough takes you from an empty directory to a planned sprint in ~10 mi
 npx @hanzlaa/rcode install
 ```
 
-## 2. Initialize a new project
+## 2. Initialize the project
+
+Always start with `/rihal-init` — it is the single entry point:
 
 ```
-/rihal-new-project employee leave tracker for an Omani government ministry
+/rihal-init employee leave tracker for an Omani government ministry
 ```
 
-The agent asks 5–10 questions about scope, users, constraints, then produces:
+`/rihal-init` detects this is a fresh project and routes into `/rihal-new-project` for you. The agent asks 5–10 questions about scope, users, constraints, then produces:
 - `.planning/PROJECT.md` — project definition
 - `.planning/REQUIREMENTS.md` — categorized requirements
 - `.planning/ROADMAP.md` — phased execution plan
