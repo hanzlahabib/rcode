@@ -182,6 +182,17 @@ else
   fail "agent-behavior drift detected (#746) — run 'node test/eval/run-eval.cjs' to review the diff; if intentional, re-bless with 'node test/eval/run-eval.cjs --bless'"
 fi
 
+# Check 9 — artifact schema validation (#747).
+# Validates rihal-code's own artifacts — SKILL.md frontmatter, agent
+# frontmatter, .rihal/state.json — against the zod schemas in
+# cli/lib/schemas.cjs. A malformed frontmatter (missing name, too few
+# trigger phrases, missing negative boundary) surfaces here.
+if node --test test/artifact-schema.test.cjs > /dev/null 2>&1; then
+  pass "artifact schemas valid — SKILL.md / agent / state.json (#747)"
+else
+  fail "artifact schema validation failed (#747) — run 'node --test test/artifact-schema.test.cjs' to review"
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "✓ Dogfood checks passed"

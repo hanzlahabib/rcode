@@ -17,6 +17,11 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const { checkStaleness } = require('./lib/memory-bank.cjs');
+const {
+  parseFrontmatter,
+  validateSkillFrontmatter,
+  validateAgentFrontmatter,
+} = require('./lib/schemas.cjs');
 
 // ---------- Shared helpers ----------
 
@@ -32,6 +37,19 @@ function findSkillFiles(dir) {
     }
   }
   return results;
+}
+
+/**
+ * One-level scan of `rihal/agents/` for `.md` files. There is no existing
+ * agent-file iterator (findSkillFiles matches only files named SKILL.md),
+ * so the schema-validation pass needs its own shallow glob.
+ */
+function findAgentFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => path.join(dir, e.name));
 }
 
 function checkCompliance(filePath) {
@@ -259,6 +277,70 @@ function runCompliance(packageRoot) {
   return failing;
 }
 
+// ---------- Schema validation ----------
+
+/**
+ * Validate SKILL.md and agent frontmatter against the zod schemas in
+ * cli/lib/schemas.cjs (issue #747). Hard failures (missing name, too few
+ * trigger phrases, missing negative boundary, missing tools) count toward
+ * the non-zero exit path; advisory warnings (e.g. >12 trigger phrases) just
+ * print a ⚠.
+ *
+ * @returns {number} count of artifacts with hard failures
+ */
+function runSchemaValidation(packageRoot) {
+  const skillDirs = [
+    path.join(packageRoot, 'rihal/skills/agents'),
+    path.join(packageRoot, 'rihal/skills/actions'),
+  ];
+
+  let totalSkills = 0;
+  let totalAgents = 0;
+  let failing = 0;
+  let warned = 0;
+
+  for (const dir of skillDirs) {
+    for (const file of findSkillFiles(dir)) {
+      totalSkills++;
+      const { frontmatter, body } = parseFrontmatter(fs.readFileSync(file, 'utf8'));
+      const result = validateSkillFrontmatter(frontmatter, body);
+      const rel = path.relative(packageRoot, file);
+      if (!result.ok) {
+        failing++;
+        console.log(`   ✗ ${rel}`);
+        for (const err of result.errors) console.log(`       ${err}`);
+      }
+      if (result.warnings && result.warnings.length > 0) {
+        warned++;
+        for (const w of result.warnings) console.log(`   ⚠ ${rel}: ${w}`);
+      }
+    }
+  }
+
+  for (const file of findAgentFiles(path.join(packageRoot, 'rihal/agents'))) {
+    totalAgents++;
+    const { frontmatter } = parseFrontmatter(fs.readFileSync(file, 'utf8'));
+    const result = validateAgentFrontmatter(frontmatter);
+    if (!result.ok) {
+      failing++;
+      const rel = path.relative(packageRoot, file);
+      console.log(`   ✗ ${rel}`);
+      for (const err of result.errors) console.log(`       ${err}`);
+    }
+  }
+
+  if (failing === 0) {
+    console.log(
+      `   ✓ ${totalSkills} skill + ${totalAgents} agent frontmatter blocks pass schema validation` +
+        (warned > 0 ? ` (${warned} with advisory warnings)` : ''),
+    );
+  } else {
+    console.log(`   ✗ ${failing} artifact(s) failed schema validation`);
+  }
+
+  return failing;
+}
+
 // ---------- Duplicate-installation check ----------
 
 /**
@@ -348,7 +430,11 @@ module.exports = function doctor(args, { packageRoot }) {
   console.log(`\nPackage compliance:`);
   const complianceFailures = runCompliance(packageRoot);
 
-  const totalFailures = preflightFailures + complianceFailures + duplicateFailures;
+  console.log(`\nArtifact schema validation:`);
+  const schemaFailures = runSchemaValidation(packageRoot);
+
+  const totalFailures =
+    preflightFailures + complianceFailures + duplicateFailures + schemaFailures;
   console.log();
   if (totalFailures === 0) {
     console.log(`✅ All checks passed.`);
