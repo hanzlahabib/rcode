@@ -115,6 +115,54 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 
+// ── Ensure interactive-terminal native module is present ─────────
+// @lydell/node-pty is an optionalDependency, so it can be absent if the
+// package was installed with --omit=optional or a partial CI install.
+// It ships prebuilt binaries (no node-gyp), so fetching it is a fast,
+// no-compile, one-time step. Runs async — the dashboard never blocks; the
+// orchestrator is spawned via the callback once the install settles.
+// Failure is non-fatal: the terminal just degrades with a clear message.
+function ensurePty(done) {
+  try { require.resolve('@lydell/node-pty'); done(); return; } catch {}
+
+  const pkgRoot = path.join(__dirname, '..');
+
+  // @lydell/node-pty is already declared in optionalDependencies, so a plain
+  // lockfile-respecting `install` pulls it in without mutating package.json.
+  // Use pnpm when the repo is pnpm-managed — `npm install` fights pnpm's
+  // symlinked node_modules and stalls. End-user installs use npm.
+  const usePnpm = fs.existsSync(path.join(pkgRoot, 'pnpm-lock.yaml'));
+  const cmd  = usePnpm ? 'pnpm' : 'npm';
+  const args = usePnpm
+    ? ['install', '--ignore-scripts']
+    : ['install', '--ignore-scripts', '--no-audit', '--no-fund'];
+
+  console.log('[setup] Installing interactive-terminal support (@lydell/node-pty)…');
+  let settled = false;
+  const finish = (ok) => {
+    if (settled) return;
+    settled = true;
+    console.log(ok ? '[setup] Interactive terminal ready.'
+                    : '[setup] node-pty install incomplete — terminal stays unavailable.');
+    done();
+  };
+
+  let child;
+  try {
+    child = spawn(cmd, args, {
+      cwd: pkgRoot, stdio: 'inherit', shell: process.platform === 'win32',
+    });
+  } catch (err) {
+    console.log('[setup] node-pty install could not start:', err.message);
+    finish(false);
+    return;
+  }
+  const timer = setTimeout(() => { try { child.kill(); } catch {} }, 180000);
+  child.on('exit',  code => { clearTimeout(timer); finish(code === 0); });
+  child.on('error', err  => { clearTimeout(timer);
+    console.log('[setup] node-pty install error:', err.message); finish(false); });
+}
+
 // ── Auto-spawn orchestrator (port 7718) ──────────────────────────
 const ORCH_BIN = path.join(__dirname, 'orchestrator.js');
 let _orchProc = null;
@@ -151,7 +199,8 @@ function spawnOrchestrator() {
   }
 }
 
-spawnOrchestrator();
+// Orchestrator spawns only once node-pty is settled (present or installed).
+ensurePty(spawnOrchestrator);
 
 // Graceful shutdown
 function shutdown() {
