@@ -29,6 +29,8 @@ let _state = {
   memoryBank:       _seed.memoryBank       || null,
   // Live orchestrator sessions (populated by Orchestration view poller)
   activeSessions:   [],
+  // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
+  requestedFile:    null,
 };
 
 /** Registered subscriber functions. */
