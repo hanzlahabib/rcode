@@ -27,10 +27,16 @@ let _state = {
   workstreams:      _seed.workstreams      || [],
   pendingHandoff:   _seed.pendingHandoff   || null,
   memoryBank:       _seed.memoryBank       || null,
-  // Live orchestrator sessions (populated by Orchestration view poller)
+  // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
   // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
   requestedFile:    null,
+  // xterm terminal panel state (driven by orchestrator.js / XtermPanel.js)
+  // { open, storyId, title, minimized, fullscreen }
+  terminal:         null,
+  // Orchestrator side-panel state (driven by orchestrator.js / OrchPanel.js)
+  // { open, storyId }
+  orchPanel:        null,
 };
 
 /** Registered subscriber functions. */

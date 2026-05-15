@@ -86,6 +86,23 @@ export function chip(status) {
 }
 
 /**
+ * Human-readable elapsed time since an ISO timestamp.
+ * Ported from _orchElapsed() in client-main.js.
+ *
+ * @param {string|null} iso — ISO 8601 start time
+ * @returns {string}
+ */
+export function orchElapsed(iso) {
+  if (!iso) return '—';
+  let s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 0) s = 0;
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ' + (s % 60) + 's';
+  return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+}
+
+/**
  * Return command-hint pairs [cmd, desc] for a sprint, based on its status.
  * Ported from sprintHints() in client-render.js.
  *
