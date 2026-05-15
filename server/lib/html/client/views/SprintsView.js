@@ -1,0 +1,183 @@
+/**
+ * SprintsView — Preact component.
+ *
+ * Ports renderSprints(subId) from client-render.js.
+ * List mode: filter + sprint cards.
+ * Detail mode: breadcrumb chain, entity header, attr grid, progress bar,
+ *   Run/Terminal action bar, task cards, acceptance-criteria section,
+ *   command hints.
+ *
+ * Run Sprint / Terminal buttons call window.runAndOpenTerm / window.openTermPanel.
+ * BRIDGE(31.4): promoted to imported fns in sprint 31.4.
+ */
+
+import { html, useState } from '../preact.js';
+import { useStore } from '../store.js';
+import { pct, humanDate, allSprints, sprintHints } from '../util.js';
+import {
+  Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
+} from '../components/shared.js';
+
+function AttrItem({ label, value }) {
+  return html`
+    <div class="attr-item">
+      <span class="attr-label">${label}</span>
+      <span class="attr-value">${value}</span>
+    </div>
+  `;
+}
+
+function SprintDetail({ sprint: s, S }) {
+  const rawStories = Array.isArray(s.stories) ? s.stories : [];
+  const stories = rawStories.map(t =>
+    Object.assign({}, t, {
+      sprintId: s.id,
+      sprintGoal: s.goal || '',
+      phaseId: s.phaseId,
+      phaseName: s.phaseName,
+    }),
+  );
+  const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
+  // BRIDGE(31.4): window.runningInSprint becomes an imported fn
+  const running = window.runningInSprint ? window.runningInSprint(s) : 0;
+  const hints = sprintHints(s);
+
+  // Acceptance criteria section
+  const storiesWithAc = stories.filter(t => t.acceptance);
+
+  // Breadcrumb includes both "All Sprints" and optional "Phase N" link
+  const breadcrumbItems = [{ label: 'All Sprints', hash: 'sprints' }];
+  if (s.phaseId) breadcrumbItems.push({ label: 'Phase ' + s.phaseId, hash: 'phases/' + s.phaseId });
+
+  function handleRun(e) {
+    e.stopPropagation();
+    // BRIDGE(31.4): window.runAndOpenTerm becomes an imported fn
+    if (window.runAndOpenTerm)
+      window.runAndOpenTerm('sprint-' + s.id, '/rihal-execute-sprint ' + s.id, 'Sprint ' + s.id);
+  }
+  function handleTerm(e) {
+    e.stopPropagation();
+    // BRIDGE(31.4): window.openTermPanel becomes an imported fn
+    if (window.openTermPanel) window.openTermPanel('sprint-' + s.id, 'Sprint ' + s.id);
+  }
+
+  return html`
+    <div>
+      <${Breadcrumb} items=${breadcrumbItems}/>
+      <div class="entity-header">
+        <div class="entity-title">
+          ⚡ Sprint ${s.id}
+          <${RunningBadge} count=${running}/>
+        </div>
+        <div class="attr-grid">
+          <${AttrItem} label="Goal" value=${s.goal || '—'}/>
+          <${AttrItem} label="Status" value=${html`<${Chip} status=${s.status}/>`}/>
+          <${AttrItem} label="Phase" value=${'P' + s.phaseId + (s.phaseName ? ' — ' + s.phaseName : '')}/>
+          <${AttrItem} label="Velocity"
+            value=${(s.velocity_actual != null ? s.velocity_actual : '—') + ' / ' +
+                    (s.velocity_target != null ? s.velocity_target : '—') + ' pts'}/>
+          <${AttrItem} label="Tasks Done" value=${done + '/' + stories.length}/>
+          <${AttrItem} label="Progress" value=${pct(done, stories.length)}/>
+          ${s.started_at ? html`<${AttrItem} label="Started" value=${humanDate(s.started_at)}/>` : null}
+          ${s.completed_at ? html`<${AttrItem} label="Completed" value=${humanDate(s.completed_at)}/>` : null}
+        </div>
+      </div>
+      <div style="margin-bottom:var(--space-4);">
+        <${ProgressBar} done=${done} total=${stories.length}/>
+      </div>
+      <div class="term-action-bar">
+        <button class="term-run-btn" onClick=${handleRun}>▶ Run Sprint</button>
+        <button class="term-run-btn outline" onClick=${handleTerm}>📟 Terminal</button>
+      </div>
+      <div class="view-title" style="margin-top:var(--space-4)">Tasks</div>
+      <div class="phase-list">
+        ${stories.length
+          ? stories.map(t => html`<${TaskCard} key=${t.id || t.title} task=${t}/>`)
+          : html`
+              <div class="empty">
+                No tasks in this sprint yet.
+                <div class="empty-action">Run /rihal-create-story to add tasks</div>
+              </div>
+            `}
+      </div>
+      ${storiesWithAc.length ? html`
+        <div class="view-title" style="margin-top:var(--space-6)">Acceptance Criteria</div>
+        <div class="phase-list">
+          ${storiesWithAc.map(t => html`
+            <div key=${t.id || t.title} class="item">
+              <div class="item-title">${t.title}</div>
+              <div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">
+                ✓ ${t.acceptance}
+              </div>
+            </div>
+          `)}
+        </div>
+      ` : null}
+      <${CmdHints} hints=${hints}/>
+    </div>
+  `;
+}
+
+export function SprintsView({ subId }) {
+  const S = useStore();
+  const sprints = allSprints(S.phases || []);
+  const [filter, setFilter] = useState('');
+
+  if (subId) {
+    const s = sprints.find(sp => String(sp.id) === String(subId));
+    if (!s) {
+      return html`
+        <div id="view-sprints" class="view active">
+          <${Breadcrumb} items=${[{ label: 'All Sprints', hash: 'sprints' }]}/>
+          <div class="empty">Sprint not found.</div>
+        </div>
+      `;
+    }
+    return html`
+      <div id="view-sprints" class="view active">
+        <${SprintDetail} sprint=${s} S=${S}/>
+      </div>
+    `;
+  }
+
+  // List mode
+  const curSp = sprints.find(sp => sp.id === S.currentSprint);
+  const slHints = [
+    ['/rihal-sprint-planning','Plan a new sprint'],
+    ['/rihal-stats',          'Project statistics'],
+  ];
+  if (curSp) {
+    slHints.push(['/rihal-execute',      'Execute current sprint ' + curSp.id]);
+    slHints.push(['/rihal-sprint-status','Status of Sprint ' + curSp.id]);
+  }
+
+  const q = filter.toLowerCase();
+  const filtered = q
+    ? sprints.filter(s =>
+        String(s.id).includes(q) ||
+        (s.goal || '').toLowerCase().includes(q) ||
+        (s.phaseName || '').toLowerCase().includes(q),
+      )
+    : sprints;
+
+  return html`
+    <div id="view-sprints" class="view active">
+      <div class="view-title">Sprints</div>
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Filter…"
+          value=${filter} onInput=${e => setFilter(e.target.value)}/>
+      </div>
+      <div id="sprints-inner" class="phase-list">
+        ${filtered.length
+          ? filtered.map(s => html`<${SprintCard} key=${s.id} sprint=${s} S=${S}/>`)
+          : html`
+              <div class="empty">
+                No sprints yet.
+                <div class="empty-action">Run /rihal-plan to create sprints</div>
+              </div>
+            `}
+      </div>
+      <${CmdHints} hints=${slHints}/>
+    </div>
+  `;
+}
