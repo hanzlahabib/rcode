@@ -9,39 +9,8 @@ function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&
 function renderHtml(state, orchToken) {
   const projectName = state.projectName || 'No project initialized';
 
-  const agents = [
-    { name: 'Sadiq Damani',         arabic: 'صادق',         role: 'Director of Strategy',              real: true, type: 'leadership' },
-    { name: 'Waleed Al Harthi',     arabic: 'وليد',         role: 'CTO',                               real: true, type: 'leadership' },
-    { name: 'Ahmed Al Hassani',     arabic: 'أحمد الحسني',  role: 'Technology & Development Director', real: true, type: 'leadership' },
-    { name: 'Nasser',               arabic: 'ناصر',         role: 'Engineering Manager',               real: true, type: 'leadership' },
-    { name: 'Hussain',              arabic: 'حسين',         role: 'PM + Scrum Master',                 type: 'product' },
-    { name: 'Layla',                arabic: 'ليلى',         role: 'Lead UX Designer',                  type: 'design' },
-    { name: 'Zahra',                arabic: 'زهرة',         role: 'Branding & Creative Director',      type: 'design' },
-    { name: 'Omar',                 arabic: 'عمر',          role: 'Full-Stack Engineer',               type: 'engineering' },
-    { name: 'Haitham Al Khamiyasi', arabic: 'هيثم',        role: 'Senior Frontend',                   real: true, type: 'engineering' },
-    { name: 'Yousef',               arabic: 'يوسف',         role: 'Senior Backend',                    type: 'engineering' },
-    { name: 'Zayd',                 arabic: 'زيد',          role: 'ML Engineer',                       type: 'engineering' },
-    { name: 'Fatima',               arabic: 'فاطمة',        role: 'QA Lead',                           type: 'quality' },
-    { name: 'Khalid',               arabic: 'خالد',         role: 'DevOps',                            type: 'engineering' },
-    { name: 'Noor',                 arabic: 'نور',          role: 'Scribe',                            type: 'support' },
-    { name: 'Mariam',               arabic: 'مريم',         role: 'Marketing Lead',                    type: 'product' },
-    { name: 'Raees',                arabic: 'رئيس',         role: 'Orchestration Director',            type: 'system' },
-    { name: 'Majlis',               arabic: 'مجلس',         role: 'Consulting Council',                type: 'system' },
-    { name: 'Diwan',                arabic: 'ديوان',        role: 'Dashboard Registry',                type: 'system' },
-  ];
-
-  const realAgents = agents.filter(a => a.real);
-  const aiAgents   = agents.filter(a => !a.real);
-
-  function agentCard(a) {
-    const filterText = (a.name + ' ' + a.role + ' ' + a.arabic + ' ' + a.type).toLowerCase();
-    const skillName  = a.name.split(' ')[0].toLowerCase();
-    return `<div class="agent-card" data-filter-text="${filterText}" onclick="viewAgentSkill('${skillName}')" style="cursor:pointer;">
-      <div class="name">${esc(a.name)}${a.real ? ' <span class="real-badge">real</span>' : ''} <span class="type-badge">${esc(a.type)}</span></div>
-      <div class="arabic">${a.arabic}</div>
-      <div class="role">${esc(a.role)}</div>
-    </div>`;
-  }
+  // Agent roster moved to server/lib/html/client/agents-data.js (Sprint 31.3).
+  // AgentsView.js renders it client-side; shell.js no longer needs it.
 
   return `<!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -104,27 +73,8 @@ ${renderCss()}
   </div>
 </div>
 
-<script>
-function viewAgentSkill(name) {
-  navTo('files');
-  // Wait for inline file tree to render (fetched async), then find the agent's skill file
-  setTimeout(function() {
-    var items = document.querySelectorAll('.inline-file-entry');
-    for (var i = 0; i < items.length; i++) {
-      if ((items[i].dataset.path || '').toLowerCase().includes(name)) {
-        items[i].click();
-        return;
-      }
-    }
-    // No exact match — pre-fill the search so the user can see related files
-    var search = document.querySelector('#file-list-inline .filter-input');
-    if (search) {
-      search.value = name;
-      search.dispatchEvent(new Event('input'));
-    }
-  }, 400);
-}
-<\/script>
+<!-- viewAgentSkill() removed — Sprint 31.3 moved agent roster to agents-data.js.
+     AgentsView.js now handles skill navigation via the store requestedFile bridge. -->
 
 <!-- ── xterm Terminal Panel ───────────────────────────────────── -->
 <div id="term-backdrop" class="term-backdrop"></div>
