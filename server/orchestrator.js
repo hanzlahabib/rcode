@@ -159,6 +159,7 @@ async function handleRun(req, res) {
   ], {
     cwd: PROJECT_ROOT,
     env: { ...process.env },
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
 
   s.proc = proc;
