@@ -427,6 +427,67 @@ Started: 2026-03 · Current
 
 ---
 
+## Phase 28 — Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval
+
+**Goal:** Close the infrastructure gaps found auditing rihal-code against `everything-claude-code`: a full lifecycle hooks system, measured token/cost tracking, agent-behavior regression coverage, schema validation of rihal's own artifacts, and a bounded follow-up loop for research subagents. Covers GitHub issues #742–#750.
+
+**Status:** Planned
+
+**Plans:**
+- 28-1 — Hooks expansion: Bash safety dispatcher (#742, done), PreCompact state capture (#743), Stop format/typecheck (#744), compact-nudge (#749), cost tracking via Stop hook (#745)
+- 28-2 — Agent-behavior regression harness: snapshot + diff on skill changes (#746)
+- 28-3 — Artifact JSON-schema validation: SKILL.md / agent / state.json (#747); AGENTS.md scope-list fix (#750)
+- 28-4 — Iterative-retrieval loop for research subagents (#748)
+
+**Acceptance:**
+- All five `rihal-hooks.cjs` lifecycle handlers registered and tested
+- `session-report.md` reports measured (not heuristic) token usage when a log exists
+- Editing a tracked SKILL.md produces a visible behavior diff in the dogfood check
+- `cli/doctor.js` reports malformed SKILL.md / agent / state.json artifacts
+- Research workflows re-query insufficient subagent summaries, capped at 3 cycles
+- `node --test` passes with no new failures (including `scope-history-parity`)
+
+---
+
+## Phase 29 — Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping
+
+**Goal:** Close the vulnerabilities found in the rihal-code self security audit: an unauthenticated network-reachable RCE in the orchestrator, bypassable bash-guard controls, and unscoped file reads. Covers GitHub issues #752–#754.
+
+**Status:** Planned
+
+**Plans:**
+- 29-1 — Orchestrator lockdown (#752): bind `127.0.0.1`, remove CORS `*`, add per-session auth token, sanitize `storyId` against path traversal, authenticate `/api/clean-sessions`
+- 29-2 — bash-guard hardening (#753): anchor `RIHAL_PUSH_OK=1` as env prefix, detect `+`-refspec force-push, document as best-effort + add bypass regression tests
+- 29-3 — File-read scoping (#754): constrain `post-commit` `-F` paths to repo root; switch `rihal-tools.cjs` git calls to argument-array exec
+
+**Acceptance:**
+- Orchestrator listens on `127.0.0.1` only; unauthenticated/cross-origin `/api/run` + `/api/clean-sessions` are rejected; traversal `storyId` rejected
+- `echo RIHAL_PUSH_OK; git push` and `git push origin +main` are both BLOCKED; bypass regression tests pass
+- `post-commit` ignores out-of-repo `-F` paths; `rihal-tools.cjs` git calls use no shell string interpolation
+- `node --test` passes with no new failures
+
+---
+
+## Phase 30 — Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish
+
+**Goal:** Turn rihal-code into an adoptable product: resolve the license contradiction, give the README visual proof and a focused value prop, fix self-contradicting metadata, and clarify onboarding. Covers GitHub issues #755–#759.
+
+**Status:** Planned
+
+**Plans:**
+- 30-1 — License resolution (#755): add a `LICENSE` file; make `package.json`, README, and LICENSE agree (decision: OSS vs commercial)
+- 30-2 — README diet + visual proof (#756): cut README to ~200 lines, add demo GIF + dashboard screenshot, relocate CI/test/command detail to DOCS.md
+- 30-3 — Metadata consistency (#757): fix agent/command counts across README/DOCS/package.json; align package.json description + keywords with positioning
+- 30-4 — Onboarding + polish (#758, #759): clarify install model and canonical first command; add differentiation table + maturity note; flesh out examples/; consolidate docs; reconcile BRAND.md naming
+
+**Acceptance:**
+- `LICENSE` file exists and agrees with `package.json` + README
+- README < ~250 lines with at least one demo GIF/screenshot above the fold
+- No conflicting counts across README / DOCS.md / package.json
+- One canonical first-run command used everywhere; differentiation table + maturity line present in README
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
