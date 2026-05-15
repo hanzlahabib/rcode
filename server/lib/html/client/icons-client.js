@@ -1,19 +1,20 @@
 /**
- * Inline SVG icon set (Lucide-style stroke icons).
+ * Client-side ESM icon set — mirrors server/lib/html/icons.js.
  *
- * No CDN, no font — just path data rendered into a <svg>. Used server-side
- * by shell.js for static chrome, and embedded as window.__ICONS__ so the
- * client modules can render the same icons in dynamic markup.
+ * IMPORTANT: The ICONS map below is a copy of the one in icons.js (CJS).
+ * Keep both files in sync when adding or changing icon paths.
+ * Cross-reference: server/lib/html/icons.js (server-side CJS counterpart)
  *
- * IMPORTANT: The ICONS map is duplicated in the ESM client counterpart:
- *   server/lib/html/client/icons-client.js (in sync with this file)
- * Keep both files in sync when adding or changing icon paths. The duplication
- * is the no-build-step cost — the browser cannot import a CJS module as ESM.
+ * Why two files? icons.js uses `module.exports` for Node require() in shell.js.
+ * The browser cannot import a CJS module as ESM without a build step, so this
+ * ESM-only copy is the no-build-step cost. The data is identical; update both.
  */
 
+import { h } from './preact.js';
+
 // name → inner SVG markup (viewBox 0 0 24 24, stroke = currentColor)
-// Keep in sync with server/lib/html/client/icons-client.js
-const ICONS = {
+// Keep in sync with server/lib/html/icons.js
+export const ICONS = {
   home:        '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
   activity:    '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
   map:         '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>',
@@ -38,14 +39,30 @@ const ICONS = {
   hourglass:   '<path d="M5 22h14M5 2h14M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/>',
 };
 
-// Render an icon as an inline <svg>. size in px; cls adds extra classes.
-function icon(name, size, cls) {
-  const p = ICONS[name];
-  if (!p) return '';
-  const s = size || 16;
-  return '<svg class="ic' + (cls ? ' ' + cls : '') + '" width="' + s + '" height="' + s +
-    '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+/**
+ * Icon Preact component. Renders an inline SVG from the ICONS map.
+ *
+ * Props:
+ *   name  {string}  — key in ICONS
+ *   size  {number}  — px, default 16
+ *   cls   {string}  — extra CSS classes
+ *
+ * Usage: html`<${Icon} name="home" size=${16} />`
+ */
+export function Icon({ name, size = 16, cls = '' }) {
+  const paths = ICONS[name];
+  if (!paths) return null;
+  return h('svg', {
+    class: 'ic' + (cls ? ' ' + cls : ''),
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'aria-hidden': 'true',
+    dangerouslySetInnerHTML: { __html: paths },
+  });
 }
-
-module.exports = { ICONS, icon };
