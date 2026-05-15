@@ -60,6 +60,15 @@ Task(prompt="<research_type>
 Project Research — Stack dimension for [domain].
 </research_type>
 
+<objective>
+Identify the standard stack for [domain].
+
+Why this matters: this research feeds requirements definition and roadmap
+creation for {project_name}. A sufficient result lets the roadmap pick
+concrete libraries (with versions and rationale) and sequence build phases —
+not a vague survey of options.
+</objective>
+
 <milestone_context>
 [greenfield OR subsequent]
 
@@ -99,6 +108,15 @@ Use template: .rihal/templates/research-project/STACK.md
 Task(prompt="<research_type>
 Project Research — Features dimension for [domain].
 </research_type>
+
+<objective>
+Identify the feature landscape for [domain].
+
+Why this matters: this research feeds requirements definition and roadmap
+creation for {project_name}. A sufficient result lets requirements separate
+table stakes from differentiators and anti-features — not an undifferentiated
+feature list.
+</objective>
 
 <milestone_context>
 [greenfield OR subsequent]
@@ -140,6 +158,15 @@ Task(prompt="<research_type>
 Project Research — Architecture dimension for [domain].
 </research_type>
 
+<objective>
+Identify how [domain] systems are structured.
+
+Why this matters: this research feeds requirements definition and roadmap
+creation for {project_name}. A sufficient result lets the roadmap sequence
+phases by component dependency and data flow — not a generic architecture
+sketch.
+</objective>
+
 <milestone_context>
 [greenfield OR subsequent]
 
@@ -180,6 +207,14 @@ Task(prompt="<research_type>
 Project Research — Pitfalls dimension for [domain].
 </research_type>
 
+<objective>
+Identify the common mistakes in [domain] projects.
+
+Why this matters: this research feeds requirements definition and roadmap
+creation for {project_name}. A sufficient result lets the roadmap assign each
+pitfall a prevention step in a specific phase — not a generic warning list.
+</objective>
+
 <milestone_context>
 [greenfield OR subsequent]
 
@@ -217,7 +252,24 @@ Use template: .rihal/templates/research-project/PITFALLS.md
 ", subagent_type="rihal-project-researcher", model="{researcher_model}", description="Pitfalls research")
 ```
 
-After all 4 agents complete, spawn synthesizer to create SUMMARY.md:
+**Sufficiency loop (per dimension, runs before synthesis):**
+
+@.rihal/references/iterative-retrieval.md
+
+After the 4 parallel researchers return, evaluate each dimension's returned
+artifact (STACK / FEATURES / ARCHITECTURE / PITFALLS) for sufficiency against
+that dimension's `<objective>` — does it cover every sub-question, are
+recommendations specific (versions/rationale) not vague, and were any
+`## RESEARCH INCONCLUSIVE` or blocked signals returned. For any dimension
+that is insufficient, re-dispatch that dimension's `rihal-project-researcher`
+with a follow-up prompt naming the specific gaps and including the prior
+result, asking only for the missing pieces. This loop is hard-capped at 3
+cycles per dimension (initial + up to 2 follow-ups). After the cap, proceed
+with the best result for that dimension and note residual gaps in its
+artifact. Only then continue to synthesis.
+
+After all 4 agents complete and the sufficiency loop has settled, spawn
+synthesizer to create SUMMARY.md:
 
 ```
 Task(prompt="
