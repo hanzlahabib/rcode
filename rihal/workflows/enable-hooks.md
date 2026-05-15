@@ -1,7 +1,7 @@
 # Workflow: rihal-enable-hooks
 
 <purpose>
-Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
+Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), post-commit (format validation), and bash-guard (blocks dangerous commands) guardrails.
 </purpose>
 
 
@@ -81,6 +81,7 @@ Enabled guardrails:
   • pre-edit: Verifies files are Read() before Edit/Write
   • pre-workflow: Warns if rihal-* commands look suspicious
   • post-commit: Validates commit format and bans "Generated with Claude" patterns
+  • bash-guard: Blocks unapproved git push, --force, --no-verify, and unscoped rm -rf
 
 To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.
 ```
