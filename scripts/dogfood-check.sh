@@ -172,6 +172,16 @@ else
   pass "rihal/bin/ ↔ .rihal/bin/ in sync (no installed-CLI drift)"
 fi
 
+# Check 8 — agent-behavior regression harness (#746).
+# Diffs each tracked SKILL.md / agent .md structured contract (triggers,
+# tools, routing keywords, negative boundaries) against committed baselines.
+# A SKILL.md edit that changes routing/decisions surfaces as drift here.
+if node test/eval/run-eval.cjs > /dev/null 2>&1; then
+  pass "agent-behavior baselines unchanged (#746)"
+else
+  fail "agent-behavior drift detected (#746) — run 'node test/eval/run-eval.cjs' to review the diff; if intentional, re-bless with 'node test/eval/run-eval.cjs --bless'"
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "✓ Dogfood checks passed"
