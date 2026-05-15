@@ -708,7 +708,8 @@ function renderKanban() {
       const meta = [t.id, t.points ? t.points + ' pts' : null,
         t.phaseId ? 'P' + t.phaseId : null].filter(Boolean).join(' · ');
       const canRun = c === 'todo' || c === 'blocked';
-      const btn = sid
+      // Action buttons in card header
+      const actionBtns = sid
         ? (canRun
             ? '<button class="kanban-run-btn" data-action="run">▶ Run</button>'
             : c === 'in_progress'
@@ -716,9 +717,20 @@ function renderKanban() {
               : '')
         : '';
       h += '<div class="kanban-card s-' + c + '" data-story-id="' + sid + '" draggable="true">' +
+        // Card main info
         '<div class="kanban-card-title">' + esc(t.title || t.id || 'Untitled') + '</div>' +
         (meta ? '<div class="kanban-card-meta">' + esc(meta) + '</div>' : '') +
-        (btn ? '<div class="kanban-card-actions">' + btn + '</div>' : '') +
+        (actionBtns ? '<div class="kanban-card-actions">' + actionBtns + '</div>' : '') +
+        // Inline terminal — hidden by default, opens when Run is clicked
+        '<div class="kanban-terminal" style="display:none;">' +
+          '<div class="kanban-terminal-body"></div>' +
+          '<div class="kanban-files"></div>' +
+          '<div class="kanban-terminal-footer">' +
+            '<button class="kt-btn stop" data-action="stop">■ Stop</button>' +
+            '<button class="kt-btn" data-action="clear-term">Clear</button>' +
+            '<button class="kt-btn" data-action="close-term">Close</button>' +
+          '</div>' +
+        '</div>' +
         '</div>';
     }
     h += '</div>';
@@ -731,87 +743,133 @@ function renderKanban() {
   refreshOrchestratorStatus();
 }
 
-// Spawn a claude session for a story
+// Get the card element for a storyId
+function getCard(sid) { return document.querySelector('[data-story-id="' + sid + '"]'); }
+
+// Open the inline terminal on a card and clear it
+function openCardTerminal(storyId) {
+  var card = getCard(storyId);
+  if (!card) return;
+  var term = card.querySelector('.kanban-terminal');
+  if (term) { term.style.display = 'block'; card.classList.add('term-open'); }
+  var body = card.querySelector('.kanban-terminal-body');
+  if (body) body.innerHTML = '';
+  var files = card.querySelector('.kanban-files');
+  if (files) files.innerHTML = '';
+}
+
+// Append a log line to a specific card's terminal
+function appendCardLog(storyId, line) {
+  var card = getCard(storyId);
+  if (!card) return;
+  var body = card.querySelector('.kanban-terminal-body');
+  if (!body) return;
+  var div = document.createElement('div');
+  var cls = 'kt-line';
+  if (line.startsWith('⚙')) cls += ' tool';
+  else if (line.startsWith('⚠')) cls += ' warn';
+  else if (line.startsWith('✗')) cls += ' err';
+  else if (line.startsWith('▶') || line.startsWith('◉') || line.startsWith('■')) cls += ' meta';
+  div.className = cls;
+  div.textContent = line;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+// Append a file operation row to a card
+function appendCardFileOp(storyId, fileOp) {
+  var card = getCard(storyId);
+  if (!card) return;
+  var files = card.querySelector('.kanban-files');
+  if (!files) return;
+  var div = document.createElement('div');
+  div.className = 'kt-file';
+  var opClass = fileOp.op === 'write' ? 'op-w' : fileOp.op === 'bash' ? 'op-b' : 'op-r';
+  var opLabel = fileOp.op === 'write' ? '✎' : fileOp.op === 'bash' ? '$' : '👁';
+  var label = fileOp.path || fileOp.cmd || fileOp.tool;
+  div.innerHTML = '<span class="' + opClass + '">' + opLabel + '</span> ' + esc(label);
+  files.appendChild(div);
+}
+
+// Spawn a local claude session for a story
 function runStory(storyId) {
   if (!storyId) return;
-  openKanbanLog(storyId);
-  appendKanbanLog('⏳ Connecting to orchestrator…');
+  openCardTerminal(storyId);
+  appendCardLog(storyId, '⏳ Connecting to orchestrator…');
 
   fetch(ORCH + '/api/run', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId }),
   })
-  .then(r => r.json())
-  .then(data => {
-    if (data.error) { appendKanbanLog('✗ ' + data.error); return; }
-    appendKanbanLog('▶ Session started (pid ' + data.pid + ')');
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { appendCardLog(storyId, '✗ ' + data.error); return; }
+    appendCardLog(storyId, '▶ pid ' + data.pid);
     moveKanbanCard(storyId, 'in_progress');
     connectOrchestratorStream(storyId);
   })
-  .catch(err => {
-    appendKanbanLog('✗ Orchestrator not reachable: ' + err.message);
-    appendKanbanLog('→ Start it: node server/orchestrator.js');
+  .catch(function(err) {
+    appendCardLog(storyId, '✗ Orchestrator unreachable: ' + err.message);
+    appendCardLog(storyId, '→ Run: node server/orchestrator.js');
   });
 }
 
 // Stop a running session
 function stopStory(storyId) {
+  appendCardLog(storyId, '■ Stopping…');
   fetch(ORCH + '/api/stop', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId }),
-  }).catch(() => {});
-  appendKanbanLog('■ Stop requested for ' + storyId);
+  }).catch(function() {});
 }
 
-// Open SSE stream and pipe logs into the log panel
+// Connect SSE stream → pipe events into card terminal
 function connectOrchestratorStream(storyId) {
   if (_orchStreams[storyId]) _orchStreams[storyId].close();
-  const es = new EventSource(ORCH + '/api/stream/' + encodeURIComponent(storyId));
+  var es = new EventSource(ORCH + '/api/stream/' + encodeURIComponent(storyId));
   _orchStreams[storyId] = es;
 
-  es.onmessage = e => {
+  es.onmessage = function(e) {
     try {
-      const d = JSON.parse(e.data);
-      if (d.line)   appendKanbanLog(d.line);
+      var d = JSON.parse(e.data);
+      if (d.line)   appendCardLog(storyId, d.line);
+      if (d.fileOp) appendCardFileOp(storyId, d.fileOp);
       if (d.status) {
-        appendKanbanLog('◉ Status: ' + d.status);
-        if (d.status === 'done')    moveKanbanCard(storyId, 'done');
-        if (d.status === 'error')   moveKanbanCard(storyId, 'blocked');
-        if (d.status === 'stopped') { /* stay in current col */ }
-        if (d.status !== 'running') { es.close(); delete _orchStreams[storyId]; }
+        var st = d.status;
+        appendCardLog(storyId, '◉ ' + st);
+        if (st === 'done')    moveKanbanCard(storyId, 'done');
+        if (st === 'error')   moveKanbanCard(storyId, 'blocked');
+        if (st !== 'running') { es.close(); delete _orchStreams[storyId]; }
       }
     } catch {}
   };
-  es.onerror = () => { es.close(); delete _orchStreams[storyId]; };
+  es.onerror = function() { es.close(); delete _orchStreams[storyId]; };
 }
 
-// Poll /api/status and sync card states (visual)
+// Poll /api/status and sync card positions + re-attach streams
 function refreshOrchestratorStatus() {
   fetch(ORCH + '/api/status')
-    .then(r => r.json())
-    .then(status => {
-      for (const [sid, info] of Object.entries(status)) {
+    .then(function(r) { return r.json(); })
+    .then(function(status) {
+      for (var sid in status) {
+        var info = status[sid];
         if (info.status === 'running') moveKanbanCard(sid, 'in_progress');
         else if (info.status === 'done') moveKanbanCard(sid, 'done');
-        // Re-attach SSE for any still-running session without an open stream
-        if (info.status === 'running' && !_orchStreams[sid]) {
-          connectOrchestratorStream(sid);
-        }
+        if (info.status === 'running' && !_orchStreams[sid]) connectOrchestratorStream(sid);
       }
     })
-    .catch(() => {}); // orchestrator may not be running yet — silent
+    .catch(function() {});
 }
 
-// Move a card element to the correct column (visual only)
+// Move card to a column and swap action button
 function moveKanbanCard(storyId, colId) {
-  const card = document.querySelector('[data-story-id="' + storyId + '"]');
-  const col  = document.querySelector('.kanban-col[data-col="' + colId + '"]');
+  var card = getCard(storyId);
+  var col  = document.querySelector('.kanban-col[data-col="' + colId + '"]');
   if (!card || !col) return;
   col.appendChild(card);
-  // Swap button
-  const actions = card.querySelector('.kanban-card-actions');
+  var actions = card.querySelector('.kanban-card-actions');
   if (actions) {
     if (colId === 'in_progress') {
       actions.innerHTML = '<button class="kanban-stop-btn" data-action="stop">■ Stop</button>';
@@ -820,59 +878,38 @@ function moveKanbanCard(storyId, colId) {
     } else {
       actions.innerHTML = '<button class="kanban-run-btn" data-action="run">▶ Run</button>';
     }
-    // Re-wire the newly created button
     wireKanbanCardButtons(card);
   }
   refreshKanbanCounts();
 }
 
-function wireKanbanLogButtons() {
-  var closeBtn = document.getElementById('kanban-log-close');
-  var clearBtn = document.getElementById('kanban-log-clear');
-  if (closeBtn) closeBtn.onclick = closeKanbanLog;
-  if (clearBtn) clearBtn.onclick = function() {
-    var b = document.getElementById('kanban-log-body');
-    if (b) b.innerHTML = '';
-  };
-}
-
-function openKanbanLog(storyId) {
-  var panel = document.getElementById('kanban-log-panel');
-  var title = document.getElementById('kanban-log-title');
-  var body  = document.getElementById('kanban-log-body');
-  if (!panel) return;
-  if (title) title.textContent = '🤖 Agent — ' + storyId;
-  if (body)  body.innerHTML = '';
-  panel.style.display = 'block';
-}
-
-function closeKanbanLog() {
-  var panel = document.getElementById('kanban-log-panel');
-  if (panel) panel.style.display = 'none';
-}
-
-function appendKanbanLog(line) {
-  var body = document.getElementById('kanban-log-body');
-  if (!body) return;
-  var div = document.createElement('div');
-  var isWarn = line.startsWith('⚠');
-  var isErr  = line.startsWith('✗');
-  div.className = 'kanban-log-line' + (isWarn ? ' warn' : isErr ? ' err' : '');
-  div.textContent = line;
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-  var panel = document.getElementById('kanban-log-panel');
-  if (panel) panel.style.display = 'block';
-}
+function wireKanbanLogButtons() {} // kept for compatibility — no-op now
 
 function wireKanbanCardButtons(card) {
   var sid = card.dataset.storyId;
   if (!sid) return;
   card.querySelectorAll('[data-action="run"]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) { e.stopPropagation(); runStory(sid); });
+    btn.onclick = function(e) { e.stopPropagation(); runStory(sid); };
   });
   card.querySelectorAll('[data-action="stop"]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) { e.stopPropagation(); stopStory(sid); });
+    btn.onclick = function(e) { e.stopPropagation(); stopStory(sid); };
+  });
+  card.querySelectorAll('[data-action="clear-term"]').forEach(function(btn) {
+    btn.onclick = function(e) {
+      e.stopPropagation();
+      var b = card.querySelector('.kanban-terminal-body');
+      var f = card.querySelector('.kanban-files');
+      if (b) b.innerHTML = '';
+      if (f) f.innerHTML = '';
+    };
+  });
+  card.querySelectorAll('[data-action="close-term"]').forEach(function(btn) {
+    btn.onclick = function(e) {
+      e.stopPropagation();
+      var term = card.querySelector('.kanban-terminal');
+      if (term) term.style.display = 'none';
+      card.classList.remove('term-open');
+    };
   });
 }
 

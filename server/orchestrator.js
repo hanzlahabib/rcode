@@ -58,6 +58,17 @@ function broadcast(storyId, line) {
   }
 }
 
+// Push a file operation event to SSE clients + buffer it
+function broadcastFileOp(storyId, fileOp) {
+  const s = sessions.get(storyId);
+  if (!s || !fileOp) return;
+  s.fileOps.push(fileOp);
+  const payload = 'data: ' + JSON.stringify({ fileOp }) + '\n\n';
+  for (const client of s.sseClients) {
+    try { client.write(payload); } catch { s.sseClients.delete(client); }
+  }
+}
+
 // Push a status event to all SSE clients for a session
 function broadcastStatus(storyId, status) {
   const s = sessions.get(storyId);
@@ -69,30 +80,64 @@ function broadcastStatus(storyId, status) {
   }
 }
 
-// Extract human-readable text from a stream-json event line
-function extractText(raw) {
-  if (!raw) return null;
+// Parse one stream-json line → { text?, fileOp? }
+// toolBuf = accumulated partial JSON per content block index
+function parseStreamLine(raw, toolBuf) {
+  if (!raw) return {};
   try {
     const p = JSON.parse(raw);
-    // Assistant text chunks
+
+    // Assistant text delta
     if (p.type === 'content_block_delta' && p.delta?.type === 'text_delta') {
-      return p.delta.text || null;
+      return { text: p.delta.text || null };
     }
-    // Tool use — show tool name as progress hint
+
+    // Tool use start — record tool name, init buffer
     if (p.type === 'content_block_start' && p.content_block?.type === 'tool_use') {
-      return '⚙ ' + (p.content_block.name || 'tool');
+      const name = p.content_block.name || 'tool';
+      toolBuf[p.index] = { name, json: '' };
+      return { text: '⚙ ' + name };
     }
+
+    // Tool input JSON accumulation
+    if (p.type === 'content_block_delta' && p.delta?.type === 'input_json_delta') {
+      if (toolBuf[p.index]) toolBuf[p.index].json += (p.delta.partial_json || '');
+      return {};
+    }
+
+    // Tool use complete — try to extract file path
+    if (p.type === 'content_block_stop' && toolBuf[p.index]) {
+      const { name, json: partial } = toolBuf[p.index];
+      delete toolBuf[p.index];
+      let fileOp = null;
+      try {
+        const inp = JSON.parse(partial);
+        const filePath = inp.path || inp.file_path || inp.file || inp.filename || null;
+        const isWrite = /write|edit|create|str_replace/i.test(name);
+        const isRead  = /read|view|cat/i.test(name);
+        const isBash  = /bash|exec|run|shell/i.test(name);
+        if (filePath) {
+          fileOp = { tool: name, path: filePath, op: isWrite ? 'write' : isRead ? 'read' : 'access' };
+        } else if (isBash && inp.command) {
+          fileOp = { tool: 'bash', path: null, cmd: String(inp.command).slice(0, 80), op: 'bash' };
+        }
+      } catch {}
+      return { fileOp };
+    }
+
     // Result summary
-    if (p.type === 'result') return '✓ ' + (p.subtype || 'done');
-    // Legacy assistant block format (older claude versions)
+    if (p.type === 'result') return { text: '✓ ' + (p.subtype || 'done') };
+
+    // Legacy format
     if (p.type === 'assistant' && Array.isArray(p.message?.content)) {
-      return p.message.content.filter(c => c.type === 'text').map(c => c.text).join('') || null;
+      const text = p.message.content.filter(c => c.type === 'text').map(c => c.text).join('');
+      return { text: text || null };
     }
-    return null; // skip system/ping/other noise
+
+    return {};
   } catch {
     const t = raw.trim();
-    // Show plain text lines (non-JSON stderr text)
-    return t.startsWith('{') ? null : (t || null);
+    return { text: t.startsWith('{') ? null : (t || null) };
   }
 }
 
@@ -101,7 +146,7 @@ function extractText(raw) {
 function handleStatus(res) {
   const out = {};
   for (const [id, s] of sessions) {
-    out[id] = { pid: s.pid, status: s.status, lines: s.logs.length };
+    out[id] = { pid: s.pid, status: s.status, lines: s.logs.length, fileOps: s.fileOps };
   }
   json(res, 200, out);
 }
@@ -120,9 +165,12 @@ function handleStream(req, res, storyId) {
     return;
   }
 
-  // Replay buffered logs so late-connecting clients see history
+  // Replay buffered logs + file ops so late-connecting clients see history
   for (const line of s.logs) {
     res.write('data: ' + JSON.stringify({ line }) + '\n\n');
+  }
+  for (const fileOp of s.fileOps) {
+    res.write('data: ' + JSON.stringify({ fileOp }) + '\n\n');
   }
   res.write('data: ' + JSON.stringify({ status: s.status }) + '\n\n');
 
@@ -146,7 +194,9 @@ async function handleRun(req, res) {
 
   const s = {
     pid: null, proc: null, status: 'starting',
-    logs: [`▶ Starting: claude -p "${cmd}"`],
+    logs: ['▶ Starting: claude -p "' + cmd + '"'],
+    fileOps: [],          // { tool, path, op } — file changes this session
+    toolBuf: {},          // index → accumulated partial JSON for tool inputs
     sseClients: new Set(),
   };
   sessions.set(storyId, s);
@@ -167,15 +217,21 @@ async function handleRun(req, res) {
   s.status = 'running';
 
   proc.stdout.on('data', chunk => {
-    for (const line of chunk.toString().split('\n')) {
-      const text = extractText(line.trim());
+    for (const raw of chunk.toString().split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      const { text, fileOp } = parseStreamLine(line, s.toolBuf);
       if (text) broadcast(storyId, text);
+      if (fileOp) broadcastFileOp(storyId, fileOp);
     }
   });
 
   proc.stderr.on('data', chunk => {
     const msg = chunk.toString().trim();
-    if (msg) broadcast(storyId, '⚠ ' + msg);
+    // Skip the noisy stdin warning — it's expected with stdio:ignore
+    if (msg && !msg.includes('no stdin data received')) {
+      broadcast(storyId, '⚠ ' + msg);
+    }
   });
 
   proc.on('error', err => {
@@ -185,7 +241,7 @@ async function handleRun(req, res) {
 
   proc.on('exit', code => {
     const final = code === 0 ? 'done' : (code === null ? 'stopped' : 'error');
-    broadcast(storyId, final === 'done' ? '✅ Completed successfully' : `✗ Exited with code ${code}`);
+    broadcast(storyId, final === 'done' ? '✅ Completed' : '✗ Exited with code ' + code);
     broadcastStatus(storyId, final);
   });
 
