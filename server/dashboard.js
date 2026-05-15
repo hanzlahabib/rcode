@@ -104,9 +104,17 @@ const server = http.createServer((req, res) => {
 
   if (url.startsWith('/js/')) {
     const name = url.slice(4).split('?')[0];
-    // Charset blocks path separators and traversal — only flat *.js names.
-    if (!/^[\w.-]+\.js$/.test(name)) { res.writeHead(404); res.end('Not found'); return; }
-    fs.readFile(path.join(CLIENT_DIR, name), (err, data) => {
+    // Allow exactly one optional subdirectory (e.g. components/App.js, views/Foo.js)
+    // while still rejecting traversal attempts. The regex blocks `..`, encoded
+    // separators, and anything other than word chars, dots, hyphens, and one `/`.
+    if (!/^(?:[\w.-]+\/)?[\w.-]+\.js$/.test(name)) { res.writeHead(404); res.end('Not found'); return; }
+    // Defense-in-depth: resolved path must stay inside CLIENT_DIR even after
+    // any OS-level resolution (handles encoded traversal the regex might miss).
+    const resolved = path.resolve(CLIENT_DIR, name);
+    if (!resolved.startsWith(CLIENT_DIR + path.sep) && resolved !== CLIENT_DIR) {
+      res.writeHead(403); res.end('Forbidden'); return;
+    }
+    fs.readFile(resolved, (err, data) => {
       if (err) { res.writeHead(404); res.end('Not found'); return; }
       res.writeHead(200, {
         'Content-Type':  'application/javascript; charset=utf-8',
