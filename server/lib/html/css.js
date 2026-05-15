@@ -2040,11 +2040,79 @@ footer {
   color: var(--text-secondary);
 }
 .term-run-btn.outline:hover { background: var(--bg-hover); color: var(--text-primary); }
+.term-run-btn.danger {
+  background: transparent;
+  border-color: rgba(255,107,107,0.4);
+  color: #ff6b6b;
+}
+.term-run-btn.danger:hover { background: rgba(255,107,107,0.12); opacity: 1; }
 .term-action-bar {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
+}
+.term-status-dot.exited { background: #ff4444; animation: none; }
+
+/* ── Orchestration view ─────────────────────────────────────── */
+.orch-subtitle {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-5);
+}
+.orch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+.orch-card {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--text-muted);
+  border-radius: var(--radius-4);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.orch-card.orch-running { border-left-color: var(--accent-green); }
+.orch-card.orch-error,
+.orch-card.orch-exited  { border-left-color: #ff4444; }
+.orch-card.orch-stopped { border-left-color: var(--accent-amber); }
+.orch-card.orch-done    { border-left-color: var(--accent-blue); }
+.orch-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.orch-card-id {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+.orch-card-badge {
+  margin-left: auto;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.orch-card-cmd {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: var(--bg-elev-1);
+  border-radius: var(--radius-2);
+  padding: var(--space-2) var(--space-3);
+  word-break: break-all;
+}
+.orch-card-meta {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+.orch-card-actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
 /* ── Scrollbar global ───────────────────────────────────────── */

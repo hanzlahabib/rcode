@@ -66,16 +66,19 @@ function route() {
 
   // Close orchestrator panel when leaving kanban — it's fixed-position and overlaps other views
   if (view !== 'kanban') closeOrchPanel();
+  // Stop the live-sessions poll when leaving the Orchestration view.
+  if (view !== 'orchestration') stopOrchPoll();
 
-  if (view === 'overview')        renderOverview();
-  else if (view === 'roadmap')    renderRoadmap();
-  else if (view === 'milestones') renderMilestones(subId);
-  else if (view === 'phases')     renderPhases(subId);
-  else if (view === 'sprints')    renderSprints(subId);
-  else if (view === 'tasks')      renderTasks();
-  else if (view === 'kanban')     renderKanban();
-  else if (view === 'decisions')  renderDecisions();
-  else if (view === 'memory')     renderMemory();
+  if (view === 'overview')           renderOverview();
+  else if (view === 'orchestration') renderOrchestration();
+  else if (view === 'roadmap')       renderRoadmap();
+  else if (view === 'milestones')    renderMilestones(subId);
+  else if (view === 'phases')        renderPhases(subId);
+  else if (view === 'sprints')       renderSprints(subId);
+  else if (view === 'tasks')         renderTasks();
+  else if (view === 'kanban')        renderKanban();
+  else if (view === 'decisions')     renderDecisions();
+  else if (view === 'memory')        renderMemory();
 }
 
 function renderMemory() {
@@ -611,5 +614,97 @@ function runAndOpenTerm(storyId, cmd, title) {
     openTermPanel(storyId, title || storyId);
     if (_term) _term.writeln('\r\n\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\x1b[0m');
   });
+}
+
+// ── Orchestration view — live agent sessions ─────────────────────────────────
+// One place to see every running/finished session, with status, elapsed time,
+// and quick Stop / Open-Terminal controls. Polls /api/sessions while visible.
+var _orchPollTimer = null;
+
+function renderOrchestration() {
+  var el = document.getElementById('view-orchestration');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="view-title">⚡ Orchestration</div>' +
+    '<div class="orch-subtitle">Live agent sessions — run, watch, communicate, stop.</div>' +
+    '<div id="orch-sessions"><div class="empty">Loading sessions…</div></div>';
+  orchPollNow();
+  stopOrchPoll();
+  _orchPollTimer = setInterval(orchPollNow, 2000);
+}
+
+function stopOrchPoll() {
+  if (_orchPollTimer) { clearInterval(_orchPollTimer); _orchPollTimer = null; }
+}
+
+function orchPollNow() {
+  var tok = _orchToken();
+  if (!tok) { _orchRender(null, 'No orchestrator token — restart the dashboard'); return; }
+  fetch(ORCH_HTTP + '/api/sessions', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { _orchRender((d && d.sessions) || []); })
+    .catch(function () { _orchRender(null, 'Orchestrator unreachable'); });
+}
+
+function _orchElapsed(iso) {
+  if (!iso) return '—';
+  var s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 0) s = 0;
+  if (s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ' + (s % 60) + 's';
+  return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+}
+
+function _orchCard(s) {
+  var id = esc(s.storyId);
+  var running = s.status === 'running';
+  return '<div class="orch-card orch-' + esc(s.status) + '">' +
+    '<div class="orch-card-head">' +
+      '<span class="term-status-dot ' + esc(s.status) + '"></span>' +
+      '<span class="orch-card-id">' + id + '</span>' +
+      '<span class="orch-card-badge">' + esc(s.status) + '</span>' +
+    '</div>' +
+    '<div class="orch-card-cmd">' + esc(s.cmd || '') + '</div>' +
+    '<div class="orch-card-meta">' +
+      '⏱ ' + _orchElapsed(s.startTime) +
+      ' · 👁 ' + (s.clients || 0) +
+      (s.pid ? ' · pid ' + esc(String(s.pid)) : '') +
+    '</div>' +
+    '<div class="orch-card-actions">' +
+      '<button class="term-run-btn outline" onclick="openTermPanel(\'' + id + '\',\'' + id + '\')">📟 Terminal</button>' +
+      (running ? '<button class="term-run-btn danger" onclick="orchStopSession(\'' + id + '\')">■ Stop</button>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+function _orchRender(sessions, err) {
+  var box = document.getElementById('orch-sessions');
+  if (!box) return;
+  if (err) {
+    box.innerHTML = '<div class="empty">' + esc(err) + '</div>';
+    return;
+  }
+  if (!sessions.length) {
+    box.innerHTML = '<div class="empty">No agent sessions yet.' +
+      '<div class="empty-action">Run a phase or sprint to start one</div></div>';
+    return;
+  }
+  // Running sessions first, then most-recently-started.
+  sessions.sort(function (a, b) {
+    if ((a.status === 'running') !== (b.status === 'running')) return a.status === 'running' ? -1 : 1;
+    return String(b.startTime || '').localeCompare(String(a.startTime || ''));
+  });
+  box.innerHTML = '<div class="orch-grid">' + sessions.map(_orchCard).join('') + '</div>';
+}
+
+function orchStopSession(storyId) {
+  var tok = _orchToken();
+  if (!tok) return;
+  fetch(ORCH_HTTP + '/api/stop', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId: storyId })
+  }).then(function () { orchPollNow(); }).catch(function () {});
 }
 

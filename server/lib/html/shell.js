@@ -75,6 +75,7 @@ ${renderCss()}
     <nav>
       <div class="nav-section">Overview</div>
       <button class="nav-link" data-view="overview">🏠 Overview</button>
+      <button class="nav-link" data-view="orchestration">⚡ Orchestration</button>
       <button class="nav-link" data-view="roadmap">🗺 Roadmap</button>
 
       <div class="nav-section">Planning</div>
@@ -190,6 +191,7 @@ ${renderCss()}
       </div>
 
       <!-- ── Dynamic views (rendered by JS) ─────────────────── -->
+      <div id="view-orchestration" class="view"></div>
       <div id="view-roadmap"    class="view"></div>
       <div id="view-milestones" class="view"></div>
       <div id="view-phases"     class="view"></div>
