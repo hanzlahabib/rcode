@@ -6195,6 +6195,61 @@ function cmdValidateRoadmap() {
 }
 
 /**
+ * cmdRoadmapDetectStructure — detect monolithic vs per-milestone ROADMAP layout.
+ * Closes #734. Reports which convention is in use so workflows can branch correctly
+ * instead of assuming a single ROADMAP.md.
+ *
+ * Conventions detected:
+ *   monolithic   — .planning/ROADMAP.md (single file, all milestones)
+ *   per-milestone — .planning/ROADMAP-M{N}.md or .planning/milestones/{N}-*.md
+ *   hybrid        — both patterns present
+ *   absent        — no ROADMAP files found at all
+ */
+function cmdRoadmapDetectStructure() {
+  const planningDir = path.join(PROJECT_ROOT, '.planning');
+  const monoPath    = path.join(planningDir, 'ROADMAP.md');
+  const hasMono     = fs.existsSync(monoPath);
+
+  let perMilestoneFiles = [];
+  try {
+    const files = fs.readdirSync(planningDir);
+    // ROADMAP-M1.md, ROADMAP-M2.md, ROADMAP-milestone-name.md
+    perMilestoneFiles = files.filter(f => /^ROADMAP-[A-Za-z0-9].*\.md$/.test(f) && f !== 'ROADMAP.md');
+  } catch {}
+
+  let milestoneDirFiles = [];
+  const msDir = path.join(planningDir, 'milestones');
+  if (fs.existsSync(msDir)) {
+    try { milestoneDirFiles = fs.readdirSync(msDir).filter(f => f.endsWith('.md')); } catch {}
+  }
+
+  const hasPerMilestone = perMilestoneFiles.length > 0 || milestoneDirFiles.length > 0;
+
+  let structure;
+  if (hasMono && hasPerMilestone) structure = 'hybrid';
+  else if (hasMono)               structure = 'monolithic';
+  else if (hasPerMilestone)       structure = 'per-milestone';
+  else                            structure = 'absent';
+
+  return {
+    ok: true,
+    structure,
+    monolithic_file: hasMono ? '.planning/ROADMAP.md' : null,
+    per_milestone_files: [
+      ...perMilestoneFiles.map(f => `.planning/${f}`),
+      ...milestoneDirFiles.map(f => `.planning/milestones/${f}`),
+    ],
+    recommendation: structure === 'monolithic'
+      ? 'Standard layout. Use /rihal-plan and /rihal-execute normally.'
+      : structure === 'per-milestone'
+      ? 'Per-milestone layout detected. Pass the specific ROADMAP file to rihal-roadmapper with --roadmap <path>.'
+      : structure === 'hybrid'
+      ? 'Mixed layout. Consolidate to one convention to avoid workflow confusion.'
+      : 'No ROADMAP found. Run /rihal-new-project or /rihal-new-milestone first.',
+  };
+}
+
+/**
  * cmdMilestoneHealth — gauge for the current milestone (issue #718).
  *
  * Counts open vs done phases under the current milestone and recommends
@@ -6672,6 +6727,9 @@ async function main() {
         break;
       case 'validate-roadmap':
         result = cmdValidateRoadmap();
+        break;
+      case 'roadmap-detect-structure':
+        result = cmdRoadmapDetectStructure();
         break;
       case 'milestone-health':
         result = cmdMilestoneHealth();
