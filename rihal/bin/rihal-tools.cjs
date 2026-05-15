@@ -5200,6 +5200,95 @@ function cmdNotesCount() {
  * Placeholder URLs (containing `<PLACEHOLDER`) are skipped with a clear
  * message — useful in v2.0 before M5 lands real Rihal repo URLs.
  */
+
+/**
+ * cmdHandoff — cross-skill continuation token system. Closes #741.
+ *
+ * Enables one workflow to write a structured "where I left off" token
+ * that the next skill/workflow reads at startup — bridging the context
+ * gap between chained agents.
+ *
+ * Subcommands:
+ *   handoff write --from <skill> --to <skill> --phase <N> [--plan <M>] [--context "..."]
+ *       Write a handoff token to ~/.rihal/handoffs/{from}-{to}-{date}.json
+ *       and also to .rihal/handoff-latest.json for easy pickup by the next agent.
+ *
+ *   handoff read [--from <skill>]
+ *       Read the most recent handoff targeting the current (or specified) skill.
+ *       Returns JSON with: from, to, phase, plan, context, written_at.
+ *       Exits 0 even when no handoff exists (returns {found: false}).
+ *
+ *   handoff clear
+ *       Remove .rihal/handoff-latest.json (signal that the handoff was consumed).
+ */
+function cmdHandoff(args) {
+  const os_mod      = require('os');
+  const sub         = (args[0] || 'help').trim();
+  const handoffsDir = path.join(os_mod.homedir(), '.rihal', 'handoffs');
+  const latestPath  = path.join(RIHAL_DIR, 'handoff-latest.json');
+
+  if (sub === 'write') {
+    const fromVal    = args[args.indexOf('--from') + 1]    || null;
+    const toVal      = args[args.indexOf('--to') + 1]      || null;
+    const phaseVal   = args[args.indexOf('--phase') + 1]   || null;
+    const planVal    = args[args.indexOf('--plan') + 1]     || null;
+    const ctxIdx     = args.indexOf('--context');
+    const contextVal = ctxIdx !== -1 ? args.slice(ctxIdx + 1).join(' ') : null;
+    if (!fromVal || !toVal) throw new Error('handoff write requires --from <skill> and --to <skill>');
+
+    const token = {
+      from: fromVal, to: toVal,
+      phase: phaseVal || null, plan: planVal || null,
+      context: contextVal || null,
+      written_at: new Date().toISOString(),
+    };
+
+    try { fs.mkdirSync(handoffsDir, { recursive: true }); } catch {}
+    const date   = new Date().toISOString().slice(0, 10);
+    const fname  = `${fromVal}-${toVal}-${date}.json`;
+    const fpath  = path.join(handoffsDir, fname);
+    fs.writeFileSync(fpath, JSON.stringify(token, null, 2) + '\n');
+    // Also write the "latest" shortcut into the project .rihal dir
+    try {
+      fs.mkdirSync(RIHAL_DIR, { recursive: true });
+      fs.writeFileSync(latestPath, JSON.stringify(token, null, 2) + '\n');
+    } catch {}
+
+    return { ok: true, token, written_to: [path.relative(PROJECT_ROOT, fpath), path.relative(PROJECT_ROOT, latestPath)] };
+  }
+
+  if (sub === 'read') {
+    const fromFilter = args[args.indexOf('--from') + 1] || null;
+    // Prefer .rihal/handoff-latest.json (written by the most recent handoff write)
+    if (fs.existsSync(latestPath)) {
+      try {
+        const token = JSON.parse(fs.readFileSync(latestPath, 'utf8'));
+        if (!fromFilter || token.from === fromFilter) {
+          return { found: true, token, source: path.relative(PROJECT_ROOT, latestPath) };
+        }
+      } catch {}
+    }
+    // Fallback: scan ~/.rihal/handoffs/ for most recent matching file
+    try {
+      const files = fs.readdirSync(handoffsDir)
+        .filter(f => f.endsWith('.json') && (!fromFilter || f.startsWith(fromFilter + '-')))
+        .sort().reverse();
+      if (files.length) {
+        const token = JSON.parse(fs.readFileSync(path.join(handoffsDir, files[0]), 'utf8'));
+        return { found: true, token, source: files[0] };
+      }
+    } catch {}
+    return { found: false, token: null };
+  }
+
+  if (sub === 'clear') {
+    try { fs.unlinkSync(latestPath); } catch {}
+    return { ok: true, cleared: path.relative(PROJECT_ROOT, latestPath) };
+  }
+
+  return { ok: false, error: `Unknown handoff subcommand: ${sub}. Valid: write, read, clear` };
+}
+
 function cmdBrain(args) {
   const sub = args[0] || 'help';
   // sources.yaml lives under .rihal/brain/ in user installs (v2.2+).
@@ -6552,6 +6641,10 @@ async function main() {
         result = cmdBrain(args);
         break;
       }
+      case 'handoff': {
+        result = cmdHandoff(args);
+        break;
+      }
       case 'progress': {
         result = cmdProgress(args);
         break;
@@ -6630,6 +6723,9 @@ async function main() {
         console.log('  config-get <dotted.key>                      → read scalar from .rihal/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rihal/config.yaml');
         console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
+        console.log('  handoff write --from <skill> --to <skill> --phase N [--context "..."] → write cross-skill handoff token (#741)');
+        console.log('  handoff read [--from <skill>]               → read most recent handoff for this skill (#741)');
+        console.log('  handoff clear                               → consume (clear) the latest handoff token (#741)');
         console.log('    yolo_scope config keys: "global" | "phase:N" | "workflow:name"');
         console.log('    yolo_ttl config key: ISO timestamp — yolo auto-expires after this time');
         console.log('  verify schema-drift <phase> [--block]        → detect schema vs migration drift across phase commits');
