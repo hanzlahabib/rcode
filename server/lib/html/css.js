@@ -2054,6 +2054,29 @@ footer {
 }
 .term-status-dot.exited { background: #ff4444; animation: none; }
 
+/* Compact ▶ Run button on phase / sprint / task list cards */
+.card-run-btn {
+  float: right;
+  margin-left: var(--space-3);
+  height: 20px;
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease),
+              color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+.card-run-btn:hover {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #fff;
+}
+
 /* ── Orchestration view ─────────────────────────────────────── */
 .orch-subtitle {
   color: var(--text-tertiary);

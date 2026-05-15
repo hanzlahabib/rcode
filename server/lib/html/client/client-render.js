@@ -136,6 +136,13 @@ function phaseHints(p) {
 }
 
 // ---- Entity cards ----
+// Compact ▶ Run button for list cards. stopPropagation keeps the card's own
+// navigate-onclick from firing. storyId/cmd/label are controlled, quote-free.
+function runBtn(storyId, cmd, label) {
+  return '<button class="card-run-btn" title="Run ' + label + '" ' +
+    'onclick="event.stopPropagation();runAndOpenTerm(\'' + storyId + '\',\'' + cmd + '\',\'' + label + '\')">▶ Run</button>';
+}
+
 function phaseCard(p) {
   const sps = p.sprints || [];
   const stories = sps.flatMap(s => s.stories || []);
@@ -143,7 +150,8 @@ function phaseCard(p) {
   const isCur = String(p.id) === String(S.currentPhase);
   return '<div class="item item-clickable" onclick="navTo(\'phases/' + p.id + '\')"' +
     (isCur ? ' style="border-left-color:var(--accent-amber)"' : '') + '>' +
-    '<div class="item-title">Phase ' + esc(p.id) + ' — ' + esc(p.name) +
+    '<div class="item-title">' + runBtn('phase-' + p.id, '/rihal-execute', 'Phase ' + p.id) +
+    'Phase ' + esc(p.id) + ' — ' + esc(p.name) +
     (isCur ? tag('current') : '') + chip(p.status) + '</div>' +
     '<div class="item-meta">' + tag(sps.length + ' sprint' + (sps.length!==1?'s':'')) +
     tag(done + '/' + stories.length + ' tasks') +
@@ -162,7 +170,8 @@ function sprintCard(s) {
   const phaseId = s.phaseId || s.id || '';
   return '<div class="item item-clickable' + (isCur ? ' sprint-current' : '') + '" onclick="navTo(\'sprints/' + s.id + '\')"' +
     (isCur ? ' style="border-left-color:var(--accent-amber);background:rgba(245,158,11,0.04)"' : '') + '>' +
-    '<div class="item-title">Sprint ' + esc(s.id) + ' — ' + esc(s.goal || 'No goal') +
+    '<div class="item-title">' + runBtn('sprint-' + s.id, '/rihal-execute-sprint ' + s.id, 'Sprint ' + s.id) +
+    'Sprint ' + esc(s.id) + ' — ' + esc(s.goal || 'No goal') +
     (isCur ? tag('current') : '') + chip(s.status) + '</div>' +
     '<div class="item-meta">' +
     (s.phaseId ? tag('Phase ' + s.phaseId) : '') +
@@ -208,6 +217,7 @@ function taskCard(t) {
   return '<div class="item item-clickable" data-status="' + (t.status||'') + '" style="' + (done ? 'opacity:.65' : '') + '"' +
     ' onclick="toggleTaskDetail(\'' + tid + '\')">' +
     '<div class="item-title" style="' + (done ? 'text-decoration:line-through' : '') + '">' +
+    (t.id && !done ? runBtn(t.id, '/rihal-dev-story ' + t.id, 'Story ' + t.id) : '') +
     (done ? '✓ ' : '') + esc(t.title) + chip(t.status) +
     '<span class="task-expand-icon" id="icon-' + tid + '">▶</span></div>' +
     '<div class="item-meta">' +
