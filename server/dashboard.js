@@ -94,6 +94,14 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Lets the client fetch the current orchestrator token at runtime, so a
+  // long-open tab can self-heal instead of 401'ing if the token ever drifts.
+  if (url === '/api/orch-token') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ token: ORCH_TOKEN }));
+    return;
+  }
+
   if (url.startsWith('/js/')) {
     const name = url.slice(4).split('?')[0];
     // Charset blocks path separators and traversal — only flat *.js names.

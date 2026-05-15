@@ -450,6 +450,7 @@ function closeSidebar() {
 // ---- Boot ----
 route();
 updateTitle();
+refreshOrchToken();
 startSessionsPoll();
 
 // ── xterm Terminal Panel (WebSocket ↔ node-pty) ──────────────────────────────
@@ -464,6 +465,15 @@ var ORCH_HTTP = 'http://localhost:7718';
 var ORCH_WS   = 'ws://localhost:7718';
 
 function _orchToken() { return window.__ORCH_TOKEN__ || ''; }
+
+// Re-fetch the live orchestrator token from the dashboard (same-origin).
+// Lets a long-open tab self-heal if its embedded token ever drifts.
+function refreshOrchToken() {
+  return fetch('/api/orch-token')
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (d && d.token) window.__ORCH_TOKEN__ = d.token; })
+    .catch(function () {});
+}
 
 // Fit the terminal to its container and tell the PTY the new size.
 function _termResize() {
@@ -768,8 +778,12 @@ function pollActiveSessions() {
   var tok = _orchToken();
   if (!tok) return;
   fetch(ORCH_HTTP + '/api/sessions', { headers: { 'Authorization': 'Bearer ' + tok } })
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (r.status === 401) { refreshOrchToken(); return null; }
+      return r.json();
+    })
     .then(function (d) {
+      if (!d) return;
       _activeSessions = (d && d.sessions) || [];
       var sig = _activeSessions.map(function (s) { return s.storyId + ':' + s.status; }).join('|');
       if (sig !== _sessionsSig) { _sessionsSig = sig; route(); }
