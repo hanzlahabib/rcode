@@ -18,9 +18,9 @@
  *   the .active class on the static host divs when the route changes.
  *   Legacy route() in client-main.js also toggles these — both coexist.
  *
- *   The migrated Preact views (overview, decisions) are rendered INSIDE
- *   #app-root and styled to replace their legacy counterparts. The legacy
- *   #view-overview and #view-decisions in shell.js are removed.
+ *   The migrated Preact views (overview, decisions, roadmap, milestones,
+ *   phases, sprints, tasks) are rendered INSIDE #app-root. The legacy
+ *   render functions for these views are removed from client-render.js.
  */
 
 import { html, useState, useEffect, useRef, useCallback, memo } from '../preact.js';
@@ -29,18 +29,30 @@ import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
+import { RoadmapView } from '../views/RoadmapView.js';
+import { MilestonesView } from '../views/MilestonesView.js';
+import { PhasesView } from '../views/PhasesView.js';
+import { SprintsView } from '../views/SprintsView.js';
+import { TasksView } from '../views/TasksView.js';
 
 // Views served by Preact components (migrated)
-const PREACT_VIEWS = { overview: OverviewView, decisions: DecisionsView };
+const PREACT_VIEWS = {
+  overview:   OverviewView,
+  decisions:  DecisionsView,
+  roadmap:    RoadmapView,
+  milestones: MilestonesView,
+  phases:     PhasesView,
+  sprints:    SprintsView,
+  tasks:      TasksView,
+};
 
 // Un-migrated view keys — rendered as frozen placeholder divs inside main-scroll.
 // Legacy client-main.js writes innerHTML into these; Preact MUST NOT clear them.
 const LEGACY_VIEWS = [
-  'orchestration', 'roadmap', 'milestones', 'phases',
-  'sprints', 'tasks', 'kanban', 'files', 'agents', 'memory',
+  'orchestration', 'kanban', 'files', 'agents', 'memory',
 ];
 
-const ALL_VIEWS = ['overview', ...LEGACY_VIEWS, 'decisions'];
+const ALL_VIEWS = Object.keys(PREACT_VIEWS).concat(LEGACY_VIEWS);
 
 /** Parse location.hash into { view, subId } — port of client-main.js:45-49. */
 function parseHash() {

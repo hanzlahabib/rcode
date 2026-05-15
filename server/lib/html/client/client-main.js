@@ -69,19 +69,14 @@ function route() {
   // Stop the live-sessions poll when leaving the Orchestration view.
   if (view !== 'orchestration') stopOrchPoll();
 
-  if (view === 'overview') {
-    // Preact owns the overview view — no legacy render call needed.
+  // Preact owns these views — no legacy render call needed.
+  const PREACT_OWNED = ['overview', 'decisions', 'roadmap', 'milestones', 'phases', 'sprints', 'tasks'];
+  if (PREACT_OWNED.includes(view)) {
+    // Intentionally empty — Preact re-renders on hashchange via its own listener.
   } else if (view === 'orchestration') renderOrchestration();
-  else if (view === 'roadmap')       renderRoadmap();
-  else if (view === 'milestones')    renderMilestones(subId);
-  else if (view === 'phases')        renderPhases(subId);
-  else if (view === 'sprints')       renderSprints(subId);
-  else if (view === 'tasks')         renderTasks();
   else if (view === 'kanban')        renderKanban();
   else if (view === 'files')         initFileList(); // lazy — waits for Preact to create #view-files
-  else if (view === 'decisions') {
-    // Preact owns the decisions view — no legacy render call needed.
-  } else if (view === 'memory')      renderMemory();
+  else if (view === 'memory')        renderMemory();
 }
 
 function renderMemory() {
