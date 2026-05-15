@@ -27,6 +27,7 @@
 const http   = require('http');
 const path   = require('path');
 const crypto = require('crypto');
+const { execFile } = require('child_process');
 
 // @lydell/node-pty ships prebuilt binaries and never invokes node-gyp, so a
 // plain `npm install` works on any common platform with no build toolchain.
@@ -114,18 +115,41 @@ function setStatus(s, status) {
   wsSend(s, { t: 's', s: status });
 }
 
+// Set of working-tree files with uncommitted changes. A session's
+// "files changed" is the current dirty set minus the set captured when it
+// started — an estimate of what that session touched.
+function gitModified() {
+  return new Promise(resolve => {
+    execFile('git', ['-C', PROJECT_ROOT, 'status', '--porcelain'],
+      { timeout: 5000 }, (err, stdout) => {
+        if (err) { resolve(new Set()); return; }
+        const set = new Set();
+        for (const line of String(stdout).split('\n')) {
+          const f = line.slice(3).trim();
+          if (f) set.add(f);
+        }
+        resolve(set);
+      });
+  });
+}
+
 // ── route handlers ────────────────────────────────────────────────────────────
 
-function handleSessions(res) {
+async function handleSessions(res) {
+  const current = await gitModified();
   const out = [];
   for (const [id, s] of sessions) {
+    const start = s.filesAtStart || new Set();
+    let changed = 0;
+    for (const f of current) if (!start.has(f)) changed++;
     out.push({
-      storyId:   id,
-      status:    s.status,
-      pid:       s.proc ? s.proc.pid : null,
-      cmd:       s.cmd,
-      startTime: s.startTime,
-      clients:   s.wsClients.size,
+      storyId:      id,
+      status:       s.status,
+      pid:          s.proc ? s.proc.pid : null,
+      cmd:          s.cmd,
+      startTime:    s.startTime,
+      clients:      s.wsClients.size,
+      filesChanged: changed,
     });
   }
   json(res, 200, { sessions: out });
@@ -170,11 +194,15 @@ async function handleRun(req, res) {
 
   const s = {
     proc, status: 'running', cmd, cols, rows,
-    startTime:  new Date().toISOString(),
-    scrollback: '',
-    wsClients:  new Set(),
+    startTime:   new Date().toISOString(),
+    scrollback:  '',
+    wsClients:   new Set(),
+    filesAtStart: new Set(),
   };
   sessions.set(storyId, s);
+  // Snapshot the dirty working tree so /api/sessions can report how many
+  // files this session has changed since it began.
+  gitModified().then(set => { s.filesAtStart = set; });
 
   proc.onData(d => {
     s.scrollback += d;
@@ -254,7 +282,7 @@ const server = http.createServer(async (req, res) => {
 
   const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
 
-  if (method === 'GET'  && pathOnly === '/api/sessions') { handleSessions(res);       return; }
+  if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
 

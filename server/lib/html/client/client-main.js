@@ -668,6 +668,7 @@ function _orchCard(s) {
     '<div class="orch-card-cmd">' + esc(s.cmd || '') + '</div>' +
     '<div class="orch-card-meta">' +
       '⏱ ' + _orchElapsed(s.startTime) +
+      ' · 📝 ' + (s.filesChanged || 0) + ' file' + (s.filesChanged === 1 ? '' : 's') +
       ' · 👁 ' + (s.clients || 0) +
       (s.pid ? ' · pid ' + esc(String(s.pid)) : '') +
     '</div>' +
