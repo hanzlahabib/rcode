@@ -326,7 +326,7 @@ async function handleRun(req, res) {
   ], {
     cwd: PROJECT_ROOT,
     env: { ...process.env },
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ['pipe', 'pipe', 'pipe'],
   });
 
   s.proc = proc;
@@ -346,10 +346,7 @@ async function handleRun(req, res) {
 
   proc.stderr.on('data', chunk => {
     const msg = chunk.toString().trim();
-    // Skip the noisy stdin warning — it's expected with stdio:ignore
-    if (msg && !msg.includes('no stdin data received')) {
-      broadcast(storyId, '⚠ ' + msg);
-    }
+    if (msg) broadcast(storyId, '⚠ ' + msg);
   });
 
   proc.on('error', err => {
@@ -365,6 +362,22 @@ async function handleRun(req, res) {
   });
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
+}
+
+async function handleMessage(req, res) {
+  const body    = await parseBody(req);
+  const storyId = String(body.storyId || '').trim();
+  const data    = String(body.data    || '');
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
+  const s = sessions.get(storyId);
+  if (!s || s.status !== 'running') { json(res, 404, { error: 'no active session' }); return; }
+  try {
+    s.proc.stdin.write(data);
+    broadcast(storyId, '[input] ' + data.trim());
+    json(res, 200, { ok: true });
+  } catch (err) {
+    json(res, 500, { error: err.message });
+  }
 }
 
 async function handleCleanSessions(req, res) {
@@ -404,6 +417,7 @@ const server = http.createServer(async (req, res) => {
   }
   if (method === 'POST' && url === '/api/run')             { await handleRun(req, res);  return; }
   if (method === 'POST' && url === '/api/stop')            { await handleStop(req, res); return; }
+  if (method === 'POST' && url === '/api/message')         { await handleMessage(req, res); return; }
   if (method === 'POST' && url === '/api/clean-sessions')  { await handleCleanSessions(req, res); return; }
 
   res.writeHead(404); res.end('Not found');

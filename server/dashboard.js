@@ -22,6 +22,7 @@
 
 const http    = require('http');
 const path    = require('path');
+const crypto  = require('crypto');
 const { spawn } = require('child_process');
 
 const { scanState } = require('./lib/scanner');
@@ -32,6 +33,9 @@ const { renderHtml } = require('./lib/html/shell');
 const PORT = parseInt(process.env.PORT || '7717', 10);
 const RIHAL_DIR = process.env.RIHAL_DIR || path.join(process.cwd(), '.rihal');
 const PROJECT_ROOT = path.dirname(RIHAL_DIR);
+
+// Shared orchestrator token — generated once, passed to orchestrator via env and embedded in HTML
+const ORCH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('hex');
 
 // ---------- HTTP Server ----------
 const server = http.createServer((req, res) => {
@@ -70,7 +74,7 @@ const server = http.createServer((req, res) => {
 
   if (url === '/' || url === '/index.html') {
     const state = scanState(RIHAL_DIR);
-    const html = renderHtml(state);
+    const html = renderHtml(state, ORCH_TOKEN);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;
@@ -100,7 +104,7 @@ function spawnOrchestrator() {
   try {
     _orchProc = spawn(process.execPath, [ORCH_BIN], {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env },
+      env: { ...process.env, ORCH_TOKEN },
       stdio: 'pipe',
     });
     _orchProc.stdout.on('data', chunk => {

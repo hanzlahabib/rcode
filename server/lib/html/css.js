@@ -1883,6 +1883,155 @@ footer {
 /* ── Overview dynamic area ──────────────────────────────────── */
 #view-overview-dynamic section { margin-top: var(--space-5); }
 
+/* ── xterm Terminal Panel ───────────────────────────────────── */
+.term-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+}
+.term-backdrop.open { display: block; }
+.term-panel {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 236px;
+  right: 0;
+  height: 55vh;
+  min-height: 300px;
+  background: #0c0c0e;
+  border-top: 2px solid var(--accent-primary);
+  z-index: 201;
+  flex-direction: column;
+}
+.term-panel.open { display: flex; }
+.term-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+  height: 38px;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  user-select: none;
+}
+.term-header-left { display: flex; align-items: center; gap: var(--space-3); }
+.term-header-right { display: flex; align-items: center; gap: var(--space-2); }
+.term-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}
+.term-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+.term-status-dot.running { background: var(--accent-green); animation: pulse 1.5s infinite; }
+.term-status-dot.done    { background: var(--accent-green); animation: none; }
+.term-status-dot.error   { background: #ff4444; animation: none; }
+.term-status-dot.stopped { background: var(--accent-amber); animation: none; }
+.term-status-dot.connecting { background: var(--accent-blue); animation: pulse 1s infinite; }
+.term-btn {
+  height: 22px;
+  padding: 0 var(--space-3);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  white-space: nowrap;
+}
+.term-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.term-stop-btn { color: #ff6b6b; border-color: rgba(255,107,107,0.3); }
+.term-stop-btn:hover { background: rgba(255,107,107,0.1); }
+#term-container {
+  flex: 1;
+  overflow: hidden;
+  padding: 6px 8px;
+  background: #0c0c0e;
+}
+.term-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elev-2);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.term-prompt {
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+.term-input-field {
+  flex: 1;
+  height: 26px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  outline: none;
+  letter-spacing: 0;
+}
+.term-input-field::placeholder { color: var(--text-muted); }
+.term-send-btn {
+  height: 24px;
+  padding: 0 var(--space-3);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-2);
+  color: white;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.term-send-btn:hover { opacity: 1; }
+/* Run / Terminal action buttons (used on sprint/phase detail) */
+.term-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-4);
+  background: var(--accent-primary);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-3);
+  color: white;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.term-run-btn:hover { opacity: 0.85; }
+.term-run-btn.outline {
+  background: transparent;
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+.term-run-btn.outline:hover { background: var(--bg-hover); color: var(--text-primary); }
+.term-action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
 /* ── Scrollbar global ───────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -515,8 +515,11 @@ function renderPhases(subId) {
       // #282: completed_at date
       (p.completed_at ? attr('Completed', humanDate(p.completed_at)) : '') + '</div></div>' +
       '<div style="margin-bottom:var(--space-4);">' + progressBar(done, stories.length) + '</div>' +
-      // #283: View plan file button
-      '<div style="margin-bottom:var(--space-6);"><button class="back-btn" onclick="viewPlanFile(\\'' + esc(p.id) + '\\')">📄 View plan file →</button></div>' +
+      '<div class="term-action-bar">' +
+        '<button class="term-run-btn" onclick="runAndOpenTerm(\'phase-' + esc(p.id) + '\',\'/rihal-execute\',\'Phase ' + esc(p.id) + '\')">▶ Run Phase</button>' +
+        '<button class="term-run-btn outline" onclick="openTermPanel(\'phase-' + esc(p.id) + '\',\'Phase ' + esc(p.id) + '\')">📟 Terminal</button>' +
+        '<button class="back-btn" onclick="viewPlanFile(\\'' + esc(p.id) + '\\')">📄 View plan file →</button>' +
+      '</div>' +
       velocityHtml +
       '<div class="view-title" style="margin-top:var(--space-6)">Sprints</div>' +
       '<div class="phase-list">' + (sps.length ? sps.map(s => sprintCard(Object.assign({},s,{phaseId:p.id,phaseName:p.name}))).join('') :
@@ -564,8 +567,12 @@ function renderSprints(subId) {
       (s.started_at   ? attr('Started',   humanDate(s.started_at))   : '') +
       (s.completed_at ? attr('Completed', humanDate(s.completed_at)) : '') + '</div></div>' +
       // #289: progress bar
-      '<div style="margin-bottom:var(--space-6);">' + progressBar(done, stories.length) + '</div>' +
-      '<div class="view-title" style="margin-top:var(--space-6)">Tasks</div>' +
+      '<div style="margin-bottom:var(--space-4);">' + progressBar(done, stories.length) + '</div>' +
+      '<div class="term-action-bar">' +
+        '<button class="term-run-btn" onclick="runAndOpenTerm(\'sprint-' + esc(s.id) + '\',\'/rihal-execute-sprint ' + esc(s.id) + '\',\'Sprint ' + esc(s.id) + '\')">▶ Run Sprint</button>' +
+        '<button class="term-run-btn outline" onclick="openTermPanel(\'sprint-' + esc(s.id) + '\',\'Sprint ' + esc(s.id) + '\')">📟 Terminal</button>' +
+      '</div>' +
+      '<div class="view-title" style="margin-top:var(--space-4)">Tasks</div>' +
       '<div class="phase-list">' + (stories.length ? stories.map(taskCard).join('') :
         '<div class="empty">No tasks in this sprint yet.<div class="empty-action">Run /rihal-create-story to add tasks</div></div>') + '</div>' +
       acHtml + cmdAccordion(sprintHints(s));
@@ -955,7 +962,7 @@ function runStory(storyId) {
 
   fetch(ORCH + '/api/run', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (window.__ORCH_TOKEN__ || '') },
     body: JSON.stringify({ storyId }),
   })
   .then(function(r) { return r.json(); })
@@ -977,7 +984,7 @@ function stopStory(storyId) {
   appendCardLog(storyId, '■ Stopping…');
   fetch(ORCH + '/api/stop', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (window.__ORCH_TOKEN__ || '') },
     body: JSON.stringify({ storyId }),
   }).catch(function() {});
 }
@@ -1033,7 +1040,7 @@ function _updateOrchDot() {
 }
 
 function refreshOrchestratorStatus() {
-  fetch(ORCH + '/api/status')
+  fetch(ORCH + '/api/status', { headers: { 'Authorization': 'Bearer ' + (window.__ORCH_TOKEN__ || '') } })
     .then(function(r) { return r.json(); })
     .then(function(status) {
       // Mark orch as reachable
@@ -1610,6 +1617,167 @@ function closeSidebar() {
 // ---- Boot ----
 route();
 updateTitle();
+
+// ── xterm Terminal Panel ─────────────────────────────────────────────────────
+var _term = null;
+var _termFit = null;
+var _termEvt = null;
+var _termStoryId = null;
+
+function _orchToken() { return window.__ORCH_TOKEN__ || ''; }
+
+function openTermPanel(storyId, title) {
+  _termStoryId = storyId;
+  document.getElementById('term-title').textContent = title || storyId;
+  document.getElementById('term-panel').classList.add('open');
+  document.getElementById('term-backdrop').classList.add('open');
+  setTermDot('connecting');
+
+  if (!_term && typeof Terminal !== 'undefined') {
+    _term = new Terminal({
+      theme: {
+        background: '#0c0c0e', foreground: '#c9d1d9',
+        cursor: '#58a6ff', selectionBackground: 'rgba(94,106,210,0.25)',
+        black: '#0c0c0e', red: '#ff4444', green: '#3fb950',
+        yellow: '#d29922', blue: '#58a6ff', magenta: '#bc8cff',
+        cyan: '#39c5cf', white: '#b1bac4', brightBlack: '#6e7681',
+      },
+      fontFamily: '"JetBrains Mono","SF Mono",Consolas,monospace',
+      fontSize: 12, lineHeight: 1.4, convertEol: true,
+      scrollback: 5000, cursorStyle: 'bar',
+    });
+    if (typeof FitAddon !== 'undefined') {
+      _termFit = new FitAddon.FitAddon();
+      _term.loadAddon(_termFit);
+    }
+    _term.open(document.getElementById('term-container'));
+    if (_termFit) _termFit.fit();
+    _term.onData(function(data) {
+      var tok = _orchToken();
+      if (!_termStoryId || !tok) return;
+      fetch('http://localhost:7718/api/message', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId: _termStoryId, data: data })
+      }).catch(function() {});
+    });
+    window.addEventListener('resize', function() { if (_termFit) _termFit.fit(); });
+  } else if (_term) {
+    _term.clear();
+    if (_termFit) _termFit.fit();
+  }
+
+  if (_termEvt) { _termEvt.close(); _termEvt = null; }
+  var tok = _orchToken();
+  if (!tok) {
+    if (_term) _term.writeln('\r\x1b[31m✗ No orchestrator token — restart the dashboard\x1b[0m');
+    return;
+  }
+
+  if (_term) _term.writeln('\x1b[90m── connecting to stream: ' + storyId + ' ──\x1b[0m\r\n');
+
+  var url = 'http://localhost:7718/api/stream/' + encodeURIComponent(storyId) + '?token=' + tok;
+  _termEvt = new EventSource(url);
+  _termEvt.onmessage = function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      if (d.line)   { if (_term) _term.writeln('\r' + d.line); }
+      if (d.chunk)  { if (_term) _term.write(d.chunk); }
+      if (d.fileOp) { if (_term) _term.writeln('\r\x1b[36m[' + d.fileOp.type + '] ' + d.fileOp.path + '\x1b[0m'); }
+      if (d.status) {
+        setTermDot(d.status);
+        if (d.status === 'done' || d.status === 'error' || d.status === 'stopped') {
+          if (_term) _term.writeln('\r\n\x1b[90m── session ' + d.status + ' ──\x1b[0m');
+          if (_termEvt) { _termEvt.close(); _termEvt = null; }
+        } else {
+          setTermDot(d.status);
+        }
+      }
+      if (d.error)  { if (_term) _term.writeln('\r\x1b[31m✗ ' + d.error + '\x1b[0m'); }
+    } catch(ex) {}
+  };
+  _termEvt.onerror = function() {
+    if (_term) _term.writeln('\r\x1b[31m✗ stream disconnected\x1b[0m');
+    setTermDot('error');
+  };
+}
+
+function setTermDot(status) {
+  var dot = document.getElementById('term-status-dot');
+  if (dot) dot.className = 'term-status-dot ' + (status || '');
+}
+
+function closeTermPanel() {
+  document.getElementById('term-panel').classList.remove('open');
+  document.getElementById('term-backdrop').classList.remove('open');
+  if (_termEvt) { _termEvt.close(); _termEvt = null; }
+}
+
+function termStop() {
+  var tok = _orchToken();
+  if (!_termStoryId || !tok) return;
+  fetch('http://localhost:7718/api/stop', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId: _termStoryId })
+  }).catch(function() {});
+}
+
+function termSend() {
+  var inp = document.getElementById('term-input');
+  if (!inp) return;
+  var msg = (inp.value || '').trim();
+  if (!msg) return;
+  inp.value = '';
+  var tok = _orchToken();
+  if (!_termStoryId || !tok) return;
+  if (_term) _term.writeln('\r\x1b[90m[you] ' + msg + '\x1b[0m');
+  fetch('http://localhost:7718/api/message', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId: _termStoryId, data: msg + '\n' })
+  }).catch(function() {});
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var panel = document.getElementById('term-panel');
+    if (panel && panel.classList.contains('open')) closeTermPanel();
+  }
+});
+
+var _termInputEl = document.getElementById('term-input');
+if (_termInputEl) {
+  _termInputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') termSend();
+  });
+}
+
+function runAndOpenTerm(storyId, cmd, title) {
+  var tok = _orchToken();
+  openTermPanel(storyId, title || storyId);
+  if (!tok) return;
+  fetch('http://localhost:7718/api/run', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId: storyId, cmd: cmd })
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error && data.error !== 'already running') {
+      if (_term) _term.writeln('\r\x1b[31m✗ ' + data.error + '\x1b[0m');
+    } else if (data.error === 'already running') {
+      if (_term) _term.writeln('\r\x1b[33m⚠ Already running (pid ' + data.pid + ') — showing live output\x1b[0m');
+      setTermDot('running');
+    }
+  })
+  .catch(function(err) {
+    if (_term) _term.writeln('\r\x1b[31m✗ Orchestrator unreachable: ' + err.message + '\x1b[0m');
+  });
+}
+
+// Also fix existing kanban run/stop to use auth token
+var _origRunStory = window.runStory;
+
 </script>`;
 }
 
