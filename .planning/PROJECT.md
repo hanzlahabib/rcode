@@ -8,17 +8,18 @@ Rihal Code gives teams a real AI team instead of one assistant pretending to be 
 
 ## Current Milestone
 
-**M1 — Ship v2 + Tier Docs** (in progress)
+**M2 — Hardening & Polish** (in progress)
 
-See `ROADMAP.md` for phase breakdown.
+M1 — Ship v2 + Tier Docs shipped 2026-05-16 (phases 01–19). See `MILESTONES.md`.
+See `ROADMAP.md` for the M2 phase breakdown.
 
 ## Modules
 
-- `rihal/` — v1 production package (18 agents, 22 action skills, 17 agent skills, CLI)
-- `rihal/v2/` — v2 methodology (36 agents, 67 workflows, 69 commands) — just shipped to main
-- `cli/` — installer + CLI commands (install, tiers, dashboard, etc.)
-- `server/dashboard.js` — view-only Diwan dashboard (port 7717)
-- `docs/` — TIERS.md, STANDARDS.md, V2-PREVIEW.md, METHODOLOGY.md
+- `rihal/` — the unified methodology package (34 agents, 39 skills, 71 workflows, 70 commands, CLI)
+- `cli/` — installer + CLI commands (install, tiers, dashboard, doctor, etc.)
+- `server/dashboard.js` — view-only Majlis dashboard (port 7717) with orchestration + node-pty terminal
+- `server/lib/html/client/` — dashboard client JS modules (render, kanban, main)
+- `docs/` — TIERS.md, STANDARDS.md, METHODOLOGY.md
 - `.github/` — workflows, PR/issue templates
 
 ## Stack
@@ -43,3 +44,6 @@ See `ROADMAP.md` for phase breakdown.
 - `AGENTS.md` — never-push-to-main, no AI attribution, no --force, no --no-verify
 - `CLAUDE.md` — AI agent project instructions
 - `docs/STANDARDS.md` — 5-component skill spec, commit rules, PR checklist
+
+---
+*Last updated: 2026-05-16 after M1 milestone completion*
