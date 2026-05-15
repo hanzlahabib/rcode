@@ -655,6 +655,260 @@ function sortTasks() {
   if (el) el.innerHTML = sort === 'default' ? renderTasksGrouped(tasks) : tasks.map(taskCard).join('');
 }
 
+// ── Kanban + Orchestrator ────────────────────────────────────────────────────
+// Drag-drop is visual only (dashboard is view-only, no write endpoints).
+// Run/Stop buttons talk to orchestrator on :7718 — separate server.
+var ORCH = 'http://localhost:7718';
+// Map<storyId, EventSource> — active SSE connections
+var _orchStreams = {};
+
+function kanbanCol(status) {
+  if (status === 'done' || status === 'completed') return 'done';
+  if (status === 'in_progress' || status === 'active' || status === 'running') return 'in_progress';
+  if (status === 'blocked') return 'blocked';
+  return 'todo';
+}
+
+function renderKanban() {
+  const el = document.getElementById('view-kanban');
+  if (!el) return;
+  const tasks = allTasks();
+  const cols = [
+    { id: 'todo',        label: 'Todo' },
+    { id: 'in_progress', label: 'In Progress' },
+    { id: 'blocked',     label: 'Blocked' },
+    { id: 'done',        label: 'Done' },
+  ];
+  const buckets = { todo: [], in_progress: [], blocked: [], done: [] };
+  for (const t of tasks) buckets[kanbanCol(t.status)].push(t);
+
+  let h = '<div class="view-title">🗂 Kanban</div>';
+  h += '<div class="filter-bar" style="justify-content:space-between;">' +
+    '<span style="color:var(--text-muted);font-size:var(--text-sm);">' +
+    'Click <strong>▶ Run</strong> to spawn a local claude session. ' +
+    'Drag = visual only (not persisted).</span>' +
+    '<button class="kanban-refresh-btn" onclick="refreshOrchestratorStatus()">⟳ Sync</button>' +
+    '</div>';
+
+  if (!tasks.length) {
+    el.innerHTML = h + '<div class="empty">No stories yet.' +
+      '<div class="empty-action">Run <code>/rihal-plan</code> to generate tasks.</div></div>';
+    return;
+  }
+
+  h += '<div class="kanban-board">';
+  for (const col of cols) {
+    const items = buckets[col.id];
+    h += '<div class="kanban-col" data-col="' + col.id + '">' +
+      '<div class="kanban-col-head"><span>' + esc(col.label) + '</span>' +
+      '<span class="kanban-count">' + items.length + '</span></div>';
+    for (const t of items) {
+      const c = kanbanCol(t.status);
+      const sid = esc(t.id || '');
+      const meta = [t.id, t.points ? t.points + ' pts' : null,
+        t.phaseId ? 'P' + t.phaseId : null].filter(Boolean).join(' · ');
+      const canRun = c === 'todo' || c === 'blocked';
+      const btn = sid
+        ? (canRun
+            ? '<button class="kanban-run-btn" data-action="run">▶ Run</button>'
+            : c === 'in_progress'
+              ? '<button class="kanban-stop-btn" data-action="stop">■ Stop</button>'
+              : '')
+        : '';
+      h += '<div class="kanban-card s-' + c + '" data-story-id="' + sid + '" draggable="true">' +
+        '<div class="kanban-card-title">' + esc(t.title || t.id || 'Untitled') + '</div>' +
+        (meta ? '<div class="kanban-card-meta">' + esc(meta) + '</div>' : '') +
+        (btn ? '<div class="kanban-card-actions">' + btn + '</div>' : '') +
+        '</div>';
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+
+  // Log panel — shown when a session is active
+  h += '<div id="kanban-log-panel" class="kanban-log-panel" style="display:none;">' +
+    '<div class="kanban-log-head">' +
+    '<span id="kanban-log-title">🤖 Agent Log</span>' +
+    '<button onclick="closeKanbanLog()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;">✕</button>' +
+    '</div>' +
+    '<div id="kanban-log-body" class="kanban-log-body"></div>' +
+    '</div>';
+
+  el.innerHTML = h;
+  wireKanbanDnd();
+  refreshOrchestratorStatus();
+}
+
+// Spawn a claude session for a story
+function runStory(storyId) {
+  if (!storyId) return;
+  openKanbanLog(storyId);
+  appendKanbanLog('⏳ Connecting to orchestrator…');
+
+  fetch(ORCH + '/api/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) { appendKanbanLog('✗ ' + data.error); return; }
+    appendKanbanLog('▶ Session started (pid ' + data.pid + ')');
+    moveKanbanCard(storyId, 'in_progress');
+    connectOrchestratorStream(storyId);
+  })
+  .catch(err => {
+    appendKanbanLog('✗ Orchestrator not reachable: ' + err.message);
+    appendKanbanLog('→ Start it: node server/orchestrator.js');
+  });
+}
+
+// Stop a running session
+function stopStory(storyId) {
+  fetch(ORCH + '/api/stop', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId }),
+  }).catch(() => {});
+  appendKanbanLog('■ Stop requested for ' + storyId);
+}
+
+// Open SSE stream and pipe logs into the log panel
+function connectOrchestratorStream(storyId) {
+  if (_orchStreams[storyId]) _orchStreams[storyId].close();
+  const es = new EventSource(ORCH + '/api/stream/' + encodeURIComponent(storyId));
+  _orchStreams[storyId] = es;
+
+  es.onmessage = e => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.line)   appendKanbanLog(d.line);
+      if (d.status) {
+        appendKanbanLog('◉ Status: ' + d.status);
+        if (d.status === 'done')    moveKanbanCard(storyId, 'done');
+        if (d.status === 'error')   moveKanbanCard(storyId, 'blocked');
+        if (d.status === 'stopped') { /* stay in current col */ }
+        if (d.status !== 'running') { es.close(); delete _orchStreams[storyId]; }
+      }
+    } catch {}
+  };
+  es.onerror = () => { es.close(); delete _orchStreams[storyId]; };
+}
+
+// Poll /api/status and sync card states (visual)
+function refreshOrchestratorStatus() {
+  fetch(ORCH + '/api/status')
+    .then(r => r.json())
+    .then(status => {
+      for (const [sid, info] of Object.entries(status)) {
+        if (info.status === 'running') moveKanbanCard(sid, 'in_progress');
+        else if (info.status === 'done') moveKanbanCard(sid, 'done');
+        // Re-attach SSE for any still-running session without an open stream
+        if (info.status === 'running' && !_orchStreams[sid]) {
+          connectOrchestratorStream(sid);
+        }
+      }
+    })
+    .catch(() => {}); // orchestrator may not be running yet — silent
+}
+
+// Move a card element to the correct column (visual only)
+function moveKanbanCard(storyId, colId) {
+  const card = document.querySelector('[data-story-id="' + storyId + '"]');
+  const col  = document.querySelector('.kanban-col[data-col="' + colId + '"]');
+  if (!card || !col) return;
+  col.appendChild(card);
+  // Swap button
+  const actions = card.querySelector('.kanban-card-actions');
+  if (actions) {
+    if (colId === 'in_progress') {
+      actions.innerHTML = '<button class="kanban-stop-btn" data-action="stop">■ Stop</button>';
+    } else if (colId === 'done') {
+      actions.innerHTML = '';
+    } else {
+      actions.innerHTML = '<button class="kanban-run-btn" data-action="run">▶ Run</button>';
+    }
+    // Re-wire the newly created button
+    wireKanbanCardButtons(card);
+  }
+  refreshKanbanCounts();
+}
+
+function openKanbanLog(storyId) {
+  const panel = document.getElementById('kanban-log-panel');
+  const title = document.getElementById('kanban-log-title');
+  const body  = document.getElementById('kanban-log-body');
+  if (!panel) return;
+  if (title) title.textContent = '🤖 Agent Log — ' + storyId;
+  if (body)  body.innerHTML = '';
+  panel.style.display = 'block';
+}
+
+function closeKanbanLog() {
+  const panel = document.getElementById('kanban-log-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+function appendKanbanLog(line) {
+  const body = document.getElementById('kanban-log-body');
+  if (!body) return;
+  const div = document.createElement('div');
+  div.className = 'kanban-log-line';
+  div.textContent = line;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  // Auto-open panel if it was closed
+  const panel = document.getElementById('kanban-log-panel');
+  if (panel) panel.style.display = 'block';
+}
+
+function wireKanbanCardButtons(card) {
+  var sid = card.dataset.storyId;
+  if (!sid) return;
+  card.querySelectorAll('[data-action="run"]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { e.stopPropagation(); runStory(sid); });
+  });
+  card.querySelectorAll('[data-action="stop"]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { e.stopPropagation(); stopStory(sid); });
+  });
+}
+
+function wireKanbanDnd() {
+  let dragged = null;
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    wireKanbanCardButtons(card);
+    card.addEventListener('dragstart', e => {
+      if (e.target.tagName === 'BUTTON') { e.preventDefault(); return; }
+      dragged = card;
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      dragged = null;
+    });
+  });
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if (!dragged) return;
+      col.appendChild(dragged);
+      refreshKanbanCounts();
+      showToast('Moved (visual only — not persisted)');
+    });
+  });
+}
+
+function refreshKanbanCounts() {
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    const n = col.querySelectorAll('.kanban-card').length;
+    const badge = col.querySelector('.kanban-count');
+    if (badge) badge.textContent = n;
+  });
+}
+
 // #283: view plan file
 async function viewPlanFile(phaseId) {
   // Try to find the plan file via the file tree
@@ -727,6 +981,7 @@ function route() {
   else if (view === 'phases')     renderPhases(subId);
   else if (view === 'sprints')    renderSprints(subId);
   else if (view === 'tasks')      renderTasks();
+  else if (view === 'kanban')     renderKanban();
   else if (view === 'decisions')  renderDecisions();
   else if (view === 'memory')     renderMemory();
 }

@@ -77,6 +77,7 @@ ${renderCss()}
       <button class="nav-link" data-view="phases">📋 Phases</button>
       <button class="nav-link" data-view="sprints">⚡ Sprints</button>
       <button class="nav-link" data-view="tasks">✓ Tasks</button>
+      <button class="nav-link" data-view="kanban">🗂 Kanban</button>
       <div class="nav-section">Workspace</div>
       <button class="nav-link" data-view="files">📄 Files</button>
       <button class="nav-link" data-view="agents">🤝 Agents</button>
@@ -180,6 +181,7 @@ ${renderCss()}
     <div id="view-phases"     class="view"></div>
     <div id="view-sprints"    class="view"></div>
     <div id="view-tasks"      class="view"></div>
+    <div id="view-kanban"     class="view"></div>
 
     <div id="view-files" class="view">
       <div class="view-title">Files</div>
