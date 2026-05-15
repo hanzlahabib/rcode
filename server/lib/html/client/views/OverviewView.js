@@ -3,103 +3,12 @@
  *
  * Ports renderOverview() from client-render.js to a component tree.
  * Reads state via useStore(). Keeps every existing CSS class.
- *
- * Sub-components ProgressBar and CmdHints are inline here.
- * TODO(31.2): promote ProgressBar and CmdHints to components/
  */
 
-import { html, useState } from '../preact.js';
+import { html } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, pctNum, humanDate, allSprints, chip } from '../util.js';
-
-// ---- Inline sub-components (TODO(31.2): promote to components/) ----
-
-function ProgressBar({ done, total }) {
-  const p = pctNum(done, total);
-  const color = p >= 100 ? 'var(--accent-green)' : p > 50 ? 'var(--accent-blue)' : 'var(--accent-amber)';
-  return html`
-    <div class="progress-bar">
-      <div class="progress-bar-fill" style=${'width:' + p + '%;background:' + color}></div>
-    </div>
-  `;
-}
-
-function CmdHintItem({ cmd, desc }) {
-  function copyCmd() {
-    navigator.clipboard.writeText(cmd).then(() => showToast('Copied: ' + cmd)).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = cmd;
-      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta); showToast('Copied: ' + cmd);
-    });
-  }
-  return html`
-    <div class="cmd-hint-item" onClick=${copyCmd}>
-      <span class="cmd-text">${cmd}</span>
-      <span class="cmd-desc">${desc}</span>
-      <span class="cmd-copy">📋</span>
-    </div>
-  `;
-}
-
-function CmdAccordion({ hints }) {
-  if (!hints || !hints.length) return null;
-  return html`
-    <details class="cmd-hints">
-      <summary>💡 Commands</summary>
-      <div class="cmd-hints-list">
-        ${hints.map(([cmd, desc]) => html`<${CmdHintItem} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
-      </div>
-    </details>
-  `;
-}
-
-// Sprint hints — same logic as client-render.js:sprintHints
-function getSprintHints(sprint) {
-  if (!sprint) return [];
-  const st = sprint.status || 'planned';
-  const sid = sprint.id || '';
-  const stories = Array.isArray(sprint.stories) ? sprint.stories : [];
-  if (st === 'completed' || st === 'complete' || st === 'done') {
-    return [
-      ['/rihal-verify-work',   'Verify UAT for Sprint ' + sid],
-      ['/rihal-audit',         'Audit completed Sprint ' + sid],
-      ['/rihal-session-report','Generate session report'],
-      ['/rihal-code-review',   'Review code from Sprint ' + sid],
-    ];
-  } else if (st === 'active' || st === 'in_progress') {
-    return [
-      ['/rihal-progress',     'Check Sprint ' + sid + ' progress'],
-      ['/rihal-sprint-status','Status report for Sprint ' + sid],
-      ['/rihal-pause-work',   'Pause and save context'],
-    ];
-  } else if (st === 'blocked') {
-    return [
-      ['/rihal-debug',         'Debug blocker in Sprint ' + sid],
-      ['/rihal-correct-course','Course-correct Sprint ' + sid],
-    ];
-  } else {
-    if (!stories.length) {
-      return [
-        ['/rihal-sprint-planning','Groom Sprint ' + sid + ' — add stories'],
-        ['/rihal-create-story',   'Create a story for Sprint ' + sid],
-        ['/rihal-discuss-phase',  'Discuss approach before planning'],
-      ];
-    }
-    return [
-      ['/rihal-execute',        'Execute Sprint ' + sid],
-      ['/rihal-discuss-phase',  'Discuss before executing'],
-      ['/rihal-sprint-planning','Refine Sprint ' + sid + ' plan'],
-    ];
-  }
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
-}
+import { pct, humanDate, allSprints, chip, sprintHints as getSprintHints } from '../util.js';
+import { ProgressBar, CmdHints } from '../components/shared.js';
 
 // ---- OverviewView ----
 
@@ -305,7 +214,7 @@ export function OverviewView() {
       <${CouncilSessions}/>
       <${ChainsSection}/>
       <${LastSession}/>
-      <${CmdAccordion} hints=${hints}/>
+      <${CmdHints} hints=${hints}/>
     </div>
   `;
 }
