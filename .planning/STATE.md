@@ -78,9 +78,9 @@ None.
 ## Roadmap Evolution
 
 - Phase 15 added (2026-04-30): fix 8 phantom CLI subcommands per #481 — phases list, find-phase, uat render-checkpoint, audit-uat, requirements mark-complete, todo match-phase, learnings copy, docs-audit. Goal: zero diff between called and implemented top-level subcommands.
-- Phase 28 added (2026-05-15): audit gap closure — ECC-parity hooks (PreCompact, Stop verify, cost tracking, compact-nudge, Bash safety), agent-behavior regression harness, artifact JSON-schema validation, iterative-retrieval loop for research subagents. Covers GitHub issues #742-#750. Planned: 4 sprints.
-- Phase 29 added (2026-05-15): security hardening — orchestrator unauthenticated RCE, bash-guard bypasses, file-read scoping. From the rihal-code self security audit. Covers #752-#754. Planned: 3 sprints.
-- Phase 30 added (2026-05-15): marketability — license contradiction, README diet + visual proof, metadata consistency, onboarding clarity, polish. From the marketability audit. Covers #755-#759. Planned: 4 sprints. NOTE: Phase 30-1 has a license-decision checkpoint requiring a human choice (OSS vs commercial).
+- Phase 28 added + executed (2026-05-15): audit gap closure — ECC-parity hooks (PreCompact, Stop verify, cost tracking, compact-nudge, Bash safety), agent-behavior regression harness, artifact JSON-schema validation, iterative-retrieval loop. Covers #742-#750. 4 sprints executed on branch `audit-gap-closure`.
+- Phase 29 added + executed (2026-05-15): security hardening — orchestrator unauthenticated RCE fixed, bash-guard bypasses closed, file-read scoping. Covers #752-#754. 3 sprints executed on branch `audit-gap-closure`.
+- Phase 30 added + executed (2026-05-15): marketability — MIT license adopted, README cut 535→183 lines, metadata consistency, onboarding clarity, polish. Covers #755-#759. 4 sprints executed on branch `audit-gap-closure`. DEFERRED: real demo GIF + dashboard screenshot capture (zero-byte placeholders committed at docs/assets/ — human task). Follow-up #760: 5 skills fail the new schema validation.
 
 ---
 
