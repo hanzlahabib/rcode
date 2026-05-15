@@ -1227,6 +1227,9 @@ function route() {
   // #310: scroll to top on view switch
   document.querySelector('.content-area')?.scrollTo(0, 0);
 
+  // Close orchestrator panel when leaving kanban — it's fixed-position and overlaps other views
+  if (view !== 'kanban') closeOrchPanel();
+
   if (view === 'overview')        renderOverview();
   else if (view === 'roadmap')    renderRoadmap();
   else if (view === 'milestones') renderMilestones(subId);
@@ -1354,7 +1357,8 @@ function filterItems(input, listId) {
   const q = input.value.toLowerCase().trim();
   const el = document.getElementById(listId);
   if (!el) return;
-  el.querySelectorAll('.item').forEach(item => {
+  // Target both list items and agent cards
+  el.querySelectorAll('.item, .agent-card').forEach(item => {
     item.style.display = !q || item.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 }
