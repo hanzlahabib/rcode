@@ -19,11 +19,20 @@ const http       = require('http');
 const path       = require('path');
 const fs         = require('fs');
 const os         = require('os');
+const crypto     = require('crypto');
 
-const PORT         = 7718;
+const PORT         = parseInt(process.env.ORCH_PORT || '7718', 10);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
 const SESSIONS_DIR = path.join(os.homedir(), '.rihal', 'sessions');
+
+// Per-session auth token. Use ORCH_TOKEN if set, else generate one and print
+// it on boot. The dashboard process / user must pass this token on EVERY call
+// (Authorization: Bearer header, or ?token= query param for the SSE endpoint).
+const AUTH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('hex');
+
+// storyId must be a safe path segment — no separators, no traversal.
+const STORY_ID_RE = /^[A-Za-z0-9._-]+$/;
 
 // Ensure sessions directory exists
 try { fs.mkdirSync(SESSIONS_DIR, { recursive: true }); } catch {}
@@ -34,15 +43,42 @@ const sessions = new Map();
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
 function json(res, code, body) {
   res.writeHead(code, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(body));
+}
+
+// Constant-time token check. Accepts the token via `Authorization: Bearer`
+// header, or a `?token=` query param (the EventSource SSE client cannot set
+// headers). Returns true only on an exact match.
+function authed(req) {
+  let presented = null;
+  const auth = req.headers && req.headers.authorization;
+  if (auth && auth.startsWith('Bearer ')) {
+    presented = auth.slice('Bearer '.length);
+  } else {
+    const qIdx = (req.url || '').indexOf('?');
+    if (qIdx !== -1) {
+      const params = new URLSearchParams((req.url || '').slice(qIdx + 1));
+      presented = params.get('token');
+    }
+  }
+  if (typeof presented !== 'string') return false;
+  const a = Buffer.from(presented);
+  const b = Buffer.from(AUTH_TOKEN);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+// Validate a storyId before it touches the filesystem. Charset blocks path
+// separators; the explicit `..` check blocks traversal even though `.` is
+// allowed in the charset.
+function validStoryId(id) {
+  return typeof id === 'string'
+    && id.length > 0
+    && id.length <= 128
+    && !id.includes('..')
+    && STORY_ID_RE.test(id);
 }
 
 function parseBody(req) {
@@ -164,6 +200,8 @@ function persistSession(storyId, exitStatus) {
   try {
     const date = new Date().toISOString().slice(0, 10);
     const file = path.join(SESSIONS_DIR, storyId + '-' + date + '.json');
+    // Defense-in-depth: refuse to write outside SESSIONS_DIR.
+    if (!path.resolve(file).startsWith(SESSIONS_DIR + path.sep)) return;
     fs.writeFileSync(file, JSON.stringify({
       storyId, status: exitStatus,
       startTime: s.startTime, endTime: new Date().toISOString(),
@@ -180,7 +218,10 @@ function loadLastSession(storyId) {
       .sort()
       .reverse();
     if (!files.length) return null;
-    return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, files[0]), 'utf8'));
+    const file = path.join(SESSIONS_DIR, files[0]);
+    // Defense-in-depth: refuse to read outside SESSIONS_DIR.
+    if (!path.resolve(file).startsWith(SESSIONS_DIR + path.sep)) return null;
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch { return null; }
 }
 
@@ -210,6 +251,7 @@ function handleStatus(res) {
 }
 
 function handleStream(req, res, storyId) {
+  if (!validStoryId(storyId)) { res.writeHead(400); res.end('invalid storyId'); return; }
   res.writeHead(200, {
     'Content-Type':    'text/event-stream',
     'Cache-Control':   'no-cache',
@@ -255,6 +297,7 @@ async function handleRun(req, res) {
   const body     = await parseBody(req);
   const storyId  = String(body.storyId || '').trim();
   if (!storyId) { json(res, 400, { error: 'missing storyId' }); return; }
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
 
   const existing = sessions.get(storyId);
   if (existing?.status === 'running') {
@@ -334,6 +377,7 @@ async function handleCleanSessions(req, res) {
 async function handleStop(req, res) {
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
   const s       = sessions.get(storyId);
   if (!s) { json(res, 404, { error: 'no session' }); return; }
 
@@ -346,14 +390,15 @@ async function handleStop(req, res) {
 // ── server ────────────────────────────────────────────────────────────────────
 
 const server = http.createServer(async (req, res) => {
-  cors(res);
   const method = req.method || '';
   const url    = req.url    || '';
+  // Every route requires the token — /api/status leaks session detail too.
+  if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
 
-  if (method === 'OPTIONS')                                { res.writeHead(204); res.end(); return; }
   if (method === 'GET'  && url === '/api/status')          { handleStatus(res); return; }
   if (method === 'GET'  && url.startsWith('/api/stream/')) {
-    const storyId = decodeURIComponent(url.slice('/api/stream/'.length));
+    const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
+    const storyId = decodeURIComponent(pathOnly.slice('/api/stream/'.length));
     handleStream(req, res, storyId);
     return;
   }
@@ -364,10 +409,13 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '127.0.0.1', () => {
   console.log('\n🤖 Rihal Orchestrator');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('   Port:  ' + PORT);
+  console.log('   Bind:  127.0.0.1 (loopback only)');
+  // The dashboard process / user must pass this token on every API call.
+  console.log('   Token: ' + AUTH_TOKEN);
   console.log('   POST   /api/run    { storyId }');
   console.log('   POST   /api/stop   { storyId }');
   console.log('   GET    /api/status');
