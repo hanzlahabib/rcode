@@ -1921,6 +1921,49 @@ footer {
   flex-direction: column;
 }
 .term-panel.open { display: flex; }
+.term-panel.fullscreen {
+  inset: 0;
+  left: 0;
+  height: 100vh;
+}
+
+/* Minimized terminal pill */
+.term-pill {
+  display: none;
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 201;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-4);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+.term-pill.show { display: flex; }
+.term-pill:hover { background: var(--bg-hover); }
+.term-pill-icon { color: var(--text-muted); }
+
+/* "running" badge for phase / sprint / task cards */
+.run-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  background: rgba(63,185,80,0.15);
+  border: 1px solid rgba(63,185,80,0.4);
+  border-radius: var(--radius-2);
+  color: var(--accent-green);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
 .term-header {
   display: flex;
   align-items: center;

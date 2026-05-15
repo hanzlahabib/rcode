@@ -450,6 +450,7 @@ function closeSidebar() {
 // ---- Boot ----
 route();
 updateTitle();
+startSessionsPoll();
 
 // ── xterm Terminal Panel (WebSocket ↔ node-pty) ──────────────────────────────
 // One reusable xterm.js terminal. openTermPanel() attaches it to a session's
@@ -544,14 +545,48 @@ function openTermPanel(storyId, title) {
 }
 
 function setTermDot(status) {
+  var cls = 'term-status-dot ' + (status || '');
   var dot = document.getElementById('term-status-dot');
-  if (dot) dot.className = 'term-status-dot ' + (status || '');
+  if (dot) dot.className = cls;
+  var pdot = document.getElementById('term-pill-dot');
+  if (pdot) pdot.className = cls;
 }
 
+// Close the viewer — the orchestrator session keeps running in the
+// background (use Stop to actually end it).
 function closeTermPanel() {
+  document.getElementById('term-panel').classList.remove('open', 'fullscreen');
+  document.getElementById('term-backdrop').classList.remove('open');
+  var pill = document.getElementById('term-pill');
+  if (pill) pill.classList.remove('show');
+  if (_termWs) { try { _termWs.close(); } catch (e) {} _termWs = null; }
+}
+
+// Minimize — hide the panel to a pill but keep the WebSocket connected.
+function minimizeTermPanel() {
   document.getElementById('term-panel').classList.remove('open');
   document.getElementById('term-backdrop').classList.remove('open');
-  if (_termWs) { try { _termWs.close(); } catch (e) {} _termWs = null; }
+  var pill = document.getElementById('term-pill');
+  if (pill) {
+    var t = document.getElementById('term-title');
+    document.getElementById('term-pill-title').textContent = t ? t.textContent : 'Terminal';
+    pill.classList.add('show');
+  }
+}
+
+function restoreTermPanel() {
+  var pill = document.getElementById('term-pill');
+  if (pill) pill.classList.remove('show');
+  document.getElementById('term-panel').classList.add('open');
+  document.getElementById('term-backdrop').classList.add('open');
+  _termResize();
+}
+
+// Toggle the panel between the bottom-drawer and full-screen layouts.
+function termToggleFull() {
+  var panel = document.getElementById('term-panel');
+  if (panel) panel.classList.toggle('fullscreen');
+  _termResize();
 }
 
 function termStop() {
@@ -712,5 +747,62 @@ function orchStopSession(storyId) {
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId: storyId })
   }).then(function () { orchPollNow(); }).catch(function () {});
+}
+
+// ── Active-session awareness — running badges across the dashboard ───────────
+// A lightweight global poll of /api/sessions. Card renderers read these to
+// show "running" badges on phase / sprint / task / kanban cards. The current
+// view re-renders only when the session set changes, so badges stay live
+// without disrupting the view on every poll.
+var _activeSessions = [];
+var _sessionsSig = '';
+var _sessionsPoll = null;
+
+function startSessionsPoll() {
+  if (_sessionsPoll) return;
+  pollActiveSessions();
+  _sessionsPoll = setInterval(pollActiveSessions, 4000);
+}
+
+function pollActiveSessions() {
+  var tok = _orchToken();
+  if (!tok) return;
+  fetch(ORCH_HTTP + '/api/sessions', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      _activeSessions = (d && d.sessions) || [];
+      var sig = _activeSessions.map(function (s) { return s.storyId + ':' + s.status; }).join('|');
+      if (sig !== _sessionsSig) { _sessionsSig = sig; route(); }
+    })
+    .catch(function () {});
+}
+
+function activeSession(storyId) {
+  for (var i = 0; i < _activeSessions.length; i++) {
+    if (_activeSessions[i].storyId === storyId) return _activeSessions[i];
+  }
+  return null;
+}
+function isSessionRunning(storyId) {
+  var s = activeSession(storyId);
+  return !!(s && s.status === 'running');
+}
+function runningInSprint(sp) {
+  var n = isSessionRunning('sprint-' + sp.id) ? 1 : 0;
+  (sp.stories || []).forEach(function (st) {
+    if (st.id && isSessionRunning(st.id)) n++;
+  });
+  return n;
+}
+function runningInPhase(p) {
+  var n = isSessionRunning('phase-' + p.id) ? 1 : 0;
+  (p.sprints || []).forEach(function (sp) { n += runningInSprint(sp); });
+  return n;
+}
+function runningTotal() {
+  return _activeSessions.filter(function (s) { return s.status === 'running'; }).length;
+}
+function runningBadge(n) {
+  return n ? '<span class="run-badge">● ' + n + ' running</span>' : '';
 }
 

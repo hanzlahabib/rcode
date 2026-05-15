@@ -24,8 +24,11 @@ function renderKanban() {
     { id: 'blocked',     label: 'Blocked',      cssClass: 'col-blocked' },
     { id: 'done',        label: 'Done',         cssClass: 'col-done' },
   ];
+  // A task with a live orchestrator session shows in "In Progress" even if
+  // its stored status has not been updated yet.
+  const effCol = t => (t.id && isSessionRunning(t.id)) ? 'in_progress' : kanbanCol(t.status);
   const buckets = { todo: [], in_progress: [], blocked: [], done: [] };
-  for (const t of tasks) buckets[kanbanCol(t.status)].push(t);
+  for (const t of tasks) buckets[effCol(t)].push(t);
 
   // Topbar
   let h = '<div class="kanban-topbar">' +
@@ -34,8 +37,8 @@ function renderKanban() {
       'Kanban' +
     '</div>' +
     '<div class="kanban-topbar-actions">' +
-      '<button class="kanban-refresh-btn" onclick="refreshOrchestratorStatus()">⟳ Sync</button>' +
-      '<button class="kanban-refresh-btn" onclick="openOrchPanel(null)" style="margin-left:4px;">⊞ Sessions</button>' +
+      '<button class="kanban-refresh-btn" onclick="renderKanban()">⟳ Sync</button>' +
+      '<button class="kanban-refresh-btn" onclick="navTo(\'orchestration\')" style="margin-left:4px;">⊞ Sessions</button>' +
     '</div>' +
   '</div>';
 
@@ -55,7 +58,7 @@ function renderKanban() {
       '</div>' +
       '<div class="kanban-col-body">';
     for (const t of items) {
-      const c  = kanbanCol(t.status);
+      const c  = effCol(t);
       const sid = esc(t.id || '');
       const canRun = c === 'todo' || c === 'blocked';
       const isRunning = c === 'in_progress';
@@ -92,7 +95,6 @@ function renderKanban() {
 
   el.innerHTML = h;
   wireKanbanDnd();
-  refreshOrchestratorStatus();
 }
 
 function getCard(sid) { return document.querySelector('[data-story-id="' + sid + '"]'); }

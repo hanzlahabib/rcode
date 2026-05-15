@@ -315,8 +315,10 @@ function viewAgentSkill(name) {
       <span class="term-title" id="term-title">Terminal</span>
     </div>
     <div class="term-header-right">
-      <button class="term-btn term-stop-btn" id="term-stop-btn" onclick="termStop()">■ Stop</button>
-      <button class="term-btn" onclick="closeTermPanel()">✕ Close</button>
+      <button class="term-btn" onclick="termToggleFull()" id="term-full-btn" title="Toggle full screen">⛶ Full</button>
+      <button class="term-btn" onclick="minimizeTermPanel()" title="Minimize — session keeps running">— Min</button>
+      <button class="term-btn term-stop-btn" id="term-stop-btn" onclick="termStop()" title="End the agent session">■ Stop</button>
+      <button class="term-btn" onclick="closeTermPanel()" title="Close viewer — session keeps running in the background">✕ Close</button>
     </div>
   </div>
   <div id="term-container"></div>
@@ -325,6 +327,13 @@ function viewAgentSkill(name) {
     <input type="text" id="term-input" class="term-input-field" placeholder="Send message to agent… (Enter)">
     <button class="term-send-btn" onclick="termSend()">Send ↑</button>
   </div>
+</div>
+
+<!-- Minimized terminal pill — click to restore. Session keeps running. -->
+<div id="term-pill" class="term-pill" onclick="restoreTermPanel()" title="Restore terminal">
+  <span class="term-status-dot" id="term-pill-dot"></span>
+  <span id="term-pill-title">Terminal</span>
+  <span class="term-pill-icon">▢</span>
 </div>
 
 ${renderClientJs(state)}

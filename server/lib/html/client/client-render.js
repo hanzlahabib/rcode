@@ -157,6 +157,7 @@ function phaseCard(p) {
     tag(done + '/' + stories.length + ' tasks') +
     (stories.length > 0 ? tag(pct(done,stories.length) + ' done') : '') +
     (p.completed_at ? ' <span style="color:var(--text-muted);font-size:var(--text-xs);">Done ' + humanDate(p.completed_at) + '</span>' : '') +
+    runningBadge(runningInPhase(p)) +
     '</div>' +
     (stories.length > 0 ? '<div style="margin-top:6px;">' + progressBar(done, stories.length) + '</div>' : '') +
     (sps[0]?.goal ? '<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">' + esc(sps[0].goal) + '</div>' : '') +
@@ -177,7 +178,8 @@ function sprintCard(s) {
     (s.phaseId ? tag('Phase ' + s.phaseId) : '') +
     tag(done + '/' + stories.length + ' tasks') +
     (s.velocity_target != null ? tag('Target: ' + s.velocity_target + 'pts') : '') +
-    (s.velocity_actual != null ? tag('Actual: ' + s.velocity_actual + 'pts') : '') + '</div>' +
+    (s.velocity_actual != null ? tag('Actual: ' + s.velocity_actual + 'pts') : '') +
+    runningBadge(runningInSprint(s)) + '</div>' +
     '<div style="margin-top:6px;">' + progressBar(done, stories.length) + '</div>' +
     (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rihal-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
     (s.started_at ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">' +
@@ -224,7 +226,8 @@ function taskCard(t) {
     (t.points ? tag(t.points + 'pts') : '') +
     (t.id ? tag(t.id) : '') +
     (t.sprintId ? tag('Sprint ' + t.sprintId) : '') +
-    (t.phaseId ? tag('Phase ' + t.phaseId) : '') + '</div>' +
+    (t.phaseId ? tag('Phase ' + t.phaseId) : '') +
+    (t.id && isSessionRunning(t.id) ? '<span class="run-badge">● running</span>' : '') + '</div>' +
     '<div class="task-detail" id="' + tid + '" style="display:none;">' +
     rows + cmds + '</div>' +
     '</div>';
@@ -451,7 +454,8 @@ function renderMilestones(subId) {
       attr('Total Phases', _phases.length) + attr('Completed Phases', doneP) +
       attr('Current Phase', S.currentPhase||'—') + attr('Current Sprint', S.currentSprint||'—') +
       attr('Tasks Done', done.length + '/' + total.length) +
-      attr('Progress', pct(done.length, total.length)) + '</div></div>' +
+      attr('Progress', pct(done.length, total.length)) +
+      attr('Running now', runningTotal()) + '</div></div>' +
       velocityHtml + timelineHtml +
       '<div class="view-title" style="margin-top:var(--space-6)">Phases under this milestone</div>' +
       '<div class="phase-list">' + _phases.map(phaseCard).join('') + '</div>';
