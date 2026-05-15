@@ -11,19 +11,13 @@ npx @hanzlaa/rcode install    # one command, zero dependencies
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
-Status: actively developed — published on npm as `@hanzlaa/rcode` v3.4.x, with an automated test suite covered by `node --test`.
+Status: actively developed — published on npm as `@hanzlaa/rcode` v3.5.x, with an automated test suite covered by `node --test`.
 
 ---
 
 ## See it work
 
-The full loop in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`:
-
-![Rihal Code demo](docs/assets/hero-demo.gif)
-
-The Diwan dashboard renders project state, decisions, and the Memory Bank in one view:
-
-![Diwan dashboard](docs/assets/diwan-dashboard.png)
+The full loop runs in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`. The Diwan dashboard (`npm run dashboard`) renders project state, decisions, and the Memory Bank in one view.
 
 ---
 

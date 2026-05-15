@@ -4,6 +4,30 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.5.0 (2026-05-15) — audit gap closure: hooks, security, marketability
+
+A three-phase release closing gaps found auditing rihal-code against the `everything-claude-code` reference setup, plus a security and marketability self-audit. Covers GitHub issues #742–#762.
+
+**Hooks & infrastructure (Phase 28)**
+- Lifecycle hooks expanded to 8: added `bash-guard` (blocks unapproved `git push`, `--force`, `--no-verify`, `rm -rf`), `pre-compact`, `stop-verify`, `cost-track`, `compact-nudge`
+- Agent-behavior regression harness — snapshot + diff on skill changes, wired into `dogfood-check.sh`
+- zod artifact-schema validation for SKILL.md / agent / `state.json`, enforced by `cli/doctor.js`
+- Bounded iterative-retrieval loop for research subagents
+
+**Security hardening (Phase 29)**
+- Closed an unauthenticated network-reachable RCE in the orchestrator (127.0.0.1 bind, per-session auth token, path-traversal guard)
+- Hardened `bash-guard` against token-smuggling and `+`-refspec push bypasses
+- Scoped `post-commit` file reads; de-shelled `rihal-tools` git calls
+
+**Marketability (Phase 30)**
+- Adopted the MIT license (resolves the prior `UNLICENSED` + public-npm contradiction)
+- README cut 535 → ~180 lines; metadata counts reconciled (45 agents, 109 commands, 85 skills, 126 workflows)
+- Onboarding clarified; differentiation table and worked example added
+
+**Test suite:** 341 tests, all passing.
+
+---
+
 ## v3.4.33 (2026-05-11) — code-review dispatch fix (closes #720)
 
 `/rihal-code-review` was crashing with `Agent type 'rihal-review-adversarial-general' not found`. The step-02 dispatch text said "Invoke via the rihal-review-adversarial-general skill" — but that name exists as a **skill** in `rihal/skills/core/`, not a subagent. The surrounding "Launch parallel subagents" instruction made the AI dispatch `Task(subagent_type=X)` which failed.
