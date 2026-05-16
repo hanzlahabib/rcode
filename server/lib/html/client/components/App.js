@@ -136,7 +136,7 @@ export function App() {
       setUpdatedAgo('just now');
       if (newState.raw) {
         setState({
-          phases:           newState.raw.phases           || [],
+          phases:           newState.phaseTree            || newState.raw.phases || [],
           milestone:        newState.raw.milestone        || '',
           currentPhase:     newState.raw.current_phase    || null,
           currentSprint:    newState.raw.current_sprint   || null,
