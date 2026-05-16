@@ -211,10 +211,12 @@ layer (color, spacing, typography, radii, shadows) consumed by every component, 
 full sweep replacing every emoji-as-icon with inline SVG icons from `icons.js`. Light
 and dark themes both driven by the token layer.
 
-**Status:** Planned
+**Status:** In Progress (32.1 complete — awaiting human visual verify)
 
 **Plans:**
-- _TBD — planned via /rihal-plan 32_
+- 32-1 — Token layer audit + icon alignment CSS (COMPLETE — human verify checkpoint)
+- 32-2 — Emoji-to-SVG icon sweep (planned)
+- 32-3 — Theme toggle cleanup (planned)
 
 **Acceptance:**
 - All component styling reads from a single design-token source (CSS custom properties)
