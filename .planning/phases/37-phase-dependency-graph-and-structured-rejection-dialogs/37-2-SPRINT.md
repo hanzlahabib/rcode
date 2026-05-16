@@ -3,8 +3,11 @@ phase: 37-phase-dependency-graph-and-structured-rejection-dialogs
 plan_number: 2
 sprint: 37.2
 type: execute
-wave: 1
-depends_on: []
+wave: 2
+depends_on: [37-1]
+sequential: true
+sequential_after: 37-1
+conflicting_files: [server/lib/html/css.js]
 autonomous: true
 requirements: [GATE-1, GATE-2]
 files_modified:
