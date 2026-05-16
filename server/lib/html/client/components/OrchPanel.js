@@ -191,7 +191,7 @@ export function OrchPanel() {
   }
 
   function handleClean() {
-    cleanSessions(7).then(d => {
+    cleanSessions().then(d => {
       showToast('Cleaned ' + (d.removed || 0) + ' sessions');
     });
   }

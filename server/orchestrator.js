@@ -279,6 +279,23 @@ async function handleStop(req, res) {
   json(res, 200, { storyId, status: 'stopped' });
 }
 
+// Remove ended sessions (done/exited/stopped/error). Running sessions are never
+// touched. Optional body.olderThanDays gates removal by session start age.
+async function handleCleanSessions(req, res) {
+  const body = await parseBody(req);
+  const olderThanDays = Number(body.olderThanDays) || 0;
+  const cutoff = olderThanDays > 0 ? Date.now() - olderThanDays * 86400000 : null;
+  let removed = 0;
+  for (const [id, s] of sessions) {
+    if (s.status === 'running') continue;
+    if (cutoff !== null && (Date.parse(s.startTime || '') || 0) > cutoff) continue;
+    s.wsClients.forEach(ws => { try { ws.close(); } catch {} });
+    sessions.delete(id);
+    removed++;
+  }
+  json(res, 200, { removed });
+}
+
 // ── WebSocket data plane ───────────────────────────────────────────────────────
 
 function attachWebSocket(ws, storyId) {
@@ -333,6 +350,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
+  if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
 
   res.writeHead(404); res.end('Not found');
 });
