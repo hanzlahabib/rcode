@@ -80,9 +80,10 @@ export function fetchSessions() {
  * POST /api/clean-sessions — remove sessions older than N days.
  */
 export function cleanSessions(olderThanDays = 7) {
+  const tok = orchToken();
   return fetch(ORCH_HTTP + '/api/clean-sessions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ olderThanDays }),
   })
     .then(r => r.json())

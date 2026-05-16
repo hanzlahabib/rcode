@@ -175,6 +175,7 @@ export function App() {
     if (btn) btn.textContent = '↺ …';
     try {
       const r = await fetch('/api/state');
+      if (!r.ok) return;
       const newState = await r.json();
       lastScannedRef.current = newState.lastScanned;
       scanTimeRef.current = Date.now();
@@ -200,6 +201,7 @@ export function App() {
     const id = setInterval(async () => {
       try {
         const r = await fetch('/api/state');
+        if (!r.ok) return;
         const s = await r.json();
         if (s.lastScanned !== lastScannedRef.current) await fetchAndRerender();
       } catch { /* ignore */ }

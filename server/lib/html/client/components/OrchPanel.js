@@ -48,6 +48,13 @@ export function OrchPanel() {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [sessionsMap, activeTab]);
 
+  // Close all SSE streams on unmount to prevent leaking EventSource connections.
+  useEffect(() => {
+    return () => {
+      Object.keys(_streams).forEach(closeStream);
+    };
+  }, []);
+
   // When orchPanel is opened with a storyId, create the tab and connect SSE
   useEffect(() => {
     if (!reqStory) return;

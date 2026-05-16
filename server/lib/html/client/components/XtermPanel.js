@@ -63,7 +63,6 @@ function ensureTerm(containerEl) {
       _termWs.send(JSON.stringify({ t: 'i', d: data }));
     }
   });
-  window.addEventListener('resize', _resize);
 }
 
 /** Open a WebSocket to the orchestrator PTY for storyId. */
@@ -111,7 +110,9 @@ export function XtermPanel() {
   const storyId    = t.storyId || '';
   const title      = t.title   || 'Terminal';
 
-  // Build xterm instance on first open; reconnect when storyId changes
+  // Build xterm instance on first open; reconnect when storyId changes.
+  // The resize listener is registered here (not inside ensureTerm) so the
+  // cleanup return can mirror it on unmount.
   useEffect(() => {
     if (!open || !containerRef.current) return;
     ensureTerm(containerRef.current);
@@ -120,6 +121,8 @@ export function XtermPanel() {
       currentStoryRef.current = storyId;
       connectWs(storyId);
     }
+    window.addEventListener('resize', _resize);
+    return () => window.removeEventListener('resize', _resize);
   }, [open, storyId]);
 
   // Resize when entering/leaving fullscreen or on open
