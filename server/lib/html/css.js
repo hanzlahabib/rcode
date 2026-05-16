@@ -2239,6 +2239,63 @@ footer {
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+/* ── Command runner (Sprint 33.2) ───────────────────────────────────────────── */
+.cmd-runner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.cmd-runner-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cmd-runner-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+.cmd-runner-select {
+  flex: 1;
+  background: var(--bg-input, var(--bg-sidebar));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.cmd-runner-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+.cmd-runner-btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.cmd-runner-btn:hover:not(:disabled) { opacity: 0.85; }
+.cmd-runner-btn:disabled,
+.cmd-runner-btn--busy { opacity: 0.6; cursor: not-allowed; }
 </style>`;
 }
 
