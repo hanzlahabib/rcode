@@ -73,7 +73,6 @@ None.
 
 | # | Title | Note |
 |---|-------|------|
-| #760 | 5 skills fail schema validation | from Phase 28 |
 | — | Demo GIF + dashboard screenshot | zero-byte placeholders at `docs/assets/` |
 | #469 | Phase 13 parser+walker consolidation | M1 known gap, deferred |
 | #110 | Phase → Sprint → Story/Task hierarchy refactor | p3 |
