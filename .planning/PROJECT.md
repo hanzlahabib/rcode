@@ -6,12 +6,23 @@
 
 Rihal Code gives teams a real AI team instead of one assistant pretending to be everything. Agents with cultural identity and hard scope boundaries, a tiered methodology (Starter → Advanced → Ultra Advanced → Standards), file-based state, and zero-lock-in install.
 
-## Current Milestone
+## Current Milestone: M3 — Archon Dashboard Port (v5)
 
-**M2 — Hardening & Polish** (in progress)
+**Goal:** Port high-value Archon UI patterns into the Diwan/Majlis Preact dashboard without adding server dependencies.
+
+**Target features:**
+- Status Summary Bar with aggregate count chips and multi-attribute filtering
+- Session history panel (persisted past runs, grouped by status/date)
+- Searchable, categorized command palette (Cmd+K style)
+- Sidebar with live health badges (active sessions, blockers)
+- Poll/realtime dedup-merge so live SSE/WS events and persisted history render once
+- Lightweight hand-rolled SVG phase DAG view (depends_on waves)
+- Structured rejection dialogs that collect a reason at checkpoint gates
+
+**Constraint:** `server/dashboard.js` stays Node-stdlib only (no new server deps); client stays Preact (htm + ESM CDN, no build step); dashboard server keeps zero write endpoints.
 
 M1 — Ship v2 + Tier Docs shipped 2026-05-16 (phases 01–19). See `MILESTONES.md`.
-See `ROADMAP.md` for the M2 phase breakdown.
+M2 — Hardening & Polish (phases 20–33) in progress — see `ROADMAP.md`.
 
 ## Modules
 
@@ -45,5 +56,22 @@ See `ROADMAP.md` for the M2 phase breakdown.
 - `CLAUDE.md` — AI agent project instructions
 - `docs/STANDARDS.md` — 5-component skill spec, commit rules, PR checklist
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition:**
+1. Requirements invalidated? → move to Out of Scope with reason
+2. Requirements validated? → move to Validated with phase reference
+3. New requirements emerged? → add to Active
+4. Decisions to log? → add to Key Decisions
+5. "What This Is" still accurate? → update if drifted
+
+**After each milestone (via `/rihal-complete-milestone`):**
+1. Full review of all sections
+2. Core Value check
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-05-16 after M1 milestone completion*
+*Last updated: 2026-05-16 — M3 Archon Dashboard Port started*

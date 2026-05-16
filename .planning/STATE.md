@@ -1,9 +1,9 @@
 # Rihal Code — State
 
 **Last updated:** 2026-05-16
-**Milestone:** M2 — Hardening & Polish (v4)
+**Milestone:** M3 — Archon Dashboard Port (v5)
 **Version:** 3.5.0
-**Current phase:** 33 — Dashboard command runner (complete 2026-05-16; awaiting human in-browser UAT)
+**Current phase:** Not started — defining requirements
 **Branch:** 31-preact-migration
 
 ---
@@ -14,8 +14,18 @@ See: `.planning/PROJECT.md` (updated 2026-05-16)
 
 **Core value:** A real AI team — tiered agents, skills, and slash commands — with hard
 scope boundaries and zero-lock-in install.
-**Current focus:** M2 — Hardening & Polish. Active work: Preact migration of the
-Majlis dashboard client (phase 31).
+**Current focus:** M3 — Archon Dashboard Port. Porting high-value Archon UI patterns
+into the Diwan/Majlis Preact dashboard. M2 (phases 20–33) still open — phases 32–33
+awaiting human UAT.
+
+---
+
+## Current Position
+
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-16 — Milestone M3 started
 
 ---
 
@@ -44,6 +54,13 @@ gaps in `.planning/MILESTONES.md`. Roadmap archived to
 | 30 | Marketability (#755–#759) | complete |
 | 31 | Preact migration — Majlis dashboard client | complete (human verify pending) |
 | 32 | Dashboard theming — design tokens + emoji-to-SVG sweep | in progress (32.3 human verify checkpoint — phase acceptance gate) |
+
+---
+
+## M3 — Archon Dashboard Port
+
+Roadmap pending — phases continue from 33 (start at Phase 34). See `ROADMAP.md`
+once the roadmap is written.
 
 ---
 
