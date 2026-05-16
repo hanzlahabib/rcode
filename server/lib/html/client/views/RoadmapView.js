@@ -15,7 +15,8 @@
 import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { pctNum } from '../util.js';
-import { Chip, ProgressBar, CmdHints } from '../components/shared.js';
+import { Chip, ProgressBar, CmdHints, RunBtn, RunningBadge } from '../components/shared.js';
+import { runningInPhase } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
 
 /**
@@ -72,6 +73,7 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
   const pStories = sps.flatMap(s => s.stories || []);
   const pDone = pStories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const pp = pctNum(pDone, pStories.length);
+  const running = runningInPhase(p);
 
   // Filter: hide this node if query doesn't match phase name
   if (filterQuery && !p.name.toLowerCase().includes(filterQuery)) return null;
@@ -86,8 +88,10 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
       <div class="tree-row" onClick=${() => setOpen(o => !o)} onDblClick=${handleDblClick}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
         <span class="tree-icon"><${Icon} name="clipboard-list" size=${14}/></span>
+        <${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>
         <span class="tree-label">P${p.id} — ${p.name}</span>
         <${Chip} status=${p.status}/>
+        <${RunningBadge} count=${running}/>
         <span style="width:60px;display:inline-block;margin:0 8px;">
           <div class="progress-bar" style="height:4px;">
             <div class="progress-bar-fill" style=${'width:' + pp + '%;height:100%;'}></div>
