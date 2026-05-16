@@ -267,7 +267,7 @@ html, body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.5); /* intentional: one-off overlay tint; translucency can't be expressed as a theme token */
   z-index: 15;
 }
 
@@ -282,7 +282,7 @@ html, body {
 
 /* ── Topbar / header ───────────────────────────────────────────── */
 header {
-  background: rgba(8,9,10,0.8);
+  background: rgba(8,9,10,0.8); /* intentional: frosted glass tied to --bg-page exact value; alpha can't be expressed as a theme token */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
@@ -297,7 +297,7 @@ header {
 }
 
 [data-theme="light"] header {
-  background: rgba(245,245,247,0.85);
+  background: rgba(245,245,247,0.85); /* intentional: light frosted glass; alpha channel can't be expressed as a theme token */
 }
 
 .brand {
@@ -332,6 +332,17 @@ header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.topbar-start-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4); /* --space-4 = 12px */
+}
+
+.updated-ago {
+  font-size: var(--text-2xs); /* --text-2xs = 11px */
+  color: var(--text-muted);
 }
 
 .live {
@@ -1570,6 +1581,21 @@ footer {
   font-size: var(--text-xs);
   gap: var(--space-3);
   text-align: center;
+}
+
+.orch-empty-tab {
+  padding: var(--space-2) var(--space-3); /* 6px 8px via space tokens */
+  font-size: var(--text-2xs); /* 11px */
+  color: var(--text-muted);
+}
+
+.orch-footer-spacer {
+  flex: 1;
+}
+
+.orch-footer-status {
+  font-size: var(--text-2xs); /* 11px */
+  color: var(--text-muted);
 }
 
 /* Terminal log lines */

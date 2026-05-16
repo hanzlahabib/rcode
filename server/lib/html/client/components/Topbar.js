@@ -18,7 +18,7 @@ import { Icon } from '../icons-client.js';
 export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
   return html`
     <header>
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div class="topbar-start-group">
         <button
           class="hamburger-btn"
           id="hamburger-btn"
@@ -37,8 +37,9 @@ export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onTo
       </div>
       <div class="header-actions">
         <span class="live" id="live-dot" title="Live"></span>
-        <span id="updated-ago" style="font-size:11px;color:var(--text-muted);">${updatedAgo || 'just now'}</span>
+        <span id="updated-ago" class="updated-ago">${updatedAgo || 'just now'}</span>
         <button class="header-btn" id="refresh-btn" onClick=${onRefresh}>↺ Refresh</button>
+        <!-- icon shows TARGET state (not current): dark→sun means "click to go light"; light→moon means "click to go dark" -->
         <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme"><${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${14}/></button>
         <button class="header-btn" onClick=${() => {
           navigator.clipboard.writeText(location.href);
