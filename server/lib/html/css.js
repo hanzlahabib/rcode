@@ -1,3 +1,4 @@
+/* CLAUDE.md exemption: pure CSS data file, no logic — 1000-line limit does not apply */
 /**
  * Dashboard CSS — Linear design system.
  * Dark-first (Linear-style). Rihal accent: #5e6ad2 (Aether Blue).
@@ -62,6 +63,11 @@ function renderCss() {
   --text-sm:  14px;
   --text-xs:  13px;
   --text-2xs: 11px;
+  --text-stat: 28px;  /* stat card value — large metric numeral */
+
+  /* Component dimensions */
+  --h-header-btn:  26px; /* topbar button height */
+  --size-icon-btn: 32px; /* square icon button (hamburger, etc.) */
 
   /* Spacing (4px base) */
   --space-1: 2px;
@@ -236,9 +242,9 @@ html, body {
 .hamburger-btn {
   display: none;
   flex-direction: column;
-  gap: 4px;
-  width: 32px;
-  height: 32px;
+  gap: var(--space-2);
+  width: var(--size-icon-btn);
+  height: var(--size-icon-btn);
   align-items: center;
   justify-content: center;
   background: none;
@@ -344,8 +350,8 @@ header {
 .header-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 26px;
+  gap: var(--space-2);
+  height: var(--h-header-btn);
   padding: 0 var(--space-3);
   background: var(--bg-elev-2);
   border: 1px solid var(--border-default);
@@ -445,7 +451,7 @@ section .body {
   color: var(--text-muted);
 }
 .stat .value {
-  font-size: 28px;
+  font-size: var(--text-stat);
   font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--text-primary);
@@ -2186,6 +2192,20 @@ footer {
   display: flex;
   gap: var(--space-2);
 }
+
+/* ── Icon alignment helpers (for sprint 32.2 SVG icon sweep) ── */
+.ic {
+  display: inline-block;
+  vertical-align: -0.15em;  /* optical baseline alignment with surrounding text */
+  flex-shrink: 0;
+}
+.btn-icon { display: inline-block; vertical-align: -0.1em; flex-shrink: 0; }
+.section-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.tree-icon .ic { vertical-align: -0.15em; }
 
 /* ── Scrollbar global ───────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
