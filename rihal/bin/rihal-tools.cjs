@@ -3372,6 +3372,89 @@ function cmdPhase(subArgs) {
     };
   }
 
+  // =====================================================================
+  // phase sync-sprints <phase_number> — register sprint records into
+  // state.json by deriving them from the .planning/phases/<dir>/*-SPRINT.md
+  // files (the source of truth). Closes #765: planner agents write SPRINT.md
+  // files but do not always register sprint entries, leaving state.json an
+  // incomplete mirror. This makes registration a deterministic CLI step.
+  // =====================================================================
+  if (sub === 'sync-sprints') {
+    const phaseRef = subArgs[1];
+    if (!phaseRef) throw new Error('phase sync-sprints requires <phase_number>');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+    if (!fs.existsSync(statePath)) {
+      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+    }
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
+    if (!state.phases) state.phases = [];
+    const idx = state.phases.findIndex(p =>
+      String(p.number) === String(phaseRef) ||
+      String(p.id) === String(phaseRef) ||
+      p.name === phaseRef
+    );
+    if (idx === -1) {
+      throw new Error(`Phase "${phaseRef}" not found in state.phases`);
+    }
+
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const intId = String(phaseRef).split('.')[0];
+    let dirs;
+    try { dirs = fs.readdirSync(phasesDir, { withFileTypes: true }).filter(d => d.isDirectory()); }
+    catch { throw new Error(`No .planning/phases directory found`); }
+    const dir = dirs.find(d => d.name.startsWith(intId + '-') ||
+                               d.name.startsWith(intId.padStart(2, '0') + '-'));
+    if (!dir) throw new Error(`No phase directory on disk for phase ${phaseRef}`);
+
+    const files = fs.readdirSync(path.join(phasesDir, dir.name));
+    const sprintFiles = files.filter(f => /-SPRINT\.md$/i.test(f)).sort();
+    const sprints = sprintFiles.map(f => {
+      const m   = f.match(/^(\d+)-(\d+)-SPRINT\.md$/i);
+      const num = m ? parseInt(m[2], 10) : 0;
+      const sid = m ? `${parseInt(m[1], 10)}.${num}` : f.replace(/-SPRINT\.md$/i, '');
+      const text = fs.readFileSync(path.join(phasesDir, dir.name, f), 'utf8');
+      const fmGoal = (text.match(/^goal:\s*(.+)$/m) || [])[1];
+      let goal = fmGoal ? fmGoal.trim() : '';
+      if (!goal) {
+        const obj = (text.match(/<objective>\s*([\s\S]*?)<\/objective>/) || [])[1] || '';
+        goal = (obj.trim().split('\n').map(s => s.trim()).filter(Boolean)[0] || '').slice(0, 160);
+      }
+      const stories = [];
+      const taskRe = /<task\b([^>]*)>([\s\S]*?)<\/task>/g;
+      let tm;
+      while ((tm = taskRe.exec(text))) {
+        const idM = tm[1].match(/id="([^"]+)"/);
+        const tM  = tm[2].match(/<title>([\s\S]*?)<\/title>/);
+        stories.push({ id: idM ? idM[1] : `${sid}.${stories.length + 1}`,
+                       title: tM ? tM[1].trim() : `Task ${stories.length + 1}`,
+                       status: 'planned' });
+      }
+      if (!stories.length) {
+        // Legacy SPRINT.md: "### Story|Task <id> — <title>" headings.
+        const headRe = /^#{2,4}\s+(?:Story|Task)\s+([^\s—–-]+)\s*[—–-]\s*(.+?)\s*$/gm;
+        let hm;
+        while ((hm = headRe.exec(text))) {
+          stories.push({ id: hm[1].trim(), title: hm[2].trim(), status: 'planned' });
+        }
+      }
+      const hasSummary = files.includes(f.replace(/-SPRINT\.md$/i, '-SUMMARY.md'));
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`,
+               status: hasSummary ? 'complete' : 'planned', stories };
+    });
+
+    state.phases[idx].sprints = sprints;
+    state.phases[idx].plan_count = sprints.length;
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    return {
+      ok: true,
+      phase: phaseRef,
+      sprints_registered: sprints.length,
+      stories_registered: sprints.reduce((a, s) => a + s.stories.length, 0),
+    };
+  }
+
   if (sub === 'set-status') {
     const phaseRef = subArgs[1];
     const newStatus = subArgs[2];
@@ -3570,7 +3653,7 @@ function cmdPhase(subArgs) {
     return { ok: true, count: created.length, phases: created };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, set-status, next-range, scaffold-milestone`);
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone`);
 }
 
 /**
