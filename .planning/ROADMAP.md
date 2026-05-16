@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✓ **M1 — Ship v2 + Tier Docs** — Phases 01–19 (shipped 2026-05-16)
-- 🚧 **M2 — Hardening & Polish** (v4) — Phases 20–31 (in progress)
+- 🚧 **M2 — Hardening & Polish** (v4) — Phases 20–33 (in progress)
 
 <details>
 <summary>✓ M1 — Ship v2 + Tier Docs (Phases 01–19) — SHIPPED 2026-05-16</summary>
@@ -234,12 +234,12 @@ output in the WebSocket terminal, and see completion. The orchestrator service (
 owns command execution; `dashboard.js` stays pure-stdlib view-only. Reuse the phase-29
 bash-guard / auth hardening — no raw exec surface.
 
-**Status:** In progress (sprint 33.3 auto tasks complete — awaiting human-verify checkpoint 33.3.4)
+**Status:** Complete (2026-05-16)
 
 **Plans:**
 - [x] Sprint 33.1 — Server-side COMMAND_ALLOWLIST (security boundary before UI ships)
-- [x] Sprint 33.2 — Command runner UI (picker + terminal panel) — auto tasks complete; pending human-verify
-- [x] Sprint 33.3 — Polish and harden — error toasts, disabled state, CSS audit — auto tasks complete; pending human-verify
+- [x] Sprint 33.2 — Command runner UI (command picker + reused WebSocket terminal)
+- [x] Sprint 33.3 — Polish and harden — error toasts, disabled state, CSS token audit
 
 **Acceptance:**
 - UI exposes a command picker covering `init` and other safe rihal commands
