@@ -9,10 +9,11 @@
  *   onRefresh     {function} — called when Refresh button is clicked
  *   onToggleTheme {function} — called when theme button is clicked
  *   onToggleSidebar {function} — called when hamburger is clicked
- *   themeLabel    {string}   — label for the theme button (◑ / 🌙 / ☀️)
+ *   themeLabel    {string}   — 'light' or 'dark' — controls which icon the theme button shows
  */
 
 import { html } from '../preact.js';
+import { Icon } from '../icons-client.js';
 
 export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
   return html`
@@ -27,7 +28,7 @@ export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onTo
           <span></span><span></span><span></span>
         </button>
         <div class="brand">
-          <div class="icon">🕌</div>
+          <div class="icon"><${Icon} name="building" size=${16} cls="brand-icon"/></div>
           <div>
             <h1>Majlis — The Council</h1>
             <div class="arabic">مجلس · ${projectName || ''}</div>
@@ -38,7 +39,7 @@ export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onTo
         <span class="live" id="live-dot" title="Live"></span>
         <span id="updated-ago" style="font-size:11px;color:var(--text-muted);">${updatedAgo || 'just now'}</span>
         <button class="header-btn" id="refresh-btn" onClick=${onRefresh}>↺ Refresh</button>
-        <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme">${themeLabel || '◑'}</button>
+        <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme"><${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${14}/></button>
         <button class="header-btn" onClick=${() => {
           navigator.clipboard.writeText(location.href);
           // Show a toast if available
