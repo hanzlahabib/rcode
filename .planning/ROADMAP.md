@@ -234,10 +234,12 @@ output in the WebSocket terminal, and see completion. The orchestrator service (
 owns command execution; `dashboard.js` stays pure-stdlib view-only. Reuse the phase-29
 bash-guard / auth hardening — no raw exec surface.
 
-**Status:** Planned
+**Status:** In progress (sprint 33.1 complete — awaiting human-verify checkpoint 33.1.3)
 
 **Plans:**
-- _TBD — planned via /rihal-plan 33_
+- [x] Sprint 33.1 — Server-side COMMAND_ALLOWLIST (security boundary before UI ships)
+- [ ] Sprint 33.2 — Command runner UI (picker + terminal panel)
+- [ ] Sprint 33.3 — Wire command runner into OrchestrationView; end-to-end
 
 **Acceptance:**
 - UI exposes a command picker covering `init` and other safe rihal commands
