@@ -9,7 +9,7 @@
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
 import { humanDate } from '../util.js';
-import { CmdHint, showToast } from '../components/shared.js';
+import { CmdHint, CmdHints, showToast } from '../components/shared.js';
 
 const CMD_HINTS = [
   ['/rihal-council',                   'Convene the council for a new decision'],
@@ -96,12 +96,7 @@ export function DecisionsView() {
           `;
         })}
       </div>
-      <details class="cmd-hints">
-        <summary>💡 Commands</summary>
-        <div class="cmd-hints-list">
-          ${CMD_HINTS.map(([cmd, desc]) => html`<${CmdHint} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
-        </div>
-      </details>
+      <${CmdHints} hints=${CMD_HINTS}/>
     </div>
   `;
 }

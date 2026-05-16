@@ -12,6 +12,7 @@ import { pctNum, chip as chipDesc, humanDate, pct } from '../util.js';
 import {
   runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
+import { Icon } from '../icons-client.js';
 
 // ---- Toast helper (shared by CmdHint copy action and any view) ----
 export function showToast(msg) {
@@ -121,7 +122,7 @@ export function CmdHint({ cmd, desc }) {
     <div class="cmd-hint-item" onClick=${handleClick}>
       <span class="cmd-text">${cmd}</span>
       <span class="cmd-desc">${desc}</span>
-      <span class="cmd-copy">📋</span>
+      <${Icon} name="copy" size=${14} cls="cmd-copy"/>
     </div>
   `;
 }
@@ -134,7 +135,7 @@ export function CmdHints({ hints }) {
   if (!hints || !hints.length) return null;
   return html`
     <details class="cmd-hints">
-      <summary>💡 Commands</summary>
+      <summary><${Icon} name="lightbulb" size=${14}/> Commands</summary>
       <div class="cmd-hints-list">
         ${hints.map(([cmd, desc]) => html`<${CmdHint} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
       </div>
