@@ -3,7 +3,7 @@
 **Last updated:** 2026-05-16
 **Milestone:** M2 — Hardening & Polish (v4)
 **Version:** 3.5.0
-**Current phase:** 33 — Dashboard command runner (sprint 33.1 auto-tasks complete — awaiting human-verify checkpoint 33.1.3)
+**Current phase:** 33 — Dashboard command runner (sprint 33.2 auto-tasks complete — awaiting human-verify checkpoint 33.2.4)
 **Branch:** 31-preact-migration
 
 ---
