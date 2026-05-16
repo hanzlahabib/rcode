@@ -59,8 +59,15 @@ gaps in `.planning/MILESTONES.md`. Roadmap archived to
 
 ## M3 — Archon Dashboard Port
 
-Roadmap pending — phases continue from 33 (start at Phase 34). See `ROADMAP.md`
-once the roadmap is written.
+| # | Name | Sprints | Status |
+|---|------|---------|--------|
+| 34 | Status Summary Bar with Multi-Attribute Filtering | 2 (34.1, 34.2) | planned |
+| 35 | Session History Panel with Live/Persisted Dedup-Merge | 2 (35.1, 35.2) | planned |
+| 36 | Command Palette and Sidebar Health Badges | 2 (36.1, 36.2) | planned |
+| 37 | Phase Dependency Graph and Structured Rejection Dialogs | 2 (37.1, 37.2) | planned |
+
+8 sprints, 26 stories. All sprint plans passed rihal-sprint-checker
+verification. Ready to execute — `/rihal-execute 34`.
 
 ---
 
