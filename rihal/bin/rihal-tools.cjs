@@ -3566,33 +3566,35 @@ function cmdPhase(subArgs) {
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
     const statePath = path.join(RIHAL_DIR, 'state.json');
 
+    // #769 — the next free number is derived from phase DIRECTORIES only.
+    // A directory is the physical "slot taken" signal. ROADMAP.md headings and
+    // directory-less state.json entries represent phases that are *planned but
+    // not yet scaffolded* — which is exactly what this command materialises —
+    // so they must NOT push the start number forward. (The old code also read
+    // the roadmap + state into maxNum, which made scaffold-milestone skip past
+    // an already-written roadmap range, e.g. scaffolding 38-41 for a 34-37
+    // milestone.)
+    const dirNumbers = new Set();
     let maxNum = 0;
     if (fs.existsSync(phasesDir)) {
       for (const entry of fs.readdirSync(phasesDir)) {
         const m = entry.match(/^(\d+)/);
-        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+        if (m) {
+          const n = parseInt(m[1], 10);
+          dirNumbers.add(n);
+          maxNum = Math.max(maxNum, n);
+        }
       }
-    }
-    if (fs.existsSync(roadmapPath)) {
-      const text = fs.readFileSync(roadmapPath, 'utf8');
-      const pipeRe = /^\|\s*(\d+)\s*\|/gm;
-      let m;
-      while ((m = pipeRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
-      const headRe = /^#{2,4}\s*Phase\s+(\d+)\b/gm;
-      while ((m = headRe.exec(text)) !== null) maxNum = Math.max(maxNum, parseInt(m[1], 10));
     }
     let state = { phases: [] };
     if (fs.existsSync(statePath)) {
       try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
     }
     if (!Array.isArray(state.phases)) state.phases = [];
-    for (const p of state.phases) {
-      const n = parseInt(String(p.number || ''), 10);
-      if (!Number.isNaN(n)) maxNum = Math.max(maxNum, n);
-    }
 
     const firstNum = startOverride !== null ? startOverride : maxNum + 1;
     const created  = [];
+    const roadmapSkipped = [];
 
     for (let i = 0; i < names.length; i++) {
       const phaseName = names[i];
@@ -3606,8 +3608,17 @@ function cmdPhase(subArgs) {
       if (!slug) {
         throw new Error(`Name at index ${i} ("${phaseName}") produces an empty slug`);
       }
-      if (state.phases.some(p => String(p.number) === number)) {
-        throw new Error(`Phase ${number} already exists in state.json (would collide at index ${i})`);
+      // #769 — a real collision is a state entry that ALSO has a directory on
+      // disk (the phase is genuinely already scaffolded). A directory-less
+      // state entry is a phantom — e.g. rihal-roadmapper synced the phase into
+      // state.json but never created the folder — so reconcile it in place
+      // instead of aborting.
+      const existingIdx = state.phases.findIndex(p => String(p.number) === number);
+      if (existingIdx !== -1) {
+        if (dirNumbers.has(firstNum + i)) {
+          throw new Error(`Phase ${number} already scaffolded (directory + state entry exist) — collision at index ${i}`);
+        }
+        state.phases.splice(existingIdx, 1);
       }
 
       const dirName  = `${number}-${slug}`;
@@ -3617,22 +3628,29 @@ function cmdPhase(subArgs) {
       }
       fs.mkdirSync(directory, { recursive: true });
 
-      // Append ROADMAP entry
+      // Append ROADMAP entry — but skip if the roadmap already declares this
+      // phase (#769: rihal-roadmapper writes `## Phase N` sections directly, so
+      // appending a stub here produced a duplicate heading).
       if (fs.existsSync(roadmapPath)) {
-        const entry = `## Phase ${number} — ${phaseName}\n\n` +
-          `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
-          `**Status:** Planned\n\n` +
-          `**Plans:**\n- _TBD_\n\n` +
-          `**Acceptance:** _TBD_\n\n---\n`;
         let text = fs.readFileSync(roadmapPath, 'utf8');
-        const backlogMatch = text.match(/^##\s+Backlog\b/m);
-        if (backlogMatch) {
-          text = text.slice(0, backlogMatch.index) + entry + '\n' + text.slice(backlogMatch.index);
+        const headingRe = new RegExp(`^#{2,4}\\s*Phase\\s+${number}\\b`, 'm');
+        if (headingRe.test(text)) {
+          roadmapSkipped.push(number);
         } else {
-          if (!text.endsWith('\n')) text += '\n';
-          text += '\n' + entry;
+          const entry = `## Phase ${number} — ${phaseName}\n\n` +
+            `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
+            `**Status:** Planned\n\n` +
+            `**Plans:**\n- _TBD_\n\n` +
+            `**Acceptance:** _TBD_\n\n---\n`;
+          const backlogMatch = text.match(/^##\s+Backlog\b/m);
+          if (backlogMatch) {
+            text = text.slice(0, backlogMatch.index) + entry + '\n' + text.slice(backlogMatch.index);
+          } else {
+            if (!text.endsWith('\n')) text += '\n';
+            text += '\n' + entry;
+          }
+          fs.writeFileSync(roadmapPath, text);
         }
-        fs.writeFileSync(roadmapPath, text);
       }
 
       state.phases.push({
@@ -3650,7 +3668,7 @@ function cmdPhase(subArgs) {
     if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
-    return { ok: true, count: created.length, phases: created };
+    return { ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped };
   }
 
   throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone`);
@@ -4563,6 +4581,96 @@ function cmdPhasePlanIndex(rawArgs) {
     incomplete,
     has_checkpoints: hasCheckpoints,
   };
+}
+
+/**
+ * Extract a frontmatter list field that may be written inline (`key: [a, b]`),
+ * as a single scalar (`key: a`), or as a block list (`key:` then `  - a`).
+ * Returns a string array (empty if the key is absent).
+ */
+function fmListField(block, key) {
+  const lines = block.split('\n');
+  const strip = (s) => s.trim().replace(/^["']|["']$/g, '');
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(new RegExp(`^${key}\\s*:\\s*(.*)$`));
+    if (!m) continue;
+    const inline = m[1].trim();
+    if (inline.startsWith('[')) {
+      return inline.replace(/^\[|\]$/g, '').split(',').map(strip).filter(Boolean);
+    }
+    if (inline) return [strip(inline)];
+    const out = [];
+    for (let j = i + 1; j < lines.length; j++) {
+      const lm = lines[j].match(/^\s+-\s+(.*)$/);
+      if (!lm) break;
+      out.push(strip(lm[1]));
+    }
+    return out;
+  }
+  return [];
+}
+
+/**
+ * plan check-wave-overlaps <phase> — enforce the wave-parallelism rule
+ * (plan.md Step 12.5, issue #768): two plans in the SAME wave that both list
+ * the same path in `files_modified` cannot run in parallel — the later plan
+ * (by plan number) must declare `sequential: true`. Returns a JSON report of
+ * unresolved conflicts so /rihal-plan can auto-correct the frontmatter.
+ */
+function cmdPlanCheckWaveOverlaps(rawArgs) {
+  const phaseArg = String(rawArgs || '').trim().split(/\s+/)[0] || '';
+  if (!phaseArg) {
+    console.error('Usage: plan check-wave-overlaps <phase-number>');
+    process.exit(1);
+  }
+  const phasesDir = path.join(PLANNING_DIR, 'phases');
+  const norm = phaseArg.replace(/^0+/, '') || '0';
+  let phaseDir = null;
+  if (fs.existsSync(phasesDir)) {
+    for (const d of fs.readdirSync(phasesDir)) {
+      const m = d.match(/^(\d+)(?:[-.])/);
+      if (m && (m[1].replace(/^0+/, '') || '0') === norm) { phaseDir = path.join(phasesDir, d); break; }
+    }
+  }
+  if (!phaseDir) return { phase: phaseArg, conflicts: [], plans_checked: 0, phase_dir: null };
+
+  const plans = [];
+  for (const file of fs.readdirSync(phaseDir).filter((f) => /-SPRINT\.md$/i.test(f)).sort()) {
+    const text = fs.readFileSync(path.join(phaseDir, file), 'utf8');
+    let block = '';
+    if (text.startsWith('---\n')) {
+      const end = text.indexOf('\n---\n', 4);
+      if (end !== -1) block = text.slice(4, end);
+    }
+    const stem = file.replace(/-SPRINT\.md$/i, '');
+    const numMatch = (block.match(/^plan_number\s*:\s*(\d+)/m) || stem.match(/-(\d+)$/));
+    plans.push({
+      id: stem,
+      order: numMatch ? parseInt(numMatch[1], 10) : 0,
+      wave: parseInt((block.match(/^wave\s*:\s*(\d+)/m) || [])[1] || '1', 10) || 1,
+      sequential: /^sequential\s*:\s*true\s*$/m.test(block),
+      files: fmListField(block, 'files_modified'),
+    });
+  }
+
+  const conflicts = [];
+  for (let a = 0; a < plans.length; a++) {
+    for (let b = a + 1; b < plans.length; b++) {
+      const [earlier, later] = plans[a].order <= plans[b].order ? [plans[a], plans[b]] : [plans[b], plans[a]];
+      if (earlier.wave !== later.wave) continue;
+      const shared = earlier.files.filter((f) => later.files.includes(f));
+      if (shared.length === 0) continue;
+      if (later.sequential) continue;
+      conflicts.push({
+        wave: earlier.wave,
+        plan_a: earlier.id,
+        plan_b: later.id,
+        shared_files: shared,
+        plan_b_sequential: false,
+      });
+    }
+  }
+  return { phase: phaseArg, phase_dir: path.relative(PROJECT_ROOT, phaseDir), plans_checked: plans.length, conflicts };
 }
 
 /** phases list — directory inventory under .planning/phases with optional --type filter and --pick path. */
@@ -6632,7 +6740,10 @@ async function main() {
           console.log(JSON.stringify(result, null, 2));
           process.exit(result.ok ? 0 : 1);
         }
-        else { console.error('Unknown plan subcommand. Valid: list, validate-evidence'); process.exit(1); }
+        else if (args[0] === 'check-wave-overlaps') {
+          result = cmdPlanCheckWaveOverlaps(args.slice(1).join(' '));
+        }
+        else { console.error('Unknown plan subcommand. Valid: list, validate-evidence, check-wave-overlaps'); process.exit(1); }
         break;
       case 'phase-plan-index':
         result = cmdPhasePlanIndex(args.join(' '));
@@ -6892,8 +7003,9 @@ async function main() {
         console.log('  classify-tech --keywords "<keywords>"        → classify tech stack from keywords (frontend/backend/mobile/styling)');
         console.log('  context refresh                              → refresh .rihal/context/ cache from .rihal/sources.yaml');
         console.log('  module <subcommand> [args]                   → module system helpers');
-        console.log('  plan <list|validate-evidence>                → phase/plan operations');
+        console.log('  plan <list|validate-evidence|check-wave-overlaps>  → phase/plan operations');
         console.log('  plan validate-evidence <N> [--spot-check]    → enforce <evidence> blocks in SPRINT.md (#649); exit 1 on violation');
+        console.log('  plan check-wave-overlaps <N>                 → detect same-wave plans sharing files_modified (#768)');
         console.log('  phase-plan-index <N>                         → JSON inventory of plans under phase N (waves, summary status, task counts)');
         console.log('  phases list [--type X] [--pick path]         → directory inventory of .planning/phases (--type: summaries|sprints|directories|all; --pick: e.g. directories[-1])');
         console.log('  find-phase <N> [--raw]                       → resolve phase number to dir/slug + decimal children');
