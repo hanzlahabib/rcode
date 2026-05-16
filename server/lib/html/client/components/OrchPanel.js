@@ -17,6 +17,7 @@ import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
 import { orchToken, stopSession, cleanSessions, ORCH_HTTP } from '../orchestrator.js';
 import { showToast } from './shared.js';
+import { Icon } from '../icons-client.js';
 
 // ── Session map helpers ───────────────────────────────────────────────────────
 
@@ -209,7 +210,7 @@ export function OrchPanel() {
           <span class=${'orch-status-dot' + (runningCount > 0 ? ' up' : '')}></span>
           Agent Sessions
         </div>
-        <button class="orch-panel-close" onClick=${handleClose} title="Close">✕</button>
+        <button class="orch-panel-close" onClick=${handleClose} title="Close" aria-label="Close panel"><${Icon} name="x" size=${14}/></button>
       </div>
 
       <!-- Tab strip -->
@@ -233,7 +234,8 @@ export function OrchPanel() {
                 class="orch-tab-close"
                 onClick=${e => handleTabClose(e, sid)}
                 title="Close"
-              >✕</button>
+                aria-label="Close tab"
+              ><${Icon} name="x" size=${12}/></button>
             </button>
           `;
         })}
@@ -259,11 +261,11 @@ export function OrchPanel() {
             <div class="orch-files-head">File changes</div>
             ${activeSess.fileOps.map((fo, i) => {
               const opClass = fo.op === 'write' ? 'op-w' : fo.op === 'bash' ? 'op-b' : 'op-r';
-              const opLabel = fo.op === 'write' ? '✎' : fo.op === 'bash' ? '$' : '👁';
+              const opLabel = fo.op === 'write' ? '✎' : fo.op === 'bash' ? '$' : null;
               const label   = fo.path || fo.cmd || fo.tool || '';
               return html`
                 <div key=${i} class="kt-file">
-                  <span class=${'op-icon ' + opClass}>${opLabel}</span> ${label}
+                  <span class=${'op-icon ' + opClass}>${fo.op !== 'write' && fo.op !== 'bash' ? html`<${Icon} name="eye" size=${12}/>` : opLabel}</span> ${label}
                 </div>
               `;
             })}
