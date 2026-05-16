@@ -2119,6 +2119,16 @@ footer {
   border-color: var(--accent-green);
   color: #fff;
 }
+.ms-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: var(--space-3);
+}
+.ms-audit-btn:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
 
 /* ── Orchestration view ─────────────────────────────────────── */
 .orch-subtitle {

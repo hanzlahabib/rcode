@@ -16,7 +16,7 @@ import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { pctNum, sprintHints, phaseHints } from '../util.js';
 import { Chip, ProgressBar, CmdHints, RunBtn, RunningBadge } from '../components/shared.js';
-import { runningInPhase } from '../orchestrator.js';
+import { runningInPhase, runAndOpenTerm } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
 
 /**
@@ -186,9 +186,11 @@ export function RoadmapView() {
     ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done'
   );
   const rmHints = [
-    ['/rihal-add-phase',       'Add a new phase'],
+    ['/rihal-autonomous',       'Execute all remaining phases (autonomous)'],
+    ['/rihal-audit',            'Audit the project'],
+    ['/rihal-add-phase',        'Add a new phase'],
     ['/rihal-milestone-summary','View milestone summary'],
-    ['/rihal-new-milestone',   'Start a new milestone'],
+    ['/rihal-new-milestone',    'Start a new milestone'],
   ];
   if (allPDone) {
     rmHints.push(['/rihal-audit-milestone',    'Audit milestone completion']);
@@ -213,6 +215,16 @@ export function RoadmapView() {
             <span class="tree-label">${ms}</span>
             <span class="tree-badge">
               ${phases.length} phases · ${doneTasks.length}/${totalTasks.length} tasks
+            </span>
+            <span class="ms-actions">
+              <button class="card-run-btn" title="Execute every remaining phase (autonomous run — pauses at checkpoints)"
+                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-execute-all', '/rihal-autonomous', 'Execute all phases'); }}>
+                <${Icon} name="play" size=${12}/> Run All
+              </button>
+              <button class="card-run-btn ms-audit-btn" title="Audit the whole milestone"
+                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-audit', '/rihal-audit-milestone', 'Audit milestone'); }}>
+                <${Icon} name="clipboard-list" size=${12}/> Audit
+              </button>
             </span>
           </div>
           <div class="tree-children">
