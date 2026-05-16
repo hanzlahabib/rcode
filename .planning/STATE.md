@@ -3,7 +3,7 @@
 **Last updated:** 2026-05-16
 **Milestone:** M2 — Hardening & Polish (v4)
 **Version:** 3.5.0
-**Current phase:** 32 — Dashboard theming (sprint 32.1 complete — awaiting human visual verify checkpoint)
+**Current phase:** 32 — Dashboard theming (sprint 32.2 auto-tasks complete — awaiting human visual verify checkpoint 32.2.7)
 **Branch:** 31-preact-migration
 
 ---
@@ -43,7 +43,7 @@ gaps in `.planning/MILESTONES.md`. Roadmap archived to
 | 29 | Security hardening (#752–#754) | complete |
 | 30 | Marketability (#755–#759) | complete |
 | 31 | Preact migration — Majlis dashboard client | complete (human verify pending) |
-| 32 | Dashboard theming — design tokens + emoji-to-SVG sweep | in progress (32.1 human verify checkpoint) |
+| 32 | Dashboard theming — design tokens + emoji-to-SVG sweep | in progress (32.2 human verify checkpoint) |
 
 ---
 
