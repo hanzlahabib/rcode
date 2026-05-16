@@ -3324,6 +3324,54 @@ function cmdPhase(subArgs) {
     };
   }
 
+  // =====================================================================
+  // phase complete <phase_number> — mark a phase complete and report the
+  // next phase. Closes the workflow/CLI drift (#766): execute.md calls
+  // `phase complete` but only set-status existed.
+  // =====================================================================
+  if (sub === 'complete') {
+    const phaseRef = subArgs[1];
+    if (!phaseRef) throw new Error('phase complete requires <phase_number>');
+    const statePath = path.join(RIHAL_DIR, 'state.json');
+    if (!fs.existsSync(statePath)) {
+      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+    }
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
+    if (!state.phases) state.phases = [];
+    const idx = state.phases.findIndex(p =>
+      String(p.number) === String(phaseRef) ||
+      String(p.id) === String(phaseRef) ||
+      p.name === phaseRef
+    );
+    if (idx === -1) {
+      throw new Error(`Phase "${phaseRef}" not found in state.phases (looked up by number, id, and name)`);
+    }
+    const previous = state.phases[idx].status || null;
+    state.phases[idx].status = 'complete';
+    state.phases[idx].status_updated = new Date().toISOString();
+    state.phases[idx].completed_at = state.phases[idx].completed_at || new Date().toISOString().slice(0, 10);
+
+    const num = parseInt(String(state.phases[idx].number || phaseRef), 10);
+    const next = state.phases
+      .filter(p => parseInt(String(p.number), 10) > num)
+      .sort((a, b) => parseInt(String(a.number), 10) - parseInt(String(b.number), 10))[0] || null;
+
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    return {
+      ok: true,
+      phase: phaseRef,
+      previous_status: previous,
+      new_status: 'complete',
+      next_phase: next ? next.number : null,
+      next_phase_name: next ? (next.name || null) : null,
+      is_last_phase: !next,
+      warnings: [],
+      has_warnings: false,
+    };
+  }
+
   if (sub === 'set-status') {
     const phaseRef = subArgs[1];
     const newStatus = subArgs[2];
@@ -3522,7 +3570,7 @@ function cmdPhase(subArgs) {
     return { ok: true, count: created.length, phases: created };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, set-status, next-range, scaffold-milestone`);
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, set-status, next-range, scaffold-milestone`);
 }
 
 /**
