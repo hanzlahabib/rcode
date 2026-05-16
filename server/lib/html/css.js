@@ -28,7 +28,6 @@ function renderCss() {
   --text-secondary: #b4bcd0;
   --text-tertiary:  #8a8f98;
   --text-muted:     #62666d;
-  --text-on-accent: #ffffff;
 
   /* Brand — Rihal keeps Aether Blue */
   --accent-primary: #5e6ad2;
@@ -43,7 +42,6 @@ function renderCss() {
   --red:     #eb5757;
   --blue:    #26b5ce;
   --violet:  #bf7af0;
-  --orange:  #f2994a;
 
   /* Status */
   --status-todo:     #e2e2e2;
@@ -56,7 +54,6 @@ function renderCss() {
   --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
 
   /* Size scale */
-  --text-2xl: 24px;
   --text-xl:  20px;
   --text-lg:  17px;
   --text-md:  15px;
@@ -78,7 +75,6 @@ function renderCss() {
   --space-6: 20px;
   --space-7: 24px;
   --space-8: 32px;
-  --space-9: 48px;
   --space-10: 64px;
 
   /* Radius */
@@ -90,19 +86,13 @@ function renderCss() {
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm:    0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md:    0 4px 12px rgba(0,0,0,0.5);
   --shadow-lg:    0 16px 32px rgba(0,0,0,0.6);
-  --shadow-modal: 0 32px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
-  --shadow-focus: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--accent-primary);
 
   /* Motion */
   --ease: cubic-bezier(0.4,0,0.2,1);
-  --ease-in: cubic-bezier(0.4,0,1,1);
   --t-fast: 120ms;
   --t-base: 200ms;
   --t-menu: 240ms;
-  --t-view: 320ms;
 
   /* Legacy compat aliases */
   --bg: var(--bg-page);
@@ -110,7 +100,6 @@ function renderCss() {
   --border: var(--border-default);
   --radius-sm: var(--radius-2);
   --radius-md: var(--radius-4);
-  --radius-lg: var(--radius-5);
   --accent-green: var(--green);
   --accent-amber: var(--amber);
   --accent-red: var(--red);
@@ -1005,7 +994,7 @@ section .body {
 .agent-card .role {
   font-size: var(--text-2xs);
   color: var(--text-tertiary);
-  letter---spacing: -0.006em;
+  letter-spacing: -0.006em;
 }
 .real-badge {
   font-size: var(--text-2xs);
