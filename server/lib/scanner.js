@@ -31,6 +31,80 @@ function parseSimpleYaml(text) {
   return out;
 }
 
+/**
+ * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
+ * which is the committed source of truth. state.json sprint/story records are
+ * often incomplete (planner agents write SPRINT.md files without registering
+ * sprint entries), so the dashboard derives counts from disk instead of trusting
+ * state.json. When a phase has a directory with *-SPRINT.md files, those win;
+ * otherwise the raw state.json sprints array is kept as-is.
+ *
+ * @param {string} projectDir   repo root
+ * @param {Array}  rawPhases    state.raw.phases
+ * @returns {Array|null}        phases with a populated `sprints` array each
+ */
+function buildPhaseTree(projectDir, rawPhases) {
+  if (!Array.isArray(rawPhases)) return null;
+  const phasesDir = path.join(projectDir, '.planning', 'phases');
+  let dirs;
+  try {
+    dirs = fs.readdirSync(phasesDir, { withFileTypes: true }).filter(d => d.isDirectory());
+  } catch { return rawPhases; }
+
+  return rawPhases.map(p => {
+    const intId = String(p.id || p.number || '').split('.')[0];
+    if (!intId) return p;
+    const dir = dirs.find(d => d.name.startsWith(intId + '-') ||
+                               d.name.startsWith(intId.padStart(2, '0') + '-'));
+    if (!dir) return p;
+
+    let files;
+    try { files = fs.readdirSync(path.join(phasesDir, dir.name)); } catch { return p; }
+    const sprintFiles = files.filter(f => /-SPRINT\.md$/i.test(f)).sort();
+    if (!sprintFiles.length) return p;
+
+    const phaseComplete = /complete|done/i.test(p.status || '');
+    const sprints = sprintFiles.map(f => {
+      const m   = f.match(/^(\d+)-(\d+)-SPRINT\.md$/i);
+      const num = m ? parseInt(m[2], 10) : 0;
+      const sid = m ? `${parseInt(m[1], 10)}.${num}` : f.replace(/-SPRINT\.md$/i, '');
+      const text = safeReadText(path.join(phasesDir, dir.name, f)) || '';
+
+      // Sprint goal: frontmatter `goal:`, else first line of <objective>.
+      const fm = parseSimpleYaml((text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '');
+      let goal = fm.goal || '';
+      if (!goal) {
+        const obj = (text.match(/<objective>\s*([\s\S]*?)<\/objective>/) || [])[1] || '';
+        goal = (obj.trim().split('\n').map(s => s.trim()).filter(Boolean)[0] || '').slice(0, 160);
+      }
+
+      // Stories: one per <task> block; title from <title>.
+      const stories = [];
+      const taskRe = /<task\b([^>]*)>([\s\S]*?)<\/task>/g;
+      let tm;
+      while ((tm = taskRe.exec(text))) {
+        const idM    = tm[1].match(/id="([^"]+)"/);
+        const titleM = tm[2].match(/<title>([\s\S]*?)<\/title>/);
+        stories.push({
+          id:     idM ? idM[1] : `${sid}-task-${stories.length + 1}`,
+          title:  titleM ? titleM[1].trim() : `Task ${stories.length + 1}`,
+          status: phaseComplete ? 'done' : 'todo',
+        });
+      }
+
+      // Status: a *-SUMMARY.md sibling means the sprint shipped.
+      const hasSummary = files.includes(f.replace(/-SPRINT\.md$/i, '-SUMMARY.md'));
+      const status = hasSummary ? 'complete'
+        : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
+        : 'planned';
+
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories };
+    });
+
+    return { ...p, sprints };
+  });
+}
+
 function scanState(rihalDir) {
   const projectDir = path.dirname(rihalDir);
   const state = {
@@ -199,6 +273,8 @@ function scanState(rihalDir) {
       };
     } catch { /* ignore */ }
   }
+
+  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases);
 
   return state;
 }

@@ -18,7 +18,7 @@ const { ICONS } = require('./icons');
 // store.js initial state and the view components that read it.
 function clientState(state) {
   return JSON.stringify({
-    phases:           state.raw?.phases         || [],
+    phases:           state.phaseTree           || state.raw?.phases || [],
     milestone:        state.raw?.milestone      || '',
     currentPhase:     state.raw?.current_phase  || null,
     currentSprint:    state.raw?.current_sprint || null,
