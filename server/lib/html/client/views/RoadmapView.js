@@ -7,9 +7,9 @@
  * Key differences from legacy:
  *   - Tree expansion is component useState per node — no DOM style.display hacks.
  *   - Filter is component useState — no querySelectorAll style.display hacks.
- *   - Keyboard E/C (expand/collapse-all) handled via global keydown in App; this
- *     component exposes expandAll/collapseAll via window._roadmapControl so App
- *     can reach in. (Proper context/ref wiring deferred to 31.4.)
+ *   - Keyboard E/C (expand/collapse-all) fires a CustomEvent on the roadmap tree
+ *     container; PhaseNode and SprintNode listen and update their open state.
+ *     Shortcuts only fire when the Roadmap view is active (view root is mounted).
  */
 
 import { html, useState, useEffect } from '../preact.js';
@@ -17,10 +17,17 @@ import { useStore } from '../store.js';
 import { pctNum } from '../util.js';
 import { Chip, ProgressBar, CmdHints } from '../components/shared.js';
 
-/** Recursive tree node with local expansion state. */
-function TreeNode({ label, icon, badge, status, children, defaultOpen, onDoubleClick }) {
+/**
+ * Recursive tree node with local expansion state.
+ * expandSignal: { key: number, open: boolean } — when key changes, force open state.
+ */
+function TreeNode({ label, icon, badge, status, children, defaultOpen, onDoubleClick, expandSignal }) {
   const [open, setOpen] = useState(defaultOpen || false);
   const toggle = () => setOpen(o => !o);
+
+  useEffect(() => {
+    if (expandSignal && expandSignal.key > 0) setOpen(expandSignal.open);
+  }, [expandSignal && expandSignal.key]);
 
   return html`
     <div class="tree-node">
@@ -54,8 +61,12 @@ function TaskLeaf({ task: t }) {
 }
 
 /** Phase row with inline mini progress bar. */
-function PhaseNode({ phase: p, filterQuery }) {
+function PhaseNode({ phase: p, filterQuery, expandSignal }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (expandSignal && expandSignal.key > 0) setOpen(expandSignal.open);
+  }, [expandSignal && expandSignal.key]);
   const sps = p.sprints || [];
   const pStories = sps.flatMap(s => s.stories || []);
   const pDone = pStories.filter(t => t.status === 'done' || t.status === 'completed').length;
@@ -85,7 +96,7 @@ function PhaseNode({ phase: p, filterQuery }) {
       </div>
       ${open ? html`
         <div class="tree-children">
-          ${sps.length ? sps.map(s => html`<${SprintNode} key=${s.id} sprint=${s}/>`) : html`
+          ${sps.length ? sps.map(s => html`<${SprintNode} key=${s.id} sprint=${s} expandSignal=${expandSignal}/>`) : html`
             <div style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2) var(--space-6);">
               No sprints
             </div>
@@ -97,8 +108,12 @@ function PhaseNode({ phase: p, filterQuery }) {
 }
 
 /** Sprint row inside roadmap. */
-function SprintNode({ sprint: s }) {
+function SprintNode({ sprint: s, expandSignal }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (expandSignal && expandSignal.key > 0) setOpen(expandSignal.open);
+  }, [expandSignal && expandSignal.key]);
   const sts = s.stories || [];
   const sDone = sts.filter(t => t.status === 'done' || t.status === 'completed').length;
 
@@ -131,6 +146,24 @@ export function RoadmapView() {
   const [filterQuery, setFilterQuery] = useState('');
   // rootOpen is always true (the milestone root stays expanded)
   const [rootOpen] = useState(true);
+
+  // expandSignal drives E/C keyboard shortcuts.
+  // { key: number, open: boolean } — incrementing key triggers child useEffects.
+  const [expandSignal, setExpandSignal] = useState({ key: 0, open: false });
+
+  // E = expand all, C = collapse all — only active while this view is mounted.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'e' || e.key === 'E') {
+        setExpandSignal(prev => ({ key: prev.key + 1, open: true }));
+      } else if (e.key === 'c' || e.key === 'C') {
+        setExpandSignal(prev => ({ key: prev.key + 1, open: false }));
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Total stats for root badge
   const totalTasks = phases.flatMap(p => (p.sprints || []).flatMap(s => s.stories || []));
@@ -171,7 +204,7 @@ export function RoadmapView() {
             </span>
           </div>
           <div class="tree-children">
-            ${phases.map(p => html`<${PhaseNode} key=${p.id} phase=${p} filterQuery=${q}/>`)}
+            ${phases.map(p => html`<${PhaseNode} key=${p.id} phase=${p} filterQuery=${q} expandSignal=${expandSignal}/>`)}
           </div>
         </div>
       </div>
