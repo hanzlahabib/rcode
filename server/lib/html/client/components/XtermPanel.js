@@ -11,7 +11,7 @@
  * Setting state.terminal via orchestrator.js triggers this component.
  */
 
-import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
+import { html, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
 import { orchToken, stopSession, ORCH_WS } from '../orchestrator.js';
 
@@ -100,7 +100,6 @@ function connectWs(storyId) {
 export function XtermPanel() {
   const { terminal, termStatus } = useStore();
   const containerRef = useRef(null);
-  const [inputVal, setInputVal] = useState('');
   const currentStoryRef = useRef(null);
 
   const t = terminal || {};
@@ -167,20 +166,6 @@ export function XtermPanel() {
     setTimeout(_resize, 50);
   }, [t, fullscreen]);
 
-  const handleSend = useCallback(() => {
-    const msg = inputVal.trim();
-    if (!msg) return;
-    setInputVal('');
-    if (_termWs && _termWs.readyState === 1) {
-      _termWs.send(JSON.stringify({ t: 'i', d: msg + '\r' }));
-    }
-    if (_term) _term.focus();
-  }, [inputVal]);
-
-  const handleInputKey = useCallback(e => {
-    if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
-  }, [handleSend]);
-
   // ── Pill (minimized state) ──
   const pill = html`
     <div
@@ -226,19 +211,8 @@ export function XtermPanel() {
           </button>
         </div>
       </div>
+      <div class="term-hint">Click the terminal and type to talk to the agent — Enter sends, Ctrl+C interrupts.</div>
       <div ref=${containerRef} id="term-container"></div>
-      <div class="term-input-row">
-        <span class="term-prompt">❯</span>
-        <input
-          type="text"
-          class="term-input-field"
-          placeholder="Send message to agent… (Enter)"
-          value=${inputVal}
-          onInput=${e => setInputVal(e.target.value)}
-          onKeyDown=${handleInputKey}
-        />
-        <button class="term-send-btn" onClick=${handleSend}>Send ↑</button>
-      </div>
     </div>
   `;
 

@@ -2050,47 +2050,14 @@ footer {
   padding: 6px 8px;
   background: #0c0c0e;
 }
-.term-input-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.term-hint {
   padding: var(--space-2) var(--space-3);
   background: var(--bg-elev-2);
   border-top: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-}
-.term-prompt {
-  color: var(--accent-primary);
-  font-family: var(--font-mono);
+  color: var(--text-muted);
   font-size: var(--text-xs);
   flex-shrink: 0;
 }
-.term-input-field {
-  flex: 1;
-  height: 26px;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  outline: none;
-  letter-spacing: 0;
-}
-.term-input-field::placeholder { color: var(--text-muted); }
-.term-send-btn {
-  height: 24px;
-  padding: 0 var(--space-3);
-  background: var(--accent-primary);
-  border: none;
-  border-radius: var(--radius-2);
-  color: white;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  opacity: 0.85;
-  white-space: nowrap;
-}
-.term-send-btn:hover { opacity: 1; }
 /* Run / Terminal action buttons (used on sprint/phase detail) */
 .term-run-btn {
   display: inline-flex;
