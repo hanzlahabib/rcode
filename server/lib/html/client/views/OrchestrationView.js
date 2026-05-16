@@ -12,7 +12,7 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS } from '../orchestrator.js';
+import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
 import { orchElapsed } from '../util.js';
 import { Icon } from '../icons-client.js';
 
@@ -84,11 +84,17 @@ function sortSessions(sessions) {
  * all session and terminal state via runAndOpenTerm.
  */
 function CommandRunner() {
+  const { activeSessions } = useStore();
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
   const [busy, setBusy] = useState(false);
 
+  const slug      = selected ? selected.replace(/^\//, '').replace(/\//g, '-') : '';
+  const sessionId = slug ? 'cmd-' + slug : '';
+  const isRunning = sessionId ? isSessionRunning(sessionId) : false;
+  const disabled  = busy || isRunning;
+
   function handleRun() {
-    if (!selected || busy) return;
+    if (!selected || disabled) return;
     setBusy(true);
     runCommandFromUI(selected);
     // Reset busy after 2 s — the terminal panel is now open and the session is
@@ -109,10 +115,14 @@ function CommandRunner() {
             <option key=${cmd} value=${cmd}>${label}</option>
           `)}
         </select>
-        <button class="cmd-runner-btn${busy ? ' cmd-runner-btn--busy' : ''}"
+        <button class=${'cmd-runner-btn' + (disabled ? ' cmd-runner-btn--busy' : '')}
           onClick=${handleRun}
-          disabled=${busy}>
-          ${busy ? html`<${Icon} name="hourglass" size=${14}/> Running…` : html`<${Icon} name="play" size=${14}/> Run`}
+          disabled=${disabled}>
+          ${isRunning
+            ? html`<${Icon} name="hourglass" size=${14}/> Running…`
+            : busy
+              ? html`<${Icon} name="hourglass" size=${14}/> Starting…`
+              : html`<${Icon} name="play" size=${14}/> Run`}
         </button>
       </div>
     </div>
