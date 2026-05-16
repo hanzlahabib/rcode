@@ -234,12 +234,12 @@ output in the WebSocket terminal, and see completion. The orchestrator service (
 owns command execution; `dashboard.js` stays pure-stdlib view-only. Reuse the phase-29
 bash-guard / auth hardening — no raw exec surface.
 
-**Status:** In progress (sprint 33.2 auto tasks complete — awaiting human-verify checkpoint 33.2.4)
+**Status:** In progress (sprint 33.3 auto tasks complete — awaiting human-verify checkpoint 33.3.4)
 
 **Plans:**
 - [x] Sprint 33.1 — Server-side COMMAND_ALLOWLIST (security boundary before UI ships)
 - [x] Sprint 33.2 — Command runner UI (picker + terminal panel) — auto tasks complete; pending human-verify
-- [ ] Sprint 33.3 — Wire command runner into OrchestrationView; end-to-end
+- [x] Sprint 33.3 — Polish and harden — error toasts, disabled state, CSS audit — auto tasks complete; pending human-verify
 
 **Acceptance:**
 - UI exposes a command picker covering `init` and other safe rihal commands
