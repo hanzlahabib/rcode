@@ -14,7 +14,7 @@
 
 import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
-import { pctNum } from '../util.js';
+import { pctNum, sprintHints, phaseHints } from '../util.js';
 import { Chip, ProgressBar, CmdHints, RunBtn, RunningBadge } from '../components/shared.js';
 import { runningInPhase } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
@@ -102,8 +102,11 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
       ${open ? html`
         <div class="tree-children">
           ${sps.length ? sps.map(s => html`<${SprintNode} key=${s.id} sprint=${s} expandSignal=${expandSignal}/>`) : html`
-            <div style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2) var(--space-6);">
-              No sprints
+            <div style="padding:var(--space-2) var(--space-6);">
+              <div style="color:var(--text-muted);font-size:var(--text-xs);margin-bottom:var(--space-2);">
+                No sprints yet — plan this phase:
+              </div>
+              <${CmdHints} hints=${phaseHints(p)}/>
             </div>
           `}
         </div>
@@ -127,6 +130,7 @@ function SprintNode({ sprint: s, expandSignal }) {
       <div class="tree-row" onClick=${() => setOpen(o => !o)}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
         <span class="tree-icon"><${Icon} name="zap" size=${14}/></span>
+        <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rihal-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
         <span class="tree-label">Sprint ${s.id} — ${s.goal || 'No goal'}</span>
         <${Chip} status=${s.status}/>
         <span class="tree-badge">${sDone}/${sts.length}</span>
@@ -134,8 +138,11 @@ function SprintNode({ sprint: s, expandSignal }) {
       ${open ? html`
         <div class="tree-children">
           ${sts.length ? sts.map(t => html`<${TaskLeaf} key=${t.id || t.title} task=${t}/>`) : html`
-            <div style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2) var(--space-6);">
-              No tasks
+            <div style="padding:var(--space-2) var(--space-6);">
+              <div style="color:var(--text-muted);font-size:var(--text-xs);margin-bottom:var(--space-2);">
+                No tasks yet — add them:
+              </div>
+              <${CmdHints} hints=${sprintHints(s)}/>
             </div>
           `}
         </div>
