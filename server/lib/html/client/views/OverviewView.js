@@ -9,6 +9,7 @@ import { html } from '../preact.js';
 import { useStore } from '../store.js';
 import { pct, humanDate, allSprints, chip, sprintHints as getSprintHints } from '../util.js';
 import { ProgressBar, CmdHints } from '../components/shared.js';
+import { Icon } from '../icons-client.js';
 
 // ---- OverviewView ----
 
@@ -44,7 +45,7 @@ export function OverviewView() {
     const d = sts.filter(t => t.status === 'done' || t.status === 'completed').length;
     return html`
       <section>
-        <h2>⚡ Current Sprint — ${curSprint.id}</h2>
+        <h2 class="section-icon"><${Icon} name="zap" size=${16}/> Current Sprint — ${curSprint.id}</h2>
         <div class="body">
           <div style="margin-bottom:8px;font-size:var(--text-sm);color:var(--text-secondary);">
             ${curSprint.goal || ''}
@@ -83,7 +84,7 @@ export function OverviewView() {
     if (!Array.isArray(S.council_sessions) || !S.council_sessions.length) return null;
     return html`
       <section>
-        <h2>🏛 Council Sessions</h2>
+        <h2 class="section-icon"><${Icon} name="building" size=${16}/> Council Sessions</h2>
         <div class="body">
           <div class="phase-list">
             ${S.council_sessions.slice(-5).reverse().map((cs, i) => html`
@@ -107,7 +108,7 @@ export function OverviewView() {
     const { cls, label } = chip('active');
     return html`
       <section>
-        <h2>🔗 Chains & Workstreams</h2>
+        <h2 class="section-icon"><${Icon} name="link" size=${16}/> Chains &amp; Workstreams</h2>
         <div class="body">
           ${chains.length ? html`
             <div style="margin-bottom:var(--space-4);">
@@ -153,7 +154,7 @@ export function OverviewView() {
     const where = ho.sprint ? ' [sprint ' + ho.sprint + ']' : ho.phase ? ' [phase ' + ho.phase + ']' : '';
     return html`
       <section style="border-left:4px solid var(--accent-orange,#f59e0b);padding-left:var(--space-3);">
-        <h2>⚠ Pending Handoff</h2>
+        <h2 class="section-icon"><${Icon} name="alert-triangle" size=${16}/> Pending Handoff</h2>
         <div class="body">
           <div>${when}${where}${summary}</div>
           ${ho.resume_hint ? html`
@@ -175,7 +176,7 @@ export function OverviewView() {
     const m = S.memoryBank.active;
     return html`
       <section>
-        <h2>🧠 Memory Bank</h2>
+        <h2 class="section-icon"><${Icon} name="brain" size=${16}/> Memory Bank</h2>
         <div class="body">
           <div class="attr-grid">
             <div class="attr-item">
