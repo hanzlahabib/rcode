@@ -12,6 +12,7 @@ import { useStore } from '../store.js';
 import { pct, humanDate, allSprints, allTasks } from '../util.js';
 import { CompletionRing, Breadcrumb, Tag, PhaseCard } from '../components/shared.js';
 import { runningTotal } from '../orchestrator.js';
+import { Icon } from '../icons-client.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -86,7 +87,7 @@ export function MilestonesView({ subId }) {
         <div class="entity-header">
           <div style="display:flex;align-items:center;gap:var(--space-6);">
             <div>
-              <div class="entity-title">🎯 ${ms}</div>
+              <div class="entity-title"><${Icon} name="flag" size=${18}/> ${ms}</div>
             </div>
             <${CompletionRing} done=${done.length} total=${total.length}/>
           </div>
@@ -119,7 +120,7 @@ export function MilestonesView({ subId }) {
           <div style="display:flex;align-items:center;gap:var(--space-4);">
             <${CompletionRing} done=${done.length} total=${total.length}/>
             <div>
-              <div class="item-title">🎯 ${ms}</div>
+              <div class="item-title"><${Icon} name="flag" size=${18}/> ${ms}</div>
               <div class="item-meta">
                 <${Tag}>${phases.length} phases</${Tag}>
                 <${Tag}>${allSprints(phases).length} sprints</${Tag}>

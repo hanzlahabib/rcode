@@ -15,6 +15,7 @@ import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
 import { runAndOpenTerm, openTermPanel, runningInSprint } from '../orchestrator.js';
+import { Icon } from '../icons-client.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -60,7 +61,7 @@ function SprintDetail({ sprint: s, S }) {
       <${Breadcrumb} items=${breadcrumbItems}/>
       <div class="entity-header">
         <div class="entity-title">
-          ⚡ Sprint ${s.id}
+          <${Icon} name="zap" size=${18}/> Sprint ${s.id}
           <${RunningBadge} count=${running}/>
         </div>
         <div class="attr-grid">
@@ -81,7 +82,7 @@ function SprintDetail({ sprint: s, S }) {
       </div>
       <div class="term-action-bar">
         <button class="term-run-btn" onClick=${handleRun}>▶ Run Sprint</button>
-        <button class="term-run-btn outline" onClick=${handleTerm}>📟 Terminal</button>
+        <button class="term-run-btn outline" onClick=${handleTerm}><${Icon} name="monitor" size=${14}/> Terminal</button>
       </div>
       <div class="view-title" style="margin-top:var(--space-4)">Tasks</div>
       <div class="phase-list">

@@ -14,6 +14,7 @@ import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
 import { runAndOpenTerm, openTermPanel, runningInPhase } from '../orchestrator.js';
+import { Icon } from '../icons-client.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -76,7 +77,7 @@ function PhaseDetail({ phase: p, S }) {
       <${Breadcrumb} items=${[{ label: 'All Phases', hash: 'phases' }]}/>
       <div class="entity-header">
         <div class="entity-title">
-          📋 Phase ${p.id} — ${p.name}
+          <${Icon} name="clipboard-list" size=${18}/> Phase ${p.id} — ${p.name}
           <${RunningBadge} count=${running}/>
         </div>
         <div class="attr-grid">
@@ -92,8 +93,8 @@ function PhaseDetail({ phase: p, S }) {
       </div>
       <div class="term-action-bar">
         <button class="term-run-btn" onClick=${handleRun}>▶ Run Phase</button>
-        <button class="term-run-btn outline" onClick=${handleTerm}>📟 Terminal</button>
-        <button class="back-btn" onClick=${handleViewPlan}>📄 View plan file →</button>
+        <button class="term-run-btn outline" onClick=${handleTerm}><${Icon} name="monitor" size=${14}/> Terminal</button>
+        <button class="back-btn" onClick=${handleViewPlan}><${Icon} name="file-text" size=${14}/> View plan file →</button>
       </div>
       <${VelocityBars} sprints=${sps}/>
       <div class="view-title" style="margin-top:var(--space-6)">Sprints</div>
