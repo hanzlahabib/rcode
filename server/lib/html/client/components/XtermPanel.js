@@ -242,5 +242,5 @@ export function XtermPanel() {
     </div>
   `;
 
-  return html`<>${backdrop}${panel}${pill}</>`;
+  return [backdrop, panel, pill];
 }
