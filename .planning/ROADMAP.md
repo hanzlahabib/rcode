@@ -183,7 +183,7 @@ views and the xterm terminal. Wire in `server/lib/html/icons.js` for professiona
 icons. Every existing feature must keep working — orchestration, interactive terminal,
 running-session badges, file browser, drill-down navigation, auto-refresh.
 
-**Status:** In progress
+**Status:** Complete (2026-05-16)
 
 **Constraints:**
 - No build step — Preact + htm loaded via esm.sh ESM imports
@@ -192,6 +192,9 @@ running-session badges, file browser, drill-down navigation, auto-refresh.
 
 **Plans:**
 - [x] Sprint 31.1 — Preact runtime, store, router, Sidebar, Topbar, Overview + Decisions views
+- [x] Sprint 31.2 — shared primitives + Roadmap, Milestones, Phases, Sprints, Tasks views
+- [x] Sprint 31.3 — Kanban, Files, Agents, Memory views; agent roster → client module
+- [x] Sprint 31.4 — Orchestration view, XtermPanel, OrchPanel; 3 legacy modules deleted
 
 **Acceptance:**
 - All dashboard views render as Preact components, no string-concatenation rendering left
