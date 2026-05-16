@@ -4,6 +4,32 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.6.0 (2026-05-16) — dashboard revamp: Preact migration, theming, command runner
+
+A major revamp of the Majlis dashboard across three phases (31–33), plus a sweep of
+in-browser bug fixes from UAT.
+
+**Preact migration (Phase 31)**
+- Rebuilt the entire dashboard client as Preact components via `htm` + ESM CDN imports — no build step
+- All 12 views migrated; the 3 legacy string-concatenation render modules deleted
+- xterm.js terminal wrapped as a Preact component, not replaced
+
+**Theming (Phase 32)**
+- Single design-token layer (color, spacing, typography, radii) driving both light and dark themes
+- Every emoji-as-icon replaced with inline SVG icons — 35-icon Lucide-style set
+
+**Command runner (Phase 33)**
+- Run `init` and other safe rihal commands from the dashboard UI via the orchestrator
+- Server-side command allowlist as the security boundary; `dashboard.js` stays view-only
+
+**Dashboard fixes**
+- Roadmap derives the phase/sprint/task tree from the `.planning/` filesystem — accurate counts regardless of `state.json`
+- Phase/sprint Run buttons carry the correct id; Run is gated on sprint-plan existence
+- Milestone-level Run All + Audit actions; empty phases/sprints surface create/plan command hints
+- Fixed: htm fragment crash, `esm.sh` import errors, intermittent zero counts on refresh
+
+---
+
 ## v3.5.0 (2026-05-15) — audit gap closure: hooks, security, marketability
 
 A three-phase release closing gaps found auditing rihal-code against the `everything-claude-code` reference setup, plus a security and marketability self-audit. Covers GitHub issues #742–#762.
