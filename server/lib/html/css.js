@@ -2266,7 +2266,7 @@ footer {
 }
 .cmd-runner-select {
   flex: 1;
-  background: var(--bg-input, var(--bg-sidebar));
+  background: var(--bg-input, var(--bg-elev-2));
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);

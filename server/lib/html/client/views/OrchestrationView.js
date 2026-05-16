@@ -10,7 +10,7 @@
  * is sufficient.
  */
 
-import { html, useState } from '../preact.js';
+import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
 import { orchElapsed } from '../util.js';
@@ -81,10 +81,10 @@ function sortSessions(sessions) {
 /**
  * CommandRunner — dropdown + Run button for launching allowlisted rihal commands.
  * State is local (useState) — no store changes needed; runCommandFromUI handles
- * all session and terminal state via runAndOpenTerm.
+ * all session and terminal state via runCommandFromUI → runSession.
  */
 function CommandRunner() {
-  const { activeSessions } = useStore();
+  useStore(); // subscribe to store updates so isSessionRunning() re-evaluates on each poll
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
   const [busy, setBusy] = useState(false);
 
@@ -93,13 +93,19 @@ function CommandRunner() {
   const isRunning = sessionId ? isSessionRunning(sessionId) : false;
   const disabled  = busy || isRunning;
 
+  // Reset busy 2 s after a Run click — the terminal panel is now open and the
+  // session is streaming. Managed via useEffect so the timer is cancelled if
+  // CommandRunner unmounts before it fires.
+  useEffect(() => {
+    if (!busy) return;
+    const t = setTimeout(() => setBusy(false), 2000);
+    return () => clearTimeout(t);
+  }, [busy]);
+
   function handleRun() {
     if (!selected || disabled) return;
     setBusy(true);
     runCommandFromUI(selected);
-    // Reset busy after 2 s — the terminal panel is now open and the session is
-    // streaming. We do not block on session completion here.
-    setTimeout(() => setBusy(false), 2000);
   }
 
   return html`
