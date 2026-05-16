@@ -10,9 +10,9 @@
  * is sufficient.
  */
 
-import { html } from '../preact.js';
+import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel } from '../orchestrator.js';
+import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS } from '../orchestrator.js';
 import { orchElapsed } from '../util.js';
 import { Icon } from '../icons-client.js';
 
@@ -76,6 +76,49 @@ function sortSessions(sessions) {
   });
 }
 
+// ── Command runner ────────────────────────────────────────────────────────────
+
+/**
+ * CommandRunner — dropdown + Run button for launching allowlisted rihal commands.
+ * State is local (useState) — no store changes needed; runCommandFromUI handles
+ * all session and terminal state via runAndOpenTerm.
+ */
+function CommandRunner() {
+  const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
+  const [busy, setBusy] = useState(false);
+
+  function handleRun() {
+    if (!selected || busy) return;
+    setBusy(true);
+    runCommandFromUI(selected);
+    // Reset busy after 2 s — the terminal panel is now open and the session is
+    // streaming. We do not block on session completion here.
+    setTimeout(() => setBusy(false), 2000);
+  }
+
+  return html`
+    <div class="cmd-runner">
+      <div class="cmd-runner-title">
+        <${Icon} name="terminal" size=${14}/> Command Runner
+      </div>
+      <div class="cmd-runner-row">
+        <select class="cmd-runner-select"
+          value=${selected}
+          onChange=${e => setSelected(e.target.value)}>
+          ${ALLOWED_COMMANDS.map(({ cmd, label }) => html`
+            <option key=${cmd} value=${cmd}>${label}</option>
+          `)}
+        </select>
+        <button class="cmd-runner-btn${busy ? ' cmd-runner-btn--busy' : ''}"
+          onClick=${handleRun}
+          disabled=${busy}>
+          ${busy ? html`<${Icon} name="hourglass" size=${14}/> Running…` : html`<${Icon} name="play" size=${14}/> Run`}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 // ── Root view ─────────────────────────────────────────────────────────────────
 
 export function OrchestrationView() {
@@ -88,6 +131,8 @@ export function OrchestrationView() {
       <div class="orch-subtitle">
         Live agent sessions — run, watch, communicate, stop.
       </div>
+
+      <${CommandRunner}/>
 
       ${sessions.length === 0 ? html`
         <div class="empty">
