@@ -12,6 +12,7 @@
 
 import { html, useState, useEffect, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
+import { showToast } from '../components/shared.js';
 
 // ---- Markdown helpers (ported from client-main.js:287-294) ----
 function stripFrontmatter(md) {
@@ -122,7 +123,7 @@ function FileContent({ path, html: htmlContent, loading, error }) {
 
   function copyPath() {
     navigator.clipboard.writeText(path).then(() => {
-      if (typeof window.showToast === 'function') window.showToast('Path copied!');
+      showToast('Path copied!');
     }).catch(() => {});
   }
 

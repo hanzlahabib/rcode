@@ -13,8 +13,8 @@ import {
   runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
 
-// ---- Toast helper (shared by CmdHint copy action) ----
-function showToast(msg) {
+// ---- Toast helper (shared by CmdHint copy action and any view) ----
+export function showToast(msg) {
   const el = document.getElementById('toast');
   if (!el) return;
   el.textContent = msg;

@@ -16,6 +16,7 @@
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
 import { orchToken, stopSession, cleanSessions, ORCH_HTTP } from '../orchestrator.js';
+import { showToast } from './shared.js';
 
 // ── Session map helpers ───────────────────────────────────────────────────────
 
@@ -183,9 +184,7 @@ export function OrchPanel() {
 
   function handleClean() {
     cleanSessions(7).then(d => {
-      if (typeof window.showToast === 'function') {
-        window.showToast('Cleaned ' + (d.removed || 0) + ' sessions');
-      }
+      showToast('Cleaned ' + (d.removed || 0) + ' sessions');
     });
   }
 

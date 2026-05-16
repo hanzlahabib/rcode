@@ -11,6 +11,7 @@ import { html, useState, useCallback } from '../preact.js';
 import { useStore } from '../store.js';
 import { allTasks } from '../util.js';
 import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
+import { showToast } from '../components/shared.js';
 
 // ---- Column descriptors ----
 const COLS = [
@@ -172,9 +173,7 @@ export function KanbanView() {
     if (!dragging || !dragging.id) return;
     setVisualMoves(prev => ({ ...prev, [dragging.id]: colId }));
     setDragging(null);
-    if (typeof window.showToast === 'function') {
-      window.showToast('Moved (visual only — not persisted)'); // visual only — not persisted
-    }
+    showToast('Moved (visual only — not persisted)'); // visual only — not persisted
   }
 
   // ---- Manual refresh ----
