@@ -4,6 +4,41 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.6.1 (2026-05-16) — dashboard + CLI gap fixes
+
+Patch release closing the gaps found in v3.6.0 dashboard UAT plus two `rihal-tools`
+fixes surfaced while planning a new milestone.
+
+**Dashboard & CLI gap closure (#763–#767)**
+- **`/api/clean-sessions` implemented** — the OrchPanel "Clean" button POSTed to a route
+  the orchestrator never handled (404). Added the handler: removes ended sessions,
+  leaves running ones untouched. (#763)
+- **Legacy SPRINT.md task parsing** — the roadmap phase tree only counted `<task>` blocks,
+  so pre-`<task>`-format phases (20–30) showed 0 tasks. Added a fallback that parses
+  `### Story|Task <id> — <title>` headings. (#764)
+- **`phase sync-sprints` command** — planner agents write SPRINT.md files without always
+  registering sprint records in `state.json`. New command derives and writes sprint/story
+  records from the `.planning/` filesystem deterministically. (#765)
+- **`phase complete` command** — `execute.md` called a `phase complete` subcommand that
+  never existed (`Unknown phase subcommand`). Added it: marks the phase complete and
+  returns next-phase metadata. (#766)
+- **CSS cleanup** — dropped 11 unused design tokens; fixed a `letter---spacing` typo
+  (an invalid property the browser was silently dropping). (#767)
+
+**CLI fixes (#768–#769)**
+- **`phase scaffold-milestone` numbering** — the next phase number was derived from
+  ROADMAP.md headings and directory-less `state.json` entries, so scaffolding skipped
+  past an already-written roadmap range (e.g. created phases 38–41 for a 34–37
+  milestone). It now numbers from phase directories only, reconciles phantom state
+  entries instead of aborting, and skips appending a duplicate roadmap stub when the
+  phase section already exists. (#769)
+- **`plan check-wave-overlaps`** — the subcommand was referenced by the plan workflow's
+  wave-parallelism gate but never implemented, so the gate silently no-opped. Added it:
+  it detects same-wave plans that share a `files_modified` path without being marked
+  `sequential` and returns a structured conflict report. (#768)
+
+---
+
 ## v3.6.0 (2026-05-16) — dashboard revamp: Preact migration, theming, command runner
 
 A major revamp of the Majlis dashboard across three phases (31–33), plus a sweep of
