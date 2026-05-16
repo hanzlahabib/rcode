@@ -218,3 +218,42 @@ export function runStory(storyId) {
 export function stopStory(storyId) {
   stopSession(storyId);
 }
+
+// ── Command runner ────────────────────────────────────────────────────────────
+/**
+ * Client-side allowlist — mirrors the server COMMAND_ALLOWLIST.
+ * The server always re-validates; this list drives the picker dropdown only.
+ * Update both when adding a new command.
+ */
+export const ALLOWED_COMMANDS = [
+  { cmd: '/rihal-init',          label: 'init — initialise project workspace' },
+  { cmd: '/rihal-status',        label: 'status — phase / sprint status' },
+  { cmd: '/rihal-progress',      label: 'progress — milestone progress' },
+  { cmd: '/rihal-help',          label: 'help — command reference' },
+  { cmd: '/rihal-health',        label: 'health — repo health check' },
+  { cmd: '/rihal-next',          label: 'next — suggest next action' },
+  { cmd: '/rihal-show',          label: 'show — show current plan' },
+  { cmd: '/rihal-list-plans',    label: 'list-plans — list all sprint plans' },
+  { cmd: '/rihal-sprint-status', label: 'sprint-status — sprint execution status' },
+  { cmd: '/rihal-config',        label: 'config — show rihal config' },
+  { cmd: '/rihal-diff',          label: 'diff — diff since last checkpoint' },
+  { cmd: '/rihal-stats',         label: 'stats — project statistics' },
+];
+
+/**
+ * Launch an allowlisted rihal command from the dashboard command runner.
+ * Uses a synthetic storyId derived from the command slug so it shows up as
+ * its own session in the Orchestration grid.
+ *
+ * storyId format: "cmd-rihal-init" (satisfies STORY_ID_RE /^[A-Za-z0-9._-]+$/).
+ *
+ * @param {string} cmd  Must be one of ALLOWED_COMMANDS[*].cmd.
+ */
+export function runCommandFromUI(cmd) {
+  if (!cmd) return;
+  // Derive a stable session ID: strip leading slash, replace remaining slashes.
+  const slug    = cmd.replace(/^\//, '').replace(/\//g, '-');
+  const storyId = 'cmd-' + slug;
+  const title   = cmd + ' (command runner)';
+  runAndOpenTerm(storyId, cmd, title);
+}
