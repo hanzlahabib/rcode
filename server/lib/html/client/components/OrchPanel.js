@@ -216,7 +216,7 @@ export function OrchPanel() {
       <!-- Tab strip -->
       <div class="orch-tabs">
         ${tabs.length === 0 ? html`
-          <div class="orch-term-empty" style="padding:6px 8px;font-size:11px;color:var(--text-muted);">
+          <div class="orch-term-empty orch-empty-tab">
             No active sessions
           </div>
         ` : tabs.map(sid => {
@@ -275,6 +275,7 @@ export function OrchPanel() {
 
       <!-- Footer -->
       <div class="orch-panel-footer">
+        <!-- style= here is intentional: dynamic display:none toggle — replacing with a CSS class would require extra state wiring -->
         <button
           class="orch-footer-btn stop"
           style=${hasStream ? '' : 'display:none'}
@@ -282,8 +283,8 @@ export function OrchPanel() {
         >■ Stop</button>
         <button class="orch-footer-btn" onClick=${handleClear}>Clear</button>
         <button class="orch-footer-btn" onClick=${handleClean}>Clean sessions…</button>
-        <div style="flex:1;"></div>
-        <span style="font-size:11px;color:var(--text-muted);">
+        <div class="orch-footer-spacer"></div>
+        <span class="orch-footer-status">
           ${runningCount > 0 ? runningCount + ' running' : ''}
         </span>
       </div>
