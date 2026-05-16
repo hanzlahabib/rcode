@@ -20,7 +20,7 @@ function renderHtml(state, orchToken) {
 <title>Majlis — ${esc(projectName)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"><\/script>
 <script>window.__ORCH_TOKEN__ = ${JSON.stringify(orchToken || '')};<\/script>
@@ -29,8 +29,7 @@ ${renderCss()}
 <body>
 
 <!-- ── Preact app mount ────────────────────────────────────────────────── -->
-<!-- App renders: sidebar, topbar, migrated views, and frozen placeholder   -->
-<!-- hosts for the 10 un-migrated legacy views — all inside this div.       -->
+<!-- App renders: sidebar, topbar, and all 12 Preact views (sprint 31.4).  -->
 <div id="app-root"></div>
 
 <!-- ── Toast ──────────────────────────────────────────────── -->

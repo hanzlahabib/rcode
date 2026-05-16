@@ -9,33 +9,7 @@
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
 import { humanDate } from '../util.js';
-
-function CmdHintItem({ cmd, desc }) {
-  function copyCmd() {
-    navigator.clipboard.writeText(cmd).then(
-      () => showToast('Copied: ' + cmd),
-    ).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = cmd;
-      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta); showToast('Copied: ' + cmd);
-    });
-  }
-  return html`
-    <div class="cmd-hint-item" onClick=${copyCmd}>
-      <span class="cmd-text">${cmd}</span>
-      <span class="cmd-desc">${desc}</span>
-      <span class="cmd-copy">📋</span>
-    </div>
-  `;
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
-}
+import { CmdHint, showToast } from '../components/shared.js';
 
 const CMD_HINTS = [
   ['/rihal-council',                   'Convene the council for a new decision'],
@@ -125,7 +99,7 @@ export function DecisionsView() {
       <details class="cmd-hints">
         <summary>💡 Commands</summary>
         <div class="cmd-hints-list">
-          ${CMD_HINTS.map(([cmd, desc]) => html`<${CmdHintItem} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
+          ${CMD_HINTS.map(([cmd, desc]) => html`<${CmdHint} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
         </div>
       </details>
     </div>

@@ -3,27 +3,16 @@
  *
  * Owns:
  *   - Hash router (view + subId state, hashchange listener)
- *   - Layout: Sidebar + content area + Topbar + migrated view components
+ *   - Layout: Sidebar + content area + Topbar + all 12 Preact view components
  *   - 30s auto-refresh: polls /api/state, diffs lastScanned, calls setState
  *   - Theme toggle: reads/persists localStorage('majlis-theme')
  *
- * COEXISTENCE-SEAM NOTE:
- *   Legacy client-main.js still registers its own hashchange listener and
- *   calls route() to toggle .active on view host divs. The un-migrated view
- *   host divs (#view-orchestration, #view-kanban, etc.) remain as STATIC
- *   HTML in shell.js — Preact does NOT render them. App only renders the
- *   sidebar, topbar, and the 2 migrated Preact views inside #app-root.
- *
- *   For un-migrated views, App uses LegacyViewSync to imperatively toggle
- *   the .active class on the static host divs when the route changes.
- *   Legacy route() in client-main.js also toggles these — both coexist.
- *
- *   The migrated Preact views (overview, decisions, roadmap, milestones,
- *   phases, sprints, tasks) are rendered INSIDE #app-root. The legacy
- *   render functions for these views are removed from client-render.js.
+ * Sprint 31.4 completed the Preact migration. All 12 views are Preact
+ * components. Legacy client-main.js, client-render.js, and client-kanban.js
+ * are deleted. No coexistence seam remains.
  */
 
-import { html, useState, useEffect, useRef, useCallback, memo } from '../preact.js';
+import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { getState, setState, subscribe } from '../store.js';
 import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
 import { Sidebar } from './Sidebar.js';
@@ -74,39 +63,6 @@ function parseHash() {
   // #263: unknown hash falls back to overview
   const resolvedView = ALL_VIEWS.includes(view) ? view : 'overview';
   return { view: resolvedView, subId };
-}
-
-/**
- * Frozen placeholder host for an un-migrated legacy view.
- *
- * memo(() => true) means this component NEVER re-renders after first mount.
- * Preact will not diff its children, so legacy-injected innerHTML survives
- * store updates, theme toggles, and auto-refresh re-renders.
- *
- * The .active class is managed imperatively by LegacyViewSync (not via props),
- * because a props change would trigger a re-render (memo would not bail out
- * if the propsAreEqual function checked the active prop).
- */
-const FrozenHost = memo(
-  function FrozenHost({ id }) {
-    return html`<div id=${id} class="view" />`;
-  },
-  () => true, // always equal → never re-render
-);
-
-/**
- * Imperatively sync the .active class on frozen legacy view host divs.
- * Renders nothing — uses effects to touch the DOM directly after each
- * router state change. Coexists with legacy route()'s own class toggling.
- */
-function LegacyViewSync({ activeView }) {
-  useEffect(() => {
-    for (const v of LEGACY_VIEWS) {
-      const el = document.getElementById('view-' + v);
-      if (el) el.classList.toggle('active', activeView === v);
-    }
-  }, [activeView]);
-  return null;
 }
 
 /** Root App component. No props needed — reads everything from the store. */
