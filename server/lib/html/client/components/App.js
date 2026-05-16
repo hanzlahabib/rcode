@@ -84,22 +84,20 @@ export function App() {
   }, []);
 
   // ---- Theme ----
-  const [themeLabel, setThemeLabel] = useState(() => {
-    const saved = localStorage.getItem('majlis-theme');
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('majlis-theme') || 'dark';
     if (saved === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
-      return '🌙';
     }
-    return '◑';
+    return saved;
   });
 
   const toggleTheme = useCallback(() => {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
+    const next = theme === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next === 'dark' ? '' : next);
     localStorage.setItem('majlis-theme', next);
-    setThemeLabel(next === 'light' ? '🌙' : '☀️');
-  }, []);
+    setTheme(next);
+  }, [theme]);
 
   // ---- Sidebar collapse ----
   const toggleSidebar = useCallback(() => {
@@ -198,7 +196,7 @@ export function App() {
           onRefresh=${fetchAndRerender}
           onToggleTheme=${toggleTheme}
           onToggleSidebar=${toggleSidebar}
-          themeLabel=${themeLabel}
+          themeLabel=${theme}
         />
 
         <div class="main-scroll" id="main-scroll">
