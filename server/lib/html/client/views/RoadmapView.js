@@ -16,6 +16,7 @@ import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { pctNum } from '../util.js';
 import { Chip, ProgressBar, CmdHints } from '../components/shared.js';
+import { Icon } from '../icons-client.js';
 
 /**
  * Recursive tree node with local expansion state.
@@ -84,7 +85,7 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
     <div class="tree-node" data-filter-text=${p.name.toLowerCase()}>
       <div class="tree-row" onClick=${() => setOpen(o => !o)} onDblClick=${handleDblClick}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
-        <span class="tree-icon">📋</span>
+        <span class="tree-icon"><${Icon} name="clipboard-list" size=${14}/></span>
         <span class="tree-label">P${p.id} — ${p.name}</span>
         <${Chip} status=${p.status}/>
         <span style="width:60px;display:inline-block;margin:0 8px;">
@@ -121,7 +122,7 @@ function SprintNode({ sprint: s, expandSignal }) {
     <div class="tree-node">
       <div class="tree-row" onClick=${() => setOpen(o => !o)}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
-        <span class="tree-icon">⚡</span>
+        <span class="tree-icon"><${Icon} name="zap" size=${14}/></span>
         <span class="tree-label">Sprint ${s.id} — ${s.goal || 'No goal'}</span>
         <${Chip} status=${s.status}/>
         <span class="tree-badge">${sDone}/${sts.length}</span>
@@ -197,7 +198,7 @@ export function RoadmapView() {
         <div class="tree-node tree-ms">
           <div class="tree-row tree-header">
             <span class="tree-chevron">▼</span>
-            <span class="tree-icon">🎯</span>
+            <span class="tree-icon"><${Icon} name="flag" size=${14}/></span>
             <span class="tree-label">${ms}</span>
             <span class="tree-badge">
               ${phases.length} phases · ${doneTasks.length}/${totalTasks.length} tasks
