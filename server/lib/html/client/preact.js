@@ -9,7 +9,7 @@
  *   htm      3.1.1
  */
 
-import { h, render, Fragment, memo } from 'https://esm.sh/preact@10.24.3';
+import { h, render, Fragment, memo, createContext } from 'https://esm.sh/preact@10.24.3';
 import {
   useState,
   useEffect,
@@ -18,7 +18,6 @@ import {
   useCallback,
   useReducer,
   useContext,
-  createContext,
 } from 'https://esm.sh/preact@10.24.3/hooks';
 import htmLib from 'https://esm.sh/htm@3.1.1';
 
