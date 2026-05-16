@@ -88,7 +88,7 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
       <div class="tree-row" onClick=${() => setOpen(o => !o)} onDblClick=${handleDblClick}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
         <span class="tree-icon"><${Icon} name="clipboard-list" size=${14}/></span>
-        <${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>
+        ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
         <span class="tree-label">P${p.id} — ${p.name}</span>
         <${Chip} status=${p.status}/>
         <${RunningBadge} count=${running}/>
