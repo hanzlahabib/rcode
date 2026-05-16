@@ -211,12 +211,12 @@ layer (color, spacing, typography, radii, shadows) consumed by every component, 
 full sweep replacing every emoji-as-icon with inline SVG icons from `icons.js`. Light
 and dark themes both driven by the token layer.
 
-**Status:** In Progress (32.1 complete — awaiting human visual verify)
+**Status:** Complete (2026-05-16)
 
 **Plans:**
-- 32-1 — Token layer audit + icon alignment CSS (COMPLETE — human verify checkpoint)
-- 32-2 — Emoji-to-SVG icon sweep (planned)
-- 32-3 — Theme toggle cleanup (planned)
+- [x] Sprint 32.1 — design-token audit + icon-alignment CSS classes
+- [x] Sprint 32.2 — 11 new SVG icons; emoji-to-SVG sweep across 6 views + shared.js
+- [x] Sprint 32.3 — Topbar/App/OrchPanel sweep; moon/sun theme icons; final audit
 
 **Acceptance:**
 - All component styling reads from a single design-token source (CSS custom properties)
