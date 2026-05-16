@@ -51,6 +51,27 @@ const AUTH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('he
 // storyId must be a safe single path segment — no separators, no traversal.
 const STORY_ID_RE = /^[A-Za-z0-9._-]+$/;
 
+// Command allowlist — the SECURITY BOUNDARY for the dashboard command runner.
+// Only commands listed here may be launched via the UI command picker.
+// Slash-commands that launch dev work (rihal-dev-story, rihal-execute, etc.)
+// are NOT listed here; they are composed by the UI itself via storyId, not
+// by the command runner. This list covers read-mostly and informational rihal
+// slash-commands that are safe to run from the browser without further context.
+const COMMAND_ALLOWLIST = new Set([
+  '/rihal-init',
+  '/rihal-status',
+  '/rihal-progress',
+  '/rihal-help',
+  '/rihal-health',
+  '/rihal-next',
+  '/rihal-show',
+  '/rihal-list-plans',
+  '/rihal-sprint-status',
+  '/rihal-config',
+  '/rihal-diff',
+  '/rihal-stats',
+]);
+
 // Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
 const SCROLLBACK_MAX = 256 * 1024;
 
@@ -167,6 +188,17 @@ async function handleRun(req, res) {
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
   if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
+
+  // Gate the allowlist on command-runner sessions only.
+  // Command-runner sessions always use a storyId with the "cmd-" prefix
+  // (e.g. "cmd-rihal-init"). Existing dev-run sessions use storyIds such as
+  // "phase-33", "sprint-33.1", or a raw task id — never "cmd-*" — and MUST NOT
+  // be gated here, even though they also supply body.cmd explicitly.
+  // This prefix check is the authoritative discriminant between the two call paths.
+  if (storyId.startsWith('cmd-') && body.cmd && !COMMAND_ALLOWLIST.has(String(body.cmd).trim())) {
+    json(res, 403, { error: 'command not in allowlist', cmd: String(body.cmd).trim() });
+    return;
+  }
 
   if (!pty) {
     json(res, 503, { error: 'interactive terminal unavailable on this platform — run: pnpm add @lydell/node-pty' });
