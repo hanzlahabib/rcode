@@ -11,6 +11,7 @@
  */
 
 import { getState, setState } from './store.js';
+import { showToast } from './components/shared.js';
 
 export const ORCH_HTTP = 'http://localhost:7718';
 export const ORCH_WS   = 'ws://localhost:7718';
@@ -247,13 +248,32 @@ export const ALLOWED_COMMANDS = [
  *
  * storyId format: "cmd-rihal-init" (satisfies STORY_ID_RE /^[A-Za-z0-9._-]+$/).
  *
+ * Surfaces errors as toast notifications:
+ *   - 403 / 503 / any server error message  → showToast('Command error: ...')
+ *   - 409 "already running"                  → no toast (expected; terminal reattaches)
+ *   - network failure                         → showToast('Could not reach orchestrator')
+ *
  * @param {string} cmd  Must be one of ALLOWED_COMMANDS[*].cmd.
  */
 export function runCommandFromUI(cmd) {
   if (!cmd) return;
-  // Derive a stable session ID: strip leading slash, replace remaining slashes.
   const slug    = cmd.replace(/^\//, '').replace(/\//g, '-');
   const storyId = 'cmd-' + slug;
   const title   = cmd + ' (command runner)';
-  runAndOpenTerm(storyId, cmd, title);
+  // Open the terminal panel immediately so the user gets visual feedback.
+  setState({
+    terminal: { open: true, storyId, title, minimized: false, fullscreen: false },
+  });
+
+  const tok = orchToken();
+  if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
+
+  runSession(storyId, cmd)
+    .then(data => {
+      // 409 = already running (not an error — terminal is already attached).
+      if (data && data.error && !data.error.includes('already running')) {
+        showToast('Command error: ' + data.error);
+      }
+    })
+    .catch(() => showToast('Could not reach orchestrator'));
 }
