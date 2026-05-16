@@ -11,6 +11,7 @@ import { html } from '../preact.js';
 import { useStore } from '../store.js';
 import { pct, humanDate, allSprints, allTasks } from '../util.js';
 import { CompletionRing, Breadcrumb, Tag, PhaseCard } from '../components/shared.js';
+import { runningTotal } from '../orchestrator.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -77,8 +78,7 @@ export function MilestonesView({ subId }) {
   if (subId) {
     const doneP = phases.filter(p => p.status === 'complete' || p.status === 'completed').length;
     const sprints = allSprints(phases).filter(s => s.velocity_actual != null);
-    // BRIDGE(31.4): window.runningTotal becomes an imported fn
-    const runningNow = window.runningTotal ? window.runningTotal() : 0;
+    const runningNow = runningTotal();
 
     return html`
       <div id="view-milestones" class="view active">

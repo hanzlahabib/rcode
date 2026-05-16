@@ -5,10 +5,6 @@
  * List mode: filter + phase cards.
  * Detail mode: entity header, attr grid, progress bar, Run/Terminal/View-plan
  *   buttons, sprint velocity bars, sprint cards, command hints accordion.
- *
- * Run Phase / Terminal buttons call window.runAndOpenTerm / window.openTermPanel.
- * View-plan-file calls window.viewPlanFile.
- * All three are legacy bridge globals — marked BRIDGE(31.4).
  */
 
 import { html, useState } from '../preact.js';
@@ -17,6 +13,7 @@ import { pct, humanDate, phaseHints } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
+import { runAndOpenTerm, openTermPanel, runningInPhase } from '../orchestrator.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -57,24 +54,21 @@ function PhaseDetail({ phase: p, S }) {
   const sps = Array.isArray(p.sprints) ? p.sprints : [];
   const stories = sps.flatMap(s => (Array.isArray(s.stories) ? s.stories : []));
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
-  // BRIDGE(31.4): window.runningInPhase becomes an imported fn
-  const running = window.runningInPhase ? window.runningInPhase(p) : 0;
+  const running = runningInPhase(p);
   const hints = phaseHints(p);
 
   function handleRun(e) {
     e.stopPropagation();
-    // BRIDGE(31.4): window.runAndOpenTerm becomes an imported fn
-    if (window.runAndOpenTerm) window.runAndOpenTerm('phase-' + p.id, '/rihal-execute', 'Phase ' + p.id);
+    runAndOpenTerm('phase-' + p.id, '/rihal-execute', 'Phase ' + p.id);
   }
   function handleTerm(e) {
     e.stopPropagation();
-    // BRIDGE(31.4): window.openTermPanel becomes an imported fn
-    if (window.openTermPanel) window.openTermPanel('phase-' + p.id, 'Phase ' + p.id);
+    openTermPanel('phase-' + p.id, 'Phase ' + p.id);
   }
   function handleViewPlan(e) {
     e.stopPropagation();
-    // BRIDGE(31.4): window.viewPlanFile becomes an imported fn
-    if (window.viewPlanFile) window.viewPlanFile(p.id);
+    // Navigate to files view — viewPlanFile was a legacy DOM function
+    window.location.hash = 'files';
   }
 
   return html`

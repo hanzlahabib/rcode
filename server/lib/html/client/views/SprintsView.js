@@ -6,9 +6,6 @@
  * Detail mode: breadcrumb chain, entity header, attr grid, progress bar,
  *   Run/Terminal action bar, task cards, acceptance-criteria section,
  *   command hints.
- *
- * Run Sprint / Terminal buttons call window.runAndOpenTerm / window.openTermPanel.
- * BRIDGE(31.4): promoted to imported fns in sprint 31.4.
  */
 
 import { html, useState } from '../preact.js';
@@ -17,6 +14,7 @@ import { pct, humanDate, allSprints, sprintHints } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
+import { runAndOpenTerm, openTermPanel, runningInSprint } from '../orchestrator.js';
 
 function AttrItem({ label, value }) {
   return html`
@@ -38,8 +36,7 @@ function SprintDetail({ sprint: s, S }) {
     }),
   );
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
-  // BRIDGE(31.4): window.runningInSprint becomes an imported fn
-  const running = window.runningInSprint ? window.runningInSprint(s) : 0;
+  const running = runningInSprint(s);
   const hints = sprintHints(s);
 
   // Acceptance criteria section
@@ -51,14 +48,11 @@ function SprintDetail({ sprint: s, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    // BRIDGE(31.4): window.runAndOpenTerm becomes an imported fn
-    if (window.runAndOpenTerm)
-      window.runAndOpenTerm('sprint-' + s.id, '/rihal-execute-sprint ' + s.id, 'Sprint ' + s.id);
+    runAndOpenTerm('sprint-' + s.id, '/rihal-execute-sprint ' + s.id, 'Sprint ' + s.id);
   }
   function handleTerm(e) {
     e.stopPropagation();
-    // BRIDGE(31.4): window.openTermPanel becomes an imported fn
-    if (window.openTermPanel) window.openTermPanel('sprint-' + s.id, 'Sprint ' + s.id);
+    openTermPanel('sprint-' + s.id, 'Sprint ' + s.id);
   }
 
   return html`

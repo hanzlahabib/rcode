@@ -9,6 +9,9 @@
 
 import { html, useState } from '../preact.js';
 import { pctNum, chip as chipDesc, humanDate, pct } from '../util.js';
+import {
+  runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
+} from '../orchestrator.js';
 
 // ---- Toast helper (shared by CmdHint copy action) ----
 function showToast(msg) {
@@ -141,14 +144,13 @@ export function CmdHints({ hints }) {
 
 // ---- RunBtn ----
 /**
- * Compact run button. Calls window.runAndOpenTerm (legacy global).
+ * Compact run button. Calls runAndOpenTerm from orchestrator.js.
  * @param {{ storyId: string, cmd: string, label: string }} props
  */
-// BRIDGE(31.4): window.runAndOpenTerm becomes an imported fn
 export function RunBtn({ storyId, cmd, label }) {
   function handleClick(e) {
     e.stopPropagation();
-    if (window.runAndOpenTerm) window.runAndOpenTerm(storyId, cmd, label);
+    runAndOpenTerm(storyId, cmd, label);
   }
   return html`
     <button class="card-run-btn" title=${'Run ' + label} onClick=${handleClick}>
@@ -178,8 +180,7 @@ export function PhaseCard({ phase: p, S }) {
   const stories = sps.flatMap(s => s.stories || []);
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const isCur = String(p.id) === String(S && S.currentPhase);
-  // BRIDGE(31.4): window.runningInPhase becomes an imported fn
-  const running = window.runningInPhase ? window.runningInPhase(p) : 0;
+  const running = runningInPhase(p);
   const borderStyle = isCur ? 'border-left-color:var(--accent-amber)' : '';
   return html`
     <div class=${'item item-clickable'} style=${borderStyle}
@@ -224,8 +225,7 @@ export function SprintCard({ sprint: s, S }) {
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const isCur = s.id === (S && S.currentSprint);
   const phaseId = s.phaseId || s.id || '';
-  // BRIDGE(31.4): window.runningInSprint becomes an imported fn
-  const running = window.runningInSprint ? window.runningInSprint(s) : 0;
+  const running = runningInSprint(s);
   const borderStyle = isCur
     ? 'border-left-color:var(--accent-amber);background:rgba(245,158,11,0.04)'
     : '';
@@ -269,8 +269,7 @@ export function SprintCard({ sprint: s, S }) {
 export function TaskCard({ task: t }) {
   const [expanded, setExpanded] = useState(false);
   const done = t.status === 'done' || t.status === 'completed';
-  // BRIDGE(31.4): window.isSessionRunning becomes an imported fn
-  const running = window.isSessionRunning ? window.isSessionRunning(t.id) : false;
+  const running = isSessionRunning(t.id);
 
   // Build cmd hints for this task
   const taskCmds = [];

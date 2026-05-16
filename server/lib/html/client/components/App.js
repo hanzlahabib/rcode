@@ -25,8 +25,11 @@
 
 import { html, useState, useEffect, useRef, useCallback, memo } from '../preact.js';
 import { getState, setState, subscribe } from '../store.js';
+import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
 import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
+import { XtermPanel } from './XtermPanel.js';
+import { OrchPanel } from './OrchPanel.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
 import { RoadmapView } from '../views/RoadmapView.js';
@@ -38,28 +41,27 @@ import { KanbanView } from '../views/KanbanView.js';
 import { FilesView } from '../views/FilesView.js';
 import { AgentsView } from '../views/AgentsView.js';
 import { MemoryView } from '../views/MemoryView.js';
+import { OrchestrationView } from '../views/OrchestrationView.js';
 
 // Views served by Preact components (migrated)
-// Sprint 31.3: +kanban, +files, +agents, +memory → 11 of 12 views Preact.
+// Sprint 31.4: +orchestration → all 12 views Preact. Migration complete.
 const PREACT_VIEWS = {
-  overview:   OverviewView,
-  decisions:  DecisionsView,
-  roadmap:    RoadmapView,
-  milestones: MilestonesView,
-  phases:     PhasesView,
-  sprints:    SprintsView,
-  tasks:      TasksView,
-  kanban:     KanbanView,
-  files:      FilesView,
-  agents:     AgentsView,
-  memory:     MemoryView,
+  overview:      OverviewView,
+  decisions:     DecisionsView,
+  roadmap:       RoadmapView,
+  milestones:    MilestonesView,
+  phases:        PhasesView,
+  sprints:       SprintsView,
+  tasks:         TasksView,
+  kanban:        KanbanView,
+  files:         FilesView,
+  agents:        AgentsView,
+  memory:        MemoryView,
+  orchestration: OrchestrationView,
 };
 
-// Un-migrated view keys — rendered as frozen placeholder divs inside main-scroll.
-// Only Orchestration remains legacy until Sprint 31.4.
-const LEGACY_VIEWS = [
-  'orchestration',
-];
+// All views are now Preact — no legacy placeholder hosts needed.
+const LEGACY_VIEWS = [];
 
 const ALL_VIEWS = Object.keys(PREACT_VIEWS).concat(LEGACY_VIEWS);
 
@@ -210,6 +212,12 @@ export function App() {
     window._preactRefresh = fetchAndRerender;
   }, [fetchAndRerender]);
 
+  // Start the global session poll and refresh the orchestrator token on boot.
+  useEffect(() => {
+    refreshOrchToken();
+    startSessionsPoll();
+  }, []);
+
   // ---- View rendering ----
   const PreactView = PREACT_VIEWS[view] || null;
 
@@ -236,18 +244,16 @@ export function App() {
         />
 
         <div class="main-scroll" id="main-scroll">
-          ${/* Imperatively sync .active on frozen legacy host divs. */}
-          <${LegacyViewSync} activeView=${view} />
+          ${/* All 12 views are now Preact — LegacyViewSync no longer needed. */}
 
           ${/* Migrated Preact views — rendered and managed by Preact. */}
           ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
-
-          ${/* Frozen placeholder hosts for un-migrated legacy views.
-               FrozenHost never re-renders (memo(() => true)) so Preact
-               does not clear legacy-injected innerHTML on store updates. */}
-          ${LEGACY_VIEWS.map(v => html`<${FrozenHost} key=${v} id=${'view-' + v} />`)}
         </div>
       </div>
+
+      ${/* Fixed-position overlay panels — rendered as siblings of the content area. */}
+      <${XtermPanel} />
+      <${OrchPanel} />
     </div>
   `;
 }

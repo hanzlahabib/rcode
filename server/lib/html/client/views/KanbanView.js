@@ -4,14 +4,13 @@
  * Displays a 4-column board (todo / in_progress / blocked / done) with
  * draggable cards. Drag-and-drop is visual-only (not persisted).
  *
- * Run/Stop/View card buttons call window.runStory / window.stopStory /
- * window.openOrchPanel — legacy globals kept alive until Sprint 31.4.
- * Each call site is marked // BRIDGE(31.4).
+ * Run/Stop/View card buttons call imported orchestrator functions (Sprint 31.4).
  */
 
-import { html, useState, useEffect, useCallback } from '../preact.js';
+import { html, useState, useCallback } from '../preact.js';
 import { useStore } from '../store.js';
 import { allTasks } from '../util.js';
+import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
 
 // ---- Column descriptors ----
 const COLS = [
@@ -49,15 +48,15 @@ function KanbanCard({ task, col, onDragStart, onDragEnd }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    if (typeof window.runStory === 'function') window.runStory(sid); // BRIDGE(31.4)
+    runStory(sid);
   }
   function handleStop(e) {
     e.stopPropagation();
-    if (typeof window.stopStory === 'function') window.stopStory(sid); // BRIDGE(31.4)
+    stopStory(sid);
   }
   function handleView(e) {
     e.stopPropagation();
-    if (typeof window.openOrchPanel === 'function') window.openOrchPanel(sid); // BRIDGE(31.4)
+    openOrchPanel(sid);
   }
 
   return html`
