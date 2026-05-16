@@ -14,6 +14,7 @@ import { html } from '../preact.js';
 import { useStore } from '../store.js';
 import { stopSession, openTermPanel } from '../orchestrator.js';
 import { orchElapsed } from '../util.js';
+import { Icon } from '../icons-client.js';
 
 // ── Session card ──────────────────────────────────────────────────────────────
 
@@ -21,7 +22,7 @@ function OrchCard({ session: s }) {
   const running = s.status === 'running';
   const waiting = !!s.waiting;
   const cardCls = 'orch-card orch-' + s.status + (waiting ? ' orch-waiting' : '');
-  const badge   = waiting ? '⏳ waiting for input' : s.status;
+  const badge   = waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
   const dotCls  = 'term-status-dot ' + (waiting ? 'waiting' : s.status);
 
   function handleTerminal(e) {
@@ -43,14 +44,14 @@ function OrchCard({ session: s }) {
       </div>
       <div class="orch-card-cmd">${s.cmd || ''}</div>
       <div class="orch-card-meta">
-        ⏱ ${orchElapsed(s.startTime)}
-        ${' · '}📝 ${s.filesChanged || 0} file${s.filesChanged === 1 ? '' : 's'}
-        ${' · '}👁 ${s.clients || 0}
+        <${Icon} name="clock" size=${12}/> ${orchElapsed(s.startTime)}
+        ${' · '}<${Icon} name="edit-3" size=${12}/> ${s.filesChanged || 0} file${s.filesChanged === 1 ? '' : 's'}
+        ${' · '}<${Icon} name="eye" size=${12}/> ${s.clients || 0}
         ${s.pid ? html` · pid ${s.pid}` : null}
       </div>
       <div class="orch-card-actions">
         <button class="term-run-btn outline" onClick=${handleTerminal}>
-          📟 Terminal
+          <${Icon} name="monitor" size=${14}/> Terminal
         </button>
         ${running ? html`
           <button class="term-run-btn danger" onClick=${handleStop}>■ Stop</button>
@@ -83,7 +84,7 @@ export function OrchestrationView() {
 
   return html`
     <div class="view active" id="view-orchestration">
-      <div class="view-title">⚡ Orchestration</div>
+      <div class="view-title section-icon"><${Icon} name="activity" size=${18}/> Orchestration</div>
       <div class="orch-subtitle">
         Live agent sessions — run, watch, communicate, stop.
       </div>
