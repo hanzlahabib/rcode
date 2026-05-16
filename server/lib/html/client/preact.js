@@ -9,7 +9,7 @@
  *   htm      3.1.1
  */
 
-import { h, render, Fragment, memo, createContext } from 'https://esm.sh/preact@10.24.3';
+import { h, render, Fragment } from 'https://esm.sh/preact@10.24.3';
 import {
   useState,
   useEffect,
@@ -17,14 +17,13 @@ import {
   useMemo,
   useCallback,
   useReducer,
-  useContext,
 } from 'https://esm.sh/preact@10.24.3/hooks';
 import htmLib from 'https://esm.sh/htm@3.1.1';
 
 // htm bound to Preact's h — use as a tagged template literal: html`<div>...</div>`
 export const html = htmLib.bind(h);
 
-export { h, render, Fragment, memo };
+export { h, render, Fragment };
 export {
   useState,
   useEffect,
@@ -32,6 +31,4 @@ export {
   useMemo,
   useCallback,
   useReducer,
-  useContext,
-  createContext,
 };
