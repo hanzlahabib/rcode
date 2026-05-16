@@ -91,6 +91,19 @@ function buildPhaseTree(projectDir, rawPhases) {
           status: phaseComplete ? 'done' : 'todo',
         });
       }
+      // Fallback for pre-<task> SPRINT.md format (phases 20-30 era):
+      // "### Story 20.01.01 — title" / "### Task X — title" headings.
+      if (!stories.length) {
+        const headRe = /^#{2,4}\s+(?:Story|Task)\s+([^\s—–-]+)\s*[—–-]\s*(.+?)\s*$/gm;
+        let hm;
+        while ((hm = headRe.exec(text))) {
+          stories.push({
+            id:     hm[1].trim(),
+            title:  hm[2].trim(),
+            status: phaseComplete ? 'done' : 'todo',
+          });
+        }
+      }
 
       // Status: a *-SUMMARY.md sibling means the sprint shipped.
       const hasSummary = files.includes(f.replace(/-SPRINT\.md$/i, '-SUMMARY.md'));
