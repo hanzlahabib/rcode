@@ -195,9 +195,15 @@ async function handleRun(req, res) {
   // "phase-33", "sprint-33.1", or a raw task id — never "cmd-*" — and MUST NOT
   // be gated here, even though they also supply body.cmd explicitly.
   // This prefix check is the authoritative discriminant between the two call paths.
-  if (storyId.startsWith('cmd-') && body.cmd && !COMMAND_ALLOWLIST.has(String(body.cmd).trim())) {
-    json(res, 403, { error: 'command not in allowlist', cmd: String(body.cmd).trim() });
-    return;
+  // NOTE: The gate fires for ANY cmd- storyId — a missing or empty body.cmd is
+  // also rejected. Previously the truthiness check on body.cmd allowed falsy values
+  // to bypass the allowlist and fall through to the /rihal-dev-story fallback.
+  if (storyId.startsWith('cmd-')) {
+    const reqCmd = typeof body.cmd === 'string' ? body.cmd.trim() : '';
+    if (!reqCmd || !COMMAND_ALLOWLIST.has(reqCmd)) {
+      json(res, 403, { error: 'command not in allowlist', cmd: reqCmd });
+      return;
+    }
   }
 
   if (!pty) {
