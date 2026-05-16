@@ -204,6 +204,47 @@ running-session badges, file browser, drill-down navigation, auto-refresh.
 
 ---
 
+## Phase 32 — Dashboard theming — design tokens and emoji-to-SVG icon sweep
+
+**Goal:** Give the Preact dashboard a coherent visual system — a single design-token
+layer (color, spacing, typography, radii, shadows) consumed by every component, and a
+full sweep replacing every emoji-as-icon with inline SVG icons from `icons.js`. Light
+and dark themes both driven by the token layer.
+
+**Status:** Planned
+
+**Plans:**
+- _TBD — planned via /rihal-plan 32_
+
+**Acceptance:**
+- All component styling reads from a single design-token source (CSS custom properties)
+- Zero emoji used as UI icons — every icon is an inline SVG from `icons.js`
+- Light + dark themes both render correctly from the token layer
+- No visual regressions; `node server/dashboard.js` starts clean on :7717
+
+---
+
+## Phase 33 — Dashboard command runner — run init and rihal commands through the UI
+
+**Goal:** Let the user launch `init` and other rihal commands end-to-end from the
+dashboard UI — pick a command, run it through the orchestrator service, watch live
+output in the WebSocket terminal, and see completion. The orchestrator service (:7718)
+owns command execution; `dashboard.js` stays pure-stdlib view-only. Reuse the phase-29
+bash-guard / auth hardening — no raw exec surface.
+
+**Status:** Planned
+
+**Plans:**
+- _TBD — planned via /rihal-plan 33_
+
+**Acceptance:**
+- UI exposes a command picker covering `init` and other safe rihal commands
+- Commands run via the orchestrator (:7718) with auth + bash-guard enforced; `dashboard.js` unchanged as view-only
+- Live output streams to the WebSocket terminal; completion state is visible
+- No new write endpoints on `dashboard.js`; `node server/dashboard.js` starts clean
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
