@@ -46,16 +46,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSH-1 | TBD | Pending |
-| DSH-2 | TBD | Pending |
-| DSH-3 | TBD | Pending |
-| DSH-4 | TBD | Pending |
-| DSH-5 | TBD | Pending |
-| DSH-6 | TBD | Pending |
-| HIST-1 | TBD | Pending |
-| HIST-2 | TBD | Pending |
-| HIST-3 | TBD | Pending |
-| GATE-1 | TBD | Pending |
-| GATE-2 | TBD | Pending |
+| DSH-1 | 34 | Pending |
+| DSH-2 | 34 | Pending |
+| DSH-3 | 34 | Pending |
+| DSH-4 | 36 | Pending |
+| DSH-5 | 36 | Pending |
+| DSH-6 | 37 | Pending |
+| HIST-1 | 35 | Pending |
+| HIST-2 | 35 | Pending |
+| HIST-3 | 35 | Pending |
+| GATE-1 | 37 | Pending |
+| GATE-2 | 37 | Pending |
 
-**Total:** 11 requirements across 3 categories — 0/11 mapped ✓
+**Total:** 11 requirements across 3 categories — 11/11 mapped ✓

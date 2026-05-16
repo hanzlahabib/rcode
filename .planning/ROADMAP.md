@@ -255,3 +255,109 @@ bash-guard / auth hardening — no raw exec surface.
 - Consolidate create-prd / edit-prd / validate-prd into one skill with modes
 - Add Windsurf / Antigravity install paths tested
 - Template Improvements (GH #101)
+
+---
+
+# M3 — Archon Dashboard Port (v5)
+
+**Goal:** Port high-value Archon UI patterns into the Diwan/Majlis Preact dashboard,
+reimplemented in Preact — aggregate status chips with filtering, persisted session
+history, a searchable command palette, sidebar health badges, a hand-rolled SVG phase
+DAG, and structured rejection dialogs at checkpoint gates.
+
+**Constraint (all phases):** `server/dashboard.js` stays Node-stdlib only with zero
+write endpoints; the client stays Preact via `htm` + ESM CDN with no build step. Session
+persistence and any new endpoints live on the orchestrator service (:7718), never on
+`dashboard.js`.
+
+Started: 2026-05-16 · Continues phase numbering from M2 (Phase 34+)
+
+---
+
+## Phase 34 — Status Summary Bar with Multi-Attribute Filtering
+
+**Goal:** Give the dashboard an Archon-style status summary bar — aggregate count
+chips for phases, sprints, and sessions grouped by status — plus filter chips that
+narrow a view by status, milestone, and date. Active filters serialise into the URL
+hash so a filtered view can be bookmarked and shared.
+
+**Covers:** DSH-1, DSH-2, DSH-3
+
+**Status:** Planned
+
+**Success criteria:**
+- User sees a summary bar with count chips for phases / sprints / sessions grouped by status
+- User can click status, milestone, and date filter chips to narrow the visible list
+- A filtered view's active filters appear in `location.hash`; reloading or sharing that URL restores the same filter set
+- Clearing all filters returns the view to its unfiltered state with no stale chips
+
+**Grounding:** new component under `server/lib/html/client/components/`, consumes
+`store.js` state and the existing `App.js` hash router (`parseHash`); no server change.
+
+---
+
+## Phase 35 — Session History Panel with Live/Persisted Dedup-Merge
+
+**Goal:** Persist past orchestration runs on the orchestrator service and surface them
+in a history panel grouped by status and date, each row showing duration and final
+status. Merge the persisted history with the live `/api/sessions` poll so a run that
+is both live and persisted renders exactly once.
+
+**Covers:** HIST-1, HIST-2, HIST-3
+
+**Status:** Planned
+
+**Success criteria:**
+- User opens a history panel listing past orchestration runs grouped by status and date
+- Each past run row shows its duration and final status
+- A run that is both in the live session poll and the persisted history renders as a single row, never duplicated
+- Persisted history survives an orchestrator restart and is readable without any write endpoint on `dashboard.js`
+
+**Grounding:** orchestrator service (`server/orchestrator.js`) gains run persistence
+plus a history read endpoint; the in-memory `sessions` Map already tracks
+`status`/timing. Client merges via the `activeSessions` store field set by
+`orchestrator.js` `startSessionsPoll`.
+
+---
+
+## Phase 36 — Command Palette and Sidebar Health Badges
+
+**Goal:** Add a searchable, categorized Cmd+K-style command palette that can find and
+run any allowlisted rihal command, and live health badges in the sidebar showing
+active session count and blocker count.
+
+**Covers:** DSH-4, DSH-5
+
+**Status:** Planned
+
+**Success criteria:**
+- User opens a command palette (keyboard shortcut), types to search, and sees commands grouped by category
+- User can run a found command from the palette and it launches through the orchestrator
+- The sidebar shows a live badge with the active session count and a badge with the blocker count
+- Badge counts update as sessions start/stop and blockers change, with no manual refresh
+
+**Grounding:** palette reuses `ALLOWED_COMMANDS` + `runCommandFromUI` from
+`orchestrator.js`; badges read `activeSessions` and `blockers` from `store.js` and
+render in `components/Sidebar.js`.
+
+---
+
+## Phase 37 — Phase Dependency Graph and Structured Rejection Dialogs
+
+**Goal:** Render the milestone's phases as a lightweight hand-rolled SVG dependency
+graph showing `depends_on` waves, and add structured rejection dialogs at checkpoint
+gates that capture a reason and record it against the run/phase for later review.
+
+**Covers:** DSH-6, GATE-1, GATE-2
+
+**Status:** Planned
+
+**Success criteria:**
+- User views the milestone's phases as an SVG graph laid out by `depends_on` waves
+- User can reject a checkpoint through a dialog that requires a reason before submitting
+- A submitted rejection reason is recorded against the run/phase and visible later
+- The graph and dialogs add no new build step and no graph library — pure inline SVG and Preact
+
+**Grounding:** `server/lib/scanner.js` extended to expose phase `depends_on` for the
+graph; rejection capture posts to the orchestrator service (:7718), reusing the
+phase-29 auth/bash-guard boundary — `dashboard.js` stays view-only.
