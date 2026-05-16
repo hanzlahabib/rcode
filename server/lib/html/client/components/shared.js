@@ -187,7 +187,7 @@ export function PhaseCard({ phase: p, S }) {
     <div class=${'item item-clickable'} style=${borderStyle}
       onClick=${() => { location.hash = 'phases/' + p.id; }}>
       <div class="item-title">
-        <${RunBtn} storyId=${'phase-' + p.id} cmd="/rihal-execute" label=${'Phase ' + p.id}/>
+        <${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>
         Phase ${p.id} — ${p.name}
         ${isCur ? html`<${Tag}>current</${Tag}>` : null}
         <${Chip} status=${p.status}/>

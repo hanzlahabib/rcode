@@ -60,7 +60,7 @@ function PhaseDetail({ phase: p, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runAndOpenTerm('phase-' + p.id, '/rihal-execute', 'Phase ' + p.id);
+    runAndOpenTerm('phase-' + p.id, '/rihal-execute ' + p.id, 'Phase ' + p.id);
   }
   function handleTerm(e) {
     e.stopPropagation();

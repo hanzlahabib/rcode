@@ -140,7 +140,7 @@ export function sprintHints(s) {
       ];
     }
     return [
-      ['/rihal-execute',        'Execute Sprint ' + sid],
+      ['/rihal-execute-sprint ' + sid, 'Execute Sprint ' + sid],
       ['/rihal-discuss-phase',  'Discuss before executing'],
       ['/rihal-sprint-planning','Refine Sprint ' + sid + ' plan'],
     ];
@@ -179,7 +179,7 @@ export function phaseHints(p) {
       ];
     }
     return [
-      ['/rihal-execute',        'Start executing Phase ' + pid],
+      ['/rihal-execute ' + pid, 'Start executing Phase ' + pid],
       ['/rihal-sprint-planning','Plan next sprint in Phase ' + pid],
     ];
   }
