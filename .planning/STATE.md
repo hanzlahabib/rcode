@@ -3,7 +3,7 @@
 **Last updated:** 2026-05-16
 **Milestone:** M2 — Hardening & Polish (v4)
 **Version:** 3.5.0
-**Current phase:** 31 — Preact migration (sprint 31.3 complete, awaiting human verify of 31.3.6)
+**Current phase:** 31 — Preact migration (sprint 31.4 complete, awaiting human verify of 31.4.6)
 **Branch:** 31-preact-migration
 
 ---
@@ -42,7 +42,7 @@ gaps in `.planning/MILESTONES.md`. Roadmap archived to
 | 28 | Audit gap closure (#742–#750) | complete |
 | 29 | Security hardening (#752–#754) | complete |
 | 30 | Marketability (#755–#759) | complete |
-| 31 | Preact migration — Majlis dashboard client | in progress |
+| 31 | Preact migration — Majlis dashboard client | complete (human verify pending) |
 
 ---
 
