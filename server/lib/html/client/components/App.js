@@ -200,14 +200,10 @@ export function App() {
         />
 
         <div class="main-scroll" id="main-scroll">
-          ${/* All 12 views are now Preact — LegacyViewSync no longer needed. */}
-
-          ${/* Migrated Preact views — rendered and managed by Preact. */}
           ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
         </div>
       </div>
 
-      ${/* Fixed-position overlay panels — rendered as siblings of the content area. */}
       <${XtermPanel} />
       <${OrchPanel} />
     </div>
