@@ -6137,12 +6137,10 @@ function cmdProgress(args) {
         return (p.status === 'complete' || p.completed) && disk && !disk.has_verification;
       }).length;
       const hasDrift = (insights || []).some(i => i.kind === 'roadmap-drift' || (i.message && i.message.includes('ROADMAP')));
-      const auditParts = [];
-      if (unverifiedCount > 0) auditParts.push(`${unverifiedCount} phase${unverifiedCount > 1 ? 's' : ''} unverified`);
-      if (hasDrift) auditParts.push('ROADMAP drift');
-      const auditLabel = auditParts.length > 0
-        ? `Audit milestone — ${auditParts.join(', ')}`
-        : 'Audit milestone for final sign-off';
+      const auditHints = [];
+      if (unverifiedCount > 0) auditHints.push(`${unverifiedCount} phases unverified`);
+      if (hasDrift) auditHints.push('roadmap drift');
+      const auditLabel = auditHints.length > 0 ? auditHints.join(', ') : '';
       routes.push({ letter: 'C', label: auditLabel, command: '/rihal-audit-milestone' });
       routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal-complete-milestone' });
     }

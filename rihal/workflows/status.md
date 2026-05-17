@@ -118,22 +118,22 @@ Omit a section entirely when its array is empty.
 
 ## Step 6 — Next Up (intent-tree)
 
-Render `SNAPSHOT.routes[]` as a Route A/B/C menu:
+Render `SNAPSHOT.routes[]` as a Route A/B/C menu. Each route renders as a **single line** — label (if non-empty) followed immediately by the command on the same line:
 
 ```
 Next Up:
 
-  [A] {route where letter === "A"}
-      → {route.command}
-
-  [B] {route where letter === "B"}
-      → {route.command}
-
-  [C] {route where letter === "C"}
-      → {route.command}
+  [A] {label}  →  {command}
+  [B] {label}  →  {command}
+  [C] {label}  →  {command}
 ```
 
-Group routes by letter. If multiple routes share a letter, list them indented. If there are no routes, print the fallback suggestion from the CLI output.
+If `route.label` is empty, render just:
+```
+  [C] {command}
+```
+
+This keeps the command copy-paste-ready on one line. Group routes by letter. If multiple routes share a letter, list them on separate lines under the same `[X]`. If there are no routes, print the fallback suggestion from the CLI output.
 
 </process>
 
