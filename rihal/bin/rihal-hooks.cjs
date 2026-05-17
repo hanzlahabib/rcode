@@ -321,69 +321,184 @@ async function bashGuard() {
 }
 
 /**
- * pre-compact: Refresh HANDOFF.json before context compaction (#743).
+ * pre-compact: Capture rihal session state before context compaction.
  *
- * Triggered by the PreCompact hook. Reads .rihal/state.json from the current
- * working directory and, if a phase is active, writes a HANDOFF.json pointer
- * so a post-compaction agent can resume cleanly. No-op when no phase is
- * active. Never blocks compaction.
+ * Triggered by the PreCompact hook. Enriched version (#743 + enhancement):
+ *   1. Reads .rihal/state.json + .planning/STATE.md + active SPRINT.md
+ *   2. Collects recent git commits and in-progress task checkboxes
+ *   3. Writes enriched .rihal/HANDOFF.json (machine-readable resume file)
+ *   4. Writes .rihal/.continue-here.md (paste-ready resume prompt)
+ *   5. Outputs { systemMessage } so Claude sees context immediately after
+ *      compaction — enabling /rihal-resume-work to restore full context.
+ *
+ * Never blocks compaction — any error exits 1 (non-blocking per spec).
  */
 async function preCompact() {
   try {
     const path = require('path');
+    const { execSync } = require('child_process');
     await readInputJson(); // drain the PreCompact event payload
 
     const cwd = process.cwd();
+
+    // ── 1. Load state.json ──────────────────────────────────────────────
     const statePath = path.join(cwd, '.rihal', 'state.json');
-    if (!fs.existsSync(statePath)) {
-      process.exit(0);
+    let state = null;
+    if (fs.existsSync(statePath)) {
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
     }
 
-    let state;
-    try {
-      state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-    } catch {
-      process.exit(0);
-    }
-
-    const phases = Array.isArray(state.phases) ? state.phases : [];
-    const hasActivePhase =
-      !!state.current_phase &&
-      phases.length > 0 &&
-      phases.some(
-        (p) =>
-          p &&
-          (p.status === 'executing' ||
-            p.name === state.current_phase ||
-            p.number === state.current_phase)
-      );
-
-    if (!hasActivePhase) {
-      process.exit(0);
-    }
-
+    // ── 2. Determine active phase ────────────────────────────────────────
+    const phases = Array.isArray(state?.phases) ? state.phases : [];
     const executing = phases.find((p) => p && p.status === 'executing');
     const matched = phases.find(
-      (p) => p && (p.name === state.current_phase || p.number === state.current_phase)
+      (p) => p && (p.name === state?.current_phase || p.number === state?.current_phase)
     );
-    const activePhase = executing || matched;
+    const activePhase = executing || matched || null;
     const phaseLabel = activePhase
-      ? activePhase.number || activePhase.name || state.current_phase
-      : state.current_phase;
+      ? (activePhase.number || activePhase.name || state?.current_phase)
+      : (state?.current_phase || null);
 
+    // ── 3. Read active SPRINT.md (incomplete tasks) ──────────────────────
+    const incompleteTasks = [];
+    const completedCount = { done: 0, total: 0 };
+    const planningBase = path.join(cwd, '.planning', 'phases');
+    if (phaseLabel && fs.existsSync(planningBase)) {
+      try {
+        const phaseDirs = fs.readdirSync(planningBase)
+          .filter(d => d.startsWith(String(phaseLabel)));
+        for (const pd of phaseDirs) {
+          const pdPath = path.join(planningBase, pd);
+          if (!fs.statSync(pdPath).isDirectory()) continue;
+          const sprintFiles = fs.readdirSync(pdPath)
+            .filter(f => f.endsWith('-SPRINT.md'))
+            .sort()
+            .reverse(); // most recent first
+          if (sprintFiles.length === 0) continue;
+          const sprintText = fs.readFileSync(path.join(pdPath, sprintFiles[0]), 'utf8');
+          for (const line of sprintText.split('\n')) {
+            const done = /^\s*-\s*\[x\]/i.test(line);
+            const pending = /^\s*-\s*\[ \]/.test(line);
+            if (done || pending) completedCount.total++;
+            if (done) completedCount.done++;
+            if (pending) {
+              const task = line.replace(/^\s*-\s*\[ \]\s*/, '').trim();
+              if (task) incompleteTasks.push(task);
+            }
+          }
+          break; // use first matching phase dir only
+        }
+      } catch {}
+    }
+
+    // ── 4. Recent git commits ────────────────────────────────────────────
+    let recentCommits = [];
+    try {
+      const log = execSync('git log --oneline -5 --no-decorate 2>/dev/null', {
+        cwd, encoding: 'utf8', timeout: 3000,
+      }).trim();
+      recentCommits = log ? log.split('\n').filter(Boolean) : [];
+    } catch {}
+
+    // ── 5. Read milestone / roadmap headline ────────────────────────────
+    let milestoneHint = state?.milestone || null;
+    if (!milestoneHint) {
+      for (const rp of ['.planning/ROADMAP.md', '.planning/milestones/ROADMAP.md']) {
+        const full = path.join(cwd, rp);
+        if (!fs.existsSync(full)) continue;
+        const m = fs.readFileSync(full, 'utf8').match(/^##\s+Milestone\s+(M\d+[^\n]*)/m);
+        if (m) { milestoneHint = m[1].trim(); break; }
+      }
+    }
+
+    // ── 6. Read last 3 decisions from STATE.md ───────────────────────────
+    let recentDecisions = [];
+    const stateFile = path.join(cwd, '.planning', 'STATE.md');
+    if (fs.existsSync(stateFile)) {
+      try {
+        const stateText = fs.readFileSync(stateFile, 'utf8');
+        const decSection = stateText.match(/##\s+(?:Recent\s+)?Decisions[\s\S]*?(?=\n##|\Z)/i);
+        if (decSection) {
+          recentDecisions = decSection[0]
+            .split('\n')
+            .filter(l => /^\s*[-*]/.test(l))
+            .slice(0, 3)
+            .map(l => l.replace(/^\s*[-*]\s*/, '').trim())
+            .filter(Boolean);
+        }
+      } catch {}
+    }
+
+    // ── 7. Build enriched HANDOFF.json ───────────────────────────────────
     const handoff = {
       generated_at: new Date().toISOString(),
       reason: 'pre-compact',
       phase: phaseLabel,
-      current_plan: state.current_plan ?? null,
-      current_sprint: state.current_sprint ?? null,
+      milestone: milestoneHint,
+      current_plan: state?.current_plan ?? null,
+      current_sprint: state?.current_sprint ?? null,
+      progress: completedCount.total > 0
+        ? `${completedCount.done}/${completedCount.total} tasks done`
+        : null,
+      incomplete_tasks: incompleteTasks.slice(0, 10),
+      recent_commits: recentCommits,
+      recent_decisions: recentDecisions,
     };
 
-    const handoffPath = path.join(cwd, 'HANDOFF.json');
-    const tmpPath = handoffPath + '.tmp';
-    fs.writeFileSync(tmpPath, JSON.stringify(handoff, null, 2) + '\n');
-    fs.renameSync(tmpPath, handoffPath);
+    const rihalDir = path.join(cwd, '.rihal');
+    if (!fs.existsSync(rihalDir)) {
+      process.exit(0); // not a rihal project
+    }
 
+    const handoffPath = path.join(rihalDir, 'HANDOFF.json');
+    fs.writeFileSync(handoffPath + '.tmp', JSON.stringify(handoff, null, 2) + '\n');
+    fs.renameSync(handoffPath + '.tmp', handoffPath);
+
+    // ── 8. Write .continue-here.md (paste-ready resume prompt) ───────────
+    const resumeLines = [
+      '# Rihal Session Resume',
+      '',
+      `**Compacted:** ${handoff.generated_at}`,
+      phaseLabel ? `**Phase:** ${phaseLabel}` : null,
+      milestoneHint ? `**Milestone:** ${milestoneHint}` : null,
+      handoff.progress ? `**Progress:** ${handoff.progress}` : null,
+      '',
+    ].filter(l => l !== null);
+
+    if (incompleteTasks.length > 0) {
+      resumeLines.push('**Next tasks:**');
+      incompleteTasks.slice(0, 5).forEach(t => resumeLines.push(`- [ ] ${t}`));
+      resumeLines.push('');
+    }
+    if (recentCommits.length > 0) {
+      resumeLines.push('**Recent commits:**');
+      recentCommits.forEach(c => resumeLines.push(`- ${c}`));
+      resumeLines.push('');
+    }
+    if (recentDecisions.length > 0) {
+      resumeLines.push('**Recent decisions:**');
+      recentDecisions.forEach(d => resumeLines.push(`- ${d}`));
+      resumeLines.push('');
+    }
+    resumeLines.push('---');
+    resumeLines.push('Run `/rihal-resume-work` to restore full project context.');
+
+    fs.writeFileSync(
+      path.join(rihalDir, '.continue-here.md'),
+      resumeLines.join('\n') + '\n'
+    );
+
+    // ── 9. Emit systemMessage for Claude post-compaction ─────────────────
+    const msgParts = ['**Rihal context compacted.**'];
+    if (phaseLabel) msgParts.push(`Active phase: **${phaseLabel}**`);
+    if (milestoneHint) msgParts.push(`Milestone: ${milestoneHint}`);
+    if (handoff.progress) msgParts.push(`Progress: ${handoff.progress}`);
+    if (incompleteTasks.length > 0) {
+      msgParts.push(`Next task: ${incompleteTasks[0]}`);
+    }
+    msgParts.push('Run `/rihal-resume-work` to restore full context, or `/clear` then paste `.rihal/.continue-here.md`.');
+
+    process.stdout.write(JSON.stringify({ systemMessage: msgParts.join(' | ') }) + '\n');
     process.exit(0);
   } catch (err) {
     console.error(`Hook error: ${err.message}`);
