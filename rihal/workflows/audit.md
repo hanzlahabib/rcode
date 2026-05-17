@@ -18,6 +18,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
 /rihal-audit                           # interactive — asks what to audit
+/rihal-audit plans [--report]         # → audit-plans (structural + status + deps check)
 /rihal-audit phase [<NN>]              # → /rihal-verify-phase
 /rihal-audit milestone [--strict]      # → /rihal-audit-milestone (with synth fallback)
 /rihal-audit uat                       # → /rihal-audit-uat
@@ -30,6 +31,8 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 **Examples:**
 ```
 /rihal-audit
+/rihal-audit plans
+/rihal-audit plans --report
 /rihal-audit milestone --strict
 /rihal-audit phase 03
 /rihal-audit lens security
@@ -45,7 +48,7 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
 
 Parse `$ARGUMENTS`:
-- First word ∈ {phase, milestone, uat, code, fix, work, lens} → set `$TARGET`, drop it from args, jump to Step 4.
+- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens} → set `$TARGET`, drop it from args, jump to Step 4.
 - Empty or unrecognised → continue to Step 2.
 
 ## Step 2 — Detect project state
@@ -68,7 +71,7 @@ as `(no data — skip)`.
 ## Step 3 — Ask user (guided mode only)
 
 If `$MODE` is `yolo`, skip this step and pick the most relevant target
-automatically (priority: `work` if dirty branch, else `phase` if PLANS>0
+automatically (priority: `work` if dirty branch, else `plans` if PLANS>0
 and SUMMARIES<PLANS, else `milestone` if SUMMARIES>0, else `code`).
 
 Otherwise call AskUserQuestion:
@@ -78,13 +81,14 @@ Question:
 What do you want to audit?
 
 Options:
-  1. phase           — verify a single phase against its PLAN  ({PLANS} plans)
-  2. milestone       — cross-phase milestone goal coverage     ({SUMMARIES} summaries)
-  3. uat             — outstanding UAT / verification items    ({UAT_FILES} files)
-  4. code-quality    — Karpathy 4-principle code review        (current diff)
-  5. auto-fix        — audit then auto-fix findings            (uses #1–4 output)
-  6. work            — verify current branch / WIP             ({ON_BRANCH}, dirty={DIRTY})
-  7. lens            — 15-lens methodology audit               (security, perf, tests…)
+  1. plans           — planning integrity: completeness, status, deps ({PLANS} sprints)
+  2. phase           — verify a single phase against its PLAN          ({PLANS} plans)
+  3. milestone       — cross-phase milestone goal coverage             ({SUMMARIES} summaries)
+  4. uat             — outstanding UAT / verification items            ({UAT_FILES} files)
+  5. code-quality    — Karpathy 4-principle code review                (current diff)
+  6. auto-fix        — audit then auto-fix findings                    (uses #1–5 output)
+  7. work            — verify current branch / WIP                     ({ON_BRANCH}, dirty={DIRTY})
+  8. lens            — 15-lens methodology audit                       (security, perf, tests…)
   0. cancel
 ```
 
@@ -98,6 +102,7 @@ sub-workflow.
 
 | target | precondition | failure message |
 |---|---|---|
+| plans | `.planning/ROADMAP.md` exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
 | phase | at least one `.planning/phases/*/PLAN.md` or `*-SPRINT.md` | `No plan file found. Run /rihal-plan first.` |
 | milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
 | uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal-execute on a phase first.` |
@@ -140,6 +145,7 @@ Run the target's slash command, forwarding remaining args:
 
 | target | dispatch |
 |---|---|
+| plans | execute `@.rihal/workflows/audit-plans.md` inline |
 | phase | `/rihal-verify-phase $REST_ARGS` |
 | milestone | `/rihal-audit-milestone $REST_ARGS` |
 | uat | `/rihal-audit-uat $REST_ARGS` |
