@@ -6070,7 +6070,7 @@ function cmdProgress(args) {
     return insights;
   }
 
-  function deriveRoutes(state, roadmapPhases, diskByNum) {
+  function deriveRoutes(state, roadmapPhases, diskByNum, insights) {
     const routes = [];
     const statePhases = (state && (state.state?.phases || state.phases)) || [];
 
@@ -6131,7 +6131,19 @@ function cmdProgress(args) {
     // Route C — close out milestone if everything seems done
     const allDone = statePhases.length > 0 && statePhases.every(p => p.status === 'complete' || p.completed);
     if (allDone) {
-      routes.push({ letter: 'C', label: 'Audit current milestone', command: '/rihal-audit-milestone' });
+      // Count unverified phases (complete but no VERIFICATION.md on disk)
+      const unverifiedCount = statePhases.filter(p => {
+        const disk = diskByNum[phaseKey(p)];
+        return (p.status === 'complete' || p.completed) && disk && !disk.has_verification;
+      }).length;
+      const hasDrift = (insights || []).some(i => i.kind === 'roadmap-drift' || (i.message && i.message.includes('ROADMAP')));
+      const auditParts = [];
+      if (unverifiedCount > 0) auditParts.push(`${unverifiedCount} phase${unverifiedCount > 1 ? 's' : ''} unverified`);
+      if (hasDrift) auditParts.push('ROADMAP drift');
+      const auditLabel = auditParts.length > 0
+        ? `Audit milestone — ${auditParts.join(', ')}`
+        : 'Audit milestone for final sign-off';
+      routes.push({ letter: 'C', label: auditLabel, command: '/rihal-audit-milestone' });
       routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal-complete-milestone' });
     }
 
@@ -6208,14 +6220,15 @@ function cmdProgress(args) {
   }
 
   if (sub === 'routes') {
-    return { ok: true, routes: deriveRoutes(state, roadmapPhases, diskByNum) };
+    const routeInsights = detectInsights(state, roadmapPhases, diskByNum);
+    return { ok: true, routes: deriveRoutes(state, roadmapPhases, diskByNum, routeInsights) };
   }
 
   // sub === 'init' (default) — full snapshot
   const currentPhase = state && state.current_phase;
   const insights = detectInsights(state, roadmapPhases, diskByNum);
   enforceStrictGate(insights);
-  const routes = deriveRoutes(state, roadmapPhases, diskByNum);
+  const routes = deriveRoutes(state, roadmapPhases, diskByNum, insights);
   const { weighted: weightedCompleted, pct: weightedPct } = computeWeightedProgress(statePhases, diskByNum);
 
   return {
