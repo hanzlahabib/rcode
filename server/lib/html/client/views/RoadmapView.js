@@ -70,13 +70,13 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
     if (expandSignal && expandSignal.key > 0) setOpen(expandSignal.open);
   }, [expandSignal && expandSignal.key]);
   const sps = p.sprints || [];
-  const pStories = sps.flatMap(s => s.stories || []);
+  const pStories = sps.flatMap(s => (s ? s.stories || [] : []));
   const pDone = pStories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const pp = pctNum(pDone, pStories.length);
   const running = runningInPhase(p);
 
   // Filter: hide this node if query doesn't match phase name
-  if (filterQuery && !p.name.toLowerCase().includes(filterQuery)) return null;
+  if (filterQuery && !(p.name || '').toLowerCase().includes(filterQuery)) return null;
 
   function handleDblClick(e) {
     e.stopPropagation();

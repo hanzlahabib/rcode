@@ -110,6 +110,7 @@ export function orchElapsed(iso) {
  * @returns {Array<[string, string]>}
  */
 export function sprintHints(s) {
+  if (!s) return [];
   const stories = Array.isArray(s.stories) ? s.stories : [];
   const st = s.status || 'planned';
   const sid = s.id || '';
@@ -155,6 +156,7 @@ export function sprintHints(s) {
  * @returns {Array<[string, string]>}
  */
 export function phaseHints(p) {
+  if (!p) return [];
   const sps = Array.isArray(p.sprints) ? p.sprints : [];
   const st = p.status || 'planned';
   const pid = p.id || '';

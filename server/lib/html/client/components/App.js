@@ -157,7 +157,7 @@ export function App() {
         const r = await fetch('/api/state');
         if (!r.ok) return;
         const s = await r.json();
-        if (s.lastScanned !== lastScannedRef.current) await fetchAndRerender();
+        if (s && s.lastScanned !== lastScannedRef.current) await fetchAndRerender();
       } catch { /* ignore */ }
     }, 30000);
     return () => clearInterval(id);

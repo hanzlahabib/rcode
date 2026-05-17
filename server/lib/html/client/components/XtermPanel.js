@@ -82,6 +82,7 @@ function connectWs(storyId) {
   ws.onmessage = e => {
     let m;
     try { m = JSON.parse(e.data); } catch { return; }
+    if (!m) return;
     if (m.t === 'o' || m.t === 'hist') {
       if (_term) _term.write(m.d);
     } else if (m.t === 's') {

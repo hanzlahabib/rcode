@@ -53,7 +53,7 @@ function VelocityBars({ sprints }) {
 
 function PhaseDetail({ phase: p, S }) {
   const sps = Array.isArray(p.sprints) ? p.sprints : [];
-  const stories = sps.flatMap(s => (Array.isArray(s.stories) ? s.stories : []));
+  const stories = sps.flatMap(s => (s && Array.isArray(s.stories) ? s.stories : []));
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
   const running = runningInPhase(p);
   const hints = phaseHints(p);
@@ -158,7 +158,7 @@ export function PhasesView({ subId }) {
 
   const q = filter.toLowerCase();
   const filtered = q
-    ? phases.filter(p => p.name.toLowerCase().includes(q) || String(p.id).includes(q))
+    ? phases.filter(p => (p.name || '').toLowerCase().includes(q) || String(p.id).includes(q))
     : phases;
 
   return html`
