@@ -140,5 +140,5 @@ After applying: "ROADMAP.md updated. Run `/rihal-manager` to execute phases in t
 ## ▶ Next Up
 
 - **Circular deps found:** Fix dependency cycle, then re-run analysis
-- **Ready to execute:** `/rihal-execute {phase}` — run with dependency awareness
-- **Review roadmap:** `/rihal-progress` — see full project state
+- /rihal-execute {phase}
+- /rihal-progress

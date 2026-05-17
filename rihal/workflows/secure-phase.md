@@ -205,5 +205,5 @@ If arguments are invalid, missing files, or subagent fails:
 ## ▶ Next Up
 
 - **Issues found:** Address security findings, then re-run `/rihal-secure-phase {phase}`
-- **Clean report:** `/rihal-verify-phase {phase}` — run full verification
-- **Continue execution:** `/rihal-execute {next-phase}` — proceed to next phase
+- /rihal-verify-phase {phase}
+- /rihal-execute {next-phase}

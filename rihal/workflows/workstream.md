@@ -204,6 +204,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## ▶ Next Up
 
-- **Workstream created:** `/rihal-execute {workstream-phase}` — begin execution
-- **View all workstreams:** `/rihal-progress` — see parallel workstream status
-- **Stuck:** `/rihal-forensics` — diagnose any blocked workstream
+- /rihal-execute {workstream-phase}
+- /rihal-progress
+- /rihal-forensics

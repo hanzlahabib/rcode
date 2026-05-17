@@ -26,6 +26,6 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## ▶ Next Up
 
-- **PRD updated:** `/rihal-validate-prd` — check completeness after changes
-- **Ready to plan:** `/rihal-create-milestone` — build milestone roadmap from PRD
-- **Review epics:** `/rihal-create-epics-and-stories` — update stories if scope changed
+- /rihal-validate-prd
+- /rihal-create-milestone
+- /rihal-create-epics-and-stories

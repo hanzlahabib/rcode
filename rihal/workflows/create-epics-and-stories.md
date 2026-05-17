@@ -374,6 +374,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## ▶ Next Up
 
-- **Stories created:** `/rihal-sprint-planning` — schedule capacity-gated sprint
-- **Review stories:** `/rihal-dev-story {story-id}` — implement a specific story
-- **Back to PRD:** `/rihal-edit-prd` — revise if epics revealed scope gaps
+- /rihal-sprint-planning
+- /rihal-dev-story {story-id}
+- /rihal-edit-prd

@@ -238,6 +238,6 @@ Run: /rihal-status for project-state issues
 
 ## ▶ Next Up
 
-- **Issues found:** `/rihal-forensics` — deep diagnostic on specific failures
-- **Ready to continue:** `/rihal-do` — interactive router guides next step
-- **Fix specific phase:** `/rihal-correct-course {phase}` — targeted correction
+- /rihal-forensics
+- /rihal-do
+- /rihal-correct-course {phase}

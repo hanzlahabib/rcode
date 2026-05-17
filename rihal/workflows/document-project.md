@@ -181,6 +181,6 @@ If .rihal/DOCS-AUDIT.md exists, check for missing/stale docs:
 
 ## ▶ Next Up
 
-- **Documentation updated:** `/rihal-progress` — see current project state
-- **Proceed to planning:** `/rihal-plan {phase}` — create executable plans
-- **Review with council:** `/rihal-council {question}` — debate approach
+- /rihal-progress
+- /rihal-plan {phase}
+- /rihal-council {question}

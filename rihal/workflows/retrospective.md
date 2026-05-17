@@ -26,6 +26,6 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## ▶ Next Up
 
-- **Retrospective complete:** `/rihal-new-milestone` — start the next milestone
-- **Review project state:** `/rihal-progress` — see current roadmap position
-- **Archive milestone:** `/rihal-complete-milestone` — if not already done
+- /rihal-new-milestone
+- /rihal-progress
+- /rihal-complete-milestone

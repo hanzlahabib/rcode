@@ -188,5 +188,5 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 ## ▶ Next Up
 
 - **Vulnerabilities found:** Address security findings, re-run `/rihal-review-adversarial`
-- **Clean report:** `/rihal-verify-phase {phase}` — full verification
-- **Ship:** `/rihal-ship {phase}` — package the phase
+- /rihal-verify-phase {phase}
+- /rihal-ship {phase}

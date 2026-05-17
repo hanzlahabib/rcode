@@ -26,6 +26,6 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## ▶ Next Up
 
-- **PRD valid:** `/rihal-create-milestone` — design M1..Mn roadmap
-- **Gaps found:** `/rihal-edit-prd` — fill in missing sections
-- **Need council review:** `/rihal-council {prd-question}` — debate key decisions
+- /rihal-create-milestone
+- /rihal-edit-prd
+- /rihal-council {prd-question}

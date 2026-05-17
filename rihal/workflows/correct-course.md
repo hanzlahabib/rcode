@@ -191,6 +191,6 @@ Run remediation with:
 
 ## ▶ Next Up
 
-- **Course corrected:** `/rihal-execute {phase}` — resume execution with updated direction
-- **Plan needs updating:** `/rihal-plan {phase}` — re-plan affected phase
-- **Check project state:** `/rihal-progress` — verify deviation was contained
+- /rihal-execute {phase}
+- /rihal-plan {phase}
+- /rihal-progress

@@ -404,6 +404,6 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 
 ## ▶ Next Up
 
-- **Verification passed:** `/rihal-complete-milestone` (if all phases done) or `/rihal-execute` for next phase
-- **Gaps found:** `/rihal-plan --gaps {phase}` — plan gap-closure tasks
-- **Re-verify after fixes:** `/rihal-verify-phase {phase}`
+- /rihal-complete-milestone
+- /rihal-plan --gaps {phase}
+- /rihal-verify-phase {phase}

@@ -199,6 +199,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## ▶ Next Up
 
-- **Fixes applied:** `/rihal-verify-phase {phase}` — re-verify after fixes
-- **More issues:** `/rihal-audit {phase}` — run audit again to confirm
-- **All clean:** `/rihal-progress` — check project state
+- /rihal-verify-phase {phase}
+- /rihal-audit {phase}
+- /rihal-progress
