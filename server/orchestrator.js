@@ -40,8 +40,14 @@ try { pty = require('@lydell/node-pty'); } catch { /* handled in handleRun */ }
 let WebSocketServer = null;
 try { ({ WebSocketServer } = require('ws')); } catch { /* handled at boot */ }
 
-const PORT         = parseInt(process.env.ORCH_PORT || '7718', 10);
-const PROJECT_ROOT = path.resolve(__dirname, '..');
+const PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
+// Use the project root passed by the dashboard (RIHAL_DIR → parent, or explicit
+// PROJECT_ROOT env var). Fall back to cwd so standalone orchestrator runs work.
+// NEVER use __dirname-relative path — that resolves to the npm package dir when
+// rcode is installed globally, not the user's actual project.
+const PROJECT_ROOT = process.env.PROJECT_ROOT
+  || (process.env.RIHAL_DIR ? path.dirname(process.env.RIHAL_DIR) : null)
+  || process.cwd();
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
 
 // Per-session auth token — see authed(). The dashboard passes ORCH_TOKEN in

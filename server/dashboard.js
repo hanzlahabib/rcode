@@ -205,7 +205,7 @@ function spawnOrchestrator() {
   try {
     _orchProc = spawn(process.execPath, [ORCH_BIN], {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env, ORCH_TOKEN },
+      env: { ...process.env, ORCH_TOKEN, RIHAL_DIR, PROJECT_ROOT },
       stdio: 'pipe',
     });
     _orchProc.stdout.on('data', chunk => {

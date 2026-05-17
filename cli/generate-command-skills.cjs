@@ -231,7 +231,29 @@ function main(packageRoot, targetSkillsDir, version, options = {}) {
     generated++;
   }
 
-  return { generated, skipped };
+  // Cleanup stale stubs: generated stubs whose command was removed from
+  // SIDEBAR_COMMANDS still block the corresponding ~/.claude/commands/ file
+  // in Claude Code 2.x (skill with user-invocable:false overrides the command).
+  // Delete any generated stub for a command no longer in the curated set.
+  let cleaned = 0;
+  try {
+    for (const entry of fs.readdirSync(targetSkillsDir)) {
+      if (!entry.startsWith('rihal-')) continue;
+      const cmdName = entry.replace(/^rihal-/, '');
+      if (SIDEBAR_COMMANDS.has(cmdName)) continue; // still wanted — leave it
+      if (realSkills.has(entry)) continue;          // real skill — never touch
+      const skillFile = path.join(targetSkillsDir, entry, 'SKILL.md');
+      if (!fs.existsSync(skillFile)) continue;
+      const text = fs.readFileSync(skillFile, 'utf8');
+      // Only remove stubs that were auto-generated from a command file.
+      if (!/^generated:\s*true/m.test(text)) continue;
+      if (!/^source:\s*rihal\/commands\//m.test(text)) continue;
+      fs.rmSync(path.join(targetSkillsDir, entry), { recursive: true, force: true });
+      cleaned++;
+    }
+  } catch { /* non-fatal */ }
+
+  return { generated, skipped, cleaned };
 }
 
 if (require.main === module) {
@@ -240,8 +262,8 @@ if (require.main === module) {
     console.error('Usage: generate-command-skills.cjs <package-root> <target-skills-dir> [version]');
     process.exit(2);
   }
-  const { generated, skipped } = main(packageRoot, targetSkillsDir, version);
-  console.log(`✓ ${generated} sidebar skill stub${generated === 1 ? '' : 's'} generated, ${skipped} skipped (already real skills or out of curated set)`);
+  const { generated, skipped, cleaned } = main(packageRoot, targetSkillsDir, version);
+  console.log(`✓ ${generated} sidebar skill stub${generated === 1 ? '' : 's'} generated, ${skipped} skipped, ${cleaned} stale stubs cleaned`);
 }
 
 module.exports = { main, SIDEBAR_COMMANDS };
