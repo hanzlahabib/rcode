@@ -105,7 +105,7 @@ description: >
   Sidebar entry — invokes the same workflow as /rihal-${cmdName}.
 triggers:
 ${triggers.map((t) => `  - "${t}"`).join('\n')}
-user-invocable: true
+user-invocable: false
 generated: true
 generated-by: rcode-install-v${version}
 source: rihal/commands/${cmdName}.md

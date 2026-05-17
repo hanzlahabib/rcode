@@ -29,7 +29,7 @@ triggers:
   - "أنشئ بنك الذاكرة"
   - "ابدأ ذاكرة ريحال"
   - "إعداد بنك الذاكرة"
-user-invocable: true
+user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
 

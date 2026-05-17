@@ -30,7 +30,7 @@ triggers:
   - "تذكّر هذا"
   - "حدّث بنك الذاكرة"
   - "سجّل هذا القرار"
-user-invocable: true
+user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
 

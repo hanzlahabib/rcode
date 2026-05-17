@@ -32,7 +32,7 @@ triggers:
   - "ابحث عن إدخالات قديمة"
   - "هل بنك الذاكرة سليم"
   - "أصلح الذاكرة"
-user-invocable: true
+user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
 

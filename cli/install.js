@@ -2051,7 +2051,9 @@ async function installInner(opts) {
     try {
       const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
       const stubsDir = path.join(opts.target, '.claude', 'skills');
-      const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion());
+      const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
+        skipGlobalDuplicates: true,
+      });
       skillsInstalled += result.generated;
     } catch { /* non-fatal */ }
     console.log('');

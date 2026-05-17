@@ -24,7 +24,7 @@ triggers:
   - "حقّق في الخطأ"
   - "أصلح الخطأ"
   - "تتبّع السبب"
-user-invocable: true
+user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -17,7 +17,7 @@ triggers:
   - "compress memory bank"
   - "memory bank ko compress karo"
   - "/rcode:memory-distill"
-user-invocable: true
+user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
 
