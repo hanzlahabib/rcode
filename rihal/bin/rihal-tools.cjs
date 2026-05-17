@@ -6092,26 +6092,18 @@ function cmdProgress(args) {
     }).slice(0, 3);
     for (const p of pendingExec) {
       const k = phaseKey(p);
-      routes.push({
-        letter: 'A',
-        label: `Execute phase ${k} — unfinished plans`,
-        command: `/rihal-execute ${k}`,
-      });
+      routes.push({ letter: 'A', label: '', command: `/rihal-execute ${k}` });
     }
 
     // Route B — phases with research but no plans
     const researchOnly = Object.entries(diskByNum)
       .filter(([num, d]) => d.has_research && d.plan_count === 0)
       .slice(0, 3);
-    for (const [num, d] of researchOnly) {
-      routes.push({
-        letter: 'B',
-        label: `Plan phase ${num} — researched, awaiting plan`,
-        command: `/rihal-plan-phase ${num}`,
-      });
+    for (const [num] of researchOnly) {
+      routes.push({ letter: 'B', label: '', command: `/rihal-plan ${num}` });
     }
 
-    // Route B' — in-progress phases without plans (the user is actively working but no SPRINT.md exists yet)
+    // Route B' — in-progress phases without plans
     const inProgressNoPlan = statePhases
       .filter(p => (p.status === 'in_progress' || p.status === 'in-progress'))
       .filter(p => {
@@ -6121,11 +6113,7 @@ function cmdProgress(args) {
       .slice(0, 2);
     for (const p of inProgressNoPlan) {
       const k = phaseKey(p);
-      routes.push({
-        letter: 'B',
-        label: `Plan phase ${k} — in progress without SPRINT.md`,
-        command: `/rihal-plan ${k}`,
-      });
+      routes.push({ letter: 'B', label: '', command: `/rihal-plan ${k}` });
     }
 
     // Route C — close out milestone if everything seems done
@@ -6137,18 +6125,20 @@ function cmdProgress(args) {
         return (p.status === 'complete' || p.completed) && disk && !disk.has_verification;
       }).length;
       const hasDrift = (insights || []).some(i => i.kind === 'roadmap-drift' || (i.message && i.message.includes('ROADMAP')));
-      const auditHints = [];
-      if (unverifiedCount > 0) auditHints.push(`${unverifiedCount} phases unverified`);
-      if (hasDrift) auditHints.push('roadmap drift');
-      const auditLabel = auditHints.length > 0 ? auditHints.join(', ') : '';
-      routes.push({ letter: 'C', label: auditLabel, command: '/rihal-audit-milestone' });
-      routes.push({ letter: 'C', label: 'Complete current milestone', command: '/rihal-complete-milestone' });
+      const auditArgs = [];
+      if (unverifiedCount > 0) auditArgs.push(String(unverifiedCount));
+      if (hasDrift) auditArgs.push('--fix-drift');
+      const auditCmd = auditArgs.length > 0
+        ? `/rihal-audit-milestone ${auditArgs.join(' ')}`
+        : '/rihal-audit-milestone';
+      routes.push({ letter: 'C', label: '', command: auditCmd });
+      routes.push({ letter: 'C', label: '', command: '/rihal-complete-milestone' });
     }
 
     // Fallback — nothing obvious: offer status
     if (routes.length === 0) {
-      routes.push({ letter: 'A', label: 'Check progress detail', command: '/rihal-progress' });
-      routes.push({ letter: 'B', label: 'Start a council on what to do next', command: '/rihal-council' });
+      routes.push({ letter: 'A', label: '', command: '/rihal-progress' });
+      routes.push({ letter: 'B', label: '', command: '/rihal-council' });
     }
 
     return routes;

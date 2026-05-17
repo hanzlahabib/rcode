@@ -4,21 +4,22 @@
 Cross-phase audit of milestone completion. Reads all SUMMARY.md files from completed phases, compares their outcomes to the original ROADMAP goals, flags gaps, and generates an audit report showing completion percentage and decision traceability.
 </purpose>
 
-## Step 0 — Usage check
+## Step 0 — Parse arguments
 
-If `$ARGUMENTS` contains only `--help` or `-h`:
+Parse `$ARGUMENTS`:
+- `--help` or `-h` → print usage and stop:
+  ```
+  /rihal-audit-milestone [<unverified-count>] [--fix-drift] [--strict] [--report]
+  ```
+- A bare integer (e.g. `28`) → `HINT_UNVERIFIED_COUNT = 28` (pre-computed by rihal-status for display; use as expected minimum in the scan)
+- `--fix-drift` → `FIX_DRIFT = true` (after audit, suggest the drift sync command)
+- `--strict` → `STRICT = true`
+- `--report` → `WRITE_REPORT = true`
 
+If `HINT_UNVERIFIED_COUNT` is set, print at the top of the audit output:
 ```
-/rihal-audit-milestone [--strict] [--report]
+ℹ Expecting ~{HINT_UNVERIFIED_COUNT} phases to verify (from rihal-status)
 ```
-
-**Examples:**
-```
-/rihal-audit-milestone
-/rihal-audit-milestone --strict --report
-```
-
-STOP — do not proceed.
 
 ## Step 1 — Locate milestone context
 

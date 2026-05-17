@@ -118,22 +118,18 @@ Omit a section entirely when its array is empty.
 
 ## Step 6 — Next Up (intent-tree)
 
-Render `SNAPSHOT.routes[]` as a Route A/B/C menu. Each route renders as a **single line** — label (if non-empty) followed immediately by the command on the same line:
+Render `SNAPSHOT.routes[]` as a Route A/B/C menu. Each route is **one line** — the command is the thing you copy and run:
 
 ```
 Next Up:
 
-  [A] {label}  →  {command}
-  [B] {label}  →  {command}
-  [C] {label}  →  {command}
+  [A] /rihal-execute 4
+  [B] /rihal-plan 5
+  [C] /rihal-audit-milestone 28 --fix-drift
+  [C] /rihal-complete-milestone
 ```
 
-If `route.label` is empty, render just:
-```
-  [C] {command}
-```
-
-This keeps the command copy-paste-ready on one line. Group routes by letter. If multiple routes share a letter, list them on separate lines under the same `[X]`. If there are no routes, print the fallback suggestion from the CLI output.
+Format: `  [{letter}] {command}` — no label, no arrow, no indented second line. The command already contains the relevant arguments (phase number, count, flags). Group routes by letter; multiple routes sharing a letter appear on consecutive lines. If there are no routes, print the fallback suggestion from the CLI output.
 
 </process>
 
