@@ -114,6 +114,37 @@ Output consumed by /rihal-execute. Plans need:
 </downstream_consumer>
 
 <deep_work_rules>
+## File Structure Map (REQUIRED — before task decomposition)
+
+Before writing any task, produce a file structure map listing every file this plan will create or modify:
+
+```
+FILES_TO_CREATE:
+  - exact/path/to/new/file.ts  — responsibility: [one sentence]
+FILES_TO_MODIFY:
+  - exact/path/to/existing.ts  — what changes: [one sentence]
+FILES_FOR_TESTS:
+  - tests/exact/path/test.ts   — tests for: [one sentence]
+```
+
+Rules:
+- Each file has one clear responsibility — if you can't describe it in one sentence, split the file
+- Files that change together should live together (split by responsibility, not layer)
+- This map is what informs task decomposition — each task should produce self-contained changes
+- In existing codebases: follow established patterns; only restructure files if a file is genuinely unwieldy and the split is included as its own task
+
+## No-Placeholders Rule (HARD BLOCKER)
+
+Every step must contain the actual content the executor needs. These are **plan failures** — never write them:
+- "TBD", "TODO", "implement later", "fill in details"
+- "Add appropriate error handling" / "add validation" / "handle edge cases" (without code)
+- "Write tests for the above" (without actual test code)
+- "Similar to Task N" — copy the code; executor may read tasks out of order
+- Steps that describe what to do without showing how (code blocks required for code steps)
+- References to types, functions, or methods not yet defined in any task in this plan
+
+If a step would require TBD content, either: (a) do the research now and fill it in, or (b) split into a research task that outputs a decision, followed by an implementation task that consumes it.
+
 ## Anti-Shallow Execution Rules (MANDATORY)
 
 Every task MUST include these fields — they are NOT optional:
@@ -185,6 +216,8 @@ Every task MUST include these fields — they are NOT optional:
 </deep_work_rules>
 
 <quality_gate>
+- [ ] File structure map written before first task (files_to_create / files_to_modify / files_for_tests)
+- [ ] No placeholder patterns: no TBD/TODO/implement-later, no "similar to Task N", no code steps without code
 - [ ] SPRINT.md files created in phase directory
 - [ ] Each plan has valid frontmatter including `files_modified:` array aggregating all `<files>` paths across tasks (consumed by execute.md intra-wave overlap checker)
 - [ ] Tasks are specific and actionable
@@ -195,10 +228,21 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Every task has `<done>` with a single observable acceptance sentence (Dimension 2 requirement)
 - [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
 - [ ] Tasks extending existing code have `<interfaces>` with relevant signatures
+- [ ] Type/name consistency: function names, types, and method signatures match across all tasks (no rename drift)
 - [ ] Dependencies correctly identified
 - [ ] Waves assigned for parallel execution
 - [ ] must_haves derived from phase goal
 </quality_gate>
+
+<self_review>
+After writing the complete plan, review the spec with fresh eyes before handing off:
+
+1. **Spec coverage** — skim each requirement in the phase goal / CONTEXT.md decisions. Can you point to a task that implements it? List any gaps; add tasks if needed.
+2. **Placeholder scan** — search the plan for the no-placeholder patterns listed above. Fix any found inline.
+3. **Type consistency** — check that function names, types, and method signatures used in later tasks match what earlier tasks define. A method called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+
+Fix issues inline. No sub-agent needed — this is a quick self-check before the sprint-checker runs.
+</self_review>
 ```
 
 ```

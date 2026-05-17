@@ -263,6 +263,21 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
   <step n="5" goal="Implement task following red-green-refactor cycle">
     <critical>FOLLOW THE STORY FILE TASKS/SUBTASKS SEQUENCE EXACTLY AS WRITTEN - NO DEVIATION</critical>
 
+    <!-- Model selection guidance — applies when dispatching sub-tasks to subagents -->
+    <model_selection>
+      Mechanical tasks (isolated function, clear spec, 1-2 files) → use cheapest/fastest model
+      Integration tasks (multi-file coordination, pattern matching) → use standard model
+      Architecture, design, or review tasks → use most capable model
+    </model_selection>
+
+    <!-- Implementer status protocol — use when completing tasks as a subagent -->
+    <status_protocol>
+      DONE: All requirements met, tests pass, committed.
+      DONE_WITH_CONCERNS: Complete but flagging doubts — describe the concern. Caller decides before review.
+      NEEDS_CONTEXT: Cannot proceed without missing information — specify exactly what is needed.
+      BLOCKED: Cannot complete despite context — describe the blocker. Caller must restructure or escalate.
+    </status_protocol>
+
     <action>Review the current task/subtask from the story file - this is your authoritative implementation guide</action>
     <action>Plan implementation following red-green-refactor cycle</action>
 
@@ -408,6 +423,65 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
     <action if="regression failures exist">HALT - Fix regression issues before completing</action>
     <action if="File List is incomplete">HALT - Update File List with all changed files</action>
     <action if="definition-of-done validation fails">HALT - Address DoD failures before completing</action>
+  </step>
+
+  <step n="9.5" goal="Two-stage automated review: spec compliance then code quality">
+    <critical>Both stages must pass before the story is marked complete. Never skip either stage. Spec compliance must pass before starting code quality review.</critical>
+
+    <output>🔍 **Two-Stage Review** — verifying before handing off to human review</output>
+
+    <!-- STAGE 1: Spec Compliance -->
+    <output>
+    ━━━ Stage 1: Spec Compliance Review ━━━
+    </output>
+    <action>Spawn a fresh spec-compliance reviewer subagent. Provide it:
+      - Full story file contents (especially Acceptance Criteria and Tasks sections)
+      - List of all modified files from the File List section
+      - Brief: "Review that every AC is satisfied in the code. Flag anything built outside spec. Flag any AC with no corresponding implementation."
+    </action>
+
+    <action>Reviewer reports one of: COMPLIANT | NON_COMPLIANT (with specific gaps listed)</action>
+
+    <check if="spec compliance reviewer reports NON_COMPLIANT">
+      <action>Fix each gap: implement missing ACs, remove any out-of-spec additions</action>
+      <action>Re-run tests to confirm fixes pass</action>
+      <action>Re-dispatch spec compliance reviewer with the same prompt</action>
+      <action>Repeat until COMPLIANT</action>
+    </check>
+
+    <output>✅ Stage 1 passed — implementation is spec-compliant</output>
+
+    <!-- STAGE 2: Code Quality Review -->
+    <output>
+    ━━━ Stage 2: Code Quality Review ━━━
+    </output>
+    <action>Spawn a fresh code quality reviewer subagent. Provide it:
+      - All modified files (from File List)
+      - Story title and ACs (context for what was being built)
+      - Project coding standards (contents of CLAUDE.md or project-context.md if available)
+      - Brief: "Review code quality: naming conventions, error handling, test coverage depth, security, performance, maintainability. Severity: High (must fix) | Medium (should fix) | Low (note only)."
+    </action>
+
+    <action>Reviewer reports one of: APPROVED | APPROVED_WITH_NOTES | CHANGES_REQUIRED (severity breakdown)</action>
+
+    <check if="code quality reviewer reports CHANGES_REQUIRED (High severity issues)">
+      <action>Fix all High-severity issues</action>
+      <action>Re-run tests to confirm fixes pass</action>
+      <action>Re-dispatch code quality reviewer with the same prompt</action>
+      <action>Repeat until APPROVED or APPROVED_WITH_NOTES</action>
+    </check>
+
+    <check if="Medium-severity issues exist">
+      <action>Fix Medium-severity issues when the fix is straightforward and low-risk</action>
+      <action>Log unfixed Medium issues in Dev Agent Record → Completion Notes for human reviewer awareness</action>
+    </check>
+
+    <output>✅ Stage 2 passed — code quality verified</output>
+
+    <output>
+    ✅ **Two-stage review complete** — story is spec-compliant and quality-approved.
+       Ready for human review.
+    </output>
   </step>
 
   <step n="10" goal="Completion communication and user support">
