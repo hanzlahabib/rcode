@@ -10,9 +10,9 @@ Execute scaffold-milestone workflow
 </objective>
 
 <execution_context>
-@.rihal/workflows/scaffold-milestone.md
+@rihal/workflows/scaffold-milestone.md
 </execution_context>
 
 <process>
-Execute the scaffold-milestone workflow from @.rihal/workflows/scaffold-milestone.md end-to-end.
+Execute the scaffold-milestone workflow from @rihal/workflows/scaffold-milestone.md end-to-end.
 </process>
