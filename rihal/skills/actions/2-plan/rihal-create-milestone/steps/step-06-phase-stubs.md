@@ -9,7 +9,7 @@ For each milestone, list the phases it contains as **stubs** (number + name + on
 ## MANDATORY RULES
 
 - 🛑 Phase numbers follow Rihal's NN convention (01, 02, ..., 99, then 999.x for parking lot).
-- 🛑 Do NOT generate plan content here. That's `/rihal-plan-phase`.
+- 🛑 Do NOT generate plan content here. That's `/rihal-plan`.
 - 🛑 Each phase has one-sentence goal, max.
 - ⏸️ HALT at menu.
 

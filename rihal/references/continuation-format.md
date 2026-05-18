@@ -91,7 +91,7 @@ Add note that this is the last plan and what comes after:
 
 **Phase 2: Authentication** — JWT login flow with refresh tokens
 
-`/rihal-plan-phase 2`
+`/rihal-plan 2`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -120,7 +120,7 @@ Show completion status before next action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-`/rihal-plan-phase 3`
+`/rihal-plan 3`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -145,7 +145,7 @@ When there's no clear primary action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-**To plan directly:** `/rihal-plan-phase 3`
+**To plan directly:** `/rihal-plan 3`
 
 **To discuss context first:** `/rihal-discuss-phase 3`
 
@@ -222,7 +222,7 @@ User has no idea what 02-03 is about.
 ### Don't: Missing /clear explanation
 
 ```
-`/rihal-plan-phase 3`
+`/rihal-plan 3`
 
 Run /clear first.
 ```
@@ -242,7 +242,7 @@ Sounds like an afterthought. Use "Also available:" instead.
 
 ```
 ```
-/rihal-plan-phase 3
+/rihal-plan 3
 ```
 ```
 

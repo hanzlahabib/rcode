@@ -165,7 +165,7 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update secur
 ```
 Rihal > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
-▶ /rihal-validate {N}    validate test coverage
+▶ /rihal-validate-phase {N}    validate test coverage
 ▶ /rihal-verify-work {N}       run UAT
 ```
 

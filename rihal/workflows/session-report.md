@@ -212,7 +212,7 @@ Write `.planning/SESSION-REPORT-{YYYY-MM-DD-HHmmss}.md` with this structure:
 ## Next Steps
 
 - Address {count} open blocker(s) before proceeding
-- Plan next phase with `/rihal-plan-phase {next_phase}`
+- Plan next phase with `/rihal-plan {next_phase}`
 ```
 
 ## Step 8 — Print confirmation

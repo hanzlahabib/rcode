@@ -42,7 +42,7 @@ What's next?
       → /rihal-create-epics-and-stories
 
   [B] Plan the first phase in detail
-      → /rihal-plan-phase 01
+      → /rihal-plan 01
 
   [C] Review the roadmap with the team
       → /rihal-council "Is this roadmap realistic?"

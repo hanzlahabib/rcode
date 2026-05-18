@@ -294,7 +294,7 @@ CONTEXT.md written: {phase_dir}/{padded_phase}-CONTEXT.md
   Decisions captured: {answered}
   Deferred:          {remaining}
 
-Next step: /rihal-plan-phase {N}
+Next step: /rihal-plan {N}
 ```
 </step>
 

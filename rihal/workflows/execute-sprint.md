@@ -582,7 +582,7 @@ If `USER_SETUP_CREATED=true`: display `⚠️ USER SETUP REQUIRED` with path + e
 | Condition | Route | Action |
 |-----------|-------|--------|
 | summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/rihal-execute {phase}` + `/rihal-verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rihal-plan-phase {Z+1}` + `/rihal-verify-work {Z}` + `/rihal-discuss-phase {Z+1}` |
+| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rihal-plan {Z+1}` + `/rihal-verify-work {Z}` + `/rihal-discuss-phase {Z+1}` |
 | summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/rihal-complete-milestone` + `/rihal-verify-work` + `/rihal-add-phase` |
 
 All routes: `/clear` first for fresh context.

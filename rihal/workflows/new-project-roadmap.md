@@ -367,7 +367,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 **Also available:**
 - /rihal-ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /rihal-plan-phase 1 — skip discussion, plan directly
+- /rihal-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -388,7 +388,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 ---
 
 **Also available:**
-- /rihal-plan-phase 1 — skip discussion, plan directly
+- /rihal-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
