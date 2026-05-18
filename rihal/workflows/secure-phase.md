@@ -106,7 +106,7 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Task(
-  prompt="Read .rihal/agents/rihal-security-auditor.md for instructions.\n\n" +
+  prompt="Read $HOME/.claude/agents/rihal-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +

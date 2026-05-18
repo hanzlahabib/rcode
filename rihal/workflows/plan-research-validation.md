@@ -232,7 +232,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list:
 ```
 Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?
 
-1. Generate UI-SPEC first — Run /rihal-ui-phase {N} then re-run /rihal-sprint-plan {N}
+1. Generate UI-SPEC first — Run /rihal-ui-phase {N} then re-run /rihal-plan {N}
 2. Continue without UI-SPEC
 3. Not a frontend phase
 
@@ -243,7 +243,7 @@ Otherwise use AskUserQuestion:
 - header: "UI Design Contract"
 - question: "Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?"
 - options:
-  - "Generate UI-SPEC first" → Display: "Run `/rihal-ui-phase {N} ${Rihal_WS}` then re-run `/rihal-sprint-plan {N} ${Rihal_WS}`". Exit workflow.
+  - "Generate UI-SPEC first" → Display: "Run `/rihal-ui-phase {N} ${Rihal_WS}` then re-run `/rihal-plan {N} ${Rihal_WS}`". Exit workflow.
   - "Continue without UI-SPEC" → Continue to step 6.
   - "Not a frontend phase" → Continue to step 6.
 

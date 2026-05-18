@@ -1,7 +1,7 @@
 # Workflow: rihal-analyze-dependencies
 
 <purpose>
-Analyze ROADMAP.md phases for dependency relationships before execution. Detect file overlap between phases, semantic API/data-flow dependencies, and suggest `Depends on` entries to prevent merge conflicts during parallel execution by `/rihal-manager`.
+Analyze ROADMAP.md phases for dependency relationships before execution. Detect file overlap between phases, semantic API/data-flow dependencies, and suggest `Depends on` entries to prevent merge conflicts during parallel execution.
 </purpose>
 
 
@@ -119,7 +119,7 @@ When writing:
 - Preserve all other phase content unchanged
 - Do not reorder phases
 
-After applying: "ROADMAP.md updated. Run `/rihal-manager` to execute phases in the correct order."
+After applying: "ROADMAP.md updated. Run `/rihal-execute-milestone` to execute phases in the correct order."
 
 ## Success Criteria
 

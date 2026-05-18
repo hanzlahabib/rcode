@@ -269,7 +269,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-autonomous` | Run remaining phases autonomously — plan → execute → verify cycles. |
 | `/rihal-research-phase <n>` | Standalone research (usually use `/rihal-plan` instead). |
 | `/rihal-analyze-dependencies` | Suggest "Depends on" entries for ROADMAP.md. |
-| `/rihal-list-phase-assumptions <n>` | Surface agent's intended approach before planning. |
 | `/rihal-profile-user` | Classify developer on 4 dimensions, produce profile artifact. |
 | `/rihal-dashboard` | Start the Diwan view-only dashboard (port 7717). |
 | `/rihal-health` | 6-point health check of the Rihal installation. |

@@ -174,7 +174,7 @@ No REVIEWS.md found for Phase {N}. Run reviews first:
 
 /rihal-review --phase {N}
 
-Then re-run /rihal-sprint-plan {N} --reviews
+Then re-run /rihal-plan {N} --reviews
 ```
 Exit workflow.
 
@@ -322,7 +322,7 @@ If "Run discuss-phase first":
   does not work correctly in nested subcontexts (#1009). Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
-  Run this command first, then re-run /rihal-sprint-plan {X} ${Rihal_WS}:
+  Run this command first, then re-run /rihal-plan {X} ${Rihal_WS}:
 
   /rihal-discuss-phase {X} ${Rihal_WS}
   ```
@@ -443,7 +443,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 ```
 
 If missing and Nyquist is still enabled/applicable — ask user:
-1. Re-run: `/rihal-sprint-plan {PHASE} --research ${Rihal_WS}`
+1. Re-run: `/rihal-plan {PHASE} --research ${Rihal_WS}`
 2. Disable Nyquist with the exact command:
    `node ".rihal/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
@@ -935,9 +935,9 @@ Verification: {Passed | Passed with override | Skipped}
 
 **Also available:**
 - cat .planning/phases/{phase-dir}/*-SPRINT.md — review plans
-- /rihal-sprint-plan {X} --research — re-research first
+- /rihal-plan {X} --research — re-research first
 - /rihal-review --phase {X} --all — peer review plans with external AIs
-- /rihal-sprint-plan {X} --reviews — replan incorporating review feedback
+- /rihal-plan {X} --reviews — replan incorporating review feedback
 
 ───────────────────────────────────────────────────────────────
 </offer_next>
@@ -958,11 +958,11 @@ stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-cod
    Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
    ```
 4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
-5. **Retry:** Restart Claude Code and run `/rihal-sprint-plan` again
+5. **Retry:** Restart Claude Code and run `/rihal-plan` again
 
 If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
 ```
-/rihal-sprint-plan N --skip-research
+/rihal-plan N --skip-research
 ```
 </windows_troubleshooting>
 

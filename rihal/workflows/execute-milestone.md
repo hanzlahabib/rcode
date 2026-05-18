@@ -89,10 +89,10 @@ Spawn `rihal-verifier` for the phase. On `FAIL` or `PARTIAL`:
 ⚠ Verify gate: Phase {N} — {FAIL|PARTIAL}
 
 Gap count: {N}
-Recommendation: Run /rihal-sprint-plan {N} --gaps to close before advancing.
+Recommendation: Run /rihal-plan {N} --gaps to close before advancing.
 
 Options:
-  1. Close gaps now (spawn /rihal-sprint-plan --gaps)  [Recommended]
+  1. Close gaps now (spawn /rihal-plan --gaps)  [Recommended]
   2. Advance anyway (log gap, continue to next phase)
   3. Abort milestone execution
 ```

@@ -10,14 +10,16 @@ Assume an adversarial/hostile perspective and audit code for weaknesses: SQL inj
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-review-adversarial <argument-here>
+/rihal-code-review --attack
 ```
 
 **Examples:**
 ```
-/rihal-review-adversarial example 1
-/rihal-review-adversarial example 2
+/rihal-code-review --attack
+/rihal-code-review --attack --scope auth/
 ```
+
+Note: This workflow is invoked internally by `/rihal-code-review --attack`. There is no standalone `/rihal-review-adversarial` command.
 
 STOP — do not proceed.
 
@@ -187,6 +189,6 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 
 ## ▶ Next Up
 
-- **Vulnerabilities found:** Address security findings, re-run `/rihal-review-adversarial`
+- **Vulnerabilities found:** Address security findings, re-run `/rihal-code-review --attack`
 - /rihal-verify-phase {phase}
 - /rihal-ship {phase}
