@@ -26,6 +26,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 /rihal-audit fix                       # → /rihal-audit-fix
 /rihal-audit work                      # → /rihal-verify-work
 /rihal-audit lens [<1-15> | all]       # → /rihal-lens-audit (15-lens methodology)
+/rihal-audit worktrees [--prune]       # → scan + report orphaned executor worktrees/branches
 ```
 
 **Examples:**
@@ -48,7 +49,7 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
 
 Parse `$ARGUMENTS`:
-- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens} → set `$TARGET`, drop it from args, jump to Step 4.
+- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens, worktrees} → set `$TARGET`, drop it from args, jump to Step 4.
 - Empty or unrecognised → continue to Step 2.
 
 ## Step 2 — Detect project state
@@ -70,9 +71,20 @@ as `(no data — skip)`.
 
 ## Step 3 — Ask user (guided mode only)
 
+Also probe for orphaned executor worktrees (add to context for Step 3 menu):
+
+```bash
+ORPHAN_WTS=$(git worktree list --porcelain \
+  | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}' \
+  | wc -l)
+ORPHAN_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null | wc -l)
+ORPHANS=$((ORPHAN_WTS + ORPHAN_BR))
+```
+
 If `$MODE` is `yolo`, skip this step and pick the most relevant target
-automatically (priority: `work` if dirty branch, else `plans` if PLANS>0
-and SUMMARIES<PLANS, else `milestone` if SUMMARIES>0, else `code`).
+automatically (priority: `worktrees` if ORPHANS>0, else `work` if dirty
+branch, else `plans` if PLANS>0 and SUMMARIES<PLANS, else `milestone` if
+SUMMARIES>0, else `code`).
 
 Otherwise call AskUserQuestion:
 
@@ -89,6 +101,7 @@ Options:
   6. auto-fix        — audit then auto-fix findings                    (uses #1–5 output)
   7. work            — verify current branch / WIP                     ({ON_BRANCH}, dirty={DIRTY})
   8. lens            — 15-lens methodology audit                       (security, perf, tests…)
+  9. worktrees       — orphaned executor worktrees/branches            ({ORPHANS} found)
   0. cancel
 ```
 
@@ -110,6 +123,7 @@ sub-workflow.
 | fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
 | lens | `rihal/` or `.rihal/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
+| worktrees | git repo exists | `Not in a git repo.` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
 (closes #234 audit-milestone halt):
@@ -153,6 +167,7 @@ Run the target's slash command, forwarding remaining args:
 | lens | `/rihal-lens-audit $REST_ARGS` |
 | fix | `/rihal-audit-fix $REST_ARGS` |
 | work | `/rihal-verify-work $REST_ARGS` |
+| worktrees | execute `@.rihal/workflows/audit-worktrees.md` inline |
 
 ## Step 6 — Closing summary
 

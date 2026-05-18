@@ -203,29 +203,44 @@ print(len(phantom))
 If 0 phantoms: `✓ PASS — no phantom-complete phases detected`
 If any: `⚠ WARN — {N} phantom-complete phase(s) detected. Run: /rihal-audit to inspect`
 
+**Check 10 — no orphaned executor worktrees or branches**
+
+```bash
+ORPHAN_WTS=$(git worktree list --porcelain \
+  | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}' \
+  | wc -l 2>/dev/null || echo 0)
+ORPHAN_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null | wc -l || echo 0)
+ORPHANS=$((ORPHAN_WTS + ORPHAN_BR))
+echo "$ORPHANS"
+```
+
+If `ORPHANS` is 0: `✓ PASS — no orphaned executor worktrees or branches`
+If `ORPHANS > 0`: `⚠ WARN — ${ORPHANS} orphaned worktree-agent-* artifact(s) from a previous /rihal-execute. Run: /rihal-audit worktrees --prune`
+
 ---
 
 ## Step 7 — Count results and print final summary
 
 **Action:** Count all pass/fail/warn results and display overall status.
 
-Total: `{N}/9 checks passed`
+Total: `{N}/10 checks passed`
 
-If all 9 pass:
+If all 10 pass:
 ```
 ✓ All systems nominal — rihal is healthy
 ```
 
-If fewer than 9 pass:
+If fewer than 10 pass:
 ```
-⚠ {N}/9 checks passed — {M} issue(s) found
+⚠ {N}/10 checks passed — {M} issue(s) found
 Run: /rihal-update to repair installation issues
 Run: /rihal-status for project-state issues
+Run: /rihal-audit worktrees --prune to clean orphaned executor artifacts
 ```
 
 ## Success Criteria
 
-- [ ] All 9 checks executed (skip state checks if no state.json)
+- [ ] All 10 checks executed (skip state checks if no state.json)
 - [ ] Each check result printed clearly
 - [ ] Final summary shows pass/fail count
 - [ ] Repair instructions shown if any checks fail

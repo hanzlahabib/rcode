@@ -280,8 +280,13 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    When executor agents ran in worktree isolation, their commits land on temporary branches in separate working trees. After the wave completes, merge these changes back and clean up:
 
    ```bash
-   # List worktrees created by this wave's agents
-   WORKTREES=$(git worktree list --porcelain | grep "^worktree " | grep -v "$(pwd)$" | sed 's/^worktree //')
+   # IMPORTANT: only touch worktrees whose branch starts with "worktree-agent-".
+   # Claude Code's EnterWorktree names all auto-created branches with this prefix.
+   # A broad "all non-primary worktrees" grep is dangerous — it would also pick up
+   # manually-created worktrees (feature branches, other milestone workspaces, etc.)
+   # and either corrupt or delete work that wasn't part of this execution.
+   WORKTREES=$(git worktree list --porcelain \
+     | awk '/^worktree /{path=$2} /^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print path}')
 
    for WT in $WORKTREES; do
      # Get the branch name for this worktree
@@ -357,6 +362,26 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    **If `workflow.use_worktrees` is `false`:** Agents ran on the main working tree — skip this step entirely.
 
    **If no worktrees found:** Skip silently — agents may have been spawned without worktree isolation.
+
+   **Post-cleanup verification (mandatory):** After the loop, confirm no `worktree-agent-*` worktrees or branches remain:
+
+   ```bash
+   LEFTOVER_WT=$(git worktree list --porcelain \
+     | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}')
+   LEFTOVER_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null)
+
+   if [ -n "$LEFTOVER_WT" ] || [ -n "$LEFTOVER_BR" ]; then
+     echo "⚠ WORKTREE LEAK: leftover executor artifacts detected after cleanup:"
+     [ -n "$LEFTOVER_WT" ] && echo "  Worktrees: $LEFTOVER_WT"
+     [ -n "$LEFTOVER_BR" ] && echo "  Branches:  $LEFTOVER_BR"
+     echo "  Run: /rihal-audit worktrees  to inspect and prune"
+   else
+     echo "✓ Worktree cleanup verified — no executor artifacts remain"
+   fi
+   ```
+
+   Do NOT silently skip this check. If leaks are found, surface them — the user's next
+   `/rihal-status` should not show surprise worktrees from a previous execution.
 
 5.6. **Post-wave shared artifact update (worktree mode only):**
 
