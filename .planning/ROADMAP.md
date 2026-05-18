@@ -33,7 +33,7 @@ Started: 2026-05 · Current
 
 ## Phase 20 — Dashboard UX Quick Wins
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 20 or edit directly._
+**Goal:** Fix five dashboard UX bugs (sidebar auto-expand, duplicate `/api/files` fetch, sprint card empty-state, sidebar/Files view duplication, Tasks CTA) — net -61 lines shipped.
 
 **Status:** Complete (2026-05-02)
 
@@ -44,7 +44,7 @@ Started: 2026-05 · Current
 
 ## Phase 21 — Dashboard Data Pipeline
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 21 or edit directly._
+**Goal:** Fix two root-cause bugs preventing tasks from appearing in the dashboard and decimal phase IDs from resolving correctly (issues #590 and #591).
 
 **Status:** Planned
 

@@ -1,6 +1,6 @@
 <purpose>
 Execute all phases in the current milestone in dependency order, with verify gates between waves. Closes #738.
-Reads the ROADMAP.md to determine phase ordering, executes each phase via /rihal-execute, runs /rihal-verify after each, and surfaces blockers before advancing.
+Reads the ROADMAP.md to determine phase ordering, executes each phase via /rihal-execute, runs /rihal-verify-phase after each, and surfaces blockers before advancing.
 </purpose>
 
 <required_reading>
