@@ -40,18 +40,11 @@ const path = require('path');
  * functional). Power users running niche commands like /rihal-prfaq or
  * /rihal-ui-phase still get them — they just don't show up in the sidebar.
  */
-const SIDEBAR_COMMANDS = new Set([
-  // Navigation & status (the daily check-in)
-  'do', 'status', 'next',
-  // Core lifecycle (the workflow loop)
-  'plan', 'execute', 'ship',
-  // Strategic
-  'council',
-  // Quality gate
-  'audit', 'verify-phase',
-  // Utility
-  'note',
-]);
+// Empty — sidebar stubs with user-invocable:false block direct /rihal-* invocation
+// in Claude Code 2.x. Commands in .claude/commands/ already appear in slash autocomplete.
+// The VS Code sidebar also shows commands directly in CC 2.x, so stubs are redundant.
+// Issue #710: sidebar stubs caused "can only be invoked by Claude" error for users.
+const SIDEBAR_COMMANDS = new Set([]);
 
 function parseFrontmatter(text) {
   if (!text.startsWith('---\n')) return {};
