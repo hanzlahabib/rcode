@@ -27,6 +27,7 @@ triggers:
   - "وثيقة المتطلبات"
   - "ابدأ PRD"
   - "صمم المتطلبات"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

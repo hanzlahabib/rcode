@@ -38,6 +38,7 @@ triggers:
   - "ابني هذه الميزة"
   - "أصلح الخطأ"
   - "إعادة هيكلة"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

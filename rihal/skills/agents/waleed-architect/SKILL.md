@@ -39,6 +39,7 @@ triggers:
   - "اختر التقنية"
   - "قرار معماري"
   - "مراجعة معمارية"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

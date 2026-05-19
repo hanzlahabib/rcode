@@ -25,6 +25,7 @@ triggers:
   - "أنشئ خطة السباق"
   - "السباق التالي"
   - "جدولة السبرنت"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -37,6 +37,7 @@ triggers:
   - "مراجعة السباق"
   - "إزالة العوائق"
   - "حالة السباق"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

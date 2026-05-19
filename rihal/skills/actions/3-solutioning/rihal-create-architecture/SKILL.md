@@ -18,6 +18,7 @@ triggers:
   - "lock this technical decision"
   - "record the
   decision to use X"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

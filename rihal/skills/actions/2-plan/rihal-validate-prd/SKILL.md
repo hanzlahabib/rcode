@@ -14,6 +14,7 @@ triggers:
   - "PRD quality
   check"
   - "audit the PRD"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

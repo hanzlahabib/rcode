@@ -27,6 +27,7 @@ not-for:
   - RTL CSS flipping (use rihal-haitham for frontend RTL)
   - content translation (use a human translator)
 allowed-tools: Read, Bash, Write
+user-invocable: true
 ---
 
 ## Overview

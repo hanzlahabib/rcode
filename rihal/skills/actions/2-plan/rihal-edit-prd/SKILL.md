@@ -14,6 +14,7 @@ triggers:
   - "add a section to the PRD"
   - "revise requirements"
   - "change the scope in the PRD"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

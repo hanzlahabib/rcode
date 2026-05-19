@@ -28,6 +28,7 @@ not-for:
   - performance monitoring (use rihal-perf)
   - log aggregation setup (use rihal-khalid)
 allowed-tools: Read, Bash, Write
+user-invocable: true
 ---
 
 ## Overview

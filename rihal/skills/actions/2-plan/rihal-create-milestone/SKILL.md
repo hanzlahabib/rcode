@@ -17,6 +17,7 @@ triggers:
   - "break this project into
   milestones"
   - "roadmap for this product"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -38,6 +38,7 @@ triggers:
   - "توجيه المهمة"
   - "ترتيب التنفيذ"
   - "من يتولى"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

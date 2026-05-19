@@ -39,6 +39,7 @@ triggers:
   - "تغطية الاختبارات"
   - "خطة الاختبار"
   - "ضمان الجودة"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

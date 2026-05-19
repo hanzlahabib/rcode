@@ -41,6 +41,7 @@ triggers:
   - "محتوى تسويقي"
   - "السوق الخليجي"
   - "تحديد الجمهور"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

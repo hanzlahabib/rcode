@@ -14,6 +14,7 @@ triggers:
   - "sprint retrospective"
   - "review completed work"
   - "extract learnings from this sprint"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

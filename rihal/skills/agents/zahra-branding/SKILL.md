@@ -44,6 +44,7 @@ triggers:
   - "خطوط عربية"
   - "إرشادات العلامة"
   - "صوت العلامة"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -38,6 +38,7 @@ triggers:
   - "معايير الهندسة"
   - "تنسيق الفرق"
   - "مقاييس التسليم"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

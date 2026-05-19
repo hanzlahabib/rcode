@@ -15,6 +15,7 @@ triggers:
   - "qa this
   feature"
   - "generate integration tests"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -25,6 +25,7 @@ triggers:
   - "قسّم المتطلبات"
   - "ابني القائمة"
   - "تحليل وثيقة المتطلبات"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

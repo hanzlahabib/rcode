@@ -22,6 +22,7 @@ triggers:
   - "deviation analyzer"
   - "انحراف الخطة"
   - "تحليل الانحراف"
+user-invocable: true
 ---
 @.rihal/references/response-style.md
 

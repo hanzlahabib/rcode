@@ -37,6 +37,7 @@ triggers:
   - "استكشف الكود"
   - "خريطة الكود"
   - "ما هو في المستودع"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -13,6 +13,7 @@ triggers:
   - "generate status report"
   - "sprint progress"
   - "where are we in the sprint"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

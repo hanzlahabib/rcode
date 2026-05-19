@@ -37,6 +37,7 @@ triggers:
   - "مراجعة التصميم"
   - "تجربة الاستخدام"
   - "نظام التصميم"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

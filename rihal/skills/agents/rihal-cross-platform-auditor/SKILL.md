@@ -26,6 +26,7 @@ not-for:
   - Docker / container portability (use rihal-khalid for infra)
   - browser compatibility (use rihal-haitham)
 allowed-tools: Read, Bash, Write
+user-invocable: true
 ---
 
 ## Overview

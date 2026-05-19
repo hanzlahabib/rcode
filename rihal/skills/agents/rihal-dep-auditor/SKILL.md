@@ -26,6 +26,7 @@ not-for:
   - license compliance audits
   - bundle size analysis (use rihal-perf)
 allowed-tools: Read, Bash, Write
+user-invocable: true
 ---
 
 ## Overview

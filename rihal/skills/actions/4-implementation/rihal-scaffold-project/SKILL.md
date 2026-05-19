@@ -18,6 +18,7 @@ triggers:
   - "create from template"
   - "rihal new project"
   - "start a new rihal project"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 
