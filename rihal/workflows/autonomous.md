@@ -18,7 +18,7 @@ interpos audit (issue #221) — DO NOT regress.
 2. **NEVER skip the methodology chain on greenfield projects.** Before
    the phase loop runs, the prerequisite check (next step) MUST verify:
    - `.planning/prd.md` exists (else halt → /rihal-create-prd)
-   - ROADMAP.md has milestone structure (else halt → /rihal-create-milestone)
+   - ROADMAP.md has milestone structure (else halt → /rihal-new-milestone)
    - `.planning/epics.md` exists (else halt → /rihal-create-epics-and-stories)
    See issue #219 + #229.
 
@@ -68,7 +68,7 @@ If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with a clear message:
 
 The autonomous flow assumes a project that has already gone through:
   1. /rihal-create-prd               → produces .planning/prd.md
-  2. /rihal-create-milestone         → produces ROADMAP.md with M1..Mn
+  2. /rihal-new-milestone         → produces ROADMAP.md with M1..Mn
   3. /rihal-create-epics-and-stories → produces .planning/epics.md
   4. THEN /rihal-autonomous           ← you are here
 
