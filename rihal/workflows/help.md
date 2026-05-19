@@ -231,7 +231,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-dev-story <file>` | Execute an approved STORY by writing tests + code per AC. |
 | (internal) `check-implementation-readiness` | Guard called by `/rihal-plan` and `/rihal-execute` to verify PRD + architecture aligned before build. |
 | `/rihal-create-architecture` | Write an Architecture Decision Record (ADR). |
-| `/rihal-create-ux-design` | Realize a UX design that informs architecture and implementation. |
 | `/rihal-correct-course` | Course-correct mid-sprint when major change is discovered. |
 | `/rihal-sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal-sprint-status` | Sprint progress — stories, points, velocity, burndown. |
