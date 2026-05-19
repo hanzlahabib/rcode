@@ -1,7 +1,7 @@
 ---
 name: rihal-init
 internal: true
-description: "INTERNAL config loader — called by other skills, not by users directly. Loads module config vars from .rihal/. Install puts this in .rihal/skills/, not .claude/skills/."
+description: "INTERNAL config loader for skills. Loads .rihal/ vars; lives in .rihal/skills/ not .claude/skills/."
 argument-hint: "[--module=module_code] [--vars=var1:default1,var2] [--skill-path=/path/to/calling/skill]"
 triggers:
   - "init"
