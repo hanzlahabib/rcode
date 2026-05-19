@@ -15,7 +15,7 @@ Append-only surgical update to a single Memory Bank file. Never rewrites, never 
 
 ## Preconditions
 
-- `.rihal/memory/` exists (run `/rcode:memory-init` first)
+- `.rihal/memory/` exists (run `/rihal-memory-init` first)
 
 ## Halt conditions
 
@@ -72,7 +72,7 @@ For `change-records/`:
 
 ### Step 5 — Suggest distillate refresh
 
-If the change was to `project/`, `milestones/current.md`, or `incidents/`, suggest `/rcode:memory-distill` to refresh distillates. Optional, not enforced.
+If the change was to `project/`, `milestones/current.md`, or `incidents/`, suggest `/rihal-memory-distill` to refresh distillates. Optional, not enforced.
 
 ---
 

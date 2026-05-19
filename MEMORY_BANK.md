@@ -63,7 +63,7 @@ Each file has a single, focused responsibility. No nested duplication.
 Top-level directory of the Memory Bank. Lists every other file with a one-line summary. Read first by every agent session.
 
 ### `project/stack.md`
-Inventory of languages, frameworks, libraries, services. Populated from `package.json`, `requirements.txt`, `docker-compose.yml`, `helm/`. Refreshed by `/rcode:memory-update` when stack changes.
+Inventory of languages, frameworks, libraries, services. Populated from `package.json`, `requirements.txt`, `docker-compose.yml`, `helm/`. Refreshed by `/rihal-memory-update` when stack changes.
 
 ### `project/decisions.md`
 Append-only log. Each entry: date, decision, rationale, alternatives considered, who decided. Lighter than full ADRs — one paragraph each. Heavier decisions get their own ADR file referenced from here.
@@ -93,7 +93,7 @@ One file per resolved incident. Format follows existing Rihal change-record temp
 Ports the verified Rihal change-record format from `template/docs/change_records/`. Each change record: ID, date, requester, owner, category, type, description, risk, deployment, approval, rollback, verification, outcome.
 
 ### `distillates/`
-**Generated, not hand-edited.** Produced by `/rcode:memory-distill`. Lossless compression of source files for fast LLM context loading. Re-run when source files change.
+**Generated, not hand-edited.** Produced by `/rihal-memory-distill`. Lossless compression of source files for fast LLM context loading. Re-run when source files change.
 
 ---
 
@@ -157,7 +157,7 @@ A typical session loads ~5K tokens of Memory Bank context and is fully oriented 
 ## Phase 3 deliverables (forward reference)
 
 When Phase 3 completes, this spec becomes the implemented system. Acceptance:
-- A fresh repo running `/rcode:memory-init` produces the directory structure above
+- A fresh repo running `/rihal-memory-init` produces the directory structure above
 - The Diwan dashboard renders a `/memory` view with file tree + previews
 - Distillates regenerate when sources change
 - All Phase 5 and 6 skills declare and honour their Memory Bank hooks

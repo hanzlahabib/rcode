@@ -1,5 +1,5 @@
 ---
-name: rcode:memory-distill
+name: rihal-memory-distill
 description: Regenerate Memory Bank distillates — token-optimised lossless compressions for fast LLM context loading
 argument-hint: "[--force] [--target {project|stack|all}]"
 allowed-tools:

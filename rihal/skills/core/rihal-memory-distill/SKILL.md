@@ -5,7 +5,7 @@ description: >
   compressions of Memory Bank source files for fast LLM context loading.
   Produces `distillates/project.distillate.md` and `distillates/stack.distillate.md`.
   Activates when the user says "distill memory bank", "regenerate distillates",
-  "refresh distillates", "/rcode:memory-distill", "compress memory bank",
+  "refresh distillates", "/rihal-memory-distill", "compress memory bank",
   "memory bank ko compress karo". Do NOT use for: bootstrap (use rcode-memory-init),
   surgical updates (use rcode-memory-update), or finding stale entries (use
   rcode-memory-audit). For non-Memory-Bank document compression, use the
@@ -16,7 +16,7 @@ triggers:
   - "refresh distillates"
   - "compress memory bank"
   - "memory bank ko compress karo"
-  - "/rcode:memory-distill"
+  - "/rihal-memory-distill"
 user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
@@ -39,7 +39,7 @@ Read the Memory Bank source files and produce two LLM-optimised distillates: a f
    ---
    generated: true
    do-not-edit: true
-   regenerate-with: /rcode:memory-distill
+   regenerate-with: /rihal-memory-distill
    source-digest: <hash>
    generated-at: <ISO datetime>
    source-files: [list of files included]
@@ -69,14 +69,14 @@ Skip notice: source files unchanged since last run — no rewrite was needed.
 ## Examples
 
 **Happy path**
-User: `/rcode:memory-distill`
+User: `/rihal-memory-distill`
 Skill: reads sources, regenerates both distillates, prints summary. ~10 seconds for a typical project.
 
 **No-op skip**
 User runs distill twice in a row without changing source files. Second run reports "source files unchanged" and exits without rewriting.
 
 **Force refresh**
-User: `/rcode:memory-distill --force`
+User: `/rihal-memory-distill --force`
 Skill: regenerates regardless of digest match. Useful when distillate format itself changes.
 
 **Negative — used on non-memory docs**

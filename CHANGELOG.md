@@ -497,7 +497,7 @@ Persistent, structured, checked-in project context. `.rihal/memory/` directory w
 - `rihal-memory-update` skill — surgical update from conversation context
 - `rihal-memory-distill` skill — regenerate token-optimised distillates
 - `rihal-memory-audit` skill — find stale entries and contradictions
-- 4 slash commands: `/rcode:memory-init`, `-update`, `-distill`, `-audit`
+- 4 slash commands: `/rihal-memory-init`, `-update`, `-distill`, `-audit`
 - 13 template files at `rihal/templates/memory/`
 - Diwan dashboard `/api/memory` endpoint + `/memory` view (additive to `server/lib/*`)
 - `MEMORY_BANK.md` specification at repo root
