@@ -226,6 +226,16 @@ html, body {
 }
 .nav-link:hover { background: var(--bg-hover); color: var(--text-secondary); }
 .nav-link.active { background: var(--bg-elev-2); color: var(--text-primary); }
+.nav-count {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-elev-2);
+  padding: 1px 6px;
+  border-radius: var(--radius-2);
+}
+.nav-link.active .nav-count { color: var(--text-secondary); background: var(--bg-hover); }
 
 /* Mobile hamburger */
 .hamburger-btn {
