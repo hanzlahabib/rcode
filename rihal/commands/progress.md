@@ -2,7 +2,7 @@
 name: rihal-progress
 description: Alias of /rihal-status --verbose — full project state dashboard with decisions, blockers, and next-step routes
 argument-hint: ""
-allowed-tools: bash, read, grep
+allowed-tools: Bash, Read, Grep
 ---
 
 <objective>
