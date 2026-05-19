@@ -14,11 +14,18 @@
 
 const { ICONS } = require('./icons');
 
+// rcode version — read once at module load; surfaced in the dashboard status bar.
+let RCODE_VERSION = '';
+try { RCODE_VERSION = require('../../../package.json').version || ''; } catch { /* version unknown */ }
+
 // Fields the client needs from the scanned state. Kept in sync with
 // store.js initial state and the view components that read it.
 function clientState(state) {
   return JSON.stringify({
     phases:           state.phaseTree           || state.raw?.phases || [],
+    projectName:      state.projectName         || '',
+    projectRoot:      state.projectRoot         || '',
+    version:          RCODE_VERSION,
     milestone:        state.raw?.milestone      || '',
     currentPhase:     state.raw?.current_phase  || null,
     currentSprint:    state.raw?.current_sprint || null,

@@ -65,6 +65,35 @@ function parseHash() {
   return { view: resolvedView, subId };
 }
 
+/** Full-width banner shown when /api/state polling is failing. */
+function OfflineBanner({ offline }) {
+  if (!offline) return null;
+  const s = 'display:flex;align-items:center;gap:var(--space-2);'
+    + 'padding:var(--space-2) var(--space-4);background:var(--red,#eb5757);'
+    + 'color:#fff;font-size:var(--text-sm);font-weight:600;';
+  return html`<div style=${s}>⚠ Dashboard offline — retrying every 30s…</div>`;
+}
+
+/** Thin IDE-style status bar: project path · rcode version · last refresh. */
+function StatusBar({ projectRoot, projectName, version, updatedAgo, offline, refreshing }) {
+  const bar = 'display:flex;align-items:center;gap:var(--space-4);height:24px;'
+    + 'padding:0 var(--space-4);background:var(--bg-elev-1);'
+    + 'border-top:1px solid var(--border-subtle);font-family:var(--font-mono);'
+    + 'font-size:var(--text-2xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;';
+  const dot = 'width:6px;height:6px;border-radius:50%;flex-shrink:0;background:'
+    + (offline ? 'var(--red,#eb5757)' : 'var(--accent-green)') + ';'
+    + (refreshing ? 'animation:pulse-dot 1s ease-in-out infinite;' : '');
+  const path = projectRoot || projectName || 'no project';
+  return html`
+    <footer style=${bar}>
+      <span style=${dot}></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;" title=${path}>${path}</span>
+      <span style="margin-left:auto;">rcode v${version || '?'}</span>
+      <span>${offline ? 'offline' : refreshing ? 'syncing…' : 'updated ' + updatedAgo}</span>
+    </footer>
+  `;
+}
+
 /** Root App component. No props needed — reads everything from the store. */
 export function App() {
   // ---- Router state ----
@@ -121,21 +150,21 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  // ---- Manual refresh ----
+  // ---- Refresh (manual + 30s poll share this) ----
   const lastScannedRef = useRef(null);
 
   const fetchAndRerender = useCallback(async () => {
-    const btn = document.getElementById('refresh-btn');
-    if (btn) btn.textContent = '↺ …';
+    setState({ refreshing: true });
     try {
       const r = await fetch('/api/state');
-      if (!r.ok) return;
+      if (!r.ok) { setState({ refreshing: false, offline: true }); return; }
       const newState = await r.json();
       lastScannedRef.current = newState.lastScanned;
       scanTimeRef.current = Date.now();
       setUpdatedAgo('just now');
+      const patch = { refreshing: false, offline: false, lastRefresh: Date.now() };
       if (newState.raw) {
-        setState({
+        Object.assign(patch, {
           phases:           newState.phaseTree            || newState.raw.phases || [],
           milestone:        newState.raw.milestone        || '',
           currentPhase:     newState.raw.current_phase    || null,
@@ -146,20 +175,16 @@ export function App() {
           last_session:     newState.raw.last_session     || null,
         });
       }
-    } catch { /* network errors ignored */ }
-    if (btn) btn.textContent = '↺ Refresh';
+      setState(patch);
+    } catch {
+      // Network failure → mark offline so the banner shows; the poll keeps retrying.
+      setState({ refreshing: false, offline: true });
+    }
   }, []);
 
   // ---- 30s auto-refresh ----
   useEffect(() => {
-    const id = setInterval(async () => {
-      try {
-        const r = await fetch('/api/state');
-        if (!r.ok) return;
-        const s = await r.json();
-        if (s && s.lastScanned !== lastScannedRef.current) await fetchAndRerender();
-      } catch { /* ignore */ }
-    }, 30000);
+    const id = setInterval(fetchAndRerender, 30000);
     return () => clearInterval(id);
   }, [fetchAndRerender]);
 
@@ -190,10 +215,11 @@ export function App() {
         document.body.classList.remove('sidebar-visible');
       }}></div>
 
-      <div class="content-area" id="main-content">
+      <div class="content-area" id="main-content" style="grid-template-rows:44px 1fr auto;">
         <${Topbar}
           projectName=${storeState.projectName || ''}
           updatedAgo=${updatedAgo}
+          refreshing=${storeState.refreshing}
           onRefresh=${fetchAndRerender}
           onToggleTheme=${toggleTheme}
           onToggleSidebar=${toggleSidebar}
@@ -201,8 +227,18 @@ export function App() {
         />
 
         <div class="main-scroll" id="main-scroll">
+          <${OfflineBanner} offline=${storeState.offline} />
           ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
         </div>
+
+        <${StatusBar}
+          projectRoot=${storeState.projectRoot}
+          projectName=${storeState.projectName}
+          version=${storeState.version}
+          updatedAgo=${updatedAgo}
+          offline=${storeState.offline}
+          refreshing=${storeState.refreshing}
+        />
       </div>
 
       <${XtermPanel} />

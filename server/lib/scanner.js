@@ -159,6 +159,8 @@ function scanState(rihalDir) {
     || state.raw?.project
     || (dirName !== '.' ? dirName : 'Unknown project');
 
+  state.projectRoot = projectDir;
+
   state.currentPhase   = state.raw?.current_phase  || null;
   state.currentSprint  = state.raw?.current_sprint || null;
   state.milestone      = state.raw?.milestone       || null;

@@ -15,7 +15,7 @@
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
 
-export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
+export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
   return html`
     <header>
       <div class="topbar-start-group">
@@ -36,8 +36,11 @@ export function Topbar({ projectName, updatedAgo, onRefresh, onToggleTheme, onTo
         </div>
       </div>
       <div class="header-actions">
-        <span class="live" id="live-dot" title="Live"></span>
-        <span id="updated-ago" class="updated-ago">${updatedAgo || 'just now'}</span>
+        <span class="live" id="live-dot" title="Live"
+          style=${refreshing ? 'animation-duration:0.7s;background:var(--accent-blue);' : ''}></span>
+        <span id="updated-ago" class="updated-ago">
+          ${refreshing ? '⟳ syncing…' : (updatedAgo || 'just now')}
+        </span>
         <button class="header-btn" id="refresh-btn" onClick=${onRefresh}>↺ Refresh</button>
         <!-- icon shows TARGET state (not current): dark→sun means "click to go light"; light→moon means "click to go dark" -->
         <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme"><${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${14}/></button>
