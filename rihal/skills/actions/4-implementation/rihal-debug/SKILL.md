@@ -44,7 +44,6 @@ If you have not completed Phase 1, you cannot propose a fix. "It seems to work" 
 Debugging is investigation, not pattern-matching. Each iteration narrows the problem space — never widens it. The skill enforces a written hypothesis, an experiment that distinguishes "yes" from "no", and a captured observation. Random fixes are not allowed — the bug must be understood before the fix is written.
 
 ## Workflow
-
 ## Phase 1 — Root Cause Investigation
 
 **BEFORE attempting ANY fix:**
