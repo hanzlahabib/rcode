@@ -175,8 +175,12 @@ export function OverviewView() {
     if (!S.memoryBank || !S.memoryBank.active) return null;
     const m = S.memoryBank.active;
     return html`
-      <section>
-        <h2 class="section-icon"><${Icon} name="brain" size=${16}/> Memory Bank</h2>
+      <section
+        class="item-clickable"
+        style="cursor:pointer;"
+        onClick=${() => { location.hash = 'memory'; }}
+      >
+        <h2 class="section-icon"><${Icon} name="brain" size=${16}/> Memory Bank →</h2>
         <div class="body">
           <div class="attr-grid">
             <div class="attr-item">
