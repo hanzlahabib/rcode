@@ -139,7 +139,11 @@ function countGlobalRihal(dir) {
 }
 
 async function main() {
-  const [, , command = 'help', ...args] = process.argv;
+  let [, , command = 'help', ...args] = process.argv;
+
+  // Normalise flag aliases → bare-word commands
+  if (command === '--help' || command === '-h') command = 'help';
+  if (command === '--version' || command === '-v') command = 'version';
 
   // Show first-run banner before dispatching — npm hides postinstall output,
   // so this is the user's first visible confirmation that the install worked.

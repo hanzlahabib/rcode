@@ -4,6 +4,20 @@ All notable changes to Rihal Code are documented here.
 
 ---
 
+## v3.6.14 (2026-05-19) — pre-release audit fixes
+
+Patch release closing gaps found during pre-announce audit pass.
+
+- **README accuracy** — corrected agent name `rihal-plan-checker → rihal-sprint-checker`, updated version ref to v3.6.x
+- **Workflow health checks** — fixed stale `10 checks` → `9 checks` in `health.md` output format
+- **CLI flags** — `rcode --help` and `rcode --version` now correctly alias to `help`/`version` subcommands instead of exiting with error
+- **CONTRIBUTING.md** — fixed stale `rihal/agents/team.yaml` path → `rihal/team.yaml`
+- **ROADMAP** — filled TBD goals for Phase 20 and Phase 21
+- **Commit scopes** — added `orchpanel` and `status` to allowed scopes in AGENTS.md
+- **Command @-includes** — corrected `execute-milestone`, `plan-milestone`, `scaffold-milestone` workflow references
+
+---
+
 ## v3.6.1 (2026-05-16) — dashboard + CLI gap fixes
 
 Patch release closing the gaps found in v3.6.0 dashboard UAT plus two `rihal-tools`

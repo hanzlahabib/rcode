@@ -10,9 +10,9 @@ Plan all phases for a milestone using parallel dependency-wave execution. Group 
 </objective>
 
 <execution_context>
-@rihal/workflows/plan-milestone.md
+@.rihal/workflows/plan-milestone.md
 </execution_context>
 
 <process>
-Execute the plan-milestone workflow from @rihal/workflows/plan-milestone.md end-to-end.
+Execute the plan-milestone workflow from @.rihal/workflows/plan-milestone.md end-to-end.
 </process>

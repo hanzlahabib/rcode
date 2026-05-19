@@ -1,6 +1,6 @@
 ---
 name: rihal-debug
-description: Root-cause debugging via the scientific method. Enforces investigate-before-fix, structured hypothesis iteration, multi-component evidence gathering, and architectural escalation after 3 failed fixes.
+description: Scientific-method debugging: investigate first, test hypotheses, escalate at 3 failures.
 triggers:
   # English
   - "debug this"
@@ -30,7 +30,6 @@ triggers:
 user-invocable: false
 ---
 @.rihal/references/karpathy-guidelines.md
-
 
 ## The Iron Law
 
@@ -137,7 +136,6 @@ If the project has Sentry (`@sentry/*` in `package.json` or `sentry-sdk` in Pyth
 - Read breadcrumbs for the chain of events leading to the error
 - Check "first seen / last seen" — recurring or one-off matters
 - Cross-reference with deployment timestamps to identify regressions
-
 ## Red Flags — STOP and return to Phase 1
 
 If you catch yourself thinking any of these:
@@ -152,17 +150,6 @@ If you catch yourself thinking any of these:
 - Each fix reveals a new problem in a different place
 
 **ALL of these mean: STOP. Return to Phase 1.**
-
-## Common Rationalizations
-
-| Excuse | Reality |
-|--------|---------|
-| "Issue is simple, don't need process" | Simple bugs have root causes too. Process is fast for simple bugs. |
-| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
-| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
-| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
-| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
-| "One more fix attempt" (after 2+) | 3+ failures = architectural problem. Escalate, don't fix again. |
 
 ## Output Format
 
@@ -209,5 +196,5 @@ Do NOT include: "tried X and it seems to work" · speculative "maybe it's cachin
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/incidents/known-issues.md` (prior debugging context), `.rihal/memory/project/stack.md` (Sentry presence, observability tools)
-- **Writes:** append root cause to `.rihal/memory/incidents/post-mortems/YYYYMMDD-<slug>.md` when resolved; remove from `known-issues.md` once fix is verified in production
+- **Reads:** `known-issues.md`, `stack.md`
+- **Writes:** append to `post-mortems/YYYYMMDD-<slug>.md`; remove from `known-issues.md` once fixed in production

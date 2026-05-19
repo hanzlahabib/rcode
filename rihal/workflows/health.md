@@ -223,16 +223,16 @@ If `ORPHANS > 0`: `⚠ WARN — ${ORPHANS} orphaned worktree-agent-* artifact(s)
 
 **Action:** Count all pass/fail/warn results and display overall status.
 
-Total: `{N}/10 checks passed`
+Total: `{N}/9 checks passed`
 
-If all 10 pass:
+If all 9 pass:
 ```
-✓ All systems nominal — rihal is healthy
+✓ All systems nominal — rihal is healthy (9/9)
 ```
 
-If fewer than 10 pass:
+If fewer than 9 pass:
 ```
-⚠ {N}/10 checks passed — {M} issue(s) found
+⚠ {N}/9 checks passed — {M} issue(s) found
 Run: /rihal-update to repair installation issues
 Run: /rihal-status for project-state issues
 Run: /rihal-audit worktrees --prune to clean orphaned executor artifacts
@@ -240,7 +240,7 @@ Run: /rihal-audit worktrees --prune to clean orphaned executor artifacts
 
 ## Success Criteria
 
-- [ ] All 10 checks executed (skip state checks if no state.json)
+- [ ] All 9 checks executed (skip state checks if no state.json)
 - [ ] Each check result printed clearly
 - [ ] Final summary shows pass/fail count
 - [ ] Repair instructions shown if any checks fail
