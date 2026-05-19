@@ -11,7 +11,7 @@ npx @hanzlaa/rcode install    # one command, zero dependencies
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
-Status: actively developed — published on npm as `@hanzlaa/rcode` v3.5.x, with an automated test suite covered by `node --test`.
+Status: actively developed — published on npm as `@hanzlaa/rcode` v3.6.x, with an automated test suite covered by `node --test`.
 
 ---
 
@@ -81,7 +81,7 @@ See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE option
 
 ```
 /rihal-council should I rewrite auth?        → 5 agents debate in parallel, 2 rounds
-/rihal-plan --research build a rental app    → researcher grounds, plan-checker verifies
+/rihal-plan --research build a rental app    → researcher grounds, sprint-checker verifies
 /rihal-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
 /rihal-status                                → phases, decisions, blockers, sessions
 ```
@@ -141,7 +141,7 @@ The design rule: **markdown owns the logic, scripts own the boundaries.** Heavy 
 
 ### Verification built in
 
-`/rihal-plan` runs `rihal-plan-checker` to validate file/symbol references before execution. `/rihal-execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion.
+`/rihal-plan` runs `rihal-sprint-checker` to validate file/symbol references before execution. `/rihal-execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion.
 
 ---
 
