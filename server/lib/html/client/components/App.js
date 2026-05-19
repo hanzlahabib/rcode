@@ -13,7 +13,7 @@
  */
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
-import { getState, setState, subscribe } from '../store.js';
+import { getState, setState, subscribe, registerRefresh } from '../store.js';
 import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
 import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
@@ -163,9 +163,10 @@ export function App() {
     return () => clearInterval(id);
   }, [fetchAndRerender]);
 
-  // Expose manualRefresh globally for any legacy onclick="manualRefresh()" callers
+  // Register the refresh handler with the store so any component can call
+  // refresh() directly. Also keeps window._preactRefresh in sync for legacy.
   useEffect(() => {
-    window._preactRefresh = fetchAndRerender;
+    registerRefresh(fetchAndRerender);
   }, [fetchAndRerender]);
 
   // Start the global session poll and refresh the orchestrator token on boot.

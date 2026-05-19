@@ -8,7 +8,7 @@
  */
 
 import { html, useState, useCallback } from '../preact.js';
-import { useStore } from '../store.js';
+import { useStore, refresh } from '../store.js';
 import { allTasks } from '../util.js';
 import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
 import { showToast } from '../components/shared.js';
@@ -131,7 +131,7 @@ function KanbanColumn({ col, cards, onDragStart, onDragEnd, onDragOver, onDrop }
 
 // ---- Root KanbanView ----
 export function KanbanView() {
-  const { phases, activeSessions } = useStore();
+  const { phases, activeSessions, currentPhase, milestone } = useStore();
   const tasks = allTasks(phases);
 
   // ---- Local column state (visual DnD overrides) ----
@@ -178,7 +178,7 @@ export function KanbanView() {
 
   // ---- Manual refresh ----
   function handleSync() {
-    if (typeof window._preactRefresh === 'function') window._preactRefresh();
+    refresh();
   }
 
   function handleSessions() {
@@ -200,7 +200,18 @@ export function KanbanView() {
         </div>
         <div class="empty" style="margin:24px;">
           No stories yet.
-          <div class="empty-action">/rihal-plan to generate tasks</div>
+          ${(milestone || currentPhase) ? html`
+            <div class="empty-action">
+              ${milestone ? html`Milestone <strong>${milestone}</strong>` : null}
+              ${milestone && currentPhase ? ' · ' : null}
+              ${currentPhase ? html`Phase <strong>${currentPhase}</strong>` : null}
+              ${' is active.'}
+            </div>
+          ` : null}
+          <div class="empty-action">
+            Run <code>/rihal-plan</code> to generate sprint stories, or browse
+            planning docs in the <a href="#files">Files</a> view.
+          </div>
         </div>
       </div>
     `;
