@@ -5,7 +5,7 @@ description: >
   `rihal/templates/memory/` into `.rihal/memory/`, then asks 5 questions to
   populate the most-used files (stack, current milestone, primary stakeholder).
   Activates when the user says "init memory bank", "bootstrap memory",
-  "set up memory bank", "/rcode:memory-init", "create memory bank",
+  "set up memory bank", "/rihal-memory-init", "create memory bank",
   "memory bank initialise", "memory bank kaise banayen". Do NOT use for:
   updating an existing Memory Bank (use rcode-memory-update), regenerating
   distillates (use rcode-memory-distill), or finding stale entries (use
@@ -17,7 +17,7 @@ triggers:
   - "set up memory bank"
   - "create memory bank"
   - "memory bank initialise"
-  - "/rcode:memory-init"
+  - "/rihal-memory-init"
   - "/rihal-memory-init"
   # Roman Urdu / Hindi
   - "memory bank kaise banayen"
@@ -49,7 +49,7 @@ Initialise the `.rihal/memory/` directory in the current project. Copies the tem
    3. Current milestone name → seeds `milestones/current.md` Milestone Name
    4. Primary external stakeholder (name + role) → seeds `people/stakeholders.md`
    5. Any known production issue today → seeds `incidents/known-issues.md`
-5. **Print the summary.** Show the file tree, where to add more, and recommend running `/rcode:memory-distill` once `project/stack.md` is fleshed out.
+5. **Print the summary.** Show the file tree, where to add more, and recommend running `/rihal-memory-distill` once `project/stack.md` is fleshed out.
 6. **Update `.rihal/state.json`** to record `memory_bank.initialised_at` so the dashboard shows it as live.
 
 ## Output Format
@@ -69,18 +69,18 @@ Files still empty (fill as you go):
   • people/team.md
   • change-records/
 
-Next step: run /rcode:memory-distill to generate fast-load distillates.
+Next step: run /rihal-memory-distill to generate fast-load distillates.
 ```
 
 ## Examples
 
 **Happy path**
-User: `/rcode:memory-init`
+User: `/rihal-memory-init`
 Skill: asks 5 questions, populates files, prints summary, updates state.json. Total time: under two minutes.
 
 **Already initialised**
-User: `/rcode:memory-init` on a project that already has `.rihal/memory/INDEX.md`.
-Skill: refuses to overwrite. Lists files, shows which are still empty, suggests `/rcode:memory-update` for surgical edits.
+User: `/rihal-memory-init` on a project that already has `.rihal/memory/INDEX.md`.
+Skill: refuses to overwrite. Lists files, shows which are still empty, suggests `/rihal-memory-update` for surgical edits.
 
 **Negative — wrong skill**
 User wants to "update the stakeholder list". Do not use this skill. Use `rcode-memory-update`.

@@ -4,7 +4,7 @@ description: >
   Audit the Memory Bank for stale entries, contradictions, missing sections,
   and content that should be archived. Produces a report with severity-tagged
   findings and one-line fix suggestions. Activates when the user says
-  "audit memory bank", "check memory bank", "/rcode:memory-audit",
+  "audit memory bank", "check memory bank", "/rihal-memory-audit",
   "memory bank ka audit", "find stale entries", "is my memory bank healthy".
   Optional --fix flag patches trivial items (typos, stale dates, broken paths)
   atomically; non-trivial findings always report-only.
@@ -19,7 +19,7 @@ triggers:
   - "auto-fix memory bank"
   - "memory bank --fix"
   - "patch trivial memory drift"
-  - "/rcode:memory-audit"
+  - "/rihal-memory-audit"
   - "/rihal-memory-audit"
   # Roman Urdu / Hindi
   - "memory bank ka audit"
@@ -72,7 +72,7 @@ CRITICAL (1)
 WARN (3)
   milestones/current.md
     └─ Milestone target close was 2026-02-01 (84 days ago) but file still says "active"
-       Fix: archive via /rcode:memory-update or move to milestones/archive/
+       Fix: archive via /rihal-memory-update or move to milestones/archive/
 
   incidents/known-issues.md
     └─ Issue "SSO Safari 16 fails" — real fix was planned for M2 (closed)
@@ -80,14 +80,14 @@ WARN (3)
 
   distillates/project.distillate.md
     └─ Source digest stale — 4 source files modified since last regenerate
-       Fix: /rcode:memory-distill
+       Fix: /rihal-memory-distill
 
 INFO (2)
   project/glossary.md
     └─ Empty — no terms recorded yet
   people/team.md
     └─ Coverage table contains 3 unfilled cells
-       Fix: /rcode:memory-update with team coverage info
+       Fix: /rihal-memory-update with team coverage info
 ```
 
 ## Examples

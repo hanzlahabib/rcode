@@ -57,7 +57,7 @@ The underlying workflow files remain — `code-review` delegates to them when th
 
 ### Naming convention
 
-- New skills (Memory Bank, future engineering and real-pain skills) are conceptually `rcode-*` in branding (slash commands like `/rcode:memory-init`), but folder names stay `rihal-memory-*` for `cli/install.js` compatibility. The installer hardcodes the `rihal-` prefix at line 741 of `install.js`; renaming would break installs. Documented in [`BRAND.md`](BRAND.md).
+- New skills (Memory Bank, future engineering and real-pain skills) are conceptually `rcode-*` in branding (slash commands like `/rihal-memory-init`), but folder names stay `rihal-memory-*` for `cli/install.js` compatibility. The installer hardcodes the `rihal-` prefix at line 741 of `install.js`; renaming would break installs. Documented in [`BRAND.md`](BRAND.md).
 
 ### Slimmed (≤120 lines, detail moved to sibling `references.md`)
 
@@ -83,7 +83,7 @@ New skill primitives. None replace existing skills; they enable the persistent p
 - `rihal-memory-distill` — regenerate fast-load distillates from sources
 - `rihal-memory-audit` — find stale entries, contradictions, missing sections
 
-Slash names: `/rcode:memory-init`, `/rcode:memory-update`, `/rcode:memory-distill`, `/rcode:memory-audit`.
+Slash names: `/rihal-memory-init`, `/rihal-memory-update`, `/rihal-memory-distill`, `/rihal-memory-audit`.
 
 ---
 
@@ -141,6 +141,6 @@ If you are running rcode from before this programme:
 6. Stop calling `/rihal-check-implementation-readiness`, `/rihal-new-project-research`, `/rihal-new-project-roadmap` directly — they are internal sub-workflows now
 7. Anywhere your project references `rihal-tech-writer`, swap to `rihal-noor`
 8. Anywhere your project references `rihal-architect`, swap to `rihal-waleed`
-9. Run `/rcode:memory-init` to bootstrap the new Memory Bank for your project
+9. Run `/rihal-memory-init` to bootstrap the new Memory Bank for your project
 
 CI runs `node --test` — none of these changes break public surfaces, but if your custom workflows reference dropped surfaces, the test suite will catch missing files at install time.

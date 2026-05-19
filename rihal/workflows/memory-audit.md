@@ -33,7 +33,7 @@ fi
 
 ## Halt conditions
 
-- Memory Bank not initialised → instruct to run `/rcode:memory-init` first
+- Memory Bank not initialised → instruct to run `/rihal-memory-init` first
 
 ---
 
@@ -77,7 +77,7 @@ For `change-records/`, `incidents/post-mortems/`, `milestones/archive/`:
 For each `distillates/*.distillate.md`:
 - Read frontmatter `source-digest`
 - Recompute digest of current source files (per `rcode-memory-distill` rules)
-- If mismatch, emit a `warn` finding suggesting `/rcode:memory-distill`
+- If mismatch, emit a `warn` finding suggesting `/rihal-memory-distill`
 
 ### Step 8 — Render report
 

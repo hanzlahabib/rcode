@@ -5,7 +5,7 @@ description: >
   Adds an entry to decisions.md, appends a known issue, updates the current
   milestone, or extends the stakeholder list — without rewriting whole files.
   Activates when the user says "remember this decision", "log this decision",
-  "add this to memory bank", "update memory bank", "/rcode:memory-update",
+  "add this to memory bank", "update memory bank", "/rihal-memory-update",
   "save this to memory", "yeh memory mein add karo", or after a council
   session that produced a clear decision. Do NOT use for: initial bootstrap
   (use rcode-memory-init), regenerating distillates (use rcode-memory-distill),
@@ -17,7 +17,7 @@ triggers:
   - "add this to memory bank"
   - "update memory bank"
   - "save this to memory"
-  - "/rcode:memory-update"
+  - "/rihal-memory-update"
   - "/rihal-memory-update"
   # Roman Urdu / Hindi
   - "yeh memory mein add karo"
@@ -53,7 +53,7 @@ Append or update a single Memory Bank file based on the current conversation con
 3. **Append using the file's documented format.** Each Memory Bank file documents its own entry format at the top — follow it exactly.
 4. **Never overwrite.** If the user wants to *change* an existing entry, refuse and direct them to edit the file directly. This skill is append-only for safety.
 5. **Stamp with date** in `YYYY-MM-DD` format.
-6. **Suggest distillate refresh** if the update was substantive (`/rcode:memory-distill`).
+6. **Suggest distillate refresh** if the update was substantive (`/rihal-memory-distill`).
 
 ## Output Format
 
@@ -64,7 +64,7 @@ Append or update a single Memory Bank file based on the current conversation con
   **Decision:** Upgrade primary database to Postgres 16.4.
   **Rationale:** ...
 
-Tip: run /rcode:memory-distill to refresh the project distillate.
+Tip: run /rihal-memory-distill to refresh the project distillate.
 ```
 
 ## Examples

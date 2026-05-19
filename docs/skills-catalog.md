@@ -475,25 +475,25 @@ INTERNAL config loader — called by other skills, not by users directly. Loads 
 
 ### `rihal-memory-audit`
 
-**Triggers:** `audit memory bank`, `check memory bank`, `find stale entries`, `is my memory bank healthy`, `memory bank ka audit`, `/rcode:memory-audit`
+**Triggers:** `audit memory bank`, `check memory bank`, `find stale entries`, `is my memory bank healthy`, `memory bank ka audit`, `/rihal-memory-audit`
 
 **Source:** [`rihal/skills/core/rihal-memory-audit/SKILL.md`](../rihal/skills/core/rihal-memory-audit/SKILL.md) — 89 lines
 
 ### `rihal-memory-distill`
 
-**Triggers:** `distill memory bank`, `regenerate distillates`, `refresh distillates`, `compress memory bank`, `memory bank ko compress karo`, `/rcode:memory-distill`
+**Triggers:** `distill memory bank`, `regenerate distillates`, `refresh distillates`, `compress memory bank`, `memory bank ko compress karo`, `/rihal-memory-distill`
 
 **Source:** [`rihal/skills/core/rihal-memory-distill/SKILL.md`](../rihal/skills/core/rihal-memory-distill/SKILL.md) — 88 lines
 
 ### `rihal-memory-init`
 
-**Triggers:** `init memory bank`, `bootstrap memory`, `set up memory bank`, `create memory bank`, `memory bank initialise`, `memory bank kaise banayen`, `/rcode:memory-init`
+**Triggers:** `init memory bank`, `bootstrap memory`, `set up memory bank`, `create memory bank`, `memory bank initialise`, `memory bank kaise banayen`, `/rihal-memory-init`
 
 **Source:** [`rihal/skills/core/rihal-memory-init/SKILL.md`](../rihal/skills/core/rihal-memory-init/SKILL.md) — 78 lines
 
 ### `rihal-memory-update`
 
-**Triggers:** `remember this decision`, `log this decision`, `add this to memory bank`, `update memory bank`, `save this to memory`, `yeh memory mein add karo`, `/rcode:memory-update`
+**Triggers:** `remember this decision`, `log this decision`, `add this to memory bank`, `update memory bank`, `save this to memory`, `yeh memory mein add karo`, `/rihal-memory-update`
 
 **Source:** [`rihal/skills/core/rihal-memory-update/SKILL.md`](../rihal/skills/core/rihal-memory-update/SKILL.md) — 74 lines
 

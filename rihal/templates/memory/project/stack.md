@@ -1,6 +1,6 @@
 # Stack — `{{PROJECT_NAME}}`
 
-Inventory of languages, frameworks, libraries, and services. Refreshed via `/rcode:memory-update` when stack changes.
+Inventory of languages, frameworks, libraries, and services. Refreshed via `/rihal-memory-update` when stack changes.
 
 ---
 

@@ -41,7 +41,7 @@ If `INDEX.md` exists:
 - List every file under `.rihal/memory/`
 - For each, count non-template lines (lines that don't start with `<!--` or contain `_(...)_` placeholders)
 - Print which files are empty / template-only and which are populated
-- Suggest `/rcode:memory-update` for surgical edits and exit
+- Suggest `/rihal-memory-update` for surgical edits and exit
 
 ### Step 2 — Copy templates
 
@@ -90,7 +90,7 @@ Add or update the `memory_bank` block in `.rihal/state.json`:
 Show:
 - File tree of `.rihal/memory/`
 - Files seeded vs files still empty
-- Suggested next command: `/rcode:memory-distill`
+- Suggested next command: `/rihal-memory-distill`
 
 ---
 

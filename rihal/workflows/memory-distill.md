@@ -20,7 +20,7 @@ Regenerate Memory Bank distillates with lossless compression. Idempotent.
 
 ## Halt conditions
 
-- `.rihal/memory/` missing → instruct to run `/rcode:memory-init` first
+- `.rihal/memory/` missing → instruct to run `/rihal-memory-init` first
 - All sources empty (only template placeholders) → warn and exit; no point distilling empty content
 
 ---
@@ -70,7 +70,7 @@ For each target distillate, write:
 ---
 generated: true
 do-not-edit: true
-regenerate-with: /rcode:memory-distill
+regenerate-with: /rihal-memory-distill
 source-digest: <hash>
 generated-at: <ISO datetime>
 source-files:

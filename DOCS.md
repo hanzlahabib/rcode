@@ -135,7 +135,7 @@ This is the first command for every project. It detects state (fresh / existing-
 ### Bootstrap your Memory Bank
 
 ```
-/rcode:memory-init
+/rihal-memory-init
 ```
 
 Asks 5 questions, populates `.rihal/memory/` with the project goal, stack, milestone, primary stakeholder, and any known production issue. Future agent sessions read this on entry.
@@ -232,10 +232,10 @@ The most important rcode concept. Persistent, structured, checked-in project con
 
 | Command | Purpose |
 |---|---|
-| `/rcode:memory-init` | Bootstrap — copy templates, ask 5 questions, populate seed files |
-| `/rcode:memory-update` | Surgical append to a Memory Bank file from conversation context |
-| `/rcode:memory-distill` | Regenerate `distillates/*.distillate.md` after sources change |
-| `/rcode:memory-audit` | Find stale entries, contradictions, missing sections |
+| `/rihal-memory-init` | Bootstrap — copy templates, ask 5 questions, populate seed files |
+| `/rihal-memory-update` | Surgical append to a Memory Bank file from conversation context |
+| `/rihal-memory-distill` | Regenerate `distillates/*.distillate.md` after sources change |
+| `/rihal-memory-audit` | Find stale entries, contradictions, missing sections |
 
 ### Token budget
 
@@ -353,7 +353,7 @@ Grouped by purpose. See `docs/REFERENCE.md` and `docs/commands.md` for the full 
 
 ### Memory Bank (4)
 
-`/rcode:memory-init` · `/rcode:memory-update` · `/rcode:memory-distill` · `/rcode:memory-audit`
+`/rihal-memory-init` · `/rihal-memory-update` · `/rihal-memory-distill` · `/rihal-memory-audit`
 
 ### Capture (5)
 
@@ -617,7 +617,7 @@ node .rihal/bin/rihal-tools.cjs state read
 
 ### Memory Bank initialisation pointer
 
-After `/rcode:memory-init`, `state.json` records:
+After `/rihal-memory-init`, `state.json` records:
 
 ```json
 {
@@ -648,7 +648,7 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 
 ```
 /rihal-init
-/rcode:memory-init       # bootstrap memory bank from current state
+/rihal-memory-init       # bootstrap memory bank from current state
 /rihal-scan              # codebase audit (Dalil)
 /rihal-status            # current phase + decisions
 ```
@@ -666,7 +666,7 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 ```
 /rihal-harden          # invoke the security checklist skill
 /rihal-secure-phase 4  # threat-model verify phase 4
-/rcode:memory-update remember: tenant isolation now enforced via RLS
+/rihal-memory-update remember: tenant isolation now enforced via RLS
 ```
 
 ### Code review before merge
@@ -792,7 +792,7 @@ Or use a different port: `PORT=9000 node server/dashboard.js`.
 
 ### `/api/memory` returns `exists: false` even though I have a `.rihal/memory/` directory
 
-The scanner looks for `.rihal/memory/INDEX.md`. If you copied templates manually without an `INDEX.md`, run `/rcode:memory-init` to generate it.
+The scanner looks for `.rihal/memory/INDEX.md`. If you copied templates manually without an `INDEX.md`, run `/rihal-memory-init` to generate it.
 
 ### Skill doesn't trigger on the expected phrase
 
