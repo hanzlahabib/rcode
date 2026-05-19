@@ -1,60 +1,77 @@
+# SUMMARY.md Template
+
+Each plan or sprint task produces a SUMMARY.md when it completes. The summary is the unit of work's lasting record — what was done, why, what remains, what other work it affects.
+
+## Frontmatter
+
+```yaml
 ---
-phase: "{{phase_id}}"
-status: complete
-closed_at: "{{closed_at}}"
+phase: NN
+plan: NN.M             # if applicable
+sprint: N              # if applicable
+story_id: NN.M         # if dev-story produced this
+generated: <ISO date>
+status: complete | partial | blocked
+verified: false        # flips to true after /rihal:verify-work passes
 ---
+```
 
-# Phase Summary — {{phase_name}}
+## Sections
 
-<!-- P2: Omit any section that has nothing substantive to say. An empty section is worse than no section. -->
+### One-liner
 
-**Phase ID:** {{phase_id}}
-**Closed:** {{closed_at}}
-**Sprint:** SPRINT.md
+A single line describing what was accomplished. Goes into `/rihal:progress` recent-work bullets, council recaps, milestone summaries. Be specific:
 
-## Outcomes
+> ❌ "Added some dashboard improvements"
+> ✅ "Wired live engagement metrics to dashboard top-3 tweets card; updates every 30s via SSE"
 
-- {{what was built, in user-visible terms}}
+### Outcomes
 
-## Decisions Made
+What changed as a result of this work, observable from outside:
 
-<!-- Omit if no decisions were made that aren't already in SPRINT.md -->
-- {{key choices and their rationale}}
+- ...
 
-## Deviations from Plan
+### Files touched
 
-<!-- Omit if execution matched the plan exactly -->
-- {{anything that diverged from SPRINT.md and why}}
+```
+src/dashboard/Card.tsx        new
+src/dashboard/index.tsx       modified — added engagement subscription
+src/lib/sse.ts                new — SSE client wrapper
+test/dashboard.test.ts        new — 4 tests
+```
 
-## Issues Encountered
+### Decisions
 
-<!-- Omit if no tasks were pruned, escalated, or skipped -->
-- {{tasks pruned, escalated, or skipped}}
+Decisions made during execution that aren't already in `state.decisions[]`:
 
-## Patterns Established
+- **<decision>**: chose A over B because <one-line reason>. Tradeoff: <what we gave up>.
 
-<!-- Omit if no new patterns were introduced. List architectural/coding patterns future phases should follow. -->
-<!-- Example: "All service errors now wrap in ServiceError(code, message) — see auth.service.ts:42" -->
-- {{new pattern introduced by this phase and where it lives}}
+### Issues encountered
 
-## Provides
+Problems hit during execution and how they were resolved:
 
-<!-- What this phase exposes for future phases to build on. Be specific: function names, API endpoints, data models, config keys. -->
-<!-- Example: "UserRepository.findByEmail() — src/repositories/user.repo.ts" -->
-- {{what future phases can reuse from this phase}}
+- **<problem>**: <one-line description>. Resolved by <action>. Time spent: <approx>.
 
-## Requires
+If a problem was NOT resolved, it goes here AND becomes a follow-up filed below.
 
-<!-- What this phase consumed from prior phases. Helps trace dependency chains. -->
-<!-- Example: "Database connection from Phase 3 (src/db/connection.ts)" -->
-- {{what this phase depended on from earlier phases}}
+### Follow-ups
 
-## Affects
+GH issues filed (or to file) for work that this story surfaced but didn't ship:
 
-<!-- Downstream phases or components that may be impacted by what changed here. -->
-<!-- Example: "Phase 9 (checkout flow) — depends on Cart model introduced here" -->
-- {{phases or components that should re-verify after this phase}}
+- #N — <title>
+- (to file) — <description>
 
-## Hand-off
+### Verification
 
-Next phase: {{next phase id and goal}}
+How a verifier confirms this story is actually done:
+
+- Run `<command>`, expect `<output>`
+- Open `<UI element>`, click `<button>`, observe `<state change>`
+
+This block feeds into UAT.md when the phase completes.
+
+### Status
+
+- **complete** — all acceptance criteria green, follow-ups filed.
+- **partial** — some AC green, others deferred. Document which AC are open.
+- **blocked** — couldn't proceed. Owner of unblock + ETA.

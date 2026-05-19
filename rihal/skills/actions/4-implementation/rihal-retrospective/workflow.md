@@ -3,6 +3,18 @@
 **Goal:** Post-epic review to extract lessons and assess success.
 
 **Your Role:** Scrum Master facilitating retrospective.
+
+## State-sync rule (NO EXCEPTIONS)
+
+After this workflow writes any `.planning/` artifact (ROADMAP.md, epics.md, sprint-*.md, SUMMARY.md, etc.) or updates phase/story status:
+
+```bash
+node .rihal/bin/rihal-tools.cjs state sync --from-disk
+```
+
+This keeps `.rihal/state.json` in sync with disk — `/rihal:progress`, `/rihal:status`, and `/rihal:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+
+---
 - No time estimates — NEVER mention hours, days, weeks, months, or ANY time-based predictions. AI has fundamentally changed development speed.
 - Communicate all responses in {communication_language} and language MUST be tailored to {user_skill_level}
 - Generate all documents in {document_output_language}

@@ -17,10 +17,10 @@ Open `rihal/brain/sources.yaml`. Replace the two `<PLACEHOLDER>` entries with th
 ## Tag the current state
 
 ### ☐ 3. Tag `v2.1.0`
-M2.5 (rebuilt /progress and /status) is on main but untagged. Run:
+M2.5 (rebuilt `/progress` and `/status`) is on main. If the tag was missed, run:
 ```bash
 git checkout main && git pull
-git tag -a v2.1.0 -m "v2.1.0 — rebuilt /progress and /status"
+git tag -a v2.1.0 -m "v2.1.0 — Progress/Status CLI rebuild"
 git push origin v2.1.0
 ```
 Once #165 is fixed, `release.yml` will auto-publish. If #165 isn't fixed, publish manually with `gh release create v2.1.0 ...` (see how v2.0.0 was done).
@@ -46,13 +46,13 @@ Run `claude` in `/tmp/rihal-demo`. Confirm the 55 skills, 44 agents, 93 commands
 ### ☐ 6. Show the golden path — 7 skills end-to-end
 Demo flow, in this order:
 
-1. `/rihal-scaffold-project` — show project init
-2. `/rihal-create-prd` — ask a short PRD question; demo the halt-at-menu discovery (this is the #124 fix in action)
-3. `/rihal-create-milestone` — turn the PRD into a roadmap with binary kill criteria (the #134 step files show their value here)
-4. `/rihal-create-epics-and-stories` — decompose M1 into stories
-5. `/rihal-sprint-planning` — demo the capacity gate (asks for devs/PTO/velocity — #127 in action)
-6. `/rihal-dev-story` — implement one story
-7. `/rihal-progress` — show the Route A/B/C next-up menu (M2.5 rebuild)
+1. `/rihal:scaffold-project` — show project init
+2. `/rihal:create-prd` — ask a short PRD question; demo the halt-at-menu discovery (this is the #124 fix in action)
+3. `/rihal:create-milestone` — turn the PRD into a roadmap with binary kill criteria (the #134 step files show their value here)
+4. `/rihal:create-epics-and-stories` — decompose M1 into stories
+5. `/rihal:sprint-planning` — demo the capacity gate (asks for devs/PTO/velocity — #127 in action)
+6. `/rihal:dev-story` — implement one story
+7. `/rihal:progress` — show the Route A/B/C next-up menu (M2.5 — CLI-rendered)
 
 ### ☐ 7. Show the brain
 ```bash
@@ -87,7 +87,7 @@ Depending on audience:
 
 ## Fallback plan — if something breaks live
 
-- `/rihal-progress` on the scratch dir gives an honest "here's where we are" even if a skill misfires.
+- `/rihal:progress` on the scratch dir gives an honest "here's where we are" even if a skill misfires.
 - `rihal-tools state read` always works as a ground-truth fallback.
 - If a slash command misfires, show the rule text — e.g. `cat rihal/skills/_shared/no-autonomous-bypass.md`. The rule itself is demo-worthy; watching the agent enforce it is the bonus.
 

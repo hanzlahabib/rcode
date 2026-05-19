@@ -193,7 +193,7 @@ Pipelines aren't just "call a bunch of agents in order." They're **contracts** �
 
 ```mermaid
 graph TD
-    Start([User: /rihal-feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
+    Start([User: /rihal:feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
     Load --> A1["→ Consulting Hussain-PM..."]
     A1 --> R1[PM response:<br/>scope, PRD, success metrics]
     R1 --> A2["→ Handing to Waleed..."]
@@ -349,17 +349,17 @@ Because CRUD is where projects break:
 
 These give you one assistant. Rihal Code gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want Rihal Code.
 
-### vs other skill-file-driven AI agent frameworks
+### What makes Rihal Code different
 
-What's distinctive in Rihal Code:
+Defining traits that separate Rihal Code from adjacent skill-driven AI methodology tools:
 
-- **Zero npm dependencies** — Rihal's installer is pure Node stdlib; no transitive packages to audit
-- **Multi-editor native** — installs to Claude, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously
-- **Atomic writes + verification** — Rihal writes state files atomically (tempfile + fsync + rename) and verifies the manifest after install to catch partial installs
-- **Timestamped uninstall backup** — creates a tar.gz before any destructive operation
-- **Config cascade with user-level** — `~/.rihal-code/defaults.json` so you configure identity once per machine
-- **Cultural framing** — bilingual Arabic-English from day one; Roman Urdu / Hindi verb dictionaries shipped
-- **Pipeline streaming protocol** — shows each agent's response live with handoff lines; no batched wall of text
+- **Zero npm dependencies** — pure Node stdlib installer; no `@clack/prompts` or similar runtime deps to pull on install
+- **Multi-editor native** — installs to Claude Code, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously, not Claude-only
+- **Atomic writes + verification** — state files are written atomically (tempfile + fsync + rename) with manifest verification after install to catch partial states
+- **Timestamped uninstall backup** — every destructive operation creates a tar.gz first
+- **Config cascade with user-level** — `~/.rihal-code/defaults.json` lets you configure identity once per machine, then per-project overrides
+- **Cultural framing** — bilingual Arabic-English from day one; Arabic agent names with cultural identity baked in
+- **Pipeline streaming protocol** — each agent's response surfaces live with handoff lines; no batched wall of text
 
 ### vs generic AI agent frameworks (LangGraph, CrewAI, AutoGen)
 
@@ -393,7 +393,7 @@ If your project is under 10 files or will be thrown away in a week, Rihal Code i
 
 ```
 1. Kickoff
-   /rihal-project "name"
+   /rihal:project "name"
    → Sadiq → Waleed → Ahmed → PM → Zahra → Layla → Nasser
    → .rihal/phases/phase-01/brief.md
    → .rihal/decisions/001-stack.md
@@ -401,32 +401,32 @@ If your project is under 10 files or will be thrown away in a week, Rihal Code i
    → .rihal/artifacts/design-system/
 
 2. Plan a sprint
-   /rihal-kickoff (for a new phase inside an existing project)
+   /rihal:kickoff (for a new phase inside an existing project)
    → .rihal/phases/phase-{n}/sprints.md
 
 3. Build features
-   /rihal-feature "description"
+   /rihal:feature "description"
    → Hussain-PM → Waleed → Layla → Haitham + Yousef → Fatima → Khalid
    → Code committed, tests passing, deployed
 
 4. UI work
-   /rihal-ui "task"
+   /rihal:ui "task"
    → Zahra → Layla → Haitham → Fatima
 
 5. Strategic questions
-   /rihal-council "question"
+   /rihal:council "question"
    → 13 agents sequential, Noor synthesizes
 
 6. Context reset (as needed)
-   /rihal-progress then manually compact active.md
+   /rihal:progress then manually compact active.md
    → .rihal/context/active.md
 
 7. Bug hunting
-   /rihal-fix "issue"
+   /rihal:fix "issue"
    → Systematic debug, root cause, fix, regression test
 
 8. Quick tasks
-   /rihal-quick "task"
+   /rihal:quick "task"
    → One-shot atomic commit
 
 9. GitHub sync

@@ -20,10 +20,10 @@ The `999.x` convention fixes all three: parking-lot items have real numeric iden
 
 ### Capturing a parking-lot item
 
-Use `/rihal-plant-seed` — it writes into ROADMAP.md under the parking-lot section AND appends to `state.phases[]` with `status: parking-lot`.
+Use `/rihal:plant-seed` — it writes into ROADMAP.md under the parking-lot section AND appends to `state.phases[]` with `status: parking-lot`.
 
 ```
-Backlog (999.x — promotable with /rihal-state promote-backlog):
+Backlog (999.x — promotable with /rihal:state promote-backlog):
 
   999.1  Cross-post to LinkedIn         — deferred: requires LinkedIn OAuth
   999.2  Auto-DM feature                — deferred: abuse risk
@@ -56,7 +56,7 @@ for p in json.load(sys.stdin).get('state', {}).get('phases', []):
 "
 ```
 
-Or, simpler: `/rihal-progress` includes parking-lot items in its phase listing, labelled as parking-lot when their number matches `999.x`.
+Or, simpler: `/rihal:progress` includes parking-lot items in its phase listing, labelled as parking-lot when their number matches `999.x`.
 
 ---
 
@@ -64,7 +64,7 @@ Or, simpler: `/rihal-progress` includes parking-lot items in its phase listing, 
 
 - Parking-lot items use decimal sub-numbering: `999.1`, `999.2`, ..., `999.99`. No gaps needed — increment by 1.
 - When promoting, pick any available integer phase number (`07`, `12`, `73`). Do not reuse `999.5` for a new parking-lot item after it's been promoted; allocate `999.6` next.
-- Decimal sub-numbering is also available for **urgent insertion** (e.g. `07.1` slotted between `07` and `08`) — see `/rihal-insert-phase` for that flow. Different tool, same numeric grammar.
+- Decimal sub-numbering is also available for **urgent insertion** (e.g. `07.1` slotted between `07` and `08`) — see `/rihal:insert-phase` for that flow. Different tool, same numeric grammar.
 
 ---
 
@@ -73,21 +73,17 @@ Or, simpler: `/rihal-progress` includes parking-lot items in its phase listing, 
 Because parking-lot items become active phases. Keeping them in the same data structure means:
 
 - Zero migration when we promote (`promoted_from` is just metadata).
-- `/rihal-progress` sees everything in one pass — no separate loader.
+- `/rihal:progress` sees everything in one pass — no separate loader.
 - CODEOWNERS rules, reviews, and audit flows work on parking-lot items out of the box.
 
 ---
 
-## Why 999.x
+## Why this specific number
 
-Backlog items need a stable home that won't conflict with active phase numbers. `999.1`, `999.5` etc. work because:
+`999.x` works because:
 
-- 999 is far above any realistic milestone phase count, so no collisions
-- Decimal-suffixed (`999.1`) keeps backlog items orderable and promotable to a real phase number when prioritised
-- `roadmap list-phases` filters them visually — they sort to the bottom and signal "not active work"
+- `999` is far above any plausible real phase number — no collision risk with active milestones.
+- The decimal sub-numbering (`999.1`, `999.2`, …) preserves order and makes parking-lot items individually addressable.
+- When promoted, the integer phase number it lands on (e.g. `07`) is unrelated to the parking-lot id, so the promotion doesn't disturb other phase numbering.
 
-The convention has been validated across dozens of projects over a year of practical use.
-
-## Not for hot-fixes
-
-Parking lot is for **promotable backlog** — work that *might* be picked up. For **active hot-fixes** (urgent fixes that need their own scope while a phase is mid-flight), use **decimal sub-phases** (e.g. `100.1`, `100.2`) — see [`docs/phase-numbering.md`](phase-numbering.md).
+The convention has been validated across multiple project lifecycles in adjacent tooling that solved the same problem.
