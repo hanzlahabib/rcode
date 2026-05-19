@@ -27,6 +27,16 @@ let _state = {
   workstreams:      _seed.workstreams      || [],
   pendingHandoff:   _seed.pendingHandoff   || null,
   memoryBank:       _seed.memoryBank       || null,
+  // Environment info — surfaced in the bottom status bar.
+  projectName:      _seed.projectName      || '',
+  projectRoot:      _seed.projectRoot      || '',
+  version:          _seed.version          || '',
+  // Refresh lifecycle: refreshing flips true during a poll/fetch; offline is
+  // true when /api/state fails; lastRefresh is the ms timestamp of the last
+  // successful fetch (null until the first one completes).
+  refreshing:       false,
+  offline:          false,
+  lastRefresh:      null,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
   // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
