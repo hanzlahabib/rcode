@@ -131,7 +131,7 @@ User types:  /rihal-prfaq
 | Add a new `/rihal-something` slash command | Create `rihal/commands/something.md` pointing to a workflow or skill |
 | Change the steps in an existing command | Edit the workflow it points to |
 | Improve how a persona thinks (Hanzla, Waleed, etc.) | Edit `rihal/skills/agents/<name>/SKILL.md` or `rihal/agents/<name>.md` |
-| Add a new agent to `/rihal-council` | Edit `rihal/agents/team.yaml` + add agent file |
+| Add a new agent to `/rihal-council` | Edit `rihal/team.yaml` + add agent file |
 | Improve a complex multi-stage task (PRFAQ, code review, etc.) | Edit the skill's stage reference files |
 | Add a new skill triggered by natural language | Create `rihal/skills/actions/<category>/<name>/SKILL.md` — no command file needed if slash is not required |
 | Fix a broken `@-include` reference | Check that the target file exists at `.rihal/<path>` after install |
