@@ -76,6 +76,26 @@ export function subscribe(fn) {
 }
 
 /**
+ * Refresh handler bridge.
+ *
+ * App owns the actual /api/state fetch (fetchAndRerender). It registers that
+ * function here on mount so any component can trigger a refresh via refresh()
+ * without reaching for a window global. `window._preactRefresh` is kept in
+ * sync for any legacy inline-onclick callers.
+ */
+let _refreshHandler = null;
+
+export function registerRefresh(fn) {
+  _refreshHandler = typeof fn === 'function' ? fn : null;
+  if (typeof window !== 'undefined') window._preactRefresh = _refreshHandler;
+}
+
+/** Trigger a data refresh, if a handler has been registered. */
+export function refresh() {
+  if (typeof _refreshHandler === 'function') return _refreshHandler();
+}
+
+/**
  * Preact hook. Subscribes the calling component to the store and
  * returns the current state. The component re-renders on every setState().
  */

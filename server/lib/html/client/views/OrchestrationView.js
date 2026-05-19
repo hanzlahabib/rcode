@@ -131,6 +131,13 @@ function CommandRunner() {
               : html`<${Icon} name="play" size=${14}/> Run`}
         </button>
       </div>
+      <div class="cmd-runner-hint">
+        ${isRunning
+          ? html`Command is running — output is streaming to the terminal panel.`
+          : busy
+            ? html`Starting — the terminal panel will open shortly.`
+            : html`Select a command and press Run. Output streams live to the terminal panel.`}
+      </div>
     </div>
   `;
 }
@@ -152,8 +159,11 @@ export function OrchestrationView() {
 
       ${sessions.length === 0 ? html`
         <div class="empty">
-          No agent sessions yet.
-          <div class="empty-action">Run a phase or sprint to start one</div>
+          No active execution.
+          <div class="empty-action">
+            Use the Command Runner above, or run <code>/rihal-execute</code> to
+            start a phase or sprint.
+          </div>
         </div>
       ` : html`
         <div class="orch-grid">

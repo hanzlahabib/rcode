@@ -2230,6 +2230,12 @@ footer {
   gap: var(--space-3);
   align-items: center;
 }
+.cmd-runner-hint {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 .cmd-runner-select {
   flex: 1;
   background: var(--bg-input, var(--bg-elev-2));
