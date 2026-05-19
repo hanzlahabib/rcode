@@ -38,37 +38,12 @@ This MD only tracks items we're acting on this session. Everything else is filed
 |---|---------|-----------|----------|
 | W2.1 | [#683](https://github.com/hanzlahabib/rihal-code/issues/683) `--purge` backup never includes `.rihal/`, deleted with rmSync | `uninstall.js` | ✅ done — backup includes .rihal/+.planning/ when purging, written to .rihal-backups/ sibling so rmSync can't kill it |
 | W2.2 | [#684](https://github.com/hanzlahabib/rihal-code/issues/684) `# rcode` regex over-matches user .gitignore content | `uninstall.js` | ✅ done — regex now requires both sentinels; user `# rcode...` comments preserved |
-| W2.3 | [#688](https://github.com/hanzlahabib/rihal-code/issues/688) `fs.rmSync` symlink guard (7 sites) | `install.js`, `uninstall.js`, `lib/fsutil.cjs` | ✅ done — `safeRmSync` helper refuses outside-root |
-| W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | ⚪ deferred — low risk in practice (target file is user's own committed code) |
-| W2.5 | [#687](https://github.com/hanzlahabib/rihal-code/issues/687) Atomic writes for `.gitignore`, `state.json`, `config.yaml`, hooks | `install.js` (11 sites) | ✅ done — `writeFileAtomic` plumbed everywhere |
-| W2.6 | [#691](https://github.com/hanzlahabib/rihal-code/issues/691) No file lock — concurrent installs corrupt manifest | `install.js` | ✅ done — PID-based exclusive lock at `.rihal/.install.lock` |
+| W2.3 | `fs.rmSync` recursive without symlink guard (3 sites) | `install.js:1815`, `uninstall.js:513,633` | critical |
+| W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | critical |
+| W2.5 | Atomic-writes helper exists but unused for `.gitignore`, `state.json`, `config.yaml`, hooks | `install.js:706,732,…` | warn |
+| W2.6 | No file lock — concurrent installs corrupt manifest | `install.js` (whole) | critical |
 | W2.7 | [#685](https://github.com/hanzlahabib/rihal-code/issues/685) commit_planning drift between .gitignore and config.yaml on re-install | `install.js` | ✅ done — resolveCommitPlanning reads existing config; surgical key update on change |
-| W2.8 | [#689](https://github.com/hanzlahabib/rihal-code/issues/689) Health-check thresholds hardcoded `<20` + skills global fallback | `install.js` | ✅ done — manifest-driven + global fallback |
-
-**Wave 2 — 7 of 8 complete.** Only W2.4 (execFileSync integrity check) remains; deferred as low-risk.
-
-## Wave 3 — Test coverage (partial)
-
-| # | Item | Status |
-|---|------|--------|
-| W3.1 | [#694](https://github.com/hanzlahabib/rihal-code/issues/694) `safeRmSync` + install idempotency / lock | ✅ done — 12 tests |
-| W3.2 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/uninstall.js` (units + integration) | ✅ done — 14 tests |
-| W3.3 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/postinstall.js` (`isGlobalInstall` heuristic, all 5 branches) | ✅ done — 12 tests |
-| W3.4 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/update.js` (parseArgs + detectInstalledEditors) | ✅ done — 12 tests |
-| W3.5 | Multi-IDE plan dedup + conflict resolution interactive flow | ⚪ deferred — interactive UI heavy |
-
-**Wave 3 — 4 of 5 complete.** 50 new tests across 5 files. Remaining W3.5 is interactive-UI heavy and deferred.
-
-## Wave 4 — Naming + extensibility
-
-| # | Item | Status |
-|---|------|--------|
-| W4.1 | [#692](https://github.com/hanzlahabib/rihal-code/issues/692) opts.ide vs opts.ides drift + double-prompt | ✅ done |
-| W4.2 | [#693](https://github.com/hanzlahabib/rihal-code/issues/693) KNOWN_ACTION_SKILLS dynamic + IDE list parity | ✅ done |
-| W4.3 | [#697](https://github.com/hanzlahabib/rihal-code/issues/697) IDE registry — single `SUPPORTED_IDES` source of truth + parity test | ✅ done |
-| W4.4 | Function names that lie about scope (`installSkills`, `installBrainScaffold`) | ⚪ deferred — pure polish |
-
-**Wave 4 — 3 of 4 complete.** Only function-name polish remains.
+| W2.8 | Health-check thresholds hardcoded `<20` instead of using package manifest | `install.js:2182-2192` | warn |
 
 ## Wave 3 — Test coverage (separate phase)
 
