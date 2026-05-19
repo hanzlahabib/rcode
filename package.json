@@ -29,6 +29,7 @@
     "CONTRIBUTING.md"
   ],
   "keywords": [
+    "rcode",
     "claude-code",
     "claude",
     "ai-agents",
@@ -53,7 +54,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hanzlahabib/rihal-code.git"
+    "url": "git+https://github.com/hanzlahabib/rihal-code.git"
   },
   "bugs": {
     "url": "https://github.com/hanzlahabib/rihal-code/issues"
