@@ -85,11 +85,14 @@ function buildPhaseTree(projectDir, rawPhases) {
       while ((tm = taskRe.exec(text))) {
         const idM    = tm[1].match(/id="([^"]+)"/);
         const titleM = tm[2].match(/<title>([\s\S]*?)<\/title>/);
-        stories.push({
+        const acM    = tm[2].match(/<acceptance_criteria>\s*([\s\S]*?)\s*<\/acceptance_criteria>/);
+        const story = {
           id:     idM ? idM[1] : `${sid}-task-${stories.length + 1}`,
           title:  titleM ? titleM[1].trim() : `Task ${stories.length + 1}`,
           status: phaseComplete ? 'done' : 'todo',
-        });
+        };
+        if (acM && acM[1].trim()) story.acceptance = acM[1].trim();
+        stories.push(story);
       }
       // Fallback for pre-<task> SPRINT.md format (phases 20-30 era):
       // "### Story 20.01.01 — title" / "### Task X — title" headings.
