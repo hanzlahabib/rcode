@@ -7,8 +7,8 @@
 
 import { html } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, allSprints, chip, sprintHints as getSprintHints } from '../util.js';
-import { ProgressBar, CmdHints } from '../components/shared.js';
+import { pct, humanDate, allSprints, allTasks, chip, sprintHints as getSprintHints } from '../util.js';
+import { ProgressBar, CmdHints, Chip } from '../components/shared.js';
 import { Icon } from '../icons-client.js';
 
 // ---- OverviewView ----
@@ -36,6 +36,41 @@ export function OverviewView() {
   let hints = [...sprintHints, ...baseHints];
   if (S.pendingHandoff) {
     hints = [['/rihal-resume-work','Resume from the pending handoff'], ...hints];
+  }
+
+  // At-a-glance status tiles — phase, sprint, blocked, last execution.
+  function StatusSummary() {
+    const curPhase = (S.phases || []).find(
+      p => String(p.id) === String(S.currentPhase),
+    ) || null;
+    const blockedCount = allTasks(S.phases).filter(t => t.status === 'blocked').length;
+    const lastExec = S.last_session
+      ? humanDate(S.last_session.date || S.last_session.timestamp)
+      : null;
+    return html`
+      <div class="stat">
+        <div class="label">Current Phase</div>
+        <div class="value">${curPhase ? 'P' + curPhase.id : '—'}</div>
+        <div class="sub">
+          ${curPhase ? html`${curPhase.name} · <${Chip} status=${curPhase.status}/>` : 'No phase set'}
+        </div>
+      </div>
+      <div class="stat">
+        <div class="label">Active Sprint</div>
+        <div class="value">${curSprint ? curSprint.id : '—'}</div>
+        <div class="sub">${curSprint ? (curSprint.goal || curSprint.status || 'in progress') : 'No active sprint'}</div>
+      </div>
+      <div class="stat" style=${blockedCount ? 'border-left-color:var(--red,#eb5757)' : ''}>
+        <div class="label">Blocked Tasks</div>
+        <div class="value" style=${blockedCount ? 'color:var(--red,#eb5757)' : ''}>${blockedCount}</div>
+        <div class="sub">${blockedCount ? 'needs attention' : 'all clear'}</div>
+      </div>
+      <div class="stat">
+        <div class="label">Last Execution</div>
+        <div class="value" style="font-size:var(--text-lg,1rem);">${lastExec || '—'}</div>
+        <div class="sub">${lastExec ? 'most recent session' : 'no sessions yet'}</div>
+      </div>
+    `;
   }
 
   // Current sprint progress
@@ -207,6 +242,7 @@ export function OverviewView() {
   return html`
     <div id="view-overview" class="view active">
       <div class="stats">
+        <${StatusSummary}/>
         <${VelocitySpark}/>
       </div>
       <${HandoffBanner}/>
