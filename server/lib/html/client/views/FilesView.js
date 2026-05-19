@@ -172,7 +172,10 @@ export function FilesView() {
     try {
       const resp = await fetch('/api/file?path=' + encodeURIComponent(file.path));
       if (!resp.ok) {
-        setFileContent({ html: null, loading: false, error: 'Failed to load file.' });
+        const msg = resp.status === 404
+          ? 'File not found: ' + file.path
+          : 'Failed to load file (HTTP ' + resp.status + ').';
+        setFileContent({ html: null, loading: false, error: msg });
         return;
       }
       const text = await resp.text();

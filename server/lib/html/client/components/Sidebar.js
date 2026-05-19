@@ -7,6 +7,9 @@
 
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
+import { useStore } from '../store.js';
+import { allSprints, allTasks } from '../util.js';
+import { AGENTS } from '../agents-data.js';
 
 // Nav structure: [ { section, links: [ { view, icon, label } ] } ]
 const NAV_SECTIONS = [
@@ -47,6 +50,15 @@ const NAV_SECTIONS = [
  *   projectName {string}  — displayed under the "Rihal" label
  */
 export function Sidebar({ activeView, projectName }) {
+  const S = useStore();
+  const counts = {
+    phases:    (S.phases || []).length,
+    sprints:   allSprints(S.phases).length,
+    tasks:     allTasks(S.phases).length,
+    decisions: (S.decisions || []).length,
+    agents:    AGENTS.length,
+  };
+
   return html`
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-project">
@@ -64,6 +76,7 @@ export function Sidebar({ activeView, projectName }) {
             >
               <${Icon} name=${icon} size=${14} />
               ${' ' + label}
+              ${counts[view] ? html`<span class="nav-count">${counts[view]}</span>` : null}
             </button>
           `)}
         `)}
