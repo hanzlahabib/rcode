@@ -40,6 +40,7 @@ triggers:
   - "قصص المستخدم"
   - "معايير القبول"
   - "خارطة المنتج"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

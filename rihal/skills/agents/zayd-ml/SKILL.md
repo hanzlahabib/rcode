@@ -42,6 +42,7 @@ triggers:
   - "نموذج ذكاء اصطناعي"
   - "هندسة الموجهات"
   - "معالجة اللغة العربية"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

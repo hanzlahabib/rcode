@@ -39,6 +39,7 @@ triggers:
   - "تصميم RTL"
   - "صفحة Next"
   - "مكون React"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 @.rihal/references/design-tokens.md

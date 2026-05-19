@@ -39,6 +39,7 @@ triggers:
   - "صمم API"
   - "قاعدة البيانات"
   - "خدمة خلفية"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

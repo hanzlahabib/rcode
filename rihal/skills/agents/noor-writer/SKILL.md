@@ -39,6 +39,7 @@ triggers:
   - "اكتب README"
   - "دليل المستخدم"
   - "ملاحظات الإصدار"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

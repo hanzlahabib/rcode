@@ -14,6 +14,7 @@ triggers:
   - "draft a brief for"
   - "product briefing"
   - "create the brief"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

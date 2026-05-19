@@ -16,6 +16,7 @@ triggers:
   - "handle scope
   change"
   - "change story mid-way"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

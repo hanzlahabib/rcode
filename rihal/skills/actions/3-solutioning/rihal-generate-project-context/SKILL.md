@@ -16,6 +16,7 @@ triggers:
   - "setup AI context"
   - "create
   project-context.md"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

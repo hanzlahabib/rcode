@@ -15,6 +15,7 @@ triggers:
   - "run
   dev-story on"
   - "implement .rihal/phases/{phase}/stories/{file}"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

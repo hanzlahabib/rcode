@@ -41,6 +41,7 @@ triggers:
   - "استشارة جماعية"
   - "ما رأي الفريق"
   - "قرار جماعي"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

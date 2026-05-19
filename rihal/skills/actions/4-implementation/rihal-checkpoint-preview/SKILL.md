@@ -9,6 +9,7 @@ triggers:
   - "review before checkpoint"
   - "checkpoint review session"
   - "preview changes before approval"
+user-invocable: true
 ---
 
 ## Overview

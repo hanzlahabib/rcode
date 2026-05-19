@@ -9,6 +9,7 @@ triggers:
   - "create a prfaq"
   - "product concept challenge"
   - "forge a product idea"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

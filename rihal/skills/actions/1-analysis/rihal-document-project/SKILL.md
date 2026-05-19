@@ -14,6 +14,7 @@ triggers:
   existing code"
   - "brownfield analysis"
   - "create LLM-friendly docs"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

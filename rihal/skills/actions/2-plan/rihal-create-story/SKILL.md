@@ -25,6 +25,7 @@ triggers:
   - "حضّر القصة"
   - "القصة التالية"
   - "جهّز القصة للتنفيذ"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -15,6 +15,7 @@ triggers:
   - "help
   me understand X industry"
   - "domain research for"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -41,6 +41,7 @@ triggers:
   - "خطة التوظيف"
   - "صحة الفريق"
   - "نمو الموظفين"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

@@ -15,6 +15,7 @@ triggers:
   - "UX plan"
   - "design this screen"
   - "create the design for"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

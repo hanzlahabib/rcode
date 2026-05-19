@@ -27,6 +27,7 @@ triggers:
   - "افحص الكود"
   - "تدقيق الكود"
   - "جودة الكود"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

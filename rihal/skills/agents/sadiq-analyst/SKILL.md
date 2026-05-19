@@ -36,6 +36,7 @@ triggers:
   - "تحليل تنافسي"
   - "استراتيجية المنتج"
   - "ماذا نبني"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

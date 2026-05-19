@@ -15,6 +15,7 @@ triggers:
   - "readiness check"
   - "IR check"
   - "can we start building"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

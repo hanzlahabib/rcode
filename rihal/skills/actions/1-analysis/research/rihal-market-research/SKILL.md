@@ -14,6 +14,7 @@ triggers:
   - "size the market"
   - "competitor scan"
   - "analyze the market for X"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 

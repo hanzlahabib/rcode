@@ -17,6 +17,7 @@ triggers:
   - "what stack for"
   - "technical
   feasibility for"
+user-invocable: true
 ---
 @.rihal/references/karpathy-guidelines.md
 
