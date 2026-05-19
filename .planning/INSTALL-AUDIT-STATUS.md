@@ -51,24 +51,24 @@ This MD only tracks items we're acting on this session. Everything else is filed
 
 | # | Item | Status |
 |---|------|--------|
-| W3.1 | [#694](https://github.com/hanzlahabib/rihal-code/issues/694) `safeRmSync` (5 tests) + install idempotency / lock (7 tests) | ✅ first batch — 12 new tests |
-| W3.2 | `cli/uninstall.js` end-to-end (purge backup, gitignore strip regex, isLocalOverride, planToPathList) | ⚪ pending |
-| W3.3 | `cli/postinstall.js` (isGlobalInstall heuristic, spawn behavior, error path) | ⚪ pending |
-| W3.4 | `cli/update.js` full update path | ⚪ pending |
-| W3.5 | Multi-IDE plan dedup, conflict resolution interactive flow | ⚪ pending |
+| W3.1 | [#694](https://github.com/hanzlahabib/rihal-code/issues/694) `safeRmSync` + install idempotency / lock | ✅ done — 12 tests |
+| W3.2 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/uninstall.js` (units + integration) | ✅ done — 14 tests |
+| W3.3 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/postinstall.js` (`isGlobalInstall` heuristic, all 5 branches) | ✅ done — 12 tests |
+| W3.4 | [#696](https://github.com/hanzlahabib/rihal-code/issues/696) `cli/update.js` (parseArgs + detectInstalledEditors) | ✅ done — 12 tests |
+| W3.5 | Multi-IDE plan dedup + conflict resolution interactive flow | ⚪ deferred — interactive UI heavy |
 
-**Wave 3 — 1 of 5 complete.** First batch covers regressions for every Wave 1+2 fix. Remaining batches need their own session.
+**Wave 3 — 4 of 5 complete.** 50 new tests across 5 files. Remaining W3.5 is interactive-UI heavy and deferred.
 
-## Wave 4 — Naming + extensibility (partial)
+## Wave 4 — Naming + extensibility
 
 | # | Item | Status |
 |---|------|--------|
 | W4.1 | [#692](https://github.com/hanzlahabib/rihal-code/issues/692) opts.ide vs opts.ides drift + double-prompt | ✅ done |
 | W4.2 | [#693](https://github.com/hanzlahabib/rihal-code/issues/693) KNOWN_ACTION_SKILLS dynamic + IDE list parity | ✅ done |
-| W4.3 | IDE registry (10+ duplicate switch sites in install.js) | ⚪ pending |
-| W4.4 | Function names that lie about scope (installSkills, installBrainScaffold, etc.) | ⚪ pending (low priority polish) |
+| W4.3 | [#697](https://github.com/hanzlahabib/rihal-code/issues/697) IDE registry — single `SUPPORTED_IDES` source of truth + parity test | ✅ done |
+| W4.4 | Function names that lie about scope (`installSkills`, `installBrainScaffold`) | ⚪ deferred — pure polish |
 
-**Wave 4 — 2 of 4 complete (highest-impact items).**
+**Wave 4 — 3 of 4 complete.** Only function-name polish remains.
 
 ## Wave 3 — Test coverage (separate phase)
 

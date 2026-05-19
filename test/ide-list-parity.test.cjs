@@ -28,7 +28,7 @@ test('SUPPORTED_IDES contains the expected canonical set', () => {
   // intentionally so reviewers see the semantic change.
   assert.deepStrictEqual(
     Array.from(SUPPORTED_IDES).sort(),
-    ['antigravity', 'claude', 'cursor', 'gemini', 'vscode', 'windsurf'],
+    ['antigravity', 'claude', 'cursor', 'gemini', 'vscode'],
   );
 });
 
@@ -50,11 +50,11 @@ test('install.js no longer hardcodes the IDE list inline (regex sweep)', () => {
   const src = fs.readFileSync(path.resolve(__dirname, '..', 'cli', 'install.js'), 'utf8');
   // Count exact array literals that hardcode the canonical set. Should
   // appear at most ONCE (the SUPPORTED_IDES definition itself).
-  const re = /['"]claude['"]\s*,\s*['"]cursor['"]\s*,\s*['"]gemini['"]\s*,\s*['"]vscode['"]\s*,\s*['"]antigravity['"]\s*,\s*['"]windsurf['"]/g;
+  const re = /['"]claude['"]\s*,\s*['"]cursor['"]\s*,\s*['"]gemini['"]\s*,\s*['"]vscode['"]\s*,\s*['"]antigravity['"]/g;
   const matches = src.match(re) || [];
   assert.strictEqual(
     matches.length,
     1,
-    `expected the canonical 6-IDE list to appear exactly once in install.js (the SUPPORTED_IDES definition); found ${matches.length}`,
+    `expected the canonical 5-IDE list to appear exactly once in install.js (the SUPPORTED_IDES definition); found ${matches.length}`,
   );
 });

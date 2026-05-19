@@ -123,46 +123,26 @@ function emptyPlan() {
     cursor:   [],
     windsurf: [],
     antigravity: [],
-    gemini:   [],
-    vscode:   [],
     agentsMd: false,
   };
 }
 
-test('planToPathList without --purge: claude flat layout pushes individual rihal-*.md paths (#704)', () => {
+test('planToPathList without --purge does NOT include .rihal/ or .planning/', () => {
   const dir = makeTempDir();
   const plan = emptyPlan();
   plan.claude.skills = ['rihal-do', 'rihal-noor'];
-  // Flat (claude) layout: command names start with rihal-
-  plan.claude.commands = ['rihal-status.md'];
+  plan.claude.commands = ['rihal-status'];
   plan.claude.agents = ['rihal-waleed.md'];
 
   const paths = uninstall.planToPathList(plan, dir, { purge: false });
 
   assert.ok(paths.includes(path.join('.claude/skills', 'rihal-do')));
   assert.ok(paths.includes(path.join('.claude/skills', 'rihal-noor')));
-  // Each flat file pushed individually; legacy subdir NOT added.
-  assert.ok(paths.includes(path.join('.claude/commands', 'rihal-status.md')));
-  assert.ok(!paths.includes('.claude/commands/rihal'));
+  assert.ok(paths.includes('.claude/commands/rihal'));
   assert.ok(paths.includes(path.join('.claude/agents', 'rihal-waleed.md')));
   // No purge → no state dirs
   assert.ok(!paths.some(p => p.startsWith('.rihal')));
   assert.ok(!paths.includes('.planning'));
-
-  cleanup(dir);
-});
-
-test('planToPathList without --purge: vscode subdir layout pushes parent dir once (#704)', () => {
-  const dir = makeTempDir();
-  const plan = emptyPlan();
-  // Subdir (vscode) layout: command names lack rihal- prefix
-  plan.claude.commands = ['status.md', 'do.md'];
-
-  const paths = uninstall.planToPathList(plan, dir, { purge: false });
-
-  // Subdir pushed once; no individual files.
-  assert.ok(paths.includes('.claude/commands/rihal'));
-  assert.ok(!paths.includes(path.join('.claude/commands', 'status.md')));
 
   cleanup(dir);
 });
@@ -217,62 +197,5 @@ test('discoverKnownActionSkills returns the actions from the package manifest', 
   // (cli/lib/manifest.cjs:50 prefixes the bareId).
   for (const s of skills) {
     assert.ok(s.startsWith('rihal-'), `expected rihal- prefix on ${s}`);
-  }
-});
-
-// ---- #706b — gemini + vscode coverage in planToPathList ----
-
-test('#706 — planToPathList includes plan.gemini paths verbatim', () => {
-  const dir = makeTempDir();
-  try {
-    const plan = emptyPlan();
-    plan.gemini.push('.gemini/rihal/agents/rihal-waleed.md');
-    plan.gemini.push('.gemini/rihal/commands/rihal-status.md');
-
-    const paths = uninstall.planToPathList(plan, dir, { purge: false });
-
-    assert.ok(paths.includes('.gemini/rihal/agents/rihal-waleed.md'),
-      'gemini paths must be included (regression of #706b)');
-    assert.ok(paths.includes('.gemini/rihal/commands/rihal-status.md'),
-      'gemini paths must be included (regression of #706b)');
-  } finally {
-    cleanup(dir);
-  }
-});
-
-test('#706 — planToPathList includes plan.vscode marker dir', () => {
-  const dir = makeTempDir();
-  try {
-    const plan = emptyPlan();
-    plan.vscode.push('.vscode/rihal');
-
-    const paths = uninstall.planToPathList(plan, dir, { purge: false });
-
-    assert.ok(paths.includes('.vscode/rihal'),
-      'vscode marker dir must be included (regression of #706b)');
-  } finally {
-    cleanup(dir);
-  }
-});
-
-test('#706 — planToPathList does NOT crash when plan.gemini / plan.vscode absent (back-compat)', () => {
-  const dir = makeTempDir();
-  try {
-    // Old-shape plan without gemini/vscode keys (e.g. callers that haven't
-    // updated their plan factories).
-    const plan = {
-      claude:   { skills: [], commands: [], agents: [] },
-      cursor:   [],
-      windsurf: [],
-      antigravity: [],
-      agentsMd: false,
-    };
-
-    assert.doesNotThrow(
-      () => uninstall.planToPathList(plan, dir, { purge: false }),
-      'planToPathList must tolerate plans without gemini/vscode keys',
-    );
-  } finally {
-    cleanup(dir);
   }
 });
