@@ -152,7 +152,7 @@ Phase number from argument (required).
 ```bash
 INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-advisor 2>/dev/null)
+AGENT_SKILLS_ADVISOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-advisor-researcher 2>/dev/null)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
