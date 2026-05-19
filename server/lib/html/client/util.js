@@ -7,16 +7,6 @@
  * Import here; do NOT duplicate in component files.
  */
 
-/** HTML-escape a value for safe rendering. */
-export function esc(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 /** Percentage string. Returns '—' if total is 0. */
 export function pct(done, total) {
   return total > 0 ? Math.round(done / total * 100) + '%' : '—';
