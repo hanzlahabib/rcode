@@ -1,8 +1,8 @@
 # Rihal Code — Skills Index
 
-All 58 skills in Rihal Code, organized by category: 17 agent skills, 26 action skills, 13 core skills, plus 2 shared modules.
+All 85 skills in Rihal Code, organized by category: 23 agent skills, 37 action skills, 25 core skills, plus 2 shared modules.
 
-## Agent Skills (17)
+## Agent Skills (23)
 
 Each agent has a persona, principles, and a capabilities table that lists which action skills it can invoke.
 
@@ -25,12 +25,18 @@ Each agent has a persona, principles, and a capabilities table that lists which 
 | **Zayd** | زيد | Senior ML Engineer | `agents/zayd-ml/` |
 | **Raees** | رئيس | Orchestrator | `agents/raees-orchestrator/` |
 | **Majlis** | مجلس | Multi-Agent Council | `agents/majlis-council/` |
+| **Dalil** | دليل | Codebase Scout | `agents/dalil-scout/` |
+| **Cross-Platform Auditor** | — | Cross-Platform Auditor | `agents/rihal-cross-platform-auditor/` |
+| **Dep Auditor** | — | Dependency Health Auditor | `agents/rihal-dep-auditor/` |
+| **Deviation Analyzer** | — | Deviation Analyzer | `agents/rihal-deviation-analyzer/` |
+| **i18n Auditor** | — | i18n / L10n Auditor | `agents/rihal-i18n-auditor/` |
+| **Observability Auditor** | — | Observability Auditor | `agents/rihal-observability-auditor/` |
 
 Note: Hussain has two hats — **PM** (strategic product management) and **SM** (scrum master / sprint ops). Real teams often combine these.
 
 ---
 
-## Action Skills (26)
+## Action Skills (37)
 
 Invoked by agents via the capabilities table in their SKILL.md. Organized by SDLC phase.
 
@@ -57,7 +63,7 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 - `actions/3-solutioning/rihal-check-implementation-readiness` — verify PRD/UX/arch alignment
 - `actions/3-solutioning/rihal-generate-project-context` — generate project-context.md
 
-### 4 — Implementation (9)
+### 4 — Implementation (20)
 - `actions/4-implementation/rihal-dev-story` — execute a story (write tests + code)
 - `actions/4-implementation/rihal-code-review` — comprehensive code review
 - `actions/4-implementation/rihal-qa-generate-e2e-tests` — generate e2e test suite
@@ -67,10 +73,21 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 - `actions/4-implementation/rihal-correct-course` — course-correction for off-track stories
 - `actions/4-implementation/rihal-scaffold-project` — scaffold new project from Rihal template
 - `actions/4-implementation/rihal-checkpoint-preview` — LLM-assisted human-in-the-loop review
+- `actions/4-implementation/rihal-browser-verify` — verify browser behaviour via Chrome DevTools MCP
+- `actions/4-implementation/rihal-ci` — CI/CD setup and quality gates
+- `actions/4-implementation/rihal-debug` — root-cause debugging via the scientific method
+- `actions/4-implementation/rihal-git-flow` — branching, commits, conflicts, parallel work
+- `actions/4-implementation/rihal-harden` — security hardening checklist for SaaS apps
+- `actions/4-implementation/rihal-incremental` — ship code in small, atomic, verifiable steps
+- `actions/4-implementation/rihal-migrate` — move from MVP to production-grade infrastructure
+- `actions/4-implementation/rihal-perf` — performance optimisation (LCP / TBT / CLS / hydration)
+- `actions/4-implementation/rihal-prove-it` — test-first development
+- `actions/4-implementation/rihal-source-truth` — cite official docs before writing framework code
+- `actions/4-implementation/rihal-trim` — code simplification
 
 ---
 
-## Core Skills (13)
+## Core Skills (25)
 
 Shared utilities used across agents and workflows.
 
@@ -87,6 +104,18 @@ Shared utilities used across agents and workflows.
 - `core/rihal-review-adversarial-general` — adversarial review for robustness
 - `core/rihal-review-edge-case-hunter` — edge case hunting and boundary testing
 - `core/rihal-party-mode` — multi-agent collaboration mode
+- `core/rihal-auth-audit` — audit Keycloak ↔ AD sync, JWT validation, tenant isolation
+- `core/rihal-client-gate` — client requirement freeze gates and async-comm patterns
+- `core/rihal-deploy-unify` — detect and unify multiple deployment paths
+- `core/rihal-incident-record` — generate a change record + post-mortem
+- `core/rihal-memory-init` — bootstrap the Memory Bank for a project
+- `core/rihal-memory-update` — surgical update of specific Memory Bank files
+- `core/rihal-memory-audit` — audit the Memory Bank for stale entries and contradictions
+- `core/rihal-memory-distill` — regenerate token-optimised Memory Bank distillates
+- `core/rihal-mvp-graduate` — move an MVP to production-grade infrastructure incrementally
+- `core/rihal-ocr-consistency` — OCR pipeline determinism + ground-truth validation
+- `core/rihal-rebrand` — stack-wide rebranding migration
+- `core/rihal-theme-system` — audit a frontend's design tokens before launch
 
 ---
 

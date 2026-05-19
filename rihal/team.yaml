@@ -85,6 +85,20 @@ agents:
       - backlog
     description: Scope, requirements, PRD writing, user stories, and backlog curation.
 
+  - id: rihal-hussain-sm
+    name: Hussain (حسين)
+    skill_path: rihal/skills/agents/hussain-sm
+    role: Scrum Master
+    authority_level: product
+    domain_keywords:
+      - sprint-planning
+      - story-preparation
+      - sprint-status
+      - retrospective
+      - course-correction
+      - agile-ceremonies
+    description: Sprint planning, story preparation, sprint status reporting, retrospectives, and mid-sprint course correction.
+
   - id: rihal-yousef
     name: Yousef (يوسف)
     file_path: rihal/agents/rihal-yousef.md
@@ -271,6 +285,48 @@ agents:
       - tasks
       - migrations
     description: Generalist engineer for implementation tasks spanning frontend and backend. Pairs with Hanzla on complex stories.
+
+  - id: rihal-dalil-scout
+    name: Dalil (دليل)
+    skill_path: rihal/skills/agents/dalil-scout
+    role: Codebase Scout
+    authority_level: analysis
+    domain_keywords:
+      - codebase-discovery
+      - repository-exploration
+      - topic-sweep
+      - architecture-mapping
+      - integrations-audit
+      - project-structure
+    description: Repository discovery, multi-root exploration, focused topic sweeps, and structured codebase documents.
+
+  - id: rihal-raees-orchestrator
+    name: Raees (رئيس)
+    skill_path: rihal/skills/agents/raees-orchestrator
+    role: Project Orchestration Director
+    authority_level: strategic
+    domain_keywords:
+      - orchestration
+      - dispatch
+      - work-routing
+      - phase-sequencing
+      - team-coordination
+      - handoffs
+    description: Dispatches work to the right specialists, sequences phases, identifies parallel vs sequential work, and coordinates handoffs.
+
+  - id: rihal-majlis-council
+    name: Majlis (مجلس)
+    skill_path: rihal/skills/agents/majlis-council
+    role: Multi-Agent Council
+    authority_level: strategic
+    domain_keywords:
+      - council
+      - team-consultation
+      - multi-agent-discussion
+      - crisis-mode
+      - incident-response
+      - cross-domain
+    description: Convenes the Rihal team to discuss any topic, collects perspectives from all relevant specialists, and delivers a synthesised answer with dissent noted.
 
 utility_agents:
   - id: rihal-planner
