@@ -27,5 +27,5 @@ Skill not installed — run: npx @hanzlaa/rcode install
 ## ▶ Next Up
 
 - /rihal-create-prd
-- /rihal-create-milestone
+- /rihal-new-milestone
 - /rihal-do

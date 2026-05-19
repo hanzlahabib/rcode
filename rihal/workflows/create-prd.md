@@ -21,5 +21,5 @@ Skill not installed — run: npx @hanzlaa/rcode install
 ## On Completion
 
 /rihal-validate-prd — validate the PRD for completeness
-/rihal-create-milestone — build the milestone roadmap from the PRD
+/rihal-new-milestone — build the milestone roadmap from the PRD
 /rihal-edit-prd — revise the PRD

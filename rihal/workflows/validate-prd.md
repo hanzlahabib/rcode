@@ -20,12 +20,12 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## On Completion
 
-/rihal-create-milestone — build the roadmap from the validated PRD
+/rihal-new-milestone — build the roadmap from the validated PRD
 /rihal-edit-prd — fix validation findings
 /rihal-council — escalate ambiguous requirements to the council
 
 ## ▶ Next Up
 
-- /rihal-create-milestone
+- /rihal-new-milestone
 - /rihal-edit-prd
 - /rihal-council {prd-question}
