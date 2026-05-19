@@ -19,7 +19,10 @@ const path = require('path');
  * Read the expected skill set from the package source.
  * Returns { agents: Set<string>, actions: Set<string> }.
  *
- * `agents` are the directory names under rihal/skills/agents/ (e.g. "waleed-cto").
+ * `agents` are the bare names (no rihal- prefix, no .md) of the agent files
+ *   under rihal/agents/*.md — these are what install ships to
+ *   .claude/agents/rihal-<name>.md, .cursor/rules/rihal/agents/, etc.
+ *   NOT the phrase-activated agent skills under rihal/skills/agents/.
  * `actions` are the skill dir names under rihal/skills/actions/, plus the
  *   nested rihal/skills/actions/research/ children (flattened — matches how
  *   installSkills() copies them).
@@ -28,10 +31,16 @@ function readPackageManifest(packageRoot) {
   const skillsRoot = path.join(packageRoot, 'rihal/skills');
   const manifest = { agents: new Set(), actions: new Set() };
 
-  const agentsDir = path.join(skillsRoot, 'agents');
+  // Issue #783 — agents are file-based (rihal/agents/*.md), not the skill
+  // directories under rihal/skills/agents/. The installer ships rihal/agents/
+  // to every editor target; the old skill-dir source produced a different
+  // namespace ("fatima-qa" vs "fatima") and made doctor report constant drift.
+  const agentsDir = path.join(packageRoot, 'rihal/agents');
   if (fs.existsSync(agentsDir)) {
     for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
-      if (entry.isDirectory()) manifest.agents.add(entry.name);
+      if (!entry.isFile()) continue;
+      if (!entry.name.startsWith('rihal-') || !entry.name.endsWith('.md')) continue;
+      manifest.agents.add(entry.name.replace(/^rihal-/, '').replace(/\.md$/, ''));
     }
   }
 
@@ -154,7 +163,21 @@ function verifyClaudeInstall(cwd, packageRoot, options = {}) {
   // rihal-* dirs which excluded ALL real actions and made the diff always
   // report "everything missing." Compare directly against the prefixed set.
   const allInstalled = readInstalledDirs(skillsDir);
-  const actionsInstalled = new Set([...allInstalled].filter((n) => pkg.actions.has(n)));
+  let actionsInstalled = new Set([...allInstalled].filter((n) => pkg.actions.has(n)));
+
+  // Issue #783 — global precedence fallback for action skills, mirroring the
+  // agent fallback above. installSkills() skips project-level skills when
+  // ~/.claude/skills/ already has them (#679), leaving the project skills dir
+  // with only command stubs. Without this fallback the verifier reports
+  // "actions 0/37" on every successful install in that scenario.
+  if (actionsInstalled.size === 0 && globalFallback) {
+    try {
+      const os = require('os');
+      const globalSkillsDir = path.join(os.homedir(), '.claude/skills');
+      const globalInstalled = readInstalledDirs(globalSkillsDir);
+      actionsInstalled = new Set([...globalInstalled].filter((n) => pkg.actions.has(n)));
+    } catch { /* non-fatal — permission errors etc. */ }
+  }
 
   return [
     diffSet('claude', 'agents', pkg.agents, installedAgents),
@@ -163,63 +186,48 @@ function verifyClaudeInstall(cwd, packageRoot, options = {}) {
 }
 
 /**
- * Verify a Cursor or Windsurf install. Both install 19 digest-based
- * .mdc rules (one per agent) + a rihal-code.mdc overview rule.
+ * Verify a Cursor or Windsurf install. Issue #783: the installer ships one
+ * .mdc agent rule per rihal/agents/*.md into the NESTED directory
+ *   .cursor/rules/rihal/agents/rihal-<name>.mdc   (cursor)
+ *   .windsurf/rules/rihal/agents/rihal-<name>.mdc (windsurf)
+ * — not flat digest-based rules at .<ide>/rules/. Compare against the same
+ * agent set the Claude install uses.
  */
 function verifyRulesInstall(editor, cwd, packageRoot) {
   const pkg = readPackageManifest(packageRoot);
-  const rulesDir = path.join(
-    cwd,
-    editor === 'cursor' ? '.cursor/rules' : '.windsurf/rules'
-  );
+  const base = editor === 'cursor' ? '.cursor/rules' : '.windsurf/rules';
+  const agentsDir = path.join(cwd, base, 'rihal', 'agents');
 
   const installed = new Set();
-  if (fs.existsSync(rulesDir)) {
-    for (const file of fs.readdirSync(rulesDir)) {
-      if (!file.startsWith('rihal-') || !file.endsWith('.mdc')) continue;
-      if (file === 'rihal-code.mdc') continue; // overview meta-rule, not per-agent
-      installed.add(file.replace(/^rihal-/, '').replace(/\.mdc$/, ''));
+  if (fs.existsSync(agentsDir)) {
+    for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue; // skip the nested rules/ subdir
+      if (!entry.name.startsWith('rihal-') || !entry.name.endsWith('.mdc')) continue;
+      installed.add(entry.name.replace(/^rihal-/, '').replace(/\.mdc$/, ''));
     }
   }
 
-  // Rules are generated from digests, not agent skill dirs. Build expected
-  // set from rihal/digests/*.md.
-  const digestsDir = path.join(packageRoot, 'rihal/digests');
-  const expected = new Set();
-  if (fs.existsSync(digestsDir)) {
-    for (const file of fs.readdirSync(digestsDir)) {
-      if (!file.endsWith('.md') || file === 'README.md') continue;
-      expected.add(file.replace(/\.md$/, ''));
-    }
-  }
-
-  return [diffSet(editor, 'rules', expected, installed)];
+  return [diffSet(editor, 'agents', pkg.agents, installed)];
 }
 
 /**
- * Verify an Antigravity install: .antigravity/agents/rihal-<agent>.md files.
- * One per digest.
+ * Verify an Antigravity install. Issue #783: the installer ships agent files
+ * to the NESTED .antigravity/rihal/agents/rihal-<name>.md — not
+ * .antigravity/agents/. Compare against the package agent set.
  */
 function verifyAntigravityInstall(cwd, packageRoot) {
-  const agentsDir = path.join(cwd, '.antigravity/agents');
+  const pkg = readPackageManifest(packageRoot);
+  const agentsDir = path.join(cwd, '.antigravity/rihal/agents');
   const installed = new Set();
   if (fs.existsSync(agentsDir)) {
-    for (const file of fs.readdirSync(agentsDir)) {
-      if (!file.startsWith('rihal-') || !file.endsWith('.md')) continue;
-      installed.add(file.replace(/^rihal-/, '').replace(/\.md$/, ''));
+    for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue;
+      if (!entry.name.startsWith('rihal-') || !entry.name.endsWith('.md')) continue;
+      installed.add(entry.name.replace(/^rihal-/, '').replace(/\.md$/, ''));
     }
   }
 
-  const digestsDir = path.join(packageRoot, 'rihal/digests');
-  const expected = new Set();
-  if (fs.existsSync(digestsDir)) {
-    for (const file of fs.readdirSync(digestsDir)) {
-      if (!file.endsWith('.md') || file === 'README.md') continue;
-      expected.add(file.replace(/\.md$/, ''));
-    }
-  }
-
-  return [diffSet('antigravity', 'agents', expected, installed)];
+  return [diffSet('antigravity', 'agents', pkg.agents, installed)];
 }
 
 /**

@@ -102,29 +102,44 @@ test('verifyClaudeInstall detects drift when one agent dir is deleted', (t) => {
   assert.deepStrictEqual(agentReport.missing, [skipped]);
 });
 
-test('verifyRulesInstall counts digest-based rules, excludes rihal-code.mdc', (t) => {
+test('verifyRulesInstall reports zero drift for the nested cursor agent layout (#783)', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
 
-  const rulesDir = path.join(cwd, '.cursor/rules');
-  fs.mkdirSync(rulesDir, { recursive: true });
+  // Issue #783: cursor agent rules install to .cursor/rules/rihal/agents/
+  // rihal-<name>.mdc — one per rihal/agents/*.md, not flat digest rules.
+  const agentsDir = path.join(cwd, '.cursor/rules/rihal/agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
 
-  // Copy expected digest names
-  const digestsDir = path.join(PACKAGE_ROOT, 'rihal/digests');
-  const expectedDigests = fs
-    .readdirSync(digestsDir)
-    .filter((f) => f.endsWith('.md') && f !== 'README.md')
-    .map((f) => f.replace(/\.md$/, ''));
-
-  for (const name of expectedDigests) {
-    fs.writeFileSync(path.join(rulesDir, `rihal-${name}.mdc`), 'stub');
+  const manifest = readPackageManifest(PACKAGE_ROOT);
+  for (const agent of manifest.agents) {
+    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.mdc`), 'stub');
   }
-  // The meta overview rule — should NOT count toward per-agent total
-  fs.writeFileSync(path.join(rulesDir, 'rihal-code.mdc'), 'stub');
+  // A nested rules/ subdir (shipped by the installer) must be ignored.
+  fs.mkdirSync(path.join(agentsDir, 'rules'));
+  fs.writeFileSync(path.join(agentsDir, 'rules', 'rihal-extra.mdc'), 'stub');
 
   const reports = verifyRulesInstall('cursor', cwd, PACKAGE_ROOT);
   assert.strictEqual(reports.length, 1);
   assert.deepStrictEqual(reports[0].missing, []);
+  assert.deepStrictEqual(reports[0].extra, []);
+});
+
+test('verifyRulesInstall detects drift when a cursor agent rule is missing (#783)', (t) => {
+  const cwd = makeTempDir();
+  t.after(() => cleanup(cwd));
+
+  const agentsDir = path.join(cwd, '.cursor/rules/rihal/agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
+
+  const agents = [...readPackageManifest(PACKAGE_ROOT).agents];
+  const skipped = agents[0];
+  for (const agent of agents.slice(1)) {
+    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.mdc`), 'stub');
+  }
+
+  const reports = verifyRulesInstall('cursor', cwd, PACKAGE_ROOT);
+  assert.deepStrictEqual(reports[0].missing, [skipped]);
 });
 
 test('verifyAntigravityInstall reports missing when agents dir is empty', (t) => {
