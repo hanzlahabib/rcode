@@ -75,23 +75,31 @@ Creates sprint plan files (SPRINT.md) for a phase.
 
 ---
 
-### Flow C: `/rihal-execute` (Sprint execution)
+### Flow C: `/rihal-execute` (Sprint execution — all 3 Phase 1 sprints)
 
 **What it does:**  
-Runs the rihal-executor agent against a SPRINT.md file to build actual code.
+Runs rihal-executor against each SPRINT.md file to build actual code.
 
 **Steps observed:**
-1. Reads SPRINT.md task list
-2. Executes each task: creates files, writes code (babel.config.js, app.json, etc.)
-3. Runs TypeScript check after each sprint
-4. Calls `state advance-plan` + `state update-progress` after completion
-5. Moves to next sprint automatically
+1. Sprint 1-1: Scaffold Expo project — babel.config.js, app.json, tsconfig, package.json ✅
+2. Sprint 1-2: SQLite schema + Drizzle ORM setup ✅ (TypeScript clean)
+3. Sprint 1-3: Repository layer + Zustand store ✅
+4. TypeScript check (`pnpm typecheck`) as gate after each sprint
+5. Conventional commits produced at each step
 
-**Happy path result:** ✅ Sprint 1-1 scaffolded Expo project, TypeScript clean (exit 0). Sprint 1-2 started (SQLite + Drizzle ORM)
+**What worked well:**
+- Planner produced thorough SPRINT.md files with correct frontmatter, evidence blocks, wave dependencies ✅
+- Sprint-checker found real issues (table name drift, drizzle-kit version caveat) ✅
+- Executor handled deviations autonomously: fixed TypeScript version mismatch and Drizzle format bug, committed cleanly ✅
+- Research pipeline (STACK.md, ARCHITECTURE.md, FEATURES.md, PITFALLS.md) — architectural decisions sound ✅
 
 **Issues found:**
-- `#820` — `state update-progress` subcommand missing → exits with unknown subcommand
-- Sprint completion partially tracked (advance-plan works, update-progress fails)
+- `#820/#837` — `state update-progress` subcommand missing → partial sprint tracking
+- `#839` — Planner emitted Drizzle migrations as array `[m0000]` instead of object `{ m0000 }` — executor fixed autonomously
+- `#842` — Planner pinned TypeScript ~5.3.3, incompatible with Expo SDK 55 (requires ≥5.4) — executor fixed autonomously
+- `#843` — `roadmap update-plan-progress` called with 1 arg in workflow but requires 3
+
+**Final result:** All 3 sprints executed, TypeScript clean, 8 bugs filed ✅
 
 ---
 
@@ -191,6 +199,26 @@ Runs 9 checks across state, agents, config, roadmap, and sprint files.
 
 ---
 
+## Run 2 — ReelSpeed App (continued) — Data loss assessment
+
+**Final verdict from rs-app agent:**
+
+| Artifact | Status |
+|----------|--------|
+| `.planning/ROADMAP.md` (14.4K, 20 phases) | **PRESERVED** — not touched by install |
+| `.planning/ROADMAP-LAUNCH.md` | **PRESERVED** |
+| 20 phases readable via `roadmap list-phases` | ✅ reads ROADMAP.md live |
+| 20 phases in `state.json` | ❌ state initialized empty — no import step |
+| Phase requirements / acceptance criteria parsed | ❌ ROADMAP.md format not parsed into structured data |
+
+**Key insight:** rcode preserves existing `.planning/` files but does not **import** them into `state.json`. There is no `rcode import-roadmap` command. Existing project data is readable but not integrated into the state machine.
+
+**Issues filed:** #830, #831, #832, #840, #841
+
+**Additional bug (#844):** `/rihal-new-project` Step 3b sends 5 options to AskUserQuestion — tool has max 4. Fails with `Invalid tool parameters`, retries with 4 options.
+
+---
+
 ## Run 4 — ReelSpeed Video Service (continued) — `/rihal-map-codebase`
 
 **What it does:**  
@@ -267,4 +295,10 @@ Before running new-project on a brownfield repo, rcode maps the existing codebas
 | #836 | High | health | rihal-tools.cjs health subcommand missing from rihal-tools — CLI dispatches it separately |
 | #837 | Medium | execute | (duplicate of #820) state update-progress unknown subcommand |
 | #838 | High | install | pnpm add -D exits 0 + prints success but doesn't write package.json when lockfile is broken |
+| #839 | Medium | planner | rihal-planner emits wrong Drizzle migrations format (array instead of object) |
+| #840 | High | install | (duplicate of #823) npx install fails on npm 11.x |
+| #841 | High | install | v3.4.4: Unknown IDE: claude even though claude is listed as supported |
+| #842 | Medium | planner | rihal-planner specified TypeScript ~5.3.3 incompatible with Expo SDK 55 (requires ≥5.4) |
+| #843 | Low | execute | roadmap update-plan-progress requires 3 args but workflow calls it with 1 — docs wrong |
+| #844 | Medium | new-project | AskUserQuestion Step 3b has 5 options — exceeds tool max of 4, fails then retries |
 
