@@ -170,15 +170,95 @@ Runs 9 checks across state, agents, config, roadmap, and sprint files.
 **Project:** `~/development/reelspeed/services/reelspeed-backend`  
 **Stack:** Node.js / Convex / TypeScript
 
-### Flow A: `/rihal-new-project` on brownfield backend
+### Flow A: `/rihal-new-project` full Q&A flow (brownfield backend)
 
-**What happens:**
-1. Install completes
-2. `/rihal-new-project` detects `project-status: stub`
-3. **Brownfield banner shown** ("Existing Node.js/TypeScript code found in src/. Mapping it first...")
-4. Spawns `rihal-codebase-mapper` agents before planning
+This documents every question the workflow asks — useful for docs and presentations.
 
-**Happy path result:** ✅ Brownfield detection working correctly
+**Step 1 — Greenfield or Brownfield?**
+```
+Is this a greenfield project or brownfield (existing codebase)?
+❯ 1. Brownfield — Enhancing/modifying existing codebase
+  2. Greenfield — Treat as new project from scratch
+```
+→ Selected: **Brownfield**
+
+**Step 2 — Map codebase first or skip?**
+```
+Existing Node.js/Convex/TypeScript codebase detected. Map it first or skip?
+❯ 1. Map first (Recommended) — deeper context for planning
+  2. Skip mapping — faster, use description only
+```
+→ Selected: **Skip mapping** (to keep dogfood fast)
+
+**Step 3a — What is changing? (scope)**
+```
+What's changing in this project?
+❯ 1. New feature on existing architecture
+  2. Refactoring existing feature
+  3. Bug fixes and tech debt
+  4. Performance optimization
+```
+→ Selected: **New feature**
+⚠️ Bug #844: This prompt originally has 5 options — AskUserQuestion max is 4. First call fails, retries with 4.
+
+**Step 3b — Scope of impact?**
+```
+How much of the codebase does this touch?
+❯ 1. Single component/module
+  2. Cross-cutting (multiple modules)
+  3. Full system
+```
+→ Selected: **Single component**
+
+**Step 3c — Rollback risk?**
+```
+Can this be rolled back easily?
+❯ 1. Yes — change is isolated
+  2. Partially — some migration needed
+  3. No — breaking change
+```
+→ Selected: **Partially**
+
+**Step 4 — How do you want to work? (mode)**
+```
+How do you want to work?
+❯ 1. YOLO (Recommended) — Auto-approve, just execute
+  2. Interactive — Confirm at each step
+```
+→ Selected: **YOLO**
+
+**Step 5a — Phase granularity?**
+```
+How finely should scope be sliced into phases?
+❯ 1. Standard (Recommended) — 5-8 phases, 3-5 plans each
+  2. Coarse — 3-5 phases, 1-3 plans each
+  3. Fine — 8-12 phases, 5-10 plans each
+```
+→ Selected: **Standard**
+
+**Step 5b — Execution style?**
+```
+How should sprints be executed?
+❯ 1. Sequential — One sprint at a time
+  2. Parallel waves — Batch non-blocking sprints
+```
+
+**Step 5c — Commit planning docs?**
+```
+Commit planning docs to git?
+❯ 1. Yes (Recommended) — Planning docs tracked in version control
+  2. No — Keep .planning/ local-only
+```
+→ Selected: **Yes**
+
+**After answering all questions:**  
+PROJECT.md committed → researchers spawned → ROADMAP.md created → planning begins
+
+**What this flow tells us:**  
+The new-project wizard asks **7 questions** for a brownfield project (fewer for greenfield). Each question is a blocking AskUserQuestion. In automated/orchestrated contexts, the orchestrator must monitor and answer each one — they cannot be skipped.
+
+**Issues found in this flow:**
+- `#844` — Step 3a has 5 options (max 4) → InvalidToolParameters on first call, retries with 4
 
 ---
 
