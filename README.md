@@ -2,187 +2,189 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **The AI team that never forgets.** Persistent memory, 45 specialist agents, 109 commands — install once, and your AI IDE gets a project brain that survives every session reset.
+> **A methodology for building software with AI — shipped as files.** Folders, markdown, slash commands. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
 
 ```bash
-# pnpm (recommended — avoids npm 11.x npx issues)
 pnpm dlx @hanzlaa/rcode install
-
-# npm / yarn
-npx @hanzlaa/rcode install
 ```
 
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
-Status: actively developed — published on npm as `@hanzlaa/rcode` v3.6.x, with an automated test suite covered by `node --test`.
+Status: `@hanzlaa/rcode` v3.6.20 on npm. 30 automated tests, 45 agents, 109 commands, 85 skills. Actively dogfooded on real projects every week.
 
 ---
 
-## See it work
+## Who builds this
 
-The full loop runs in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`. The Diwan dashboard (`npm run dashboard`) renders project state, decisions, and the Memory Bank in one view.
+One developer ([Hanzla Habib](https://github.com/hanzlahabib)) — building rcode **with** Claude, not just for it. Every workflow, agent, and skill in this repo was designed in dialogue with the same LLM you'll be running. The methodology shipped here is the one I use to build rcode itself.
+
+That means two things:
+- **The dogfood loop is the test suite.** Every release is run against fresh projects (calories-counter RN, reelspeed services) before publish. Bugs surface as GitHub issues, get fixed, ship.
+- **The tool grows from real friction, not theory.** Half the v3.6.20 fixes came from a single dogfeed session where 3 parallel agents found 50+ real bugs in 4 hours.
+
+If you're a solo dev or small team using Claude Code (or Cursor, Gemini, Codex), rcode gives you the **scaffolding a 10-person engineering org would have**: code review standards, sprint cadence, decision archives, onboarding context — without hiring the org.
 
 ---
 
-## Why this exists
+## What it actually is
 
-Every project carries unwritten context — how the team reviews PRs, what "done" means, how milestones sequence. That context sits in people's heads, Slack, and senior engineers' review comments. AI assistants pick it up never, because every new chat session starts knowing nothing about how this project actually works.
+Three layers, specialised for software delivery:
 
-You'll feel rcode pay off if you've lived any of these:
+| Layer | What lives here | Example |
+|-------|-----------------|---------|
+| **Memory** | `.rihal/memory/` — git-tracked markdown, lossless distillates | "We chose Postgres over Mongo because of JSON-B + RLS — see ADR-007" |
+| **Skills** | `rihal/skills/` — 85 phrase-activated playbooks | `rihal-sprint-checker` validates file/symbol refs before execute |
+| **Workflows** | `rihal/workflows/` — orchestrated multi-step paths | `/rihal-plan` runs research → planner → checker → confirm |
 
-- **AI agents lose context mid-project.** Three sessions in, the assistant has forgotten the architectural decision you made on day one.
-- **Onboarding a teammate** means a 30-minute archaeology dig through Slack, Notion, and review comments.
-- **Late client requirements** keep shifting the goal posts, with no record of what was decided when.
-- **MVPs that work but can't be revamped** without rewriting from scratch — the original context is lost.
+Single agent navigates the structure. No LangChain, no AutoGen, no orchestrator process. Just folders the model can read.
 
-rcode fixes that with a checked-in **Memory Bank** (`.rihal/memory/`), distinctive engineering personas, and a phased workflow that survives session resets. One install, and the AI knows. Every session. Every repo. Every contributor.
+---
 
-It's not a chatbot. It's a methodology.
+## Why I built it
+
+I've shipped products solo for years and watched the same failure repeat in every project:
+
+- **Session 1:** Productive — agent helps me design auth, picks Postgres, plans the schema.
+- **Session 5:** Agent has no idea I picked Postgres. Suggests Mongo. We argue. I copy-paste the decision back in.
+- **Session 20:** I'm pasting in 4K tokens of "here's what we decided" every session. The agent never learns. The project file structure isn't enough — decisions live in chat.
+
+rcode is the answer I built for myself. **The decision lives in `.rihal/memory/decisions.md`. The agent reads it. Done.**
+
+Same problem at team scale: onboarding takes 30 minutes of archaeology. Late requirements shift goalposts with no audit trail. MVPs work but can't be revamped because the original "why" is gone. rcode checks the context in, so the next person (or session) starts oriented.
+
+---
+
+## Concrete benefits
+
+What you'll feel in week one:
+
+- **No more re-explaining.** Decisions, blockers, conventions live in `.rihal/memory/` — agent reads them at session start automatically (~5K tokens, fully oriented).
+- **Phased delivery without ceremony.** `/rihal-new-project` produces a roadmap with phases → sprints → tasks. `/rihal-plan` produces SPRINT.md files. `/rihal-execute` runs them with atomic commits. No Jira required.
+- **Specialist review on tap.** Want a Karpathy-style review of your last commit? `/rihal-code-review --karpathy`. Want a council debate on a decision? `/rihal-council should I rewrite auth?` — 5 agents answer in parallel, round 2 they challenge each other.
+- **Intent guards.** Run the wrong command and get a one-line redirect, not a useless output.
+- **Health check.** `rihal-tools health` returns JSON — milestone health, state snapshot, project status. Wire it into your dashboard.
+- **Drift detection.** SEO-style drift baselines for any URL the project ships. Catches when somebody silently breaks your `<title>` or schema markup.
+
+What you won't get:
+- Magic. The agent still needs precise prompts; rcode just removes the boilerplate context-loading from each one.
+- A productivity multiplier on a 200-line side project. You'll feel it on real work — multi-week, multi-contributor, multi-decision.
+
+---
+
+## What it isn't (anti-hype)
+
+I dogfood this hard, so the honest version:
+
+- **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Gemini, Codex. Bring your own keys.
+- **Not a multi-agent framework.** No agent-to-agent message bus. One agent reads markdown structure and navigates it.
+- **Not a no-code tool.** You will read markdown files. You will write commit messages. You will type slash commands.
+- **Not finished.** v3.6 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rihal-code/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
+- **Not replacing senior engineers.** It gives you their scaffolding (review standards, sprint hygiene, decision archives). You still need judgment for the hard calls.
+
+---
+
+## How it stacks up
+
+| | Cursor / Windsurf | CrewAI / AutoGen | LangChain / LlamaIndex | **rcode** |
+|---|---|---|---|---|
+| **Per-project memory** | Per-user, not git-tracked | Vector DB | Vector DB + chunking | Git-tracked markdown |
+| **Specialist agents** | 1 generalist | Define in Python | Define in Python | 45 shipped |
+| **Install** | IDE extension | `pip install` + config | `pip install` + code | `pnpm dlx` — one command |
+| **Infrastructure** | Cloud API | Python server | Vector store + indexer | Zero — pure files |
+| **IDE lock-in** | Cursor only | Framework-specific | Framework-specific | Claude / Cursor / Gemini / Codex |
+| **Auditability** | Chat scrollback | Tracing dashboard | Tracing dashboard | `git log` |
+
+The point isn't "I beat LangChain." The point is **you don't need LangChain for software delivery**. You need a methodology that survives session resets, and a methodology lives in files.
 
 ---
 
 ## Quickstart
 
-### Install — two steps, one minute
-
-rcode ships in two parts. Run them both up front so nothing surfaces as an afterthought later:
-
-**Step 1 — project files (required).** In any project directory (existing codebase OR empty folder):
-
 ```bash
-# Recommended (pnpm — avoids npm 11.x npx compatibility issues):
+# 1. Install into any project (existing codebase or empty folder)
 pnpm dlx @hanzlaa/rcode install
 
-# Alternative (npm / yarn):
-npx @hanzlaa/rcode install
-
-# Or add as a dev dependency first:
-pnpm add -D @hanzlaa/rcode && ./node_modules/.bin/rcode install
-```
-
-**Step 2 — `rcode` on your PATH (optional).** For the `rcode` CLI command (e.g. `rcode version`, `rcode update`), install globally once:
-
-```bash
-npm install -g @hanzlaa/rcode
-```
-
-[Live on npm](https://www.npmjs.com/package/@hanzlaa/rcode) as `@hanzlaa/rcode`. Pure file shipping, no runtime dependencies. Step 1 installs into:
-
-- `.rihal/` — config, workflows, references, bin (Rihal infrastructure)
-- `.claude/agents/` — 45 first-class subagents
-- `.claude/commands/rihal/` — 109 slash commands
-- `.claude/skills/` — 85 phrase-activated skills
-- `rihal/brain/` — Rihal standards pulled from upstream
-- `.planning/` — where your artifacts land
-
-Restart Claude Code (or your IDE), type `/`, and every `rihal-*` command appears. Update anytime with `npx @hanzlaa/rcode update`.
-
-See [`docs/install.md`](docs/install.md) for flavors (module subsets, IDE options, version pinning, yolo mode).
-
-### Then begin the rihla
-
-```
+# 2. Restart Claude Code, then:
 /rihal-init
 ```
 
-`/rihal-init` is the single first command — there is no other entry point to choose. It detects your project state (fresh / existing-with-no-rihal / returning), asks a few configuration questions, and routes you to the right first action. For a greenfield project it routes into `/rihal-new-project` automatically — you never call that directly, it's a sub-path of `/rihal-init`.
+`/rihal-init` detects your project state (fresh / existing / returning) and routes to the right first action. For a greenfield project it auto-routes to `/rihal-new-project`.
 
 ### The full loop
 
 ```
-/rihal-council should I rewrite auth?        → 5 agents debate in parallel, 2 rounds
+/rihal-council should I rewrite auth?        → 5 agents debate, 2 rounds
 /rihal-plan --research build a rental app    → researcher grounds, sprint-checker verifies
 /rihal-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
 /rihal-status                                → phases, decisions, blockers, sessions
 ```
 
-**Brand new?** Do the [Golden Path](docs/TIERS.md#-starter--the-golden-path): scaffold → PRD → stories → sprint → dev → review → status. Seven skills, one project, end-to-end.
+Full install flavors and IDE options: [`docs/install.md`](docs/install.md). Step-by-step first project: [`docs/getting-started.md`](docs/getting-started.md).
 
 ---
 
-## What makes Rihal different
+## What's next (roadmap)
 
-Most AI tools give you one assistant pretending to be everything. **Rihal Code gives you Rihal's team — and Rihal's brain — inside every project.**
+The directions I'm building toward — open to PRs on any of these:
 
-How it stacks up against the tools you already know:
+**Near-term (next 2 releases):**
+- **Dialogue → pillars extractor.** Run a discussion, get back reusable voice/constraint/methodology MDs. `/rihal-discuss-phase` already captures decisions; this would distill *style* and *constraints* too.
+- **User-level pillars** (`~/.rihal/pillars/`) for cross-project reuse — your voice, your review style, your testing standards live once, used everywhere.
+- **Token telemetry.** Real per-response cost tracking via Claude Code's Stop hook (issue #745).
+- **Slim agent split.** 6 agents currently exceed the 100-line lean target — splitting into role-focused variants.
 
-| Dimension | Cursor / Windsurf | CrewAI / AutoGen | **Rihal Code** |
-|-----------|-------------------|------------------|----------------|
-| Per-project memory | Per-user, not git-tracked | Requires a vector DB | Git-tracked markdown in `.rihal/memory/` |
-| Specialist agents | 1 generalist with IDE context | Define your own in code | 45 shipped at install time |
-| Workflow gates | None | Build your own | Structural — refuses to run without upstream |
-| Infrastructure | Cloud API + local IDE | Python server + dependencies | Zero — pure files |
-| IDE lock-in | Cursor only | Framework-specific | Claude, Cursor, Gemini, Codex |
-| Install | IDE extension | `pip install` + config + code | `npx install` — one command |
+**Mid-term:**
+- **Cloud sync for Memory Bank** (opt-in) — so distributed teams share `.rihal/memory/` without merge conflicts.
+- **Voice-controlled sessions** — drive rcode in a live meeting via voice; trigger workflows by keyword in conversation.
+- **Multi-language docs** — Arabic-first, English mirrored. Currently the methodology is English-only with Arabic naming.
 
-Full breakdown: [`docs/USP.md`](docs/USP.md).
+**Long-term direction:**
+The bet: **methodology as a product**. Skills, workflows, and agents become a portable "engineering org in a folder" that travels with you across projects, IDEs, and LLM vendors. The methodology outlives any specific model.
 
-### Persistent project memory
+The non-goal: building yet another agent framework. There are enough. rcode stays files.
 
-A checked-in **Memory Bank** at `.rihal/memory/` — visible in the Diwan dashboard, with lossless distillates for fast LLM hydration. A typical session loads ~5K tokens of Memory Bank and is fully oriented to the project's history, decisions, and known issues. See [`MEMORY_BANK.md`](MEMORY_BANK.md) for the spec.
+---
 
-### Intent guards catch wrong commands
+## Honest state of things
 
-Run the wrong command and you get a single-line copy-paste redirect — not a useless output.
+- **v3.6.20** shipped 2026-05-22 with 50+ bug fixes from a full 3-project dogfeed run.
+- **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
+- **Test suite**: 30 tests, 100% pass on every release. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
+- **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
+- **Funding**: none. This is solo work. If your company wants commercial support, [email me](mailto:hanzla.dev@gmail.com).
 
-```
-/rihal-plan should we use postgres or mongo?
-⚠ That's a decision question, not a planning input.
-/rihal-council should we use postgres or mongo?
-```
+---
 
-Every workflow has a Step 0.5 intent detector.
+## Why "Rihal"
 
-### Markdown-first agent design
+رحّال (Rihāl) means "traveler" in Arabic — someone who carries knowledge between places. The persona names (Sadiq, Waleed, Fatima, Hussain, etc.) are Arabic placeholders. Swap them for your team in `rihal/team.yaml`. The methodology is the persona, not the names.
 
-Most agent frameworks wrap their logic in Python classes, JSON schemas, and orchestration layers. rcode doesn't. Every agent is a markdown file — the model follows structured prose, no wrapper needed.
-
-The design rule: **markdown owns the logic, scripts own the boundaries.** Heavy playbook content lives in `rihal/references/` and gets `@-include`d at spawn time, so agent files stay thin (≤100 lines) without losing context.
-
-### Three execution modes
-
-- **`/rihal-council`** — parallel debate: 3-5 agents answer simultaneously, then challenge each other in Round 2. For strategic decisions where you want disagreement, not consensus.
-- **`/rihal-chain`** — sequential pipeline: each agent reads the previous one's artifact (RESEARCH.md → SCOPE.md → PLAN.md).
-- **`/rihal-discuss`** — single agent, quick-sync: one expert, conversational, no mandatory artifact.
-
-### Karpathy coding guidelines
-
-4 behavioral principles from [Andrej Karpathy's observations on LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills), wired into every code-writing agent as hard constraints: think before coding, simplicity first, surgical changes, goal-driven execution. `/rihal-code-review --karpathy` runs them as a post-hoc audit against any diff.
-
-### Verification built in
-
-`/rihal-plan` runs `rihal-sprint-checker` to validate file/symbol references before execution. `/rihal-execute` runs `rihal-integration-checker` (cross-phase E2E) and `rihal-nyquist-auditor` (test coverage) after completion.
+[Rihal](https://rihal.om) is also one of Oman's fastest-growing tech companies — naming inspiration, not commercial affiliation.
 
 ---
 
 ## Learn more
 
 | Document | What's in it |
-|----------|--------------|
-| [`DOCS.md`](DOCS.md) | Complete documentation — install, concepts, all commands, Memory Bank, dashboard, testing & CI, architecture |
+|---|---|
+| [`DOCS.md`](DOCS.md) | Complete docs — install, concepts, all commands, Memory Bank, dashboard, testing, architecture |
 | [`docs/getting-started.md`](docs/getting-started.md) | Step-by-step first project |
 | [`docs/TIERS.md`](docs/TIERS.md) | Starter / Advanced / Power-user paths |
+| [`docs/dogfeed-flows.md`](docs/dogfeed-flows.md) | Live dogfeed log — every Q&A flow, every bug found, every fix shipped |
 | [`MEMORY_BANK.md`](MEMORY_BANK.md) | Memory Bank specification |
-| [`BRAND.md`](BRAND.md) | Naming, voice, and persona glossary |
-| [`MIGRATIONS.md`](MIGRATIONS.md) | Upgrade path from a pre-Memory-Bank install |
+| [`BRAND.md`](BRAND.md) | Naming, voice, persona glossary |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
-
----
-
-## Why "Rihal"
-
-رحّال (Rihāl) is Arabic for "traveler" — someone who journeys between places carrying knowledge. [Rihal](https://rihal.om) is also one of Oman's fastest-growing tech companies. The agent names are Arabic placeholders — swap them for your team in `rihal/team.yaml`.
 
 ---
 
 ## Credits
 
-- Karpathy coding guidelines adapted from [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (MIT)
-- File-shipping installer pattern inspired by the broader agent-skill ecosystem
+- [Andrej Karpathy's coding observations](https://github.com/forrestchang/andrej-karpathy-skills) (MIT) — wired into the code-review agents as hard constraints.
+- Built solo with [Claude Code](https://claude.com/claude-code) — the methodology shipped here is the one used to build it.
 
 ---
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](LICENSE). Use it, fork it, ship it.
