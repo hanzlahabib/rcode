@@ -184,7 +184,7 @@ CURRENT=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | python3 -c "i
 find .planning/phases/*${CURRENT}* -name "*-SPRINT.md" -o -name "*-CONTEXT.md" 2>/dev/null | head -1
 ```
 
-If current_phase is null or empty: skip this check (not started).
+If current_phase is null or empty: print `ℹ SKIP — Check 8: no active phase set (run /rihal-new-project or /rihal-plan to start one)` and treat as skipped (do not count toward pass/fail).
 If file found: `✓ PASS — current phase ${CURRENT} has planning artifacts`
 If no file: `⚠ WARN — current phase ${CURRENT} has no SPRINT.md or CONTEXT.md. Run: /rihal-plan ${CURRENT}`
 
