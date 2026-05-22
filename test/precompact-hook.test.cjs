@@ -1,5 +1,5 @@
 /**
- * Tests for the `pre-compact` subcommand in rihal/bin/rihal-hooks.cjs.
+ * Tests for the `pre-compact` subcommand in rcode/bin/rcode-hooks.cjs.
  *
  * pre-compact is a PreCompact hook (#743): it refreshes HANDOFF.json with the
  * active phase/plan pointer so a post-compaction agent can resume. It is a
@@ -15,14 +15,14 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-const HOOK = path.resolve(__dirname, '../rihal/bin/rihal-hooks.cjs');
+const HOOK = path.resolve(__dirname, '../rcode/bin/rcode-hooks.cjs');
 
 function makeTempCwd(state) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-precompact-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-precompact-'));
   if (state !== undefined) {
-    fs.mkdirSync(path.join(dir, '.rihal'), { recursive: true });
+    fs.mkdirSync(path.join(dir, '.rcode'), { recursive: true });
     fs.writeFileSync(
-      path.join(dir, '.rihal', 'state.json'),
+      path.join(dir, '.rcode', 'state.json'),
       JSON.stringify(state, null, 2)
     );
   }

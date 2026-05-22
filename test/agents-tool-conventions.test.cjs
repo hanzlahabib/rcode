@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const AGENTS_DIR = path.join(PROJECT_ROOT, 'rihal', 'agents');
+const AGENTS_DIR = path.join(PROJECT_ROOT, 'rcode', 'agents');
 
 // Tools that the Claude Code harness accepts. PascalCase only.
 const VALID_TOOLS = new Set([
@@ -47,11 +47,11 @@ function parseFrontmatter(text) {
 }
 
 const agentFiles = fs.readdirSync(AGENTS_DIR)
-  .filter((f) => f.startsWith('rihal-') && f.endsWith('.md'))
+  .filter((f) => f.startsWith('rcode-') && f.endsWith('.md'))
   .map((f) => path.join(AGENTS_DIR, f));
 
 test('agents-tool-conventions: at least one agent file is present', () => {
-  assert.ok(agentFiles.length > 0, 'expected agent files under rihal/agents/');
+  assert.ok(agentFiles.length > 0, 'expected agent files under rcode/agents/');
 });
 
 test('agents-tool-conventions: no agent uses Gemini snake_case tool names', () => {

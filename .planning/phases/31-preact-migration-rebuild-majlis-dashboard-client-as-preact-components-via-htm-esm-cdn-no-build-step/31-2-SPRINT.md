@@ -95,7 +95,7 @@ Keep `sprintHints()`/`phaseHints()` logic — move those pure functions into
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/shared.js && node --check server/lib/html/client/util.js && node --check server/lib/html/client/views/OverviewView.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/shared.js && node --check server/lib/html/client/util.js && node --check server/lib/html/client/views/OverviewView.js && echo OK
 </automated>
 </verify>
 <done>shared.js exports 9 primitives; OverviewView imports them; hint logic lives in util.js.</done>
@@ -127,7 +127,7 @@ from shared.js.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/RoadmapView.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/RoadmapView.js && echo OK
 </automated>
 </verify>
 <done>RoadmapView parses; tree expansion is component state, not DOM toggling.</done>
@@ -165,7 +165,7 @@ globals — call `window.runningInPhase` etc. with a BRIDGE marker.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/MilestonesView.js && node --check server/lib/html/client/views/PhasesView.js && node --check server/lib/html/client/components/shared.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/MilestonesView.js && node --check server/lib/html/client/views/PhasesView.js && node --check server/lib/html/client/components/shared.js && echo OK
 </automated>
 </verify>
 <done>Both views + PhaseCard/SprintCard parse; detail mode driven by router subId.</done>
@@ -202,7 +202,7 @@ server/lib/html/client/components/shared.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/SprintsView.js && node --check server/lib/html/client/views/TasksView.js && node --check server/lib/html/client/components/shared.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/SprintsView.js && node --check server/lib/html/client/views/TasksView.js && node --check server/lib/html/client/components/shared.js && echo OK
 </automated>
 </verify>
 <done>Both views + TaskCard parse; filter/sort/expand are component state.</done>
@@ -245,7 +245,7 @@ server/lib/html/client/client-render.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/client-render.js && node --check server/lib/html/client/components/App.js && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log('status',r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/client-render.js && node --check server/lib/html/client/components/App.js && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log('status',r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
 </automated>
 </verify>
 <done>5 views registered in App; replaced legacy functions deleted; no dangling references; dashboard serves 200.</done>

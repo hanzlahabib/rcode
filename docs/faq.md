@@ -1,16 +1,16 @@
 # FAQ: Frequently Asked Questions
 
-Answers to common questions about Rihal Code.
+Answers to common questions about rcode.
 
 ---
 
 ## Installation & Setup
 
-### Q: Why doesn't `/rihal-do` appear after installing?
+### Q: Why doesn't `/rcode-do` appear after installing?
 
 **A:** Restart your IDE.
 
-Rihal installs commands by writing to `.claude/commands/rihal/` and `.claude/settings.json`. IDEs typically scan these files only on startup. After install:
+rcode installs commands by writing to `.claude/commands/rcode/` and `.claude/settings.json`. IDEs typically scan these files only on startup. After install:
 
 - **Claude Code:** Restart from Command Palette
 - **Cursor:** Reload window
@@ -28,7 +28,7 @@ npx @hanzlaa/rcode install --module core
 
 This gives you:
 - 5 council agents
-- `/rihal-council`, `/rihal-discuss`, `/rihal-status`
+- `/rcode-council`, `/rcode-discuss`, `/rcode-status`
 - State management
 
 Then add execution later:
@@ -38,19 +38,19 @@ npx @hanzlaa/rcode install --module execution --force
 
 ---
 
-### Q: Does Rihal require any npm dependencies?
+### Q: Does rcode require any npm dependencies?
 
-**A:** No. Rihal ships as pure files (Markdown, YAML, Node.js binary). Zero npm dependency.
+**A:** No. rcode ships as pure files (Markdown, YAML, Node.js binary). Zero npm dependency.
 
-Rihal installs via `npx @hanzlaa/rcode install` — it copies files into your project. You don't `npm install` anything.
+rcode installs via `npx @hanzlaa/rcode install` — it copies files into your project. You don't `npm install` anything.
 
 ---
 
-### Q: Can I install Rihal into a project that already has other agents?
+### Q: Can I install rcode into a project that already has other agents?
 
-**A:** Yes. Rihal installs into `.claude/agents/` and `.claude/commands/rihal/`, which don't conflict with your existing agents.
+**A:** Yes. rcode installs into `.claude/agents/` and `.claude/commands/rcode/`, which don't conflict with your existing agents.
 
-Your existing agents stay untouched. Rihal agents are namespaced under `rihal-*`.
+Your existing agents stay untouched. rcode agents are namespaced under `rcode-*`.
 
 ---
 
@@ -64,13 +64,13 @@ Your existing agents stay untouched. Rihal agents are namespaced under `rihal-*`
 - **Chain** — Building something step-by-step (research → scope → plan)
 - **Discuss** — Quick question for one expert
 
-Start with `/rihal-do` — it routes you based on state.
+Start with `/rcode-do` — it routes you based on state.
 
 ---
 
 ### Q: How do I know which command to run next?
 
-**A:** Run `/rihal-do`.
+**A:** Run `/rcode-do`.
 
 It's the interactive router. Based on your project state, it suggests what you should do next:
 - Fresh project? → Suggest new-project or research
@@ -84,13 +84,13 @@ It's the interactive router. Based on your project state, it suggests what you s
 
 **A:** Check intent guard output.
 
-Every Rihal workflow has a "Step 0.5" that detects mismatched intent. If you run the wrong command, you get a single-line copy-paste redirect:
+Every rcode workflow has a "Step 0.5" that detects mismatched intent. If you run the wrong command, you get a single-line copy-paste redirect:
 
 ```
-/rihal-plan should we use postgres or mongo?
+/rcode-plan should we use postgres or mongo?
 ⚠ That's a decision question, not a planning input.
 Copy-paste this instead:
-/rihal-council should we use postgres or mongo?
+/rcode-council should we use postgres or mongo?
 ```
 
 ---
@@ -101,12 +101,12 @@ Copy-paste this instead:
 
 **Option 1: Override panel for one council**
 ```
-/rihal-council --agents=waleed,fatima,sadiq should we migrate to serverless?
+/rcode-council --agents=waleed,fatima,sadiq should we migrate to serverless?
 ```
 
 **Option 2: See scoring breakdown (why agents were picked)**
 ```
-/rihal-council --explain "should we hire a DevOps person?"
+/rcode-council --explain "should we hire a DevOps person?"
 ```
 
 Shows which agents scored highest and why. Used this to tune scoring.
@@ -118,9 +118,9 @@ Shows which agents scored highest and why. Used this to tune scoring.
 **A:** Step 0.5 of every workflow detects if you're asking the wrong command.
 
 Examples:
-- Ask `/rihal-plan` a decision question → redirects to `/rihal-council`
-- Ask `/rihal-council` "how do I implement X?" → redirects to `/rihal-discuss` or `/rihal-chain`
-- Ask `/rihal-execute` without a plan → redirects to `/rihal-plan`
+- Ask `/rcode-plan` a decision question → redirects to `/rcode-council`
+- Ask `/rcode-council` "how do I implement X?" → redirects to `/rcode-discuss` or `/rcode-chain`
+- Ask `/rcode-execute` without a plan → redirects to `/rcode-plan`
 
 Catches mistakes early with a copy-paste fix.
 
@@ -133,13 +133,13 @@ Catches mistakes early with a copy-paste fix.
 **A:** Yes. Create a file at:
 
 ```
-~/.rihal/agents/rihal-<name>.md
+~/.rcode/agents/rcode-<name>.md
 ```
 
 Format:
 ```markdown
 ---
-name: rihal-my-expert
+name: rcode-my-expert
 alias: my-expert
 role: Your custom role
 model: claude-opus-4-20250514
@@ -167,8 +167,8 @@ When someone asks you something, [how you respond].
 
 Then use it:
 ```
-/rihal-discuss my-expert should we use this library?
-/rihal-chain my-expert,waleed,planner "your topic"
+/rcode-discuss my-expert should we use this library?
+/rcode-chain my-expert,waleed,planner "your topic"
 ```
 
 ---
@@ -179,16 +179,16 @@ Then use it:
 
 **Project-local agents:**
 ```
-.claude/agents/rihal-*.md
+.claude/agents/rcode-*.md
 ```
-Installed with Rihal. Only these three:
-- `rihal-sadiq.md`
-- `rihal-waleed.md`
-- `rihal-fatima.md`
+Installed with rcode. Only these three:
+- `rcode-sadiq.md`
+- `rcode-waleed.md`
+- `rcode-fatima.md`
 
 **Global agents (for customization):**
 ```
-~/.rihal/agents/rihal-*.md
+~/.rcode/agents/rcode-*.md
 ```
 Create your own here. They appear alongside project-local agents.
 
@@ -201,9 +201,9 @@ Create your own here. They appear alongside project-local agents.
 The panel scorer may suggest them, but they're not installed as subagents yet. Roadmap includes all 5 as first-class council members.
 
 **Workaround:** Add them yourself:
-1. Copy a council agent (e.g., `rihal-waleed.md`)
+1. Copy a council agent (e.g., `rcode-waleed.md`)
 2. Customize for Mariam/Hussain-PM
-3. Save as `.claude/agents/rihal-mariam.md`
+3. Save as `.claude/agents/rcode-mariam.md`
 
 ---
 
@@ -211,19 +211,19 @@ The panel scorer may suggest them, but they're not installed as subagents yet. R
 
 ### Q: How do I save my progress if I have to stop?
 
-**A:** Use `/rihal-pause-work`:
+**A:** Use `/rcode-pause-work`:
 
 ```
-/rihal-pause-work
+/rcode-pause-work
 ```
 
 Creates:
-- `.rihal/HANDOFF.json` — machine-readable context
+- `.rcode/HANDOFF.json` — machine-readable context
 - `.planning/.continue-here.md` — human-readable summary
 
 Later, resume with:
 ```
-/rihal-resume-work
+/rcode-resume-work
 ```
 
 ---
@@ -233,7 +233,7 @@ Later, resume with:
 **A:** Run health check:
 
 ```
-/rihal-health --fix
+/rcode-health --fix
 ```
 
 Detects and auto-fixes:
@@ -244,18 +244,18 @@ Detects and auto-fixes:
 
 If `--fix` doesn't work, check git history:
 ```
-git log --oneline .rihal/state.json
-git show HEAD~1:.rihal/state.json
+git log --oneline .rcode/state.json
+git show HEAD~1:.rcode/state.json
 ```
 
 ---
 
 ### Q: Can I undo the last execution?
 
-**A:** Yes, use `/rihal-undo`:
+**A:** Yes, use `/rcode-undo`:
 
 ```
-/rihal-undo
+/rcode-undo
 ```
 
 Reverts:
@@ -269,10 +269,10 @@ Reverts:
 
 ### Q: How do I recover from a failed phase?
 
-**A:** Run `/rihal-correct-course`:
+**A:** Run `/rcode-correct-course`:
 
 ```
-/rihal-correct-course
+/rcode-correct-course
 ```
 
 Analyzes the failure and suggests:
@@ -287,19 +287,19 @@ Interactive prompt helps choose.
 
 ## Planning & Execution
 
-### Q: What's the difference between `/rihal-plan` and `/rihal-chain`?
+### Q: What's the difference between `/rcode-plan` and `/rcode-chain`?
 
 **A:**
 
-- **`/rihal-plan`** — Write a plan for one phase. You know what you want; just need the breakdown.
+- **`/rcode-plan`** — Write a plan for one phase. You know what you want; just need the breakdown.
   ```
-  /rihal-plan 02 build user authentication
+  /rcode-plan 02 build user authentication
   ```
   Output: PLAN.md with tasks + success criteria
 
-- **`/rihal-chain`** — Discover what to build step-by-step. Research → Scope → Plan.
+- **`/rcode-chain`** — Discover what to build step-by-step. Research → Scope → Plan.
   ```
-  /rihal-chain research-plan build a rental app for dubai
+  /rcode-chain research-plan build a rental app for dubai
   ```
   Output: RESEARCH.md, SCOPE.md, PLAN.md
 
@@ -309,7 +309,7 @@ If you're uncertain, use chain first, then plan. If you know what to build, use 
 
 ### Q: What happens when I execute a plan?
 
-**A:** `/rihal-execute` does this:
+**A:** `/rcode-execute` does this:
 
 1. Load the plan's tasks
 2. Create feature branch (if configured)
@@ -346,7 +346,7 @@ If you're uncertain, use chain first, then plan. If you know what to build, use 
 Executor doesn't care where plan came from. Point it at any PLAN.md:
 
 ```
-/rihal-execute ./some-other-plan.md
+/rcode-execute ./some-other-plan.md
 ```
 
 ---
@@ -359,13 +359,13 @@ Executor doesn't care where plan came from. Point it at any PLAN.md:
 ❌ Task 02.01.02 failed: "npm install stripe" failed with: no npm
 Blocked: Can't proceed to next task (depends on stripe installed)
 Recommendation: Install Node.js and npm, then rerun
-/rihal-rerun 02.01.02
+/rcode-rerun 02.01.02
 ```
 
 Fix the blocker manually, then rerun:
 
 ```
-/rihal-rerun 02.01.02
+/rcode-rerun 02.01.02
 ```
 
 ---
@@ -382,7 +382,7 @@ Mariam auto-triggers for:
 
 Example:
 ```
-/rihal-council yar affiliate site bnanai hai dubai ma
+/rcode-council yar affiliate site bnanai hai dubai ma
 → Panel: [mariam, hussain-pm, sadiq]
 ```
 
@@ -395,9 +395,9 @@ Mariam picked because "dubai", "affiliate", "bnanai" are in her keyword list.
 **A:** Yes, via config:
 
 ```bash
-/rihal-settings
+/rcode-settings
 # or edit directly:
-nano .rihal/config.yaml
+nano .rcode/config.yaml
 ```
 
 Set:
@@ -413,7 +413,7 @@ Agents will respond in that language (if they know it).
 
 ### Q: Why do I get warnings about file size?
 
-**A:** Rihal enforces max 600-1000 lines per file to avoid bloat.
+**A:** rcode enforces max 600-1000 lines per file to avoid bloat.
 
 If an agent file or PLAN.md approaches 600 lines, you get a warning. Once you hit ~800, it's an error.
 
@@ -445,7 +445,7 @@ etc.
 Wired into every code-writing agent as hard constraints. Audit recent changes:
 
 ```
-/rihal-code-review HEAD~5..HEAD --karpathy
+/rcode-review HEAD~5..HEAD --karpathy
 ```
 
 ---
@@ -456,7 +456,7 @@ Wired into every code-writing agent as hard constraints. Audit recent changes:
 
 ```markdown
 ---
-name: rihal-my-agent
+name: rcode-my-agent
 role: ...
 ---
 
@@ -486,10 +486,10 @@ Varies based on question complexity and agent verbosity.
 
 ### Q: How do I see token usage?
 
-**A:** Run `/rihal-stats`:
+**A:** Run `/rcode-stats`:
 
 ```
-/rihal-stats
+/rcode-stats
 ```
 
 Shows:
@@ -505,7 +505,7 @@ Shows:
 **A:** Yes, via model profile:
 
 ```
-/rihal-settings
+/rcode-settings
 ```
 
 Profiles:
@@ -516,22 +516,22 @@ Profiles:
 
 Change with:
 ```
-/rihal-config --set=model_profile=budget
+/rcode-config --set=model_profile=budget
 ```
 
 ---
 
 ## Git Integration
 
-### Q: Does Rihal auto-commit?
+### Q: Does rcode auto-commit?
 
-**A:** No. Rihal writes to `.rihal/state.json` and `.planning/`, but doesn't commit.
+**A:** No. rcode writes to `.rcode/state.json` and `.planning/`, but doesn't commit.
 
 **You control commits.** After execution:
 
 ```
 git status
-git add .rihal/state.json .planning/
+git add .rcode/state.json .planning/
 git commit -m "feat(phase-02): user authentication (02.01, 02.02)"
 ```
 
@@ -539,10 +539,10 @@ git commit -m "feat(phase-02): user authentication (02.01, 02.02)"
 
 ### Q: Can I see what changed in a phase?
 
-**A:** Yes, use `/rihal-diff`:
+**A:** Yes, use `/rcode-diff`:
 
 ```
-/rihal-diff 01 02
+/rcode-diff 01 02
 ```
 
 Shows what changed between phases. Or compare commits:
@@ -553,7 +553,7 @@ git log --oneline 01..02
 
 ---
 
-### Q: Does Rihal enforce a branching strategy?
+### Q: Does rcode enforce a branching strategy?
 
 **A:** Optional. Configure in `config.yaml`:
 
@@ -562,8 +562,8 @@ git:
   branching_strategy: "feature-branch"  # or "worktree-isolation" or "none"
 ```
 
-- **none** — Rihal doesn't touch git
-- **feature-branch** — `/rihal-execute` creates `feature/phase-{N}` branches
+- **none** — rcode doesn't touch git
+- **feature-branch** — `/rcode-execute` creates `feature/phase-{N}` branches
 - **worktree-isolation** — Uses git worktrees (experimental)
 
 ---
@@ -576,32 +576,32 @@ git:
 
 1. **Pause and resume:**
    ```
-   /rihal-pause-work
-   /rihal-resume-work
+   /rcode-pause-work
+   /rcode-resume-work
    ```
 
 2. **Reduce scope:**
    ```
-   /rihal-quick fix just this one thing
+   /rcode-quick fix just this one thing
    ```
 
 3. **Use simpler model:**
    ```
-   /rihal-config --set=model_profile=budget
+   /rcode-config --set=model_profile=budget
    ```
 
 ---
 
 ### Q: I see "Unauthorized git operation" error. What's happening?
 
-**A:** Rihal has a safety rule: no auto-pushes. Push requires explicit user approval.
+**A:** rcode has a safety rule: no auto-pushes. Push requires explicit user approval.
 
 To push:
 ```
 git push origin feature/phase-02
 ```
 
-(You type it yourself; Rihal won't do it automatically.)
+(You type it yourself; rcode won't do it automatically.)
 
 ---
 
@@ -627,12 +627,12 @@ Then rerun the command.
 **A:** Check `.claude/agents/`:
 
 ```bash
-ls .claude/agents/rihal-*.md
+ls .claude/agents/rcode-*.md
 ```
 
 Or run:
 ```
-/rihal-help
+/rcode-help
 ```
 
 ---
@@ -645,19 +645,19 @@ Or run:
 
 1. **Reduce panel size:**
    ```
-   /rihal-council --agents=waleed,sadiq "your question"
+   /rcode-council --agents=waleed,sadiq "your question"
    ```
    Smaller panel = faster parallel execution
 
 2. **Use discuss instead:**
    ```
-   /rihal-discuss waleed "your question"
+   /rcode-discuss waleed "your question"
    ```
    Single agent is much faster
 
 3. **Use budget model:**
    ```
-   /rihal-config --set=model_profile=budget
+   /rcode-config --set=model_profile=budget
    ```
 
 4. **Simpler question:**
@@ -667,7 +667,7 @@ Or run:
 
 ### Q: Can I run multiple commands in parallel?
 
-**A:** Not recommended. Rihal uses file-based locking (`.rihal/.lock`) to prevent concurrent access to state.
+**A:** Not recommended. rcode uses file-based locking (`.rcode/.lock`) to prevent concurrent access to state.
 
 If you try parallel commands, the second one will wait for the first to complete.
 
@@ -684,7 +684,7 @@ If you try parallel commands, the second one will wait for the first to complete
 
 Still stuck? Check:
 ```
-/rihal-help <command>
-/rihal-forensics --last
-/rihal-health
+/rcode-help <command>
+/rcode-forensics --last
+/rcode-health
 ```

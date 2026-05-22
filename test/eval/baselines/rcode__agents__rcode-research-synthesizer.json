@@ -1,0 +1,15 @@
+{
+  "artifact": "rcode/agents/rcode-research-synthesizer.md",
+  "negativeBoundaries": [],
+  "routingKeywords": [
+    "rcode-new-project",
+    "rcode-roadmapper",
+    "spawned by"
+  ],
+  "tools": [
+    "Bash",
+    "Read",
+    "Write"
+  ],
+  "triggers": []
+}

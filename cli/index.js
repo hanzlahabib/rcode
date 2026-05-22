@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Rihal Code CLI
+ * rcode CLI
  *
  * Usage:
- *   npx @hanzlaa/rcode init          → scaffold .rihal/ in current project
+ *   npx @hanzlaa/rcode init          → scaffold .rcode/ in current project
  *   npx @hanzlaa/rcode dashboard     → start the Diwan view-only dashboard
  *   npx @hanzlaa/rcode serve         → alias for dashboard
  *   npx @hanzlaa/rcode digest        → print compact agent digests
@@ -46,27 +46,27 @@ const COMMANDS = {
 
 function printHelp() {
   console.log(`
-🕌 Rihal Code v${PACKAGE_JSON.version}
-    Context-aware AI team methodology. See tiers: \`rihal-code tiers\`
+🕌 rcode v${PACKAGE_JSON.version}
+    Context-aware AI team methodology. See tiers: \`rcode tiers\`
 
 Usage:
   rcode <command>
 
 📦 PROJECT
-  install        Install Rihal Code into the current project
-                 (sets up .rihal/, .claude/skills/, .claude/commands/,
+  install        Install rcode into the current project
+                 (sets up .rcode/, .claude/skills/, .claude/commands/,
                  .cursor/rules/, .windsurf/rules/, .antigravity/agents/, AGENTS.md)
   init           Alias for install
-  update         Refresh skill files (backs up .rihal/ state first)
-  uninstall      Remove Rihal Code from the current project
+  update         Refresh skill files (backs up .rcode/ state first)
+  uninstall      Remove rcode from the current project
   remove         Alias for uninstall
-  nuke           Wipe ALL rihal/rcode installs everywhere (global packages,
-                 binaries, ~/.claude/* rihal artifacts, ~/.rihal/, project artifacts)
+  nuke           Wipe ALL rcode/rcode installs everywhere (global packages,
+                 binaries, ~/.claude/* rcode artifacts, ~/.rcode/, project artifacts)
                  Default = dry-run. Pass --yes to remove. Pass --include-planning
                  to also remove .planning/ in CWD.
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Memory bank freshness (--check | --refresh | --install-hook)
-  github-sync    Sync .rihal/ phases/epics/stories to GitHub (dry-run default)
+  github-sync    Sync .rcode/ phases/epics/stories to GitHub (dry-run default)
 
 👥 TEAM
   team           List the team roster
@@ -100,28 +100,28 @@ Documentation: https://github.com/hanzlahabib/rihal-code
  * who run `npm install -g @hanzlaa/rcode` see only "added 1 package" with no
  * confirmation that 100+ commands and skills were installed. We detect a fresh
  * install on the first `rcode <anything>` invocation by checking for a marker
- * file under ~/.rihal/, print a one-time welcome banner, then drop the marker.
+ * file under ~/.rcode/, print a one-time welcome banner, then drop the marker.
  */
 function maybeShowFirstRunBanner() {
   const os = require('os');
   const home = os.homedir();
-  const markerDir = path.join(home, '.rihal');
+  const markerDir = path.join(home, '.rcode');
   const marker = path.join(markerDir, '.welcome-shown');
   if (fs.existsSync(marker)) return;
 
   // Only show banner if global install actually ran — i.e. ~/.claude/commands/
-  // has rihal-*.md files. Otherwise this is a developer running from source.
+  // has rcode-*.md files. Otherwise this is a developer running from source.
   const globalCommands = path.join(home, '.claude', 'commands');
-  let hasGlobalRihal = false;
+  let hasGlobalrcode = false;
   try {
-    hasGlobalRihal = fs.existsSync(globalCommands) &&
-      fs.readdirSync(globalCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    hasGlobalrcode = fs.existsSync(globalCommands) &&
+      fs.readdirSync(globalCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md'));
   } catch { /* unreadable */ }
-  if (!hasGlobalRihal) return;
+  if (!hasGlobalrcode) return;
 
-  console.log(`\n🕌 Rihal Code v${PACKAGE_JSON.version} — first run detected.\n`);
-  console.log(`   ✓ ${countGlobalRihal(globalCommands)} slash commands installed → ~/.claude/commands/`);
-  console.log(`   ✓ All /rihal-* commands available in every Claude Code project.`);
+  console.log(`\n🕌 rcode v${PACKAGE_JSON.version} — first run detected.\n`);
+  console.log(`   ✓ ${countGlobalRcode(globalCommands)} slash commands installed → ~/.claude/commands/`);
+  console.log(`   ✓ All /rcode-* commands available in every Claude Code project.`);
   console.log(`\n   To set up a project:  cd my-project && rcode install`);
   console.log(`   Show all commands:    rcode help`);
   console.log(`   Diagnose issues:      rcode doctor\n`);
@@ -132,9 +132,9 @@ function maybeShowFirstRunBanner() {
   } catch { /* if we can't write the marker, banner shows again next time — annoying but not broken */ }
 }
 
-function countGlobalRihal(dir) {
+function countGlobalRcode(dir) {
   try {
-    return fs.readdirSync(dir).filter(f => f.startsWith('rihal-') && f.endsWith('.md')).length;
+    return fs.readdirSync(dir).filter(f => f.startsWith('rcode-') && f.endsWith('.md')).length;
   } catch { return 0; }
 }
 

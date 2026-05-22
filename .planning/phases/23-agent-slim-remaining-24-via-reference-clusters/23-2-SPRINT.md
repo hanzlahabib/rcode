@@ -6,15 +6,15 @@ type: execute
 wave: 2
 depends_on: [23-1]
 files_modified:
-  - rihal/agents/rihal-haitham.md
-  - rihal/agents/rihal-omar.md
-  - rihal/agents/rihal-yousef.md
-  - rihal/agents/rihal-nyquist-auditor.md
-  - rihal/agents/rihal-docs-auditor.md
-  - rihal/agents/rihal-ui-auditor.md
-  - rihal/agents/rihal-security-auditor.md
-  - rihal/agents/rihal-security-adversary.md
-  - rihal/agents/rihal-edge-case-hunter.md
+  - rcode/agents/rcode-haitham.md
+  - rcode/agents/rcode-omar.md
+  - rcode/agents/rcode-yousef.md
+  - rcode/agents/rcode-nyquist-auditor.md
+  - rcode/agents/rcode-docs-auditor.md
+  - rcode/agents/rcode-ui-auditor.md
+  - rcode/agents/rcode-security-auditor.md
+  - rcode/agents/rcode-security-adversary.md
+  - rcode/agents/rcode-edge-case-hunter.md
 autonomous: true
 requirements: [GH-713]
 
@@ -22,45 +22,45 @@ must_haves:
   truths:
     - All 9 agents slim to ≤100 lines after removing shared content and adding @-include
     - Each agent's unique identity, named heuristics, capabilities, examples, and redirects are fully preserved
-    - The @-include line points to .rihal/references/ (not rihal/references/)
+    - The @-include line points to .rcode/references/ (not rcode/references/)
     - Each agent's YAML frontmatter (name, description, tools, color) is unchanged
   artifacts:
-    - rihal/agents/rihal-haitham.md (≤100 lines)
-    - rihal/agents/rihal-omar.md (≤100 lines)
-    - rihal/agents/rihal-yousef.md (≤100 lines)
-    - rihal/agents/rihal-nyquist-auditor.md (≤100 lines)
-    - rihal/agents/rihal-docs-auditor.md (≤100 lines)
-    - rihal/agents/rihal-ui-auditor.md (≤100 lines)
-    - rihal/agents/rihal-security-auditor.md (≤100 lines)
-    - rihal/agents/rihal-security-adversary.md (≤100 lines)
-    - rihal/agents/rihal-edge-case-hunter.md (≤100 lines)
+    - rcode/agents/rcode-haitham.md (≤100 lines)
+    - rcode/agents/rcode-omar.md (≤100 lines)
+    - rcode/agents/rcode-yousef.md (≤100 lines)
+    - rcode/agents/rcode-nyquist-auditor.md (≤100 lines)
+    - rcode/agents/rcode-docs-auditor.md (≤100 lines)
+    - rcode/agents/rcode-ui-auditor.md (≤100 lines)
+    - rcode/agents/rcode-security-auditor.md (≤100 lines)
+    - rcode/agents/rcode-security-adversary.md (≤100 lines)
+    - rcode/agents/rcode-edge-case-hunter.md (≤100 lines)
   key_links:
-    - @.rihal/references/persona-engineer-shared.md must exist (created in sprint 23-1)
-    - @.rihal/references/auditor-shared-checklists.md must exist (created in sprint 23-1)
-    - rihal-ui-auditor.md is NOT listed in the 24-agent target list in CONTEXT.md — read it before touching to confirm it needs slimming
+    - @.rcode/references/persona-engineer-shared.md must exist (created in sprint 23-1)
+    - @.rcode/references/auditor-shared-checklists.md must exist (created in sprint 23-1)
+    - rcode-ui-auditor.md is NOT listed in the 24-agent target list in CONTEXT.md — read it before touching to confirm it needs slimming
 ---
 
 <objective>
 Slim 9 agents by replacing their shared-content blocks with a single @-include line pointing to the cluster reference file. This sprint runs in Wave 2 after sprint 23-1 creates the reference files.
 
-Cluster A — Engineer personas (3 agents): haitham, omar, yousef. Each gets @.rihal/references/persona-engineer-shared.md added and the extracted shared blocks removed.
+Cluster A — Engineer personas (3 agents): haitham, omar, yousef. Each gets @.rcode/references/persona-engineer-shared.md added and the extracted shared blocks removed.
 
-Cluster B — Auditor agents (6 agents): nyquist-auditor, docs-auditor, ui-auditor, security-auditor, security-adversary, edge-case-hunter. Each gets @.rihal/references/auditor-shared-checklists.md added and the extracted shared blocks removed.
+Cluster B — Auditor agents (6 agents): nyquist-auditor, docs-auditor, ui-auditor, security-auditor, security-adversary, edge-case-hunter. Each gets @.rcode/references/auditor-shared-checklists.md added and the extracted shared blocks removed.
 
 Purpose: Reduce 9 agent files from their current 120-182L to ≤100L each. Close #713 requirement for this cluster.
 Output: 9 modified agent stub files.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
 @.planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CONTEXT.md
-@rihal/references/agent-shared-rules.md
-@rihal/references/persona-engineer-shared.md
-@rihal/references/auditor-shared-checklists.md
+@rcode/references/agent-shared-rules.md
+@rcode/references/persona-engineer-shared.md
+@rcode/references/auditor-shared-checklists.md
 </context>
 
 <tasks>
@@ -71,11 +71,11 @@ Output: 9 modified agent stub files.
 
 <files>
 Files to modify:
-  - rihal/agents/rihal-haitham.md (143L currently)
-  - rihal/agents/rihal-omar.md (138L currently)
-  - rihal/agents/rihal-yousef.md (137L currently)
+  - rcode/agents/rcode-haitham.md (143L currently)
+  - rcode/agents/rcode-omar.md (138L currently)
+  - rcode/agents/rcode-yousef.md (137L currently)
 Reference file to @-include:
-  - .rihal/references/persona-engineer-shared.md (created in 23-1)
+  - .rcode/references/persona-engineer-shared.md (created in 23-1)
 </files>
 
 <action>
@@ -89,7 +89,7 @@ Read each agent file in full before editing. Then read persona-engineer-shared.m
 
 **Blocks that MUST remain in each stub (do NOT remove):**
 - YAML frontmatter (name, description, tools, color) — unchanged
-- Existing @-include lines at top (@.rihal/references/response-style.md, etc.)
+- Existing @-include lines at top (@.rcode/references/response-style.md, etc.)
 - The persona identity section (who they are, background, personality)
 - Communication Style section (the persona-prefix line like "Response prefix: 🎨 **Haitham:**")
 - ALL specific named heuristics with their descriptions (Three-paths check, etc.)
@@ -103,7 +103,7 @@ Read each agent file in full before editing. Then read persona-engineer-shared.m
 
 **Add @-include line** after the existing @-include lines at the top of each file (after line 11-12 typically), before the first `#` heading:
 ```
-@.rihal/references/persona-engineer-shared.md
+@.rcode/references/persona-engineer-shared.md
 ```
 
 **Line count target:** Each file should end up between 90-100 lines after the edit. If still over 100, identify additional shared content that was missed and check it against the reference file content before removing further.
@@ -111,31 +111,31 @@ Read each agent file in full before editing. Then read persona-engineer-shared.m
 **Edit approach:** Use the Edit tool to make targeted removals. Do NOT rewrite the entire file. Identify the exact lines to remove, verify they match content that is NOW in persona-engineer-shared.md, then remove them. Never remove content that has no corresponding entry in the reference file.
 
 Process one agent at a time. After editing each agent:
-1. Run `wc -l rihal/agents/rihal-[name].md` and confirm ≤100
+1. Run `wc -l rcode/agents/rcode-[name].md` and confirm ≤100
 2. Verify the @-include line is present
-3. Confirm the specific heuristic names still appear (`grep "Three-paths\|Match-existing\|Critical-path" rihal/agents/rihal-[name].md`)
+3. Confirm the specific heuristic names still appear (`grep "Three-paths\|Match-existing\|Critical-path" rcode/agents/rcode-[name].md`)
 </action>
 
 <verify>
 <automated>
-wc -l rihal/agents/rihal-haitham.md rihal/agents/rihal-omar.md rihal/agents/rihal-yousef.md && grep -l "@.rihal/references/persona-engineer-shared.md" rihal/agents/rihal-haitham.md rihal/agents/rihal-omar.md rihal/agents/rihal-yousef.md | wc -l
+wc -l rcode/agents/rcode-haitham.md rcode/agents/rcode-omar.md rcode/agents/rcode-yousef.md && grep -l "@.rcode/references/persona-engineer-shared.md" rcode/agents/rcode-haitham.md rcode/agents/rcode-omar.md rcode/agents/rcode-yousef.md | wc -l
 </automated>
 </verify>
 
 <done>
 - All three files: wc -l ≤ 100
-- All three files contain: @.rihal/references/persona-engineer-shared.md
+- All three files contain: @.rcode/references/persona-engineer-shared.md
 - haitham.md still contains: "Three-paths check", "Hydration-cost test", "Match-existing-component", "Logical-properties-only", "Performance budget"
 - omar.md still contains: "Match-existing-pattern", "AC-lockstep", "Test-truth rule", "10-minute blocker rule", "Atomic-commit rule"
 - yousef.md still contains: "Critical-path trace", "Top-1 wins", "Boring-store default", "Index-before-rewrite", "Synchronous-in-hot-loop test"
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-haitham.md:143 — current line count (143L to reduce to ≤100L)
-lines: rihal/agents/rihal-omar.md:138 — current line count (138L to reduce to ≤100L)
-lines: rihal/agents/rihal-yousef.md:137 — current line count (137L to reduce to ≤100L)
-grep: rg "STRICTLY FORBIDDEN from starting" rihal/agents/rihal-haitham.md rihal/agents/rihal-omar.md rihal/agents/rihal-yousef.md → 3 hits — these lines move to shared file, removed from stubs
-grep: rg "Five named heuristics. Cite by name." rihal/agents/ → 3 hits — meta-rule moves to shared file
+lines: rcode/agents/rcode-haitham.md:143 — current line count (143L to reduce to ≤100L)
+lines: rcode/agents/rcode-omar.md:138 — current line count (138L to reduce to ≤100L)
+lines: rcode/agents/rcode-yousef.md:137 — current line count (137L to reduce to ≤100L)
+grep: rg "STRICTLY FORBIDDEN from starting" rcode/agents/rcode-haitham.md rcode/agents/rcode-omar.md rcode/agents/rcode-yousef.md → 3 hits — these lines move to shared file, removed from stubs
+grep: rg "Five named heuristics. Cite by name." rcode/agents/ → 3 hits — meta-rule moves to shared file
 </evidence>
 
 ---
@@ -146,23 +146,23 @@ grep: rg "Five named heuristics. Cite by name." rihal/agents/ → 3 hits — met
 
 <files>
 Files to modify:
-  - rihal/agents/rihal-nyquist-auditor.md (182L currently)
-  - rihal/agents/rihal-docs-auditor.md (182L currently)
-  - rihal/agents/rihal-ui-auditor.md (124L currently)
-  - rihal/agents/rihal-security-auditor.md (122L currently)
-  - rihal/agents/rihal-security-adversary.md (127L currently)
-  - rihal/agents/rihal-edge-case-hunter.md (121L currently)
+  - rcode/agents/rcode-nyquist-auditor.md (182L currently)
+  - rcode/agents/rcode-docs-auditor.md (182L currently)
+  - rcode/agents/rcode-ui-auditor.md (124L currently)
+  - rcode/agents/rcode-security-auditor.md (122L currently)
+  - rcode/agents/rcode-security-adversary.md (127L currently)
+  - rcode/agents/rcode-edge-case-hunter.md (121L currently)
 Reference file to @-include:
-  - .rihal/references/auditor-shared-checklists.md (created in 23-1)
+  - .rcode/references/auditor-shared-checklists.md (created in 23-1)
 </files>
 
 <action>
 Read each agent file in full before editing. Read auditor-shared-checklists.md to know precisely what moved to the reference. Then apply targeted removals to each agent.
 
-**CRITICAL PRE-STEP for rihal-docs-auditor.md:**
-This agent has two special `<mode_feature_drift>` and `<mode_phase_status>` extension blocks (lines 79-182). These are NOT boilerplate — they contain structured JSON schemas and hardcoded severity rules used by the rihal-feature-drift workflow. DO NOT remove them. They are unique extensions that MUST stay in the stub. The docs-auditor will be harder to slim below 100L because of these extensions. If after removing shared blocks it is still above 100L due to these extension blocks alone, document this as an accepted deviation in the SUMMARY.md — the extension blocks are load-bearing and cannot be moved.
+**CRITICAL PRE-STEP for rcode-docs-auditor.md:**
+This agent has two special `<mode_feature_drift>` and `<mode_phase_status>` extension blocks (lines 79-182). These are NOT boilerplate — they contain structured JSON schemas and hardcoded severity rules used by the rcode-feature-drift workflow. DO NOT remove them. They are unique extensions that MUST stay in the stub. The docs-auditor will be harder to slim below 100L because of these extensions. If after removing shared blocks it is still above 100L due to these extension blocks alone, document this as an accepted deviation in the SUMMARY.md — the extension blocks are load-bearing and cannot be moved.
 
-**CRITICAL PRE-STEP for rihal-nyquist-auditor.md:**
+**CRITICAL PRE-STEP for rcode-nyquist-auditor.md:**
 The execution_flow block (lines 22-95) contains the gap-analysis loop structure. This is entirely unique to nyquist — it does NOT appear in other auditors. Do NOT remove it. It stays in the stub.
 
 **Blocks to REMOVE from each auditor agent (where present):**
@@ -187,7 +187,7 @@ The execution_flow block (lines 22-95) contains the gap-analysis loop structure.
 
 **Add @-include line** after existing @-includes at top of each file:
 ```
-@.rihal/references/auditor-shared-checklists.md
+@.rcode/references/auditor-shared-checklists.md
 ```
 
 Process one agent at a time. After each edit, run wc -l and confirm progress. For docs-auditor: if the extension blocks make it impossible to reach ≤100L, accept the result if it is ≤120L (the extension blocks are load-bearing) and document in SUMMARY.
@@ -197,23 +197,23 @@ Process one agent at a time. After each edit, run wc -l and confirm progress. Fo
 
 <verify>
 <automated>
-wc -l rihal/agents/rihal-nyquist-auditor.md rihal/agents/rihal-docs-auditor.md rihal/agents/rihal-ui-auditor.md rihal/agents/rihal-security-auditor.md rihal/agents/rihal-security-adversary.md rihal/agents/rihal-edge-case-hunter.md
+wc -l rcode/agents/rcode-nyquist-auditor.md rcode/agents/rcode-docs-auditor.md rcode/agents/rcode-ui-auditor.md rcode/agents/rcode-security-auditor.md rcode/agents/rcode-security-adversary.md rcode/agents/rcode-edge-case-hunter.md
 </automated>
 </verify>
 
 <done>
 - nyquist, ui, security, security-adversary, edge-case-hunter: wc -l ≤ 100
 - docs-auditor: wc -l ≤ 120 (acceptable due to load-bearing mode extension blocks — document deviation)
-- All 6 files contain: @.rihal/references/auditor-shared-checklists.md
+- All 6 files contain: @.rcode/references/auditor-shared-checklists.md
 - nyquist still contains: execution_flow block, gap analysis loop, structured_returns block
 - docs-auditor still contains: mode_feature_drift and mode_phase_status blocks
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-nyquist-auditor.md:1-182 — full agent (182L); execution_flow is lines 22-95 (unique, not shared)
-lines: rihal/agents/rihal-docs-auditor.md:79-182 — mode_feature_drift and mode_phase_status blocks (unique extensions, load-bearing)
-lines: rihal/agents/rihal-docs-auditor.md:23-28 — "four pressure points" header (shared structure, domain content stays)
-grep: rg "No pleasantries or closing offers" rihal/agents/rihal-docs-auditor.md rihal/agents/rihal-security-auditor.md rihal/agents/rihal-edge-case-hunter.md rihal/agents/rihal-security-adversary.md rihal/agents/rihal-nyquist-auditor.md → 5 hits (boilerplate that moves to shared file)
+lines: rcode/agents/rcode-nyquist-auditor.md:1-182 — full agent (182L); execution_flow is lines 22-95 (unique, not shared)
+lines: rcode/agents/rcode-docs-auditor.md:79-182 — mode_feature_drift and mode_phase_status blocks (unique extensions, load-bearing)
+lines: rcode/agents/rcode-docs-auditor.md:23-28 — "four pressure points" header (shared structure, domain content stays)
+grep: rg "No pleasantries or closing offers" rcode/agents/rcode-docs-auditor.md rcode/agents/rcode-security-auditor.md rcode/agents/rcode-edge-case-hunter.md rcode/agents/rcode-security-adversary.md rcode/agents/rcode-nyquist-auditor.md → 5 hits (boilerplate that moves to shared file)
 </evidence>
 
 ---
@@ -224,30 +224,30 @@ grep: rg "No pleasantries or closing offers" rihal/agents/rihal-docs-auditor.md 
 
 <files>
 Files to commit (9 modified agent stubs):
-  - rihal/agents/rihal-haitham.md
-  - rihal/agents/rihal-omar.md
-  - rihal/agents/rihal-yousef.md
-  - rihal/agents/rihal-nyquist-auditor.md
-  - rihal/agents/rihal-docs-auditor.md
-  - rihal/agents/rihal-ui-auditor.md
-  - rihal/agents/rihal-security-auditor.md
-  - rihal/agents/rihal-security-adversary.md
-  - rihal/agents/rihal-edge-case-hunter.md
+  - rcode/agents/rcode-haitham.md
+  - rcode/agents/rcode-omar.md
+  - rcode/agents/rcode-yousef.md
+  - rcode/agents/rcode-nyquist-auditor.md
+  - rcode/agents/rcode-docs-auditor.md
+  - rcode/agents/rcode-ui-auditor.md
+  - rcode/agents/rcode-security-auditor.md
+  - rcode/agents/rcode-security-adversary.md
+  - rcode/agents/rcode-edge-case-hunter.md
 </files>
 
 <action>
 Stage only the 9 modified agent files:
 
 ```bash
-git add rihal/agents/rihal-haitham.md
-git add rihal/agents/rihal-omar.md
-git add rihal/agents/rihal-yousef.md
-git add rihal/agents/rihal-nyquist-auditor.md
-git add rihal/agents/rihal-docs-auditor.md
-git add rihal/agents/rihal-ui-auditor.md
-git add rihal/agents/rihal-security-auditor.md
-git add rihal/agents/rihal-security-adversary.md
-git add rihal/agents/rihal-edge-case-hunter.md
+git add rcode/agents/rcode-haitham.md
+git add rcode/agents/rcode-omar.md
+git add rcode/agents/rcode-yousef.md
+git add rcode/agents/rcode-nyquist-auditor.md
+git add rcode/agents/rcode-docs-auditor.md
+git add rcode/agents/rcode-ui-auditor.md
+git add rcode/agents/rcode-security-auditor.md
+git add rcode/agents/rcode-security-adversary.md
+git add rcode/agents/rcode-edge-case-hunter.md
 ```
 
 Commit message:
@@ -260,7 +260,7 @@ Before committing, verify with `git diff --cached --stat` that exactly 9 files a
 
 <verify>
 <automated>
-git log --oneline -1 && git show --stat HEAD | grep "rihal/agents"
+git log --oneline -1 && git show --stat HEAD | grep "rcode/agents"
 </automated>
 </verify>
 
@@ -279,44 +279,44 @@ lines: .planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CON
 <verification>
 ```bash
 # Line count check — all 9 must be ≤100 (docs-auditor may be ≤120 if load-bearing extensions prevent 100)
-wc -l rihal/agents/rihal-haitham.md \
-       rihal/agents/rihal-omar.md \
-       rihal/agents/rihal-yousef.md \
-       rihal/agents/rihal-nyquist-auditor.md \
-       rihal/agents/rihal-docs-auditor.md \
-       rihal/agents/rihal-ui-auditor.md \
-       rihal/agents/rihal-security-auditor.md \
-       rihal/agents/rihal-security-adversary.md \
-       rihal/agents/rihal-edge-case-hunter.md
+wc -l rcode/agents/rcode-haitham.md \
+       rcode/agents/rcode-omar.md \
+       rcode/agents/rcode-yousef.md \
+       rcode/agents/rcode-nyquist-auditor.md \
+       rcode/agents/rcode-docs-auditor.md \
+       rcode/agents/rcode-ui-auditor.md \
+       rcode/agents/rcode-security-auditor.md \
+       rcode/agents/rcode-security-adversary.md \
+       rcode/agents/rcode-edge-case-hunter.md
 
 # @-include present in all 9
-grep -l "@.rihal/references/persona-engineer-shared.md" \
-  rihal/agents/rihal-haitham.md rihal/agents/rihal-omar.md rihal/agents/rihal-yousef.md | wc -l
+grep -l "@.rcode/references/persona-engineer-shared.md" \
+  rcode/agents/rcode-haitham.md rcode/agents/rcode-omar.md rcode/agents/rcode-yousef.md | wc -l
 # Expected: 3
 
-grep -l "@.rihal/references/auditor-shared-checklists.md" \
-  rihal/agents/rihal-nyquist-auditor.md rihal/agents/rihal-docs-auditor.md \
-  rihal/agents/rihal-ui-auditor.md rihal/agents/rihal-security-auditor.md \
-  rihal/agents/rihal-security-adversary.md rihal/agents/rihal-edge-case-hunter.md | wc -l
+grep -l "@.rcode/references/auditor-shared-checklists.md" \
+  rcode/agents/rcode-nyquist-auditor.md rcode/agents/rcode-docs-auditor.md \
+  rcode/agents/rcode-ui-auditor.md rcode/agents/rcode-security-auditor.md \
+  rcode/agents/rcode-security-adversary.md rcode/agents/rcode-edge-case-hunter.md | wc -l
 # Expected: 6
 
 # Named heuristics preserved in engineer stubs
-grep "Three-paths check" rihal/agents/rihal-haitham.md
-grep "Match-existing-pattern" rihal/agents/rihal-omar.md
-grep "Critical-path trace" rihal/agents/rihal-yousef.md
+grep "Three-paths check" rcode/agents/rcode-haitham.md
+grep "Match-existing-pattern" rcode/agents/rcode-omar.md
+grep "Critical-path trace" rcode/agents/rcode-yousef.md
 ```
 </verification>
 
 <success_criteria>
-- [ ] rihal-haitham.md ≤ 100 lines with @.rihal/references/persona-engineer-shared.md and named heuristics intact
-- [ ] rihal-omar.md ≤ 100 lines with @.rihal/references/persona-engineer-shared.md and named heuristics intact
-- [ ] rihal-yousef.md ≤ 100 lines with @.rihal/references/persona-engineer-shared.md and named heuristics intact
-- [ ] rihal-nyquist-auditor.md ≤ 100 lines with @.rihal/references/auditor-shared-checklists.md and execution_flow intact
-- [ ] rihal-docs-auditor.md ≤ 120 lines with @.rihal/references/auditor-shared-checklists.md and mode extension blocks intact
-- [ ] rihal-ui-auditor.md ≤ 100 lines with @.rihal/references/auditor-shared-checklists.md
-- [ ] rihal-security-auditor.md ≤ 100 lines with @.rihal/references/auditor-shared-checklists.md
-- [ ] rihal-security-adversary.md ≤ 100 lines with @.rihal/references/auditor-shared-checklists.md
-- [ ] rihal-edge-case-hunter.md ≤ 100 lines with @.rihal/references/auditor-shared-checklists.md
+- [ ] rcode-haitham.md ≤ 100 lines with @.rcode/references/persona-engineer-shared.md and named heuristics intact
+- [ ] rcode-omar.md ≤ 100 lines with @.rcode/references/persona-engineer-shared.md and named heuristics intact
+- [ ] rcode-yousef.md ≤ 100 lines with @.rcode/references/persona-engineer-shared.md and named heuristics intact
+- [ ] rcode-nyquist-auditor.md ≤ 100 lines with @.rcode/references/auditor-shared-checklists.md and execution_flow intact
+- [ ] rcode-docs-auditor.md ≤ 120 lines with @.rcode/references/auditor-shared-checklists.md and mode extension blocks intact
+- [ ] rcode-ui-auditor.md ≤ 100 lines with @.rcode/references/auditor-shared-checklists.md
+- [ ] rcode-security-auditor.md ≤ 100 lines with @.rcode/references/auditor-shared-checklists.md
+- [ ] rcode-security-adversary.md ≤ 100 lines with @.rcode/references/auditor-shared-checklists.md
+- [ ] rcode-edge-case-hunter.md ≤ 100 lines with @.rcode/references/auditor-shared-checklists.md
 - [ ] One commit with all 9 agent files, references #713
 </success_criteria>
 

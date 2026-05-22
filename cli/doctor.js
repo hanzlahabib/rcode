@@ -1,9 +1,9 @@
 /**
- * rihal-code doctor — preflight + compliance checks
+ * rcode doctor — preflight + compliance checks
  *
  * Two sections:
  *   1. Preflight — environment checks that affect whether install/sync will work
- *      (node version, writable .rihal/, model-profiles.json validity, optional
+ *      (node version, writable .rcode/, model-profiles.json validity, optional
  *      git/gh availability, agent manifest drift)
  *   2. Package compliance — 5-component skill standard on the package source
  *
@@ -40,7 +40,7 @@ function findSkillFiles(dir) {
 }
 
 /**
- * One-level scan of `rihal/agents/` for `.md` files. There is no existing
+ * One-level scan of `rcode/agents/` for `.md` files. There is no existing
  * agent-file iterator (findSkillFiles matches only files named SKILL.md),
  * so the schema-validation pass needs its own shallow glob.
  */
@@ -100,24 +100,24 @@ function runPreflight(cwd, packageRoot) {
     message: `v${nodeVersion}${major < 18 ? ' — upgrade to 18 LTS or newer' : ''}`,
   });
 
-  // 2. .rihal/ state directory — only check if project is initialized
-  const rihalDir = path.join(cwd, '.rihal');
+  // 2. .rcode/ state directory — only check if project is initialized
+  const rihalDir = path.join(cwd, '.rcode');
   if (fs.existsSync(rihalDir)) {
     checks.push({
-      label: '.rihal/ writable',
+      label: '.rcode/ writable',
       status: isWritable(rihalDir) ? 'ok' : 'fail',
       message: rihalDir,
     });
   } else {
     checks.push({
-      label: '.rihal/ state',
+      label: '.rcode/ state',
       status: 'warn',
       message: 'not initialized in this directory (run `rcode install`)',
     });
   }
 
   // 3. Package model-profiles.json parses and has expected profiles
-  const profilesPath = path.join(packageRoot, 'rihal/config/model-profiles.json');
+  const profilesPath = path.join(packageRoot, 'rcode/config/model-profiles.json');
   if (fs.existsSync(profilesPath)) {
     try {
       const profiles = JSON.parse(fs.readFileSync(profilesPath, 'utf8'));
@@ -168,7 +168,7 @@ function runPreflight(cwd, packageRoot) {
       : 'not found (github-sync unavailable)',
   });
 
-  // 6. Agent manifest drift (only if .rihal/ is initialized — indicates installed editors)
+  // 6. Agent manifest drift (only if .rcode/ is initialized — indicates installed editors)
   if (fs.existsSync(rihalDir)) {
     const editors = [];
     if (fs.existsSync(path.join(cwd, '.claude/skills'))) editors.push('claude');
@@ -210,7 +210,7 @@ function runPreflight(cwd, packageRoot) {
       checks.push({
         label: 'Memory bank',
         status: 'warn',
-        message: 'never initialized (run /rihal-init to populate)',
+        message: 'never initialized (run /rcode-init to populate)',
       });
     } else {
       checks.push({
@@ -241,8 +241,8 @@ function printChecks(checks) {
 
 function runCompliance(packageRoot) {
   const skillDirs = [
-    path.join(packageRoot, 'rihal/skills/agents'),
-    path.join(packageRoot, 'rihal/skills/actions'),
+    path.join(packageRoot, 'rcode/skills/agents'),
+    path.join(packageRoot, 'rcode/skills/actions'),
   ];
 
   let totalSkills = 0;
@@ -290,8 +290,8 @@ function runCompliance(packageRoot) {
  */
 function runSchemaValidation(packageRoot) {
   const skillDirs = [
-    path.join(packageRoot, 'rihal/skills/agents'),
-    path.join(packageRoot, 'rihal/skills/actions'),
+    path.join(packageRoot, 'rcode/skills/agents'),
+    path.join(packageRoot, 'rcode/skills/actions'),
   ];
 
   let totalSkills = 0;
@@ -317,7 +317,7 @@ function runSchemaValidation(packageRoot) {
     }
   }
 
-  for (const file of findAgentFiles(path.join(packageRoot, 'rihal/agents'))) {
+  for (const file of findAgentFiles(path.join(packageRoot, 'rcode/agents'))) {
     totalAgents++;
     const { frontmatter } = parseFrontmatter(fs.readFileSync(file, 'utf8'));
     const result = validateAgentFrontmatter(frontmatter);
@@ -344,7 +344,7 @@ function runSchemaValidation(packageRoot) {
 // ---------- Duplicate-installation check ----------
 
 /**
- * Detect rcode/rihal-code installations across all known package managers.
+ * Detect rcode/rcode installations across all known package managers.
  * Multiple installs cause duplicate slash commands in Claude Code (#637-#644).
  * Returns { count, installs[], warnings[] }.
  */
@@ -377,7 +377,7 @@ function checkDuplicateInstalls() {
       const scopeDir = path.join(dir, scope);
       if (!fs.existsSync(scopeDir)) continue;
       for (const pkg of fs.readdirSync(scopeDir)) {
-        if (pkg === 'rcode' || pkg === 'rihal-code' || pkg.startsWith('rihal')) {
+        if (pkg === 'rcode' || pkg === 'rcode' || pkg.startsWith('rcode')) {
           let version = 'unknown';
           try {
             const pkgJson = JSON.parse(fs.readFileSync(path.join(scopeDir, pkg, 'package.json'), 'utf8'));
@@ -417,7 +417,7 @@ function printDuplicateChecks(result) {
 module.exports = function doctor(args, { packageRoot }) {
   const cwd = process.cwd();
 
-  console.log(`\n🕌 Rihal Code — Doctor\n`);
+  console.log(`\n🕌 rcode — Doctor\n`);
 
   console.log(`Preflight:`);
   const checks = runPreflight(cwd, packageRoot);

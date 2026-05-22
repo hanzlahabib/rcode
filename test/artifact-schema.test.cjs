@@ -1,8 +1,8 @@
 /**
  * Tests for the artifact schema validators in cli/lib/schemas.cjs.
  *
- * Covers issue #747 — schema validation of rihal-code's own artifacts:
- * SKILL.md frontmatter, agent frontmatter, and `.rihal/state.json`.
+ * Covers issue #747 — schema validation of rcode's own artifacts:
+ * SKILL.md frontmatter, agent frontmatter, and `.rcode/state.json`.
  * The final integration test locks the packaged agent source clean.
  *
  * Run: node --test test/artifact-schema.test.cjs
@@ -25,7 +25,7 @@ const {
 // ---------- Fixtures ----------
 
 const goodSkill = {
-  name: 'rihal-example-skill',
+  name: 'rcode-example-skill',
   description:
     'Example skill. Activates when the user says "do thing one", "do thing two", ' +
     '"do thing three", "do thing four", "do thing five", or "do thing six". ' +
@@ -33,7 +33,7 @@ const goodSkill = {
 };
 
 const goodAgent = {
-  name: 'rihal-example-agent',
+  name: 'rcode-example-agent',
   description: 'Does a thing for a phase.',
   tools: 'Read, Write, Bash',
   color: 'cyan',
@@ -48,7 +48,7 @@ test('validateSkillFrontmatter — well-formed fixture passes', () => {
 
 test('validateSkillFrontmatter — only 3 trigger phrases fails on count', () => {
   const r = validateSkillFrontmatter({
-    name: 'rihal-thin-skill',
+    name: 'rcode-thin-skill',
     description: 'Activates on "one", "two", "three". Do NOT use for: anything else.',
   });
   assert.strictEqual(r.ok, false);
@@ -60,7 +60,7 @@ test('validateSkillFrontmatter — only 3 trigger phrases fails on count', () =>
 
 test('validateSkillFrontmatter — missing negative-boundary clause fails', () => {
   const r = validateSkillFrontmatter({
-    name: 'rihal-no-boundary',
+    name: 'rcode-no-boundary',
     description:
       'Activates on "alpha", "bravo", "charlie", "delta", "echo", "foxtrot".',
   });
@@ -98,19 +98,19 @@ test('validateAgentFrontmatter — missing tools fails', () => {
   );
 });
 
-test('validateAgentFrontmatter — name without rihal- prefix fails', () => {
+test('validateAgentFrontmatter — name without rcode- prefix fails', () => {
   const r = validateAgentFrontmatter({ ...goodAgent, name: 'example-agent' });
   assert.strictEqual(r.ok, false);
   assert.ok(
-    r.errors.some((e) => /rihal-/.test(e)),
+    r.errors.some((e) => /rcode-/.test(e)),
     `expected a prefix error, got: ${JSON.stringify(r.errors)}`,
   );
 });
 
 // ---------- validateState ----------
 
-test('validateState — real .rihal/state.json passes', () => {
-  const state = require(path.join(PROJECT_ROOT, '.rihal/state.json'));
+test('validateState — real .rcode/state.json passes', () => {
+  const state = require(path.join(PROJECT_ROOT, '.rcode/state.json'));
   const r = validateState(state);
   assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
 });
@@ -132,8 +132,8 @@ test('validateState — object missing phases fails', () => {
 
 // ---------- Integration: packaged agent files validate clean ----------
 
-test('every rihal/agents/*.md file has frontmatter that passes validateAgentFrontmatter', () => {
-  const agentsDir = path.join(PROJECT_ROOT, 'rihal/agents');
+test('every rcode/agents/*.md file has frontmatter that passes validateAgentFrontmatter', () => {
+  const agentsDir = path.join(PROJECT_ROOT, 'rcode/agents');
   const files = fs
     .readdirSync(agentsDir)
     .filter((f) => f.endsWith('.md'));

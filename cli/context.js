@@ -1,19 +1,19 @@
 /**
- * rihal-code context — inspect and refresh the .rihal/ memory bank freshness.
+ * rcode context — inspect and refresh the .rcode/ memory bank freshness.
  *
- * The memory bank (.rihal/context/active.md + project-brief.md) is what
- * every Rihal workflow reads at runtime. If it goes stale, agents silently
+ * The memory bank (.rcode/context/active.md + project-brief.md) is what
+ * every rcode workflow reads at runtime. If it goes stale, agents silently
  * work from outdated assumptions. This command makes staleness visible.
  *
  * Usage:
- *   rihal-code context                   show staleness report (default)
- *   rihal-code context --check           exit non-zero if stale (for CI/hooks)
- *   rihal-code context --refresh         write fresh fingerprint after a manual scan
- *   rihal-code context --install-hook    opt-in post-commit git hook that
+ *   rcode context                   show staleness report (default)
+ *   rcode context --check           exit non-zero if stale (for CI/hooks)
+ *   rcode context --refresh         write fresh fingerprint after a manual scan
+ *   rcode context --install-hook    opt-in post-commit git hook that
  *                                         prints a warning when stale
  *
  * The refresh does NOT rewrite active.md or project-brief.md — that's
- * /rihal-init's job (the scan requires an LLM). --refresh just stores the
+ * /rcode-init's job (the scan requires an LLM). --refresh just stores the
  * current fingerprint so the next check sees things as fresh.
  */
 
@@ -42,9 +42,9 @@ function parseArgs(args) {
   return opts;
 }
 
-function ensureRihalDir(cwd) {
-  if (!fs.existsSync(path.join(cwd, '.rihal'))) {
-    console.error(`❌ No .rihal/ directory found in ${cwd}`);
+function ensureRcodeDir(cwd) {
+  if (!fs.existsSync(path.join(cwd, '.rcode'))) {
+    console.error(`❌ No .rcode/ directory found in ${cwd}`);
     console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }
@@ -78,8 +78,8 @@ function printReport(cwd) {
   console.log(`   Context files:`);
   const activeMark = report.context_files.active ? '✓' : '✗';
   const briefMark = report.context_files.brief ? '✓' : '✗';
-  console.log(`     ${activeMark} .rihal/context/active.md`);
-  console.log(`     ${briefMark} .rihal/context/project-brief.md`);
+  console.log(`     ${activeMark} .rcode/context/active.md`);
+  console.log(`     ${briefMark} .rcode/context/project-brief.md`);
   console.log();
 
   if (report.stored) {
@@ -117,20 +117,20 @@ function printReport(cwd) {
   console.log();
 
   if (report.status !== 'fresh') {
-    console.log(`   ➡ Refresh with: /rihal-init (in your editor)`);
+    console.log(`   ➡ Refresh with: /rcode-init (in your editor)`);
     console.log();
   }
 }
 
 /**
- * --refresh: recompute and save the fingerprint to .rihal/state.json.
+ * --refresh: recompute and save the fingerprint to .rcode/state.json.
  * Only use this when you know the memory bank was actually refreshed
- * (e.g. by /rihal-init running end-to-end). Does NOT rewrite context files.
+ * (e.g. by /rcode-init running end-to-end). Does NOT rewrite context files.
  */
 function doRefresh(cwd) {
-  ensureRihalDir(cwd);
+  ensureRcodeDir(cwd);
   const fp = writeFingerprint(cwd);
-  console.log(`\n✅ Fingerprint saved to .rihal/state.json`);
+  console.log(`\n✅ Fingerprint saved to .rcode/state.json`);
   console.log(`   git:       ${fp.git_head ? fp.git_head.slice(0, 7) : '(no git)'}`);
   console.log(`   manifest:  ${fp.manifest_name || '(none)'}`);
   console.log(`   structure: ${fp.structure_dirs.length} top-level dirs`);
@@ -154,14 +154,14 @@ function installHook(cwd) {
   const hookPath = path.join(hooksDir, 'post-commit');
 
   const hookContent = `#!/bin/sh
-# Rihal Code — memory bank freshness check
+# rcode — memory bank freshness check
 # Installed by: rcode context --install-hook
 # Non-blocking: prints a one-line warning if the memory bank is stale.
 if command -v rcode >/dev/null 2>&1; then
   output=$(rcode context --check 2>&1)
   if [ $? -ne 0 ]; then
     echo ""
-    echo "⚠ Rihal memory bank is stale — run /rihal-init in your editor to refresh."
+    echo "⚠ rcode memory bank is stale — run /rcode-init in your editor to refresh."
     echo "   $(echo "$output" | grep '•' | head -1 | sed 's/^ *//')"
   fi
 fi
@@ -170,7 +170,7 @@ fi
   // Don't clobber an existing hook without asking
   if (fs.existsSync(hookPath)) {
     const existing = fs.readFileSync(hookPath, 'utf8');
-    if (existing.includes('Rihal Code — memory bank freshness')) {
+    if (existing.includes('rcode — memory bank freshness')) {
       console.log(`✓ post-commit hook already installed at ${hookPath}`);
       return;
     }
@@ -200,8 +200,8 @@ module.exports = function context(args) {
     return;
   }
 
-  // Default / --check: need .rihal/ to exist
-  ensureRihalDir(cwd);
+  // Default / --check: need .rcode/ to exist
+  ensureRcodeDir(cwd);
   printReport(cwd);
 
   if (opts.check) {

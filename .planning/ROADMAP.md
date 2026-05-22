@@ -1,4 +1,4 @@
-# Rihal Code — Roadmap
+# rcode — Roadmap
 
 ## Milestones
 
@@ -116,7 +116,7 @@ sprints, and tasks from the UI with an interactive terminal and live session tra
 - Interactive node-pty + WebSocket terminal in the dashboard
 - "⚡ Orchestration" view with Run buttons on phase/sprint/task cards
 - Per-session files-changed count + idle/waiting detection
-- Persisted orchestrator token (`~/.rihal/orch-token`) + `/api/orch-token` self-heal
+- Persisted orchestrator token (`~/.rcode/orch-token`) + `/api/orch-token` self-heal
 - Terminal min/fullscreen + running-session badges
 - Inline Lucide-style SVG icon set (`server/lib/html/icons.js`)
 
@@ -126,9 +126,9 @@ sprints, and tasks from the UI with an interactive terminal and live session tra
 
 ## Phase 28 — Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval
 
-**Goal:** Close the infrastructure gaps found auditing rihal-code against `everything-claude-code`:
+**Goal:** Close the infrastructure gaps found auditing rcode against `everything-claude-code`:
 a full lifecycle hooks system, measured token/cost tracking, agent-behavior regression
-coverage, schema validation of rihal's own artifacts, and a bounded follow-up loop for
+coverage, schema validation of rcode's own artifacts, and a bounded follow-up loop for
 research subagents. Covers GitHub issues #742–#750.
 
 **Status:** Complete (2026-05-15)
@@ -143,7 +143,7 @@ research subagents. Covers GitHub issues #742–#750.
 
 ## Phase 29 — Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping
 
-**Goal:** Close the vulnerabilities found in the rihal-code self security audit: an
+**Goal:** Close the vulnerabilities found in the rcode self security audit: an
 unauthenticated network-reachable RCE in the orchestrator, bypassable bash-guard
 controls, and unscoped file reads. Covers GitHub issues #752–#754.
 
@@ -158,7 +158,7 @@ controls, and unscoped file reads. Covers GitHub issues #752–#754.
 
 ## Phase 30 — Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish
 
-**Goal:** Turn rihal-code into an adoptable product: resolve the license contradiction,
+**Goal:** Turn rcode into an adoptable product: resolve the license contradiction,
 give the README visual proof and a focused value prop, fix self-contradicting metadata,
 and clarify onboarding. Covers GitHub issues #755–#759.
 
@@ -226,9 +226,9 @@ and dark themes both driven by the token layer.
 
 ---
 
-## Phase 33 — Dashboard command runner — run init and rihal commands through the UI
+## Phase 33 — Dashboard command runner — run init and rcode commands through the UI
 
-**Goal:** Let the user launch `init` and other rihal commands end-to-end from the
+**Goal:** Let the user launch `init` and other rcode commands end-to-end from the
 dashboard UI — pick a command, run it through the orchestrator service, watch live
 output in the WebSocket terminal, and see completion. The orchestrator service (:7718)
 owns command execution; `dashboard.js` stays pure-stdlib view-only. Reuse the phase-29
@@ -242,7 +242,7 @@ bash-guard / auth hardening — no raw exec surface.
 - [x] Sprint 33.3 — Polish and harden — error toasts, disabled state, CSS token audit
 
 **Acceptance:**
-- UI exposes a command picker covering `init` and other safe rihal commands
+- UI exposes a command picker covering `init` and other safe rcode commands
 - Commands run via the orchestrator (:7718) with auth + bash-guard enforced; `dashboard.js` unchanged as view-only
 - Live output streams to the WebSocket terminal; completion state is visible
 - No new write endpoints on `dashboard.js`; `node server/dashboard.js` starts clean
@@ -323,7 +323,7 @@ plus a history read endpoint; the in-memory `sessions` Map already tracks
 ## Phase 36 — Command Palette and Sidebar Health Badges
 
 **Goal:** Add a searchable, categorized Cmd+K-style command palette that can find and
-run any allowlisted rihal command, and live health badges in the sidebar showing
+run any allowlisted rcode command, and live health badges in the sidebar showing
 active session count and blocker count.
 
 **Covers:** DSH-4, DSH-5

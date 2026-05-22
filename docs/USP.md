@@ -29,7 +29,7 @@ rcode sits in none of these buckets. It is not a chat wrapper, not a code agent,
 **How rcode solves it:**
 
 ```
-.rihal/memory/
+.rcode/memory/
 ├── project/stack.md          # what we're building with
 ├── project/decisions.md      # every choice + rationale + alternatives
 ├── project/glossary.md       # domain terms
@@ -101,11 +101,11 @@ Can't execute a story → without a sprint plan
 Can't ship → without verification
 ```
 
-The chain is enforced. If you try to run `/rihal-create-epics-and-stories` and no PRD exists in `.rihal/phases/`, the skill stops and tells you: *"Run rihal-create-prd first. I cannot invent requirements."* It doesn't hedge. It doesn't offer to "help you get started." It refuses, names the missing upstream, and gives you the exact command to run.
+The chain is enforced. If you try to run `/rcode-create-epics-and-stories` and no PRD exists in `.rcode/phases/`, the skill stops and tells you: *"Run rcode-create-prd first. I cannot invent requirements."* It doesn't hedge. It doesn't offer to "help you get started." It refuses, names the missing upstream, and gives you the exact command to run.
 
 **Why this matters:** Every other tool will happily generate a 20-epic backlog from a one-sentence prompt. rcode won't. The constraint is the feature. Your epics are grounded in a PRD. Your stories are grounded in epics. Your sprint is grounded in stories. There is no hallucinated layer in the chain.
 
-**Verification closes the loop.** After execution, `/rihal-verify-phase` performs a goal-backward audit — "does the codebase actually deliver what the phase promised?" — not just "did the tasks complete?" This catches drift between plan and reality before it ships.
+**Verification closes the loop.** After execution, `/rcode-verify-phase` performs a goal-backward audit — "does the codebase actually deliver what the phase promised?" — not just "did the tasks complete?" This catches drift between plan and reality before it ships.
 
 ---
 
@@ -127,7 +127,7 @@ What you get is **files**. Markdown files, YAML files, JSON files. Dropped into 
 | Runtime | None (files read by IDE) | Python/Node server process |
 | State | Git-tracked markdown | Database / vector store / Redis |
 | Offline | Works on a plane | Requires API connectivity |
-| Debugging | `cat .rihal/memory/project/decisions.md` | Log aggregation + tracing |
+| Debugging | `cat .rcode/memory/project/decisions.md` | Log aggregation + tracing |
 | CI integration | `grep` / `cat` / any shell tool | Docker + SDK + API calls |
 | Collaboration | `git pull` | Shared server + auth |
 | IDE lock-in | None (Claude, Cursor, Gemini, Codex) | Framework-specific |
@@ -142,7 +142,7 @@ What you get is **files**. Markdown files, YAML files, JSON files. Dropped into 
 
 **The problem:** Most AI tools ship generic capabilities. "Write code." "Review code." "Plan a project." They've never been burned by the specific ways real projects fail.
 
-**rcode encodes 8 real-pain skills** from actual Rihal production incidents:
+**rcode encodes 8 real-pain skills** from actual rcode production incidents:
 
 | Skill | Pain it addresses | What happened |
 |-------|-------------------|---------------|
@@ -171,7 +171,7 @@ Plus 11 engineering-rigor skills that enforce discipline:
 | `rcode-git-flow` | Branching, commits, conflicts aligned to project hierarchy |
 | `rcode-incident-record` | Post-mortem + change record in one flow |
 
-**These aren't checklists someone wrote in a weekend.** They're encoded from incidents that cost real time and real money. The auth-audit skill knows about Keycloak sync drift because a Rihal project lived through it. The deploy-unify skill knows about overlapping deploy mechanisms because three deploys broke before we got it right.
+**These aren't checklists someone wrote in a weekend.** They're encoded from incidents that cost real time and real money. The auth-audit skill knows about Keycloak sync drift because a rcode project lived through it. The deploy-unify skill knows about overlapping deploy mechanisms because three deploys broke before we got it right.
 
 ---
 
@@ -189,7 +189,7 @@ Memory Bank              → agents never start from zero
   = A project brain that gets smarter with every session
 ```
 
-The more you use rcode, the more `.rihal/memory/` accumulates. The more memory accumulates, the sharper every agent response becomes. The sharper the responses, the less time you spend re-explaining context. **The flywheel is: use → remember → improve → use.**
+The more you use rcode, the more `.rcode/memory/` accumulates. The more memory accumulates, the sharper every agent response becomes. The sharper the responses, the less time you spend re-explaining context. **The flywheel is: use → remember → improve → use.**
 
 No other tool creates this flywheel because no other tool persists project context in a git-native, AI-readable, human-inspectable format that survives every session reset.
 
@@ -202,7 +202,7 @@ No other tool creates this flywheel because no other tool persists project conte
 | **Solo devs** | You are the whole team. rcode gives you 45 specialists without hiring anyone. |
 | **Startup teams (2-8)** | Context loss across team members is your #1 time sink. Memory Bank fixes it. |
 | **SaaS builders** | The pain skills (auth-audit, deploy-unify, mvp-graduate) are written for your stack. |
-| **Agencies / consultancies** | Client context survives project handoffs. New devs onboard from `.rihal/memory/`, not Slack archaeology. |
+| **Agencies / consultancies** | Client context survives project handoffs. New devs onboard from `.rcode/memory/`, not Slack archaeology. |
 | **AI-native teams** | You already use Claude/Cursor/Gemini daily. rcode makes them 10x better on your specific project. |
 
 ## Who rcode Is NOT For

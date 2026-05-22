@@ -1,5 +1,5 @@
 /**
- * Zero-dep interactive prompt helpers for the Rihal Code CLI.
+ * Zero-dep interactive prompt helpers for the rcode CLI.
  *
  * Why this exists:
  *   Hand-rolled readline.question() crashes or silently aborts when a user
@@ -91,7 +91,7 @@ function openSession() {
   //    ourselves, readline's internal cursor tracking walks past the
   //    prompt on backspace and erases it — that was the bug in #16.
   //
-  // 2. Piped mode (CI, test harness, rihal-code install | tee ...) —
+  // 2. Piped mode (CI, test harness, rcode install | tee ...) —
   //    rl.question() has a quirk where the second call in a sequence
   //    can miss the next buffered line. The line-event queue pattern
   //    below avoids it: we listen for `line` events ourselves and

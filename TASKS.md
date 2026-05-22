@@ -29,19 +29,19 @@ Single source of truth for the rcode improvement programme. Every task here corr
 
 ## Phase 2 — Verified Safe Drops ✅ done
 
-- [x] Drop `/rihal-report` slash (alias of session-report)
-- [x] Drop `/rihal-new-project-research` and `/rihal-new-project-roadmap` (self-declared internal)
-- [x] Drop `rihal-architect` agent (folded into Waleed)
+- [x] Drop `/rcode-report` slash (alias of session-report)
+- [x] Drop `/rcode-new-project-research` and `/rcode-new-project-roadmap` (self-declared internal)
+- [x] Drop `rcode-architect` agent (folded into Waleed)
 
 ---
 
 ## Phase 3 — Memory Bank ✅ done
 
-- [x] Bootstrap `rihal/templates/memory/` directory (13 template files)
-- [x] Add `rihal-memory-init` skill + workflow
-- [x] Add `rihal-memory-update` skill + workflow
-- [x] Add `rihal-memory-distill` skill + workflow
-- [x] Add `rihal-memory-audit` skill + workflow
+- [x] Bootstrap `rcode/templates/memory/` directory (13 template files)
+- [x] Add `rcode-memory-init` skill + workflow
+- [x] Add `rcode-memory-update` skill + workflow
+- [x] Add `rcode-memory-distill` skill + workflow
+- [x] Add `rcode-memory-audit` skill + workflow
 - [x] Wire 4 memory slash commands
 - [x] Add `scanMemoryBank` to `server/lib/scanner.js`
 - [x] Add `/api/memory` endpoint handler
@@ -56,24 +56,24 @@ Single source of truth for the rcode improvement programme. Every task here corr
 ### Group 1 — Folded slash drops
 - [x] Fold `discuss-phase-power` → `discuss-phase --power` flag
 - [x] Fold `karpathy-audit` → `code-review --karpathy` flag
-- [x] Drop user-facing `/rihal-check-implementation-readiness` slash (workflow remains internal)
-- [x] Path B alignment — rename memory skill folders to `rihal-memory-*` for installer compatibility
+- [x] Drop user-facing `/rcode-check-implementation-readiness` slash (workflow remains internal)
+- [x] Path B alignment — rename memory skill folders to `rcode-memory-*` for installer compatibility
 
 ### Group 2 — Review folds
 - [x] Fold `review-adversarial` → `code-review --attack` flag (plain English)
 - [x] Fold `review-edge-case-hunter` → `code-review --edge-cases` flag
 
 ### Group 3 — Tech-writer merge
-- [x] Merge `rihal-tech-writer` agent into `rihal-noor` persona
+- [x] Merge `rcode-tech-writer` agent into `rcode-noor` persona
 
 ### Group 4 — Skill slims (8 SKILL.md → ≤120 lines, detail moved to `references.md`)
-- [x] `rihal-clone-website` (416 → 75)
-- [x] `rihal-distillator` (212 → 63)
-- [x] `rihal-editorial-review-structure` (211 → 73)
+- [x] `rcode-clone-website` (416 → 75)
+- [x] `rcode-distillator` (212 → 63)
+- [x] `rcode-editorial-review-structure` (211 → 73)
 - [x] `dalil-scout` (202 → 120)
 - [x] `majlis-council` (192 → 98)
-- [x] `rihal-frontend-design` (182 → 92)
-- [x] `rihal-advanced-elicitation` (167 → 67)
+- [x] `rcode-frontend-design` (182 → 92)
+- [x] `rcode-advanced-elicitation` (167 → 67)
 - [x] `raees-orchestrator` (166 → 105)
 
 ### Group 5 — Workflow file splits ⏭ skipped
@@ -96,7 +96,7 @@ Decision: workflows are dense executable logic (bash + agent dispatches), not re
 - [x] Refresh `README.md` to reflect new state (post-drops, post-merges)
 - [x] Update `CONTRIBUTING.md` to align with the BRAND.md naming and commit conventions
 - [x] Update `AGENTS.md` (root) — keep `git push` rule, add new persona/skill conventions
-- [x] Sweep `docs/` for `rihal-tech-writer`, `rihal-architect`, dropped command names
+- [x] Sweep `docs/` for `rcode-tech-writer`, `rcode-architect`, dropped command names
 - [x] Create `MIGRATIONS.md` with every renamed/dropped item and replacement
 - [x] Generate `docs/skills-catalog.md` from SKILL.md frontmatter (script in `scripts/`)
 
@@ -118,7 +118,7 @@ Decision: workflows are dense executable logic (bash + agent dispatches), not re
 
 User-requested verification phase. Make sure every dashboard view works correctly with all current state.
 
-- [x] Boot dashboard against a fresh project — verify no `.rihal/` empty-state UX
+- [x] Boot dashboard against a fresh project — verify no `.rcode/` empty-state UX
 - [x] Boot dashboard against this repo — verify all routes render
 - [x] Verify `/` overview view renders project name, phase, milestone
 - [x] Verify `/roadmap`, `/milestones`, `/phases`, `/sprints`, `/tasks` views (existing)
@@ -134,34 +134,34 @@ User-requested verification phase. Make sure every dashboard view works correctl
 
 ## Phase 11 — Engineering Skills (next-level utility) ⏳ NEW
 
-Port the 11 missing engineering-rigor skills from the original plan, written from scratch in rcode voice and grounded in the verified Rihal stack (Next.js 16, React 19, Strapi, Postgres, Three.js, Sentry, Temporal, Helm/K8s).
+Port the 11 missing engineering-rigor skills from the original plan, written from scratch in rcode voice and grounded in the verified rcode stack (Next.js 16, React 19, Strapi, Postgres, Three.js, Sentry, Temporal, Helm/K8s).
 
-- [x] `rihal-incremental` — atomic, verifiable shipping
-- [x] `rihal-prove-it` — TDD with Jest + Playwright (replaces missing TDD skill)
-- [x] `rihal-source-truth` — cite official docs before code
-- [x] `rihal-browser-verify` — DevTools MCP for browser checks (Three.js perf)
-- [x] `rihal-debug` — root-cause debugging with Sentry-default observability
-- [x] `rihal-trim` — code simplification (Distillator philosophy applied to code)
-- [x] `rihal-harden` — security checklist for SaaS auth/tenant patterns
-- [x] `rihal-perf` — Next.js + Three.js + Postgres performance
-- [x] `rihal-git-flow` — branching aligned with Epic→Feature→Task hierarchy
-- [x] `rihal-ci` — Helm + K8s + Docker Compose quality gates
-- [x] `rihal-migrate` — MVP-to-prod transitions (addresses the "MVP can't be revamped" pain)
+- [x] `rcode-incremental` — atomic, verifiable shipping
+- [x] `rcode-prove-it` — TDD with Jest + Playwright (replaces missing TDD skill)
+- [x] `rcode-source-truth` — cite official docs before code
+- [x] `rcode-browser-verify` — DevTools MCP for browser checks (Three.js perf)
+- [x] `rcode-debug` — root-cause debugging with Sentry-default observability
+- [x] `rcode-trim` — code simplification (Distillator philosophy applied to code)
+- [x] `rcode-harden` — security checklist for SaaS auth/tenant patterns
+- [x] `rcode-perf` — Next.js + Three.js + Postgres performance
+- [x] `rcode-git-flow` — branching aligned with Epic→Feature→Task hierarchy
+- [x] `rcode-ci` — Helm + K8s + Docker Compose quality gates
+- [x] `rcode-migrate` — MVP-to-prod transitions (addresses the "MVP can't be revamped" pain)
 
 ---
 
 ## Phase 12 — Real-Pain Skills (the experience moat) ⏳ NEW
 
-8 skills mapped 1:1 to verified Rihal incidents. No competitor has these because they don't have the scars.
+8 skills mapped 1:1 to verified rcode incidents. No competitor has these because they don't have the scars.
 
-- [x] `rihal-auth-audit` — Keycloak ↔ AD sync verification (incident: Keycloak data lost)
-- [x] `rihal-deploy-unify` — multiple-deploy-paths detection (incident: Siraaj deploy chaos)
-- [x] `rihal-ocr-consistency` — OCR pipeline determinism + ground-truth (incident: OCR inconsistencies)
-- [x] `rihal-theme-system` — design token audit before launch (incident: theme rebrand)
-- [x] `rihal-mvp-graduate` — MVP-to-production migration plan (incident: MVPs that can't be revamped)
-- [x] `rihal-client-gate` — client-requirement freeze gates and async-comm patterns (incident: late requirements)
-- [x] `rihal-rebrand` — stack-wide rebranding migration
-- [x] `rihal-incident-record` — change-record + post-mortem in one flow
+- [x] `rcode-auth-audit` — Keycloak ↔ AD sync verification (incident: Keycloak data lost)
+- [x] `rcode-deploy-unify` — multiple-deploy-paths detection (incident: Siraaj deploy chaos)
+- [x] `rcode-ocr-consistency` — OCR pipeline determinism + ground-truth (incident: OCR inconsistencies)
+- [x] `rcode-theme-system` — design token audit before launch (incident: theme rebrand)
+- [x] `rcode-mvp-graduate` — MVP-to-production migration plan (incident: MVPs that can't be revamped)
+- [x] `rcode-client-gate` — client-requirement freeze gates and async-comm patterns (incident: late requirements)
+- [x] `rcode-rebrand` — stack-wide rebranding migration
+- [x] `rcode-incident-record` — change-record + post-mortem in one flow
 
 ---
 
@@ -183,7 +183,7 @@ Port the 11 missing engineering-rigor skills from the original plan, written fro
 - `cli/postinstall.js`
 - `cli/uninstall.js`
 - `package.json` `bin` and `files` fields
-- `.rihal-template/` packaging
+- `.rcode-template/` packaging
 
 `server/dashboard.js` was extended additively in Phase 3 with explicit user approval; no further touches without per-edit confirmation.
 

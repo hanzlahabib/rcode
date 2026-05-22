@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Majlis — Rihal Code Dashboard Server
+ * Majlis — rcode Dashboard Server
  *
- * View-only Node server that scans .rihal/ directory and renders
+ * View-only Node server that scans .rcode/ directory and renders
  * a live HTML dashboard showing project state, phases, progress,
  * decisions, and artifacts.
  *
@@ -10,7 +10,7 @@
  *
  * Architecture:
  *   server/dashboard.js          - HTTP server + routing (this file)
- *   server/lib/scanner.js        - State scanning from .rihal/
+ *   server/lib/scanner.js        - State scanning from .rcode/
  *   server/lib/api.js            - API route handlers
  *   server/lib/html/shell.js     - HTML page composition
  *   server/lib/html/css.js       - All CSS styles
@@ -36,16 +36,16 @@ const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
 const PORT = parseInt(process.env.PORT || '7717', 10);
-const RIHAL_DIR = process.env.RIHAL_DIR || path.join(process.cwd(), '.rihal');
-const PROJECT_ROOT = path.dirname(RIHAL_DIR);
+const RCODE_DIR = process.env.RCODE_DIR || path.join(process.cwd(), '.rcode');
+const PROJECT_ROOT = path.dirname(RCODE_DIR);
 
 // Shared orchestrator token — passed to the orchestrator via env and embedded
-// in the HTML. Persisted to ~/.rihal/orch-token so it stays STABLE across
+// in the HTML. Persisted to ~/.rcode/orch-token so it stays STABLE across
 // dashboard restarts; otherwise every restart invalidates the token baked
 // into already-open browser tabs and their API calls 401.
 function loadOrchToken() {
   if (process.env.ORCH_TOKEN) return process.env.ORCH_TOKEN;
-  const tokenFile = path.join(os.homedir(), '.rihal', 'orch-token');
+  const tokenFile = path.join(os.homedir(), '.rcode', 'orch-token');
   try {
     const existing = fs.readFileSync(tokenFile, 'utf8').trim();
     if (existing) return existing;
@@ -65,12 +65,12 @@ const server = http.createServer((req, res) => {
 
   if (url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', mode: 'view-only', rihal_dir: RIHAL_DIR }));
+    res.end(JSON.stringify({ status: 'ok', mode: 'view-only', rihal_dir: RCODE_DIR }));
     return;
   }
 
   if (url === '/api/state') {
-    handleApiState(req, res, RIHAL_DIR);
+    handleApiState(req, res, RCODE_DIR);
     return;
   }
 
@@ -85,12 +85,12 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === '/api/hierarchy') {
-    handleApiHierarchy(req, res, RIHAL_DIR);
+    handleApiHierarchy(req, res, RCODE_DIR);
     return;
   }
 
   if (url === '/api/memory') {
-    handleApiMemory(req, res, RIHAL_DIR);
+    handleApiMemory(req, res, RCODE_DIR);
     return;
   }
 
@@ -126,7 +126,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === '/' || url === '/index.html') {
-    const state = scanState(RIHAL_DIR);
+    const state = scanState(RCODE_DIR);
     const html = renderHtml(state, ORCH_TOKEN);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -138,11 +138,11 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`\n🕌 Majlis (مجلس) — Rihal Code Dashboard`);
+  console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`   Mode:       view-only`);
   console.log(`   URL:        http://localhost:${PORT}`);
-  console.log(`   Scanning:   ${RIHAL_DIR}`);
+  console.log(`   Scanning:   ${RCODE_DIR}`);
   console.log(`   Refresh:    30s soft poll`);
   console.log(`   Keys:       R=refresh  1-9=views  F=filter`);
   console.log(`   Stop:       kill $(lsof -t -i:${PORT})`);
@@ -205,7 +205,7 @@ function spawnOrchestrator() {
   try {
     _orchProc = spawn(process.execPath, [ORCH_BIN], {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env, ORCH_TOKEN, RIHAL_DIR, PROJECT_ROOT },
+      env: { ...process.env, ORCH_TOKEN, RCODE_DIR, PROJECT_ROOT },
       stdio: 'pipe',
     });
     _orchProc.stdout.on('data', chunk => {

@@ -5,7 +5,7 @@
  * otherwise `npm publish` ships a partial package or skips entries
  * silently.
  *
- * Found at 2026-04-30: `.rihal-template/` listed but missing.
+ * Found at 2026-04-30: `.rcode-template/` listed but missing.
  *
  * Run: node --test test/package-files-parity.test.cjs
  */

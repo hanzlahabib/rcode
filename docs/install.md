@@ -1,4 +1,4 @@
-# Installing Rihal Code
+# Installing rcode
 
 Package: [`@hanzlaa/rcode`](https://www.npmjs.com/package/@hanzlaa/rcode) on npm.
 Current version: **v3.4.4** (2026-04-27).
@@ -23,12 +23,12 @@ After the command completes, your project has:
 
 | Path | What's inside |
 |------|---------------|
-| `.rihal/` | Config, workflows, references, binary CLI (`rihal-tools.cjs`) |
+| `.rcode/` | Config, workflows, references, binary CLI (`rcode-tools.cjs`) |
 | `.claude/agents/` | 44 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
-| `.claude/commands/rihal/` | 93 slash commands (`/rihal-create-prd`, `/rihal-council`, ...) |
+| `.claude/commands/rcode/` | 93 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
 | `.claude/skills/` | 58 phrase-activated skills |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
-| `rihal/brain/` | Rihal standards pulled from upstream (M5 in-progress, currently scaffolds with placeholders) |
+| `rcode/brain/` | rcode standards pulled from upstream (M5 in-progress, currently scaffolds with placeholders) |
 
 Total install footprint: ~3.8 MB, 676 files.
 
@@ -42,14 +42,14 @@ Interactive installs also prompt you on `.planning/` specifically — you choose
 
 | Path | Commit? | Why |
 |------|:-------:|-----|
-| `.rihal/config.yaml` | ✅ commit | Your project's chosen mode, language, profile, commit_planning — collaborators should see the same |
-| `.rihal/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
-| `.rihal/brain/sources.yaml` | ✅ commit | Brain source manifest — collaborators pull the same content |
+| `.rcode/config.yaml` | ✅ commit | Your project's chosen mode, language, profile, commit_planning — collaborators should see the same |
+| `.rcode/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
+| `.rcode/brain/sources.yaml` | ✅ commit | Brain source manifest — collaborators pull the same content |
 | `.planning/` | ✅ commit *(toggle-able)* | PRD, roadmap, sprints, SUMMARY.md — the actual thinking. Set `commit_planning: false` in config to gitignore instead. |
 | `.claude/` | ❌ ignored | Installed skills/agents/commands — 500+ files, regenerate with `rcode install` |
-| `.rihal/bin/`, `.rihal/workflows/`, `.rihal/references/`, `.rihal/commands/`, `.rihal/skills/` | ❌ ignored | Methodology files — re-installed on every update |
-| `.rihal/brain/rihal-github/`, `.rihal/brain/rihal-docs/`, `.rihal/brain/best-practices/` | ❌ ignored | Pulled Rihal standards — refresh with `rcode brain pull` |
-| `.rihal/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
+| `.rcode/bin/`, `.rcode/workflows/`, `.rcode/references/`, `.rcode/commands/`, `.rcode/skills/` | ❌ ignored | Methodology files — re-installed on every update |
+| `.rcode/brain/rcode-github/`, `.rcode/brain/rcode-docs/`, `.rcode/brain/best-practices/` | ❌ ignored | Pulled rcode standards — refresh with `rcode brain pull` |
+| `.rcode/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
 
 ### Flipping commit_planning after install
 
@@ -57,15 +57,15 @@ If you want to change the commit policy for `.planning/` after install:
 
 ```bash
 # Stop committing planning artifacts:
-node .rihal/bin/rihal-tools.cjs config-set commit_planning false
-node .rihal/bin/rihal-tools.cjs gitignore refresh
+node .rcode/bin/rcode-tools.cjs config-set commit_planning false
+node .rcode/bin/rcode-tools.cjs gitignore refresh
 
 # Start committing them again:
-node .rihal/bin/rihal-tools.cjs config-set commit_planning true
-node .rihal/bin/rihal-tools.cjs gitignore refresh
+node .rcode/bin/rcode-tools.cjs config-set commit_planning true
+node .rcode/bin/rcode-tools.cjs gitignore refresh
 ```
 
-`gitignore refresh` reads `.rihal/config.yaml` and rewrites the rcode-managed block in `.gitignore`. It's idempotent — safe to run any time, and leaves your non-rcode gitignore entries untouched.
+`gitignore refresh` reads `.rcode/config.yaml` and rewrites the rcode-managed block in `.gitignore`. It's idempotent — safe to run any time, and leaves your non-rcode gitignore entries untouched.
 
 **Without the auto-managed `.gitignore`**, `git add .` would bloat your repo by 676 files (~3.8 MB) — methodology files that regenerate on every install.
 
@@ -85,9 +85,9 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 
 | Editor | `--ide` | What gets written | Status |
 |--------|---------|------------------|:------:|
-| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rihal/`, `.claude/skills/` | ✅ v2.x |
-| Cursor | `cursor` | `.cursor/rules/rihal-*.mdc` | ✅ v2.x |
-| Gemini CLI | `gemini` | `.gemini/rihal/` | ✅ v2.x |
+| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rcode/`, `.claude/skills/` | ✅ v2.x |
+| Cursor | `cursor` | `.cursor/rules/rcode-*.mdc` | ✅ v2.x |
+| Gemini CLI | `gemini` | `.gemini/rcode/` | ✅ v2.x |
 | VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v2.x |
 | VS Code native (no Claude Code extension) | `vscode` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
 | JetBrains (IntelliJ / PyCharm) | `jetbrains` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
@@ -147,22 +147,22 @@ claude   # or open the project in the Cursor / Gemini variant
 Then try any of these to kick the tires:
 
 ```
-/rihal-status           — one-line dashboard
-/rihal-progress         — full progress view with Route A/B/C next-up
-/rihal-council what should we build first?
-/rihal-create-prd for a task management feature
+/rcode-status           — one-line dashboard
+/rcode-progress         — full progress view with Route A/B/C next-up
+/rcode-council what should we build first?
+/rcode-create-prd for a task management feature
 ```
 
 If this is a new project, start with:
 
 ```
-/rihal-scaffold-project      — guided project init
-/rihal-create-prd            — PRD through structured facilitation
-/rihal-create-milestone      — design the M1..Mn roadmap from the PRD
-/rihal-create-epics-and-stories   — break M1 into sprint-ready stories
-/rihal-sprint-planning       — capacity-gated sprint plan
-/rihal-dev-story             — implement one story end-to-end
-/rihal-progress              — see where you are, what's next
+/rcode-scaffold-project      — guided project init
+/rcode-create-prd            — PRD through structured facilitation
+/rcode-create-milestone      — design the M1..Mn roadmap from the PRD
+/rcode-create-epics-and-stories   — break M1 into sprint-ready stories
+/rcode-sprint-planning       — capacity-gated sprint plan
+/rcode-dev-story             — implement one story end-to-end
+/rcode-progress              — see where you are, what's next
 ```
 
 ---
@@ -173,12 +173,12 @@ If this is a new project, start with:
 npx @hanzlaa/rcode update
 ```
 
-That pulls the latest methodology + refreshes the brain content (see `rihal/brain/`). Your project's `.rihal/config.yaml` and `.rihal/state.json` are preserved — only the methodology files get refreshed.
+That pulls the latest methodology + refreshes the brain content (see `rcode/brain/`). Your project's `.rcode/config.yaml` and `.rcode/state.json` are preserved — only the methodology files get refreshed.
 
 To pin to a specific version on update:
 
 ```bash
-/rihal-update v2.0.0   # inside a Claude session
+/rcode-update v2.0.0   # inside a Claude session
 ```
 
 ---
@@ -187,7 +187,7 @@ To pin to a specific version on update:
 
 Default mode is `guided` — skills stop at decision menus and wait for you. If you want skills to auto-advance using the best inference from context:
 
-Edit `.rihal/config.yaml`:
+Edit `.rcode/config.yaml`:
 ```yaml
 mode: yolo
 ```
@@ -198,10 +198,10 @@ Yolo still respects the research citation rule, state sync rule, and capacity ga
 
 ## Uninstalling
 
-Rihal Code is pure file-shipping with no persistent runtime. To remove:
+rcode is pure file-shipping with no persistent runtime. To remove:
 
 ```bash
-rm -rf .rihal/ .claude/ .planning/ rihal/brain/
+rm -rf .rcode/ .claude/ .planning/ rcode/brain/
 ```
 
 Your git history of your own project's artifacts in `.planning/` is yours — back up before `rm -rf` if you want to keep them.
@@ -211,7 +211,7 @@ Your git history of your own project's artifacts in `.planning/` is yours — ba
 ## Troubleshooting
 
 ### `command not found: claude`
-Install Claude Code first: see https://claude.ai/code. Rihal Code is a package you install *into* Claude Code / Cursor / Gemini — it doesn't ship the IDE itself.
+Install Claude Code first: see https://claude.ai/code. rcode is a package you install *into* Claude Code / Cursor / Gemini — it doesn't ship the IDE itself.
 
 ### Install succeeds but skills don't activate
 Make sure you're running in the directory that has `.claude/skills/`. Some IDEs require a restart after a new skill folder appears. Claude Code: `Cmd+Shift+P → Reload Window`.
@@ -220,7 +220,7 @@ Make sure you're running in the directory that has `.claude/skills/`. Some IDEs 
 npm registry mirror issue. Try `npm config set registry https://registry.npmjs.org/` then re-run.
 
 ### Collaborator on the same repo sees different skills
-Someone ran `rihal-code update` and the other hasn't. Either commit the `.rihal/` changes (they're git-friendly) or standardize on a pinned version.
+Someone ran `rcode update` and the other hasn't. Either commit the `.rcode/` changes (they're git-friendly) or standardize on a pinned version.
 
 ### Want to uninstall one module but keep others
 Not yet supported. Re-install with only the modules you want via `--module` flags + `--force`.
@@ -229,10 +229,10 @@ Not yet supported. Re-install with only the modules you want via `--module` flag
 
 ## Legacy install command (still works)
 
-The legacy binary name `rihal-code` is kept as an alias for backward compatibility with older docs:
+The legacy binary name `rcode` is kept as an alias for backward compatibility with older docs:
 
 ```bash
-npx rihal-code install     # works, same as @hanzlaa/rcode install
+npx rcode install     # works, same as @hanzlaa/rcode install
 ```
 
 New docs and CI should prefer `npx @hanzlaa/rcode install`.
@@ -241,7 +241,7 @@ New docs and CI should prefer `npx @hanzlaa/rcode install`.
 
 ## Next
 
-- Read [`docs/what-is-rihal-code.md`](what-is-rihal-code.md) for the product story.
+- Read [`docs/what-is-rcode.md`](what-is-rcode.md) for the product story.
 - Read [`docs/TIERS.md`](TIERS.md) to pick what to try first.
 - Read [`docs/ROADMAP.md`](ROADMAP.md) to see where this is going (v3 MCP server on the horizon).
 - If you want to contribute, read [`CONTRIBUTING.md`](../CONTRIBUTING.md) — per-role guide.

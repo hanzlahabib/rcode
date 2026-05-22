@@ -47,7 +47,7 @@ const NAV_SECTIONS = [
  *
  * Props:
  *   activeView  {string}  — currently active view key
- *   projectName {string}  — displayed under the "Rihal" label
+ *   projectName {string}  — displayed under the "rcode" label
  */
 export function Sidebar({ activeView, projectName }) {
   const S = useStore();
@@ -62,7 +62,7 @@ export function Sidebar({ activeView, projectName }) {
   return html`
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-project">
-        <div class="project-label">Rihal</div>
+        <div class="project-label">rcode</div>
         <span>${projectName || ''}</span>
       </div>
       <nav>

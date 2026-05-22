@@ -1,7 +1,7 @@
 # Phase 24 — Resolve Agent vs Skill Persona Duplication
 
 **Issue:** #714
-**Branch:** rihal/autonomous-m1-agent-slim-20260510-125703
+**Branch:** rcode/autonomous-m1-agent-slim-20260510-125703
 **Preceded by:** Phase 23 (agent-slim-remaining-24) — VERIFIED ✓
 
 ## Goal
@@ -9,7 +9,7 @@
 Eliminate the dual-content problem: each of 10 persona agents currently carries
 condensed Identity/Communication/Principles/Capabilities/Constraints sections
 IN the agent file even though the same persona content is already in
-`rihal/skills/agents/<name>/SKILL.md` (which is already @-included by the agent).
+`rcode/skills/agents/<name>/SKILL.md` (which is already @-included by the agent).
 
 After this phase every affected agent stub is ≤40 lines: frontmatter + @-includes only.
 The SKILL.md becomes the single source of truth for persona content.
@@ -29,14 +29,14 @@ The SKILL.md becomes the single source of truth for persona content.
 | nasser  | 58            | nasser-eng-manager/ | 155 |
 | noor    | 62            | noor-writer/ | 133 |
 
-**Not affected:** rihal-khalid.md (99L) — no matching skill dir, not a persona agent.
+**Not affected:** rcode-khalid.md (99L) — no matching skill dir, not a persona agent.
 **Not affected:** haitham/omar/yousef — already slimmed in Phase 23, no matching SKILL.md.
 
 ## Key Finding: @-include Already Exists
 
 All 10 persona agent files already contain:
 ```
-@.rihal/skills/agents/<name>/SKILL.md
+@.rcode/skills/agents/<name>/SKILL.md
 ```
 
 So when Claude spawns these agents, it loads BOTH the full SKILL.md content AND
@@ -47,17 +47,17 @@ agent-file sections; SKILL.md already has everything.
 
 ```markdown
 ---
-name: rihal-<name>
+name: rcode-<name>
 description: |
   <existing description — keep verbatim, it drives council dispatch>
 tools: <existing tools list>
 color: <existing color if present>
 ---
 
-@.rihal/references/agent-shared-rules.md
-@.rihal/references/codebase-grounding.md
-@.rihal/references/karpathy-guidelines.md   (only if currently present)
-@.rihal/skills/agents/<name>/SKILL.md
+@.rcode/references/agent-shared-rules.md
+@.rcode/references/codebase-grounding.md
+@.rcode/references/karpathy-guidelines.md   (only if currently present)
+@.rcode/skills/agents/<name>/SKILL.md
 ```
 
 No persona content below the @-includes. The SKILL.md carries everything.
@@ -74,15 +74,15 @@ Each agent stub: ≤40 lines (frontmatter ~15L + blank line + 3-4 @-includes + b
 
 ## Success Criteria
 
-1. `wc -l rihal/agents/rihal-{hanzla,waleed,sadiq,fatima,ahmed,hussain-pm,layla,mariam,nasser,noor}.md` — all ≤40
-2. `grep -l "@.rihal/skills/agents" rihal/agents/*.md` — all 10 present
+1. `wc -l rcode/agents/rcode-{hanzla,waleed,sadiq,fatima,ahmed,hussain-pm,layla,mariam,nasser,noor}.md` — all ≤40
+2. `grep -l "@.rcode/skills/agents" rcode/agents/*.md` — all 10 present
 3. No content below the last @-include line in any of the 10 files
-4. rihal-khalid.md unchanged
+4. rcode-khalid.md unchanged
 5. All SKILL.md files unchanged (source of truth, not touched)
 
 ## Install.js Path Check
 
-`cli/install.js` copies `rihal/agents/*.md` → `~/.claude/agents/*.md`. Slim stubs still
+`cli/install.js` copies `rcode/agents/*.md` → `~/.claude/agents/*.md`. Slim stubs still
 satisfy this — the agent file just needs valid frontmatter + @-includes. No path
 changes needed.
 

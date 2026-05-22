@@ -31,7 +31,7 @@ function gitInit(dir) {
   spawnSync('git', ['init', '-q'], { cwd: dir });
 }
 
-test('install creates valid JSON in .rihal/state.json (atomic write — #687)', (t) => {
+test('install creates valid JSON in .rcode/state.json (atomic write — #687)', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   gitInit(dir);
@@ -39,7 +39,7 @@ test('install creates valid JSON in .rihal/state.json (atomic write — #687)', 
   const result = runInstall(dir);
   assert.strictEqual(result.status, 0, `install failed: ${result.stderr}`);
 
-  const statePath = path.join(dir, '.rihal', 'state.json');
+  const statePath = path.join(dir, '.rcode', 'state.json');
   assert.strictEqual(fs.existsSync(statePath), true);
   // Must parse as JSON — atomic writes guarantee no partial truncation.
   const parsed = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -47,14 +47,14 @@ test('install creates valid JSON in .rihal/state.json (atomic write — #687)', 
   assert.strictEqual(parsed._seeded_stub, true);
 });
 
-test('install seeds .rihal/config.yaml with required keys', (t) => {
+test('install seeds .rcode/config.yaml with required keys', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   gitInit(dir);
 
   runInstall(dir);
 
-  const cfg = fs.readFileSync(path.join(dir, '.rihal', 'config.yaml'), 'utf8');
+  const cfg = fs.readFileSync(path.join(dir, '.rcode', 'config.yaml'), 'utf8');
   assert.match(cfg, /user_name:/);
   assert.match(cfg, /project_name:/);
   assert.match(cfg, /commit_planning:\s*(true|false)/);
@@ -80,7 +80,7 @@ test('--reset alone (without --force) errors fast and leaves no state behind (#6
   const result = runInstall(dir, ['--reset']);
   assert.strictEqual(result.status, 2);
   assert.match(result.stdout, /--reset has no effect without --force/);
-  assert.strictEqual(fs.existsSync(path.join(dir, '.rihal')), false);
+  assert.strictEqual(fs.existsSync(path.join(dir, '.rcode')), false);
 });
 
 test('install is idempotent — running twice produces the same state shape', (t) => {
@@ -90,11 +90,11 @@ test('install is idempotent — running twice produces the same state shape', (t
 
   const r1 = runInstall(dir);
   assert.strictEqual(r1.status, 0);
-  const stateBefore = fs.readFileSync(path.join(dir, '.rihal', 'state.json'), 'utf8');
+  const stateBefore = fs.readFileSync(path.join(dir, '.rcode', 'state.json'), 'utf8');
 
   const r2 = runInstall(dir);
   assert.strictEqual(r2.status, 0);
-  const stateAfter = fs.readFileSync(path.join(dir, '.rihal', 'state.json'), 'utf8');
+  const stateAfter = fs.readFileSync(path.join(dir, '.rcode', 'state.json'), 'utf8');
 
   // _seeded_stub flag and project null should both still be present
   // (no real project has graduated this state).
@@ -107,11 +107,11 @@ test('concurrent install attempts: live lock blocks the second run with exit 3 (
   t.after(() => cleanup(dir));
   gitInit(dir);
 
-  // First install must succeed so .rihal/ exists.
+  // First install must succeed so .rcode/ exists.
   runInstall(dir);
 
   // Plant a live lock with this test process's PID.
-  const lockPath = path.join(dir, '.rihal', '.install.lock');
+  const lockPath = path.join(dir, '.rcode', '.install.lock');
   fs.writeFileSync(lockPath, String(process.pid));
 
   const result = runInstall(dir);
@@ -133,7 +133,7 @@ test('stale lock (PID not alive) is reclaimed automatically', (t) => {
 
   // Plant a stale lock with a guaranteed-dead PID. PID 99999999 is far
   // higher than typical kernel pid_max (4194304 on Linux).
-  const lockPath = path.join(dir, '.rihal', '.install.lock');
+  const lockPath = path.join(dir, '.rcode', '.install.lock');
   fs.writeFileSync(lockPath, '99999999');
 
   const result = runInstall(dir);

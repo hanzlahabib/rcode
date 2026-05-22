@@ -1,7 +1,7 @@
 /**
- * Schema validators for rihal-code's own artifacts.
+ * Schema validators for rcode's own artifacts.
  *
- * Validates SKILL.md frontmatter, agent frontmatter, and `.rihal/state.json`
+ * Validates SKILL.md frontmatter, agent frontmatter, and `.rcode/state.json`
  * against zod schemas — mirroring the zod usage style in `cli/lib/config.cjs`.
  *
  * Why: today malformed SKILL.md / agent frontmatter is only caught by brittle
@@ -22,8 +22,8 @@ const { z } = require('zod');
 /**
  * Extract YAML frontmatter from a markdown document.
  *
- * Handles three value shapes seen in rihal artifacts:
- *   - plain scalars:        `name: rihal-foo`
+ * Handles three value shapes seen in rcode artifacts:
+ *   - plain scalars:        `name: rcode-foo`
  *   - folded multiline:     `description: >` followed by indented lines
  *   - block sequences:      `triggers:` followed by `  - "phrase"` lines
  *
@@ -228,15 +228,15 @@ const agentFrontmatterSchema = z.object({
   name: z
     .string()
     .min(1, 'name is required')
-    .refine((v) => v.startsWith('rihal-'), 'name must start with the "rihal-" prefix'),
+    .refine((v) => v.startsWith('rcode-'), 'name must start with the "rcode-" prefix'),
   description: z.string().min(1, 'description is required'),
   color: z.string().min(1, 'color is required'),
 });
 
 /**
- * Validate a parsed agent (`rihal/agents/*.md`) frontmatter object.
+ * Validate a parsed agent (`rcode/agents/*.md`) frontmatter object.
  *
- * Requires `name` (rihal- prefixed), `description`, `tools` (comma-list or
+ * Requires `name` (rcode- prefixed), `description`, `tools` (comma-list or
  * array), and `color`.
  *
  * @param {object} obj parsed frontmatter
@@ -269,8 +269,8 @@ function validateAgentFrontmatter(obj) {
 
 // ---------- state.json ----------
 
-// NOTE: keep this schema coordinated with `.rihal/references/state-schema.md`
-// and the canonical shape written by rihal-tools.cjs — see issue #735
+// NOTE: keep this schema coordinated with `.rcode/references/state-schema.md`
+// and the canonical shape written by rcode-tools.cjs — see issue #735
 // (coordinate state.json schema across producers/consumers). Optional and
 // unknown keys are permitted on purpose so state.json can evolve without
 // breaking this validator; only the load-bearing top-level keys are required.
@@ -289,7 +289,7 @@ const stateSchema = z
   .passthrough();
 
 /**
- * Validate the top-level shape of `.rihal/state.json`.
+ * Validate the top-level shape of `.rcode/state.json`.
  *
  * @param {object} obj parsed state.json
  * @returns {{ ok: boolean, errors: string[] }}

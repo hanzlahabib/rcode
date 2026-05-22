@@ -44,8 +44,8 @@ pair in client/orchestrator.js, a `history` store field, and supporting CSS + on
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>

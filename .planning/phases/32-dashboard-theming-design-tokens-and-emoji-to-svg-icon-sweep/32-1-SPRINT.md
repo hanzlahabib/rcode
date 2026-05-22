@@ -36,8 +36,8 @@ bodies use only var(--...) for color/spacing/radius/shadow.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -101,7 +101,7 @@ desired for light mode).
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node -e "const c = require('./server/lib/html/css.js'); const s = c.renderCss(); if (!s.includes('--text-stat')) { console.error('FAIL: --text-stat missing'); process.exit(1); } if (s.includes('font-size: 28px') && !s.includes('--text-stat: 28px')) { console.error('FAIL: 28px not tokenized'); process.exit(1); } console.log('OK len=' + s.length);" && echo PASS
+cd /home/hanzla/development/rcode && node -e "const c = require('./server/lib/html/css.js'); const s = c.renderCss(); if (!s.includes('--text-stat')) { console.error('FAIL: --text-stat missing'); process.exit(1); } if (s.includes('font-size: 28px') && !s.includes('--text-stat: 28px')) { console.error('FAIL: 28px not tokenized'); process.exit(1); } console.log('OK len=' + s.length);" && echo PASS
 </automated>
 </verify>
 <done>All known raw literals either tokenized or documented as intentional exceptions; css.js require()s cleanly; renderCss() returns a non-empty string.</done>
@@ -167,7 +167,7 @@ genuinely absent.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node -e "const s = require('./server/lib/html/css.js').renderCss(); const checks = [s.includes('.ic'), s.includes('section-icon'), s.includes('vertical-align')]; console.log(checks.every(Boolean) ? 'OK' : 'FAIL: ' + JSON.stringify(checks));"
+cd /home/hanzla/development/rcode && node -e "const s = require('./server/lib/html/css.js').renderCss(); const checks = [s.includes('.ic'), s.includes('section-icon'), s.includes('vertical-align')]; console.log(checks.every(Boolean) ? 'OK' : 'FAIL: ' + JSON.stringify(checks));"
 </automated>
 </verify>
 <done>Icon alignment CSS classes present in css.js; renderCss() returns cleanly; no duplicate rule bodies.</done>

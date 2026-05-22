@@ -19,10 +19,10 @@ AI agents lose context. `CLAUDE.md` files go stale. Onboarding a teammate three 
 
 ## Directory structure
 
-The Memory Bank lives at `.rihal/memory/` and is additive to the existing `.rihal/context/` and `.rihal/brain/` layers (which are not moved or replaced).
+The Memory Bank lives at `.rcode/memory/` and is additive to the existing `.rcode/context/` and `.rcode/brain/` layers (which are not moved or replaced).
 
 ```
-.rihal/memory/
+.rcode/memory/
 ├── INDEX.md                     # human-readable directory of everything
 ├── project/
 │   ├── stack.md                 # languages, frameworks, services in use
@@ -37,7 +37,7 @@ The Memory Bank lives at `.rihal/memory/` and is additive to the existing `.riha
 ├── incidents/
 │   ├── known-issues.md          # active bugs and workarounds
 │   └── post-mortems/            # one file per incident, dated
-├── change-records/              # ports the existing Rihal change-record format
+├── change-records/              # ports the existing rcode change-record format
 │   └── YYYYMMDD-NNN.md          # date + sequence
 └── distillates/                 # generated, not hand-edited
     ├── project.distillate.md    # full-project summary, lossless
@@ -50,7 +50,7 @@ The Memory Bank lives at `.rihal/memory/` and is additive to the existing `.riha
 - **`people/`** answers "who decides what?"
 - **`milestones/`** answers "what are we doing now?"
 - **`incidents/`** answers "what has gone wrong, what did we learn?"
-- **`change-records/`** ports an existing Rihal pattern verified in the project template
+- **`change-records/`** ports an existing rcode pattern verified in the project template
 - **`distillates/`** answers "give me the whole project in <5K tokens"
 
 Each file has a single, focused responsibility. No nested duplication.
@@ -63,7 +63,7 @@ Each file has a single, focused responsibility. No nested duplication.
 Top-level directory of the Memory Bank. Lists every other file with a one-line summary. Read first by every agent session.
 
 ### `project/stack.md`
-Inventory of languages, frameworks, libraries, services. Populated from `package.json`, `requirements.txt`, `docker-compose.yml`, `helm/`. Refreshed by `/rihal-memory-update` when stack changes.
+Inventory of languages, frameworks, libraries, services. Populated from `package.json`, `requirements.txt`, `docker-compose.yml`, `helm/`. Refreshed by `/rcode-memory-update` when stack changes.
 
 ### `project/decisions.md`
 Append-only log. Each entry: date, decision, rationale, alternatives considered, who decided. Lighter than full ADRs — one paragraph each. Heavier decisions get their own ADR file referenced from here.
@@ -87,13 +87,13 @@ One file per completed milestone. Used by `/rcode:milestone-summary` and onboard
 Active bugs and workarounds. Searchable so an agent doesn't waste cycles re-debugging a known issue.
 
 ### `incidents/post-mortems/`
-One file per resolved incident. Format follows existing Rihal change-record template. **Connects to `rcode-incident-record` skill from Phase 6.**
+One file per resolved incident. Format follows existing rcode change-record template. **Connects to `rcode-incident-record` skill from Phase 6.**
 
 ### `change-records/`
-Ports the verified Rihal change-record format from `template/docs/change_records/`. Each change record: ID, date, requester, owner, category, type, description, risk, deployment, approval, rollback, verification, outcome.
+Ports the verified rcode change-record format from `template/docs/change_records/`. Each change record: ID, date, requester, owner, category, type, description, risk, deployment, approval, rollback, verification, outcome.
 
 ### `distillates/`
-**Generated, not hand-edited.** Produced by `/rihal-memory-distill`. Lossless compression of source files for fast LLM context loading. Re-run when source files change.
+**Generated, not hand-edited.** Produced by `/rcode-memory-distill`. Lossless compression of source files for fast LLM context loading. Re-run when source files change.
 
 ---
 
@@ -123,7 +123,7 @@ Four skills, all created in Phase 3:
 
 | Skill | Purpose |
 |---|---|
-| `rcode-memory-init` | Bootstrap `.rihal/memory/` for an existing project. Asks 5 questions, populates templates. |
+| `rcode-memory-init` | Bootstrap `.rcode/memory/` for an existing project. Asks 5 questions, populates templates. |
 | `rcode-memory-update` | Surgical update of specific Memory Bank files from conversation context. |
 | `rcode-memory-distill` | Regenerate `distillates/` from source files. |
 | `rcode-memory-audit` | Find stale entries, contradictions, missing sections. |
@@ -147,7 +147,7 @@ A typical session loads ~5K tokens of Memory Bank context and is fully oriented 
 
 ## Constraints
 
-- **Memory Bank is a complement to, not a replacement for**, `.rihal/context/active.md` (current task context) and `.rihal/brain/` (Rihal institutional knowledge from external sources). All three coexist.
+- **Memory Bank is a complement to, not a replacement for**, `.rcode/context/active.md` (current task context) and `.rcode/brain/` (rcode institutional knowledge from external sources). All three coexist.
 - **Distillates are generated, not authored.** Hand-editing a distillate is a smell — the source file should be edited and the distillate regenerated.
 - **Memory Bank does not store secrets.** No tokens, no credentials, no PII. Stakeholder contact info should reference an external CRM, not embed personal data.
 - **The directory is checked into git.** This is intentional: visibility and team-shared context are the value. Private projects use private repos.
@@ -157,7 +157,7 @@ A typical session loads ~5K tokens of Memory Bank context and is fully oriented 
 ## Phase 3 deliverables (forward reference)
 
 When Phase 3 completes, this spec becomes the implemented system. Acceptance:
-- A fresh repo running `/rihal-memory-init` produces the directory structure above
+- A fresh repo running `/rcode-memory-init` produces the directory structure above
 - The Diwan dashboard renders a `/memory` view with file tree + previews
 - Distillates regenerate when sources change
 - All Phase 5 and 6 skills declare and honour their Memory Bank hooks

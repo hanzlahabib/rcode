@@ -10,28 +10,28 @@ commit: 5494e71
 ## Objective
 
 Slim 9 agents by replacing shared content blocks with @-include lines pointing to the cluster reference files created in sprint 23-1:
-- `@.rihal/references/persona-engineer-shared.md` for engineer personas
-- `@.rihal/references/auditor-shared-checklists.md` for auditor agents
+- `@.rcode/references/persona-engineer-shared.md` for engineer personas
+- `@.rcode/references/auditor-shared-checklists.md` for auditor agents
 
 ## Before / After Line Counts
 
 | Agent | Before | After | Delta | Target | Status |
 |-------|--------|-------|-------|--------|--------|
-| rihal-haitham.md | 143 | 99 | -44 | ≤100 | PASS |
-| rihal-omar.md | 138 | 96 | -42 | ≤100 | PASS |
-| rihal-yousef.md | 137 | 97 | -40 | ≤100 | PASS |
-| rihal-ui-auditor.md | 124 | 100 | -24 | ≤100 | PASS |
-| rihal-security-auditor.md | 122 | 100 | -22 | ≤100 | PASS |
-| rihal-security-adversary.md | 127 | 98 | -29 | ≤100 | PASS |
-| rihal-edge-case-hunter.md | 121 | 95 | -26 | ≤100 | PASS |
-| rihal-nyquist-auditor.md | 183 | 176 | -7 | ≤100 | DEVIATION |
-| rihal-docs-auditor.md | 182 | 173 | -9 | ≤120 | DEVIATION |
+| rcode-haitham.md | 143 | 99 | -44 | ≤100 | PASS |
+| rcode-omar.md | 138 | 96 | -42 | ≤100 | PASS |
+| rcode-yousef.md | 137 | 97 | -40 | ≤100 | PASS |
+| rcode-ui-auditor.md | 124 | 100 | -24 | ≤100 | PASS |
+| rcode-security-auditor.md | 122 | 100 | -22 | ≤100 | PASS |
+| rcode-security-adversary.md | 127 | 98 | -29 | ≤100 | PASS |
+| rcode-edge-case-hunter.md | 121 | 95 | -26 | ≤100 | PASS |
+| rcode-nyquist-auditor.md | 183 | 176 | -7 | ≤100 | DEVIATION |
+| rcode-docs-auditor.md | 182 | 173 | -9 | ≤120 | DEVIATION |
 
 Total lines removed: 243 lines across 9 files.
 
 ## Accepted Deviations
 
-### rihal-nyquist-auditor.md (176L, target ≤100L)
+### rcode-nyquist-auditor.md (176L, target ≤100L)
 
 The nyquist-auditor is structurally different from all other auditors. It uses XML-style execution blocks that are entirely unique to the gap-filling workflow:
 
@@ -41,9 +41,9 @@ The nyquist-auditor is structurally different from all other auditors. It uses X
 
 These blocks total ~150L of unique, load-bearing structured content that cannot be moved to the shared reference file because they define nyquist's specific execution protocol — not general audit methodology. The shared `@-include` was added and the generic trailing Constraints section (8L of low-value filler) was removed, achieving the maximum possible reduction.
 
-### rihal-docs-auditor.md (173L, target ≤120L)
+### rcode-docs-auditor.md (173L, target ≤120L)
 
-The docs-auditor carries two extension blocks for the `/rihal-feature-drift` workflow:
+The docs-auditor carries two extension blocks for the `/rcode-feature-drift` workflow:
 
 - `<mode_feature_drift>`: ~61L — structured JSON output schema with hardcoded severity rules (`trivial|minor|major|critical`) used by the workflow parser
 - `<mode_phase_status>`: ~52L — structured JSON output schema with phase-status severity rules (`trivial|partial|major`) used by the workflow parser

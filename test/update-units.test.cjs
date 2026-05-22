@@ -46,58 +46,58 @@ test('detectInstalledEditors: empty cwd returns []', (t) => {
   assert.deepStrictEqual(update.detectInstalledEditors(dir), []);
 });
 
-test('detectInstalledEditors: detects claude when .claude/skills/rihal-* exists', (t) => {
+test('detectInstalledEditors: detects claude when .claude/skills/rcode-* exists', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
-  fs.mkdirSync(path.join(dir, '.claude/skills/rihal-do'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.claude/skills/rihal-do/SKILL.md'), '# do\n');
+  fs.mkdirSync(path.join(dir, '.claude/skills/rcode-do'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.claude/skills/rcode-do/SKILL.md'), '# do\n');
   const editors = update.detectInstalledEditors(dir);
   assert.ok(editors.includes('claude'), 'claude should be detected');
 });
 
-test('detectInstalledEditors: ignores .claude/skills without rihal- prefix', (t) => {
+test('detectInstalledEditors: ignores .claude/skills without rcode- prefix', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   fs.mkdirSync(path.join(dir, '.claude/skills/some-other-skill'), { recursive: true });
   const editors = update.detectInstalledEditors(dir);
-  assert.ok(!editors.includes('claude'), 'claude should NOT be detected without rihal- prefix');
+  assert.ok(!editors.includes('claude'), 'claude should NOT be detected without rcode- prefix');
 });
 
-test('detectInstalledEditors: detects cursor only with rihal-*.mdc files', (t) => {
+test('detectInstalledEditors: detects cursor only with rcode-*.mdc files', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
 
   // Wrong extension → not detected
   fs.mkdirSync(path.join(dir, '.cursor/rules'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.cursor/rules/rihal-foo.md'), 'x');
+  fs.writeFileSync(path.join(dir, '.cursor/rules/rcode-foo.md'), 'x');
   assert.ok(!update.detectInstalledEditors(dir).includes('cursor'));
 
   // Correct extension → detected
-  fs.writeFileSync(path.join(dir, '.cursor/rules/rihal-foo.mdc'), 'x');
+  fs.writeFileSync(path.join(dir, '.cursor/rules/rcode-foo.mdc'), 'x');
   assert.ok(update.detectInstalledEditors(dir).includes('cursor'));
 });
 
-test('detectInstalledEditors: detects windsurf only with rihal-*.mdc', (t) => {
+test('detectInstalledEditors: detects windsurf only with rcode-*.mdc', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   fs.mkdirSync(path.join(dir, '.windsurf/rules'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.windsurf/rules/rihal-x.mdc'), 'x');
+  fs.writeFileSync(path.join(dir, '.windsurf/rules/rcode-x.mdc'), 'x');
   assert.ok(update.detectInstalledEditors(dir).includes('windsurf'));
 });
 
 test('detectInstalledEditors: detects antigravity', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
-  fs.mkdirSync(path.join(dir, '.antigravity/agents/rihal-x'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.antigravity/agents/rcode-x'), { recursive: true });
   assert.ok(update.detectInstalledEditors(dir).includes('antigravity'));
 });
 
 test('detectInstalledEditors: returns multiple editors when multiple are installed', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
-  fs.mkdirSync(path.join(dir, '.claude/skills/rihal-do'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.claude/skills/rcode-do'), { recursive: true });
   fs.mkdirSync(path.join(dir, '.cursor/rules'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.cursor/rules/rihal-x.mdc'), 'x');
+  fs.writeFileSync(path.join(dir, '.cursor/rules/rcode-x.mdc'), 'x');
   const editors = update.detectInstalledEditors(dir);
   assert.ok(editors.includes('claude'));
   assert.ok(editors.includes('cursor'));

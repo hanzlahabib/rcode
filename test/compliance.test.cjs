@@ -1,12 +1,12 @@
 /**
- * Compliance tests for Rihal v2 command, workflow, and agent consistency.
+ * Compliance tests for rcode v2 command, workflow, and agent consistency.
  *
  * These tests verify:
  * 1. Every command in help.md has a matching command file
  * 2. Every workflow listed in module YAML exists
  * 3. Every agent has valid frontmatter
  * 4. Every command file @-includes its workflow
- * 5. rihal-tools.cjs help text matches implemented subcommands
+ * 5. rcode-tools.cjs help text matches implemented subcommands
  *
  * Run: node --test test/compliance.test.cjs
  */
@@ -17,11 +17,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const RIHAL_DIR = path.join(PROJECT_ROOT, 'rihal');
-const COMMANDS_DIR = path.join(RIHAL_DIR, 'commands');
-const WORKFLOWS_DIR = path.join(RIHAL_DIR, 'workflows');
-const AGENTS_DIR = path.join(RIHAL_DIR, 'agents');
-const MODULES_DIR = path.join(RIHAL_DIR, 'modules');
+const RCODE_DIR = path.join(PROJECT_ROOT, 'rcode');
+const COMMANDS_DIR = path.join(RCODE_DIR, 'commands');
+const WORKFLOWS_DIR = path.join(RCODE_DIR, 'workflows');
+const AGENTS_DIR = path.join(RCODE_DIR, 'agents');
+const MODULES_DIR = path.join(RCODE_DIR, 'modules');
 
 /**
  * Parse YAML frontmatter. Returns { frontmatter, body }.
@@ -76,14 +76,14 @@ test('every command referenced in help.md exists as a .md file', () => {
   assert.ok(fs.existsSync(helpFile), 'help.md exists');
 
   const helpContent = fs.readFileSync(helpFile, 'utf8');
-  // Look for `/rihal-` patterns in help.md
-  const cmdMatches = helpContent.match(/\/rihal-[\w-]+/g) || [];
+  // Look for `/rcode-` patterns in help.md
+  const cmdMatches = helpContent.match(/\/rcode-[\w-]+/g) || [];
   const uniqueCmds = [...new Set(cmdMatches)].map((m) => m.slice(1)); // remove leading /
 
   const commandFiles = getMdFiles(COMMANDS_DIR).map((f) => path.basename(f, '.md'));
 
   for (const cmd of uniqueCmds) {
-    const cmdName = cmd.slice(6); // remove 'rihal-' prefix
+    const cmdName = cmd.slice(6); // remove 'rcode-' prefix
     assert.ok(
       commandFiles.includes(cmdName),
       `Command ${cmd} referenced in help.md but ${cmdName}.md not found`
@@ -149,8 +149,8 @@ test('every command file @-includes its corresponding workflow', () => {
     const cmdName = path.basename(cmdFile, '.md');
     const content = fs.readFileSync(cmdFile, 'utf8');
 
-    // Check for @-include pattern: @.rihal/workflows/{name}.md or similar
-    const includePattern = /@\.rihal\/workflows\/|@\.\/\.\.\/workflows\//;
+    // Check for @-include pattern: @.rcode/workflows/{name}.md or similar
+    const includePattern = /@\.rcode\/workflows\/|@\.\/\.\.\/workflows\//;
     const hasInclude = includePattern.test(content);
 
     assert.ok(
@@ -161,11 +161,11 @@ test('every command file @-includes its corresponding workflow', () => {
 });
 
 /**
- * Test 5: rihal-tools.cjs has matching subcommand handlers
+ * Test 5: rcode-tools.cjs has matching subcommand handlers
  */
-test('rihal-tools.cjs has implemented subcommands', () => {
-  const toolFile = path.join(PROJECT_ROOT, 'rihal/bin/rihal-tools.cjs');
-  assert.ok(fs.existsSync(toolFile), 'rihal-tools.cjs exists');
+test('rcode-tools.cjs has implemented subcommands', () => {
+  const toolFile = path.join(PROJECT_ROOT, 'rcode/bin/rcode-tools.cjs');
+  assert.ok(fs.existsSync(toolFile), 'rcode-tools.cjs exists');
 
   const content = fs.readFileSync(toolFile, 'utf8');
 
@@ -182,7 +182,7 @@ test('rihal-tools.cjs has implemented subcommands', () => {
   for (const sub of essential) {
     assert.ok(
       implemented.has(sub),
-      `Essential subcommand ${sub} not found in rihal-tools.cjs switch statement`
+      `Essential subcommand ${sub} not found in rcode-tools.cjs switch statement`
     );
   }
 });

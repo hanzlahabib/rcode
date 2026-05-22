@@ -42,8 +42,8 @@ must land its CSS first; 36-2 then appends after it. App.js is NOT in this sprin
 </sequencing>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>

@@ -1,5 +1,5 @@
 {
-  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rihal/bin → .rihal/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475).",
+  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rcode/bin → .rcode/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475).",
   "hooks": {
     "PreToolUse": [
       {

@@ -8,18 +8,18 @@ depends-on: "phase 20"
 # Phase 21 — Dashboard Data Pipeline
 
 ## Goal
-Fix the two root-cause bugs that prevent tasks from appearing in the dashboard and prevent decimal phase IDs from resolving correctly. Requires changes to `server/lib/scanner.js`, `server/lib/html/client.js`, and the `rihal-planner` workflow.
+Fix the two root-cause bugs that prevent tasks from appearing in the dashboard and prevent decimal phase IDs from resolving correctly. Requires changes to `server/lib/scanner.js`, `server/lib/html/client.js`, and the `rcode-planner` workflow.
 
 ## Bugs to Fix
 
 ### 1. Sprint stories always empty — #590
-**Root cause:** rihal-planner writes SPRINT.md markdown files but never populates `sprints[].stories[]` in `state.json`. The scanner reads `s.stories` from state.json and flatmaps it for the Tasks view. If stories array is empty, tasks are invisible.
+**Root cause:** rcode-planner writes SPRINT.md markdown files but never populates `sprints[].stories[]` in `state.json`. The scanner reads `s.stories` from state.json and flatmaps it for the Tasks view. If stories array is empty, tasks are invisible.
 
 **Fix — two-part:**
 
-**Part A: rihal-planner writes task entries to state.json**
-File: `rihal/workflows/plan.md`
-After generating SPRINT.md content, the planner must also update `state.json` by calling `rihal-tools state` to add story entries:
+**Part A: rcode-planner writes task entries to state.json**
+File: `rcode/workflows/plan.md`
+After generating SPRINT.md content, the planner must also update `state.json` by calling `rcode-tools state` to add story entries:
 ```json
 {"id": "sprint-1-task-1", "title": "...", "status": "todo", "sprint": "100.1", "phase": "100"}
 ```
@@ -55,10 +55,10 @@ const padded = String(intId).padStart(2, '0');
 ## Files to Modify
 - `server/lib/scanner.js` (lines 81-85 — stories flatmap + padded ID)
 - `server/lib/html/client.js` — phase ID comparison normalization
-- `rihal/workflows/plan.md` — add state.json task write step
+- `rcode/workflows/plan.md` — add state.json task write step
 
 ## Success Criteria
-- [ ] After `/rihal-plan 100`, tasks appear in dashboard Tasks view
+- [ ] After `/rcode-plan 100`, tasks appear in dashboard Tasks view
 - [ ] Sprint detail cards show task list
 - [ ] Phase 100.1 click correctly resolves directory and shows sprint content
 - [ ] Integer phase IDs (e.g. "13") still work correctly

@@ -1,12 +1,12 @@
 /**
- * rihal-code team — list the team roster
+ * rcode team — list the team roster
  */
 
 const fs = require('fs');
 const path = require('path');
 
 module.exports = function team(args, { packageRoot }) {
-  const digestDir = path.join(packageRoot, 'rihal/digests');
+  const digestDir = path.join(packageRoot, 'rcode/digests');
 
   if (!fs.existsSync(digestDir)) {
     console.error('Agent digests not found. Is the package installed correctly?');
@@ -15,7 +15,7 @@ module.exports = function team(args, { packageRoot }) {
 
   const files = fs.readdirSync(digestDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
 
-  console.log(`\n🕌 Rihal Code Team Roster (${files.length} agents)\n`);
+  console.log(`\n🕌 rcode Team Roster (${files.length} agents)\n`);
   console.log('─'.repeat(80));
 
   for (const file of files.sort()) {
@@ -30,6 +30,6 @@ module.exports = function team(args, { packageRoot }) {
   }
 
   console.log('─'.repeat(80));
-  console.log(`\nFor full agent details: cat rihal/digests/{agent}.md`);
-  console.log(`For full skill: rihal/skills/agents/{agent-dir}/SKILL.md\n`);
+  console.log(`\nFor full agent details: cat rcode/digests/{agent}.md`);
+  console.log(`For full skill: rcode/skills/agents/{agent-dir}/SKILL.md\n`);
 };

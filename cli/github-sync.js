@@ -1,5 +1,5 @@
 /**
- * rihal-code github-sync — sync .rihal/ state to GitHub as issues
+ * rcode github-sync — sync .rcode/ state to GitHub as issues
  *
  * Creates milestones (phases), epics (issues), and stories (issues) with
  * proper parent-child linking via GitHub's native issue references.
@@ -7,8 +7,8 @@
  * Dry-run by default. Mutations always require --execute.
  *
  * Usage:
- *   rihal-code github-sync                 # dry-run preview
- *   rihal-code github-sync --execute       # actually create issues
+ *   rcode github-sync                 # dry-run preview
+ *   rcode github-sync --execute       # actually create issues
  *
  * Granular targeting (push specific items):
  *   --phase=phase-02          push one phase (all its epics + stories)
@@ -18,7 +18,7 @@
  *
  * Options:
  *   --repo=owner/name     target a specific repo (otherwise auto-detect)
- *   --with-labels         also create/ensure the Rihal label taxonomy
+ *   --with-labels         also create/ensure the rcode label taxonomy
  *   --project             also create a Project v2 board
  *   --yes                 skip the confirmation prompt (denied in yolo mode)
  *   --force-yolo          allow --yes to apply in yolo mode (explicit opt-in)
@@ -157,7 +157,7 @@ function extractFrontmatter(content) {
 }
 
 /**
- * Parse .rihal/phases/{phase}/sprints.md if present and return a map of
+ * Parse .rcode/phases/{phase}/sprints.md if present and return a map of
  * sprint-id → story-ids (based on "- [ ] story-X-Y" list entries under
  * each sprint section). Used by --sprint=ID filtering.
  *
@@ -185,10 +185,10 @@ function parseSprintsFile(sprintsContent) {
   return sprintMap;
 }
 
-// ---------- Discover .rihal/ content ----------
+// ---------- Discover .rcode/ content ----------
 
 function loadState(cwd) {
-  const statePath = path.join(cwd, '.rihal/state.json');
+  const statePath = path.join(cwd, '.rcode/state.json');
   if (!fs.existsSync(statePath)) {
     return null;
   }
@@ -196,7 +196,7 @@ function loadState(cwd) {
 }
 
 function discoverPhases(cwd) {
-  const phasesDir = path.join(cwd, '.rihal/phases');
+  const phasesDir = path.join(cwd, '.rcode/phases');
   if (!fs.existsSync(phasesDir)) return [];
 
   const phases = [];
@@ -340,7 +340,7 @@ function extractTitle(markdown) {
 // ---------- Load/save sync map (for idempotency) ----------
 
 function loadSyncMap(cwd) {
-  const mapPath = path.join(cwd, '.rihal/integrations/github-map.json');
+  const mapPath = path.join(cwd, '.rcode/integrations/github-map.json');
   if (!fs.existsSync(mapPath)) {
     return { phases: {}, epics: {}, stories: {}, project: null, labels: [] };
   }
@@ -348,7 +348,7 @@ function loadSyncMap(cwd) {
 }
 
 function saveSyncMap(cwd, map) {
-  const mapPath = path.join(cwd, '.rihal/integrations/github-map.json');
+  const mapPath = path.join(cwd, '.rcode/integrations/github-map.json');
   // Atomic: partial writes on Ctrl+C would desync our local↔remote mapping
   // and orphan issues. writeJsonAtomic ensures the file is either old or new.
   writeJsonAtomic(mapPath, map);
@@ -409,7 +409,7 @@ async function main(args) {
   const config = loadConfig(cwd);
   const communicationMode = config.communication_mode || 'guided';
 
-  console.log(`\n🕌 Rihal Code — GitHub Sync`);
+  console.log(`\n🕌 rcode — GitHub Sync`);
   console.log(`   Mode:          ${opts.dryRun ? 'DRY-RUN (preview only, nothing is sent)' : 'EXECUTE'}`);
   console.log(`   Comms mode:    ${communicationMode}`);
   console.log(`   Scope:         ${opts.only || 'full (create + update existing)'}`);
@@ -443,10 +443,10 @@ async function main(args) {
   }
   console.log(`   ✓ Target repo: ${repo}`);
 
-  // ------ Precondition: .rihal/ exists ------
+  // ------ Precondition: .rcode/ exists ------
   const state = loadState(cwd);
   if (!state) {
-    console.error(`❌ No .rihal/state.json found. Run 'rcode install' first.`);
+    console.error(`❌ No .rcode/state.json found. Run 'rcode install' first.`);
     process.exit(1);
   }
   console.log(`   ✓ Project: ${state.project_name || '(unnamed)'}`);
@@ -475,7 +475,7 @@ async function main(args) {
       console.error(`   Check the filter value or run without filters to see available ids.`);
       process.exit(1);
     }
-    console.error(`❌ No phases found in .rihal/phases/.`);
+    console.error(`❌ No phases found in .rcode/phases/.`);
     process.exit(1);
   }
 
@@ -506,7 +506,7 @@ async function main(args) {
   // The plan diffs local state against what we know was synced before.
   // If updateEnabled is false, the update list stays empty (create-only mode).
   //
-  // Label taxonomy follows the Rihal GitHub Standards (4 categories:
+  // Label taxonomy follows the rcode GitHub Standards (4 categories:
   // Type / Priority / Status / Area). It is NOT created or assigned by
   // default — pass --with-labels to opt in. Without the flag, we focus
   // on clean issue creation with proper parent-child linking and leave
@@ -659,7 +659,7 @@ async function main(args) {
   if (!opts.only || opts.only === 'milestones') {
     console.log(`\n🎯 Milestones (phases)`);
     for (const phase of plan.milestones) {
-      const desc = phase.brief ? phase.brief.split('\n').slice(0, 5).join('\n') : 'Rihal Code phase';
+      const desc = phase.brief ? phase.brief.split('\n').slice(0, 5).join('\n') : 'rcode phase';
       const result = gh.createMilestone(phase.id, desc, null, syncOpts);
       results.milestones.push({ phase: phase.id, ...result });
       if (result.error) {
@@ -695,8 +695,8 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${epic.phase}\``,
-        `- **Source:** \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
-        `- **Synced by:** Rihal Code github-sync`,
+        `- **Source:** \`.rcode/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Synced by:** rcode github-sync`,
         ``,
         `## 📝 Child Stories`,
         ``,
@@ -778,8 +778,8 @@ async function main(args) {
         parentRefLine,
         sprintRefLine,
         `- **Phase:** \`${story.phase}\``,
-        `- **Source:** \`.rihal/phases/${story.phase}/stories/${story.file}\``,
-        `- **Synced by:** Rihal Code github-sync`,
+        `- **Source:** \`.rcode/phases/${story.phase}/stories/${story.file}\``,
+        `- **Synced by:** rcode github-sync`,
         ``,
         `> **Linking:** Reference this story in commits with \`refs #${'{issue}'}\``,
         `> or close it via PR with \`Closes #${'{issue}'}\`.`,
@@ -885,7 +885,7 @@ async function main(args) {
       const body = [
         `## 🎯 Epic Vision`,
         ``,
-        `_Strategic goal this Epic contributes to. Fill in from \`.rihal/phases/${epic.phase}/tasks/${epic.file}\`._`,
+        `_Strategic goal this Epic contributes to. Fill in from \`.rcode/phases/${epic.phase}/tasks/${epic.file}\`._`,
         ``,
         `## 📋 Source Content`,
         ``,
@@ -896,7 +896,7 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${epic.phase}\``,
-        `- **Source:** \`.rihal/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Source:** \`.rcode/phases/${epic.phase}/tasks/${epic.file}\``,
         `- **Last synced:** ${new Date().toISOString()}`,
       ].join('\n');
 
@@ -930,7 +930,7 @@ async function main(args) {
       const body = [
         `## 🎯 Problem Statement`,
         ``,
-        `_From \`.rihal/phases/${story.phase}/stories/${story.file}\`._`,
+        `_From \`.rcode/phases/${story.phase}/stories/${story.file}\`._`,
         ``,
         `## 📋 Source Content`,
         ``,
@@ -941,7 +941,7 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${story.phase}\``,
-        `- **Source:** \`.rihal/phases/${story.phase}/stories/${story.file}\``,
+        `- **Source:** \`.rcode/phases/${story.phase}/stories/${story.file}\``,
         `- **Last synced:** ${new Date().toISOString()}`,
       ].join('\n');
 
@@ -980,7 +980,7 @@ async function main(args) {
   // ------ Save sync map (only if we executed) ------
   if (opts.execute) {
     saveSyncMap(cwd, syncMap);
-    console.log(`\n💾 Sync map saved to .rihal/integrations/github-map.json`);
+    console.log(`\n💾 Sync map saved to .rcode/integrations/github-map.json`);
   }
 
   // ------ Summary ------

@@ -1,4 +1,4 @@
-# Milestones — Rihal Code
+# Milestones — rcode
 
 ## M1 — Ship v2 + Tier Docs
 
@@ -9,19 +9,19 @@
 
 ### Delivered
 
-Rihal Code v2 — a unified, installable AI engineering methodology. v1/v2 were
-merged into a single `rihal/` root with one installer, one agent roster, and one
+rcode v2 — a unified, installable AI engineering methodology. v1/v2 were
+merged into a single `rcode/` root with one installer, one agent roster, and one
 set of slash commands plus phrase-activated skills. The package shipped to npm,
 got tier-organized documentation (Starter/Advanced/Ultra/Standards), a view-only
 Majlis dashboard, a three-dimensional auto-heal system (project-doc, feature-content,
 phase-status drift), and a long sweep of CLI/parser/workflow hardening driven by
-dogfooding rihal-code on itself.
+dogfooding rcode on itself.
 
 ### Key Accomplishments
 
 - Tier-based documentation reorg — `docs/TIERS.md` as single source of truth; new user finds the Golden Path in <10s
 - V2 stabilization — v1/v2 merged to one root, single installer (70 commands + 34 agents + 39 skills + 71 workflows), BMAD/GSD references purged from 95 commits
-- Auto-heal portfolio — `/rihal-feature-drift` + phase-status drift detector + `/rihal-memory-audit --fix`, with `/loop`+`/schedule` cadence docs and a PostToolUse hook
+- Auto-heal portfolio — `/rcode-feature-drift` + phase-status drift detector + `/rcode-memory-audit --fix`, with `/loop`+`/schedule` cadence docs and a PostToolUse hook
 - Majlis dashboard — design system, Milestone→Phase→Sprint→Task drill-down, live `.planning/` file browser, auto-refresh
 - CLI/parser hardening — phantom subcommand sweeps (#465, #481), phase-number parser cap fix (#476), workflow dead-end/broken-ref closure, deep producer/consumer contract fixes (#492–#497)
 

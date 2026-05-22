@@ -13,10 +13,10 @@ import { html, useState, useEffect } from '../preact.js';
 
 // ---- Command hints accordion ----
 const MEMORY_HINTS = [
-  ['/rihal-memory-init',    'Bootstrap the Memory Bank'],
-  ['/rihal-memory-update',  'Append a decision, issue, or stakeholder entry'],
-  ['/rihal-memory-distill', 'Regenerate fast-load distillates'],
-  ['/rihal-memory-audit',   'Find stale entries and gaps'],
+  ['/rcode-memory-init',    'Bootstrap the Memory Bank'],
+  ['/rcode-memory-update',  'Append a decision, issue, or stakeholder entry'],
+  ['/rcode-memory-distill', 'Regenerate fast-load distillates'],
+  ['/rcode-memory-audit',   'Find stale entries and gaps'],
 ];
 
 function CmdAccordion({ hints }) {
@@ -115,9 +115,9 @@ export function MemoryView() {
       <div class="view active" id="view-memory">
         <div class="view-title">Memory Bank</div>
         <div class="empty">
-          <h3 style="color:var(--rihal-gold);">Not initialised</h3>
+          <h3 style="color:var(--rcode-gold);">Not initialised</h3>
           <p>The Memory Bank is rcode's structured project context.</p>
-          <div class="empty-action">Run <code>/rihal-memory-init</code> to bootstrap</div>
+          <div class="empty-action">Run <code>/rcode-memory-init</code> to bootstrap</div>
         </div>
       </div>
     `;
@@ -128,7 +128,7 @@ export function MemoryView() {
       <div class="view active" id="view-memory">
         <div class="view-title">Memory Bank</div>
         <div class="empty">
-          <p>Directory exists but INDEX.md is missing — re-run <code>/rihal-memory-init</code></p>
+          <p>Directory exists but INDEX.md is missing — re-run <code>/rcode-memory-init</code></p>
         </div>
       </div>
     `;

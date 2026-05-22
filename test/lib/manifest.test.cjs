@@ -63,9 +63,9 @@ test('verifyClaudeInstall reports zero drift when all expected dirs exist', (t) 
   fs.mkdirSync(agentsDir, { recursive: true });
   fs.mkdirSync(skillsDir, { recursive: true });
 
-  // Agents live in .claude/agents/rihal-<name>.md as files (post-v3 layout).
+  // Agents live in .claude/agents/rcode-<name>.md as files (post-v3 layout).
   for (const agent of manifest.agents) {
-    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.md`), '');
+    fs.writeFileSync(path.join(agentsDir, `rcode-${agent}.md`), '');
   }
   // Actions still live in .claude/skills/<bare-name>/ as dirs.
   for (const action of manifest.actions) {
@@ -94,7 +94,7 @@ test('verifyClaudeInstall detects drift when one agent dir is deleted', (t) => {
   const agents = [...manifest.agents];
   const skipped = agents[0];
   for (const agent of agents.slice(1)) {
-    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.md`), '');
+    fs.writeFileSync(path.join(agentsDir, `rcode-${agent}.md`), '');
   }
 
   const reports = verifyClaudeInstall(cwd, PACKAGE_ROOT, { globalFallback: false });
@@ -106,18 +106,18 @@ test('verifyRulesInstall reports zero drift for the nested cursor agent layout (
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
 
-  // Issue #783: cursor agent rules install to .cursor/rules/rihal/agents/
-  // rihal-<name>.mdc — one per rihal/agents/*.md, not flat digest rules.
-  const agentsDir = path.join(cwd, '.cursor/rules/rihal/agents');
+  // Issue #783: cursor agent rules install to .cursor/rules/rcode/agents/
+  // rcode-<name>.mdc — one per rcode/agents/*.md, not flat digest rules.
+  const agentsDir = path.join(cwd, '.cursor/rules/rcode/agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
   const manifest = readPackageManifest(PACKAGE_ROOT);
   for (const agent of manifest.agents) {
-    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.mdc`), 'stub');
+    fs.writeFileSync(path.join(agentsDir, `rcode-${agent}.mdc`), 'stub');
   }
   // A nested rules/ subdir (shipped by the installer) must be ignored.
   fs.mkdirSync(path.join(agentsDir, 'rules'));
-  fs.writeFileSync(path.join(agentsDir, 'rules', 'rihal-extra.mdc'), 'stub');
+  fs.writeFileSync(path.join(agentsDir, 'rules', 'rcode-extra.mdc'), 'stub');
 
   const reports = verifyRulesInstall('cursor', cwd, PACKAGE_ROOT);
   assert.strictEqual(reports.length, 1);
@@ -129,13 +129,13 @@ test('verifyRulesInstall detects drift when a cursor agent rule is missing (#783
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
 
-  const agentsDir = path.join(cwd, '.cursor/rules/rihal/agents');
+  const agentsDir = path.join(cwd, '.cursor/rules/rcode/agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
   const agents = [...readPackageManifest(PACKAGE_ROOT).agents];
   const skipped = agents[0];
   for (const agent of agents.slice(1)) {
-    fs.writeFileSync(path.join(agentsDir, `rihal-${agent}.mdc`), 'stub');
+    fs.writeFileSync(path.join(agentsDir, `rcode-${agent}.mdc`), 'stub');
   }
 
   const reports = verifyRulesInstall('cursor', cwd, PACKAGE_ROOT);

@@ -1,8 +1,8 @@
 /**
  * Agent registry consistency tests.
  *
- * Verifies the cross-references between rihal/team.yaml, rihal/agents/*.md,
- * and rihal/skills/agents/*.  Catches drift like "agent listed in team.yaml
+ * Verifies the cross-references between rcode/team.yaml, rcode/agents/*.md,
+ * and rcode/skills/agents/*.  Catches drift like "agent listed in team.yaml
  * but the agent file was deleted" or "skill_path points to a folder that
  * doesn't exist".
  *
@@ -15,8 +15,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const TEAM_YAML = path.join(PROJECT_ROOT, 'rihal', 'team.yaml');
-const AGENTS_DIR = path.join(PROJECT_ROOT, 'rihal', 'agents');
+const TEAM_YAML = path.join(PROJECT_ROOT, 'rcode', 'team.yaml');
+const AGENTS_DIR = path.join(PROJECT_ROOT, 'rcode', 'agents');
 
 /**
  * Minimal team.yaml parser. The file is consistently structured (one entry per
@@ -108,14 +108,14 @@ test('agents-registry: every skill_path resolves to a SKILL.md', () => {
   assert.deepEqual(missing, [], `team.yaml references missing skill files:\n${missing.join('\n')}`);
 });
 
-test('agents-registry: every rihal/agents/*.md is registered in team.yaml', () => {
+test('agents-registry: every rcode/agents/*.md is registered in team.yaml', () => {
   // The reverse direction: catch agent files that were added but never
-  // registered. Allow `rules/` subdirectory and any non-rihal-* file.
+  // registered. Allow `rules/` subdirectory and any non-rcode-* file.
   const ids = new Set(agents.map((a) => a.id));
   const orphans = [];
   for (const entry of fs.readdirSync(AGENTS_DIR)) {
     if (!entry.endsWith('.md')) continue;
-    if (!entry.startsWith('rihal-')) continue;
+    if (!entry.startsWith('rcode-')) continue;
     const id = entry.replace(/\.md$/, '');
     if (!ids.has(id)) orphans.push(entry);
   }

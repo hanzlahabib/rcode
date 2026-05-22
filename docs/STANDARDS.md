@@ -1,6 +1,6 @@
-# Rihal Code — Contributor Standards
+# rcode — Contributor Standards
 
-For people **modifying Rihal Code itself** (adding/editing skills, agents, workflows, or CLI). If you're just using Rihal Code on your own project, you don't need this — see [`TIERS.md`](./TIERS.md).
+For people **modifying rcode itself** (adding/editing skills, agents, workflows, or CLI). If you're just using rcode on your own project, you don't need this — see [`TIERS.md`](./TIERS.md).
 
 The authoritative rules live in [`AGENTS.md`](../AGENTS.md) and [`CLAUDE.md`](../CLAUDE.md). This file is a short index + quick reference.
 
@@ -17,7 +17,7 @@ The authoritative rules live in [`AGENTS.md`](../AGENTS.md) and [`CLAUDE.md`](..
 
 ## 5-Component Skill Spec
 
-Every skill under `rihal/skills/actions/*/SKILL.md` and `rihal/skills/agents/*/SKILL.md` MUST have:
+Every skill under `rcode/skills/actions/*/SKILL.md` and `rcode/skills/agents/*/SKILL.md` MUST have:
 
 1. **YAML trigger header** with `name`, `description`, 5–12 trigger phrases, and negative boundaries (`Do NOT use for...`).
 2. **Overview paragraph** — what the skill does in 2–3 sentences.
@@ -27,7 +27,7 @@ Every skill under `rihal/skills/actions/*/SKILL.md` and `rihal/skills/agents/*/S
 
 Quick compliance check:
 ```bash
-for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
+for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/SKILL.md; do
   grep -q "^## Output Format" "$f" || echo "MISSING Output Format: $f"
   grep -q "^## Examples" "$f" || echo "MISSING Examples: $f"
 done
@@ -94,13 +94,13 @@ Run these three checks locally:
 
 ```bash
 # 1. Skill compliance
-for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
+for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/SKILL.md; do
   grep -q "^## Output Format" "$f" || echo "MISSING: $f"
   grep -q "^## Examples" "$f" || echo "MISSING: $f"
 done
 
 # 2. No stray TODOs
-grep -rn -i "TODO" rihal docs examples README.md server   # should be empty
+grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
 
 # 3. Dashboard boots
 node server/dashboard.js

@@ -7,7 +7,7 @@ commit: 87ea48a
 
 ## Sprint 22-2 Summary
 
-**Objective:** Slim rihal/agents/rihal-integration-checker.md from 456 lines to ≤80 lines via @-include.
+**Objective:** Slim rcode/agents/rcode-integration-checker.md from 456 lines to ≤80 lines via @-include.
 
 **Result:** 456 lines → 61 lines (87% reduction, target was ≤80/~55).
 
@@ -16,13 +16,13 @@ commit: 87ea48a
 | Task | Description | Status |
 |------|-------------|--------|
 | 1 | Verify Sprint 22-1 reference file exists (6 steps + output template) | done |
-| 2 | Rewrite rihal-integration-checker.md as slim stub | done |
+| 2 | Rewrite rcode-integration-checker.md as slim stub | done |
 | 3 | Commit slimmed agent referencing #712 | done |
 
 ## Verification Results
 
 - PASS: 61 lines (≤80 gate)
-- PASS: @.rihal/references/integration-verification-playbook.md @-include present
+- PASS: @.rcode/references/integration-verification-playbook.md @-include present
 - PASS: frontmatter intact (name, description, tools, color unchanged)
 - PASS: bash functions (check_export_used, verify_auth_flow, etc.) not in agent stub
 - PASS: output template (Integration Check Complete, Requirements Integration Map table) not in agent stub
@@ -34,9 +34,9 @@ Note: The grep check for "Requirements Integration Map" in the agent stub produc
 ## Content Kept in Agent Stub
 
 - YAML frontmatter (lines 1-6, unchanged)
-- @.rihal/references/response-style.md
-- @.rihal/references/karpathy-guidelines.md
-- @.rihal/references/integration-verification-playbook.md (new)
+- @.rcode/references/response-style.md
+- @.rcode/references/karpathy-guidelines.md
+- @.rcode/references/integration-verification-playbook.md (new)
 - `<role>` block — identity, mandatory initial read notice, critical mindset
 - `<core_principle>` block — Existence ≠ Integration with 4 connection types
 - `<inputs>` block — Required Context with all sub-bullets
@@ -52,4 +52,4 @@ Note: The grep check for "Requirements Integration Map" in the agent stub produc
 ## Commit
 
 - `87ea48a` — refactor(agents): slim integration-checker 456→61 lines via @-include (#712)
-- Files changed: rihal/agents/rihal-integration-checker.md only
+- Files changed: rcode/agents/rcode-integration-checker.md only

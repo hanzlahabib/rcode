@@ -4,7 +4,7 @@
 
 **Outcome:** **9 GitHub issues filed (#440–#448).** 4 critical / blocker-class, 4 high, 1 medium. The pipeline is silently broken in ways that don't show up in the test suite because all 120 tests test rcode itself, not target projects.
 
-**Source memory:** `~/.claude/projects/-home-hanzla-development-rihal-code/memory/project-phase96-execution-gaps.md`
+**Source memory:** `~/.claude/projects/-home-hanzla-development-rcode/memory/project-phase96-execution-gaps.md`
 
 ---
 
@@ -12,7 +12,7 @@
 
 | # | Severity | Title | Pattern |
 |---|---|---|---|
-| #440 | 🔴 Critical | rihal-sprint-checker tool names snake_case → silently malfunctions | Tool-name drift |
+| #440 | 🔴 Critical | rcode-sprint-checker tool names snake_case → silently malfunctions | Tool-name drift |
 | #441 | 🟠 High | Planner writes `files_modified` without verifying file existence | Field drift |
 | #442 | 🟠 High | Wave parallelism not validated — same depends_on, overlapping files | Rule unenforced |
 | #443 | 🟠 High | Phase marked complete without UAT — verify-work is suggestion, not gate | Suggestion-only gate |
@@ -34,7 +34,7 @@ The 9 issues collapse into 5 distinct anti-patterns. Future audits should look f
 
 **Detection:**
 ```bash
-grep -nE "^tools:.*[a-z]+_[a-z]" rihal/agents/*.md
+grep -nE "^tools:.*[a-z]+_[a-z]" rcode/agents/*.md
 ```
 
 **Affected:** 10 agents (#440 + #445).
@@ -51,7 +51,7 @@ grep -nE "^tools:.*[a-z]+_[a-z]" rihal/agents/*.md
 | `google_web_search` | `WebSearch` |
 | `web_fetch` | `WebFetch` |
 
-**Prevention:** New compliance test `test/agents-tool-conventions.test.cjs` asserts every `rihal/agents/*.md` uses Claude Code naming. Run in CI.
+**Prevention:** New compliance test `test/agents-tool-conventions.test.cjs` asserts every `rcode/agents/*.md` uses Claude Code naming. Run in CI.
 
 ### 2. Field drift (write fields without verification)
 
@@ -83,12 +83,12 @@ grep -nE "^tools:.*[a-z]+_[a-z]" rihal/agents/*.md
 
 **Detection:**
 ```bash
-grep -nE "Next Up|Suggest|Recommend" rihal/workflows/*.md
+grep -nE "Next Up|Suggest|Recommend" rcode/workflows/*.md
 ```
 
 **Affected:** #443 (UAT gate), #448 (general pattern).
 
-**Fix:** Use intermediate states: `status: executed` (work done) vs `status: complete` (work done AND verified). `/rihal-next` and autonomous mode advance only from `complete`. Verify-work and similar gates promote from `executed` → `complete`.
+**Fix:** Use intermediate states: `status: executed` (work done) vs `status: complete` (work done AND verified). `/rcode-next` and autonomous mode advance only from `complete`. Verify-work and similar gates promote from `executed` → `complete`.
 
 **Prevention:** Audit every workflow that writes a terminal state — does it actually verify the prerequisite gate ran?
 
@@ -96,13 +96,13 @@ grep -nE "Next Up|Suggest|Recommend" rihal/workflows/*.md
 
 **Symptom:** Workflow has runtime constraints (`.planning/` gitignored, requires `git add -f`) that aren't documented anywhere agents would read them. Agents discover empirically.
 
-**Detection:** grep for fragile patterns (`-f`, `--no-verify`, `chmod`, `sudo`) in workflows; cross-reference against `.rihal/context/active.md` template.
+**Detection:** grep for fragile patterns (`-f`, `--no-verify`, `chmod`, `sudo`) in workflows; cross-reference against `.rcode/context/active.md` template.
 
 **Affected:** #444 (`.planning/` gitignore).
 
-**Fix:** Document the constraint in `.rihal/context/active.md` so every executor session loads it as part of the standard context.
+**Fix:** Document the constraint in `.rcode/context/active.md` so every executor session loads it as part of the standard context.
 
-**Prevention:** Any new constraint added in a PR must include a doc update to `.rihal/context/active.md` (or equivalent always-loaded context).
+**Prevention:** Any new constraint added in a PR must include a doc update to `.rcode/context/active.md` (or equivalent always-loaded context).
 
 ### Bonus pattern — AGENTS.md violations
 
@@ -110,7 +110,7 @@ grep -nE "Next Up|Suggest|Recommend" rihal/workflows/*.md
 
 **Detection:** grep for AGENTS.md prohibited patterns inside workflow files.
 
-**Prevention:** add a CI check that scans `rihal/workflows/` for `--no-verify`, `git push --force`, and other forbidden patterns. Block PRs that introduce them.
+**Prevention:** add a CI check that scans `rcode/workflows/` for `--no-verify`, `git push --force`, and other forbidden patterns. Block PRs that introduce them.
 
 ---
 
@@ -118,7 +118,7 @@ grep -nE "Next Up|Suggest|Recommend" rihal/workflows/*.md
 
 Things I checked that came back clean:
 
-- **Hardcoded skill paths in install.js** — none beyond the documented `rihal-` prefix logic
+- **Hardcoded skill paths in install.js** — none beyond the documented `rcode-` prefix logic
 - **Cross-tab token leaks in dashboard** — Diwan is view-only, no auth tokens served
 - **Shadowed agents in team.yaml** — `agents-registry.test.cjs` already gates this
 - **Missing SKILL.md files** — `skills-compliance.test.cjs` already gates this

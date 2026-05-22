@@ -1,8 +1,8 @@
 /**
- * Rihal Code — Model Profile Resolution Library
+ * rcode — Model Profile Resolution Library
  *
  * Reads model profiles from
- * rihal/config/model-profiles.json and resolves the right model for
+ * rcode/config/model-profiles.json and resolves the right model for
  * each agent at dispatch time.
  *
  * Usage:
@@ -28,7 +28,7 @@ function findPackageRoot(dir) {
   throw new Error('Could not find package root');
 }
 const PACKAGE_ROOT = findPackageRoot(__dirname);
-const PROFILES_PATH = path.join(PACKAGE_ROOT, 'rihal/config/model-profiles.json');
+const PROFILES_PATH = path.join(PACKAGE_ROOT, 'rcode/config/model-profiles.json');
 
 let _cached = null;
 
@@ -94,7 +94,7 @@ function resolveModelForAgent(agent, opts = {}) {
   const value = profile.agents[agent];
   if (!value) {
     throw new Error(
-      `Agent '${agent}' not mapped in profile '${profileName}'. Check rihal/config/model-profiles.json.`,
+      `Agent '${agent}' not mapped in profile '${profileName}'. Check rcode/config/model-profiles.json.`,
     );
   }
 
@@ -144,11 +144,11 @@ function formatMapAsTable(map) {
 }
 
 /**
- * Read the project's current profile from .rihal/config.json (if present).
+ * Read the project's current profile from .rcode/config.json (if present).
  * Falls back to the default profile from the package config.
  */
 function getProjectProfile(projectDir = process.cwd()) {
-  const projectConfigPath = path.join(projectDir, '.rihal', 'config.json');
+  const projectConfigPath = path.join(projectDir, '.rcode', 'config.json');
   if (fs.existsSync(projectConfigPath)) {
     try {
       const cfg = JSON.parse(fs.readFileSync(projectConfigPath, 'utf8'));
@@ -157,7 +157,7 @@ function getProjectProfile(projectDir = process.cwd()) {
         overrides: cfg.model_overrides || {},
       };
     } catch (e) {
-      console.warn(`Warning: .rihal/config.json is invalid JSON. Using defaults.`);
+      console.warn(`Warning: .rcode/config.json is invalid JSON. Using defaults.`);
     }
   }
   return { profile: getDefaultProfile(), overrides: {} };

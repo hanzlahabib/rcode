@@ -1,7 +1,7 @@
 # Phase 9 — Plan 2: Workflow ↔ CLI Drift Sweep
 
 **Date:** 2026-04-29
-**Workflows scanned:** 71 files in `rihal/workflows/`
+**Workflows scanned:** 71 files in `rcode/workflows/`
 **Unique CLI invocations found:** 134
 **Verified:** 121
 **Drift detected:** 13
@@ -60,13 +60,13 @@ The audit's job is to make this drift visible and tracked. Plan 9.4 (CI gate) en
 
 ```bash
 # Step 1 — extract every CLI reference from workflows
-ACTUAL_REFS=$(grep -rEoh 'node\s+["\.][^"]*rihal-tools\.cjs["\.]?\s+[a-z][a-zA-Z0-9-]+(\s+[a-zA-Z0-9.-]+)*' rihal/workflows/ | \
-  sed -E 's|^node\s+["\.][^"]*rihal-tools\.cjs["\.]?\s+||' | \
+ACTUAL_REFS=$(grep -rEoh 'node\s+["\.][^"]*rcode-tools\.cjs["\.]?\s+[a-z][a-zA-Z0-9-]+(\s+[a-zA-Z0-9.-]+)*' rcode/workflows/ | \
+  sed -E 's|^node\s+["\.][^"]*rcode-tools\.cjs["\.]?\s+||' | \
   awk '{print $1, ($2 ~ /^[a-z]/ ? $2 : "")}' | sort -u)
 
 # Step 2 — verify each by attempting actual invocation
 for ref in $ACTUAL_REFS; do
-  out=$(node rihal/bin/rihal-tools.cjs $ref 2>&1)
+  out=$(node rcode/bin/rcode-tools.cjs $ref 2>&1)
   if echo "$out" | grep -qi "Unknown subcommand"; then
     echo "DRIFT: $ref"
   fi

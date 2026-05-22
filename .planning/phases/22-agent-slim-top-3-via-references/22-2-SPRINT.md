@@ -6,32 +6,32 @@ type: execute
 wave: 2
 depends_on: [22-1]
 files_modified:
-  - rihal/agents/rihal-integration-checker.md
+  - rcode/agents/rcode-integration-checker.md
 autonomous: true
 requirements: [GH-712]
 
 must_haves:
   truths:
-    - rihal-integration-checker.md is ≤80 lines after the slim
+    - rcode-integration-checker.md is ≤80 lines after the slim
     - The agent's observable behaviour is identical — it still runs the same 6-step verification, loads steps and output template from the reference file
     - The @-include line resolves to the playbook created in Sprint 22-1
   artifacts:
-    - rihal/agents/rihal-integration-checker.md (slimmed, ≤80 lines)
+    - rcode/agents/rcode-integration-checker.md (slimmed, ≤80 lines)
   key_links:
-    - Depends on rihal/references/integration-verification-playbook.md from Sprint 22-1
-    - install.js copies agents to ~/.claude/agents/ — @-include path must be @.rihal/references/integration-verification-playbook.md
+    - Depends on rcode/references/integration-verification-playbook.md from Sprint 22-1
+    - install.js copies agents to ~/.claude/agents/ — @-include path must be @.rcode/references/integration-verification-playbook.md
 ---
 
 <objective>
-Slim rihal/agents/rihal-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_criteria>`, and Constraints blocks with a single @-include line pointing to the reference file created in Sprint 22-1. No behaviour change — all steps and the output template are still executed, they now load from the reference file.
+Slim rcode/agents/rcode-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_criteria>`, and Constraints blocks with a single @-include line pointing to the reference file created in Sprint 22-1. No behaviour change — all steps and the output template are still executed, they now load from the reference file.
 
 Purpose: 88% line reduction on the heaviest agent. Closes GH-712 contribution for this agent.
-Output: rihal/agents/rihal-integration-checker.md at ≤55 lines.
+Output: rcode/agents/rcode-integration-checker.md at ≤55 lines.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -45,16 +45,16 @@ Output: rihal/agents/rihal-integration-checker.md at ≤55 lines.
 **Duration estimate:** 2 min
 
 <files>
-rihal/references/integration-verification-playbook.md
+rcode/references/integration-verification-playbook.md
 </files>
 
 <action>
 Before modifying the agent, confirm the reference file exists and contains the expected content:
 
 ```bash
-test -f rihal/references/integration-verification-playbook.md || { echo "BLOCKER: reference file missing — run Sprint 22-1 first"; exit 1; }
-grep -c "## Step" rihal/references/integration-verification-playbook.md
-grep -q "Integration Check Complete\|Requirements Integration Map" rihal/references/integration-verification-playbook.md \
+test -f rcode/references/integration-verification-playbook.md || { echo "BLOCKER: reference file missing — run Sprint 22-1 first"; exit 1; }
+grep -c "## Step" rcode/references/integration-verification-playbook.md
+grep -q "Integration Check Complete\|Requirements Integration Map" rcode/references/integration-verification-playbook.md \
   && echo "output template present" || echo "BLOCKER: output template missing from reference"
 ```
 
@@ -62,7 +62,7 @@ If the file is missing, step count is not 6, or the output template is absent, S
 </action>
 
 <verify>
-<automated>test -f /home/hanzla/development/rihal-code/rihal/references/integration-verification-playbook.md && echo "READY"</automated>
+<automated>test -f /home/hanzla/development/rcode/rcode/references/integration-verification-playbook.md && echo "READY"</automated>
 Expected: prints READY.
 </verify>
 
@@ -71,28 +71,28 @@ Expected: prints READY.
 </done>
 
 <evidence>
-lines: rihal/references/integration-verification-playbook.md — created in Sprint 22-1, verified to exist before proceeding
+lines: rcode/references/integration-verification-playbook.md — created in Sprint 22-1, verified to exist before proceeding
 </evidence>
 
 ---
 
-### Task 2 — Rewrite rihal-integration-checker.md as slim stub
+### Task 2 — Rewrite rcode-integration-checker.md as slim stub
 **Type:** auto
 **Duration estimate:** 25-35 min
 
 <files>
-rihal/agents/rihal-integration-checker.md (456 lines — current source of truth, READ FIRST)
+rcode/agents/rcode-integration-checker.md (456 lines — current source of truth, READ FIRST)
 </files>
 
 <action>
-Read rihal/agents/rihal-integration-checker.md in full before making any edits.
+Read rcode/agents/rcode-integration-checker.md in full before making any edits.
 
 The slim stub must contain ONLY these sections in this order:
 
 1. **YAML frontmatter** (lines 1-6 verbatim — do not change name, description, tools, color)
 2. **Blank line**
 3. **Existing @-includes** (lines 8-9: response-style and karpathy-guidelines) — keep exactly as-is
-4. **New @-include** for the playbook: `@.rihal/references/integration-verification-playbook.md`
+4. **New @-include** for the playbook: `@.rcode/references/integration-verification-playbook.md`
 5. **Blank line**
 6. **`<role>` block** (lines 13-22) — keep verbatim including the CRITICAL Mandatory Initial Read notice and the Critical mindset paragraph
 7. **`<core_principle>` block** (lines 24-35) — keep verbatim (Existence ≠ Integration + 4 bullet points)
@@ -111,29 +111,29 @@ ALWAYS use the Write tool to overwrite the file — never use Bash/sed/awk for t
 
 The exact @-include line to add (line 4 of the stub, after existing includes):
 ```
-@.rihal/references/integration-verification-playbook.md
+@.rcode/references/integration-verification-playbook.md
 ```
 
 No quotes, no angle brackets — just the raw path prefixed with @.
 </action>
 
 <verify>
-<automated>wc -l /home/hanzla/development/rihal-code/rihal/agents/rihal-integration-checker.md</automated>
+<automated>wc -l /home/hanzla/development/rcode/rcode/agents/rcode-integration-checker.md</automated>
 Expected: ≤80 lines (target ~55 lines).
 
 ```bash
-grep "@.rihal/references/integration-verification-playbook.md" rihal/agents/rihal-integration-checker.md | wc -l
+grep "@.rcode/references/integration-verification-playbook.md" rcode/agents/rcode-integration-checker.md | wc -l
 ```
 Expected: 1 (the include line is present exactly once).
 
 ```bash
-grep -c "check_export_used\|verify_auth_flow\|check_api_consumed\|Integration Check Complete\|critical_rules\|success_criteria" rihal/agents/rihal-integration-checker.md
+grep -c "check_export_used\|verify_auth_flow\|check_api_consumed\|Integration Check Complete\|critical_rules\|success_criteria" rcode/agents/rcode-integration-checker.md
 ```
 Expected: 0 (all playbook content — bash functions, output template, rules, criteria — are gone from the agent stub).
 </verify>
 
 <done>
-- rihal-integration-checker.md is ≤80 lines (target ~55)
+- rcode-integration-checker.md is ≤80 lines (target ~55)
 - @-include line for integration-verification-playbook.md is present
 - `<role>`, `<core_principle>`, `<inputs>` blocks all preserved verbatim
 - `<verification_process>`, `<output>`, `<critical_rules>`, `<success_criteria>`, Constraints are NOT in the agent stub
@@ -141,7 +141,7 @@ Expected: 0 (all playbook content — bash functions, output template, rules, cr
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-integration-checker.md:1-456 — full file read before rewrite; lines 64-456 (verification_process + output + critical_rules + success_criteria + constraints) are the content being removed; lines 1-62 (frontmatter + includes + role + core_principle + inputs) are the content kept
+lines: rcode/agents/rcode-integration-checker.md:1-456 — full file read before rewrite; lines 64-456 (verification_process + output + critical_rules + success_criteria + constraints) are the content being removed; lines 1-62 (frontmatter + includes + role + core_principle + inputs) are the content kept
 </evidence>
 
 ---
@@ -151,14 +151,14 @@ lines: rihal/agents/rihal-integration-checker.md:1-456 — full file read before
 **Duration estimate:** 5 min
 
 <files>
-rihal/agents/rihal-integration-checker.md
+rcode/agents/rcode-integration-checker.md
 </files>
 
 <action>
 Stage and commit only the agent file:
 
 ```bash
-git add rihal/agents/rihal-integration-checker.md
+git add rcode/agents/rcode-integration-checker.md
 
 git commit -m "refactor(agents): slim integration-checker 456→≤55 lines via @-include (#712)"
 ```
@@ -176,11 +176,11 @@ Expected: most recent commit message contains "#712".
 
 <done>
 - Slimmed agent file committed with message referencing #712
-- Only rihal-integration-checker.md in the diff (no other files)
+- Only rcode-integration-checker.md in the diff (no other files)
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-integration-checker.md — the single file being committed
+lines: rcode/agents/rcode-integration-checker.md — the single file being committed
 </evidence>
 
 </tasks>
@@ -190,38 +190,38 @@ Final checks after all tasks complete:
 
 ```bash
 # Line count gate
-actual=$(wc -l < rihal/agents/rihal-integration-checker.md)
+actual=$(wc -l < rcode/agents/rcode-integration-checker.md)
 [ "$actual" -le 80 ] && echo "PASS: $actual lines" || echo "FAIL: $actual lines — must be ≤80"
 
 # @-include present
-grep -q "@.rihal/references/integration-verification-playbook.md" rihal/agents/rihal-integration-checker.md \
+grep -q "@.rcode/references/integration-verification-playbook.md" rcode/agents/rcode-integration-checker.md \
   && echo "PASS: @-include present" || echo "FAIL: @-include missing"
 
 # Frontmatter intact
-head -6 rihal/agents/rihal-integration-checker.md | grep -q "rihal-integration-checker" \
+head -6 rcode/agents/rcode-integration-checker.md | grep -q "rcode-integration-checker" \
   && echo "PASS: frontmatter intact" || echo "FAIL: frontmatter broken"
 
 # Bash functions NOT in agent stub (they belong in reference file)
-grep -q "check_export_used\|verify_auth_flow" rihal/agents/rihal-integration-checker.md \
+grep -q "check_export_used\|verify_auth_flow" rcode/agents/rcode-integration-checker.md \
   && echo "FAIL: bash functions still in agent stub" || echo "PASS: functions moved to reference"
 
 # Output template NOT in agent stub (belongs in reference file)
-grep -q "Integration Check Complete\|Requirements Integration Map" rihal/agents/rihal-integration-checker.md \
+grep -q "Integration Check Complete\|Requirements Integration Map" rcode/agents/rcode-integration-checker.md \
   && echo "FAIL: output template still in agent stub" || echo "PASS: output template moved to reference"
 
 # Bash functions ARE in reference file
-grep -q "check_export_used" rihal/references/integration-verification-playbook.md \
+grep -q "check_export_used" rcode/references/integration-verification-playbook.md \
   && echo "PASS: functions in reference file" || echo "FAIL: functions missing from reference"
 
 # Output template IS in reference file
-grep -q "Integration Check Complete" rihal/references/integration-verification-playbook.md \
+grep -q "Integration Check Complete" rcode/references/integration-verification-playbook.md \
   && echo "PASS: output template in reference file" || echo "FAIL: output template missing from reference"
 ```
 </verification>
 
 <success_criteria>
-- [ ] rihal/agents/rihal-integration-checker.md is ≤80 lines (target ~55)
-- [ ] @-include line @.rihal/references/integration-verification-playbook.md is present
+- [ ] rcode/agents/rcode-integration-checker.md is ≤80 lines (target ~55)
+- [ ] @-include line @.rcode/references/integration-verification-playbook.md is present
 - [ ] `<role>`, `<core_principle>`, `<inputs>` retained in agent stub
 - [ ] `<verification_process>`, `<output>`, `<critical_rules>`, `<success_criteria>`, Constraints removed from agent stub (all in reference file)
 - [ ] YAML frontmatter unchanged (name, description, tools, color identical to pre-slim)

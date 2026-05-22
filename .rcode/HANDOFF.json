@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-05-22T08:20:52.816Z",
+  "reason": "pre-compact",
+  "phase": "Dashboard command runner",
+  "milestone": "M2 — Hardening & Polish",
+  "current_plan": 4,
+  "current_sprint": "33.1",
+  "progress": null,
+  "incomplete_tasks": [],
+  "recent_commits": [
+    "4a46ca0 chore(release): bump to v3.6.19 — fixes #807 #810 #813 #816 #819 #820 #821 #822 #823 #826 #829 #833 #835 #836 #838 #841 #844",
+    "3ba90fd fix(docs): recommend pnpm dlx over npx for npm 11.x compatibility",
+    "d4e707a fix(install): pnpm workspace anchor, claude-code alias, lockfile verification",
+    "533cac1 fix(new-project): trim Step 3b options to 4 — closes #844",
+    "ce74e82 fix(new-project): add ROADMAP.md stub guard after roadmapper spawn — closes #826"
+  ],
+  "recent_decisions": []
+}

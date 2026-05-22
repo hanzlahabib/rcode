@@ -10,7 +10,7 @@
 Make first contact unambiguous and differentiation explicit: present the two-step
 install model up front, pick one canonical first-run command, add a competitor-naming
 differentiation table plus a maturity note to the README, flesh out `examples/` with a
-real worked example, and reconcile `BRAND.md` naming with the shipped `/rihal-*`
+real worked example, and reconcile `BRAND.md` naming with the shipped `/rcode-*`
 convention.
 
 ## Tasks completed
@@ -19,18 +19,18 @@ convention.
 - README install section restructured: the `npx @hanzlaa/rcode install` (Step 1,
   required) and `npm install -g @hanzlaa/rcode` (Step 2, optional PATH command) are now
   a clearly-labelled pair up front, replacing the trailing global-install blockquote.
-- `/rihal-init` is named as THE single first command in both README and
-  `docs/getting-started.md`, with an explicit note that `/rihal-new-project` is a
-  sub-path `/rihal-init` routes to for greenfield projects — no entry-point choice.
-- `examples/starter-walkthrough.md` updated to open with `/rihal-init` instead of
-  `/rihal-new-project`.
-- Verify: `grep npm install -g + /rihal-init across README/getting-started/starter` →
+- `/rcode-init` is named as THE single first command in both README and
+  `docs/getting-started.md`, with an explicit note that `/rcode-new-project` is a
+  sub-path `/rcode-init` routes to for greenfield projects — no entry-point choice.
+- `examples/starter-walkthrough.md` updated to open with `/rcode-init` instead of
+  `/rcode-new-project`.
+- Verify: `grep npm install -g + /rcode-init across README/getting-started/starter` →
   `install model + canonical command consistent`. Exit 0.
 
 ### 30.4.2 — Differentiation table + maturity note in README
 - Added a maturity line near the top: `Status: actively developed — published on npm as
   @hanzlaa/rcode v3.4.x, with an automated test suite covered by node --test.`
-- Added a compact 6-row differentiation table to the "What makes Rihal different"
+- Added a compact 6-row differentiation table to the "What makes rcode different"
   section, distilled from `docs/USP.md` lines 224-234, naming Cursor/Windsurf and
   CrewAI/AutoGen across rows (per-project memory, specialist agents, workflow gates,
   infrastructure, IDE lock-in, install), with a link to `docs/USP.md` for the full
@@ -40,29 +40,29 @@ convention.
 
 ### 30.4.3 — Worked example in examples/
 - Created `examples/rental-app-walkthrough.md` (157 lines): an end-to-end Golden Path
-  walkthrough of a Dubai rental-listing app through `/rihal-init` → `/rihal-council` →
-  `/rihal-plan` → `/rihal-execute` → `/rihal-status`. Each step shows the exact command
+  walkthrough of a Dubai rental-listing app through `/rcode-init` → `/rcode-council` →
+  `/rcode-plan` → `/rcode-execute` → `/rcode-status`. Each step shows the exact command
   typed and a realistic inline artifact excerpt (council-session snippet, PLAN.md task
   block, SUMMARY.md excerpt, status output). Self-contained — no external files.
-- All five referenced commands verified present in `rihal/commands/`.
-- Verify: file exists, ≥ 60 lines, references all five `/rihal-*` commands → exit 0.
+- All five referenced commands verified present in `rcode/commands/`.
+- Verify: file exists, ≥ 60 lines, references all five `/rcode-*` commands → exit 0.
 
 ### 30.4.4 — Reconcile BRAND.md naming
 - BRAND.md naming-conventions table corrected:
   - Slash command row: pattern `/rcode:<name>` (examples `/rcode:plan`, `/rcode:majlis`)
-    → `/rihal-<name>` (examples `/rihal-plan`, `/rihal-council`).
+    → `/rcode-<name>` (examples `/rcode-plan`, `/rcode-council`).
   - Skill name row: pattern `rcode-<verb>-<noun>` (examples `rcode-prove-it`,
-    `rcode-harden-auth`) → `rihal-<verb>-<noun>` (examples `rihal-auth-audit`,
-    `rihal-deploy-unify`) — verified against actual folders under `rihal/skills/core/`.
+    `rcode-harden-auth`) → `rcode-<verb>-<noun>` (examples `rcode-auth-audit`,
+    `rcode-deploy-unify`) — verified against actual folders under `rcode/skills/core/`.
 - Voice/glossary/persona sections untouched.
-- Verify: `! grep /rcode: && grep /rihal-` → `BRAND.md naming reconciled`. Residual grep
+- Verify: `! grep /rcode: && grep /rcode-` → `BRAND.md naming reconciled`. Residual grep
   for `rcode-` → 0 matches.
 
 ### 30.4.5 — Global-install hint in installer output
 - No code change required. `cli/install.js` already prints the global-install hint in
   its post-install completion block (lines 2494-2496), in a dedicated, well-labelled
   "Want the rcode CLI on your PATH?" block placed right after the "Next:" steps:
-  `npm install -g @hanzlaa/rcode  # installs rcode, rihal, rihal-code commands`.
+  `npm install -g @hanzlaa/rcode  # installs rcode, rcode, rcode commands`.
   This satisfies the task `<action>` intent exactly. Adding a duplicate `Tip:` line
   would violate scope discipline (do exactly what's needed, nothing more).
 - Verify: `node -c cli/install.js` passes; `grep npm install -g @hanzlaa/rcode
@@ -74,7 +74,7 @@ convention.
 
 Both failures are the known pre-existing baseline, unrelated to this sprint:
 - `at-ref-parity.test.cjs` — broken `@`-references in
-  `.rihal/workflows/execute-milestone.md` and `plan-milestone.md`.
+  `.rcode/workflows/execute-milestone.md` and `plan-milestone.md`.
 - `compliance.test.cjs` — `scaffold-milestone.md` command does not `@`-include a
   workflow.
 
@@ -101,8 +101,8 @@ message covers both #758 and #759 README work.)
 
 ## Success criteria
 
-- Install model unambiguous; one canonical first command (`/rihal-init`) everywhere — met.
+- Install model unambiguous; one canonical first command (`/rcode-init`) everywhere — met.
 - Differentiation explicit (named competitors) + maturity note in README, ≤240 lines — met.
 - `examples/` has a substantial end-to-end worked example — met.
-- BRAND.md naming matches the shipped `/rihal-*` convention — met.
+- BRAND.md naming matches the shipped `/rcode-*` convention — met.
 - Installer surfaces the PATH-install hint — met (pre-existing, verified).

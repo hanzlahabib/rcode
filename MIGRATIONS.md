@@ -12,24 +12,24 @@ Every renamed, merged, or dropped surface across the rcode improvement programme
 
 | Old | Replacement |
 |---|---|
-| `/rihal-report` | `/rihal-session-report` (this was always the canonical workflow) |
+| `/rcode-report` | `/rcode-session-report` (this was always the canonical workflow) |
 
 ### Dropped (self-declared internal)
 
 | Old | Replacement |
 |---|---|
-| `/rihal-new-project-research` | Use `/rihal-new-project` (which calls this internally as a sub-workflow) |
-| `/rihal-new-project-roadmap` | Use `/rihal-new-project` (same — internal sub-workflow) |
-| `/rihal-check-implementation-readiness` | Internal guard called by `/rihal-plan` and `/rihal-execute`; no user-facing slash |
+| `/rcode-new-project-research` | Use `/rcode-new-project` (which calls this internally as a sub-workflow) |
+| `/rcode-new-project-roadmap` | Use `/rcode-new-project` (same — internal sub-workflow) |
+| `/rcode-check-implementation-readiness` | Internal guard called by `/rcode-plan` and `/rcode-execute`; no user-facing slash |
 
 ### Folded into flags
 
 | Old | Replacement |
 |---|---|
-| `/rihal-discuss-phase-power` | `/rihal-discuss-phase --power` |
-| `/rihal-karpathy-audit` | `/rihal-code-review --karpathy` |
-| `/rihal-review-adversarial` | `/rihal-code-review --attack` (plain English; "adversarial" was jargon) |
-| `/rihal-review-edge-case-hunter` | `/rihal-code-review --edge-cases` |
+| `/rcode-discuss-phase-power` | `/rcode-discuss-phase --power` |
+| `/rcode-karpathy-audit` | `/rcode-review --karpathy` |
+| `/rcode-review-adversarial` | `/rcode-review --attack` (plain English; "adversarial" was jargon) |
+| `/rcode-review-edge-case-hunter` | `/rcode-review --edge-cases` |
 
 The underlying workflow files remain — `code-review` delegates to them when the corresponding flag is set. This means existing automation that calls those workflows directly still works; only the user-facing slash invocations changed.
 
@@ -41,15 +41,15 @@ The underlying workflow files remain — `code-review` delegates to them when th
 
 | Old | Replacement |
 |---|---|
-| `rihal-architect` | `rihal-waleed` (CTO + Chief Architect — already covered the full architecture scope) |
-| `rihal-tech-writer` | `rihal-noor` (Technical Writer & Presentation Lead — absorbed README, API docs, changelogs, migration guides, inline comments) |
+| `rcode-architect` | `rcode-waleed` (CTO + Chief Architect — already covered the full architecture scope) |
+| `rcode-tech-writer` | `rcode-noor` (Technical Writer & Presentation Lead — absorbed README, API docs, changelogs, migration guides, inline comments) |
 
 `team.yaml` count: 47 → 45.
 
 ### Capability changes
 
 - **Noor** now has `Write, Edit` tools (added when absorbing tech-writer's documentation-writing scope).
-- **Waleed**'s capability table previously delegated `RV` (architecture review) to `rihal-architect`; now `RV` is `inline` (Waleed handles it).
+- **Waleed**'s capability table previously delegated `RV` (architecture review) to `rcode-architect`; now `RV` is `inline` (Waleed handles it).
 
 ---
 
@@ -57,20 +57,20 @@ The underlying workflow files remain — `code-review` delegates to them when th
 
 ### Naming convention
 
-- New skills (Memory Bank, future engineering and real-pain skills) are conceptually `rcode-*` in branding (slash commands like `/rihal-memory-init`), but folder names stay `rihal-memory-*` for `cli/install.js` compatibility. The installer hardcodes the `rihal-` prefix at line 741 of `install.js`; renaming would break installs. Documented in [`BRAND.md`](BRAND.md).
+- New skills (Memory Bank, future engineering and real-pain skills) are conceptually `rcode-*` in branding (slash commands like `/rcode-memory-init`), but folder names stay `rcode-memory-*` for `cli/install.js` compatibility. The installer hardcodes the `rcode-` prefix at line 741 of `install.js`; renaming would break installs. Documented in [`BRAND.md`](BRAND.md).
 
 ### Slimmed (≤120 lines, detail moved to sibling `references.md`)
 
 These skill folders gained a `references.md` file containing the in-depth principles, scripts, templates, and checklists that previously bloated `SKILL.md`:
 
-- `rihal/skills/core/rihal-clone-website/` (416 → 75 lines)
-- `rihal/skills/core/rihal-distillator/` (212 → 63)
-- `rihal/skills/core/rihal-editorial-review-structure/` (211 → 73)
-- `rihal/skills/core/rihal-advanced-elicitation/` (167 → 67)
-- `rihal/skills/agents/dalil-scout/` (202 → 120)
-- `rihal/skills/agents/majlis-council/` (192 → 98)
-- `rihal/skills/agents/raees-orchestrator/` (166 → 105)
-- `rihal/skills/actions/2-plan/rihal-frontend-design/` (182 → 92)
+- `rcode/skills/core/rcode-clone-website/` (416 → 75 lines)
+- `rcode/skills/core/rcode-distillator/` (212 → 63)
+- `rcode/skills/core/rcode-editorial-review-structure/` (211 → 73)
+- `rcode/skills/core/rcode-advanced-elicitation/` (167 → 67)
+- `rcode/skills/agents/dalil-scout/` (202 → 120)
+- `rcode/skills/agents/majlis-council/` (192 → 98)
+- `rcode/skills/agents/raees-orchestrator/` (166 → 105)
+- `rcode/skills/actions/2-plan/rcode-frontend-design/` (182 → 92)
 
 The skill behaviour is unchanged. If you previously cited a section by line number from one of these SKILL.md files, that reference is now broken — re-cite from `references.md`.
 
@@ -78,18 +78,18 @@ The skill behaviour is unchanged. If you previously cited a section by line numb
 
 New skill primitives. None replace existing skills; they enable the persistent project memory layer.
 
-- `rihal-memory-init` — bootstrap `.rihal/memory/` for an existing project
-- `rihal-memory-update` — surgical update to a Memory Bank file from conversation context
-- `rihal-memory-distill` — regenerate fast-load distillates from sources
-- `rihal-memory-audit` — find stale entries, contradictions, missing sections
+- `rcode-memory-init` — bootstrap `.rcode/memory/` for an existing project
+- `rcode-memory-update` — surgical update to a Memory Bank file from conversation context
+- `rcode-memory-distill` — regenerate fast-load distillates from sources
+- `rcode-memory-audit` — find stale entries, contradictions, missing sections
 
-Slash names: `/rihal-memory-init`, `/rihal-memory-update`, `/rihal-memory-distill`, `/rihal-memory-audit`.
+Slash names: `/rcode-memory-init`, `/rcode-memory-update`, `/rcode-memory-distill`, `/rcode-memory-audit`.
 
 ---
 
 ## Configuration
 
-### `rihal/config/model-profiles.json`
+### `rcode/config/model-profiles.json`
 
 The key `tech-writer` was renamed to `noor` in all 5 profile blocks (`fast`, `balanced`, `quality`, `inherit-fast`, `inherit-quality`). If you have a custom `model-profiles.json` override locally, update the key name.
 
@@ -101,7 +101,7 @@ The key `tech-writer` was renamed to `noor` in all 5 profile blocks (`fast`, `ba
 - `MEMORY_BANK.md` — Memory Bank specification
 - `MIGRATIONS.md` — this file
 - `TASKS.md` — master task tracker for the rcode improvement programme
-- `rihal/templates/memory/` — 13 template files used by `rcode-memory-init`
+- `rcode/templates/memory/` — 13 template files used by `rcode-memory-init`
 - `server/lib/scanner.js` — extended with `scanMemoryBank()`
 - `server/lib/api.js` — extended with `handleApiMemory`
 - `server/dashboard.js` — `/api/memory` route registered (additive)
@@ -116,16 +116,16 @@ The key `tech-writer` was renamed to `noor` in all 5 profile blocks (`fast`, `ba
 
 ## Files removed
 
-- `rihal/commands/report.md`
-- `rihal/commands/new-project-research.md`
-- `rihal/commands/new-project-roadmap.md`
-- `rihal/commands/discuss-phase-power.md`
-- `rihal/commands/karpathy-audit.md`
-- `rihal/commands/review-adversarial.md`
-- `rihal/commands/review-edge-case-hunter.md`
-- `rihal/commands/check-implementation-readiness.md`
-- `rihal/agents/rihal-architect.md`
-- `rihal/agents/rihal-tech-writer.md`
+- `rcode/commands/report.md`
+- `rcode/commands/new-project-research.md`
+- `rcode/commands/new-project-roadmap.md`
+- `rcode/commands/discuss-phase-power.md`
+- `rcode/commands/karpathy-audit.md`
+- `rcode/commands/review-adversarial.md`
+- `rcode/commands/review-edge-case-hunter.md`
+- `rcode/commands/check-implementation-readiness.md`
+- `rcode/agents/rcode-architect.md`
+- `rcode/agents/rcode-tech-writer.md`
 
 ---
 
@@ -133,14 +133,14 @@ The key `tech-writer` was renamed to `noor` in all 5 profile blocks (`fast`, `ba
 
 If you are running rcode from before this programme:
 
-1. Replace any `/rihal-report ...` calls with `/rihal-session-report ...`
-2. Replace any `/rihal-karpathy-audit ...` with `/rihal-code-review ... --karpathy`
-3. Replace any `/rihal-review-adversarial ...` with `/rihal-code-review ... --attack`
-4. Replace any `/rihal-review-edge-case-hunter ...` with `/rihal-code-review ... --edge-cases`
-5. Replace any `/rihal-discuss-phase-power ...` with `/rihal-discuss-phase ... --power`
-6. Stop calling `/rihal-check-implementation-readiness`, `/rihal-new-project-research`, `/rihal-new-project-roadmap` directly — they are internal sub-workflows now
-7. Anywhere your project references `rihal-tech-writer`, swap to `rihal-noor`
-8. Anywhere your project references `rihal-architect`, swap to `rihal-waleed`
-9. Run `/rihal-memory-init` to bootstrap the new Memory Bank for your project
+1. Replace any `/rcode-report ...` calls with `/rcode-session-report ...`
+2. Replace any `/rcode-karpathy-audit ...` with `/rcode-review ... --karpathy`
+3. Replace any `/rcode-review-adversarial ...` with `/rcode-review ... --attack`
+4. Replace any `/rcode-review-edge-case-hunter ...` with `/rcode-review ... --edge-cases`
+5. Replace any `/rcode-discuss-phase-power ...` with `/rcode-discuss-phase ... --power`
+6. Stop calling `/rcode-check-implementation-readiness`, `/rcode-new-project-research`, `/rcode-new-project-roadmap` directly — they are internal sub-workflows now
+7. Anywhere your project references `rcode-tech-writer`, swap to `rcode-noor`
+8. Anywhere your project references `rcode-architect`, swap to `rcode-waleed`
+9. Run `/rcode-memory-init` to bootstrap the new Memory Bank for your project
 
 CI runs `node --test` — none of these changes break public surfaces, but if your custom workflows reference dropped surfaces, the test suite will catch missing files at install time.

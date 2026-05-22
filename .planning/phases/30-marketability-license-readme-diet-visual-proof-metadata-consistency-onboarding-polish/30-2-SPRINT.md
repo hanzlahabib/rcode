@@ -33,8 +33,8 @@ Output: Slimmed README.md, expanded DOCS.md, two image placeholders flagged for 
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -46,15 +46,15 @@ Output: Slimmed README.md, expanded DOCS.md, two image placeholders flagged for 
 ### Task 30.2.1 — auto — Relocate deep-detail sections from README into DOCS.md
 <type>auto</type>
 <read_first>
-- /home/hanzla/development/rihal-code/README.md (lines 343-381 full command list; 447-504 Testing + CI; 404-418 State tracking / state.json schema)
-- /home/hanzla/development/rihal-code/DOCS.md (lines 1-20 — table of contents, to find insertion points)
+- /home/hanzla/development/rcode/README.md (lines 343-381 full command list; 447-504 Testing + CI; 404-418 State tracking / state.json schema)
+- /home/hanzla/development/rcode/DOCS.md (lines 1-20 — table of contents, to find insertion points)
 </read_first>
 <files>DOCS.md</files>
 <action>
 Move these README blocks into DOCS.md (append under the matching existing DOCS.md section, or add a new section):
 - README lines 343-381 — "Full command surface (95 commands)" — move into DOCS.md section 7 (Slash commands). NOTE: the count in this heading is wrong; do not fix it here — sprint 30-3 owns count corrections. Move the content verbatim.
 - README lines 447-504 — "Testing" (test-suite table) + "CI pipeline" — move into DOCS.md as a "Testing & CI" section.
-- README lines 404-418 — "State tracking" (the `.rihal/state.json` field list) — move into DOCS.md near the existing state/config content.
+- README lines 404-418 — "State tracking" (the `.rcode/state.json` field list) — move into DOCS.md near the existing state/config content.
 Copy the content into DOCS.md first and verify it landed before the next task deletes it from README. Do not edit README.md in this task.
 </action>
 <acceptance_criteria>
@@ -70,7 +70,7 @@ Copy the content into DOCS.md first and verify it landed before the next task de
 ### Task 30.2.2 — auto — Cut README to ~200 lines and add image placeholders
 <type>auto</type>
 <read_first>
-- /home/hanzla/development/rihal-code/README.md (full — 535 lines)
+- /home/hanzla/development/rcode/README.md (full — 535 lines)
 - DOCS.md (after Task 30.2.1 — to confirm relocated content is safe to delete from README)
 </read_first>
 <files>README.md, docs/assets/hero-demo.gif, docs/assets/diwan-dashboard.png</files>
@@ -78,10 +78,10 @@ Copy the content into DOCS.md first and verify it landed before the next task de
 Rewrite README.md to ~200 lines in this order:
 1. **Value prop** — title + the one-line pitch (keep lines 1-9, the install command, npm badges).
 2. **Visual proof** — immediately after the badges, add two image references:
-   `![Rihal Code demo](docs/assets/hero-demo.gif)` and `![Diwan dashboard](docs/assets/diwan-dashboard.png)`.
+   `![rcode demo](docs/assets/hero-demo.gif)` and `![Diwan dashboard](docs/assets/diwan-dashboard.png)`.
    Create the two placeholder files `docs/assets/hero-demo.gif` and `docs/assets/diwan-dashboard.png` as EMPTY zero-byte files (`mkdir -p docs/assets` first). Do NOT fabricate binary image content — real capture is Task 30.2.3 (a checkpoint).
 3. **Quickstart** — keep the "Install — one command" + "Then begin the rihla" section, trimmed.
-4. **Differentiation** — keep a trimmed "What makes Rihal different" (intent guards, memory bank, markdown-first). Cut the long sub-explanations.
+4. **Differentiation** — keep a trimmed "What makes rcode different" (intent guards, memory bank, markdown-first). Cut the long sub-explanations.
 5. **Links** — a short "Learn more" list pointing to DOCS.md, docs/getting-started.md, BRAND.md, CHANGELOG.md.
 DELETE from README (already relocated in 30.2.1): full command list, Testing table, CI pipeline, state.json schema. Also cut: the verbose 90-second tour duplication, the Modules table, Hooks section, Configuration YAML dump — link to DOCS.md instead. Do not change any agent/command/skill counts — sprint 30-3 owns those.
 Target: `wc -l README.md` between 150 and 230.
@@ -106,7 +106,7 @@ Target: `wc -l README.md` between 150 and 230.
 <files>docs/assets/hero-demo.gif, docs/assets/diwan-dashboard.png</files>
 <action>
 PAUSE for the user. The two placeholder files from Task 30.2.2 are zero-byte. Ask the user to:
-1. Record a hero demo GIF of the install -> /rihal-council -> /rihal-plan -> /rihal-execute loop and save it to `docs/assets/hero-demo.gif`.
+1. Record a hero demo GIF of the install -> /rcode-council -> /rcode-plan -> /rcode-execute loop and save it to `docs/assets/hero-demo.gif`.
 2. Take a screenshot of the Diwan dashboard (`node server/dashboard.js`, http://localhost:7717) and save it to `docs/assets/diwan-dashboard.png`.
 The existing repo-root `image.png` may be reused for the dashboard screenshot if it already shows the dashboard — let the user decide and copy it to `docs/assets/diwan-dashboard.png` if so.
 Do NOT fabricate or generate the binary images. This task only completes when the user confirms the real assets are in place.

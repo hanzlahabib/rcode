@@ -10,7 +10,7 @@
 Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concrete fixes:
 
 1. Implement `commit` CLI subcommand (#465 — most-used missing subcommand across workflows)
-2. Add phase-aware fields to `cmdInit` (#464 part 3 — unblocks /rihal-plan + /rihal-discuss-phase agent flows)
+2. Add phase-aware fields to `cmdInit` (#464 part 3 — unblocks /rcode-plan + /rcode-discuss-phase agent flows)
 3. Read **Status:** field in `lib/roadmap.cjs` so `roadmap list-phases` reports actual status
 
 **Out of scope:**
@@ -25,7 +25,7 @@ Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concret
 ### `commit` subcommand
 
 - **D-1:** Single-purpose — atomic git commit with conventional-commit message validation. NOT a multi-step orchestrator; that's what executor agents do.
-- **D-2:** Signature: `node rihal-tools.cjs commit "<message>" [--files <path1> <path2> ...]`. Files default to all-staged if --files absent.
+- **D-2:** Signature: `node rcode-tools.cjs commit "<message>" [--files <path1> <path2> ...]`. Files default to all-staged if --files absent.
 - **D-3:** Validates conventional-commits format (`type(scope): subject`). Rejects empty subjects, non-conventional types, AI-attribution lines.
 - **D-4:** Does NOT push. Per project rule: never push without explicit human approval.
 
@@ -33,7 +33,7 @@ Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concret
 
 - **D-5:** When workflow is `phase-op` or `sprint-plan` AND a phase number is provided, init returns the documented field set. When phase number is absent or not a valid integer, fields remain absent (no synthetic defaults).
 - **D-6:** Source: parse ROADMAP.md via the now-fixed `lib/roadmap.cjs` (post #464 regex fix). Don't reinvent the parser.
-- **D-7:** Disk signals (`has_research`, `has_context`, `has_plans`, `plan_count`) come from `walkPhaseDirs` (already exists at line ~3107 of rihal-tools.cjs).
+- **D-7:** Disk signals (`has_research`, `has_context`, `has_plans`, `plan_count`) come from `walkPhaseDirs` (already exists at line ~3107 of rcode-tools.cjs).
 
 ### Status field in `roadmap list-phases`
 
@@ -61,9 +61,9 @@ Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concret
 - `#466` — Phase 10 umbrella
 
 ### Existing code to extend
-- `rihal/bin/rihal-tools.cjs` line 261 (`cmdInit`) — add phase-aware branch
-- `rihal/bin/rihal-tools.cjs` line 3604 (`main()`) — add `case 'commit':`
-- `rihal/bin/lib/roadmap.cjs` — add Status: field parsing
+- `rcode/bin/rcode-tools.cjs` line 261 (`cmdInit`) — add phase-aware branch
+- `rcode/bin/rcode-tools.cjs` line 3604 (`main()`) — add `case 'commit':`
+- `rcode/bin/lib/roadmap.cjs` — add Status: field parsing
 - `scripts/dogfood-check.sh` — update allowlist when commit lands
 
 ### Convention sources
@@ -95,7 +95,7 @@ Close the highest-impact gaps surfaced by Phase 9's dogfood audit. Three concret
 <specifics>
 ## Specific Ideas
 
-- `commit` should refuse `--no-verify` flag explicitly (not silently ignore). Print: "rihal-tools commit does not bypass hooks. Fix the underlying issue."
+- `commit` should refuse `--no-verify` flag explicitly (not silently ignore). Print: "rcode-tools commit does not bypass hooks. Fix the underlying issue."
 - `commit` should refuse messages containing "Co-Authored-By: Claude" or "Generated with Claude Code". Per project rule.
 - Phase-aware fields use `padded_phase` for backward compat with workflows that still expect zero-padding (since phases 01-05 are legacy). New phases (6+) return `padded_phase` equal to `phase_number` (no padding).
 - Status parsing should handle the actual ROADMAP variations seen in this repo: `Complete (2026-04-15)`, `Complete (2026-04-29 — closed during phase-status drift audit; ...)`, `Active (Sprint 04.2 in progress)`, `Planned`, `Closed (partial) — eng-side items shipped, ...`.

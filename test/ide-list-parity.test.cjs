@@ -3,7 +3,7 @@
  *
  * Pre-#697, the installer claimed claude/cursor/gemini/vscode/antigravity
  * while the uninstaller used claude/cursor/windsurf/antigravity. Result:
- * users with vscode-installed rihal could never cleanly uninstall, and
+ * users with vscode-installed rcode could never cleanly uninstall, and
  * the uninstaller chased a windsurf path the installer never wrote.
  *
  * This test pins both sides to a single SUPPORTED_IDES constant exported

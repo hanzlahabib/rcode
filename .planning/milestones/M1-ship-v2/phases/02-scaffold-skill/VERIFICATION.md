@@ -8,7 +8,7 @@ outcome: passed
 
 ## Goal Achievement
 
-✅ `rihal-scaffold-project` skill exists and is listed in SKILLS_INDEX
+✅ `rcode-scaffold-project` skill exists and is listed in SKILLS_INDEX
 ✅ Safety check prevents overwriting non-empty directories
 ✅ Fresh clone behavior verified — no cached template used
 ✅ GH #101 filed for follow-up template improvements
@@ -17,5 +17,5 @@ outcome: passed
 
 | File | Status |
 |------|--------|
-| `rihal/skills/actions/scaffold-project/SKILL.md` | ✅ created |
+| `rcode/skills/actions/scaffold-project/SKILL.md` | ✅ created |
 | `SKILLS_INDEX.md` | ✅ updated |

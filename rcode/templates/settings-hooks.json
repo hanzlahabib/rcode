@@ -1,0 +1,75 @@
+{
+  "_comment": "pre-edit hook is currently advisory (logs warning, does not block). Full session-read tracking requires PostToolUse Read hook to write state file. Implemented in follow-up.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs pre-edit"
+          },
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs compact-nudge"
+          }
+        ]
+      },
+      {
+        "matcher": "SlashCommand",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs pre-workflow"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs bash-guard"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs post-commit"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs pre-compact"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs stop-verify"
+          },
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs cost-track"
+          }
+        ]
+      }
+    ]
+  }
+}

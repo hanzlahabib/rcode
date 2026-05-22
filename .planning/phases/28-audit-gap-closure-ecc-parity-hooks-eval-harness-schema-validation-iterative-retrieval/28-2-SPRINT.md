@@ -36,14 +36,14 @@ Output: harness entrypoint, prompt set, normalizer, committed baselines, a `node
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
 @.planning/PROJECT.md
 @.planning/ROADMAP.md
-@.rihal/state.json
+@.rcode/state.json
 </context>
 
 <notes>
@@ -57,7 +57,7 @@ Scope discipline: this harness does NOT call a live model. It is a deterministic
 <read_first>
 - test/compliance.test.cjs
 - test/bash-guard-hook.test.cjs
-- rihal/agents/rihal-phase-researcher.md
+- rcode/agents/rcode-phase-researcher.md
 </read_first>
 <files>
 test/eval/prompts.json
@@ -68,7 +68,7 @@ test/eval/baselines/.gitkeep
 <action>
 Create `test/eval/` directory.
 
-`test/eval/prompts.json`: a JSON object mapping each tracked artifact path to a fixed list of probe prompts. Track at minimum these 5 high-traffic SKILL.md/agent files (verify each path exists before listing it; drop any that don't): the classifier-routed `do` skill, `rihal-phase-researcher.md`, `rihal-research-synthesizer.md`, plus 2 more agent .md files chosen from `rihal/agents/`. Each entry: `{ "<path>": { "probes": ["short scenario string", ...] } }`. Probes are scenario descriptors used only as stable keys — the harness does not send them to a model.
+`test/eval/prompts.json`: a JSON object mapping each tracked artifact path to a fixed list of probe prompts. Track at minimum these 5 high-traffic SKILL.md/agent files (verify each path exists before listing it; drop any that don't): the classifier-routed `do` skill, `rcode-phase-researcher.md`, `rcode-research-synthesizer.md`, plus 2 more agent .md files chosen from `rcode/agents/`. Each entry: `{ "<path>": { "probes": ["short scenario string", ...] } }`. Probes are scenario descriptors used only as stable keys — the harness does not send them to a model.
 
 `test/eval/normalize.cjs`: exports `normalize(artifactPath)` → a deterministic JSON object capturing the STRUCTURED contract of that artifact: parsed frontmatter trigger phrases (sorted), declared `tools` list (sorted), negative-boundary phrases, and a sorted list of routing/decision keywords extracted from the body (e.g. headings, `route to`, `spawn`, agent names referenced). Explicitly EXCLUDE free prose — only structural tokens. Same input must always yield byte-identical output (sort every collection).
 

@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const WF = path.join(ROOT, 'rihal', 'workflows');
+const WF = path.join(ROOT, 'rcode', 'workflows');
 
 function wf(name) {
   return fs.readFileSync(path.join(WF, name), 'utf8');
@@ -27,7 +27,7 @@ function wf(name) {
 
 test('execute.md calls record-execution after phase complete', () => {
   const text = wf('execute.md');
-  const completeIdx = text.search(/rihal-tools\.cjs"\s+phase\s+complete/);
+  const completeIdx = text.search(/rcode-tools\.cjs"\s+phase\s+complete/);
   assert.ok(completeIdx > -1, 'execute.md must call phase complete');
   const after = text.slice(completeIdx);
   assert.ok(
@@ -39,16 +39,16 @@ test('execute.md calls record-execution after phase complete', () => {
 test('execute.md has snapshot tag creation before execution', () => {
   const text = wf('execute.md');
   assert.ok(
-    /rihal\/snapshot\/phase/.test(text),
+    /rcode\/snapshot\/phase/.test(text),
     'execute.md must create a pre-execution snapshot git tag',
   );
 });
 
-test('execute.md spawns rihal-executor (not general-purpose)', () => {
+test('execute.md spawns rcode-executor (not general-purpose)', () => {
   const text = wf('execute.md');
   assert.ok(
-    /subagent_type.*rihal-executor/.test(text),
-    'execute.md must spawn rihal-executor, not general-purpose',
+    /subagent_type.*rcode-executor/.test(text),
+    'execute.md must spawn rcode-executor, not general-purpose',
   );
   assert.ok(
     !/subagent_type.*general-purpose/.test(text),

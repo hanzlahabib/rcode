@@ -18,7 +18,7 @@
 | **D-2: Severity threshold for auto-fix** | A: trivial only (typos/dates) · B: + low-risk text edits · C: + structural changes | **A** |
 
 **User's choice:** Accepted both recommended options.
-**Rationale:** Conservative defaults match `/rihal-audit-fix` precedent. `--fix` opt-in earns trust through use; trivial-only allowlist makes the safety promise enforceable in code rather than reliant on agent judgment.
+**Rationale:** Conservative defaults match `/rcode-audit-fix` precedent. `--fix` opt-in earns trust through use; trivial-only allowlist makes the safety promise enforceable in code rather than reliant on agent judgment.
 
 ---
 
@@ -37,7 +37,7 @@
 
 | Decision | Options Presented | Selected |
 |---|---|---|
-| **D-4: Reuse `rihal-docs-auditor` or new agent** | A: reuse · B: new `rihal-feature-drift-auditor` · C: extend with mode flag | **C** |
+| **D-4: Reuse `rcode-docs-auditor` or new agent** | A: reuse · B: new `rcode-feature-drift-auditor` · C: extend with mode flag | **C** |
 
 **User's choice:** Accepted recommendation.
 **Rationale:** Agent count is already a project pain point (issue #100). Extension with `--mode=feature-drift` keeps agent surface area lean while reusing the verifier-loop pattern.
@@ -58,7 +58,7 @@
 ## Claude's Discretion
 
 - Iteration cap for bounded fix-loop (suggest 3 passes)
-- Severity tag taxonomy (consistent with existing rihal conventions)
+- Severity tag taxonomy (consistent with existing rcode conventions)
 - Drift report file format and exact path
 - Internal file structure of new workflow + extended agent
 

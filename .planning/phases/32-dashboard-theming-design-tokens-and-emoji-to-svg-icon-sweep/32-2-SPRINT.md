@@ -47,8 +47,8 @@ or shared components (grep-verified); icons.js and icons-client.js are in sync.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -127,7 +127,7 @@ DO NOT change any existing icon paths. DO NOT change the Icon function signature
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/icons.js && node --check server/lib/html/client/icons-client.js && node -e "const {ICONS}=require('./server/lib/html/icons.js'); const needed=['building','alert-triangle','lightbulb','copy','monitor','file-text','flag','clipboard-list','brain','edit-3','link']; const missing=needed.filter(n=>!ICONS[n]); if(missing.length){console.error('MISSING:',missing);process.exit(1);} console.log('OK total icons='+Object.keys(ICONS).length);" && echo PASS
+cd /home/hanzla/development/rcode && node --check server/lib/html/icons.js && node --check server/lib/html/client/icons-client.js && node -e "const {ICONS}=require('./server/lib/html/icons.js'); const needed=['building','alert-triangle','lightbulb','copy','monitor','file-text','flag','clipboard-list','brain','edit-3','link']; const missing=needed.filter(n=>!ICONS[n]); if(missing.length){console.error('MISSING:',missing);process.exit(1);} console.log('OK total icons='+Object.keys(ICONS).length);" && echo PASS
 </automated>
 </verify>
 <done>Both icon files parse cleanly; all 11 new icons present in both maps; existing 22 icons untouched.</done>
@@ -173,7 +173,7 @@ redundant now that `CmdHints` is a shared component. Replace the whole block wit
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/shared.js && node --check server/lib/html/client/views/DecisionsView.js && python3 -c "import subprocess; r = subprocess.run(['grep', '-cP', '\U0001F4CB|\U0001F4A1', 'server/lib/html/client/components/shared.js', 'server/lib/html/client/views/DecisionsView.js'], capture_output=True, text=True); print('emoji remaining:', r.stdout.strip())" && echo PASS
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/shared.js && node --check server/lib/html/client/views/DecisionsView.js && python3 -c "import subprocess; r = subprocess.run(['grep', '-cP', '\U0001F4CB|\U0001F4A1', 'server/lib/html/client/components/shared.js', 'server/lib/html/client/views/DecisionsView.js'], capture_output=True, text=True); print('emoji remaining:', r.stdout.strip())" && echo PASS
 </automated>
 </verify>
 <done>No 📋 or 💡 in shared.js or DecisionsView.js; both parse cleanly; CmdHints now uses SVG icons.</done>
@@ -218,7 +218,7 @@ the icon and label align. The CSS rule for this was added in sprint 32.1 task 32
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/OverviewView.js && grep -cP "\xf0\x9f|\xe2\x9b\x8f|\xe2\x9a\xa1" server/lib/html/client/views/OverviewView.js | xargs -I{} sh -c '[ "{}" = "0" ] && echo OK || echo "FAIL: emoji remain"'
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/OverviewView.js && grep -cP "\xf0\x9f|\xe2\x9b\x8f|\xe2\x9a\xa1" server/lib/html/client/views/OverviewView.js | xargs -I{} sh -c '[ "{}" = "0" ] && echo OK || echo "FAIL: emoji remain"'
 </automated>
 </verify>
 <done>All 5 section-heading emoji replaced with SVG; file parses cleanly.</done>
@@ -264,7 +264,7 @@ sprint — log a TODO comment).
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/RoadmapView.js && python3 -c "
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/RoadmapView.js && python3 -c "
 data = open('server/lib/html/client/views/RoadmapView.js', encoding='utf-8').read()
 icons_gone = '\U0001F4CB' not in data and '⚡' not in data and '\U0001F3AF' not in data
 typo_kept  = '▼' in data or '▶' in data
@@ -338,7 +338,7 @@ Add `import { Icon } from '../icons-client.js';` after existing imports.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && for f in server/lib/html/client/views/MilestonesView.js server/lib/html/client/views/PhasesView.js server/lib/html/client/views/SprintsView.js; do node --check "$f" || { echo "SYNTAX FAIL $f"; exit 1; }; done && python3 -c "
+cd /home/hanzla/development/rcode && for f in server/lib/html/client/views/MilestonesView.js server/lib/html/client/views/PhasesView.js server/lib/html/client/views/SprintsView.js; do node --check "$f" || { echo "SYNTAX FAIL $f"; exit 1; }; done && python3 -c "
 import sys
 files = ['server/lib/html/client/views/MilestonesView.js','server/lib/html/client/views/PhasesView.js','server/lib/html/client/views/SprintsView.js']
 bad = [chr(0x1F3AF), chr(0x1F4CB), chr(0x1F4DF), chr(0x1F4C4), chr(0x26A1)]
@@ -404,7 +404,7 @@ Add `import { Icon } from '../icons-client.js';` after the existing imports.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/OrchestrationView.js && python3 -c "
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/OrchestrationView.js && python3 -c "
 import sys
 d = open('server/lib/html/client/views/OrchestrationView.js', encoding='utf-8').read()
 bad = [chr(0x1F4DD), chr(0x1F441), chr(0x1F4DF), chr(0x26A1), chr(0x23F3), chr(0x23F1)]

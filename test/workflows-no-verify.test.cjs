@@ -18,9 +18,9 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const SCAN_DIRS = [
-  path.join(PROJECT_ROOT, 'rihal', 'workflows'),
-  path.join(PROJECT_ROOT, 'rihal', 'agents'),
-  path.join(PROJECT_ROOT, 'rihal', 'skills'),
+  path.join(PROJECT_ROOT, 'rcode', 'workflows'),
+  path.join(PROJECT_ROOT, 'rcode', 'agents'),
+  path.join(PROJECT_ROOT, 'rcode', 'skills'),
 ];
 
 function walkMd(dir) {

@@ -16,7 +16,7 @@ Full redesign of the Majlis dashboard into a real-time agent orchestration UI:
 
 4. **Multi-tab session management** — `_sessions` map stores terminal DOM elements per session. Tabs switch by swapping `#orch-term-body` content. Close button removes tab and auto-selects next.
 
-5. **Session persistence** — Completed sessions written to `~/.rihal/sessions/{storyId}-{date}.json`. Replayed via SSE on reconnect. `/api/clean-sessions` endpoint with UI button.
+5. **Session persistence** — Completed sessions written to `~/.rcode/sessions/{storyId}-{date}.json`. Replayed via SSE on reconnect. `/api/clean-sessions` endpoint with UI button.
 
 6. **Auto-spawn orchestrator** — `dashboard.js` spawns `orchestrator.js` as child process. Auto-restarts on crash (3s backoff). Single start command: `node server/dashboard.js`.
 

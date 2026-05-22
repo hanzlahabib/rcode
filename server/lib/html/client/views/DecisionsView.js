@@ -12,9 +12,9 @@ import { humanDate } from '../util.js';
 import { CmdHint, CmdHints, showToast } from '../components/shared.js';
 
 const CMD_HINTS = [
-  ['/rihal-council',                   'Convene the council for a new decision'],
-  ['/rihal-discuss [agent] "topic"',   'Discuss with a specific expert'],
-  ['/rihal-decisions',                 'View decision log'],
+  ['/rcode-council',                   'Convene the council for a new decision'],
+  ['/rcode-discuss [agent] "topic"',   'Discuss with a specific expert'],
+  ['/rcode-decisions',                 'View decision log'],
 ];
 
 export function DecisionsView() {
@@ -31,7 +31,7 @@ export function DecisionsView() {
         <div class="view-title">Decisions (ADRs)</div>
         <div class="empty">
           No decisions recorded yet.
-          <div class="empty-action">Decisions made during /rihal-council appear here</div>
+          <div class="empty-action">Decisions made during /rcode-council appear here</div>
         </div>
       </div>
     `;

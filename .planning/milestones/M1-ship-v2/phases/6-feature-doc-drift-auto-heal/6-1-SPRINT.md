@@ -5,22 +5,22 @@ title: feature-drift workflow + extended docs-auditor agent
 wave: 1
 depends_on: []
 files_modified:
-  - rihal/workflows/feature-drift.md
-  - rihal/commands/feature-drift.md
-  - rihal/agents/rihal-docs-auditor.md
+  - rcode/workflows/feature-drift.md
+  - rcode/commands/feature-drift.md
+  - rcode/agents/rcode-docs-auditor.md
 autonomous: true
 sequential: false
 requirements: [phase-6-core]
 ---
 
 <objective>
-Ship the core auto-heal capability: a `/rihal-feature-drift` workflow that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items. Reuses the verifier-loop pattern from `docs-update.md` and extends `rihal-docs-auditor` with `--mode=feature-drift` per D-4.
+Ship the core auto-heal capability: a `/rcode-feature-drift` workflow that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items. Reuses the verifier-loop pattern from `docs-update.md` and extends `rcode-docs-auditor` with `--mode=feature-drift` per D-4.
 </objective>
 
 <must_haves>
-- New file `rihal/workflows/feature-drift.md` exists with sections: purpose, required_reading, process (steps: parse_args, load_artifacts, scan_drift, severity_classify, report_or_fix, commit), success_criteria, guardrails
-- New file `rihal/commands/feature-drift.md` registers slash command `/rihal-feature-drift` with execution_context pointing at the workflow
-- `rihal/agents/rihal-docs-auditor.md` accepts `--mode=feature-drift` and routes to drift-specific instructions
+- New file `rcode/workflows/feature-drift.md` exists with sections: purpose, required_reading, process (steps: parse_args, load_artifacts, scan_drift, severity_classify, report_or_fix, commit), success_criteria, guardrails
+- New file `rcode/commands/feature-drift.md` registers slash command `/rcode-feature-drift` with execution_context pointing at the workflow
+- `rcode/agents/rcode-docs-auditor.md` accepts `--mode=feature-drift` and routes to drift-specific instructions
 - Workflow handles `--fix` flag: only patches items with severity `trivial`; refuses higher severities with clear message
 - Workflow handles missing PRD/epics/stories per D-3: warn and continue with partial scope
 - Output format: severity-grouped markdown report at `${phase_dir}/DRIFT.md` (when invoked inside phase) or `.planning/audits/feature-drift-{ISO-date}.md` (otherwise)
@@ -28,19 +28,19 @@ Ship the core auto-heal capability: a `/rihal-feature-drift` workflow that reads
 </must_haves>
 
 <task id="6.1.1">
-<title>Create rihal/workflows/feature-drift.md</title>
+<title>Create rcode/workflows/feature-drift.md</title>
 <read_first>
-- rihal/workflows/docs-update.md (mirror its writer+verifier loop pattern; copy its overall structure)
-- rihal/workflows/audit-fix.md (copy its severity-tagged auto-fix conventions)
-- rihal/workflows/correct-course.md (study how it surfaces drift but not auto-fix)
+- rcode/workflows/docs-update.md (mirror its writer+verifier loop pattern; copy its overall structure)
+- rcode/workflows/audit-fix.md (copy its severity-tagged auto-fix conventions)
+- rcode/workflows/correct-course.md (study how it surfaces drift but not auto-fix)
 - .planning/phases/6-feature-doc-drift-auto-heal/6-CONTEXT.md (D-1 through D-5 + canonical_refs)
 </read_first>
 
 <action>
-Write `rihal/workflows/feature-drift.md` with this structure:
+Write `rcode/workflows/feature-drift.md` with this structure:
 
 ```markdown
-# Workflow: rihal-feature-drift
+# Workflow: rcode-feature-drift
 
 <purpose>
 Detect drift between PRD, epics, stories, and code. Report severity-tagged
@@ -48,7 +48,7 @@ findings; optionally fix trivial items in-place.
 </purpose>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -74,7 +74,7 @@ Track which layers are present in `present_layers[]`.
 </step>
 
 <step name="scan_drift">
-Spawn rihal-docs-auditor with `--mode=feature-drift`. Pass:
+Spawn rcode-docs-auditor with `--mode=feature-drift`. Pass:
 - artifacts loaded above
 - present_layers (so auditor doesn't claim drift between absent layers)
 - code surface paths
@@ -104,7 +104,7 @@ If `--fix` not set:
 
 If `--fix` set:
   For each finding with severity=trivial:
-    Spawn rihal-noor to apply the patch
+    Spawn rcode-noor to apply the patch
     Commit atomically: `fix(drift): {what was stale} → {what's true now}`
   For severity > trivial:
     Add to report only; do NOT patch.
@@ -141,26 +141,26 @@ The workflow above is the source of truth — the executor writes this content v
 </action>
 
 <acceptance_criteria>
-- File `rihal/workflows/feature-drift.md` exists
+- File `rcode/workflows/feature-drift.md` exists
 - File contains literal strings: `<purpose>`, `<step name="parse_args">`, `<step name="load_artifacts">`, `<step name="scan_drift">`, `<step name="severity_classify">`, `<step name="report_or_fix">`, `--fix`, `--mode=feature-drift`, `severity=trivial`, `bounded loop`, `max 3 passes`
 - File contains the literal commit-message template `fix(drift):`
 </acceptance_criteria>
 </task>
 
 <task id="6.1.2">
-<title>Create rihal/commands/feature-drift.md slash-command registration</title>
+<title>Create rcode/commands/feature-drift.md slash-command registration</title>
 <read_first>
-- rihal/commands/docs-update.md (template — copy frontmatter + execution_context shape)
-- rihal/commands/audit-fix.md (another template reference)
+- rcode/commands/docs-update.md (template — copy frontmatter + execution_context shape)
+- rcode/commands/audit-fix.md (another template reference)
 </read_first>
 
 <action>
-Write `rihal/commands/feature-drift.md` with this exact content:
+Write `rcode/commands/feature-drift.md` with this exact content:
 
 ```markdown
 ---
-name: rihal-feature-drift
-description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rihal-docs-update."
+name: rcode-feature-drift
+description: "Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix patches trivial items only. Reuses verifier-loop pattern from /rcode-docs-update."
 argument-hint: "[--fix] [--scope phase|project] [phase-number]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Task, AskUserQuestion
 ---
@@ -170,31 +170,31 @@ Execute feature-drift workflow
 </objective>
 
 <execution_context>
-@.rihal/workflows/feature-drift.md
+@.rcode/workflows/feature-drift.md
 </execution_context>
 
 <process>
-Execute the feature-drift workflow from @.rihal/workflows/feature-drift.md end-to-end.
+Execute the feature-drift workflow from @.rcode/workflows/feature-drift.md end-to-end.
 </process>
 ```
 </action>
 
 <acceptance_criteria>
-- File `rihal/commands/feature-drift.md` exists
-- File frontmatter contains: `name: rihal-feature-drift`, `allowed-tools:`, `argument-hint:`
-- File body contains: `@.rihal/workflows/feature-drift.md`
+- File `rcode/commands/feature-drift.md` exists
+- File frontmatter contains: `name: rcode-feature-drift`, `allowed-tools:`, `argument-hint:`
+- File body contains: `@.rcode/workflows/feature-drift.md`
 </acceptance_criteria>
 </task>
 
 <task id="6.1.3">
-<title>Extend rihal-docs-auditor agent with --mode=feature-drift</title>
+<title>Extend rcode-docs-auditor agent with --mode=feature-drift</title>
 <read_first>
-- rihal/agents/rihal-docs-auditor.md (current agent — must understand existing structure before extending)
+- rcode/agents/rcode-docs-auditor.md (current agent — must understand existing structure before extending)
 - .planning/phases/6-feature-doc-drift-auto-heal/6-CONTEXT.md (D-4 rationale)
 </read_first>
 
 <action>
-Modify `rihal/agents/rihal-docs-auditor.md`. Add a new section after the existing operating instructions, named `<mode_feature_drift>`. Section content:
+Modify `rcode/agents/rcode-docs-auditor.md`. Add a new section after the existing operating instructions, named `<mode_feature_drift>`. Section content:
 
 ```markdown
 <mode_feature_drift>
@@ -247,7 +247,7 @@ Insert this section AFTER the agent's primary operating instructions but BEFORE 
 </action>
 
 <acceptance_criteria>
-- File `rihal/agents/rihal-docs-auditor.md` exists (was already there)
+- File `rcode/agents/rcode-docs-auditor.md` exists (was already there)
 - File contains literal string `<mode_feature_drift>`
 - File contains literal string `--mode=feature-drift`
 - File contains literal string `severity": "trivial|minor|major|critical"`

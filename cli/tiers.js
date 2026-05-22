@@ -1,5 +1,5 @@
 /**
- * rihal-code tiers — print the tier map
+ * rcode tiers — print the tier map
  *
  * Reads docs/TIERS.md from the package and prints a compact version.
  * Full detail stays in docs/TIERS.md (single source of truth).
@@ -7,19 +7,19 @@
 
 module.exports = function tiers(_args, { packageJson }) {
   console.log(`
-🕌 Rihal Code v${packageJson.version} — Tiers
+🕌 rcode v${packageJson.version} — Tiers
 
 Everything is organized into 4 tiers + a preview track. Start with 🌱 Starter.
 
 🌱 STARTER — The Golden Path (7 skills)
    First-time Rihalian. Scaffold → ship, end-to-end.
-     1. rihal-scaffold-project      "scaffold a new project"
-     2. rihal-create-prd            "create a PRD"
-     3. rihal-create-story          "create a story"
-     4. rihal-sprint-planning       "plan a sprint"
-     5. rihal-dev-story             "dev this story"
-     6. rihal-code-review           "review this code"
-     7. rihal-sprint-status         "sprint status"
+     1. rcode-scaffold-project      "scaffold a new project"
+     2. rcode-create-prd            "create a PRD"
+     3. rcode-create-story          "create a story"
+     4. rcode-sprint-planning       "plan a sprint"
+     5. rcode-dev-story             "dev this story"
+     6. rcode-review           "review this code"
+     7. rcode-sprint-status         "sprint status"
    Agents: Sadiq · Hussain · Nasser
 
 🌿 ADVANCED — Real Sprint Team (9 skills)

@@ -16,7 +16,7 @@ must_haves:
       provides: "All new views (tiers, sprints, velocity, council)"
   key_links:
     - from: "dashboard.js"
-      to: ".rihal/state.json"
+      to: ".rcode/state.json"
       via: "fs.readFileSync + JSON parse"
 ---
 

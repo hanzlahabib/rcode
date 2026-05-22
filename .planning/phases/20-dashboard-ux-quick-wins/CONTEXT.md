@@ -24,12 +24,12 @@ Fix 5 UX bugs in the Majlis dashboard (`server/lib/html/`) that affect every use
 ### 3. Sprint card shows no guidance when tasks are empty — #593
 **File:** `server/lib/html/client.js` — `sprintCard()` function (~line 179-196)
 **Problem:** Sprint card shows goal/title but no tasks and no hint about why.
-**Fix:** When `stories.length === 0`, render: `<div class="empty" style="...">No tasks — run <code>/rihal-plan ${phaseId}</code> to populate</div>`
+**Fix:** When `stories.length === 0`, render: `<div class="empty" style="...">No tasks — run <code>/rcode-plan ${phaseId}</code> to populate</div>`
 
 ### 4. Tasks view empty state has no call-to-action — #595
 **File:** `server/lib/html/client.js` — `renderTasks()` function
 **Problem:** Shows "No tasks yet" with no actionable guidance.
-**Fix:** Update empty state to show current phase and command: "Run `/rihal-plan <phase>` to generate tasks for this project."
+**Fix:** Update empty state to show current phase and command: "Run `/rcode-plan <phase>` to generate tasks for this project."
 
 ### 5. Sidebar file tree duplicates Files view — #594
 **File:** `server/lib/html/shell.js` line 86 + `client.js` lines 817-865

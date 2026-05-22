@@ -14,7 +14,7 @@ completed_at: 2026-04-20
 
 | ID | Story | Status |
 |----|-------|--------|
-| S03-01 | Fix broken `rihal-update` non-destructive mode | ✅ |
+| S03-01 | Fix broken `rcode-update` non-destructive mode | ✅ |
 | S03-02 | Fix `state sync --from-disk` failures on fresh installs | ✅ |
 | S03-03 | Fix postinstall health check false positives | ✅ |
 | S03-04 | Fix settings skill interactive loop (AskUserQuestion tool) | ✅ |
@@ -23,10 +23,10 @@ completed_at: 2026-04-20
 
 ## Acceptance Criteria
 
-- [x] `npx rihal-code install` completes without errors on fresh project
-- [x] `rihal-update` preserves user-modified files
-- [x] `rihal-settings` interactive loop works end-to-end
-- [x] All 24 agents show in `npx rihal-code agents` output
+- [x] `npx rcode install` completes without errors on fresh project
+- [x] `rcode-update` preserves user-modified files
+- [x] `rcode-settings` interactive loop works end-to-end
+- [x] All 24 agents show in `npx rcode agents` output
 
 ## Notes
 

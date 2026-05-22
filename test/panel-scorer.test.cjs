@@ -15,7 +15,7 @@ const {
   applyPriorityBoosts,
   scoreAgent,
   AGENT_IDS,
-} = require('../rihal/bin/lib/council-panel.cjs');
+} = require('../rcode/bin/lib/council-panel.cjs');
 
 test('market question includes mariam', () => {
   const panel = selectPanel('what market opportunity exists in UAE for fintech');

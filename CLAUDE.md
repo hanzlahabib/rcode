@@ -69,14 +69,14 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 - Run the compliance check after modifying any skill:
   ```bash
-  for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
+  for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/SKILL.md; do
     grep -q "^## Output Format" "$f" || echo "MISSING: $f"
     grep -q "^## Examples" "$f" || echo "MISSING: $f"
   done
   ```
 - Run grep checks before committing renames or refactors:
   ```bash
-  grep -rn -i "TODO" rihal docs examples README.md server   # should be empty
+  grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
   ```
 - Test the dashboard server boots without errors before committing dashboard changes
 

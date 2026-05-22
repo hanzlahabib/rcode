@@ -1,7 +1,7 @@
 /**
  * Parity test: do.md persona-alias table vs team.yaml agent registry.
  *
- * Every rihal-* agent ID referenced in the do.md alias table must exist in
+ * Every rcode-* agent ID referenced in the do.md alias table must exist in
  * team.yaml. Catches the "added agent to team.yaml but forgot do.md" drift
  * described in issue #552.
  *
@@ -14,22 +14,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DO_MD = path.join(ROOT, 'rihal', 'workflows', 'do.md');
-const TEAM_YAML = path.join(ROOT, 'rihal', 'team.yaml');
+const DO_MD = path.join(ROOT, 'rcode', 'workflows', 'do.md');
+const TEAM_YAML = path.join(ROOT, 'rcode', 'team.yaml');
 
 function teamAgentIds(text) {
   const ids = new Set();
   for (const line of text.split('\n')) {
-    const m = line.match(/^\s*-\s+id:\s*(rihal-\S+)/);
+    const m = line.match(/^\s*-\s+id:\s*(rcode-\S+)/);
     if (m) ids.add(m[1].trim());
   }
   return ids;
 }
 
 function doMdAgentRefs(text) {
-  // Match table rows like: | ... | rihal-sadiq |
+  // Match table rows like: | ... | rcode-sadiq |
   const ids = new Set();
-  const re = /\|\s*(rihal-[\w-]+)\s*\|/g;
+  const re = /\|\s*(rcode-[\w-]+)\s*\|/g;
   let m;
   while ((m = re.exec(text)) !== null) {
     ids.add(m[1].trim());
@@ -42,7 +42,7 @@ test('do.md and team.yaml both exist', () => {
   assert.ok(fs.existsSync(TEAM_YAML), `Missing: ${TEAM_YAML}`);
 });
 
-test('every rihal-* agent in do.md persona table exists in team.yaml', () => {
+test('every rcode-* agent in do.md persona table exists in team.yaml', () => {
   const doText = fs.readFileSync(DO_MD, 'utf8');
   const teamText = fs.readFileSync(TEAM_YAML, 'utf8');
 
@@ -54,6 +54,6 @@ test('every rihal-* agent in do.md persona table exists in team.yaml', () => {
     missing,
     [],
     `do.md references agents not in team.yaml:\n  ${missing.join('\n  ')}\n` +
-    `Add them to rihal/team.yaml or fix the do.md alias table.`
+    `Add them to rcode/team.yaml or fix the do.md alias table.`
   );
 });

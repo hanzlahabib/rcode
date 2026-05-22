@@ -49,7 +49,7 @@ function SprintDetail({ sprint: s, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runAndOpenTerm('sprint-' + s.id, '/rihal-execute-sprint ' + s.id, 'Sprint ' + s.id);
+    runAndOpenTerm('sprint-' + s.id, '/rcode-execute-sprint ' + s.id, 'Sprint ' + s.id);
   }
   function handleTerm(e) {
     e.stopPropagation();
@@ -91,7 +91,7 @@ function SprintDetail({ sprint: s, S }) {
           : html`
               <div class="empty">
                 No tasks in this sprint yet.
-                <div class="empty-action">Run /rihal-create-story to add tasks</div>
+                <div class="empty-action">Run /rcode-create-story to add tasks</div>
               </div>
             `}
       </div>
@@ -138,12 +138,12 @@ export function SprintsView({ subId }) {
   // List mode
   const curSp = sprints.find(sp => sp.id === S.currentSprint);
   const slHints = [
-    ['/rihal-sprint-planning','Plan a new sprint'],
-    ['/rihal-stats',          'Project statistics'],
+    ['/rcode-sprint-planning','Plan a new sprint'],
+    ['/rcode-stats',          'Project statistics'],
   ];
   if (curSp) {
-    slHints.push(['/rihal-execute',      'Execute current sprint ' + curSp.id]);
-    slHints.push(['/rihal-sprint-status','Status of Sprint ' + curSp.id]);
+    slHints.push(['/rcode-execute',      'Execute current sprint ' + curSp.id]);
+    slHints.push(['/rcode-sprint-status','Status of Sprint ' + curSp.id]);
   }
 
   const q = filter.toLowerCase();
@@ -168,7 +168,7 @@ export function SprintsView({ subId }) {
           : html`
               <div class="empty">
                 No sprints yet.
-                <div class="empty-action">Run /rihal-plan to create sprints</div>
+                <div class="empty-action">Run /rcode-plan to create sprints</div>
               </div>
             `}
       </div>

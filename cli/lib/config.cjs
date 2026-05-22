@@ -1,10 +1,10 @@
 /**
- * Rihal Code configuration loader with 3-level cascade.
+ * rcode configuration loader with 3-level cascade.
  *
  * Priority (lowest to highest — higher overrides lower):
  *   1. Hardcoded defaults baked into this file
- *   2. User-level defaults at ~/.rihal-code/defaults.json
- *   3. Project-level config at {cwd}/.rihal/config.json
+ *   2. User-level defaults at ~/.rcode/defaults.json
+ *   3. Project-level config at {cwd}/.rcode/config.json
  *
  * All get/set operations go through this module so validation, typo
  * suggestions, and atomic writes happen in one place.
@@ -46,9 +46,9 @@ const HARDCODED_DEFAULTS = {
   document_output_language: 'English',
 
   // Paths
-  output_folder: '.rihal',
-  planning_artifacts: '.rihal/phases',
-  project_knowledge: '.rihal/context',
+  output_folder: '.rcode',
+  planning_artifacts: '.rcode/phases',
+  project_knowledge: '.rcode/context',
 
   // Model profile — matches model-profiles.json names
   model_profile: 'balanced',
@@ -102,15 +102,15 @@ const VALID_COMMUNICATION_MODES = new Set(['guided', 'yolo']);
 // ---------- Paths ----------
 
 function userLevelPath() {
-  return path.join(os.homedir(), '.rihal-code', 'defaults.json');
+  return path.join(os.homedir(), '.rcode', 'defaults.json');
 }
 
 function projectLevelPath(cwd) {
-  return path.join(cwd, '.rihal', 'config.json');
+  return path.join(cwd, '.rcode', 'config.json');
 }
 
 function projectYamlPath(cwd) {
-  return path.join(cwd, '.rihal', 'config.yaml');
+  return path.join(cwd, '.rcode', 'config.yaml');
 }
 
 // ---------- Loaders ----------

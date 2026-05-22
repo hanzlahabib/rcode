@@ -12,28 +12,28 @@ requirements: [phase-9-drift]
 ---
 
 <objective>
-Catch the #460 / #462 pattern systematically. Every workflow .md under `rihal/workflows/` references `rihal-tools.cjs` subcommands. We need to verify each referenced subcommand actually exists in the CLI and matches the shape the workflow assumes.
+Catch the #460 / #462 pattern systematically. Every workflow .md under `rcode/workflows/` references `rcode-tools.cjs` subcommands. We need to verify each referenced subcommand actually exists in the CLI and matches the shape the workflow assumes.
 </objective>
 
 <must_haves>
 - Single artifact: `.planning/phases/9-dogfood-audit-pass/DRIFT-SWEEP.md`
-- Enumerates every `rihal-tools.cjs <subcommand>` reference across all workflows
+- Enumerates every `rcode-tools.cjs <subcommand>` reference across all workflows
 - Tags each as "verified" / "drift detected — severity X"
 - Issues filed for breaking + shape drift; report links them
 </must_haves>
 
 <task id="9.2.1">
-<title>Extract every CLI invocation reference from rihal/workflows/*.md</title>
+<title>Extract every CLI invocation reference from rcode/workflows/*.md</title>
 <read_first>
-- (Discovery — list all .md files in rihal/workflows/)
+- (Discovery — list all .md files in rcode/workflows/)
 </read_first>
 
 <action>
 Run:
 
 ```bash
-grep -rEn 'rihal-tools\.cjs[^"`'\'']+' rihal/workflows/ | \
-  sed -E 's|.*rihal-tools\.cjs[[:space:]]+([^"`'\'' ]+).*|\1|' | \
+grep -rEn 'rcode-tools\.cjs[^"`'\'']+' rcode/workflows/ | \
+  sed -E 's|.*rcode-tools\.cjs[[:space:]]+([^"`'\'' ]+).*|\1|' | \
   sort -u
 ```
 
@@ -42,7 +42,7 @@ This yields a list of every subcommand chain referenced by any workflow (e.g., `
 Save the raw list to a temp var. Cross-reference against the `help` output:
 
 ```bash
-node rihal/bin/rihal-tools.cjs help
+node rcode/bin/rcode-tools.cjs help
 ```
 
 For each referenced subcommand, classify:
@@ -86,7 +86,7 @@ If the sweep finds zero drift: report "Clean run — all {N} CLI references reso
 <acceptance_criteria>
 - File `.planning/phases/9-dogfood-audit-pass/DRIFT-SWEEP.md` exists
 - Contains the three tables: Verified / Shape drift / Breaking drift
-- Every row maps to a real `rihal-tools.cjs` invocation found in a workflow
+- Every row maps to a real `rcode-tools.cjs` invocation found in a workflow
 - Total count math adds up (verified + shape + breaking = all references)
 </acceptance_criteria>
 </task>

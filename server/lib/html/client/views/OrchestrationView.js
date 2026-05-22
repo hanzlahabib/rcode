@@ -79,7 +79,7 @@ function sortSessions(sessions) {
 // ── Command runner ────────────────────────────────────────────────────────────
 
 /**
- * CommandRunner — dropdown + Run button for launching allowlisted rihal commands.
+ * CommandRunner — dropdown + Run button for launching allowlisted rcode commands.
  * State is local (useState) — no store changes needed; runCommandFromUI handles
  * all session and terminal state via runCommandFromUI → runSession.
  */
@@ -161,7 +161,7 @@ export function OrchestrationView() {
         <div class="empty">
           No active execution.
           <div class="empty-action">
-            Use the Command Runner above, or run <code>/rihal-execute</code> to
+            Use the Command Runner above, or run <code>/rcode-execute</code> to
             start a phase or sprint.
           </div>
         </div>

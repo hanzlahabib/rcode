@@ -15,16 +15,16 @@ Created three cluster reference files by extracting shared content from agent so
 
 | # | Task | Status | Files Created |
 |---|------|--------|---------------|
-| 1 | Create persona-engineer-shared.md (Cluster A) | done | rihal/references/persona-engineer-shared.md |
-| 2 | Create auditor-shared-checklists.md (Cluster B) | done | rihal/references/auditor-shared-checklists.md |
-| 3 | Create researcher-shared.md (Cluster C) | done | rihal/references/researcher-shared.md |
-| 4 | Mirror all three to .rihal/references/ | done | .rihal/references/{all three} |
+| 1 | Create persona-engineer-shared.md (Cluster A) | done | rcode/references/persona-engineer-shared.md |
+| 2 | Create auditor-shared-checklists.md (Cluster B) | done | rcode/references/auditor-shared-checklists.md |
+| 3 | Create researcher-shared.md (Cluster C) | done | rcode/references/researcher-shared.md |
+| 4 | Mirror all three to .rcode/references/ | done | .rcode/references/{all three} |
 | 5 | Commit cluster reference files | done | c63a773 |
 
 ## Artifacts
 
-### rihal/references/persona-engineer-shared.md (61L, 5 sections)
-Extracted from rihal-haitham, rihal-omar, rihal-yousef. Sections:
+### rcode/references/persona-engineer-shared.md (61L, 5 sections)
+Extracted from rcode-haitham, rcode-omar, rcode-yousef. Sections:
 - Communication Discipline
 - Named-Heuristic Protocol
 - Anti-Pattern Enforcement Protocol
@@ -33,8 +33,8 @@ Extracted from rihal-haitham, rihal-omar, rihal-yousef. Sections:
 
 Excluded: persona-specific heuristic names (Three-paths check, Critical-path trace, Match-existing-pattern, etc.), identity paragraphs, capabilities tables, examples.
 
-### rihal/references/auditor-shared-checklists.md (91L, 6 sections)
-Extracted from rihal-nyquist-auditor, rihal-docs-auditor, rihal-ui-auditor, rihal-security-auditor, rihal-security-adversary, rihal-edge-case-hunter. Sections:
+### rcode/references/auditor-shared-checklists.md (91L, 6 sections)
+Extracted from rcode-nyquist-auditor, rcode-docs-auditor, rcode-ui-auditor, rcode-security-auditor, rcode-security-adversary, rcode-edge-case-hunter. Sections:
 - Four-Pressure-Points Audit Structure (meta-pattern, not content)
 - Evidence Requirements for Audit Findings
 - Standard Severity Classification (Blocker/Major/Minor — notes nyquist and security-adversary use different schemes)
@@ -44,8 +44,8 @@ Extracted from rihal-nyquist-auditor, rihal-docs-auditor, rihal-ui-auditor, riha
 
 Excluded: OWASP checklists, WCAG checklists, nyquist gap-analysis execution flow, docs-auditor JSON schemas, domain-specific pressure point content.
 
-### rihal/references/researcher-shared.md (87L, 6 sections)
-Extracted from rihal-phase-researcher, rihal-project-researcher, rihal-advisor-researcher, rihal-profiler. Sections:
+### rcode/references/researcher-shared.md (87L, 6 sections)
+Extracted from rcode-phase-researcher, rcode-project-researcher, rcode-advisor-researcher, rcode-profiler. Sections:
 - Research Methodology: Evidence First
 - Confidence Labeling Protocol (HIGH/MEDIUM/LOW)
 - Mandatory Initial Read Protocol (verbatim from agents)
@@ -65,8 +65,8 @@ c63a773 feat(references): create cluster reference files for engineer/auditor/re
 
 ## Verification
 
-- All three source files exist in rihal/references/
-- All three runtime copies exist in .rihal/references/ (byte-for-byte identical)
+- All three source files exist in rcode/references/
+- All three runtime copies exist in .rcode/references/ (byte-for-byte identical)
 - Zero agent stub files modified
 - persona-engineer-shared.md contains no persona-specific heuristic names
 - auditor-shared-checklists.md contains no OWASP/WCAG checklists or nyquist execution flow

@@ -3,15 +3,15 @@
 **Phase:** 28 — Audit Gap Closure (ECC parity: hooks, eval harness, schema validation, iterative retrieval)
 **Sprint:** 28-1 — Lifecycle hooks expansion
 **Completed:** 2026-05-15
-**Executor:** Rihal sprint executor
+**Executor:** rcode sprint executor
 
 ## What Was Built
 
-Expanded `rihal/bin/rihal-hooks.cjs` from 4 handlers to 8 by adding four
+Expanded `rcode/bin/rcode-hooks.cjs` from 4 handlers to 8 by adding four
 lifecycle handlers, closing the hooks-parity gap found auditing against
 `everything-claude-code`:
 
-- **pre-compact** (#743) — PreCompact hook. Reads `.rihal/state.json` and, when a
+- **pre-compact** (#743) — PreCompact hook. Reads `.rcode/state.json` and, when a
   phase is active, writes a `HANDOFF.json` pointer (`generated_at`, `reason`,
   `phase`, `current_plan`, `current_sprint`) atomically (temp + rename). No-op
   when no phase is active. Never blocks compaction.
@@ -21,11 +21,11 @@ lifecycle handlers, closing the hooks-parity gap found auditing against
   failures to stderr with a non-zero exit. Advisory — never auto-fixes, never
   exits 2.
 - **cost-track** (#745) — Stop hook. Appends one JSON line per response to
-  `.rihal/telemetry/cost.jsonl` (`ts`, `input_tokens`, `output_tokens`, optional
+  `.rcode/telemetry/cost.jsonl` (`ts`, `input_tokens`, `output_tokens`, optional
   `cache_*`). No-op when no usage block is present.
 - **compact-nudge** (#749) — PreToolUse:Edit|Write hook. Per-session call counter
-  in `os.tmpdir()`; once the count crosses `RIHAL_NUDGE_THRESHOLD` (default 50)
-  prints an advisory suggesting `/rihal-trim` or `/clear`. Always exits 0.
+  in `os.tmpdir()`; once the count crosses `RCODE_NUDGE_THRESHOLD` (default 50)
+  prints an advisory suggesting `/rcode-trim` or `/clear`. Always exits 0.
 
 Registered new matchers in `settings-hooks.json` (PreCompact, Stop with two hook
 commands, second Edit|Write hook) and documented all 8 handlers in
@@ -47,10 +47,10 @@ a labeled fallback.
 
 | File | Change |
 |------|--------|
-| rihal/bin/rihal-hooks.cjs | +4 handlers, +4 switch cases, updated header + usage string |
-| rihal/templates/settings-hooks.json | PreCompact + Stop matchers, 2nd Edit|Write hook |
-| rihal/workflows/enable-hooks.md | purpose + confirmation enumerate all 8 handlers |
-| rihal/workflows/session-report.md | measured-vs-estimated token reporting branch |
+| rcode/bin/rcode-hooks.cjs | +4 handlers, +4 switch cases, updated header + usage string |
+| rcode/templates/settings-hooks.json | PreCompact + Stop matchers, 2nd Edit|Write hook |
+| rcode/workflows/enable-hooks.md | purpose + confirmation enumerate all 8 handlers |
+| rcode/workflows/session-report.md | measured-vs-estimated token reporting branch |
 | test/precompact-hook.test.cjs | new — 3 tests |
 | test/stop-verify-hook.test.cjs | new — 3 tests |
 | test/cost-track-hook.test.cjs | new — 4 tests |
@@ -58,7 +58,7 @@ a labeled fallback.
 
 ## Deviations from Plan
 
-- The SPRINT.md notes Tasks 1.2–1.5 edit `rihal-hooks.cjs` sequentially to avoid
+- The SPRINT.md notes Tasks 1.2–1.5 edit `rcode-hooks.cjs` sequentially to avoid
   merge conflicts. Since this was a single execution, all four handlers and their
   `main()` switch cases were added in one coordinated edit (functions inserted
   before `main()`, cases added together). Behavior and acceptance criteria per
@@ -75,7 +75,7 @@ None.
 ## Verification
 
 - Task 1.1: `node --check` on all 4 test files — exit 0.
-- Task 1.2: `node --check rihal-hooks.cjs` + `node --test precompact-hook.test.cjs` — pass.
+- Task 1.2: `node --check rcode-hooks.cjs` + `node --test precompact-hook.test.cjs` — pass.
 - Task 1.3: `node --check` + `node --test stop-verify-hook.test.cjs` — pass.
 - Task 1.4: `node --check` + `grep cost.jsonl session-report.md` + `node --test cost-track-hook.test.cjs` — pass.
 - Task 1.5: `node --check` + `JSON.parse(settings-hooks.json)` + matcher count = 4 + `grep compact-nudge enable-hooks.md` + `node --test compact-nudge-hook.test.cjs` — pass.

@@ -3,7 +3,7 @@
  *
  * Boots the dashboard once and asserts that every API endpoint returns
  * meaningful, non-empty content for the actual rcode repo (which has
- * a populated `.rihal/memory/`, `.rihal/state.json`, and `.planning/`).
+ * a populated `.rcode/memory/`, `.rcode/state.json`, and `.planning/`).
  *
  * This is the regression gate for Phase 10. It catches "endpoint returns
  * 200 but the body is empty" — which is invisible to the boot smoke test
@@ -40,7 +40,7 @@ function waitForReady(p) {
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new Error('not ready')), 5000);
     p.stdout.on('data', (b) => {
-      if (b.toString().includes('Rihal Code Dashboard')) {
+      if (b.toString().includes('rcode Dashboard')) {
         clearTimeout(t);
         setTimeout(resolve, 100);
       }
@@ -66,8 +66,8 @@ test('/api/state returns the rcode project metadata', async () => {
   const res = await get('/api/state');
   assert.equal(res.status, 200);
   const data = JSON.parse(res.body);
-  assert.equal(data.exists, true, 'state.exists should be true (we have .rihal/)');
-  assert.equal(data.projectName, 'rihal-code');
+  assert.equal(data.exists, true, 'state.exists should be true (we have .rcode/)');
+  assert.equal(data.projectName, 'rcode');
   assert.ok(Array.isArray(data.phases) && data.phases.length > 0, 'should have phases');
   assert.ok(data.raw && data.raw.milestone, 'raw.milestone should be set');
 });

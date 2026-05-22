@@ -4,7 +4,7 @@ milestone: M1 — Ship v2 + Tier Docs
 status: completed
 ---
 
-# Rihal Code — Roadmap (Archived — M1 Ship v2 + Tier Docs)
+# rcode — Roadmap (Archived — M1 Ship v2 + Tier Docs)
 
 **Milestone: M1 — Ship v2 + Tier Docs**
 Started: 2026-03 · Shipped: 2026-05-16
@@ -13,7 +13,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 01 — Tier-based Documentation Reorg ✅
 
-**Goal:** Make rihal-code approachable. Organize 22+ skills + 17 agents + 17 CLI commands into Starter/Advanced/Ultra/Standards tiers so a new user has a clear entry point.
+**Goal:** Make rcode approachable. Organize 22+ skills + 17 agents + 17 CLI commands into Starter/Advanced/Ultra/Standards tiers so a new user has a clear entry point.
 
 **Status:** Complete (2026-04-15)
 
@@ -22,7 +22,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 - `docs/STANDARDS.md` — contributor rules consolidated
 - `docs/V2-PREVIEW.md` — v2 status note
 - `README.md` — "🚦 Start Here" navigation block
-- `npx rihal-code tiers` CLI command
+- `npx rcode tiers` CLI command
 - Help output regrouped (PROJECT / TEAM / META)
 - `postinstall.js` shows the 7-step Golden Path
 
@@ -32,17 +32,17 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 02 — Scaffold Project Skill ✅
 
-**Goal:** Enable Rihalians to bootstrap new projects from the official template repo (`rihal-om/template`) with one command, always pulling fresh.
+**Goal:** Enable Rihalians to bootstrap new projects from the official template repo (`rcode-om/template`) with one command, always pulling fresh.
 
 **Status:** Complete (2026-04-15)
 
 **Delivered:**
-- `rihal-scaffold-project` skill (4-step workflow)
+- `rcode-scaffold-project` skill (4-step workflow)
 - Safety checks: never touches non-empty folders
 - Fresh clone every time (no local cache)
 - GitHub issue #101 tracking template improvement suggestions
 
-**Outcome:** `rihal-scaffold-project` skill shipped. Template update in #101 is a separate track.
+**Outcome:** `rcode-scaffold-project` skill shipped. Template update in #101 is a separate track.
 
 ---
 
@@ -53,7 +53,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 **Status:** Complete (2026-04-15)
 
 **Delivered:**
-- `rihal/v2/` promoted to `rihal/` root — v2 folder eliminated (`8c61e15`)
+- `rcode/v2/` promoted to `rcode/` root — v2 folder eliminated (`8c61e15`)
 - `cli/install-v2.js` → `cli/install.js` — single unified installer (`da2b48e`)
 - Install ships: 70 commands + 34 agents + 39 skills + 71 workflows
 - Ghost v1 agents purged from model-profiles.json (14 → 0 ghosts) + 14 orphan digests deleted (`ab35321`)
@@ -130,18 +130,18 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 6 — Feature Doc Drift Auto-Heal ✅
 
-**Goal:** Build a drift detector that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items only. Closes the gap between feature-documentation layers that no existing rihal tool spans.
+**Goal:** Build a drift detector that reads PRD → epics → stories → code, surfaces stale claims with severity tags, and offers a bounded auto-fix path for trivial items only. Closes the gap between feature-documentation layers that no existing rcode tool spans.
 
 **Status:** Complete (2026-04-29)
 
 **Delivered:**
-- `/rihal-feature-drift` workflow + slash command (`rihal/workflows/feature-drift.md`, `rihal/commands/feature-drift.md`)
-- `rihal-docs-auditor` extended with `<mode_feature_drift>` section (no new agent — D-4 honored)
+- `/rcode-feature-drift` workflow + slash command (`rcode/workflows/feature-drift.md`, `rcode/commands/feature-drift.md`)
+- `rcode-docs-auditor` extended with `<mode_feature_drift>` section (no new agent — D-4 honored)
 - Classifier `drift` type + `do.md` routing-table row + classifier fallback
-- `/rihal-memory-audit --fix` for trivial memory bank staleness (atomic commits, severity allowlist)
+- `/rcode-memory-audit --fix` for trivial memory bank staleness (atomic commits, severity allowlist)
 - 5 prerequisite tooling bugs fixed during scaffolding: #455 #456 #457 #458 #460
 
-**Acceptance:** ✅ `/rihal-feature-drift` invocable; classifier returns `"type":"drift"` for audit/drift phrases; `--fix` enforces trivial-only severity allowlist in code (not agent discretion); SUMMARY.md committed.
+**Acceptance:** ✅ `/rcode-feature-drift` invocable; classifier returns `"type":"drift"` for audit/drift phrases; `--fix` enforces trivial-only severity allowlist in code (not agent discretion); SUMMARY.md committed.
 
 ---
 
@@ -168,9 +168,9 @@ Started: 2026-03 · Shipped: 2026-05-16
 **Status:** Complete (2026-04-29)
 
 **Plans:**
-- `/loop` + `/schedule` cadence docs for auto-heal tools — recommended cadences for `/rihal-docs-update`, `/rihal-health`, `/rihal-feature-drift`, `/rihal-memory-audit --fix`
-- PostToolUse hook on `docs/`, `prd/`, `epics/` edits — settings.json hook fires `feature-drift --quick`; opt-in via `/rihal-enable-hooks`
-- **Phase-status drift detector** (closes #461) — `/rihal-phase-status-drift` (or `feature-drift --mode=phase-status`); compares ROADMAP claim against shipping signals (SUMMARY.md, SPRINT.md, git log on plan files); severity-tags drift; `--fix` flips trivial-only items (✅ marker, missing date)
+- `/loop` + `/schedule` cadence docs for auto-heal tools — recommended cadences for `/rcode-docs-update`, `/rcode-health`, `/rcode-feature-drift`, `/rcode-memory-audit --fix`
+- PostToolUse hook on `docs/`, `prd/`, `epics/` edits — settings.json hook fires `feature-drift --quick`; opt-in via `/rcode-enable-hooks`
+- **Phase-status drift detector** (closes #461) — `/rcode-phase-status-drift` (or `feature-drift --mode=phase-status`); compares ROADMAP claim against shipping signals (SUMMARY.md, SPRINT.md, git log on plan files); severity-tags drift; `--fix` flips trivial-only items (✅ marker, missing date)
 
 **Acceptance:** All three drift dimensions covered (project-doc, feature-content, phase-status); cadence docs published; PostToolUse hook installable.
 
@@ -179,7 +179,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 9 — Dogfood Audit Pass ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 9 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 9 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -192,7 +192,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 10 — Close Auto-Heal Tooling Gaps ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 10 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 10 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -205,7 +205,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 11 — CLI Subcommand Sweep — high-impact #465 items ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 11 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 11 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -218,7 +218,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 12 — Init Shape Completion — full agent context contract ✅
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 12 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 12 or edit directly._
 
 **Status:** Complete (2026-04-29)
 
@@ -231,7 +231,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 13 — Parser + Walker Consolidation
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 13 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 13 or edit directly._
 
 **Status:** Planned
 
@@ -244,7 +244,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 14 — Memory Bank design-system + high-N phase parser + numbering docs (#476) ✅
 
-**Goal:** Close 3 gaps surfaced 2026-04-30: Memory Bank had no design-system category (UI agents re-derived tokens each session), 9 parsers in rihal-tools.cjs capped phase numbers at 999 (silently dropped 1000+ phases), and no phase-numbering convention doc existed.
+**Goal:** Close 3 gaps surfaced 2026-04-30: Memory Bank had no design-system category (UI agents re-derived tokens each session), 9 parsers in rcode-tools.cjs capped phase numbers at 999 (silently dropped 1000+ phases), and no phase-numbering convention doc existed.
 
 **Status:** Complete (2026-04-30)
 
@@ -257,7 +257,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 15 — fix 8 phantom CLI subcommands per #481 ✅
 
-**Goal:** Eliminate phantom CLI subcommands enumerated in #481 by implementing each handler in `rihal/bin/rihal-tools.cjs` with a contract derived from how the workflow callsite consumes the output.
+**Goal:** Eliminate phantom CLI subcommands enumerated in #481 by implementing each handler in `rcode/bin/rcode-tools.cjs` with a contract derived from how the workflow callsite consumes the output.
 
 **Status:** Complete (2026-04-30)
 
@@ -274,7 +274,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 17 — Workflow Dead-End & Broken-Ref Fix ✅
 
-**Goal:** Close all dead-end, broken-ref, and orphan gaps across rihal/workflows/ — every workflow should offer a next step, broken command references should resolve, and orphaned workflows should be discoverable.
+**Goal:** Close all dead-end, broken-ref, and orphan gaps across rcode/workflows/ — every workflow should offer a next step, broken command references should resolve, and orphaned workflows should be discoverable.
 
 **Status:** Complete (2026-05-01)
 
@@ -299,7 +299,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 18 — SPRINT schema enrichment — files, verify, interfaces, summary fields
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 18 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 18 or edit directly._
 
 **Status:** Planned
 
@@ -320,7 +320,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 - `verify-phase.md` reads REVIEW.md critical/high counts and fails verdict on critical findings (closes #492)
 - `plan.md` planner prompt reads `<code_context>` from CONTEXT.md (closes #493)
 - `plan.md` adds `<done>` as mandatory task field in planner spec + quality gate (closes #494)
-- `rihal/templates/VALIDATION.md` created — unblocks Dimension 8e gate (closes #495)
+- `rcode/templates/VALIDATION.md` created — unblocks Dimension 8e gate (closes #495)
 - `plan.md` `<verify>` spec requires `<automated>` child element; quality gate updated (closes #496)
 - `autonomous.md` minimal CONTEXT.md template now includes `<canonical_refs>` section (closes #497)
 
@@ -330,7 +330,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 20 — dashboard-ux-quick-wins
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 20 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 20 or edit directly._
 
 **Status:** Planned
 
@@ -343,7 +343,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 21 — dashboard-data-pipeline
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 21 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 21 or edit directly._
 
 **Status:** Planned
 
@@ -357,7 +357,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 22 — Agent Slim: Top-3 via References
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 22 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 22 or edit directly._
 
 **Status:** Planned
 
@@ -370,7 +370,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 23 — Agent Slim: Remaining 24 via Reference Clusters
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 23 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 23 or edit directly._
 
 **Status:** Planned
 
@@ -383,7 +383,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 24 — Resolve Agent vs Skill Persona Duplication
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 24 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 24 or edit directly._
 
 **Status:** Planned
 
@@ -396,7 +396,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 25 — rcode agent CLI Command
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 25 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 25 or edit directly._
 
 **Status:** Planned
 
@@ -409,7 +409,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 26 — Reference Index and Contributing Rule
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 26 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 26 or edit directly._
 
 **Status:** Planned
 
@@ -422,7 +422,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 27 — Realtime Kanban Orchestration Dashboard
 
-**Goal:** _TBD — fill in via /rihal-discuss-phase 27 or edit directly._
+**Goal:** _TBD — fill in via /rcode-discuss-phase 27 or edit directly._
 
 **Status:** Planned
 
@@ -435,7 +435,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 28 — Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval
 
-**Goal:** Close the infrastructure gaps found auditing rihal-code against `everything-claude-code`: a full lifecycle hooks system, measured token/cost tracking, agent-behavior regression coverage, schema validation of rihal's own artifacts, and a bounded follow-up loop for research subagents. Covers GitHub issues #742–#750.
+**Goal:** Close the infrastructure gaps found auditing rcode against `everything-claude-code`: a full lifecycle hooks system, measured token/cost tracking, agent-behavior regression coverage, schema validation of rcode's own artifacts, and a bounded follow-up loop for research subagents. Covers GitHub issues #742–#750.
 
 **Status:** Planned
 
@@ -446,7 +446,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 - 28-4 — Iterative-retrieval loop for research subagents (#748)
 
 **Acceptance:**
-- All five `rihal-hooks.cjs` lifecycle handlers registered and tested
+- All five `rcode-hooks.cjs` lifecycle handlers registered and tested
 - `session-report.md` reports measured (not heuristic) token usage when a log exists
 - Editing a tracked SKILL.md produces a visible behavior diff in the dogfood check
 - `cli/doctor.js` reports malformed SKILL.md / agent / state.json artifacts
@@ -457,26 +457,26 @@ Started: 2026-03 · Shipped: 2026-05-16
 
 ## Phase 29 — Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping
 
-**Goal:** Close the vulnerabilities found in the rihal-code self security audit: an unauthenticated network-reachable RCE in the orchestrator, bypassable bash-guard controls, and unscoped file reads. Covers GitHub issues #752–#754.
+**Goal:** Close the vulnerabilities found in the rcode self security audit: an unauthenticated network-reachable RCE in the orchestrator, bypassable bash-guard controls, and unscoped file reads. Covers GitHub issues #752–#754.
 
 **Status:** Planned
 
 **Plans:**
 - 29-1 — Orchestrator lockdown (#752): bind `127.0.0.1`, remove CORS `*`, add per-session auth token, sanitize `storyId` against path traversal, authenticate `/api/clean-sessions`
-- 29-2 — bash-guard hardening (#753): anchor `RIHAL_PUSH_OK=1` as env prefix, detect `+`-refspec force-push, document as best-effort + add bypass regression tests
-- 29-3 — File-read scoping (#754): constrain `post-commit` `-F` paths to repo root; switch `rihal-tools.cjs` git calls to argument-array exec
+- 29-2 — bash-guard hardening (#753): anchor `RCODE_PUSH_OK=1` as env prefix, detect `+`-refspec force-push, document as best-effort + add bypass regression tests
+- 29-3 — File-read scoping (#754): constrain `post-commit` `-F` paths to repo root; switch `rcode-tools.cjs` git calls to argument-array exec
 
 **Acceptance:**
 - Orchestrator listens on `127.0.0.1` only; unauthenticated/cross-origin `/api/run` + `/api/clean-sessions` are rejected; traversal `storyId` rejected
-- `echo RIHAL_PUSH_OK; git push` and `git push origin +main` are both BLOCKED; bypass regression tests pass
-- `post-commit` ignores out-of-repo `-F` paths; `rihal-tools.cjs` git calls use no shell string interpolation
+- `echo RCODE_PUSH_OK; git push` and `git push origin +main` are both BLOCKED; bypass regression tests pass
+- `post-commit` ignores out-of-repo `-F` paths; `rcode-tools.cjs` git calls use no shell string interpolation
 - `node --test` passes with no new failures
 
 ---
 
 ## Phase 30 — Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish
 
-**Goal:** Turn rihal-code into an adoptable product: resolve the license contradiction, give the README visual proof and a focused value prop, fix self-contradicting metadata, and clarify onboarding. Covers GitHub issues #755–#759.
+**Goal:** Turn rcode into an adoptable product: resolve the license contradiction, give the README visual proof and a focused value prop, fix self-contradicting metadata, and clarify onboarding. Covers GitHub issues #755–#759.
 
 **Status:** Planned
 
@@ -500,4 +500,4 @@ Started: 2026-03 · Shipped: 2026-05-16
 - Consolidate create-prd / edit-prd / validate-prd into one skill with modes
 - Archive v1 once v2 is fully stable
 - Add Windsurf / Antigravity install paths tested
-- Template Improvements (GH #101) — pnpm, Node 20+, .gitignore, README, .rihal/config.json scaffold, TypeScript strict
+- Template Improvements (GH #101) — pnpm, Node 20+, .gitignore, README, .rcode/config.json scaffold, TypeScript strict

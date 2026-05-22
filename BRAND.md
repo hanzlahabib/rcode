@@ -8,7 +8,7 @@ This document defines the voice, naming, and brand vocabulary for rcode. It is t
 
 > **rcode is the memory bank for AI-driven SaaS teams — your project's context, structured, visible, and never lost.**
 
-Built by Rihal. Designed for solo devs, startup teams, and SaaS builders who have lived the pain of:
+Built by rcode. Designed for solo devs, startup teams, and SaaS builders who have lived the pain of:
 - AI agents losing context mid-project
 - Onboarding a teammate who has no idea what was decided three sprints ago
 - Late client requirements derailing delivery
@@ -17,7 +17,7 @@ Built by Rihal. Designed for solo devs, startup teams, and SaaS builders who hav
 ## What rcode is not
 
 - It is not a methodology. Use rcode alongside whatever planning approach fits your team.
-- It is not Rihal-only. The named primitives (Memory Bank, Majlis, Diwan, Dalil, Distillate) are brand vocabulary, like Linear's "Cycles" or Notion's "Blocks". Anyone can use them.
+- It is not rcode-only. The named primitives (Memory Bank, Majlis, Diwan, Dalil, Distillate) are brand vocabulary, like Linear's "Cycles" or Notion's "Blocks". Anyone can use them.
 - It is not a generic agentic toolkit. rcode is opinionated about persistent memory, distinctive personas, and phase clarity.
 
 ---
@@ -38,14 +38,14 @@ Built by Rihal. Designed for solo devs, startup teams, and SaaS builders who hav
 
 | Surface | Pattern | Example |
 |---|---|---|
-| Skill name (folder + frontmatter) | `rihal-<verb>-<noun>` | `rihal-auth-audit`, `rihal-deploy-unify` |
-| Slash command | `/rihal-<name>` | `/rihal-plan`, `/rihal-council` |
-| Persona ID (in `team.yaml`) | Distinctive name with `rihal-` prefix retained for compatibility | `rihal-sadiq`, `rihal-waleed`, `rihal-fatima` |
+| Skill name (folder + frontmatter) | `rcode-<verb>-<noun>` | `rcode-auth-audit`, `rcode-deploy-unify` |
+| Slash command | `/rcode-<name>` | `/rcode-plan`, `/rcode-council` |
+| Persona ID (in `team.yaml`) | Distinctive name with `rcode-` prefix retained for compatibility | `rcode-sadiq`, `rcode-waleed`, `rcode-fatima` |
 | Persona display name | Original Arabic + Latin | "Sadiq (صادق)", "Dalil (دليل)" |
 | Concept / primitive | TitleCase brand term | Memory Bank, Distillate, Majlis, Diwan |
 | Doc files | `kebab-case.md` | `BRAND.md`, `MEMORY_BANK.md`, `MIGRATIONS.md` |
 
-**Why personas keep `rihal-` prefix in IDs:** the dashboard scanner reads `team.yaml` and renders persona pages by ID. Renaming IDs would break the dashboard. Display names and skill folders use the new vocabulary; IDs stay for compatibility.
+**Why personas keep `rcode-` prefix in IDs:** the dashboard scanner reads `team.yaml` and renders persona pages by ID. Renaming IDs would break the dashboard. Display names and skill folders use the new vocabulary; IDs stay for compatibility.
 
 ---
 
@@ -53,7 +53,7 @@ Built by Rihal. Designed for solo devs, startup teams, and SaaS builders who hav
 
 | Term | Meaning |
 |---|---|
-| **Memory Bank** | The structured, checked-in `.rihal/memory/` directory that stores project context, decisions, incidents, and people. The differentiator. |
+| **Memory Bank** | The structured, checked-in `.rcode/memory/` directory that stores project context, decisions, incidents, and people. The differentiator. |
 | **Distillate** | A token-optimised, lossless compression of one or more documents, suitable for fast LLM context loading. |
 | **Majlis** (مجلس) | The multi-perspective consulting council. Convenes specialists, surfaces dissent, synthesises a recommendation. |
 | **Diwan** (ديوان) | The view-only dashboard that visualises Memory Bank, phases, decisions, and project state. |

@@ -1,16 +1,16 @@
 /**
- * cli/install.js — Rihal v2 file-shipping installer (prototype)
+ * cli/install.js — rcode v2 file-shipping installer (prototype)
  *
  * Compared to the v1 `cli/init.js` (2918 lines of inline string templates),
- * this installer copies real files from the package's `rihal/` directory
+ * this installer copies real files from the package's `rcode/` directory
  * into a target project. The same file-shipping pattern (no npm deps).
  *
  * Target layout in the user's project:
  *
- *   .rihal/
+ *   .rcode/
  *     _config/
  *       manifest.yaml          (version + install date + installed modules)
- *       agent-manifest.csv     (auto-generated from rihal/agents/*.md frontmatter)
+ *       agent-manifest.csv     (auto-generated from rcode/agents/*.md frontmatter)
  *       files-manifest.csv     (SHA256 hashes for update/doctor)
  *     config.yaml              (user_name, project_name, language, mode)
  *     workflows/
@@ -19,15 +19,15 @@
  *       council-protocol.md
  *       commit-conventions.md
  *     bin/
- *       rihal-tools.cjs
+ *       rcode-tools.cjs
  *       lib/council-panel.cjs
  *   .claude/
  *     agents/
- *       rihal-sadiq.md
- *       rihal-waleed.md
- *       rihal-fatima.md
+ *       rcode-sadiq.md
+ *       rcode-waleed.md
+ *       rcode-fatima.md
  *     commands/
- *       rihal/
+ *       rcode/
  *         council.md
  *   .planning/
  *     council-sessions/        (empty dir, populated on first council run)
@@ -77,7 +77,7 @@ const dim  = (s) => pc.dim(s);
 const bold = (s) => pc.bold(s);
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
-const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
+const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
 
 /**
  * Single source of truth for supported IDEs (#697 — W4.3).
@@ -93,7 +93,7 @@ const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'a
 
 /**
  * Resolve the stable on-disk location of this package so config.yaml
- * rihal_source_path doesn't point to a temp npm install directory.
+ * rcode_source_path doesn't point to a temp npm install directory.
  * Issue #831 — process.argv[1] may be /tmp/... when installed via npx.
  * Resolution order: package.json location of @hanzlaa/rcode in global
  * node_modules, then local node_modules, then argv fallback.
@@ -129,7 +129,7 @@ function findPnpmWorkspaceRoot(startDir) {
   }
 }
 
-// Zod schema for .rihal/config.yaml validation (#250).
+// Zod schema for .rcode/config.yaml validation (#250).
 const ConfigSchema = z.object({
   user_name: z.string().min(1),
   project_name: z.string().min(1),
@@ -139,7 +139,7 @@ const ConfigSchema = z.object({
   }).default('guided'),
   model_profile: z.string().optional(),
   commit_planning: z.boolean().optional(),
-  rihal_source_path: z.string().optional(),
+  rcode_source_path: z.string().optional(),
   workflow: z.object({
     research_by_default: z.boolean().optional(),
     plan_checker: z.boolean().optional(),
@@ -239,7 +239,7 @@ function parseArgs(argv) {
   }
   // --global without an explicit target means "install to ~/.claude/" — i.e.
   // home dir. Without this, running `rcode install --global` from inside a
-  // project directory wrote rihal artifacts to that project, not to the user's
+  // project directory wrote rcode artifacts to that project, not to the user's
   // home where Claude Code reads global commands from.
   if (opts.global && !opts.targetProvided) {
     opts.target = os.homedir();
@@ -273,7 +273,7 @@ function parseArgs(argv) {
 /**
  * Create a tar.gz backup of every file the install plan would touch BEFORE
  * --force-overwrite clobbers them. Closes #381 — without this, customized
- * .claude/agents/rihal-*.md and similar files were silently lost.
+ * .claude/agents/rcode-*.md and similar files were silently lost.
  *
  * Returns { ok, path, warning, fileCount } — ok=false means we couldn't
  * create the backup (tar missing, no paths, etc.); the caller decides
@@ -298,10 +298,10 @@ function createInstallBackup(target, plan) {
   // explicitly preserves them — defensive: if install regresses and starts
   // touching them, the backup catches it.
   for (const stateFile of [
-    '.rihal/config.yaml',
-    '.rihal/state.json',
-    '.rihal/_config/manifest.yaml',
-    '.rihal/_config/files-manifest.csv',
+    '.rcode/config.yaml',
+    '.rcode/state.json',
+    '.rcode/_config/manifest.yaml',
+    '.rcode/_config/files-manifest.csv',
   ]) {
     if (fs.existsSync(path.join(target, stateFile))) {
       paths.push(stateFile);
@@ -312,11 +312,11 @@ function createInstallBackup(target, plan) {
     return { ok: false, warning: 'no existing files to back up — fresh install', fileCount: 0 };
   }
 
-  const backupsDir = path.join(target, '.rihal/backups');
+  const backupsDir = path.join(target, '.rcode/backups');
   try {
     fs.mkdirSync(backupsDir, { recursive: true });
   } catch (err) {
-    return { ok: false, warning: `could not create .rihal/backups/: ${err.message}`, fileCount: 0 };
+    return { ok: false, warning: `could not create .rcode/backups/: ${err.message}`, fileCount: 0 };
   }
 
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -344,7 +344,7 @@ function createInstallBackup(target, plan) {
 }
 
 /**
- * Print the Rihal Memory Bank installer header. Box-drawn banner shown once
+ * Print the rcode Memory Bank installer header. Box-drawn banner shown once
  * at the top of every interactive install run.
  */
 function printInstallHeader(targetVersion) {
@@ -353,7 +353,7 @@ function printInstallHeader(targetVersion) {
     '',
     pc.cyan('╭───────────────────────────────────────────────────────────╮'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
-    pc.cyan('│') + '   ' + pc.bold(pc.yellow('🕌  Rihal Memory Bank')) + '  ' + dim('— installer') + '                       ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + pc.bold(pc.yellow('🕌  rcode Memory Bank')) + '  ' + dim('— installer') + '                       ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('A persistent context-brain for your editor') + '             ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
@@ -466,14 +466,14 @@ async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
   if (opts.noPrompt || opts.global) return false; // global install: no planning artifacts
 
-  // Issue #685: on re-install, read the existing .rihal/config.yaml and use
+  // Issue #685: on re-install, read the existing .rcode/config.yaml and use
   // its commit_planning value as the default. Otherwise the new prompt
   // answer overwrites .gitignore but NOT config.yaml, leaving two sources of
   // truth that silently diverge. Users on re-install almost always want to
   // KEEP their existing setting unless they explicitly pass --commit-planning.
   let existingValue = null;
   try {
-    const cfgPath = path.join(opts.target, '.rihal', 'config.yaml');
+    const cfgPath = path.join(opts.target, '.rcode', 'config.yaml');
     if (fs.existsSync(cfgPath)) {
       const cfg = fs.readFileSync(cfgPath, 'utf8');
       const m = cfg.match(/^commit_planning:\s*(true|false)\s*$/m);
@@ -507,7 +507,7 @@ async function resolveCommitPlanning(opts) {
 
 function printHelp() {
   console.log(`
-Rihal Code installer
+rcode installer
 
 Usage:
   node cli/install.js [target-dir]
@@ -524,11 +524,11 @@ Options:
   --help             this text
 
 Installs (IDE-specific):
-  claude:  target/.rihal/          config, workflows, references, bin
-           target/.claude/agents/  first-class Rihal subagents
-           target/.claude/commands/rihal/  slash commands
-  cursor:  target/.cursor/rules/rihal/    Cursor-specific rules + agents
-  gemini:  target/.gemini/rihal/          Gemini CLI commands + agents
+  claude:  target/.rcode/          config, workflows, references, bin
+           target/.claude/agents/  first-class rcode subagents
+           target/.claude/commands/rcode/  slash commands
+  cursor:  target/.cursor/rules/rcode/    Cursor-specific rules + agents
+  gemini:  target/.gemini/rcode/          Gemini CLI commands + agents
   target/.planning/       artifact output dir (all IDEs)
 `);
 }
@@ -543,62 +543,62 @@ function getPathsForIde(ide, target) {
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
         commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
       };
     case 'cursor':
       return {
-        agentsDir: path.join(target, '.cursor', 'rules', 'rihal', 'agents'),
-        commandsDir: path.join(target, '.cursor', 'rules', 'rihal', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
+        agentsDir: path.join(target, '.cursor', 'rules', 'rcode', 'agents'),
+        commandsDir: path.join(target, '.cursor', 'rules', 'rcode', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
       };
     case 'gemini':
       return {
-        agentsDir: path.join(target, '.gemini', 'rihal', 'agents'),
-        commandsDir: path.join(target, '.gemini', 'rihal', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
+        agentsDir: path.join(target, '.gemini', 'rcode', 'agents'),
+        commandsDir: path.join(target, '.gemini', 'rcode', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
       };
     case 'vscode':
       // VS Code's Claude Code / Continue / Copilot extensions all read from
       // .claude/ (Claude Code's canonical paths). We install there directly
       // using the SAME layout as the claude case (prefixed-root form) so
       // multi-IDE installs don't double up — see #723 / #635-#643 / #646.
-      // The .vscode/rihal/ marker is preserved for workspace settings.
+      // The .vscode/rcode/ marker is preserved for workspace settings.
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
         commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
-        markerDir: path.join(target, '.vscode', 'rihal'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
+        markerDir: path.join(target, '.vscode', 'rcode'),
       };
     case 'antigravity':
       // Antigravity (Google's agentic IDE) — install to .antigravity/ mirroring
       // the .gemini/ structure. Antigravity's plugin protocol is still firming
-      // up; the user can adjust paths via .rihal/config.yaml's `extra_install_paths`
+      // up; the user can adjust paths via .rcode/config.yaml's `extra_install_paths`
       // if Antigravity expects different routing.
       return {
-        agentsDir: path.join(target, '.antigravity', 'rihal', 'agents'),
-        commandsDir: path.join(target, '.antigravity', 'rihal', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
+        agentsDir: path.join(target, '.antigravity', 'rcode', 'agents'),
+        commandsDir: path.join(target, '.antigravity', 'rcode', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
       };
     case 'windsurf':
       // Windsurf (Codeium's agentic IDE) — uses .windsurf/rules/ for .mdc rule
       // files, parallel to cursor's .cursor/rules/. cli/lib/manifest.cjs already
       // handles the rules-install verify path (#723 closes the install-side gap).
       return {
-        agentsDir: path.join(target, '.windsurf', 'rules', 'rihal', 'agents'),
-        commandsDir: path.join(target, '.windsurf', 'rules', 'rihal', 'commands'),
-        workflowsDir: path.join(target, '.rihal', 'workflows'),
-        referencesDir: path.join(target, '.rihal', 'references'),
-        binDir: path.join(target, '.rihal', 'bin'),
+        agentsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'agents'),
+        commandsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
       };
     default:
       throw new Error(`Unknown IDE: ${ide}. Supported: ${SUPPORTED_IDES.join(', ')}`);
@@ -608,7 +608,7 @@ function getPathsForIde(ide, target) {
 /**
  * Walk a directory and return absolute file paths. Uses fast-glob so
  * symlink cycles are never followed and patterns can be excluded via
- * .rihalignore files (#249).
+ * .rcodeignore files (#249).
  */
 function walkFiles(dir, extraIgnore = []) {
   if (!fs.existsSync(dir)) return [];
@@ -622,11 +622,11 @@ function walkFiles(dir, extraIgnore = []) {
 }
 
 /**
- * Read .rihalignore patterns from a given root directory.
+ * Read .rcodeignore patterns from a given root directory.
  * Returns an array of glob-style ignore patterns (same syntax as .gitignore).
  */
-function readRihalIgnore(root) {
-  const ignoreFile = path.join(root, '.rihalignore');
+function readRcodeIgnore(root) {
+  const ignoreFile = path.join(root, '.rcodeignore');
   if (!fs.existsSync(ignoreFile)) return [];
   return fs.readFileSync(ignoreFile, 'utf8')
     .split('\n')
@@ -658,7 +658,7 @@ function copyDirRecursive(source, dest) {
 
 /**
  * Seed .planning/ with starter ROADMAP.md + STATE.md + PROJECT.md so
- * workflows work immediately after install. User can /rihal-sprint-planning
+ * workflows work immediately after install. User can /rcode-sprint-planning
  * on a fresh install without manual setup.
  *
  * Only seeds if .planning/ROADMAP.md doesn't already exist (preserves user data).
@@ -677,11 +677,11 @@ function seedStarterPlanning(target, projectName) {
   const name = projectName || path.basename(target);
 
   // Stub planning files: clearly marked as install templates so users (and
-  // /rihal-new-project Step 0.5 detection) can tell them apart from real
+  // /rcode-new-project Step 0.5 detection) can tell them apart from real
   // planning artifacts. See issues #670 #671 #676.
   const STUB_BANNER =
-    `<!-- INSTALL STUB — overwritten by /rihal-new-project. Delete this file or run\n` +
-    `     /rihal-new-project before committing. See https://github.com/hanzlahabib/rihal-code/issues/670 -->\n\n`;
+    `<!-- INSTALL STUB — overwritten by /rcode-new-project. Delete this file or run\n` +
+    `     /rcode-new-project before committing. See https://github.com/hanzlahabib/rihal-code/issues/670 -->\n\n`;
 
   fs.writeFileSync(projectPath,
     STUB_BANNER +
@@ -718,26 +718,26 @@ function seedStarterPlanning(target, projectName) {
     `---\n\n` +
     `## Decisions\n\n_None yet._\n\n` +
     `## Blockers\n\n_None._\n\n` +
-    `## Next Action\n\nRun \`/rihal-new-project <description>\` to bootstrap, or \`/rihal-sprint-planning\` once a real phase exists.\n`
+    `## Next Action\n\nRun \`/rcode-new-project <description>\` to bootstrap, or \`/rcode-sprint-planning\` once a real phase exists.\n`
   );
 
-  // Issue #670: do NOT pre-seed .rihal/state.json with a fake project +
+  // Issue #670: do NOT pre-seed .rcode/state.json with a fake project +
   // "Setup & Scaffolding" phase. That made every fresh install look like a
-  // real initialized project and broke /rihal-new-project Step 0.5 detection.
+  // real initialized project and broke /rcode-new-project Step 0.5 detection.
   //
   // Write a minimal shell with _seeded_stub:true so:
-  //   - rihal-tools doesn't have to re-init on first call (avoids race)
-  //   - /rihal-new-project Step 0.5 (issue #671) can detect "stub" reliably
+  //   - rcode-tools doesn't have to re-init on first call (avoids race)
+  //   - /rcode-new-project Step 0.5 (issue #671) can detect "stub" reliably
   //   - sprint tools that previously relied on phase 01 will surface a clear
-  //     "no phases yet — run /rihal-new-project first" error instead of
+  //     "no phases yet — run /rcode-new-project first" error instead of
   //     silently operating on a fake phase
   //
   // Issue #705: only mark _seeded_stub when the planning ROADMAP is also
   // a stub. If the user manually deletes state.json but has real
   // .planning/ROADMAP.md (no INSTALL STUB banner), seeding _seeded_stub
-  // would mis-classify a real project as fresh and let /rihal-new-project
+  // would mis-classify a real project as fresh and let /rcode-new-project
   // overwrite it. Guard with the banner check.
-  const rihalStateJson = path.join(target, '.rihal', 'state.json');
+  const rcodeStateJson = path.join(target, '.rcode', 'state.json');
   function planningRoadmapIsStub() {
     const rmPath = path.join(target, '.planning', 'ROADMAP.md');
     if (!fs.existsSync(rmPath)) return true; // missing → fresh install case
@@ -746,13 +746,13 @@ function seedStarterPlanning(target, projectName) {
       return text.includes('<!-- INSTALL STUB');
     } catch { return true; }
   }
-  if (!fs.existsSync(rihalStateJson)) {
+  if (!fs.existsSync(rcodeStateJson)) {
     const now = new Date().toISOString();
     const isStubProject = planningRoadmapIsStub();
 
     // Resolve project name from config.yaml if available (#816)
     let resolvedProject = null;
-    const configYamlPath = path.join(target, '.rihal', 'config.yaml');
+    const configYamlPath = path.join(target, '.rcode', 'config.yaml');
     if (fs.existsSync(configYamlPath)) {
       try {
         const cfg = fs.readFileSync(configYamlPath, 'utf8');
@@ -800,8 +800,8 @@ function seedStarterPlanning(target, projectName) {
       last_session: null,
       velocity_history: [],
     };
-    fs.mkdirSync(path.dirname(rihalStateJson), { recursive: true });
-    writeFileAtomic(rihalStateJson, JSON.stringify(state, null, 2) + '\n');
+    fs.mkdirSync(path.dirname(rcodeStateJson), { recursive: true });
+    writeFileAtomic(rcodeStateJson, JSON.stringify(state, null, 2) + '\n');
   }
 
   return true;
@@ -830,23 +830,23 @@ function ensureRcodeGitignore(target, options = {}) {
     '',
     BEGIN,
     '# Added automatically on first rcode install. Idempotent — safe to re-run.',
-    '# Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.',
+    '# Edit `commit_planning` in .rcode/config.yaml to flip planning-artifact tracking.',
     '',
     '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
     '.claude/',
-    '.rihal/bin/',
-    '.rihal/workflows/',
-    '.rihal/references/',
-    '.rihal/commands/',
-    '.rihal/skills/',
+    '.rcode/bin/',
+    '.rcode/workflows/',
+    '.rcode/references/',
+    '.rcode/commands/',
+    '.rcode/skills/',
     '',
-    '# Pulled Rihal brain content (refresh with: rcode brain pull)',
-    '.rihal/brain/rihal-github/',
-    '.rihal/brain/rihal-docs/',
-    '.rihal/brain/best-practices/',
+    '# Pulled rcode brain content (refresh with: rcode brain pull)',
+    '.rcode/brain/rcode-github/',
+    '.rcode/brain/rcode-docs/',
+    '.rcode/brain/best-practices/',
     '',
     '# Runtime noise',
-    '.rihal/state.json.lock',
+    '.rcode/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',
   ];
@@ -862,9 +862,9 @@ function ensureRcodeGitignore(target, options = {}) {
   lines.push(
     '',
     '# What you DO commit:',
-    '#   .rihal/config.yaml        - project mode/language/profile/commit_planning',
-    '#   .rihal/state.json         - decisions, roadmap pointer, blockers',
-    '#   .rihal/brain/sources.yaml - brain source manifest',
+    '#   .rcode/config.yaml        - project mode/language/profile/commit_planning',
+    '#   .rcode/state.json         - decisions, roadmap pointer, blockers',
+    '#   .rcode/brain/sources.yaml - brain source manifest',
     commitPlanning
       ? '#   .planning/                - PRD, roadmap, sprints, SUMMARY.md files'
       : '#   (planning artifacts are NOT committed — see commit_planning in config)',
@@ -916,7 +916,7 @@ function ensureRcodeGitignore(target, options = {}) {
 
 /**
  * Ensure .git/hooks/pre-commit includes the rcode-managed block that auto-syncs
- * state.json when .planning/ or .rihal/brain/sources.yaml files change.
+ * state.json when .planning/ or .rcode/brain/sources.yaml files change.
  *
  * Idempotent via sentinels — existing user hook content is preserved.
  * Respects opts.gitHooks: false → skip entirely (--no-git-hooks flag).
@@ -937,12 +937,12 @@ function ensureRcodePreCommitHook(target, options = {}) {
   const BLOCK = [
     '',
     BEGIN,
-    '# Auto-syncs .rihal/state.json when planning files change.',
+    '# Auto-syncs .rcode/state.json when planning files change.',
     '# Added by rcode install — safe to re-run (idempotent).',
-    'if git diff --cached --name-only | grep -qE "^\\.planning/|^\\.rihal/brain/sources\\.yaml$"; then',
-    '  if [ -x .rihal/bin/rihal-tools.cjs ]; then',
-    '    node .rihal/bin/rihal-tools.cjs state sync --from-disk > /dev/null 2>&1 || true',
-    '    git add .rihal/state.json 2>/dev/null || true',
+    'if git diff --cached --name-only | grep -qE "^\\.planning/|^\\.rcode/brain/sources\\.yaml$"; then',
+    '  if [ -x .rcode/bin/rcode-tools.cjs ]; then',
+    '    node .rcode/bin/rcode-tools.cjs state sync --from-disk > /dev/null 2>&1 || true',
+    '    git add .rcode/state.json 2>/dev/null || true',
     '  fi',
     'fi',
     END,
@@ -996,14 +996,14 @@ function ensureRcodePreCommitHook(target, options = {}) {
 }
 
 /**
- * Install brain scaffold (sources.yaml + README.md) into .rihal/brain/ on target.
+ * Install brain scaffold (sources.yaml + README.md) into .rcode/brain/ on target.
  * Actual brain content lands after `brain pull` runs.
- * Closes #188 — previously the package's rihal/brain/sources.yaml was never
+ * Closes #188 — previously the package's rcode/brain/sources.yaml was never
  * copied to the target at all, leaving brain pull permanently broken.
  */
 function installBrainScaffold(packageRoot, target) {
-  const srcDir = path.join(packageRoot, 'rihal', 'brain');
-  const destDir = path.join(target, '.rihal', 'brain');
+  const srcDir = path.join(packageRoot, 'rcode', 'brain');
+  const destDir = path.join(target, '.rcode', 'brain');
   fs.mkdirSync(destDir, { recursive: true });
   let copied = 0;
   for (const name of ['sources.yaml', 'README.md']) {
@@ -1015,9 +1015,9 @@ function installBrainScaffold(packageRoot, target) {
     }
   }
   // Also pre-seed the best-practices subfolder from the package's
-  // rihal/skills/_shared/ so a fresh install has working brain content
+  // rcode/skills/_shared/ so a fresh install has working brain content
   // immediately, even before brain pull runs against real upstream URLs.
-  const sharedSrc = path.join(packageRoot, 'rihal', 'skills', '_shared');
+  const sharedSrc = path.join(packageRoot, 'rcode', 'skills', '_shared');
   if (fs.existsSync(sharedSrc)) {
     const bpDest = path.join(destDir, 'best-practices');
     fs.mkdirSync(bpDest, { recursive: true });
@@ -1037,28 +1037,28 @@ function installBrainScaffold(packageRoot, target) {
 /**
  * Install v1-style skills into the target project.
  *
- * User-facing skills  → .claude/skills/rihal-{name}   (phrase-activated, visible as slash commands)
- * Internal skills     → .rihal/skills/rihal-{name}    (utility libs called by other skills, NOT in
+ * User-facing skills  → .claude/skills/rcode-{name}   (phrase-activated, visible as slash commands)
+ * Internal skills     → .rcode/skills/rcode-{name}    (utility libs called by other skills, NOT in
  *                                                       .claude/skills/ so they don't pollute the menu)
  *
  * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
  */
 function installSkills(packageRoot, target, options = {}) {
-  const skillsSource = path.join(packageRoot, 'rihal/skills');
+  const skillsSource = path.join(packageRoot, 'rcode/skills');
   const skillsDest = path.join(target, '.claude/skills');
-  const internalDest = path.join(target, '.rihal/skills');
+  const internalDest = path.join(target, '.rcode/skills');
 
   if (!fs.existsSync(skillsSource)) return { count: 0, skippedGlobal: 0 };
   fs.mkdirSync(skillsDest, { recursive: true });
   fs.mkdirSync(internalDest, { recursive: true });
 
-  // Issue #679: when ~/.claude/skills/<name>/ already exists with the rihal-
+  // Issue #679: when ~/.claude/skills/<name>/ already exists with the rcode-
   // prefix, Claude Code reads from BOTH global and project, showing every
-  // /rihal-* twice in the slash picker. Skip the project copy for any rihal-*
+  // /rcode-* twice in the slash picker. Skip the project copy for any rcode-*
   // skill that already lives in the global skills dir.
   const globalSkillsDir = path.join(os.homedir(), '.claude', 'skills');
-  const globalRihalSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
-    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rihal-')))
+  const globalRcodeSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
+    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rcode-')))
     : new Set();
 
   let count = 0;
@@ -1085,18 +1085,18 @@ function installSkills(packageRoot, target, options = {}) {
       const src = path.join(dir, entry.name);
       const hasSkillMd = fs.existsSync(path.join(src, 'SKILL.md'));
       if (hasSkillMd) {
-        const destName = entry.name.startsWith('rihal-')
+        const destName = entry.name.startsWith('rcode-')
           ? entry.name
-          : `rihal-${entry.name}`;
+          : `rcode-${entry.name}`;
         const internal = isInternalSkill(src);
         const dest = internal
-          ? path.join(internalDest, destName)   // internal → .rihal/skills/
+          ? path.join(internalDest, destName)   // internal → .rcode/skills/
           : path.join(skillsDest, destName);     // user-facing → .claude/skills/
 
-        // Skip user-facing (non-internal) rihal-* skills when the same name
+        // Skip user-facing (non-internal) rcode-* skills when the same name
         // exists globally — UNLESS the user has a *.local.md override on the
         // project copy, in which case we always preserve their customization.
-        if (!internal && globalRihalSkills.has(destName) && !hasLocalOverride(dest)) {
+        if (!internal && globalRcodeSkills.has(destName) && !hasLocalOverride(dest)) {
           // Also remove the existing project copy (left over from previous
           // installs that didn't dedup) so it stops showing in the picker.
           if (fs.existsSync(dest)) {
@@ -1157,18 +1157,18 @@ function parseFrontmatter(text) {
  * For cursor IDE, converts command files from .md to .mdc format.
  */
 /**
- * Migrate legacy vscode-layout commands (.claude/commands/rihal/{name}.md)
- * to the unified prefixed-root form (.claude/commands/rihal-{name}.md).
+ * Migrate legacy vscode-layout commands (.claude/commands/rcode/{name}.md)
+ * to the unified prefixed-root form (.claude/commands/rcode-{name}.md).
  *
  * Idempotent. Safe to run on every install/update — no-op when no legacy
- * dir exists. After move, removes the now-empty rihal/ subdir.
+ * dir exists. After move, removes the now-empty rcode/ subdir.
  *
  * Returns { moved, removed_dir } so callers can log the migration count.
  * Designed by Waleed for #723; closes the dual-layout cause of #635, #637,
  * #638, #639, #640, #641, #642, #643, #646.
  */
 function migrateVscodeCommandsLayout(target) {
-  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
   const newRoot = path.join(target, '.claude', 'commands');
   if (!fs.existsSync(legacyDir) || !fs.statSync(legacyDir).isDirectory()) {
     return { moved: 0, removed_dir: false };
@@ -1178,8 +1178,8 @@ function migrateVscodeCommandsLayout(target) {
     const src = path.join(legacyDir, entry);
     if (!fs.statSync(src).isFile() || !entry.endsWith('.md')) continue;
     const baseName = path.basename(entry, '.md');
-    // Don't double-prefix if someone already had rihal-foo.md inside rihal/.
-    const targetName = baseName.startsWith('rihal-') ? entry : `rihal-${entry}`;
+    // Don't double-prefix if someone already had rcode-foo.md inside rcode/.
+    const targetName = baseName.startsWith('rcode-') ? entry : `rcode-${entry}`;
     const dst = path.join(newRoot, targetName);
     if (fs.existsSync(dst)) {
       // Already migrated by an earlier pass — remove the duplicate at source.
@@ -1217,7 +1217,7 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     }
     // Note: pre-#723 we had a dual-layout workaround here that filtered
     // vscode subdir entries when claude+vscode were both selected. After
-    // Waleed's unification (vscode now writes the same rihal-{name}.md root
+    // Waleed's unification (vscode now writes the same rcode-{name}.md root
     // form as claude), the seen-by-rel dedup above already covers it — both
     // IDEs emit identical `rel` values and only one wins. Layout drift will
     // resurface this filter; it's intentionally deleted, not commented out.
@@ -1234,27 +1234,27 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   const relAgents = path.relative(target, paths.agentsDir);
   const relCommands = path.relative(target, paths.commandsDir);
 
-  // .rihal/workflows/
+  // .rcode/workflows/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'workflows'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'workflows'), f);
     plan.push({ src: f, rel: path.join(relWorkflows, rel) });
   }
 
-  // .rihal/references/
+  // .rcode/references/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'references'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'references'), f);
     plan.push({ src: f, rel: path.join(relReferences, rel) });
   }
 
-  // .rihal/bin/
+  // .rcode/bin/
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'bin'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'bin'), f);
     plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
   }
 
-  // .rihal/templates/projects/  — starter templates consumed by /rihal-from-template
+  // .rcode/templates/projects/  — starter templates consumed by /rcode-from-template
   const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
-  const relProjectTemplates = path.relative(target, path.join(target, '.rihal', 'templates', 'projects'));
+  const relProjectTemplates = path.relative(target, path.join(target, '.rcode', 'templates', 'projects'));
   for (const f of walkFiles(projectTemplatesSrc)) {
     const rel = path.relative(projectTemplatesSrc, f);
     plan.push({ src: f, rel: path.join(relProjectTemplates, rel) });
@@ -1269,31 +1269,31 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   }
 
   // Commands — IDE-specific
-  // Claude AND VSCode: output as .claude/commands/rihal-{name}.md (prefixed root).
+  // Claude AND VSCode: output as .claude/commands/rcode-{name}.md (prefixed root).
   // Both target the same commands dir (#723 / Waleed unification) so multi-IDE
-  // installs never duplicate. Cursor/Gemini keep the bare-name-in-rihal/-subdir form.
+  // installs never duplicate. Cursor/Gemini keep the bare-name-in-rcode/-subdir form.
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
     const ext = ide === 'cursor' ? '.mdc' : '.md';
     const baseName = path.basename(f, '.md');
     const outName = (ide === 'claude' || ide === 'vscode')
-      ? `rihal-${baseName}${ext}`
+      ? `rcode-${baseName}${ext}`
       : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
   }
 
-  // Agent rules (on-demand reference files) — copied to .rihal/agents-rules/
-  const agentRulesDir = path.join(target, '.rihal', 'agents-rules');
+  // Agent rules (on-demand reference files) — copied to .rcode/agents-rules/
+  const agentRulesDir = path.join(target, '.rcode', 'agents-rules');
   for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents', 'rules'))) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'agents', 'rules'), f);
-    plan.push({ src: f, rel: path.join('.rihal', 'agents-rules', rel) });
+    plan.push({ src: f, rel: path.join('.rcode', 'agents-rules', rel) });
   }
 
   return plan;
 }
 
 /**
- * Parse a module YAML manifest (rihal/modules/{name}.yaml).
+ * Parse a module YAML manifest (rcode/modules/{name}.yaml).
  * Returns { name, requires[], agents[], workflows[], commands[], references[] }.
  */
 function readModuleManifest(moduleName) {
@@ -1332,7 +1332,7 @@ function readModuleManifest(moduleName) {
 }
 
 /**
- * List available module names by scanning rihal/modules/*.yaml
+ * List available module names by scanning rcode/modules/*.yaml
  */
 function listAvailableModules() {
   const modulesDir = path.join(SOURCE_ROOT, 'modules');
@@ -1353,13 +1353,13 @@ function filterPlanByModules(plan, moduleNames) {
     const mod = readModuleManifest(modName);
     if (!mod) { console.warn(`  ⚠ Unknown module: ${modName}`); continue; }
     for (const a of mod.agents) allowed.add(path.join('.claude', 'agents', a));
-    for (const w of mod.workflows) allowed.add(path.join('.rihal', 'workflows', w));
-    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', `rihal-${c}`));
-    for (const r of mod.references) allowed.add(path.join('.rihal', 'references', r));
+    for (const w of mod.workflows) allowed.add(path.join('.rcode', 'workflows', w));
+    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', `rcode-${c}`));
+    for (const r of mod.references) allowed.add(path.join('.rcode', 'references', r));
   }
   // Always include bin/ (shared infrastructure, not module-specific)
   return plan.filter((entry) => {
-    if (entry.rel.startsWith(path.join('.rihal', 'bin'))) return true;
+    if (entry.rel.startsWith(path.join('.rcode', 'bin'))) return true;
     return allowed.has(entry.rel);
   });
 }
@@ -1368,7 +1368,7 @@ function filterPlanByModules(plan, moduleNames) {
  * Auto-generate agent-manifest.csv from the installed agent files'
  * frontmatter. Columns: id, file, name, description, color.
  *
- * The `id` column strips the `rihal-` prefix so workflow code can match
+ * The `id` column strips the `rcode-` prefix so workflow code can match
  * against the council-panel scorer's AGENT_IDS (which use bare names).
  */
 function generateAgentManifest(plan, target) {
@@ -1382,7 +1382,7 @@ function generateAgentManifest(plan, target) {
     const text = fs.readFileSync(filePath, 'utf8');
     const { frontmatter } = parseFrontmatter(text);
     const name = frontmatter.name || path.basename(entry.rel, '.md');
-    const bareId = name.replace(/^rihal-/, '');
+    const bareId = name.replace(/^rcode-/, '');
     if (seen.has(bareId)) continue; // Skip duplicate
     seen.add(bareId);
     const desc = (frontmatter.description || '').replace(/"/g, '""');
@@ -1397,7 +1397,7 @@ function generateAgentManifest(plan, target) {
   // Also include agents already on disk but not in current plan
   const agentDir = path.join(target, '.claude', 'agents');
   if (fs.existsSync(agentDir)) {
-    const existingFiles = fs.readdirSync(agentDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    const existingFiles = fs.readdirSync(agentDir).filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
     const alreadyIncluded = new Set(plan.filter(e => e.rel.startsWith(path.join('.claude', 'agents'))).map(e => path.basename(e.rel)));
     for (const file of existingFiles) {
       if (alreadyIncluded.has(file)) continue;
@@ -1405,7 +1405,7 @@ function generateAgentManifest(plan, target) {
       const text = fs.readFileSync(filePath, 'utf8');
       const { frontmatter } = parseFrontmatter(text);
       const name = frontmatter.name || path.basename(file, '.md');
-      const bareId = name.replace(/^rihal-/, '');
+      const bareId = name.replace(/^rcode-/, '');
       if (seen.has(bareId)) continue; // Skip if already added
       seen.add(bareId);
       const desc = (frontmatter.description || '').replace(/"/g, '""');
@@ -1416,11 +1416,11 @@ function generateAgentManifest(plan, target) {
   // rows.length === 1) so the manifest reflects every installed agent. On a
   // fresh project install agents may live in ~/.claude/agents/ (global slash
   // commands) or in the source tree if local copy was skipped via dedup.
-  // Also scan rihal/agents/ in SOURCE_ROOT as a last-resort fallback so the
+  // Also scan rcode/agents/ in SOURCE_ROOT as a last-resort fallback so the
   // manifest is never empty when the package itself ships agent definitions.
   const extraScans = [
     path.join(os.homedir(), '.claude', 'agents'),
-    path.join(os.homedir(), '.rihal', 'agents'),
+    path.join(os.homedir(), '.rcode', 'agents'),
   ];
   // Final fallback: scan the package source itself.
   try {
@@ -1432,7 +1432,7 @@ function generateAgentManifest(plan, target) {
     if (!fs.existsSync(scanDir)) continue;
     let files;
     try {
-      files = fs.readdirSync(scanDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+      files = fs.readdirSync(scanDir).filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
     } catch { continue; }
     for (const file of files) {
       const filePath = path.join(scanDir, file);
@@ -1440,7 +1440,7 @@ function generateAgentManifest(plan, target) {
       try { text = fs.readFileSync(filePath, 'utf8'); } catch { continue; }
       const { frontmatter } = parseFrontmatter(text);
       const name = frontmatter.name || path.basename(file, '.md');
-      const bareId = name.replace(/^rihal-/, '');
+      const bareId = name.replace(/^rcode-/, '');
       if (seen.has(bareId)) continue;
       seen.add(bareId);
       const desc = (frontmatter.description || '').replace(/"/g, '""');
@@ -1469,7 +1469,7 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
 
   // Issue #702: skills installed via installSkills() and sidebar stubs
   // generated by cli/generate-command-skills.cjs are NOT in the install plan
-  // (they're walked from rihal/skills/ separately and copied directly).
+  // (they're walked from rcode/skills/ separately and copied directly).
   // Without this scan, files-manifest.csv was missing the largest category
   // of installed files — orphan sweep + doctor drift detection were blind
   // to renamed/removed skills.
@@ -1500,7 +1500,7 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
   // --force sweep was not run. Without this, a re-install without --force
   // silently drops stale files from the manifest, making them invisible.
   if (mergeExistingManifest) {
-    const manifestPath = path.join(target, '.rihal', '_config', 'files-manifest.csv');
+    const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
     if (fs.existsSync(manifestPath)) {
       try {
         const oldRows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
@@ -1522,7 +1522,7 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
 
 /**
  * Orphan sweep — remove files that were part of a previous install but aren't
- * in the current plan. Reads `.rihal/_config/files-manifest.csv` from the
+ * in the current plan. Reads `.rcode/_config/files-manifest.csv` from the
  * previous install and computes the diff against the new plan.
  *
  * Closes #196 — without this, upgrading rcode leaves stale skill/command
@@ -1531,12 +1531,12 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
  * Deliberately conservative:
  *   - Only removes files that appeared in the PREVIOUS manifest.
  *   - Never removes files the user created themselves.
- *   - Never touches .rihal/config.yaml, .rihal/state.json, or .planning/.
+ *   - Never touches .rcode/config.yaml, .rcode/state.json, or .planning/.
  *
  * Returns the number of orphan files removed.
  */
 function sweepStaleInstalledFiles(target, newPlan) {
-  const manifestPath = path.join(target, '.rihal', '_config', 'files-manifest.csv');
+  const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
   if (!fs.existsSync(manifestPath)) return 0;
 
   let oldRels;
@@ -1549,7 +1549,7 @@ function sweepStaleInstalledFiles(target, newPlan) {
 
   const newRelsSet = new Set(newPlan.map(e => e.rel.split(path.sep).join('/')));
   // Safety — never sweep these, even if they somehow landed in the manifest.
-  const neverSweep = /^(\.rihal\/config\.yaml|\.rihal\/state\.json|\.rihal\/state\.json\.lock|\.planning\/|\.rihal\/brain\/sources\.yaml)/;
+  const neverSweep = /^(\.rcode\/config\.yaml|\.rcode\/state\.json|\.rcode\/state\.json\.lock|\.planning\/|\.rcode\/brain\/sources\.yaml)/;
   // #382 — local overrides: files matching <name>.local.md are user-managed.
   // The installer never touches them: not in copy, not in sweep, not even on
   // --force-overwrite. This gives users a stable path to customize agent
@@ -1649,7 +1649,7 @@ function generateInstallManifest(opts) {
   // Merge with existing manifest if present; capture previous_version for rollback (#253).
   let existingModules = [];
   let previousVersion = null;
-  const existingPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
+  const existingPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
   if (fs.existsSync(existingPath)) {
     const text = fs.readFileSync(existingPath, 'utf8');
     let inModules = false;
@@ -1666,7 +1666,7 @@ function generateInstallManifest(opts) {
   const allModules = [...new Set([...existingModules, ...newModules])];
   const moduleLines = allModules.map((m) => `  - ${m}`).join('\n');
   const lines = [
-    '# Rihal v2 install manifest',
+    '# rcode v2 install manifest',
     `version: ${version}`,
     `installDate: ${new Date().toISOString()}`,
   ];
@@ -1681,7 +1681,7 @@ function sanitizeYamlValue(val) {
 
 function generateConfigYaml(opts) {
   return [
-    '# Rihal v2 project config',
+    '# rcode v2 project config',
     '# Generated by install. Safe to edit.',
     `user_name: "${sanitizeYamlValue(opts.userName)}"`,
     `project_name: "${sanitizeYamlValue(opts.projectName)}"`,
@@ -1689,7 +1689,7 @@ function generateConfigYaml(opts) {
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
     `commit_planning: ${opts.commitPlanning !== false}`,
-    `rihal_source_path: "${sanitizeYamlValue(resolveStableSourcePath())}/"`,
+    `rcode_source_path: "${sanitizeYamlValue(resolveStableSourcePath())}/"`,
     'workflow:',
     '  research_by_default: false',
     '  plan_checker: true',
@@ -1782,7 +1782,7 @@ async function install(opts) {
   }
 
   // Issue #691: file lock prevents concurrent installs from racing on the
-  // same .rihal/_config/manifest.yaml + files-manifest.csv. Without it, two
+  // same .rcode/_config/manifest.yaml + files-manifest.csv. Without it, two
   // parallel runs (two terminals, postinstall + manual install, etc.) can
   // each write a manifest the OTHER doesn't see → orphan sweep on the next
   // install deletes files the other run considered legit.
@@ -1812,7 +1812,7 @@ async function install(opts) {
 }
 
 /**
- * Acquire an exclusive install lock at .rihal/.install.lock (issue #691).
+ * Acquire an exclusive install lock at .rcode/.install.lock (issue #691).
  *
  * Returns:
  *   { ok: true, release: () => void }                 lock acquired
@@ -1822,7 +1822,7 @@ async function install(opts) {
  * reclaimed automatically.
  */
 function acquireInstallLock(target) {
-  const lockDir = path.join(target, '.rihal');
+  const lockDir = path.join(target, '.rcode');
   const lockPath = path.join(lockDir, '.install.lock');
   try {
     fs.mkdirSync(lockDir, { recursive: true });
@@ -1873,10 +1873,10 @@ async function installInner(opts) {
   // Resolve commit-planning preference (interactive prompt or flag) — #189.
   opts.commitPlanning = await resolveCommitPlanning(opts);
 
-  console.log(`\n🕌 ${bold('Rihal Code')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
+  console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
 
   // Detect an existing install and surface it (#195).
-  const existingManifestPath = path.join(opts.target, '.rihal', '_config', 'manifest.yaml');
+  const existingManifestPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
   if (fs.existsSync(existingManifestPath)) {
     const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
     const existingVersion = m ? m[1].trim() : 'unknown';
@@ -1939,8 +1939,8 @@ async function installInner(opts) {
 
   // Antigravity install is experimental — best-effort path, user may need to adjust
   if (opts.ides.includes('antigravity')) {
-    console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rihal/{agents,commands}/.'));
-    console.log('  ' + dim('If Antigravity expects a different path, adjust .rihal/config.yaml and re-run.'));
+    console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rcode/{agents,commands}/.'));
+    console.log('  ' + dim('If Antigravity expects a different path, adjust .rcode/config.yaml and re-run.'));
   }
 
   // Validate requested modules exist
@@ -1959,7 +1959,7 @@ async function installInner(opts) {
   if (Array.isArray(opts.ides) && opts.ides.includes('vscode') || (opts.ide === 'vscode')) {
     const migrated = migrateVscodeCommandsLayout(opts.target);
     if (migrated.moved > 0) {
-      console.log(`  ↻ Migrated ${migrated.moved} legacy vscode-layout command(s) to .claude/commands/rihal-{name}.md`);
+      console.log(`  ↻ Migrated ${migrated.moved} legacy vscode-layout command(s) to .claude/commands/rcode-{name}.md`);
     }
   }
 
@@ -1975,7 +1975,7 @@ async function installInner(opts) {
   }
 
   // Force-overwrite backup — closes #381. Without this, customized
-  // .claude/agents/rihal-*.md and similar package-managed files were silently
+  // .claude/agents/rcode-*.md and similar package-managed files were silently
   // clobbered with no recovery path. Now every --force-overwrite run creates
   // a tar.gz of every existing target before any write happens.
   // Skip when --no-backup is passed (CI escape hatch) or on fresh installs.
@@ -2010,7 +2010,7 @@ async function installInner(opts) {
   // to overwrite. If hashes differ, user customized it → preserve.
   const priorManifest = new Map();
   if (opts.nonDestructive) {
-    const manifestPath = path.join(opts.target, '.rihal', '_config', 'files-manifest.csv');
+    const manifestPath = path.join(opts.target, '.rcode', '_config', 'files-manifest.csv');
     if (fs.existsSync(manifestPath)) {
       try {
         const lines = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
@@ -2217,7 +2217,7 @@ async function installInner(opts) {
   // Global install only ships the read-only tooling: commands, skills, workflows, bin.
   if (opts.global) {
     // Still write the manifest so the global install is traceable/upgradeable
-    const configDir = path.join(opts.target, '.rihal', '_config');
+    const configDir = path.join(opts.target, '.rcode', '_config');
     ensureDir(configDir);
     fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
     // Install skills + sidebar stubs globally — never dedup against globals,
@@ -2237,7 +2237,7 @@ async function installInner(opts) {
     return 0;
   }
 
-  // Duplicate-prevention: if rihal commands already exist globally in ~/.claude/commands/,
+  // Duplicate-prevention: if rcode commands already exist globally in ~/.claude/commands/,
   // skip writing agents/commands to the project's .claude/ directory. Without this,
   // running `npx rcode install` in the home dir AND then in a project creates two sets
   // of identical files — Claude Code shows both as duplicate slash commands.
@@ -2247,18 +2247,18 @@ async function installInner(opts) {
   // Run dedup even when force:true — only forceOverwrite skips it.
   if (isProjectInstall && !opts.forceOverwrite) {
     try {
-      // Check both root-level rihal-*.md AND the rihal/ subdirectory (vscode-style).
-      const globalHasRihal = fs.existsSync(globalClaudeCommands) && (
-        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md')) ||
-        fs.existsSync(path.join(globalClaudeCommands, 'rihal'))
+      // Check both root-level rcode-*.md AND the rcode/ subdirectory (vscode-style).
+      const globalHasrcode = fs.existsSync(globalClaudeCommands) && (
+        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(globalClaudeCommands, 'rcode'))
       );
-      const projectHasRihal = fs.existsSync(projectClaudeCommands) && (
-        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rihal-') && f.endsWith('.md')) ||
-        fs.existsSync(path.join(projectClaudeCommands, 'rihal'))
+      const projectHasrcode = fs.existsSync(projectClaudeCommands) && (
+        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(projectClaudeCommands, 'rcode'))
       );
-      if (globalHasRihal && !projectHasRihal) {
+      if (globalHasrcode && !projectHasrcode) {
         // Global commands exist, project has none yet — filter them out of the plan
-        // so we don't create duplicates. Project gets .rihal/ state only.
+        // so we don't create duplicates. Project gets .rcode/ state only.
         const before = plan.length;
         const filtered = plan.filter(e => {
           const rel = e.rel.split(path.sep).join('/');
@@ -2267,33 +2267,33 @@ async function installInner(opts) {
         if (filtered.length < before) {
           plan.length = 0;
           filtered.forEach(e => plan.push(e));
-          console.log('  ' + dim('Global rihal commands detected in ~/.claude/ — skipping project-level agent/command install to avoid duplicates.'));
+          console.log('  ' + dim('Global rcode commands detected in ~/.claude/ — skipping project-level agent/command install to avoid duplicates.'));
           console.log('  ' + dim('Use --force-overwrite to install locally anyway.'));
         }
-      } else if (globalHasRihal && projectHasRihal) {
+      } else if (globalHasrcode && projectHasrcode) {
         // Both exist — project commands are duplicates. Remove project-level ones.
         try {
-          // Remove root-level rihal-*.md files
+          // Remove root-level rcode-*.md files
           const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
-            .filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+            .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
           for (const f of projectCommandFiles) {
             fs.unlinkSync(path.join(projectClaudeCommands, f));
           }
-          // Remove rihal/ subdirectory (vscode-style commands).
+          // Remove rcode/ subdirectory (vscode-style commands).
           // #688 — safeRmSync refuses to traverse out-of-target symlinks.
-          const rihalSubdir = path.join(projectClaudeCommands, 'rihal');
-          if (fs.existsSync(rihalSubdir)) {
-            safeRmSync(rihalSubdir, opts.target);
+          const rcodeSubdir = path.join(projectClaudeCommands, 'rcode');
+          if (fs.existsSync(rcodeSubdir)) {
+            safeRmSync(rcodeSubdir, opts.target);
           }
           const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
           if (fs.existsSync(projectAgentsDir)) {
             const agentFiles = fs.readdirSync(projectAgentsDir)
-              .filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+              .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
             for (const f of agentFiles) {
               fs.unlinkSync(path.join(projectAgentsDir, f));
             }
           }
-          console.log('  ' + dim('Removed duplicate project-level rihal commands (global ones in ~/.claude/ take precedence).'));
+          console.log('  ' + dim('Removed duplicate project-level rcode commands (global ones in ~/.claude/ take precedence).'));
         } catch { /* non-fatal */ }
         const filtered = plan.filter(e => {
           const rel = e.rel.split(path.sep).join('/');
@@ -2306,18 +2306,18 @@ async function installInner(opts) {
     } catch { /* non-fatal — skip detection on permission errors */ }
   }
 
-  // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
-  const configDir = path.join(opts.target, '.rihal', '_config');
+  // Write .rcode/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
+  const configDir = path.join(opts.target, '.rcode', '_config');
   ensureDir(configDir);
-  // Issue #806: ensure .planning/ exists so /rihal-new-project Write calls succeed
+  // Issue #806: ensure .planning/ exists so /rcode-new-project Write calls succeed
   // even when seedStarterPlanning returns early (e.g. ROADMAP.md already present).
   ensureDir(path.join(opts.target, '.planning'));
   fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
   fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
 
   // Handle --reset flag: delete config.yaml and state.json if --reset is passed
-  const configPath = path.join(opts.target, '.rihal', 'config.yaml');
-  const stateDest = path.join(opts.target, '.rihal', 'state.json');
+  const configPath = path.join(opts.target, '.rcode', 'config.yaml');
+  const stateDest = path.join(opts.target, '.rcode', 'state.json');
   let existedBefore = false;
 
   if (opts.reset && opts.force) {
@@ -2332,7 +2332,7 @@ async function installInner(opts) {
   }
   // Note: --reset without --force is rejected at the top of install() (#680).
 
-  // Write .rihal/config.yaml (user_name, project_name, language, mode)
+  // Write .rcode/config.yaml (user_name, project_name, language, mode)
   // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
   if (!fs.existsSync(configPath)) {
     writeFileAtomic(configPath, generateConfigYaml(opts));
@@ -2368,11 +2368,11 @@ async function installInner(opts) {
       console.log('');
       console.log('  ' + warn('config.yaml has validation errors:'));
       for (const e of validation.errors) console.log(pc.yellow(e));
-      console.log(dim('  → Edit .rihal/config.yaml to fix, then run /rihal-status'));
+      console.log(dim('  → Edit .rcode/config.yaml to fix, then run /rcode-status'));
     }
   } catch { /* best-effort */ }
 
-  // Seed .rihal/state.json (skip if already exists — don't overwrite on re-install unless --reset)
+  // Seed .rcode/state.json (skip if already exists — don't overwrite on re-install unless --reset)
   if (!fs.existsSync(stateDest)) {
     const stateSrc = path.join(SOURCE_ROOT, 'state.json');
     if (fs.existsSync(stateSrc)) {
@@ -2411,21 +2411,21 @@ async function installInner(opts) {
   // .planning/council-sessions/ empty dir
   ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
 
-  // .rihal/context/ — seed stub files so doctor doesn't report "never initialized"
-  // The /rihal-init slash command populates these with real project content.
-  const contextDir = path.join(opts.target, '.rihal', 'context');
+  // .rcode/context/ — seed stub files so doctor doesn't report "never initialized"
+  // The /rcode-init slash command populates these with real project content.
+  const contextDir = path.join(opts.target, '.rcode', 'context');
   ensureDir(contextDir);
   const activeCtx = path.join(contextDir, 'active.md');
   const briefCtx = path.join(contextDir, 'project-brief.md');
   if (!fs.existsSync(activeCtx)) {
-    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rihal-init` inside your AI editor to populate this file._\n');
+    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
   }
   if (!fs.existsSync(briefCtx)) {
-    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rihal-init` inside your AI editor to populate this file._\n');
+    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
   }
 
-  // ~/.rihal/agents/ global agents directory
-  const globalAgentsDir = path.join(os.homedir(), '.rihal', 'agents');
+  // ~/.rcode/agents/ global agents directory
+  const globalAgentsDir = path.join(os.homedir(), '.rcode', 'agents');
   ensureDir(globalAgentsDir);
 
   // Issue #702: files-manifest.csv used to be written here, BEFORE
@@ -2433,11 +2433,11 @@ async function installInner(opts) {
   // functions install were therefore invisible to sweepStaleInstalledFiles
   // and doctor's drift detection. Manifest generation moved below to AFTER
   // all skill installations complete, with extraScanDirs covering both
-  // .claude/skills/ and .rihal/skills/ on disk.
+  // .claude/skills/ and .rcode/skills/ on disk.
 
   // Install v1-style phrase-activated skills (scaffold-project, create-prd,
   // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
-  // Issue #679: skip rihal-* skills that already exist in ~/.claude/skills/
+  // Issue #679: skip rcode-* skills that already exist in ~/.claude/skills/
   // (global precedence) so the slash picker doesn't show every command twice.
   // Reuse the isProjectInstall flag declared earlier in this scope.
   const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
@@ -2445,7 +2445,7 @@ async function installInner(opts) {
   });
   let skillsInstalled = skillsResult.count;
   if (skillsResult.skippedGlobal > 0) {
-    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rihal skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
+    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rcode skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
   }
 
   // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
@@ -2479,7 +2479,7 @@ async function installInner(opts) {
       mergeExistingManifest: !opts.force,
       extraScanDirs: [
         path.join(opts.target, '.claude', 'skills'),
-        path.join(opts.target, '.rihal', 'skills'),
+        path.join(opts.target, '.rcode', 'skills'),
       ],
     }),
   );
@@ -2487,7 +2487,7 @@ async function installInner(opts) {
   // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
   const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
 
-  // Install brain scaffolding at .rihal/brain/ (sources.yaml + README).
+  // Install brain scaffolding at .rcode/brain/ (sources.yaml + README).
   // Actual brain content lands after first brain pull runs.
   installBrainScaffold(PACKAGE_ROOT, opts.target);
 
@@ -2499,13 +2499,13 @@ async function installInner(opts) {
   // Respects --no-git-hooks flag; skips silently when .git/ is absent.
   const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
 
-  // Pull Rihal brain content (v2.0 — issue #158).
-  // Runs rihal-tools brain pull as a child process. Placeholder URLs
+  // Pull rcode brain content (v2.0 — issue #158).
+  // Runs rcode-tools brain pull as a child process. Placeholder URLs
   // are skipped gracefully so this does not fail a fresh install.
   let brainReport = null;
   try {
     const { execFileSync } = require('child_process');
-    const toolsPath = path.join(opts.target, '.rihal', 'bin', 'rihal-tools.cjs');
+    const toolsPath = path.join(opts.target, '.rcode', 'bin', 'rcode-tools.cjs');
     if (fs.existsSync(toolsPath)) {
       // Issue #706: 60s timeout — without it, a slow upstream URL hangs the
       // entire install indefinitely. Brain pull is best-effort, so a timeout
@@ -2594,12 +2594,12 @@ async function installInner(opts) {
   let agentsFromGlobal = false, commandsFromGlobal = false;
   try {
     if (fs.existsSync(agentsDir)) {
-      agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
+      agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
     }
     if (fs.existsSync(commandsDir)) {
-      // claude IDE names commands rihal-*.md; other IDEs use plain {name}.md inside a rihal/ subdir
+      // claude IDE names commands rcode-*.md; other IDEs use plain {name}.md inside a rcode/ subdir
       const commandFilter = primaryIde === 'claude'
-        ? f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))
+        ? f => f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))
         : f => f.endsWith('.md') || f.endsWith('.mdc');
       commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
     }
@@ -2614,23 +2614,23 @@ async function installInner(opts) {
       const homeCommands = path.join(os.homedir(), '.claude/commands');
       const homeSkills = path.join(os.homedir(), '.claude/skills');
       if (agentCount === 0 && fs.existsSync(homeAgents)) {
-        // #669 — count both rihal-* and rcode-* prefixes; missing rcode-
+        // #669 — count both rcode-* and rcode-* prefixes; missing rcode-
         // branch produced "Agents: 0" alongside "Skills: 120".
         const n = fs.readdirSync(homeAgents)
-          .filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
           .length;
         if (n > 0) { agentCount = n; agentsFromGlobal = true; }
       }
       if (commandCount === 0 && fs.existsSync(homeCommands)) {
         const n = fs.readdirSync(homeCommands)
-          .filter(f => (f.startsWith('rihal-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
           .length;
         if (n > 0) { commandCount = n; commandsFromGlobal = true; }
       }
       if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
         try {
           const globalSkillCount = fs.readdirSync(homeSkills, { withFileTypes: true })
-            .filter(d => d.isDirectory() && d.name.startsWith('rihal-')).length;
+            .filter(d => d.isDirectory() && d.name.startsWith('rcode-')).length;
           if (globalSkillCount > skillsInstalled) skillsInstalled = globalSkillCount;
         } catch { /* non-fatal */ }
       }
@@ -2641,9 +2641,9 @@ async function installInner(opts) {
   console.log('');
   console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
   console.log(`  ${bold('IDE:')}       ${opts.ides.join(', ')}`);
-  console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rihal/config.yaml)')}`);
+  console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rcode/config.yaml)')}`);
   console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
-  console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rihal-tools gitignore refresh)')}`);
+  console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rcode-tools gitignore refresh)')}`);
   console.log('');
   // Show the actual install paths so cursor/gemini/antigravity output is accurate
   const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
@@ -2659,9 +2659,9 @@ async function installInner(opts) {
   console.log(`  ${bold('Next:')}`);
   console.log(`    cd ${opts.target}`);
   console.log('    claude              # start Claude Code (reload window if already open)');
-  console.log('    /rihal-progress     # where you are, what\'s next');
-  console.log('    /rihal-do           # interactive command picker');
-  console.log('    /rihal-council <q>  # multi-agent strategic answer');
+  console.log('    /rcode-progress     # where you are, what\'s next');
+  console.log('    /rcode-do           # interactive command picker');
+  console.log('    /rcode-council <q>  # multi-agent strategic answer');
   console.log('');
   // #665 — when the install came in via npm -g (--global --no-prompt), the
   // interactive IDE/planning prompts were skipped. Tell the user how to
@@ -2675,14 +2675,14 @@ async function installInner(opts) {
   console.log(dim('  Refresh anytime:'));
   console.log(dim('    pnpm dlx @hanzlaa/rcode@latest install   # recommended (avoids npm 11.x npx issues)'));
   console.log(dim('    npx @hanzlaa/rcode@latest install        # npm / yarn'));
-  console.log(dim(`    /rihal-update v${version}              # pin rcode to a specific version`));
+  console.log(dim(`    /rcode-update v${version}              # pin rcode to a specific version`));
   console.log('');
   console.log(dim('  Want the rcode CLI on your PATH? (optional — needed for rcode version / rcode update):'));
-  console.log(dim('    npm install -g @hanzlaa/rcode       # installs rcode, rihal, rihal-code commands'));
+  console.log(dim('    npm install -g @hanzlaa/rcode       # installs rcode, rcode, rcode commands'));
   console.log(dim('    rcode version                       # verify'));
   console.log('');
   console.log(dim('  Customize without losing changes on update:'));
-  console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rihal-waleed.local.md)'));
+  console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rcode-waleed.local.md)'));
   console.log(dim('    *.local.md files are NEVER touched by install / --force-overwrite / uninstall.'));
   console.log('');
   console.log('  ' + warn('If your IDE is already open, reload the window to refresh skills/commands.'));
@@ -2691,7 +2691,7 @@ async function installInner(opts) {
 
   // Lightweight update check (#252) — async background, never blocks install.
   // Suppressed in non-TTY / CI or when --no-update-check is passed.
-  if (!opts.noUpdateCheck && process.stdout.isTTY && !process.env.CI && !process.env.RIHAL_NO_UPDATE_NOTIFIER) {
+  if (!opts.noUpdateCheck && process.stdout.isTTY && !process.env.CI && !process.env.RCODE_NO_UPDATE_NOTIFIER) {
     const { execFile } = require('child_process');
     execFile('npm', ['view', '@hanzlaa/rcode', 'version', '--json'], { timeout: 4000 }, (err, stdout) => {
       if (err) return;
@@ -2754,9 +2754,9 @@ function runInstallHealthCheck(target, counts) {
       const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
       expected.agents = tolerate(pkgManifest.agents.size);
       expected.skills = tolerate(pkgManifest.actions.size);
-      // Commands count comes from rihal/commands/. No bundled enumerator
+      // Commands count comes from rcode/commands/. No bundled enumerator
       // exists; reuse the agents threshold as a proxy floor.
-      const commandsDir = path.join(PACKAGE_ROOT, 'rihal', 'commands');
+      const commandsDir = path.join(PACKAGE_ROOT, 'rcode', 'commands');
       if (fs.existsSync(commandsDir)) {
         const cmdCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') && !f.startsWith('_')).length;
         expected.commands = tolerate(cmdCount);
@@ -2774,23 +2774,23 @@ function runInstallHealthCheck(target, counts) {
     }
   }
 
-  check('rihal-tools.cjs runs', () => {
-    const toolsPath = path.join(target, '.rihal', 'bin', 'rihal-tools.cjs');
-    if (!fs.existsSync(toolsPath)) throw new Error('bin/rihal-tools.cjs not installed');
+  check('rcode-tools.cjs runs', () => {
+    const toolsPath = path.join(target, '.rcode', 'bin', 'rcode-tools.cjs');
+    if (!fs.existsSync(toolsPath)) throw new Error('bin/rcode-tools.cjs not installed');
     execFileSync('node', ['-c', toolsPath], { stdio: 'pipe' });
     return 'syntax ok';
   });
 
-  check('.rihal/config.yaml present', () => {
-    const p = path.join(target, '.rihal', 'config.yaml');
+  check('.rcode/config.yaml present', () => {
+    const p = path.join(target, '.rcode', 'config.yaml');
     if (!fs.existsSync(p)) throw new Error('missing');
     const text = fs.readFileSync(p, 'utf8');
     if (!/user_name:|project_name:/.test(text)) throw new Error('config.yaml incomplete');
     return `${fs.statSync(p).size} bytes`;
   });
 
-  check('.rihal/state.json parses', () => {
-    const p = path.join(target, '.rihal', 'state.json');
+  check('.rcode/state.json parses', () => {
+    const p = path.join(target, '.rcode', 'state.json');
     if (!fs.existsSync(p)) throw new Error('missing');
     JSON.parse(fs.readFileSync(p, 'utf8'));
     return 'valid JSON';
@@ -2814,7 +2814,7 @@ function runInstallHealthCheck(target, counts) {
   if (fails > 0) {
     console.log('');
     console.log('  ' + fail(`${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`));
-    console.log(dim('     Debug: node .rihal/bin/rihal-tools.cjs state read && ls -la .rihal/'));
+    console.log(dim('     Debug: node .rcode/bin/rcode-tools.cjs state read && ls -la .rcode/'));
     console.log(dim('     Reinstall: rcode install . --force'));
     console.log('');
     return false;
@@ -2863,7 +2863,7 @@ async function runInstallWizard(opts) {
   const pkgVersion = readPackageVersion();
 
   console.log('');
-  intro(pc.bold('🕌 Rihal Code') + pc.dim(`  v${pkgVersion}`));
+  intro(pc.bold('🕌 rcode') + pc.dim(`  v${pkgVersion}`));
 
   // ── 1. Install directory ──────────────────────────────────────────────
   if (!opts.targetProvided) {
@@ -2968,7 +2968,7 @@ async function runInstallWizard(opts) {
 if (require.main === module) main();
 
 /**
- * Handler for cli/index.js — called as `npx rihal-code install [args]`.
+ * Handler for cli/index.js — called as `npx rcode install [args]`.
  * Converts the index.js-style (args, ctx) signature into a cli/install.js
  * parseArgs-compatible argv and runs install().
  */

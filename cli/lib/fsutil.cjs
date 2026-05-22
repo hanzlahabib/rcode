@@ -1,7 +1,7 @@
 /**
- * Filesystem utilities for the Rihal Code CLI.
+ * Filesystem utilities for the rcode CLI.
  *
- * Currently provides atomic writes so state files (.rihal/state.json,
+ * Currently provides atomic writes so state files (.rcode/state.json,
  * github-map.json, model-profiles.json, AGENTS.md) can't be truncated by
  * a Ctrl+C mid-write. Pattern: write to a sibling temp file, fsync, then
  * rename over the target. On POSIX, rename within a filesystem is atomic,
@@ -89,7 +89,7 @@ function writeJsonAtomic(filePath, obj, opts = {}) {
  *
  * Symlinks INSIDE the directory are still followed by Node's rmSync — that
  * is unavoidable with the recursive flag. The threat model addressed here
- * is a single top-level symlink swap (e.g. `.rihal -> /`), not deep nested
+ * is a single top-level symlink swap (e.g. `.rcode -> /`), not deep nested
  * symlinks. Defense in depth, not a sandbox.
  *
  * @param {string} targetPath path to remove

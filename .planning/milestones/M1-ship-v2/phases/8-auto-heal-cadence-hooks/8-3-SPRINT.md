@@ -5,8 +5,8 @@ title: phase-status drift detector — extends feature-drift with --mode=phase-s
 wave: 2
 depends_on: [8.2]
 files_modified:
-  - rihal/workflows/feature-drift.md
-  - rihal/agents/rihal-docs-auditor.md
+  - rcode/workflows/feature-drift.md
+  - rcode/agents/rcode-docs-auditor.md
   - scripts/dogfood-check.sh
 autonomous: true
 sequential: false
@@ -28,7 +28,7 @@ Closes #461. Detect drift between ROADMAP claim and shipping reality (phase stat
 <task id="8.3.1">
 <title>Add --mode=phase-status to feature-drift workflow</title>
 <read_first>
-- rihal/workflows/feature-drift.md (extends existing parse_args + scan_drift)
+- rcode/workflows/feature-drift.md (extends existing parse_args + scan_drift)
 - .planning/phases/8-auto-heal-cadence-hooks/8-CONTEXT.md (D-6, D-7, D-8, D-9)
 </read_first>
 
@@ -50,9 +50,9 @@ Add severity-classify rules for phase-status mode: trivial = missing ✅, partia
 </task>
 
 <task id="8.3.2">
-<title>Add <mode_phase_status> section to rihal-docs-auditor</title>
+<title>Add <mode_phase_status> section to rcode-docs-auditor</title>
 <read_first>
-- rihal/agents/rihal-docs-auditor.md (study the existing <mode_feature_drift> section as template)
+- rcode/agents/rcode-docs-auditor.md (study the existing <mode_feature_drift> section as template)
 </read_first>
 
 <action>

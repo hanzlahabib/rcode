@@ -88,7 +88,7 @@ function PhaseNode({ phase: p, filterQuery, expandSignal }) {
       <div class="tree-row" onClick=${() => setOpen(o => !o)} onDblClick=${handleDblClick}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
         <span class="tree-icon"><${Icon} name="clipboard-list" size=${14}/></span>
-        ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
+        ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rcode-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
         <span class="tree-label">P${p.id} — ${p.name}</span>
         <${Chip} status=${p.status}/>
         <${RunningBadge} count=${running}/>
@@ -130,7 +130,7 @@ function SprintNode({ sprint: s, expandSignal }) {
       <div class="tree-row" onClick=${() => setOpen(o => !o)}>
         <span class="tree-chevron">${open ? '▼' : '▶'}</span>
         <span class="tree-icon"><${Icon} name="zap" size=${14}/></span>
-        <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rihal-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
+        <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rcode-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
         <span class="tree-label">Sprint ${s.id} — ${s.goal || 'No goal'}</span>
         <${Chip} status=${s.status}/>
         <span class="tree-badge">${sDone}/${sts.length}</span>
@@ -186,15 +186,15 @@ export function RoadmapView() {
     ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done'
   );
   const rmHints = [
-    ['/rihal-autonomous',       'Execute all remaining phases (autonomous)'],
-    ['/rihal-audit',            'Audit the project'],
-    ['/rihal-add-phase',        'Add a new phase'],
-    ['/rihal-milestone-summary','View milestone summary'],
-    ['/rihal-new-milestone',    'Start a new milestone'],
+    ['/rcode-autonomous',       'Execute all remaining phases (autonomous)'],
+    ['/rcode-audit',            'Audit the project'],
+    ['/rcode-add-phase',        'Add a new phase'],
+    ['/rcode-milestone-summary','View milestone summary'],
+    ['/rcode-new-milestone',    'Start a new milestone'],
   ];
   if (allPDone) {
-    rmHints.push(['/rihal-audit-milestone',    'Audit milestone completion']);
-    rmHints.push(['/rihal-complete-milestone', 'Complete and archive milestone']);
+    rmHints.push(['/rcode-audit-milestone',    'Audit milestone completion']);
+    rmHints.push(['/rcode-complete-milestone', 'Complete and archive milestone']);
   }
 
   const q = filterQuery.toLowerCase().trim();
@@ -218,11 +218,11 @@ export function RoadmapView() {
             </span>
             <span class="ms-actions">
               <button class="card-run-btn" title="Execute every remaining phase (autonomous run — pauses at checkpoints)"
-                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-execute-all', '/rihal-autonomous', 'Execute all phases'); }}>
+                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-execute-all', '/rcode-autonomous', 'Execute all phases'); }}>
                 <${Icon} name="play" size=${12}/> Run All
               </button>
               <button class="card-run-btn ms-audit-btn" title="Audit the whole milestone"
-                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-audit', '/rihal-audit-milestone', 'Audit milestone'); }}>
+                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-audit', '/rcode-audit-milestone', 'Audit milestone'); }}>
                 <${Icon} name="clipboard-list" size=${12}/> Audit
               </button>
             </span>

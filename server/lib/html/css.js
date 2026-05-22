@@ -1,7 +1,7 @@
 /* CLAUDE.md exemption: pure CSS data file, no logic — 1000-line limit does not apply */
 /**
  * Dashboard CSS — Linear design system.
- * Dark-first (Linear-style). Rihal accent: #5e6ad2 (Aether Blue).
+ * Dark-first (Linear-style). rcode accent: #5e6ad2 (Aether Blue).
  */
 function renderCss() {
   return `<style>
@@ -29,7 +29,7 @@ function renderCss() {
   --text-tertiary:  #8a8f98;
   --text-muted:     #62666d;
 
-  /* Brand — Rihal keeps Aether Blue */
+  /* Brand — rcode keeps Aether Blue */
   --accent-primary: #5e6ad2;
   --accent-hover:   #7170ff;
   --accent-active:  #4853bb;

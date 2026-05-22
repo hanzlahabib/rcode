@@ -7,7 +7,7 @@
 <domain>
 ## Phase Boundary
 
-Run every rihal tool against rihal-code itself, surface every gap as a filed issue (no silent fixes), and add a CI gate that catches regressions on push. This phase formalizes the ad-hoc dogfooding that surfaced 8 systemic bugs during Phase 6 — turning episodic discovery into recurring practice.
+Run every rcode tool against rcode itself, surface every gap as a filed issue (no silent fixes), and add a CI gate that catches regressions on push. This phase formalizes the ad-hoc dogfooding that surfaced 8 systemic bugs during Phase 6 — turning episodic discovery into recurring practice.
 
 **In scope:**
 - Plan 1: Dogfood scan — invoke each tool, document observed-vs-expected
@@ -16,7 +16,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 - Plan 4: CI dogfood gate — fail-on-regression check on push to main
 
 **Deferred:**
-- Plan 5 (stretch): `/rihal-dogfood-scan` slash-command wrapper — wait for Plan 1 to land first; if scan-results.md proves stable, then wrap. Tracked in deferred section.
+- Plan 5 (stretch): `/rcode-dogfood-scan` slash-command wrapper — wait for Plan 1 to land first; if scan-results.md proves stable, then wrap. Tracked in deferred section.
 
 **Not in scope:**
 - Phase-status drift detector (#461) — Phase 8 owns it
@@ -34,8 +34,8 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 
 ### Workflow drift sweep
 
-- **D-3:** Pattern to detect: `rihal-tools.cjs <subcommand>` referenced in any `.md` workflow → confirm the subcommand exists in `rihal/bin/rihal-tools.cjs` AND accepts the expected flags AND returns the JSON shape the workflow consumes. The detector grep + verifier loop runs in plan 2.
-- **D-4:** Drift findings classify into severity: `breaking` (subcommand doesn't exist — like #460 #462), `shape` (subcommand exists but flags or output mismatched), `cosmetic` (workflow refers to `/rihal-x` form when canonical is `/rihal-x` — already cleaned in #456 but verify no recurrence).
+- **D-3:** Pattern to detect: `rcode-tools.cjs <subcommand>` referenced in any `.md` workflow → confirm the subcommand exists in `rcode/bin/rcode-tools.cjs` AND accepts the expected flags AND returns the JSON shape the workflow consumes. The detector grep + verifier loop runs in plan 2.
+- **D-4:** Drift findings classify into severity: `breaking` (subcommand doesn't exist — like #460 #462), `shape` (subcommand exists but flags or output mismatched), `cosmetic` (workflow refers to `/rcode-x` form when canonical is `/rcode-x` — already cleaned in #456 but verify no recurrence).
 
 ### State path audit
 
@@ -66,16 +66,16 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 - `#461` — phase-status drift (Phase 8, not Phase 9 — but the audit's recurring run will eventually catch its absence)
 
 ### Existing tools to audit
-- `rihal/workflows/health.md` — 6-point installation health check
-- `rihal/workflows/status.md` — phase + sprint state from state.json
-- `rihal/workflows/audit.md` — unified audit router
-- `rihal/workflows/feature-drift.md` — just shipped in Phase 6
-- `rihal/workflows/memory-audit.md` — extended in Phase 6 with --fix
-- `rihal/bin/rihal-tools.cjs` — every CLI subcommand referenced by any workflow
+- `rcode/workflows/health.md` — 6-point installation health check
+- `rcode/workflows/status.md` — phase + sprint state from state.json
+- `rcode/workflows/audit.md` — unified audit router
+- `rcode/workflows/feature-drift.md` — just shipped in Phase 6
+- `rcode/workflows/memory-audit.md` — extended in Phase 6 with --fix
+- `rcode/bin/rcode-tools.cjs` — every CLI subcommand referenced by any workflow
 
 ### Convention sources
 - `CLAUDE.md` — project rules (no push without approval, conventional commits, no AI attribution)
-- `.gitignore` — `.rihal/state.json` is gitignored, `.planning/state.json` should NOT exist
+- `.gitignore` — `.rcode/state.json` is gitignored, `.planning/state.json` should NOT exist
 - Phase 6 SUMMARY.md — pattern proven this session: ticket-first, dogfood-first, atomic-commit-per-fix
 
 </canonical_refs>
@@ -87,7 +87,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 - **Phase 6 fix-issue pattern** — every gap got its own GH issue with reproducer + commit closing it. Plan 1-3 reuse this discipline.
 - **`gh issue create` with HEREDOC** — bash pattern for filing issues from CLI without manual editor open.
 - **`grep -rln` + grep verification loop** — pattern used to verify CLI references in #460 + #462 sweep. Plan 2 templates from this.
-- **`rihal/bin/rihal-tools.cjs help`** output — already enumerates all subcommands; Plan 2 cross-references workflow refs against this list.
+- **`rcode/bin/rcode-tools.cjs help`** output — already enumerates all subcommands; Plan 2 cross-references workflow refs against this list.
 
 ### Established patterns
 - **Atomic commit per fix** with `fix(scope): {what} → {fixed}` message. Phase 9 fixes follow this.
@@ -95,7 +95,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 - **Reports as markdown artifacts** in phase dir — `SCAN-RESULTS.md`, `DRIFT-SWEEP.md`, etc.
 
 ### Integration points
-- **`rihal/bin/rihal-tools.cjs help`** — primary source-of-truth for "what CLI subcommands exist". Plan 2's verifier reads this.
+- **`rcode/bin/rcode-tools.cjs help`** — primary source-of-truth for "what CLI subcommands exist". Plan 2's verifier reads this.
 - **`.github/workflows/`** — Plan 4 adds new YAML here.
 - **`package.json`** — Plan 4 adds `scripts.dogfood` for local invocation.
 
@@ -104,7 +104,7 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 <specifics>
 ## Specific Ideas
 
-- **Audit report format** — for each tool, three sections: `## What it claims to do` (from workflow purpose), `## Observed on rihal-code` (actual output captured), `## Drift / gap` (delta + severity). Maps cleanly into issue bodies if filed.
+- **Audit report format** — for each tool, three sections: `## What it claims to do` (from workflow purpose), `## Observed on rcode` (actual output captured), `## Drift / gap` (delta + severity). Maps cleanly into issue bodies if filed.
 - **CI gate runs in <30 seconds** — no subagent spawning, no plan/execute calls. Just CLI smoke tests + grep checks. Anything heavier becomes a separate scheduled run.
 - **Filing one umbrella issue per audit run** if multiple gaps appear — link individual reproducer issues underneath. Avoid issue-flood from a single audit.
 
@@ -113,9 +113,9 @@ Run every rihal tool against rihal-code itself, surface every gap as a filed iss
 <deferred>
 ## Deferred Ideas
 
-- **Plan 5 — `/rihal-dogfood-scan` slash command** — wrap plan 1 into a one-shot invocation. Defer to follow-up phase (10 or 11) once SCAN-RESULTS.md format stabilizes.
+- **Plan 5 — `/rcode-dogfood-scan` slash command** — wrap plan 1 into a one-shot invocation. Defer to follow-up phase (10 or 11) once SCAN-RESULTS.md format stabilizes.
 - **Scheduled dogfood runs** — `/loop` or `/schedule` agent that runs the audit daily and auto-files issues — Phase 8 territory (cadence docs).
-- **Cross-project dogfood** — running rihal-code's tools on schedule-manager / siraaj after package release. Out of scope for Phase 9 since those projects aren't this repo.
+- **Cross-project dogfood** — running rcode's tools on schedule-manager / siraaj after package release. Out of scope for Phase 9 since those projects aren't this repo.
 
 ### Reviewed Todos (not folded)
 None — no pending todos relevant to dogfood audit.

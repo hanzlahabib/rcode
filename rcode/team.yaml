@@ -1,0 +1,610 @@
+# rcode v2 Agent Roster
+# Structured definition of all installed agents: roles, authority levels, domain keywords for council dispatch
+# Updated: 2026-04-23
+
+agents:
+  - id: rcode-sadiq
+    name: Sadiq (صادق)
+    file_path: rcode/agents/rcode-sadiq.md
+    skill_path: rcode/skills/agents/sadiq-analyst
+    role: Director of Strategy
+    authority_level: strategic
+    domain_keywords:
+      - strategy
+      - priority
+      - kill-criterion
+      - opportunity-cost
+      - should-we-build
+      - timing
+      - market-opportunity
+    description: Pushes for measurable outcomes and kill criteria. Answers "should we build this", "why now", "what NOT to do" questions.
+
+  - id: rcode-waleed
+    name: Waleed (وليد)
+    file_path: rcode/agents/rcode-waleed.md
+    skill_path: rcode/skills/agents/waleed-architect
+    role: Chief Technology Officer
+    authority_level: technical
+    domain_keywords:
+      - architecture
+      - stack
+      - feasibility
+      - security
+      - scale
+      - performance
+      - tech-debt
+      - database
+      - infrastructure
+    description: Answers architecture, stack selection, technical feasibility, security, and scale questions.
+
+  - id: rcode-fatima
+    name: Fatima (فاطمة)
+    file_path: rcode/agents/rcode-fatima.md
+    skill_path: rcode/skills/agents/fatima-qa
+    role: QA Lead
+    authority_level: quality
+    domain_keywords:
+      - quality
+      - testing
+      - test-strategy
+      - coverage
+      - release-readiness
+      - regression
+      - bugs
+      - qa-gates
+    description: Answers quality gates, test strategy, coverage, release readiness, and "is this production-ready" questions.
+
+  - id: rcode-mariam
+    name: Mariam (مريم)
+    file_path: rcode/agents/rcode-mariam.md
+    skill_path: rcode/skills/agents/mariam-marketing
+    role: Marketing & Growth Lead
+    authority_level: growth
+    domain_keywords:
+      - market-research
+      - discovery
+      - user-research
+      - gtm
+      - positioning
+      - messaging
+      - growth-strategy
+    description: Market research, user discovery, GTM strategy, positioning, and growth metrics.
+
+  - id: rcode-hussain-pm
+    name: Hussain (حسين)
+    file_path: rcode/agents/rcode-hussain-pm.md
+    skill_path: rcode/skills/agents/hussain-pm
+    role: Product Manager
+    authority_level: product
+    domain_keywords:
+      - scope
+      - requirements
+      - prd
+      - user-stories
+      - acceptance-criteria
+      - backlog
+    description: Scope, requirements, PRD writing, user stories, and backlog curation.
+
+  - id: rcode-hussain-sm
+    name: Hussain (حسين)
+    skill_path: rcode/skills/agents/hussain-sm
+    role: Scrum Master
+    authority_level: product
+    domain_keywords:
+      - sprint-planning
+      - story-preparation
+      - sprint-status
+      - retrospective
+      - course-correction
+      - agile-ceremonies
+    description: Sprint planning, story preparation, sprint status reporting, retrospectives, and mid-sprint course correction.
+
+  - id: rcode-yousef
+    name: Yousef (يوسف)
+    file_path: rcode/agents/rcode-yousef.md
+    skill_path: rcode/skills/agents/yousef-backend
+    role: Senior Backend Engineer
+    authority_level: technical
+    domain_keywords:
+      - backend
+      - api
+      - database
+      - performance
+      - latency
+      - queues
+      - webhooks
+      - integrations
+      - p50
+      - p95
+    description: Backend implementation, API design, database queries, performance tuning, and latency diagnosis.
+
+  - id: rcode-haitham
+    name: Haitham (هيثم)
+    file_path: rcode/agents/rcode-haitham.md
+    skill_path: rcode/skills/agents/haitham-frontend
+    role: Senior Frontend Engineer
+    authority_level: technical
+    domain_keywords:
+      - frontend
+      - react
+      - nextjs
+      - components
+      - rtl
+      - arabic-layout
+      - accessibility
+      - a11y
+      - bundle-size
+    description: React/Next.js, component design, RTL/Arabic layouts, accessibility, and frontend performance.
+
+  - id: rcode-zayd
+    name: Zayd (زيد)
+    file_path: rcode/agents/rcode-zayd.md
+    skill_path: rcode/skills/agents/zayd-ml
+    role: Senior ML Engineer
+    authority_level: technical
+    domain_keywords:
+      - ml
+      - machine-learning
+      - ocr
+      - llm
+      - rag
+      - retrieval
+      - embeddings
+      - vector-search
+      - nlp
+      - arabic-nlp
+    description: ML model selection, training, LLM integration, RAG/retrieval, vector search, and Arabic NLP.
+
+  - id: rcode-layla
+    name: Layla (ليلى)
+    file_path: rcode/agents/rcode-layla.md
+    skill_path: rcode/skills/agents/layla-designer
+    role: UX Designer
+    authority_level: design
+    domain_keywords:
+      - ux
+      - user-experience
+      - interaction-design
+      - user-flow
+      - wireframe
+      - design-system
+      - accessibility
+      - usability
+    description: User experience design, interaction flows, design systems, accessibility audits, and usability reviews.
+
+  - id: rcode-zahra
+    name: Zahra (زهرة)
+    file_path: rcode/agents/rcode-zahra.md
+    skill_path: rcode/skills/agents/zahra-branding
+    role: Branding & Creative Director
+    authority_level: design
+    domain_keywords:
+      - brand
+      - brand-identity
+      - typography
+      - arabic-typography
+      - color-system
+      - design-tokens
+      - visual-language
+      - brand-audit
+    description: Brand identity, visual language, typography systems (Latin + Arabic), color systems, and design tokens.
+
+  - id: rcode-nasser
+    name: Nasser (ناصر)
+    file_path: rcode/agents/rcode-nasser.md
+    skill_path: rcode/skills/agents/nasser-eng-manager
+    role: Software Engineering Manager
+    authority_level: management
+    domain_keywords:
+      - 1on1
+      - hiring
+      - onboarding
+      - growth-plan
+      - performance-review
+      - team-health
+      - burnout
+      - squad-composition
+    description: People operations, 1:1s, hiring, onboarding, growth plans, team health, and burnout detection.
+
+  - id: rcode-khalid
+    name: Khalid (خالد)
+    file_path: rcode/agents/rcode-khalid.md
+    role: DevOps & Infrastructure Engineer
+    authority_level: operational
+    domain_keywords:
+      - devops
+      - ci-cd
+      - deployment
+      - containers
+      - docker
+      - kubernetes
+      - monitoring
+      - infrastructure
+      - release-engineering
+    description: Deployment pipelines, CI/CD, container orchestration, cloud infrastructure, monitoring, and release engineering.
+
+  - id: rcode-noor
+    name: Noor (نور)
+    file_path: rcode/agents/rcode-noor.md
+    skill_path: rcode/skills/agents/noor-writer
+    role: Technical Writer & Presentation Lead
+    authority_level: operational
+    domain_keywords:
+      - documentation
+      - readme
+      - api-docs
+      - mermaid
+      - diagrams
+      - pitch-deck
+      - changelog
+      - blog-post
+      - migration-guide
+      - inline-comments
+    description: Documentation, README files, API docs, architecture diagrams, changelogs, migration guides, inline code comments, pitch decks, and blog posts.
+
+  - id: rcode-ahmed
+    name: Ahmed Al Hassani (أحمد الحسني)
+    file_path: rcode/agents/rcode-ahmed.md
+    skill_path: rcode/skills/agents/ahmed-hassani-director
+    role: Technology & Development Director
+    authority_level: strategic
+    domain_keywords:
+      - delivery-plan
+      - engineering-standards
+      - raci
+      - cross-team
+      - dora-metrics
+      - tech-debt-backlog
+      - delivery-timeline
+    description: Bridges CTO vision to executable delivery. Engineering standards, DORA metrics, cross-team coordination.
+
+  - id: rcode-hanzla
+    name: Hanzla (حنظلة)
+    file_path: rcode/agents/rcode-hanzla.md
+    skill_path: rcode/skills/agents/hanzla-engineer
+    role: Senior Full-Stack Engineer
+    authority_level: technical
+    domain_keywords:
+      - implementation
+      - story-execution
+      - code
+      - bug-fix
+      - refactoring
+      - testing
+    description: Story execution, code implementation, bug fixes, refactoring, and hands-on development.
+
+  - id: rcode-omar
+    name: Omar (عمر)
+    file_path: rcode/agents/rcode-omar.md
+    role: Software Engineer
+    authority_level: operational
+    domain_keywords:
+      - implementation
+      - code
+      - pairing
+      - tasks
+      - migrations
+    description: Generalist engineer for implementation tasks spanning frontend and backend. Pairs with Hanzla on complex stories.
+
+  - id: rcode-dalil-scout
+    name: Dalil (دليل)
+    skill_path: rcode/skills/agents/dalil-scout
+    role: Codebase Scout
+    authority_level: analysis
+    domain_keywords:
+      - codebase-discovery
+      - repository-exploration
+      - topic-sweep
+      - architecture-mapping
+      - integrations-audit
+      - project-structure
+    description: Repository discovery, multi-root exploration, focused topic sweeps, and structured codebase documents.
+
+  - id: rcode-raees-orchestrator
+    name: Raees (رئيس)
+    skill_path: rcode/skills/agents/raees-orchestrator
+    role: Project Orchestration Director
+    authority_level: strategic
+    domain_keywords:
+      - orchestration
+      - dispatch
+      - work-routing
+      - phase-sequencing
+      - team-coordination
+      - handoffs
+    description: Dispatches work to the right specialists, sequences phases, identifies parallel vs sequential work, and coordinates handoffs.
+
+  - id: rcode-majlis-council
+    name: Majlis (مجلس)
+    skill_path: rcode/skills/agents/majlis-council
+    role: Multi-Agent Council
+    authority_level: strategic
+    domain_keywords:
+      - council
+      - team-consultation
+      - multi-agent-discussion
+      - crisis-mode
+      - incident-response
+      - cross-domain
+    description: Convenes the rcode team to discuss any topic, collects perspectives from all relevant specialists, and delivers a synthesised answer with dissent noted.
+
+utility_agents:
+  - id: rcode-planner
+    name: rcode Planner
+    role: Phase Planning
+    authority_level: operational
+    domain_keywords:
+      - planning
+      - phase-plan
+      - task-breakdown
+    description: Creates detailed implementation plans from scope and context.
+
+  - id: rcode-executor
+    name: rcode Executor
+    role: Implementation
+    authority_level: operational
+    domain_keywords:
+      - implementation
+      - execution
+      - code-changes
+    description: Executes planned work, commits changes, creates summaries.
+
+  - id: rcode-verifier
+    name: rcode Verifier
+    role: Quality Verification
+    authority_level: quality
+    domain_keywords:
+      - verification
+      - testing
+      - validation
+    description: Verifies phase completion and checks quality gates.
+
+# Council panel routing rules
+# These rules determine which agents are spawned for different question types.
+# Panel scorer (council-panel.cjs) picks from these based on keyword signals.
+routing:
+  market:
+    - rcode-mariam      # leads
+    - rcode-hussain-pm  # scopes
+    - rcode-sadiq       # kill criteria
+  codebase:
+    - rcode-waleed      # architecture lead
+    - rcode-yousef      # backend implementation
+    - rcode-fatima      # quality gates
+  performance:
+    - rcode-yousef      # backend perf diagnosis owns p50/p95/throughput
+    - rcode-waleed      # architecture-level perf decisions (caching, sharding)
+    - rcode-fatima      # benchmarking + regression guards
+  ml:
+    - rcode-zayd        # ML/OCR/retrieval lead
+    - rcode-yousef      # integration points (queues, APIs)
+    - rcode-fatima      # eval + perf testing
+  frontend:
+    - rcode-haitham     # React/Next.js/RTL implementation
+    - rcode-layla       # UX + interaction design
+    - rcode-fatima      # accessibility + visual regression
+  team:
+    - rcode-sadiq       # leads
+    - rcode-nasser      # people/ops
+  release:
+    - rcode-fatima      # leads
+    - rcode-waleed      # architecture
+    - rcode-khalid      # infra/deploy (if installed)
+  design:
+    - rcode-layla       # UX design lead
+    - rcode-zahra       # branding + visual identity
+    - rcode-waleed      # technical feasibility
+  greenfield:
+    - rcode-mariam      # market
+    - rcode-hussain-pm  # scope
+    - rcode-waleed      # feasibility
+    - rcode-sadiq       # strategic fit
+
+# Tactical / Workflow Agents (spawned by workflows)
+tactical_agents:
+  - id: rcode-advisor-researcher
+    name: Advisor Researcher
+    file_path: rcode/agents/rcode-advisor-researcher.md
+    role: Advisor Researcher
+    authority_level: research
+    description: Advisor-level deep research for gray-area decisions
+
+  - id: rcode-assumptions-analyzer
+    name: Assumptions Analyzer
+    file_path: rcode/agents/rcode-assumptions-analyzer.md
+    role: Assumptions Analyzer
+    authority_level: analysis
+    description: Analyzes phase assumptions with evidence from codebase
+
+  - id: rcode-fixer
+    name: Code Fixer
+    file_path: rcode/agents/rcode-fixer.md
+    role: Code Fixer
+    authority_level: implementation
+    description: Applies code review findings and implements fixes
+
+  - id: rcode-reviewer
+    name: Code Reviewer
+    file_path: rcode/agents/rcode-reviewer.md
+    role: Code Reviewer
+    authority_level: quality
+    description: Reviews code for bugs, security issues, quality problems
+
+  - id: rcode-codebase-mapper
+    name: Codebase Mapper
+    file_path: rcode/agents/rcode-codebase-mapper.md
+    role: Codebase Mapper
+    authority_level: analysis
+    description: Explores and documents codebase architecture
+
+  - id: rcode-debugger
+    name: Debugger
+    file_path: rcode/agents/rcode-debugger.md
+    role: Debugger
+    authority_level: implementation
+    description: Investigates bugs using scientific method
+
+  - id: rcode-deviation-analyzer
+    name: Deviation Analyzer
+    file_path: rcode/agents/rcode-deviation-analyzer.md
+    role: Deviation Analyzer
+    authority_level: analysis
+    description: Analyzes plan deviations and root causes
+
+  - id: rcode-docs-auditor
+    name: Docs Auditor
+    file_path: rcode/agents/rcode-docs-auditor.md
+    role: Docs Auditor
+    authority_level: quality
+    description: Audits documentation completeness and accuracy
+
+  - id: rcode-edge-case-hunter
+    name: Edge Case Hunter
+    file_path: rcode/agents/rcode-edge-case-hunter.md
+    role: Edge Case Hunter
+    authority_level: quality
+    description: Enumerates edge cases and boundary conditions
+
+  - id: rcode-executor
+    name: Executor
+    file_path: rcode/agents/rcode-executor.md
+    role: Executor
+    authority_level: implementation
+    description: Executes sprint plans with atomic commits
+
+  - id: rcode-integration-checker
+    name: Integration Checker
+    file_path: rcode/agents/rcode-integration-checker.md
+    role: Integration Checker
+    authority_level: quality
+    description: Verifies cross-phase integration and E2E flows
+
+  - id: rcode-nyquist-auditor
+    name: Nyquist Auditor
+    file_path: rcode/agents/rcode-nyquist-auditor.md
+    role: Nyquist Auditor
+    authority_level: quality
+    description: Fills test coverage gaps for phase requirements
+
+  - id: rcode-phase-researcher
+    name: Phase Researcher
+    file_path: rcode/agents/rcode-phase-researcher.md
+    role: Phase Researcher
+    authority_level: research
+    description: Researches how to implement a phase before planning
+
+  - id: rcode-planner
+    name: Planner
+    file_path: rcode/agents/rcode-planner.md
+    role: Planner
+    authority_level: planning
+    description: Creates executable phase plans with task breakdown
+
+  - id: rcode-profiler
+    name: Profiler
+    file_path: rcode/agents/rcode-profiler.md
+    role: Profiler
+    authority_level: analysis
+    description: Analyzes user behavior patterns and personas
+
+  - id: rcode-project-researcher
+    name: Project Researcher
+    file_path: rcode/agents/rcode-project-researcher.md
+    role: Project Researcher
+    authority_level: research
+    description: Researches domain ecosystem before roadmap creation
+
+  - id: rcode-remediation-planner
+    name: Remediation Planner
+    file_path: rcode/agents/rcode-remediation-planner.md
+    role: Remediation Planner
+    authority_level: planning
+    description: Plans remediation for issues and blockers
+
+  - id: rcode-research-synthesizer
+    name: Research Synthesizer
+    file_path: rcode/agents/rcode-research-synthesizer.md
+    role: Research Synthesizer
+    authority_level: research
+    description: Synthesizes parallel research outputs into summary
+
+  - id: rcode-roadmapper
+    name: Roadmapper
+    file_path: rcode/agents/rcode-roadmapper.md
+    role: Roadmapper
+    authority_level: planning
+    description: Creates project roadmaps with phase breakdown
+
+  - id: rcode-security-adversary
+    name: Security Adversary
+    file_path: rcode/agents/rcode-security-adversary.md
+    role: Security Adversary
+    authority_level: security
+    description: Adversarial security review and threat modeling
+
+  - id: rcode-security-auditor
+    name: Security Auditor
+    file_path: rcode/agents/rcode-security-auditor.md
+    role: Security Auditor
+    authority_level: security
+    description: Comprehensive security audit and compliance verification
+
+  - id: rcode-sprint-checker
+    name: Sprint Checker
+    file_path: rcode/agents/rcode-sprint-checker.md
+    role: Sprint Checker
+    authority_level: quality
+    description: Verifies sprint plans before execution
+
+  - id: rcode-ui-auditor
+    name: UI Auditor
+    file_path: rcode/agents/rcode-ui-auditor.md
+    role: UI Auditor
+    authority_level: quality
+    description: Audits UI for usability and design quality
+
+  - id: rcode-ux-designer
+    name: UX Designer
+    file_path: rcode/agents/rcode-ux-designer.md
+    role: UX Designer
+    authority_level: design
+    description: UX design, accessibility, and design system work
+
+  - id: rcode-verifier
+    name: Verifier
+    file_path: rcode/agents/rcode-verifier.md
+    role: Verifier
+    authority_level: quality
+    description: Verifies phase goal achievement goal-backward
+
+  - id: rcode-i18n-auditor
+    name: i18n Auditor
+    file_path: rcode/agents/rcode-i18n-auditor.md
+    skill_path: rcode/skills/agents/rcode-i18n-auditor
+    role: i18n Auditor
+    authority_level: quality
+    description: Detects hardcoded English strings, missing response_language threading, and RTL layout gaps
+
+  - id: rcode-cross-platform-auditor
+    name: Cross-Platform Auditor
+    file_path: rcode/agents/rcode-cross-platform-auditor.md
+    skill_path: rcode/skills/agents/rcode-cross-platform-auditor
+    role: Cross-Platform Auditor
+    authority_level: quality
+    description: Detects bash-isms, macOS-only flags, hardcoded Unix paths, and CRLF line endings
+
+  - id: rcode-dep-auditor
+    name: Dep Auditor
+    file_path: rcode/agents/rcode-dep-auditor.md
+    skill_path: rcode/skills/agents/rcode-dep-auditor
+    role: Dependency Health Auditor
+    authority_level: quality
+    description: Scans for outdated packages, CVEs, unused dependencies, and loose version pins
+
+  - id: rcode-observability-auditor
+    name: Observability Auditor
+    file_path: rcode/agents/rcode-observability-auditor.md
+    skill_path: rcode/skills/agents/rcode-observability-auditor
+    role: Observability Auditor
+    authority_level: quality
+    description: Detects unguarded shell calls, unchecked Task() results, and missing INIT .ok checks

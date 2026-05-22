@@ -38,7 +38,7 @@ function waitForReady(proc, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('dashboard did not start in time')), timeoutMs);
     proc.stdout.on('data', (buf) => {
-      if (buf.toString().includes('Rihal Code Dashboard')) {
+      if (buf.toString().includes('rcode Dashboard')) {
         clearTimeout(timer);
         // give it a beat to bind the listener
         setTimeout(resolve, 100);
@@ -80,7 +80,7 @@ test('dashboard: boots and serves /health, /api/state, /api/memory', async (t) =
 
   const state = await get(port, '/api/state');
   assert.equal(state.status, 200);
-  // state.json may or may not exist on this repo's .rihal/ — both are valid
+  // state.json may or may not exist on this repo's .rcode/ — both are valid
   const stateJson = JSON.parse(state.body);
   assert.ok(typeof stateJson === 'object', 'state must be an object');
 

@@ -12,7 +12,7 @@ must_haves:
     - "A completed orchestration run survives an orchestrator restart and is still readable."
     - "GET /api/history returns past runs with status, startTime, endTime, and durationMs."
   artifacts:
-    - "~/.rihal/orch-history.json — JSON-array file of persisted runs."
+    - "~/.rcode/orch-history.json — JSON-array file of persisted runs."
     - "GET /api/history route handler in server/orchestrator.js."
   key_links:
     - "proc.onExit → persistRun() append; if persistRun is not called on exit, history stays empty."
@@ -31,12 +31,12 @@ Purpose: the in-memory `sessions` Map at server/orchestrator.js:80 is wiped on e
 orchestrator restart and `handleCleanSessions` deletes ended sessions outright — there
 is no record of past runs. HIST-1/HIST-2 require past runs with duration + final status.
 
-Output: a `~/.rihal/orch-history.json` file and a `GET /api/history` route.
+Output: a `~/.rcode/orch-history.json` file and a `GET /api/history` route.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -81,7 +81,7 @@ HistoryEntry shape (exact keys):
 1. Add `const os = require('os');` to the requires block at server/orchestrator.js:27-30.
 
 2. After the `sessions` Map declaration (server/orchestrator.js:80), add module constants:
-   - `const HISTORY_FILE = path.join(os.homedir(), '.rihal', 'orch-history.json');`
+   - `const HISTORY_FILE = path.join(os.homedir(), '.rcode', 'orch-history.json');`
    - `const HISTORY_MAX = 200;` with comment: `// cap persisted runs so the file cannot grow unbounded`
 
 3. Add `loadHistory()`: read `HISTORY_FILE` synchronously with `fs.readFileSync`,
@@ -97,7 +97,7 @@ HistoryEntry shape (exact keys):
    - Compute `durationMs = Date.parse(endTime) - (Date.parse(s.startTime) || Date.parse(endTime))`.
    - Build a `HistoryEntry` with the exact keys above (`cmd` from `s.cmd`).
    - `history.push(entry);` then `if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);`
-   - Ensure the `~/.rihal` directory exists: `fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });`
+   - Ensure the `~/.rcode` directory exists: `fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });`
    - Write atomically: `fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));`
    - Wrap the directory-create + write in try/catch — a write failure must NOT crash
      the orchestrator (log via `console.error` and continue).
@@ -124,7 +124,7 @@ grep -q "persistRun(storyId, s, status)" server/orchestrator.js
 grep -q "orch-history.json" server/orchestrator.js
 </automated>
 </verify>
-<done>Every orchestration run that ends is appended to ~/.rihal/orch-history.json with its final status and duration.</done>
+<done>Every orchestration run that ends is appended to ~/.rcode/orch-history.json with its final status and duration.</done>
 </task>
 
 <task id="35.1.2" type="auto">
@@ -188,7 +188,7 @@ grep -q "method === 'GET'  && pathOnly === '/api/history'" server/orchestrator.j
 <success_criteria>
 - HIST-2 server half: each persisted run carries `status`, `startTime`, `endTime`, `durationMs`.
 - HIST-1 server half: `GET /api/history` returns all persisted past runs.
-- Persistence survives restart: `~/.rihal/orch-history.json` is read at boot by `loadHistory()`.
+- Persistence survives restart: `~/.rcode/orch-history.json` is read at boot by `loadHistory()`.
 - Zero write endpoints added to `dashboard.js`.
 </success_criteria>
 

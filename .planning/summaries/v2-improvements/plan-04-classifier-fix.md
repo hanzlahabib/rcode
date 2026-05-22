@@ -8,12 +8,12 @@ estimated_effort: small
 
 ## Objective
 
-`rihal-tools.cjs classify-question` returned `"codebase"` for a clearly market/greenfield question written in Roman Urdu. Fix the classifier to handle multilingual input (Roman Urdu + Urdu unicode) and fix the panel routing bug where greenfield questions don't auto-include Mariam.
+`rcode-tools.cjs classify-question` returned `"codebase"` for a clearly market/greenfield question written in Roman Urdu. Fix the classifier to handle multilingual input (Roman Urdu + Urdu unicode) and fix the panel routing bug where greenfield questions don't auto-include Mariam.
 
 ## Context
 
-- Classifier is in `rihal/v2/bin/rihal-tools.cjs` — the `classifyQuestion()` function
-- Panel scorer is in `rihal/v2/bin/lib/council-panel.cjs`
+- Classifier is in `rcode/v2/bin/rcode-tools.cjs` — the `classifyQuestion()` function
+- Panel scorer is in `rcode/v2/bin/lib/council-panel.cjs`
 - The bug: Roman Urdu words like "bnanai" (build), "site", "dubai", "market", "karo" don't match any English keyword → classifier falls back to `"codebase"`
 - Panel routing rule in `council.md`: `market` or `discovery` → Mariam leads, Hussain-PM follows. This never triggers because classifier misses the question type.
 - Test inputs to validate against: the Roman Urdu question from today's session
@@ -49,8 +49,8 @@ estimated_effort: small
 ### Task 1 — Read and understand current classifier implementation
 type: auto
 **Steps:**
-1. Read `rihal/v2/bin/rihal-tools.cjs` — find `classifyQuestion()` function fully
-2. Read `rihal/v2/bin/lib/council-panel.cjs` — find the scoring tables and routing logic
+1. Read `rcode/v2/bin/rcode-tools.cjs` — find `classifyQuestion()` function fully
+2. Read `rcode/v2/bin/lib/council-panel.cjs` — find the scoring tables and routing logic
 3. Document (in comments to yourself, not in the file yet):
    - How signals are currently matched (regex? includes? split?)
    - Where the fallback to `"codebase"` happens
@@ -62,7 +62,7 @@ type: auto
 ### Task 2 — Add Roman Urdu keyword signals to classifier
 type: auto
 **Steps:**
-1. In `rihal-tools.cjs`, find the signals/keywords arrays for each question_type
+1. In `rcode-tools.cjs`, find the signals/keywords arrays for each question_type
 2. Add Roman Urdu signals following the mapping table above. Pattern to follow:
    - `greenfield` signals: add `bnanai`, `banana`, `site`, `app banana`, `shuru`, `start karna`, `naya project`
    - `market` signals: add `dubai`, `uae`, `gulf`, `affiliate`, `market`, `karobar`, `business karna`
@@ -99,7 +99,7 @@ type: auto
 ### Task 5 — Add unit tests for classifier and panel scorer
 type: auto
 **Steps:**
-1. Check if `rihal-tools.cjs` or `council-panel.cjs` have any existing tests (look in `test/` directory)
+1. Check if `rcode-tools.cjs` or `council-panel.cjs` have any existing tests (look in `test/` directory)
 2. Create `test/classifier.test.mjs` (Node built-in test runner, no Jest — follows existing test patterns):
    ```js
    import { test } from 'node:test';

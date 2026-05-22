@@ -19,7 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const AGENTS_DIR = path.join(PROJECT_ROOT, 'rihal', 'agents');
+const AGENTS_DIR = path.join(PROJECT_ROOT, 'rcode', 'agents');
 const SAFE_COLORS = new Set([
   'red', 'blue', 'green', 'yellow',
   'cyan', 'magenta', 'purple', 'orange',

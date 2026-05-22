@@ -40,7 +40,7 @@ Script must run these checks, all of which must pass:
 set -e
 
 # Check 1 — every advertised CLI subcommand exists
-node rihal/bin/rihal-tools.cjs help > /tmp/help.txt
+node rcode/bin/rcode-tools.cjs help > /tmp/help.txt
 for cmd in "init phase-op" "state sync --from-disk" "phase add Test_Phase_Throwaway" "roadmap list-phases"; do
   # Smoke each (some are dry-runnable, others need teardown)
   echo "Smoking: $cmd"
@@ -53,8 +53,8 @@ if [ -f .planning/state.json ]; then
 fi
 
 # Check 3 — workflow ↔ CLI ref sweep (re-runs Plan 9.2 logic)
-UNKNOWN=$(node rihal/bin/rihal-tools.cjs help)
-WORKFLOW_REFS=$(grep -rEoh 'rihal-tools\.cjs[[:space:]]+[a-z][a-z0-9-]+' rihal/workflows/ | awk '{print $2}' | sort -u)
+UNKNOWN=$(node rcode/bin/rcode-tools.cjs help)
+WORKFLOW_REFS=$(grep -rEoh 'rcode-tools\.cjs[[:space:]]+[a-z][a-z0-9-]+' rcode/workflows/ | awk '{print $2}' | sort -u)
 for ref in $WORKFLOW_REFS; do
   if ! echo "$UNKNOWN" | grep -q "^[[:space:]]*$ref"; then
     echo "DRIFT: workflow references CLI subcommand '$ref' which is not in help output"
@@ -63,7 +63,7 @@ for ref in $WORKFLOW_REFS; do
 done
 
 # Check 4 — sync warnings
-SYNC_OUT=$(node rihal/bin/rihal-tools.cjs state sync --from-disk 2>&1)
+SYNC_OUT=$(node rcode/bin/rcode-tools.cjs state sync --from-disk 2>&1)
 if echo "$SYNC_OUT" | grep -q '"warnings"'; then
   echo "DRIFT: sync returned warnings"
   echo "$SYNC_OUT"

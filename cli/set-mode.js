@@ -1,21 +1,21 @@
 /**
- * rihal-code set-mode — toggle the communication mode.
+ * rcode set-mode — toggle the communication mode.
  *
- * Thin wrapper over `rihal-code config communication_mode <value>` with
+ * Thin wrapper over `rcode config communication_mode <value>` with
  * inline explanations of what each mode changes. Supports the same
  * typo suggestions as the underlying config setter.
  *
  * Usage:
- *   rihal-code set-mode                show current mode + explanation
- *   rihal-code set-mode guided         switch to guided (ask at gates)
- *   rihal-code set-mode yolo           switch to yolo (skip menus, trust defaults)
+ *   rcode set-mode                show current mode + explanation
+ *   rcode set-mode guided         switch to guided (ask at gates)
+ *   rcode set-mode yolo           switch to yolo (skip menus, trust defaults)
  *
  * Affects:
  *   - Workflow step files ("halt at menu" vs "pick default and continue")
- *   - /rihal-kickoff next-step menu (interactive vs auto-continue)
+ *   - /rcode-kickoff next-step menu (interactive vs auto-continue)
  *   - github-sync confirmation prompts (yolo still requires --force-yolo
  *     for github mutations — see docs/adr/0001-github-sync-as-cli.md)
- *   - /rihal-pause and /rihal-resume (yolo skips the confirmation prompt
+ *   - /rcode-pause and /rcode-resume (yolo skips the confirmation prompt
  *     on resume; guided always asks)
  *   - All agent skill files that read communication_mode from config
  */
@@ -41,10 +41,10 @@ const MODE_DESCRIPTIONS = {
 
 module.exports = function setMode(args) {
   const cwd = process.cwd();
-  const rihalDir = path.join(cwd, '.rihal');
+  const rihalDir = path.join(cwd, '.rcode');
 
   if (!fs.existsSync(rihalDir)) {
-    console.error(`❌ No .rihal/ directory found in ${cwd}`);
+    console.error(`❌ No .rcode/ directory found in ${cwd}`);
     console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }

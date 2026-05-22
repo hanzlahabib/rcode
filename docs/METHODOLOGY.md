@@ -1,6 +1,6 @@
-# Rihal Code — Deep Dive
+# rcode — Deep Dive
 
-This is the **why** behind Rihal Code. For the **how** (installation, CLI commands, pipeline syntax), see the [README](../README.md).
+This is the **why** behind rcode. For the **how** (installation, CLI commands, pipeline syntax), see the [README](../README.md).
 
 ---
 
@@ -16,10 +16,10 @@ And most AI workflows give you **one assistant** — a generalist who has to be 
 
 ## The Solution
 
-Rihal Code applies five ideas:
+rcode applies five ideas:
 
 1. **Specialized agents with real authority boundaries** — each agent owns a domain and defers outside it
-2. **File-based state** that survives between sessions (`.rihal/`)
+2. **File-based state** that survives between sessions (`.rcode/`)
 3. **Upstream-grounded workflows** — creation skills refuse to run without their upstream artifacts (no hallucinated requirements)
 4. **Pipeline contracts** — predefined agent chains for common work types (project/feature/UI/council)
 5. **Context cascading config** — hardcoded → user → project, so you configure once and inherit everywhere
@@ -80,19 +80,19 @@ No agent overrides another on their home turf. When a decision spans domains, it
 
 ---
 
-## The `.rihal/` state directory
+## The `.rcode/` state directory
 
 This is the project's **persistent brain**. Everything lives here — git-friendly, editor-inspectable, offline-ready.
 
 ```
-.rihal/
+.rcode/
 ├── config.json             # canonical project config (read by every workflow)
 ├── model-profiles.json     # model assignments (quality / balanced / budget / inherit)
 ├── state.json              # current project phase + active agents
 ├── phases/                 # phase briefs, epics, stories
 │   └── phase-01/
 │       ├── brief.md
-│       ├── epics.md        # output of rihal-create-epics-and-stories
+│       ├── epics.md        # output of rcode-create-epics-and-stories
 │       ├── sprints.md
 │       └── stories/
 ├── plans/                  # implementation plans per feature
@@ -124,12 +124,12 @@ This is the project's **persistent brain**. Everything lives here — git-friend
 
 ## Grounded creation — no hallucinated requirements
 
-The biggest failure mode of AI planning is the generalist confidently emitting epics and stories from nothing. Rihal Code forbids this structurally.
+The biggest failure mode of AI planning is the generalist confidently emitting epics and stories from nothing. rcode forbids this structurally.
 
 ```mermaid
 graph TD
-    Start([User: create epics]) --> Check{PRD exists<br/>in .rihal/phases/?}
-    Check -->|no| Refuse([❌ Refuse<br/>'Run rihal-create-prd first.<br/>I cannot invent requirements.'])
+    Start([User: create epics]) --> Check{PRD exists<br/>in .rcode/phases/?}
+    Check -->|no| Refuse([❌ Refuse<br/>'Run rcode-create-prd first.<br/>I cannot invent requirements.'])
     Check -->|yes| Extract[Read PRD<br/>extract FRs, NFRs]
     Extract --> ArchCheck{Architecture<br/>exists?}
     ArchCheck -->|yes| ReadArch[Merge architecture<br/>requirements]
@@ -140,7 +140,7 @@ graph TD
     UXCheck -->|no| Confirm
     ReadUX --> Confirm[Present extracted<br/>requirements to user]
     Confirm --> Decompose[Decompose into<br/>3-6 epics × 3-8 stories]
-    Decompose --> Write[Write .rihal/phases/{n}/epics.md<br/>with frontmatter citing<br/>inputDocuments]
+    Decompose --> Write[Write .rcode/phases/{n}/epics.md<br/>with frontmatter citing<br/>inputDocuments]
     Write --> Done([✅ Done — every story<br/>cites its upstream FR])
 
     style Refuse fill:#ffcdd2
@@ -178,10 +178,10 @@ Every time context drifts, the previous session gets compacted into `context/act
 ### Context reset workflow
 
 ```
-1. Save current session state → .rihal/progress/session-{date}.md
-2. Compact everything → .rihal/context/active.md (under 2k tokens)
+1. Save current session state → .rcode/progress/session-{date}.md
+2. Compact everything → .rcode/context/active.md (under 2k tokens)
 3. /clear the AI context
-4. Tell AI: "Read .rihal/context/active.md ONLY"
+4. Tell AI: "Read .rcode/context/active.md ONLY"
 5. Resume work with a lean brain
 ```
 
@@ -193,7 +193,7 @@ Pipelines aren't just "call a bunch of agents in order." They're **contracts** �
 
 ```mermaid
 graph TD
-    Start([User: /rihal:feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
+    Start([User: /rcode:feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
     Load --> A1["→ Consulting Hussain-PM..."]
     A1 --> R1[PM response:<br/>scope, PRD, success metrics]
     R1 --> A2["→ Handing to Waleed..."]
@@ -209,7 +209,7 @@ graph TD
     A5 --> R5[Fatima response:<br/>reads all prior,<br/>gates with tests]
     R5 --> A6["→ Handing to Khalid..."]
     A6 --> R6[Khalid response:<br/>ship plan + monitoring]
-    R6 --> Done([✅ Feature shipped<br/>.rihal/phases/.../stories/])
+    R6 --> Done([✅ Feature shipped<br/>.rcode/phases/.../stories/])
 
     style Done fill:#c8e6c9
 ```
@@ -226,8 +226,8 @@ Real teams work on many projects. Retyping `user_name` and `communication_langua
 
 ```mermaid
 graph LR
-    A[Hardcoded defaults<br/>cli/lib/config.cjs] -->|merged| B[~/.rihal-code/defaults.json<br/>user-level<br/>set once per machine]
-    B -->|merged| C[.rihal/config.json<br/>project-level<br/>wins over both]
+    A[Hardcoded defaults<br/>cli/lib/config.cjs] -->|merged| B[~/.rcode/defaults.json<br/>user-level<br/>set once per machine]
+    B -->|merged| C[.rcode/config.json<br/>project-level<br/>wins over both]
     C --> D[Effective config<br/>seen by workflows]
 
     style A fill:#f3e5f5
@@ -236,7 +236,7 @@ graph LR
     style D fill:#e1f5ff
 ```
 
-First install offers a wizard. If you say "save as global defaults," your answers land in `~/.rihal-code/defaults.json`. Every future project inherits them as the defaults in the wizard, so you just hit Enter through and get your preferences automatically.
+First install offers a wizard. If you say "save as global defaults," your answers land in `~/.rcode/defaults.json`. Every future project inherits them as the defaults in the wizard, so you just hit Enter through and get your preferences automatically.
 
 Project-level config always wins — so a specific project can say "this one is in Arabic" without changing your global.
 
@@ -273,7 +273,7 @@ graph TD
     style Inherit fill:#f3e5f5
 ```
 
-Switch at any time: `rihal-code set-profile budget`. Override per-agent by editing `.rihal/model-profiles.json`.
+Switch at any time: `rcode set-profile budget`. Override per-agent by editing `.rcode/model-profiles.json`.
 
 ---
 
@@ -283,11 +283,11 @@ The same install populates every compatible editor's discovery path:
 
 ```mermaid
 graph TD
-    Source[rihal/ package source<br/>19 agents × digests<br/>40 skills] --> Install([rihal-code install])
-    Install --> C[.claude/skills/rihal-*<br/>17 agents + 23 actions]
-    Install --> Cu[.cursor/rules/rihal-*.mdc<br/>19 digest-based rules]
-    Install --> W[.windsurf/rules/rihal-*.mdc<br/>19 digest-based rules]
-    Install --> AG[.antigravity/agents/rihal-*.md<br/>19 agent files]
+    Source[rcode/ package source<br/>19 agents × digests<br/>40 skills] --> Install([rcode install])
+    Install --> C[.claude/skills/rcode-*<br/>17 agents + 23 actions]
+    Install --> Cu[.cursor/rules/rcode-*.mdc<br/>19 digest-based rules]
+    Install --> W[.windsurf/rules/rcode-*.mdc<br/>19 digest-based rules]
+    Install --> AG[.antigravity/agents/rcode-*.md<br/>19 agent files]
     Install --> U[AGENTS.md<br/>universal spec]
 
     C --> CC[Claude Code]
@@ -320,7 +320,7 @@ Because CRUD is where projects break:
 - Multi-writer scenarios need locks; locks need coordination
 - Bugs in write logic corrupt state permanently
 
-**The dashboard never writes.** It reads `.rihal/` files on a 5-second interval. If you want to change something, you run a workflow — which updates files — and the dashboard reflects the new state on the next tick.
+**The dashboard never writes.** It reads `.rcode/` files on a 5-second interval. If you want to change something, you run a workflow — which updates files — and the dashboard reflects the new state on the next tick.
 
 ### What it shows
 
@@ -334,7 +334,7 @@ Because CRUD is where projects break:
 
 ### Design choices
 
-- **Omani palette** — Rihal blue `#1e3a8a` + gold `#f59e0b`
+- **Omani palette** — rcode blue `#1e3a8a` + gold `#f59e0b`
 - **Dark mode only** — because terminals
 - **Bilingual** — Arabic + English signage
 - **No JS framework** — single Node.js file, no build step, no deps
@@ -347,27 +347,27 @@ Because CRUD is where projects break:
 
 ### vs single-agent frameworks (Cursor rules, Continue, Aider)
 
-These give you one assistant. Rihal Code gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want Rihal Code.
+These give you one assistant. rcode gives you a structured team with authority boundaries. If your work needs *"which technology?"* and *"which user?"* and *"which test?"* answered by the same person, single-agent is fine. If those are three different people in real life, you want rcode.
 
-### What makes Rihal Code different
+### What makes rcode different
 
-Defining traits that separate Rihal Code from adjacent skill-driven AI methodology tools:
+Defining traits that separate rcode from adjacent skill-driven AI methodology tools:
 
 - **Zero npm dependencies** — pure Node stdlib installer; no `@clack/prompts` or similar runtime deps to pull on install
 - **Multi-editor native** — installs to Claude Code, Cursor, Windsurf, Antigravity, and AGENTS.md simultaneously, not Claude-only
 - **Atomic writes + verification** — state files are written atomically (tempfile + fsync + rename) with manifest verification after install to catch partial states
 - **Timestamped uninstall backup** — every destructive operation creates a tar.gz first
-- **Config cascade with user-level** — `~/.rihal-code/defaults.json` lets you configure identity once per machine, then per-project overrides
+- **Config cascade with user-level** — `~/.rcode/defaults.json` lets you configure identity once per machine, then per-project overrides
 - **Cultural framing** — bilingual Arabic-English from day one; Arabic agent names with cultural identity baked in
 - **Pipeline streaming protocol** — each agent's response surfaces live with handoff lines; no batched wall of text
 
 ### vs generic AI agent frameworks (LangGraph, CrewAI, AutoGen)
 
-Those are toolkits. You build your team. Rihal Code is **the team, already built**, opinionated about roles, authorities, and the `.rihal/` state layout. Less flexible, more out-of-the-box value.
+Those are toolkits. You build your team. rcode is **the team, already built**, opinionated about roles, authorities, and the `.rcode/` state layout. Less flexible, more out-of-the-box value.
 
 ---
 
-## When to use Rihal Code
+## When to use rcode
 
 **Good fit:**
 
@@ -385,7 +385,7 @@ Those are toolkits. You build your team. Rihal Code is **the team, already built
 - Projects that fit entirely in your head
 - Pure ML research where the output is a notebook
 
-If your project is under 10 files or will be thrown away in a week, Rihal Code is overkill. Use it for real work that ships and lasts.
+If your project is under 10 files or will be thrown away in a week, rcode is overkill. Use it for real work that ships and lasts.
 
 ---
 
@@ -393,48 +393,48 @@ If your project is under 10 files or will be thrown away in a week, Rihal Code i
 
 ```
 1. Kickoff
-   /rihal:project "name"
+   /rcode:project "name"
    → Sadiq → Waleed → Ahmed → PM → Zahra → Layla → Nasser
-   → .rihal/phases/phase-01/brief.md
-   → .rihal/decisions/001-stack.md
-   → .rihal/artifacts/brand/
-   → .rihal/artifacts/design-system/
+   → .rcode/phases/phase-01/brief.md
+   → .rcode/decisions/001-stack.md
+   → .rcode/artifacts/brand/
+   → .rcode/artifacts/design-system/
 
 2. Plan a sprint
-   /rihal:kickoff (for a new phase inside an existing project)
-   → .rihal/phases/phase-{n}/sprints.md
+   /rcode:kickoff (for a new phase inside an existing project)
+   → .rcode/phases/phase-{n}/sprints.md
 
 3. Build features
-   /rihal:feature "description"
+   /rcode:feature "description"
    → Hussain-PM → Waleed → Layla → Haitham + Yousef → Fatima → Khalid
    → Code committed, tests passing, deployed
 
 4. UI work
-   /rihal:ui "task"
+   /rcode:ui "task"
    → Zahra → Layla → Haitham → Fatima
 
 5. Strategic questions
-   /rihal:council "question"
+   /rcode:council "question"
    → 13 agents sequential, Noor synthesizes
 
 6. Context reset (as needed)
-   /rihal:progress then manually compact active.md
-   → .rihal/context/active.md
+   /rcode:progress then manually compact active.md
+   → .rcode/context/active.md
 
 7. Bug hunting
-   /rihal:fix "issue"
+   /rcode:fix "issue"
    → Systematic debug, root cause, fix, regression test
 
 8. Quick tasks
-   /rihal:quick "task"
+   /rcode:quick "task"
    → One-shot atomic commit
 
 9. GitHub sync
-   rihal-code github-sync --execute
-   → Creates/updates milestones, epics, stories from .rihal/phases/
+   rcode github-sync --execute
+   → Creates/updates milestones, epics, stories from .rcode/phases/
 
 10. Dashboard (anytime)
-    rihal-code dashboard
+    rcode dashboard
     → http://localhost:7717
 ```
 
@@ -442,7 +442,7 @@ If your project is under 10 files or will be thrown away in a week, Rihal Code i
 
 ## Final note
 
-This methodology is opinionated. That's on purpose. If you disagree with the opinions, fork it and make it yours — but don't water it down. Methodologies become useless when they try to please everyone. Rihal Code trades flexibility for sharp edges, and that's the point.
+This methodology is opinionated. That's on purpose. If you disagree with the opinions, fork it and make it yours — but don't water it down. Methodologies become useless when they try to please everyone. rcode trades flexibility for sharp edges, and that's the point.
 
 <div dir="rtl" style="text-align:center;margin-top:40px;font-size:18px;">
 رحلة البناء

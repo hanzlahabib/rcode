@@ -209,7 +209,7 @@ export function KanbanView() {
             </div>
           ` : null}
           <div class="empty-action">
-            Run <code>/rihal-plan</code> to generate sprint stories, or browse
+            Run <code>/rcode-plan</code> to generate sprint stories, or browse
             planning docs in the <a href="#files">Files</a> view.
           </div>
         </div>

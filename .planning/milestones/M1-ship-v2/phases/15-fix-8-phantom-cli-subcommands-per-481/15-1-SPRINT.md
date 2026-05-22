@@ -9,18 +9,18 @@ requirements: [REQ-481]
 
 must_haves:
   truths:
-    - "node .rihal/bin/rihal-tools.cjs phases list returns JSON with directories[] and summaries[]"
-    - "node .rihal/bin/rihal-tools.cjs find-phase <N> returns JSON with number, slug, dir, exists"
-    - "node .rihal/bin/rihal-tools.cjs uat render-checkpoint --file <p> returns markdown checkpoint block"
-    - "node .rihal/bin/rihal-tools.cjs audit-uat returns JSON inventory of UAT files with status counts"
-    - "node .rihal/bin/rihal-tools.cjs requirements mark-complete <ID> [<ID>...] toggles requirement state in REQUIREMENTS.md"
-    - "node .rihal/bin/rihal-tools.cjs todo match-phase <N> returns todos tagged with phase N"
-    - "node .rihal/bin/rihal-tools.cjs learnings copy returns ok with count of copied entries (or no-op when missing)"
+    - "node .rcode/bin/rcode-tools.cjs phases list returns JSON with directories[] and summaries[]"
+    - "node .rcode/bin/rcode-tools.cjs find-phase <N> returns JSON with number, slug, dir, exists"
+    - "node .rcode/bin/rcode-tools.cjs uat render-checkpoint --file <p> returns markdown checkpoint block"
+    - "node .rcode/bin/rcode-tools.cjs audit-uat returns JSON inventory of UAT files with status counts"
+    - "node .rcode/bin/rcode-tools.cjs requirements mark-complete <ID> [<ID>...] toggles requirement state in REQUIREMENTS.md"
+    - "node .rcode/bin/rcode-tools.cjs todo match-phase <N> returns todos tagged with phase N"
+    - "node .rcode/bin/rcode-tools.cjs learnings copy returns ok with count of copied entries (or no-op when missing)"
     - "comm -23 of called-vs-implemented top-level subcommands returns 0 lines"
   artifacts:
-    - path: "rihal/bin/rihal-tools.cjs"
+    - path: "rcode/bin/rcode-tools.cjs"
       provides: "8 new subcommand handlers + dispatch cases + help entries"
-    - path: "rihal/bin/rihal-tools.cjs"
+    - path: "rcode/bin/rcode-tools.cjs"
       provides: "cmdPhasesList, cmdFindPhase, cmdUatRenderCheckpoint, cmdAuditUat, cmdRequirementsMarkComplete, cmdTodoMatchPhase, cmdLearningsCopy"
   key_links:
     - from: "GH issue #481"
@@ -30,11 +30,11 @@ must_haves:
 
 ## Goal
 
-Eliminate the 8 phantom CLI subcommands enumerated in #481 by implementing each handler in `rihal/bin/rihal-tools.cjs` with a contract derived from how the workflow callsite consumes the output. All 8 must be callable; failures must surface as structured JSON errors, not crashes.
+Eliminate the 8 phantom CLI subcommands enumerated in #481 by implementing each handler in `rcode/bin/rcode-tools.cjs` with a contract derived from how the workflow callsite consumes the output. All 8 must be callable; failures must surface as structured JSON errors, not crashes.
 
 ## Context
 
-Three phantoms (`/rihal-execute-phase`, `phase-plan-index`, `init execute-phase`) were closed in commit `a091be6` against #479. A subsequent sweep of all `rihal-tools.cjs <subcmd>` callsites in `rihal/workflows/` against the implemented top-level cases turned up 8 more.
+Three phantoms (`/rcode-execute-phase`, `phase-plan-index`, `init execute-phase`) were closed in commit `a091be6` against #479. A subsequent sweep of all `rcode-tools.cjs <subcmd>` callsites in `rcode/workflows/` against the implemented top-level cases turned up 8 more.
 
 The contract for each subcommand must be derived from the **callsite consumer code**, not guessed:
 

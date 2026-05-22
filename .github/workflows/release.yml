@@ -48,12 +48,12 @@ jobs:
           echo "✓ dist/rcode.js parses and runs"
 
       - name: CLI syntax check
-        run: node -c rihal/bin/rihal-tools.cjs
+        run: node -c rcode/bin/rcode-tools.cjs
 
       - name: 5-component skill compliance
         run: |
           missing=0
-          for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/*/SKILL.md; do
+          for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/*/SKILL.md; do
             [ -f "$f" ] || continue
             grep -q "^## Output Format" "$f" || { echo "MISSING Output Format: $f"; missing=$((missing+1)); }
             grep -q "^## Examples" "$f"      || { echo "MISSING Examples: $f";      missing=$((missing+1)); }
@@ -67,7 +67,7 @@ jobs:
       - name: Brain sources dry-run
         run: |
           # brain list must return valid JSON with ok:true; don't crash on placeholder URLs
-          node rihal/bin/rihal-tools.cjs brain list > /tmp/brain-list.json
+          node rcode/bin/rcode-tools.cjs brain list > /tmp/brain-list.json
           grep -q '"ok": true' /tmp/brain-list.json || {
             echo "brain list did not return ok:true"
             cat /tmp/brain-list.json
@@ -104,12 +104,12 @@ jobs:
             echo "See CHANGELOG.md for details." >> /tmp/release-notes.md
           fi
 
-      - name: Build install bundle (tar.gz of the rihal/ + cli/ + docs/ tree)
+      - name: Build install bundle (tar.gz of the rcode/ + cli/ + docs/ tree)
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           mkdir -p dist
-          tar czf "dist/rihal-code-${TAG}.tar.gz" \
-            rihal/ cli/ docs/ \
+          tar czf "dist/rcode-${TAG}.tar.gz" \
+            rcode/ cli/ docs/ \
             README.md CHANGELOG.md CONTRIBUTING.md AGENTS.md package.json
           ls -lh dist/
 
@@ -119,6 +119,6 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           body_path: /tmp/release-notes.md
-          files: dist/rihal-code-*.tar.gz
+          files: dist/rcode-*.tar.gz
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, '-') }}

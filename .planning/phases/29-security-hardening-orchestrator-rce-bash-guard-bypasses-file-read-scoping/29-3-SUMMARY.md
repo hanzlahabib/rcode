@@ -15,10 +15,10 @@ Closed issue #754 by removing two injection / unscoped-read vectors:
    repo (e.g. `~/.ssh/id_rsa`). The `-F` path is now resolved against `process.cwd()`,
    symlink-dereferenced with `fs.realpathSync`, and verified to start with the repo root —
    mirroring the path-traversal guard in `server/lib/api.js:131-141`. An explicit,
-   commented exception allows the rihal-controlled commit-message tmp file
-   (`os.tmpdir()/rihal-commit-msg-<digits>.txt`) so legitimate commit flows are not broken.
+   commented exception allows the rcode-controlled commit-message tmp file
+   (`os.tmpdir()/rcode-commit-msg-<digits>.txt`) so legitimate commit flows are not broken.
 
-2. **rihal-tools.cjs git calls via argument arrays** — `git add` and `git ls-files
+2. **rcode-tools.cjs git calls via argument arrays** — `git add` and `git ls-files
    --error-unmatch` previously interpolated filenames into shell strings passed to
    `execSync`, so a crafted filename (containing `;`, `$()`, backticks, spaces) could
    inject commands. Both now run via `execFileSync('git', [...])` argument arrays — no
@@ -30,15 +30,15 @@ Closed issue #754 by removing two injection / unscoped-read vectors:
 | ID | Title | Status |
 |----|-------|--------|
 | 29.3.1 | Constrain post-commit `-F` message file reads to the repo working tree | done |
-| 29.3.2 | Switch rihal-tools.cjs git add / git ls-files to execFileSync argument arrays | done |
+| 29.3.2 | Switch rcode-tools.cjs git add / git ls-files to execFileSync argument arrays | done |
 | 29.3.3 | Smoke-verify the git-call refactor with a real commit path | done |
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `rihal/bin/rihal-hooks.cjs` | post-commit: `-F` path resolved + realpathSync + repo-root `startsWith` containment check; rihal-commit-msg tmp-file exception added & commented; `path`/`os` required inside `postCommit` |
-| `rihal/bin/rihal-tools.cjs` | `execFileSync` added to child_process destructure; `git add` and `git ls-files --error-unmatch` switched from interpolated `execSync` strings to `execFileSync('git', [...])` argument arrays |
+| `rcode/bin/rcode-hooks.cjs` | post-commit: `-F` path resolved + realpathSync + repo-root `startsWith` containment check; rcode-commit-msg tmp-file exception added & commented; `path`/`os` required inside `postCommit` |
+| `rcode/bin/rcode-tools.cjs` | `execFileSync` added to child_process destructure; `git add` and `git ls-files --error-unmatch` switched from interpolated `execSync` strings to `execFileSync('git', [...])` argument arrays |
 
 ## Deviations from Plan
 
@@ -54,9 +54,9 @@ not unique in the file (3 occurrences); resolved by anchoring the edit to the
 
 ## Verification
 
-- [x] `node -c rihal/bin/rihal-hooks.cjs` parses clean
-- [x] `node -c rihal/bin/rihal-tools.cjs` parses clean
-- [x] Task 29.3.1 automated verify: `realpathSync` + `rihal-commit-msg-` present — PASS
+- [x] `node -c rcode/bin/rcode-hooks.cjs` parses clean
+- [x] `node -c rcode/bin/rcode-tools.cjs` parses clean
+- [x] Task 29.3.1 automated verify: `realpathSync` + `rcode-commit-msg-` present — PASS
 - [x] Task 29.3.2 automated verify: `execFileSync('git', ['add'`/`['ls-files'` present, `git add ${` gone — PASS
 - [x] `grep -c "ls-files --error-unmatch \""` returns 0
 - [x] Smoke test (throwaway repo): normal file stages OK; gitignored file triggers

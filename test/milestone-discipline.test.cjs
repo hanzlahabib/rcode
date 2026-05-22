@@ -1,7 +1,7 @@
 /**
  * Tests for the milestone-discipline subcommands (issue #718 / Wave 7).
  *
- * Pins three rihal-tools subcommands:
+ * Pins three rcode-tools subcommands:
  *   - validate-phase-id: pure check on a single ID
  *   - validate-roadmap:  scan ROADMAP.md for offenders
  *   - milestone-health:  open vs done phase count + recommendation
@@ -14,17 +14,17 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
-const TOOLS = path.join(REPO_ROOT, 'rihal', 'bin', 'rihal-tools.cjs');
+const TOOLS = path.join(REPO_ROOT, 'rcode', 'bin', 'rcode-tools.cjs');
 const { makeTempDir, cleanup } = require('./helpers.cjs');
 
 function run(args, opts = {}) {
-  // When opts.cwd is set, ALSO point RIHAL_PROJECT_ROOT at it so the tool
+  // When opts.cwd is set, ALSO point RCODE_PROJECT_ROOT at it so the tool
   // reads from the tempdir instead of the rcode repo it loaded from.
-  // Without this, PROJECT_ROOT stays at the script's location (rihal-tools
+  // Without this, PROJECT_ROOT stays at the script's location (rcode-tools
   // resolves __dirname/../..) and validate-roadmap / milestone-health read
   // the wrong files. See #718.
   const env = { ...process.env, NODE_DISABLE_COLORS: '1' };
-  if (opts.cwd) env.RIHAL_PROJECT_ROOT = opts.cwd;
+  if (opts.cwd) env.RCODE_PROJECT_ROOT = opts.cwd;
   const r = spawnSync('node', [TOOLS, ...args], {
     encoding: 'utf8',
     cwd: opts.cwd || REPO_ROOT,
@@ -145,8 +145,8 @@ test('validate-roadmap: reports line numbers so callers can fix in place', (t) =
 // ────────────────────────────────────────────────────────────────────────
 
 function writeState(dir, state) {
-  fs.mkdirSync(path.join(dir, '.rihal'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.rihal', 'state.json'), JSON.stringify(state));
+  fs.mkdirSync(path.join(dir, '.rcode'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.rcode', 'state.json'), JSON.stringify(state));
 }
 
 test('milestone-health: healthy when ≤7 open phases', (t) => {

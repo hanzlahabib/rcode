@@ -6,15 +6,15 @@
 
 ## What Was Done
 
-Extracted static playbook content from the three heaviest agent files into three new standalone reference files under `rihal/references/`. This is a pure extraction — no behaviour change, no rewriting. Content was copied verbatim from source agents. Agent files were not modified (that is Wave 2 work in sprints 22-2, 22-3, 22-4).
+Extracted static playbook content from the three heaviest agent files into three new standalone reference files under `rcode/references/`. This is a pure extraction — no behaviour change, no rewriting. Content was copied verbatim from source agents. Agent files were not modified (that is Wave 2 work in sprints 22-2, 22-3, 22-4).
 
 ## Files Created
 
 | File | Lines | Extracted From |
 |------|-------|----------------|
-| `rihal/references/integration-verification-playbook.md` | 392 | `rihal/agents/rihal-integration-checker.md` (lines 64–457) |
-| `rihal/references/research-synthesis-playbook.md` | 205 | `rihal/agents/rihal-research-synthesizer.md` (lines 48–254) |
-| `rihal/references/codebase-mapping-process.md` | 174 | `rihal/agents/rihal-codebase-mapper.md` (lines 79–244) |
+| `rcode/references/integration-verification-playbook.md` | 392 | `rcode/agents/rcode-integration-checker.md` (lines 64–457) |
+| `rcode/references/research-synthesis-playbook.md` | 205 | `rcode/agents/rcode-research-synthesizer.md` (lines 48–254) |
+| `rcode/references/codebase-mapping-process.md` | 174 | `rcode/agents/rcode-codebase-mapper.md` (lines 79–244) |
 
 ## Content Extracted Per File
 
@@ -27,7 +27,7 @@ Extracted static playbook content from the three heaviest agent files into three
 - Constraints section
 
 **research-synthesis-playbook.md:**
-- All 8 synthesis steps (Steps 1–8) including the Write tool mandate in Step 6 and exact `rihal-tools.cjs` commit command in Step 7
+- All 8 synthesis steps (Steps 1–8) including the Write tool mandate in Step 6 and exact `rcode-tools.cjs` commit command in Step 7
 - Output format specification (template path + key sections)
 - SYNTHESIS COMPLETE and SYNTHESIS BLOCKED structured return formats
 - Success criteria checkbox list + quality indicators
@@ -43,9 +43,9 @@ Extracted static playbook content from the three heaviest agent files into three
 
 | File | Lines (before) | Lines (after) |
 |------|----------------|---------------|
-| `rihal/agents/rihal-integration-checker.md` | 456 | 456 |
-| `rihal/agents/rihal-research-synthesizer.md` | 254 | 254 |
-| `rihal/agents/rihal-codebase-mapper.md` | 244 | 244 |
+| `rcode/agents/rcode-integration-checker.md` | 456 | 456 |
+| `rcode/agents/rcode-research-synthesizer.md` | 254 | 254 |
+| `rcode/agents/rcode-codebase-mapper.md` | 244 | 244 |
 
 ## Git Commit
 

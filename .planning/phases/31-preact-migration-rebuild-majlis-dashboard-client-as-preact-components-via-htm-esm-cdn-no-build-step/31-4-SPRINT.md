@@ -100,7 +100,7 @@ remove the window attachments in task 31.4.6.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/orchestrator.js && node --check server/lib/html/client/store.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/orchestrator.js && node --check server/lib/html/client/store.js && echo OK
 </automated>
 </verify>
 <done>orchestrator.js parses; no DOM-by-id; session poll writes the store.</done>
@@ -150,7 +150,7 @@ server/lib/html/shell.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/XtermPanel.js && node --check server/lib/html/client/components/OrchPanel.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');const h=renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'t');if(h.includes('id=\"term-panel\"'))process.exit(1);if(!h.includes('xterm@5.3.0'))process.exit(1);console.log('OK');"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/XtermPanel.js && node --check server/lib/html/client/components/OrchPanel.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');const h=renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'t');if(h.includes('id=\"term-panel\"'))process.exit(1);if(!h.includes('xterm@5.3.0'))process.exit(1);console.log('OK');"
 </automated>
 </verify>
 <done>XtermPanel wraps the CDN xterm via a ref; OrchPanel parses; static panels removed from shell; xterm CDN kept.</done>
@@ -181,7 +181,7 @@ Port `_orchElapsed` into util.js (pure).
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/OrchestrationView.js && node --check server/lib/html/client/util.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/OrchestrationView.js && node --check server/lib/html/client/util.js && echo OK
 </automated>
 </verify>
 <done>OrchestrationView parses; reads sessions from store; elapsed helper in util.</done>
@@ -217,7 +217,7 @@ server/lib/html/client/views/SprintsView.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && for f in components/App.js components/shared.js views/KanbanView.js views/PhasesView.js views/SprintsView.js; do node --check "server/lib/html/client/$f" || exit 1; done && echo OK
+cd /home/hanzla/development/rcode && for f in components/App.js components/shared.js views/KanbanView.js views/PhasesView.js views/SprintsView.js; do node --check "server/lib/html/client/$f" || exit 1; done && echo OK
 </automated>
 </verify>
 <done>All 12 views routed; XtermPanel + OrchPanel mounted; every BRIDGE shim replaced with a real import.</done>
@@ -255,7 +255,7 @@ server/lib/html/client/client-main.js (delete)
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client.js && for f in $(find server/lib/html/client -name '*.js'); do node --check "$f" || exit 1; done && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log(r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client.js && for f in $(find server/lib/html/client -name '*.js'); do node --check "$f" || exit 1; done && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log(r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
 </automated>
 </verify>
 <done>3 legacy modules deleted; client.js emits only the module entry; all surviving JS parses; dashboard serves 200.</done>

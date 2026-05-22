@@ -95,7 +95,7 @@ to KanbanView.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/KanbanView.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/KanbanView.js && echo OK
 </automated>
 </verify>
 <done>KanbanView parses; DnD via Preact handlers; visual-only toast preserved.</done>
@@ -130,7 +130,7 @@ list (groups, optional `subGroups` as `<details>`), and a file-content pane.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/FilesView.js && node --check server/lib/html/client/store.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/FilesView.js && node --check server/lib/html/client/store.js && echo OK
 </automated>
 </verify>
 <done>FilesView parses; tree + content fetched via hooks; agent-jump bridge wired through store.</done>
@@ -169,7 +169,7 @@ server/lib/html/shell.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/agents-data.js && node --check server/lib/html/client/views/AgentsView.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'t');console.log('OK');"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/agents-data.js && node --check server/lib/html/client/views/AgentsView.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'t');console.log('OK');"
 </automated>
 </verify>
 <done>Roster moved to agents-data.js; AgentsView parses; shell.js no longer renders agents.</done>
@@ -199,7 +199,7 @@ server/lib/html/shell.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/MemoryView.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/MemoryView.js && echo OK
 </automated>
 </verify>
 <done>MemoryView parses; static memory host removed from shell.js.</done>
@@ -234,7 +234,7 @@ server/lib/html/client/client-main.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/App.js && node --check server/lib/html/client/client-main.js && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log(r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/App.js && node --check server/lib/html/client/client-main.js && node -e "const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{require('http').get('http://127.0.0.1:7717/',r=>{console.log(r.statusCode);srv.kill();process.exit(r.statusCode===200?0:1);});},1500);"
 </automated>
 </verify>
 <done>4 views routed in App; legacy renderMemory/renderDecisions deleted; renderOrchestration kept; dashboard serves 200.</done>

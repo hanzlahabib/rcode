@@ -5,11 +5,11 @@ status: complete
 commit: 1749d06
 ---
 
-# Sprint 22.3 Summary — Slim rihal-research-synthesizer via @-include
+# Sprint 22.3 Summary — Slim rcode-research-synthesizer via @-include
 
 ## What Was Done
 
-Slimmed `rihal/agents/rihal-research-synthesizer.md` from 254 lines to 45 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<success_criteria>`, and Constraints blocks with a single `@.rihal/references/research-synthesis-playbook.md` include line.
+Slimmed `rcode/agents/rcode-research-synthesizer.md` from 254 lines to 45 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<success_criteria>`, and Constraints blocks with a single `@.rcode/references/research-synthesis-playbook.md` include line.
 
 ## Line Count
 
@@ -21,7 +21,7 @@ Slimmed `rihal/agents/rihal-research-synthesizer.md` from 254 lines to 45 lines 
 
 - YAML frontmatter (lines 1-6, unchanged)
 - Existing @-includes: response-style.md, karpathy-guidelines.md
-- New @-include: `@.rihal/references/research-synthesis-playbook.md`
+- New @-include: `@.rcode/references/research-synthesis-playbook.md`
 - `<role>` block (verbatim)
 - `<downstream_consumer>` block (verbatim)
 
@@ -51,4 +51,4 @@ All 7 checks passed:
 
 ## Files Modified
 
-- `rihal/agents/rihal-research-synthesizer.md` — slimmed from 254 to 45 lines
+- `rcode/agents/rcode-research-synthesizer.md` — slimmed from 254 to 45 lines

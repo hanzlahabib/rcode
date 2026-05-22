@@ -1,33 +1,33 @@
 {
-  "rihal/skills/agents/raees-orchestrator/SKILL.md": {
+  "rcode/skills/agents/raees-orchestrator/SKILL.md": {
     "probes": [
       "user asks who should do a multi-step task",
       "user asks to orchestrate a workflow across domains",
       "user asks to sequence parallel vs sequential work"
     ]
   },
-  "rihal/agents/rihal-phase-researcher.md": {
+  "rcode/agents/rcode-phase-researcher.md": {
     "probes": [
       "researcher investigates a phase domain before planning",
       "researcher produces RESEARCH.md for the planner",
       "researcher honors locked CONTEXT.md decisions"
     ]
   },
-  "rihal/agents/rihal-research-synthesizer.md": {
+  "rcode/agents/rcode-research-synthesizer.md": {
     "probes": [
       "synthesizer merges 4 parallel research files",
       "synthesizer writes SUMMARY.md for the roadmapper",
       "synthesizer commits all research files"
     ]
   },
-  "rihal/agents/rihal-planner.md": {
+  "rcode/agents/rcode-planner.md": {
     "probes": [
       "planner builds an executable phase plan",
       "planner runs goal-backward verification",
       "planner analyzes task dependencies"
     ]
   },
-  "rihal/agents/rihal-codebase-mapper.md": {
+  "rcode/agents/rcode-codebase-mapper.md": {
     "probes": [
       "mapper explores a codebase focus area",
       "mapper writes a structured analysis document",

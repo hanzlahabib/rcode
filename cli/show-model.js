@@ -1,5 +1,5 @@
 /**
- * rihal-code show-model — print the resolved model for an agent (or all agents)
+ * rcode show-model — print the resolved model for an agent (or all agents)
  *
  * Usage:
  *   npx @hanzlaa/rcode show-model              # all agents in current profile

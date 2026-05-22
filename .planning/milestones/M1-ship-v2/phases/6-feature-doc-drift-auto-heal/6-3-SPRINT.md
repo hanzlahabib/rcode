@@ -5,19 +5,19 @@ title: memory-audit --fix mode for trivial staleness
 wave: 2
 depends_on: [6.1]
 files_modified:
-  - rihal/workflows/memory-audit.md
-  - rihal/skills/core/rihal-memory-audit/SKILL.md
+  - rcode/workflows/memory-audit.md
+  - rcode/skills/core/rcode-memory-audit/SKILL.md
 autonomous: true
 sequential: false
 requirements: [phase-6-memfix]
 ---
 
 <objective>
-Extend `/rihal-memory-audit` with an opt-in `--fix` flag that surgically updates trivial staleness in the Memory Bank (typos, stale dates, broken paths). All non-trivial findings stay report-only per D-2. Mirrors the safety constraints of `/rihal-feature-drift` so behavior is consistent across auto-heal tools.
+Extend `/rcode-memory-audit` with an opt-in `--fix` flag that surgically updates trivial staleness in the Memory Bank (typos, stale dates, broken paths). All non-trivial findings stay report-only per D-2. Mirrors the safety constraints of `/rcode-feature-drift` so behavior is consistent across auto-heal tools.
 </objective>
 
 <must_haves>
-- `rihal/workflows/memory-audit.md` accepts `--fix` flag
+- `rcode/workflows/memory-audit.md` accepts `--fix` flag
 - `--fix` only patches items the auditor classifies as severity=trivial
 - Each fix commits atomically with `fix(memory): {what was stale} → {what's true now}`
 - `--fix` defaults OFF — report-only behavior is preserved when flag absent
@@ -27,14 +27,14 @@ Extend `/rihal-memory-audit` with an opt-in `--fix` flag that surgically updates
 <task id="6.3.1">
 <title>Add --fix mode to memory-audit workflow</title>
 <read_first>
-- rihal/workflows/memory-audit.md (current report-only flow)
-- rihal/workflows/feature-drift.md (will be created in 6.1; share severity allowlist + atomic-commit pattern with this plan)
-- rihal/workflows/audit-fix.md (precedent for severity-tagged auto-fix)
+- rcode/workflows/memory-audit.md (current report-only flow)
+- rcode/workflows/feature-drift.md (will be created in 6.1; share severity allowlist + atomic-commit pattern with this plan)
+- rcode/workflows/audit-fix.md (precedent for severity-tagged auto-fix)
 - .planning/phases/6-feature-doc-drift-auto-heal/6-CONTEXT.md (D-1, D-2)
 </read_first>
 
 <action>
-In `rihal/workflows/memory-audit.md`:
+In `rcode/workflows/memory-audit.md`:
 
 1. In the `parse_args` step (or earliest argument-parsing step), add detection for `--fix`:
    ```bash
@@ -84,7 +84,7 @@ In `rihal/workflows/memory-audit.md`:
 </action>
 
 <acceptance_criteria>
-- File `rihal/workflows/memory-audit.md` contains literal string `FIX_MODE`
+- File `rcode/workflows/memory-audit.md` contains literal string `FIX_MODE`
 - File contains literal `<step name="apply_fixes">`
 - File contains literal `fix(memory):`
 - File contains literal `--fix NEVER patches above trivial severity`
@@ -95,11 +95,11 @@ In `rihal/workflows/memory-audit.md`:
 <task id="6.3.2">
 <title>Update memory-audit SKILL.md with --fix triggers</title>
 <read_first>
-- rihal/skills/core/rihal-memory-audit/SKILL.md (current skill description)
+- rcode/skills/core/rcode-memory-audit/SKILL.md (current skill description)
 </read_first>
 
 <action>
-In `rihal/skills/core/rihal-memory-audit/SKILL.md`:
+In `rcode/skills/core/rcode-memory-audit/SKILL.md`:
 
 1. Update the `description:` field to mention --fix mode. Append to current description:
    ` Optional --fix flag patches trivial items (typos, stale dates, broken paths) atomically; non-trivial findings always report-only.`
@@ -114,7 +114,7 @@ Do NOT remove existing trigger phrases. Do NOT change other frontmatter fields.
 </action>
 
 <acceptance_criteria>
-- File `rihal/skills/core/rihal-memory-audit/SKILL.md` `description:` contains the literal phrase `--fix`
+- File `rcode/skills/core/rcode-memory-audit/SKILL.md` `description:` contains the literal phrase `--fix`
 - File `triggers:` list contains `"auto-fix memory bank"`
 - Original triggers preserved (no removed entries)
 </acceptance_criteria>

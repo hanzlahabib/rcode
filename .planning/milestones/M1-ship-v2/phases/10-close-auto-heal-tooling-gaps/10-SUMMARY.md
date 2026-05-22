@@ -8,10 +8,10 @@
 
 | Fix | File | Outcome |
 |---|---|---|
-| `cmdCommit` subcommand | `rihal/bin/rihal-tools.cjs` | Atomic git commit with conventional-commits validation. Rejects AI attribution, rejects `--no-verify` flag, no auto-push. Closes the most-used missing subcommand from #465 (used by execute-sprint, map-codebase, new-project-roadmap). |
-| `cmdInit` phase-aware fields | `rihal/bin/rihal-tools.cjs` | When workflow is `phase-op` or `sprint-plan` + valid phase number provided, init now returns 21 phase-aware fields the workflows already document. Closes the third part of #464. |
-| Status parsing in `lib/roadmap.cjs` | `rihal/bin/lib/roadmap.cjs` | `extractPhases` reads the literal `**Status:**` line and maps to enum (complete / active / planned / closed / unknown). `cmdListPhases` now reports actual status. |
-| `files0(dir, pattern)` helper | `rihal/bin/rihal-tools.cjs` | Small module-scope utility for resolving artifact paths under phase dirs (handles both zero-padded legacy and plain integer prefixes). |
+| `cmdCommit` subcommand | `rcode/bin/rcode-tools.cjs` | Atomic git commit with conventional-commits validation. Rejects AI attribution, rejects `--no-verify` flag, no auto-push. Closes the most-used missing subcommand from #465 (used by execute-sprint, map-codebase, new-project-roadmap). |
+| `cmdInit` phase-aware fields | `rcode/bin/rcode-tools.cjs` | When workflow is `phase-op` or `sprint-plan` + valid phase number provided, init now returns 21 phase-aware fields the workflows already document. Closes the third part of #464. |
+| Status parsing in `lib/roadmap.cjs` | `rcode/bin/lib/roadmap.cjs` | `extractPhases` reads the literal `**Status:**` line and maps to enum (complete / active / planned / closed / unknown). `cmdListPhases` now reports actual status. |
+| `files0(dir, pattern)` helper | `rcode/bin/rcode-tools.cjs` | Small module-scope utility for resolving artifact paths under phase dirs (handles both zero-padded legacy and plain integer prefixes). |
 | Dogfood gate baseline update | `scripts/dogfood-check.sh` | `commit` removed from #465 allowlist — any future regression of `cmdCommit` fails CI. |
 
 ## Decisions honored
@@ -33,7 +33,7 @@ The `cmdCommit` subcommand was used to commit Phase 10's own changes — first t
 | # | Verification |
 |---|---|
 | #466 | All 3 highest-impact gaps from #464 + #465 closed in this commit. |
-| #465 (commit only) | `node rihal/bin/rihal-tools.cjs commit "<msg>"` works end-to-end. 14 other missing subcommands remain in #465. |
+| #465 (commit only) | `node rcode/bin/rcode-tools.cjs commit "<msg>"` works end-to-end. 14 other missing subcommands remain in #465. |
 | #464 (part 3) | `init phase-op N` and `init sprint-plan N` return phase-aware fields. |
 
 ## Out of scope (deferred)

@@ -25,24 +25,24 @@ must_haves:
   key_links:
     - "doctor.js must import and run the schemas in its compliance section."
     - "dogfood-check.sh must run schema validation so PRs trigger it."
-    - "state.json schema must match the real shape in .rihal/state.json and reference issue #735."
+    - "state.json schema must match the real shape in .rcode/state.json and reference issue #735."
 ---
 
 <objective>
-Add schema validation for rihal's own artifacts — SKILL.md frontmatter, agent frontmatter, and `.rihal/state.json` — mirroring the existing zod pattern in `cli/lib/config.cjs`. Wire validation into `cli/doctor.js` and `scripts/dogfood-check.sh`, replace the grep-based 5-component compliance check prose in `AGENTS.md` with schema validation, and fix the AGENTS.md scope list so `test/scope-history-parity.test.cjs` passes (#750).
+Add schema validation for rcode's own artifacts — SKILL.md frontmatter, agent frontmatter, and `.rcode/state.json` — mirroring the existing zod pattern in `cli/lib/config.cjs`. Wire validation into `cli/doctor.js` and `scripts/dogfood-check.sh`, replace the grep-based 5-component compliance check prose in `AGENTS.md` with schema validation, and fix the AGENTS.md scope list so `test/scope-history-parity.test.cjs` passes (#750).
 Purpose: Close the artifact-validation gap — today malformed SKILL.md/agent frontmatter is only caught by brittle grep checks, and Phase 27's `kanban`/`orchestrator` scopes break the scope-parity test.
 Output: a schemas module, doctor.js + dogfood wiring, a test file, AGENTS.md/CLAUDE.md edits.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
 @.planning/PROJECT.md
 @.planning/ROADMAP.md
-@.rihal/state.json
+@.rcode/state.json
 </context>
 
 <notes>
@@ -83,9 +83,9 @@ grep -q '`kanban`' AGENTS.md && grep -q '`orchestrator`' AGENTS.md && node --tes
 ### Task 3.2 — Create the artifact schemas module
 <read_first>
 - cli/lib/config.cjs
-- rihal/agents/rihal-phase-researcher.md
-- .rihal/state.json
-- .rihal/references/state-schema.md
+- rcode/agents/rcode-phase-researcher.md
+- .rcode/state.json
+- .rcode/references/state-schema.md
 </read_first>
 <files>
 cli/lib/schemas.cjs
@@ -94,8 +94,8 @@ cli/lib/schemas.cjs
 Create `cli/lib/schemas.cjs` exporting three validators, mirroring the zod usage style of `cli/lib/config.cjs` (or JSON Schema + stdlib validator if zod is not a dependency — see notes):
 
 1. `skillFrontmatterSchema` / `validateSkillFrontmatter(obj)`: requires `name` (string), `description` (string). Requires the description (or a dedicated trigger field) to contain at least 5 and at most 12 trigger phrases — count the quoted activation phrases in the description body. Requires a negative-boundary clause (e.g. text matching `not for|does not|negative`). Return `{ ok, errors[] }`.
-2. `agentFrontmatterSchema` / `validateAgentFrontmatter(obj)`: requires `name` (string, `rihal-` prefix), `description` (string), `tools` (comma-or-array list), `color` (string). Return `{ ok, errors[] }`.
-3. `stateSchema` / `validateState(obj)`: validates `.rihal/state.json` top-level shape — `version`, `project`, `phases` (array), `schema_version` (number), plus the fields actually present in the current `.rihal/state.json` (`current_phase`, `current_plan`, `current_sprint`, `velocity_history`, `milestones`). Be permissive on optional/unknown keys. Add a code comment referencing issue #735 (coordinate state.json schema). Return `{ ok, errors[] }`.
+2. `agentFrontmatterSchema` / `validateAgentFrontmatter(obj)`: requires `name` (string, `rcode-` prefix), `description` (string), `tools` (comma-or-array list), `color` (string). Return `{ ok, errors[] }`.
+3. `stateSchema` / `validateState(obj)`: validates `.rcode/state.json` top-level shape — `version`, `project`, `phases` (array), `schema_version` (number), plus the fields actually present in the current `.rcode/state.json` (`current_phase`, `current_plan`, `current_sprint`, `velocity_history`, `milestones`). Be permissive on optional/unknown keys. Add a code comment referencing issue #735 (coordinate state.json schema). Return `{ ok, errors[] }`.
 
 Also export a `parseFrontmatter(text)` helper (a YAML-frontmatter extractor) if one isn't already importable — keep it minimal, matching the parser already used in `test/compliance.test.cjs`.
 Keep the file under 1000 lines, pure of side effects (exports only).
@@ -103,11 +103,11 @@ Keep the file under 1000 lines, pure of side effects (exports only).
 <acceptance_criteria>
 - `node --check cli/lib/schemas.cjs` exits 0.
 - `node -e "const s=require('./cli/lib/schemas.cjs');['validateSkillFrontmatter','validateAgentFrontmatter','validateState'].forEach(f=>{if(typeof s[f]!=='function')process.exit(1)})"` exits 0.
-- `node -e "const s=require('./cli/lib/schemas.cjs');const st=require('./.rihal/state.json');if(!s.validateState(st).ok)process.exit(1)"` exits 0 (the real state.json validates clean).
+- `node -e "const s=require('./cli/lib/schemas.cjs');const st=require('./.rcode/state.json');if(!s.validateState(st).ok)process.exit(1)"` exits 0 (the real state.json validates clean).
 </acceptance_criteria>
 <verify>
 <automated>
-node --check cli/lib/schemas.cjs && node -e "const s=require('./cli/lib/schemas.cjs');['validateSkillFrontmatter','validateAgentFrontmatter','validateState'].forEach(f=>{if(typeof s[f]!=='function')process.exit(1)});const st=require('./.rihal/state.json');if(!s.validateState(st).ok)process.exit(1)"
+node --check cli/lib/schemas.cjs && node -e "const s=require('./cli/lib/schemas.cjs');['validateSkillFrontmatter','validateAgentFrontmatter','validateState'].forEach(f=>{if(typeof s[f]!=='function')process.exit(1)});const st=require('./.rcode/state.json');if(!s.validateState(st).ok)process.exit(1)"
 </automated>
 </verify>
 <done>`cli/lib/schemas.cjs` exports three working validators and the real state.json validates clean.</done>
@@ -124,9 +124,9 @@ test/artifact-schema.test.cjs
 <action>
 Create `test/artifact-schema.test.cjs` (`node --test`, following `test/bash-guard-hook.test.cjs` structure). Cover:
 - `validateSkillFrontmatter`: a well-formed fixture object passes; an object with only 3 trigger phrases fails with an error mentioning the phrase count; an object missing the negative-boundary clause fails; a missing `name` fails.
-- `validateAgentFrontmatter`: a well-formed agent fixture passes; missing `tools` fails; a `name` without `rihal-` prefix fails.
-- `validateState`: the real `.rihal/state.json` (require it) passes; a `{}` object fails; an object missing `phases` fails.
-- An integration assertion: every `rihal/agents/*.md` file's parsed frontmatter passes `validateAgentFrontmatter` (this locks the package source clean).
+- `validateAgentFrontmatter`: a well-formed agent fixture passes; missing `tools` fails; a `name` without `rcode-` prefix fails.
+- `validateState`: the real `.rcode/state.json` (require it) passes; a `{}` object fails; an object missing `phases` fails.
+- An integration assertion: every `rcode/agents/*.md` file's parsed frontmatter passes `validateAgentFrontmatter` (this locks the package source clean).
 </action>
 <acceptance_criteria>
 - `node --check test/artifact-schema.test.cjs` exits 0.
@@ -152,7 +152,7 @@ scripts/dogfood-check.sh
 AGENTS.md
 </files>
 <action>
-In `cli/doctor.js` compliance section (which already validates `model-profiles.json` and detects manifest drift): import `cli/lib/schemas.cjs` and add a compliance check that runs `validateSkillFrontmatter` over every `SKILL.md` in the package source and `validateAgentFrontmatter` over every `rihal/agents/*.md`. Note: the existing `findSkillFiles` helper (cli/doctor.js:23) matches only files literally named `SKILL.md` — reuse it for the skill pass, but you must ADD a new small glob/scan for `rihal/agents/*.md` (a one-level `fs.readdirSync` filtered to `.md`) for the agent pass; there is no existing agent-file iterator. Print malformed artifacts with their errors. Any failure contributes to the existing non-zero exit path. Do not remove the existing compliance checks — add alongside.
+In `cli/doctor.js` compliance section (which already validates `model-profiles.json` and detects manifest drift): import `cli/lib/schemas.cjs` and add a compliance check that runs `validateSkillFrontmatter` over every `SKILL.md` in the package source and `validateAgentFrontmatter` over every `rcode/agents/*.md`. Note: the existing `findSkillFiles` helper (cli/doctor.js:23) matches only files literally named `SKILL.md` — reuse it for the skill pass, but you must ADD a new small glob/scan for `rcode/agents/*.md` (a one-level `fs.readdirSync` filtered to `.md`) for the agent pass; there is no existing agent-file iterator. Print malformed artifacts with their errors. Any failure contributes to the existing non-zero exit path. Do not remove the existing compliance checks — add alongside.
 
 In `scripts/dogfood-check.sh`: append a numbered check (follow the existing `Check N —` + `pass`/`fail` pattern) that runs `node --test test/artifact-schema.test.cjs` and maps its exit code to `pass`/`fail`.
 

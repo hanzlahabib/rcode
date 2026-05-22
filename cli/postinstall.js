@@ -1,8 +1,8 @@
 /**
- * rihal-code postinstall hook — runs automatically after `npm install -g`
+ * rcode postinstall hook — runs automatically after `npm install -g`
  *
  * Auto-installs commands, skills, workflows, and bin tools into the global
- * Claude Code directory (~/.claude/) so every project can use rihal immediately
+ * Claude Code directory (~/.claude/) so every project can use rcode immediately
  * without needing a per-project `rcode install` run.
  *
  * Artifacts (.planning/, STATE.md, ROADMAP.md) are always created in the
@@ -75,10 +75,10 @@ if (isGlobalInstall(process.env, __dirname, process.cwd())) {
       // surface later for users who never saw the original line.
       const receiptLine = `✓ rcode installed → ${globalTarget}  (run 'rcode install' in a project to configure)`;
       process.stderr.write('\n' + receiptLine + '\n');
-      process.stderr.write('  All /rihal-* commands are now available in every project.\n\n');
+      process.stderr.write('  All /rcode-* commands are now available in every project.\n\n');
       try {
         const fs = require('fs');
-        const receiptPath = path.join(globalTarget, '.rihal-install-receipt');
+        const receiptPath = path.join(globalTarget, '.rcode-install-receipt');
         const receipt = {
           ts: new Date().toISOString(),
           target: globalTarget,
@@ -95,7 +95,7 @@ if (isGlobalInstall(process.env, __dirname, process.cwd())) {
   });
   child.on('error', (err) => {
     console.warn(`\n⚠ Global auto-install failed: ${err.message}`);
-    console.warn('  Run "rcode install" manually to set up rihal commands.\n');
+    console.warn('  Run "rcode install" manually to set up rcode commands.\n');
     printWelcome();
   });
 } else {
@@ -104,21 +104,21 @@ if (isGlobalInstall(process.env, __dirname, process.cwd())) {
 
 function printWelcome() {
   console.log(`
-🕌 Rihal Code installed.
+🕌 rcode installed.
 
 Commands are available globally in every Claude Code project.
 To set up per-project state + planning structure, run inside your project:
 
-  rcode install      # creates .rihal/config.yaml, .planning/, STATE.md
+  rcode install      # creates .rcode/config.yaml, .planning/, STATE.md
 
 🌱 The Golden Path (say these phrases in your AI IDE):
-  1. "scaffold a new project"     → rihal-scaffold-project
-  2. "create a PRD"               → rihal-create-prd
-  3. "create a story"             → rihal-create-story
-  4. "plan a sprint"              → rihal-sprint-planning
-  5. "dev this story"             → rihal-dev-story
-  6. "review this code"           → rihal-code-review
-  7. "sprint status"              → rihal-sprint-status
+  1. "scaffold a new project"     → rcode-scaffold-project
+  2. "create a PRD"               → rcode-create-prd
+  3. "create a story"             → rcode-create-story
+  4. "plan a sprint"              → rcode-sprint-planning
+  5. "dev this story"             → rcode-dev-story
+  6. "review this code"           → rcode-review
+  7. "sprint status"              → rcode-sprint-status
 
 More:
   rcode help         # all commands (grouped)

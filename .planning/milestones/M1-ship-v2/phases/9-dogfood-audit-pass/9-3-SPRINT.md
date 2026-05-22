@@ -12,12 +12,12 @@ requirements: [phase-9-state-paths]
 ---
 
 <objective>
-#462's root cause was two state files (`.rihal/state.json` and `.planning/state.json`) being written/read by different commands. Audit every state-touching path in the codebase to find any other instances of the same anti-pattern.
+#462's root cause was two state files (`.rcode/state.json` and `.planning/state.json`) being written/read by different commands. Audit every state-touching path in the codebase to find any other instances of the same anti-pattern.
 </objective>
 
 <must_haves>
 - Single artifact: `.planning/phases/9-dogfood-audit-pass/STATE-PATHS.md`
-- Documents every path containing `state.json` referenced anywhere in `rihal/`, `.claude/`, `.github/`, `cli/`
+- Documents every path containing `state.json` referenced anywhere in `rcode/`, `.claude/`, `.github/`, `cli/`
 - Confirms there is exactly one canonical state file
 - Issues filed for any divergence
 </must_haves>
@@ -32,13 +32,13 @@ requirements: [phase-9-state-paths]
 Run:
 
 ```bash
-grep -rEn "state\.json" rihal/ .claude/ .github/ cli/ docs/ 2>/dev/null | \
+grep -rEn "state\.json" rcode/ .claude/ .github/ cli/ docs/ 2>/dev/null | \
   grep -v "node_modules\|\.git/" | \
   sort -u
 ```
 
 Categorize each result:
-- **Canonical reads/writes** — uses `RIHAL_DIR + 'state.json'` (the right path)
+- **Canonical reads/writes** — uses `RCODE_DIR + 'state.json'` (the right path)
 - **Wrong-path reads/writes** — uses `PLANNING_DIR + 'state.json'` or any other location (#462 pattern)
 - **Documentation references** — workflow .md or docs/ that mention state.json (these are usually fine, just verify they reference the right path)
 - **gitignore / config** — `.gitignore`, `.claude/settings.json`, etc.
@@ -49,19 +49,19 @@ Write to STATE-PATHS.md:
 # State Path Audit
 
 **Audit date:** 2026-04-29
-**Pattern this catches:** #462 (cmdPhase wrote to PLANNING_DIR/state.json instead of RIHAL_DIR/state.json)
+**Pattern this catches:** #462 (cmdPhase wrote to PLANNING_DIR/state.json instead of RCODE_DIR/state.json)
 
 ## Canonical path
 
-`.rihal/state.json` — RIHAL_DIR-rooted, gitignored, used by `cmdState` and (post-#462) `cmdPhase`.
+`.rcode/state.json` — RCODE_DIR-rooted, gitignored, used by `cmdState` and (post-#462) `cmdPhase`.
 
 ## All references found
 
-### Canonical (uses RIHAL_DIR or .rihal/state.json) ({n})
+### Canonical (uses RCODE_DIR or .rcode/state.json) ({n})
 
 | File | Line | Context |
 |---|---|---|
-| rihal/bin/rihal-tools.cjs | 634 | `const statePath = path.join(RIHAL_DIR, 'state.json');` |
+| rcode/bin/rcode-tools.cjs | 634 | `const statePath = path.join(RCODE_DIR, 'state.json');` |
 | ... | | |
 
 ### Wrong-path (file /= canonical) ({n})
@@ -80,11 +80,11 @@ Write to STATE-PATHS.md:
 
 | File | Line | Entry |
 |---|---|---|
-| .gitignore | N | `.rihal/state.json` |
+| .gitignore | N | `.rcode/state.json` |
 | ... | | |
 ```
 
-If zero wrong-path references: report says "All {N} state references resolve to the canonical RIHAL_DIR/state.json. #462 pattern fully closed."
+If zero wrong-path references: report says "All {N} state references resolve to the canonical RCODE_DIR/state.json. #462 pattern fully closed."
 </action>
 
 <acceptance_criteria>

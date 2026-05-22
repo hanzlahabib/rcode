@@ -1,12 +1,12 @@
 /**
  * rcode nuke — one-shot full cleanup
  *
- * Removes EVERY trace of rihal/rcode from the system:
+ * Removes EVERY trace of rcode/rcode from the system:
  *   - Global npm/pnpm/yarn/bun installs (both @hanzlaa/rcode and legacy @hanzlahabib/rihal-code)
- *   - Global binaries (rcode, rihal, rihal-code) in all known PATH dirs
- *   - Global Claude Code artifacts (~/.claude/commands/rihal*, ~/.claude/agents/rihal-*, ~/.claude/skills/rihal-*)
- *   - Global state (~/.rihal/)
- *   - Project-level artifacts in CWD (.claude/commands/rihal*, .claude/agents/rihal-*, .rihal/, .planning/ optional)
+ *   - Global binaries (rcode, rcode, rcode) in all known PATH dirs
+ *   - Global Claude Code artifacts (~/.claude/commands/rcode*, ~/.claude/agents/rcode-*, ~/.claude/skills/rcode-*)
+ *   - Global state (~/.rcode/)
+ *   - Project-level artifacts in CWD (.claude/commands/rcode*, .claude/agents/rcode-*, .rcode/, .planning/ optional)
  *
  * Default mode: dry-run — prints what *would* be removed.
  * Pass --yes to actually remove. Pass --include-planning to also remove .planning/ in CWD.
@@ -84,7 +84,7 @@ function getGlobalNodeModulesDirs() {
 }
 
 /**
- * For a given global node_modules dir, return a list of rihal/rcode package paths.
+ * For a given global node_modules dir, return a list of rcode/rcode package paths.
  * Looks for both @hanzlaa/rcode (current) and @hanzlahabib/rihal-code (legacy).
  */
 function findRihalPackages(globalNodeModules) {
@@ -93,8 +93,8 @@ function findRihalPackages(globalNodeModules) {
     const scopeDir = path.join(globalNodeModules, scope);
     if (!exists(scopeDir)) continue;
     for (const pkg of readDirSafe(scopeDir)) {
-      // Match rcode, rihal-code, or anything starting with rihal
-      if (pkg === 'rcode' || pkg === 'rihal-code' || pkg.startsWith('rihal')) {
+      // Match rcode, rcode, or anything starting with rcode
+      if (pkg === 'rcode' || pkg === 'rcode' || pkg.startsWith('rcode')) {
         found.push({ scope, pkg, dir: path.join(scopeDir, pkg) });
       }
     }
@@ -103,7 +103,7 @@ function findRihalPackages(globalNodeModules) {
 }
 
 /**
- * Resolve global bin directories where rcode/rihal/rihal-code may live.
+ * Resolve global bin directories where rcode/rcode/rcode may live.
  */
 function getGlobalBinDirs() {
   const home = os.homedir();
@@ -149,7 +149,7 @@ function getGlobalBinDirs() {
   return [...dirs].filter(exists);
 }
 
-const RCODE_BINS = ['rcode', 'rihal', 'rihal-code'];
+const RCODE_BINS = ['rcode', 'rcode', 'rcode'];
 
 function findRihalBins(binDir) {
   const found = [];
@@ -158,9 +158,9 @@ function findRihalBins(binDir) {
     if (exists(p)) {
       let target = null;
       try { target = fs.readlinkSync(p); } catch {}
-      // Only flag if it's clearly ours (target points at rcode/rihal-code package).
+      // Only flag if it's clearly ours (target points at rcode/rcode package).
       // If it's not a symlink, include it anyway — bare scripts in pnpm bin etc.
-      if (!target || /rcode|rihal-code|@hanzlaa|@hanzlahabib/.test(target)) {
+      if (!target || /rcode|rcode|@hanzlaa|@hanzlahabib/.test(target)) {
         found.push({ name, path: p, target });
       }
     }
@@ -169,42 +169,42 @@ function findRihalBins(binDir) {
 }
 
 /**
- * Find rihal-related artifacts in a Claude Code config dir (~/.claude or .claude in CWD).
+ * Find rcode-related artifacts in a Claude Code config dir (~/.claude or .claude in CWD).
  */
 function findClaudeArtifacts(claudeDir) {
   const found = [];
   if (!exists(claudeDir)) return found;
 
-  // .claude/commands/rihal-*.md (claude-style root)
+  // .claude/commands/rcode-*.md (claude-style root)
   const cmdRoot = path.join(claudeDir, 'commands');
   if (exists(cmdRoot)) {
     for (const f of readDirSafe(cmdRoot)) {
-      if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+      if (f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
         found.push({ kind: 'command', path: path.join(cmdRoot, f) });
       }
     }
-    // .claude/commands/rihal/ (vscode-style subdir)
-    const rihalSubdir = path.join(cmdRoot, 'rihal');
-    if (exists(rihalSubdir)) {
-      found.push({ kind: 'commands-dir', path: rihalSubdir });
+    // .claude/commands/rcode/ (vscode-style subdir)
+    const rcodeSubdir = path.join(cmdRoot, 'rcode');
+    if (exists(rcodeSubdir)) {
+      found.push({ kind: 'commands-dir', path: rcodeSubdir });
     }
   }
 
-  // .claude/agents/rihal-*.md
+  // .claude/agents/rcode-*.md
   const agentsDir = path.join(claudeDir, 'agents');
   if (exists(agentsDir)) {
     for (const f of readDirSafe(agentsDir)) {
-      if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+      if (f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
         found.push({ kind: 'agent', path: path.join(agentsDir, f) });
       }
     }
   }
 
-  // .claude/skills/rihal-*
+  // .claude/skills/rcode-*
   const skillsDir = path.join(claudeDir, 'skills');
   if (exists(skillsDir)) {
     for (const d of readDirSafe(skillsDir)) {
-      if (d.startsWith('rihal-')) {
+      if (d.startsWith('rcode-')) {
         found.push({ kind: 'skill-dir', path: path.join(skillsDir, d) });
       }
     }
@@ -220,9 +220,9 @@ function buildPlan({ includePlanning }) {
     packages: [],
     bins: [],
     globalClaude: [],
-    globalRihal: null,
+    globalrcode: null,
     projectClaude: [],
-    projectRihal: null,
+    projectrcode: null,
     projectPlanning: null,
   };
 
@@ -243,14 +243,14 @@ function buildPlan({ includePlanning }) {
   // Global Claude artifacts (~/.claude/)
   plan.globalClaude = findClaudeArtifacts(path.join(home, '.claude'));
 
-  // Global state (~/.rihal/)
-  const globalRihal = path.join(home, '.rihal');
-  if (exists(globalRihal)) plan.globalRihal = globalRihal;
+  // Global state (~/.rcode/)
+  const globalrcode = path.join(home, '.rcode');
+  if (exists(globalrcode)) plan.globalrcode = globalRcode;
 
   // Project-level (CWD only — never recurse, user may have many projects)
   plan.projectClaude = findClaudeArtifacts(path.join(cwd, '.claude'));
-  const projectRihal = path.join(cwd, '.rihal');
-  if (exists(projectRihal) && cwd !== home) plan.projectRihal = projectRihal;
+  const projectrcode = path.join(cwd, '.rcode');
+  if (exists(projectrcode) && cwd !== home) plan.projectrcode = projectRcode;
 
   if (includePlanning) {
     const projectPlanning = path.join(cwd, '.planning');
@@ -292,13 +292,13 @@ function printPlan(plan, { dryRun }) {
     description: `[${a.kind}] ${a.path}`,
   })));
 
-  if (plan.globalRihal) section('🗂️  ~/.rihal/ (global state):', plan.globalRihal);
+  if (plan.globalrcode) section('🗂️  ~/.rcode/ (global state):', plan.globalrcode);
 
   section('🤖 ./.claude/ artifacts (current project):', plan.projectClaude.map(a => ({
     description: `[${a.kind}] ${a.path}`,
   })));
 
-  if (plan.projectRihal) section('🗂️  ./.rihal/ (project state):', plan.projectRihal);
+  if (plan.projectrcode) section('🗂️  ./.rcode/ (project state):', plan.projectrcode);
   if (plan.projectPlanning) section('📋 ./.planning/ (your work — only with --include-planning):', plan.projectPlanning);
 
   if (total === 0) {
@@ -350,16 +350,16 @@ function executePlan(plan) {
   for (const a of plan.globalClaude) {
     if (rmrf(a.path)) { console.log(`  ✓ removed ${a.path}`); removed++; }
   }
-  if (plan.globalRihal && rmrf(plan.globalRihal)) {
-    console.log(`  ✓ removed ${plan.globalRihal}`); removed++;
+  if (plan.globalrcode && rmrf(plan.globalrcode)) {
+    console.log(`  ✓ removed ${plan.globalRcode}`); removed++;
   }
 
   // Claude artifacts (project)
   for (const a of plan.projectClaude) {
     if (rmrf(a.path)) { console.log(`  ✓ removed ${a.path}`); removed++; }
   }
-  if (plan.projectRihal && rmrf(plan.projectRihal)) {
-    console.log(`  ✓ removed ${plan.projectRihal}`); removed++;
+  if (plan.projectrcode && rmrf(plan.projectrcode)) {
+    console.log(`  ✓ removed ${plan.projectRcode}`); removed++;
   }
   if (plan.projectPlanning && rmrf(plan.projectPlanning)) {
     console.log(`  ✓ removed ${plan.projectPlanning}`); removed++;
@@ -379,7 +379,7 @@ module.exports = function nuke(args = []) {
       const pkg = JSON.parse(fs.readFileSync(cwdPkgJson, 'utf8'));
       if (pkg.name === '@hanzlaa/rcode' || pkg.name === '@hanzlahabib/rihal-code') {
         console.log('\n⚠  You are inside the rcode source repo.');
-        console.log('   Nuke would remove this repo\'s .claude/, .rihal/, and possibly .planning/.');
+        console.log('   Nuke would remove this repo\'s .claude/, .rcode/, and possibly .planning/.');
         console.log('   That is your source code — almost certainly not what you want.');
         console.log('   Run nuke from a different directory, or pass --i-know-what-im-doing to override.\n');
         if (!args.includes('--i-know-what-im-doing')) return;

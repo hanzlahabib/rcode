@@ -1,4 +1,4 @@
-# Rihal Code — Starter Example
+# rcode — Starter Example
 
 This walkthrough takes you from an empty directory to a planned sprint in ~10 minutes.
 
@@ -8,7 +8,7 @@ This walkthrough takes you from an empty directory to a planned sprint in ~10 mi
 - Git
 - Claude Code (or compatible agent)
 
-## 1. Install Rihal Code
+## 1. Install rcode
 
 ```bash
 npx @hanzlaa/rcode install
@@ -16,13 +16,13 @@ npx @hanzlaa/rcode install
 
 ## 2. Initialize the project
 
-Always start with `/rihal-init` — it is the single entry point:
+Always start with `/rcode-init` — it is the single entry point:
 
 ```
-/rihal-init employee leave tracker for an Omani government ministry
+/rcode-init employee leave tracker for an Omani government ministry
 ```
 
-`/rihal-init` detects this is a fresh project and routes into `/rihal-new-project` for you. The agent asks 5–10 questions about scope, users, constraints, then produces:
+`/rcode-init` detects this is a fresh project and routes into `/rcode-new-project` for you. The agent asks 5–10 questions about scope, users, constraints, then produces:
 - `.planning/PROJECT.md` — project definition
 - `.planning/REQUIREMENTS.md` — categorized requirements
 - `.planning/ROADMAP.md` — phased execution plan
@@ -30,7 +30,7 @@ Always start with `/rihal-init` — it is the single entry point:
 ## 3. Plan the first sprint
 
 ```
-/rihal-plan 01
+/rcode-plan 01
 ```
 
 Produces `.planning/phases/01-*/SPRINT.md` with stories, acceptance criteria, and dependency waves.
@@ -38,7 +38,7 @@ Produces `.planning/phases/01-*/SPRINT.md` with stories, acceptance criteria, an
 ## 4. Execute the sprint
 
 ```
-/rihal-execute 01
+/rcode-execute 01
 ```
 
 The executor agent works through each story — writes code, runs tests, commits atomically.
@@ -46,13 +46,13 @@ The executor agent works through each story — writes code, runs tests, commits
 ## 5. Check status
 
 ```
-/rihal-status
+/rcode-status
 ```
 
 Shows progress, blockers, and next actions.
 
 ## What's next?
 
-- `/rihal-code-review` — review changes before merging
-- `/rihal-sprint-status` — detailed sprint progress
-- `/rihal-retrospective` — run a retro after the sprint
+- `/rcode-review` — review changes before merging
+- `/rcode-sprint-status` — detailed sprint progress
+- `/rcode-retrospective` — run a retro after the sprint

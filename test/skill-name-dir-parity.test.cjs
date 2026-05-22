@@ -7,12 +7,12 @@
  * mis-routes invocations.
  *
  * test/skills-compliance.test.cjs already enforces this for the
- * source tree (rihal/skills/). This test extends the same rule to
+ * source tree (rcode/skills/). This test extends the same rule to
  * the install copy (.claude/skills/) — where the install pipeline
  * may rename dirs without updating frontmatter, or vice versa.
  *
  * Found 19 mismatches at 2026-04-30 (all agent-personality skills,
- * pattern: dir=rihal-X-role, frontmatter=rihal-agent-X). Snapshot-
+ * pattern: dir=rcode-X-role, frontmatter=rcode-agent-X). Snapshot-
  * ratchet pattern: fail if count goes up; encourage drop.
  *
  * Run: node --test test/skill-name-dir-parity.test.cjs

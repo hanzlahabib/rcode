@@ -11,7 +11,7 @@ outcome: passed
 ✅ `docs/TIERS.md` exists with Starter / Advanced / Ultra / Standards sections
 ✅ `docs/STANDARDS.md` consolidates all contributor rules
 ✅ README "🚦 Start Here" block present
-✅ `npx rihal-code tiers` command works
+✅ `npx rcode tiers` command works
 ✅ New user path tested — Golden Path reachable in < 10 seconds
 
 ## Artifacts Verified

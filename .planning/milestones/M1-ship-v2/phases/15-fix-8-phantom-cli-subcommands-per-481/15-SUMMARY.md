@@ -7,7 +7,7 @@
 
 ## Goal
 
-Eliminate the 8 phantom CLI subcommands enumerated in #481 by implementing each handler in `rihal/bin/rihal-tools.cjs` with a contract derived from how the workflow callsite consumes the output.
+Eliminate the 8 phantom CLI subcommands enumerated in #481 by implementing each handler in `rcode/bin/rcode-tools.cjs` with a contract derived from how the workflow callsite consumes the output.
 
 ## Outcome
 
@@ -43,10 +43,10 @@ Implemented **9 subcommands** (8 from #481 plus 1 found during smoke testing):
 
 1. **Schema drift in `state sync`** — Writes phases with `.number` field while older code reads `.id`. Caused dedupe to drop newly synced entries during cleanup. Worked around by normalizing both fields per entry. Root cause not yet fixed.
 
-2. **Class C of #482 (phantom `.rihal/` paths) is mostly false positive** — Most paths are intentional fallbacks (`if exists` guards), lazy-created (`mkdir -p`), or templates expected from package install. No source-level fix warranted. Documented in #482 closure note.
+2. **Class C of #482 (phantom `.rcode/` paths) is mostly false positive** — Most paths are intentional fallbacks (`if exists` guards), lazy-created (`mkdir -p`), or templates expected from package install. No source-level fix warranted. Documented in #482 closure note.
 
 ## Next Phase Readiness
 
 - All known phantom CLI subcommands resolved
-- `/rihal-execute <N>` pre-flight should now run cleanly (subject to per-callsite contract validation)
+- `/rcode-execute <N>` pre-flight should now run cleanly (subject to per-callsite contract validation)
 - #482 still has open work: Class A (state-sync schema drift root cause) and #480 (install drift v3.3.2 vs v3.4.4)

@@ -1,8 +1,8 @@
 /**
- * Tests for the `cost-track` subcommand in rihal/bin/rihal-hooks.cjs.
+ * Tests for the `cost-track` subcommand in rcode/bin/rcode-hooks.cjs.
  *
  * cost-track is a Stop hook (#745): on response completion it appends one
- * usage record to .rihal/telemetry/cost.jsonl so session-report can report
+ * usage record to .rcode/telemetry/cost.jsonl so session-report can report
  * measured token totals. It must never block (exit 0 on success).
  *
  * Run: node --test test/cost-track-hook.test.cjs
@@ -15,10 +15,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-const HOOK = path.resolve(__dirname, '../rihal/bin/rihal-hooks.cjs');
+const HOOK = path.resolve(__dirname, '../rcode/bin/rcode-hooks.cjs');
 
 function makeTempCwd() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-costtrack-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-costtrack-'));
 }
 
 function runHook(cwd, payload) {
@@ -30,7 +30,7 @@ function runHook(cwd, payload) {
 }
 
 function costLogPath(dir) {
-  return path.join(dir, '.rihal', 'telemetry', 'cost.jsonl');
+  return path.join(dir, '.rcode', 'telemetry', 'cost.jsonl');
 }
 
 const SAMPLE = { usage: { input_tokens: 1200, output_tokens: 340 } };

@@ -14,7 +14,7 @@ requirements_addressed:
 must_haves:
   truths:
     - "`bash scripts/dogfood-check.sh` exits 0 with the new gate active"
-    - "If a future commit adds a second `function walkPhaseDirs` to rihal-tools.cjs OR a second roadmap-parser function across the two files, the gate FAILS the script"
+    - "If a future commit adds a second `function walkPhaseDirs` to rcode-tools.cjs OR a second roadmap-parser function across the two files, the gate FAILS the script"
     - "The gate runs in <1 second and uses only grep + bash arithmetic (no node spawn)"
   artifacts:
     - "scripts/dogfood-check.sh has a 'Check 7 — parser/walker canonical (#469)' block"
@@ -56,23 +56,23 @@ Insert the following block in `scripts/dogfood-check.sh` immediately after the C
 ```bash
 # Check 7 — parser + walker canonical (#469 / Phase 13)
 # Enforces consolidation: exactly one ROADMAP parser function across
-# rihal-tools.cjs + lib/roadmap.cjs, and exactly one walkPhaseDirs across
-# rihal-tools.cjs (canonical lives in lib/phase-dirs.cjs after Phase 13).
+# rcode-tools.cjs + lib/roadmap.cjs, and exactly one walkPhaseDirs across
+# rcode-tools.cjs (canonical lives in lib/phase-dirs.cjs after Phase 13).
 # Fails on any new duplicate that would reintroduce the drift behind
 # #460/#462/#464/#465.
 PARSER_COUNT=$(grep -hcE "^function (extractPhases|parseRoadmap[A-Za-z]*)\b|^\s+function parseRoadmap[A-Za-z]*\b" \
-  rihal/bin/rihal-tools.cjs rihal/bin/lib/roadmap.cjs 2>/dev/null | \
+  rcode/bin/rcode-tools.cjs rcode/bin/lib/roadmap.cjs 2>/dev/null | \
   awk '{s+=$1} END {print s+0}')
 if [ "$PARSER_COUNT" = "1" ]; then
   pass "exactly 1 ROADMAP parser function (#469)"
 else
   fail "expected 1 ROADMAP parser, found $PARSER_COUNT (#469 regression — duplicate parsers reintroduced)"
   grep -nE "^function (extractPhases|parseRoadmap[A-Za-z]*)\b|^\s+function parseRoadmap[A-Za-z]*\b" \
-    rihal/bin/rihal-tools.cjs rihal/bin/lib/roadmap.cjs 2>/dev/null | sed 's/^/    /'
+    rcode/bin/rcode-tools.cjs rcode/bin/lib/roadmap.cjs 2>/dev/null | sed 's/^/    /'
 fi
 
-WALKER_TOOLS=$(grep -c "function walkPhaseDirs" rihal/bin/rihal-tools.cjs 2>/dev/null || echo 0)
-WALKER_LIB=$(grep -c "function walkPhaseDirs" rihal/bin/lib/phase-dirs.cjs 2>/dev/null || echo 0)
+WALKER_TOOLS=$(grep -c "function walkPhaseDirs" rcode/bin/rcode-tools.cjs 2>/dev/null || echo 0)
+WALKER_LIB=$(grep -c "function walkPhaseDirs" rcode/bin/lib/phase-dirs.cjs 2>/dev/null || echo 0)
 if [ "$WALKER_TOOLS" = "0" ] && [ "$WALKER_LIB" = "1" ]; then
   pass "walkPhaseDirs lifted to lib/phase-dirs.cjs (#469)"
 else
@@ -93,23 +93,23 @@ Do NOT change the `set -e` directive. Do NOT touch any of Checks 1-6.
 
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | grep -q "exactly 1 ROADMAP parser function" && echo "PASS: parser gate runs" || { echo "FAIL: parser gate not invoked"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
+cd /home/hanzla/development/rcode && bash scripts/dogfood-check.sh 2>&1 | grep -q "exactly 1 ROADMAP parser function" && echo "PASS: parser gate runs" || { echo "FAIL: parser gate not invoked"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
 </automated>
 
 <automated>
-cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | grep -q "walkPhaseDirs lifted to lib/phase-dirs.cjs" && echo "PASS: walker gate runs" || { echo "FAIL: walker gate not invoked"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
+cd /home/hanzla/development/rcode && bash scripts/dogfood-check.sh 2>&1 | grep -q "walkPhaseDirs lifted to lib/phase-dirs.cjs" && echo "PASS: walker gate runs" || { echo "FAIL: walker gate not invoked"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
 </automated>
 
 <automated>
-cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | tail -3 | grep -q "Dogfood checks passed" && echo "PASS: full script exits 0" || { echo "FAIL: dogfood failed overall"; bash scripts/dogfood-check.sh; exit 1; }
+cd /home/hanzla/development/rcode && bash scripts/dogfood-check.sh 2>&1 | tail -3 | grep -q "Dogfood checks passed" && echo "PASS: full script exits 0" || { echo "FAIL: dogfood failed overall"; bash scripts/dogfood-check.sh; exit 1; }
 </automated>
 
 <automated>
 # Negative test — temporarily inject a fake duplicate parser, prove the gate fails, then revert.
-cd /home/hanzla/development/rihal-code && cp rihal/bin/rihal-tools.cjs /tmp/rihal-tools.cjs.bak && \
-  printf '\nfunction parseRoadmapPhasesFAKE() { return []; }\n' >> rihal/bin/rihal-tools.cjs && \
+cd /home/hanzla/development/rcode && cp rcode/bin/rcode-tools.cjs /tmp/rcode-tools.cjs.bak && \
+  printf '\nfunction parseRoadmapPhasesFAKE() { return []; }\n' >> rcode/bin/rcode-tools.cjs && \
   ! bash scripts/dogfood-check.sh > /tmp/dogfood-neg.log 2>&1 && grep -q "expected 1 ROADMAP parser, found 2" /tmp/dogfood-neg.log && echo "PASS: gate correctly FAILS on injected duplicate" || { echo "WARN: negative test inconclusive"; cat /tmp/dogfood-neg.log; }; \
-  cp /tmp/rihal-tools.cjs.bak rihal/bin/rihal-tools.cjs && rm /tmp/rihal-tools.cjs.bak && bash scripts/dogfood-check.sh > /dev/null 2>&1 && echo "PASS: restored — script back to green"
+  cp /tmp/rcode-tools.cjs.bak rcode/bin/rcode-tools.cjs && rm /tmp/rcode-tools.cjs.bak && bash scripts/dogfood-check.sh > /dev/null 2>&1 && echo "PASS: restored — script back to green"
 </automated>
 </verify>
 

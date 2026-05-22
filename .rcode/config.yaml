@@ -1,0 +1,17 @@
+user_name: hanzla
+project_name: rihal-code
+communication_language: Mixed
+mode: yolo
+model_profile: balanced
+commit_planning: true
+model_override: 
+rihal_source_path:
+workflow:
+  research_by_default: false
+  plan_checker: true
+  post_execute_gates: true
+  ui_safety_gate: true
+  discuss_mode: adaptive
+  _auto_chain_active: false
+git:
+  branching_strategy: feature-branch

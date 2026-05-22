@@ -1,28 +1,28 @@
 /**
- * rihal-code update — refresh an existing install without losing state.
+ * rcode update — refresh an existing install without losing state.
  *
  * What it does:
- *   1. Verifies Rihal Code is actually installed (.rihal/config.json present)
+ *   1. Verifies rcode is actually installed (.rcode/config.json present)
  *   2. Reads the stored installed_version vs current package version
  *   3. If same → confirms user wants to refresh anyway (files might have
  *      drifted from the package), or exit with --yes
- *   4. Backs up current editor-dir skill files to .rihal/backups/update-{ts}.tgz
+ *   4. Backs up current editor-dir skill files to .rcode/backups/update-{ts}.tgz
  *   5. Delegates file refresh to cli/install.js (single source of truth)
- *   6. Updates installed_version in .rihal/config.json atomically
+ *   6. Updates installed_version in .rcode/config.json atomically
  *   7. Runs manifest verification to catch drift
  *
  * What it preserves (never touched):
- *   - .rihal/config.json (only installed_version field is updated)
- *   - .rihal/state.json, phases/, plans/, decisions/, artifacts/, progress/, context/
+ *   - .rcode/config.json (only installed_version field is updated)
+ *   - .rcode/state.json, phases/, plans/, decisions/, artifacts/, progress/, context/
  *   - Project data — user's phase briefs, stories, bugs, research
  *
  * What it refreshes:
- *   - .claude/skills/rihal-* (agent + action skills)
- *   - .claude/commands/rihal/ (slash commands)
- *   - .cursor/rules/rihal-*.mdc
- *   - .windsurf/rules/rihal-*.mdc
- *   - .antigravity/agents/rihal-*
- *   - Rihal section in AGENTS.md (re-appended fresh)
+ *   - .claude/skills/rcode-* (agent + action skills)
+ *   - .claude/commands/rcode/ (slash commands)
+ *   - .cursor/rules/rcode-*.mdc
+ *   - .windsurf/rules/rcode-*.mdc
+ *   - .antigravity/agents/rcode-*
+ *   - rcode section in AGENTS.md (re-appended fresh)
  *
  * Flags:
  *   --yes / -y   skip confirmation prompts
@@ -38,8 +38,8 @@ const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const install = require('./install');
 
 /**
- * Issue #701: update.js used to read .rihal/config.json with JSON.parse, but
- * the installer writes .rihal/config.yaml. So `rcode update` errored on
+ * Issue #701: update.js used to read .rcode/config.json with JSON.parse, but
+ * the installer writes .rcode/config.yaml. So `rcode update` errored on
  * every real install. Read config.yaml with the same minimal parser the
  * installer uses, and write it back as YAML preserving every other field.
  */
@@ -87,51 +87,51 @@ function parseArgs(args) {
 }
 
 /**
- * Detect which editors have Rihal files installed. Anything we detect
+ * Detect which editors have rcode files installed. Anything we detect
  * will be refreshed on update.
  */
 function detectInstalledEditors(cwd) {
   const editors = [];
 
   // Issue #701: post-#679 dedup leaves .claude/skills/ empty when ~/.claude/
-  // already has the rihal-* set. Detect "claude install" by looking at
-  // .rihal/config.yaml as the canonical signal — if config exists, the
+  // already has the rcode-* set. Detect "claude install" by looking at
+  // .rcode/config.yaml as the canonical signal — if config exists, the
   // project ran rcode install at least once for claude. The presence of
   // any commands/agents/skills then becomes secondary evidence.
   const os = require('os');
   const homeSkills = path.join(os.homedir(), '.claude/skills');
   const projectClaude = (
     (fs.existsSync(path.join(cwd, '.claude/skills')) &&
-      fs.readdirSync(path.join(cwd, '.claude/skills')).some(n => n.startsWith('rihal-'))) ||
+      fs.readdirSync(path.join(cwd, '.claude/skills')).some(n => n.startsWith('rcode-'))) ||
     (fs.existsSync(path.join(cwd, '.claude/agents')) &&
-      fs.readdirSync(path.join(cwd, '.claude/agents')).some(n => n.startsWith('rihal-'))) ||
+      fs.readdirSync(path.join(cwd, '.claude/agents')).some(n => n.startsWith('rcode-'))) ||
     (fs.existsSync(path.join(cwd, '.claude/commands')) &&
-      fs.readdirSync(path.join(cwd, '.claude/commands')).some(n => n.startsWith('rihal-')))
+      fs.readdirSync(path.join(cwd, '.claude/commands')).some(n => n.startsWith('rcode-')))
   );
   const globalClaude = (
     fs.existsSync(homeSkills) &&
-    fs.readdirSync(homeSkills).some(n => n.startsWith('rihal-'))
+    fs.readdirSync(homeSkills).some(n => n.startsWith('rcode-'))
   );
-  const configIndicatesClaude = fs.existsSync(path.join(cwd, '.rihal/config.yaml'));
+  const configIndicatesClaude = fs.existsSync(path.join(cwd, '.rcode/config.yaml'));
   if (projectClaude || (configIndicatesClaude && globalClaude)) editors.push('claude');
 
   if (fs.existsSync(path.join(cwd, '.cursor/rules'))) {
-    const hasRihal = fs
+    const hasrcode = fs
       .readdirSync(path.join(cwd, '.cursor/rules'))
-      .some((n) => n.startsWith('rihal-') && n.endsWith('.mdc'));
-    if (hasRihal) editors.push('cursor');
+      .some((n) => n.startsWith('rcode-') && n.endsWith('.mdc'));
+    if (hasrcode) editors.push('cursor');
   }
   if (fs.existsSync(path.join(cwd, '.windsurf/rules'))) {
-    const hasRihal = fs
+    const hasrcode = fs
       .readdirSync(path.join(cwd, '.windsurf/rules'))
-      .some((n) => n.startsWith('rihal-') && n.endsWith('.mdc'));
-    if (hasRihal) editors.push('windsurf');
+      .some((n) => n.startsWith('rcode-') && n.endsWith('.mdc'));
+    if (hasrcode) editors.push('windsurf');
   }
   if (fs.existsSync(path.join(cwd, '.antigravity/agents'))) {
-    const hasRihal = fs
+    const hasrcode = fs
       .readdirSync(path.join(cwd, '.antigravity/agents'))
-      .some((n) => n.startsWith('rihal-'));
-    if (hasRihal) editors.push('antigravity');
+      .some((n) => n.startsWith('rcode-'));
+    if (hasrcode) editors.push('antigravity');
   }
   return editors;
 }
@@ -143,7 +143,7 @@ function detectInstalledEditors(cwd) {
 function createBackup(cwd, editors) {
   const paths = [];
   if (editors.includes('claude')) {
-    paths.push('.claude/skills', '.claude/commands/rihal');
+    paths.push('.claude/skills', '.claude/commands/rcode');
   }
   if (editors.includes('cursor')) paths.push('.cursor/rules');
   if (editors.includes('windsurf')) paths.push('.windsurf/rules');
@@ -159,7 +159,7 @@ function createBackup(cwd, editors) {
     return { ok: false, warning: 'tar not available' };
   }
 
-  const backupsDir = path.join(cwd, '.rihal/backups');
+  const backupsDir = path.join(cwd, '.rcode/backups');
   try {
     fs.mkdirSync(backupsDir, { recursive: true });
   } catch (err) {
@@ -183,7 +183,7 @@ function createBackup(cwd, editors) {
 }
 
 /**
- * Remove existing rihal-* files from the install target before re-copying.
+ * Remove existing rcode-* files from the install target before re-copying.
  * Skill files have version-specific content, so overwriting on top of old
  * files can leave stale bits. Clean before overlay.
  */
@@ -194,22 +194,22 @@ function removeOldSkillFiles(cwd, editors) {
     const skillsDir = path.join(cwd, '.claude/skills');
     if (fs.existsSync(skillsDir)) {
       for (const name of fs.readdirSync(skillsDir)) {
-        if (name.startsWith('rihal-')) {
+        if (name.startsWith('rcode-')) {
           fs.rmSync(path.join(skillsDir, name), { recursive: true, force: true });
           removed.claude++;
         }
       }
     }
-    // Remove vscode-style subdir .claude/commands/rihal/
-    const commandsSubdir = path.join(cwd, '.claude/commands/rihal');
+    // Remove vscode-style subdir .claude/commands/rcode/
+    const commandsSubdir = path.join(cwd, '.claude/commands/rcode');
     if (fs.existsSync(commandsSubdir)) {
       fs.rmSync(commandsSubdir, { recursive: true, force: true });
     }
-    // Remove claude-style root-level .claude/commands/rihal-*.md files
+    // Remove claude-style root-level .claude/commands/rcode-*.md files
     const commandsRoot = path.join(cwd, '.claude/commands');
     if (fs.existsSync(commandsRoot)) {
       for (const f of fs.readdirSync(commandsRoot)) {
-        if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+        if (f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
           fs.unlinkSync(path.join(commandsRoot, f));
         }
       }
@@ -220,7 +220,7 @@ function removeOldSkillFiles(cwd, editors) {
     const rulesDir = path.join(cwd, '.cursor/rules');
     if (fs.existsSync(rulesDir)) {
       for (const name of fs.readdirSync(rulesDir)) {
-        if (name.startsWith('rihal-') && name.endsWith('.mdc')) {
+        if (name.startsWith('rcode-') && name.endsWith('.mdc')) {
           fs.rmSync(path.join(rulesDir, name));
           removed.cursor++;
         }
@@ -232,7 +232,7 @@ function removeOldSkillFiles(cwd, editors) {
     const rulesDir = path.join(cwd, '.windsurf/rules');
     if (fs.existsSync(rulesDir)) {
       for (const name of fs.readdirSync(rulesDir)) {
-        if (name.startsWith('rihal-') && name.endsWith('.mdc')) {
+        if (name.startsWith('rcode-') && name.endsWith('.mdc')) {
           fs.rmSync(path.join(rulesDir, name));
           removed.windsurf++;
         }
@@ -244,7 +244,7 @@ function removeOldSkillFiles(cwd, editors) {
     const agDir = path.join(cwd, '.antigravity/agents');
     if (fs.existsSync(agDir)) {
       for (const name of fs.readdirSync(agDir)) {
-        if (name.startsWith('rihal-')) {
+        if (name.startsWith('rcode-')) {
           fs.rmSync(path.join(agDir, name));
           removed.antigravity++;
         }
@@ -256,7 +256,7 @@ function removeOldSkillFiles(cwd, editors) {
 }
 
 /**
- * Strip the Rihal section from AGENTS.md so the install function can
+ * Strip the rcode section from AGENTS.md so the install function can
  * re-append a fresh one. Uses the same regex patterns as uninstall.js.
  */
 function stripAgentsMdSection(cwd) {
@@ -264,8 +264,8 @@ function stripAgentsMdSection(cwd) {
   if (!fs.existsSync(agentsMdPath)) return;
   let content = fs.readFileSync(agentsMdPath, 'utf8');
   const patterns = [
-    /\n*---\n+## Rihal Code Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
-    /\n*## Rihal Code Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*---\n+## rcode Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*## rcode Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
   ];
   let changed = false;
   for (const pattern of patterns) {
@@ -299,15 +299,15 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   const packageVersion = packageJson?.version || '0.0.0';
 
   // ------ Sanity: must be installed ------
-  // Issue #701: installer writes .rihal/config.yaml, not config.json.
+  // Issue #701: installer writes .rcode/config.yaml, not config.json.
   // Tolerate both shapes for users who upgrade across the rename window,
   // but the canonical path is YAML.
-  const configYamlPath = path.join(cwd, '.rihal/config.yaml');
-  const configJsonPath = path.join(cwd, '.rihal/config.json');
+  const configYamlPath = path.join(cwd, '.rcode/config.yaml');
+  const configJsonPath = path.join(cwd, '.rcode/config.json');
   const configPath = fs.existsSync(configYamlPath) ? configYamlPath : configJsonPath;
 
   if (!fs.existsSync(configPath)) {
-    console.error(`\n❌ Rihal Code is not installed in this directory.`);
+    console.error(`\n❌ rcode is not installed in this directory.`);
     console.error(`   To install: rcode install\n`);
     process.exit(1);
   }
@@ -338,7 +338,7 @@ async function runUpdate(args, { packageRoot, packageJson }) {
     process.exit(1);
   }
 
-  console.log(`\n🕌 Rihal Code — Update\n`);
+  console.log(`\n🕌 rcode — Update\n`);
   console.log(`   Installed: ${installedVersion}`);
   console.log(`   Package:   ${packageVersion}`);
   console.log(`   Editors:   ${editors.join(', ')}`);
@@ -455,8 +455,8 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   console.log();
   console.log(
     installedVersion === packageVersion
-      ? `✅ Rihal Code ${packageVersion} refreshed.`
-      : `✅ Rihal Code updated: ${installedVersion} → ${packageVersion}`,
+      ? `✅ rcode ${packageVersion} refreshed.`
+      : `✅ rcode updated: ${installedVersion} → ${packageVersion}`,
   );
   if (backup.ok) {
     console.log(`   Rollback: tar -xzf ${backup.path}`);

@@ -1,5 +1,5 @@
 /**
- * scripts/build.cjs — esbuild bundler for the Rihal CLI (#245)
+ * scripts/build.cjs — esbuild bundler for the rcode CLI (#245)
  *
  * Bundles cli/index.js + all devDependency packages into a single
  * self-contained dist/rcode.js. The published npm artifact has zero
@@ -51,7 +51,7 @@ if (result.errors && result.errors.length > 0) {
 // may have preserved from the source file to avoid a duplicate on line 2.
 let bundle = fs.readFileSync(OUT, 'utf8');
 bundle = bundle.replace(/^#!.*\n/, '');  // strip any existing shebang
-bundle = '#!/usr/bin/env node\n/* Rihal Code — built with esbuild. Source: github.com/hanzlahabib/rihal-code */\n' + bundle;
+bundle = '#!/usr/bin/env node\n/* rcode — built with esbuild. Source: github.com/hanzlahabib/rihal-code */\n' + bundle;
 fs.writeFileSync(OUT, bundle, 'utf8');
 
 // Make the bundle executable

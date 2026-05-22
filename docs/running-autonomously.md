@@ -1,12 +1,12 @@
-# Running Rihal Autonomously
+# Running rcode Autonomously
 
-Most Rihal skills (create-prd, create-milestone, create-epics-and-stories, sprint-planning) use **step-file architecture**: they halt at every menu and wait for user input. This is the default and it is deliberate — the product of these skills is only as good as the discovery that produces them.
+Most rcode skills (create-prd, create-milestone, create-epics-and-stories, sprint-planning) use **step-file architecture**: they halt at every menu and wait for user input. This is the default and it is deliberate — the product of these skills is only as good as the discovery that produces them.
 
 There are exactly two sanctioned ways to run these skills without halting at menus. Any other "autonomous mode" an agent declares is invented and should be rejected (see issue #124).
 
 ## Sanctioned Path 1 — Project-wide: `mode: yolo`
 
-Edit `.rihal/config.yaml`:
+Edit `.rcode/config.yaml`:
 
 ```yaml
 mode: yolo   # default is `guided`
@@ -27,7 +27,7 @@ mode: guided
 ## Sanctioned Path 2 — Per-invocation: `--auto`
 
 ```
-/rihal-do --auto <question>
+/rcode-do --auto <question>
 ```
 
 The router passes an `autoMode=true` flag to the dispatched skill. Same semantics as `mode: yolo` but scoped to the single invocation.

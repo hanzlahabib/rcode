@@ -15,10 +15,10 @@ Measured from real commands at execution time — authoritative for the whole sp
 
 | Thing     | Command                                       | Count |
 | --------- | --------------------------------------------- | ----- |
-| Agents    | `ls rihal/agents/*.md \| wc -l`                | 45    |
-| Commands  | `find rihal/commands -name '*.md' \| wc -l`    | 109   |
-| Skills    | `find rihal/skills -name 'SKILL.md' \| wc -l`  | 85    |
-| Workflows | `find rihal/workflows -name '*.md' \| wc -l`   | 126   |
+| Agents    | `ls rcode/agents/*.md \| wc -l`                | 45    |
+| Commands  | `find rcode/commands -name '*.md' \| wc -l`    | 109   |
+| Skills    | `find rcode/skills -name 'SKILL.md' \| wc -l`  | 85    |
+| Workflows | `find rcode/workflows -name '*.md' \| wc -l`   | 126   |
 
 All four match the planning-time figures (45 / 109 / 85 / 126) — no drift, no re-baselining needed.
 

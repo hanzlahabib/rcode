@@ -1,17 +1,17 @@
 /**
  * Source agent description budget — context-window guard.
  *
- * rihal/agents/*.md frontmatter `description:` is read by the agent
+ * rcode/agents/*.md frontmatter `description:` is read by the agent
  * registry and shown in agent pickers. Long descriptions inflate
  * every spawn. Soft cap: 200 chars per source agent description.
  *
  * Snapshot baseline 2026-04-30: 11 of 41 source agents exceed 200
- * chars (top: rihal-ahmed.md at 319). Ratchet — fail on regression
+ * chars (top: rcode-ahmed.md at 319). Ratchet — fail on regression
  * past baseline.
  *
  * Different from test/skill-description-budget.test.cjs:
  *   - that test scans installed `.claude/skills/*` (cap 100 chars)
- *   - this test scans source `rihal/agents/*` (cap 200 chars — agent
+ *   - this test scans source `rcode/agents/*` (cap 200 chars — agent
  *     descriptions need more room than skill descriptions because
  *     they describe a persona, not a single action)
  *
@@ -24,7 +24,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const AGENTS_DIR = path.join(PROJECT_ROOT, 'rihal', 'agents');
+const AGENTS_DIR = path.join(PROJECT_ROOT, 'rcode', 'agents');
 const HARD_CAP_CHARS = 200;
 const BASELINE_OFFENDERS = 0;
 

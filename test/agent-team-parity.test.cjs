@@ -2,7 +2,7 @@
  * team.yaml ↔ agent files parity test.
  *
  * team.yaml is the canonical agent registry — its entries must each
- * resolve to either a source file (rihal/agents/<id>.md), the file_path
+ * resolve to either a source file (rcode/agents/<id>.md), the file_path
  * field if specified, or an installed file (.claude/agents/<id>.md).
  *
  * Catches:
@@ -10,10 +10,10 @@
  *   - file_path fields pointing at moved/renamed files
  *   - source files orphaned from the registry (lower-priority warning)
  *
- * Schema reference: rihal/team.yaml entries look like
- *   - id: rihal-X
+ * Schema reference: rcode/team.yaml entries look like
+ *   - id: rcode-X
  *     name: ...
- *     file_path: rihal/agents/rihal-Y.md   (optional alias)
+ *     file_path: rcode/agents/rcode-Y.md   (optional alias)
  *
  * Run: node --test test/agent-team-parity.test.cjs
  */
@@ -24,8 +24,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const TEAM_YAML = path.join(PROJECT_ROOT, 'rihal', 'team.yaml');
-const SRC_AGENTS = path.join(PROJECT_ROOT, 'rihal', 'agents');
+const TEAM_YAML = path.join(PROJECT_ROOT, 'rcode', 'team.yaml');
+const SRC_AGENTS = path.join(PROJECT_ROOT, 'rcode', 'agents');
 const INSTALLED_AGENTS = path.join(PROJECT_ROOT, '.claude', 'agents');
 
 function parseTeamEntries(text) {
@@ -95,9 +95,9 @@ function walkMd(dir, out = []) {
 }
 
 test('every workflow subagent_type= reference resolves to an agent file', () => {
-  const re = /subagent_type\s*[:=]\s*['"](rihal-[a-z0-9-]+)['"]/g;
+  const re = /subagent_type\s*[:=]\s*['"](rcode-[a-z0-9-]+)['"]/g;
   const refs = new Set();
-  for (const f of walkMd(path.join(PROJECT_ROOT, 'rihal', 'workflows'))) {
+  for (const f of walkMd(path.join(PROJECT_ROOT, 'rcode', 'workflows'))) {
     const t = fs.readFileSync(f, 'utf8');
     let m;
     while ((m = re.exec(t)) !== null) refs.add(m[1]);

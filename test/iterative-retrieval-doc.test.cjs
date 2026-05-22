@@ -21,11 +21,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const REF = path.join(ROOT, '.rihal', 'references', 'iterative-retrieval.md');
+const REF = path.join(ROOT, '.rcode', 'references', 'iterative-retrieval.md');
 const RESEARCH_WORKFLOWS = ['research-phase.md', 'new-project-research.md'];
 
 function wf(name) {
-  return fs.readFileSync(path.join(ROOT, 'rihal', 'workflows', name), 'utf8');
+  return fs.readFileSync(path.join(ROOT, 'rcode', 'workflows', name), 'utf8');
 }
 
 test('iterative-retrieval.md reference exists', () => {
@@ -48,7 +48,7 @@ test('iterative-retrieval.md states the executor out-of-scope rule', () => {
 for (const name of RESEARCH_WORKFLOWS) {
   test(`${name} @-includes iterative-retrieval.md and the ref resolves`, () => {
     const text = wf(name);
-    const m = text.match(/@((?:\.rihal|rihal)\/references\/iterative-retrieval\.md)/);
+    const m = text.match(/@((?:\.rcode|rcode)\/references\/iterative-retrieval\.md)/);
     assert.ok(m, `${name} must @-include iterative-retrieval.md`);
     assert.ok(
       fs.existsSync(path.join(ROOT, m[1])),

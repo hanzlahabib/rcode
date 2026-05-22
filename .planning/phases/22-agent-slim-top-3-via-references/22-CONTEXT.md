@@ -7,12 +7,12 @@
 <domain>
 ## Phase Boundary
 
-Extract 70-77% static playbook bulk from the three heaviest agents into rihal/references/ files and @-include them. Closes GitHub #712.
+Extract 70-77% static playbook bulk from the three heaviest agents into rcode/references/ files and @-include them. Closes GitHub #712.
 
 Targets:
-- rihal/agents/rihal-integration-checker.md (456 lines → ≤80)
-- rihal/agents/rihal-research-synthesizer.md (254 lines → ≤80)
-- rihal/agents/rihal-codebase-mapper.md (244 lines → ≤80)
+- rcode/agents/rcode-integration-checker.md (456 lines → ≤80)
+- rcode/agents/rcode-research-synthesizer.md (254 lines → ≤80)
+- rcode/agents/rcode-codebase-mapper.md (244 lines → ≤80)
 
 Pattern: same @-include convention already used by 6/42 agents for agent-shared-rules.md.
 </domain>
@@ -21,9 +21,9 @@ Pattern: same @-include convention already used by 6/42 agents for agent-shared-
 ## Implementation Decisions
 
 ### New reference files to create
-- rihal/references/integration-verification-playbook.md — verification steps, flow patterns, bash snippets, output template, critical rules, success criteria from integration-checker
-- rihal/references/research-synthesis-playbook.md — methodology steps 1-8, output format, structured returns, success criteria from research-synthesizer
-- rihal/references/codebase-mapping-process.md — full <process> block from codebase-mapper
+- rcode/references/integration-verification-playbook.md — verification steps, flow patterns, bash snippets, output template, critical rules, success criteria from integration-checker
+- rcode/references/research-synthesis-playbook.md — methodology steps 1-8, output format, structured returns, success criteria from research-synthesizer
+- rcode/references/codebase-mapping-process.md — full <process> block from codebase-mapper
 
 ### Agent file structure after slim
 - integration-checker keeps: frontmatter + @-includes + `<role>` (brief) + `<core_principle>` + `<inputs>`. Everything else moves to reference.
@@ -38,16 +38,16 @@ Commit messages reference #712.
 <canonical_refs>
 ## Canonical References
 
-- rihal/references/agent-shared-rules.md — format template for @-include pattern
-- rihal/agents/rihal-integration-checker.md — source of truth for extraction
-- rihal/agents/rihal-research-synthesizer.md — source of truth for extraction
-- rihal/agents/rihal-codebase-mapper.md — source of truth for extraction
+- rcode/references/agent-shared-rules.md — format template for @-include pattern
+- rcode/agents/rcode-integration-checker.md — source of truth for extraction
+- rcode/agents/rcode-research-synthesizer.md — source of truth for extraction
+- rcode/agents/rcode-codebase-mapper.md — source of truth for extraction
 </canonical_refs>
 
 <code_context>
 ## Existing Code Insights
 
-@-include format used in agents: single line `@.rihal/references/<file>.md`
+@-include format used in agents: single line `@.rcode/references/<file>.md`
 6/42 agents currently use @-include for agent-shared-rules.md — pattern is established but not yet universal.
 install.js copies agents to ~/.claude/agents/ — @-include paths must resolve relative to install destination.
 </code_context>

@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const WORKFLOWS_DIR = path.join(PROJECT_ROOT, 'rihal', 'workflows');
+const WORKFLOWS_DIR = path.join(PROJECT_ROOT, 'rcode', 'workflows');
 
 test('every workflow file declares a <purpose> block', () => {
   if (!fs.existsSync(WORKFLOWS_DIR)) return;

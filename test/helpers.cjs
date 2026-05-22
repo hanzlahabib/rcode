@@ -19,7 +19,7 @@ const crypto = require('crypto');
  * Create a fresh temp directory for a single test. Returns its absolute
  * path. Pair with cleanup() or let the `after` hook handle it.
  */
-function makeTempDir(prefix = 'rihal-test-') {
+function makeTempDir(prefix = 'rcode-test-') {
   const randomSuffix = crypto.randomBytes(4).toString('hex');
   const dir = path.join(os.tmpdir(), `${prefix}${randomSuffix}`);
   fs.mkdirSync(dir, { recursive: true });
@@ -39,13 +39,13 @@ function cleanup(dir) {
 }
 
 /**
- * Create a minimal .rihal/ scaffold in the temp dir. Just enough to let
- * the libraries under test work without failing on "no .rihal/" checks.
+ * Create a minimal .rcode/ scaffold in the temp dir. Just enough to let
+ * the libraries under test work without failing on "no .rcode/" checks.
  */
-function initRihalDir(cwd) {
-  fs.mkdirSync(path.join(cwd, '.rihal', 'phases'), { recursive: true });
+function initRcodeDir(cwd) {
+  fs.mkdirSync(path.join(cwd, '.rcode', 'phases'), { recursive: true });
   fs.writeFileSync(
-    path.join(cwd, '.rihal', 'state.json'),
+    path.join(cwd, '.rcode', 'state.json'),
     JSON.stringify({ created: new Date().toISOString() }, null, 2),
   );
 }
@@ -55,7 +55,7 @@ function initRihalDir(cwd) {
  * frontmatter writes without needing the full install scaffold.
  */
 function seedPhase(cwd, phaseId, briefContent = '# Phase brief\n') {
-  const dir = path.join(cwd, '.rihal', 'phases', phaseId);
+  const dir = path.join(cwd, '.rcode', 'phases', phaseId);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'brief.md'), briefContent);
   return dir;
@@ -73,12 +73,12 @@ function registerCleanup(t, dir) {
  * Mirror the runtime global-precedence fallback that install.js uses
  * (#664/#666/#669 for agents/commands, #689 for skills). When the project
  * .claude/ dir is empty because globals shadow it (#679 dedup), tests that
- * count installed rihal-* artifacts should look at ~/.claude/ instead.
+ * count installed rcode-* artifacts should look at ~/.claude/ instead.
  *
  * Returns the count from project first; falls back to global only if
  * project has 0. Returns 0 when neither has anything.
  */
-function countRihalArtifacts(projectRoot, kind) {
+function countRcodeArtifacts(projectRoot, kind) {
   // kind: 'agents' (.md files) | 'skills' (dirs) | 'commands' (.md files)
   const projectDir = path.join(projectRoot, '.claude', kind);
   const globalDir = path.join(os.homedir(), '.claude', kind);
@@ -88,10 +88,10 @@ function countRihalArtifacts(projectRoot, kind) {
     try {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       if (kind === 'skills') {
-        return entries.filter(e => e.isDirectory() && e.name.startsWith('rihal-')).length;
+        return entries.filter(e => e.isDirectory() && e.name.startsWith('rcode-')).length;
       }
       return entries.filter(e =>
-        e.isFile() && e.name.startsWith('rihal-') && e.name.endsWith('.md'),
+        e.isFile() && e.name.startsWith('rcode-') && e.name.endsWith('.md'),
       ).length;
     } catch {
       return 0;
@@ -106,8 +106,8 @@ function countRihalArtifacts(projectRoot, kind) {
 module.exports = {
   makeTempDir,
   cleanup,
-  initRihalDir,
+  initRcodeDir,
   seedPhase,
   registerCleanup,
-  countRihalArtifacts,
+  countRcodeArtifacts,
 };

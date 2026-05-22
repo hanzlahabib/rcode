@@ -1,25 +1,25 @@
 /**
- * rihal-code uninstall — remove Rihal Code from the current project.
+ * rcode uninstall — remove rcode from the current project.
  *
  * Cleanly removes:
- *   - .claude/skills/rihal-*             (phrase-activated skills)
- *   - .claude/commands/rihal/             (slash commands)
- *   - .claude/agents/rihal-*.md           (v2 subagents: sadiq, waleed, yousef, zayd, etc.)
- *   - .cursor/rules/rihal-*.mdc           (cursor rules)
- *   - .windsurf/rules/rihal-*.mdc         (windsurf rules)
- *   - .antigravity/agents/rihal-*         (antigravity agents)
- *   - Rihal Code section in AGENTS.md     (appended section only — file preserved)
- *   - .rihal/                             (ONLY if user explicitly confirms — contains project state)
+ *   - .claude/skills/rcode-*             (phrase-activated skills)
+ *   - .claude/commands/rcode/             (slash commands)
+ *   - .claude/agents/rcode-*.md           (v2 subagents: sadiq, waleed, yousef, zayd, etc.)
+ *   - .cursor/rules/rcode-*.mdc           (cursor rules)
+ *   - .windsurf/rules/rcode-*.mdc         (windsurf rules)
+ *   - .antigravity/agents/rcode-*         (antigravity agents)
+ *   - rcode section in AGENTS.md     (appended section only — file preserved)
+ *   - .rcode/                             (ONLY if user explicitly confirms — contains project state)
  *
  * Default: interactive preview → confirmation → delete.
  *
  * Flags:
  *   --editor=claude|cursor|windsurf|antigravity|all   Limit scope
- *   --keep-state                                      Never touch .rihal/
- *   --delete-state                                    Also delete .rihal/ (skip prompt)
+ *   --keep-state                                      Never touch .rcode/
+ *   --delete-state                                    Also delete .rcode/ (skip prompt)
  *   --purge / --all                                   Wipe everything — editor files,
- *                                                       .rihal/, .planning/, gitignore block.
- *                                                       Use when you want /rihal-init to
+ *                                                       .rcode/, .planning/, gitignore block.
+ *                                                       Use when you want /rcode-init to
  *                                                       report "fresh" on next install.
  *   --yes / -y                                        Skip the main confirmation
  */
@@ -33,10 +33,10 @@ const { writeFileAtomic, safeRmSync } = require('./lib/fsutil.cjs');
 function parseArgs(args) {
   const opts = {
     editor: null,           // null = all
-    keepState: false,       // if true, never delete .rihal/
-    deleteState: false,     // if true, delete .rihal/ without prompting
+    keepState: false,       // if true, never delete .rcode/
+    deleteState: false,     // if true, delete .rcode/ without prompting
     yes: false,             // skip the main confirmation
-    purge: false,           // wipe everything: editor files + .rihal/ + .planning/ + gitignore block
+    purge: false,           // wipe everything: editor files + .rcode/ + .planning/ + gitignore block
   };
   for (const arg of args) {
     if (arg.startsWith('--editor=')) {
@@ -49,7 +49,7 @@ function parseArgs(args) {
       opts.yes = true;
     } else if (arg === '--purge' || arg === '--all') {
       // --purge implies --delete-state and removes .planning/ + gitignore block.
-      // Use this when you want a clean slate so /rihal-init reports "fresh" next time.
+      // Use this when you want a clean slate so /rcode-init reports "fresh" next time.
       opts.purge = true;
       opts.deleteState = true;
     }
@@ -78,12 +78,12 @@ function isLocalOverride(name) {
  * Both supported shapes require BOTH the opener AND the closer to match —
  * user comments starting with "# rcode" are safe.
  */
-function stripRihalGitignoreBlock(text) {
+function stripRcodeGitignoreBlock(text) {
   return text
     // Current shape (install.js BEGIN/END markers — exact match).
     .replace(/\n?# ===== rcode-managed gitignore block[\s\S]*?# ===== end rcode-managed gitignore block =====\n?/g, '\n')
     // Legacy >>> / <<< fenced shape.
-    .replace(/\n?# >>> rihal-code >>>[\s\S]*?# <<< rihal-code <<<\n?/g, '\n')
+    .replace(/\n?# >>> rcode >>>[\s\S]*?# <<< rcode <<<\n?/g, '\n')
     .replace(/\n{3,}/g, '\n\n');
 }
 
@@ -133,7 +133,7 @@ function rmdirIfEmpty(dir) {
  * Order matters: pass innermost first so each parent has a chance to
  * become empty after its child is removed.
  *
- * Never touches `.rihal/` — that's managed separately by the state
+ * Never touches `.rcode/` — that's managed separately by the state
  * preservation flow.
  */
 function cleanupEmptyDirs(cwd, relPaths) {
@@ -161,11 +161,11 @@ function buildPlan(cwd, editors) {
 
   // Issue #706: vscode and gemini are in SUPPORTED_IDES but uninstall.js had
   // no branches for them. vscode shares .claude/ for commands+agents+skills
-  // — fold into the claude branch. gemini has its own .gemini/rihal/ tree.
+  // — fold into the claude branch. gemini has its own .gemini/rcode/ tree.
   if (editors.includes('vscode')) {
     if (!editors.includes('claude')) editors.push('claude'); // share scan
-    const markerDir = path.join(cwd, '.vscode/rihal');
-    if (fs.existsSync(markerDir)) plan.vscode.push('.vscode/rihal');
+    const markerDir = path.join(cwd, '.vscode/rcode');
+    if (fs.existsSync(markerDir)) plan.vscode.push('.vscode/rcode');
   }
 
   if (editors.includes('claude')) {
@@ -173,26 +173,26 @@ function buildPlan(cwd, editors) {
     if (fs.existsSync(skillsDir)) {
       plan.claude.skills = fs
         .readdirSync(skillsDir)
-        .filter((name) => name.startsWith('rihal-') || isKnownSkillName(name));
+        .filter((name) => name.startsWith('rcode-') || isKnownSkillName(name));
     }
-    // Collect commands from vscode-style subdir (.claude/commands/rihal/) and
-    // claude-style root-level files (.claude/commands/rihal-*.md).
-    const commandsSubdir = path.join(cwd, '.claude/commands/rihal');
+    // Collect commands from vscode-style subdir (.claude/commands/rcode/) and
+    // claude-style root-level files (.claude/commands/rcode-*.md).
+    const commandsSubdir = path.join(cwd, '.claude/commands/rcode');
     if (fs.existsSync(commandsSubdir)) {
       plan.claude.commands = fs.readdirSync(commandsSubdir);
     }
     const commandsRoot = path.join(cwd, '.claude/commands');
     if (fs.existsSync(commandsRoot)) {
       const rootFiles = fs.readdirSync(commandsRoot)
-        .filter(f => f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc')));
+        .filter(f => f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc')));
       plan.claude.commands = [...plan.claude.commands, ...rootFiles];
     }
-    // v2 installs agents to .claude/agents/rihal-*.md — scan for them
+    // v2 installs agents to .claude/agents/rcode-*.md — scan for them
     const agentsDir = path.join(cwd, '.claude/agents');
     if (fs.existsSync(agentsDir)) {
       plan.claude.agents = fs
         .readdirSync(agentsDir)
-        .filter((name) => name.startsWith('rihal-') && name.endsWith('.md'));
+        .filter((name) => name.startsWith('rcode-') && name.endsWith('.md'));
     }
   }
 
@@ -201,7 +201,7 @@ function buildPlan(cwd, editors) {
     if (fs.existsSync(cursorDir)) {
       plan.cursor = fs
         .readdirSync(cursorDir)
-        .filter((name) => name.startsWith('rihal-') || name === 'rihal-code.mdc' || name === 'rihal-method.mdc');
+        .filter((name) => name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc');
     }
   }
 
@@ -210,7 +210,7 @@ function buildPlan(cwd, editors) {
     if (fs.existsSync(windsurfDir)) {
       plan.windsurf = fs
         .readdirSync(windsurfDir)
-        .filter((name) => name.startsWith('rihal-') || name === 'rihal-code.mdc' || name === 'rihal-method.mdc');
+        .filter((name) => name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc');
     }
   }
 
@@ -219,35 +219,35 @@ function buildPlan(cwd, editors) {
     if (fs.existsSync(agDir)) {
       plan.antigravity = fs
         .readdirSync(agDir)
-        .filter((name) => name.startsWith('rihal-'));
+        .filter((name) => name.startsWith('rcode-'));
     }
   }
 
   if (editors.includes('gemini')) {
-    // #706 — gemini installs to .gemini/rihal/{agents,commands}
+    // #706 — gemini installs to .gemini/rcode/{agents,commands}
     for (const sub of ['agents', 'commands']) {
-      const dir = path.join(cwd, '.gemini', 'rihal', sub);
+      const dir = path.join(cwd, '.gemini', 'rcode', sub);
       if (fs.existsSync(dir)) {
         for (const name of fs.readdirSync(dir)) {
-          if (name.startsWith('rihal-') || name.endsWith('.md')) {
-            plan.gemini.push(path.join('.gemini/rihal', sub, name));
+          if (name.startsWith('rcode-') || name.endsWith('.md')) {
+            plan.gemini.push(path.join('.gemini/rcode', sub, name));
           }
         }
       }
     }
   }
 
-  // Check AGENTS.md for Rihal section
+  // Check AGENTS.md for rcode section
   const agentsMdPath = path.join(cwd, 'AGENTS.md');
   if (fs.existsSync(agentsMdPath)) {
     const content = fs.readFileSync(agentsMdPath, 'utf8');
-    if (content.includes('## Rihal Code Agents (installed)') || content.includes('## Rihal Method Agents (installed)')) {
+    if (content.includes('## rcode Agents (installed)') || content.includes('## rcode Method Agents (installed)')) {
       plan.agentsMd = 'present';
     }
   }
 
-  // Check .rihal/ state directory
-  const rihalDir = path.join(cwd, '.rihal');
+  // Check .rcode/ state directory
+  const rihalDir = path.join(cwd, '.rcode');
   if (fs.existsSync(rihalDir)) {
     let fileCount = 0;
     function countFiles(dir) {
@@ -267,7 +267,7 @@ function buildPlan(cwd, editors) {
  * Names of action-skill directories the installer places under .claude/skills/.
  *
  * Issue #693: this used to be a hardcoded array of 23 names that drifted from
- * the source the moment anyone added or removed a skill in `rihal/skills/`.
+ * the source the moment anyone added or removed a skill in `rcode/skills/`.
  * We now derive it from the package's own manifest (cli/lib/manifest.cjs)
  * with a static fallback for the rare case where the manifest module isn't
  * resolvable from the uninstall context.
@@ -282,8 +282,8 @@ function discoverKnownActionSkills() {
     }
   } catch { /* fall through to static list */ }
   // Static fallback — kept minimal, only the names that don't start with
-  // 'rihal-' would actually need this list since we already match
-  // 'rihal-*' via prefix. This is defensive only.
+  // 'rcode-' would actually need this list since we already match
+  // 'rcode-*' via prefix. This is defensive only.
   return [];
 }
 const KNOWN_ACTION_SKILLS = discoverKnownActionSkills();
@@ -299,7 +299,7 @@ function isKnownSkillName(name) {
  * @param {object} plan — uninstall plan
  * @param {string} cwd — project root
  * @param {object} [options]
- * @param {boolean} [options.purge=false] — when true, also include .rihal/
+ * @param {boolean} [options.purge=false] — when true, also include .rcode/
  *   and .planning/ in the backup so --purge users can recover state.json,
  *   decisions, and planning artifacts. Issue #683.
  */
@@ -310,23 +310,23 @@ function planToPathList(plan, cwd, options = {}) {
     paths.push(path.join('.claude/skills', name));
   }
   // Issue #704: claude IDE installs slash commands as flat
-  // .claude/commands/rihal-*.md files (post-#697 layout). The previous
-  // backup only added the legacy '.claude/commands/rihal' subdir, so on
+  // .claude/commands/rcode-*.md files (post-#697 layout). The previous
+  // backup only added the legacy '.claude/commands/rcode' subdir, so on
   // any modern claude install the tarball was missing every slash command.
   // Add each flat file individually if present, plus the legacy subdir.
   for (const name of plan.claude.commands) {
     // plan.claude.commands holds entries from BOTH layouts:
-    //   - 'rihal-foo.md' (claude flat)
+    //   - 'rcode-foo.md' (claude flat)
     //   - 'foo.md' (vscode subdir)
-    // Disambiguate by the rihal- prefix.
-    if (name.startsWith('rihal-') && name.endsWith('.md')) {
+    // Disambiguate by the rcode- prefix.
+    if (name.startsWith('rcode-') && name.endsWith('.md')) {
       paths.push(path.join('.claude/commands', name));
     }
   }
   // Legacy vscode-style subdir is added once if any subdir entries exist.
-  const hasSubdirCommand = plan.claude.commands.some(n => !n.startsWith('rihal-'));
+  const hasSubdirCommand = plan.claude.commands.some(n => !n.startsWith('rcode-'));
   if (hasSubdirCommand) {
-    paths.push('.claude/commands/rihal');
+    paths.push('.claude/commands/rcode');
   }
   for (const name of plan.claude.agents) {
     paths.push(path.join('.claude/agents', name));
@@ -353,18 +353,18 @@ function planToPathList(plan, cwd, options = {}) {
     paths.push('AGENTS.md');
   }
 
-  // Issue #683: --purge wipes .rihal/ AND .planning/ but the backup never
+  // Issue #683: --purge wipes .rcode/ AND .planning/ but the backup never
   // included them. User loses state.json, decisions, planning artifacts with
-  // no recovery. Add them when purging — but EXCLUDE .rihal/backups/ itself
+  // no recovery. Add them when purging — but EXCLUDE .rcode/backups/ itself
   // (we'd be writing into the dir we're tar-ing).
   if (options.purge) {
-    const rihalDir = path.join(cwd, '.rihal');
+    const rihalDir = path.join(cwd, '.rcode');
     if (fs.existsSync(rihalDir)) {
       // Walk one level deep and add everything except backups/
       try {
         for (const entry of fs.readdirSync(rihalDir)) {
           if (entry === 'backups') continue;
-          paths.push(path.join('.rihal', entry));
+          paths.push(path.join('.rcode', entry));
         }
       } catch { /* fall through; ok=false from tar will warn */ }
     }
@@ -396,13 +396,13 @@ function createBackup(cwd, plan, options = {}) {
     return { ok: false, warning: 'tar not available on this system' };
   }
 
-  // Issue #683: when --purge wipes .rihal/, a backup written into
-  // .rihal/backups/ would be deleted moments later. Write to a sibling
-  // .rihal-backups/ at the project root instead so the backup survives.
-  // For non-purge runs, keep the historical .rihal/backups/ location.
+  // Issue #683: when --purge wipes .rcode/, a backup written into
+  // .rcode/backups/ would be deleted moments later. Write to a sibling
+  // .rcode-backups/ at the project root instead so the backup survives.
+  // For non-purge runs, keep the historical .rcode/backups/ location.
   const backupsDir = options.purge
-    ? path.join(cwd, '.rihal-backups')
-    : path.join(cwd, '.rihal/backups');
+    ? path.join(cwd, '.rcode-backups')
+    : path.join(cwd, '.rcode/backups');
   try {
     fs.mkdirSync(backupsDir, { recursive: true });
   } catch (err) {
@@ -436,9 +436,9 @@ function createBackup(cwd, plan, options = {}) {
 }
 
 /**
- * Remove the Rihal Code section from AGENTS.md without deleting the whole file.
- * The section starts with `## Rihal Code Agents (installed)` or the older
- * `## Rihal Method Agents (installed)` header and ends at either EOF or the
+ * Remove the rcode section from AGENTS.md without deleting the whole file.
+ * The section starts with `## rcode Agents (installed)` or the older
+ * `## rcode Method Agents (installed)` header and ends at either EOF or the
  * next `## ` top-level heading.
  */
 function stripRihalFromAgentsMd(agentsMdPath) {
@@ -446,12 +446,12 @@ function stripRihalFromAgentsMd(agentsMdPath) {
   let content = fs.readFileSync(agentsMdPath, 'utf8');
   let changed = false;
 
-  // Match the Rihal section and everything until the next `## ` or EOF
+  // Match the rcode section and everything until the next `## ` or EOF
   const patterns = [
-    /\n*---\n+## Rihal Code Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
-    /\n*---\n+## Rihal Method Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
-    /\n*## Rihal Code Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
-    /\n*## Rihal Method Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*---\n+## rcode Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*---\n+## rcode Method Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*## rcode Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
+    /\n*## rcode Method Agents \(installed\)[\s\S]*?(?=\n## |\n*$)/,
   ];
 
   for (const pattern of patterns) {
@@ -494,27 +494,27 @@ async function runUninstall(args) {
     ? (opts.editor === 'all' ? Array.from(SUPPORTED_IDES) : [opts.editor])
     : Array.from(SUPPORTED_IDES);
 
-  console.log(`\n🕌 Rihal Code — Uninstall\n`);
+  console.log(`\n🕌 rcode — Uninstall\n`);
   console.log(`   Project: ${cwd}`);
   console.log(`   Scope:   ${editors.join(', ')}`);
   console.log();
 
-  // Fast path: is Rihal Code installed here at all? Check our own marker
-  // (.rihal/config.yaml) + any editor install trace. If nothing, exit cleanly
+  // Fast path: is rcode installed here at all? Check our own marker
+  // (.rcode/config.yaml) + any editor install trace. If nothing, exit cleanly
   // with a clear message so users don't wonder "did it work?"
   // (Was checking config.json — a long-standing typo since the installer
   // writes config.yaml. The check still worked thanks to the editor-files
-  // fallback, but a project with .rihal/ and no editor files would falsely
+  // fallback, but a project with .rcode/ and no editor files would falsely
   // report "not installed".)
-  const hasConfig = fs.existsSync(path.join(cwd, '.rihal/config.yaml'))
-    || fs.existsSync(path.join(cwd, '.rihal/config.json'));
+  const hasConfig = fs.existsSync(path.join(cwd, '.rcode/config.yaml'))
+    || fs.existsSync(path.join(cwd, '.rcode/config.json'));
   const hasAnyEditorFiles =
     fs.existsSync(path.join(cwd, '.claude/skills')) ||
     fs.existsSync(path.join(cwd, '.cursor/rules')) ||
     fs.existsSync(path.join(cwd, '.windsurf/rules')) ||
     fs.existsSync(path.join(cwd, '.antigravity/agents'));
   if (!hasConfig && !hasAnyEditorFiles) {
-    console.log(`\n❌ Rihal Code is not installed in this directory.`);
+    console.log(`\n❌ rcode is not installed in this directory.`);
     console.log(`   Nothing to uninstall.`);
     console.log();
     console.log(`   To install: rcode install`);
@@ -534,9 +534,9 @@ async function runUninstall(args) {
   const totalItems = totalSkills + totalCommands + totalAgents + totalCursor + totalWindsurf + totalAG;
 
   // Edge case: install traces exist but no actual files match our patterns
-  // (e.g. user manually deleted Rihal files but left dirs). Exit clean.
+  // (e.g. user manually deleted rcode files but left dirs). Exit clean.
   if (totalItems === 0 && !plan.agentsMd && !plan.stateDir) {
-    console.log(`\n❌ No Rihal Code files found to remove.`);
+    console.log(`\n❌ No rcode files found to remove.`);
     console.log(`   The install markers are present but all files have already been deleted.`);
     console.log();
     return;
@@ -545,29 +545,29 @@ async function runUninstall(args) {
   console.log(`What will be removed:\n`);
   if (editors.includes('claude')) {
     console.log(`   Claude Code`);
-    console.log(`     .claude/skills/ (rihal-*):    ${totalSkills} skills`);
-    console.log(`     .claude/commands/rihal/:      ${totalCommands} slash commands`);
-    console.log(`     .claude/agents/rihal-*.md:    ${totalAgents} agents`);
+    console.log(`     .claude/skills/ (rcode-*):    ${totalSkills} skills`);
+    console.log(`     .claude/commands/rcode/:      ${totalCommands} slash commands`);
+    console.log(`     .claude/agents/rcode-*.md:    ${totalAgents} agents`);
   }
   if (editors.includes('cursor')) {
     console.log(`   Cursor`);
-    console.log(`     .cursor/rules/rihal-*.mdc:    ${totalCursor} rules`);
+    console.log(`     .cursor/rules/rcode-*.mdc:    ${totalCursor} rules`);
   }
   if (editors.includes('windsurf')) {
     console.log(`   Windsurf`);
-    console.log(`     .windsurf/rules/rihal-*.mdc:  ${totalWindsurf} rules`);
+    console.log(`     .windsurf/rules/rcode-*.mdc:  ${totalWindsurf} rules`);
   }
   if (editors.includes('antigravity')) {
     console.log(`   Antigravity`);
-    console.log(`     .antigravity/agents/rihal-*:  ${totalAG} agents`);
+    console.log(`     .antigravity/agents/rcode-*:  ${totalAG} agents`);
   }
   if (plan.agentsMd) {
     console.log(`   AGENTS.md`);
-    console.log(`     Rihal Code section will be stripped (file preserved)`);
+    console.log(`     rcode section will be stripped (file preserved)`);
   }
   if (plan.stateDir) {
     console.log();
-    console.log(`⚠️  .rihal/ state directory detected`);
+    console.log(`⚠️  .rcode/ state directory detected`);
     console.log(`   Contains ${plan.stateDir.files} files (phases, decisions, progress, artifacts)`);
     console.log(`   This is YOUR PROJECT DATA — not the skill files.`);
     if (opts.deleteState) {
@@ -594,14 +594,14 @@ async function runUninstall(args) {
 
   // Create a timestamped backup before doing anything destructive.
   // Non-fatal on failure — the user already confirmed, we just warn.
-  // Issue #683: --purge backs up .rihal/ and .planning/ too so users can
+  // Issue #683: --purge backs up .rcode/ and .planning/ too so users can
   // recover state.json, decisions log, and planning artifacts.
   console.log();
   const backup = createBackup(cwd, plan, { purge: opts.purge === true });
   if (backup.ok) {
     console.log(`   💾 backup created: ${backup.path}`);
     if (opts.purge) {
-      console.log('      includes .rihal/ and .planning/ (state, decisions, planning artifacts)');
+      console.log('      includes .rcode/ and .planning/ (state, decisions, planning artifacts)');
     }
   } else {
     console.log(`   ⚠ no backup created (${backup.warning}) — continuing anyway`);
@@ -613,24 +613,24 @@ async function runUninstall(args) {
 
   if (editors.includes('claude')) {
     const skillsDir = path.join(cwd, '.claude/skills');
-    const n = removeMatching(skillsDir, (name) => name.startsWith('rihal-') || isKnownSkillName(name));
+    const n = removeMatching(skillsDir, (name) => name.startsWith('rcode-') || isKnownSkillName(name));
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Claude skills`);
 
-    // Remove vscode-style subdir .claude/commands/rihal/
-    const commandsDir = path.join(cwd, '.claude/commands/rihal');
+    // Remove vscode-style subdir .claude/commands/rcode/
+    const commandsDir = path.join(cwd, '.claude/commands/rcode');
     if (fs.existsSync(commandsDir)) {
       const r = safeRmSync(commandsDir, path.resolve(cwd));
       if (!r.ok && r.reason === 'outside-root') {
         console.log(`   ⚠ refused to remove ${commandsDir} — symlink resolves outside project root`);
       }
     }
-    // Remove claude-style root-level rihal-*.md files
+    // Remove claude-style root-level rcode-*.md files
     const commandsRoot = path.join(cwd, '.claude/commands');
     let commandsRemoved = 0;
     if (fs.existsSync(commandsRoot)) {
       for (const f of fs.readdirSync(commandsRoot)) {
-        if (f.startsWith('rihal-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
+        if (f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))) {
           fs.unlinkSync(path.join(commandsRoot, f));
           commandsRemoved++;
         }
@@ -642,10 +642,10 @@ async function runUninstall(args) {
       console.log(`   ✓ removed ${totalCommandsRemoved} slash commands from .claude/commands/`);
     }
 
-    // v2: .claude/agents/rihal-*.md
+    // v2: .claude/agents/rcode-*.md
     const agentsDir = path.join(cwd, '.claude/agents');
     const nAgents = removeMatching(agentsDir, (name) =>
-      name.startsWith('rihal-') && name.endsWith('.md'),
+      name.startsWith('rcode-') && name.endsWith('.md'),
     );
     removed += nAgents;
     if (nAgents > 0) console.log(`   ✓ removed ${nAgents} Claude agents`);
@@ -664,7 +664,7 @@ async function runUninstall(args) {
   if (editors.includes('cursor')) {
     const cursorDir = path.join(cwd, '.cursor/rules');
     const n = removeMatching(cursorDir, (name) =>
-      name.startsWith('rihal-') || name === 'rihal-code.mdc' || name === 'rihal-method.mdc',
+      name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc',
     );
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Cursor rules`);
@@ -673,7 +673,7 @@ async function runUninstall(args) {
   if (editors.includes('windsurf')) {
     const windsurfDir = path.join(cwd, '.windsurf/rules');
     const n = removeMatching(windsurfDir, (name) =>
-      name.startsWith('rihal-') || name === 'rihal-code.mdc' || name === 'rihal-method.mdc',
+      name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc',
     );
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Windsurf rules`);
@@ -681,17 +681,17 @@ async function runUninstall(args) {
 
   if (editors.includes('antigravity')) {
     const agDir = path.join(cwd, '.antigravity/agents');
-    const n = removeMatching(agDir, (name) => name.startsWith('rihal-'));
+    const n = removeMatching(agDir, (name) => name.startsWith('rcode-'));
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Antigravity agents`);
   }
 
-  // #706 — gemini removal (.gemini/rihal/{agents,commands})
+  // #706 — gemini removal (.gemini/rcode/{agents,commands})
   if (editors.includes('gemini')) {
     let n = 0;
     for (const sub of ['agents', 'commands']) {
-      const dir = path.join(cwd, '.gemini', 'rihal', sub);
-      n += removeMatching(dir, (name) => name.startsWith('rihal-') || name.endsWith('.md'));
+      const dir = path.join(cwd, '.gemini', 'rcode', sub);
+      n += removeMatching(dir, (name) => name.startsWith('rcode-') || name.endsWith('.md'));
     }
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Gemini files`);
@@ -700,12 +700,12 @@ async function runUninstall(args) {
   // #706 — vscode marker dir cleanup. Commands+skills+agents share .claude/
   // and were already removed under the claude branch.
   if (editors.includes('vscode')) {
-    const markerDir = path.join(cwd, '.vscode/rihal');
+    const markerDir = path.join(cwd, '.vscode/rcode');
     if (fs.existsSync(markerDir)) {
       const r = safeRmSync(markerDir, path.resolve(cwd));
       if (r.ok) {
         removed += 1;
-        console.log(`   ✓ removed .vscode/rihal/ marker`);
+        console.log(`   ✓ removed .vscode/rcode/ marker`);
       }
     }
   }
@@ -715,15 +715,15 @@ async function runUninstall(args) {
     const agentsMdPath = path.join(cwd, 'AGENTS.md');
     const stripped = stripRihalFromAgentsMd(agentsMdPath);
     if (stripped) {
-      console.log(`   ✓ stripped Rihal Code section from AGENTS.md`);
+      console.log(`   ✓ stripped rcode section from AGENTS.md`);
     }
   }
 
-  // Cleanup empty editor directories left behind after removing rihal-*
+  // Cleanup empty editor directories left behind after removing rcode-*
   // entries. Only removes dirs that are COMPLETELY empty — never touches
   // user content. Order matters: innermost first so each parent gets a
   // chance to become empty after its child is removed.
-  // Not touching .rihal/ — that's handled by the state preservation flow.
+  // Not touching .rcode/ — that's handled by the state preservation flow.
   cleanupEmptyDirs(cwd, [
     '.claude/skills',
     '.claude/commands',
@@ -736,36 +736,36 @@ async function runUninstall(args) {
     '.antigravity',
   ]);
 
-  // Always remove .rihal/brain/ — it's pulled rcode content (issue #202),
+  // Always remove .rcode/brain/ — it's pulled rcode content (issue #202),
   // not user data. Refreshed by `brain pull` on next install.
-  const brainDir = path.join(cwd, '.rihal', 'brain');
+  const brainDir = path.join(cwd, '.rcode', 'brain');
   if (fs.existsSync(brainDir)) {
     const r = safeRmSync(brainDir, path.resolve(cwd));
     if (r.ok) {
-      console.log(`   ✓ removed .rihal/brain/ (pulled content, will refresh on reinstall)`);
+      console.log(`   ✓ removed .rcode/brain/ (pulled content, will refresh on reinstall)`);
     } else if (r.reason === 'outside-root') {
-      console.log(`   ⚠ refused to remove .rihal/brain/ — symlink resolves outside project root`);
+      console.log(`   ⚠ refused to remove .rcode/brain/ — symlink resolves outside project root`);
     }
   }
 
-  // Handle .rihal/ state directory
+  // Handle .rcode/ state directory
   if (plan.stateDir) {
-    const rihalDir = path.join(cwd, '.rihal');
+    const rihalDir = path.join(cwd, '.rcode');
     let shouldDeleteState = opts.deleteState;
 
     if (!opts.deleteState && !opts.keepState && !opts.yes) {
       console.log();
-      console.log(`⚠️  The .rihal/ state directory contains your project data:`);
+      console.log(`⚠️  The .rcode/ state directory contains your project data:`);
       console.log(`   - config.yaml, state.json, RIHLA.md`);
       console.log(`   - phases, decisions, progress, artifacts, context`);
       console.log(`   - ${plan.stateDir.files} files total`);
       console.log();
-      console.log(`   If you keep it: /rihal-init will report "already configured"`);
+      console.log(`   If you keep it: /rcode-init will report "already configured"`);
       console.log(`     and reuse your existing config + history on next install.`);
       console.log(`   If you delete it: next install starts fresh — no carry-over.`);
       console.log();
       shouldDeleteState = await askConfirm(
-        `Also delete .rihal/ state? This is destructive and cannot be undone. [y/N] `,
+        `Also delete .rcode/ state? This is destructive and cannot be undone. [y/N] `,
         { default: 'n' },
       );
     }
@@ -773,20 +773,20 @@ async function runUninstall(args) {
     if (shouldDeleteState) {
       const r = safeRmSync(rihalDir, path.resolve(cwd));
       if (r.ok) {
-        console.log(`   ✓ removed .rihal/ state directory`);
+        console.log(`   ✓ removed .rcode/ state directory`);
       } else if (r.reason === 'outside-root') {
-        console.log(`   ⚠ refused to remove .rihal/ — symlink resolves outside project root`);
+        console.log(`   ⚠ refused to remove .rcode/ — symlink resolves outside project root`);
       } else {
-        console.log(`   ⚠ could not remove .rihal/: ${r.reason}`);
+        console.log(`   ⚠ could not remove .rcode/: ${r.reason}`);
       }
     } else {
-      console.log(`   ℹ kept .rihal/ state directory (your project data is preserved)`);
+      console.log(`   ℹ kept .rcode/ state directory (your project data is preserved)`);
     }
   }
 
   // --purge: also wipe .planning/ artifacts and the rcode .gitignore block.
   // Without this, "uninstall + reinstall" carries forward stale phases /
-  // sprints / SUMMARY files even after .rihal/ is gone.
+  // sprints / SUMMARY files even after .rcode/ is gone.
   if (opts.purge) {
     const planningDir = path.join(cwd, '.planning');
     if (fs.existsSync(planningDir)) {
@@ -810,7 +810,7 @@ async function runUninstall(args) {
     //
     // Three shapes have ever shipped:
     //   1. Current (install.js:653-654): "# ===== rcode-managed gitignore block ... =====" ... "# ===== end rcode-managed gitignore block ====="
-    //   2. Old fenced markers: "# >>> rihal-code >>>" ... "# <<< rihal-code <<<"
+    //   2. Old fenced markers: "# >>> rcode >>>" ... "# <<< rcode <<<"
     //   3. Hypothetical legacy single-line "# rcode" — never actually
     //      committed by any installer version we can find. Removed.
     //
@@ -820,7 +820,7 @@ async function runUninstall(args) {
     if (fs.existsSync(gitignorePath)) {
       try {
         const before = fs.readFileSync(gitignorePath, 'utf8');
-        const stripped = stripRihalGitignoreBlock(before);
+        const stripped = stripRcodeGitignoreBlock(before);
         if (stripped !== before) {
           fs.writeFileSync(gitignorePath, stripped);
           console.log(`   ✓ stripped rcode block from .gitignore (--purge)`);
@@ -837,10 +837,10 @@ async function runUninstall(args) {
   }
 
   // Hint about the purge flag if the user kept state — closes the user's
-  // most common confusion: "I uninstalled but /rihal-init still says configured."
-  if (plan.stateDir && fs.existsSync(path.join(cwd, '.rihal'))) {
+  // most common confusion: "I uninstalled but /rcode-init still says configured."
+  if (plan.stateDir && fs.existsSync(path.join(cwd, '.rcode'))) {
     console.log();
-    console.log(`ℹ  .rihal/ state was preserved. /rihal-init will detect this on reinstall.`);
+    console.log(`ℹ  .rcode/ state was preserved. /rcode-init will detect this on reinstall.`);
     console.log(`   For a fully clean slate next time, use: rcode uninstall --purge`);
   }
 
@@ -850,7 +850,7 @@ async function runUninstall(args) {
   console.log(`💡 IDE reload required:`);
   console.log(`   VS Code / Cursor: Cmd+Shift+P → "Developer: Reload Window"`);
   console.log(`   If commands still appear after reload, check ~/.claude/commands/ for`);
-  console.log(`   any globally-installed rihal-* items (rcode does not touch global installs).`);
+  console.log(`   any globally-installed rcode-* items (rcode does not touch global installs).`);
 
   // Hint about reinstalling
   console.log(`\nTo reinstall later:`);
@@ -863,7 +863,7 @@ async function runUninstall(args) {
 module.exports.isLocalOverride = isLocalOverride;
 module.exports.planToPathList = planToPathList;
 module.exports.discoverKnownActionSkills = discoverKnownActionSkills;
-module.exports.stripRihalGitignoreBlock = stripRihalGitignoreBlock;
+module.exports.stripRcodeGitignoreBlock = stripRcodeGitignoreBlock;
 
 // Direct invocation — allow `node cli/uninstall.js [flags]` to run end-to-end.
 // When called via cli/index.js, module.exports is invoked directly.

@@ -1,6 +1,6 @@
 /**
  * Tests for cli/lib/memory-bank.cjs — project fingerprint and staleness
- * detection for .rihal/context/ memory bank files.
+ * detection for .rcode/context/ memory bank files.
  *
  * Fingerprint comparison is deterministic for file hashes but depends on
  * real git for SHA lookups. Tests that need git init the tempdir as a
@@ -20,7 +20,7 @@ const {
   checkStaleness,
   STALE_THRESHOLDS,
 } = require('../../cli/lib/memory-bank.cjs');
-const { makeTempDir, cleanup, initRihalDir } = require('../helpers.cjs');
+const { makeTempDir, cleanup, initRcodeDir } = require('../helpers.cjs');
 
 function gitInit(cwd) {
   spawnSync('git', ['init', '-q'], { cwd });
@@ -80,7 +80,7 @@ test('computeFingerprint excludes dot directories, node_modules, dist, build', (
 test('writeFingerprint + readFingerprint round-trip', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
+  initRcodeDir(cwd);
 
   const written = writeFingerprint(cwd);
   const read = readFingerprint(cwd);
@@ -93,7 +93,7 @@ test('writeFingerprint + readFingerprint round-trip', (t) => {
 test('checkStaleness returns "never" when context files dont exist', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
+  initRcodeDir(cwd);
 
   const result = checkStaleness(cwd);
   assert.strictEqual(result.status, 'never');
@@ -103,9 +103,9 @@ test('checkStaleness returns "never" when context files dont exist', (t) => {
 test('checkStaleness returns "stale" when only one context file exists', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
-  fs.mkdirSync(path.join(cwd, '.rihal', 'context'));
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'active.md'), '# active');
+  initRcodeDir(cwd);
+  fs.mkdirSync(path.join(cwd, '.rcode', 'context'));
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'active.md'), '# active');
 
   const result = checkStaleness(cwd);
   assert.strictEqual(result.status, 'stale');
@@ -115,11 +115,11 @@ test('checkStaleness returns "stale" when only one context file exists', (t) => 
 test('checkStaleness returns "fresh" when both files exist and fingerprint matches', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
+  initRcodeDir(cwd);
 
-  fs.mkdirSync(path.join(cwd, '.rihal', 'context'));
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'active.md'), '# active');
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'project-brief.md'), '# brief');
+  fs.mkdirSync(path.join(cwd, '.rcode', 'context'));
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'active.md'), '# active');
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'project-brief.md'), '# brief');
 
   writeFingerprint(cwd);
 
@@ -131,10 +131,10 @@ test('checkStaleness returns "fresh" when both files exist and fingerprint match
 test('checkStaleness detects manifest hash change', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
-  fs.mkdirSync(path.join(cwd, '.rihal', 'context'));
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'active.md'), '# active');
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'project-brief.md'), '# brief');
+  initRcodeDir(cwd);
+  fs.mkdirSync(path.join(cwd, '.rcode', 'context'));
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'active.md'), '# active');
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'project-brief.md'), '# brief');
   fs.writeFileSync(path.join(cwd, 'package.json'), '{"name":"v1"}');
 
   writeFingerprint(cwd);
@@ -153,10 +153,10 @@ test('checkStaleness detects manifest hash change', (t) => {
 test('checkStaleness detects structure change (new top-level dir)', (t) => {
   const cwd = makeTempDir();
   t.after(() => cleanup(cwd));
-  initRihalDir(cwd);
-  fs.mkdirSync(path.join(cwd, '.rihal', 'context'));
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'active.md'), '# active');
-  fs.writeFileSync(path.join(cwd, '.rihal', 'context', 'project-brief.md'), '# brief');
+  initRcodeDir(cwd);
+  fs.mkdirSync(path.join(cwd, '.rcode', 'context'));
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'active.md'), '# active');
+  fs.writeFileSync(path.join(cwd, '.rcode', 'context', 'project-brief.md'), '# brief');
   fs.mkdirSync(path.join(cwd, 'src'));
 
   writeFingerprint(cwd);

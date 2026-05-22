@@ -4,7 +4,7 @@
  * Catches regressions of #443 / #448 — workflows that mark a phase
  * `status: complete` without first verifying a passing VERIFICATION.md.
  *
- * Heuristic: if a workflow file calls `phase complete` (the rihal-tools
+ * Heuristic: if a workflow file calls `phase complete` (the rcode-tools
  * subcommand that flips state.json), there should be a check for
  * VERIFICATION.md or `verify-work` *before* that call.
  *
@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const WORKFLOWS_DIR = path.join(PROJECT_ROOT, 'rihal', 'workflows');
+const WORKFLOWS_DIR = path.join(PROJECT_ROOT, 'rcode', 'workflows');
 
 function readWorkflow(name) {
   const p = path.join(WORKFLOWS_DIR, name);
@@ -27,9 +27,9 @@ function readWorkflow(name) {
 test('workflows-state-gating: execute.md gates phase complete on VERIFICATION.md', () => {
   const wf = readWorkflow('execute.md');
   // The actual CLI call (not prose mentions of "phase complete")
-  const completeCallRe = /rihal-tools\.cjs"\s+phase\s+complete/;
+  const completeCallRe = /rcode-tools\.cjs"\s+phase\s+complete/;
   const hasCompleteCall = completeCallRe.test(wf.text);
-  assert.ok(hasCompleteCall, 'execute.md must call rihal-tools phase complete somewhere');
+  assert.ok(hasCompleteCall, 'execute.md must call rcode-tools phase complete somewhere');
 
   // The UAT gate must exist before that call
   const completeIdx = wf.text.search(completeCallRe);

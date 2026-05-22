@@ -1,5 +1,5 @@
 /**
- * Rihal Local Orchestrator — port 7718
+ * rcode Local Orchestrator — port 7718
  *
  * Spawns interactive `claude` sessions inside a real pseudo-terminal
  * (node-pty) and bridges each one to the browser over a WebSocket.
@@ -41,12 +41,12 @@ let WebSocketServer = null;
 try { ({ WebSocketServer } = require('ws')); } catch { /* handled at boot */ }
 
 const PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
-// Use the project root passed by the dashboard (RIHAL_DIR → parent, or explicit
+// Use the project root passed by the dashboard (RCODE_DIR → parent, or explicit
 // PROJECT_ROOT env var). Fall back to cwd so standalone orchestrator runs work.
 // NEVER use __dirname-relative path — that resolves to the npm package dir when
 // rcode is installed globally, not the user's actual project.
 const PROJECT_ROOT = process.env.PROJECT_ROOT
-  || (process.env.RIHAL_DIR ? path.dirname(process.env.RIHAL_DIR) : null)
+  || (process.env.RCODE_DIR ? path.dirname(process.env.RCODE_DIR) : null)
   || process.cwd();
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
 
@@ -59,23 +59,23 @@ const STORY_ID_RE = /^[A-Za-z0-9._-]+$/;
 
 // Command allowlist — the SECURITY BOUNDARY for the dashboard command runner.
 // Only commands listed here may be launched via the UI command picker.
-// Slash-commands that launch dev work (rihal-dev-story, rihal-execute, etc.)
+// Slash-commands that launch dev work (rcode-dev-story, rcode-execute, etc.)
 // are NOT listed here; they are composed by the UI itself via storyId, not
-// by the command runner. This list covers read-mostly and informational rihal
+// by the command runner. This list covers read-mostly and informational rcode
 // slash-commands that are safe to run from the browser without further context.
 const COMMAND_ALLOWLIST = new Set([
-  '/rihal-init',
-  '/rihal-status',
-  '/rihal-progress',
-  '/rihal-help',
-  '/rihal-health',
-  '/rihal-next',
-  '/rihal-show',
-  '/rihal-list-plans',
-  '/rihal-sprint-status',
-  '/rihal-config',
-  '/rihal-diff',
-  '/rihal-stats',
+  '/rcode-init',
+  '/rcode-status',
+  '/rcode-progress',
+  '/rcode-help',
+  '/rcode-health',
+  '/rcode-next',
+  '/rcode-show',
+  '/rcode-list-plans',
+  '/rcode-sprint-status',
+  '/rcode-config',
+  '/rcode-diff',
+  '/rcode-stats',
 ]);
 
 // Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
@@ -197,13 +197,13 @@ async function handleRun(req, res) {
 
   // Gate the allowlist on command-runner sessions only.
   // Command-runner sessions always use a storyId with the "cmd-" prefix
-  // (e.g. "cmd-rihal-init"). Existing dev-run sessions use storyIds such as
+  // (e.g. "cmd-rcode-init"). Existing dev-run sessions use storyIds such as
   // "phase-33", "sprint-33.1", or a raw task id — never "cmd-*" — and MUST NOT
   // be gated here, even though they also supply body.cmd explicitly.
   // This prefix check is the authoritative discriminant between the two call paths.
   // NOTE: The gate fires for ANY cmd- storyId — a missing or empty body.cmd is
   // also rejected. Previously the truthiness check on body.cmd allowed falsy values
-  // to bypass the allowlist and fall through to the /rihal-dev-story fallback.
+  // to bypass the allowlist and fall through to the /rcode-dev-story fallback.
   if (storyId.startsWith('cmd-')) {
     const reqCmd = typeof body.cmd === 'string' ? body.cmd.trim() : '';
     if (!reqCmd || !COMMAND_ALLOWLIST.has(reqCmd)) {
@@ -228,7 +228,7 @@ async function handleRun(req, res) {
   // Initial prompt. `claude [prompt]` starts an interactive session that
   // processes the prompt, then waits for further input — exactly the
   // run-then-communicate flow we want.
-  const cmd  = String(body.cmd || `/rihal-dev-story ${storyId}`);
+  const cmd  = String(body.cmd || `/rcode-dev-story ${storyId}`);
   const cols = 120, rows = 30;
 
   let proc;
@@ -375,7 +375,7 @@ if (WebSocketServer) {
 }
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log('\n🤖 Rihal Orchestrator');
+  console.log('\n🤖 rcode Orchestrator');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('   Port:   ' + PORT + '  (127.0.0.1, loopback only)');
   console.log('   Token:  ' + AUTH_TOKEN);

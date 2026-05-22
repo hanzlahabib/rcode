@@ -16,14 +16,14 @@ Slimmed 13 agents across two sub-clusters (Cluster C: researchers, Cluster D: ex
 
 **Status:** complete
 
-All 4 researcher agents slimmed by adding `@.rihal/references/researcher-shared.md` and removing shared blocks (mandatory initial read, generic meta-rule expansions, examples).
+All 4 researcher agents slimmed by adding `@.rcode/references/researcher-shared.md` and removing shared blocks (mandatory initial read, generic meta-rule expansions, examples).
 
 | Agent | Before | After | @-include added |
 |-------|--------|-------|-----------------|
-| rihal-phase-researcher.md | 130L | 96L | yes |
-| rihal-project-researcher.md | 128L | 94L | yes |
-| rihal-advisor-researcher.md | 116L | 93L | yes |
-| rihal-profiler.md | 117L | 98L | yes |
+| rcode-phase-researcher.md | 130L | 96L | yes |
+| rcode-project-researcher.md | 128L | 94L | yes |
+| rcode-advisor-researcher.md | 116L | 93L | yes |
+| rcode-profiler.md | 117L | 98L | yes |
 
 Blocks removed from researcher agents:
 - Mandatory initial read block (moved to researcher-shared.md in sprint 23-1)
@@ -39,7 +39,7 @@ Preserved in each stub: role identity, CONTEXT.md/upstream input, downstream con
 
 **Status:** complete
 
-9 playbook files created in `rihal/references/` and mirrored to `.rihal/references/`.
+9 playbook files created in `rcode/references/` and mirrored to `.rcode/references/`.
 
 | Playbook | Content extracted |
 |----------|-----------------|
@@ -65,15 +65,15 @@ All 9 agents slimmed by removing content moved to playbooks and adding @-include
 
 | Agent | Before | After |
 |-------|--------|-------|
-| rihal-executor.md | 124L | 27L |
-| rihal-debugger.md | 140L | 37L |
-| rihal-verifier.md | 124L | 40L |
-| rihal-remediation-planner.md | 123L | 56L |
-| rihal-code-reviewer.md | 120L | 57L |
-| rihal-code-fixer.md | 120L | 57L |
-| rihal-roadmapper.md | 120L | 48L |
-| rihal-assumptions-analyzer.md | 117L | 49L |
-| rihal-ux-designer.md | 123L | 57L |
+| rcode-executor.md | 124L | 27L |
+| rcode-debugger.md | 140L | 37L |
+| rcode-verifier.md | 124L | 40L |
+| rcode-remediation-planner.md | 123L | 56L |
+| rcode-reviewer.md | 120L | 57L |
+| rcode-fixer.md | 120L | 57L |
+| rcode-roadmapper.md | 120L | 48L |
+| rcode-assumptions-analyzer.md | 117L | 49L |
+| rcode-ux-designer.md | 123L | 57L |
 
 Each stub retains: YAML frontmatter, @-include lines (existing + new playbook), role definition, principles/named rules, anti-patterns/refuse list, redirects, constraints.
 
@@ -83,7 +83,7 @@ Each stub retains: YAML frontmatter, @-include lines (existing + new playbook), 
 
 **Status:** complete
 **Commit:** `d022b6d` — `refactor(agents): slim researcher cluster + extract execution agent playbooks (#713)`
-**Files:** 31 (4 researcher stubs + 9 playbooks in rihal/references/ + 9 runtime copies in .rihal/references/ + 9 execution stubs)
+**Files:** 31 (4 researcher stubs + 9 playbooks in rcode/references/ + 9 runtime copies in .rcode/references/ + 9 execution stubs)
 
 ---
 
@@ -91,21 +91,21 @@ Each stub retains: YAML frontmatter, @-include lines (existing + new playbook), 
 
 ```
 wc -l results (all ≤100):
-  96  rihal-phase-researcher.md
-  94  rihal-project-researcher.md
-  93  rihal-advisor-researcher.md
-  98  rihal-profiler.md
-  27  rihal-executor.md
-  37  rihal-debugger.md
-  40  rihal-verifier.md
-  56  rihal-remediation-planner.md
-  57  rihal-code-reviewer.md
-  57  rihal-code-fixer.md
-  48  rihal-roadmapper.md
-  49  rihal-assumptions-analyzer.md
-  57  rihal-ux-designer.md
+  96  rcode-phase-researcher.md
+  94  rcode-project-researcher.md
+  93  rcode-advisor-researcher.md
+  98  rcode-profiler.md
+  27  rcode-executor.md
+  37  rcode-debugger.md
+  40  rcode-verifier.md
+  56  rcode-remediation-planner.md
+  57  rcode-reviewer.md
+  57  rcode-fixer.md
+  48  rcode-roadmapper.md
+  49  rcode-assumptions-analyzer.md
+  57  rcode-ux-designer.md
 
-playbook count: 9 in rihal/references/, 9 in .rihal/references/
+playbook count: 9 in rcode/references/, 9 in .rcode/references/
 @-include present: all 13 agents confirmed
 ```
 
@@ -113,11 +113,11 @@ playbook count: 9 in rihal/references/, 9 in .rihal/references/
 
 ## Success Criteria
 
-- [x] rihal-phase-researcher.md ≤ 100 lines with @.rihal/references/researcher-shared.md (96L)
-- [x] rihal-project-researcher.md ≤ 100 lines with @.rihal/references/researcher-shared.md (94L)
-- [x] rihal-advisor-researcher.md ≤ 100 lines with @.rihal/references/researcher-shared.md (93L)
-- [x] rihal-profiler.md ≤ 100 lines with @.rihal/references/researcher-shared.md (98L)
-- [x] 9 playbook files created in rihal/references/
-- [x] All 9 playbooks mirrored to .rihal/references/
+- [x] rcode-phase-researcher.md ≤ 100 lines with @.rcode/references/researcher-shared.md (96L)
+- [x] rcode-project-researcher.md ≤ 100 lines with @.rcode/references/researcher-shared.md (94L)
+- [x] rcode-advisor-researcher.md ≤ 100 lines with @.rcode/references/researcher-shared.md (93L)
+- [x] rcode-profiler.md ≤ 100 lines with @.rcode/references/researcher-shared.md (98L)
+- [x] 9 playbook files created in rcode/references/
+- [x] All 9 playbooks mirrored to .rcode/references/
 - [x] All 9 execution/specialist stubs ≤ 100 lines with their playbook @-include line
 - [x] One commit with all changed files, references #713

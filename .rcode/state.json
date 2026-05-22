@@ -1,0 +1,1016 @@
+{
+  "version": "1",
+  "project": "rihal-code",
+  "created": "2026-04-15T13:11:19.259Z",
+  "updated": "2026-05-22T08:14:17.468Z",
+  "current_phase": "Dashboard command runner",
+  "current_plan": 4,
+  "model_profile": "balanced",
+  "milestone": "M2 — Hardening & Polish",
+  "phases": [
+    {
+      "id": "20",
+      "number": "20",
+      "name": "Dashboard UX Quick Wins",
+      "slug": "dashboard-ux-quick-wins",
+      "goal": "Fix five dashboard UX bugs (sidebar auto-expand, duplicate `/api/files` fetch, sprint card empty-state, sidebar/Files view duplication, Tasks CTA) — net -61 lines shipped.",
+      "status": "complete",
+      "created": "2026-05-02T05:50:23.149Z",
+      "started": "2026-05-02T00:00:00.000Z",
+      "completed": "2026-05-02T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "20.1",
+          "number": 1,
+          "goal": "Fix 5 Majlis dashboard UX bugs: sidebar collapse (#589 #594), dedup fetch (#592), sprint empty-state (#593), Tasks empty-state (#595)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-02T00:00:00.000Z",
+          "stories": []
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "number": "21",
+      "name": "Dashboard Data Pipeline",
+      "slug": "dashboard-data-pipeline",
+      "goal": "Fix two root-cause bugs preventing tasks from appearing in the dashboard and decimal phase IDs from resolving correctly (issues #590 and #591).",
+      "status": "planned",
+      "created": "2026-05-02T05:50:26.941Z",
+      "started": null,
+      "completed": null,
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "21.1",
+          "number": 1,
+          "goal": "Fix decimal phase ID matching in scanner.js (#591) and normalize phase ID string comparisons in client.js; add SPRINT.md fallback task parser",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ]
+    },
+    {
+      "id": "22",
+      "number": "22",
+      "name": "Agent Slim: Top-3 via References",
+      "slug": "agent-slim-top-3-via-references",
+      "goal": "Slim the three largest agent files by extracting shared content into `references/`.",
+      "status": "complete",
+      "created": "2026-05-10T07:56:36.261Z",
+      "started": "2026-05-10T08:14:58.085Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "plan_count": 4,
+      "plans": 4,
+      "sprints": [
+        {
+          "id": "22.1",
+          "number": 1,
+          "goal": "Create three reference files in rihal/references/ by extracting the static playbook content from the three heaviest agents. This is a pure extraction — no behav",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "1",
+              "title": "Create integration-verification-playbook.md",
+              "status": "planned"
+            },
+            {
+              "id": "2",
+              "title": "Create research-synthesis-playbook.md",
+              "status": "planned"
+            },
+            {
+              "id": "3",
+              "title": "Create codebase-mapping-process.md",
+              "status": "planned"
+            },
+            {
+              "id": "4",
+              "title": "Commit the three reference files",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "22.2",
+          "number": 2,
+          "goal": "Slim rihal/agents/rihal-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "1",
+              "title": "Verify Sprint 22-1 reference file exists",
+              "status": "planned"
+            },
+            {
+              "id": "2",
+              "title": "Rewrite rihal-integration-checker.md as slim stub",
+              "status": "planned"
+            },
+            {
+              "id": "3",
+              "title": "Commit the slimmed agent",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "22.3",
+          "number": 3,
+          "goal": "Slim rihal/agents/rihal-research-synthesizer.md from 254 lines to ≤80 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<su",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "1",
+              "title": "Verify Sprint 22-1 reference file exists",
+              "status": "planned"
+            },
+            {
+              "id": "2",
+              "title": "Rewrite rihal-research-synthesizer.md as slim stub",
+              "status": "planned"
+            },
+            {
+              "id": "3",
+              "title": "Commit the slimmed agent",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "22.4",
+          "number": 4,
+          "goal": "Slim rihal/agents/rihal-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "1",
+              "title": "Verify Sprint 22-1 reference file exists",
+              "status": "planned"
+            },
+            {
+              "id": "2",
+              "title": "Rewrite rihal-codebase-mapper.md as slim stub",
+              "status": "planned"
+            },
+            {
+              "id": "3",
+              "title": "Commit the slimmed agent",
+              "status": "planned"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "23",
+      "number": "23",
+      "name": "Agent Slim: Remaining 24 via Reference Clusters",
+      "slug": "agent-slim-remaining-24-via-reference-clusters",
+      "goal": "Slim the remaining 24 agents using shared reference clusters.",
+      "status": "complete",
+      "created": "2026-05-10T07:56:42.058Z",
+      "started": "2026-05-10T00:00:00.000Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "plan_count": 0
+    },
+    {
+      "id": "24",
+      "number": "24",
+      "name": "Resolve Agent vs Skill Persona Duplication",
+      "slug": "resolve-agent-vs-skill-persona-duplication",
+      "goal": "Eliminate duplication between agent personas and skill personas.",
+      "status": "complete",
+      "created": "2026-05-10T07:56:42.115Z",
+      "started": "2026-05-10T00:00:00.000Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "24.1",
+          "number": 1,
+          "goal": "Slim 10 persona agent stubs",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-10T00:00:00.000Z",
+          "stories": []
+        }
+      ]
+    },
+    {
+      "id": "25",
+      "number": "25",
+      "name": "rcode Agent CLI Command",
+      "slug": "rcode-agent-cli-command",
+      "goal": "Add an `rcode agent` CLI command.",
+      "status": "complete",
+      "created": "2026-05-10T07:56:42.171Z",
+      "started": "2026-05-10T00:00:00.000Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "25.1",
+          "number": 1,
+          "goal": "Add rcode agent <name> CLI command wrapping claude --agent rihal-<name>",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-10T00:00:00.000Z",
+          "stories": []
+        }
+      ]
+    },
+    {
+      "id": "26",
+      "number": "26",
+      "name": "Reference Index and Contributing Rule",
+      "slug": "reference-index-and-contributing-rule",
+      "goal": "Add a reference index and a contributing rule for the `references/` system.",
+      "status": "complete",
+      "created": "2026-05-10T07:56:42.231Z",
+      "started": "2026-05-10T00:00:00.000Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "plan_count": 1
+    },
+    {
+      "id": "27",
+      "number": "27",
+      "name": "Realtime Kanban Orchestration Dashboard",
+      "slug": "realtime-kanban-orchestration-dashboard",
+      "goal": "Turn the Majlis dashboard into a realtime orchestration surface — run phases,",
+      "status": "complete",
+      "created": "2026-05-15T06:13:02.904Z",
+      "started": "2026-05-16T00:00:00.000Z",
+      "completed": "2026-05-16T00:00:00.000Z",
+      "plan_count": 0
+    },
+    {
+      "id": "28",
+      "number": "28",
+      "name": "Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval",
+      "slug": "audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval",
+      "goal": "Close the infrastructure gaps found auditing rihal-code against `everything-claude-code`:",
+      "status": "complete",
+      "created": "2026-05-15T13:42:38.605Z",
+      "started": "2026-05-15T00:00:00.000Z",
+      "completed": "2026-05-15T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "28.1",
+          "number": 1,
+          "goal": "Hooks expansion: PreCompact, Stop verify, cost tracking, compact-nudge",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "28.2",
+          "number": 2,
+          "goal": "Agent-behavior regression harness",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "28.3",
+          "number": 3,
+          "goal": "Artifact JSON-schema validation + AGENTS.md scope fix",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "28.4",
+          "number": 4,
+          "goal": "Iterative-retrieval loop for research subagents",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        }
+      ],
+      "plans": 4,
+      "planned_at": "2026-05-15T13:59:48.106Z"
+    },
+    {
+      "id": "29",
+      "number": "29",
+      "name": "Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping",
+      "slug": "security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping",
+      "goal": "Close the vulnerabilities found in the rihal-code self security audit: an",
+      "status": "complete",
+      "created": "2026-05-15T14:19:29.608Z",
+      "started": "2026-05-15T00:00:00.000Z",
+      "completed": "2026-05-15T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "29.1",
+          "number": 1,
+          "goal": "Orchestrator lockdown — bind 127.0.0.1, auth token, storyId validation (#752)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "29.2",
+          "number": 2,
+          "goal": "bash-guard hardening — anchor RIHAL_PUSH_OK, +-refspec force-push detection (#753)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "29.3",
+          "number": 3,
+          "goal": "File-read scoping — post-commit -F path constraint, execFileSync git calls (#754)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        }
+      ],
+      "plans": 3,
+      "planned_at": "2026-05-15T14:26:37.115Z"
+    },
+    {
+      "id": "30",
+      "number": "30",
+      "name": "Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish",
+      "slug": "marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish",
+      "goal": "Turn rihal-code into an adoptable product: resolve the license contradiction,",
+      "status": "complete",
+      "created": "2026-05-15T14:19:29.650Z",
+      "started": "2026-05-15T00:00:00.000Z",
+      "completed": "2026-05-15T00:00:00.000Z",
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "30.1",
+          "number": 1,
+          "goal": "License resolution — add LICENSE file, align package.json + README",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "30.2",
+          "number": 2,
+          "goal": "README diet + visual proof — cut to ~200 lines, add demo GIF + dashboard screenshot",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "30.3",
+          "number": 3,
+          "goal": "Metadata consistency — fix agent/command/skill counts across README/DOCS/package.json",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        },
+        {
+          "id": "30.4",
+          "number": 4,
+          "goal": "Onboarding + polish — install model, differentiation table, examples, BRAND.md",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-15T00:00:00.000Z",
+          "stories": []
+        }
+      ],
+      "plans": 4,
+      "planned_at": "2026-05-15T14:26:37.157Z"
+    },
+    {
+      "id": "31",
+      "number": "31",
+      "name": "Preact migration — Majlis dashboard client",
+      "slug": "preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step",
+      "goal": "Rebuild the Majlis dashboard client as Preact components via `htm` + ESM CDN",
+      "status": "complete",
+      "created": "2026-05-15T20:32:13.402Z",
+      "started": "2026-05-15T23:10:19.852Z",
+      "completed": null,
+      "plan_count": 4,
+      "plans": 4,
+      "planned_at": "2026-05-15T20:46:54.646Z",
+      "status_updated": "2026-05-16T11:09:40.907Z",
+      "sprints": [
+        {
+          "id": "31.1",
+          "number": 1,
+          "goal": "Stand up the Preact + htm runtime with no build step, convert the dashboard shell",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "31.1.1",
+              "title": "Widen /js/ static route to serve nested ESM modules",
+              "status": "planned"
+            },
+            {
+              "id": "31.1.2",
+              "title": "Add Preact/htm ESM runtime module + make icons.js dual-mode",
+              "status": "planned"
+            },
+            {
+              "id": "31.1.3",
+              "title": "Build the reactive store + shared client utilities",
+              "status": "planned"
+            },
+            {
+              "id": "31.1.4",
+              "title": "App root, Sidebar, Topbar components + hash router",
+              "status": "planned"
+            },
+            {
+              "id": "31.1.5",
+              "title": "Migrate Overview + Decisions views; wire entry into shell.js + client.js",
+              "status": "planned"
+            },
+            {
+              "id": "31.1.6",
+              "title": "Manual regression sweep — foundation",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "31.2",
+          "number": 2,
+          "goal": "Migrate the five planning views (Roadmap, Milestones, Phases, Sprints, Tasks) to",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "31.2.1",
+              "title": "Extract shared visual-primitive components",
+              "status": "planned"
+            },
+            {
+              "id": "31.2.2",
+              "title": "Migrate Roadmap view (tree, filter, expand/collapse)",
+              "status": "planned"
+            },
+            {
+              "id": "31.2.3",
+              "title": "Migrate Milestones + Phases views (list + drill-down detail)",
+              "status": "planned"
+            },
+            {
+              "id": "31.2.4",
+              "title": "Migrate Sprints + Tasks views",
+              "status": "planned"
+            },
+            {
+              "id": "31.2.5",
+              "title": "Register migrated views in App router; remove dead legacy render functions",
+              "status": "planned"
+            },
+            {
+              "id": "31.2.6",
+              "title": "Manual regression sweep — planning views",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "31.3",
+          "number": 3,
+          "goal": "Migrate the four remaining complex views — Kanban, Files, Agents, Memory — to",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "31.3.1",
+              "title": "Migrate Kanban view (4-column board, card actions, drag-and-drop)",
+              "status": "planned"
+            },
+            {
+              "id": "31.3.2",
+              "title": "Migrate Files view (tree fetch, file load, markdown render)",
+              "status": "planned"
+            },
+            {
+              "id": "31.3.3",
+              "title": "Migrate Agents view; move roster out of shell.js",
+              "status": "planned"
+            },
+            {
+              "id": "31.3.4",
+              "title": "Migrate Memory view",
+              "status": "planned"
+            },
+            {
+              "id": "31.3.5",
+              "title": "Register the 4 views in App router; trim legacy route dispatch",
+              "status": "planned"
+            },
+            {
+              "id": "31.3.6",
+              "title": "Manual regression sweep — complex views",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "31.4",
+          "number": 4,
+          "goal": "Migrate the last view (Orchestration) and the two panel surfaces (the xterm",
+          "status": "complete",
+          "stories": [
+            {
+              "id": "31.4.1",
+              "title": "Extract orchestrator client logic into an ESM module",
+              "status": "planned"
+            },
+            {
+              "id": "31.4.2",
+              "title": "Wrap xterm.js as XtermPanel + OrchPanel components",
+              "status": "planned"
+            },
+            {
+              "id": "31.4.3",
+              "title": "Migrate Orchestration view",
+              "status": "planned"
+            },
+            {
+              "id": "31.4.4",
+              "title": "Register Orchestration + panels in App; replace BRIDGE shims with imports",
+              "status": "planned"
+            },
+            {
+              "id": "31.4.5",
+              "title": "Delete the three legacy modules; trim client.js to the module entry",
+              "status": "planned"
+            },
+            {
+              "id": "31.4.6",
+              "title": "Final full-dashboard regression sweep",
+              "status": "planned"
+            }
+          ]
+        }
+      ],
+      "completed_at": "2026-05-16"
+    },
+    {
+      "id": "32",
+      "number": "32",
+      "name": "Dashboard theming — design tokens and emoji-to-SVG icon sweep",
+      "slug": "dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep",
+      "goal": "Give the Preact dashboard a coherent visual system — a single design-token",
+      "status": "complete",
+      "created": "2026-05-16T00:30:35.120Z",
+      "started": null,
+      "completed": null,
+      "plan_count": 3,
+      "status_updated": "2026-05-16T01:26:44.807Z",
+      "sprints": [
+        {
+          "id": "32.1",
+          "number": 1,
+          "goal": "Design-token audit in css.js + icon-alignment CSS classes",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        },
+        {
+          "id": "32.2",
+          "number": 2,
+          "goal": "11 new SVG icons; emoji-to-SVG sweep across 6 views + shared.js",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        },
+        {
+          "id": "32.3",
+          "number": 3,
+          "goal": "Topbar/App/OrchPanel sweep; moon/sun theme icons; final emoji audit",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        }
+      ]
+    },
+    {
+      "id": "33",
+      "number": "33",
+      "name": "Dashboard command runner — run init and rihal commands through the UI",
+      "slug": "dashboard-command-runner-run-init-and-rihal-commands-through-the-ui",
+      "goal": "Let the user launch `init` and other rihal commands end-to-end from the",
+      "status": "complete",
+      "created": "2026-05-16T00:31:40.154Z",
+      "started": "2026-05-16T01:49:09.891Z",
+      "completed": null,
+      "plan_count": 3,
+      "sprints": [
+        {
+          "id": "33.1",
+          "number": 1,
+          "goal": "Add server-side command allowlist to orchestrator.js securing the command runner endpoint",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        },
+        {
+          "id": "33.2",
+          "number": 2,
+          "goal": "Build command-picker dropdown in OrchestrationView wired to the existing XtermPanel terminal",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        },
+        {
+          "id": "33.3",
+          "number": 3,
+          "goal": "Add error toasts, running-state awareness, and CSS token audit to complete the feature",
+          "status": "complete",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-05-16",
+          "stories": []
+        }
+      ],
+      "plans": 3,
+      "status_updated": "2026-05-16T02:15:23.421Z"
+    },
+    {
+      "id": "34",
+      "number": "34",
+      "name": "Status Summary Bar with Multi-Attribute Filtering",
+      "goal": "Give the dashboard an Archon-style status summary bar — aggregate count",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "plan_count": 2,
+      "sprints": [
+        {
+          "id": "34.1",
+          "number": 1,
+          "goal": "Build the foundation for the Phase 34 status summary bar and URL-persisted filters:",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "34.1.1",
+              "title": "Create filter-state.js — hash query-string serialise/parse module",
+              "status": "planned"
+            },
+            {
+              "id": "34.1.2",
+              "title": "Extend App.js parseHash to expose filter state and pass it to views",
+              "status": "planned"
+            },
+            {
+              "id": "34.1.3",
+              "title": "Build StatusSummaryBar component with phase/sprint/session count chips",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "34.2",
+          "number": 2,
+          "goal": "Make the Phase 34 summary bar and filters interactive. Build a `FilterChips`",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "34.2.1",
+              "title": "Build FilterChips component — status/milestone/date toggle chips",
+              "status": "planned"
+            },
+            {
+              "id": "34.2.2",
+              "title": "Mount summary bar + filter chips into PhasesView and apply the filters prop",
+              "status": "planned"
+            },
+            {
+              "id": "34.2.3",
+              "title": "Mount summary bar + filter chips into SprintsView and apply the filters prop",
+              "status": "planned"
+            }
+          ]
+        }
+      ],
+      "status_updated": "2026-05-16T12:26:35.141Z"
+    },
+    {
+      "id": "35",
+      "number": "35",
+      "name": "Session History Panel with Live/Persisted Dedup-Merge",
+      "goal": "Persist past orchestration runs on the orchestrator service and surface them",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "plan_count": 2,
+      "sprints": [
+        {
+          "id": "35.1",
+          "number": 1,
+          "goal": "Persist every orchestration run that ends (done/exited/stopped/error) to a JSON file",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "35.1.1",
+              "title": "Add run-history persistence layer to the orchestrator",
+              "status": "planned"
+            },
+            {
+              "id": "35.1.2",
+              "title": "Expose GET /api/history read endpoint",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "35.2",
+          "number": 2,
+          "goal": "Surface the persisted run history (from Sprint 35.1's `GET /api/history`) in the",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "35.2.1",
+              "title": "Add fetchHistory, the history store field, and the dedup-merge helper",
+              "status": "planned"
+            },
+            {
+              "id": "35.2.2",
+              "title": "Add the history icon to both icon modules",
+              "status": "planned"
+            },
+            {
+              "id": "35.2.3",
+              "title": "Render the HistoryPanel in OrchestrationView grouped by status and date",
+              "status": "planned"
+            },
+            {
+              "id": "35.2.4",
+              "title": "Add history panel CSS using design tokens",
+              "status": "planned"
+            }
+          ]
+        }
+      ],
+      "status_updated": "2026-05-16T12:26:35.176Z"
+    },
+    {
+      "id": "36",
+      "number": "36",
+      "name": "Command Palette and Sidebar Health Badges",
+      "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "plan_count": 2,
+      "sprints": [
+        {
+          "id": "36.1",
+          "number": 1,
+          "goal": "Add an Archon-style Cmd+K command palette to the Majlis dashboard: a keyboard-triggered",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "36-1.1",
+              "title": "Add category field to ALLOWED_COMMANDS and a search icon",
+              "status": "planned"
+            },
+            {
+              "id": "36-1.2",
+              "title": "Create the CommandPalette Preact component",
+              "status": "planned"
+            },
+            {
+              "id": "36-1.3",
+              "title": "Wire CommandPalette into App with a Cmd+K / Ctrl+K toggle",
+              "status": "planned"
+            },
+            {
+              "id": "36-1.4",
+              "title": "Add command palette CSS to css.js",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "36.2",
+          "number": 2,
+          "goal": "Add live health badges to the dashboard sidebar: one showing the count of running",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "36-2.1",
+              "title": "Render live health badges in the Sidebar",
+              "status": "planned"
+            },
+            {
+              "id": "36-2.2",
+              "title": "Pass blockers through App refresh and add health-badge CSS",
+              "status": "planned"
+            }
+          ]
+        }
+      ],
+      "status_updated": "2026-05-16T12:26:35.211Z"
+    },
+    {
+      "id": "37",
+      "number": "37",
+      "name": "Phase Dependency Graph and Structured Rejection Dialogs",
+      "goal": "Render the milestone's phases as a lightweight hand-rolled SVG dependency",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "plan_count": 2,
+      "sprints": [
+        {
+          "id": "37.1",
+          "number": 1,
+          "goal": "Render the milestone's phases as a hand-rolled inline-SVG dependency graph in the Roadmap view, laid out by `depends_on` wave.",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "37.1.1",
+              "title": "Parse sprint-level depends_on in scanner.js and derive a phase-level depends_on",
+              "status": "planned"
+            },
+            {
+              "id": "37.1.2",
+              "title": "Add a hand-rolled SVG PhaseGraph component to RoadmapView.js",
+              "status": "planned"
+            },
+            {
+              "id": "37.1.3",
+              "title": "Add design-token CSS for the phase dependency graph",
+              "status": "planned"
+            }
+          ]
+        },
+        {
+          "id": "37.2",
+          "number": 2,
+          "goal": "Add structured rejection dialogs at checkpoint gates: a Preact dialog that captures a required reason, and orchestrator-side persistence that records the reason",
+          "status": "planned",
+          "stories": [
+            {
+              "id": "37.2.1",
+              "title": "Add POST /api/reject and GET /api/rejections with JSON-file persistence to the orchestrator",
+              "status": "planned"
+            },
+            {
+              "id": "37.2.2",
+              "title": "Add submitRejection/fetchRejections to the client orchestrator API and merge rejections into the poll",
+              "status": "planned"
+            },
+            {
+              "id": "37.2.3",
+              "title": "Build the RejectDialog Preact component with required-reason validation",
+              "status": "planned"
+            },
+            {
+              "id": "37.2.4",
+              "title": "Wire the Reject button and recorded-rejection display into OrchestrationView OrchCard",
+              "status": "planned"
+            },
+            {
+              "id": "37.2.5",
+              "title": "Add design-token CSS for the reject overlay, dialog, and recorded-rejection row",
+              "status": "planned"
+            }
+          ]
+        }
+      ],
+      "status_updated": "2026-05-16T12:26:35.245Z"
+    }
+  ],
+  "executions": [],
+  "decisions": [
+    {
+      "summary": "test A — cross-project memory from rihal-code",
+      "phase": "04",
+      "plan": 0,
+      "date": "2026-04-17T23:01:22.914Z"
+    },
+    {
+      "summary": "test B — second decision",
+      "phase": "04",
+      "plan": 0,
+      "date": "2026-04-17T23:01:22.950Z"
+    },
+    {
+      "summary": "post-edit sanity check",
+      "phase": "04",
+      "plan": 0,
+      "date": "2026-04-17T23:04:54.514Z"
+    },
+    {
+      "summary": "Completed milestone M1 — Ship v2 + Tier Docs (phases 01-19)",
+      "phase": "Preact migration — Majlis dashboard client",
+      "plan": 1,
+      "date": "2026-05-15T20:31:00.349Z"
+    },
+    {
+      "summary": "Milestone restructure: phases 20-30 reassigned to new milestone M2 — Hardening & Polish (v4)",
+      "phase": "Preact migration — Majlis dashboard client",
+      "plan": 1,
+      "date": "2026-05-15T20:31:00.429Z"
+    },
+    {
+      "summary": "Started milestone M3 Archon Dashboard Port: 4 phases (34-37), 11 requirements",
+      "phase": "Dashboard command runner",
+      "plan": 3,
+      "date": "2026-05-16T12:06:19.204Z"
+    }
+  ],
+  "blockers": [],
+  "council_sessions": [],
+  "chains": [],
+  "workstreams": [],
+  "active_workstream": null,
+  "last_session": "2026-05-16T06:27:35.015Z",
+  "current_sprint": "33.1",
+  "velocity_history": [
+    {
+      "sprint": "04.1",
+      "points": 15,
+      "completed_at": "2026-04-17T05:35:16.056Z"
+    }
+  ],
+  "sprints": [],
+  "plans": [],
+  "milestones": [
+    {
+      "id": "M1",
+      "slug": "ship-v2",
+      "path": "/home/hanzla/development/rihal-code/.planning/milestones/M1-ship-v2/ROADMAP.md",
+      "created": "2026-04-29T13:04:44.184Z",
+      "status": "completed",
+      "completed": "2026-05-16"
+    },
+    {
+      "id": "M2",
+      "slug": "hardening-polish",
+      "title": "Hardening & Polish",
+      "path": "/home/hanzla/development/rihal-code/.planning/ROADMAP.md",
+      "status": "active",
+      "created": "2026-05-15T20:30:52.481Z"
+    }
+  ],
+  "schema_version": 1
+}

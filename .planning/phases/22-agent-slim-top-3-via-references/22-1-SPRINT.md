@@ -6,41 +6,41 @@ type: execute
 wave: 1
 depends_on: []
 files_modified:
-  - rihal/references/integration-verification-playbook.md
-  - rihal/references/research-synthesis-playbook.md
-  - rihal/references/codebase-mapping-process.md
+  - rcode/references/integration-verification-playbook.md
+  - rcode/references/research-synthesis-playbook.md
+  - rcode/references/codebase-mapping-process.md
 autonomous: true
 requirements: [GH-712]
 
 must_haves:
   truths:
-    - Three new reference files exist in rihal/references/ with the extracted static content
+    - Three new reference files exist in rcode/references/ with the extracted static content
     - Each reference file is self-contained — an executor reading only that file gets the full playbook
     - No content is duplicated between agent stubs and reference files after this sprint
   artifacts:
-    - rihal/references/integration-verification-playbook.md
-    - rihal/references/research-synthesis-playbook.md
-    - rihal/references/codebase-mapping-process.md
+    - rcode/references/integration-verification-playbook.md
+    - rcode/references/research-synthesis-playbook.md
+    - rcode/references/codebase-mapping-process.md
   key_links:
     - Sprint 22-2, 22-3, 22-4 (Wave 2) depend on these files existing before they run
-    - The @-include paths used by agents must be: @.rihal/references/<filename>.md (single-line, no quotes)
+    - The @-include paths used by agents must be: @.rcode/references/<filename>.md (single-line, no quotes)
 ---
 
 <objective>
-Create three reference files in rihal/references/ by extracting the static playbook content from the three heaviest agents. This is a pure extraction — no behaviour change, no rewriting. Content moves verbatim from agent files into reference files. Wave 2 sprints (22-2, 22-3, 22-4) will then replace that content in the agents with a single @-include line.
+Create three reference files in rcode/references/ by extracting the static playbook content from the three heaviest agents. This is a pure extraction — no behaviour change, no rewriting. Content moves verbatim from agent files into reference files. Wave 2 sprints (22-2, 22-3, 22-4) will then replace that content in the agents with a single @-include line.
 
 Purpose: Establishes the reference files that Wave 2 depends on. Agent files are NOT modified in this sprint.
-Output: Three new .md files under rihal/references/.
+Output: Three new .md files under rcode/references/.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
 @.planning/phases/22-agent-slim-top-3-via-references/22-CONTEXT.md
-@rihal/references/agent-shared-rules.md
+@rcode/references/agent-shared-rules.md
 </context>
 
 <tasks>
@@ -50,19 +50,19 @@ Output: Three new .md files under rihal/references/.
 **Duration estimate:** 25-35 min
 
 <files>
-Source to read: rihal/agents/rihal-integration-checker.md (lines 64–457)
-Destination to create: rihal/references/integration-verification-playbook.md
+Source to read: rcode/agents/rcode-integration-checker.md (lines 64–457)
+Destination to create: rcode/references/integration-verification-playbook.md
 </files>
 
 <action>
-Read rihal/agents/rihal-integration-checker.md in full before writing.
+Read rcode/agents/rcode-integration-checker.md in full before writing.
 
-Create rihal/references/integration-verification-playbook.md with the following structure:
+Create rcode/references/integration-verification-playbook.md with the following structure:
 
 ```
 # Integration Verification Playbook
 
-Loaded by `rihal-integration-checker` via `@-include`. Contains the full
+Loaded by `rcode-integration-checker` via `@-include`. Contains the full
 six-step verification process, structured output template, critical rules,
 and success criteria.
 
@@ -99,12 +99,12 @@ ALWAYS use the Write tool — never heredoc or Bash to write the file.
 </action>
 
 <verify>
-<automated>wc -l /home/hanzla/development/rihal-code/rihal/references/integration-verification-playbook.md && grep -c "## Step" /home/hanzla/development/rihal-code/rihal/references/integration-verification-playbook.md</automated>
+<automated>wc -l /home/hanzla/development/rcode/rcode/references/integration-verification-playbook.md && grep -c "## Step" /home/hanzla/development/rcode/rcode/references/integration-verification-playbook.md</automated>
 Expected: file exists, line count > 300, grep returns 6 (six steps present).
 </verify>
 
 <done>
-- rihal/references/integration-verification-playbook.md exists
+- rcode/references/integration-verification-playbook.md exists
 - Contains all 6 steps verbatim from the source agent
 - Contains all bash functions: check_export_used, check_api_consumed, check_auth_protection, verify_auth_flow, verify_data_flow, verify_form_flow
 - YAML report templates (wiring + flows) are present
@@ -115,8 +115,8 @@ Expected: file exists, line count > 300, grep returns 6 (six steps present).
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-integration-checker.md:64-457 — verification_process (64-361), output (363-419), critical_rules (421-433), success_criteria (435-448), constraints (450-457) all being extracted
-creates: rihal/references/integration-verification-playbook.md — no existing file at this path (`ls rihal/references/ | grep integration` → 0 hits)
+lines: rcode/agents/rcode-integration-checker.md:64-457 — verification_process (64-361), output (363-419), critical_rules (421-433), success_criteria (435-448), constraints (450-457) all being extracted
+creates: rcode/references/integration-verification-playbook.md — no existing file at this path (`ls rcode/references/ | grep integration` → 0 hits)
 </evidence>
 
 ---
@@ -126,19 +126,19 @@ creates: rihal/references/integration-verification-playbook.md — no existing f
 **Duration estimate:** 20-25 min
 
 <files>
-Source to read: rihal/agents/rihal-research-synthesizer.md (lines 48–254)
-Destination to create: rihal/references/research-synthesis-playbook.md
+Source to read: rcode/agents/rcode-research-synthesizer.md (lines 48–254)
+Destination to create: rcode/references/research-synthesis-playbook.md
 </files>
 
 <action>
-Read rihal/agents/rihal-research-synthesizer.md in full before writing.
+Read rcode/agents/rcode-research-synthesizer.md in full before writing.
 
-Create rihal/references/research-synthesis-playbook.md with the following structure:
+Create rcode/references/research-synthesis-playbook.md with the following structure:
 
 ```
 # Research Synthesis Playbook
 
-Loaded by `rihal-research-synthesizer` via `@-include`. Contains the full
+Loaded by `rcode-research-synthesizer` via `@-include`. Contains the full
 eight-step synthesis process, output format specification, structured return
 formats, and success criteria.
 
@@ -154,7 +154,7 @@ Then copy the following blocks verbatim from the agent file (do NOT copy the XML
 - Step 4: Derive Roadmap Implications (phase structure, research flags)
 - Step 5: Assess Confidence (confidence table template)
 - Step 6: Write SUMMARY.md (Write tool mandate + template reference)
-- Step 7: Commit All Research (rihal-tools.cjs commit command)
+- Step 7: Commit All Research (rcode-tools.cjs commit command)
 - Step 8: Return Summary
 
 **Block B — `<output_format>` body (lines 151–161):**
@@ -177,15 +177,15 @@ ALWAYS use the Write tool — never heredoc or Bash.
 </action>
 
 <verify>
-<automated>wc -l /home/hanzla/development/rihal-code/rihal/references/research-synthesis-playbook.md && grep -c "## Step" /home/hanzla/development/rihal-code/rihal/references/research-synthesis-playbook.md</automated>
+<automated>wc -l /home/hanzla/development/rcode/rcode/references/research-synthesis-playbook.md && grep -c "## Step" /home/hanzla/development/rcode/rcode/references/research-synthesis-playbook.md</automated>
 Expected: file exists, line count > 150, grep returns 8 (eight steps present).
 </verify>
 
 <done>
-- rihal/references/research-synthesis-playbook.md exists
+- rcode/references/research-synthesis-playbook.md exists
 - Contains all 8 steps verbatim from the source agent
 - Step 6 retains the "ALWAYS use the Write tool" mandate (not a hint — it is a behavioural rule)
-- Step 7 retains the exact rihal-tools.cjs commit command
+- Step 7 retains the exact rcode-tools.cjs commit command
 - `<output_format>` specification (template path + key sections) is present
 - SYNTHESIS COMPLETE and SYNTHESIS BLOCKED return formats are present
 - `<success_criteria>` checkbox list + quality indicators are present
@@ -193,8 +193,8 @@ Expected: file exists, line count > 150, grep returns 8 (eight steps present).
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-research-synthesizer.md:48-254 — execution_flow (48-148), output_format (150-161), structured_returns (163-222), success_criteria (224-246), constraints (248-254) all being extracted
-creates: rihal/references/research-synthesis-playbook.md — no existing file at this path (`ls rihal/references/ | grep research-synthesis` → 0 hits)
+lines: rcode/agents/rcode-research-synthesizer.md:48-254 — execution_flow (48-148), output_format (150-161), structured_returns (163-222), success_criteria (224-246), constraints (248-254) all being extracted
+creates: rcode/references/research-synthesis-playbook.md — no existing file at this path (`ls rcode/references/ | grep research-synthesis` → 0 hits)
 </evidence>
 
 ---
@@ -204,19 +204,19 @@ creates: rihal/references/research-synthesis-playbook.md — no existing file at
 **Duration estimate:** 15-20 min
 
 <files>
-Source to read: rihal/agents/rihal-codebase-mapper.md (lines 79–244)
-Destination to create: rihal/references/codebase-mapping-process.md
+Source to read: rcode/agents/rcode-codebase-mapper.md (lines 79–244)
+Destination to create: rcode/references/codebase-mapping-process.md
 </files>
 
 <action>
-Read rihal/agents/rihal-codebase-mapper.md lines 79–244 (the entire `<process>` block through end of file).
+Read rcode/agents/rcode-codebase-mapper.md lines 79–244 (the entire `<process>` block through end of file).
 
-Create rihal/references/codebase-mapping-process.md with the following structure:
+Create rcode/references/codebase-mapping-process.md with the following structure:
 
 ```
 # Codebase Mapping Process
 
-Loaded by `rihal-codebase-mapper` (Dalil) via `@-include`. Contains the full
+Loaded by `rcode-codebase-mapper` (Dalil) via `@-include`. Contains the full
 four-step mapping process: parsing focus area, discovering source roots,
 exploring the codebase with focus-specific bash commands, writing documents
 with mandatory Scan Scope section, and returning confirmation.
@@ -241,12 +241,12 @@ ALWAYS use the Write tool — never heredoc or Bash.
 </action>
 
 <verify>
-<automated>wc -l /home/hanzla/development/rihal-code/rihal/references/codebase-mapping-process.md && grep -c "step name=" /home/hanzla/development/rihal-code/rihal/references/codebase-mapping-process.md</automated>
+<automated>wc -l /home/hanzla/development/rcode/rcode/references/codebase-mapping-process.md && grep -c "step name=" /home/hanzla/development/rcode/rcode/references/codebase-mapping-process.md</automated>
 Expected: file exists, line count > 140, grep returns 5 (opening tags for 5 steps including return_confirmation).
 </verify>
 
 <done>
-- rihal/references/codebase-mapping-process.md exists
+- rcode/references/codebase-mapping-process.md exists
 - Contains all 5 step blocks verbatim from the source agent
 - The MANDATORY Scan Scope markdown template is present in write_documents step
 - The `$SOURCE_ROOTS` / `$LANGUAGES` variable references are preserved verbatim
@@ -254,8 +254,8 @@ Expected: file exists, line count > 140, grep returns 5 (opening tags for 5 step
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-codebase-mapper.md:79-244 — the entire `<process>` block being extracted
-creates: rihal/references/codebase-mapping-process.md — no existing file at this path (`ls rihal/references/ | grep codebase-mapping` → 0 hits)
+lines: rcode/agents/rcode-codebase-mapper.md:79-244 — the entire `<process>` block being extracted
+creates: rcode/references/codebase-mapping-process.md — no existing file at this path (`ls rcode/references/ | grep codebase-mapping` → 0 hits)
 </evidence>
 
 ---
@@ -265,18 +265,18 @@ creates: rihal/references/codebase-mapping-process.md — no existing file at th
 **Duration estimate:** 5 min
 
 <files>
-rihal/references/integration-verification-playbook.md
-rihal/references/research-synthesis-playbook.md
-rihal/references/codebase-mapping-process.md
+rcode/references/integration-verification-playbook.md
+rcode/references/research-synthesis-playbook.md
+rcode/references/codebase-mapping-process.md
 </files>
 
 <action>
 Stage and commit only these three new files. Do not stage any other files.
 
 ```bash
-git add rihal/references/integration-verification-playbook.md \
-        rihal/references/research-synthesis-playbook.md \
-        rihal/references/codebase-mapping-process.md
+git add rcode/references/integration-verification-playbook.md \
+        rcode/references/research-synthesis-playbook.md \
+        rcode/references/codebase-mapping-process.md
 
 git commit -m "feat(references): extract verification/synthesis/mapping playbooks for agent slim (#712)"
 ```
@@ -288,7 +288,7 @@ Commit message requirements:
 </action>
 
 <verify>
-<automated>git log --oneline -1 | grep "#712" && git diff HEAD~1 --name-only | grep "rihal/references/"</automated>
+<automated>git log --oneline -1 | grep "#712" && git diff HEAD~1 --name-only | grep "rcode/references/"</automated>
 Expected: most recent commit message contains "#712", diff shows the three reference files.
 </verify>
 
@@ -299,7 +299,7 @@ Expected: most recent commit message contains "#712", diff shows the three refer
 </done>
 
 <evidence>
-creates: rihal/references/integration-verification-playbook.md, rihal/references/research-synthesis-playbook.md, rihal/references/codebase-mapping-process.md
+creates: rcode/references/integration-verification-playbook.md, rcode/references/research-synthesis-playbook.md, rcode/references/codebase-mapping-process.md
 </evidence>
 
 </tasks>
@@ -309,32 +309,32 @@ After all four tasks complete:
 
 ```bash
 # All three files exist
-test -f rihal/references/integration-verification-playbook.md && echo "OK: integration playbook"
-test -f rihal/references/research-synthesis-playbook.md && echo "OK: research synthesis playbook"
-test -f rihal/references/codebase-mapping-process.md && echo "OK: codebase mapping process"
+test -f rcode/references/integration-verification-playbook.md && echo "OK: integration playbook"
+test -f rcode/references/research-synthesis-playbook.md && echo "OK: research synthesis playbook"
+test -f rcode/references/codebase-mapping-process.md && echo "OK: codebase mapping process"
 
 # Content sanity checks
-grep -c "## Step" rihal/references/integration-verification-playbook.md  # expect 6
-grep -c "## Step" rihal/references/research-synthesis-playbook.md         # expect 8
-grep -c "step name=" rihal/references/codebase-mapping-process.md         # expect 5
+grep -c "## Step" rcode/references/integration-verification-playbook.md  # expect 6
+grep -c "## Step" rcode/references/research-synthesis-playbook.md         # expect 8
+grep -c "step name=" rcode/references/codebase-mapping-process.md         # expect 5
 
 # Extended content checks for integration playbook
-grep -q "SYNTHESIS COMPLETE\|Integration Check Complete" rihal/references/integration-verification-playbook.md \
+grep -q "SYNTHESIS COMPLETE\|Integration Check Complete" rcode/references/integration-verification-playbook.md \
   && echo "OK: output template present in integration playbook"
-grep -q "SYNTHESIS COMPLETE" rihal/references/research-synthesis-playbook.md \
+grep -q "SYNTHESIS COMPLETE" rcode/references/research-synthesis-playbook.md \
   && echo "OK: structured returns present in synthesis playbook"
 
 # Agent files are UNCHANGED (Wave 2 modifies them)
-wc -l rihal/agents/rihal-integration-checker.md   # still 456
-wc -l rihal/agents/rihal-research-synthesizer.md  # still 254
-wc -l rihal/agents/rihal-codebase-mapper.md        # still 244
+wc -l rcode/agents/rcode-integration-checker.md   # still 456
+wc -l rcode/agents/rcode-research-synthesizer.md  # still 254
+wc -l rcode/agents/rcode-codebase-mapper.md        # still 244
 ```
 </verification>
 
 <success_criteria>
-- [ ] rihal/references/integration-verification-playbook.md exists with all 6 verification steps, output template, critical rules, success criteria, and constraints
-- [ ] rihal/references/research-synthesis-playbook.md exists with all 8 synthesis steps, output format, structured returns (SYNTHESIS COMPLETE / BLOCKED), success criteria, and constraints
-- [ ] rihal/references/codebase-mapping-process.md exists with all 5 process steps
+- [ ] rcode/references/integration-verification-playbook.md exists with all 6 verification steps, output template, critical rules, success criteria, and constraints
+- [ ] rcode/references/research-synthesis-playbook.md exists with all 8 synthesis steps, output format, structured returns (SYNTHESIS COMPLETE / BLOCKED), success criteria, and constraints
+- [ ] rcode/references/codebase-mapping-process.md exists with all 5 process steps
 - [ ] All three files committed in one commit referencing #712
 - [ ] Agent files are unchanged (Wave 2 is blocked on this sprint, not this one)
 - [ ] No behaviour change — content is verbatim extraction, not rewriting

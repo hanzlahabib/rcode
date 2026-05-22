@@ -2,13 +2,13 @@
  * Source-codebase duplication test.
  *
  * Asserts that no source skill folder mirrors a slash command. Sidebar
- * stubs (rihal-do, rihal-status, etc.) are generated at INSTALL TIME by
+ * stubs (rcode-do, rcode-status, etc.) are generated at INSTALL TIME by
  * cli/generate-command-skills.cjs. They must NEVER live in the
  * source tree — that would mean we maintain the same content twice.
  *
  * The script's curated SIDEBAR_COMMANDS list is the contract — any
- * command in that list must NOT have a matching rihal-<name> skill
- * folder under rihal/skills/.
+ * command in that list must NOT have a matching rcode-<name> skill
+ * folder under rcode/skills/.
  *
  * Run: node --test test/no-source-command-skill-dupes.test.cjs
  */
@@ -19,7 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(PROJECT_ROOT, 'rihal', 'skills');
+const SKILLS_DIR = path.join(PROJECT_ROOT, 'rcode', 'skills');
 const { SIDEBAR_COMMANDS } = require(path.join(PROJECT_ROOT, 'cli', 'generate-command-skills.cjs'));
 
 function findSkillFolderNames(dir, out = new Set()) {
@@ -45,9 +45,9 @@ test('no-source-command-skill-dupes: SIDEBAR_COMMANDS curated list is non-empty'
 test('no-source-command-skill-dupes: no source skill duplicates a sidebar command', () => {
   const dupes = [];
   for (const cmd of SIDEBAR_COMMANDS) {
-    const expectedStub = `rihal-${cmd}`;
+    const expectedStub = `rcode-${cmd}`;
     if (skillNames.has(expectedStub)) {
-      dupes.push(`${expectedStub} (mirrors /rihal-${cmd})`);
+      dupes.push(`${expectedStub} (mirrors /rcode-${cmd})`);
     }
   }
   // Some commands legitimately have real skills. Those are exempted by the
@@ -56,17 +56,17 @@ test('no-source-command-skill-dupes: no source skill duplicates a sidebar comman
   // that runtime behavior so the source-tree check stays in sync with what
   // actually ships.
   const ALLOWED_OVERLAPS = new Set([
-    'rihal-debug',                       // actions/4-implementation/rihal-debug
-    'rihal-code-review',                 // actions/4-implementation/rihal-code-review
+    'rcode-debug',                       // actions/4-implementation/rcode-debug
+    'rcode-review',                 // actions/4-implementation/rcode-review
     // Phase-flow commands that ship full skills + sidebar entries — both
     // forms are intentional. The skill is the in-IDE workflow; the command
     // is the slash-picker shortcut. Sidebar generator skips these at install.
-    'rihal-sprint-planning',
-    'rihal-sprint-status',
-    'rihal-dev-story',
-    'rihal-create-story',
-    'rihal-create-epics-and-stories',
-    'rihal-prfaq',
+    'rcode-sprint-planning',
+    'rcode-sprint-status',
+    'rcode-dev-story',
+    'rcode-create-story',
+    'rcode-create-epics-and-stories',
+    'rcode-prfaq',
   ]);
   const filtered = dupes.filter((d) => {
     const name = d.split(' ')[0];

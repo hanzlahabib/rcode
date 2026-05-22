@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hanzlahabib/rihal-code/blob/main/rcode/config/model-profiles.schema.json",
+  "title": "rcode Model Profiles",
+  "description": "Schema for model profiles. Each profile is a complete mapping of every agent to a model tier.",
+  "type": "object",
+  "required": ["version", "profiles", "default_profile", "model_aliases"],
+  "properties": {
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "profiles": {
+      "type": "object",
+      "description": "Named profiles (quality, balanced, budget, inherit). Each profile defines a model per agent.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["agents"],
+        "properties": {
+          "description": { "type": "string" },
+          "agents": {
+            "type": "object",
+            "description": "Map of agent name → model tier (opus/sonnet/haiku) or 'inherit' or fully-qualified model ID",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    },
+    "default_profile": {
+      "type": "string",
+      "description": "Profile to use when no project-level override is set"
+    },
+    "model_aliases": {
+      "type": "object",
+      "description": "Short alias → concrete model ID"
+    }
+  }
+}

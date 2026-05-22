@@ -11,7 +11,7 @@ Closes #ISSUE_ID
 - [ ] Documentation
 - [ ] Breaking change (skill ID rename, agent authority change, config schema change)
 
-## Rihal Code Compliance
+## rcode Compliance
 If this PR adds or modifies a skill, verify the 5-component standard:
 - [ ] YAML header has explicit trigger phrases (5-12)
 - [ ] YAML header has negative boundaries ("Do NOT use for...")

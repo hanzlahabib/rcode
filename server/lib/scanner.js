@@ -1,5 +1,5 @@
 /**
- * State scanner — reads .rihal/ and .planning/ directories to build dashboard state.
+ * State scanner — reads .rcode/ and .planning/ directories to build dashboard state.
  */
 const fs = require('fs');
 const path = require('path');
@@ -259,15 +259,15 @@ function scanState(rihalDir) {
   }
   if (fs.existsSync(planningDir)) walkPlanning(planningDir, '');
 
-  // #12 — surface pending handoff (.rihal/HANDOFF.json) and active context
-  // (.rihal/context/active.md) for the dashboard banner + memory-bank summary.
+  // #12 — surface pending handoff (.rcode/HANDOFF.json) and active context
+  // (.rcode/context/active.md) for the dashboard banner + memory-bank summary.
   // Both are no-op when the files don't exist. View-only — no writes.
   const handoffPath = path.join(rihalDir, 'HANDOFF.json');
   if (fs.existsSync(handoffPath)) {
     const ho = safeReadJson(handoffPath);
     if (ho && !ho.__parseError) {
       state.pendingHandoff = {
-        path: '.rihal/HANDOFF.json',
+        path: '.rcode/HANDOFF.json',
         ts: ho.ts || ho.timestamp || null,
         summary: ho.summary || ho.note || ho.what_was_happening || null,
         phase: ho.phase || ho.current_phase || null,
@@ -284,7 +284,7 @@ function scanState(rihalDir) {
       const text = fs.readFileSync(activeCtx, 'utf8');
       state.memoryBank = state.memoryBank || {};
       state.memoryBank.active = {
-        path: '.rihal/context/active.md',
+        path: '.rcode/context/active.md',
         bytes: stat.size,
         lines: text.split('\n').length,
         updated: stat.mtime.toISOString(),
@@ -298,7 +298,7 @@ function scanState(rihalDir) {
 }
 
 /**
- * Scan the Memory Bank at .rihal/memory/. Returns structure suitable
+ * Scan the Memory Bank at .rcode/memory/. Returns structure suitable
  * for the /api/memory endpoint and the dashboard /memory view.
  * Returns { exists: false } when the Memory Bank has not been initialised.
  */
@@ -322,7 +322,7 @@ function scanMemoryBank(rihalDir) {
   const indexPath = path.join(memoryDir, 'INDEX.md');
   if (fs.existsSync(indexPath)) {
     result.initialised = true;
-    result.indexPath = '.rihal/memory/INDEX.md';
+    result.indexPath = '.rcode/memory/INDEX.md';
   }
 
   const sectionMap = {
@@ -348,7 +348,7 @@ function scanMemoryBank(rihalDir) {
       }
       return {
         name,
-        path: `.rihal/memory/${section}/${name}`,
+        path: `.rcode/memory/${section}/${name}`,
         exists,
         bytes,
         populated,
@@ -361,7 +361,7 @@ function scanMemoryBank(rihalDir) {
     if (!fs.existsSync(full)) return [];
     return listDir(full)
       .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .map(e => ({ name: e.name, path: `.rihal/memory/${subdir}/${e.name}` }));
+      .map(e => ({ name: e.name, path: `.rcode/memory/${subdir}/${e.name}` }));
   }
 
   result.distillates = listMd('distillates');

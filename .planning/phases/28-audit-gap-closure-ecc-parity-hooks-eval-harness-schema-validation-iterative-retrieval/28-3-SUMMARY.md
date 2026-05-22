@@ -7,8 +7,8 @@
 
 ## Objective
 
-Add zod schema validation for rihal-code's own artifacts — SKILL.md
-frontmatter, agent frontmatter, and `.rihal/state.json` — mirroring the zod
+Add zod schema validation for rcode's own artifacts — SKILL.md
+frontmatter, agent frontmatter, and `.rcode/state.json` — mirroring the zod
 pattern in `cli/lib/config.cjs`. Wire validation into `cli/doctor.js` and
 `scripts/dogfood-check.sh`, replace the grep-based 5-component compliance
 snippet in `AGENTS.md`, and fix the AGENTS.md scope list so
@@ -37,9 +37,9 @@ snippet in `AGENTS.md`, and fix the AGENTS.md scope list so
   - `validateSkillFrontmatter(obj, body?)` — requires `name`, `description`,
     ≥5 trigger phrases, and a negative-boundary clause. `>12` phrases is a
     non-blocking **warning** (see Deviations).
-  - `validateAgentFrontmatter(obj)` — requires `name` (`rihal-` prefix),
+  - `validateAgentFrontmatter(obj)` — requires `name` (`rcode-` prefix),
     `description`, `tools` (string or array), `color`.
-  - `validateState(obj)` — validates the real `.rihal/state.json` top-level
+  - `validateState(obj)` — validates the real `.rcode/state.json` top-level
     shape (`version`, `project`, `phases`, `schema_version`, plus
     `current_phase`/`current_plan`/`current_sprint`/`velocity_history`/
     `milestones`); permissive (`.passthrough()`) on unknown keys. Carries a
@@ -51,13 +51,13 @@ snippet in `AGENTS.md`, and fix the AGENTS.md scope list so
 - New `test/artifact-schema.test.cjs` (`node --test`, modeled on
   `test/bash-guard-hook.test.cjs`): 11 tests covering well-formed fixtures,
   too-few-trigger-phrases, missing negative boundary, missing `name`, missing
-  `tools`, non-`rihal-` prefix, real state.json passing, `{}` failing, missing
-  `phases` failing, plus an integration test that **every** `rihal/agents/*.md`
+  `tools`, non-`rcode-` prefix, real state.json passing, `{}` failing, missing
+  `phases` failing, plus an integration test that **every** `rcode/agents/*.md`
   file's frontmatter passes `validateAgentFrontmatter`.
 
 ### Task 3.4 — Wire into doctor.js, dogfood-check.sh, AGENTS.md
 - `cli/doctor.js`: imports `cli/lib/schemas.cjs`, adds a new `findAgentFiles`
-  shallow scan of `rihal/agents/` (no existing agent-file iterator —
+  shallow scan of `rcode/agents/` (no existing agent-file iterator —
   `findSkillFiles` matches only files named `SKILL.md`), and a
   `runSchemaValidation` section that validates every SKILL.md and agent file.
   Hard failures feed the existing non-zero exit path; advisory warnings print
@@ -87,8 +87,8 @@ snippet in `AGENTS.md`, and fix the AGENTS.md scope list so
 4. **5 pre-existing skill-standard gaps surfaced by doctor.js — not fixed
    (out of scope).** Schema validation correctly flags 5 action skills that
    genuinely do not meet the standard:
-   - `rihal-prfaq`, `rihal-checkpoint-preview` — only 1 trigger phrase.
-   - `rihal-ci`, `rihal-harden`, `rihal-migrate` — no structured
+   - `rcode-prfaq`, `rcode-checkpoint-preview` — only 1 trigger phrase.
+   - `rcode-ci`, `rcode-harden`, `rcode-migrate` — no structured
      negative-boundary section (only inline "never"/"don't" advice).
    These are pre-existing content gaps, not introduced by this sprint. Fixing
    them would mean editing 5 unrelated skill files — out of scope for 28-3
@@ -125,7 +125,7 @@ sprint's changes. **No new failures introduced.**
 ## Commits (branch `audit-gap-closure`, not pushed)
 
 - `520d931` fix(scopes): add kanban and orchestrator to allowed commit scopes (#750)
-- `f401184` feat(cli): add zod schema validators for rihal artifacts (#747)
+- `f401184` feat(cli): add zod schema validators for rcode artifacts (#747)
 - `6bbcc4b` feat(cli): wire artifact schema validation into doctor and dogfood (#747)
 
 ## Files

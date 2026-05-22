@@ -187,7 +187,7 @@ export function PhaseCard({ phase: p, S }) {
     <div class=${'item item-clickable'} style=${borderStyle}
       onClick=${() => { location.hash = 'phases/' + p.id; }}>
       <div class="item-title">
-        ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rihal-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
+        ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rcode-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
         Phase ${p.id} — ${p.name}
         ${isCur ? html`<${Tag}>current</${Tag}>` : null}
         <${Chip} status=${p.status}/>
@@ -234,7 +234,7 @@ export function SprintCard({ sprint: s, S }) {
     <div class=${'item item-clickable' + (isCur ? ' sprint-current' : '')} style=${borderStyle}
       onClick=${() => { location.hash = 'sprints/' + s.id; }}>
       <div class="item-title">
-        <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rihal-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
+        <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rcode-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
         Sprint ${s.id} — ${s.goal || 'No goal'}
         ${isCur ? html`<${Tag}>current</${Tag}>` : null}
         <${Chip} status=${s.status}/>
@@ -249,7 +249,7 @@ export function SprintCard({ sprint: s, S }) {
       <div style="margin-top:6px;"><${ProgressBar} done=${done} total=${stories.length}/></div>
       ${stories.length === 0 ? html`
         <div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">
-          No tasks — run <code>/rihal-plan ${phaseId}</code> to populate
+          No tasks — run <code>/rcode-plan ${phaseId}</code> to populate
         </div>
       ` : null}
       ${s.started_at ? html`
@@ -276,14 +276,14 @@ export function TaskCard({ task: t }) {
   const taskCmds = [];
   if (t.id) {
     if (!done) {
-      taskCmds.push(['/rihal-dev-story ' + t.id, 'Implement this story']);
-      taskCmds.push(['/rihal-create-story ' + (t.sprintId || ''), 'Add related story']);
+      taskCmds.push(['/rcode-dev-story ' + t.id, 'Implement this story']);
+      taskCmds.push(['/rcode-create-story ' + (t.sprintId || ''), 'Add related story']);
     } else {
-      taskCmds.push(['/rihal-verify-work ' + t.id, 'Verify this story']);
-      taskCmds.push(['/rihal-code-review ' + t.id, 'Review code for this story']);
+      taskCmds.push(['/rcode-verify-work ' + t.id, 'Verify this story']);
+      taskCmds.push(['/rcode-review ' + t.id, 'Review code for this story']);
     }
     if (t.sprintId) {
-      taskCmds.push(['/rihal-sprint-status ' + t.sprintId, 'Sprint ' + t.sprintId + ' status']);
+      taskCmds.push(['/rcode-sprint-status ' + t.sprintId, 'Sprint ' + t.sprintId + ' status']);
     }
   }
 
@@ -292,7 +292,7 @@ export function TaskCard({ task: t }) {
       style=${done ? 'opacity:.65' : ''}
       onClick=${() => setExpanded(e => !e)}>
       <div class="item-title" style=${done ? 'text-decoration:line-through' : ''}>
-        ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${'/rihal-dev-story ' + t.id} label=${'Story ' + t.id}/>` : null}
+        ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${'/rcode-dev-story ' + t.id} label=${'Story ' + t.id}/>` : null}
         ${done ? '✓ ' : ''}${t.title}
         <${Chip} status=${t.status}/>
         <span class="task-expand-icon">${expanded ? '▼' : '▶'}</span>

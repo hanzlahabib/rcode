@@ -1,14 +1,14 @@
 # Phase 9 — Plan 1: Dogfood Scan Results
 
 **Date:** 2026-04-29
-**Repo:** rihal-code (commit chain post-#462 fix)
+**Repo:** rcode (commit chain post-#462 fix)
 **Tools scanned:** 8
 
 ---
 
 ## state sync --from-disk
 
-**Claimed:** Sync `.rihal/state.json` from disk artifacts (ROADMAP.md headings + epics).
+**Claimed:** Sync `.rcode/state.json` from disk artifacts (ROADMAP.md headings + epics).
 
 **Observed:**
 ```json
@@ -114,28 +114,28 @@
 
 ---
 
-## /rihal-feature-drift (workflow + agent — static check)
+## /rcode-feature-drift (workflow + agent — static check)
 
 **Claimed:** Detect drift between PRD, epics, stories, and code. Severity-tagged report; --fix for trivial only.
 
 **Observed (static — agent not spawned this scan):**
-- `rihal/workflows/feature-drift.md` exists ✓
-- `rihal/commands/feature-drift.md` exists ✓
-- `rihal/agents/rihal-docs-auditor.md` contains `<mode_feature_drift>` section ✓
+- `rcode/workflows/feature-drift.md` exists ✓
+- `rcode/commands/feature-drift.md` exists ✓
+- `rcode/agents/rcode-docs-auditor.md` contains `<mode_feature_drift>` section ✓
 
-**Drift / gaps:** None at the static level. First production run is its own subsequent task — would surface real drift between rihal-code's PRD (none), epics (none), stories (none), and code. Worth noting: rihal-code has no PRD/epics/stories layer — it's a tooling project. Tool would warn-and-skip per D-3.
+**Drift / gaps:** None at the static level. First production run is its own subsequent task — would surface real drift between rcode's PRD (none), epics (none), stories (none), and code. Worth noting: rcode has no PRD/epics/stories layer — it's a tooling project. Tool would warn-and-skip per D-3.
 
 **Severity:** none (static); production run deferred.
 
 ---
 
-## /rihal-memory-audit (read-only + --fix support)
+## /rcode-memory-audit (read-only + --fix support)
 
 **Claimed:** Audit Memory Bank, optionally `--fix` trivial staleness.
 
 **Observed (static):**
-- `rihal/workflows/memory-audit.md` has `FIX_MODE` block + `<step name="apply_fixes">` ✓
-- `.rihal/memory/INDEX.md` exists ✓ (precondition met for production run)
+- `rcode/workflows/memory-audit.md` has `FIX_MODE` block + `<step name="apply_fixes">` ✓
+- `.rcode/memory/INDEX.md` exists ✓ (precondition met for production run)
 
 **Drift / gaps:** None at static level.
 
@@ -153,8 +153,8 @@
 | init phase-op | breaking | open in #464 |
 | init sprint-plan | breaking | open in #464 |
 | help | none | passing |
-| /rihal-feature-drift (static) | none | passing |
-| /rihal-memory-audit (static) | none | passing |
+| /rcode-feature-drift (static) | none | passing |
+| /rcode-memory-audit (static) | none | passing |
 
 **Filed this session:** #464 — umbrella for the 3 ROADMAP-parser drifts surfaced.
 **Fixed this session:** regex in `lib/roadmap.cjs` (closed 2/3 of #464).

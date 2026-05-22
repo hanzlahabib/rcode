@@ -1,4 +1,4 @@
-# Rihal Code (rcode)
+# rcode
 
 <div dir="rtl">طريقة رحال</div>
 
@@ -33,9 +33,9 @@ Three layers, specialised for software delivery:
 
 | Layer | What lives here | Example |
 |-------|-----------------|---------|
-| **Memory** | `.rihal/memory/` — git-tracked markdown, lossless distillates | "We chose Postgres over Mongo because of JSON-B + RLS — see ADR-007" |
-| **Skills** | `rihal/skills/` — 85 phrase-activated playbooks | `rihal-sprint-checker` validates file/symbol refs before execute |
-| **Workflows** | `rihal/workflows/` — orchestrated multi-step paths | `/rihal-plan` runs research → planner → checker → confirm |
+| **Memory** | `.rcode/memory/` — git-tracked markdown, lossless distillates | "We chose Postgres over Mongo because of JSON-B + RLS — see ADR-007" |
+| **Skills** | `rcode/skills/` — 85 phrase-activated playbooks | `rcode-sprint-checker` validates file/symbol refs before execute |
+| **Workflows** | `rcode/workflows/` — orchestrated multi-step paths | `/rcode-plan` runs research → planner → checker → confirm |
 
 Single agent navigates the structure. No LangChain, no AutoGen, no orchestrator process. Just folders the model can read.
 
@@ -49,7 +49,7 @@ I've shipped products solo for years and watched the same failure repeat in ever
 - **Session 5:** Agent has no idea I picked Postgres. Suggests Mongo. We argue. I copy-paste the decision back in.
 - **Session 20:** I'm pasting in 4K tokens of "here's what we decided" every session. The agent never learns. The project file structure isn't enough — decisions live in chat.
 
-rcode is the answer I built for myself. **The decision lives in `.rihal/memory/decisions.md`. The agent reads it. Done.**
+rcode is the answer I built for myself. **The decision lives in `.rcode/memory/decisions.md`. The agent reads it. Done.**
 
 Same problem at team scale: onboarding takes 30 minutes of archaeology. Late requirements shift goalposts with no audit trail. MVPs work but can't be revamped because the original "why" is gone. rcode checks the context in, so the next person (or session) starts oriented.
 
@@ -59,11 +59,11 @@ Same problem at team scale: onboarding takes 30 minutes of archaeology. Late req
 
 What you'll feel in week one:
 
-- **No more re-explaining.** Decisions, blockers, conventions live in `.rihal/memory/` — agent reads them at session start automatically (~5K tokens, fully oriented).
-- **Phased delivery without ceremony.** `/rihal-new-project` produces a roadmap with phases → sprints → tasks. `/rihal-plan` produces SPRINT.md files. `/rihal-execute` runs them with atomic commits. No Jira required.
-- **Specialist review on tap.** Want a Karpathy-style review of your last commit? `/rihal-code-review --karpathy`. Want a council debate on a decision? `/rihal-council should I rewrite auth?` — 5 agents answer in parallel, round 2 they challenge each other.
+- **No more re-explaining.** Decisions, blockers, conventions live in `.rcode/memory/` — agent reads them at session start automatically (~5K tokens, fully oriented).
+- **Phased delivery without ceremony.** `/rcode-new-project` produces a roadmap with phases → sprints → tasks. `/rcode-plan` produces SPRINT.md files. `/rcode-execute` runs them with atomic commits. No Jira required.
+- **Specialist review on tap.** Want a Karpathy-style review of your last commit? `/rcode-review --karpathy`. Want a council debate on a decision? `/rcode-council should I rewrite auth?` — 5 agents answer in parallel, round 2 they challenge each other.
 - **Intent guards.** Run the wrong command and get a one-line redirect, not a useless output.
-- **Health check.** `rihal-tools health` returns JSON — milestone health, state snapshot, project status. Wire it into your dashboard.
+- **Health check.** `rcode-tools health` returns JSON — milestone health, state snapshot, project status. Wire it into your dashboard.
 - **Drift detection.** SEO-style drift baselines for any URL the project ships. Catches when somebody silently breaks your `<title>` or schema markup.
 
 What you won't get:
@@ -106,18 +106,18 @@ The point isn't "I beat LangChain." The point is **you don't need LangChain for 
 pnpm dlx @hanzlaa/rcode install
 
 # 2. Restart Claude Code, then:
-/rihal-init
+/rcode-init
 ```
 
-`/rihal-init` detects your project state (fresh / existing / returning) and routes to the right first action. For a greenfield project it auto-routes to `/rihal-new-project`.
+`/rcode-init` detects your project state (fresh / existing / returning) and routes to the right first action. For a greenfield project it auto-routes to `/rcode-new-project`.
 
 ### The full loop
 
 ```
-/rihal-council should I rewrite auth?        → 5 agents debate, 2 rounds
-/rihal-plan --research build a rental app    → researcher grounds, sprint-checker verifies
-/rihal-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
-/rihal-status                                → phases, decisions, blockers, sessions
+/rcode-council should I rewrite auth?        → 5 agents debate, 2 rounds
+/rcode-plan --research build a rental app    → researcher grounds, sprint-checker verifies
+/rcode-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
+/rcode-status                                → phases, decisions, blockers, sessions
 ```
 
 Full install flavors and IDE options: [`docs/install.md`](docs/install.md). Step-by-step first project: [`docs/getting-started.md`](docs/getting-started.md).
@@ -129,13 +129,13 @@ Full install flavors and IDE options: [`docs/install.md`](docs/install.md). Step
 The directions I'm building toward — open to PRs on any of these:
 
 **Near-term (next 2 releases):**
-- **Dialogue → pillars extractor.** Run a discussion, get back reusable voice/constraint/methodology MDs. `/rihal-discuss-phase` already captures decisions; this would distill *style* and *constraints* too.
-- **User-level pillars** (`~/.rihal/pillars/`) for cross-project reuse — your voice, your review style, your testing standards live once, used everywhere.
+- **Dialogue → pillars extractor.** Run a discussion, get back reusable voice/constraint/methodology MDs. `/rcode-discuss-phase` already captures decisions; this would distill *style* and *constraints* too.
+- **User-level pillars** (`~/.rcode/pillars/`) for cross-project reuse — your voice, your review style, your testing standards live once, used everywhere.
 - **Token telemetry.** Real per-response cost tracking via Claude Code's Stop hook (issue #745).
 - **Slim agent split.** 6 agents currently exceed the 100-line lean target — splitting into role-focused variants.
 
 **Mid-term:**
-- **Cloud sync for Memory Bank** (opt-in) — so distributed teams share `.rihal/memory/` without merge conflicts.
+- **Cloud sync for Memory Bank** (opt-in) — so distributed teams share `.rcode/memory/` without merge conflicts.
 - **Voice-controlled sessions** — drive rcode in a live meeting via voice; trigger workflows by keyword in conversation.
 - **Multi-language docs** — Arabic-first, English mirrored. Currently the methodology is English-only with Arabic naming.
 
@@ -156,11 +156,11 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ---
 
-## Why "Rihal"
+## Why "rcode"
 
-رحّال (Rihāl) means "traveler" in Arabic — someone who carries knowledge between places. The persona names (Sadiq, Waleed, Fatima, Hussain, etc.) are Arabic placeholders. Swap them for your team in `rihal/team.yaml`. The methodology is the persona, not the names.
+رحّال (Rihāl) means "traveler" in Arabic — someone who carries knowledge between places. The persona names (Sadiq, Waleed, Fatima, Hussain, etc.) are Arabic placeholders. Swap them for your team in `rcode/team.yaml`. The methodology is the persona, not the names.
 
-[Rihal](https://rihal.om) is also one of Oman's fastest-growing tech companies — naming inspiration, not commercial affiliation.
+[rcode](https://rihal.om) is also one of Oman's fastest-growing tech companies — naming inspiration, not commercial affiliation.
 
 ---
 

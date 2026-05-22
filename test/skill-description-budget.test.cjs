@@ -33,7 +33,7 @@ const HARD_CAP_CHARS = 100;
 const BASELINE_OFFENDERS = 0;
 
 /**
- * Resolve which skills directory has the rihal-* set. After #679 dedup,
+ * Resolve which skills directory has the rcode-* set. After #679 dedup,
  * .claude/skills/ may be empty when globals shadow it. Mirror runtime
  * fallback.
  */
@@ -41,7 +41,7 @@ function resolveSkillsDir() {
   for (const dir of [PROJECT_SKILLS_DIR, GLOBAL_SKILLS_DIR]) {
     if (!fs.existsSync(dir)) continue;
     try {
-      const has = fs.readdirSync(dir).some(d => d.startsWith('rihal-'));
+      const has = fs.readdirSync(dir).some(d => d.startsWith('rcode-'));
       if (has) return dir;
     } catch { /* continue */ }
   }
@@ -54,7 +54,7 @@ function countOffenders() {
   let total = 0;
   const offenders = [];
   for (const d of fs.readdirSync(dir)) {
-    if (!d.startsWith('rihal-')) continue;
+    if (!d.startsWith('rcode-')) continue;
     const f = path.join(dir, d, 'SKILL.md');
     if (!fs.existsSync(f)) continue;
     total++;
@@ -73,7 +73,7 @@ function countOffenders() {
 }
 
 test('installed skill count is non-trivial (sanity)', () => {
-  if (!resolveSkillsDir()) return; // neither project nor global has rihal skills — skip
+  if (!resolveSkillsDir()) return; // neither project nor global has rcode skills — skip
   const { total } = countOffenders();
   assert.ok(total > 50, `expected >50 skills, got ${total} — install drift?`);
 });

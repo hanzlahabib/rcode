@@ -1,7 +1,7 @@
 /**
  * Regression tests for #701 — `rcode update` was broken end-to-end on every
- * real install because it read .rihal/config.json and JSON.parse'd it, but
- * the installer writes .rihal/config.yaml.
+ * real install because it read .rcode/config.json and JSON.parse'd it, but
+ * the installer writes .rcode/config.yaml.
  *
  * These tests pin three properties:
  *   1. Update succeeds against a config.yaml-only install (the canonical
@@ -63,7 +63,7 @@ test('#701 — update against a YAML config writes installed_version without cra
   const r = runInstall(dir);
   assert.strictEqual(r.status, 0, `install failed: ${r.stderr}`);
 
-  const configPath = path.join(dir, '.rihal', 'config.yaml');
+  const configPath = path.join(dir, '.rcode', 'config.yaml');
   assert.strictEqual(fs.existsSync(configPath), true, 'install must produce config.yaml');
 
   // Initial config has no installed_version — update should add it.
@@ -82,11 +82,11 @@ test('#701 — update preserves YAML comments + nested keys + key ordering', asy
   gitInit(dir);
   runInstall(dir);
 
-  const configPath = path.join(dir, '.rihal', 'config.yaml');
+  const configPath = path.join(dir, '.rcode', 'config.yaml');
   const before = fs.readFileSync(configPath, 'utf8');
 
   // Sanity: install writes the comment header + nested workflow:/git: blocks
-  assert.match(before, /# Rihal v2 project config/);
+  assert.match(before, /# rcode v2 project config/);
   assert.match(before, /workflow:/);
   assert.match(before, /git:/);
 
@@ -94,7 +94,7 @@ test('#701 — update preserves YAML comments + nested keys + key ordering', asy
 
   const after = fs.readFileSync(configPath, 'utf8');
   // Comment header preserved
-  assert.match(after, /# Rihal v2 project config/);
+  assert.match(after, /# rcode v2 project config/);
   // Nested keys preserved (this used to be the foot-gun — JSON.parse would
   // have thrown on these, then a JSON.stringify rewrite would have flattened them)
   assert.match(after, /workflow:/);
@@ -118,7 +118,7 @@ test('#701 — update repeated bumps replace the existing installed_version exac
   await runUpdate(dir, '2.0.0');
   await runUpdate(dir, '3.0.0');
 
-  const after = fs.readFileSync(path.join(dir, '.rihal', 'config.yaml'), 'utf8');
+  const after = fs.readFileSync(path.join(dir, '.rcode', 'config.yaml'), 'utf8');
   // Exactly one installed_version line — the latest value.
   const matches = after.match(/^installed_version:.*$/gm) || [];
   assert.strictEqual(matches.length, 1, `expected 1 installed_version line, got ${matches.length}`);
@@ -127,30 +127,30 @@ test('#701 — update repeated bumps replace the existing installed_version exac
 
 test('#701 — detectInstalledEditors finds claude when project .claude/ is empty but globals exist', () => {
   // The post-#679 dedup leaves .claude/skills/ empty when ~/.claude/skills/
-  // already has the rihal-* set. detectInstalledEditors must fall back.
+  // already has the rcode-* set. detectInstalledEditors must fall back.
   const update = require('../cli/update.js');
   const dir = makeTempDir();
 
   try {
-    // Seed: empty project .claude/ + presence of .rihal/config.yaml.
-    fs.mkdirSync(path.join(dir, '.rihal'), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.rihal', 'config.yaml'), 'user_name: "test"\n');
+    // Seed: empty project .claude/ + presence of .rcode/config.yaml.
+    fs.mkdirSync(path.join(dir, '.rcode'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.rcode', 'config.yaml'), 'user_name: "test"\n');
 
-    // Don't create any rihal-* files in project. Only globals exist.
+    // Don't create any rcode-* files in project. Only globals exist.
     const editors = update.detectInstalledEditors(dir);
 
-    // If the contributor's ~/.claude/skills/ has no rihal-* entries (CI),
+    // If the contributor's ~/.claude/skills/ has no rcode-* entries (CI),
     // skip — we can't drive the fallback path from a tempdir alone. The
     // explicit project-claude check (no fallback) is covered separately.
     const os = require('os');
     const homeSkills = path.join(os.homedir(), '.claude/skills');
-    const globalHasRihal = fs.existsSync(homeSkills) &&
-      fs.readdirSync(homeSkills).some(n => n.startsWith('rihal-'));
+    const globalHasrcode = fs.existsSync(homeSkills) &&
+      fs.readdirSync(homeSkills).some(n => n.startsWith('rcode-'));
 
-    if (globalHasRihal) {
+    if (globalHasrcode) {
       assert.ok(
         editors.includes('claude'),
-        'with globals + .rihal/config.yaml, claude must be detected even if project .claude/ is empty',
+        'with globals + .rcode/config.yaml, claude must be detected even if project .claude/ is empty',
       );
     } else {
       // No globals → claude should NOT be detected (config alone isn't enough).

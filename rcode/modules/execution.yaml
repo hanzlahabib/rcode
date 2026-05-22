@@ -1,0 +1,66 @@
+name: execution
+version: "1.0"
+description: "Plan execution — write and run PLAN.md files, quick tasks, debug, audit-fix"
+requires:
+  - core
+agents:
+  - rcode-executor.md
+  - rcode-planner.md
+  - rcode-verifier.md
+  - rcode-debugger.md
+  - rcode-sprint-checker.md
+  - rcode-integration-checker.md
+  - rcode-nyquist-auditor.md
+workflows:
+  - execute.md
+  - plan.md
+  - list-plans.md
+  - quick.md
+  - debug.md
+  - audit-fix.md
+  - undo.md
+  - analyze-dependencies.md
+  - import.md
+  - inbox.md
+  - check-implementation-readiness.md
+  - correct-course.md
+  - code-review.md
+  - code-review-fix.md
+  - review-adversarial.md
+  - review-edge-case-hunter.md
+  - chain.md
+  - export-to-github.md
+commands:
+  - execute.md
+  - plan.md
+  - list-plans.md
+  - quick.md
+  - debug.md
+  - audit-fix.md
+  - undo.md
+  - analyze-dependencies.md
+  - import.md
+  - inbox.md
+  - check-implementation-readiness.md
+  - correct-course.md
+  - code-review.md
+  - code-review-fix.md
+  - review-adversarial.md
+  - review-edge-case-hunter.md
+  - chain.md
+  - export-to-github.md
+references:
+  - execution-protocol.md
+  - checkpoints.md
+  - continuation-format.md
+  - output-format.md
+  - output-realism.md
+  - verification-patterns.md
+  - tdd.md
+  - checklist-story-draft.md
+  - checklist-story-dod.md
+  - checklist-po-master.md
+  - checklist-architect.md
+  - checklist-change.md
+  - checklist-pm.md
+  - karpathy-guidelines.md

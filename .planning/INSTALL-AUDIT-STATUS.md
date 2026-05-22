@@ -2,7 +2,7 @@
 
 **Branch:** `fix/install-flow-audit-batch` (from `main` @ `6154f39`)
 **Started:** 2026-05-07
-**Source:** 3 lens audits (security+observability+cross-platform / error-recovery+state-machine+dep-health / coverage+extensibility+naming) on `cli/install.js`, `cli/uninstall.js`, `cli/postinstall.js`, `cli/index.js`, `cli/lib/manifest.cjs`. Plus user-reported `/rihal-*` picker duplication (#679).
+**Source:** 3 lens audits (security+observability+cross-platform / error-recovery+state-machine+dep-health / coverage+extensibility+naming) on `cli/install.js`, `cli/uninstall.js`, `cli/postinstall.js`, `cli/index.js`, `cli/lib/manifest.cjs`. Plus user-reported `/rcode-*` picker duplication (#679).
 
 **Goal:** ship safety + correctness fixes commit-by-commit. One issue → one commit → update this file → repeat.
 
@@ -25,7 +25,7 @@ This MD only tracks items we're acting on this session. Everything else is filed
 |---|-------|--------|--------|
 | W1.1 | [#679](https://github.com/hanzlahabib/rihal-code/issues/679) skills/ dedup missing — picker shows everything twice | `cli/install.js`, `cli/generate-command-skills.cjs` | ✅ done — verified 0 overlap |
 | W1.2 | [#680](https://github.com/hanzlahabib/rihal-code/issues/680) `--reset` alone silently does nothing | `cli/install.js` | ✅ done — fail-fast at install() entry, exit 2 |
-| W1.3 | [#681](https://github.com/hanzlahabib/rihal-code/issues/681) `_seeded_stub` never cleared | `rihal/bin/rihal-tools.cjs` | ✅ done — auto-clear in writeState + explicit `state clear-stub` |
+| W1.3 | [#681](https://github.com/hanzlahabib/rihal-code/issues/681) `_seeded_stub` never cleared | `rcode/bin/rcode-tools.cjs` | ✅ done — auto-clear in writeState + explicit `state clear-stub` |
 | W1.4 | [#682](https://github.com/hanzlahabib/rihal-code/issues/682) Package-name drift in CLI JSDocs | `cli/index.js`, `cli/set-profile.js`, `cli/show-model.js` | ✅ done — 16 stale refs replaced; `nuke.js` left alone (legacy migration) |
 
 **Wave 1 complete.** Commits on branch: 4 (skills dedup, --reset fast-fail, _seeded_stub clear, package-name normalization). Issues filed: #679, #680, #681, #682.
@@ -36,12 +36,12 @@ This MD only tracks items we're acting on this session. Everything else is filed
 
 | # | Finding | File:line | Severity |
 |---|---------|-----------|----------|
-| W2.1 | [#683](https://github.com/hanzlahabib/rihal-code/issues/683) `--purge` backup never includes `.rihal/`, deleted with rmSync | `uninstall.js` | ✅ done — backup includes .rihal/+.planning/ when purging, written to .rihal-backups/ sibling so rmSync can't kill it |
+| W2.1 | [#683](https://github.com/hanzlahabib/rihal-code/issues/683) `--purge` backup never includes `.rcode/`, deleted with rmSync | `uninstall.js` | ✅ done — backup includes .rcode/+.planning/ when purging, written to .rcode-backups/ sibling so rmSync can't kill it |
 | W2.2 | [#684](https://github.com/hanzlahabib/rihal-code/issues/684) `# rcode` regex over-matches user .gitignore content | `uninstall.js` | ✅ done — regex now requires both sentinels; user `# rcode...` comments preserved |
 | W2.3 | [#688](https://github.com/hanzlahabib/rihal-code/issues/688) `fs.rmSync` symlink guard (7 sites) | `install.js`, `uninstall.js`, `lib/fsutil.cjs` | ✅ done — `safeRmSync` helper refuses outside-root |
-| W2.4 | `execFileSync` of target's `.rihal/bin/rihal-tools.cjs` without integrity check | `install.js:1962` | ⚪ deferred — low risk in practice (target file is user's own committed code) |
+| W2.4 | `execFileSync` of target's `.rcode/bin/rcode-tools.cjs` without integrity check | `install.js:1962` | ⚪ deferred — low risk in practice (target file is user's own committed code) |
 | W2.5 | [#687](https://github.com/hanzlahabib/rihal-code/issues/687) Atomic writes for `.gitignore`, `state.json`, `config.yaml`, hooks | `install.js` (11 sites) | ✅ done — `writeFileAtomic` plumbed everywhere |
-| W2.6 | [#691](https://github.com/hanzlahabib/rihal-code/issues/691) No file lock — concurrent installs corrupt manifest | `install.js` | ✅ done — PID-based exclusive lock at `.rihal/.install.lock` |
+| W2.6 | [#691](https://github.com/hanzlahabib/rihal-code/issues/691) No file lock — concurrent installs corrupt manifest | `install.js` | ✅ done — PID-based exclusive lock at `.rcode/.install.lock` |
 | W2.7 | [#685](https://github.com/hanzlahabib/rihal-code/issues/685) commit_planning drift between .gitignore and config.yaml on re-install | `install.js` | ✅ done — resolveCommitPlanning reads existing config; surgical key update on change |
 | W2.8 | [#689](https://github.com/hanzlahabib/rihal-code/issues/689) Health-check thresholds hardcoded `<20` + skills global fallback | `install.js` | ✅ done — manifest-driven + global fallback |
 
@@ -94,7 +94,7 @@ Will be linked here as filed:
 
 ## Decisions log
 
-- 2026-05-07: Workaround applied to local repo — removed 119 duplicate project-side rihal skills via `rm -rf ./.claude/skills/rihal-*` for skills present in `~/.claude/skills/`. User's picker now de-duplicated; `Window → Reload` required.
+- 2026-05-07: Workaround applied to local repo — removed 119 duplicate project-side rcode skills via `rm -rf ./.claude/skills/rcode-*` for skills present in `~/.claude/skills/`. User's picker now de-duplicated; `Window → Reload` required.
 - 2026-05-07: No `dev` branch in repo; canonical work on `main`. Created `fix/install-flow-audit-batch` from `main @ 6154f39`.
 - 2026-05-07: Wave 3 (tests) deferred — too large for one session given audit fix scope. Will be a separate phase after Wave 1+2 ship.
 

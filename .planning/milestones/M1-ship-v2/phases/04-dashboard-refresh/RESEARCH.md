@@ -13,7 +13,7 @@ The Majlis dashboard (`server/dashboard.js`) was a static HTML page with minimal
 | Item | What it does | Relevant because |
 |------|--------------|-----------------|
 | `server/dashboard.js` | Node stdlib HTTP server, inline HTML/CSS/JS | Must stay single-file, zero npm deps |
-| `.rihal/state.json` | Source of truth for phases/sprints/tasks | All data comes from here |
+| `.rcode/state.json` | Source of truth for phases/sprints/tasks | All data comes from here |
 | `.planning/phases/` | Sprint files, plan docs | File browser should surface these |
 | Reverse brainstorm artifact | 16 ideas for dashboard interactivity | Prioritized feature list |
 

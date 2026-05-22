@@ -1,22 +1,22 @@
 # Phase 25 — rcode agent CLI Command
 
 **Issue:** #715
-**Branch:** rihal/autonomous-m1-agent-slim-20260510-125703
+**Branch:** rcode/autonomous-m1-agent-slim-20260510-125703
 **Preceded by:** Phase 24 (persona dedup) — VERIFIED ✓
 
 ## Goal
 
-Add `rcode agent <name>` command to `cli/index.js` that wraps `claude --agent rihal-<name>`.
+Add `rcode agent <name>` command to `cli/index.js` that wraps `claude --agent rcode-<name>`.
 Bypasses council/orchestration token tax for single-specialist queries.
 
 ## Usage
 
 ```bash
-rcode agent hanzla              # → claude --agent rihal-hanzla
-rcode agent waleed              # → claude --agent rihal-waleed
-rcode agent --list              # → list all available agents from rihal/agents/
-rcode agent hanzla -- "prompt" # → claude --agent rihal-hanzla "prompt"
-rcode agent badname             # → Error: No agent named 'rihal-badname' ...
+rcode agent hanzla              # → claude --agent rcode-hanzla
+rcode agent waleed              # → claude --agent rcode-waleed
+rcode agent --list              # → list all available agents from rcode/agents/
+rcode agent hanzla -- "prompt" # → claude --agent rcode-hanzla "prompt"
+rcode agent badname             # → Error: No agent named 'rcode-badname' ...
 rcode agent                     # (no name) → print usage + --list output
 ```
 
@@ -35,12 +35,12 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function agent(args, { packageRoot }) {
-  // --list: enumerate agents from rihal/agents/
+  // --list: enumerate agents from rcode/agents/
   if (args.includes('--list') || args.length === 0) {
-    const agentDir = path.join(packageRoot, 'rihal/agents');
+    const agentDir = path.join(packageRoot, 'rcode/agents');
     const names = fs.readdirSync(agentDir)
-      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
-      .map(f => f.replace(/^rihal-/, '').replace(/\.md$/, ''))
+      .filter(f => f.startsWith('rcode-') && f.endsWith('.md'))
+      .map(f => f.replace(/^rcode-/, '').replace(/\.md$/, ''))
       .sort();
     if (args.length === 0) {
       console.log('Usage: rcode agent <name> [-- extra args]\n');
@@ -51,15 +51,15 @@ module.exports = function agent(args, { packageRoot }) {
   }
 
   const name = args[0];
-  const agentName = `rihal-${name}`;
+  const agentName = `rcode-${name}`;
 
   // Validate agent exists
-  const agentDir = path.join(packageRoot, 'rihal/agents');
+  const agentDir = path.join(packageRoot, 'rcode/agents');
   const agentFile = path.join(agentDir, `${agentName}.md`);
   if (!fs.existsSync(agentFile)) {
     const available = fs.readdirSync(agentDir)
-      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
-      .map(f => f.replace(/^rihal-/, '').replace(/\.md$/, ''))
+      .filter(f => f.startsWith('rcode-') && f.endsWith('.md'))
+      .map(f => f.replace(/^rcode-/, '').replace(/\.md$/, ''))
       .sort()
       .join(', ');
     console.error(`Error: No agent named '${agentName}' found.`);
@@ -78,7 +78,7 @@ module.exports = function agent(args, { packageRoot }) {
   const dashIdx = args.indexOf('--');
   const extra = dashIdx !== -1 ? args.slice(dashIdx + 1) : [];
 
-  // Spawn claude --agent rihal-<name> [extra...]
+  // Spawn claude --agent rcode-<name> [extra...]
   const result = spawnSync('claude', ['--agent', agentName, ...extra], { stdio: 'inherit' });
   process.exit(result.status ?? 0);
 };
@@ -97,7 +97,7 @@ module.exports = function agent(args, { packageRoot }) {
 ## Success Criteria
 
 1. `node cli/index.js agent --list` prints all 41 agent names
-2. `node cli/index.js agent hanzla` spawns `claude --agent rihal-hanzla` (or fails with "claude not found" if not on PATH in test)
+2. `node cli/index.js agent hanzla` spawns `claude --agent rcode-hanzla` (or fails with "claude not found" if not on PATH in test)
 3. `node cli/index.js agent badname` prints error + available list, exits 1
 4. `node cli/index.js agent` (no args) prints usage + list
 5. `node cli/index.js help` shows `agent` in the TEAM section

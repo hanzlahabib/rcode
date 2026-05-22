@@ -1,5 +1,5 @@
 /**
- * rihal-code dashboard — start the Diwan view-only dashboard
+ * rcode dashboard — start the Diwan view-only dashboard
  */
 
 const path = require('path');
@@ -8,17 +8,17 @@ const { spawn } = require('child_process');
 module.exports = function dashboard(args, { packageRoot }) {
   const serverPath = path.join(packageRoot, 'server/dashboard.js');
   const cwd = process.cwd();
-  const rihalDir = path.join(cwd, '.rihal');
+  const rihalDir = path.join(cwd, '.rcode');
 
   console.log(`\n🕌 Starting Diwan dashboard...`);
   console.log(`   Scanning: ${rihalDir}`);
 
-  // Fork the dashboard process with RIHAL_DIR pointing at the user's current project
+  // Fork the dashboard process with RCODE_DIR pointing at the user's current project
   const proc = spawn('node', [serverPath], {
     stdio: 'inherit',
     env: {
       ...process.env,
-      RIHAL_DIR: rihalDir,
+      RCODE_DIR: rihalDir,
     },
   });
 

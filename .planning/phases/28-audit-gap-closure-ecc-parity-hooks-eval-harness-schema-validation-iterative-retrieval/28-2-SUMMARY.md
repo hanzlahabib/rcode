@@ -18,18 +18,18 @@ is gitignored. Wired into `scripts/dogfood-check.sh`.
 
 ### Task 2.1 — Harness skeleton, prompt set, normalizer
 - `test/eval/prompts.json` — maps 5 tracked artifacts to fixed probe-scenario keys:
-  - `rihal/skills/agents/raees-orchestrator/SKILL.md` (classifier-routed orchestrator skill)
-  - `rihal/agents/rihal-phase-researcher.md`
-  - `rihal/agents/rihal-research-synthesizer.md`
-  - `rihal/agents/rihal-planner.md`
-  - `rihal/agents/rihal-codebase-mapper.md`
+  - `rcode/skills/agents/raees-orchestrator/SKILL.md` (classifier-routed orchestrator skill)
+  - `rcode/agents/rcode-phase-researcher.md`
+  - `rcode/agents/rcode-research-synthesizer.md`
+  - `rcode/agents/rcode-planner.md`
+  - `rcode/agents/rcode-codebase-mapper.md`
   - All 5 paths verified present on disk before listing.
 - `test/eval/normalize.cjs` — exports `normalize(artifactPath)` returning a
   deterministic JSON object: sorted trigger phrases (from both the YAML
   `triggers:` list and quoted phrases in the description's "Activates when…"
   clause), sorted `tools`, sorted negative-boundary phrases ("Do NOT use for:"),
   and sorted routing/decision keywords (headings, route/spawn/dispatch verbs,
-  referenced `rihal-*` agent names). Free prose excluded; every collection sorted
+  referenced `rcode-*` agent names). Free prose excluded; every collection sorted
   for byte-identical output.
 - `test/eval/run-eval.cjs` — Node-stdlib CLI: default mode diffs each artifact
   against `test/eval/baselines/<slug>.json` and exits 1 on drift (with a

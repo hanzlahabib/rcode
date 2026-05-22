@@ -13,7 +13,7 @@ must_haves:
     - "Dashboard renders with Inter font, CSS custom properties, dark Linear/Vercel aesthetic (#0a0a0b base)"
     - "Two-column layout: 240px fixed sidebar + scrollable main content area"
     - "Sidebar nav switches views (Overview, Files, Phases, Agents, Decisions) without page reload"
-    - "GET /api/files returns JSON list of .md paths under .rihal/ and .planning/"
+    - "GET /api/files returns JSON list of .md paths under .rcode/ and .planning/"
     - "GET /api/file?path= returns raw markdown, refusing paths outside project root"
     - "Clicking a .md file in sidebar renders it via marked.js in the main area"
     - "Blocker banner appears as first element in main area when state.blockers.length > 0, dismissible via sessionStorage"
@@ -54,7 +54,7 @@ Overhaul `server/dashboard.js` into a polished, functional developer dashboard. 
 | 04.2.01 | Design system tokens + Inter font + base resets | 2 | todo | All 11 CSS custom properties present in `:root`; Inter loaded from fonts.googleapis.com; `node server/dashboard.js` starts clean |
 | 04.2.02 | Two-column layout: sidebar + main content area | 3 | todo | Page renders a 240px fixed left sidebar and a flex-1 main area; nav links (Overview, Files, Phases, Agents, Decisions) switch visible view section via `data-view` JS without page reload |
 | 04.2.03 | `/api/files` and `/api/file` endpoints with path traversal protection | 3 | todo | `curl http://localhost:7717/api/files` returns JSON array of .md relative paths; `curl "http://localhost:7717/api/file?path=../../etc/passwd"` returns 403; valid path returns raw markdown text |
-| 04.2.04 | Sidebar MD file tree + marked.js in-browser rendering | 3 | todo | Sidebar shows collapsible file tree under `.rihal/` and `.planning/`; clicking any file fetches `/api/file` and renders HTML via `marked.parse()` into `#file-view` div; Files nav link activates that view |
+| 04.2.04 | Sidebar MD file tree + marked.js in-browser rendering | 3 | todo | Sidebar shows collapsible file tree under `.rcode/` and `.planning/`; clicking any file fetches `/api/file` and renders HTML via `marked.parse()` into `#file-view` div; Files nav link activates that view |
 | 04.2.05 | Blocker banner — conditional, top-positioned, session-dismissible | 2 | todo | When `state.blockers` is non-empty, a red `#blocker-banner` div appears as first child of `#main-content`; clicking X sets `sessionStorage.setItem('blockers-dismissed','1')` and hides banner; on reload, banner stays hidden if key is set |
 | 04.2.06 | Phase status chips — color-coded by status value | 2 | todo | Each phase card has a `<span class="status-chip">` element; `complete` → `var(--accent-green)`, `active`/`in_progress` → `var(--accent-blue)`, `blocked` → `var(--accent-red)`, all other values → `var(--text-muted)` |
 | 04.2.07 | Auto-refresh header: "Updated Xs ago" + manual refresh + 30s poll | 3 | todo | Header shows `<span id="updated-ago">` updated every second; "↺ Refresh" button calls `fetchAndRenderOverview()` which GETs `/api/state` and re-renders stats + phase list in-place; `setInterval` every 30 000ms fetches `/api/state`, compares `state.lastScanned`, re-renders if changed |
@@ -97,7 +97,7 @@ Overhaul `server/dashboard.js` into a polished, functional developer dashboard. 
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (lines 174–416, current `<style>` block)
+- /home/hanzla/development/rcode/server/dashboard.js (lines 174–416, current `<style>` block)
 </read_first>
 
 <action>
@@ -157,12 +157,12 @@ Add to `<head>` (before the `<style>` tag):
 
 Update `font-family` in `body` rule to: `'Inter', -apple-system, 'Segoe UI', sans-serif`.
 
-Do NOT remove the existing `--rihal-blue`, `--rihal-gold` variables — keep them; new tokens are additive.
+Do NOT remove the existing `--rcode-blue`, `--rcode-gold` variables — keep them; new tokens are additive.
 </action>
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "accent-blue"
 kill $(lsof -t -i:7717) 2>/dev/null; true
@@ -179,7 +179,7 @@ Visually: background must be near-black (#0a0a0b), body text in Inter.
 **Type:** checkpoint:human-verify
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (full `renderHtml()` and `<style>` block)
+- /home/hanzla/development/rcode/server/dashboard.js (full `renderHtml()` and `<style>` block)
 </read_first>
 
 <action>
@@ -298,7 +298,7 @@ Visually: background must be near-black (#0a0a0b), body text in Inter.
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "nav-link"
 kill $(lsof -t -i:7717) 2>/dev/null; true
@@ -315,15 +315,15 @@ Human verify: open http://localhost:7717 — clicking "Phases" in sidebar shows 
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (lines 611–648, the HTTP server handler switch)
+- /home/hanzla/development/rcode/server/dashboard.js (lines 611–648, the HTTP server handler switch)
 </read_first>
 
 <action>
 Add two new route handlers inside the `http.createServer` callback, before the catch-all 404. Both handlers are GET-only and read-only.
 
-**Define project root constant at the top of the file (after RIHAL_DIR declaration):**
+**Define project root constant at the top of the file (after RCODE_DIR declaration):**
 ```js
-const PROJECT_ROOT = path.dirname(RIHAL_DIR); // e.g. /home/user/project
+const PROJECT_ROOT = path.dirname(RCODE_DIR); // e.g. /home/user/project
 ```
 
 **`GET /api/files` handler:**
@@ -331,7 +331,7 @@ const PROJECT_ROOT = path.dirname(RIHAL_DIR); // e.g. /home/user/project
 if (url === '/api/files') {
   const results = [];
   const roots = [
-    { base: RIHAL_DIR,                          prefix: '.rihal' },
+    { base: RCODE_DIR,                          prefix: '.rcode' },
     { base: path.join(PROJECT_ROOT, '.planning'), prefix: '.planning' },
   ];
   function walkMd(dir, prefix, depth) {
@@ -384,11 +384,11 @@ CRITICAL: The `startsWith(PROJECT_ROOT + path.sep)` check MUST NOT be weakened o
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/api/files | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if isinstance(d, list) else 'FAIL')"
 curl -s -o /dev/null -w "%{http_code}" "http://localhost:7717/api/file?path=../../etc/passwd"
-curl -s -o /dev/null -w "%{http_code}" "http://localhost:7717/api/file?path=.rihal/state.json"
+curl -s -o /dev/null -w "%{http_code}" "http://localhost:7717/api/file?path=.rcode/state.json"
 kill $(lsof -t -i:7717) 2>/dev/null; true
 </automated>
 Line 1 must print "OK". Line 2 (traversal attempt) must print "403". Line 3 (non-.md file) must print "403".
@@ -402,7 +402,7 @@ Line 1 must print "OK". Line 2 (traversal attempt) must print "403". Line 3 (non
 **Type:** checkpoint:human-verify
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (current `<head>` block and bottom `<script>` section)
+- /home/hanzla/development/rcode/server/dashboard.js (current `<head>` block and bottom `<script>` section)
 </read_first>
 
 <action>
@@ -474,7 +474,7 @@ Line 1 must print "OK". Line 2 (traversal attempt) must print "403". Line 3 (non
   const tree = document.getElementById('sidebar-file-tree');
   if (!tree) return;
 
-  // Group by top-level prefix (.rihal vs .planning)
+  // Group by top-level prefix (.rcode vs .planning)
   const groups = {};
   files.forEach(f => {
     const top = f.split('/')[0];
@@ -525,13 +525,13 @@ Line 1 must print "OK". Line 2 (traversal attempt) must print "403". Line 3 (non
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "sidebar-file-tree"
 kill $(lsof -t -i:7717) 2>/dev/null; true
 </automated>
 Result must be >= 1.
-Human verify: open http://localhost:7717 — file tree appears in sidebar grouped by `.rihal` and `.planning`. Click any `.md` file — Files view activates, file content renders as formatted HTML (not raw text), headings and code blocks are styled.
+Human verify: open http://localhost:7717 — file tree appears in sidebar grouped by `.rcode` and `.planning`. Click any `.md` file — Files view activates, file content renders as formatted HTML (not raw text), headings and code blocks are styled.
 </acceptance_criteria>
 
 ---
@@ -542,7 +542,7 @@ Human verify: open http://localhost:7717 — file tree appears in sidebar groupe
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (the `renderHtml` function, specifically how `state.blockers` is currently used around line 549)
+- /home/hanzla/development/rcode/server/dashboard.js (the `renderHtml` function, specifically how `state.blockers` is currently used around line 549)
 </read_first>
 
 <action>
@@ -590,12 +590,12 @@ ${state.blockers.length > 0 ? `
 })();
 ```
 
-NOTE: `state.blockers` is currently `[]` in `.rihal/state.json`. The banner renders no HTML when the array is empty. To test, temporarily set `state.blockers = [{ title: 'Test blocker' }]` in the scanState return value, verify banner appears, then revert.
+NOTE: `state.blockers` is currently `[]` in `.rcode/state.json`. The banner renders no HTML when the array is empty. To test, temporarily set `state.blockers = [{ title: 'Test blocker' }]` in the scanState return value, verify banner appears, then revert.
 </action>
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "blocker-banner"
 kill $(lsof -t -i:7717) 2>/dev/null; true
@@ -612,7 +612,7 @@ Human verify: Manually test by temporarily injecting a blocker in scanState — 
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (the phase list rendering block inside `renderHtml`, currently around line 523–547)
+- /home/hanzla/development/rcode/server/dashboard.js (the phase list rendering block inside `renderHtml`, currently around line 523–547)
 </read_first>
 
 <action>
@@ -654,7 +654,7 @@ The chip replaces the old inline-styled span entirely. The `isCurrent` amber bor
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "status-chip"
 kill $(lsof -t -i:7717) 2>/dev/null; true
@@ -671,7 +671,7 @@ Human verify: Phases view shows colored pill badges — "complete" phases have a
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (current `<header>` block around line 420–433, and the `<script>` block at the bottom near line 601–606)
+- /home/hanzla/development/rcode/server/dashboard.js (current `<header>` block around line 420–433, and the `<script>` block at the bottom near line 601–606)
 </read_first>
 
 <action>
@@ -777,7 +777,7 @@ Note: The old `setTimeout(() => location.reload(), 5000)` is fully removed — t
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "updated-ago"
 curl -s http://localhost:7717/ | grep -c "manualRefresh"
@@ -795,7 +795,7 @@ Human verify: "Updated Xs ago" counter increments in the header each second. Cli
 **Type:** auto
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/dashboard.js (phase list HTML template, agent card HTML template, decision list HTML template — all inside `renderHtml()`)
+- /home/hanzla/development/rcode/server/dashboard.js (phase list HTML template, agent card HTML template, decision list HTML template — all inside `renderHtml()`)
 </read_first>
 
 <action>
@@ -857,7 +857,7 @@ document.querySelectorAll('.filter-input').forEach(input => {
 
 <acceptance_criteria>
 <automated>
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/ | grep -c "filter-input"
 curl -s http://localhost:7717/ | grep -c "data-filter-text"
@@ -880,7 +880,7 @@ Stories must be executed in sequence. Each story modifies `server/dashboard.js` 
 After all 8 stories complete, run the full smoke test:
 
 ```bash
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 sleep 1
 curl -s http://localhost:7717/health | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if d['status']=='ok' else 'FAIL')"
 curl -s http://localhost:7717/api/files | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if isinstance(d,list) else 'FAIL')"

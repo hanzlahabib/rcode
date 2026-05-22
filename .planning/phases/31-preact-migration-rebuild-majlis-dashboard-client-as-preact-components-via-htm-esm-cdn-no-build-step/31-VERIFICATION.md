@@ -6,7 +6,7 @@ generated: 2026-05-16T08:30:00Z
 
 # Phase 31 — Verification Report
 
-**Verifier:** rihal-code-verifier
+**Verifier:** rcode-verifier
 **Method:** goal-backward structural analysis + boot test
 **Scope:** server/lib/html/client/ + server/lib/html/client.js + server/lib/html/shell.js + server/dashboard.js
 **Human UAT:** PENDING (browser-interaction acceptance criteria deferred — see section below)

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # .claude/hooks/block-unregistered-phase-writes.sh — PreToolUse on Write/Edit.
 #
-# Closes #475 — LLMs bypass /rihal-add-phase + /rihal-plan and write
+# Closes #475 — LLMs bypass /rcode-add-phase + /rcode-plan and write
 # .planning/phases/<NN>-*/SPRINT.md (or similar) directly. Result: phase
-# is invisible to /rihal-status, /rihal-execute, /rihal-progress because
-# it was never registered in .rihal/state.json or ROADMAP.md.
+# is invisible to /rcode-status, /rcode-execute, /rcode-progress because
+# it was never registered in .rcode/state.json or ROADMAP.md.
 #
 # This hook intercepts Write/Edit on files under .planning/phases/<NN>-*/
 # and refuses if <NN> is not registered. Operator can opt out with a
-# `<!-- rihal-bypass: <reason> -->` comment in the new content (for
+# `<!-- rcode-bypass: <reason> -->` comment in the new content (for
 # retroactive documentation of unregistered phases that already shipped).
 #
 # Receives the tool's JSON payload on stdin. Extracts file_path + content.
@@ -35,16 +35,16 @@ case "$file_path" in
     ;;
 esac
 
-# Find PROJECT_ROOT by walking up from file_path until we hit .rihal/.
+# Find PROJECT_ROOT by walking up from file_path until we hit .rcode/.
 dir="$(dirname "$file_path")"
 project_root=""
 while [ "$dir" != "/" ] && [ "$dir" != "." ]; do
-  if [ -d "$dir/.rihal" ]; then project_root="$dir"; break; fi
+  if [ -d "$dir/.rcode" ]; then project_root="$dir"; break; fi
   dir="$(dirname "$dir")"
 done
-[ -z "$project_root" ] && exit 0  # no rihal install — out of scope
+[ -z "$project_root" ] && exit 0  # no rcode install — out of scope
 
-state_path="$project_root/.rihal/state.json"
+state_path="$project_root/.rcode/state.json"
 roadmap_path="$project_root/.planning/ROADMAP.md"
 
 # Extract phase number from path: .planning/phases/NN-slug/...
@@ -54,11 +54,11 @@ phase_num="$(printf '%s' "$file_path" \
   | grep -oE '[0-9]+(\.[0-9]+)?')"
 [ -z "$phase_num" ] && exit 0  # weird path — not our concern
 
-# Bypass marker: if Write content contains `<!-- rihal-bypass:` allow.
+# Bypass marker: if Write content contains `<!-- rcode-bypass:` allow.
 content="$(printf '%s' "$input" \
   | grep -oE '"(content|new_string)"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' \
   | head -1)"
-if printf '%s' "$content" | grep -q 'rihal-bypass:'; then
+if printf '%s' "$content" | grep -q 'rcode-bypass:'; then
   echo "[block-unregistered-phase] bypass marker detected — allowing write to $file_path" >&2
   exit 0
 fi
@@ -96,23 +96,23 @@ fi
 # Block.
 {
   echo ""
-  echo "✖ rihal #475 guard — phase $phase_num is NOT registered."
+  echo "✖ rcode #475 guard — phase $phase_num is NOT registered."
   echo ""
   echo "  Target file:  $file_path"
   echo "  ROADMAP.md:   $([ "$roadmap_has_phase" = "1" ] && echo 'has entry' || echo 'MISSING')"
   echo "  state.json:   $([ "$state_has_phase" = "1" ] && echo 'has entry' || echo 'MISSING')"
   echo ""
   echo "  Direct writes to .planning/phases/ produce planning artifacts that are"
-  echo "  invisible to /rihal-status, /rihal-execute, /rihal-progress, and"
+  echo "  invisible to /rcode-status, /rcode-execute, /rcode-progress, and"
   echo "  'roadmap list-phases'."
   echo ""
-  echo "  Fix:    Run /rihal-add-phase \"<name>\" first to register phase $phase_num,"
+  echo "  Fix:    Run /rcode-add-phase \"<name>\" first to register phase $phase_num,"
   echo "          then retry the write."
   echo ""
-  echo "  CLI:    node .rihal/bin/rihal-tools.cjs phase add \"<name>\""
+  echo "  CLI:    node .rcode/bin/rcode-tools.cjs phase add \"<name>\""
   echo ""
   echo "  Bypass: For retroactive documentation of an already-shipped phase, add"
-  echo "          '<!-- rihal-bypass: <one-line reason> -->' at the top of the file."
+  echo "          '<!-- rcode-bypass: <one-line reason> -->' at the top of the file."
 } >&2
 
 exit 2

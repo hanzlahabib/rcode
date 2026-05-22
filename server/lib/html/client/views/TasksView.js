@@ -84,16 +84,16 @@ export function TasksView() {
   const allDone = rawTasks.length > 0 && rawTasks.every(t => t.status === 'done' || t.status === 'completed');
   const hasBlocked = rawTasks.some(t => t.status === 'blocked');
   const tHints = [
-    ['/rihal-create-story',   'Add a new story/task'],
-    ['/rihal-sprint-planning','Plan the next sprint'],
+    ['/rcode-create-story',   'Add a new story/task'],
+    ['/rcode-sprint-planning','Plan the next sprint'],
   ];
   if (allDone) {
-    tHints.push(['/rihal-verify-work','Verify all tasks pass UAT']);
-    tHints.push(['/rihal-audit-uat', 'Audit UAT coverage']);
+    tHints.push(['/rcode-verify-work','Verify all tasks pass UAT']);
+    tHints.push(['/rcode-audit-uat', 'Audit UAT coverage']);
   }
   if (hasBlocked) {
-    tHints.push(['/rihal-debug',         'Debug blocked tasks']);
-    tHints.push(['/rihal-correct-course','Course-correct blockers']);
+    tHints.push(['/rcode-debug',         'Debug blocked tasks']);
+    tHints.push(['/rcode-correct-course','Course-correct blockers']);
   }
 
   // Empty state
@@ -137,7 +137,7 @@ export function TasksView() {
               <div class="empty">
                 No tasks yet.
                 <div class="empty-action">
-                  Run <code>/rihal-plan${phaseHint}</code> to generate tasks for this project.
+                  Run <code>/rcode-plan${phaseHint}</code> to generate tasks for this project.
                 </div>
               </div>
             `}

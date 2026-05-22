@@ -30,8 +30,8 @@ Output: orchestrator bound to loopback only, CORS removed, per-session bearer to
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>

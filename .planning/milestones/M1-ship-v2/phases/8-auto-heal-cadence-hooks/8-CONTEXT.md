@@ -10,9 +10,9 @@
 Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal tools shipped in Phase 6. Add the third drift dimension (phase-status drift, #461) to round out the auto-heal portfolio. Mirror Phase 6's extend-existing-tool pattern.
 
 **In scope:**
-- Cadence docs — recommended schedules for `/rihal-docs-update`, `/rihal-health`, `/rihal-feature-drift`, `/rihal-memory-audit --fix`
-- PostToolUse hook on `docs/`, `prd/`, `.planning/` edits — fires `/rihal-feature-drift --quick`
-- `/rihal-feature-drift --mode=phase-status` — extends existing workflow with a third drift dimension (closes #461)
+- Cadence docs — recommended schedules for `/rcode-docs-update`, `/rcode-health`, `/rcode-feature-drift`, `/rcode-memory-audit --fix`
+- PostToolUse hook on `docs/`, `prd/`, `.planning/` edits — fires `/rcode-feature-drift --quick`
+- `/rcode-feature-drift --mode=phase-status` — extends existing workflow with a third drift dimension (closes #461)
 
 **Not in scope:**
 - Real-time file-watcher daemon (rejected — overkill)
@@ -26,11 +26,11 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
 ### Cadence
 
 - **D-1:** Recommended cadences as a doc, not enforced infra. Users opt in via `/loop` or external cron — we ship guidance and the underlying scripts. Cadence per tool:
-  - `/rihal-health` — weekly (Monday 9am)
-  - `/rihal-feature-drift` — on push (already in CI dogfood gate)
-  - `/rihal-memory-audit` (read-only) — weekly
-  - `/rihal-memory-audit --fix` — monthly (so trivial drift accumulates a bit before sweep, easier to review the diff)
-  - `/rihal-phase-status-drift` (this phase) — daily during active development, weekly otherwise
+  - `/rcode-health` — weekly (Monday 9am)
+  - `/rcode-feature-drift` — on push (already in CI dogfood gate)
+  - `/rcode-memory-audit` (read-only) — weekly
+  - `/rcode-memory-audit --fix` — monthly (so trivial drift accumulates a bit before sweep, easier to review the diff)
+  - `/rcode-phase-status-drift` (this phase) — daily during active development, weekly otherwise
 - **D-2:** Doc lives at `docs/AUTO-HEAL-CADENCE.md` — referenced from README's "Auto-heal" section.
 
 ### Hooks
@@ -41,12 +41,12 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
   - `prd/**/*.md`
   - `epics/**/*.md`
   - `stories/**/*.md`
-- **D-4:** Hook runs `/rihal-feature-drift --quick` (a fast-mode flag we'll add to the existing workflow). `--quick` skips the deep verifier-loop, just runs the auditor scan in report-only mode. Full `--fix` mode is never auto-triggered by hooks (D-1 from Phase 6: never default).
-- **D-5:** Hook is opt-in via `/rihal-enable-hooks` (referenced in existing skill). User must explicitly opt in.
+- **D-4:** Hook runs `/rcode-feature-drift --quick` (a fast-mode flag we'll add to the existing workflow). `--quick` skips the deep verifier-loop, just runs the auditor scan in report-only mode. Full `--fix` mode is never auto-triggered by hooks (D-1 from Phase 6: never default).
+- **D-5:** Hook is opt-in via `/rcode-enable-hooks` (referenced in existing skill). User must explicitly opt in.
 
 ### Phase-status drift detector
 
-- **D-6:** Extends `/rihal-feature-drift` with `--mode=phase-status` rather than creating a new `/rihal-phase-status-drift` slash command. Consistent with Phase 6 D-4 (extend, don't proliferate).
+- **D-6:** Extends `/rcode-feature-drift` with `--mode=phase-status` rather than creating a new `/rcode-phase-status-drift` slash command. Consistent with Phase 6 D-4 (extend, don't proliferate).
 - **D-7:** Compares ROADMAP claim (Status: Complete | Active | Planned) against shipping signals:
   - Presence of `*-SUMMARY.md` in phase dir → suggests Complete
   - Presence of `*-SPRINT.md` without summary → suggests In Progress
@@ -76,14 +76,14 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
 - `#463` — Phase 9 dogfood audit (precedent for this phase's discipline)
 
 ### Existing tools to extend
-- `rihal/workflows/feature-drift.md` — adds `--mode=phase-status` + `--quick` per D-6 / D-4
-- `rihal/agents/rihal-docs-auditor.md` — extends `<mode_feature_drift>` family with new `<mode_phase_status>` section
+- `rcode/workflows/feature-drift.md` — adds `--mode=phase-status` + `--quick` per D-6 / D-4
+- `rcode/agents/rcode-docs-auditor.md` — extends `<mode_feature_drift>` family with new `<mode_phase_status>` section
 - `scripts/dogfood-check.sh` — Phase 9 baseline; this phase's CI hook integrates here
 
 ### Convention sources
 - Phase 6 SUMMARY.md — extend-don't-proliferate pattern proven
 - Phase 9 SUMMARY.md — dogfood discipline + audit pattern
-- `rihal/skills/core/rihal-enable-hooks/SKILL.md` (or equivalent) — for D-5 opt-in pattern
+- `rcode/skills/core/rcode-enable-hooks/SKILL.md` (or equivalent) — for D-5 opt-in pattern
 
 </canonical_refs>
 
@@ -91,11 +91,11 @@ Layer scheduled and edit-time triggers on top of the manual-invoke auto-heal too
 ## Existing Code Insights
 
 ### Reusable assets
-- **`<mode_feature_drift>` precedent in rihal-docs-auditor** — same pattern works for `<mode_phase_status>`
+- **`<mode_feature_drift>` precedent in rcode-docs-auditor** — same pattern works for `<mode_phase_status>`
 - **Severity allowlist enforcement in feature-drift workflow** — same enforcement structure for phase-status `--fix`
 - **CI dogfood gate (`scripts/dogfood-check.sh`)** — adds a new check for phase-status alignment
-- **`rihal-tools.cjs` roadmap parser (post #464)** — heading-style ROADMAP works; phase-status detector reads via this
-- **`rihal-tools.cjs walkPhaseDirs` (line ~3107)** — already enumerates phase dirs and detects SUMMARY/SPRINT/RESEARCH/CONTEXT presence; perfect input for phase-status drift logic
+- **`rcode-tools.cjs` roadmap parser (post #464)** — heading-style ROADMAP works; phase-status detector reads via this
+- **`rcode-tools.cjs walkPhaseDirs` (line ~3107)** — already enumerates phase dirs and detects SUMMARY/SPRINT/RESEARCH/CONTEXT presence; perfect input for phase-status drift logic
 
 ### Established patterns
 - **Manual-invoke first, hooks layer after** — Phase 6's intentional sequencing; Phase 8 ships the layer.

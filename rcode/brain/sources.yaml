@@ -1,0 +1,62 @@
+# rcode Brain — content sources
+#
+# This file lists upstream repositories whose content is pulled into
+# rcode/brain/ on install and on every `/rcode-update`. Anything pulled
+# here ends up in every Rihalian's project context.
+#
+# Repo URLs are placeholders until M5 (issue #162) when Hanzla supplies
+# the real rcode GitHub org and docs repo addresses. `brain pull` will
+# detect `<PLACEHOLDER>` entries and skip them with a clear message.
+#
+# Real URLs land as part of issue #162. Until then, this file documents
+# the intent and shape of the pipeline.
+
+version: 1
+
+defaults:
+  # Branch to track when no per-source override is set.
+  branch: main
+  # How long before a cached checkout is considered stale and re-cloned.
+  cache_ttl: 6h
+  # Private repos — if true, `brain pull` uses the user's `gh auth` token.
+  # Set to false for public repos (faster, no auth needed).
+  private: true
+
+sources:
+  - name: rcode-github-standards
+    description: >
+      PR, issue, and commit standards for the rcode GitHub org. Every
+      Rihalian's AI sees these when reviewing or drafting a PR.
+    repo: "<PLACEHOLDER: github.com/rcode-om/???>"
+    branch: main
+    paths:
+      - docs/pr-standards.md
+      - docs/issue-standards.md
+      - docs/commit-standards.md
+      - docs/review-checklist.md
+    dest: rcode-github/
+
+  - name: rcode-docs
+    description: >
+      Architecture decisions, internal guides, role playbooks. The bulk
+      of the rcode institutional knowledge lives here.
+    repo: "<PLACEHOLDER: github.com/rcode-om/???>"
+    branch: main
+    paths:
+      - "architecture/**/*.md"
+      - "guides/**/*.md"
+      - "standards/**/*.md"
+      - "playbooks/**/*.md"
+    dest: rcode-docs/
+
+  - name: rcode-best-practices
+    description: >
+      Hanzla's one-year-of-usage best practices — in-repo, version-
+      controlled alongside the rest of rcode. Resolved from the
+      installed .rcode/skills/_shared/ dir (or the package's own
+      rcode/skills/_shared/ when running inside the rcode repo).
+    repo: self
+    paths:
+      - .rcode/skills/_shared/**/*.md
+      - rcode/skills/_shared/**/*.md
+    dest: best-practices/

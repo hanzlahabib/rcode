@@ -26,16 +26,16 @@ untouched.
 
 ## Files changed
 
-- `rihal/references/iterative-retrieval.md` (new) — loop-contract reference
-- `rihal/references/agent-contracts.md` — "Iterative retrieval" section added
-- `rihal/workflows/research-phase.md` — broader `<objective>`/`<objective_context>`, Step 5 sufficiency loop
-- `rihal/workflows/new-project-research.md` — `<objective>` block on all 4 researcher prompts, per-dimension loop before synthesis
+- `rcode/references/iterative-retrieval.md` (new) — loop-contract reference
+- `rcode/references/agent-contracts.md` — "Iterative retrieval" section added
+- `rcode/workflows/research-phase.md` — broader `<objective>`/`<objective_context>`, Step 5 sufficiency loop
+- `rcode/workflows/new-project-research.md` — `<objective>` block on all 4 researcher prompts, per-dimension loop before synthesis
 - `test/iterative-retrieval-doc.test.cjs` (new) — doc-parity test, 7 assertions
 
-Note: the SPRINT `files_modified` listed `.rihal/references/*` paths. `.rihal/`
-is the gitignored install layout; the tracked SOURCE is `rihal/`. Per project
-CLAUDE.md ("edit the SOURCE under `rihal/`"), the committed changes live in
-`rihal/references/` and `rihal/workflows/`. The `.rihal/` install copies were
+Note: the SPRINT `files_modified` listed `.rcode/references/*` paths. `.rcode/`
+is the gitignored install layout; the tracked SOURCE is `rcode/`. Per project
+CLAUDE.md ("edit the SOURCE under `rcode/`"), the committed changes live in
+`rcode/references/` and `rcode/workflows/`. The `.rcode/` install copies were
 also updated locally to keep source/install in parity (not tracked).
 
 ## Verification results
@@ -50,7 +50,7 @@ also updated locally to keep source/install in parity (not tracked).
 3 failing tests — all pre-existing baseline, no NEW failures:
 
 - `scope-history-parity` — commit scopes `kanban`, `orchestrator` not in AGENTS.md (pre-existing, Phase 27 commits)
-- `at-ref-parity` — broken refs `.rihal/workflows/execute-milestone.md`, `.rihal/workflows/plan-milestone.md` (#483 baseline; my new `@.rihal/references/iterative-retrieval.md` ref resolves correctly)
+- `at-ref-parity` — broken refs `.rcode/workflows/execute-milestone.md`, `.rcode/workflows/plan-milestone.md` (#483 baseline; my new `@.rcode/references/iterative-retrieval.md` ref resolves correctly)
 - `command-workflow @-includes` — pre-existing baseline
 
 The new `iterative-retrieval.md` reference resolves under both layouts;
@@ -64,5 +64,5 @@ The new `iterative-retrieval.md` reference resolves under both layouts;
 
 ## Deviations / blockers
 
-- **Deviation (file paths):** SPRINT `<files>` named `.rihal/references/*`; committed changes are in the tracked source `rihal/references/*` instead, because `.rihal/` is gitignored install output. No scope change — same logical files.
+- **Deviation (file paths):** SPRINT `<files>` named `.rcode/references/*`; committed changes are in the tracked source `rcode/references/*` instead, because `.rcode/` is gitignored install output. No scope change — same logical files.
 - No blockers. Executor/verifier workflows untouched. No push performed.

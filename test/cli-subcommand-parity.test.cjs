@@ -2,16 +2,16 @@
  * CLI subcommand parity test.
  *
  * Locks the wins from session 2026-04-30 (closes #479, #481): every
- * top-level subcommand called from rihal/workflows/ and rihal/skills/
- * MUST have a matching case in rihal/bin/rihal-tools.cjs's dispatch
- * switch. Phantom CLI calls are how we ended up with /rihal-execute-phase,
+ * top-level subcommand called from rcode/workflows/ and rcode/skills/
+ * MUST have a matching case in rcode/bin/rcode-tools.cjs's dispatch
+ * switch. Phantom CLI calls are how we ended up with /rcode-execute-phase,
  * phase-plan-index, and 8 more — this test prevents the next round.
  *
  * Methodology mirrors the one-shot diff used during session triage:
  *   comm -23 <(called subcommands) <(implemented top-level cases)
  *
  * False-positive allowlist captures bash-narration words that look like
- * subcommand calls (e.g. "rihal-tools.cjs not found:") but aren't.
+ * subcommand calls (e.g. "rcode-tools.cjs not found:") but aren't.
  *
  * Run: node --test test/cli-subcommand-parity.test.cjs
  */
@@ -22,16 +22,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const CLI_PATH = path.join(PROJECT_ROOT, 'rihal', 'bin', 'rihal-tools.cjs');
+const CLI_PATH = path.join(PROJECT_ROOT, 'rcode', 'bin', 'rcode-tools.cjs');
 const SCAN_DIRS = [
-  path.join(PROJECT_ROOT, 'rihal', 'workflows'),
-  path.join(PROJECT_ROOT, 'rihal', 'skills'),
+  path.join(PROJECT_ROOT, 'rcode', 'workflows'),
+  path.join(PROJECT_ROOT, 'rcode', 'skills'),
 ];
 
-// Words that appear after `rihal-tools.cjs ` in narration text but are not
+// Words that appear after `rcode-tools.cjs ` in narration text but are not
 // subcommand invocations. Confirmed by inspection in session 2026-04-30.
 // `node` slips in when regex spans a newline boundary (next line of a fenced
-// bash block starts with `node ".rihal/bin/...`); keeping it here belts-and-
+// bash block starts with `node ".rcode/bin/...`); keeping it here belts-and-
 // braces alongside the same-line regex below.
 const PROSE_FALSE_POSITIVES = new Set(['exists', 'is', 'not', 'node']);
 
@@ -48,7 +48,7 @@ function walk(dir, out = []) {
 function extractCalledSubcommands() {
   // Same-line only ([^\S\n]+ = whitespace except newlines) so the next bash
   // command on a new line doesn't get attributed to this one.
-  const re = /rihal-tools\.cjs"?[^\S\n]+([a-z][a-z-]+)/g;
+  const re = /rcode-tools\.cjs"?[^\S\n]+([a-z][a-z-]+)/g;
   const found = new Set();
   for (const dir of SCAN_DIRS) {
     for (const f of walk(dir)) {
@@ -78,9 +78,9 @@ test('every CLI subcommand called from workflows/skills has a dispatch case', ()
   assert.deepEqual(
     phantom,
     [],
-    `Phantom CLI subcommands found in workflows/skills (no matching case in rihal-tools.cjs):\n` +
+    `Phantom CLI subcommands found in workflows/skills (no matching case in rcode-tools.cjs):\n` +
       `  ${phantom.join(', ')}\n` +
-      `Either implement the handler in rihal/bin/rihal-tools.cjs or remove the call site.`,
+      `Either implement the handler in rcode/bin/rcode-tools.cjs or remove the call site.`,
   );
 });
 

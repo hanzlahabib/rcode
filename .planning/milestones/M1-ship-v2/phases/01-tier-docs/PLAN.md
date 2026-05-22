@@ -8,7 +8,7 @@ milestone: M1
 
 # Phase 01 — Tier-based Documentation Reorg
 
-**Goal:** Make rihal-code approachable. Organize 22+ skills, 17 agents, and 17 CLI commands into Starter / Advanced / Ultra / Standards tiers so a new user has a clear entry point.
+**Goal:** Make rcode approachable. Organize 22+ skills, 17 agents, and 17 CLI commands into Starter / Advanced / Ultra / Standards tiers so a new user has a clear entry point.
 
 ## Requirements
 
@@ -26,7 +26,7 @@ Audit all existing skills, agents, and CLI commands. Assign each to a tier based
 - `docs/STANDARDS.md` — consolidated contributor rules
 - `docs/V2-PREVIEW.md` — v2 status note for existing users
 - `README.md` — "🚦 Start Here" navigation block added
-- `npx rihal-code tiers` CLI command
+- `npx rcode tiers` CLI command
 - Help output regrouped (PROJECT / TEAM / META sections)
 - `postinstall.js` shows 7-step Golden Path
 

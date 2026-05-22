@@ -12,29 +12,29 @@ const fs = require('fs');
 const path = require('path');
 const { makeTempDir, registerCleanup } = require('./helpers.cjs');
 
-const CLI_SRC = path.resolve(__dirname, '..', 'rihal', 'bin', 'rihal-tools.cjs');
+const CLI_SRC = path.resolve(__dirname, '..', 'rcode', 'bin', 'rcode-tools.cjs');
 
 function run(cwd, args) {
-  // Per #473 guard, the source CLI refuses to run against a foreign .rihal/.
-  // Tests use the locally-installed copy at <cwd>/.rihal/bin/rihal-tools.cjs.
-  const localCli = path.join(cwd, '.rihal', 'bin', 'rihal-tools.cjs');
+  // Per #473 guard, the source CLI refuses to run against a foreign .rcode/.
+  // Tests use the locally-installed copy at <cwd>/.rcode/bin/rcode-tools.cjs.
+  const localCli = path.join(cwd, '.rcode', 'bin', 'rcode-tools.cjs');
   return execFileSync('node', [localCli, ...args], {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, RIHAL_NO_AUTO_INIT: '1' },
+    env: { ...process.env, RCODE_NO_AUTO_INIT: '1' },
   });
 }
 
 function setupProject(t, opts = {}) {
-  const cwd = makeTempDir('rihal-phase-decimal-');
+  const cwd = makeTempDir('rcode-phase-decimal-');
   registerCleanup(t, cwd);
-  fs.mkdirSync(path.join(cwd, '.rihal', 'bin'), { recursive: true });
-  fs.copyFileSync(CLI_SRC, path.join(cwd, '.rihal', 'bin', 'rihal-tools.cjs'));
+  fs.mkdirSync(path.join(cwd, '.rcode', 'bin'), { recursive: true });
+  fs.copyFileSync(CLI_SRC, path.join(cwd, '.rcode', 'bin', 'rcode-tools.cjs'));
   fs.mkdirSync(path.join(cwd, '.planning', 'phases'), { recursive: true });
 
   const seedPhases = opts.phases || [{ number: '13', name: 'Parent Phase', slug: 'parent-phase' }];
   fs.writeFileSync(
-    path.join(cwd, '.rihal', 'state.json'),
+    path.join(cwd, '.rcode', 'state.json'),
     JSON.stringify({ phases: seedPhases, decisions: [], blockers: [] }, null, 2),
   );
 
@@ -52,7 +52,7 @@ test('phase add --decimal slots first child as parent.1', (t) => {
   const cwd = setupProject(t);
   const out = run(cwd, ['phase', 'add', '--decimal', '13', 'wave alpha']);
   assert.match(out, /13\.1/);
-  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
   const added = state.phases.find((p) => p.number === '13.1');
   assert.ok(added, 'phase 13.1 should be in state');
   assert.strictEqual(added.slug, 'wave-alpha');
@@ -69,7 +69,7 @@ test('phase add --decimal increments past existing minor', (t) => {
   });
   const out = run(cwd, ['phase', 'add', '--decimal', '13', 'third child']);
   assert.match(out, /13\.3/);
-  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
   assert.ok(state.phases.find((p) => p.number === '13.3'));
 });
 
@@ -77,7 +77,7 @@ test('phase add --decimal accepts flag before name', (t) => {
   const cwd = setupProject(t);
   const out = run(cwd, ['phase', 'add', '--decimal', '13', 'reordered name']);
   assert.match(out, /13\.1/);
-  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
   const added = state.phases.find((p) => p.number === '13.1');
   assert.strictEqual(added.name, 'reordered name');
 });
@@ -102,6 +102,6 @@ test('phase add (no --decimal) still increments integer max', (t) => {
   const cwd = setupProject(t);
   const out = run(cwd, ['phase', 'add', 'next integer']);
   assert.match(out, /14/);
-  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
   assert.ok(state.phases.find((p) => p.number === '14'));
 });

@@ -6,32 +6,32 @@ type: execute
 wave: 2
 depends_on: [22-1]
 files_modified:
-  - rihal/agents/rihal-codebase-mapper.md
+  - rcode/agents/rcode-codebase-mapper.md
 autonomous: true
 requirements: [GH-712]
 
 must_haves:
   truths:
-    - rihal-codebase-mapper.md is ≤80 lines after the slim
+    - rcode-codebase-mapper.md is ≤80 lines after the slim
     - The agent's observable behaviour is identical — all four process steps (parse_focus, discover_source_roots, explore_codebase, write_documents, return_confirmation) are still executed via the reference file
     - The @-include line resolves to the process file created in Sprint 22-1
   artifacts:
-    - rihal/agents/rihal-codebase-mapper.md (slimmed, ≤80 lines)
+    - rcode/agents/rcode-codebase-mapper.md (slimmed, ≤80 lines)
   key_links:
-    - Depends on rihal/references/codebase-mapping-process.md from Sprint 22-1
+    - Depends on rcode/references/codebase-mapping-process.md from Sprint 22-1
     - Can run in parallel with Sprint 22-2 and 22-3 — different files, no overlap
 ---
 
 <objective>
-Slim rihal/agents/rihal-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference file created in Sprint 22-1. No behaviour change — all process steps are still executed via the reference file.
+Slim rcode/agents/rcode-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference file created in Sprint 22-1. No behaviour change — all process steps are still executed via the reference file.
 
 Purpose: 67% line reduction on the third-heaviest agent. Closes GH-712 contribution for this agent.
-Output: rihal/agents/rihal-codebase-mapper.md at ≤80 lines.
+Output: rcode/agents/rcode-codebase-mapper.md at ≤80 lines.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -45,22 +45,22 @@ Output: rihal/agents/rihal-codebase-mapper.md at ≤80 lines.
 **Duration estimate:** 2 min
 
 <files>
-rihal/references/codebase-mapping-process.md
+rcode/references/codebase-mapping-process.md
 </files>
 
 <action>
 Before modifying the agent, confirm the reference file exists:
 
 ```bash
-test -f rihal/references/codebase-mapping-process.md || { echo "BLOCKER: reference file missing — run Sprint 22-1 first"; exit 1; }
-grep -c "step name=" rihal/references/codebase-mapping-process.md
+test -f rcode/references/codebase-mapping-process.md || { echo "BLOCKER: reference file missing — run Sprint 22-1 first"; exit 1; }
+grep -c "step name=" rcode/references/codebase-mapping-process.md
 ```
 
 If the file is missing or step count is not 5, STOP. Sprint 22-1 must complete first.
 </action>
 
 <verify>
-<automated>test -f /home/hanzla/development/rihal-code/rihal/references/codebase-mapping-process.md && echo "READY"</automated>
+<automated>test -f /home/hanzla/development/rcode/rcode/references/codebase-mapping-process.md && echo "READY"</automated>
 Expected: prints READY.
 </verify>
 
@@ -69,29 +69,29 @@ Expected: prints READY.
 </done>
 
 <evidence>
-lines: rihal/references/codebase-mapping-process.md — created in Sprint 22-1
+lines: rcode/references/codebase-mapping-process.md — created in Sprint 22-1
 </evidence>
 
 ---
 
-### Task 2 — Rewrite rihal-codebase-mapper.md as slim stub
+### Task 2 — Rewrite rcode-codebase-mapper.md as slim stub
 **Type:** auto
 **Duration estimate:** 20-25 min
 
 <files>
-rihal/agents/rihal-codebase-mapper.md (244 lines — current source of truth, READ FIRST)
+rcode/agents/rcode-codebase-mapper.md (244 lines — current source of truth, READ FIRST)
 </files>
 
 <action>
-Read rihal/agents/rihal-codebase-mapper.md in full before making any edits.
+Read rcode/agents/rcode-codebase-mapper.md in full before making any edits.
 
 Important: This agent has a slightly different @-include layout than the others. Current lines 9-11:
 ```
-@.rihal/references/response-style.md
-@.rihal/references/karpathy-guidelines-full.md
-@.rihal/skills/agents/dalil-scout/SKILL.md
+@.rcode/references/response-style.md
+@.rcode/references/karpathy-guidelines-full.md
+@.rcode/skills/agents/dalil-scout/SKILL.md
 ```
-Note: lines 7-8 are both blank (two blank lines after frontmatter). The `@.rihal/skills/agents/dalil-scout/SKILL.md` include is on line 11.
+Note: lines 7-8 are both blank (two blank lines after frontmatter). The `@.rcode/skills/agents/dalil-scout/SKILL.md` include is on line 11.
 
 The slim stub must contain exactly these sections in this order:
 
@@ -99,14 +99,14 @@ The slim stub must contain exactly these sections in this order:
 2. **Blank line**
 3. **Existing @-includes** — keep all three exactly as-is:
    ```
-   @.rihal/references/response-style.md
-   @.rihal/references/karpathy-guidelines-full.md
-   @.rihal/skills/agents/dalil-scout/SKILL.md
+   @.rcode/references/response-style.md
+   @.rcode/references/karpathy-guidelines-full.md
+   @.rcode/skills/agents/dalil-scout/SKILL.md
    ```
-4. **New @-include** for the process: `@.rihal/references/codebase-mapping-process.md`
+4. **New @-include** for the process: `@.rcode/references/codebase-mapping-process.md`
 5. **Blank line**
 6. **`<role>` block** (lines 13-30) — keep verbatim. This includes: Dalil identity + Arabic name meaning, Voice directive (continuity beat + sign-off pattern), Honesty about scope paragraph, focus areas list (tech/arch/quality/concerns → output files), CRITICAL Mandatory Initial Read notice
-7. **`<why_this_matters>` block** (lines 32-63) — keep verbatim. The table mapping phase types to codebase documents loaded by /rihal-plan, the /rihal-execute reference note, and the 5 "what this means for your output" bullet points
+7. **`<why_this_matters>` block** (lines 32-63) — keep verbatim. The table mapping phase types to codebase documents loaded by /rcode-plan, the /rcode-execute reference note, and the 5 "what this means for your output" bullet points
 8. **`<philosophy>` block** (lines 65-77) — keep verbatim. Four rules: document quality over brevity, always include file paths, write current state only, be prescriptive not descriptive
 
 What to REMOVE from the agent file:
@@ -118,33 +118,33 @@ ALWAYS use the Write tool to overwrite the file — never use Bash/sed/awk.
 
 The exact @-include line to add (after the three existing @-includes, before the blank line and `<role>`):
 ```
-@.rihal/references/codebase-mapping-process.md
+@.rcode/references/codebase-mapping-process.md
 ```
 </action>
 
 <verify>
-<automated>wc -l /home/hanzla/development/rihal-code/rihal/agents/rihal-codebase-mapper.md</automated>
+<automated>wc -l /home/hanzla/development/rcode/rcode/agents/rcode-codebase-mapper.md</automated>
 Expected: ≤80 lines.
 
 ```bash
-grep "@.rihal/references/codebase-mapping-process.md" rihal/agents/rihal-codebase-mapper.md | wc -l
+grep "@.rcode/references/codebase-mapping-process.md" rcode/agents/rcode-codebase-mapper.md | wc -l
 ```
 Expected: 1.
 
 ```bash
-grep -c "discover_source_roots\|explore_codebase\|write_documents" rihal/agents/rihal-codebase-mapper.md
+grep -c "discover_source_roots\|explore_codebase\|write_documents" rcode/agents/rcode-codebase-mapper.md
 ```
 Expected: 0 (process step names are gone from the agent stub — they live in the reference file).
 
 ```bash
 # All three original @-includes still present
-grep -c "@.rihal/references/response-style.md\|@.rihal/references/karpathy-guidelines-full.md\|@.rihal/skills/agents/dalil-scout/SKILL.md" rihal/agents/rihal-codebase-mapper.md
+grep -c "@.rcode/references/response-style.md\|@.rcode/references/karpathy-guidelines-full.md\|@.rcode/skills/agents/dalil-scout/SKILL.md" rcode/agents/rcode-codebase-mapper.md
 ```
 Expected: 3.
 </verify>
 
 <done>
-- rihal-codebase-mapper.md is ≤80 lines
+- rcode-codebase-mapper.md is ≤80 lines
 - @-include line for codebase-mapping-process.md is present
 - All three original @-includes (response-style, karpathy-guidelines-full, dalil-scout SKILL.md) preserved
 - <role>, <why_this_matters>, <philosophy> blocks all retained verbatim
@@ -154,7 +154,7 @@ Expected: 3.
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-codebase-mapper.md:1-244 — full file read before rewrite; lines 79-244 (`<process>` block) are the content being removed (grep "step name=" → 5 hits in that range confirms scope); dalil-scout @-include confirmed at line 11 (two blank lines after frontmatter at lines 7-8)
+lines: rcode/agents/rcode-codebase-mapper.md:1-244 — full file read before rewrite; lines 79-244 (`<process>` block) are the content being removed (grep "step name=" → 5 hits in that range confirms scope); dalil-scout @-include confirmed at line 11 (two blank lines after frontmatter at lines 7-8)
 </evidence>
 
 ---
@@ -164,14 +164,14 @@ lines: rihal/agents/rihal-codebase-mapper.md:1-244 — full file read before rew
 **Duration estimate:** 5 min
 
 <files>
-rihal/agents/rihal-codebase-mapper.md
+rcode/agents/rcode-codebase-mapper.md
 </files>
 
 <action>
 Stage and commit only the agent file:
 
 ```bash
-git add rihal/agents/rihal-codebase-mapper.md
+git add rcode/agents/rcode-codebase-mapper.md
 
 git commit -m "refactor(agents): slim codebase-mapper 244→≤80 lines via @-include (#712)"
 ```
@@ -189,11 +189,11 @@ Expected: most recent commit message contains "#712".
 
 <done>
 - Slimmed agent file committed with message referencing #712
-- Only rihal-codebase-mapper.md in the diff
+- Only rcode-codebase-mapper.md in the diff
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-codebase-mapper.md — the single file being committed
+lines: rcode/agents/rcode-codebase-mapper.md — the single file being committed
 </evidence>
 
 </tasks>
@@ -203,36 +203,36 @@ Final checks after all tasks complete:
 
 ```bash
 # Line count gate
-actual=$(wc -l < rihal/agents/rihal-codebase-mapper.md)
+actual=$(wc -l < rcode/agents/rcode-codebase-mapper.md)
 [ "$actual" -le 80 ] && echo "PASS: $actual lines" || echo "FAIL: $actual lines — must be ≤80"
 
 # @-include present
-grep -q "@.rihal/references/codebase-mapping-process.md" rihal/agents/rihal-codebase-mapper.md \
+grep -q "@.rcode/references/codebase-mapping-process.md" rcode/agents/rcode-codebase-mapper.md \
   && echo "PASS: @-include present" || echo "FAIL: @-include missing"
 
 # All three original @-includes preserved
-grep -q "@.rihal/references/response-style.md" rihal/agents/rihal-codebase-mapper.md \
+grep -q "@.rcode/references/response-style.md" rcode/agents/rcode-codebase-mapper.md \
   && echo "PASS: response-style include" || echo "FAIL: response-style include missing"
-grep -q "@.rihal/skills/agents/dalil-scout/SKILL.md" rihal/agents/rihal-codebase-mapper.md \
+grep -q "@.rcode/skills/agents/dalil-scout/SKILL.md" rcode/agents/rcode-codebase-mapper.md \
   && echo "PASS: dalil-scout include" || echo "FAIL: dalil-scout include missing"
 
 # Process bash blocks NOT in agent stub
-grep -q "discover_source_roots\|explore_codebase" rihal/agents/rihal-codebase-mapper.md \
+grep -q "discover_source_roots\|explore_codebase" rcode/agents/rcode-codebase-mapper.md \
   && echo "FAIL: process step names still in agent stub" || echo "PASS: steps moved to reference"
 
 # Dalil voice identity retained in role block
-grep -q "Dalil here — starting the scan\|— Dalil" rihal/agents/rihal-codebase-mapper.md \
+grep -q "Dalil here — starting the scan\|— Dalil" rcode/agents/rcode-codebase-mapper.md \
   && echo "PASS: Dalil voice retained in role" || echo "FAIL: Dalil voice missing from stub"
 
 # Frontmatter intact (cyan colour)
-head -6 rihal/agents/rihal-codebase-mapper.md | grep -q "cyan" \
+head -6 rcode/agents/rcode-codebase-mapper.md | grep -q "cyan" \
   && echo "PASS: frontmatter intact" || echo "FAIL: frontmatter changed"
 ```
 </verification>
 
 <success_criteria>
-- [ ] rihal/agents/rihal-codebase-mapper.md is ≤80 lines
-- [ ] @-include line @.rihal/references/codebase-mapping-process.md is present
+- [ ] rcode/agents/rcode-codebase-mapper.md is ≤80 lines
+- [ ] @-include line @.rcode/references/codebase-mapping-process.md is present
 - [ ] All three original @-includes (response-style, karpathy-guidelines-full, dalil-scout SKILL.md) preserved
 - [ ] <role>, <why_this_matters>, <philosophy> blocks all retained
 - [ ] <process> step bodies (bash commands, Scan Scope template) removed from agent stub

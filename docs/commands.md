@@ -1,18 +1,18 @@
 # Full Command Reference
 
-All 96 Rihal commands, grouped by purpose. Each entry includes syntax, examples, and related commands.
+All 96 rcode commands, grouped by purpose. Each entry includes syntax, examples, and related commands.
 
 ---
 
 ## Router + Lifecycle (8 commands)
 
-### `/rihal-init`
-**Purpose:** Initialize Rihal in a new or existing project.
+### `/rcode-init`
+**Purpose:** Initialize rcode in a new or existing project.
 
-Initialize Rihal and set project baseline.
+Initialize rcode and set project baseline.
 
 ```
-/rihal-init
+/rcode-init
 ```
 
 Detects project state (new / existing / returning), asks for:
@@ -20,17 +20,17 @@ Detects project state (new / existing / returning), asks for:
 - Model profile (quality, balanced, budget)
 - Branching strategy preference
 
-Creates `.rihal/config.yaml` and `.rihal/RIHLA.md` (project journey baseline).
+Creates `.rcode/config.yaml` and `.rcode/RIHLA.md` (project journey baseline).
 
-**Related:** `/rihal-settings`, `/rihal-status`
+**Related:** `/rcode-settings`, `/rcode-status`
 
 ---
 
-### `/rihal-do`
+### `/rcode-do`
 **Purpose:** Interactive router — guided discovery of next action.
 
 ```
-/rihal-do
+/rcode-do
 ```
 
 Routes you based on current project state:
@@ -39,30 +39,30 @@ Routes you based on current project state:
 - Have a plan → suggest execute
 - Mid-execution → suggest continue, pause, or review
 
-**Related:** `/rihal-council`, `/rihal-chain`, `/rihal-plan`, `/rihal-execute`
+**Related:** `/rcode-council`, `/rcode-chain`, `/rcode-plan`, `/rcode-execute`
 
 ---
 
-### `/rihal-help`
+### `/rcode-help`
 **Purpose:** List all available commands.
 
 ```
-/rihal-help
-/rihal-help council
+/rcode-help
+/rcode-help council
 ```
 
 Shows available commands by category. Optionally filter by keyword.
 
-**Related:** `/rihal-do`
+**Related:** `/rcode-do`
 
 ---
 
-### `/rihal-status`
+### `/rcode-status`
 **Purpose:** View project state formatted (phases, decisions, sessions, blockers).
 
 ```
-/rihal-status
-/rihal-status --json
+/rcode-status
+/rcode-status --json
 ```
 
 Displays:
@@ -74,15 +74,15 @@ Displays:
 
 Add `--json` for machine-readable output.
 
-**Related:** `/rihal-stats`, `/rihal-health`
+**Related:** `/rcode-stats`, `/rcode-health`
 
 ---
 
-### `/rihal-stats`
+### `/rcode-stats`
 **Purpose:** Project statistics (commands run, artifacts created, tokens used).
 
 ```
-/rihal-stats
+/rcode-stats
 ```
 
 Shows:
@@ -92,16 +92,16 @@ Shows:
 - Phases completed
 - Total tokens consumed (by model)
 
-**Related:** `/rihal-status`, `/rihal-health`
+**Related:** `/rcode-status`, `/rcode-health`
 
 ---
 
-### `/rihal-health`
+### `/rcode-health`
 **Purpose:** Diagnostic check — detect broken state, orphaned files, stale locks.
 
 ```
-/rihal-health
-/rihal-health --fix
+/rcode-health
+/rcode-health --fix
 ```
 
 Checks:
@@ -112,16 +112,16 @@ Checks:
 
 Add `--fix` to auto-correct safe issues.
 
-**Related:** `/rihal-status`, `/rihal-forensics`
+**Related:** `/rcode-status`, `/rcode-forensics`
 
 ---
 
-### `/rihal-forensics`
+### `/rcode-forensics`
 **Purpose:** Post-mortem investigation for failed commands.
 
 ```
-/rihal-forensics --last
-/rihal-forensics 2026-04-12
+/rcode-forensics --last
+/rcode-forensics 2026-04-12
 ```
 
 Analyzes:
@@ -130,31 +130,31 @@ Analyzes:
 - State corruption or conflicts
 - Orphaned artifacts
 
-**Related:** `/rihal-health`, `/rihal-correct-course`
+**Related:** `/rcode-health`, `/rcode-correct-course`
 
 ---
 
-### `/rihal-update`
-**Purpose:** Update Rihal to latest version.
+### `/rcode-update`
+**Purpose:** Update rcode to latest version.
 
 ```
-/rihal-update
-/rihal-update --dry-run
+/rcode-update
+/rcode-update --dry-run
 ```
 
 Downloads latest from v2-prototype branch. Add `--dry-run` to preview changes.
 
-**Related:** `/rihal-install`
+**Related:** `/rcode-install`
 
 ---
 
 ## Discovery + Research (7 commands)
 
-### `/rihal-new-project`
+### `/rcode-new-project`
 **Purpose:** Deep discovery for greenfield projects.
 
 ```
-/rihal-new-project build a saas rental platform
+/rcode-new-project build a saas rental platform
 ```
 
 Spawns a parallel chain:
@@ -164,16 +164,16 @@ Spawns a parallel chain:
 
 Outputs: MARKET.md, FEASIBILITY.md, SCOPE.md (in `.planning/chains/`).
 
-**Related:** `/rihal-chain`, `/rihal-plan`
+**Related:** `/rcode-chain`, `/rcode-plan`
 
 ---
 
-### `/rihal-map-codebase`
+### `/rcode-map-codebase`
 **Purpose:** Analyze and map project structure, dependencies, modules.
 
 ```
-/rihal-map-codebase
-/rihal-map-codebase --depth 2
+/rcode-map-codebase
+/rcode-map-codebase --depth 2
 ```
 
 Outputs codebase topology:
@@ -182,16 +182,16 @@ Outputs codebase topology:
 - Dependency graph
 - Technology stack detected
 
-**Related:** `/rihal-scan`, `/rihal-explore`, `/rihal-document-project`
+**Related:** `/rcode-scan`, `/rcode-explore`, `/rcode-document-project`
 
 ---
 
-### `/rihal-scan`
+### `/rcode-scan`
 **Purpose:** Lightweight codebase assessment (faster than map-codebase).
 
 ```
-/rihal-scan
-/rihal-scan --focus=src/auth
+/rcode-scan
+/rcode-scan --focus=src/auth
 ```
 
 Quick snapshot of:
@@ -200,16 +200,16 @@ Quick snapshot of:
 - Languages and frameworks
 - Obvious gaps or red flags
 
-**Related:** `/rihal-map-codebase`, `/rihal-explore`
+**Related:** `/rcode-map-codebase`, `/rcode-explore`
 
 ---
 
-### `/rihal-explore`
+### `/rcode-explore`
 **Purpose:** Guided codebase exploration by topic.
 
 ```
-/rihal-explore authentication
-/rihal-explore how is state managed?
+/rcode-explore authentication
+/rcode-explore how is state managed?
 ```
 
 Searches codebase for a topic and produces:
@@ -217,16 +217,16 @@ Searches codebase for a topic and produces:
 - Architecture summary for that area
 - Implementation patterns found
 
-**Related:** `/rihal-map-codebase`, `/rihal-scan`
+**Related:** `/rcode-map-codebase`, `/rcode-scan`
 
 ---
 
-### `/rihal-document-project`
+### `/rcode-document-project`
 **Purpose:** Auto-generate project documentation.
 
 ```
-/rihal-document-project
-/rihal-document-project --sections=arch,api,install
+/rcode-document-project
+/rcode-document-project --sections=arch,api,install
 ```
 
 Creates or updates:
@@ -237,16 +237,16 @@ Creates or updates:
 
 Outputs to `docs/` or specified directory.
 
-**Related:** `/rihal-docs-update`, `/rihal-map-codebase`
+**Related:** `/rcode-docs-update`, `/rcode-map-codebase`
 
 ---
 
-### `/rihal-analyze-dependencies`
+### `/rcode-analyze-dependencies`
 **Purpose:** Audit and suggest dependency updates.
 
 ```
-/rihal-analyze-dependencies
-/rihal-analyze-dependencies --security
+/rcode-analyze-dependencies
+/rcode-analyze-dependencies --security
 ```
 
 Analyzes:
@@ -257,18 +257,18 @@ Analyzes:
 
 Add `--security` for security-only scan.
 
-**Related:** `/rihal-map-codebase`, `/rihal-scan`
+**Related:** `/rcode-map-codebase`, `/rcode-scan`
 
 ---
 
 ## Planning (7 commands)
 
-### `/rihal-plan`
+### `/rcode-plan`
 **Purpose:** Write a detailed PLAN.md with verification.
 
 ```
-/rihal-plan build user authentication module
-/rihal-plan 02 implement payments
+/rcode-plan build user authentication module
+/rcode-plan 02 implement payments
 ```
 
 Flow:
@@ -278,17 +278,17 @@ Flow:
 
 Outputs: `.planning/phases/{NN}/PLAN.md`.
 
-**Related:** `/rihal-chain`, `/rihal-execute`
+**Related:** `/rcode-chain`, `/rcode-execute`
 
 ---
 
-### `/rihal-chain`
+### `/rcode-chain`
 **Purpose:** Sequential pipeline — each agent reads previous output.
 
 ```
-/rihal-chain research-plan build rental app in dubai
-/rihal-chain feasibility migrate to serverless
-/rihal-chain custom researcher,architect,planner "your topic"
+/rcode-chain research-plan build rental app in dubai
+/rcode-chain feasibility migrate to serverless
+/rcode-chain custom researcher,architect,planner "your topic"
 ```
 
 Presets:
@@ -301,29 +301,29 @@ Or custom: comma-separated agent names + topic.
 
 Outputs: typed artifacts per stage (RESEARCH.md, SCOPE.md, PLAN.md) in `.planning/chains/`.
 
-**Related:** `/rihal-council`, `/rihal-plan`, `/rihal-discuss`
+**Related:** `/rcode-council`, `/rcode-plan`, `/rcode-discuss`
 
 ---
 
-### `/rihal-create-epics-and-stories`
+### `/rcode-create-epics-and-stories`
 **Purpose:** Break a phase into epics and user stories.
 
 ```
-/rihal-create-epics-and-stories 02
-/rihal-create-epics-and-stories "build payment processing"
+/rcode-create-epics-and-stories 02
+/rcode-create-epics-and-stories "build payment processing"
 ```
 
 Outputs: structured epics with acceptance criteria and story points.
 
-**Related:** `/rihal-create-story`, `/rihal-dev-story`, `/rihal-sprint-planning`
+**Related:** `/rcode-create-story`, `/rcode-dev-story`, `/rcode-sprint-planning`
 
 ---
 
-### `/rihal-create-story`
+### `/rcode-create-story`
 **Purpose:** Write a single user story.
 
 ```
-/rihal-create-story "As a user, I want to reset my password"
+/rcode-create-story "As a user, I want to reset my password"
 ```
 
 Outputs:
@@ -332,15 +332,15 @@ Outputs:
 - Definition of done checklist
 - Related tasks
 
-**Related:** `/rihal-create-epics-and-stories`, `/rihal-dev-story`
+**Related:** `/rcode-create-epics-and-stories`, `/rcode-dev-story`
 
 ---
 
-### `/rihal-dev-story`
+### `/rcode-dev-story`
 **Purpose:** Convert a user story into a dev task.
 
 ```
-/rihal-dev-story "As a user, I want to reset my password"
+/rcode-dev-story "As a user, I want to reset my password"
 ```
 
 Outputs:
@@ -349,15 +349,15 @@ Outputs:
 - File/function/method names needed
 - Test cases
 
-**Related:** `/rihal-create-story`, `/rihal-plan`
+**Related:** `/rcode-create-story`, `/rcode-plan`
 
 ---
 
-### `/rihal-sprint-planning`
+### `/rcode-sprint-planning`
 **Purpose:** Plan a sprint from a backlog.
 
 ```
-/rihal-sprint-planning --backlog=.planning/backlog.md
+/rcode-sprint-planning --backlog=.planning/backlog.md
 ```
 
 Produces:
@@ -366,31 +366,31 @@ Produces:
 - Capacity check
 - Risk assessment
 
-**Related:** `/rihal-plan`, `/rihal-create-epics-and-stories`
+**Related:** `/rcode-plan`, `/rcode-create-epics-and-stories`
 
 ---
 
-### `/rihal-brainstorm`
+### `/rcode-brainstorm`
 **Purpose:** Open-ended idea generation with the council.
 
 ```
-/rihal-brainstorm features for a social commerce platform
+/rcode-brainstorm features for a social commerce platform
 ```
 
 All 5 council agents contribute ideas. Outputs: session artifact with ideas grouped by theme.
 
-**Related:** `/rihal-council`, `/rihal-discuss`
+**Related:** `/rcode-council`, `/rcode-discuss`
 
 ---
 
 ## Execution (6 commands)
 
-### `/rihal-execute`
+### `/rcode-execute`
 **Purpose:** Execute a plan with atomic commits + post-gates.
 
 ```
-/rihal-execute .planning/phases/01/PLAN.md
-/rihal-execute 02
+/rcode-execute .planning/phases/01/PLAN.md
+/rcode-execute 02
 ```
 
 Flow:
@@ -402,30 +402,30 @@ Flow:
    - nyquist-auditor (test coverage)
 5. Output: SUMMARY.md + commits
 
-**Related:** `/rihal-quick`, `/rihal-autonomous`, `/rihal-undo`
+**Related:** `/rcode-quick`, `/rcode-autonomous`, `/rcode-undo`
 
 ---
 
-### `/rihal-quick`
+### `/rcode-quick`
 **Purpose:** Execute a trivial task inline (no ceremony).
 
 ```
-/rihal-quick fix the typo in README
-/rihal-quick add eslint rule for no-console
+/rcode-quick fix the typo in README
+/rcode-quick add eslint rule for no-console
 ```
 
 Shortcut for small changes that don't need a full plan. Single commit, no gates.
 
-**Related:** `/rihal-execute`, `/rihal-autonomous`
+**Related:** `/rcode-execute`, `/rcode-autonomous`
 
 ---
 
-### `/rihal-autonomous`
+### `/rcode-autonomous`
 **Purpose:** Execute all remaining phases without human input.
 
 ```
-/rihal-autonomous --until=phase-5
-/rihal-autonomous --token-budget=1M
+/rcode-autonomous --until=phase-5
+/rcode-autonomous --token-budget=1M
 ```
 
 Runs all phases sequentially. Options:
@@ -435,16 +435,16 @@ Runs all phases sequentially. Options:
 
 Requires explicit approval.
 
-**Related:** `/rihal-execute`, `/rihal-audit-fix`
+**Related:** `/rcode-execute`, `/rcode-audit-fix`
 
 ---
 
-### `/rihal-audit-fix`
+### `/rcode-audit-fix`
 **Purpose:** Autonomous audit-to-fix pipeline.
 
 ```
-/rihal-audit-fix --focus=src/auth
-/rihal-audit-fix --issue-type=security
+/rcode-audit-fix --focus=src/auth
+/rcode-audit-fix --issue-type=security
 ```
 
 Flow:
@@ -452,32 +452,32 @@ Flow:
 2. Edge-case-hunter finds gaps
 3. Fixer commits fixes with explanations
 
-**Related:** `/rihal-execute`, `/rihal-code-review-fix`
+**Related:** `/rcode-execute`, `/rcode-review-fix`
 
 ---
 
-### `/rihal-undo`
+### `/rcode-undo`
 **Purpose:** Safely revert last completed phase.
 
 ```
-/rihal-undo
-/rihal-undo --keep-artifacts
+/rcode-undo
+/rcode-undo --keep-artifacts
 ```
 
 Reverts commits from the phase and marks phase incomplete. Keeps artifacts by default; add `--keep-artifacts` to preserve.
 
-**Related:** `/rihal-correct-course`, `/rihal-pause-work`
+**Related:** `/rcode-correct-course`, `/rcode-pause-work`
 
 ---
 
 ## Observability + Review (11 commands)
 
-### `/rihal-code-review`
+### `/rcode-review`
 **Purpose:** Review recent code changes.
 
 ```
-/rihal-code-review HEAD~3..HEAD
-/rihal-code-review --branch=feature/auth
+/rcode-review HEAD~3..HEAD
+/rcode-review --branch=feature/auth
 ```
 
 Produces:
@@ -486,42 +486,42 @@ Produces:
 - Suggestions for improvement
 - Compliance check
 
-**Related:** `/rihal-code-review-fix`, `/rihal-code-review --karpathy`
+**Related:** `/rcode-review-fix`, `/rcode-review --karpathy`
 
 ---
 
-### `/rihal-code-review-fix`
+### `/rcode-review-fix`
 **Purpose:** Auto-fix issues found by code-review.
 
 ```
-/rihal-code-review-fix HEAD~3..HEAD
+/rcode-review-fix HEAD~3..HEAD
 ```
 
-Runs `/rihal-code-review`, then automatically fixes all flagged issues.
+Runs `/rcode-review`, then automatically fixes all flagged issues.
 
-**Related:** `/rihal-code-review`, `/rihal-audit-fix`
+**Related:** `/rcode-review`, `/rcode-audit-fix`
 
 ---
 
-### `/rihal-code-review --attack`
-**Purpose:** Stress-test a design or implementation. Folded into `/rihal-code-review` as a flag.
+### `/rcode-review --attack`
+**Purpose:** Stress-test a design or implementation. Folded into `/rcode-review` as a flag.
 
 ```
-/rihal-code-review .planning/phases/01/PLAN.md --attack
-/rihal-code-review "our payment flow" --attack
+/rcode-review .planning/phases/01/PLAN.md --attack
+/rcode-review "our payment flow" --attack
 ```
 
 Fatima (QA) and Waleed (CTO) pick apart the design, find worst-case scenarios.
 
-**Related:** `/rihal-code-review`, `/rihal-code-review --edge-cases`
+**Related:** `/rcode-review`, `/rcode-review --edge-cases`
 
 ---
 
-### `/rihal-code-review --edge-cases`
+### `/rcode-review --edge-cases`
 **Purpose:** Find edge cases and error paths.
 
 ```
-/rihal-code-review --edge-cases src/payment/process.js
+/rcode-review --edge-cases src/payment/process.js
 ```
 
 Audits code for:
@@ -530,16 +530,16 @@ Audits code for:
 - Race conditions
 - Input validation gaps
 
-**Related:** `/rihal-code-review`, `/rihal-code-review --attack`
+**Related:** `/rcode-review`, `/rcode-review --attack`
 
 ---
 
-### `/rihal-code-review --karpathy`
-**Purpose:** Audit code vs Karpathy's 4 coding principles. Folded into `/rihal-code-review` as a flag.
+### `/rcode-review --karpathy`
+**Purpose:** Audit code vs Karpathy's 4 coding principles. Folded into `/rcode-review` as a flag.
 
 ```
-/rihal-code-review HEAD~5..HEAD --karpathy
-/rihal-code-review 03 --files=src/auth/ --karpathy
+/rcode-review HEAD~5..HEAD --karpathy
+/rcode-review 03 --files=src/auth/ --karpathy
 ```
 
 Checks:
@@ -548,16 +548,16 @@ Checks:
 3. Surgical changes (minimal, focused edits)
 4. Goal-driven execution (verifiable success criteria)
 
-**Related:** `/rihal-code-review`, `/rihal-execute`
+**Related:** `/rcode-review`, `/rcode-execute`
 
 ---
 
-### `/rihal-secure-phase`
+### `/rcode-secure-phase`
 **Purpose:** Security-focused verification of a phase.
 
 ```
-/rihal-secure-phase 02
-/rihal-secure-phase .planning/phases/02/PLAN.md
+/rcode-secure-phase 02
+/rcode-secure-phase .planning/phases/02/PLAN.md
 ```
 
 Audits:
@@ -566,17 +566,17 @@ Audits:
 - Data sensitivity handling
 - Third-party integrations
 
-**Related:** `/rihal-code-review`, `/rihal-code-review --attack`
+**Related:** `/rcode-review`, `/rcode-review --attack`
 
 ---
 
-### `/rihal-show`
+### `/rcode-show`
 **Purpose:** Display artifact by ID (phase, plan, task, session).
 
 ```
-/rihal-show M1
-/rihal-show 02.01
-/rihal-show council-2026-04-12-auth
+/rcode-show M1
+/rcode-show 02.01
+/rcode-show council-2026-04-12-auth
 ```
 
 Outputs full content of:
@@ -587,16 +587,16 @@ Outputs full content of:
 - Council session
 - Chain output
 
-**Related:** `/rihal-why`, `/rihal-status`
+**Related:** `/rcode-why`, `/rcode-status`
 
 ---
 
-### `/rihal-why`
+### `/rcode-why`
 **Purpose:** Explain why a specific agent was chosen.
 
 ```
-/rihal-why 02
-/rihal-why council-2026-04-12
+/rcode-why 02
+/rcode-why council-2026-04-12
 ```
 
 Shows:
@@ -605,16 +605,16 @@ Shows:
 - Classifier decision (if multilingual)
 - Keyword matches
 
-**Related:** `/rihal-show`, `/rihal-council --explain`
+**Related:** `/rcode-show`, `/rcode-council --explain`
 
 ---
 
-### `/rihal-rerun`
+### `/rcode-rerun`
 **Purpose:** Re-execute a previous command/session.
 
 ```
-/rihal-rerun M1
-/rihal-rerun council-2026-04-12-auth
+/rcode-rerun M1
+/rcode-rerun council-2026-04-12-auth
 ```
 
 Re-spawns the same agents with the same context. Useful for:
@@ -622,17 +622,17 @@ Re-spawns the same agents with the same context. Useful for:
 - Re-verifying decisions
 - Updating outputs after code changes
 
-**Related:** `/rihal-show`, `/rihal-correct-course`
+**Related:** `/rcode-show`, `/rcode-correct-course`
 
 ---
 
-### `/rihal-diff`
+### `/rcode-diff`
 **Purpose:** Compare two artifacts or phases.
 
 ```
-/rihal-diff 01 02
-/rihal-diff PLAN.md PLAN.md.old
-/rihal-diff council-session-1 council-session-2
+/rcode-diff 01 02
+/rcode-diff PLAN.md PLAN.md.old
+/rcode-diff council-session-1 council-session-2
 ```
 
 Shows:
@@ -641,21 +641,21 @@ Shows:
 - Scope creep detection
 - Decision evolution
 
-**Related:** `/rihal-show`, `/rihal-status`
+**Related:** `/rcode-show`, `/rcode-status`
 
 ---
 
 ## Recovery + Correction (4 commands)
 
-### `/rihal-pause-work`
+### `/rcode-pause-work`
 **Purpose:** Save session context and pause.
 
 ```
-/rihal-pause-work
+/rcode-pause-work
 ```
 
 Writes:
-- `.rihal/HANDOFF.json` — machine-readable context
+- `.rcode/HANDOFF.json` — machine-readable context
 - `.planning/.continue-here.md` — human-readable summary
 
 Captures:
@@ -664,16 +664,16 @@ Captures:
 - Last command output
 - Unfinished tasks
 
-**Related:** `/rihal-resume-work`, `/rihal-correct-course`
+**Related:** `/rcode-resume-work`, `/rcode-correct-course`
 
 ---
 
-### `/rihal-resume-work`
+### `/rcode-resume-work`
 **Purpose:** Resume from a pause.
 
 ```
-/rihal-resume-work
-/rihal-resume-work --handoff=.rihal/HANDOFF.json
+/rcode-resume-work
+/rcode-resume-work --handoff=.rcode/HANDOFF.json
 ```
 
 Loads HANDOFF.json and surfaces:
@@ -682,16 +682,16 @@ Loads HANDOFF.json and surfaces:
 - Last artifacts
 - Suggested next action
 
-**Related:** `/rihal-pause-work`, `/rihal-do`
+**Related:** `/rcode-pause-work`, `/rcode-do`
 
 ---
 
-### `/rihal-correct-course`
+### `/rcode-correct-course`
 **Purpose:** Recover from a failed or derailed phase.
 
 ```
-/rihal-correct-course
-/rihal-correct-course 02 --reason="stack incompatibility"
+/rcode-correct-course
+/rcode-correct-course 02 --reason="stack incompatibility"
 ```
 
 Analyzes failure and suggests:
@@ -700,16 +700,16 @@ Analyzes failure and suggests:
 - Pivot to different approach
 - Re-plan with new constraints
 
-**Related:** `/rihal-undo`, `/rihal-pause-work`
+**Related:** `/rcode-undo`, `/rcode-pause-work`
 
 ---
 
-### `/rihal-next`
+### `/rcode-next`
 **Purpose:** Move to the next phase.
 
 ```
-/rihal-next
-/rihal-next --phase=03
+/rcode-next
+/rcode-next --phase=03
 ```
 
 Marks current phase complete and advances. Shows:
@@ -717,19 +717,19 @@ Marks current phase complete and advances. Shows:
 - Next phase goals
 - Suggested first command
 
-**Related:** `/rihal-status`, `/rihal-do`
+**Related:** `/rcode-status`, `/rcode-do`
 
 ---
 
 ## Multi-Agent Modes (3 commands)
 
-### `/rihal-council`
+### `/rcode-council`
 **Purpose:** Parallel debate — all agents respond simultaneously.
 
 ```
-/rihal-council should we rewrite the auth system?
-/rihal-council --agents=waleed,fatima,sadiq "our tech debt"
-/rihal-council --explain "should we migrate to microservices?"
+/rcode-council should we rewrite the auth system?
+/rcode-council --agents=waleed,fatima,sadiq "our tech debt"
+/rcode-council --explain "should we migrate to microservices?"
 ```
 
 Flow:
@@ -744,37 +744,37 @@ Options:
 
 Outputs: `.planning/council-sessions/council-{date}-{slug}.md`.
 
-**Related:** `/rihal-chain`, `/rihal-discuss`, `/rihal-brainstorm`
+**Related:** `/rcode-chain`, `/rcode-discuss`, `/rcode-brainstorm`
 
 ---
 
-### `/rihal-chain`
+### `/rcode-chain`
 (See Planning section)
 
 ---
 
-### `/rihal-discuss`
+### `/rcode-discuss`
 **Purpose:** Single agent, conversational tone.
 
 ```
-/rihal-discuss waleed can we use redis for caching?
-/rihal-discuss what's our biggest technical risk?
-/rihal-discuss fatima is the test coverage adequate?
+/rcode-discuss waleed can we use redis for caching?
+/rcode-discuss what's our biggest technical risk?
+/rcode-discuss fatima is the test coverage adequate?
 ```
 
 If no agent named, scorer picks top match based on question keywords.
 
-**Related:** `/rihal-council`, `/rihal-chain`
+**Related:** `/rcode-council`, `/rcode-chain`
 
 ---
 
 ## Configuration + Setup (4 commands)
 
-### `/rihal-settings`
+### `/rcode-settings`
 **Purpose:** Interactive configuration.
 
 ```
-/rihal-settings
+/rcode-settings
 ```
 
 Edit:
@@ -785,17 +785,17 @@ Edit:
 - Branching strategy
 - Workflow toggles (plan-checker, post-gates)
 
-**Related:** `/rihal-init`, `/rihal-profile-user`, `/rihal-config`
+**Related:** `/rcode-init`, `/rcode-profile-user`, `/rcode-config`
 
 ---
 
-### `/rihal-install`
+### `/rcode-install`
 **Purpose:** Install specific modules or update installation.
 
 ```
-/rihal-install --module=core
-/rihal-install --module=execution --force
-/rihal-install --ide=cursor
+/rcode-install --module=core
+/rcode-install --module=execution --force
+/rcode-install --ide=cursor
 ```
 
 Modules:
@@ -803,16 +803,16 @@ Modules:
 - `execution` — executor, planner, verifier + gates
 - `discovery` — codebase-mapper, researcher, code-review
 
-**Related:** `/rihal-update`, `/rihal-init`
+**Related:** `/rcode-update`, `/rcode-init`
 
 ---
 
-### `/rihal-enable-hooks`
+### `/rcode-enable-hooks`
 **Purpose:** Install opt-in pre/post-workflow hooks.
 
 ```
-/rihal-enable-hooks
-/rihal-enable-hooks --hook=pre-edit
+/rcode-enable-hooks
+/rcode-enable-hooks --hook=pre-edit
 ```
 
 Installs into `.claude/settings.json`:
@@ -820,15 +820,15 @@ Installs into `.claude/settings.json`:
 2. **pre-workflow** — soft intent warnings
 3. **post-commit** — blocks AI attribution, validates format
 
-**Related:** `/rihal-settings`
+**Related:** `/rcode-settings`
 
 ---
 
-### `/rihal-profile-user`
+### `/rcode-profile-user`
 **Purpose:** Generate your behavioral profile for agent personalization.
 
 ```
-/rihal-profile-user
+/rcode-profile-user
 ```
 
 Asks about:
@@ -839,31 +839,31 @@ Asks about:
 
 Profile guides agent response styles.
 
-**Related:** `/rihal-settings`, `/rihal-init`
+**Related:** `/rcode-settings`, `/rcode-init`
 
 ---
 
-### `/rihal-config`
+### `/rcode-config`
 **Purpose:** View or edit config directly.
 
 ```
-/rihal-config
-/rihal-config --set=model_profile=quality
+/rcode-config
+/rcode-config --set=model_profile=quality
 ```
 
-Shows current `.rihal/config.yaml`. Add `--set=KEY=VALUE` to update single field.
+Shows current `.rcode/config.yaml`. Add `--set=KEY=VALUE` to update single field.
 
-**Related:** `/rihal-settings`
+**Related:** `/rcode-settings`
 
 ---
 
 ## Lifecycle + Phases (9 commands)
 
-### `/rihal-insert-phase`
+### `/rcode-insert-phase`
 **Purpose:** Insert urgent work as a decimal phase mid-cycle.
 
 ```
-/rihal-insert-phase 02 "fix critical bug in auth"
+/rcode-insert-phase 02 "fix critical bug in auth"
 ```
 
 Creates phase `02.1` (inserted between 02 and 03). Useful for:
@@ -871,15 +871,15 @@ Creates phase `02.1` (inserted between 02 and 03). Useful for:
 - Discovered blockers
 - Regulatory/security requirements
 
-**Related:** `/rihal-new-milestone`, `/rihal-next`
+**Related:** `/rcode-new-milestone`, `/rcode-next`
 
 ---
 
-### `/rihal-new-milestone`
+### `/rcode-new-milestone`
 **Purpose:** Start a new milestone cycle.
 
 ```
-/rihal-new-milestone "M2: Scaling Phase"
+/rcode-new-milestone "M2: Scaling Phase"
 ```
 
 Marks:
@@ -889,15 +889,15 @@ Marks:
 
 Outputs: summary of previous milestone.
 
-**Related:** `/rihal-complete-milestone`, `/rihal-audit-milestone`
+**Related:** `/rcode-complete-milestone`, `/rcode-audit-milestone`
 
 ---
 
-### `/rihal-audit-milestone`
+### `/rcode-audit-milestone`
 **Purpose:** Audit a milestone's completion.
 
 ```
-/rihal-audit-milestone M1
+/rcode-audit-milestone M1
 ```
 
 Verifies:
@@ -906,16 +906,16 @@ Verifies:
 - Deliverables match scope
 - No orphaned tasks
 
-**Related:** `/rihal-complete-milestone`, `/rihal-milestone-summary`
+**Related:** `/rcode-complete-milestone`, `/rcode-milestone-summary`
 
 ---
 
-### `/rihal-complete-milestone`
+### `/rcode-complete-milestone`
 **Purpose:** Mark a milestone complete and generate summary.
 
 ```
-/rihal-complete-milestone
-/rihal-complete-milestone M1
+/rcode-complete-milestone
+/rcode-complete-milestone M1
 ```
 
 Produces:
@@ -924,15 +924,15 @@ Produces:
 - Metrics (phases, hours, tokens)
 - Retrospective notes
 
-**Related:** `/rihal-new-milestone`, `/rihal-milestone-summary`
+**Related:** `/rcode-new-milestone`, `/rcode-milestone-summary`
 
 ---
 
-### `/rihal-milestone-summary`
+### `/rcode-milestone-summary`
 **Purpose:** Generate comprehensive milestone report.
 
 ```
-/rihal-milestone-summary M1
+/rcode-milestone-summary M1
 ```
 
 Outputs:
@@ -942,15 +942,15 @@ Outputs:
 - Blockers encountered
 - Lessons learned
 
-**Related:** `/rihal-complete-milestone`, `/rihal-session-report`
+**Related:** `/rcode-complete-milestone`, `/rcode-session-report`
 
 ---
 
-### `/rihal-new-workspace`
+### `/rcode-new-workspace`
 **Purpose:** Create an isolated workspace for parallel tracks.
 
 ```
-/rihal-new-workspace "experimental-auth"
+/rcode-new-workspace "experimental-auth"
 ```
 
 Isolates:
@@ -961,15 +961,15 @@ Isolates:
 
 Useful for A/B testing approaches or parallel R&D.
 
-**Related:** `/rihal-list-workspaces`, `/rihal-remove-workspace`
+**Related:** `/rcode-list-workspaces`, `/rcode-remove-workspace`
 
 ---
 
-### `/rihal-list-workspaces`
+### `/rcode-list-workspaces`
 **Purpose:** Show all workspaces and which is active.
 
 ```
-/rihal-list-workspaces
+/rcode-list-workspaces
 ```
 
 Displays:
@@ -977,30 +977,30 @@ Displays:
 - Active workspace
 - Phase progress in each
 
-**Related:** `/rihal-new-workspace`, `/rihal-remove-workspace`
+**Related:** `/rcode-new-workspace`, `/rcode-remove-workspace`
 
 ---
 
-### `/rihal-remove-workspace`
+### `/rcode-remove-workspace`
 **Purpose:** Delete a workspace.
 
 ```
-/rihal-remove-workspace experimental-auth
+/rcode-remove-workspace experimental-auth
 ```
 
 Removes workspace and all its artifacts. Requires confirmation.
 
-**Related:** `/rihal-new-workspace`, `/rihal-list-workspaces`
+**Related:** `/rcode-new-workspace`, `/rcode-list-workspaces`
 
 ---
 
-### `/rihal-workstream`
+### `/rcode-workstream`
 **Purpose:** Manage work that spans multiple phases.
 
 ```
-/rihal-workstream add --name="Refactor Auth" --phases=02,03,04
-/rihal-workstream list
-/rihal-workstream status auth-refactor
+/rcode-workstream add --name="Refactor Auth" --phases=02,03,04
+/rcode-workstream list
+/rcode-workstream status auth-refactor
 ```
 
 Tracks work across phases:
@@ -1008,19 +1008,19 @@ Tracks work across phases:
 - Consolidated progress
 - Risk rollup
 
-**Related:** `/rihal-plan`, `/rihal-status`
+**Related:** `/rcode-plan`, `/rcode-status`
 
 ---
 
 ## Docs + Notes + Reporting (8 commands)
 
-### `/rihal-docs-update`
+### `/rcode-docs-update`
 **Purpose:** Auto-update project documentation.
 
 ```
-/rihal-docs-update
-/rihal-docs-update --section=API
-/rihal-docs-update --files=src/payment/
+/rcode-docs-update
+/rcode-docs-update --section=API
+/rcode-docs-update --files=src/payment/
 ```
 
 Updates:
@@ -1029,29 +1029,29 @@ Updates:
 - API documentation
 - Deployment guide
 
-**Related:** `/rihal-document-project`, `/rihal-note`
+**Related:** `/rcode-document-project`, `/rcode-note`
 
 ---
 
-### `/rihal-note`
+### `/rcode-note`
 **Purpose:** Quick zero-friction idea capture.
 
 ```
-/rihal-note discovered edge case in payment retry logic
+/rcode-note discovered edge case in payment retry logic
 ```
 
 Appends to `.planning/notes/[phase].md`. No ceremony.
 
-**Related:** `/rihal-add-todo`, `/rihal-docs-update`
+**Related:** `/rcode-add-todo`, `/rcode-docs-update`
 
 ---
 
-### `/rihal-session-report`
+### `/rcode-session-report`
 **Purpose:** Generate comprehensive session summary.
 
 ```
-/rihal-session-report
-/rihal-session-report --since=2026-04-01
+/rcode-session-report
+/rcode-session-report --since=2026-04-01
 ```
 
 Includes:
@@ -1061,43 +1061,43 @@ Includes:
 - Token usage
 - Time breakdown
 
-**Related:** `/rihal-status`, `/rihal-stats`
+**Related:** `/rcode-status`, `/rcode-stats`
 
 ---
 
-### `/rihal-add-todo`
+### `/rcode-add-todo`
 **Purpose:** Add task to phase backlog.
 
 ```
-/rihal-add-todo "write database migration tests"
-/rihal-add-todo --phase=02 "implement payment webhooks"
+/rcode-add-todo "write database migration tests"
+/rcode-add-todo --phase=02 "implement payment webhooks"
 ```
 
 Appends to phase's task list.
 
-**Related:** `/rihal-note`, `/rihal-plan`
+**Related:** `/rcode-note`, `/rcode-plan`
 
 ---
 
-### `/rihal-import`
+### `/rcode-import`
 **Purpose:** Import external plans or documents.
 
 ```
-/rihal-import ./external-plan.md --as=phase-01
-/rihal-import --from-confluence --doc-id=123
+/rcode-import ./external-plan.md --as=phase-01
+/rcode-import --from-confluence --doc-id=123
 ```
 
-Converts external plan to Rihal format and integrates with state.
+Converts external plan to rcode format and integrates with state.
 
-**Related:** `/rihal-document-project`, `/rihal-plan`
+**Related:** `/rcode-document-project`, `/rcode-plan`
 
 ---
 
-### `/rihal-inbox`
+### `/rcode-inbox`
 **Purpose:** Review and process captured notes/todos.
 
 ```
-/rihal-inbox
+/rcode-inbox
 ```
 
 Shows:
@@ -1107,18 +1107,18 @@ Shows:
 
 Lets you organize into phases/plans.
 
-**Related:** `/rihal-note`, `/rihal-add-todo`
+**Related:** `/rcode-note`, `/rcode-add-todo`
 
 ---
 
 ## UI Design (2 commands)
 
-### `/rihal-ui-phase`
+### `/rcode-ui-phase`
 **Purpose:** Generate UI design contract for a phase.
 
 ```
-/rihal-ui-phase 02
-/rihal-ui-phase --component=auth-flow
+/rcode-ui-phase 02
+/rcode-ui-phase --component=auth-flow
 ```
 
 Produces:
@@ -1129,15 +1129,15 @@ Produces:
 
 Outputs: `UI-SPEC.md` in phase directory.
 
-**Related:** `/rihal-ui-review`, `/rihal-plan`
+**Related:** `/rcode-ui-review`, `/rcode-plan`
 
 ---
 
-### `/rihal-ui-review`
+### `/rcode-ui-review`
 **Purpose:** Retroactive UI/UX 6-pillar audit.
 
 ```
-/rihal-ui-review src/components/
+/rcode-ui-review src/components/
 ```
 
 Audits:
@@ -1148,15 +1148,15 @@ Audits:
 5. Brand consistency
 6. Performance
 
-**Related:** `/rihal-ui-phase`, `/rihal-code-review`
+**Related:** `/rcode-ui-phase`, `/rcode-review`
 
 ---
 
 ## Tips
 
-- **Stuck?** Run `/rihal-do` — it routes you based on state.
+- **Stuck?** Run `/rcode-do` — it routes you based on state.
 - **Wrong command?** Workflows have **intent guards** (Step 0.5) that redirect with a copy-paste fix.
-- **More info?** Run `/rihal-help` or see `docs/` directory.
+- **More info?** Run `/rcode-help` or see `docs/` directory.
 - **Debug mode?** Add `--explain` or `--verbose` to most commands.
 
 See the main README.md for quick examples and 3-mode mental model.

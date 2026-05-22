@@ -1,0 +1,25 @@
+{
+  "artifact": "rcode/agents/rcode-phase-researcher.md",
+  "negativeBoundaries": [],
+  "routingKeywords": [
+    "Anti-Patterns / Refuse List",
+    "Examples",
+    "On-Demand Rule Files",
+    "Principles",
+    "Workflow",
+    "rcode-plan",
+    "rcode-planner",
+    "rcode-research",
+    "spawned by"
+  ],
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "WebFetch",
+    "WebSearch",
+    "Write"
+  ],
+  "triggers": []
+}

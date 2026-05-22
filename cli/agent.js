@@ -1,5 +1,5 @@
 /**
- * rcode agent <name> — launch a specialist agent via claude --agent rihal-<name>
+ * rcode agent <name> — launch a specialist agent via claude --agent rcode-<name>
  */
 
 const { spawnSync } = require('child_process');
@@ -7,13 +7,13 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function agent(args, { packageRoot }) {
-  const agentDir = path.join(packageRoot, 'rihal/agents');
+  const agentDir = path.join(packageRoot, 'rcode/agents');
 
   // --list or zero args: enumerate available agents
   if (args.includes('--list') || args.length === 0) {
     const names = fs.readdirSync(agentDir)
-      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
-      .map(f => f.replace(/^rihal-/, '').replace(/\.md$/, ''))
+      .filter(f => f.startsWith('rcode-') && f.endsWith('.md'))
+      .map(f => f.replace(/^rcode-/, '').replace(/\.md$/, ''))
       .sort();
     if (args.length === 0) {
       console.log('Usage: rcode agent <name> [-- extra args]\n');
@@ -24,14 +24,14 @@ module.exports = function agent(args, { packageRoot }) {
   }
 
   const name = args[0];
-  const agentName = `rihal-${name}`;
+  const agentName = `rcode-${name}`;
 
   // Validate agent file exists
   const agentFile = path.join(agentDir, `${agentName}.md`);
   if (!fs.existsSync(agentFile)) {
     const available = fs.readdirSync(agentDir)
-      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
-      .map(f => f.replace(/^rihal-/, '').replace(/\.md$/, ''))
+      .filter(f => f.startsWith('rcode-') && f.endsWith('.md'))
+      .map(f => f.replace(/^rcode-/, '').replace(/\.md$/, ''))
       .sort()
       .join(', ');
     console.error(`Error: No agent named '${agentName}' found.`);
@@ -51,7 +51,7 @@ module.exports = function agent(args, { packageRoot }) {
   const dashIdx = args.indexOf('--');
   const extra = dashIdx !== -1 ? args.slice(dashIdx + 1) : [];
 
-  // Spawn claude --agent rihal-<name> [extra...]
+  // Spawn claude --agent rcode-<name> [extra...]
   const result = spawnSync('claude', ['--agent', agentName, ...extra], { stdio: 'inherit' });
   process.exit(result.status ?? 0);
 };

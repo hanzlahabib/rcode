@@ -1,5 +1,5 @@
 /**
- * Tests for the `stop-verify` subcommand in rihal/bin/rihal-hooks.cjs.
+ * Tests for the `stop-verify` subcommand in rcode/bin/rcode-hooks.cjs.
  *
  * stop-verify is a Stop hook (#744): on response completion it syntax-checks
  * the files changed during the response and surfaces failures to stderr. It is
@@ -15,10 +15,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-const HOOK = path.resolve(__dirname, '../rihal/bin/rihal-hooks.cjs');
+const HOOK = path.resolve(__dirname, '../rcode/bin/rcode-hooks.cjs');
 
 function makeTempCwd() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-stopverify-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-stopverify-'));
 }
 
 function runHook(cwd, payload) {

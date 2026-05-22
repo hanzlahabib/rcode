@@ -1,12 +1,12 @@
 # Agent Reference
 
-All 43 agents in Rihal Code, their roles, and when they spawn.
+All 43 agents in rcode, their roles, and when they spawn.
 
 ---
 
 ## Council Agents (5)
 
-These are the primary decision-makers, spawned by `/rihal-council` debates.
+These are the primary decision-makers, spawned by `/rcode-council` debates.
 
 ### 🧭 Sadiq (صادق) — Director of Strategy
 
@@ -104,10 +104,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ### Execution Agents
 
-#### rihal-executor
+#### rcode-executor
 **Purpose:** Execute tasks from a plan. Creates files, runs commands, writes code.
 
-**Spawned by:** `/rihal-execute`, `/rihal-quick`, `/rihal-autonomous`
+**Spawned by:** `/rcode-execute`, `/rcode-quick`, `/rcode-autonomous`
 
 **Constraints:**
 - Follows Karpathy guidelines (think first, simplicity, surgical changes, goal-driven)
@@ -117,10 +117,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-planner
+#### rcode-planner
 **Purpose:** Break down a goal into PLAN.md with tasks, subtasks, success criteria.
 
-**Spawned by:** `/rihal-plan`, `/rihal-chain research-plan`, chain pipelines
+**Spawned by:** `/rcode-plan`, `/rcode-chain research-plan`, chain pipelines
 
 **Output:** `.planning/phases/{NN}/PLAN.md` with:
 - Task list (numbered)
@@ -133,10 +133,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-verifier
+#### rcode-verifier
 **Purpose:** Verify that completed code matches plan intent.
 
-**Spawned by:** `/rihal-execute` (post-completion)
+**Spawned by:** `/rcode-execute` (post-completion)
 
 **Checks:**
 - All tasks from plan are complete
@@ -146,10 +146,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-plan-checker
+#### rcode-plan-checker
 **Purpose:** Validate PLAN.md before execution.
 
-**Spawned by:** `/rihal-plan` (post-planner)
+**Spawned by:** `/rcode-plan` (post-planner)
 
 **Checks:**
 - All referenced files exist in codebase
@@ -162,10 +162,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-debugger
+#### rcode-debugger
 **Purpose:** Systematic debugging of failed tasks.
 
-**Spawned by:** `/rihal-debug`, `/rihal-correct-course`
+**Spawned by:** `/rcode-debug`, `/rcode-correct-course`
 
 **Approach:**
 1. Reproduce the error
@@ -177,10 +177,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ### Discovery Agents
 
-#### rihal-codebase-mapper
+#### rcode-codebase-mapper
 **Purpose:** Analyze and document project structure.
 
-**Spawned by:** `/rihal-map-codebase`, `/rihal-new-project`
+**Spawned by:** `/rcode-map-codebase`, `/rcode-new-project`
 
 **Output:**
 - Module/service topology
@@ -190,10 +190,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-project-researcher
+#### rcode-project-researcher
 **Purpose:** Research a project topic deeply.
 
-**Spawned by:** `/rihal-chain research-plan`, `/rihal-new-project`
+**Spawned by:** `/rcode-chain research-plan`, `/rcode-new-project`
 
 **Output:** RESEARCH.md with:
 - Market context
@@ -204,10 +204,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-roadmapper
+#### rcode-roadmapper
 **Purpose:** Create a phased roadmap from research.
 
-**Spawned by:** `/rihal-chain gtm-to-build`, chain pipelines
+**Spawned by:** `/rcode-chain gtm-to-build`, chain pipelines
 
 **Output:** ROADMAP.md with:
 - Phases and dependencies
@@ -217,16 +217,16 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-phase-researcher
+#### rcode-phase-researcher
 **Purpose:** Deep research for a specific phase.
 
-**Spawned by:** `/rihal-chain research-plan`, `/rihal-do` (when planning)
+**Spawned by:** `/rcode-chain research-plan`, `/rcode-do` (when planning)
 
 **Focuses on:** What needs to be learned before building this phase.
 
 ---
 
-#### rihal-advisor-researcher
+#### rcode-advisor-researcher
 **Purpose:** Expert advice gathering (interview subjects, domain experts).
 
 **Spawned by:** Research workflows when external expertise needed
@@ -235,10 +235,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-assumptions-analyzer
+#### rcode-assumptions-analyzer
 **Purpose:** Surface hidden assumptions in a plan.
 
-**Spawned by:** `/rihal-code-review --attack`
+**Spawned by:** `/rcode-review --attack`
 
 **Produces:**
 - List of assumptions made
@@ -247,7 +247,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-research-synthesizer
+#### rcode-research-synthesizer
 **Purpose:** Synthesize multiple research sources into actionable insights.
 
 **Spawned by:** Chain pipelines after researcher outputs
@@ -261,10 +261,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ### Verification & Quality Agents
 
-#### rihal-integration-checker
+#### rcode-integration-checker
 **Purpose:** Cross-phase E2E verification.
 
-**Spawned by:** `/rihal-execute` (post-gate)
+**Spawned by:** `/rcode-execute` (post-gate)
 
 **Checks:**
 - No phase breaks previous phases
@@ -274,10 +274,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-nyquist-auditor
+#### rcode-nyquist-auditor
 **Purpose:** Verify test coverage is adequate.
 
-**Spawned by:** `/rihal-execute` (post-gate)
+**Spawned by:** `/rcode-execute` (post-gate)
 
 **Checks:**
 - Coverage thresholds met
@@ -289,10 +289,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-noor
+#### rcode-noor
 **Purpose:** Write technical documentation.
 
-**Spawned by:** `/rihal-docs-update`, `/rihal-document-project`
+**Spawned by:** `/rcode-docs-update`, `/rcode-document-project`
 
 **Produces:**
 - Architecture docs
@@ -302,10 +302,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-ux-designer
+#### rcode-ux-designer
 **Purpose:** Design interaction flows and UI specs.
 
-**Spawned by:** `/rihal-ui-phase`, `/rihal-plan` (for UI-heavy phases)
+**Spawned by:** `/rcode-ui-phase`, `/rcode-plan` (for UI-heavy phases)
 
 **Output:** UI-SPEC.md with:
 - Component list
@@ -315,10 +315,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-code-reviewer
+#### rcode-reviewer
 **Purpose:** Review code for quality and style.
 
-**Spawned by:** `/rihal-code-review`, `/rihal-audit-fix`
+**Spawned by:** `/rcode-review`, `/rcode-audit-fix`
 
 **Checks:**
 - Code clarity
@@ -329,10 +329,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-code-fixer
+#### rcode-fixer
 **Purpose:** Auto-fix code review issues.
 
-**Spawned by:** `/rihal-code-review-fix`, `/rihal-audit-fix`
+**Spawned by:** `/rcode-review-fix`, `/rcode-audit-fix`
 
 **Implements:**
 - Style fixes
@@ -342,10 +342,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-edge-case-hunter
+#### rcode-edge-case-hunter
 **Purpose:** Find error paths and boundary conditions.
 
-**Spawned by:** `/rihal-code-review --edge-cases`, `/rihal-audit-fix`
+**Spawned by:** `/rcode-review --edge-cases`, `/rcode-audit-fix`
 
 **Finds:**
 - Uncaught exceptions
@@ -355,10 +355,10 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ---
 
-#### rihal-deviation-analyzer
+#### rcode-deviation-analyzer
 **Purpose:** Detect when code deviates from plan.
 
-**Spawned by:** `/rihal-execute` (verification step)
+**Spawned by:** `/rcode-execute` (verification step)
 
 **Checks:**
 - Implemented vs. planned scope match
@@ -369,134 +369,134 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 ### More Specialized Agents
 
-#### rihal-docs-auditor
+#### rcode-docs-auditor
 **Purpose:** Audit documentation completeness and accuracy.
 
-**Spawned by:** `/rihal-docs-update`, `/rihal-secure-phase`
+**Spawned by:** `/rcode-docs-update`, `/rcode-secure-phase`
 
 ---
 
 
-#### rihal-security-auditor
+#### rcode-security-auditor
 **Purpose:** Security-focused code review.
 
-**Spawned by:** `/rihal-secure-phase`, `/rihal-code-review --attack`
+**Spawned by:** `/rcode-secure-phase`, `/rcode-review --attack`
 
 ---
 
 ### Team Agents (added in v1.0)
 
-#### rihal-layla 🎭
+#### rcode-layla 🎭
 **Purpose:** UX Designer — interaction design, user flows, wireframes, accessibility audits, design systems.
 
-**Spawned by:** `/rihal-council`, design-related discussions
+**Spawned by:** `/rcode-council`, design-related discussions
 
 ---
 
-#### rihal-nasser 👥
+#### rcode-nasser 👥
 **Purpose:** Engineering Manager — 1:1s, hiring, onboarding, growth plans, performance, team health.
 
-**Spawned by:** `/rihal-council`, people-ops questions
+**Spawned by:** `/rcode-council`, people-ops questions
 
 ---
 
-#### rihal-khalid 🚀
+#### rcode-khalid 🚀
 **Purpose:** DevOps & Infrastructure — CI/CD, containers, monitoring, deployment pipelines.
 
-**Spawned by:** `/rihal-council`, infrastructure questions
+**Spawned by:** `/rcode-council`, infrastructure questions
 
 ---
 
-#### rihal-zahra ✨
+#### rcode-zahra ✨
 **Purpose:** Branding & Creative Director — typography, color systems, design tokens, brand consistency.
 
-**Spawned by:** `/rihal-council`, brand-related discussions
+**Spawned by:** `/rcode-council`, brand-related discussions
 
 ---
 
-#### rihal-noor 📝
+#### rcode-noor 📝
 **Purpose:** Technical Writer — docs, Mermaid diagrams, presentations, changelogs.
 
-**Spawned by:** `/rihal-council`, `/rihal-docs-update`
+**Spawned by:** `/rcode-council`, `/rcode-docs-update`
 
 ---
 
-#### rihal-ahmed 📋
+#### rcode-ahmed 📋
 **Purpose:** Technology & Development Director — delivery coordination, DORA metrics, engineering scorecards.
 
-**Spawned by:** `/rihal-council`, delivery planning
+**Spawned by:** `/rcode-council`, delivery planning
 
 ---
 
-#### rihal-hanzla ⚡
+#### rcode-hanzla ⚡
 **Purpose:** Senior Full-Stack Engineer — story execution, code implementation, complex features.
 
-**Spawned by:** `/rihal-execute`, `/rihal-dev-story`
+**Spawned by:** `/rcode-execute`, `/rcode-dev-story`
 
 ---
 
-#### rihal-omar 🔧
+#### rcode-omar 🔧
 **Purpose:** Software Engineer — generalist implementation, bug fixes, testing.
 
-**Spawned by:** `/rihal-execute`, `/rihal-dev-story`
+**Spawned by:** `/rcode-execute`, `/rcode-dev-story`
 
 ---
 
-#### rihal-haitham 💻
+#### rcode-haitham 💻
 **Purpose:** Senior Frontend Engineer — React/Next.js, component design, RTL/Arabic layouts, frontend performance.
 
-**Spawned by:** `/rihal-council`, `/rihal-ui-phase`, frontend implementation discussions
+**Spawned by:** `/rcode-council`, `/rcode-ui-phase`, frontend implementation discussions
 
 ---
 
-#### rihal-yousef ⚙️
+#### rcode-yousef ⚙️
 **Purpose:** Senior Backend Engineer — API design, database queries, performance, queues, webhooks.
 
-**Spawned by:** `/rihal-council`, backend implementation discussions
+**Spawned by:** `/rcode-council`, backend implementation discussions
 
 ---
 
-#### rihal-zayd 🧠
+#### rcode-zayd 🧠
 **Purpose:** Senior ML Engineer — LLM integration, RAG/retrieval, embeddings, prompt engineering, evals.
 
-**Spawned by:** `/rihal-council`, AI/ML feature discussions
+**Spawned by:** `/rcode-council`, AI/ML feature discussions
 
 ---
 
-#### rihal-sprint-checker ✅
+#### rcode-sprint-checker ✅
 **Purpose:** Verify sprint plans will achieve the phase goal before execution.
 
-**Spawned by:** `/rihal-plan` (post-planner, pre-execution)
+**Spawned by:** `/rcode-plan` (post-planner, pre-execution)
 
 **Checks:** Goal-backward analysis — does the plan actually deliver what the phase promises?
 
 ---
 
-#### rihal-ui-auditor 🎨
+#### rcode-ui-auditor 🎨
 **Purpose:** Retroactive visual audit of implemented frontend code across 6 quality pillars.
 
-**Spawned by:** `/rihal-ui-review`
+**Spawned by:** `/rcode-ui-review`
 
 ---
 
-#### rihal-profiler 👤
+#### rcode-profiler 👤
 **Purpose:** Analyze user behavior patterns, create personas, identify usage flows.
 
-**Spawned by:** `/rihal-profile-user`
+**Spawned by:** `/rcode-profile-user`
 
 ---
 
-#### rihal-security-adversary 🔴
+#### rcode-security-adversary 🔴
 **Purpose:** Adversarial security review — think like an attacker, find exploitation paths.
 
-**Spawned by:** `/rihal-code-review --attack`, `/rihal-secure-phase`
+**Spawned by:** `/rcode-review --attack`, `/rcode-secure-phase`
 
 ---
 
-#### rihal-remediation-planner 🔧
+#### rcode-remediation-planner 🔧
 **Purpose:** Plan remediation for issues and blockers — create action plans to recover from deviations.
 
-**Spawned by:** `/rihal-correct-course`, post-execute failure workflows
+**Spawned by:** `/rcode-correct-course`, post-execute failure workflows
 
 ---
 
@@ -505,14 +505,14 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 You can define your own agents at:
 
 ```
-~/.rihal/agents/rihal-<name>.md
+~/.rcode/agents/rcode-<name>.md
 ```
 
 They appear in every project without forking. Format:
 
 ```markdown
 ---
-name: rihal-my-expert
+name: rcode-my-expert
 alias: my-expert
 role: Your custom role
 model: claude-opus-4-20250514
@@ -523,8 +523,8 @@ model: claude-opus-4-20250514
 
 **Trigger in commands:**
 ```
-/rihal-discuss my-expert should we use this library?
-/rihal-chain my-expert,sadiq,waleed your topic
+/rcode-discuss my-expert should we use this library?
+/rcode-chain my-expert,sadiq,waleed your topic
 ```
 
 ---
@@ -533,24 +533,24 @@ model: claude-opus-4-20250514
 
 ### Explicitly (by name)
 ```
-/rihal-discuss waleed what's the best stack?
-/rihal-chain researcher,planner,executor "your topic"
+/rcode-discuss waleed what's the best stack?
+/rcode-chain researcher,planner,executor "your topic"
 ```
 
 ### Implicitly (by panel scorer)
 ```
-/rihal-council should we build this?
+/rcode-council should we build this?
 ```
 Scorer picks 3-5 agents based on question keywords.
 
 ### Via specific commands
 ```
-/rihal-plan build auth module
+/rcode-plan build auth module
 ```
 Spawns: planner → plan-checker (verification) → may spawn executor
 
 ```
-/rihal-execute .planning/phases/01/PLAN.md
+/rcode-execute .planning/phases/01/PLAN.md
 ```
 Spawns: executor → verifier → integration-checker → nyquist-auditor
 
@@ -574,7 +574,7 @@ const KEYWORD_WEIGHTS = {
 Run with `--explain` to see scoring:
 
 ```
-/rihal-council should we move to microservices? --explain
+/rcode-council should we move to microservices? --explain
 ```
 
 Output:
@@ -596,7 +596,7 @@ Every agent has documented response constraints:
 3. **Output format** — structured vs. narrative
 4. **Disagreement style** — how they challenge others
 
-Read agent files in `.claude/agents/rihal-*.md` for full definitions.
+Read agent files in `.claude/agents/rcode-*.md` for full definitions.
 
 ---
 

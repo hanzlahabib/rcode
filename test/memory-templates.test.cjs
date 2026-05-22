@@ -1,9 +1,9 @@
 /**
  * Memory Bank template tests.
  *
- * Verifies that rihal/templates/memory/ contains the structure rcode-memory-init
+ * Verifies that rcode/templates/memory/ contains the structure rcode-memory-init
  * expects to copy into a fresh project. The init skill is documented in
- * rihal/skills/core/rihal-memory-init/SKILL.md and copies this directory
+ * rcode/skills/core/rcode-memory-init/SKILL.md and copies this directory
  * verbatim, so any drift here breaks the bootstrap flow.
  *
  * Run: node --test test/memory-templates.test.cjs
@@ -15,7 +15,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const TEMPLATES_DIR = path.join(PROJECT_ROOT, 'rihal', 'templates', 'memory');
+const TEMPLATES_DIR = path.join(PROJECT_ROOT, 'rcode', 'templates', 'memory');
 
 const REQUIRED_FILES = [
   'INDEX.md',

@@ -100,7 +100,7 @@ End-to-end streaming:
 **Points:** 3
 
 Session persistence:
-- `SESSIONS_DIR = ~/.rihal/sessions/` — auto-created on startup
+- `SESSIONS_DIR = ~/.rcode/sessions/` — auto-created on startup
 - `persistSession(storyId, exitStatus)` — writes `{storyId, status, startTime, endTime, logs, fileOps}` JSON on exit
 - `loadLastSession(storyId)` — returns most recent session file for storyId
 - `cleanSessions(olderThanDays)` — deletes by mtime
@@ -164,7 +164,7 @@ Session persistence:
 - [x] View Logs button → opens panel, activates tab for that session
 - [x] Panel tabs work: multiple concurrent sessions, close button, tab switching
 - [x] SSE chunks arrive in real-time, appended in-place to terminal
-- [x] Session persisted to ~/.rihal/sessions/ on completion
+- [x] Session persisted to ~/.rcode/sessions/ on completion
 - [x] Page reload → refreshOrchestratorStatus restores running sessions
 - [x] Clean Sessions button → /api/clean-sessions → toast with count
 - [x] Linear design system renders with dark-first palette, Inter font
@@ -178,5 +178,5 @@ Phase 27 delivered the complete Realtime Kanban Orchestration Dashboard. All 18 
 - Zero external dependencies — pure Node stdlib for server, CDN-only for client (marked.js)
 - View-only dashboard constraint maintained — orchestrator owns all write paths
 - Single boot command: `node server/dashboard.js`
-- Sessions persist to `~/.rihal/sessions/` for replay across restarts
+- Sessions persist to `~/.rcode/sessions/` for replay across restarts
 - Multi-tab side panel handles N concurrent agent sessions without UI clutter

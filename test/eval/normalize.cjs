@@ -8,7 +8,7 @@
  *   - declared `tools` (sorted)
  *   - negative-boundary phrases ("Do NOT use for: ...")
  *   - routing/decision keywords from the body (headings, route/spawn/dispatch
- *     verbs, referenced rihal-* agent names)
+ *     verbs, referenced rcode-* agent names)
  *
  * Free prose is excluded. Every collection is sorted so the same input always
  * yields byte-identical output — the harness diffs structure, not wording.
@@ -113,8 +113,8 @@ function extractRoutingKeywords(body) {
   while ((m = verbRe.exec(body)) !== null) {
     out.push(m[1].toLowerCase());
   }
-  // Referenced rihal-* agent names anywhere in the body.
-  for (const ref of body.match(/\brihal-[a-z][a-z0-9-]+/g) || []) {
+  // Referenced rcode-* agent names anywhere in the body.
+  for (const ref of body.match(/\brcode-[a-z][a-z0-9-]+/g) || []) {
     out.push(ref);
   }
   return out;

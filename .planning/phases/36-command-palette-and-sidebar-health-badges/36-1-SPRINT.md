@@ -31,16 +31,16 @@ must_haves:
 
 <objective>
 Add an Archon-style Cmd+K command palette to the Majlis dashboard: a keyboard-triggered
-overlay that searches the allowlisted rihal commands, groups them by category, and runs a
+overlay that searches the allowlisted rcode commands, groups them by category, and runs a
 selected command through the existing orchestrator path.
-Purpose: DSH-4 — find and run any rihal command without hunting through the UI.
+Purpose: DSH-4 — find and run any rcode command without hunting through the UI.
 Output: a new CommandPalette Preact component, a category field on ALLOWED_COMMANDS, a
 search icon, App-level keyboard wiring, and palette CSS.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -77,10 +77,10 @@ export const ICONS = { name: '<svg inner markup>' };       // icons-client.js:17
 <action>
 1. In orchestrator.js ALLOWED_COMMANDS (lines 230-243), add a `category` string to every
    one of the 12 entries. Keep `cmd` and `label` unchanged. Use exactly these categories:
-   - `'Project'`   for: /rihal-init, /rihal-config
-   - `'Status'`    for: /rihal-status, /rihal-progress, /rihal-sprint-status, /rihal-stats
-   - `'Planning'`  for: /rihal-show, /rihal-list-plans, /rihal-next
-   - `'Inspect'`   for: /rihal-help, /rihal-health, /rihal-diff
+   - `'Project'`   for: /rcode-init, /rcode-config
+   - `'Status'`    for: /rcode-status, /rcode-progress, /rcode-sprint-status, /rcode-stats
+   - `'Planning'`  for: /rcode-show, /rcode-list-plans, /rcode-next
+   - `'Inspect'`   for: /rcode-help, /rcode-health, /rcode-diff
    Each object becomes `{ cmd: '...', label: '...', category: '...' }`. Do not reorder.
 2. In icons-client.js ICONS map, add a `search` entry (after the `sun` entry):
    `search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',`

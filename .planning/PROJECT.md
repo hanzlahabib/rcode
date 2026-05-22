@@ -1,10 +1,10 @@
-# Rihal Code
+# rcode
 
 **One-line:** AI engineering methodology — tiered agents, skills, and slash commands for Claude Code / Cursor / compatible IDEs.
 
 ## Vision
 
-Rihal Code gives teams a real AI team instead of one assistant pretending to be everything. Agents with cultural identity and hard scope boundaries, a tiered methodology (Starter → Advanced → Ultra Advanced → Standards), file-based state, and zero-lock-in install.
+rcode gives teams a real AI team instead of one assistant pretending to be everything. Agents with cultural identity and hard scope boundaries, a tiered methodology (Starter → Advanced → Ultra Advanced → Standards), file-based state, and zero-lock-in install.
 
 ## Current Milestone: M3 — Archon Dashboard Port (v5)
 
@@ -26,7 +26,7 @@ M2 — Hardening & Polish (phases 20–33) in progress — see `ROADMAP.md`.
 
 ## Modules
 
-- `rihal/` — the unified methodology package (34 agents, 39 skills, 71 workflows, 70 commands, CLI)
+- `rcode/` — the unified methodology package (34 agents, 39 skills, 71 workflows, 70 commands, CLI)
 - `cli/` — installer + CLI commands (install, tiers, dashboard, doctor, etc.)
 - `server/dashboard.js` — view-only Majlis dashboard (port 7717) with orchestration + node-pty terminal
 - `server/lib/html/client/` — dashboard client JS modules (render, kanban, main)
@@ -42,12 +42,12 @@ M2 — Hardening & Polish (phases 20–33) in progress — see `ROADMAP.md`.
 ## Distribution
 
 - `npm i -g @hanzlahabib/rihal-code` (or `npx @hanzlahabib/rihal-code install`)
-- Install script copies package core into target project's `.rihal/lib/` so projects are self-contained
+- Install script copies package core into target project's `.rcode/lib/` so projects are self-contained
 
 ## Links
 
 - Repo: https://github.com/hanzlahabib/rihal-code
-- Template used by scaffold: https://github.com/rihal-om/template
+- Template used by scaffold: https://github.com/rcode-om/template
 - Open issues: https://github.com/hanzlahabib/rihal-code/issues
 
 ## Authoritative Rules
@@ -67,7 +67,7 @@ This document evolves at phase transitions and milestone boundaries.
 4. Decisions to log? → add to Key Decisions
 5. "What This Is" still accurate? → update if drifted
 
-**After each milestone (via `/rihal-complete-milestone`):**
+**After each milestone (via `/rcode-complete-milestone`):**
 1. Full review of all sections
 2. Core Value check
 3. Audit Out of Scope — reasons still valid?

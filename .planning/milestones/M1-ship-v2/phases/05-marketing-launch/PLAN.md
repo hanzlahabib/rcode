@@ -7,7 +7,7 @@ milestone: M1
 
 # Phase 05 — Marketing + Launch
 
-**Goal:** Publish Rihal Code v2 with tier docs. Get first 10 external installs. Establish presence in MENA developer communities.
+**Goal:** Publish rcode v2 with tier docs. Get first 10 external installs. Establish presence in MENA developer communities.
 
 ## Requirements
 

@@ -29,7 +29,7 @@ must_haves:
 Fix two root-cause bugs that prevent decimal phase IDs from resolving in the dashboard (#591) and
 extend scanner.js with a SPRINT.md fallback parser so tasks appear when state.json stories are empty.
 
-Purpose: Phase IDs like "100.1" are written to state.json by rihal-planner but the scanner constructs
+Purpose: Phase IDs like "100.1" are written to state.json by rcode-planner but the scanner constructs
 a padded directory prefix from the full decimal string, producing "100.1" instead of "100", so no
 directory match is found. Client-side, renderPhases passes a string subId from the URL hash while
 ph.id may be a number, causing strict equality to fail.
@@ -40,8 +40,8 @@ Output:
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -281,7 +281,7 @@ estimate: 15 min
 Run the dashboard server and verify the two bugs are resolved:
 
 ```bash
-node /home/hanzla/development/rihal-code/server/dashboard.js
+node /home/hanzla/development/rcode/server/dashboard.js
 ```
 
 Open http://localhost:3000 (or whichever port dashboard.js reports).
@@ -301,7 +301,7 @@ These are visual checks that cannot be fully automated — pause for human verif
 node -e "
 const { scanState } = require('./server/lib/scanner.js');
 // smoke: scanner loads and exports correctly
-const s = scanState('/home/hanzla/development/rihal-code/.rihal');
+const s = scanState('/home/hanzla/development/rcode/.rcode');
 console.log('phases:', s.phases.length);
 console.log('projectName:', s.projectName || '(none)');
 console.log('smoke OK');
@@ -311,7 +311,7 @@ Expected: prints phase count and project name, ends with `smoke OK`.
 </verify>
 
 <acceptance_criteria>
-1. Dashboard server starts without errors: `node server/dashboard.js` exits cleanly if no .rihal/ — or serves on port when .rihal/ exists
+1. Dashboard server starts without errors: `node server/dashboard.js` exits cleanly if no .rcode/ — or serves on port when .rcode/ exists
 2. Human confirms: decimal phase ID click opens phase detail (not "Phase not found.")
 3. Human confirms: integer phase IDs still open correctly
 4. Human confirms: Tasks view shows entries for phases that have SPRINT.md but empty stories in state.json (or confirms tasks present from state.json)

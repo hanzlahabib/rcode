@@ -24,7 +24,7 @@ must_haves:
     - A previously submitted rejection reason for a session is readable later and shown on the session card.
   artifacts:
     - server/lib/html/client/components/RejectDialog.js exists as a new Preact dialog component.
-    - server/orchestrator.js exposes POST /api/reject and GET /api/rejections, persisting to ~/.rihal/rejections.json.
+    - server/orchestrator.js exposes POST /api/reject and GET /api/rejections, persisting to ~/.rcode/rejections.json.
   key_links:
     - RejectDialog submit calls a new submitRejection() in client orchestrator.js which POSTs to ORCH_HTTP + /api/reject with the orchestrator Bearer token.
     - orchestrator.js /api/reject reuses the existing authed() token gate — no new auth surface, no write endpoint on dashboard.js.
@@ -38,8 +38,8 @@ Output: a `RejectDialog` component, a `submitRejection`/`fetchRejections` client
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -80,12 +80,12 @@ server/orchestrator.js
 </interfaces>
 <action>
 1. At the top of orchestrator.js add `const fs = require('fs');` and `const os = require('os');` alongside the existing requires (lines 27-29).
-2. Define `const REJECTIONS_PATH = path.join(os.homedir(), '.rihal', 'rejections.json');` near the other path constants (~line 44).
+2. Define `const REJECTIONS_PATH = path.join(os.homedir(), '.rcode', 'rejections.json');` near the other path constants (~line 44).
 3. Add `readRejections()`:
    - Read `REJECTIONS_PATH`; `JSON.parse`; if the file is missing or malformed, return `[]`.
    - Return the parsed array.
 4. Add `appendRejection(entry)`:
-   - `readRejections()`, push `entry`, ensure the `~/.rihal` directory exists with `fs.mkdirSync(dir, { recursive: true })`, then `fs.writeFileSync(REJECTIONS_PATH, JSON.stringify(list, null, 2))`.
+   - `readRejections()`, push `entry`, ensure the `~/.rcode` directory exists with `fs.mkdirSync(dir, { recursive: true })`, then `fs.writeFileSync(REJECTIONS_PATH, JSON.stringify(list, null, 2))`.
    - Wrap the write in try/catch; on failure return `false`, else `true`.
 5. Add `async function handleReject(req, res)`:
    - `parseBody`; read `storyId`, `reason`, optional `phase`.
@@ -114,7 +114,7 @@ Both sit behind the existing `authed(req)` gate (line 346) — no new auth surfa
 node --check server/orchestrator.js && grep -q "'/api/reject'" server/orchestrator.js && grep -q "'/api/rejections'" server/orchestrator.js && grep -q "REJECTIONS_PATH" server/orchestrator.js && grep -q "reason required" server/orchestrator.js && test -z "$(git diff --name-only -- server/dashboard.js)"
 </automated>
 </verify>
-<done>The orchestrator accepts an authenticated POST /api/reject that rejects empty reasons and persists each rejection to ~/.rihal/rejections.json, readable via GET /api/rejections.</done>
+<done>The orchestrator accepts an authenticated POST /api/reject that rejects empty reasons and persists each rejection to ~/.rcode/rejections.json, readable via GET /api/rejections.</done>
 </task>
 
 <task id="37.2.2" type="auto">
@@ -283,13 +283,13 @@ node --check server/lib/html/css.js && grep -q "reject-overlay" server/lib/html/
 <verification>
 - `node --check server/orchestrator.js` and `node --input-type=module --check` on all three client modules exit 0.
 - `node server/dashboard.js` starts clean on :7717; `git diff --name-only -- server/dashboard.js` is empty (view-only boundary intact).
-- A manual orchestrator round-trip: `POST /api/reject` with an empty reason returns 400 `reason required`; with a real reason returns 200 and the entry appears in `GET /api/rejections` and in `~/.rihal/rejections.json`.
+- A manual orchestrator round-trip: `POST /api/reject` with an empty reason returns 400 `reason required`; with a real reason returns 200 and the entry appears in `GET /api/rejections` and in `~/.rcode/rejections.json`.
 - The Orchestration view shows a Reject button on waiting sessions and the recorded reason on a session that has one.
 </verification>
 
 <success_criteria>
 - GATE-1 satisfied: the user rejects a checkpoint through a structured Preact dialog that requires a reason before the Submit button is enabled — no browser `alert()`/`confirm()`.
-- GATE-2 satisfied: submitted reasons are persisted to `~/.rihal/rejections.json` by the orchestrator and surfaced back on the session card for later review.
+- GATE-2 satisfied: submitted reasons are persisted to `~/.rcode/rejections.json` by the orchestrator and surfaced back on the session card for later review.
 - No new write endpoint on `dashboard.js`; the orchestrator reuses its existing `authed()` Bearer-token gate.
 - No new dependency, no build step.
 </success_criteria>

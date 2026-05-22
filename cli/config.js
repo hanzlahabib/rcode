@@ -1,12 +1,12 @@
 /**
- * rihal-code config — get, set, or list project configuration.
+ * rcode config — get, set, or list project configuration.
  *
  * Usage:
- *   rihal-code config                        # show all effective values
- *   rihal-code config <key>                  # get one value
- *   rihal-code config <key> <value>          # set in .rihal/config.json
- *   rihal-code config --global <key> <value> # set in ~/.rihal-code/defaults.json
- *   rihal-code config --list                 # show all with source annotations
+ *   rcode config                        # show all effective values
+ *   rcode config <key>                  # get one value
+ *   rcode config <key> <value>          # set in .rcode/config.json
+ *   rcode config --global <key> <value> # set in ~/.rcode/defaults.json
+ *   rcode config --list                 # show all with source annotations
  *
  * All reads/writes go through cli/lib/config.cjs so validation, atomic
  * writes, and typo suggestions stay centralized.
@@ -60,7 +60,7 @@ function printListing(cwd) {
   );
 
   console.log(
-    `\n🕌 Rihal Code — configuration\n`
+    `\n🕌 rcode — configuration\n`
   );
   console.log(`   Project: ${projectLevelPath(cwd)}`);
   console.log(`   User:    ${userLevelPath()}\n`);
@@ -87,9 +87,9 @@ module.exports = function config(args) {
 
   // No args OR --list → print everything
   if (opts.positional.length === 0 || opts.list) {
-    const rihalDir = path.join(cwd, '.rihal');
+    const rihalDir = path.join(cwd, '.rcode');
     if (!fs.existsSync(rihalDir) && !opts.global) {
-      console.error(`❌ No .rihal/ directory found in ${cwd}`);
+      console.error(`❌ No .rcode/ directory found in ${cwd}`);
       console.error(`   Run 'rcode install' first, or use --global to manage user defaults.`);
       process.exit(1);
     }
@@ -115,9 +115,9 @@ module.exports = function config(args) {
     const [key, value] = opts.positional;
     const scope = opts.global ? 'global' : 'project';
 
-    // For global writes, we don't need .rihal/ to exist
-    if (scope === 'project' && !fs.existsSync(path.join(cwd, '.rihal'))) {
-      console.error(`❌ No .rihal/ directory found in ${cwd}`);
+    // For global writes, we don't need .rcode/ to exist
+    if (scope === 'project' && !fs.existsSync(path.join(cwd, '.rcode'))) {
+      console.error(`❌ No .rcode/ directory found in ${cwd}`);
       console.error(`   Run 'rcode install' first, or use --global.`);
       process.exit(1);
     }

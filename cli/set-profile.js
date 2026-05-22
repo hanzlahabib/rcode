@@ -1,5 +1,5 @@
 /**
- * rihal-code set-profile — change the model profile for the current project
+ * rcode set-profile — change the model profile for the current project
  *
  * Usage:
  *   npx @hanzlaa/rcode set-profile balanced
@@ -8,7 +8,7 @@
  *   npx @hanzlaa/rcode set-profile inherit
  *   npx @hanzlaa/rcode set-profile                  # show current
  *
- * This is a thin wrapper over `rihal-code config model_profile <name>`.
+ * This is a thin wrapper over `rcode config model_profile <name>`.
  * All config read/write goes through cli/lib/config.cjs, which handles
  * atomic writes, allowlist validation, and typo suggestions.
  */
@@ -26,10 +26,10 @@ const { setConfigValue, getConfigValue } = require('./lib/config.cjs');
 
 module.exports = function setProfile(args) {
   const cwd = process.cwd();
-  const rihalDir = path.join(cwd, '.rihal');
+  const rihalDir = path.join(cwd, '.rcode');
 
   if (!fs.existsSync(rihalDir)) {
-    console.error(`❌ No .rihal/ directory found in ${cwd}`);
+    console.error(`❌ No .rcode/ directory found in ${cwd}`);
     console.error(`   Run 'rcode install' first.`);
     process.exit(1);
   }

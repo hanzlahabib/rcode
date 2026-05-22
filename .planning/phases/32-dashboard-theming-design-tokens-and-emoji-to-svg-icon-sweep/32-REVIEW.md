@@ -13,7 +13,7 @@ resolved: 2026-05-16
 # Phase 32 Code Review
 
 **Phase:** 32 — Dashboard theming — design tokens and emoji-to-SVG icon sweep
-**Reviewer:** rihal-code-reviewer
+**Reviewer:** rcode-reviewer
 **Branch:** 31-preact-migration
 **Commit range:** a7a7ca1..HEAD (sprints 32.1–32.3)
 

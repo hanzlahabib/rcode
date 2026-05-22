@@ -31,8 +31,8 @@ Output: a `depends_on` array on every `phaseTree` phase (scanner.js), a `PhaseGr
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -44,7 +44,7 @@ Output: a `depends_on` array on every `phaseTree` phase (scanner.js), a `PhaseGr
 <grounding_notes>
 Verified before planning:
 - `grep -rn "depends_on" server/` → ZERO hits. scanner.js does NOT parse depends_on today; it must be added.
-- Phase records in `.rihal/state.json` have keys `id, number, name, slug, goal, status, created, started, completed, plan_count, sprints` — NO `depends_on` key. Phase-level depends_on does not exist as data.
+- Phase records in `.rcode/state.json` have keys `id, number, name, slug, goal, status, created, started, completed, plan_count, sprints` — NO `depends_on` key. Phase-level depends_on does not exist as data.
 - `depends_on` exists only in SPRINT.md frontmatter as a YAML array, e.g. `depends_on: []` (verified in 30-1-SPRINT.md, 31.1, 32.1). Phase-level dependency must be DERIVED by aggregating sprint depends_on and mapping sprint IDs (`NN.S`) back to phase IDs (`NN`).
 - `scanner.js` `buildPhaseTree` (lines 46-119) already reads every `*-SPRINT.md` file and runs `parseSimpleYaml` on its frontmatter (line 73). `parseSimpleYaml` (lines 24-32) only handles scalar `key: value` lines — it drops `depends_on: [a, b]` because the value is an array. An array-aware extraction is needed.
 - RoadmapView.js reads `S.phases` from the store (line 156); `App.js` `fetchAndRerender` sets `phases` from `newState.phaseTree` (App.js:139). So adding `depends_on` to phaseTree entries flows to the view with no client wiring change.
@@ -85,11 +85,11 @@ Keep the file pure Node stdlib — no new requires.
 - `grep -q "function parseYamlList" server/lib/scanner.js` exits 0.
 - `grep -q "dependsOn" server/lib/scanner.js` exits 0.
 - `node --check server/lib/scanner.js` exits 0.
-- Running `node -e "const{scanState}=require('./server/lib/scanner.js');const s=scanState(require('path').resolve('.rihal'));const pt=s.phaseTree||[];console.log(pt.every(p=>Array.isArray(p.dependsOn)))"` prints `true`.
+- Running `node -e "const{scanState}=require('./server/lib/scanner.js');const s=scanState(require('path').resolve('.rcode'));const pt=s.phaseTree||[];console.log(pt.every(p=>Array.isArray(p.dependsOn)))"` prints `true`.
 </acceptance_criteria>
 <verify>
 <automated>
-node --check server/lib/scanner.js && grep -q "function parseYamlList" server/lib/scanner.js && grep -q "dependsOn" server/lib/scanner.js && node -e "const{scanState}=require('./server/lib/scanner.js');const s=scanState(require('path').resolve('.rihal'));const pt=s.phaseTree||[];if(!pt.every(p=>Array.isArray(p.dependsOn)))process.exit(1)"
+node --check server/lib/scanner.js && grep -q "function parseYamlList" server/lib/scanner.js && grep -q "dependsOn" server/lib/scanner.js && node -e "const{scanState}=require('./server/lib/scanner.js');const s=scanState(require('path').resolve('.rcode'));const pt=s.phaseTree||[];if(!pt.every(p=>Array.isArray(p.dependsOn)))process.exit(1)"
 </automated>
 </verify>
 <done>Every phase in the dashboard's phaseTree carries a derived `dependsOn` array of phase IDs aggregated from its sprints' SPRINT.md frontmatter.</done>

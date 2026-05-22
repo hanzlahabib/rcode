@@ -3,7 +3,7 @@
  * typo suggestions.
  *
  * HOME is stubbed to a tempdir so tests don't read/write the contributor's
- * real ~/.rihal-code/defaults.json.
+ * real ~/.rcode/defaults.json.
  */
 
 const { test } = require('node:test');
@@ -23,7 +23,7 @@ const {
   writeUserDefaults,
   suggestClosest,
 } = require('../../cli/lib/config.cjs');
-const { makeTempDir, cleanup, initRihalDir } = require('../helpers.cjs');
+const { makeTempDir, cleanup, initRcodeDir } = require('../helpers.cjs');
 
 /**
  * Run a test function with process.env.HOME pointed at a temp home so
@@ -33,7 +33,7 @@ const { makeTempDir, cleanup, initRihalDir } = require('../helpers.cjs');
 function withStubbedHome(fn) {
   return (t) => {
     const originalHome = process.env.HOME;
-    const stubHome = makeTempDir('rihal-home-');
+    const stubHome = makeTempDir('rcode-home-');
     process.env.HOME = stubHome;
     t.after(() => {
       process.env.HOME = originalHome;
@@ -66,9 +66,9 @@ test(
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
 
-    fs.mkdirSync(path.join(home, '.rihal-code'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.rcode'), { recursive: true });
     fs.writeFileSync(
-      path.join(home, '.rihal-code', 'defaults.json'),
+      path.join(home, '.rcode', 'defaults.json'),
       JSON.stringify({ user_name: 'Hanzla', communication_language: 'Urdu' }),
     );
 
@@ -85,15 +85,15 @@ test(
   withStubbedHome((t, home) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
-    fs.mkdirSync(path.join(home, '.rihal-code'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.rcode'), { recursive: true });
     fs.writeFileSync(
-      path.join(home, '.rihal-code', 'defaults.json'),
+      path.join(home, '.rcode', 'defaults.json'),
       JSON.stringify({ user_name: 'User', model_profile: 'quality' }),
     );
     fs.writeFileSync(
-      path.join(cwd, '.rihal', 'config.json'),
+      path.join(cwd, '.rcode', 'config.json'),
       JSON.stringify({ user_name: 'Project' }),
     );
 
@@ -129,7 +129,7 @@ test(
   withStubbedHome((t) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     const result = setConfigValue(cwd, 'profile', 'balanced');
     assert.strictEqual(result.ok, false);
@@ -143,7 +143,7 @@ test(
   withStubbedHome((t) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     const result = setConfigValue(cwd, 'model_profile', 'qality');
     assert.strictEqual(result.ok, false);
@@ -157,7 +157,7 @@ test(
   withStubbedHome((t) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     const result = setConfigValue(cwd, 'communication_mode', 'guidded');
     assert.strictEqual(result.ok, false);
@@ -170,14 +170,14 @@ test(
   withStubbedHome((t) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     const result = setConfigValue(cwd, 'user_name', 'Hanzla');
     assert.strictEqual(result.ok, true);
     assert.strictEqual(result.scope, 'project');
 
     const stored = JSON.parse(
-      fs.readFileSync(path.join(cwd, '.rihal', 'config.json'), 'utf8'),
+      fs.readFileSync(path.join(cwd, '.rcode', 'config.json'), 'utf8'),
     );
     assert.strictEqual(stored.user_name, 'Hanzla');
   }),
@@ -188,14 +188,14 @@ test(
   withStubbedHome((t, home) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     const result = setConfigValue(cwd, 'user_name', 'Hanzla', { scope: 'global' });
     assert.strictEqual(result.ok, true);
     assert.strictEqual(result.scope, 'global');
 
     const stored = JSON.parse(
-      fs.readFileSync(path.join(home, '.rihal-code', 'defaults.json'), 'utf8'),
+      fs.readFileSync(path.join(home, '.rcode', 'defaults.json'), 'utf8'),
     );
     assert.strictEqual(stored.user_name, 'Hanzla');
   }),
@@ -206,11 +206,11 @@ test(
   withStubbedHome((t, home) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
-    fs.mkdirSync(path.join(home, '.rihal-code'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.rcode'), { recursive: true });
     fs.writeFileSync(
-      path.join(home, '.rihal-code', 'defaults.json'),
+      path.join(home, '.rcode', 'defaults.json'),
       JSON.stringify({ user_name: 'FromUser' }),
     );
 
@@ -221,7 +221,7 @@ test(
     assert.strictEqual(created, true);
 
     const stored = JSON.parse(
-      fs.readFileSync(path.join(cwd, '.rihal', 'config.json'), 'utf8'),
+      fs.readFileSync(path.join(cwd, '.rcode', 'config.json'), 'utf8'),
     );
     assert.strictEqual(stored.user_name, 'FromWizard');
     assert.strictEqual(stored.installed_version, '1.0.0');
@@ -233,10 +233,10 @@ test(
   withStubbedHome((t) => {
     const cwd = makeTempDir();
     t.after(() => cleanup(cwd));
-    initRihalDir(cwd);
+    initRcodeDir(cwd);
 
     fs.writeFileSync(
-      path.join(cwd, '.rihal', 'config.json'),
+      path.join(cwd, '.rcode', 'config.json'),
       JSON.stringify({ user_name: 'Existing' }),
     );
 
@@ -244,7 +244,7 @@ test(
     assert.strictEqual(created, false);
 
     const stored = JSON.parse(
-      fs.readFileSync(path.join(cwd, '.rihal', 'config.json'), 'utf8'),
+      fs.readFileSync(path.join(cwd, '.rcode', 'config.json'), 'utf8'),
     );
     assert.strictEqual(stored.user_name, 'Existing');
   }),

@@ -42,8 +42,8 @@ in the entire client/ tree; final in-browser regression sweep passes all views.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -110,7 +110,7 @@ to light), show the sun icon. This matches common UX conventions.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/icons.js && node --check server/lib/html/client/icons-client.js && node --check server/lib/html/client/components/Topbar.js && node -e "const {ICONS}=require('./server/lib/html/icons.js');['moon','sun'].forEach(n=>{if(!ICONS[n])throw new Error('missing:'+n);}); console.log('icons OK total='+Object.keys(ICONS).length);" && echo PASS
+cd /home/hanzla/development/rcode && node --check server/lib/html/icons.js && node --check server/lib/html/client/icons-client.js && node --check server/lib/html/client/components/Topbar.js && node -e "const {ICONS}=require('./server/lib/html/icons.js');['moon','sun'].forEach(n=>{if(!ICONS[n])throw new Error('missing:'+n);}); console.log('icons OK total='+Object.keys(ICONS).length);" && echo PASS
 </automated>
 </verify>
 <done>moon/sun icons added to both icon files; Topbar brand logo and theme button use SVG icons; no emoji remain in Topbar.js.</done>
@@ -183,7 +183,7 @@ These are the ONLY changes needed in App.js. All other logic remains identical.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/App.js && python3 -c "
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/App.js && python3 -c "
 d = open('server/lib/html/client/components/App.js', encoding='utf-8').read()
 emoji_gone = chr(0x1F319) not in d and chr(0x2600) not in d and '◑' not in d
 has_settheme = 'setTheme' in d
@@ -237,7 +237,7 @@ already present from a previous task (check first).
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/components/OrchPanel.js && python3 -c "
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/components/OrchPanel.js && python3 -c "
 d = open('server/lib/html/client/components/OrchPanel.js', encoding='utf-8').read()
 eye_gone   = chr(0x1F441) not in d
 x_gone     = '✕' not in d
@@ -294,7 +294,7 @@ task. This task has no files to modify unless a stray emoji is found.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && grep -rl "$(printf '\xf0\x9f')" server/lib/html/client/ | grep -v ".snap" | while read f; do echo "WARNING: possible emoji in $f"; done; for f in $(find server/lib/html/client -name '*.js'); do node --check "$f" || echo "SYNTAX: $f"; done; node -e "const {ICONS}=require('./server/lib/html/icons.js'); const n=Object.keys(ICONS).length; console.log('icons total='+n); if(n<36)process.exit(1);" && echo SWEEP_PASS
+cd /home/hanzla/development/rcode && grep -rl "$(printf '\xf0\x9f')" server/lib/html/client/ | grep -v ".snap" | while read f; do echo "WARNING: possible emoji in $f"; done; for f in $(find server/lib/html/client -name '*.js'); do node --check "$f" || echo "SYNTAX: $f"; done; node -e "const {ICONS}=require('./server/lib/html/icons.js'); const n=Object.keys(ICONS).length; console.log('icons total='+n); if(n<36)process.exit(1);" && echo SWEEP_PASS
 </automated>
 </verify>
 <done>Zero emoji-as-icon in client/ tree; all JS files parse cleanly; icon count >= 35.</done>

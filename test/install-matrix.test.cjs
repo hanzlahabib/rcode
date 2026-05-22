@@ -4,7 +4,7 @@
  * Closes #635, #637, #638, #639, #640, #641, #642, #643, #646.
  *
  * After unification, vscode and claude IDEs both write commands to the same
- * prefixed-root form (.claude/commands/rihal-{name}.md). These tests verify:
+ * prefixed-root form (.claude/commands/rcode-{name}.md). These tests verify:
  *
  *   row 4  (claude+vscode single run)  → no duplicates, single set of files
  *   row 5  (re-run = idempotency)      → second run produces byte-identical state
@@ -48,13 +48,13 @@ test('getPathsForIde: vscode and claude return the same commandsDir (#723 unific
     'agentsDir should already have matched pre-fix, keep it pinned');
 });
 
-test('vscode still writes its workspace marker (.vscode/rihal/)', () => {
+test('vscode still writes its workspace marker (.vscode/rcode/)', () => {
   // Unification dropped the subdir but should NOT drop the marker —
   // VSCode workspace settings can pin behaviour via this dir.
   const paths = getPathsForIde('vscode', '/tmp/never-written');
   assert.ok(paths.markerDir, 'vscode paths must still include markerDir');
-  assert.ok(paths.markerDir.endsWith(path.join('.vscode', 'rihal')),
-    `markerDir should be .vscode/rihal, got: ${paths.markerDir}`);
+  assert.ok(paths.markerDir.endsWith(path.join('.vscode', 'rcode')),
+    `markerDir should be .vscode/rcode, got: ${paths.markerDir}`);
 });
 
 // ─── Row 4: claude+vscode plan has no command duplicates ─────────────────────
@@ -77,15 +77,15 @@ test('buildInstallPlan(["claude","vscode"]): no duplicate command entries (row 4
   assert.deepStrictEqual(duplicates, [],
     `claude+vscode plan must dedupe commands by rel — found duplicates: ${JSON.stringify(duplicates)}`);
 
-  // Also: NO entry should be inside the legacy .claude/commands/rihal/ subdir.
+  // Also: NO entry should be inside the legacy .claude/commands/rcode/ subdir.
   // That layout is dead post-#723.
   const legacy = commandEntries.filter(e =>
-    e.rel.split(path.sep).join('/').startsWith('.claude/commands/rihal/'));
+    e.rel.split(path.sep).join('/').startsWith('.claude/commands/rcode/'));
   assert.deepStrictEqual(legacy, [],
-    `No command should land in the legacy .claude/commands/rihal/ subdir. Found: ${legacy.length} entries`);
+    `No command should land in the legacy .claude/commands/rcode/ subdir. Found: ${legacy.length} entries`);
 });
 
-test('buildInstallPlan(["claude","vscode"]): every command uses rihal- prefix at root (row 4)', () => {
+test('buildInstallPlan(["claude","vscode"]): every command uses rcode- prefix at root (row 4)', () => {
   const plan = buildInstallPlan(['claude', 'vscode'], '/tmp/never-written');
   const commandEntries = plan.filter(e => {
     const rel = e.rel.split(path.sep).join('/');
@@ -95,7 +95,7 @@ test('buildInstallPlan(["claude","vscode"]): every command uses rihal- prefix at
   for (const e of commandEntries) {
     const basename = path.basename(e.rel);
     assert.ok(
-      basename.startsWith('rihal-'),
+      basename.startsWith('rcode-'),
       `Every command must use prefixed-root form. Got: ${e.rel}`,
     );
   }
@@ -126,7 +126,7 @@ test('migrateVscodeCommandsLayout: no legacy dir → no-op', (t) => {
 test('migrateVscodeCommandsLayout: moves bare files to prefixed-root form', (t) => {
   const target = mkTempProject();
   t.after(() => cleanup(target));
-  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
   fs.mkdirSync(legacyDir, { recursive: true });
   fs.writeFileSync(path.join(legacyDir, 'plan.md'), '# plan content');
   fs.writeFileSync(path.join(legacyDir, 'execute.md'), '# execute content');
@@ -136,28 +136,28 @@ test('migrateVscodeCommandsLayout: moves bare files to prefixed-root form', (t) 
   assert.equal(result.moved, 2, 'should move both files');
   assert.equal(result.removed_dir, true, 'should remove now-empty legacy dir');
   assert.ok(
-    fs.existsSync(path.join(target, '.claude', 'commands', 'rihal-plan.md')),
-    'plan.md should land as rihal-plan.md at root',
+    fs.existsSync(path.join(target, '.claude', 'commands', 'rcode-plan.md')),
+    'plan.md should land as rcode-plan.md at root',
   );
   assert.ok(
-    fs.existsSync(path.join(target, '.claude', 'commands', 'rihal-execute.md')),
-    'execute.md should land as rihal-execute.md at root',
+    fs.existsSync(path.join(target, '.claude', 'commands', 'rcode-execute.md')),
+    'execute.md should land as rcode-execute.md at root',
   );
   assert.equal(
-    fs.readFileSync(path.join(target, '.claude', 'commands', 'rihal-plan.md'), 'utf8'),
+    fs.readFileSync(path.join(target, '.claude', 'commands', 'rcode-plan.md'), 'utf8'),
     '# plan content',
     'file content must be preserved across the rename',
   );
   assert.ok(
     !fs.existsSync(legacyDir),
-    'legacy rihal/ subdir should be cleaned up after the migration',
+    'legacy rcode/ subdir should be cleaned up after the migration',
   );
 });
 
 test('migrateVscodeCommandsLayout: idempotent — running twice is a no-op', (t) => {
   const target = mkTempProject();
   t.after(() => cleanup(target));
-  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
   fs.mkdirSync(legacyDir, { recursive: true });
   fs.writeFileSync(path.join(legacyDir, 'plan.md'), '# plan');
 
@@ -172,21 +172,21 @@ test('migrateVscodeCommandsLayout: idempotent — running twice is a no-op', (t)
 test('migrateVscodeCommandsLayout: collision protection (target already exists)', (t) => {
   const target = mkTempProject();
   t.after(() => cleanup(target));
-  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
   fs.mkdirSync(legacyDir, { recursive: true });
-  // Both layouts present — claude wrote rihal-plan.md, vscode wrote rihal/plan.md.
+  // Both layouts present — claude wrote rcode-plan.md, vscode wrote rcode/plan.md.
   // Migration should treat the prefixed-root version as canonical and drop the
   // legacy duplicate so we don't end up with two slash commands for one source.
   fs.writeFileSync(path.join(legacyDir, 'plan.md'), '# legacy plan');
   fs.writeFileSync(
-    path.join(target, '.claude', 'commands', 'rihal-plan.md'),
+    path.join(target, '.claude', 'commands', 'rcode-plan.md'),
     '# canonical plan',
   );
 
   migrateVscodeCommandsLayout(target);
 
   assert.equal(
-    fs.readFileSync(path.join(target, '.claude', 'commands', 'rihal-plan.md'), 'utf8'),
+    fs.readFileSync(path.join(target, '.claude', 'commands', 'rcode-plan.md'), 'utf8'),
     '# canonical plan',
     'canonical file must NOT be overwritten by the legacy duplicate',
   );
@@ -199,9 +199,9 @@ test('migrateVscodeCommandsLayout: collision protection (target already exists)'
 test('migrateVscodeCommandsLayout: leaves user-managed dir alone if non-empty after move', (t) => {
   const target = mkTempProject();
   t.after(() => cleanup(target));
-  const legacyDir = path.join(target, '.claude', 'commands', 'rihal');
+  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
   fs.mkdirSync(legacyDir, { recursive: true });
-  // Only one rihal-managed file but a user has stashed something else in here.
+  // Only one rcode-managed file but a user has stashed something else in here.
   fs.writeFileSync(path.join(legacyDir, 'plan.md'), '# plan');
   fs.writeFileSync(path.join(legacyDir, 'MY-NOTES.txt'), 'user file');
 

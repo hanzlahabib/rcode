@@ -1,6 +1,6 @@
 # Numeric ID System
 
-Rihal uses a hierarchical numeric ID system to organize work across milestones, phases, plans, and tasks.
+rcode uses a hierarchical numeric ID system to organize work across milestones, phases, plans, and tasks.
 
 ---
 
@@ -32,9 +32,9 @@ Additionally:
 
 **Commands:**
 ```
-/rihal-new-milestone "M2: Scaling Phase"
-/rihal-complete-milestone M1
-/rihal-audit-milestone M2
+/rcode-new-milestone "M2: Scaling Phase"
+/rcode-complete-milestone M1
+/rcode-audit-milestone M2
 ```
 
 **Files:**
@@ -72,9 +72,9 @@ M1
 
 **Commands:**
 ```
-/rihal-plan build auth module           # Creates 02/PLAN.md
-/rihal-insert-phase 02 "fix ssl bug"    # Creates 02.1, renumbers
-/rihal-next                              # Advances to next phase
+/rcode-plan build auth module           # Creates 02/PLAN.md
+/rcode-insert-phase 02 "fix ssl bug"    # Creates 02.1, renumbers
+/rcode-next                              # Advances to next phase
 ```
 
 **Files:**
@@ -102,9 +102,9 @@ M1
 
 **Commands:**
 ```
-/rihal-plan 02.01 implement payment gateway   # Creates 02.01/PLAN.md
-/rihal-execute .planning/phases/02/02.01.PLAN.md
-/rihal-show 02.01                             # Display that plan
+/rcode-plan 02.01 implement payment gateway   # Creates 02.01/PLAN.md
+/rcode-execute .planning/phases/02/02.01.PLAN.md
+/rcode-show 02.01                             # Display that plan
 ```
 
 **Files:**
@@ -150,8 +150,8 @@ M1
 
 **Commands:**
 ```
-/rihal-show 02.01.02              # Display that task
-/rihal-why 02.01.02               # Explain why task was created
+/rcode-show 02.01.02              # Display that task
+/rcode-why 02.01.02               # Explain why task was created
 ```
 
 ---
@@ -162,16 +162,16 @@ M1
 
 ```
 # Reference a phase
-/rihal-execute 02
-/rihal-plan 02                    # Plans in phase 02
-/rihal-show 02
+/rcode-execute 02
+/rcode-plan 02                    # Plans in phase 02
+/rcode-show 02
 
 # Reference a specific plan
-/rihal-show 02.01
-/rihal-execute .planning/phases/02/02.01.PLAN.md
+/rcode-show 02.01
+/rcode-execute .planning/phases/02/02.01.PLAN.md
 
 # Reference a task (usually just in viewing/documentation)
-/rihal-show 02.01.02
+/rcode-show 02.01.02
 ```
 
 ### In markdown
@@ -268,7 +268,7 @@ After:
 
 **Command:**
 ```
-/rihal-insert-phase 02 "fix database connection pooling"
+/rcode-insert-phase 02 "fix database connection pooling"
 ```
 
 **Behavior:**
@@ -313,7 +313,7 @@ After:
 
 ## State tracking
 
-Your `.rihal/state.json` tracks:
+Your `.rcode/state.json` tracks:
 ```json
 {
   "current_phase": "02",
@@ -331,8 +331,8 @@ Your `.rihal/state.json` tracks:
 
 View with:
 ```
-/rihal-status
-node .rihal/bin/rihal-tools.cjs state read
+/rcode-status
+node .rcode/bin/rcode-tools.cjs state read
 ```
 
 ---
@@ -341,11 +341,11 @@ node .rihal/bin/rihal-tools.cjs state read
 
 | Level | When | Command |
 |-------|------|---------|
-| Milestone | Completing major cycle (1+ months) | `/rihal-new-milestone` |
-| Phase | Completing phase (1-2 weeks) | `/rihal-next` |
+| Milestone | Completing major cycle (1+ months) | `/rcode-new-milestone` |
+| Phase | Completing phase (1-2 weeks) | `/rcode-next` |
 | Plan | Breaking phase into work chunks | Automatic when planning |
 | Task | Within a plan | Automatic when executor runs |
-| Decimal | Emergency work mid-phase | `/rihal-insert-phase` |
+| Decimal | Emergency work mid-phase | `/rcode-insert-phase` |
 
 ---
 
@@ -360,9 +360,9 @@ node .rihal/bin/rihal-tools.cjs state read
    ```
 5. **Query by ID** — Reference system supports:
    ```
-   /rihal-show 02.01.02
-   /rihal-why 02.01
-   /rihal-diff 01 02
+   /rcode-show 02.01.02
+   /rcode-why 02.01
+   /rcode-diff 01 02
    ```
 
 ---

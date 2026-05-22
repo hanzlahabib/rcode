@@ -19,7 +19,7 @@
 |---|---|---|
 | #463 | Phase 9 umbrella — Dogfood Audit Pass | Closed by this phase |
 | #464 | roadmap list-phases / get-phase / init phase-op return empty for heading-style ROADMAP | Regex part fixed; init fields still open (Phase 10+) |
-| #465 | 15 subcommands referenced by workflows but missing from rihal-tools.cjs | Filed; deferred to follow-up phases for implementation |
+| #465 | 15 subcommands referenced by workflows but missing from rcode-tools.cjs | Filed; deferred to follow-up phases for implementation |
 
 ## Issues confirmed closed (audit verified)
 
@@ -47,7 +47,7 @@ Plan 9.4's CI gate caught 2 missing subcommands (`phases`, `frontmatter`) that p
 
 - **Implementing the 15 missing subcommands (#465)** — each is a feature in its own right. Phase 10+ work.
 - **`init phase-op` / `init sprint-plan` phase-aware fields (#464 part 3)** — workflows currently fall through error branches; agents work around by hardcoding paths. Larger surface, deferred.
-- **`/rihal-dogfood-scan` slash-command wrapper** (Plan 5 stretch from #463) — wait for SCAN-RESULTS.md format to stabilize.
+- **`/rcode-dogfood-scan` slash-command wrapper** (Plan 5 stretch from #463) — wait for SCAN-RESULTS.md format to stabilize.
 - **Status field in `roadmap list-phases` output** — always "planned" regardless of ROADMAP entry. Cosmetic; deferred.
 
 ## Commit chain (Phase 9)
@@ -57,7 +57,7 @@ Plan 9.4's CI gate caught 2 missing subcommands (`phases`, `frontmatter`) that p
 {prev-commit}    feat(9.1+9.2+9.3): wave 1 dogfood audit — scan + drift + state
 {prev-commit}    fix(roadmap): accept em-dash + hyphen separators in phase headings  (#464)
 {prev-commit}    plan(9): 4 sprints across 2 waves — dogfood audit pass
-{prev-commit}    fix(cli): 'phase add' writes state to .rihal/state.json (not .planning/) (#462)
+{prev-commit}    fix(cli): 'phase add' writes state to .rcode/state.json (not .planning/) (#462)
 ```
 
 (Includes earlier session commits for #455, #456, #457, #458, #460 closures + Phase 6 delivery.)
@@ -65,5 +65,5 @@ Plan 9.4's CI gate caught 2 missing subcommands (`phases`, `frontmatter`) that p
 ## Next steps
 
 - Phase 10 candidate: implement the highest-impact missing subcommands from #465 (`commit`, `check-implementation-readiness`, `generate-claude-md`).
-- Phase 8 still queued: cadence docs + PostToolUse hook + `/rihal-phase-status-drift` (closes #461).
+- Phase 8 still queued: cadence docs + PostToolUse hook + `/rcode-phase-status-drift` (closes #461).
 - Phase 7 still queued: marketing push (demo video + social posts + install metric).

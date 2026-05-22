@@ -30,7 +30,7 @@ The single document covering everything you need to use, customise, and contribu
 
 rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that installs persistent project context, distinctive engineering personas, and phase-based workflows into your repository for use with Claude Code, Cursor, Gemini, and any compatible AI IDE.
 
-**Built by Rihal. Designed for solo devs, startup teams, and SaaS builders.**
+**Built by rcode. Designed for solo devs, startup teams, and SaaS builders.**
 
 ### The problem rcode solves
 
@@ -41,17 +41,17 @@ rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that instal
 
 ### What rcode gives you
 
-- **Persistent project memory** at `.rihal/memory/` — checked into git, browsable in any IDE, visible in the Diwan dashboard
+- **Persistent project memory** at `.rcode/memory/` — checked into git, browsable in any IDE, visible in the Diwan dashboard
 - **45 distinctive engineering personas** with Arabic-named brand vocabulary (Sadiq, Waleed, Fatima, Dalil, Majlis…)
-- **85 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from Rihal's actual production incidents
-- **109 slash commands** for parallel agent debate (`/rihal-council`), sequential pipelines (`/rihal-chain`), quick consultation (`/rihal-discuss`), and end-to-end automation (`/rihal-autonomous`)
+- **85 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from rcode's actual production incidents
+- **109 slash commands** for parallel agent debate (`/rcode-council`), sequential pipelines (`/rcode-chain`), quick consultation (`/rcode-discuss`), and end-to-end automation (`/rcode-autonomous`)
 - **A view-only dashboard** (Diwan) at port 7717 that renders project state, decision logs, and Memory Bank content
 - **Zero runtime dependencies** — pure Node.js with built-in test runner
 
 ### What rcode is not
 
 - Not a methodology — use rcode alongside whatever planning approach fits your team
-- Not Rihal-only — the named primitives are brand vocabulary like Linear's "Cycles" or Notion's "Blocks"; anyone can use them
+- Not rcode-only — the named primitives are brand vocabulary like Linear's "Cycles" or Notion's "Blocks"; anyone can use them
 - Not a chatbot — rcode is opinionated about persistent memory, distinctive personas, and phase clarity
 
 ---
@@ -70,16 +70,16 @@ After install, the project gains:
 
 | Path | Contents |
 |---|---|
-| `.rihal/` | rcode infrastructure + project state |
-| `.rihal/memory/` | Memory Bank (the differentiator) |
-| `.rihal/state.json` | Current phase, decisions, sessions |
-| `.rihal/config.yaml` | Project preferences |
-| `.rihal/brain/` | Rihal institutional knowledge pulled from upstream |
+| `.rcode/` | rcode infrastructure + project state |
+| `.rcode/memory/` | Memory Bank (the differentiator) |
+| `.rcode/state.json` | Current phase, decisions, sessions |
+| `.rcode/config.yaml` | Project preferences |
+| `.rcode/brain/` | rcode institutional knowledge pulled from upstream |
 | `.claude/agents/` | 45 first-class subagents (for Claude Code) |
-| `.claude/commands/rihal/` | 109 slash commands |
+| `.claude/commands/rcode/` | 109 slash commands |
 | `.claude/skills/` | 85 phrase-activated skills |
-| `.cursor/rules/rihal/` | Cursor commands and rules |
-| `.gemini/rihal/` | Gemini CLI commands and agents |
+| `.cursor/rules/rcode/` | Cursor commands and rules |
+| `.gemini/rcode/` | Gemini CLI commands and agents |
 | `.planning/` | Where your project's artefacts land |
 
 ### Module subsets
@@ -106,7 +106,7 @@ npx @hanzlaa/rcode install --ide gemini
 npx @hanzlaa/rcode update
 ```
 
-Updates the installed methodology files in place. Local edits to `rihal/skills/_shared/best-practices/` survive every install (see `cli/postinstall.js` for the local-overrides pattern).
+Updates the installed methodology files in place. Local edits to `rcode/skills/_shared/best-practices/` survive every install (see `cli/postinstall.js` for the local-overrides pattern).
 
 ---
 
@@ -115,30 +115,30 @@ Updates the installed methodology files in place. Local edits to `rihal/skills/_
 After installing, restart your AI IDE so the new commands and skills are picked up. Then:
 
 ```
-/rihal-init
+/rcode-init
 ```
 
-This is the first command for every project. It detects state (fresh / existing-with-no-rihal / returning), asks a few config questions (model profile, language, branching strategy), and routes you to the right next action.
+This is the first command for every project. It detects state (fresh / existing-with-no-rcode / returning), asks a few config questions (model profile, language, branching strategy), and routes you to the right next action.
 
 ### The Golden Path (7 commands, end-to-end)
 
 ```
-1. /rihal-init                    # configure for this project
-2. /rihal-new-project             # idea → research → REQUIREMENTS → ROADMAP
-3. /rihal-plan 1                  # produce SPRINT.md for phase 1
-4. /rihal-execute 1               # ship phase 1 with atomic commits
-5. /rihal-next                    # auto-route to the next step
-6. /rihal-status                  # see current state
-7. /rihal-ship                    # open PR with auto-generated body
+1. /rcode-init                    # configure for this project
+2. /rcode-new-project             # idea → research → REQUIREMENTS → ROADMAP
+3. /rcode-plan 1                  # produce SPRINT.md for phase 1
+4. /rcode-execute 1               # ship phase 1 with atomic commits
+5. /rcode-next                    # auto-route to the next step
+6. /rcode-status                  # see current state
+7. /rcode-ship                    # open PR with auto-generated body
 ```
 
 ### Bootstrap your Memory Bank
 
 ```
-/rihal-memory-init
+/rcode-memory-init
 ```
 
-Asks 5 questions, populates `.rihal/memory/` with the project goal, stack, milestone, primary stakeholder, and any known production issue. Future agent sessions read this on entry.
+Asks 5 questions, populates `.rcode/memory/` with the project goal, stack, milestone, primary stakeholder, and any known production issue. Future agent sessions read this on entry.
 
 ### Open the Diwan dashboard
 
@@ -158,18 +158,18 @@ rcode is built from five layers. Every feature is assembled from the same five.
 
 | Layer | Where | What it is |
 |---|---|---|
-| **Command** | `rihal/commands/*.md` | The slash command entry point — what you type in Claude Code |
-| **Workflow** | `rihal/workflows/*.md` | Step-by-step orchestration instructions |
-| **Skill** | `rihal/skills/{actions,agents,core}/<name>/SKILL.md` | Deep, domain-specific instructions |
-| **Agent** | `rihal/agents/*.md` + `rihal/skills/agents/*/SKILL.md` | A specialised persona spawned by a workflow or skill |
-| **Memory Bank** | `.rihal/memory/` | Persistent, structured project context the agents read first |
+| **Command** | `rcode/commands/*.md` | The slash command entry point — what you type in Claude Code |
+| **Workflow** | `rcode/workflows/*.md` | Step-by-step orchestration instructions |
+| **Skill** | `rcode/skills/{actions,agents,core}/<name>/SKILL.md` | Deep, domain-specific instructions |
+| **Agent** | `rcode/agents/*.md` + `rcode/skills/agents/*/SKILL.md` | A specialised persona spawned by a workflow or skill |
+| **Memory Bank** | `.rcode/memory/` | Persistent, structured project context the agents read first |
 
 ### Phase-based work organisation
 
 Every action skill lives in one of four phase folders:
 
 ```
-rihal/skills/actions/
+rcode/skills/actions/
 ├── 1-analysis/      # research, briefs, document existing project
 ├── 2-plan/          # PRDs, epics, stories, UX, architecture
 ├── 3-solutioning/   # architecture decisions, readiness gates
@@ -182,15 +182,15 @@ This isn't a waterfall — it's a vocabulary. You can jump between phases freely
 
 | Mode | Command | Use when |
 |---|---|---|
-| **Parallel debate** | `/rihal-council` | Strategic decision needs multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
-| **Sequential pipeline** | `/rihal-chain` | Pipeline of agents where each reads the previous output (research → scope → plan → build) |
-| **Quick consultation** | `/rihal-discuss` | Single expert, fast, conversational, no mandatory artefact |
+| **Parallel debate** | `/rcode-council` | Strategic decision needs multiple perspectives — 3-5 agents debate in parallel, 2 rounds with cross-talk |
+| **Sequential pipeline** | `/rcode-chain` | Pipeline of agents where each reads the previous output (research → scope → plan → build) |
+| **Quick consultation** | `/rcode-discuss` | Single expert, fast, conversational, no mandatory artefact |
 
 ### Brand vocabulary
 
 | Term | Meaning |
 |---|---|
-| **Memory Bank** | The structured `.rihal/memory/` directory. The differentiator. |
+| **Memory Bank** | The structured `.rcode/memory/` directory. The differentiator. |
 | **Distillate** | Token-optimised, lossless compression of one or more documents for fast LLM context loading |
 | **Majlis** (مجلس) | The multi-perspective consulting council |
 | **Diwan** (ديوان) | The view-only dashboard (`server/dashboard.js`) |
@@ -207,7 +207,7 @@ The most important rcode concept. Persistent, structured, checked-in project con
 ### Directory structure
 
 ```
-.rihal/memory/
+.rcode/memory/
 ├── INDEX.md                     # human-readable directory of everything
 ├── project/
 │   ├── stack.md                 # languages, frameworks, services in use
@@ -232,10 +232,10 @@ The most important rcode concept. Persistent, structured, checked-in project con
 
 | Command | Purpose |
 |---|---|
-| `/rihal-memory-init` | Bootstrap — copy templates, ask 5 questions, populate seed files |
-| `/rihal-memory-update` | Surgical append to a Memory Bank file from conversation context |
-| `/rihal-memory-distill` | Regenerate `distillates/*.distillate.md` after sources change |
-| `/rihal-memory-audit` | Find stale entries, contradictions, missing sections |
+| `/rcode-memory-init` | Bootstrap — copy templates, ask 5 questions, populate seed files |
+| `/rcode-memory-update` | Surgical append to a Memory Bank file from conversation context |
+| `/rcode-memory-distill` | Regenerate `distillates/*.distillate.md` after sources change |
+| `/rcode-memory-audit` | Find stale entries, contradictions, missing sections |
 
 ### Token budget
 
@@ -311,7 +311,7 @@ Distinctive named characters that bring focused expertise to specific questions.
 
 Used internally by workflows — usually not invoked directly:
 
-`rihal-planner` · `rihal-executor` · `rihal-verifier` · `rihal-plan-checker` · `rihal-debugger` · `rihal-codebase-mapper` · `rihal-project-researcher` · `rihal-roadmapper` · `rihal-phase-researcher` · `rihal-advisor-researcher` · `rihal-assumptions-analyzer` · `rihal-research-synthesizer` · `rihal-integration-checker` · `rihal-nyquist-auditor` · `rihal-code-reviewer` · `rihal-code-fixer` · `rihal-edge-case-hunter` · `rihal-deviation-analyzer` · `rihal-remediation-planner` · `rihal-docs-auditor` · `rihal-doc-verifier` · `rihal-doc-writer` · `rihal-security-auditor` · `rihal-security-adversary` · `rihal-sprint-checker` · `rihal-ui-auditor`
+`rcode-planner` · `rcode-executor` · `rcode-verifier` · `rcode-plan-checker` · `rcode-debugger` · `rcode-codebase-mapper` · `rcode-project-researcher` · `rcode-roadmapper` · `rcode-phase-researcher` · `rcode-advisor-researcher` · `rcode-assumptions-analyzer` · `rcode-research-synthesizer` · `rcode-integration-checker` · `rcode-nyquist-auditor` · `rcode-reviewer` · `rcode-fixer` · `rcode-edge-case-hunter` · `rcode-deviation-analyzer` · `rcode-remediation-planner` · `rcode-docs-auditor` · `rcode-doc-verifier` · `rcode-doc-writer` · `rcode-security-auditor` · `rcode-security-adversary` · `rcode-sprint-checker` · `rcode-ui-auditor`
 
 ---
 
@@ -353,7 +353,7 @@ Grouped by purpose. See `docs/REFERENCE.md` and `docs/commands.md` for the full 
 
 ### Memory Bank (4)
 
-`/rihal-memory-init` · `/rihal-memory-update` · `/rihal-memory-distill` · `/rihal-memory-audit`
+`/rcode-memory-init` · `/rcode-memory-update` · `/rcode-memory-distill` · `/rcode-memory-audit`
 
 ### Capture (5)
 
@@ -423,21 +423,21 @@ Skills are deep, domain-specific instructions invoked by phrase or by other skil
 
 ### Phase 1 — Analysis (6 skills)
 
-`rihal-domain-research` · `rihal-market-research` · `rihal-technical-research` · `rihal-document-project` · `rihal-prfaq` · `rihal-product-brief`
+`rcode-domain-research` · `rcode-market-research` · `rcode-technical-research` · `rcode-document-project` · `rcode-prfaq` · `rcode-product-brief`
 
 ### Phase 2 — Plan (8 skills)
 
-`rihal-create-epics-and-stories` · `rihal-create-milestone` · `rihal-create-prd` · `rihal-create-story` · `rihal-create-ux-design` · `rihal-edit-prd` · `rihal-frontend-design` · `rihal-validate-prd`
+`rcode-create-epics-and-stories` · `rcode-create-milestone` · `rcode-create-prd` · `rcode-create-story` · `rcode-create-ux-design` · `rcode-edit-prd` · `rcode-frontend-design` · `rcode-validate-prd`
 
 ### Phase 3 — Solutioning (3 skills)
 
-`rihal-check-implementation-readiness` · `rihal-create-architecture` · `rihal-generate-project-context`
+`rcode-check-implementation-readiness` · `rcode-create-architecture` · `rcode-generate-project-context`
 
 ### Phase 4 — Implementation (20 skills)
 
-**Original (9):** `rihal-checkpoint-preview` · `rihal-code-review` · `rihal-correct-course` · `rihal-dev-story` · `rihal-qa-generate-e2e-tests` · `rihal-retrospective` · `rihal-scaffold-project` · `rihal-sprint-planning` · `rihal-sprint-status`
+**Original (9):** `rcode-checkpoint-preview` · `rcode-review` · `rcode-correct-course` · `rcode-dev-story` · `rcode-qa-generate-e2e-tests` · `rcode-retrospective` · `rcode-scaffold-project` · `rcode-sprint-planning` · `rcode-sprint-status`
 
-**Engineering rigour (11):** `rihal-incremental` · `rihal-prove-it` · `rihal-source-truth` · `rihal-browser-verify` · `rihal-debug` · `rihal-trim` · `rihal-harden` · `rihal-perf` · `rihal-git-flow` · `rihal-ci` · `rihal-migrate`
+**Engineering rigour (11):** `rcode-incremental` · `rcode-prove-it` · `rcode-source-truth` · `rcode-browser-verify` · `rcode-debug` · `rcode-trim` · `rcode-harden` · `rcode-perf` · `rcode-git-flow` · `rcode-ci` · `rcode-migrate`
 
 ### Persona skills (18)
 
@@ -445,15 +445,15 @@ Skills are deep, domain-specific instructions invoked by phrase or by other skil
 
 ### Core (25 skills)
 
-**Memory Bank (4):** `rihal-memory-init` · `rihal-memory-update` · `rihal-memory-distill` · `rihal-memory-audit`
+**Memory Bank (4):** `rcode-memory-init` · `rcode-memory-update` · `rcode-memory-distill` · `rcode-memory-audit`
 
-**Real-pain (8):** `rihal-auth-audit` · `rihal-client-gate` · `rihal-deploy-unify` · `rihal-incident-record` · `rihal-mvp-graduate` · `rihal-ocr-consistency` · `rihal-rebrand` · `rihal-theme-system`
+**Real-pain (8):** `rcode-auth-audit` · `rcode-client-gate` · `rcode-deploy-unify` · `rcode-incident-record` · `rcode-mvp-graduate` · `rcode-ocr-consistency` · `rcode-rebrand` · `rcode-theme-system`
 
-**Content tools (5):** `rihal-advanced-elicitation` · `rihal-brainstorming` · `rihal-distillator` · `rihal-editorial-review-prose` · `rihal-editorial-review-structure`
+**Content tools (5):** `rcode-advanced-elicitation` · `rcode-brainstorming` · `rcode-distillator` · `rcode-editorial-review-prose` · `rcode-editorial-review-structure`
 
-**Reviews (2, sub-skills of code-review):** `rihal-review-adversarial-general` · `rihal-review-edge-case-hunter`
+**Reviews (2, sub-skills of code-review):** `rcode-review-adversarial-general` · `rcode-review-edge-case-hunter`
 
-**Init / help / utilities (6):** `rihal-init` · `rihal-help` · `rihal-index-docs` · `rihal-clone-website` · `rihal-shard-doc` · `rihal-party-mode`
+**Init / help / utilities (6):** `rcode-init` · `rcode-help` · `rcode-index-docs` · `rcode-clone-website` · `rcode-shard-doc` · `rcode-party-mode`
 
 ### Skill anatomy
 
@@ -461,7 +461,7 @@ Every SKILL.md follows the 5-component standard:
 
 ```yaml
 ---
-name: rihal-<verb>-<noun>
+name: rcode-<verb>-<noun>
 description: ... Use when ... Do NOT use for ...
 triggers: [5-12 trigger phrases]
 user-invocable: true
@@ -480,30 +480,30 @@ Hard cap: 200 lines per SKILL.md. Detail belongs in a sibling `references.md`.
 
 ## 9. Workflows
 
-Workflow files at `rihal/workflows/<name>.md` contain the actual orchestration logic — bash blocks, agent dispatches, state updates.
+Workflow files at `rcode/workflows/<name>.md` contain the actual orchestration logic — bash blocks, agent dispatches, state updates.
 
 A typical workflow:
 
 1. **Parses arguments** from the slash command
-2. **Loads project state** via `node .rihal/bin/rihal-tools.cjs init <op>`
+2. **Loads project state** via `node .rcode/bin/rcode-tools.cjs init <op>`
 3. **Validates inputs** (phase exists, gates satisfied)
-4. **Spawns subagents** via `Task(subagent_type=rihal-<name>, ...)`
-5. **Updates state** via `rihal-tools.cjs state` calls
+4. **Spawns subagents** via `Task(subagent_type=rcode-<name>, ...)`
+5. **Updates state** via `rcode-tools.cjs state` calls
 6. **Reports** to the user with the standard output format
 
 Workflows are referenced from command files via `@`-include:
 
 ```markdown
-# rihal/commands/plan.md
+# rcode/commands/plan.md
 ---
-name: rihal-plan
+name: rcode-plan
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion
 ---
 
-@.rihal/workflows/plan.md
+@.rcode/workflows/plan.md
 ```
 
-The largest workflow is `.rihal/workflows/autonomous.md` at 1059 lines. Five workflows exceed 500 lines; this is by design — they orchestrate complex multi-phase processes. Trimming them carries unverified runtime risk and was deferred from the v3.0 programme.
+The largest workflow is `.rcode/workflows/autonomous.md` at 1059 lines. Five workflows exceed 500 lines; this is by design — they orchestrate complex multi-phase processes. Trimming them carries unverified runtime risk and was deferred from the v3.0 programme.
 
 ---
 
@@ -526,7 +526,7 @@ Stop with `kill $(lsof -t -i:7717)`.
 |---|---|
 | `/` | Server-rendered HTML dashboard |
 | `/health` | `{"status":"ok","mode":"view-only","rihal_dir":"..."}` |
-| `/api/state` | Project state from `.rihal/state.json` + scanner output |
+| `/api/state` | Project state from `.rcode/state.json` + scanner output |
 | `/api/files` | List of `.planning/` markdown files grouped by category |
 | `/api/file?path=<rel>` | Markdown file content (security: paths must be inside project root and end in `.md`) |
 | `/api/hierarchy` | Milestone → phases → sprints → stories tree |
@@ -538,7 +538,7 @@ Stop with `kill $(lsof -t -i:7717)`.
 server/
 ├── dashboard.js          # HTTP server + routing (~92 lines)
 └── lib/
-    ├── scanner.js        # State scanning from .rihal/ and .rihal/memory/
+    ├── scanner.js        # State scanning from .rcode/ and .rcode/memory/
     ├── api.js            # API route handlers
     └── html/
         ├── shell.js      # HTML page composition + nav
@@ -559,7 +559,7 @@ The HTML client has these views (toggle via nav):
 - **Files** — `.planning/` markdown browser
 - **Agents** — personas roster (rendered server-side from `team.yaml`)
 - **Decisions** — decision log timeline
-- **Memory Bank** (new) — `.rihal/memory/` browser with section-by-section file status
+- **Memory Bank** (new) — `.rcode/memory/` browser with section-by-section file status
 
 ### Verification
 
@@ -569,9 +569,9 @@ End-to-end test: `node --test test/dashboard-e2e.test.cjs` — 9 assertions cove
 
 ## 11. Configuration
 
-### `.rihal/config.yaml`
+### `.rcode/config.yaml`
 
-Project-level preferences. Created by `/rihal-init`.
+Project-level preferences. Created by `/rcode-init`.
 
 ```yaml
 project_name: my-app
@@ -589,18 +589,18 @@ workflow:
 
 ### Model profiles
 
-`rihal/config/model-profiles.json` defines 5 profiles. Each maps an agent to a Claude model tier:
+`rcode/config/model-profiles.json` defines 5 profiles. Each maps an agent to a Claude model tier:
 
 - **`fast`** — haiku for utility agents, sonnet for council
 - **`balanced`** (default) — opus for strategic, sonnet for engineering, haiku for utility
 - **`quality`** — opus everywhere
 - **`inherit-fast`** / **`inherit-quality`** — inherit Claude Code's current setting
 
-### State file (`.rihal/state.json`)
+### State file (`.rcode/state.json`)
 
-Project state machine. Lists phases, decisions, council sessions, blockers, current pointer, milestone tracking. Updated by `rihal-tools.cjs` on every workflow event.
+Project state machine. Lists phases, decisions, council sessions, blockers, current pointer, milestone tracking. Updated by `rcode-tools.cjs` on every workflow event.
 
-`.rihal/state.json` tracks everything:
+`.rcode/state.json` tracks everything:
 
 - `current_phase`, `current_plan`
 - `phases[]`, `executions[]`, `decisions[]`, `blockers[]`
@@ -610,14 +610,14 @@ Project state machine. Lists phases, decisions, council sessions, blockers, curr
 View formatted:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state read
+node .rcode/bin/rcode-tools.cjs state read
 # or
-/rihal-status
+/rcode-status
 ```
 
 ### Memory Bank initialisation pointer
 
-After `/rihal-memory-init`, `state.json` records:
+After `/rcode-memory-init`, `state.json` records:
 
 ```json
 {
@@ -637,26 +637,26 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 ### Starting a new project
 
 ```
-/rihal-init
-/rihal-new-project build a saas rental platform for Oman
-/rihal-plan 1
-/rihal-execute 1
-/rihal-next
+/rcode-init
+/rcode-new-project build a saas rental platform for Oman
+/rcode-plan 1
+/rcode-execute 1
+/rcode-next
 ```
 
 ### Onboarding to an existing project
 
 ```
-/rihal-init
-/rihal-memory-init       # bootstrap memory bank from current state
-/rihal-scan              # codebase audit (Dalil)
-/rihal-status            # current phase + decisions
+/rcode-init
+/rcode-memory-init       # bootstrap memory bank from current state
+/rcode-scan              # codebase audit (Dalil)
+/rcode-status            # current phase + decisions
 ```
 
 ### Cross-domain decision
 
 ```
-/rihal-council should we migrate auth from Firebase to Keycloak?
+/rcode-council should we migrate auth from Firebase to Keycloak?
 ```
 
 5 agents debate in parallel; output saved to `.planning/council-sessions/`.
@@ -664,30 +664,30 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 ### Pre-launch security pass
 
 ```
-/rihal-harden          # invoke the security checklist skill
-/rihal-secure-phase 4  # threat-model verify phase 4
-/rihal-memory-update remember: tenant isolation now enforced via RLS
+/rcode-harden          # invoke the security checklist skill
+/rcode-secure-phase 4  # threat-model verify phase 4
+/rcode-memory-update remember: tenant isolation now enforced via RLS
 ```
 
 ### Code review before merge
 
 ```
-/rihal-code-review HEAD~5..HEAD                  # standard
-/rihal-code-review HEAD~5..HEAD --karpathy       # Karpathy 4-principle audit
-/rihal-code-review HEAD~5..HEAD --attack         # adversarial / red-team mode
-/rihal-code-review HEAD~5..HEAD --edge-cases     # boundary enumeration
+/rcode-review HEAD~5..HEAD                  # standard
+/rcode-review HEAD~5..HEAD --karpathy       # Karpathy 4-principle audit
+/rcode-review HEAD~5..HEAD --attack         # adversarial / red-team mode
+/rcode-review HEAD~5..HEAD --edge-cases     # boundary enumeration
 ```
 
 ### MVP-to-production planning
 
 ```
-/rihal-mvp-graduate    # 8-check gap report + 5-phase plan
+/rcode-mvp-graduate    # 8-check gap report + 5-phase plan
 ```
 
 ### Incident post-mortem
 
 ```
-/rihal-incident-record   # generate change-record + post-mortem from context
+/rcode-incident-record   # generate change-record + post-mortem from context
 ```
 
 ---
@@ -696,35 +696,35 @@ The Diwan dashboard reads this to show "Memory Bank: live" status.
 
 ### Project-local overrides
 
-Local edits to `rihal/skills/_shared/best-practices/` survive every install. The `cli/postinstall.js` flow preserves `*.local.md` files.
+Local edits to `rcode/skills/_shared/best-practices/` survive every install. The `cli/postinstall.js` flow preserves `*.local.md` files.
 
 ### Adding a custom skill
 
-1. Create `rihal/skills/{actions|core|agents}/<name>/SKILL.md` with the 5-component frontmatter
+1. Create `rcode/skills/{actions|core|agents}/<name>/SKILL.md` with the 5-component frontmatter
 2. (Optional) Add `references.md` for detail
-3. (Optional) Add a slash command at `rihal/commands/<name>.md`
-4. (Optional) Add a workflow at `rihal/workflows/<name>.md`
+3. (Optional) Add a slash command at `rcode/commands/<name>.md`
+4. (Optional) Add a workflow at `rcode/workflows/<name>.md`
 5. Run `node --test test/skills-compliance.test.cjs` to verify
 6. Run `node scripts/build-skills-catalog.cjs` to regenerate the catalogue
 
 ### Adding a custom agent
 
-1. Define the agent in `rihal/agents/rihal-<name>.md` with `name`, `description`, `tools`, `color`
-2. Add an entry in `rihal/team.yaml` with `id`, `file_path`, optional `skill_path`, `domain_keywords`, and `description`
-3. (Optional) Add a persona skill at `rihal/skills/agents/<name>/SKILL.md`
+1. Define the agent in `rcode/agents/rcode-<name>.md` with `name`, `description`, `tools`, `color`
+2. Add an entry in `rcode/team.yaml` with `id`, `file_path`, optional `skill_path`, `domain_keywords`, and `description`
+3. (Optional) Add a persona skill at `rcode/skills/agents/<name>/SKILL.md`
 4. Run `node --test test/agents-registry.test.cjs` to verify
 5. Restart the dashboard to pick up the new agent in the roster
 
 ### Adding a custom command
 
-1. Create `rihal/commands/<name>.md` with frontmatter (name, description, argument-hint, allowed-tools)
-2. Body contains `@.rihal/workflows/<name>.md` to delegate
+1. Create `rcode/commands/<name>.md` with frontmatter (name, description, argument-hint, allowed-tools)
+2. Body contains `@.rcode/workflows/<name>.md` to delegate
 3. Create the matching workflow file
-4. Re-install: `npx @hanzlaa/rcode install` to copy into `.claude/commands/rihal/`
+4. Re-install: `npx @hanzlaa/rcode install` to copy into `.claude/commands/rcode/`
 
 ### Global agent customisation
 
-Define reusable agents at `~/.rihal/agents/rihal-<name>.md`. They appear in every project alongside project-local agents, without forking the repo.
+Define reusable agents at `~/.rcode/agents/rcode-<name>.md`. They appear in every project alongside project-local agents, without forking the repo.
 
 ---
 
@@ -750,14 +750,14 @@ If you're upgrading from v3.1.0 or older and see 30+ `differs from package versi
 cd <your-project>
 
 # 1. Diff each critical-fix file before deciding
-for f in rihal-sprint-checker rihal-verifier rihal-codebase-mapper \
-         rihal-integration-checker rihal-roadmapper \
-         rihal-advisor-researcher rihal-assumptions-analyzer \
-         rihal-phase-researcher rihal-project-researcher \
-         rihal-research-synthesizer; do
+for f in rcode-sprint-checker rcode-verifier rcode-codebase-mapper \
+         rcode-integration-checker rcode-roadmapper \
+         rcode-advisor-researcher rcode-assumptions-analyzer \
+         rcode-phase-researcher rcode-project-researcher \
+         rcode-research-synthesizer; do
   echo "=== $f ==="
   diff ".claude/agents/$f.md" \
-       "$(npm root -g)/@hanzlaa/rcode/rihal/agents/$f.md" | head -20
+       "$(npm root -g)/@hanzlaa/rcode/rcode/agents/$f.md" | head -20
 done
 ```
 
@@ -771,7 +771,7 @@ If you've made meaningful local edits, prefer Path A. If your install is mostly 
 
 ### `node --test` fails after install
 
-Likely cause: `cli/install.js` couldn't create one of the target directories. Run `/rihal-health` for a 6-point diagnostic:
+Likely cause: `cli/install.js` couldn't create one of the target directories. Run `/rcode-health` for a 6-point diagnostic:
 
 ```bash
 npx @hanzlaa/rcode doctor
@@ -790,21 +790,21 @@ node server/dashboard.js
 
 Or use a different port: `PORT=9000 node server/dashboard.js`.
 
-### `/api/memory` returns `exists: false` even though I have a `.rihal/memory/` directory
+### `/api/memory` returns `exists: false` even though I have a `.rcode/memory/` directory
 
-The scanner looks for `.rihal/memory/INDEX.md`. If you copied templates manually without an `INDEX.md`, run `/rihal-memory-init` to generate it.
+The scanner looks for `.rcode/memory/INDEX.md`. If you copied templates manually without an `INDEX.md`, run `/rcode-memory-init` to generate it.
 
 ### Skill doesn't trigger on the expected phrase
 
-Check `rihal/skills/<name>/SKILL.md` frontmatter — the `triggers:` list controls phrase activation. Add or refine your phrase. Compatible IDEs (Claude Code, Cursor, Gemini) honour these triggers; plain ChatGPT does not.
+Check `rcode/skills/<name>/SKILL.md` frontmatter — the `triggers:` list controls phrase activation. Add or refine your phrase. Compatible IDEs (Claude Code, Cursor, Gemini) honour these triggers; plain ChatGPT does not.
 
-### Old slash command (`/rihal-karpathy-audit`, etc.) doesn't work
+### Old slash command (`/rcode-karpathy-audit`, etc.) doesn't work
 
 These were folded in v3.0. See [`MIGRATIONS.md`](MIGRATIONS.md) for the new flag-based equivalent. Compatibility window: **none** — old slashes return "command not found" rather than silently rerouting (deliberate; surprise reroutes were rejected).
 
 ### Agent name conflicts between two installs
 
-Project-local agents (`.claude/agents/rihal-*.md`) override global agents (`~/.rihal/agents/rihal-*.md`). Conflicts are silent — last write wins.
+Project-local agents (`.claude/agents/rcode-*.md`) override global agents (`~/.rcode/agents/rcode-*.md`). Conflicts are silent — last write wins.
 
 ### Test failure: `agents-registry: every file_path resolves to an existing agent file`
 
@@ -827,7 +827,7 @@ node --test --test-reporter=spec   # verbose output with test names
 
 | Suite | Tests | What it verifies |
 |-------|-------|-----------------|
-| `compliance.test.cjs` | 8 | Architecture invariants — every command routes through a workflow, every agent has valid frontmatter, all module manifests resolve, `rihal-tools.cjs` subcommands match help text |
+| `compliance.test.cjs` | 8 | Architecture invariants — every command routes through a workflow, every agent has valid frontmatter, all module manifests resolve, `rcode-tools.cjs` subcommands match help text |
 | `classifier.test.cjs` | 10 | Question classifier handles Roman Urdu, Arabic (unicode), English, ambiguous, and multilingual inputs; routes to correct intent (greenfield / market / codebase) |
 | `panel-scorer.test.cjs` | 12 | Council panel scorer selects correct agents for market, greenfield, and codebase questions; `--agents` override bypasses scoring; `--full` returns all agents |
 | `lib/config.test.cjs` | 15 | Config loader merges hardcoded → user → project layers; validates enum values; `suggestClosest` catches typos |
@@ -844,9 +844,9 @@ Every install runs 5 automated smoke tests before exiting:
 
 ```
   Health check:
-    ✓ rihal-tools.cjs runs — syntax ok
-    ✓ .rihal/config.yaml present — 412 bytes
-    ✓ .rihal/state.json parses — valid JSON
+    ✓ rcode-tools.cjs runs — syntax ok
+    ✓ .rcode/config.yaml present — 412 bytes
+    ✓ .rcode/state.json parses — valid JSON
     ✓ agents installed — 45
     ✓ skills + commands installed — 85 skills + 109 commands
 ```
@@ -880,7 +880,7 @@ node --test test/lib/manifest.test.cjs   # install verification only
 ### File-system layout
 
 ```
-rihal-code/                     # the rcode source repo
+rcode/                     # the rcode source repo
 ├── BRAND.md                     # voice + naming
 ├── MEMORY_BANK.md               # Memory Bank spec
 ├── MIGRATIONS.md                # upgrade path from older versions
@@ -897,7 +897,7 @@ rihal-code/                     # the rcode source repo
 │   ├── github-sync.js
 │   ├── postinstall.js
 │   └── ...
-├── rihal/                       # the methodology (this is what gets installed)
+├── rcode/                       # the methodology (this is what gets installed)
 │   ├── agents/                  # 45 agent definition files
 │   ├── commands/                # 109 slash command files
 │   ├── workflows/               # 126 workflow files
@@ -924,35 +924,35 @@ rihal-code/                     # the rcode source repo
 
 When you run `npx @hanzlaa/rcode install` in a project, the installer:
 
-1. Walks `rihal/skills/` recursively and copies each skill folder to `.claude/skills/rihal-<name>/` (prepending `rihal-` if not already prefixed)
-2. Copies `rihal/commands/*.md` to `.claude/commands/rihal/`
-3. Copies `rihal/agents/rihal-*.md` to `.claude/agents/`
-4. Copies `rihal/workflows/*.md` to `.rihal/workflows/`
-5. Copies `rihal/references/*.md` to `.rihal/references/`
-6. Copies `rihal/templates/` to `.rihal/templates/`
-7. Pulls institutional knowledge into `.rihal/brain/` (per `sources.yaml`)
-8. Creates `.rihal/state.json` if absent
-9. Creates `.rihal/config.yaml` if absent (with sensible defaults)
-10. Creates empty `.rihal/context/active.md` and `project-brief.md` stubs
+1. Walks `rcode/skills/` recursively and copies each skill folder to `.claude/skills/rcode-<name>/` (prepending `rcode-` if not already prefixed)
+2. Copies `rcode/commands/*.md` to `.claude/commands/rcode/`
+3. Copies `rcode/agents/rcode-*.md` to `.claude/agents/`
+4. Copies `rcode/workflows/*.md` to `.rcode/workflows/`
+5. Copies `rcode/references/*.md` to `.rcode/references/`
+6. Copies `rcode/templates/` to `.rcode/templates/`
+7. Pulls institutional knowledge into `.rcode/brain/` (per `sources.yaml`)
+8. Creates `.rcode/state.json` if absent
+9. Creates `.rcode/config.yaml` if absent (with sensible defaults)
+10. Creates empty `.rcode/context/active.md` and `project-brief.md` stubs
 
 The installer is **idempotent** — re-running it is safe and updates files in place.
 
 ### Data flow
 
 ```
-User types /rihal-plan
+User types /rcode-plan
    │
    ▼
-.claude/commands/rihal/plan.md   (slash command shell)
+.claude/commands/rcode/plan.md   (slash command shell)
    │  @-includes
    ▼
-.rihal/workflows/plan.md          (orchestration logic)
+.rcode/workflows/plan.md          (orchestration logic)
    │  invokes
    ▼
-Task(subagent_type=rihal-planner, ...)
+Task(subagent_type=rcode-planner, ...)
    │  reads
    ▼
-.rihal/state.json + .rihal/memory/  (project context)
+.rcode/state.json + .rcode/memory/  (project context)
    │
    ▼
 Spawned subagent produces SPRINT.md
@@ -961,7 +961,7 @@ Spawned subagent produces SPRINT.md
 .planning/phases/<NN>/<NN>-<NN>-SPRINT.md
    │  state updated via
    ▼
-node .rihal/bin/rihal-tools.cjs state set ...
+node .rcode/bin/rcode-tools.cjs state set ...
    │
    ▼
 Diwan dashboard re-renders on next 30s poll
@@ -1004,7 +1004,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full guide. Highlights:
 - **One logical change per commit** — bundled refactors get rejected
 - **Every skill change must pass the 5-component compliance check** — frontmatter, overview, workflow, output format, examples
 - **Every agent change must update**: `team.yaml`, dashboard roster, README counts
-- **Off-limits files**: `cli/install.js`, `cli/update.js`, `cli/github-sync.js`, `cli/postinstall.js`, `cli/uninstall.js`, `package.json` `bin`/`files` fields, `.rihal-template/` packaging. `server/dashboard.js` is extended additively only.
+- **Off-limits files**: `cli/install.js`, `cli/update.js`, `cli/github-sync.js`, `cli/postinstall.js`, `cli/uninstall.js`, `package.json` `bin`/`files` fields, `.rcode-template/` packaging. `server/dashboard.js` is extended additively only.
 
 ### Contribution workflow
 
@@ -1083,4 +1083,4 @@ Open an issue at [`hanzlahabib/rihal-code`](https://github.com/hanzlahabib/rihal
 
 ---
 
-*Built by Rihal. Designed for everyone who's tired of AI agents losing context.*
+*Built by rcode. Designed for everyone who's tired of AI agents losing context.*

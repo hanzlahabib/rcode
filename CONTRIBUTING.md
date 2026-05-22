@@ -1,4 +1,4 @@
-# Contributing to Rihal Code
+# Contributing to rcode
 
 Thank you for contributing. These guidelines exist to keep the module maintainable and impressive when demoed.
 
@@ -13,16 +13,16 @@ Thank you for contributing. These guidelines exist to keep the module maintainab
 
 ## Architecture overview — what are all these files?
 
-Before you touch anything, you need a mental model of how the four building blocks fit together. Every feature in Rihal Code is assembled from the same four pieces.
+Before you touch anything, you need a mental model of how the four building blocks fit together. Every feature in rcode is assembled from the same four pieces.
 
 ### The four building blocks
 
 | Layer | Where | What it is |
 |-------|-------|-----------|
-| **Command** | `rihal/commands/*.md` | The slash command entry point — what you type in Claude Code |
-| **Workflow** | `rihal/workflows/*.md` | Step-by-step orchestration instructions for multi-step tasks |
-| **Skill** | `rihal/skills/actions/*/SKILL.md` | Deep, domain-specific instructions for complex multi-stage tasks |
-| **Agent** | `rihal/agents/*.md` + `rihal/skills/agents/*/SKILL.md` | A specialized persona spawned by a workflow or skill to do focused work |
+| **Command** | `rcode/commands/*.md` | The slash command entry point — what you type in Claude Code |
+| **Workflow** | `rcode/workflows/*.md` | Step-by-step orchestration instructions for multi-step tasks |
+| **Skill** | `rcode/skills/actions/*/SKILL.md` | Deep, domain-specific instructions for complex multi-stage tasks |
+| **Agent** | `rcode/agents/*.md` + `rcode/skills/agents/*/SKILL.md` | A specialized persona spawned by a workflow or skill to do focused work |
 
 ### Commands — the entry point
 
@@ -30,34 +30,34 @@ A command file is tiny. It registers a slash command in Claude Code's UI and poi
 
 ```markdown
 ---
-name: rihal-prfaq
+name: rcode-prfaq
 description: Working Backwards PRFAQ challenge
 allowed-tools: [Read, Write, Agent, AskUserQuestion, WebSearch]
 ---
 
-@.rihal/skills/rihal-prfaq/SKILL.md
+@.rcode/skills/rcode-prfaq/SKILL.md
 ```
 
 That `@-include` line tells Claude to load the target file's contents as context. Without a command file, a skill is unreachable via `/` — it can only be triggered by describing the task in natural language.
 
-**Rule:** Every capability intended to be user-typed as `/rihal-something` needs a matching `rihal/commands/something.md`.
+**Rule:** Every capability intended to be user-typed as `/rcode-something` needs a matching `rcode/commands/something.md`.
 
 ### Workflows — orchestration logic
 
 Workflows are prose instructions — markdown files Claude reads as a script to follow. They handle control flow: read state, ask a question, dispatch to a sub-workflow, report results. Most slash commands point to a workflow:
 
 ```
-/rihal-audit  →  commands/audit.md  →  @workflows/audit.md
+/rcode-audit  →  commands/audit.md  →  @workflows/audit.md
 ```
 
 Workflows are the right tool when the task is a sequence of steps that Claude drives (check state → ask user → run something → report). They should not contain deep domain knowledge — that belongs in skills.
 
 ### Skills — deep domain knowledge
 
-Skills go deeper than workflows. A skill like `rihal-prfaq` has its own folder with multi-stage reference files, sub-agent definitions, and templates:
+Skills go deeper than workflows. A skill like `rcode-prfaq` has its own folder with multi-stage reference files, sub-agent definitions, and templates:
 
 ```
-rihal/skills/actions/1-analysis/rihal-prfaq/
+rcode/skills/actions/1-analysis/rcode-prfaq/
 ├── SKILL.md                   ← main entry, loaded by the command
 ├── references/
 │   ├── press-release.md       ← Stage 2 instructions
@@ -74,7 +74,7 @@ rihal/skills/actions/1-analysis/rihal-prfaq/
 Skills are the right tool when the task has multiple stages, needs sub-agent parallelism, or carries domain-specific coaching logic (e.g., how to run a PRFAQ gauntlet, how to do a Karpathy code review).
 
 Skills have **two activation paths**:
-1. **Via command** — `/rihal-prfaq` loads the SKILL.md directly
+1. **Via command** — `/rcode-prfaq` loads the SKILL.md directly
 2. **Phrase-activated** — when a user describes the task, Claude picks up the skill from its `description` field in the YAML frontmatter
 
 ### Agents — focused specialists
@@ -83,14 +83,14 @@ Agents are spawned by workflows and skills to do a specific job. They have a per
 
 There are two kinds:
 
-**Sub-agents** live inside skill folders (`rihal/skills/agents/*/SKILL.md`). They're invoked by their parent skill, not by the user directly. Example: the PRFAQ skill spawns `artifact-analyzer` and `web-researcher` in parallel during Stage 1.
+**Sub-agents** live inside skill folders (`rcode/skills/agents/*/SKILL.md`). They're invoked by their parent skill, not by the user directly. Example: the PRFAQ skill spawns `artifact-analyzer` and `web-researcher` in parallel during Stage 1.
 
-**Council agents** live in `rihal/agents/*.md`. They're the named characters (Waleed, Hanzla, Fatima, Sadiq…) that `/rihal-council` assembles into a panel. These are installed to `.claude/agents/` and can be spawned from any workflow.
+**Council agents** live in `rcode/agents/*.md`. They're the named characters (Waleed, Hanzla, Fatima, Sadiq…) that `/rcode-council` assembles into a panel. These are installed to `.claude/agents/` and can be spawned from any workflow.
 
 ### How they chain for a real request
 
 ```
-User types:  /rihal-council "Should we use Redis?"
+User types:  /rcode-council "Should we use Redis?"
                    │
          commands/council.md          ← slash command entry
                    │ @-includes
@@ -98,7 +98,7 @@ User types:  /rihal-council "Should we use Redis?"
                    │ spawns (parallel)
         ┌──────────┴───────────────┐
         ▼                          ▼
-  agents/rihal-waleed.md     agents/rihal-sadiq.md
+  agents/rcode-waleed.md     agents/rcode-sadiq.md
   (architecture answer)      (strategic kill criteria)
         └──────────┬───────────────┘
                    ▼
@@ -108,11 +108,11 @@ User types:  /rihal-council "Should we use Redis?"
 A more complex chain involving a skill:
 
 ```
-User types:  /rihal-prfaq
+User types:  /rcode-prfaq
                    │
          commands/prfaq.md
                    │ @-includes
-         skills/rihal-prfaq/SKILL.md   ← Stage 1: ignition + context gathering
+         skills/rcode-prfaq/SKILL.md   ← Stage 1: ignition + context gathering
                    │ spawns (parallel)
         ┌──────────┴────────────────────┐
         ▼                               ▼
@@ -128,17 +128,17 @@ User types:  /rihal-prfaq
 
 | I want to… | Edit this |
 |-----------|-----------|
-| Add a new `/rihal-something` slash command | Create `rihal/commands/something.md` pointing to a workflow or skill |
+| Add a new `/rcode-something` slash command | Create `rcode/commands/something.md` pointing to a workflow or skill |
 | Change the steps in an existing command | Edit the workflow it points to |
-| Improve how a persona thinks (Hanzla, Waleed, etc.) | Edit `rihal/skills/agents/<name>/SKILL.md` or `rihal/agents/<name>.md` |
-| Add a new agent to `/rihal-council` | Edit `rihal/team.yaml` + add agent file |
+| Improve how a persona thinks (Hanzla, Waleed, etc.) | Edit `rcode/skills/agents/<name>/SKILL.md` or `rcode/agents/<name>.md` |
+| Add a new agent to `/rcode-council` | Edit `rcode/team.yaml` + add agent file |
 | Improve a complex multi-stage task (PRFAQ, code review, etc.) | Edit the skill's stage reference files |
-| Add a new skill triggered by natural language | Create `rihal/skills/actions/<category>/<name>/SKILL.md` — no command file needed if slash is not required |
-| Fix a broken `@-include` reference | Check that the target file exists at `.rihal/<path>` after install |
+| Add a new skill triggered by natural language | Create `rcode/skills/actions/<category>/<name>/SKILL.md` — no command file needed if slash is not required |
+| Fix a broken `@-include` reference | Check that the target file exists at `.rcode/<path>` after install |
 
 ### The install chain
 
-The source tree in `rihal/` is **not what Claude reads at runtime**. On install, `cli/install.js` copies everything into `.rihal/` and `.claude/`. When a command `@-includes` `.rihal/workflows/audit.md`, it's reading the installed copy. If you edit the source but don't reinstall, Claude still sees the old version.
+The source tree in `rcode/` is **not what Claude reads at runtime**. On install, `cli/install.js` copies everything into `.rcode/` and `.claude/`. When a command `@-includes` `.rcode/workflows/audit.md`, it's reading the installed copy. If you edit the source but don't reinstall, Claude still sees the old version.
 
 ```bash
 # After editing source files:
@@ -151,19 +151,19 @@ This is why the compliance check runs against the source tree but the reload win
 
 ## Who owns what — contribute to YOUR slice
 
-Rihal Code v2 is organized around **role ownership** (issue #160). Find your role, touch only that slice, open a focused PR. CODEOWNERS in `.github/CODEOWNERS` routes reviews automatically.
+rcode v2 is organized around **role ownership** (issue #160). Find your role, touch only that slice, open a focused PR. CODEOWNERS in `.github/CODEOWNERS` routes reviews automatically.
 
 | I am a… | Touch this | Why you'd edit |
 |---------|-----------|----------------|
-| **PM / Scrum Master** | `rihal/skills/agents/hussain-pm/`, `hussain-sm/`, `raees-orchestrator/` + `rihal/skills/actions/2-plan/` + `actions/1-analysis/` | Sharper PRD questions, better story templates, sprint-planning that matches how Rihal runs sprints |
-| **CTO / Architect** | `rihal/skills/agents/waleed-architect/`, `ahmed-hassani-director/`, `nasser-eng-manager/` + `rihal/skills/actions/3-solutioning/` | ADR structure, tech-selection criteria reflecting Rihal stack biases, arch-review gates |
-| **Designer / UX** | `rihal/skills/agents/layla-designer/`, `zahra-branding/` + `rihal/skills/actions/2-plan/rihal-create-ux-design/`, `rihal-frontend-design/` | Stronger design critiques, accessibility checks, Arabic-first RTL guidance |
-| **Backend / Frontend / ML** | `rihal/skills/agents/yousef-backend/`, `haitham-frontend/`, `zayd-ml/`, `hanzla-engineer/` + `rihal/skills/actions/4-implementation/` | Code-review checklists that catch the bugs Rihal sees in production, sprint capacity rules from lived experience |
-| **QA / Writer** | `rihal/skills/agents/fatima-qa/`, `noor-writer/` | Edge-case hunters, documentation patterns (README / API / ADR) |
-| **Strategy / Marketing** | `rihal/skills/agents/sadiq-analyst/`, `mariam-marketing/`, `majlis-council/` + `rihal/skills/actions/1-analysis/` | Kill-criteria framing, GCC-first GTM patterns, council panel heuristics |
-| **Any role, cross-cutting rule** | `rihal/skills/_shared/` | **Rarely.** A change here affects every skill referencing the fragment. Bring a clear motivating failure; expect extra scrutiny. |
-| **Infra / CLI / workflows** | `rihal/bin/`, `cli/`, `rihal/workflows/`, `rihal/commands/`, `.github/` | New CLI subcommands (follow the `rihal-tools state sync` / `brain pull` patterns), new slash commands, CI tweaks |
-| **Rihal standards / brain content** | `rihal/brain/` + `rihal/skills/_shared/` | New cross-project Rihal standards. After issue #162 (M5), upstream Rihal-docs-repo changes flow here via `brain pull`. |
+| **PM / Scrum Master** | `rcode/skills/agents/hussain-pm/`, `hussain-sm/`, `raees-orchestrator/` + `rcode/skills/actions/2-plan/` + `actions/1-analysis/` | Sharper PRD questions, better story templates, sprint-planning that matches how rcode runs sprints |
+| **CTO / Architect** | `rcode/skills/agents/waleed-architect/`, `ahmed-hassani-director/`, `nasser-eng-manager/` + `rcode/skills/actions/3-solutioning/` | ADR structure, tech-selection criteria reflecting rcode stack biases, arch-review gates |
+| **Designer / UX** | `rcode/skills/agents/layla-designer/`, `zahra-branding/` + `rcode/skills/actions/2-plan/rcode-create-ux-design/`, `rcode-frontend-design/` | Stronger design critiques, accessibility checks, Arabic-first RTL guidance |
+| **Backend / Frontend / ML** | `rcode/skills/agents/yousef-backend/`, `haitham-frontend/`, `zayd-ml/`, `hanzla-engineer/` + `rcode/skills/actions/4-implementation/` | Code-review checklists that catch the bugs rcode sees in production, sprint capacity rules from lived experience |
+| **QA / Writer** | `rcode/skills/agents/fatima-qa/`, `noor-writer/` | Edge-case hunters, documentation patterns (README / API / ADR) |
+| **Strategy / Marketing** | `rcode/skills/agents/sadiq-analyst/`, `mariam-marketing/`, `majlis-council/` + `rcode/skills/actions/1-analysis/` | Kill-criteria framing, GCC-first GTM patterns, council panel heuristics |
+| **Any role, cross-cutting rule** | `rcode/skills/_shared/` | **Rarely.** A change here affects every skill referencing the fragment. Bring a clear motivating failure; expect extra scrutiny. |
+| **Infra / CLI / workflows** | `rcode/bin/`, `cli/`, `rcode/workflows/`, `rcode/commands/`, `.github/` | New CLI subcommands (follow the `rcode-tools state sync` / `brain pull` patterns), new slash commands, CI tweaks |
+| **rcode standards / brain content** | `rcode/brain/` + `rcode/skills/_shared/` | New cross-project rcode standards. After issue #162 (M5), upstream rcode-docs-repo changes flow here via `brain pull`. |
 
 ### The four-step pattern
 
@@ -176,7 +176,7 @@ Example — a PM improving the PRD discovery step:
 
 ```bash
 git checkout -b pm/sharper-prd-discovery
-# edit rihal/skills/actions/2-plan/rihal-create-prd/steps-c/step-02-discovery.md
+# edit rcode/skills/actions/2-plan/rcode-create-prd/steps-c/step-02-discovery.md
 # run the compliance check
 git commit -am "feat(skills): sharper PRD discovery on pricing models"
 gh pr create --title "feat(skills): sharper PRD discovery on pricing models"
@@ -186,17 +186,17 @@ gh pr create --title "feat(skills): sharper PRD discovery on pricing models"
 
 ## Adding a New Agent — Registration Checklist
 
-When you add a new agent to `rihal/team.yaml`, update **all** of these locations to keep parity tests green:
+When you add a new agent to `rcode/team.yaml`, update **all** of these locations to keep parity tests green:
 
 | File | What to add |
 |------|-------------|
-| `rihal/team.yaml` | Agent entry with `id`, `name`, `role`, `domain_keywords` |
-| `rihal/agents/rihal-<id>.md` | Agent persona stub |
-| `rihal/skills/agents/<slug>/SKILL.md` | Full skill definition (5-component standard) |
-| `.claude/skills/rihal-<id>/SKILL.md` | Installed skill copy (or let install sync it) |
-| `rihal/workflows/do.md` | Routing alias row in the persona table |
-| `rihal/workflows/discuss.md` | Add to single-agent dispatch list |
-| `rihal/bin/rihal-tools.cjs` `QUALITY_AGENTS` | Add model assignment if the agent is `quality` tier |
+| `rcode/team.yaml` | Agent entry with `id`, `name`, `role`, `domain_keywords` |
+| `rcode/agents/rcode-<id>.md` | Agent persona stub |
+| `rcode/skills/agents/<slug>/SKILL.md` | Full skill definition (5-component standard) |
+| `.claude/skills/rcode-<id>/SKILL.md` | Installed skill copy (or let install sync it) |
+| `rcode/workflows/do.md` | Routing alias row in the persona table |
+| `rcode/workflows/discuss.md` | Add to single-agent dispatch list |
+| `rcode/bin/rcode-tools.cjs` `QUALITY_AGENTS` | Add model assignment if the agent is `quality` tier |
 | `README.md` team table | Add a row for the new persona |
 | `server/dashboard.js` roster | Add to dashboard display roster |
 
@@ -209,11 +209,11 @@ Run `node --test` before opening a PR.
 
 ### Agent File Size Rule
 
-**If your agent file body exceeds 100 lines, you MUST extract the playbook to `rihal/references/`.**
+**If your agent file body exceeds 100 lines, you MUST extract the playbook to `rcode/references/`.**
 
 Pattern:
-1. Create `rihal/references/<name>-playbook.md` with the extracted content
-2. Replace the extracted content in the agent file with `@.rihal/references/<name>-playbook.md`
+1. Create `rcode/references/<name>-playbook.md` with the extracted content
+2. Replace the extracted content in the agent file with `@.rcode/references/<name>-playbook.md`
 3. Target: agent stub ≤100 lines (frontmatter + @-includes + short role description)
 
 This rule exists because subagent spawning loads the full agent `.md` body into the model context.
@@ -221,8 +221,8 @@ Static playbook content (checklists, step-by-step flows, output templates) can b
 heavy agent — extracting it via `@-include` saves context budget on every spawn.
 
 Accepted exceptions (document in VERIFICATION.md when you create them):
-- `rihal-nyquist-auditor.md` (176L) — load-bearing XML execution blocks
-- `rihal-docs-auditor.md` (173L) — load-bearing JSON schema for `/rihal-feature-drift`
+- `rcode-nyquist-auditor.md` (176L) — load-bearing XML execution blocks
+- `rcode-docs-auditor.md` (173L) — load-bearing JSON schema for `/rcode-feature-drift`
 
 ---
 
@@ -271,19 +271,19 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `perf` — performance improvement
 - `revert` — reverting a previous commit
 
-### Allowed scopes (for Rihal Code)
+### Allowed scopes (for rcode)
 - `agents` — agent persona files
 - `skills` — action or agent skills
 - `workflows` — multi-step workflows
-- `commands` — `rihal/commands/*.md` slash command files
+- `commands` — `rcode/commands/*.md` slash command files
 - `templates` — memory bank or pitch templates
 - `dashboard` — Majlis/Diwan server
 - `docs` — README, METHODOLOGY, SKILLS_INDEX, USER-GUIDE, FAQ
 - `config` — team.yaml, config.yaml
 - `github` — CI/CD, issue templates, PR templates
-- `cli` — `cli/*.js` and `rihal/bin/rihal-tools.cjs`
-- `state` — `.rihal/state.json` and state-manipulation code paths
-- `refs` — files inside `rihal/references/`
+- `cli` — `cli/*.js` and `rcode/bin/rcode-tools.cjs`
+- `state` — `.rcode/state.json` and state-manipulation code paths
+- `refs` — files inside `rcode/references/`
 - `hooks` — `.claude/hooks/*` and install-time hook wiring
 - `install` — installer flow, manifest, side-effects
 - `memory` — Memory Bank distillates and templates
@@ -316,20 +316,20 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `lens-audit` — 15-lens audit system and lenses
 - `tiers` — TIERS.md and tier-related documentation
 - `build` — `scripts/build.cjs`, esbuild config, bundle artifacts
-- `council` — `/rihal-council` workflow + spawning logic
+- `council` — `/rcode-council` workflow + spawning logic
 - `doctor` — `cli/doctor.js` health checks
 - `postinstall` — `cli/postinstall.js` lifecycle hook
-- `progress` — `/rihal-progress` workflow
+- `progress` — `/rcode-progress` workflow
 - `security` — security guardrails (symlink guards, integrity checks)
 - `test` — test files under `test/` (test-only changes)
-- `tools` — `rihal/bin/rihal-tools.cjs` subcommands
+- `tools` — `rcode/bin/rcode-tools.cjs` subcommands
 - `uninstall` — `cli/uninstall.js` flow
 - `update` — `cli/update.js` flow
 - `changelog` — CHANGELOG.md edits
 - `scopes` — AGENTS.md / CONTRIBUTING.md scope-list maintenance
 - `phases` — `.planning/phases/` artifacts (SPRINT.md, SUMMARY.md, VERIFICATION.md)
-- `references` — files inside `rihal/references/` (extracting agent playbooks to references)
-- `kanban` — `/rihal-kanban` orchestration board workflow and surfaces
+- `references` — files inside `rcode/references/` (extracting agent playbooks to references)
+- `kanban` — `/rcode-kanban` orchestration board workflow and surfaces
 - `orchestrator` — orchestrator panel, SSE streaming, session persistence
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
@@ -344,7 +344,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 
 ```
 feat(agents): add Mariam marketing lead agent
-fix(skills): correct rihal-dev-story trigger phrases
+fix(skills): correct rcode-dev-story trigger phrases
 docs(readme): update team roster with 17 agents
 refactor(dashboard): rename Majlis to Diwan for view-only role
 chore(github): import Siraaj commit and PR rules
@@ -359,20 +359,20 @@ chore(github): import Siraaj commit and PR rules
 1. **Rebase on `main`** to avoid merge commits
 2. **Run the compliance check** for any modified skills:
    ```bash
-   for f in rihal/skills/agents/*/SKILL.md rihal/skills/actions/*/SKILL.md; do
+   for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/SKILL.md; do
      grep -q "^## Output Format" "$f" || echo "MISSING Output Format: $f"
      grep -q "^## Examples" "$f" || echo "MISSING Examples: $f"
    done
    ```
 3. **Test the dashboard** still runs:
    ```bash
-   RIHAL_DIR=$(pwd)/examples/.rihal node server/dashboard.js
+   RCODE_DIR=$(pwd)/examples/.rcode node server/dashboard.js
    # Check http://localhost:7717
    ```
 4. **Grep for regressions:**
    ```bash
-   grep -rn -i "TODO" rihal docs examples README.md server   # should be empty
-   grep -rn "ahmed" rihal docs README.md server | grep -v "ahmed-hassani\|Ahmed Al Hassani"   # should be empty
+   grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
+   grep -rn "ahmed" rcode docs README.md server | grep -v "ahmed-hassani\|Ahmed Al Hassani"   # should be empty
    ```
 
 ### PR title
@@ -473,7 +473,7 @@ Every test **must**:
 - Finish in under 100ms ideally (libraries are pure; I/O should be tempfile-only)
 
 Every test **must not**:
-- Depend on the contributor's real `~/.rihal-code/defaults.json` — use `withStubbedHome` from `test/lib/config.test.cjs` as the pattern
+- Depend on the contributor's real `~/.rcode/defaults.json` — use `withStubbedHome` from `test/lib/config.test.cjs` as the pattern
 - Call `process.exit()` from test code (tests run in the same process; this would kill the runner)
 - Write to `console.log` for assertions — use `node:assert` functions instead
 - Add a new npm dependency (runtime or dev) — see the "Zero-dep invariant" CI job below
@@ -504,7 +504,7 @@ only surface at install time.
 ### For new workflows
 1. Read the workflow instructions end-to-end as if executing it
 2. Check for dead references (files that don't exist, skills that aren't registered)
-3. Verify it saves outputs to the correct `.rihal/` subdirectory
+3. Verify it saves outputs to the correct `.rcode/` subdirectory
 
 ---
 
@@ -531,8 +531,8 @@ When filing an issue, use the appropriate template in `.github/ISSUE_TEMPLATE/`:
 
 ## Questions?
 
-Open an issue with the `question` label, or discuss in the Rihal team Slack if you're internal.
+Open an issue with the `question` label, or discuss in the rcode team Slack if you're internal.
 
-Thank you for making Rihal Code better. Every improvement compounds across every project that uses it.
+Thank you for making rcode better. Every improvement compounds across every project that uses it.
 
 — Hanzla Habib

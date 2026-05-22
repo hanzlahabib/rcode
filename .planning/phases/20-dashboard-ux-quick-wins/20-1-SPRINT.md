@@ -15,7 +15,7 @@ must_haves:
     - Sidebar fits in viewport height without scrolling past nav links on a 100-phase project
     - Browser DevTools Network tab shows exactly one /api/files request per page load
     - Sprint cards show a command hint when stories array is empty
-    - Tasks view empty state names the current phase and gives the exact /rihal-plan command to run
+    - Tasks view empty state names the current phase and gives the exact /rcode-plan command to run
     - Clicking a file in the Files view still loads and renders the file correctly after sidebar tree removal
   artifacts:
     - server/lib/html/client.js (modified — sidebar IIFE deleted, shared _filesPromise, empty-state messages updated)
@@ -33,8 +33,8 @@ Output: Modified client.js and shell.js. No new files.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -50,8 +50,8 @@ Output: Modified client.js and shell.js. No new files.
 **Estimated time:** 30–45 min
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/lib/html/shell.js (full file — 241 lines)
-- /home/hanzla/development/rihal-code/server/lib/html/client.js (lines 816–930 — both IIFEs)
+- /home/hanzla/development/rcode/server/lib/html/shell.js (full file — 241 lines)
+- /home/hanzla/development/rcode/server/lib/html/client.js (lines 816–930 — both IIFEs)
 </read_first>
 
 <action>
@@ -111,23 +111,23 @@ After these changes:
 <verify>
 <automated>
 # Confirm sidebar div is gone from shell.js
-grep -c 'sidebar-file-tree' /home/hanzla/development/rihal-code/server/lib/html/shell.js
+grep -c 'sidebar-file-tree' /home/hanzla/development/rcode/server/lib/html/shell.js
 # Expected output: 0
 
 # Confirm sidebar IIFE is gone from client.js (the comment anchor is the safest check)
-grep -c 'File tree (sidebar)' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'File tree (sidebar)' /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: 0
 
 # Confirm exactly one fetch('/api/files') call remains in client.js
-grep -c "fetch('/api/files')" /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c "fetch('/api/files')" /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: 1
 
 # Confirm shared promise is present
-grep -c '_filesPromise' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c '_filesPromise' /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: 2  (declaration + usage inside inline IIFE)
 
 # Confirm server still starts cleanly
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 SERVER_PID=$!
 sleep 2
 curl -s -o /dev/null -w "%{http_code}" http://localhost:7717/ && kill $SERVER_PID
@@ -156,7 +156,7 @@ The sidebar no longer renders a file tree. DevTools Network tab shows one /api/f
 **Estimated time:** 20–30 min
 
 <read_first>
-- /home/hanzla/development/rihal-code/server/lib/html/client.js (lines 179–196 for sprintCard, lines 548–595 for renderTasks/renderTasksGrouped)
+- /home/hanzla/development/rcode/server/lib/html/client.js (lines 179–196 for sprintCard, lines 548–595 for renderTasks/renderTasksGrouped)
 </read_first>
 
 <action>
@@ -189,7 +189,7 @@ function sprintCard(s) {
     (s.velocity_target != null ? tag('Target: ' + s.velocity_target + 'pts') : '') +
     (s.velocity_actual != null ? tag('Actual: ' + s.velocity_actual + 'pts') : '') + '</div>' +
     '<div style="margin-top:6px;">' + progressBar(done, stories.length) + '</div>' +
-    (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rihal-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
+    (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rcode-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
     (s.started_at ? '<div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">' +
       humanDate(s.started_at) + (s.completed_at ? ' → ' + humanDate(s.completed_at) : ' → ongoing') + '</div>' : '') +
     '</div>';
@@ -198,14 +198,14 @@ function sprintCard(s) {
 
 Key change: the new line inserted after the progress bar div:
 ```javascript
-    (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rihal-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
+    (stories.length === 0 ? '<div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">No tasks — run <code>/rcode-plan ' + esc(phaseId) + '</code> to populate</div>' : '') +
 ```
 
 **Fix 2 — renderTasksGrouped(): improve empty-state message (bug #595)**
 
 Current renderTasksGrouped() (line 581):
 ```javascript
-  if (!tasks.length) return '<div class="empty">No tasks yet.<div class="empty-action">Run /rihal-create-story to add tasks</div></div>';
+  if (!tasks.length) return '<div class="empty">No tasks yet.<div class="empty-action">Run /rcode-create-story to add tasks</div></div>';
 ```
 
 Replace with a message that references the current phase from `S.currentPhase`:
@@ -213,7 +213,7 @@ Replace with a message that references the current phase from `S.currentPhase`:
   if (!tasks.length) {
     var phaseHint = S.currentPhase ? ' ' + S.currentPhase : '';
     return '<div class="empty">No tasks yet.' +
-      '<div class="empty-action">Run <code>/rihal-plan' + phaseHint + '</code> to generate tasks for this project.</div></div>';
+      '<div class="empty-action">Run <code>/rcode-plan' + phaseHint + '</code> to generate tasks for this project.</div></div>';
   }
 ```
 
@@ -223,19 +223,19 @@ Do NOT touch any other lines in renderTasks() or renderTasksGrouped().
 <verify>
 <automated>
 # Confirm sprint empty-state message is present in client.js
-grep -c 'No tasks — run' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'No tasks — run' /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: 1
 
-# Confirm tasks empty-state references /rihal-plan
-grep -c 'rihal-plan' /home/hanzla/development/rihal-code/server/lib/html/client.js
+# Confirm tasks empty-state references /rcode-plan
+grep -c 'rcode-plan' /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: >= 2 (sprintCard + renderTasksGrouped + phaseHints already has one)
 
 # Confirm renderTasksGrouped now uses currentPhase variable
-grep -c 'S.currentPhase' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'S.currentPhase' /home/hanzla/development/rcode/server/lib/html/client.js
 # Expected output: >= 1
 
 # Confirm server still starts cleanly
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 SERVER_PID=$!
 sleep 2
 curl -s -o /dev/null -w "%{http_code}" http://localhost:7717/ && kill $SERVER_PID
@@ -246,13 +246,13 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:7717/ && kill $SERVER_PI
 <acceptance_criteria>
 - `grep -c 'No tasks — run' server/lib/html/client.js` returns 1
 - `grep -n 'S.currentPhase' server/lib/html/client.js` shows at least one match inside renderTasksGrouped
-- `grep -c 'rihal-plan' server/lib/html/client.js` returns >= 2
+- `grep -c 'rcode-plan' server/lib/html/client.js` returns >= 2
 - `node server/dashboard.js` starts without error
 - sprintCard() function still has the `stories` const on line 2 (structural sanity — function not accidentally deleted)
 </acceptance_criteria>
 
 <done>
-Sprint cards show "No tasks — run /rihal-plan <phaseId> to populate" when stories array is empty. Tasks view empty state shows "Run /rihal-plan <currentPhase> to generate tasks for this project." Server boots cleanly with no JS syntax errors.
+Sprint cards show "No tasks — run /rcode-plan <phaseId> to populate" when stories array is empty. Tasks view empty state shows "Run /rcode-plan <currentPhase> to generate tasks for this project." Server boots cleanly with no JS syntax errors.
 </done>
 
 </tasks>
@@ -262,31 +262,31 @@ Run all checks after both stories are applied:
 
 ```bash
 # 1. sidebar-file-tree removed from shell.js
-grep -c 'sidebar-file-tree' /home/hanzla/development/rihal-code/server/lib/html/shell.js
+grep -c 'sidebar-file-tree' /home/hanzla/development/rcode/server/lib/html/shell.js
 # → 0
 
 # 2. sidebar IIFE gone from client.js
-grep -c 'File tree (sidebar)' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'File tree (sidebar)' /home/hanzla/development/rcode/server/lib/html/client.js
 # → 0
 
 # 3. exactly one /api/files fetch call
-grep -c "fetch('/api/files')" /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c "fetch('/api/files')" /home/hanzla/development/rcode/server/lib/html/client.js
 # → 1
 
 # 4. shared promise declared and used
-grep -c '_filesPromise' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c '_filesPromise' /home/hanzla/development/rcode/server/lib/html/client.js
 # → 2
 
 # 5. sprint empty-state present
-grep -c 'No tasks — run' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'No tasks — run' /home/hanzla/development/rcode/server/lib/html/client.js
 # → 1
 
 # 6. tasks empty-state improved
-grep -c 'S.currentPhase' /home/hanzla/development/rihal-code/server/lib/html/client.js
+grep -c 'S.currentPhase' /home/hanzla/development/rcode/server/lib/html/client.js
 # → >= 1
 
 # 7. server boots
-node /home/hanzla/development/rihal-code/server/dashboard.js &
+node /home/hanzla/development/rcode/server/dashboard.js &
 PID=$!; sleep 2; CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:7717/); kill $PID; echo $CODE
 # → 200
 ```

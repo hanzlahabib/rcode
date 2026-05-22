@@ -8,7 +8,7 @@ completed: 2026-05-16
 
 # M1 — Ship v2 + Tier Docs
 
-**Goal:** Ship Rihal Code v2 as a polished, installable AI methodology that any Rihalian engineer can pick up in under 10 minutes. Tier-organized, fully documented, publicly available on npm.
+**Goal:** Ship rcode v2 as a polished, installable AI methodology that any Rihalian engineer can pick up in under 10 minutes. Tier-organized, fully documented, publicly available on npm.
 
 **Closed 2026-05-16** via milestone restructure. Originally scoped as phases 01–05;
 phases 06–19 accumulated and were absorbed into M1 at closure. Phases 20–30 moved to M2.

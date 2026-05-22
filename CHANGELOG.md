@@ -1,6 +1,6 @@
 # CHANGELOG
 
-All notable changes to Rihal Code are documented here.
+All notable changes to rcode are documented here.
 
 ---
 
@@ -8,10 +8,10 @@ All notable changes to Rihal Code are documented here.
 
 Patch release closing gaps found during pre-announce audit pass.
 
-- **README accuracy** — corrected agent name `rihal-plan-checker → rihal-sprint-checker`, updated version ref to v3.6.x
+- **README accuracy** — corrected agent name `rcode-plan-checker → rcode-sprint-checker`, updated version ref to v3.6.x
 - **Workflow health checks** — fixed stale `10 checks` → `9 checks` in `health.md` output format
 - **CLI flags** — `rcode --help` and `rcode --version` now correctly alias to `help`/`version` subcommands instead of exiting with error
-- **CONTRIBUTING.md** — fixed stale `rihal/agents/team.yaml` path → `rihal/team.yaml`
+- **CONTRIBUTING.md** — fixed stale `rcode/agents/team.yaml` path → `rcode/team.yaml`
 - **ROADMAP** — filled TBD goals for Phase 20 and Phase 21
 - **Commit scopes** — added `orchpanel` and `status` to allowed scopes in AGENTS.md
 - **Command @-includes** — corrected `execute-milestone`, `plan-milestone`, `scaffold-milestone` workflow references
@@ -20,7 +20,7 @@ Patch release closing gaps found during pre-announce audit pass.
 
 ## v3.6.1 (2026-05-16) — dashboard + CLI gap fixes
 
-Patch release closing the gaps found in v3.6.0 dashboard UAT plus two `rihal-tools`
+Patch release closing the gaps found in v3.6.0 dashboard UAT plus two `rcode-tools`
 fixes surfaced while planning a new milestone.
 
 **Dashboard & CLI gap closure (#763–#767)**
@@ -68,7 +68,7 @@ in-browser bug fixes from UAT.
 - Every emoji-as-icon replaced with inline SVG icons — 35-icon Lucide-style set
 
 **Command runner (Phase 33)**
-- Run `init` and other safe rihal commands from the dashboard UI via the orchestrator
+- Run `init` and other safe rcode commands from the dashboard UI via the orchestrator
 - Server-side command allowlist as the security boundary; `dashboard.js` stays view-only
 
 **Dashboard fixes**
@@ -81,7 +81,7 @@ in-browser bug fixes from UAT.
 
 ## v3.5.0 (2026-05-15) — audit gap closure: hooks, security, marketability
 
-A three-phase release closing gaps found auditing rihal-code against the `everything-claude-code` reference setup, plus a security and marketability self-audit. Covers GitHub issues #742–#762.
+A three-phase release closing gaps found auditing rcode against the `everything-claude-code` reference setup, plus a security and marketability self-audit. Covers GitHub issues #742–#762.
 
 **Hooks & infrastructure (Phase 28)**
 - Lifecycle hooks expanded to 8: added `bash-guard` (blocks unapproved `git push`, `--force`, `--no-verify`, `rm -rf`), `pre-compact`, `stop-verify`, `cost-track`, `compact-nudge`
@@ -92,7 +92,7 @@ A three-phase release closing gaps found auditing rihal-code against the `everyt
 **Security hardening (Phase 29)**
 - Closed an unauthenticated network-reachable RCE in the orchestrator (127.0.0.1 bind, per-session auth token, path-traversal guard)
 - Hardened `bash-guard` against token-smuggling and `+`-refspec push bypasses
-- Scoped `post-commit` file reads; de-shelled `rihal-tools` git calls
+- Scoped `post-commit` file reads; de-shelled `rcode-tools` git calls
 
 **Marketability (Phase 30)**
 - Adopted the MIT license (resolves the prior `UNLICENSED` + public-npm contradiction)
@@ -105,12 +105,12 @@ A three-phase release closing gaps found auditing rihal-code against the `everyt
 
 ## v3.4.33 (2026-05-11) — code-review dispatch fix (closes #720)
 
-`/rihal-code-review` was crashing with `Agent type 'rihal-review-adversarial-general' not found`. The step-02 dispatch text said "Invoke via the rihal-review-adversarial-general skill" — but that name exists as a **skill** in `rihal/skills/core/`, not a subagent. The surrounding "Launch parallel subagents" instruction made the AI dispatch `Task(subagent_type=X)` which failed.
+`/rcode-review` was crashing with `Agent type 'rcode-review-adversarial-general' not found`. The step-02 dispatch text said "Invoke via the rcode-review-adversarial-general skill" — but that name exists as a **skill** in `rcode/skills/core/`, not a subagent. The surrounding "Launch parallel subagents" instruction made the AI dispatch `Task(subagent_type=X)` which failed.
 
-Three reviewer roles now dispatch to actual agents in `rihal/agents/`:
-- Blind Hunter → `rihal-security-adversary`
-- Edge Case Hunter → `rihal-edge-case-hunter`
-- Acceptance Auditor → `rihal-code-reviewer`
+Three reviewer roles now dispatch to actual agents in `rcode/agents/`:
+- Blind Hunter → `rcode-security-adversary`
+- Edge Case Hunter → `rcode-edge-case-hunter`
+- Acceptance Auditor → `rcode-reviewer`
 
 Wording also switched from ambiguous "Invoke via the X skill" to explicit `Task(subagent_type=...)` so future readers can't mis-dispatch.
 
@@ -120,10 +120,10 @@ Wording also switched from ambiguous "Invoke via the X skill" to explicit `Task(
 
 Two gaps surfaced by audit-style outputs that produced `A1-A7` / `B1-B5` phase IDs:
 
-- **Phase IDs unenforced** — `/rihal-plan` and `/rihal-audit-milestone` freestyled. rcode's actual convention (integer or decimal-subphase) was undocumented + unvalidated.
-- **Milestone closure never prompted** — `/rihal-add-phase` happily appended phase #25 under M1 without nudging toward `/rihal-complete-milestone`. rcode's own state.json hit 25 open phases dogfooding the bug.
+- **Phase IDs unenforced** — `/rcode-plan` and `/rcode-audit-milestone` freestyled. rcode's actual convention (integer or decimal-subphase) was undocumented + unvalidated.
+- **Milestone closure never prompted** — `/rcode-add-phase` happily appended phase #25 under M1 without nudging toward `/rcode-complete-milestone`. rcode's own state.json hit 25 open phases dogfooding the bug.
 
-3 new `rihal-tools` subcommands: `validate-phase-id`, `validate-roadmap`, `milestone-health`. Workflow wiring in `add-phase.md` + `status.md`. Convention pinned in `rihal/references/phase-id-conventions.md`. 14 new tests, 273/273 passing.
+3 new `rcode-tools` subcommands: `validate-phase-id`, `validate-roadmap`, `milestone-health`. Workflow wiring in `add-phase.md` + `status.md`. Convention pinned in `rcode/references/phase-id-conventions.md`. 14 new tests, 273/273 passing.
 
 ---
 
@@ -131,7 +131,7 @@ Two gaps surfaced by audit-style outputs that produced `A1-A7` / `B1-B5` phase I
 
 Users hit "Skill listing will be truncated — 491 descriptions dropped" on every Claude Code session because rcode shipped 85 skills with **zero** marked `internal: true`. Every action skill was picker-visible even though they're invoked via slash commands.
 
-- **fix(skills):** Mark all 37 `rihal/skills/actions/**/SKILL.md` as `internal: true`. They route to `.rihal/skills/` (private) instead of `.claude/skills/` (picker). Slash dispatch unchanged.
+- **fix(skills):** Mark all 37 `rcode/skills/actions/**/SKILL.md` as `internal: true`. They route to `.rcode/skills/` (private) instead of `.claude/skills/` (picker). Slash dispatch unchanged.
 - **fix(skills):** Trim `SIDEBAR_COMMANDS` from 43 → 10 daily-driver entries. Niche commands (`prfaq`, `ui-phase`, `forensics`, `map-codebase`, etc.) stay reachable via `/` autocomplete; they just don't claim sidebar slots.
 
 **Picker footprint: 82 → 57 entries (-30%).** Combined with `/plugins → uninstall` for any unused plugins (vercel adds 42 alone), most users drop below the truncation threshold without raising `skillListingBudgetFraction`.
@@ -154,12 +154,12 @@ Each test names the issue it pins and emits a "regression of #N" marker so futur
 
 Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had missed. All shipped.
 
-- **fix(update):** `rcode update` was broken end-to-end — read `.rihal/config.json` and `JSON.parse`d it, but installer writes `.rihal/config.yaml` (#701). Switched to YAML parser; `detectInstalledEditors` falls back to `~/.claude/skills/` for post-#679-dedup case; surgical `setYamlKey` preserves comments + ordering.
-- **fix(install):** `files-manifest.csv` was generated BEFORE `installSkills`, so 100+ skill files never entered the manifest — orphan sweep + doctor drift detection blind to renamed/removed skills (#702). Manifest write moved to AFTER all skill installations; new `extraScanDirs` option walks `.claude/skills/` and `.rihal/skills/`.
+- **fix(update):** `rcode update` was broken end-to-end — read `.rcode/config.json` and `JSON.parse`d it, but installer writes `.rcode/config.yaml` (#701). Switched to YAML parser; `detectInstalledEditors` falls back to `~/.claude/skills/` for post-#679-dedup case; surgical `setYamlKey` preserves comments + ordering.
+- **fix(install):** `files-manifest.csv` was generated BEFORE `installSkills`, so 100+ skill files never entered the manifest — orphan sweep + doctor drift detection blind to renamed/removed skills (#702). Manifest write moved to AFTER all skill installations; new `extraScanDirs` option walks `.claude/skills/` and `.rcode/skills/`.
 - **fix(install):** `sweepStaleInstalledFiles` called `fs.rmSync(path.join(target, rel))` with `rel` from the user-readable CSV — a `../../etc/passwd` entry could escape project root (#703). The whole point of #688's `safeRmSync` was bypassed in the most exposed code path. Now routes through `safeRmSync(full, targetRoot)` with a pre-check that rejects `..` segments.
-- **fix(uninstall):** Backup tarball excluded flat `.claude/commands/rihal-*.md` files (#704). Only the legacy `.claude/commands/rihal/` subdir was added; modern claude installs (post-#697) had every slash command missing from the rollback. `planToPathList` now disambiguates by `rihal-` prefix.
+- **fix(uninstall):** Backup tarball excluded flat `.claude/commands/rcode-*.md` files (#704). Only the legacy `.claude/commands/rcode/` subdir was added; modern claude installs (post-#697) had every slash command missing from the rollback. `planToPathList` now disambiguates by `rcode-` prefix.
 - **fix(install):** `_seeded_stub:true` was seeded into state.json even when `.planning/ROADMAP.md` already had real (non-stub) phases (#705). User who manually deleted state.json had their real project mis-classified as fresh on re-install. Guard checks ROADMAP for the `INSTALL STUB` banner.
-- **fix(install,uninstall):** brain-pull `execFileSync` had no timeout — slow URL hung install indefinitely (#706a). Added `timeout: 60_000`. Plus `cli/uninstall.js` had no branches for `vscode` or `gemini` despite SUPPORTED_IDES listing both (#706b) — added marker-dir cleanup for vscode and `.gemini/rihal/{agents,commands}` removal for gemini.
+- **fix(install,uninstall):** brain-pull `execFileSync` had no timeout — slow URL hung install indefinitely (#706a). Added `timeout: 60_000`. Plus `cli/uninstall.js` had no branches for `vscode` or `gemini` despite SUPPORTED_IDES listing both (#706b) — added marker-dir cleanup for vscode and `.gemini/rcode/{agents,commands}` removal for gemini.
 
 **Net: 242/242 tests passing. Every critical from the post-fix audit closed.**
 
@@ -168,10 +168,10 @@ Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had mis
 ## v3.4.28 (2026-05-07) — green test suite (closes #698)
 
 - **fix(test):** Make pre-existing test failures aware of the #679 dedup reality. After globals shadow project skills, tests that count `./.claude/skills/` etc. would erroneously fail with "0 found". Fall back to `~/.claude/` mirroring the runtime behavior. Touches `agent-size-budget`, `skill-description-budget`, `help-md-parity`, `no-absolute-home-paths`.
-- **fix(lib/manifest):** `verifyClaudeInstall` had a pre-existing bug where the actions filter `!n.startsWith('rihal-')` excluded ALL real installed actions (since `installSkills` prefixes every action with `rihal-`). Rewrote to compare against the prefixed package set directly. Drift detection now actually works.
-- **fix(test):** `manifest.test.cjs` was seeding `.claude/skills/rihal-X` for agents — but the post-v3 layout puts agents at `.claude/agents/rihal-X.md`. Updated the two drift tests to match.
+- **fix(lib/manifest):** `verifyClaudeInstall` had a pre-existing bug where the actions filter `!n.startsWith('rcode-')` excluded ALL real installed actions (since `installSkills` prefixes every action with `rcode-`). Rewrote to compare against the prefixed package set directly. Drift detection now actually works.
+- **fix(test):** `manifest.test.cjs` was seeding `.claude/skills/rcode-X` for agents — but the post-v3 layout puts agents at `.claude/agents/rcode-X.md`. Updated the two drift tests to match.
 - **feat(lib/manifest):** Added `{ globalFallback: false }` option to `verifyClaudeInstall` so tests can isolate from the contributor's real `~/.claude/`. Default remains true to preserve runtime behavior.
-- **fix(test):** `no-source-command-skill-dupes` now exempts the 6 phase-flow commands (`rihal-sprint-planning`, `rihal-dev-story`, etc.) that legitimately ship as both real skills and sidebar entries — matching the generator's runtime behavior.
+- **fix(test):** `no-source-command-skill-dupes` now exempts the 6 phase-flow commands (`rcode-sprint-planning`, `rcode-dev-story`, etc.) that legitimately ship as both real skills and sidebar entries — matching the generator's runtime behavior.
 - **fix(meta):** AGENTS.md + CONTRIBUTING.md scope lists synced. New scopes added: `build`, `council`, `doctor`, `postinstall`, `progress`, `security`, `test`, `tools`, `uninstall` (all already used in commits).
 
 **Net: full suite goes from 231/241 → 241/241 passing.**
@@ -180,7 +180,7 @@ Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had mis
 
 ## v3.4.27 (2026-05-07) — install/uninstall batch 4 (closes #696 #697)
 
-- **test(uninstall,postinstall,update):** 38 new tests for the previously-untested CLI modules (#696). Closes Wave 3 W3.2/W3.3/W3.4 from `.planning/INSTALL-AUDIT-STATUS.md`. Refactors three files for testability: `cli/postinstall.js` now wraps top-level effect in `require.main === module` so importing it doesn't fire the postinstall logic; `cli/uninstall.js` extracts the gitignore-strip regex into pure `stripRihalGitignoreBlock`; `cli/update.js` adds named exports for `parseArgs` and `detectInstalledEditors`.
+- **test(uninstall,postinstall,update):** 38 new tests for the previously-untested CLI modules (#696). Closes Wave 3 W3.2/W3.3/W3.4 from `.planning/INSTALL-AUDIT-STATUS.md`. Refactors three files for testability: `cli/postinstall.js` now wraps top-level effect in `require.main === module` so importing it doesn't fire the postinstall logic; `cli/uninstall.js` extracts the gitignore-strip regex into pure `stripRcodeGitignoreBlock`; `cli/update.js` adds named exports for `parseArgs` and `detectInstalledEditors`.
 - **refactor(install,uninstall):** Single `SUPPORTED_IDES` source of truth (#697). Promotes the canonical IDE list to a frozen module-level constant in `cli/install.js`, exported and imported by `cli/uninstall.js`. Drift guard test fails CI if anyone re-introduces a local copy or a hardcoded literal of the same shape.
 
 12 + 14 + 12 + 4 = 42 new tests covering every fix from Wave 1+2 plus the post-fix coverage gaps.
@@ -195,9 +195,9 @@ Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had mis
 
 ## v3.4.25 (2026-05-07) — install/uninstall batch 3 (closes #691 #692 #693 #694)
 
-- **fix(install):** PID-based exclusive lock at `.rihal/.install.lock` (#691). Concurrent installs no longer corrupt the manifest. Stale locks (dead PID) auto-reclaimed; live locks exit 3 with a clear message and the lock path.
+- **fix(install):** PID-based exclusive lock at `.rcode/.install.lock` (#691). Concurrent installs no longer corrupt the manifest. Stale locks (dead PID) auto-reclaimed; live locks exit 3 with a clear message and the lock path.
 - **fix(install):** Honor wizard's IDE selection — no double-prompt (#692). `resolveIde` early-returns if `opts.ides` is already set; wizard now also seeds `opts.ide` and `opts.ideProvided` to fix the field-shape drift between the singular and array forms.
-- **fix(uninstall):** Dynamic `KNOWN_ACTION_SKILLS` + IDE list parity with installer (#693). The hardcoded 23-entry list was 14 entries behind the source; now derived from `cli/lib/manifest.cjs` at runtime (37 actions). Editor list now matches installer's surface (claude/cursor/gemini/vscode/antigravity), so users with vscode-installed rihal can finally `rcode uninstall`.
+- **fix(uninstall):** Dynamic `KNOWN_ACTION_SKILLS` + IDE list parity with installer (#693). The hardcoded 23-entry list was 14 entries behind the source; now derived from `cli/lib/manifest.cjs` at runtime (37 actions). Editor list now matches installer's surface (claude/cursor/gemini/vscode/antigravity), so users with vscode-installed rcode can finally `rcode uninstall`.
 - **test(install):** First batch of integration tests (#694). 12 new tests covering `safeRmSync` (#688), atomic state writes (#687), `--reset` fail-fast (#680), idempotency, and the install-lock behavior (#691). Spawn-based — catches bundler-skew issues like the 3.4.22 stale-dist regression.
 
 ---
@@ -222,17 +222,17 @@ Post-fix audit found 5 still-real critical issues that 8 rounds of fixes had mis
 
 User-blocking fix:
 
-- **fix(install):** skills/ dedup — picker no longer shows /rihal-* twice (#679). When `~/.claude/skills/<name>` exists, project install skips writing the same skill (and its sidebar stub) under `.claude/skills/`. Verified: 0 overlap on a fresh install where 119 global rihal skills exist. `*.local.md` overrides always preserved.
+- **fix(install):** skills/ dedup — picker no longer shows /rcode-* twice (#679). When `~/.claude/skills/<name>` exists, project install skips writing the same skill (and its sidebar stub) under `.claude/skills/`. Verified: 0 overlap on a fresh install where 119 global rcode skills exist. `*.local.md` overrides always preserved.
 
 UX correctness:
 
 - **fix(install):** `--reset` alone now fails fast (exit 2) instead of silently doing nothing (#680). `--reset` requires `--force` to confirm the destructive intent.
-- **feat(state):** `_seeded_stub:true` auto-clears on project graduation (#681). `writeState()` drops the marker once the project has REQUIREMENTS.md or a real phase. New `state clear-stub` subcommand for explicit clearing from `/rihal-new-project`.
+- **feat(state):** `_seeded_stub:true` auto-clears on project graduation (#681). `writeState()` drops the marker once the project has REQUIREMENTS.md or a real phase. New `state clear-stub` subcommand for explicit clearing from `/rcode-new-project`.
 - **docs(cli):** Normalize package name to `@hanzlaa/rcode` in JSDoc headers (#682). 16 stale `@hanzlahabib/rihal-code` references replaced. `cli/nuke.js` keeps both names for legacy migration.
 
 Safety / data-loss fixes:
 
-- **fix(uninstall):** `--purge` backup now includes `.rihal/` + `.planning/` (#683). The previous backup tarball excluded the very directories `--purge` deletes, plus the tarball itself was written into `.rihal/backups/` and got nuked seconds later by the rmSync of `.rihal/`. Backup now writes to `.rihal-backups/` (sibling) when purging and includes `.rihal/<every entry except backups>` plus `.planning/`. Verified `state.json` and `PROJECT.md` are restorable from the post-purge tarball.
+- **fix(uninstall):** `--purge` backup now includes `.rcode/` + `.planning/` (#683). The previous backup tarball excluded the very directories `--purge` deletes, plus the tarball itself was written into `.rcode/backups/` and got nuked seconds later by the rmSync of `.rcode/`. Backup now writes to `.rcode-backups/` (sibling) when purging and includes `.rcode/<every entry except backups>` plus `.planning/`. Verified `state.json` and `PROJECT.md` are restorable from the post-purge tarball.
 - **fix(uninstall):** Tighten `.gitignore` strip regex — no longer eats user comments (#684). The legacy `# rcode[\s\S]*?` pattern matched any user line starting with `# rcode` and greedily consumed up to the next blank line, silently nuking user content. New regex requires both the `===== rcode-managed gitignore block =====` opener AND closer.
 - **fix(install):** Keep `commit_planning` in `config.yaml` in sync with `.gitignore` on re-install (#685). Re-install previously rewrote `.gitignore` from the new prompt answer but preserved the old `config.yaml`, leaving two sources of truth. `resolveCommitPlanning` now reads existing config as default; surgical key update on actual change.
 
@@ -244,12 +244,12 @@ Safety / data-loss fixes:
 
 - **fix(install):** health check + summary respect global precedence (#664, #666, #669) — when project install removes local agent/command copies in favor of `~/.claude/` globals, the summary and verifier now fall back to counting from `~/.claude/agents/` and `~/.claude/commands/` instead of reporting `0`.
 
-### `/rihal-new-project` first-run gaps (closes #670 #671 #672 #673 #674 #675 #676)
+### `/rcode-new-project` first-run gaps (closes #670 #671 #672 #673 #674 #675 #676)
 
-- **fix(install):** `seedStarterPlanning()` no longer pre-seeds `.rihal/state.json` with a fake `Setup & Scaffolding` phase (#670). State is seeded as `{_seeded_stub: true, project: null, phases: []}` so Step 0.5 can detect the stub.
+- **fix(install):** `seedStarterPlanning()` no longer pre-seeds `.rcode/state.json` with a fake `Setup & Scaffolding` phase (#670). State is seeded as `{_seeded_stub: true, project: null, phases: []}` so Step 0.5 can detect the stub.
 - **fix(install):** stub `.planning/PROJECT.md`, `ROADMAP.md`, `STATE.md` now carry an `INSTALL STUB` HTML banner so users (and downstream tooling) can tell them apart from real planning artifacts (#676).
-- **fix(workflows):** `/rihal-new-project` Step 0.5 rewritten with stub-vs-real classification (#671). Real-project signals: `REQUIREMENTS.md`, `research/`, >1 phase, or first-phase-name ≠ "Setup & Scaffolding".
-- **feat(workflows):** `/rihal-new-project` accepts `--force` / `--reinit` (#672). Creates a `pre-rihal-rewrite-<timestamp>` git tag for rollback before overwriting.
+- **fix(workflows):** `/rcode-new-project` Step 0.5 rewritten with stub-vs-real classification (#671). Real-project signals: `REQUIREMENTS.md`, `research/`, >1 phase, or first-phase-name ≠ "Setup & Scaffolding".
+- **feat(workflows):** `/rcode-new-project` accepts `--force` / `--reinit` (#672). Creates a `pre-rcode-rewrite-<timestamp>` git tag for rollback before overwriting.
 - **fix(workflows):** Step 0.5 error message now lists the escape hatches: `--force`, `rcode install --reset` (#673).
 - **fix(workflows):** `--auto` no longer blocked on stub state (#674) — the new stub classification proceeds without prompting.
 
@@ -260,17 +260,17 @@ Safety / data-loss fixes:
 50 commits since v3.4.4. Grouped by area.
 
 ### Dashboard (Phases 20–21)
-- **fix(dashboard):** phase 20 UX quick-wins — remove sidebar file tree, add empty states with `/rihal-plan` hints, deduplicate `/api/files` fetch (`125ebff`)
+- **fix(dashboard):** phase 20 UX quick-wins — remove sidebar file tree, add empty states with `/rcode-plan` hints, deduplicate `/api/files` fetch (`125ebff`)
 - **fix(dashboard):** phase 21 data pipeline — decimal phase IDs (split `.` before `padStart`), SPRINT.md fallback task parser, `String()` coercion on phase ID comparisons (`c0d681b`)
 - **feat(dashboard):** add phases 20–21 in ROADMAP and state (`6a082f5`)
 
-### Plan / Tools (`rihal-tools.cjs`)
+### Plan / Tools (`rcode-tools.cjs`)
 - **fix(plan,tools):** researcher skip when CONTEXT.md exists (`--research` to force), ghost phase number sanity guard, two-layer gitignore commit guard — closes #588 #583 #566 (`20c3a3e`)
 
 ### Lens Audit
 - **feat(lens-audit):** rewrite `lens-audit.md` — all 15 lenses dispatched via skill subagents (`3031b2b`)
 - **feat(skills):** add 4 gap audit skills for lenses 5, 8, 10, 13 (`a1a7370`)
-- **feat(workflows):** add 15-lens audit workflow + wire into `/rihal-audit` (`66ccd33`)
+- **feat(workflows):** add 15-lens audit workflow + wire into `/rcode-audit` (`66ccd33`)
 
 ### Config / State
 - **feat(config):** `state migrate-schema` subcommand normalises phases to current schema — closes #558 (`79b0d27`)
@@ -289,7 +289,7 @@ Safety / data-loss fixes:
 ### Workflow Consistency & i18n
 - **fix(workflows):** add `response_language` handling to 8 subagent-spawning workflows — closes #560 (`6fc849b`)
 - **fix(workflows):** standardize `PHASE_NUM → PHASE_NUMBER` — closes #523 (`84ad704`)
-- **fix(workflows):** add `2>/dev/null` guards to top 10 unguarded rihal-tools calls — closes #516 (`de55229`)
+- **fix(workflows):** add `2>/dev/null` guards to top 10 unguarded rcode-tools calls — closes #516 (`de55229`)
 - **fix(workflows):** enforce `MAX_PASSES` cap in `discuss-phase` loop — closes #534 (`19215e8`)
 - **fix(workflows):** replace stale `PLAN.md` refs with `SPRINT.md` in 6 workflows — closes #522 (`271dda9`)
 - **fix(workflows):** add `done_field_protocol` to executor prompt in `execute.md` — closes #514 (`a3bd4d1`)
@@ -304,13 +304,13 @@ Safety / data-loss fixes:
 - **fix(references):** add RTL/Arabic output safety guidance to `output-format.md` — closes #561
 
 ### Agents & Skills
-- **fix(agents):** create `rihal-deviation-analyzer` skill stub — closes #515 (`ec882e3`)
+- **fix(agents):** create `rcode-deviation-analyzer` skill stub — closes #515 (`ec882e3`)
 - **fix(skills):** close 19 agent persona name/dir mismatches (`f1b30ac`)
 - **fix(agents):** normalize 7 non-standard colors to safe palette (`8de6220`)
 - **feat(skills):** add 4 gap audit skills for lens-audit lenses 5, 8, 10, 13 (`a1a7370`)
 
 ### Commands & GitHub
-- **feat(commands):** add `/rihal-capture` + `/rihal-phase` unified entries — refs #484 (`e10a567`)
+- **feat(commands):** add `/rcode-capture` + `/rcode-phase` unified entries — refs #484 (`e10a567`)
 - **feat(github):** require-issue-link CI gate — flag PRs without `Closes/Refs/Fixes #N` (`281429d`)
 
 ### Performance
@@ -336,7 +336,7 @@ Release-train backfill — entries for v3.3.1 → v3.4.4 captured below as a blo
 - Bump-only release.
 
 ### v3.4.1 (commit `7d16b83`) — preceded by `615a17b`
-- **fix(refs):** migrate `rihal:command` to `rihal-command` slash syntax.
+- **fix(refs):** migrate `rcode:command` to `rcode-command` slash syntax.
 
 ### v3.4.0 (commit `cc5b46a`)
 - **feat(cli):** multi-IDE install, dashboard phase browser, agent cards. Detects every Claude Code-compatible IDE on the machine and offers an install picker.
@@ -351,22 +351,22 @@ Release-train backfill — entries for v3.3.1 → v3.4.4 captured below as a blo
 
 ## v3.3.0 — sidebar discoverability: install-time skill stubs for slash commands (2026-04-27)
 
-VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rihal/` are reachable only via the `/` autocomplete picker. Users expected `rihal-do` to appear in the sidebar alongside other rcode skills.
+VS Code's Claude Code extension only lists `.claude/skills/` in its sidebar — slash commands at `.claude/commands/rcode/` are reachable only via the `/` autocomplete picker. Users expected `rcode-do` to appear in the sidebar alongside other rcode skills.
 
 This release closes the gap **without duplicating files in the source codebase** — sidebar stubs are generated only at install destination.
 
 ### Added
 
-- **`cli/generate-command-skills.cjs`** — install-time generator that creates `.claude/skills/rihal-<cmd>/SKILL.md` for a curated list of 28 user-facing commands (`do`, `status`, `progress`, `next`, `plan`, `execute`, `council`, `discuss`, `ship`, `audit`, `verify-phase`, `verify-work`, `note`, `add-todo`, `check-todos`, `pause-work`, `resume-work`, etc.). Each stub:
+- **`cli/generate-command-skills.cjs`** — install-time generator that creates `.claude/skills/rcode-<cmd>/SKILL.md` for a curated list of 28 user-facing commands (`do`, `status`, `progress`, `next`, `plan`, `execute`, `council`, `discuss`, `ship`, `audit`, `verify-phase`, `verify-work`, `note`, `add-todo`, `check-todos`, `pause-work`, `resume-work`, etc.). Each stub:
   - Has `generated: true` and `generated-by: rcode-install-vX.Y.Z` frontmatter so the next install can refresh it idempotently
   - Includes a prominent `<!-- AUTO-GENERATED — Do NOT edit -->` HTML comment
-  - Points the user at the source of truth (`rihal/commands/<cmd>.md` and `rihal/workflows/<cmd>.md`)
-  - Skipped automatically when a real skill with the same name already exists (e.g. `rihal-debug`, `rihal-code-review`)
-- **`test/no-source-command-skill-dupes.test.cjs`** — guards the source codebase from accidentally introducing the very duplication this generator solves at install time. Catches if a future PR ships a `rihal-do` skill folder that would shadow the generated stub.
+  - Points the user at the source of truth (`rcode/commands/<cmd>.md` and `rcode/workflows/<cmd>.md`)
+  - Skipped automatically when a real skill with the same name already exists (e.g. `rcode-debug`, `rcode-review`)
+- **`test/no-source-command-skill-dupes.test.cjs`** — guards the source codebase from accidentally introducing the very duplication this generator solves at install time. Catches if a future PR ships a `rcode-do` skill folder that would shadow the generated stub.
 
 ### Fixed
 
-- Issue users reported after upgrading to v3.2.1: VS Code sidebar didn't list `rihal-do` even though the command existed. Now it appears as a sidebar skill stub, sourced from the same single command file.
+- Issue users reported after upgrading to v3.2.1: VS Code sidebar didn't list `rcode-do` even though the command existed. Now it appears as a sidebar skill stub, sourced from the same single command file.
 
 ### Counts
 
@@ -376,7 +376,7 @@ This release closes the gap **without duplicating files in the source codebase**
 
 ### Honesty about the duplication
 
-The stubs ARE duplicates of the slash commands in a sense — they invoke the same workflow files. The difference: they live ONLY at the install destination (`.claude/skills/`), never in the rcode source tree (`rihal/skills/`). One source of truth per command + a generated sidebar entry, refreshed every install. CI test #no-source-command-skill-dupes prevents anyone from sneaking duplicate source folders past review.
+The stubs ARE duplicates of the slash commands in a sense — they invoke the same workflow files. The difference: they live ONLY at the install destination (`.claude/skills/`), never in the rcode source tree (`rcode/skills/`). One source of truth per command + a generated sidebar entry, refreshed every install. CI test #no-source-command-skill-dupes prevents anyone from sneaking duplicate source folders past review.
 
 ---
 
@@ -386,15 +386,15 @@ Patch for v3.2.0 — selecting VS Code or Antigravity from the install menu now 
 
 ### Fixed
 
-- **`--ide vscode`** now routes through `getPathsForIde()` to install at `.claude/agents/`, `.claude/commands/rihal/`, and `.claude/skills/` (where the Claude Code / Continue / Copilot extensions read from). User-visible: install completes; the user-facing notice reads "VS Code → installing to .claude/ paths".
-- **`--ide antigravity`** routes to `.antigravity/rihal/{agents,commands}/`, mirroring the `.gemini/rihal/` layout. Marked experimental — the user is told at install time that Antigravity's plugin protocol is still firming up and they may need to adjust paths via `.rihal/config.yaml`.
+- **`--ide vscode`** now routes through `getPathsForIde()` to install at `.claude/agents/`, `.claude/commands/rcode/`, and `.claude/skills/` (where the Claude Code / Continue / Copilot extensions read from). User-visible: install completes; the user-facing notice reads "VS Code → installing to .claude/ paths".
+- **`--ide antigravity`** routes to `.antigravity/rcode/{agents,commands}/`, mirroring the `.gemini/rcode/` layout. Marked experimental — the user is told at install time that Antigravity's plugin protocol is still firming up and they may need to adjust paths via `.rcode/config.yaml`.
 - **Health check** at end of install now reads from the IDE-specific install paths (was hardcoded to `.claude/`). Cursor / Gemini / VS Code / Antigravity installs no longer false-fail the agent / command counts.
 - **IDE-validation list** in `cli/install.js` extended to include `vscode` and `antigravity` so explicit `--ide vscode` / `--ide antigravity` flags pass validation.
 
 ### Verified
 
 - `node dist/rcode.js install /tmp/test-vscode --ide vscode --yes` → 41 agents + 80 skills + 95 commands, health check ✓
-- `node dist/rcode.js install /tmp/test-anti --ide antigravity --yes` → 41 agents + 80 skills + 95 commands at `.antigravity/rihal/`, health check ✓
+- `node dist/rcode.js install /tmp/test-anti --ide antigravity --yes` → 41 agents + 80 skills + 95 commands at `.antigravity/rcode/`, health check ✓
 - 130 tests still passing
 
 ---
@@ -447,20 +447,20 @@ Patch release closing the 9 bugs surfaced during the 2026-04-27 pipeline integri
 
 ### Fixed — agent runtime
 
-- **#440 / #445 (CRITICAL):** 10 agents declared tools using Gemini-style snake_case names (`read_file`, `run_shell_command`, etc.). Claude Code silently rejected these — agents narrated what they would do without invoking any tool. Affected: `rihal-sprint-checker`, `rihal-verifier`, `rihal-codebase-mapper` (Dalil), `rihal-integration-checker`, `rihal-roadmapper`, `rihal-advisor-researcher`, `rihal-assumptions-analyzer`, `rihal-phase-researcher`, `rihal-project-researcher`, `rihal-research-synthesizer`. All renamed to PascalCase (`Read`, `Bash`, `Grep`, `Glob`, `Write`, `WebFetch`, `WebSearch`).
+- **#440 / #445 (CRITICAL):** 10 agents declared tools using Gemini-style snake_case names (`read_file`, `run_shell_command`, etc.). Claude Code silently rejected these — agents narrated what they would do without invoking any tool. Affected: `rcode-sprint-checker`, `rcode-verifier`, `rcode-codebase-mapper` (Dalil), `rcode-integration-checker`, `rcode-roadmapper`, `rcode-advisor-researcher`, `rcode-assumptions-analyzer`, `rcode-phase-researcher`, `rcode-project-researcher`, `rcode-research-synthesizer`. All renamed to PascalCase (`Read`, `Bash`, `Grep`, `Glob`, `Write`, `WebFetch`, `WebSearch`).
 - **#440 (defence):** `plan.md` now refuses to advance plans on empty sprint-checker output. Sprint-checker MUST emit YAML evidence markers (`issues:`, `verified_files:`, file:line refs) — empty narrative output is treated as malfunction, not pass.
 
 ### Fixed — workflow correctness
 
 - **#441:** Planner now verifies every file in `files_modified` actually exists on disk before committing it to a plan. Plans referencing fictional file names are rejected.
-- **#442:** New `12.5. Wave Parallelism File-Overlap Check` in `plan.md`. Calls `rihal-tools plan check-wave-overlaps`; auto-corrects same-wave plans with overlapping files to `sequential: true`.
-- **#443 / #448:** New `executed` → `complete` state transition. Phase moves to `executed` after work is done; only a passing VERIFICATION.md promotes to `complete`. `/rihal-next` refuses to advance from `executed`. Closes the gap where phases reached `complete` without UAT.
-- **#446:** Removed `git commit --no-verify` recommendation from parallel-execution mode in `execute.md`. AGENTS.md forbids `--no-verify`. Replaced with file-based commit lock (`.rihal/.commit-lock`) so hooks run normally per commit.
+- **#442:** New `12.5. Wave Parallelism File-Overlap Check` in `plan.md`. Calls `rcode-tools plan check-wave-overlaps`; auto-corrects same-wave plans with overlapping files to `sequential: true`.
+- **#443 / #448:** New `executed` → `complete` state transition. Phase moves to `executed` after work is done; only a passing VERIFICATION.md promotes to `complete`. `/rcode-next` refuses to advance from `executed`. Closes the gap where phases reached `complete` without UAT.
+- **#446:** Removed `git commit --no-verify` recommendation from parallel-execution mode in `execute.md`. AGENTS.md forbids `--no-verify`. Replaced with file-based commit lock (`.rcode/.commit-lock`) so hooks run normally per commit.
 
 ### Fixed — documentation drift
 
-- **#444:** `.planning/` gitignore + `git add -f` constraint now documented in `rihal-executor.md` so every executor session loads it. Prevents silently-dropped SUMMARY.md commits.
-- **#447:** 9 legacy core skills now declare `## Memory Bank Hooks` (matching the post-Phase-3 5-component standard): `rihal-init`, `rihal-help`, `rihal-index-docs`, `rihal-shard-doc`, `rihal-party-mode`, `rihal-brainstorming`, `rihal-editorial-review-prose`, `rihal-review-adversarial-general`, `rihal-review-edge-case-hunter`.
+- **#444:** `.planning/` gitignore + `git add -f` constraint now documented in `rcode-executor.md` so every executor session loads it. Prevents silently-dropped SUMMARY.md commits.
+- **#447:** 9 legacy core skills now declare `## Memory Bank Hooks` (matching the post-Phase-3 5-component standard): `rcode-init`, `rcode-help`, `rcode-index-docs`, `rcode-shard-doc`, `rcode-party-mode`, `rcode-brainstorming`, `rcode-editorial-review-prose`, `rcode-review-adversarial-general`, `rcode-review-edge-case-hunter`.
 
 ### Added — regression-prevention tests (4 new test files, +10 cases)
 
@@ -491,14 +491,14 @@ The largest single delta since v2.0. 10 phases, 80+ commits, 19 new skills, comp
 
 ### Added — `Memory Bank` primitive (Phase 3)
 
-Persistent, structured, checked-in project context. `.rihal/memory/` directory with project, people, milestones, incidents, change-records, and distillates subdirectories.
+Persistent, structured, checked-in project context. `.rcode/memory/` directory with project, people, milestones, incidents, change-records, and distillates subdirectories.
 
-- `rihal-memory-init` skill — bootstrap a Memory Bank for an existing project
-- `rihal-memory-update` skill — surgical update from conversation context
-- `rihal-memory-distill` skill — regenerate token-optimised distillates
-- `rihal-memory-audit` skill — find stale entries and contradictions
-- 4 slash commands: `/rihal-memory-init`, `-update`, `-distill`, `-audit`
-- 13 template files at `rihal/templates/memory/`
+- `rcode-memory-init` skill — bootstrap a Memory Bank for an existing project
+- `rcode-memory-update` skill — surgical update from conversation context
+- `rcode-memory-distill` skill — regenerate token-optimised distillates
+- `rcode-memory-audit` skill — find stale entries and contradictions
+- 4 slash commands: `/rcode-memory-init`, `-update`, `-distill`, `-audit`
+- 13 template files at `rcode/templates/memory/`
 - Diwan dashboard `/api/memory` endpoint + `/memory` view (additive to `server/lib/*`)
 - `MEMORY_BANK.md` specification at repo root
 
@@ -506,30 +506,30 @@ Persistent, structured, checked-in project context. `.rihal/memory/` directory w
 
 Stack-grounded for Next.js 16, React 19, Strapi, Postgres, Three.js, Sentry, Temporal, Helm/K8s.
 
-- `rihal-incremental` — atomic, verifiable shipping
-- `rihal-prove-it` — TDD with Jest + Playwright + node:test
-- `rihal-source-truth` — cite official docs before code
-- `rihal-browser-verify` — Chrome DevTools MCP for runtime verification
-- `rihal-debug` — root-cause debugging via the scientific method
-- `rihal-trim` — code simplification (no behaviour change)
-- `rihal-harden` — security checklist for SaaS auth/tenant patterns
-- `rihal-perf` — performance optimisation per stack layer
-- `rihal-git-flow` — branching aligned with Epic→Feature→Task hierarchy
-- `rihal-ci` — Helm + K8s + Docker Compose quality gates
-- `rihal-migrate` — MVP-to-production transitions
+- `rcode-incremental` — atomic, verifiable shipping
+- `rcode-prove-it` — TDD with Jest + Playwright + node:test
+- `rcode-source-truth` — cite official docs before code
+- `rcode-browser-verify` — Chrome DevTools MCP for runtime verification
+- `rcode-debug` — root-cause debugging via the scientific method
+- `rcode-trim` — code simplification (no behaviour change)
+- `rcode-harden` — security checklist for SaaS auth/tenant patterns
+- `rcode-perf` — performance optimisation per stack layer
+- `rcode-git-flow` — branching aligned with Epic→Feature→Task hierarchy
+- `rcode-ci` — Helm + K8s + Docker Compose quality gates
+- `rcode-migrate` — MVP-to-production transitions
 
 ### Added — Real-pain skills (Phase 12, 8 skills)
 
-Encoded from verified Rihal incidents — no other tool has these because they require the scars.
+Encoded from verified rcode incidents — no other tool has these because they require the scars.
 
-- `rihal-auth-audit` — Keycloak ↔ AD sync verification, JWT validation, tenant isolation
-- `rihal-deploy-unify` — multiple-deploy-paths detection (Siraaj incident)
-- `rihal-ocr-consistency` — OCR pipeline determinism + ground-truth validation
-- `rihal-theme-system` — design token audit before launch (rebrand incident)
-- `rihal-mvp-graduate` — MVP-to-production strategic plan with stakeholder sequencing
-- `rihal-client-gate` — client requirement freeze gates and async-comm patterns
-- `rihal-rebrand` — stack-wide rebranding migration (9 surfaces)
-- `rihal-incident-record` — change-record + post-mortem in one flow
+- `rcode-auth-audit` — Keycloak ↔ AD sync verification, JWT validation, tenant isolation
+- `rcode-deploy-unify` — multiple-deploy-paths detection (Siraaj incident)
+- `rcode-ocr-consistency` — OCR pipeline determinism + ground-truth validation
+- `rcode-theme-system` — design token audit before launch (rebrand incident)
+- `rcode-mvp-graduate` — MVP-to-production strategic plan with stakeholder sequencing
+- `rcode-client-gate` — client requirement freeze gates and async-comm patterns
+- `rcode-rebrand` — stack-wide rebranding migration (9 surfaces)
+- `rcode-incident-record` — change-record + post-mortem in one flow
 
 ### Added — Brand & docs (Phase 1, Phase 8)
 
@@ -554,41 +554,41 @@ Encoded from verified Rihal incidents — no other tool has these because they r
 
 | Old | New |
 |---|---|
-| `/rihal-report` | `/rihal-session-report` (was a pure alias) |
-| `/rihal-karpathy-audit <args>` | `/rihal-code-review <args> --karpathy` |
-| `/rihal-review-adversarial <args>` | `/rihal-code-review <args> --attack` (plain English) |
-| `/rihal-review-edge-case-hunter <args>` | `/rihal-code-review <args> --edge-cases` |
-| `/rihal-discuss-phase-power <args>` | `/rihal-discuss-phase <args> --power` |
+| `/rcode-report` | `/rcode-session-report` (was a pure alias) |
+| `/rcode-karpathy-audit <args>` | `/rcode-review <args> --karpathy` |
+| `/rcode-review-adversarial <args>` | `/rcode-review <args> --attack` (plain English) |
+| `/rcode-review-edge-case-hunter <args>` | `/rcode-review <args> --edge-cases` |
+| `/rcode-discuss-phase-power <args>` | `/rcode-discuss-phase <args> --power` |
 
 Underlying workflow files retained — `code-review` delegates to them on flag match.
 
 ### Changed — Agents (Phase 2 + Phase 4)
 
-- `rihal-architect` agent dropped — folded into `rihal-waleed` (CTO + Chief Architect)
-- `rihal-tech-writer` agent dropped — folded into `rihal-noor` (Technical Writer & Presentation Lead). Noor gained `Write, Edit` tools.
+- `rcode-architect` agent dropped — folded into `rcode-waleed` (CTO + Chief Architect)
+- `rcode-tech-writer` agent dropped — folded into `rcode-noor` (Technical Writer & Presentation Lead). Noor gained `Write, Edit` tools.
 - `team.yaml` agent count: 47 → 45
 
 ### Changed — Skills slimmed (Phase 4 Group 4)
 
 8 oversized SKILL.md files moved to ≤120 lines with detail in sibling `references.md`:
 
-- `rihal-clone-website` (416 → 75)
-- `rihal-distillator` (212 → 63)
-- `rihal-editorial-review-structure` (211 → 73)
-- `rihal-advanced-elicitation` (167 → 67)
+- `rcode-clone-website` (416 → 75)
+- `rcode-distillator` (212 → 63)
+- `rcode-editorial-review-structure` (211 → 73)
+- `rcode-advanced-elicitation` (167 → 67)
 - `dalil-scout` (202 → 120)
 - `majlis-council` (192 → 98)
 - `raees-orchestrator` (166 → 105)
-- `rihal-frontend-design` (182 → 92)
+- `rcode-frontend-design` (182 → 92)
 
 ### Removed (user-facing slashes only — internal workflows preserved)
 
-- `/rihal-report`, `/rihal-new-project-research`, `/rihal-new-project-roadmap`, `/rihal-check-implementation-readiness`
-- `/rihal-discuss-phase-power`, `/rihal-karpathy-audit`, `/rihal-review-adversarial`, `/rihal-review-edge-case-hunter`
+- `/rcode-report`, `/rcode-new-project-research`, `/rcode-new-project-roadmap`, `/rcode-check-implementation-readiness`
+- `/rcode-discuss-phase-power`, `/rcode-karpathy-audit`, `/rcode-review-adversarial`, `/rcode-review-edge-case-hunter`
 
 ### Notable decisions
 
-- **Path B** — skill folder names stay `rihal-*` for `cli/install.js` compatibility; brand vocabulary lives in slash names and content. See [`BRAND.md`](BRAND.md).
+- **Path B** — skill folder names stay `rcode-*` for `cli/install.js` compatibility; brand vocabulary lives in slash names and content. See [`BRAND.md`](BRAND.md).
 - **Plain English over jargon** — `--attack` instead of `--adversarial`, `--edge-cases` instead of `--edge-case-hunter`. Audience includes non-native English speakers.
 - **Workflow file splits skipped** — Phase 5 work was deferred. Rationale: workflows are dense executable bash + agent-dispatch, not redundant prose. Trimming carried unverified runtime risk.
 - **Off-limits files preserved** — `cli/install.js`, `cli/update.js`, `cli/github-sync.js`, `cli/postinstall.js`, `cli/uninstall.js` were not modified in this programme. `server/dashboard.js` was extended additively (one route registration) with explicit user approval.
@@ -611,23 +611,23 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 
 ### Fixed
 - `doctor` no longer reports `actions 0/4 missing: 1-analysis, 2-plan, ...` — manifest builder now walks action bucket dirs recursively (matching `installSkills` behavior) instead of adding bucket directory names that never appear in `.claude/skills/`
-- `doctor` no longer reports `Memory bank: never initialized` immediately after fresh install — `install` now seeds empty `.rihal/context/active.md` and `.rihal/context/project-brief.md` stubs so the "never" state is skipped; message reads "run /rihal-init in your editor to populate project context"
+- `doctor` no longer reports `Memory bank: never initialized` immediately after fresh install — `install` now seeds empty `.rcode/context/active.md` and `.rcode/context/project-brief.md` stubs so the "never" state is skipped; message reads "run /rcode-init in your editor to populate project context"
 
 ---
 
 ## v2.3.3 — CLI aliases + state.json fix + stale install-v2 refs removed (2026-04-25)
 
 ### Added
-- `rihal` bin alias in package.json — `rihal install`, `rihal update`, `rihal uninstall` now work alongside `rcode` and `rihal-code`
-- `rihal/state.json` template — install now seeds `.rihal/state.json` correctly on first install (was silently skipped because template was missing, causing health check failure `✗ .rihal/state.json parses — missing`)
+- `rcode` bin alias in package.json — `rcode install`, `rcode update`, `rcode uninstall` now work alongside `rcode` and `rcode`
+- `rcode/state.json` template — install now seeds `.rcode/state.json` correctly on first install (was silently skipped because template was missing, causing health check failure `✗ .rcode/state.json parses — missing`)
 
 ### Fixed
-- Replaced all `rihal-code install-v2` error messages in workflows (council.md, chain.md, discuss.md, enable-hooks.md) — stale v1 command, now `npx @hanzlaa/rcode install`
+- Replaced all `rcode install-v2` error messages in workflows (council.md, chain.md, discuss.md, enable-hooks.md) — stale v1 command, now `npx @hanzlaa/rcode install`
 - Corrected agent/command counts everywhere: **43 agents, 99 commands** (plan-checker alias shares sprint-checker file; 99 command files on disk)
   - README.md, docs/agents.md, docs/TIERS.md all updated
 
 ### No behavior change
-- `rihal-code` alias preserved for backward compatibility
+- `rcode` alias preserved for backward compatibility
 - `npx @hanzlaa/rcode` still works as before
 
 ---
@@ -639,8 +639,8 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 ### Fixed
 
 - Corrected `team.yaml` YAML structure: tactical agents block was nested inside `routing:` mapping, causing parse errors. Added proper `tactical_agents:` top-level key.
-- Registered `rihal-plan-checker` in `team.yaml` (alias for `rihal-sprint-checker`; referenced in `verify-work.md` workflow but was never registered)
-- Removed 3 dead stub entries from `docs/agents.md`: `rihal-doc-verifier`, `rihal-doc-writer`, `rihal-repo-metrics` — no agent files exist, no workflow references found
+- Registered `rcode-plan-checker` in `team.yaml` (alias for `rcode-sprint-checker`; referenced in `verify-work.md` workflow but was never registered)
+- Removed 3 dead stub entries from `docs/agents.md`: `rcode-doc-verifier`, `rcode-doc-writer`, `rcode-repo-metrics` — no agent files exist, no workflow references found
 - Corrected agent counts across all docs: 46 → 44 (17 persona + 27 tactical)
   - `docs/agents.md` header
   - `README.md` feature list and health check output
@@ -659,8 +659,8 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 - Added `## Overview` to 34 skills, `## Workflow` to 12 skills
 - Renamed `## On Activation` → `## Workflow` in all 17 agent SKILL.md files
 - Fixed 7 broken `@`-includes across workflows: `autonomous.md`, `sprint-planning.md`, `checkpoint-preview.md`, `prfaq.md`, `document-project.md`
-- Fixed broken `@.rihal/workflows/execute-plan.md` reference in `rihal-planner.md` → `execute.md`
-- Removed legacy nested duplicate SKILL.md dirs (`rihal-shard-doc/rihal-shard-doc`, `rihal-advanced-elicitation/rihal-advanced-elicitation`)
+- Fixed broken `@.rcode/workflows/execute-plan.md` reference in `rcode-planner.md` → `execute.md`
+- Removed legacy nested duplicate SKILL.md dirs (`rcode-shard-doc/rcode-shard-doc`, `rcode-advanced-elicitation/rcode-advanced-elicitation`)
 - Added `skill_path:` field to 14 agents in `team.yaml` linking persona IDs to `skills/agents/` dirs
 - Registered all 26 tactical/workflow agents in `team.yaml` (executor, planner, verifier, debugger, etc.) — were on disk but invisible to council dispatch (#201)
 - Added retroactive `SPRINT.md` for phases 01–03 (completed before sprint tracking was standardized)
@@ -675,19 +675,19 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 
 ### Added
 
-- Auto-sync state on commit (pre-commit hook writes `.rihal/state.json` on every `git commit`)
-- `/rihal-brainstorm` skill — structured ideation with reverse-brainstorm, SCAMPER, and 6-hats modes
+- Auto-sync state on commit (pre-commit hook writes `.rcode/state.json` on every `git commit`)
+- `/rcode-brainstorm` skill — structured ideation with reverse-brainstorm, SCAMPER, and 6-hats modes
 - 24 tactical sub-agents registered in `team.yaml` (partial — full registration in v2.3.1)
 - Dashboard: hierarchical nav (milestones → phases → sprints → tasks), file browser, auto-refresh, blocker banner, design system, dark/light toggle, keyboard shortcuts
 
 ### Fixed
 
 - Dashboard: strip YAML frontmatter before rendering markdown in file viewer
-- Dashboard: project name showing `.` instead of `rihal-code`
+- Dashboard: project name showing `.` instead of `rcode`
 - Dashboard: auto-refresh re-renders active view without page reload
 - Dashboard: modularized monolithic 1200-line file into `server/lib/` modules
 - Planning: aligned `.planning/` structure with the rcode standard layout (phases 01–05 dirs, PLAN.md, VERIFICATION.md)
-- Config: `project_name: '.'` → `rihal-code`; stale `rihal_source_path` cleared
+- Config: `project_name: '.'` → `rcode`; stale `rcode_source_path` cleared
 
 ---
 
@@ -702,8 +702,8 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 
 ### The committable split
 
-- ✅ **Commit:** `.rihal/config.yaml` (project mode/language/profile), `.rihal/state.json` (decisions log + roadmap + blockers), `.planning/` (PRD, roadmap, sprints, SUMMARY files).
-- ❌ **Ignore:** `.claude/`, `.rihal/{bin,workflows,references,commands,skills}/`, `rihal/brain/`, lock files, debug artifacts.
+- ✅ **Commit:** `.rcode/config.yaml` (project mode/language/profile), `.rcode/state.json` (decisions log + roadmap + blockers), `.planning/` (PRD, roadmap, sprints, SUMMARY files).
+- ❌ **Ignore:** `.claude/`, `.rcode/{bin,workflows,references,commands,skills}/`, `rcode/brain/`, lock files, debug artifacts.
 
 ### Verified
 
@@ -714,7 +714,7 @@ See [`MIGRATIONS.md`](MIGRATIONS.md) for the per-surface mapping. CI catches old
 
 ### Deferred
 
-Users already on v2.1.0 who accidentally committed `.claude/` etc. will need a one-off cleanup: `git rm -r --cached .claude .rihal/workflows .rihal/bin .rihal/references rihal/brain && git commit -m "chore: stop tracking rcode-managed files"`. A follow-up `rcode migrate` subcommand could automate this but it's not shipped here.
+Users already on v2.1.0 who accidentally committed `.claude/` etc. will need a one-off cleanup: `git rm -r --cached .claude .rcode/workflows .rcode/bin .rcode/references rcode/brain && git commit -m "chore: stop tracking rcode-managed files"`. A follow-up `rcode migrate` subcommand could automate this but it's not shipped here.
 
 ---
 
@@ -726,42 +726,42 @@ Also bundles M2.5 (rebuilt `/progress` and `/status`, PR #166) + the orphan fixe
 
 ### Added
 
-- **npm package:** `@hanzlaa/rcode` scoped under the personal `hanzlaa` npm account (pending Rihal org approval for a future `@rihal/code` rename).
-- **Binary aliases:** `rcode` (primary) + `rihal-code` (legacy alias — existing commands keep working).
+- **npm package:** `@hanzlaa/rcode` scoped under the personal `hanzlaa` npm account (pending rcode org approval for a future `@rcode/code` rename).
+- **Binary aliases:** `rcode` (primary) + `rcode` (legacy alias — existing commands keep working).
 - **`docs/install.md`** — dedicated install guide covering flavors (module subsets, IDE options, version pinning), yolo mode, troubleshooting, uninstall.
 - **M2.5 CLI subcommands** (via PR #166):
-  - `rihal-tools progress init` — single pre-computed snapshot for `/rihal-progress` rendering.
-  - `rihal-tools progress bar --raw` — ASCII bar string only.
-  - `rihal-tools progress insights` — drift / undercount / between-milestones detection.
-  - `rihal-tools progress routes` — intent-tree for Route A/B/C Next Up menu.
-  - `rihal-tools summary-extract` — surgical field extraction from SUMMARY.md (no whole-file load).
-  - `rihal-tools state-snapshot` — compact state for display.
-  - `rihal-tools state promote-backlog 999.x --to NN` — parking-lot promotion.
-- **Story- and sprint-level state sync** (PR #167, issue #135): `state sync --from-disk` now parses `epics.md` for stories + walks `.rihal/phases/*/sprint-*.md` for sprint entries. Status preservation verified end-to-end.
+  - `rcode-tools progress init` — single pre-computed snapshot for `/rcode-progress` rendering.
+  - `rcode-tools progress bar --raw` — ASCII bar string only.
+  - `rcode-tools progress insights` — drift / undercount / between-milestones detection.
+  - `rcode-tools progress routes` — intent-tree for Route A/B/C Next Up menu.
+  - `rcode-tools summary-extract` — surgical field extraction from SUMMARY.md (no whole-file load).
+  - `rcode-tools state-snapshot` — compact state for display.
+  - `rcode-tools state promote-backlog 999.x --to NN` — parking-lot promotion.
+- **Story- and sprint-level state sync** (PR #167, issue #135): `state sync --from-disk` now parses `epics.md` for stories + walks `.rcode/phases/*/sprint-*.md` for sprint entries. Status preservation verified end-to-end.
 - **`docs/verification/v2.0-gap-fixes.md`** (PR #168, issue #136): 9-row verification matrix confirming the v2.0 gap batch is intact.
 - **`docs/parking-lot-convention.md`**: 999.x numbering documentation.
 
 ### Changed
 
-- **Workflow shrinkage:** `rihal/workflows/progress.md` dropped from 573 to 184 lines (68% reduction) — CLI does the thinking, workflow renders.
-- **`/rihal-status`** and **`/rihal-progress`** both call the same CLI subcommand — guaranteed consistency, closes the seam from issue #131.
+- **Workflow shrinkage:** `rcode/workflows/progress.md` dropped from 573 to 184 lines (68% reduction) — CLI does the thinking, workflow renders.
+- **`/rcode-status`** and **`/rcode-progress`** both call the same CLI subcommand — guaranteed consistency, closes the seam from issue #131.
 - **README** install command updated to `npx @hanzlaa/rcode install`.
 
 ### Fixed
 
-- Self-drift on the rihal-code repo itself — phases 04, 05 now have proper `number` fields in `.rihal/state.json`, drift-detection reports clean.
+- Self-drift on the rcode repo itself — phases 04, 05 now have proper `number` fields in `.rcode/state.json`, drift-detection reports clean.
 
 ### Deferred to follow-ups (issues open in v3.0 milestone)
 
 - Full skill-folder reorganization under role directories (#179).
-- Real Rihal brain URLs (#162) — pending Rihal approval.
+- Real rcode brain URLs (#162) — pending rcode approval.
 - CI Actions quota fix (#165) — pending billing action.
 
 ---
 
-## v2.0.0 — Rihal Brain (2026-04-15)
+## v2.0.0 — rcode Brain (2026-04-15)
 
-**Repositioning release.** Rihal Code is no longer a generic AI-engineering methodology that happens to be written at Rihal. It is **the installable context-brain for Rihalians** — every Rihal project can now pull PR standards, commit conventions, architecture docs, and internal guides straight from Rihal's own repos into the AI assistant's context on install.
+**Repositioning release.** rcode is no longer a generic AI-engineering methodology that happens to be written at rcode. It is **the installable context-brain for Rihalians** — every rcode project can now pull PR standards, commit conventions, architecture docs, and internal guides straight from rcode's own repos into the AI assistant's context on install.
 
 The v1 methodology, agents, and skills all remain. v2 adds the brain layer on top and reorganizes contribution around role-owners.
 
@@ -769,10 +769,10 @@ Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/miles
 
 ### Added
 
-- **`docs/what-is-rihal-code.md`** — product story for the v2 repositioning.
+- **`docs/what-is-rcode.md`** — product story for the v2 repositioning.
 - **`docs/ROADMAP.md`** — public roadmap through v3.0 (MCP server) with binary kill criteria.
-- **`rihal/brain/`** — new content tree with `sources.yaml` (placeholder URLs until M5) and pull destinations for `rihal-github/`, `rihal-docs/`, and `best-practices/`.
-- **`rihal-tools brain pull`** — CLI subcommand that fetches configured sources via `git` sparse-checkout. Mirrors the `state sync --from-disk` pattern shipped in v1.0.0-beta.0 / issue #126.
+- **`rcode/brain/`** — new content tree with `sources.yaml` (placeholder URLs until M5) and pull destinations for `rcode-github/`, `rcode-docs/`, and `best-practices/`.
+- **`rcode-tools brain pull`** — CLI subcommand that fetches configured sources via `git` sparse-checkout. Mirrors the `state sync --from-disk` pattern shipped in v1.0.0-beta.0 / issue #126.
 - **Install hook** runs `brain pull` automatically (graceful no-op when sources are placeholders).
 - **`.github/CODEOWNERS`** — per-role ownership enforcement so PM / CTO / UX / QA etc. changes route to the right reviewers.
 - **`CONTRIBUTING.md` — per-role guide** — one paragraph, one command sequence, one PR per role.
@@ -782,11 +782,11 @@ Tracked in GitHub [milestone #4](https://github.com/hanzlahabib/rihal-code/miles
 ### Changed
 
 - **README.md** — new top section leads with the brain-in-a-box framing. Tier structure and methodology docs unchanged beneath it.
-- **`/rihal-update`** — now also runs `brain pull`, supports version pinning (`/rihal-update v1.3.0`).
+- **`/rcode-update`** — now also runs `brain pull`, supports version pinning (`/rcode-update v1.3.0`).
 
 ### Documentation
 
-- Public roadmap surfaces M2.5 (progress/status UX overhaul), M3 (role ownership), M4 (release pipeline), M5 (real Rihal content URLs), M6 (MCP).
+- Public roadmap surfaces M2.5 (progress/status UX overhaul), M3 (role ownership), M4 (release pipeline), M5 (real rcode content URLs), M6 (MCP).
 
 ### Deferred to follow-up releases
 
@@ -802,20 +802,20 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 
 ### Breaking
 
-- **`rihal/v2/` directory removed.** All contents promoted to `rihal/` root. Any external scripts referencing `rihal/v2/...` paths must update to `rihal/...`.
+- **`rcode/v2/` directory removed.** All contents promoted to `rcode/` root. Any external scripts referencing `rcode/v2/...` paths must update to `rcode/...`.
 - **`cli/install-v2.js` renamed to `cli/install.js`.** Old script path invalid.
-- **`npx rihal-code install` is now the single entry point.** Routes through the unified installer (was previously routing to v1's `cli/init.js`).
+- **`npx rcode install` is now the single entry point.** Routes through the unified installer (was previously routing to v1's `cli/init.js`).
 - **Multi-IDE support reduced to Claude / Cursor / Gemini.** Dropped Windsurf, Antigravity, Codex direct install paths (AGENTS.md still applies).
 
 ### Added
 
 - **Unified installer** — installs v2 agents/commands/workflows AND v1 phrase-activated skills in one command. 93 slash commands + 44 agents + 58 skills.
-- **`/rihal-dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
-- **`rihal-scaffold-project`** skill — bootstraps a new Rihalian project from `github.com/rihal-om/template`. Fresh clone, no cache, safety checks on non-empty dirs.
+- **`/rcode-dashboard`** slash command — launches Diwan view-only dashboard from inside Claude Code.
+- **`rcode-scaffold-project`** skill — bootstraps a new Rihalian project from `github.com/rcode-om/template`. Fresh clone, no cache, safety checks on non-empty dirs.
 - **Tier-based docs** — `docs/TIERS.md`, `docs/STANDARDS.md`. Skills organized into Starter / Advanced / Ultra Advanced / Standards.
-- **`npx rihal-code tiers`** CLI command — prints the tier map.
+- **`npx rcode tiers`** CLI command — prints the tier map.
 - **Golden Path** — 7-step Starter tier (scaffold → PRD → story → sprint → dev → review → status) for first-time users.
-- **`.planning/PROJECT.md` + `ROADMAP.md` + `STATE.md`** — dogfooded tracking artifacts for rihal-code itself.
+- **`.planning/PROJECT.md` + `ROADMAP.md` + `STATE.md`** — dogfooded tracking artifacts for rcode itself.
 
 ### Changed
 
@@ -823,19 +823,19 @@ First beta release. v1 and v2 methodologies unified into a single landscape.
 - **`README.md`** — "Start Here" tier navigation block at the top. Install section collapsed to one command.
 - **CLI help** — commands grouped into PROJECT / TEAM / META (was flat list of 17).
 - **Postinstall** — shows 7-step Golden Path instead of generic command list.
-- **`rihal/team.yaml`** — v2 schema (agents + utility_agents + routing). v1 schema removed.
+- **`rcode/team.yaml`** — v2 schema (agents + utility_agents + routing). v1 schema removed.
 
 ### Removed
 
-- `rihal/agents/*.agent.md` — 14 v1 persona agents (superseded by v2's 36).
-- `rihal/workflows/` (v1 — 13 files). Replaced by v2's 68 workflows.
-- `rihal/v2/` directory entirely (contents promoted).
+- `rcode/agents/*.agent.md` — 14 v1 persona agents (superseded by v2's 36).
+- `rcode/workflows/` (v1 — 13 files). Replaced by v2's 68 workflows.
+- `rcode/v2/` directory entirely (contents promoted).
 - All inspiration-source references from commit history (rewritten in 95 commits).
 
 ### Fixed
 
-- `.rihal/state.json` was previously committed with the literal string `bad json`. Now gitignored and regenerated on install.
-- `rihal/v2/` hardcoded paths in 3 test files, CLI, references, workflows — all updated.
+- `.rcode/state.json` was previously committed with the literal string `bad json`. Now gitignored and regenerated on install.
+- `rcode/v2/` hardcoded paths in 3 test files, CLI, references, workflows — all updated.
 
 ### Internal
 
@@ -858,30 +858,30 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   - Decimal phase insertion (02.1) for urgent mid-cycle work
   - Hierarchical IDs used throughout for cross-referencing
 - **Multi-agent modes:**
-  - `/rihal-council` — parallel debate (Round 1 + Round 2)
-  - `/rihal-chain` — sequential pipeline with typed outputs per stage
-  - `/rihal-discuss` — single expert, conversational tone
+  - `/rcode-council` — parallel debate (Round 1 + Round 2)
+  - `/rcode-chain` — sequential pipeline with typed outputs per stage
+  - `/rcode-discuss` — single expert, conversational tone
 
 #### Planning & Execution
-- `/rihal-plan` with **plan-verification loop** — rihal-plan-checker validates file/symbol references; loops back on failure
-- `/rihal-chain` with preset pipelines: research-plan, feasibility, gtm-to-build, full-discovery
-- `/rihal-execute` with **post-execute gates:**
-  - rihal-integration-checker (cross-phase E2E verification)
-  - rihal-nyquist-auditor (test coverage audit)
+- `/rcode-plan` with **plan-verification loop** — rcode-plan-checker validates file/symbol references; loops back on failure
+- `/rcode-chain` with preset pipelines: research-plan, feasibility, gtm-to-build, full-discovery
+- `/rcode-execute` with **post-execute gates:**
+  - rcode-integration-checker (cross-phase E2E verification)
+  - rcode-nyquist-auditor (test coverage audit)
   - Both append findings to SUMMARY.md
-- `/rihal-quick` — trivial task execution without ceremony
-- `/rihal-autonomous` — run all remaining phases with token/phase budget
+- `/rcode-quick` — trivial task execution without ceremony
+- `/rcode-autonomous` — run all remaining phases with token/phase budget
 
 #### Intent Guards & Safety
 - **Step 0.5** on every workflow — detects mismatched intent and redirects with copy-paste fix
 - No more confusing output; wrong command → single-line redirect
-- Examples: "That's a decision question, not a planning input. Copy-paste this instead: /rihal-council ..."
+- Examples: "That's a decision question, not a planning input. Copy-paste this instead: /rcode-council ..."
 
 #### Multilingual Support
 - **Multilingual classifier** — recognizes Roman Urdu, Arabic, English
 - Auto-routes to Mariam for GCC/MENA questions
 - Keywords: `dubai`, `affiliate`, `bnanai`, `karobar`, `site banana`, `دبئی`, `مارکیٹ`, `کاروبار`, and 20+ more
-- Example: `/rihal-council yar affiliate site bnanai hai dubai ma` → picks [mariam, hussain-pm, sadiq]
+- Example: `/rcode-council yar affiliate site bnanai hai dubai ma` → picks [mariam, hussain-pm, sadiq]
 
 #### Code Quality
 - **Karpathy coding guidelines** enforcement — 4 principles wired into every code-writing agent:
@@ -889,29 +889,29 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
   2. Simplicity first (no speculative abstractions)
   3. Surgical changes (touch only what's needed)
   4. Goal-driven execution (define verifiable success criteria)
-- `/rihal-karpathy-audit HEAD~5..HEAD` — audit recent changes vs. guidelines
+- `/rcode-karpathy-audit HEAD~5..HEAD` — audit recent changes vs. guidelines
 - Karpathy-guidelines.md in references/ loaded by all executor/planner agents
 
 #### State Management & Recovery
-- `.rihal/state.json` — comprehensive project state tracking
+- `.rcode/state.json` — comprehensive project state tracking
   - Phases, executions, decisions, blockers
   - Council sessions and chain runs
   - Workstreams and milestones
-- `/rihal-status` — formatted state viewer
-- `/rihal-pause-work` → creates `.rihal/HANDOFF.json` + `.planning/.continue-here.md`
-- `/rihal-resume-work` → re-surfaces blocking constraints + last context
-- `/rihal-health --fix` → recovers from corrupted state
+- `/rcode-status` — formatted state viewer
+- `/rcode-pause-work` → creates `.rcode/HANDOFF.json` + `.planning/.continue-here.md`
+- `/rcode-resume-work` → re-surfaces blocking constraints + last context
+- `/rcode-health --fix` → recovers from corrupted state
 
 #### Observability & Debugging
-- `/rihal-show <id>` — display artifact by numeric ID
-- `/rihal-why <topic>` — explain why agent was picked (panel scoring breakdown)
-- `/rihal-rerun <id>` — re-execute previous command/session
-- `/rihal-diff <id1> <id2>` — compare phases/plans/artifacts
-- `/rihal-report <phase>` — generate phase report (decisions, blockers, time)
-- `/rihal-session-report` — comprehensive session summary
+- `/rcode-show <id>` — display artifact by numeric ID
+- `/rcode-why <topic>` — explain why agent was picked (panel scoring breakdown)
+- `/rcode-rerun <id>` — re-execute previous command/session
+- `/rcode-diff <id1> <id2>` — compare phases/plans/artifacts
+- `/rcode-report <phase>` — generate phase report (decisions, blockers, time)
+- `/rcode-session-report` — comprehensive session summary
 
 #### Hooks System (opt-in)
-- `/rihal-enable-hooks` — installs 3 opt-in hooks into `.claude/settings.json`
+- `/rcode-enable-hooks` — installs 3 opt-in hooks into `.claude/settings.json`
 - **pre-edit** — enforces read-before-edit
 - **pre-workflow** — soft intent warnings on mismatched commands
 - **post-commit** — validates commit format, blocks AI attribution
@@ -922,33 +922,33 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - Same commands across all IDEs
 
 #### Phase Management
-- `/rihal-insert-phase 02 "urgent fix"` — creates 02.1 between 02 and 03
-- `/rihal-new-milestone` — start new milestone cycle
-- `/rihal-complete-milestone` — mark milestone complete + generate summary
-- `/rihal-audit-milestone` — verify milestone completeness
+- `/rcode-insert-phase 02 "urgent fix"` — creates 02.1 between 02 and 03
+- `/rcode-new-milestone` — start new milestone cycle
+- `/rcode-complete-milestone` — mark milestone complete + generate summary
+- `/rcode-audit-milestone` — verify milestone completeness
 
 #### Workspace Isolation
-- `/rihal-new-workspace "experimental-auth"` — create isolated parallel track
-- `/rihal-list-workspaces` — list all workspaces and active one
-- `/rihal-remove-workspace` — delete a workspace
+- `/rcode-new-workspace "experimental-auth"` — create isolated parallel track
+- `/rcode-list-workspaces` — list all workspaces and active one
+- `/rcode-remove-workspace` — delete a workspace
 - Useful for A/B testing, parallel R&D, feature branches
 
 #### Miscellaneous Commands
-- `/rihal-diff` — compare phases/plans/artifacts
-- `/rihal-config` — view/edit config directly
-- `/rihal-init` — initialize project with Arabic greeting + setup
-- `/rihal-do` — interactive router (guides you to next action)
-- `/rihal-health` — diagnose state/artifacts/locks
-- `/rihal-forensics` — post-mortem analysis
-- `/rihal-next` — advance to next phase
-- `/rihal-correct-course` — recover from failed phase
-- `/rihal-undo` — safely revert last phase
-- `/rihal-note` — zero-friction idea capture
-- `/rihal-add-todo` — add task to backlog
-- `/rihal-inbox` — review + process captured notes/todos
+- `/rcode-diff` — compare phases/plans/artifacts
+- `/rcode-config` — view/edit config directly
+- `/rcode-init` — initialize project with Arabic greeting + setup
+- `/rcode-do` — interactive router (guides you to next action)
+- `/rcode-health` — diagnose state/artifacts/locks
+- `/rcode-forensics` — post-mortem analysis
+- `/rcode-next` — advance to next phase
+- `/rcode-correct-course` — recover from failed phase
+- `/rcode-undo` — safely revert last phase
+- `/rcode-note` — zero-friction idea capture
+- `/rcode-add-todo` — add task to backlog
+- `/rcode-inbox` — review + process captured notes/todos
 
 #### Documentation & References
-- 35+ reference documents in `rihal/references/`
+- 35+ reference documents in `rcode/references/`
 - council-protocol.md — 5-step majlis + deterministic panel scoring
 - karpathy-guidelines.md — 4 coding principles + validation framework
 - state-schema.md — complete state.json documentation
@@ -958,22 +958,22 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - And 25+ more (checklists, domain probes, response styles, etc.)
 
 #### Global Agent Customization
-- `~/.rihal/agents/rihal-<name>.md` — define custom agents globally
+- `~/.rcode/agents/rcode-<name>.md` — define custom agents globally
 - Agents appear in every project without forking
 - Supported in v2.1+ roadmap
 
 #### Token & Cost Tracking
 - Token cost footer on heavy workflows
-- `/rihal-stats` — displays token usage by model
+- `/rcode-stats` — displays token usage by model
 - Model profiles: quality, balanced, budget, inherit
 
 #### Configuration
-- `.rihal/config.yaml` with 10+ settings:
+- `.rcode/config.yaml` with 10+ settings:
   - user_name, project_name, communication_language
   - mode (guided/yolo), model_profile
   - workflow toggles (plan_checker, post_execute_gates)
   - git branching_strategy
-- `/rihal-settings` — interactive configuration editor
+- `/rcode-settings` — interactive configuration editor
 
 #### Testing & Validation
 - 95+ compliance tests verify:
@@ -1010,10 +1010,10 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 - Cross-project file leaks fixed via CLI subcommand isolation
 
 #### Bug Fixes
-- 13 missing subagent files created (rihal-executor, rihal-planner, rihal-verifier, etc.)
+- 13 missing subagent files created (rcode-executor, rcode-planner, rcode-verifier, etc.)
 - 25 orphaned commands wired into module YAMLs
 - Pre-workflow intent gates now respect multiline input
-- `/rihal-init` no longer drops global saves in TTY
+- `/rcode-init` no longer drops global saves in TTY
 - Backspace in TTY-based prompts preserves prompt text
 - Multi-IDE installer no longer conflicts with existing .claude/ structure
 - Workstream flag conflicts resolved
@@ -1025,7 +1025,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 ### Removed
 
 #### Deprecated
-- `/rihal-generate-project-context` (replaced by `/rihal-init`)
+- `/rcode-generate-project-context` (replaced by `/rcode-init`)
 - Hardcoded agent lists (now derived from installed_agents.yaml)
 - Old cross-system path references and branding leaks
 
@@ -1053,7 +1053,7 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 #### Documentation
 - README rewritten for v2-prototype (64 → 69 commands, 22 → 35+ agents)
 - Added "What's new" section highlighting recent additions
-- Filesystem layout documented (.rihal/ vs .planning/)
+- Filesystem layout documented (.rcode/ vs .planning/)
 - Three modes deep-dive: Council vs. Chain vs. Discuss
 
 ---
@@ -1061,10 +1061,10 @@ v2-prototype is the current active branch. Stable releases will be tagged on mai
 ### Known Issues
 
 #### Limitations
-- Global agents (`~/.rihal/agents/`) not yet supported (roadmap for v2.1)
+- Global agents (`~/.rcode/agents/`) not yet supported (roadmap for v2.1)
 - Mariam and Hussain-PM not installed as first-class council agents (workaround: copy and customize)
 - Worktree isolation removed (auto-branch isolation available instead)
-- Token budgeting on `/rihal-autonomous` is advisory (soft limit, not hard)
+- Token budgeting on `/rcode-autonomous` is advisory (soft limit, not hard)
 
 #### Experimental
 - Decimal phase insertion (02.1) is new; test coverage in progress
@@ -1081,7 +1081,7 @@ Earlier versions tracked on main branch. See GitHub Releases for details.
 ## Roadmap (planned)
 
 ### v2.1
-- Global agents fully supported (`~/.rihal/agents/`)
+- Global agents fully supported (`~/.rcode/agents/`)
 - Mariam and Hussain-PM as first-class council agents
 - Extended multilingual classifier (50+ keywords)
 - Integration with external knowledge bases

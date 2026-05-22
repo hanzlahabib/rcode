@@ -14,7 +14,7 @@ closed: "2026-05-02"
 |-----|-----|------|
 | #589 sidebar expanded on every page | Removed entire sidebar file tree | shell.js, client.js |
 | #592 duplicate /api/files fetch | Shared `_filesPromise` — one request per page load | client.js |
-| #593 sprint card no task guidance | `sprintCard()` empty-state: "No tasks — run /rihal-plan" | client.js |
+| #593 sprint card no task guidance | `sprintCard()` empty-state: "No tasks — run /rcode-plan" | client.js |
 | #594 sidebar duplicates Files view | Sidebar IIFE deleted; Files view is canonical browser | client.js |
 | #595 Tasks view no CTA | `renderTasksGrouped()` references `S.currentPhase` | client.js |
 

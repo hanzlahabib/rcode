@@ -7,23 +7,23 @@ depends_on: ["13.1"]
 sequential: true
 sequential_after: "13.1"
 files_modified:
-  - rihal/bin/rihal-tools.cjs
-  - rihal/bin/lib/phase-dirs.cjs
+  - rcode/bin/rcode-tools.cjs
+  - rcode/bin/lib/phase-dirs.cjs
 autonomous: true
 requirements_addressed:
   - "#469 — single canonical phase-dir walker"
-  - "BRIEF acceptance: grep -c 'function walkPhaseDirs' rihal/bin/rihal-tools.cjs → exactly 1"
+  - "BRIEF acceptance: grep -c 'function walkPhaseDirs' rcode/bin/rcode-tools.cjs → exactly 1"
   - "BRIEF acceptance: cmdInit phase-aware fields keep working (Phase 10 #466 / Phase 12 #468 contracts)"
 must_haves:
   truths:
-    - "`node rihal/bin/rihal-tools.cjs init phase-op 6` returns phase_found, phase_dir, has_research, has_context, has_verification, has_plans, plan_count, has_reviews, has_uat — same shape as before"
-    - "`node rihal/bin/rihal-tools.cjs progress init` includes phase disk artifact info in identical shape to before this sprint"
+    - "`node rcode/bin/rcode-tools.cjs init phase-op 6` returns phase_found, phase_dir, has_research, has_context, has_verification, has_plans, plan_count, has_reviews, has_uat — same shape as before"
+    - "`node rcode/bin/rcode-tools.cjs progress init` includes phase disk artifact info in identical shape to before this sprint"
     - "All 132/132 existing tests still pass"
     - "Dogfood Check 6 (phase-status alignment #461) still passes"
   artifacts:
-    - "New file rihal/bin/lib/phase-dirs.cjs exporting `walkPhaseDirs(phasesDir)` and `inspectPhaseDir(phasesDirEntry, phaseNum)` — the two shapes the codebase needs"
-    - "rihal/bin/rihal-tools.cjs no longer contains a nested `function walkPhaseDirs` inside cmdProgress"
-    - "rihal/bin/rihal-tools.cjs cmdInit's inline phase-dir scan (lines 421-460) is replaced with a call to inspectPhaseDir"
+    - "New file rcode/bin/lib/phase-dirs.cjs exporting `walkPhaseDirs(phasesDir)` and `inspectPhaseDir(phasesDirEntry, phaseNum)` — the two shapes the codebase needs"
+    - "rcode/bin/rcode-tools.cjs no longer contains a nested `function walkPhaseDirs` inside cmdProgress"
+    - "rcode/bin/rcode-tools.cjs cmdInit's inline phase-dir scan (lines 421-460) is replaced with a call to inspectPhaseDir"
   key_links:
     - "cmdProgress calls walkPhaseDirs() via require('./lib/phase-dirs.cjs')"
     - "cmdInit calls inspectPhaseDir() via require('./lib/phase-dirs.cjs')"
@@ -31,7 +31,7 @@ must_haves:
 ---
 
 <objective>
-Lift the two phase-dir walkers into one module: `rihal/bin/lib/phase-dirs.cjs`. cmdProgress and cmdInit both consume it. The output shapes differ (cmdProgress wants {by-num map of {plan_count, summary_count, has_research, has_context, has_verification}}; cmdInit wants {single phase: phase_slug, phase_dir, has_research, has_context, has_verification, has_plans, plan_count, has_reviews, has_uat}) — expose two functions sharing one scanner so neither caller's contract changes.
+Lift the two phase-dir walkers into one module: `rcode/bin/lib/phase-dirs.cjs`. cmdProgress and cmdInit both consume it. The output shapes differ (cmdProgress wants {by-num map of {plan_count, summary_count, has_research, has_context, has_verification}}; cmdInit wants {single phase: phase_slug, phase_dir, has_research, has_context, has_verification, has_plans, plan_count, has_reviews, has_uat}) — expose two functions sharing one scanner so neither caller's contract changes.
 
 Purpose: Eliminates the second drift source. Phase 12 (#468) added `has_reviews`/`has_uat` to cmdInit only; cmdProgress's walker doesn't know about them. Lifting prevents this kind of one-sided drift.
 
@@ -42,7 +42,7 @@ Output: One canonical scanner. Both callers go through it. No behavior changes f
 @.planning/STATE.md
 @.planning/phases/13-parser-walker-consolidation/13-BRIEF.md
 @.planning/phases/13-parser-walker-consolidation/13-1-SPRINT.md
-@rihal/bin/lib/roadmap.cjs
+@rcode/bin/lib/roadmap.cjs
 </context>
 
 <tasks>
@@ -50,17 +50,17 @@ Output: One canonical scanner. Both callers go through it. No behavior changes f
 ### Story 13.2.1 — Create lib/phase-dirs.cjs with walkPhaseDirs + inspectPhaseDir
 
 <files>
-- rihal/bin/lib/phase-dirs.cjs (NEW FILE — creates: rihal/bin/lib/phase-dirs.cjs)
+- rcode/bin/lib/phase-dirs.cjs (NEW FILE — creates: rcode/bin/lib/phase-dirs.cjs)
 </files>
 
 <read_first>
-- rihal/bin/rihal-tools.cjs lines 3959-3980 (existing walkPhaseDirs nested in cmdProgress — output shape: by-num map with `path`, `dirName`, `plan_count`, `summary_count`, `has_research`, `has_context`, `has_verification`)
-- rihal/bin/rihal-tools.cjs lines 421-460 (cmdInit's inline scan — output shape: single-phase fields `has_research`, `has_context`, `has_verification`, `has_plans`, `plan_count`, `has_reviews`, `has_uat`, plus `phase_slug` and `phase_dir`)
-- rihal/bin/lib/roadmap.cjs (style reference — match the JSDoc comment style and stdlib-only constraint)
+- rcode/bin/rcode-tools.cjs lines 3959-3980 (existing walkPhaseDirs nested in cmdProgress — output shape: by-num map with `path`, `dirName`, `plan_count`, `summary_count`, `has_research`, `has_context`, `has_verification`)
+- rcode/bin/rcode-tools.cjs lines 421-460 (cmdInit's inline scan — output shape: single-phase fields `has_research`, `has_context`, `has_verification`, `has_plans`, `plan_count`, `has_reviews`, `has_uat`, plus `phase_slug` and `phase_dir`)
+- rcode/bin/lib/roadmap.cjs (style reference — match the JSDoc comment style and stdlib-only constraint)
 </read_first>
 
 <action>
-Create `rihal/bin/lib/phase-dirs.cjs`. Pure stdlib (`fs`, `path`). Export two functions backed by one private scanner:
+Create `rcode/bin/lib/phase-dirs.cjs`. Pure stdlib (`fs`, `path`). Export two functions backed by one private scanner:
 
 ```js
 const fs = require('fs');
@@ -166,8 +166,8 @@ Do NOT delete the duplicates yet — that happens in 13.2.2 and 13.2.3.
 
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node -e "
-const { walkPhaseDirs, inspectPhaseDir } = require('./rihal/bin/lib/phase-dirs.cjs');
+cd /home/hanzla/development/rcode && node -e "
+const { walkPhaseDirs, inspectPhaseDir } = require('./rcode/bin/lib/phase-dirs.cjs');
 const dirs = walkPhaseDirs('.planning/phases');
 const phase13 = dirs['13'];
 if (!phase13 || !phase13.path) { console.error('FAIL: phase 13 not found via walker'); process.exit(1); }
@@ -181,10 +181,10 @@ console.log('PASS inspectPhaseDir: slug=' + ins.phase_slug + ' has_reviews=' + i
 </verify>
 
 <done>
-- `rihal/bin/lib/phase-dirs.cjs` exists, ~80 lines, pure stdlib
+- `rcode/bin/lib/phase-dirs.cjs` exists, ~80 lines, pure stdlib
 - Exports `walkPhaseDirs`, `inspectPhaseDir`, `scanPhaseDir`
 - Smoke test against `.planning/phases` returns the expected shapes for both functions
-- The file has a JSDoc block matching the style of `rihal/bin/lib/roadmap.cjs`
+- The file has a JSDoc block matching the style of `rcode/bin/lib/roadmap.cjs`
 </done>
 
 ---
@@ -192,12 +192,12 @@ console.log('PASS inspectPhaseDir: slug=' + ins.phase_slug + ' has_reviews=' + i
 ### Story 13.2.2 — Replace nested walkPhaseDirs in cmdProgress with the lifted helper
 
 <files>
-- rihal/bin/rihal-tools.cjs (delete the function at lines 3959-3980; rewire its call sites)
+- rcode/bin/rcode-tools.cjs (delete the function at lines 3959-3980; rewire its call sites)
 </files>
 
 <read_first>
-- rihal/bin/rihal-tools.cjs lines 3879-end-of-cmdProgress (find the nested `walkPhaseDirs` definition and every `walkPhaseDirs()` call inside cmdProgress)
-- rihal/bin/lib/phase-dirs.cjs (just-created in 13.2.1)
+- rcode/bin/rcode-tools.cjs lines 3879-end-of-cmdProgress (find the nested `walkPhaseDirs` definition and every `walkPhaseDirs()` call inside cmdProgress)
+- rcode/bin/lib/phase-dirs.cjs (just-created in 13.2.1)
 </read_first>
 
 <action>
@@ -209,17 +209,17 @@ console.log('PASS inspectPhaseDir: slug=' + ins.phase_slug + ' has_reviews=' + i
 
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && grep -c "function walkPhaseDirs" rihal/bin/rihal-tools.cjs | grep -q "^0$" && echo "PASS: no nested walkPhaseDirs definition" || { echo "FAIL: nested function still present"; grep -n "function walkPhaseDirs" rihal/bin/rihal-tools.cjs; exit 1; }
+cd /home/hanzla/development/rcode && grep -c "function walkPhaseDirs" rcode/bin/rcode-tools.cjs | grep -q "^0$" && echo "PASS: no nested walkPhaseDirs definition" || { echo "FAIL: nested function still present"; grep -n "function walkPhaseDirs" rcode/bin/rcode-tools.cjs; exit 1; }
 </automated>
 
 <automated>
-cd /home/hanzla/development/rihal-code && node rihal/bin/rihal-tools.cjs progress init 2>&1 > /tmp/progress-after.json && [ -s /tmp/progress-after.json ] && echo "PASS: progress init produces output" && head -c 400 /tmp/progress-after.json || { echo "FAIL: progress init broken"; cat /tmp/progress-after.json; exit 1; }
+cd /home/hanzla/development/rcode && node rcode/bin/rcode-tools.cjs progress init 2>&1 > /tmp/progress-after.json && [ -s /tmp/progress-after.json ] && echo "PASS: progress init produces output" && head -c 400 /tmp/progress-after.json || { echo "FAIL: progress init broken"; cat /tmp/progress-after.json; exit 1; }
 </automated>
 </verify>
 
 <done>
-- `grep "function walkPhaseDirs" rihal/bin/rihal-tools.cjs` → 0 matches
-- `node rihal/bin/rihal-tools.cjs progress init` runs without error
+- `grep "function walkPhaseDirs" rcode/bin/rcode-tools.cjs` → 0 matches
+- `node rcode/bin/rcode-tools.cjs progress init` runs without error
 - Output shape unchanged (verifiable by diffing against a baseline captured before this sprint started)
 </done>
 
@@ -228,16 +228,16 @@ cd /home/hanzla/development/rihal-code && node rihal/bin/rihal-tools.cjs progres
 ### Story 13.2.3 — Replace cmdInit's inline phase-dir scan with inspectPhaseDir
 
 <files>
-- rihal/bin/rihal-tools.cjs (lines 421-478 inside cmdInit's phase-aware branch)
+- rcode/bin/rcode-tools.cjs (lines 421-478 inside cmdInit's phase-aware branch)
 </files>
 
 <read_first>
-- rihal/bin/rihal-tools.cjs lines 395-520 (cmdInit phase-aware branch, full context including the `files0()` helper usages at lines 463-478)
-- rihal/bin/lib/phase-dirs.cjs (the inspectPhaseDir contract, especially the `files` field for files0-style lookups)
+- rcode/bin/rcode-tools.cjs lines 395-520 (cmdInit phase-aware branch, full context including the `files0()` helper usages at lines 463-478)
+- rcode/bin/lib/phase-dirs.cjs (the inspectPhaseDir contract, especially the `files` field for files0-style lookups)
 </read_first>
 
 <action>
-At rihal-tools.cjs ~line 415 already does `const roadmap = require(...)`. Add a parallel:
+At rcode-tools.cjs ~line 415 already does `const roadmap = require(...)`. Add a parallel:
 ```js
 const phaseDirs = require(path.join(__dirname, 'lib', 'phase-dirs.cjs'));
 ```
@@ -293,7 +293,7 @@ Note: `out.phase_found` retains its EXISTING semantic (driven by `roadmapPhase !
 
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node rihal/bin/rihal-tools.cjs init phase-op "13" 2>&1 | node -e "
+cd /home/hanzla/development/rcode && node rcode/bin/rcode-tools.cjs init phase-op "13" 2>&1 | node -e "
 let buf=''; process.stdin.on('data',c=>buf+=c).on('end',()=>{
   let j; try { j = JSON.parse(buf); } catch(e) { console.error('FAIL non-JSON:', buf.slice(0,200)); process.exit(1); }
   const need = ['phase_found','phase_number','padded_phase','phase_slug','phase_dir','has_research','has_context','has_verification','has_plans','plan_count','has_reviews','has_uat'];
@@ -305,22 +305,22 @@ let buf=''; process.stdin.on('data',c=>buf+=c).on('end',()=>{
 
 <automated>
 # Final consolidation gate for walker
-cd /home/hanzla/development/rihal-code && total=$(grep -c "function walkPhaseDirs" rihal/bin/rihal-tools.cjs); [ "$total" = "0" ] && echo "PASS: no nested walkPhaseDirs in rihal-tools.cjs (lifted to lib/phase-dirs.cjs)" || { echo "FAIL: $total walker definitions remain"; exit 1; }
+cd /home/hanzla/development/rcode && total=$(grep -c "function walkPhaseDirs" rcode/bin/rcode-tools.cjs); [ "$total" = "0" ] && echo "PASS: no nested walkPhaseDirs in rcode-tools.cjs (lifted to lib/phase-dirs.cjs)" || { echo "FAIL: $total walker definitions remain"; exit 1; }
 </automated>
 
 <automated>
-cd /home/hanzla/development/rihal-code && pnpm test 2>&1 | tail -10 | grep -qE "132 (passed|passing)" && echo "PASS 132 tests" || { echo "FAIL: tests broken"; pnpm test 2>&1 | tail -40; exit 1; }
+cd /home/hanzla/development/rcode && pnpm test 2>&1 | tail -10 | grep -qE "132 (passed|passing)" && echo "PASS 132 tests" || { echo "FAIL: tests broken"; pnpm test 2>&1 | tail -40; exit 1; }
 </automated>
 
 <automated>
-cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | tail -5 | grep -q "Dogfood checks passed" && echo "PASS dogfood" || { echo "FAIL dogfood"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
+cd /home/hanzla/development/rcode && bash scripts/dogfood-check.sh 2>&1 | tail -5 | grep -q "Dogfood checks passed" && echo "PASS dogfood" || { echo "FAIL dogfood"; bash scripts/dogfood-check.sh 2>&1; exit 1; }
 </automated>
 </verify>
 
 <done>
-- `grep "function walkPhaseDirs" rihal/bin/rihal-tools.cjs` returns 0 matches (the canonical now lives in `rihal/bin/lib/phase-dirs.cjs`)
+- `grep "function walkPhaseDirs" rcode/bin/rcode-tools.cjs` returns 0 matches (the canonical now lives in `rcode/bin/lib/phase-dirs.cjs`)
 - The inline phase-dir scan block in cmdInit (was ~40 lines, 421-460) is replaced by a single `inspectPhaseDir` call + flat field assignments
-- `node rihal/bin/rihal-tools.cjs init phase-op "13"` returns all 12 expected fields with correct values
+- `node rcode/bin/rcode-tools.cjs init phase-op "13"` returns all 12 expected fields with correct values
 - 132/132 tests pass
 - `scripts/dogfood-check.sh` passes
 </done>
@@ -328,10 +328,10 @@ cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | t
 </tasks>
 
 <verification>
-- `grep -c "function walkPhaseDirs" rihal/bin/rihal-tools.cjs` → 0 (canonical lives in lib/phase-dirs.cjs)
-- `grep -c "function walkPhaseDirs\|function inspectPhaseDir" rihal/bin/lib/phase-dirs.cjs` → 2
-- `node rihal/bin/rihal-tools.cjs init phase-op "13"` returns full Phase 12 (#468) field contract
-- `node rihal/bin/rihal-tools.cjs progress init` produces output identical in shape to baseline
+- `grep -c "function walkPhaseDirs" rcode/bin/rcode-tools.cjs` → 0 (canonical lives in lib/phase-dirs.cjs)
+- `grep -c "function walkPhaseDirs\|function inspectPhaseDir" rcode/bin/lib/phase-dirs.cjs` → 2
+- `node rcode/bin/rcode-tools.cjs init phase-op "13"` returns full Phase 12 (#468) field contract
+- `node rcode/bin/rcode-tools.cjs progress init` produces output identical in shape to baseline
 - 132/132 tests pass
 - Dogfood Check 6 (phase-status alignment #461) still passes
 </verification>
@@ -347,6 +347,6 @@ cd /home/hanzla/development/rihal-code && bash scripts/dogfood-check.sh 2>&1 | t
 <output>
 On completion, write `.planning/phases/13-parser-walker-consolidation/13-2-SUMMARY.md` documenting:
 - New file lib/phase-dirs.cjs (LOC, exports, design rationale)
-- Lines deleted from rihal-tools.cjs (count + line ranges)
+- Lines deleted from rcode-tools.cjs (count + line ranges)
 - Verification gate output
 </output>

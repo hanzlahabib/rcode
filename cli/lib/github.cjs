@@ -1,5 +1,5 @@
 /**
- * GitHub CLI wrapper library for Rihal Code.
+ * GitHub CLI wrapper library for rcode.
  *
  * Uses the `gh` CLI exclusively. Never calls the GitHub API directly (keeps auth
  * in the user's existing `gh` session, respects GH_TOKEN, and works with SSO).

@@ -4,13 +4,13 @@
  *
  * Background: bugs #18 and #19 were caused by slash-command templates in
  * cli/init.js that contained hardcoded `$HOME/.../cli/lib/*.cjs` require()
- * shell-outs, or `rihal/digests/{agent}.md` relative paths. When a user
- * runs those commands from a project that is not rihal-code itself, the
- * paths resolve outside the user's cwd — either to another rihal-code
+ * shell-outs, or `rcode/digests/{agent}.md` relative paths. When a user
+ * runs those commands from a project that is not rcode itself, the
+ * paths resolve outside the user's cwd — either to another rcode
  * checkout on the same machine, or to nothing at all.
  *
- * This test installs rihal-code into a fresh temp directory and asserts
- * that every file under `.claude/commands/rihal/` contains no forbidden
+ * This test installs rcode into a fresh temp directory and asserts
+ * that every file under `.claude/commands/rcode/` contains no forbidden
  * path patterns. If a contributor adds a new slash command that reaches
  * outside the project, this test fails with a clear diagnostic pointing
  * at the offending file and line.
@@ -21,9 +21,9 @@
  *   1. `$HOME/...` or `$HOME/`                        — absolute env-var path
  *   2. `~/` at the start of a string literal          — shell-expanded home
  *   3. `/home/`, `/root/`, `/Users/`                   — hardcoded user paths
- *   4. `require('rihal/`                               — package-relative require
- *   5. `rihal/digests/`                                — package-internal path
- *   6. `rihal/skills/` (as a read target, not docs)   — package-internal path
+ *   4. `require('rcode/`                               — package-relative require
+ *   5. `rcode/digests/`                                — package-internal path
+ *   6. `rcode/skills/` (as a read target, not docs)   — package-internal path
  *
  * The test does an actual install into os.tmpdir() so it catches
  * regressions that only manifest at install time (e.g. template variable
@@ -43,14 +43,14 @@ const { makeTempDir, cleanup } = require('../helpers.cjs');
 const FORBIDDEN_PATTERNS = [
   {
     regex: /\$HOME\//,
-    description: '`$HOME/` — absolute path to the user\'s home directory. Use `rihal-code <subcommand>` instead; the CLI knows its own package root.',
+    description: '`$HOME/` — absolute path to the user\'s home directory. Use `rcode <subcommand>` instead; the CLI knows its own package root.',
   },
   {
-    regex: /(?:^|[^a-zA-Z0-9_])~\/(?:[a-zA-Z]|\.rihal)/,
-    // Allow `~/.rihal-code/defaults.json` in explanatory text — but flag
+    regex: /(?:^|[^a-zA-Z0-9_])~\/(?:[a-zA-Z]|\.rcode)/,
+    // Allow `~/.rcode/defaults.json` in explanatory text — but flag
     // any attempt to actually read from `~/`. The negative lookahead above
     // limits false positives. Flag if templates literally require ~/foo.
-    description: '`~/` — shell home expansion. Templates must use project-relative paths or `rihal-code <subcommand>`.',
+    description: '`~/` — shell home expansion. Templates must use project-relative paths or `rcode <subcommand>`.',
   },
   {
     regex: /\/home\/[a-zA-Z]/,
@@ -61,30 +61,30 @@ const FORBIDDEN_PATTERNS = [
     description: '`/Users/<user>/...` — hardcoded macOS home path. Never.',
   },
   {
-    regex: /require\(['"]rihal\//,
-    description: '`require(\'rihal/...\')` — package-relative require. The CLI is the only thing that should know where `rihal/` lives; templates shell out to `rihal-code <subcommand>`.',
+    regex: /require\(['"]rcode\//,
+    description: '`require(\'rcode/...\')` — package-relative require. The CLI is the only thing that should know where `rcode/` lives; templates shell out to `rcode <subcommand>`.',
   },
   {
     regex: /(?:Load|Read|Open|require\()\s*[^\n]*\brihal\/digests\//,
-    description: '`rihal/digests/...` — package-internal digest path. Use `rihal-code digest <agent>` instead.',
+    description: '`rcode/digests/...` — package-internal digest path. Use `rcode digest <agent>` instead.',
   },
   // BMAD-style pivot (v0.2.0) — these CLI subcommands were deleted and
   // replaced with direct Claude Read/Write/Bash file I/O. Any template
   // that still references them is a regression.
   {
-    regex: /\brihal-code\s+(?:sprint|milestone|bug|handoff|preserve|session|story-commit)\b/,
-    description: '`rihal-code {sprint|milestone|bug|handoff|preserve|session|story-commit}` — these CLI subcommands were removed in the BMAD-style pivot. Slash command templates must instruct Claude to read/write `.rihal/**` files directly via the Read/Write/Bash tools.',
+    regex: /\brcode\s+(?:sprint|milestone|bug|handoff|preserve|session|story-commit)\b/,
+    description: '`rcode {sprint|milestone|bug|handoff|preserve|session|story-commit}` — these CLI subcommands were removed in the BMAD-style pivot. Slash command templates must instruct Claude to read/write `.rcode/**` files directly via the Read/Write/Bash tools.',
   },
 ];
 
-// List of rihal-slash-command files we expect after a fresh install.
+// List of rcode-slash-command files we expect after a fresh install.
 // We don't assert on the exact set (new commands can be added) — we just
 // walk the directory and scan every `.md` file under it.
 function listSlashCommands(cwd) {
   const out = [];
 
-  // VS Code-style layout: .claude/commands/rihal/<name>.md
-  const subdir = path.join(cwd, '.claude', 'commands', 'rihal');
+  // VS Code-style layout: .claude/commands/rcode/<name>.md
+  const subdir = path.join(cwd, '.claude', 'commands', 'rcode');
   if (fs.existsSync(subdir)) {
     for (const name of fs.readdirSync(subdir)) {
       if (!name.endsWith('.md')) continue;
@@ -92,25 +92,25 @@ function listSlashCommands(cwd) {
     }
   }
 
-  // Claude Code layout: .claude/commands/rihal-<name>.md (flat)
+  // Claude Code layout: .claude/commands/rcode-<name>.md (flat)
   const flatDir = path.join(cwd, '.claude', 'commands');
   if (fs.existsSync(flatDir)) {
     for (const name of fs.readdirSync(flatDir)) {
-      if (!name.startsWith('rihal-') || !name.endsWith('.md')) continue;
+      if (!name.startsWith('rcode-') || !name.endsWith('.md')) continue;
       out.push({ name, full: path.join(flatDir, name) });
     }
   }
 
   // After #679/#664 dedup, project commands may be removed when ~/.claude/
-  // already has the rihal-* set. Fall back to reading installed-template
-  // content from rihal/commands/ in the source repo so the cross-project-
+  // already has the rcode-* set. Fall back to reading installed-template
+  // content from rcode/commands/ in the source repo so the cross-project-
   // path lint can still run.
   if (out.length === 0) {
-    const sourceDir = path.resolve(__dirname, '..', '..', 'rihal', 'commands');
+    const sourceDir = path.resolve(__dirname, '..', '..', 'rcode', 'commands');
     if (fs.existsSync(sourceDir)) {
       for (const name of fs.readdirSync(sourceDir)) {
         if (!name.endsWith('.md') || name.startsWith('_')) continue;
-        out.push({ name: `rihal-${name}`, full: path.join(sourceDir, name) });
+        out.push({ name: `rcode-${name}`, full: path.join(sourceDir, name) });
       }
     }
   }
@@ -130,7 +130,7 @@ function findMatches(content, pattern) {
 }
 
 function installIntoTempDir(cwd) {
-  // Installs rihal-code into a fresh temp directory via cli/install.js
+  // Installs rcode into a fresh temp directory via cli/install.js
   // (the unified installer). Copies agents, commands, skills, workflows
   // exactly as a real user install. Output is silenced so test log stays clean.
   const originalWrite = process.stdout.write.bind(process.stdout);
@@ -143,7 +143,7 @@ function installIntoTempDir(cwd) {
       force: true,
       yes: true,
       userName: 'test',
-      projectName: 'rihal-noleaks-test',
+      projectName: 'rcode-noleaks-test',
       language: 'English',
       mode: 'guided',
       ide: 'claude',
@@ -160,7 +160,7 @@ function installIntoTempDir(cwd) {
 }
 
 test('no slash-command template contains forbidden cross-project paths', async (t) => {
-  const cwd = makeTempDir('rihal-noleaks-');
+  const cwd = makeTempDir('rcode-noleaks-');
   t.after(() => cleanup(cwd));
 
   await installIntoTempDir(cwd);
@@ -193,14 +193,14 @@ test('no slash-command template contains forbidden cross-project paths', async (
       .join('\n');
     assert.fail(
       `${violations.length} forbidden path pattern(s) found in installed slash commands:${report}\n\n` +
-      `These patterns reach outside the user's project directory. Use \`rihal-code <subcommand>\` ` +
+      `These patterns reach outside the user's project directory. Use \`rcode <subcommand>\` ` +
       `invocations instead — the CLI resolves package-internal paths from its own install root.`,
     );
   }
 });
 
 test('every known slash command installs and is non-empty', async (t) => {
-  const cwd = makeTempDir('rihal-noleaks-');
+  const cwd = makeTempDir('rcode-noleaks-');
   t.after(() => cleanup(cwd));
 
   await installIntoTempDir(cwd);
@@ -216,13 +216,13 @@ test('every known slash command installs and is non-empty', async (t) => {
 
 test('state-mutating slash commands use direct file I/O, not deleted CLI subcommands', async (t) => {
   // BMAD-style pivot (v0.2.0): slash commands that used to shell out to
-  // `rihal-code handoff|preserve|session|sprint|milestone|bug|story-commit`
-  // must now instruct Claude to read/write `.rihal/**` files directly
+  // `rcode handoff|preserve|session|sprint|milestone|bug|story-commit`
+  // must now instruct Claude to read/write `.rcode/**` files directly
   // using the Read/Write tools. This test locks in that migration — every
   // template that historically touched state must mention the Write tool
-  // (or explicit .rihal/ path writes) so we don't regress to CLI-driven
+  // (or explicit .rcode/ path writes) so we don't regress to CLI-driven
   // state mutation.
-  const cwd = makeTempDir('rihal-noleaks-');
+  const cwd = makeTempDir('rcode-noleaks-');
   t.after(() => cleanup(cwd));
 
   await installIntoTempDir(cwd);
@@ -234,12 +234,12 @@ test('state-mutating slash commands use direct file I/O, not deleted CLI subcomm
   // shell-outs (already covered by test #1, but checked here too for
   // clarity in failure reports).
   const expectations = [
-    { file: 'preserve.md',    expect: /Write tool|\.rihal\/context\/permanent\.md/ },
-    { file: 'save-session.md', expect: /Write tool|\.rihal\/progress\/session-/ },
-    { file: 'pause.md',       expect: /Write tool|\.rihal\/HANDOFF\.json/ },
-    { file: 'resume.md',      expect: /Read tool|\.rihal\/HANDOFF\.json/ },
-    { file: 'continue.md',    expect: /grep.*\.rihal\/progress|Glob.*milestones/ },
-    { file: 'bug.md',         expect: /Write tool|\.rihal\/artifacts\/bugs/ },
+    { file: 'preserve.md',    expect: /Write tool|\.rcode\/context\/permanent\.md/ },
+    { file: 'save-session.md', expect: /Write tool|\.rcode\/progress\/session-/ },
+    { file: 'pause.md',       expect: /Write tool|\.rcode\/HANDOFF\.json/ },
+    { file: 'resume.md',      expect: /Read tool|\.rcode\/HANDOFF\.json/ },
+    { file: 'continue.md',    expect: /grep.*\.rcode\/progress|Glob.*milestones/ },
+    { file: 'bug.md',         expect: /Write tool|\.rcode\/artifacts\/bugs/ },
   ];
 
   for (const { file, expect } of expectations) {
@@ -253,7 +253,7 @@ test('state-mutating slash commands use direct file I/O, not deleted CLI subcomm
     assert.match(
       content,
       expect,
-      `${file} should use direct file I/O (Read/Write tool + .rihal/** path) instead of shelling out to a deleted CLI subcommand`,
+      `${file} should use direct file I/O (Read/Write tool + .rcode/** path) instead of shelling out to a deleted CLI subcommand`,
     );
   }
 });

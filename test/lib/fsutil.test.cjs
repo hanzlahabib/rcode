@@ -2,7 +2,7 @@
  * Tests for cli/lib/fsutil.cjs — atomic write helpers.
  *
  * These are the most critical tests in the suite because every state
- * file in .rihal/ routes through writeFileAtomic / writeJsonAtomic. If
+ * file in .rcode/ routes through writeFileAtomic / writeJsonAtomic. If
  * atomicity ever breaks, a Ctrl+C mid-write can corrupt user data.
  */
 

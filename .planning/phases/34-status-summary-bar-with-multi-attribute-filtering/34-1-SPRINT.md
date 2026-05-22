@@ -35,8 +35,8 @@ Output: one new state module, one new component, App.js router extension, CSS cl
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>

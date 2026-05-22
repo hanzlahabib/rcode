@@ -1,5 +1,5 @@
 /**
- * Tests for cmdClassifyQuestion() in rihal/bin/rihal-tools.cjs.
+ * Tests for cmdClassifyQuestion() in rcode/bin/rcode-tools.cjs.
  *
  * We extract the function by patching process.argv so main() exits early,
  * then reaching into the module. Since the file calls main() at the bottom
@@ -12,7 +12,7 @@ const assert = require('node:assert');
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
-const TOOL = path.resolve(__dirname, '../rihal/bin/rihal-tools.cjs');
+const TOOL = path.resolve(__dirname, '../rcode/bin/rcode-tools.cjs');
 
 function classify(question) {
   const result = spawnSync(process.execPath, [TOOL, 'classify-question', question], {

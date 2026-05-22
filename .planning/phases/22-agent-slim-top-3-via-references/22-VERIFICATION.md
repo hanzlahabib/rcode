@@ -6,7 +6,7 @@ verified: 2026-05-10
 
 # Phase 22 Verification — Agent Slim: Top 3 via References
 
-**Goal:** Slim the 3 heaviest agent files by extracting static playbook bulk into rihal/references/ files and @-including them. Closes #712.
+**Goal:** Slim the 3 heaviest agent files by extracting static playbook bulk into rcode/references/ files and @-including them. Closes #712.
 
 ---
 
@@ -14,48 +14,48 @@ verified: 2026-05-10
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 1 | rihal-integration-checker.md ≤80 lines (expected 61) | VERIFIED | `wc -l` = 61 |
-| 2 | rihal-research-synthesizer.md ≤80 lines (expected 45) | VERIFIED | `wc -l` = 45 |
-| 3 | rihal-codebase-mapper.md ≤80 lines (expected 78) | VERIFIED | `wc -l` = 78 |
-| 4 | rihal/references/integration-verification-playbook.md exists with content | VERIFIED | 392 lines, non-empty |
-| 5 | rihal/references/research-synthesis-playbook.md exists with content | VERIFIED | 205 lines, non-empty |
-| 6 | rihal/references/codebase-mapping-process.md exists with content | VERIFIED | 176 lines, non-empty |
-| 7 | .rihal/references/ copies of all 3 exist | VERIFIED | All 3 present, byte-for-byte identical to source |
-| 8 | @-include paths resolve to correct runtime location (.rihal/references/) | VERIFIED | All 7 @-included paths exist on disk |
+| 1 | rcode-integration-checker.md ≤80 lines (expected 61) | VERIFIED | `wc -l` = 61 |
+| 2 | rcode-research-synthesizer.md ≤80 lines (expected 45) | VERIFIED | `wc -l` = 45 |
+| 3 | rcode-codebase-mapper.md ≤80 lines (expected 78) | VERIFIED | `wc -l` = 78 |
+| 4 | rcode/references/integration-verification-playbook.md exists with content | VERIFIED | 392 lines, non-empty |
+| 5 | rcode/references/research-synthesis-playbook.md exists with content | VERIFIED | 205 lines, non-empty |
+| 6 | rcode/references/codebase-mapping-process.md exists with content | VERIFIED | 176 lines, non-empty |
+| 7 | .rcode/references/ copies of all 3 exist | VERIFIED | All 3 present, byte-for-byte identical to source |
+| 8 | @-include paths resolve to correct runtime location (.rcode/references/) | VERIFIED | All 7 @-included paths exist on disk |
 | 9 | Agent stubs are structurally valid (frontmatter intact, role/identity present) | VERIFIED | All 3 have valid YAML frontmatter + role block |
 
 ---
 
 ## Artifact Verification (4-level)
 
-### rihal/agents/rihal-integration-checker.md
+### rcode/agents/rcode-integration-checker.md
 
 | Level | Check | Result |
 |-------|-------|--------|
 | Exists | File present | VERIFIED |
 | Substantive | 61 lines, contains role + core_principle + inputs sections | VERIFIED |
-| Wired | @-includes integration-verification-playbook.md at .rihal/references/ | VERIFIED |
-| Data Flows | Runtime path .rihal/references/integration-verification-playbook.md exists (392 lines) | VERIFIED |
+| Wired | @-includes integration-verification-playbook.md at .rcode/references/ | VERIFIED |
+| Data Flows | Runtime path .rcode/references/integration-verification-playbook.md exists (392 lines) | VERIFIED |
 
-### rihal/agents/rihal-research-synthesizer.md
+### rcode/agents/rcode-research-synthesizer.md
 
 | Level | Check | Result |
 |-------|-------|--------|
 | Exists | File present | VERIFIED |
 | Substantive | 45 lines, contains role + downstream_consumer sections | VERIFIED |
-| Wired | @-includes research-synthesis-playbook.md at .rihal/references/ | VERIFIED |
-| Data Flows | Runtime path .rihal/references/research-synthesis-playbook.md exists (205 lines) | VERIFIED |
+| Wired | @-includes research-synthesis-playbook.md at .rcode/references/ | VERIFIED |
+| Data Flows | Runtime path .rcode/references/research-synthesis-playbook.md exists (205 lines) | VERIFIED |
 
-### rihal/agents/rihal-codebase-mapper.md
+### rcode/agents/rcode-codebase-mapper.md
 
 | Level | Check | Result |
 |-------|-------|--------|
 | Exists | File present | VERIFIED |
 | Substantive | 78 lines, contains role + why_this_matters + philosophy sections | VERIFIED |
-| Wired | @-includes codebase-mapping-process.md at .rihal/references/ | VERIFIED |
-| Data Flows | Runtime path .rihal/references/codebase-mapping-process.md exists (176 lines) | VERIFIED |
+| Wired | @-includes codebase-mapping-process.md at .rcode/references/ | VERIFIED |
+| Data Flows | Runtime path .rcode/references/codebase-mapping-process.md exists (176 lines) | VERIFIED |
 
-### Source reference files (rihal/references/)
+### Source reference files (rcode/references/)
 
 | File | Exists | Lines |
 |------|--------|-------|
@@ -63,7 +63,7 @@ verified: 2026-05-10
 | research-synthesis-playbook.md | VERIFIED | 205 |
 | codebase-mapping-process.md | VERIFIED | 176 |
 
-### Runtime reference files (.rihal/references/)
+### Runtime reference files (.rcode/references/)
 
 | File | Exists | Matches source |
 |------|--------|---------------|
@@ -75,15 +75,15 @@ verified: 2026-05-10
 
 ## @-Include Path Resolution
 
-All @-include directives in the 3 stubs point to `.rihal/references/` (runtime install location). Every referenced path was verified to exist on disk:
+All @-include directives in the 3 stubs point to `.rcode/references/` (runtime install location). Every referenced path was verified to exist on disk:
 
-- `.rihal/references/response-style.md` — EXISTS
-- `.rihal/references/karpathy-guidelines.md` — EXISTS
-- `.rihal/references/karpathy-guidelines-full.md` — EXISTS
-- `.rihal/references/integration-verification-playbook.md` — EXISTS
-- `.rihal/references/research-synthesis-playbook.md` — EXISTS
-- `.rihal/references/codebase-mapping-process.md` — EXISTS
-- `.rihal/skills/agents/dalil-scout/SKILL.md` — EXISTS
+- `.rcode/references/response-style.md` — EXISTS
+- `.rcode/references/karpathy-guidelines.md` — EXISTS
+- `.rcode/references/karpathy-guidelines-full.md` — EXISTS
+- `.rcode/references/integration-verification-playbook.md` — EXISTS
+- `.rcode/references/research-synthesis-playbook.md` — EXISTS
+- `.rcode/references/codebase-mapping-process.md` — EXISTS
+- `.rcode/skills/agents/dalil-scout/SKILL.md` — EXISTS
 
 ---
 

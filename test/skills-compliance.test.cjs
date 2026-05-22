@@ -1,7 +1,7 @@
 /**
  * Skills compliance tests.
  *
- * Verifies every SKILL.md across rihal/skills/ meets the rcode skill standard:
+ * Verifies every SKILL.md across rcode/skills/ meets the rcode skill standard:
  *   1. Has valid YAML frontmatter with `name:` and `description:` fields
  *   2. Stays under the line budget (skill body length cap)
  *   3. Frontmatter `name:` matches the directory name (so the installer
@@ -19,7 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(PROJECT_ROOT, 'rihal', 'skills');
+const SKILLS_DIR = path.join(PROJECT_ROOT, 'rcode', 'skills');
 const LINE_BUDGET = 200;
 
 function parseFrontmatter(text) {
@@ -61,7 +61,7 @@ function findSkillFiles(dir) {
 const skillFiles = findSkillFiles(SKILLS_DIR);
 
 test('skills-compliance: at least one SKILL.md exists', () => {
-  assert.ok(skillFiles.length > 0, 'expected to find SKILL.md files under rihal/skills/');
+  assert.ok(skillFiles.length > 0, 'expected to find SKILL.md files under rcode/skills/');
 });
 
 test('skills-compliance: every SKILL.md has frontmatter with name + description', () => {
@@ -84,11 +84,11 @@ test('skills-compliance: every SKILL.md ≤ line budget', () => {
   assert.deepEqual(offenders, [], `SKILL.md files over budget — split content into a sibling references.md:\n${offenders.join('\n')}`);
 });
 
-test('skills-compliance: frontmatter name uses rihal- or rcode- prefix', () => {
-  // The installer prepends `rihal-` to any folder name that doesn't already
-  // start with `rihal-`, so the frontmatter `name:` field MUST already use
+test('skills-compliance: frontmatter name uses rcode- or rcode- prefix', () => {
+  // The installer prepends `rcode-` to any folder name that doesn't already
+  // start with `rcode-`, so the frontmatter `name:` field MUST already use
   // one of the known prefixes. This catches drift from the naming convention
-  // (e.g. an unprefixed `name: my-skill` would land at `.claude/skills/rihal-my-skill`
+  // (e.g. an unprefixed `name: my-skill` would land at `.claude/skills/rcode-my-skill`
   // but the frontmatter wouldn't match — confusing for the user).
   const offenders = [];
   for (const f of skillFiles) {
@@ -96,8 +96,8 @@ test('skills-compliance: frontmatter name uses rihal- or rcode- prefix', () => {
     const { frontmatter } = parseFrontmatter(text);
     const declared = frontmatter.name;
     if (!declared) continue; // already flagged in previous test
-    if (!/^(rihal|rcode)-/.test(declared)) {
-      offenders.push(`${f} — name='${declared}' should start with 'rihal-' or 'rcode-'`);
+    if (!/^(rcode|rcode)-/.test(declared)) {
+      offenders.push(`${f} — name='${declared}' should start with 'rcode-' or 'rcode-'`);
     }
   }
   assert.deepEqual(offenders, [], `Skill name prefix check:\n${offenders.join('\n')}`);

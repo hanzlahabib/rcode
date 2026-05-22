@@ -8,7 +8,7 @@ outcome: passed
 
 ## Goal Achievement
 
-✅ Single `rihal/` root — v2 folder eliminated
+✅ Single `rcode/` root — v2 folder eliminated
 ✅ `cli/install.js` is the single unified installer
 ✅ Install ships 70 commands + 34 agents + 39 skills
 ✅ Zero ghost agents in model-profiles.json
@@ -20,7 +20,7 @@ outcome: passed
 
 | Item | Status |
 |------|--------|
-| `rihal/` root (no v2 subfolder) | ✅ verified |
+| `rcode/` root (no v2 subfolder) | ✅ verified |
 | `cli/install.js` | ✅ verified |
 | `package.json` version | ✅ 1.0.0-beta.0 |
 | Ghost agent count | ✅ 0 |

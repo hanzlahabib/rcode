@@ -7,7 +7,7 @@ generated: 2026-05-16T02:00:00Z
 # Phase 32 Verification Report
 
 **Phase:** 32 — Dashboard theming — design tokens and emoji-to-SVG icon sweep
-**Verifier:** rihal-phase-verifier
+**Verifier:** rcode-phase-verifier
 **Commit range verified:** a7a7ca1..HEAD
 **Verification mode:** initial (no prior VERIFICATION.md)
 

@@ -2,7 +2,7 @@
 
 **Verdict:** pass-with-cautions
 **Checked:** 2026-05-16
-**Checker:** rihal-sprint-checker
+**Checker:** rcode-sprint-checker
 **Plans:** 31-1, 31-2, 31-3, 31-4 (4 sequential sprints, 4 waves)
 
 ## Result

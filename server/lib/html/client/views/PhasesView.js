@@ -60,7 +60,7 @@ function PhaseDetail({ phase: p, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runAndOpenTerm('phase-' + p.id, '/rihal-execute ' + p.id, 'Phase ' + p.id);
+    runAndOpenTerm('phase-' + p.id, '/rcode-execute ' + p.id, 'Phase ' + p.id);
   }
   function handleTerm(e) {
     e.stopPropagation();
@@ -108,7 +108,7 @@ function PhaseDetail({ phase: p, S }) {
           : html`
               <div class="empty">
                 No sprints in this phase yet.
-                <div class="empty-action">Run /rihal-plan to create sprints</div>
+                <div class="empty-action">Run /rcode-plan to create sprints</div>
               </div>
             `}
       </div>
@@ -146,14 +146,14 @@ export function PhasesView({ subId }) {
     phases.length > 0 &&
     phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
   const plHints = [
-    ['/rihal-add-phase', 'Add a new phase'],
-    ['/rihal-stats',     'Project statistics'],
-    ['/rihal-progress',  'Overall progress'],
+    ['/rcode-add-phase', 'Add a new phase'],
+    ['/rcode-stats',     'Project statistics'],
+    ['/rcode-progress',  'Overall progress'],
   ];
   if (allComplete) {
-    plHints.push(['/rihal-audit-milestone',    'Audit milestone completion']);
-    plHints.push(['/rihal-complete-milestone', 'Complete and archive milestone']);
-    plHints.push(['/rihal-ship',               'Create PR and ship']);
+    plHints.push(['/rcode-audit-milestone',    'Audit milestone completion']);
+    plHints.push(['/rcode-complete-milestone', 'Complete and archive milestone']);
+    plHints.push(['/rcode-ship',               'Create PR and ship']);
   }
 
   const q = filter.toLowerCase();
@@ -174,7 +174,7 @@ export function PhasesView({ subId }) {
           : html`
               <div class="empty">
                 No phases yet.
-                <div class="empty-action">Run /rihal-new-project to start</div>
+                <div class="empty-action">Run /rcode-new-project to start</div>
               </div>
             `}
       </div>

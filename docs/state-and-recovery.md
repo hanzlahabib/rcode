@@ -1,20 +1,20 @@
 # State, Recovery, and Handoff
 
-How Rihal tracks project state, survives interruptions, and resumes work.
+How rcode tracks project state, survives interruptions, and resumes work.
 
 ---
 
 ## State Tracking: state.json
 
-**Location:** `.rihal/state.json`
+**Location:** `.rcode/state.json`
 
 **Purpose:** Single source of truth for project progress. Every command reads and updates this file.
 
 **Readable format:**
 ```bash
-/rihal-status
+/rcode-status
 # or
-node .rihal/bin/rihal-tools.cjs state read
+node .rcode/bin/rcode-tools.cjs state read
 ```
 
 ---
@@ -52,7 +52,7 @@ node .rihal/bin/rihal-tools.cjs state read
       "phase": "01",
       "status": "complete",
       "timestamp": "2026-04-01T10:30:00Z",
-      "executor": "rihal-executor",
+      "executor": "rcode-executor",
       "commit_hash": "abc123..."
     }
   ],
@@ -127,7 +127,7 @@ node .rihal/bin/rihal-tools.cjs state read
 |-------|------|---------|
 | `version` | string | Schema version (always "1") |
 | `project` | string | Project name from config |
-| `created` | ISO date | When Rihal was initialized (never changes) |
+| `created` | ISO date | When rcode was initialized (never changes) |
 | `updated` | ISO date | Last write timestamp |
 | `current_phase` | string or null | Active phase (e.g., "02") |
 | `current_plan` | number | Plan counter (increments per phase) |
@@ -200,12 +200,12 @@ node .rihal/bin/rihal-tools.cjs state read
 ### Pause: Save context for later
 
 ```
-/rihal-pause-work
+/rcode-pause-work
 ```
 
 Creates two files:
 
-**1. `.rihal/HANDOFF.json`** (machine-readable)
+**1. `.rcode/HANDOFF.json`** (machine-readable)
 ```json
 {
   "timestamp": "2026-04-12T15:45:30Z",
@@ -246,7 +246,7 @@ Currently on plan 02.01: User authentication flow
    - Action: Ping review queue tomorrow
 
 ## What's next
-1. Run `/rihal-resume-work` to load saved context
+1. Run `/rcode-resume-work` to load saved context
 2. Resolve SSL blocker or confirm workaround sufficient
 3. Review 02.02 plan: Admin authentication
 4. Execute 02.02
@@ -261,7 +261,7 @@ Currently on plan 02.01: User authentication flow
 
 ## Last artifacts
 - Phase summary: .planning/phases/02/02.01.SUMMARY.md
-- Full state: .rihal/state.json
+- Full state: .rcode/state.json
 ```
 
 ---
@@ -269,7 +269,7 @@ Currently on plan 02.01: User authentication flow
 ### Resume: Reload context
 
 ```
-/rihal-resume-work
+/rcode-resume-work
 ```
 
 Reads HANDOFF.json and surfaces:
@@ -287,11 +287,11 @@ Reads HANDOFF.json and surfaces:
    2. Database migration awaiting review
 
 📋 Suggested next action:
-   /rihal-plan 02.02 implement admin authentication
+   /rcode-plan 02.02 implement admin authentication
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Ready to continue? Type /rihal-plan 02.02 or /rihal-do
+Ready to continue? Type /rcode-plan 02.02 or /rcode-do
 ```
 
 The handoff re-surfaces:
@@ -307,7 +307,7 @@ The handoff re-surfaces:
 ### Health check
 
 ```
-/rihal-health
+/rcode-health
 ```
 
 Detects:
@@ -318,7 +318,7 @@ Detects:
 
 **Auto-fix safe issues:**
 ```
-/rihal-health --fix
+/rcode-health --fix
 ```
 
 Recovers from:
@@ -331,8 +331,8 @@ Recovers from:
 ### Forensics: Post-mortem analysis
 
 ```
-/rihal-forensics --last
-/rihal-forensics 2026-04-12
+/rcode-forensics --last
+/rcode-forensics 2026-04-12
 ```
 
 Analyzes:
@@ -346,7 +346,7 @@ Analyzes:
 ### Undo last phase
 
 ```
-/rihal-undo
+/rcode-undo
 ```
 
 Reverts:
@@ -355,7 +355,7 @@ Reverts:
 - Removes phase from state (but keeps artifacts)
 
 ```
-/rihal-undo --keep-artifacts
+/rcode-undo --keep-artifacts
 ```
 
 Also keeps artifacts for reference.
@@ -365,7 +365,7 @@ Also keeps artifacts for reference.
 ### Correct course
 
 ```
-/rihal-correct-course
+/rcode-correct-course
 ```
 
 Suggests recovery options:
@@ -383,7 +383,7 @@ Interactive prompt helps choose.
 Run parallel experiments without conflicts:
 
 ```
-/rihal-new-workspace "experimental-auth"
+/rcode-new-workspace "experimental-auth"
 ```
 
 Creates isolated:
@@ -394,8 +394,8 @@ Creates isolated:
 
 Switch workspaces:
 ```
-/rihal-list-workspaces
-/rihal-switch-workspace experimental-auth
+/rcode-list-workspaces
+/rcode-switch-workspace experimental-auth
 ```
 
 Useful for:
@@ -407,18 +407,18 @@ Useful for:
 
 ## Lock files
 
-Rihal creates temporary lock files to prevent concurrent access:
+rcode creates temporary lock files to prevent concurrent access:
 
 ```
-.rihal/.lock              — Active command lock
-.rihal/state.lock         — State mutation lock
+.rcode/.lock              — Active command lock
+.rcode/state.lock         — State mutation lock
 ```
 
 **Why:** Multiple agents shouldn't mutate state simultaneously.
 
 **Stale locks:** If a command crashes, lock may persist. Fix with:
 ```
-/rihal-health --fix
+/rcode-health --fix
 ```
 
 ---
@@ -428,11 +428,11 @@ Rihal creates temporary lock files to prevent concurrent access:
 State changes are **not** automatically committed. You control commits:
 
 ```
-# Rihal writes to state.json
-/rihal-plan build auth module
+# rcode writes to state.json
+/rcode-plan build auth module
 
 # You commit explicitly
-git add .rihal/state.json .planning/phases/01/
+git add .rcode/state.json .planning/phases/01/
 git commit -m "feat(phases): plan 01.01 user auth"
 ```
 
@@ -447,25 +447,25 @@ Reference the numeric IDs in commits for traceability.
 
 ## Backup strategy
 
-Rihal state is in two places:
-1. `.rihal/state.json` — active state
-2. `.rihal/HANDOFF.json` — pause-work snapshot
+rcode state is in two places:
+1. `.rcode/state.json` — active state
+2. `.rcode/HANDOFF.json` — pause-work snapshot
 3. `.planning/` — all artifacts (markdown files)
 
 **All are version-controlled.** Treat like any other project files:
 
 ```bash
-git log --oneline .rihal/state.json
+git log --oneline .rcode/state.json
 git log --oneline .planning/
 ```
 
 **Recovery from git:**
 ```bash
 # See what changed
-git diff HEAD~1 .rihal/state.json
+git diff HEAD~1 .rcode/state.json
 
 # Revert to previous state
-git checkout HEAD~1 -- .rihal/state.json
+git checkout HEAD~1 -- .rcode/state.json
 ```
 
 ---
@@ -473,16 +473,16 @@ git checkout HEAD~1 -- .rihal/state.json
 ## Best practices
 
 1. **Commit state frequently** — After each phase/plan completes.
-2. **Pause before context-switch** — Use `/rihal-pause-work` if stopping mid-phase.
+2. **Pause before context-switch** — Use `/rcode-pause-work` if stopping mid-phase.
 3. **Use workspaces for experiments** — Don't fork main state for R&D.
-4. **Document blockers in state** — Use `/rihal-add-blocker` or directly edit.
+4. **Document blockers in state** — Use `/rcode-add-blocker` or directly edit.
 5. **Review HANDOFF.md before resuming** — Refresh on context before continuing.
-6. **Run health checks regularly** — Especially after crashes: `/rihal-health`.
+6. **Run health checks regularly** — Especially after crashes: `/rcode-health`.
 
 ---
 
 ## See also
 
 - `docs/numbering.md` — Understanding numeric IDs in state
-- `docs/commands.md` — `/rihal-pause-work`, `/rihal-resume-work`, `/rihal-health`
+- `docs/commands.md` — `/rcode-pause-work`, `/rcode-resume-work`, `/rcode-health`
 - `docs/getting-started.md` — First run initialization

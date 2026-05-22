@@ -27,12 +27,12 @@
 
 | # | Bug | Fix |
 |---|---|---|
-| #470 | `rihal/bin/` ↔ `.rihal/bin/` drift on self-dev | PostToolUse hook + dogfood Check 7 + `scripts/sync-bin.sh` (3-layer prevention) |
-| #472 | `agent-skills rihal-X` always returned "Unknown agent" — every workflow got empty skills context | New `resolveAgentId` helper: exact → strip `rihal-` prefix → canonical alias |
+| #470 | `rcode/bin/` ↔ `.rcode/bin/` drift on self-dev | PostToolUse hook + dogfood Check 7 + `scripts/sync-bin.sh` (3-layer prevention) |
+| #472 | `agent-skills rcode-X` always returned "Unknown agent" — every workflow got empty skills context | New `resolveAgentId` helper: exact → strip `rcode-` prefix → canonical alias |
 | #473 | `phase add` from a foreign dir polluted parent project's ROADMAP | `assertCwdMatchesProjectRoot` guard, exit 2 with remediation |
-| #475 | LLMs bypassing `/rihal-add-phase` and writing SPRINT.md directly | PreToolUse hook blocks unregistered phase writes; bypass marker for retroactive docs; CLAUDE.md template guidance |
-| **runtime-vs-audit contradiction** | `/rihal-status` said "all complete" while `/rihal-audit` flagged missing PLAN.md | New `phantom-complete` insight cross-checks completion claim against disk artifacts |
-| **High-N parsers** | 9 sites in rihal-tools.cjs capped phase numbers at 999 via `\d{1,3}` | All 9 replaced with `\d+`; 1000+ phases now visible in list-phases / get-phase / progress / state-sync |
+| #475 | LLMs bypassing `/rcode-add-phase` and writing SPRINT.md directly | PreToolUse hook blocks unregistered phase writes; bypass marker for retroactive docs; CLAUDE.md template guidance |
+| **runtime-vs-audit contradiction** | `/rcode-status` said "all complete" while `/rcode-audit` flagged missing PLAN.md | New `phantom-complete` insight cross-checks completion claim against disk artifacts |
+| **High-N parsers** | 9 sites in rcode-tools.cjs capped phase numbers at 999 via `\d{1,3}` | All 9 replaced with `\d+`; 1000+ phases now visible in list-phases / get-phase / progress / state-sync |
 
 ---
 
@@ -74,7 +74,7 @@ Counted: 50 issues closed in the 2026-04-29/30 window. Highlights:
 
 | Bucket | What | Tracking |
 |---|---|---|
-| **Skill name resolver** | `Skill(rihal-X)` rejected; needs `rihal:X` namespace | #477 (item A) |
+| **Skill name resolver** | `Skill(rcode-X)` rejected; needs `rcode:X` namespace | #477 (item A) |
 | **Wave 4 triggers** | ~50 action/core skills still English-only | #477 (item B) |
 | **CLI ergonomics** | `phase add --decimal <parent>` flag | #477 (item C) |
 | **siraaj migration** | `1001-*` → `100.1-*` per phase-numbering.md | #477 (item D) |
@@ -107,11 +107,11 @@ Owned-up failures, no spin:
 
 ```
 /clear
-/rihal-status
+/rcode-status
 # Then pick from #477 — recommended order: A → C → E → B → F
 ```
 
-State file authoritative: `.rihal/state.json` (machine-readable). Narrative: `.planning/STATE.md` (refreshed in `3baa908`).
+State file authoritative: `.rcode/state.json` (machine-readable). Narrative: `.planning/STATE.md` (refreshed in `3baa908`).
 
 ---
 

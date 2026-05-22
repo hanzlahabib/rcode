@@ -8,7 +8,7 @@
  *
  * Snapshot baseline 2026-04-30: 5 missing refs (tracked in #483 —
  * source-vs-install layout drift). They resolve in the source layout
- * (rihal/) but not the install layout (.rihal/). Test ratchets the
+ * (rcode/) but not the install layout (.rcode/). Test ratchets the
  * count down as #483 gets fixed.
  *
  * Run: node --test test/at-ref-parity.test.cjs
@@ -20,10 +20,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SCAN_DIR = path.join(PROJECT_ROOT, 'rihal');
+const SCAN_DIR = path.join(PROJECT_ROOT, 'rcode');
 const BASELINE_BROKEN_REFS = 0;
 
-const REF_RE = /@((?:\.rihal|rihal)\/[a-zA-Z0-9_/.\-]+\.md)/g;
+const REF_RE = /@((?:\.rcode|rcode)\/[a-zA-Z0-9_/.\-]+\.md)/g;
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -35,14 +35,14 @@ function walk(dir, out = []) {
   return out;
 }
 
-// `.rihal/` is the install-time mirror of the `rihal/` source tree. A
-// `@.rihal/<rest>` ref is valid if it resolves in EITHER layout — the install
-// copy OR the `rihal/<rest>` source. Checking only the install copy produces
+// `.rcode/` is the install-time mirror of the `rcode/` source tree. A
+// `@.rcode/<rest>` ref is valid if it resolves in EITHER layout — the install
+// copy OR the `rcode/<rest>` source. Checking only the install copy produces
 // false positives whenever the local install is stale (#761 / #483).
 function refResolves(ref) {
   if (fs.existsSync(path.join(PROJECT_ROOT, ref))) return true;
-  if (ref.startsWith('.rihal/')) {
-    return fs.existsSync(path.join(PROJECT_ROOT, 'rihal/' + ref.slice('.rihal/'.length)));
+  if (ref.startsWith('.rcode/')) {
+    return fs.existsSync(path.join(PROJECT_ROOT, 'rcode/' + ref.slice('.rcode/'.length)));
   }
   return false;
 }

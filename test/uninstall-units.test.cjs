@@ -33,7 +33,7 @@ test('isLocalOverride matches *.local.<ext> for known extensions', () => {
 
 test('isLocalOverride does NOT match plain rcode files', () => {
   for (const name of [
-    'rihal-waleed.md',
+    'rcode-waleed.md',
     'foo.md',
     'foo.local.txt',          // unsupported extension
     'foo.localmd',             // missing dot
@@ -44,48 +44,48 @@ test('isLocalOverride does NOT match plain rcode files', () => {
   }
 });
 
-// ---- stripRihalGitignoreBlock — issue #684 ----
+// ---- stripRcodeGitignoreBlock — issue #684 ----
 
-test('stripRihalGitignoreBlock removes the current sentinel block', () => {
+test('stripRcodeGitignoreBlock removes the current sentinel block', () => {
   const before = `node_modules/
 *.tmp
 
 # ===== rcode-managed gitignore block =====
-.rihal/state.json
+.rcode/state.json
 .planning/_backup/
 # ===== end rcode-managed gitignore block =====
 
 other-stuff
 `;
-  const after = uninstall.stripRihalGitignoreBlock(before);
+  const after = uninstall.stripRcodeGitignoreBlock(before);
   assert.doesNotMatch(after, /rcode-managed/);
   assert.match(after, /node_modules\//);
   assert.match(after, /\*\.tmp/);
   assert.match(after, /other-stuff/);
 });
 
-test('stripRihalGitignoreBlock removes legacy >>>/<<< fenced shape', () => {
+test('stripRcodeGitignoreBlock removes legacy >>>/<<< fenced shape', () => {
   const before = `keep-me
 
-# >>> rihal-code >>>
-.rihal/
-# <<< rihal-code <<<
+# >>> rcode >>>
+.rcode/
+# <<< rcode <<<
 
 keep-me-too
 `;
-  const after = uninstall.stripRihalGitignoreBlock(before);
-  assert.doesNotMatch(after, />>> rihal-code >>>/);
-  assert.doesNotMatch(after, /<<< rihal-code <<</);
+  const after = uninstall.stripRcodeGitignoreBlock(before);
+  assert.doesNotMatch(after, />>> rcode >>>/);
+  assert.doesNotMatch(after, /<<< rcode <<</);
   assert.match(after, /keep-me/);
   assert.match(after, /keep-me-too/);
 });
 
-test('stripRihalGitignoreBlock preserves user comments starting with "# rcode"', () => {
+test('stripRcodeGitignoreBlock preserves user comments starting with "# rcode"', () => {
   // The very bug #684 fixed — make sure we don't regress.
   const before = `node_modules/
 
 # ===== rcode-managed gitignore block =====
-.rihal/state.json
+.rcode/state.json
 # ===== end rcode-managed gitignore block =====
 
 # rcode is great — this is MY note
@@ -93,7 +93,7 @@ my-secret.txt
 # rcode-related thoughts
 keep-me.txt
 `;
-  const after = uninstall.stripRihalGitignoreBlock(before);
+  const after = uninstall.stripRcodeGitignoreBlock(before);
   // rcode block is gone
   assert.doesNotMatch(after, /rcode-managed/);
   // User content is preserved
@@ -103,15 +103,15 @@ keep-me.txt
   assert.match(after, /keep-me\.txt/);
 });
 
-test('stripRihalGitignoreBlock is a no-op when no rcode block is present', () => {
+test('stripRcodeGitignoreBlock is a no-op when no rcode block is present', () => {
   const before = '# rcode is mentioned here but no block exists\nfoo.txt\n';
-  const after = uninstall.stripRihalGitignoreBlock(before);
+  const after = uninstall.stripRcodeGitignoreBlock(before);
   assert.strictEqual(after, before);
 });
 
-test('stripRihalGitignoreBlock collapses 3+ blank lines down to 2', () => {
+test('stripRcodeGitignoreBlock collapses 3+ blank lines down to 2', () => {
   const before = 'a\n\n\n\n\nb\n';
-  const after = uninstall.stripRihalGitignoreBlock(before);
+  const after = uninstall.stripRcodeGitignoreBlock(before);
   assert.strictEqual(after, 'a\n\nb\n');
 });
 
@@ -127,24 +127,24 @@ function emptyPlan() {
   };
 }
 
-test('planToPathList without --purge: claude flat layout pushes individual rihal-*.md paths (#704)', () => {
+test('planToPathList without --purge: claude flat layout pushes individual rcode-*.md paths (#704)', () => {
   const dir = makeTempDir();
   const plan = emptyPlan();
-  plan.claude.skills = ['rihal-do', 'rihal-noor'];
-  // Flat (claude) layout: command names start with rihal-
-  plan.claude.commands = ['rihal-status.md'];
-  plan.claude.agents = ['rihal-waleed.md'];
+  plan.claude.skills = ['rcode-do', 'rcode-noor'];
+  // Flat (claude) layout: command names start with rcode-
+  plan.claude.commands = ['rcode-status.md'];
+  plan.claude.agents = ['rcode-waleed.md'];
 
   const paths = uninstall.planToPathList(plan, dir, { purge: false });
 
-  assert.ok(paths.includes(path.join('.claude/skills', 'rihal-do')));
-  assert.ok(paths.includes(path.join('.claude/skills', 'rihal-noor')));
+  assert.ok(paths.includes(path.join('.claude/skills', 'rcode-do')));
+  assert.ok(paths.includes(path.join('.claude/skills', 'rcode-noor')));
   // Each flat file pushed individually; legacy subdir NOT added.
-  assert.ok(paths.includes(path.join('.claude/commands', 'rihal-status.md')));
-  assert.ok(!paths.includes('.claude/commands/rihal'));
-  assert.ok(paths.includes(path.join('.claude/agents', 'rihal-waleed.md')));
+  assert.ok(paths.includes(path.join('.claude/commands', 'rcode-status.md')));
+  assert.ok(!paths.includes('.claude/commands/rcode'));
+  assert.ok(paths.includes(path.join('.claude/agents', 'rcode-waleed.md')));
   // No purge → no state dirs
-  assert.ok(!paths.some(p => p.startsWith('.rihal')));
+  assert.ok(!paths.some(p => p.startsWith('.rcode')));
   assert.ok(!paths.includes('.planning'));
 
   cleanup(dir);
@@ -153,37 +153,37 @@ test('planToPathList without --purge: claude flat layout pushes individual rihal
 test('planToPathList without --purge: vscode subdir layout pushes parent dir once (#704)', () => {
   const dir = makeTempDir();
   const plan = emptyPlan();
-  // Subdir (vscode) layout: command names lack rihal- prefix
+  // Subdir (vscode) layout: command names lack rcode- prefix
   plan.claude.commands = ['status.md', 'do.md'];
 
   const paths = uninstall.planToPathList(plan, dir, { purge: false });
 
   // Subdir pushed once; no individual files.
-  assert.ok(paths.includes('.claude/commands/rihal'));
+  assert.ok(paths.includes('.claude/commands/rcode'));
   assert.ok(!paths.includes(path.join('.claude/commands', 'status.md')));
 
   cleanup(dir);
 });
 
-test('planToPathList with --purge includes .rihal/<children> AND .planning/', (t) => {
+test('planToPathList with --purge includes .rcode/<children> AND .planning/', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
 
-  // Seed a fake .rihal/ with three subdirs and one file. Backups dir must
+  // Seed a fake .rcode/ with three subdirs and one file. Backups dir must
   // be excluded so the tarball doesn't try to read itself.
-  fs.mkdirSync(path.join(dir, '.rihal', 'context'), { recursive: true });
-  fs.mkdirSync(path.join(dir, '.rihal', 'backups'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.rihal', 'state.json'), '{}');
-  fs.writeFileSync(path.join(dir, '.rihal', 'config.yaml'), '');
+  fs.mkdirSync(path.join(dir, '.rcode', 'context'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.rcode', 'backups'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.rcode', 'state.json'), '{}');
+  fs.writeFileSync(path.join(dir, '.rcode', 'config.yaml'), '');
   fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
 
   const paths = uninstall.planToPathList(emptyPlan(), dir, { purge: true });
 
-  // Each .rihal/ entry except backups/ shows up.
-  assert.ok(paths.includes(path.join('.rihal', 'context')), '.rihal/context missing');
-  assert.ok(paths.includes(path.join('.rihal', 'state.json')), '.rihal/state.json missing');
-  assert.ok(paths.includes(path.join('.rihal', 'config.yaml')), '.rihal/config.yaml missing');
-  assert.ok(!paths.includes(path.join('.rihal', 'backups')), 'backups dir should be excluded');
+  // Each .rcode/ entry except backups/ shows up.
+  assert.ok(paths.includes(path.join('.rcode', 'context')), '.rcode/context missing');
+  assert.ok(paths.includes(path.join('.rcode', 'state.json')), '.rcode/state.json missing');
+  assert.ok(paths.includes(path.join('.rcode', 'config.yaml')), '.rcode/config.yaml missing');
+  assert.ok(!paths.includes(path.join('.rcode', 'backups')), 'backups dir should be excluded');
   // .planning/ included as a single dir.
   assert.ok(paths.includes('.planning'), '.planning missing');
 });
@@ -211,9 +211,9 @@ test('discoverKnownActionSkills returns the actions from the package manifest', 
   // Must be an array and include a known stable skill name.
   assert.ok(Array.isArray(skills));
   assert.ok(skills.length > 0, 'expected at least one action skill discovered');
-  // Names should all start with rihal- after the manifest normalisation
+  // Names should all start with rcode- after the manifest normalisation
   // (cli/lib/manifest.cjs:50 prefixes the bareId).
   for (const s of skills) {
-    assert.ok(s.startsWith('rihal-'), `expected rihal- prefix on ${s}`);
+    assert.ok(s.startsWith('rcode-'), `expected rcode- prefix on ${s}`);
   }
 });

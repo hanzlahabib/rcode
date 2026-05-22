@@ -41,7 +41,7 @@
 |--------|-------------|----------|
 | Filesystem is the shared memory | No extra coordination, sessions read same project files | ✓ |
 | Session context injection | Orchestrator injects memory summary into spawned sessions | |
-| Lock file coordination | .rihal/orchestrator-state.json shared state | |
+| Lock file coordination | .rcode/orchestrator-state.json shared state | |
 
 **User's choice:** Filesystem is the shared memory
 **Notes:** User initially asked for "each card to be independent + shared memory and part of orchestrator with memory shared so that it works efficiently maximum" — clarified that the filesystem naturally handles this. Accepted immediately.
@@ -70,7 +70,7 @@
 | Persist all sessions live to disk | Stream every line to disk | |
 
 **User's choice:** Hybrid (1 + 2) + auto clean commands
-**Notes:** Running sessions stay in-memory for speed. Completed sessions persist to ~/.rihal/sessions/. "Give auto clean commands too for user selection" — add /api/clean-sessions endpoint + Clean Sessions UI button with 7/30/All options.
+**Notes:** Running sessions stay in-memory for speed. Completed sessions persist to ~/.rcode/sessions/. "Give auto clean commands too for user selection" — add /api/clean-sessions endpoint + Clean Sessions UI button with 7/30/All options.
 
 ---
 

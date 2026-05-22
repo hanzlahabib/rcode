@@ -92,7 +92,7 @@ dashboard.js in this sprint.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && mkdir -p server/lib/html/client/components && printf 'export const x=1;' > server/lib/html/client/components/_probe.js && node -e "const s=require('http');const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{s.get('http://127.0.0.1:7717/js/components/_probe.js',r=>{console.log('nested',r.statusCode);s.get('http://127.0.0.1:7717/js/..%2f..%2fdashboard.js',r2=>{console.log('traversal',r2.statusCode);srv.kill();process.exit(r.statusCode===200&&r2.statusCode!==200?0:1);});});},1500);" ; rm -f server/lib/html/client/components/_probe.js
+cd /home/hanzla/development/rcode && mkdir -p server/lib/html/client/components && printf 'export const x=1;' > server/lib/html/client/components/_probe.js && node -e "const s=require('http');const srv=require('child_process').spawn('node',['server/dashboard.js'],{stdio:'ignore'});setTimeout(()=>{s.get('http://127.0.0.1:7717/js/components/_probe.js',r=>{console.log('nested',r.statusCode);s.get('http://127.0.0.1:7717/js/..%2f..%2fdashboard.js',r2=>{console.log('traversal',r2.statusCode);srv.kill();process.exit(r.statusCode===200&&r2.statusCode!==200?0:1);});});},1500);" ; rm -f server/lib/html/client/components/_probe.js
 </automated>
 </verify>
 <done>Nested module path returns 200; traversal attempt returns non-200; dashboard boots clean.</done>
@@ -135,7 +135,7 @@ server/lib/html/icons.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/preact.js && node --check server/lib/html/client/icons-client.js && node -e "require('./server/lib/html/icons.js')" && for u in $(grep -oE 'https://esm.sh/[^'"'"'\"]+' server/lib/html/client/preact.js); do code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 15 "$u"); echo "$u -> $code"; [ "$code" = "200" ] || exit 1; done && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/preact.js && node --check server/lib/html/client/icons-client.js && node -e "require('./server/lib/html/icons.js')" && for u in $(grep -oE 'https://esm.sh/[^'"'"'\"]+' server/lib/html/client/preact.js); do code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 15 "$u"); echo "$u -> $code"; [ "$code" = "200" ] || exit 1; done && echo OK
 </automated>
 </verify>
 <done>preact.js and icons-client.js parse as valid JS; server icons.js still require()s cleanly; every pinned esm.sh URL returns HTTP 200 (a bad version pin fails here, not at the human checkpoint).</done>
@@ -175,7 +175,7 @@ those become components in later tasks.
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/store.js && node --check server/lib/html/client/util.js && echo OK
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/store.js && node --check server/lib/html/client/util.js && echo OK
 </automated>
 </verify>
 <done>Both modules parse cleanly; util has no module-global phase state.</done>
@@ -248,7 +248,7 @@ class toggling must still fire on hashchange. Therefore:
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && for f in components/App.js components/Sidebar.js components/Topbar.js app.js; do node --check "server/lib/html/client/$f" || exit 1; done && echo OK
+cd /home/hanzla/development/rcode && for f in components/App.js components/Sidebar.js components/Topbar.js app.js; do node --check "server/lib/html/client/$f" || exit 1; done && echo OK
 </automated>
 </verify>
 <done>All four component files parse cleanly; Sidebar has 12 icon-bearing nav links and zero emoji.</done>
@@ -299,7 +299,7 @@ server/lib/html/client.js
 </acceptance_criteria>
 <verify>
 <automated>
-cd /home/hanzla/development/rihal-code && node --check server/lib/html/client/views/OverviewView.js && node --check server/lib/html/client/views/DecisionsView.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');const h=renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'tok');if(!h.includes('app-root'))process.exit(1);if(!h.includes('/js/app.js'))process.exit(1);if(!h.includes('__ICONS__'))process.exit(1);console.log('OK');"
+cd /home/hanzla/development/rcode && node --check server/lib/html/client/views/OverviewView.js && node --check server/lib/html/client/views/DecisionsView.js && node -e "const {renderHtml}=require('./server/lib/html/shell.js');const h=renderHtml({exists:true,planningFiles:[],blockers:[],raw:{phases:[],decisions:[]}},'tok');if(!h.includes('app-root'))process.exit(1);if(!h.includes('/js/app.js'))process.exit(1);if(!h.includes('__ICONS__'))process.exit(1);console.log('OK');"
 </automated>
 </verify>
 <done>renderHtml emits app-root mount, module entry, and __ICONS__; both view modules parse cleanly.</done>

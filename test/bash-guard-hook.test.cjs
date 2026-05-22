@@ -1,5 +1,5 @@
 /**
- * Tests for the `bash-guard` subcommand in rihal/bin/rihal-hooks.cjs.
+ * Tests for the `bash-guard` subcommand in rcode/bin/rcode-hooks.cjs.
  *
  * bash-guard is a PreToolUse:Bash hook: exit 2 blocks the command,
  * exit 0 allows it. Covers issue #742 — enforcing AGENTS.md rules
@@ -14,7 +14,7 @@ const assert = require('node:assert');
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
-const HOOK = path.resolve(__dirname, '../rihal/bin/rihal-hooks.cjs');
+const HOOK = path.resolve(__dirname, '../rcode/bin/rcode-hooks.cjs');
 
 function runGuard(command) {
   const result = spawnSync(process.execPath, [HOOK, 'bash-guard'], {
@@ -32,14 +32,14 @@ test('plain git push is blocked', () => {
   assert.strictEqual(runGuard('git push origin main'), BLOCKED);
 });
 
-test('git push with RIHAL_PUSH_OK token is allowed', () => {
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push origin main'), ALLOWED);
+test('git push with RCODE_PUSH_OK token is allowed', () => {
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push origin main'), ALLOWED);
 });
 
 test('git push --force is blocked even with the token', () => {
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push --force'), BLOCKED);
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push --force-with-lease'), BLOCKED);
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push -f origin main'), BLOCKED);
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push --force'), BLOCKED);
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push --force-with-lease'), BLOCKED);
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push -f origin main'), BLOCKED);
 });
 
 test('--no-verify is blocked', () => {
@@ -74,14 +74,14 @@ test('empty command is allowed', () => {
   assert.strictEqual(runGuard(''), ALLOWED);
 });
 
-test('substring RIHAL_PUSH_OK does not un-gate a push', () => {
-  assert.strictEqual(runGuard('echo RIHAL_PUSH_OK; git push'), BLOCKED);
-  assert.strictEqual(runGuard('git push # RIHAL_PUSH_OK'), BLOCKED);
+test('substring RCODE_PUSH_OK does not un-gate a push', () => {
+  assert.strictEqual(runGuard('echo RCODE_PUSH_OK; git push'), BLOCKED);
+  assert.strictEqual(runGuard('git push # RCODE_PUSH_OK'), BLOCKED);
 });
 
 test('+-prefixed refspec force-push is blocked', () => {
   assert.strictEqual(runGuard('git push origin +main'), BLOCKED);
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push origin +main'), BLOCKED);
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push origin +main'), BLOCKED);
   assert.strictEqual(
     runGuard('git push origin +HEAD:refs/heads/main'),
     BLOCKED
@@ -89,5 +89,5 @@ test('+-prefixed refspec force-push is blocked', () => {
 });
 
 test('genuine authorized push still works', () => {
-  assert.strictEqual(runGuard('RIHAL_PUSH_OK=1 git push origin main'), ALLOWED);
+  assert.strictEqual(runGuard('RCODE_PUSH_OK=1 git push origin main'), ALLOWED);
 });

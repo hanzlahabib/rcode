@@ -19,9 +19,9 @@ gaps: []
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
 | 1 | All 10 persona agent files are <=40 lines | VERIFIED | `wc -l` output: hanzla=18, waleed=20, sadiq=18, fatima=19, ahmed=10, hussain-pm=19 (note: SUMMARY says 19, actual wc confirms 19), layla=10, mariam=18, nasser=10, noor=11; total=153 |
-| 2 | Each file still @-includes its matching SKILL.md | VERIFIED | `grep -l "@.rihal/skills/agents" rihal/agents/rihal-{...}.md | wc -l` returns 10 |
+| 2 | Each file still @-includes its matching SKILL.md | VERIFIED | `grep -l "@.rcode/skills/agents" rcode/agents/rcode-{...}.md | wc -l` returns 10 |
 | 3 | No persona content (headings below last @-include) in any stub | VERIFIED | Loop check: all 10 files returned "OK" — no `^#` heading below last `^@` line |
-| 4 | rihal-khalid.md is untouched | VERIFIED | `wc -l rihal/agents/rihal-khalid.md` returns 99 |
+| 4 | rcode-khalid.md is untouched | VERIFIED | `wc -l rcode/agents/rcode-khalid.md` returns 99 |
 | 5 | All SKILL.md files are untouched | VERIFIED | hanzla-engineer/SKILL.md=158L, hussain-pm/SKILL.md=166L (both match CONTEXT.md expected values) |
 
 ---
@@ -30,16 +30,16 @@ gaps: []
 
 | Artifact | Exists | Substantive | Wired | Status |
 |----------|--------|-------------|-------|--------|
-| rihal-hanzla.md (slimmed) | Yes | Yes (18L, frontmatter + 4 @-includes) | Yes (@-includes SKILL.md) | VERIFIED |
-| rihal-waleed.md (slimmed) | Yes | Yes (20L) | Yes | VERIFIED |
-| rihal-sadiq.md (slimmed) | Yes | Yes (18L) | Yes | VERIFIED |
-| rihal-fatima.md (slimmed) | Yes | Yes (19L) | Yes | VERIFIED |
-| rihal-ahmed.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
-| rihal-hussain-pm.md (slimmed) | Yes | Yes (19L) | Yes | VERIFIED |
-| rihal-layla.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
-| rihal-mariam.md (slimmed) | Yes | Yes (18L) | Yes | VERIFIED |
-| rihal-nasser.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
-| rihal-noor.md (slimmed) | Yes | Yes (11L) | Yes | VERIFIED |
+| rcode-hanzla.md (slimmed) | Yes | Yes (18L, frontmatter + 4 @-includes) | Yes (@-includes SKILL.md) | VERIFIED |
+| rcode-waleed.md (slimmed) | Yes | Yes (20L) | Yes | VERIFIED |
+| rcode-sadiq.md (slimmed) | Yes | Yes (18L) | Yes | VERIFIED |
+| rcode-fatima.md (slimmed) | Yes | Yes (19L) | Yes | VERIFIED |
+| rcode-ahmed.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
+| rcode-hussain-pm.md (slimmed) | Yes | Yes (19L) | Yes | VERIFIED |
+| rcode-layla.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
+| rcode-mariam.md (slimmed) | Yes | Yes (18L) | Yes | VERIFIED |
+| rcode-nasser.md (slimmed) | Yes | Yes (10L) | Yes | VERIFIED |
+| rcode-noor.md (slimmed) | Yes | Yes (11L) | Yes | VERIFIED |
 
 ---
 
@@ -47,8 +47,8 @@ gaps: []
 
 | Link | Status | Evidence |
 |------|--------|----------|
-| Each agent stub @-includes SKILL.md | VERIFIED | grep confirms 10/10 files contain `@.rihal/skills/agents/<name>/SKILL.md` |
-| rihal-khalid.md not in slimmed set | VERIFIED | wc=99, no modification |
+| Each agent stub @-includes SKILL.md | VERIFIED | grep confirms 10/10 files contain `@.rcode/skills/agents/<name>/SKILL.md` |
+| rcode-khalid.md not in slimmed set | VERIFIED | wc=99, no modification |
 
 ---
 
@@ -64,7 +64,7 @@ Commit `e650dec` — `chore(agents): slim 10 persona stubs — strip duplicate c
 
 ---
 
-## Spot-Check: rihal-hanzla.md (representative sample)
+## Spot-Check: rcode-hanzla.md (representative sample)
 
 File is exactly 18 lines: YAML frontmatter (lines 1-13) + blank line + 4 @-includes (lines 15-18). No heading or persona content anywhere below the frontmatter closing `---`.
 

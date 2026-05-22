@@ -106,34 +106,34 @@ export function sprintHints(s) {
   const sid = s.id || '';
   if (st === 'completed' || st === 'complete' || st === 'done') {
     return [
-      ['/rihal-verify-work',   'Verify UAT for Sprint ' + sid],
-      ['/rihal-audit',         'Audit completed Sprint ' + sid],
-      ['/rihal-session-report','Generate session report'],
-      ['/rihal-code-review',   'Review code from Sprint ' + sid],
+      ['/rcode-verify-work',   'Verify UAT for Sprint ' + sid],
+      ['/rcode-audit',         'Audit completed Sprint ' + sid],
+      ['/rcode-session-report','Generate session report'],
+      ['/rcode-review',   'Review code from Sprint ' + sid],
     ];
   } else if (st === 'active' || st === 'in_progress') {
     return [
-      ['/rihal-progress',     'Check Sprint ' + sid + ' progress'],
-      ['/rihal-sprint-status','Status report for Sprint ' + sid],
-      ['/rihal-pause-work',   'Pause and save context'],
+      ['/rcode-progress',     'Check Sprint ' + sid + ' progress'],
+      ['/rcode-sprint-status','Status report for Sprint ' + sid],
+      ['/rcode-pause-work',   'Pause and save context'],
     ];
   } else if (st === 'blocked') {
     return [
-      ['/rihal-debug',         'Debug blocker in Sprint ' + sid],
-      ['/rihal-correct-course','Course-correct Sprint ' + sid],
+      ['/rcode-debug',         'Debug blocker in Sprint ' + sid],
+      ['/rcode-correct-course','Course-correct Sprint ' + sid],
     ];
   } else {
     if (!stories.length) {
       return [
-        ['/rihal-sprint-planning','Groom Sprint ' + sid + ' — add stories'],
-        ['/rihal-create-story',   'Create a story for Sprint ' + sid],
-        ['/rihal-discuss-phase',  'Discuss approach before planning'],
+        ['/rcode-sprint-planning','Groom Sprint ' + sid + ' — add stories'],
+        ['/rcode-create-story',   'Create a story for Sprint ' + sid],
+        ['/rcode-discuss-phase',  'Discuss approach before planning'],
       ];
     }
     return [
-      ['/rihal-execute-sprint ' + sid, 'Execute Sprint ' + sid],
-      ['/rihal-discuss-phase',  'Discuss before executing'],
-      ['/rihal-sprint-planning','Refine Sprint ' + sid + ' plan'],
+      ['/rcode-execute-sprint ' + sid, 'Execute Sprint ' + sid],
+      ['/rcode-discuss-phase',  'Discuss before executing'],
+      ['/rcode-sprint-planning','Refine Sprint ' + sid + ' plan'],
     ];
   }
 }
@@ -152,27 +152,27 @@ export function phaseHints(p) {
   const pid = p.id || '';
   if (st === 'completed' || st === 'complete' || st === 'done') {
     return [
-      ['/rihal-validate-phase','Validate Phase ' + pid + ' deliverables'],
-      ['/rihal-audit',        'Audit Phase ' + pid + ' completion'],
-      ['/rihal-code-review',  'Review Phase ' + pid + ' code'],
+      ['/rcode-validate-phase','Validate Phase ' + pid + ' deliverables'],
+      ['/rcode-audit',        'Audit Phase ' + pid + ' completion'],
+      ['/rcode-review',  'Review Phase ' + pid + ' code'],
     ];
   } else if (st === 'active' || st === 'in_progress') {
     return [
-      ['/rihal-progress',     'Check Phase ' + pid + ' progress'],
-      ['/rihal-sprint-status','Current sprint status'],
-      ['/rihal-code-review',  'Review code in Phase ' + pid],
+      ['/rcode-progress',     'Check Phase ' + pid + ' progress'],
+      ['/rcode-sprint-status','Current sprint status'],
+      ['/rcode-review',  'Review code in Phase ' + pid],
     ];
   } else {
     if (!sps.length) {
       return [
-        ['/rihal-plan',         'Create sprint plan for Phase ' + pid],
-        ['/rihal-discuss-phase','Discuss Phase ' + pid + ' approach'],
-        ['/rihal-research-phase','Research Phase ' + pid + ' before planning'],
+        ['/rcode-plan',         'Create sprint plan for Phase ' + pid],
+        ['/rcode-discuss-phase','Discuss Phase ' + pid + ' approach'],
+        ['/rcode-research-phase','Research Phase ' + pid + ' before planning'],
       ];
     }
     return [
-      ['/rihal-execute ' + pid, 'Start executing Phase ' + pid],
-      ['/rihal-sprint-planning','Plan next sprint in Phase ' + pid],
+      ['/rcode-execute ' + pid, 'Start executing Phase ' + pid],
+      ['/rcode-sprint-planning','Plan next sprint in Phase ' + pid],
     ];
   }
 }

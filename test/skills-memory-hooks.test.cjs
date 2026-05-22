@@ -15,7 +15,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(PROJECT_ROOT, 'rihal', 'skills');
+const SKILLS_DIR = path.join(PROJECT_ROOT, 'rcode', 'skills');
 
 function findSkills(dir) {
   const out = [];
@@ -38,9 +38,9 @@ test('skills-memory-hooks: all SKILL.md files present', () => {
 
 test('skills-memory-hooks: every core SKILL.md declares Memory Bank Hooks', () => {
   // Scope:
-  //  - rihal/skills/core/ : enforced (#447 fix lives here)
-  //  - rihal/skills/agents/ : exempt (per-invocation hooks in agent files)
-  //  - rihal/skills/actions/ : tracked separately — many legacy action skills
+  //  - rcode/skills/core/ : enforced (#447 fix lives here)
+  //  - rcode/skills/agents/ : exempt (per-invocation hooks in agent files)
+  //  - rcode/skills/actions/ : tracked separately — many legacy action skills
   //    predate the 5-component standard; expanding enforcement is a separate
   //    audit cycle.
   const offenders = [];

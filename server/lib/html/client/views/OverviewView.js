@@ -28,14 +28,14 @@ export function OverviewView() {
 
   // Cmd hints
   const baseHints = [
-    ['/rihal-next',   'What should I do next?'],
-    ['/rihal-status', 'Quick project status'],
-    ['/rihal-council','Ask the team a question'],
+    ['/rcode-next',   'What should I do next?'],
+    ['/rcode-status', 'Quick project status'],
+    ['/rcode-council','Ask the team a question'],
   ];
   const sprintHints = getSprintHints(curSprint);
   let hints = [...sprintHints, ...baseHints];
   if (S.pendingHandoff) {
-    hints = [['/rihal-resume-work','Resume from the pending handoff'], ...hints];
+    hints = [['/rcode-resume-work','Resume from the pending handoff'], ...hints];
   }
 
   // At-a-glance status tiles — phase, sprint, blocked, last execution.
@@ -198,7 +198,7 @@ export function OverviewView() {
             </div>
           ` : null}
           <div style="margin-top:var(--space-3);font-size:var(--text-sm);">
-            <code>/rihal-resume-work</code>
+            <code>/rcode-resume-work</code>
           </div>
         </div>
       </section>

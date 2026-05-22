@@ -13,7 +13,7 @@ generated: 2026-05-10T12:00:00Z
 ## Pattern Check
 
 The phase goal is correct in principle: extract static playbook content from
-three heavy agent files into `rihal/references/` and replace with `@-include`
+three heavy agent files into `rcode/references/` and replace with `@-include`
 directives. The approach is consistent with how existing references are handled
 in this repo (e.g. `response-style.md`, `karpathy-guidelines.md`).
 
@@ -30,40 +30,40 @@ only the procedural playbook content into references is the right split.
 ### BLOCKER — @-include paths point to a directory that does not contain the new files
 
 **Files:** All three agent stubs
-- `rihal/agents/rihal-integration-checker.md:10`
-  `@.rihal/references/integration-verification-playbook.md`
-- `rihal/agents/rihal-research-synthesizer.md:10`
-  `@.rihal/references/research-synthesis-playbook.md`
-- `rihal/agents/rihal-codebase-mapper.md:11`
-  `@.rihal/references/codebase-mapping-process.md`
+- `rcode/agents/rcode-integration-checker.md:10`
+  `@.rcode/references/integration-verification-playbook.md`
+- `rcode/agents/rcode-research-synthesizer.md:10`
+  `@.rcode/references/research-synthesis-playbook.md`
+- `rcode/agents/rcode-codebase-mapper.md:11`
+  `@.rcode/references/codebase-mapping-process.md`
 
 **Why this is a blocker:** The `@-include` directive resolves relative to the
-project root. The three new reference files were written to `rihal/references/`,
-not `.rihal/references/`. Running `ls .rihal/references/` confirms the three
+project root. The three new reference files were written to `rcode/references/`,
+not `.rcode/references/`. Running `ls .rcode/references/` confirms the three
 files are absent there. Every other `@-include` in the codebase consistently
-uses `.rihal/references/` (verified across all agents: `rihal-waleed.md`,
-`rihal-planner.md`, `rihal-verifier.md`, `rihal-omar.md`, etc.).
+uses `.rcode/references/` (verified across all agents: `rcode-waleed.md`,
+`rcode-planner.md`, `rcode-verifier.md`, `rcode-omar.md`, etc.).
 
 At runtime, all three playbook includes will silently fail to load — the agents
 will execute without their procedural content. This negates the entire phase.
 
-**Required fix:** Move (or copy) the three files into `.rihal/references/`:
-- `rihal/references/integration-verification-playbook.md` → `.rihal/references/integration-verification-playbook.md`
-- `rihal/references/research-synthesis-playbook.md` → `.rihal/references/research-synthesis-playbook.md`
-- `rihal/references/codebase-mapping-process.md` → `.rihal/references/codebase-mapping-process.md`
+**Required fix:** Move (or copy) the three files into `.rcode/references/`:
+- `rcode/references/integration-verification-playbook.md` → `.rcode/references/integration-verification-playbook.md`
+- `rcode/references/research-synthesis-playbook.md` → `.rcode/references/research-synthesis-playbook.md`
+- `rcode/references/codebase-mapping-process.md` → `.rcode/references/codebase-mapping-process.md`
 
-If `rihal/references/` is intentional as a new parallel directory (separate
-concern from `.rihal/references/`), then the agent stubs must be updated to
+If `rcode/references/` is intentional as a new parallel directory (separate
+concern from `.rcode/references/`), then the agent stubs must be updated to
 match. Either way, one side must change. The path convention used by all other
-agents is `.rihal/references/` — that should be the canonical destination.
+agents is `.rcode/references/` — that should be the canonical destination.
 
 ---
 
 ### HIGH — XML structural tags stripped from integration-checker reference without equivalent replacements
 
-**File:** `rihal/references/integration-verification-playbook.md`
+**File:** `rcode/references/integration-verification-playbook.md`
 
-**Original:** `rihal/agents/rihal-integration-checker.md` (pre-phase, at commit
+**Original:** `rcode/agents/rcode-integration-checker.md` (pre-phase, at commit
 `cf374b5`) wrapped its procedural content in `<verification_process>…</verification_process>`,
 output template in `<output>…</output>`, rules in `<critical_rules>…</critical_rules>`,
 and checklist in `<success_criteria>…</success_criteria>`.
@@ -91,7 +91,7 @@ Do not leave a mixed convention.
 
 ### MEDIUM — Unclosed code fence in `codebase-mapping-process.md:165`
 
-**File:** `rihal/references/codebase-mapping-process.md:165`
+**File:** `rcode/references/codebase-mapping-process.md:165`
 
 The `return_confirmation` step opens a triple-backtick code fence at line 165
 and never closes it. The `</step>` tag at line 174 is inside the open fence,
@@ -99,7 +99,7 @@ meaning a model parsing this file will treat the `</step>`, the `</output>` tag
 at line 175, and any content that follows as code rather than instructions.
 
 **Pre-existing status:** This defect existed in the source agent file at commit
-`cf374b5` (line 238 of the original `rihal-codebase-mapper.md`). Phase 22
+`cf374b5` (line 238 of the original `rcode-codebase-mapper.md`). Phase 22
 faithfully extracted it — it was not introduced here.
 
 **Required fix:** Add a closing ` ``` ` after the "Read only when the current
@@ -116,7 +116,7 @@ shell check would catch this class of regression:
 
 ```bash
 # Verify all @-include paths resolve to actual files
-grep -rh "^@" rihal/agents/ | sed 's/^@//' | while read path; do
+grep -rh "^@" rcode/agents/ | sed 's/^@//' | while read path; do
   [ -f "$path" ] || echo "MISSING: $path"
 done
 ```
@@ -141,8 +141,8 @@ fully present with no truncation.
 
 ## Required Fixes
 
-1. **Move the three reference files to `.rihal/references/`** (or update all
-   three agent stubs to `@rihal/references/` — but `.rihal/references/` is the
+1. **Move the three reference files to `.rcode/references/`** (or update all
+   three agent stubs to `@rcode/references/` — but `.rcode/references/` is the
    established convention). This unblocks runtime use.
 2. **Resolve XML structural inconsistency** in `integration-verification-playbook.md`
    — either restore tags in the reference or strip them from the agent stub.

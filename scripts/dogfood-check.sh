@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dogfood smoke checks — runs against rihal-code itself.
+# Dogfood smoke checks — runs against rcode itself.
 # Phase 9 plan 9.4 (#463). Fails on regression of:
 #   - #455 (sync silent no-op on heading-style ROADMAP)
 #   - #460 (phase add CLI missing)
@@ -15,12 +15,12 @@ set -e
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-CLI="node rihal/bin/rihal-tools.cjs"
+CLI="node rcode/bin/rcode-tools.cjs"
 FAIL=0
 fail() { echo "  ✗ FAIL: $1"; FAIL=1; }
 pass() { echo "  ✓ pass: $1"; }
 
-echo "Dogfood checks — rihal-code"
+echo "Dogfood checks — rcode"
 echo
 
 # Check 1 — orphan .planning/state.json must not exist (#462)
@@ -69,18 +69,18 @@ else
 fi
 
 # Check 5 — workflow ↔ CLI ref sweep (#465 regression detector)
-# Extract every node rihal-tools.cjs <subcmd> reference and verify each top-level
+# Extract every node rcode-tools.cjs <subcmd> reference and verify each top-level
 # subcommand appears in help. (Subcommand args like 'state add-decision' are
 # verified by their first token only — looser check, but catches #460-class breakage.)
 HELP=$($CLI help 2>&1)
-WORKFLOW_REFS=$(grep -rEoh 'node\s+["\.][^"]*rihal-tools\.cjs["\.]?\s+[a-z][a-zA-Z0-9-]+' rihal/workflows/ 2>/dev/null | \
-  sed -E 's|^node\s+["\.][^"]*rihal-tools\.cjs["\.]?\s+||' | \
+WORKFLOW_REFS=$(grep -rEoh 'node\s+["\.][^"]*rcode-tools\.cjs["\.]?\s+[a-z][a-zA-Z0-9-]+' rcode/workflows/ 2>/dev/null | \
+  sed -E 's|^node\s+["\.][^"]*rcode-tools\.cjs["\.]?\s+||' | \
   sort -u)
 DRIFT_COUNT=0
 for ref in $WORKFLOW_REFS; do
   # Skip empty or pure-comment matches
   [ -z "$ref" ] && continue
-  if ! echo "$HELP" | grep -qE "^\s*${ref}\b" && ! grep -qE "case '${ref}'" rihal/bin/rihal-tools.cjs 2>/dev/null; then
+  if ! echo "$HELP" | grep -qE "^\s*${ref}\b" && ! grep -qE "case '${ref}'" rcode/bin/rcode-tools.cjs 2>/dev/null; then
     # This is one of the known-missing subcommands from #465. Don't fail the
     # gate on those — they're already filed and tracked. But fail on NEW drift.
     case "$ref" in
@@ -112,7 +112,7 @@ fi
 # phase scope, or Status: Planned with all acceptance items shipped). TRIVIAL
 # drift (missing ✅) and PARTIAL drift (N of M items shipped) just warn.
 PHASE_STATUS_MAJOR=0
-if [ -f .rihal/state.json ]; then
+if [ -f .rcode/state.json ]; then
   PHASES=$($CLI roadmap list-phases 2>&1)
   if echo "$PHASES" | grep -q '"number"'; then
     # For each phase, check the obvious major-drift signals
@@ -145,17 +145,17 @@ else
 fi
 
 # Check 7 — installed CLI matches source (Phase 12 dogfood gap).
-# .rihal/bin/ is gitignored and seeded by `rihal-code install`. When developing
-# rihal-code itself, edits to rihal/bin/ don't auto-propagate to .rihal/bin/,
-# so workflows (which call .rihal/bin/) silently run stale code. Phase 12's
+# .rcode/bin/ is gitignored and seeded by `rcode install`. When developing
+# rcode itself, edits to rcode/bin/ don't auto-propagate to .rcode/bin/,
+# so workflows (which call .rcode/bin/) silently run stale code. Phase 12's
 # new init fields shipped in source but the running session called the stale
 # installed copy and got the pre-Phase-10 shape. This gate fails on drift.
 BIN_DRIFT=0
-if [ -d .rihal/bin ]; then
-  for src in rihal/bin/*.cjs rihal/bin/lib/*.cjs; do
+if [ -d .rcode/bin ]; then
+  for src in rcode/bin/*.cjs rcode/bin/lib/*.cjs; do
     [ -f "$src" ] || continue
-    rel="${src#rihal/bin/}"
-    dst=".rihal/bin/${rel}"
+    rel="${src#rcode/bin/}"
+    dst=".rcode/bin/${rel}"
     if [ ! -f "$dst" ]; then
       BIN_DRIFT=$((BIN_DRIFT + 1))
       echo "    DRIFT: $dst missing (source: $src)"
@@ -167,9 +167,9 @@ if [ -d .rihal/bin ]; then
 fi
 
 if [ "$BIN_DRIFT" -gt 0 ]; then
-  fail "$BIN_DRIFT file(s) drifted between rihal/bin/ and .rihal/bin/ — run: cp -r rihal/bin/. .rihal/bin/"
+  fail "$BIN_DRIFT file(s) drifted between rcode/bin/ and .rcode/bin/ — run: cp -r rcode/bin/. .rcode/bin/"
 else
-  pass "rihal/bin/ ↔ .rihal/bin/ in sync (no installed-CLI drift)"
+  pass "rcode/bin/ ↔ .rcode/bin/ in sync (no installed-CLI drift)"
 fi
 
 # Check 8 — agent-behavior regression harness (#746).
@@ -183,8 +183,8 @@ else
 fi
 
 # Check 9 — artifact schema validation (#747).
-# Validates rihal-code's own artifacts — SKILL.md frontmatter, agent
-# frontmatter, .rihal/state.json — against the zod schemas in
+# Validates rcode's own artifacts — SKILL.md frontmatter, agent
+# frontmatter, .rcode/state.json — against the zod schemas in
 # cli/lib/schemas.cjs. A malformed frontmatter (missing name, too few
 # trigger phrases, missing negative boundary) surfaces here.
 if node --test test/artifact-schema.test.cjs > /dev/null 2>&1; then

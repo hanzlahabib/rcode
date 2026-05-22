@@ -7,47 +7,47 @@ wave: 1
 depends_on: []
 files_modified: []
 creates:
-  - rihal/references/persona-engineer-shared.md
-  - rihal/references/auditor-shared-checklists.md
-  - rihal/references/researcher-shared.md
+  - rcode/references/persona-engineer-shared.md
+  - rcode/references/auditor-shared-checklists.md
+  - rcode/references/researcher-shared.md
 autonomous: true
 requirements: [GH-713]
 
 must_haves:
   truths:
-    - Three new cluster reference files exist in rihal/references/ with extracted shared content
+    - Three new cluster reference files exist in rcode/references/ with extracted shared content
     - Each file is self-contained — an executor reading only it gets the full shared rules for that cluster
     - No agent files are modified in this sprint (pure extraction sprint)
-    - Both rihal/references/ and .rihal/references/ copies are present for each new file
+    - Both rcode/references/ and .rcode/references/ copies are present for each new file
   artifacts:
-    - rihal/references/persona-engineer-shared.md
-    - rihal/references/auditor-shared-checklists.md
-    - rihal/references/researcher-shared.md
-    - .rihal/references/persona-engineer-shared.md
-    - .rihal/references/auditor-shared-checklists.md
-    - .rihal/references/researcher-shared.md
+    - rcode/references/persona-engineer-shared.md
+    - rcode/references/auditor-shared-checklists.md
+    - rcode/references/researcher-shared.md
+    - .rcode/references/persona-engineer-shared.md
+    - .rcode/references/auditor-shared-checklists.md
+    - .rcode/references/researcher-shared.md
   key_links:
     - Sprint 23-2 depends on persona-engineer-shared.md and auditor-shared-checklists.md existing
     - Sprint 23-3 depends on researcher-shared.md existing
     - Sprint 23-4 has no cluster file dependency (planner/sprint-checker are unique-content agents)
-    - The @-include path agents use is @.rihal/references/<filename>.md (not rihal/references/)
+    - The @-include path agents use is @.rcode/references/<filename>.md (not rcode/references/)
 ---
 
 <objective>
 Create three cluster reference files by extracting the SHARED content that repeats across the engineer-persona cluster, the auditor cluster, and the researcher cluster. This sprint is extraction only — no agent files are touched.
 
 Purpose: Establishes the shared-content foundations that Wave 2 sprints (23-2 and 23-3) will @-include. Without these files Wave 2 cannot run.
-Output: Three new .md files in rihal/references/ (and mirrored to .rihal/references/).
+Output: Three new .md files in rcode/references/ (and mirrored to .rcode/references/).
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
 @.planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CONTEXT.md
-@rihal/references/agent-shared-rules.md
+@rcode/references/agent-shared-rules.md
 </context>
 
 <tasks>
@@ -58,10 +58,10 @@ Output: Three new .md files in rihal/references/ (and mirrored to .rihal/referen
 
 <files>
 Sources to read (all three must be read before writing):
-  - rihal/agents/rihal-haitham.md (143L) — lines 40-144
-  - rihal/agents/rihal-omar.md (138L) — lines 23-138
-  - rihal/agents/rihal-yousef.md (137L) — lines 23-137
-Destination to create: rihal/references/persona-engineer-shared.md
+  - rcode/agents/rcode-haitham.md (143L) — lines 40-144
+  - rcode/agents/rcode-omar.md (138L) — lines 23-138
+  - rcode/agents/rcode-yousef.md (137L) — lines 23-137
+Destination to create: rcode/references/persona-engineer-shared.md
 </files>
 
 <action>
@@ -105,7 +105,7 @@ File preamble to write at top of persona-engineer-shared.md:
 ```
 # Engineer Persona Shared Rules
 
-Loaded by `rihal-haitham`, `rihal-omar`, and `rihal-yousef` via `@-include`.
+Loaded by `rcode-haitham`, `rcode-omar`, and `rcode-yousef` via `@-include`.
 Contains the shared communication discipline, heuristic protocol, and
 operational constraints that all three engineer personas inherit.
 
@@ -116,24 +116,24 @@ examples, redirects) lives in each agent's own file.
 
 <verify>
 <automated>
-wc -l /home/hanzla/development/rihal-code/rihal/references/persona-engineer-shared.md && grep -c "## " /home/hanzla/development/rihal-code/rihal/references/persona-engineer-shared.md && test -f /home/hanzla/development/rihal-code/.rihal/references/persona-engineer-shared.md && echo "mirror OK"
+wc -l /home/hanzla/development/rcode/rcode/references/persona-engineer-shared.md && grep -c "## " /home/hanzla/development/rcode/rcode/references/persona-engineer-shared.md && test -f /home/hanzla/development/rcode/.rcode/references/persona-engineer-shared.md && echo "mirror OK"
 </automated>
 </verify>
 
 <done>
-- rihal/references/persona-engineer-shared.md exists and has at least 5 sections
-- .rihal/references/persona-engineer-shared.md is a copy (same content, same wc -l)
+- rcode/references/persona-engineer-shared.md exists and has at least 5 sections
+- .rcode/references/persona-engineer-shared.md is a copy (same content, same wc -l)
 - File contains NO persona-specific heuristic names (no "Three-paths check", "Critical-path trace", "Match-existing-pattern")
 - File contains Communication Discipline, Named-Heuristic Protocol, Anti-Pattern Enforcement Protocol, Engineer Workflow Invariants, Shared Operational Constraints sections
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-haitham.md:40-143 — identity + principles + decision framework + anti-patterns + capabilities + workflow + constraints (unique + shared content mixed)
-lines: rihal/agents/rihal-omar.md:23-138 — same structural pattern, different named heuristics
-lines: rihal/agents/rihal-yousef.md:23-137 — same structural pattern, different named heuristics
-grep: rg "STRICTLY FORBIDDEN from starting" rihal/agents/ → 3 hits (haitham:67, omar:62, yousef:66) — confirms identical shared rule
-grep: rg "Five named heuristics. Cite by name." rihal/agents/ → 3 hits (haitham:49, omar:45, yousef:48) — confirms shared meta-pattern
-creates: rihal/references/persona-engineer-shared.md — no existing file at this path; no existing file covers engineer-persona shared rules (agent-shared-rules.md covers universal rules, not persona-cluster rules)
+lines: rcode/agents/rcode-haitham.md:40-143 — identity + principles + decision framework + anti-patterns + capabilities + workflow + constraints (unique + shared content mixed)
+lines: rcode/agents/rcode-omar.md:23-138 — same structural pattern, different named heuristics
+lines: rcode/agents/rcode-yousef.md:23-137 — same structural pattern, different named heuristics
+grep: rg "STRICTLY FORBIDDEN from starting" rcode/agents/ → 3 hits (haitham:67, omar:62, yousef:66) — confirms identical shared rule
+grep: rg "Five named heuristics. Cite by name." rcode/agents/ → 3 hits (haitham:49, omar:45, yousef:48) — confirms shared meta-pattern
+creates: rcode/references/persona-engineer-shared.md — no existing file at this path; no existing file covers engineer-persona shared rules (agent-shared-rules.md covers universal rules, not persona-cluster rules)
 </evidence>
 
 ---
@@ -144,13 +144,13 @@ creates: rihal/references/persona-engineer-shared.md — no existing file at thi
 
 <files>
 Sources to read (all six must be read before writing):
-  - rihal/agents/rihal-nyquist-auditor.md (182L)
-  - rihal/agents/rihal-docs-auditor.md (182L)
-  - rihal/agents/rihal-ui-auditor.md (124L)
-  - rihal/agents/rihal-security-auditor.md (122L)
-  - rihal/agents/rihal-security-adversary.md (127L)
-  - rihal/agents/rihal-edge-case-hunter.md (121L)
-Destination to create: rihal/references/auditor-shared-checklists.md
+  - rcode/agents/rcode-nyquist-auditor.md (182L)
+  - rcode/agents/rcode-docs-auditor.md (182L)
+  - rcode/agents/rcode-ui-auditor.md (124L)
+  - rcode/agents/rcode-security-auditor.md (122L)
+  - rcode/agents/rcode-security-adversary.md (127L)
+  - rcode/agents/rcode-edge-case-hunter.md (121L)
+Destination to create: rcode/references/auditor-shared-checklists.md
 </files>
 
 <action>
@@ -192,8 +192,8 @@ File preamble:
 ```
 # Auditor Shared Checklists
 
-Loaded by rihal-nyquist-auditor, rihal-docs-auditor, rihal-ui-auditor,
-rihal-security-auditor, rihal-security-adversary, and rihal-edge-case-hunter
+Loaded by rcode-nyquist-auditor, rcode-docs-auditor, rcode-ui-auditor,
+rcode-security-auditor, rcode-security-adversary, and rcode-edge-case-hunter
 via `@-include`. Contains the shared audit methodology, evidence requirements,
 severity model, and role boundary that all auditors inherit.
 
@@ -204,24 +204,24 @@ execution flow, examples) lives in each agent's own file.
 
 <verify>
 <automated>
-wc -l /home/hanzla/development/rihal-code/rihal/references/auditor-shared-checklists.md && test -f /home/hanzla/development/rihal-code/.rihal/references/auditor-shared-checklists.md && echo "mirror OK" && grep "Audit Role Boundary\|Evidence Requirements\|Severity Classification" /home/hanzla/development/rihal-code/rihal/references/auditor-shared-checklists.md
+wc -l /home/hanzla/development/rcode/rcode/references/auditor-shared-checklists.md && test -f /home/hanzla/development/rcode/.rcode/references/auditor-shared-checklists.md && echo "mirror OK" && grep "Audit Role Boundary\|Evidence Requirements\|Severity Classification" /home/hanzla/development/rcode/rcode/references/auditor-shared-checklists.md
 </automated>
 </verify>
 
 <done>
-- rihal/references/auditor-shared-checklists.md exists with at least 5 sections
-- .rihal/references/auditor-shared-checklists.md is a copy
+- rcode/references/auditor-shared-checklists.md exists with at least 5 sections
+- .rcode/references/auditor-shared-checklists.md is a copy
 - Contains: Four-Pressure-Points Audit Structure, Evidence Requirements for Audit Findings, Standard Severity Classification, Audit Role Boundary, Audit Output Structure, Shared Auditor Constraints
 - Does NOT contain OWASP checklists, WCAG checklists, nyquist gap-analysis loop, or docs-auditor JSON schemas
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-docs-auditor.md:23-28 — "Every documentation audit has four pressure points" pattern (shared structure)
-lines: rihal/agents/rihal-security-auditor.md:23-28 — identical "four pressure points" pattern
-lines: rihal/agents/rihal-edge-case-hunter.md:23-28 — identical pattern
-grep: rg "do not write\|do not implement\|You do not" rihal/agents/rihal-docs-auditor.md rihal/agents/rihal-security-auditor.md rihal/agents/rihal-edge-case-hunter.md rihal/agents/rihal-security-adversary.md → 4 hits confirming shared role-boundary rule
-grep: rg "No pleasantries or closing offers" rihal/agents/ → 6 hits (all auditors share this constraint)
-creates: rihal/references/auditor-shared-checklists.md — no existing file; agent-shared-rules.md covers universal rules only, not auditor-cluster rules
+lines: rcode/agents/rcode-docs-auditor.md:23-28 — "Every documentation audit has four pressure points" pattern (shared structure)
+lines: rcode/agents/rcode-security-auditor.md:23-28 — identical "four pressure points" pattern
+lines: rcode/agents/rcode-edge-case-hunter.md:23-28 — identical pattern
+grep: rg "do not write\|do not implement\|You do not" rcode/agents/rcode-docs-auditor.md rcode/agents/rcode-security-auditor.md rcode/agents/rcode-edge-case-hunter.md rcode/agents/rcode-security-adversary.md → 4 hits confirming shared role-boundary rule
+grep: rg "No pleasantries or closing offers" rcode/agents/ → 6 hits (all auditors share this constraint)
+creates: rcode/references/auditor-shared-checklists.md — no existing file; agent-shared-rules.md covers universal rules only, not auditor-cluster rules
 </evidence>
 
 ---
@@ -232,11 +232,11 @@ creates: rihal/references/auditor-shared-checklists.md — no existing file; age
 
 <files>
 Sources to read (all four must be read before writing):
-  - rihal/agents/rihal-phase-researcher.md (129L)
-  - rihal/agents/rihal-project-researcher.md (128L)
-  - rihal/agents/rihal-advisor-researcher.md (116L)
-  - rihal/agents/rihal-profiler.md (117L)
-Destination to create: rihal/references/researcher-shared.md
+  - rcode/agents/rcode-phase-researcher.md (129L)
+  - rcode/agents/rcode-project-researcher.md (128L)
+  - rcode/agents/rcode-advisor-researcher.md (116L)
+  - rcode/agents/rcode-profiler.md (117L)
+Destination to create: rcode/references/researcher-shared.md
 </files>
 
 <action>
@@ -278,8 +278,8 @@ File preamble:
 ```
 # Researcher Shared Rules
 
-Loaded by rihal-phase-researcher, rihal-project-researcher,
-rihal-advisor-researcher, and rihal-profiler via `@-include`.
+Loaded by rcode-phase-researcher, rcode-project-researcher,
+rcode-advisor-researcher, and rcode-profiler via `@-include`.
 Contains the shared research methodology, confidence labeling,
 evidence discipline, and scope constraints all researchers inherit.
 
@@ -290,58 +290,58 @@ in each agent's own file.
 
 <verify>
 <automated>
-wc -l /home/hanzla/development/rihal-code/rihal/references/researcher-shared.md && test -f /home/hanzla/development/rihal-code/.rihal/references/researcher-shared.md && echo "mirror OK" && grep "Mandatory Initial Read\|Confidence Labeling\|Evidence First" /home/hanzla/development/rihal-code/rihal/references/researcher-shared.md
+wc -l /home/hanzla/development/rcode/rcode/references/researcher-shared.md && test -f /home/hanzla/development/rcode/.rcode/references/researcher-shared.md && echo "mirror OK" && grep "Mandatory Initial Read\|Confidence Labeling\|Evidence First" /home/hanzla/development/rcode/rcode/references/researcher-shared.md
 </automated>
 </verify>
 
 <done>
-- rihal/references/researcher-shared.md exists with at least 5 sections
-- .rihal/references/researcher-shared.md is a copy
+- rcode/references/researcher-shared.md exists with at least 5 sections
+- .rcode/references/researcher-shared.md is a copy
 - Contains: Research Methodology Evidence First, Confidence Labeling Protocol, Mandatory Initial Read Protocol, Output Discipline Be Decisive, Scope Discipline for Researchers, Shared Researcher Constraints
 - Does NOT contain any agent's output format schema or agent-specific workflow steps
 </done>
 
 <evidence>
-lines: rihal/agents/rihal-phase-researcher.md:93-96 — "Prescriptive-not-exploratory" and "Confidence-labeled" named rules (shared meta-pattern)
-lines: rihal/agents/rihal-project-researcher.md:88-91 — "Evidence-drives-conclusions" and "Confident-but-honest" named rules (semantically identical to phase-researcher pattern)
-lines: rihal/agents/rihal-phase-researcher.md:19-21 — "If the prompt contains a <files_to_read> block, you MUST use the Read tool" (verbatim identical in project-researcher:17-19)
-grep: rg "files_to_read" rihal/agents/rihal-phase-researcher.md rihal/agents/rihal-project-researcher.md rihal/agents/rihal-assumptions-analyzer.md → 3 hits confirming shared mandatory-read protocol
-grep: rg "HIGH confidence\|MEDIUM confidence\|LOW confidence" rihal/agents/ → hits in phase-researcher, project-researcher, advisor-researcher confirming shared confidence labeling
-creates: rihal/references/researcher-shared.md — no existing file; no existing reference covers researcher-cluster shared rules
+lines: rcode/agents/rcode-phase-researcher.md:93-96 — "Prescriptive-not-exploratory" and "Confidence-labeled" named rules (shared meta-pattern)
+lines: rcode/agents/rcode-project-researcher.md:88-91 — "Evidence-drives-conclusions" and "Confident-but-honest" named rules (semantically identical to phase-researcher pattern)
+lines: rcode/agents/rcode-phase-researcher.md:19-21 — "If the prompt contains a <files_to_read> block, you MUST use the Read tool" (verbatim identical in project-researcher:17-19)
+grep: rg "files_to_read" rcode/agents/rcode-phase-researcher.md rcode/agents/rcode-project-researcher.md rcode/agents/rcode-assumptions-analyzer.md → 3 hits confirming shared mandatory-read protocol
+grep: rg "HIGH confidence\|MEDIUM confidence\|LOW confidence" rcode/agents/ → hits in phase-researcher, project-researcher, advisor-researcher confirming shared confidence labeling
+creates: rcode/references/researcher-shared.md — no existing file; no existing reference covers researcher-cluster shared rules
 </evidence>
 
 ---
 
-### Task 4 — Mirror all three files to .rihal/references/
+### Task 4 — Mirror all three files to .rcode/references/
 **Type:** auto
 **Duration estimate:** 5-10 min
 
 <files>
 Sources:
-  - rihal/references/persona-engineer-shared.md (just created)
-  - rihal/references/auditor-shared-checklists.md (just created)
-  - rihal/references/researcher-shared.md (just created)
+  - rcode/references/persona-engineer-shared.md (just created)
+  - rcode/references/auditor-shared-checklists.md (just created)
+  - rcode/references/researcher-shared.md (just created)
 Destinations:
-  - .rihal/references/persona-engineer-shared.md
-  - .rihal/references/auditor-shared-checklists.md
-  - .rihal/references/researcher-shared.md
+  - .rcode/references/persona-engineer-shared.md
+  - .rcode/references/auditor-shared-checklists.md
+  - .rcode/references/researcher-shared.md
 </files>
 
 <action>
-The @-include paths that agents use at runtime point to `.rihal/references/` (with the leading dot), not `rihal/references/`. The `rihal/references/` directory is the source-of-truth copy that gets committed. The `.rihal/references/` copy is the runtime copy the agent loader resolves.
+The @-include paths that agents use at runtime point to `.rcode/references/` (with the leading dot), not `rcode/references/`. The `rcode/references/` directory is the source-of-truth copy that gets committed. The `.rcode/references/` copy is the runtime copy the agent loader resolves.
 
 Copy each file:
 ```bash
-cp rihal/references/persona-engineer-shared.md .rihal/references/persona-engineer-shared.md
-cp rihal/references/auditor-shared-checklists.md .rihal/references/auditor-shared-checklists.md
-cp rihal/references/researcher-shared.md .rihal/references/researcher-shared.md
+cp rcode/references/persona-engineer-shared.md .rcode/references/persona-engineer-shared.md
+cp rcode/references/auditor-shared-checklists.md .rcode/references/auditor-shared-checklists.md
+cp rcode/references/researcher-shared.md .rcode/references/researcher-shared.md
 ```
 
 Verify content is identical (diff should be empty):
 ```bash
-diff rihal/references/persona-engineer-shared.md .rihal/references/persona-engineer-shared.md
-diff rihal/references/auditor-shared-checklists.md .rihal/references/auditor-shared-checklists.md
-diff rihal/references/researcher-shared.md .rihal/references/researcher-shared.md
+diff rcode/references/persona-engineer-shared.md .rcode/references/persona-engineer-shared.md
+diff rcode/references/auditor-shared-checklists.md .rcode/references/auditor-shared-checklists.md
+diff rcode/references/researcher-shared.md .rcode/references/researcher-shared.md
 ```
 
 Do NOT use absolute paths in the cp commands — use paths relative to the repo root (the working directory).
@@ -349,18 +349,18 @@ Do NOT use absolute paths in the cp commands — use paths relative to the repo 
 
 <verify>
 <automated>
-diff /home/hanzla/development/rihal-code/rihal/references/persona-engineer-shared.md /home/hanzla/development/rihal-code/.rihal/references/persona-engineer-shared.md && diff /home/hanzla/development/rihal-code/rihal/references/auditor-shared-checklists.md /home/hanzla/development/rihal-code/.rihal/references/auditor-shared-checklists.md && diff /home/hanzla/development/rihal-code/rihal/references/researcher-shared.md /home/hanzla/development/rihal-code/.rihal/references/researcher-shared.md && echo "all mirrors identical"
+diff /home/hanzla/development/rcode/rcode/references/persona-engineer-shared.md /home/hanzla/development/rcode/.rcode/references/persona-engineer-shared.md && diff /home/hanzla/development/rcode/rcode/references/auditor-shared-checklists.md /home/hanzla/development/rcode/.rcode/references/auditor-shared-checklists.md && diff /home/hanzla/development/rcode/rcode/references/researcher-shared.md /home/hanzla/development/rcode/.rcode/references/researcher-shared.md && echo "all mirrors identical"
 </automated>
 </verify>
 
 <done>
 - All three diffs return empty (files are byte-for-byte identical)
-- .rihal/references/ directory now has all three new files alongside existing references
+- .rcode/references/ directory now has all three new files alongside existing references
 </done>
 
 <evidence>
-lines: .planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CONTEXT.md:67-68 — "Each cluster reference file goes in rihal/references/ (source) AND .rihal/references/ (runtime copy)"
-grep: rg "@.rihal/references/" rihal/agents/rihal-integration-checker.md → confirms @.rihal/references/ is the runtime include path format used by all agents
+lines: .planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CONTEXT.md:67-68 — "Each cluster reference file goes in rcode/references/ (source) AND .rcode/references/ (runtime copy)"
+grep: rg "@.rcode/references/" rcode/agents/rcode-integration-checker.md → confirms @.rcode/references/ is the runtime include path format used by all agents
 </evidence>
 
 ---
@@ -371,27 +371,27 @@ grep: rg "@.rihal/references/" rihal/agents/rihal-integration-checker.md → con
 
 <files>
 Files to stage and commit:
-  - rihal/references/persona-engineer-shared.md
-  - rihal/references/auditor-shared-checklists.md
-  - rihal/references/researcher-shared.md
-  - .rihal/references/persona-engineer-shared.md
-  - .rihal/references/auditor-shared-checklists.md
-  - .rihal/references/researcher-shared.md
+  - rcode/references/persona-engineer-shared.md
+  - rcode/references/auditor-shared-checklists.md
+  - rcode/references/researcher-shared.md
+  - .rcode/references/persona-engineer-shared.md
+  - .rcode/references/auditor-shared-checklists.md
+  - .rcode/references/researcher-shared.md
 </files>
 
 <action>
 Stage only the six new reference files. Do NOT use `git add -A` or `git add .`. Stage each file individually:
 
 ```bash
-git add rihal/references/persona-engineer-shared.md
-git add rihal/references/auditor-shared-checklists.md
-git add rihal/references/researcher-shared.md
-git add -f .rihal/references/persona-engineer-shared.md
-git add -f .rihal/references/auditor-shared-checklists.md
-git add -f .rihal/references/researcher-shared.md
+git add rcode/references/persona-engineer-shared.md
+git add rcode/references/auditor-shared-checklists.md
+git add rcode/references/researcher-shared.md
+git add -f .rcode/references/persona-engineer-shared.md
+git add -f .rcode/references/auditor-shared-checklists.md
+git add -f .rcode/references/researcher-shared.md
 ```
 
-Use `-f` for the `.rihal/` copies in case `.rihal/` is in `.gitignore`.
+Use `-f` for the `.rcode/` copies in case `.rcode/` is in `.gitignore`.
 
 Commit message:
 ```
@@ -413,7 +413,7 @@ git log --oneline -1
 
 <evidence>
 lines: .planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-CONTEXT.md:71 — "Commit per cluster wave, not per agent"
-grep: rg "commit_planning" /home/hanzla/development/rihal-code/.rihal/config.yaml — read to determine if git add -f is needed for .rihal/ files
+grep: rg "commit_planning" /home/hanzla/development/rcode/.rcode/config.yaml — read to determine if git add -f is needed for .rcode/ files
 </evidence>
 
 </tasks>
@@ -421,27 +421,27 @@ grep: rg "commit_planning" /home/hanzla/development/rihal-code/.rihal/config.yam
 <verification>
 ```bash
 # All three source files exist
-test -f rihal/references/persona-engineer-shared.md && \
-test -f rihal/references/auditor-shared-checklists.md && \
-test -f rihal/references/researcher-shared.md && \
+test -f rcode/references/persona-engineer-shared.md && \
+test -f rcode/references/auditor-shared-checklists.md && \
+test -f rcode/references/researcher-shared.md && \
 echo "source files OK"
 
 # All three runtime copies exist
-test -f .rihal/references/persona-engineer-shared.md && \
-test -f .rihal/references/auditor-shared-checklists.md && \
-test -f .rihal/references/researcher-shared.md && \
+test -f .rcode/references/persona-engineer-shared.md && \
+test -f .rcode/references/auditor-shared-checklists.md && \
+test -f .rcode/references/researcher-shared.md && \
 echo "runtime copies OK"
 
 # No agent stubs modified in this sprint
-git diff HEAD~1 HEAD --name-only | grep "rihal/agents/" && echo "FAIL: agent stubs modified" || echo "OK: no agent stubs touched"
+git diff HEAD~1 HEAD --name-only | grep "rcode/agents/" && echo "FAIL: agent stubs modified" || echo "OK: no agent stubs touched"
 ```
 </verification>
 
 <success_criteria>
-- [ ] rihal/references/persona-engineer-shared.md created with preamble + 5 sections
-- [ ] rihal/references/auditor-shared-checklists.md created with preamble + 6 sections
-- [ ] rihal/references/researcher-shared.md created with preamble + 6 sections
-- [ ] All three mirrored byte-for-byte to .rihal/references/
+- [ ] rcode/references/persona-engineer-shared.md created with preamble + 5 sections
+- [ ] rcode/references/auditor-shared-checklists.md created with preamble + 6 sections
+- [ ] rcode/references/researcher-shared.md created with preamble + 6 sections
+- [ ] All three mirrored byte-for-byte to .rcode/references/
 - [ ] Zero agent stub files modified
 - [ ] One commit: "feat(agents): create cluster reference files for engineer, auditor, researcher personas (#713)"
 </success_criteria>

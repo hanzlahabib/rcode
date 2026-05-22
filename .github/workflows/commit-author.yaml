@@ -15,6 +15,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Allow real email addresses and GitHub noreply.
-          # For Rihal internal forks, add '@rihal\.om' to the regex.
+          # For rcode internal forks, add '@rcode\.om' to the regex.
           committer-email-regex: '@users\.noreply\.github\.com|@github\.com$|.+@.+\..+'
           author-email-regex: '@users\.noreply\.github\.com|@github\.com$|.+@.+\..+'

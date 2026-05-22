@@ -30,8 +30,8 @@ Output: A `LICENSE` file plus aligned `package.json` and README.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -43,9 +43,9 @@ Output: A `LICENSE` file plus aligned `package.json` and README.
 ### Task 30.1.1 — checkpoint:decision — Choose the license
 <type>checkpoint:decision</type>
 <read_first>
-- /home/hanzla/development/rihal-code/package.json (lines 49, 71-73 — `license` + `publishConfig`)
-- /home/hanzla/development/rihal-code/README.md (lines 521-523 — current License section)
-- /home/hanzla/development/rihal-code/ATTRIBUTION.md (full — records third-party MIT credit obligations)
+- /home/hanzla/development/rcode/package.json (lines 49, 71-73 — `license` + `publishConfig`)
+- /home/hanzla/development/rcode/README.md (lines 521-523 — current License section)
+- /home/hanzla/development/rcode/ATTRIBUTION.md (full — records third-party MIT credit obligations)
 </read_first>
 <files></files>
 <action>
@@ -71,14 +71,14 @@ Record the user's answer verbatim. The remaining tasks in this sprint depend on 
 <type>auto</type>
 <read_first>
 - The decision recorded in Task 30.1.1
-- /home/hanzla/development/rihal-code/package.json (line 45-48 — `author.name` = "Hanzla Habib")
+- /home/hanzla/development/rcode/package.json (line 45-48 — `author.name` = "Hanzla Habib")
 </read_first>
 <files>LICENSE</files>
 <action>
 Create `LICENSE` at the repo root using the EXACT canonical text for the license chosen in 30.1.1:
 - MIT → standard MIT License text, copyright line: `Copyright (c) 2026 Hanzla Habib`.
 - Apache-2.0 → full canonical Apache License 2.0 text.
-- Commercial → a proprietary "all rights reserved" notice naming Hanzla Habib / Rihal as copyright holder.
+- Commercial → a proprietary "all rights reserved" notice naming Hanzla Habib / rcode as copyright holder.
 Use the exact canonical wording — do not paraphrase OSS license text. Pull the year from the current date (2026) and the holder from `package.json` `author.name`.
 </action>
 <acceptance_criteria>
@@ -95,8 +95,8 @@ Use the exact canonical wording — do not paraphrase OSS license text. Pull the
 <type>auto</type>
 <read_first>
 - LICENSE (created in 30.1.2)
-- /home/hanzla/development/rihal-code/package.json (line 49, 71-73)
-- /home/hanzla/development/rihal-code/README.md (lines 521-523)
+- /home/hanzla/development/rcode/package.json (line 49, 71-73)
+- /home/hanzla/development/rcode/README.md (lines 521-523)
 </read_first>
 <files>package.json, README.md</files>
 <action>

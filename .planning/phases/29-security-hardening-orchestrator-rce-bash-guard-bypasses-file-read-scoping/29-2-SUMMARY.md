@@ -8,27 +8,27 @@
 
 ## Objective
 
-Close two bypasses in the `bash-guard` PreToolUse hook (`rihal/bin/rihal-hooks.cjs`):
+Close two bypasses in the `bash-guard` PreToolUse hook (`rcode/bin/rcode-hooks.cjs`):
 
-1. `RIHAL_PUSH_OK` was matched as a bare substring anywhere in the command, so `echo RIHAL_PUSH_OK; git push` un-gated an unapproved push.
+1. `RCODE_PUSH_OK` was matched as a bare substring anywhere in the command, so `echo RCODE_PUSH_OK; git push` un-gated an unapproved push.
 2. A `+`-prefixed refspec force-push (`git push origin +main`) matched neither `--force` nor `-f` and slipped through the force-push block.
 
 ## Tasks Completed
 
 | Task | Title | Result |
 | ---- | ----- | ------ |
-| 29.2.1 | Anchor `RIHAL_PUSH_OK` as a real env-var prefix | Done — substring check replaced with `/^\s*RIHAL_PUSH_OK=1(\s|$)/` |
+| 29.2.1 | Anchor `RCODE_PUSH_OK` as a real env-var prefix | Done — substring check replaced with `/^\s*RCODE_PUSH_OK=1(\s|$)/` |
 | 29.2.2 | Detect `+`-refspec force-push; document guard as best-effort | Done — token scan after `push`, routed to force block; doc comment amended |
 | 29.2.3 | Add bash-guard bypass regression tests | Done — 3 new test cases added, all 12 green |
 
 ## Changes
 
-- **`rihal/bin/rihal-hooks.cjs`**
-  - Token check anchored: only a leading `RIHAL_PUSH_OK=1 ` env-var assignment un-gates a push. Bare `RIHAL_PUSH_OK` with no value no longer un-gates.
+- **`rcode/bin/rcode-hooks.cjs`**
+  - Token check anchored: only a leading `RCODE_PUSH_OK=1 ` env-var assignment un-gates a push. Bare `RCODE_PUSH_OK` with no value no longer un-gates.
   - New `isPlusRefspecForce` check: splits the command, drops tokens up to and including `push`, and treats any remaining token starting with `+` as a force-push refspec. Routed through the existing `block('git push --force is never permitted.', ...)` call.
   - bashGuard doc comment now states the guard is best-effort, not a security boundary.
 - **`test/bash-guard-hook.test.cjs`** — 3 new `test(...)` cases (existing 9 untouched):
-  - `substring RIHAL_PUSH_OK does not un-gate a push`
+  - `substring RCODE_PUSH_OK does not un-gate a push`
   - `+-prefixed refspec force-push is blocked`
   - `genuine authorized push still works`
 
@@ -45,9 +45,9 @@ Close two bypasses in the `bash-guard` PreToolUse hook (`rihal/bin/rihal-hooks.c
 
 ## Success Criteria
 
-- `echo RIHAL_PUSH_OK; git push` is BLOCKED — verified
+- `echo RCODE_PUSH_OK; git push` is BLOCKED — verified
 - `git push origin +main` is BLOCKED — verified
-- `RIHAL_PUSH_OK=1 git push origin main` is still ALLOWED — verified
+- `RCODE_PUSH_OK=1 git push origin main` is still ALLOWED — verified
 - bashGuard comment states it is best-effort, not a security boundary — verified
 
 ## Commits

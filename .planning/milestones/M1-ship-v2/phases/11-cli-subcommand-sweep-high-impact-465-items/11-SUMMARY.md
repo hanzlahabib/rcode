@@ -11,7 +11,7 @@
 | 1 | `generate-claude-md` | new-project-roadmap.md | Scaffolds project CLAUDE.md with project-rules baseline (commit/push/file-mod/scope) |
 | 2 | `check-implementation-readiness --phase N` | check-implementation-readiness.md | Returns `{ready, blockers}` — verifies `.planning/` + ROADMAP + phase exists + no blocking anti-patterns |
 | 3 | `commit-to-subrepo --subrepo P "<msg>"` | execute-sprint.md | Same conventional-commits + AI-attribution + `--no-verify` rules as `cmdCommit`, scoped to a subrepo |
-| 4 | `context refresh` | init.md | Touches `.rihal/context/.last-refresh`; graceful no-op when sources.yaml absent |
+| 4 | `context refresh` | init.md | Touches `.rcode/context/.last-refresh`; graceful no-op when sources.yaml absent |
 | 5 | `classify-tech --keywords "<text>"` | ui-phase.md | Classifies tech stack across 17 known patterns (next.js, react, vue, fastapi, django, etc.) |
 
 ## Decisions honored

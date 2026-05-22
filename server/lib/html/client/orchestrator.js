@@ -211,7 +211,7 @@ export function openOrchPanel(storyId) {
  */
 export function runStory(storyId) {
   if (!storyId) return;
-  runAndOpenTerm(storyId, '/rihal-dev-story ' + storyId, storyId);
+  runAndOpenTerm(storyId, '/rcode-dev-story ' + storyId, storyId);
 }
 
 /**
@@ -228,26 +228,26 @@ export function stopStory(storyId) {
  * Update both when adding a new command.
  */
 export const ALLOWED_COMMANDS = [
-  { cmd: '/rihal-init',          label: 'init — initialise project workspace' },
-  { cmd: '/rihal-status',        label: 'status — phase / sprint status' },
-  { cmd: '/rihal-progress',      label: 'progress — milestone progress' },
-  { cmd: '/rihal-help',          label: 'help — command reference' },
-  { cmd: '/rihal-health',        label: 'health — repo health check' },
-  { cmd: '/rihal-next',          label: 'next — suggest next action' },
-  { cmd: '/rihal-show',          label: 'show — show current plan' },
-  { cmd: '/rihal-list-plans',    label: 'list-plans — list all sprint plans' },
-  { cmd: '/rihal-sprint-status', label: 'sprint-status — sprint execution status' },
-  { cmd: '/rihal-config',        label: 'config — show rihal config' },
-  { cmd: '/rihal-diff',          label: 'diff — diff since last checkpoint' },
-  { cmd: '/rihal-stats',         label: 'stats — project statistics' },
+  { cmd: '/rcode-init',          label: 'init — initialise project workspace' },
+  { cmd: '/rcode-status',        label: 'status — phase / sprint status' },
+  { cmd: '/rcode-progress',      label: 'progress — milestone progress' },
+  { cmd: '/rcode-help',          label: 'help — command reference' },
+  { cmd: '/rcode-health',        label: 'health — repo health check' },
+  { cmd: '/rcode-next',          label: 'next — suggest next action' },
+  { cmd: '/rcode-show',          label: 'show — show current plan' },
+  { cmd: '/rcode-list-plans',    label: 'list-plans — list all sprint plans' },
+  { cmd: '/rcode-sprint-status', label: 'sprint-status — sprint execution status' },
+  { cmd: '/rcode-config',        label: 'config — show rcode config' },
+  { cmd: '/rcode-diff',          label: 'diff — diff since last checkpoint' },
+  { cmd: '/rcode-stats',         label: 'stats — project statistics' },
 ];
 
 /**
- * Launch an allowlisted rihal command from the dashboard command runner.
+ * Launch an allowlisted rcode command from the dashboard command runner.
  * Uses a synthetic storyId derived from the command slug so it shows up as
  * its own session in the Orchestration grid.
  *
- * storyId format: "cmd-rihal-init" (satisfies STORY_ID_RE /^[A-Za-z0-9._-]+$/).
+ * storyId format: "cmd-rcode-init" (satisfies STORY_ID_RE /^[A-Za-z0-9._-]+$/).
  *
  * Surfaces errors as toast notifications:
  *   - 403 / 503 / any server error message  → showToast('Command error: ...')

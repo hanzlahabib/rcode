@@ -8,15 +8,15 @@ Understanding when and how to use each execution mode.
 
 | Mode | Command | Agents | Parallelism | Output | Use when |
 |------|---------|--------|-------------|--------|----------|
-| **Council** | `/rihal-council` | 3-5 | Parallel | Single artifact with all voices | Making decisions where disagreement is valuable |
-| **Chain** | `/rihal-chain` | 2-7+ | Sequential | Typed artifacts per stage (RESEARCH → SCOPE → PLAN) | Building something step-by-step where each step depends on the previous |
-| **Discuss** | `/rihal-discuss` | 1 | N/A | Conversational, optional artifact | Quick questions, expert advice, fast feedback |
+| **Council** | `/rcode-council` | 3-5 | Parallel | Single artifact with all voices | Making decisions where disagreement is valuable |
+| **Chain** | `/rcode-chain` | 2-7+ | Sequential | Typed artifacts per stage (RESEARCH → SCOPE → PLAN) | Building something step-by-step where each step depends on the previous |
+| **Discuss** | `/rcode-discuss` | 1 | N/A | Conversational, optional artifact | Quick questions, expert advice, fast feedback |
 
 ---
 
 ## Council Mode: Parallel Debate
 
-**Command:** `/rihal-council "your question"`
+**Command:** `/rcode-council "your question"`
 
 **Mental model:** Bring together 3-5 people in a room. Each speaks for the question. Then they challenge each other's points. You hear all perspectives before deciding.
 
@@ -44,7 +44,7 @@ Understanding when and how to use each execution mode.
 ### Example
 
 ```
-/rihal-council should we migrate from monolith to microservices?
+/rcode-council should we migrate from monolith to microservices?
 ```
 
 **Flow:**
@@ -70,16 +70,16 @@ Contains all Round 1 + Round 2 responses, flagged with the sharpest disagreement
 
 ```
 # Basic debate
-/rihal-council should we use react or vue?
+/rcode-council should we use react or vue?
 
 # Override panel (pick specific agents)
-/rihal-council --agents=waleed,fatima should we move to serverless?
+/rcode-council --agents=waleed,fatima should we move to serverless?
 
 # Force all 5 agents
-/rihal-council --full "our biggest technical risk"
+/rcode-council --full "our biggest technical risk"
 
 # See panel scoring breakdown
-/rihal-council --explain "should we hire a DevOps person?"
+/rcode-council --explain "should we hire a DevOps person?"
 ```
 
 ### Output format
@@ -159,7 +159,7 @@ Recommendation: YES — but only if we can ship features on month 4
 
 ## Chain Mode: Sequential Pipeline
 
-**Command:** `/rihal-chain [preset|agents] "your topic"`
+**Command:** `/rcode-chain [preset|agents] "your topic"`
 
 **Mental model:** Assembly line. Researcher passes findings to architect, who passes to PM, who passes to planner. Each stage refines, doesn't redo.
 
@@ -185,7 +185,7 @@ Recommendation: YES — but only if we can ship features on month 4
 ### Example
 
 ```
-/rihal-chain research-plan build a rental app for dubai
+/rcode-chain research-plan build a rental app for dubai
 ```
 
 **Preset:** `research-plan` (researcher → PM → planner)
@@ -229,7 +229,7 @@ Built-in presets for common workflows:
 ### Custom chains
 
 ```
-/rihal-chain researcher,architect,planner "should we rewrite in Go?"
+/rcode-chain researcher,architect,planner "should we rewrite in Go?"
 ```
 
 Comma-separated agent names in order. Each reads previous output.
@@ -238,16 +238,16 @@ Comma-separated agent names in order. Each reads previous output.
 
 ```
 # Preset
-/rihal-chain research-plan build a rental app
+/rcode-chain research-plan build a rental app
 
 # Feasibility check
-/rihal-chain feasibility migrate to serverless
+/rcode-chain feasibility migrate to serverless
 
 # GTM + build path
-/rihal-chain gtm-to-build build a saas for docstring generation
+/rcode-chain gtm-to-build build a saas for docstring generation
 
 # Custom chain
-/rihal-chain advisor-researcher,architect,auditor "is this framework suitable?"
+/rcode-chain advisor-researcher,architect,auditor "is this framework suitable?"
 ```
 
 ### Output format
@@ -291,7 +291,7 @@ Comma-separated agent names in order. Each reads previous output.
 
 ## Next Steps
 
-Suggested action: `/rihal-execute .planning/phases/01/PLAN.md`
+Suggested action: `/rcode-execute .planning/phases/01/PLAN.md`
 
 ---
 
@@ -307,7 +307,7 @@ Suggested action: `/rihal-execute .planning/phases/01/PLAN.md`
 
 ## Discuss Mode: Quick Expert Sync
 
-**Command:** `/rihal-discuss [agent] "your question"`
+**Command:** `/rcode-discuss [agent] "your question"`
 
 **Mental model:** Text one colleague. Fast, conversational, no ceremony. Optional artifact.
 
@@ -332,7 +332,7 @@ Suggested action: `/rihal-execute .planning/phases/01/PLAN.md`
 ### Example
 
 ```
-/rihal-discuss waleed should we use postgres jsonb or separate tables for nested data?
+/rcode-discuss waleed should we use postgres jsonb or separate tables for nested data?
 ```
 
 **Flow:**
@@ -349,7 +349,7 @@ Suggested action: `/rihal-execute .planning/phases/01/PLAN.md`
 If no agent specified:
 
 ```
-/rihal-discuss what's the best way to handle authentication errors?
+/rcode-discuss what's the best way to handle authentication errors?
 ```
 
 Panel scorer picks agent by keyword (likely Waleed for tech, Fatima for testing, Sadiq for strategy).
@@ -357,7 +357,7 @@ Panel scorer picks agent by keyword (likely Waleed for tech, Fatima for testing,
 Run with `--explain` to see scoring:
 
 ```
-/rihal-discuss --explain "how do we handle authentication errors?"
+/rcode-discuss --explain "how do we handle authentication errors?"
 
 → Fatima picked (test strategy +20, error handling +15)
 ```
@@ -366,16 +366,16 @@ Run with `--explain` to see scoring:
 
 ```
 # Ask specific agent
-/rihal-discuss waleed can we use redis for sessions?
+/rcode-discuss waleed can we use redis for sessions?
 
 # Auto-route to best expert
-/rihal-discuss what's the kill criterion for this project?
+/rcode-discuss what's the kill criterion for this project?
 
 # Named discussion (gives it a title)
-/rihal-discuss --title="Redis Session Store" waleed "Redis vs sessions?"
+/rcode-discuss --title="Redis Session Store" waleed "Redis vs sessions?"
 
 # Show agent scoring
-/rihal-discuss --explain "should we use TypeScript?"
+/rcode-discuss --explain "should we use TypeScript?"
 ```
 
 ### Output format
@@ -383,7 +383,7 @@ Run with `--explain` to see scoring:
 Informal, conversational. Example:
 
 ```
-> /rihal-discuss fatima is this release ready?
+> /rcode-discuss fatima is this release ready?
 
 🛡️ Fatima
 
@@ -433,19 +433,19 @@ Common workflow:
 
 ```
 # 1. Quick research
-/rihal-discuss what market should we target?
+/rcode-discuss what market should we target?
 
 # 2. Full discovery
-/rihal-chain research-plan build app for that market
+/rcode-chain research-plan build app for that market
 
 # 3. Debate next steps
-/rihal-council should we build this or acquire?
+/rcode-council should we build this or acquire?
 
 # 4. Finalize plan
-/rihal-plan implement feature from chain
+/rcode-plan implement feature from chain
 
 # 5. Execute
-/rihal-execute .planning/phases/01/PLAN.md
+/rcode-execute .planning/phases/01/PLAN.md
 ```
 
 Each mode feeds into the next.

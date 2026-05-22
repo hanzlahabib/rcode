@@ -16,9 +16,9 @@
 | `plan_checker_enabled` | `workflow.plan_checker` | `true` |
 | `nyquist_validation_enabled` | `workflow.nyquist_validation` | `true` |
 | `text_mode` | `workflow.text_mode` | `false` |
-| `researcher_model` | profile resolution (`rihal-researcher` → `phase-researcher` fallback) | `null` if not installed |
-| `planner_model` | profile resolution (`rihal-planner`) | `null` if not installed |
-| `checker_model` | profile resolution (`rihal-sprint-checker`) | `null` if not installed |
+| `researcher_model` | profile resolution (`rcode-researcher` → `phase-researcher` fallback) | `null` if not installed |
+| `planner_model` | profile resolution (`rcode-planner`) | `null` if not installed |
+| `checker_model` | profile resolution (`rcode-sprint-checker`) | `null` if not installed |
 | `phase_req_ids` | `REQ-*` extracted from ROADMAP `**Requirements:**` block | `[]` |
 | `has_reviews`, `reviews_path` | `*-REVIEWS.md` in phase dir | `false` / `null` |
 | `has_uat`, `uat_path` | `*-UAT.md` in phase dir | `false` / `null` |
@@ -49,8 +49,8 @@
 
 ## Verification
 
-- `node rihal/bin/rihal-tools.cjs init phase-op 12` returns all 23 documented fields
-- `node rihal/bin/rihal-tools.cjs init sprint-plan 12` returns the same superset (plan.md + discuss-phase.md combined)
+- `node rcode/bin/rcode-tools.cjs init phase-op 12` returns all 23 documented fields
+- `node rcode/bin/rcode-tools.cjs init sprint-plan 12` returns the same superset (plan.md + discuss-phase.md combined)
 - `npm test` → 132/132 pass (no regressions)
 - `bash scripts/dogfood-check.sh` → all checks pass
 

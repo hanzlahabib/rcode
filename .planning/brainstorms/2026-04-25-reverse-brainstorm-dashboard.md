@@ -71,5 +71,5 @@
 
 ## Next Steps
 
-- `/rihal-plan dashboard interactive features` — implementation sprint
-- `/rihal-council is SSE worth it or just use polling?` — architecture decision
+- `/rcode-plan dashboard interactive features` — implementation sprint
+- `/rcode-council is SSE worth it or just use polling?` — architecture decision

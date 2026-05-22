@@ -12,7 +12,7 @@
 - [ ] **DSH-1**: User can see aggregate count chips (phases / sprints / sessions grouped by status) in a status summary bar
 - [ ] **DSH-2**: User can filter a dashboard view by status, milestone, and date using filter chips
 - [ ] **DSH-3**: User's active filters persist in the URL so a filtered view can be bookmarked and shared
-- [ ] **DSH-4**: User can open a searchable, categorized command palette to find and run any rihal command
+- [ ] **DSH-4**: User can open a searchable, categorized command palette to find and run any rcode command
 - [ ] **DSH-5**: User can see live health badges (active session count, blocker count) in the sidebar
 - [ ] **DSH-6**: User can view the milestone's phases as a dependency graph showing depends_on waves
 
@@ -35,7 +35,7 @@
 
 ## Out of Scope
 
-- Visual drag-and-drop workflow builder — rihal workflows are authored as YAML skills, not built in a canvas
+- Visual drag-and-drop workflow builder — rcode workflows are authored as YAML skills, not built in a canvas
 - Migration to React 19 + Vite SPA — violates the dep-free server and zero-build-step constraints
 - Chat / conversations surface — different product area
 - `@xyflow/react` / `@dagrejs/dagre` graph libraries — DSH-6 is hand-rolled SVG to avoid new deps

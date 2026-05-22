@@ -1,4 +1,4 @@
-# Retrospective — Rihal Code
+# Retrospective — rcode
 
 ## Milestone: M1 — Ship v2 + Tier Docs
 
@@ -7,14 +7,14 @@
 
 ### What Was Built
 
-A unified, installable AI engineering methodology. v1/v2 merged into one `rihal/`
+A unified, installable AI engineering methodology. v1/v2 merged into one `rcode/`
 root with a single installer, tier-organized docs, a view-only Majlis dashboard,
 a three-dimensional auto-heal system, and a long tail of CLI/parser/workflow
-hardening — most of it surfaced by dogfooding rihal-code on its own repo.
+hardening — most of it surfaced by dogfooding rcode on its own repo.
 
 ### What Worked
 
-- Dogfooding as a bug source — running rihal commands on rihal-code itself surfaced
+- Dogfooding as a bug source — running rcode commands on rcode itself surfaced
   real gaps (phantom subcommands, parser caps, workflow dead-ends) that no abstract
   audit would have found.
 - Splitting Phase 05 — separating the eng-shipping motion (npm + README) from GTM
@@ -26,7 +26,7 @@ hardening — most of it surfaced by dogfooding rihal-code on its own repo.
 
 - **Phase-status drift went systemic.** `state.json` marked nearly every phase 04–30
   as `planned` while summaries and ROADMAP `✅` markers said otherwise. The drift
-  detector built in Phase 08 was never run on a cadence against rihal-code itself.
+  detector built in Phase 08 was never run on a cadence against rcode itself.
 - **Milestone tracking was never maintained.** `M1/MILESTONE.md` defined M1 as phases
   01–05; phases 06–19 accumulated with no milestone assignment. Closing M1 required
   a manual restructure because no "assign phase to milestone" tool exists.
@@ -43,12 +43,12 @@ hardening — most of it surfaced by dogfooding rihal-code on its own repo.
 ### Key Lessons
 
 - A drift detector that isn't scheduled is a drift detector that doesn't run. Phase-status
-  drift should be a cadence hook on rihal-code itself, not a manual invoke.
+  drift should be a cadence hook on rcode itself, not a manual invoke.
 - Milestone membership needs to be a first-class, tool-managed field on each phase —
   the absence of a "move phase between milestones" command made this closure manual.
 - "Complete" must mean "has a SUMMARY.md." Treat a missing summary as an incomplete phase.
 
-### Tooling Weaknesses Found (dogfooding /rihal-complete-milestone)
+### Tooling Weaknesses Found (dogfooding /rcode-complete-milestone)
 
 - No command moves a phase between milestones — restructure was fully manual.
 - `complete-milestone` assumes one git tag per milestone; it has no path for a

@@ -26,18 +26,18 @@ must_haves:
 Metadata consistency (#757). README contradicts itself — "45 agents" in the hero (line 5) vs "44 agents" in the body (line 60); "95 commands" (line 5) vs "96 slash commands" (line 61). DOCS.md says "Slash commands (95)" and "Skills (80)" while README says "105 skills". package.json's description ("memory bank for AI-driven SaaS teams") tells a different story than the README hero.
 
 Verified real counts (from file-count audit at planning time):
-- Agents: **45** (`ls rihal/agents/*.md | wc -l` = 45)
-- Commands: **109** (`find rihal/commands -name '*.md' | wc -l` = 109)
-- Skills: **85** (`find rihal/skills -name SKILL.md | wc -l` = 85)
-- Workflows: **126** (`find rihal/workflows -name '*.md' | wc -l` = 126)
+- Agents: **45** (`ls rcode/agents/*.md | wc -l` = 45)
+- Commands: **109** (`find rcode/commands -name '*.md' | wc -l` = 109)
+- Skills: **85** (`find rcode/skills -name SKILL.md | wc -l` = 85)
+- Workflows: **126** (`find rcode/workflows -name '*.md' | wc -l` = 126)
 
 Purpose: One number per thing, true everywhere.
 Output: Consistent README, DOCS.md, package.json with verified counts and aligned positioning.
 </objective>
 
 <execution_context>
-@.rihal/workflows/execute.md
-@.rihal/templates/summary.md
+@.rcode/workflows/execute.md
+@.rcode/templates/summary.md
 </execution_context>
 
 <context>
@@ -54,20 +54,20 @@ Output: Consistent README, DOCS.md, package.json with verified counts and aligne
 <files></files>
 <action>
 Run these four commands and record the output in the SUMMARY as the authoritative count baseline:
-- `ls rihal/agents/*.md | wc -l`
-- `find rihal/commands -name '*.md' | wc -l`
-- `find rihal/skills -name 'SKILL.md' | wc -l`
-- `find rihal/workflows -name '*.md' | wc -l`
+- `ls rcode/agents/*.md | wc -l`
+- `find rcode/commands -name '*.md' | wc -l`
+- `find rcode/skills -name 'SKILL.md' | wc -l`
+- `find rcode/workflows -name '*.md' | wc -l`
 If any number differs from the planning-time figures (45 / 109 / 85 / 126), use the freshly measured number as authoritative for the rest of this sprint. Do not guess or round.
 </action>
 <acceptance_criteria>
 - Four counts captured from real commands and written into the SUMMARY.
 </acceptance_criteria>
 <verify>
-<automated>echo "agents=$(ls rihal/agents/*.md | wc -l) commands=$(find rihal/commands -name '*.md' | wc -l) skills=$(find rihal/skills -name 'SKILL.md' | wc -l) workflows=$(find rihal/workflows -name '*.md' | wc -l)"</automated>
+<automated>echo "agents=$(ls rcode/agents/*.md | wc -l) commands=$(find rcode/commands -name '*.md' | wc -l) skills=$(find rcode/skills -name 'SKILL.md' | wc -l) workflows=$(find rcode/workflows -name '*.md' | wc -l)"</automated>
 </verify>
 <done>Authoritative counts measured and logged.</done>
-<evidence>grep: planning-time audit ran `ls rihal/agents/*.md | wc -l` -> 45, `find rihal/commands -name '*.md' | wc -l` -> 109, `find rihal/skills -name SKILL.md | wc -l` -> 85, `find rihal/workflows -name '*.md' | wc -l` -> 126.</evidence>
+<evidence>grep: planning-time audit ran `ls rcode/agents/*.md | wc -l` -> 45, `find rcode/commands -name '*.md' | wc -l` -> 109, `find rcode/skills -name SKILL.md | wc -l` -> 85, `find rcode/workflows -name '*.md' | wc -l` -> 126.</evidence>
 
 ### Task 30.3.2 — auto — Fix all counts in README.md
 <type>auto</type>
@@ -122,7 +122,7 @@ Grep `grep -nE '[0-9]+|\([0-9]+\)' DOCS.md | grep -iE 'agent|command|skill|perso
 ### Task 30.3.4 — auto — Align package.json description and keywords
 <type>auto</type>
 <read_first>
-- /home/hanzla/development/rihal-code/package.json (lines 4, 31-44 — description + keywords)
+- /home/hanzla/development/rcode/package.json (lines 4, 31-44 — description + keywords)
 - README.md (lines 1-9 — the hero pitch, as the canonical positioning)
 </read_first>
 <files>package.json</files>

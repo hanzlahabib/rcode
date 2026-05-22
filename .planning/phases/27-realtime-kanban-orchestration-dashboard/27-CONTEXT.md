@@ -38,10 +38,10 @@ This phase does NOT include: multi-user collaboration, remote cloud sessions (Cl
 - **D-14:** Dashboard exposes orchestrator status in the header (green dot = running, red = down).
 
 ### Session Persistence
-- **D-15:** Hybrid approach: running sessions stay in-memory only (fast). On session exit (done/error/stopped), write logs + fileOps to `~/.rihal/sessions/{storyId}-{ISO-date}.json`.
+- **D-15:** Hybrid approach: running sessions stay in-memory only (fast). On session exit (done/error/stopped), write logs + fileOps to `~/.rcode/sessions/{storyId}-{ISO-date}.json`.
 - **D-16:** On orchestrator restart, load the most recent completed session per storyId and replay into the card terminal on SSE reconnect.
 - **D-17:** Add a `/api/clean-sessions` endpoint to orchestrator that deletes sessions older than N days. Dashboard exposes a "Clean Sessions" button in the Kanban view header (user selects: 7 days / 30 days / All).
-- **D-18:** Session files are stored in `~/.rihal/sessions/` (home dir, not project dir) — keep them out of git.
+- **D-18:** Session files are stored in `~/.rcode/sessions/` (home dir, not project dir) — keep them out of git.
 
 ### Claude's Discretion
 - Specific Pico CSS version or alternative library selection (choose what integrates cleanest with the Claude design system from D-04)

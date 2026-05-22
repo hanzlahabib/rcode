@@ -1,0 +1,20 @@
+{
+  "artifact": "rcode/agents/rcode-codebase-mapper.md",
+  "negativeBoundaries": [],
+  "routingKeywords": [
+    "dispatches",
+    "rcode-execute",
+    "rcode-map-codebase",
+    "rcode-plan",
+    "rcode-scan",
+    "spawned by"
+  ],
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "triggers": []
+}

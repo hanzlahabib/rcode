@@ -10,12 +10,12 @@ creates:
   - cli/agent.js          # confirmed does NOT exist (test -f returned DOES NOT EXIST)
 autonomous: true
 requirements:
-  - "issue-715: add rcode agent <name> command wrapping claude --agent rihal-<name>"
+  - "issue-715: add rcode agent <name> command wrapping claude --agent rcode-<name>"
 
 must_haves:
   truths:
-    - "rcode agent hanzla spawns claude --agent rihal-hanzla"
-    - "rcode agent --list prints all 41 agent names from rihal/agents/"
+    - "rcode agent hanzla spawns claude --agent rcode-hanzla"
+    - "rcode agent --list prints all 41 agent names from rcode/agents/"
     - "rcode agent badname exits 1 with error message and available list"
     - "rcode agent (no args) prints usage then available agent list"
     - "rcode help shows agent entry under the TEAM section"
@@ -25,7 +25,7 @@ must_haves:
     - cli/index.js (edited, ≤200 lines — currently 166, adds ~10)
   key_links:
     - "cli/index.js COMMANDS dict → must include agent: require('./agent')"
-    - "cli/agent.js → reads rihal/agents/ at packageRoot, not CWD"
+    - "cli/agent.js → reads rcode/agents/ at packageRoot, not CWD"
     - "cli/agent.js → uses spawnSync with stdio: 'inherit' (NOT execSync)"
 ---
 
@@ -38,7 +38,7 @@ must_haves:
 
 ## Sprint Goal
 
-Add `rcode agent <name>` as a first-class CLI command that wraps `claude --agent rihal-<name>`.
+Add `rcode agent <name>` as a first-class CLI command that wraps `claude --agent rcode-<name>`.
 Enables direct specialist-agent invocation without paying the council/orchestration token tax.
 Two files changed: create `cli/agent.js`, edit `cli/index.js`.
 
@@ -57,7 +57,7 @@ Two files changed: create `cli/agent.js`, edit `cli/index.js`.
 
 <objective>
 Create the new `cli/agent.js` module that implements the `rcode agent` command.
-Purpose: Allow users to invoke a named specialist agent directly via `claude --agent rihal-<name>` without going through the orchestration layer.
+Purpose: Allow users to invoke a named specialist agent directly via `claude --agent rcode-<name>` without going through the orchestration layer.
 Output: `cli/agent.js` (new file, ≤80 lines)
 </objective>
 
@@ -75,9 +75,9 @@ Create `cli/agent.js` following the existing module pattern:
 
 Implement exactly as specified in CONTEXT.md. Key rules:
 - Use `require('child_process').spawnSync` with `stdio: 'inherit'` — NOT `execSync`. Reason: interactive terminal passthrough; execSync buffers output and creates shell injection vectors.
-- Agent directory: `path.join(packageRoot, 'rihal/agents')` — packageRoot comes from the caller, do NOT use `process.cwd()`.
-- `--list` or zero args: enumerate `rihal/agents/rihal-*.md` files, strip `rihal-` prefix and `.md` suffix, sort, print. When zero args also print usage line first.
-- Validation: check the resolved `rihal/agents/rihal-<name>.md` path exists with `fs.existsSync` before spawning. On failure: `console.error` the missing name + available list, `process.exit(1)`.
+- Agent directory: `path.join(packageRoot, 'rcode/agents')` — packageRoot comes from the caller, do NOT use `process.cwd()`.
+- `--list` or zero args: enumerate `rcode/agents/rcode-*.md` files, strip `rcode-` prefix and `.md` suffix, sort, print. When zero args also print usage line first.
+- Validation: check the resolved `rcode/agents/rcode-<name>.md` path exists with `fs.existsSync` before spawning. On failure: `console.error` the missing name + available list, `process.exit(1)`.
 - `which claude` check via `spawnSync('which', ['claude'], { encoding: 'utf8' })` before spawning. On non-zero status: print install hint, `process.exit(1)`.
 - Pass-through args: collect everything after `--` separator and append to the spawn call.
 - Final spawn: `spawnSync('claude', ['--agent', agentName, ...extra], { stdio: 'inherit' })`. Exit with `result.status ?? 0`.
@@ -103,14 +103,14 @@ node cli/index.js agent badname; [ $? -eq 1 ] && echo "exit-1 on bad name: OK"
 - `cli/agent.js` exists and is ≤80 lines (`wc -l cli/agent.js` output ≤80)
 - `node cli/index.js agent --list` exits 0 and prints ≥41 `rcode agent <name>` lines
 - `node cli/index.js agent` (no args) prints `Usage: rcode agent <name>` then the list
-- `node cli/index.js agent badname` exits 1 and prints "No agent named 'rihal-badname' found" plus available names
+- `node cli/index.js agent badname` exits 1 and prints "No agent named 'rcode-badname' found" plus available names
 - `node cli/index.js agent hanzla` either spawns claude or exits with "claude binary not found" error (both are correct — depends on whether claude is on PATH in the test environment)
 </done>
 
 <evidence>
 - `creates: cli/agent.js` — confirmed does not exist: `test -f cli/agent.js && echo EXISTS || echo "DOES NOT EXIST"` → DOES NOT EXIST
-- `rihal/agents/` contains 41 `.md` files matching `rihal-*.md` pattern: `ls rihal/agents/*.md | wc -l` → 41 (advisor-researcher, ahmed, assumptions-analyzer, … zayd — full list verified)
-- Pattern reference: `cli/digest.js:43-71` — shows exact `module.exports = function digest(args, { packageRoot })` shape and `path.join(packageRoot, 'rihal/agents')` access pattern
+- `rcode/agents/` contains 41 `.md` files matching `rcode-*.md` pattern: `ls rcode/agents/*.md | wc -l` → 41 (advisor-researcher, ahmed, assumptions-analyzer, … zayd — full list verified)
+- Pattern reference: `cli/digest.js:43-71` — shows exact `module.exports = function digest(args, { packageRoot })` shape and `path.join(packageRoot, 'rcode/agents')` access pattern
 - Pattern reference: `cli/team.js:8-35` — confirms `fs.readdirSync` + `.filter(f => f.endsWith('.md'))` idiom used across the codebase
 </evidence>
 
@@ -203,7 +203,7 @@ node cli/index.js agent --list | grep "rcode agent" | wc -l
 # expect: 41
 
 # 2. named agent routes to spawn (claude on PATH) or fails with clear error (claude not on PATH)
-node cli/index.js agent hanzla 2>&1 | grep -E "rihal-hanzla|claude binary not found"
+node cli/index.js agent hanzla 2>&1 | grep -E "rcode-hanzla|claude binary not found"
 
 # 3. bad name exits 1
 node cli/index.js agent badname; echo "exit: $?"

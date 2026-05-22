@@ -32,7 +32,7 @@ function runInstall(target, extra = []) {
 // files were invisible to orphan sweep + doctor drift detection.
 // ────────────────────────────────────────────────────────────────────────
 
-test('#702 — files-manifest.csv contains entries from .rihal/skills/', (t) => {
+test('#702 — files-manifest.csv contains entries from .rcode/skills/', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   gitInit(dir);
@@ -40,31 +40,31 @@ test('#702 — files-manifest.csv contains entries from .rihal/skills/', (t) => 
   const r = runInstall(dir);
   assert.strictEqual(r.status, 0, `install failed: ${r.stderr}`);
 
-  const manifestPath = path.join(dir, '.rihal', '_config', 'files-manifest.csv');
+  const manifestPath = path.join(dir, '.rcode', '_config', 'files-manifest.csv');
   assert.strictEqual(fs.existsSync(manifestPath), true, 'manifest must exist');
 
   const content = fs.readFileSync(manifestPath, 'utf8');
-  // Internal skills always land in .rihal/skills/ and are NOT shadowed by
+  // Internal skills always land in .rcode/skills/ and are NOT shadowed by
   // global precedence — these MUST appear in the manifest.
-  const internalSkillRows = content.split('\n').filter(line => /^\.rihal\/skills\//.test(line));
+  const internalSkillRows = content.split('\n').filter(line => /^\.rcode\/skills\//.test(line));
   assert.ok(
     internalSkillRows.length > 0,
-    `expected manifest to contain .rihal/skills/* entries, got 0. ` +
+    `expected manifest to contain .rcode/skills/* entries, got 0. ` +
     `This means files-manifest.csv was generated before installSkills() ran — regression of #702.`,
   );
 });
 
-test('#702 — manifest entries match files actually on disk under .rihal/skills/', (t) => {
+test('#702 — manifest entries match files actually on disk under .rcode/skills/', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   gitInit(dir);
   runInstall(dir);
 
-  const manifestPath = path.join(dir, '.rihal', '_config', 'files-manifest.csv');
+  const manifestPath = path.join(dir, '.rcode', '_config', 'files-manifest.csv');
   const rows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
   const manifestRels = new Set(rows.map(r => r.split(',')[0]));
 
-  // Walk .rihal/skills/ and assert every file is in the manifest.
+  // Walk .rcode/skills/ and assert every file is in the manifest.
   function walk(absDir, baseRel) {
     if (!fs.existsSync(absDir)) return;
     for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
@@ -80,7 +80,7 @@ test('#702 — manifest entries match files actually on disk under .rihal/skills
       }
     }
   }
-  walk(path.join(dir, '.rihal', 'skills'), '.rihal/skills');
+  walk(path.join(dir, '.rcode', 'skills'), '.rcode/skills');
 });
 
 // ────────────────────────────────────────────────────────────────────────
@@ -106,7 +106,7 @@ test('#703 — sweep refuses CSV rows with .. path-escape segments', (t) => {
   const escapeRel = path.relative(dir, victim);
   assert.ok(escapeRel.includes('..'), `expected escape rel to contain .., got ${escapeRel}`);
 
-  const manifestPath = path.join(dir, '.rihal', '_config', 'files-manifest.csv');
+  const manifestPath = path.join(dir, '.rcode', '_config', 'files-manifest.csv');
   fs.appendFileSync(manifestPath, `${escapeRel},deadbeef,0\n`);
 
   // Re-run install with --force to trigger the sweep.
@@ -132,7 +132,7 @@ test('#703 — sweep refuses absolute paths from CSV', (t) => {
   fs.writeFileSync(victim, 'absolute path victim');
 
   // Plant an ABSOLUTE path entry — different attack vector than '..'.
-  const manifestPath = path.join(dir, '.rihal', '_config', 'files-manifest.csv');
+  const manifestPath = path.join(dir, '.rcode', '_config', 'files-manifest.csv');
   fs.appendFileSync(manifestPath, `${victim},deadbeef,0\n`);
 
   runInstall(dir, ['--force']);
@@ -158,7 +158,7 @@ test('#705 — fresh install with no ROADMAP gets _seeded_stub:true (baseline)',
 
   runInstall(dir);
 
-  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rcode', 'state.json'), 'utf8'));
   assert.strictEqual(state._seeded_stub, true, 'fresh install should have _seeded_stub:true');
 });
 
@@ -186,13 +186,13 @@ test('#705 — re-install with real ROADMAP + missing state.json does NOT re-see
     path.join(dir, '.planning', 'ROADMAP.md'),
     '# Real Project Roadmap\n\n## Phase 1 — Real production phase\n\nReal goal here.\n',
   );
-  fs.unlinkSync(path.join(dir, '.rihal', 'state.json'));
+  fs.unlinkSync(path.join(dir, '.rcode', 'state.json'));
 
   // Re-install. Without the #705 guard, the template _seeded_stub:true
   // would be copied straight back in.
   runInstall(dir);
 
-  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rcode', 'state.json'), 'utf8'));
   assert.notStrictEqual(
     state._seeded_stub,
     true,
@@ -208,11 +208,11 @@ test('#705 — re-install with stub ROADMAP + missing state.json DOES re-seed _s
   runInstall(dir);
 
   // Don't change ROADMAP (still has stub banner); just delete state.json.
-  fs.unlinkSync(path.join(dir, '.rihal', 'state.json'));
+  fs.unlinkSync(path.join(dir, '.rcode', 'state.json'));
 
   runInstall(dir);
 
-  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rihal', 'state.json'), 'utf8'));
+  const state = JSON.parse(fs.readFileSync(path.join(dir, '.rcode', 'state.json'), 'utf8'));
   assert.strictEqual(
     state._seeded_stub,
     true,

@@ -2,9 +2,9 @@
  * Integration test for `rcode uninstall --purge` (Wave 3 W3.2).
  * Runs the real cli/uninstall.js in a tempdir and verifies:
  *
- *   - backup tarball survives the rmSync of .rihal/ (#683 fix)
+ *   - backup tarball survives the rmSync of .rcode/ (#683 fix)
  *   - state.json + .planning/PROJECT.md are restorable from the tarball
- *   - .rihal/, .planning/ are gone after purge
+ *   - .rcode/, .planning/ are gone after purge
  *   - .gitignore rcode block is stripped while user lines are preserved
  *
  * Exercises every fix from Wave 1+2 in one E2E flow.
@@ -39,7 +39,7 @@ function runUninstall(target, ...flags) {
   });
 }
 
-test('--purge removes .rihal/ and .planning/, leaves backup tarball at .rihal-backups/', (t) => {
+test('--purge removes .rcode/ and .planning/, leaves backup tarball at .rcode-backups/', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   gitInit(dir);
@@ -47,7 +47,7 @@ test('--purge removes .rihal/ and .planning/, leaves backup tarball at .rihal-ba
   // Install + seed real-looking project data.
   runInstall(dir);
   fs.writeFileSync(
-    path.join(dir, '.rihal', 'state.json'),
+    path.join(dir, '.rcode', 'state.json'),
     JSON.stringify({ project: 'foo', decisions: [{ id: 'd-1', text: 'important' }] }, null, 2),
   );
   fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# foo\nimportant content\n');
@@ -55,13 +55,13 @@ test('--purge removes .rihal/ and .planning/, leaves backup tarball at .rihal-ba
   const result = runUninstall(dir, '--purge', '--yes');
   assert.strictEqual(result.status, 0, `purge failed: ${result.stderr}`);
 
-  // .rihal/ and .planning/ are gone
-  assert.strictEqual(fs.existsSync(path.join(dir, '.rihal')), false);
+  // .rcode/ and .planning/ are gone
+  assert.strictEqual(fs.existsSync(path.join(dir, '.rcode')), false);
   assert.strictEqual(fs.existsSync(path.join(dir, '.planning')), false);
 
-  // Backup at .rihal-backups/ (sibling, not under .rihal/)
-  const backupsDir = path.join(dir, '.rihal-backups');
-  assert.strictEqual(fs.existsSync(backupsDir), true, '.rihal-backups/ missing');
+  // Backup at .rcode-backups/ (sibling, not under .rcode/)
+  const backupsDir = path.join(dir, '.rcode-backups');
+  assert.strictEqual(fs.existsSync(backupsDir), true, '.rcode-backups/ missing');
   const tarballs = fs.readdirSync(backupsDir).filter(f => f.endsWith('.tgz'));
   assert.strictEqual(tarballs.length, 1, `expected exactly one tarball, got ${tarballs.length}`);
 
@@ -69,7 +69,7 @@ test('--purge removes .rihal/ and .planning/, leaves backup tarball at .rihal-ba
   const tarPath = path.join(backupsDir, tarballs[0]);
   const list = spawnSync('tar', ['-tzf', tarPath], { encoding: 'utf8' });
   assert.strictEqual(list.status, 0);
-  assert.match(list.stdout, /^\.rihal\/state\.json$/m);
+  assert.match(list.stdout, /^\.rcode\/state\.json$/m);
   assert.match(list.stdout, /^\.planning\/PROJECT\.md$/m);
 });
 

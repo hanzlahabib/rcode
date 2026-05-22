@@ -27,7 +27,7 @@ Moved three blocks out of the README into `DOCS.md`:
 - **Testing table + CI pipeline** → new `## Testing & CI` section inserted
   before section 15 (Architecture), with a TOC entry added.
 - **State tracking / state.json field list** → appended under the existing
-  "State file (`.rihal/state.json`)" subsection in section 11 (Configuration).
+  "State file (`.rcode/state.json`)" subsection in section 11 (Configuration).
 
 DOCS.md grew from 969 → 1086 lines.
 
@@ -35,10 +35,10 @@ DOCS.md grew from 969 → 1086 lines.
 Rewrote `README.md` to **165 lines** (target 150–230) in the required order:
 1. **Value prop** — title, RTL tagline, one-line pitch, install command, npm badges.
 2. **Visual proof** — `## See it work` section directly under the badges with
-   `![Rihal Code demo](docs/assets/hero-demo.gif)` and
+   `![rcode demo](docs/assets/hero-demo.gif)` and
    `![Diwan dashboard](docs/assets/diwan-dashboard.png)`.
-3. **Quickstart** — install, `/rihal-init`, the full loop, Golden Path link.
-4. **Differentiation** — trimmed "What makes Rihal different" (persistent
+3. **Quickstart** — install, `/rcode-init`, the full loop, Golden Path link.
+4. **Differentiation** — trimmed "What makes rcode different" (persistent
    memory, intent guards, markdown-first, three modes, Karpathy, verification).
 5. **Links** — a "Learn more" table pointing to DOCS.md, getting-started,
    TIERS, MEMORY_BANK, BRAND, MIGRATIONS, CHANGELOG.
@@ -59,8 +59,8 @@ placeholder files committed in 30.2.2 are zero-byte. Their `<verify>` command
 (`test -s`) currently reports `PENDING: human asset capture not yet done`.
 
 **Human action required:**
-1. Record a hero demo GIF of the `install → /rihal-council → /rihal-plan →
-   /rihal-execute` loop and save it to `docs/assets/hero-demo.gif`.
+1. Record a hero demo GIF of the `install → /rcode-council → /rcode-plan →
+   /rcode-execute` loop and save it to `docs/assets/hero-demo.gif`.
 2. Take a screenshot of the Diwan dashboard (`node server/dashboard.js`,
    http://localhost:7717) and save it to `docs/assets/diwan-dashboard.png`.
    The existing repo-root `image.png` (59.1K) may be reused if it already

@@ -7,7 +7,7 @@ commits: 1
 
 ## Summary
 
-Added `rcode agent <name>` command wrapping `claude --agent rihal-<name>`.
+Added `rcode agent <name>` command wrapping `claude --agent rcode-<name>`.
 
 ## Files Changed
 
@@ -19,7 +19,7 @@ Added `rcode agent <name>` command wrapping `claude --agent rihal-<name>`.
 | Criterion | Result |
 |-----------|--------|
 | `rcode agent --list` prints 41 names | ✓ |
-| `rcode agent hanzla` launches claude --agent rihal-hanzla | ✓ |
+| `rcode agent hanzla` launches claude --agent rcode-hanzla | ✓ |
 | `rcode agent badname` exits 1 with error + available list | ✓ |
 | `rcode agent` (no args) prints usage + list | ✓ |
 | `rcode help` shows `agent` under TEAM section | ✓ |

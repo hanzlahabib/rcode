@@ -9,7 +9,7 @@ generated: 2026-05-16T00:16:03Z
 fixed: 2026-05-16
 ---
 
-<!-- FIXES APPLIED 2026-05-16 by rihal-code-fixer
+<!-- FIXES APPLIED 2026-05-16 by rcode-fixer
 
 H1 XtermPanel.js — moved window.addEventListener('resize') into useEffect
     with return () => removeEventListener cleanup; removed from ensureTerm.
@@ -40,7 +40,7 @@ files pass node --check.
 
 # Phase 31 — Code Review
 
-**Reviewer:** rihal-code-reviewer
+**Reviewer:** rcode-reviewer
 **Branch:** 31-preact-migration
 **Commits reviewed:** d62cc4f..HEAD (14 commits, 4 sprints)
 **Scope:** server/lib/html/client/ tree + server/lib/html/shell.js + server/lib/html/client.js + server/dashboard.js
@@ -57,7 +57,7 @@ All 12 views are Preact components. The three legacy string-concat modules are c
 
 ### H1 — `window.addEventListener('resize', _resize)` in XtermPanel is never removed
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/XtermPanel.js:66`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/XtermPanel.js:66`
 
 `ensureTerm()` calls `window.addEventListener('resize', _resize)` at line 66. `ensureTerm()` is called from inside a `useEffect` at line 117, but the `useEffect` has no cleanup return that removes the listener. Because `_term` is module-scoped and checked for existence (`if (_term || ...) return`), `ensureTerm` runs exactly once across the component's lifetime — but if the Preact tree were ever unmounted and remounted (e.g., during hot reload or future layout refactors), a second listener would be registered, and neither would be removed.
 
@@ -85,7 +85,7 @@ Then remove the `window.addEventListener` call from inside `ensureTerm`.
 
 ### H2 — `OrchPanel` SSE streams are never closed on component unmount
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/OrchPanel.js:52-63`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/OrchPanel.js:52-63`
 
 The `useEffect` that calls `connectStream(reqStory)` (line 52) has no cleanup return. Module-level `_streams` map is populated when a session opens, and `closeStream` is called on status terminal (`done`/`stopped`/`error`) and on manual tab-close. However, if the component itself were unmounted — e.g., the user navigates in a future refactor that conditionally mounts OrchPanel, or the panel is conditionally rendered based on a feature flag — all open `EventSource` connections in `_streams` survive indefinitely. The `onerror` handler calls `closeStream` but only on the specific stream that errored, not all streams.
 
@@ -106,7 +106,7 @@ useEffect(() => {
 
 ### H3 — `cleanSessions()` is missing the Authorization header
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/orchestrator.js:82-90`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/orchestrator.js:82-90`
 
 `cleanSessions()` POSTs to `/api/clean-sessions` with only `Content-Type` in the headers. Every other write endpoint in `orchestrator.js` — `runSession` (line 44-49), `stopSession` (line 55-60), `fetchSessions` (line 69-72) — correctly includes `'Authorization': 'Bearer ' + tok`. If the orchestrator enforces bearer-token auth on `/api/clean-sessions` (which it should, given it's a destructive operation), `cleanSessions` will 401 silently — the `.catch(() => ({ removed: 0 }))` swallows the failure and the UI shows "Cleaned 0 sessions" with no error indication.
 
@@ -132,7 +132,7 @@ export function cleanSessions(olderThanDays = 7) {
 
 ### H4 — `fetchAndRerender` and auto-refresh do not check `r.ok` before calling `r.json()`
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/App.js:177-178,201-203`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/App.js:177-178,201-203`
 
 `fetchAndRerender` calls `await r.json()` immediately after `fetch('/api/state')` without checking `r.ok`. If the server returns a non-200 (e.g., 500 or 503 on startup), `r.json()` may throw (if the body is not JSON) — which is caught by the outer `catch` and silently ignored — or worse, returns an error JSON object that gets passed to `setState`, overwriting valid store state with partial/null data. The same pattern appears in the 30s poll at line 201-203.
 
@@ -146,7 +146,7 @@ Both call sites lack response validation before parsing.
 
 ### M1 — `marked` CDN loaded without a version pin
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/shell.js:23`
+**File:** `/home/hanzla/development/rcode/server/lib/html/shell.js:23`
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
@@ -160,7 +160,7 @@ Both call sites lack response validation before parsing.
 
 ### M2 — `FrozenHost` and `LegacyViewSync` are dead code, but the module-level JSDoc block is actively misleading
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/App.js:1-25,80-110`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/App.js:1-25,80-110`
 
 `FrozenHost` (line 90) and `LegacyViewSync` (line 102) are defined but never instantiated in the render tree — confirmed by searching for `<${FrozenHost}` and `<${LegacyViewSync}` (no matches). The module-level JSDoc (lines 11-24) still describes the coexistence-seam architecture as if it is active: "Legacy client-main.js still registers its own hashchange listener", "App uses LegacyViewSync to imperatively toggle the .active class". Both legacy files are deleted and this seam is gone. A future maintainer reading the file header will be confused about the architecture that no longer exists.
 
@@ -170,7 +170,7 @@ Dead code is a 6-month maintainability issue: the definitions of `FrozenHost` an
 
 ### M3 — `showToast` is duplicated: defined locally in `DecisionsView.js` rather than imported
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/views/DecisionsView.js:33-38`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/views/DecisionsView.js:33-38`
 
 `DecisionsView.js` defines its own `showToast()` (lines 33-38) — a verbatim copy of the version in `shared.js`. Sprint 31.4 promoted `showToast` from a window global to an export of `shared.js` and updated `KanbanView.js`, `FilesView.js`, and `OrchPanel.js` to import it. `DecisionsView.js` was not updated and still carries its own copy. If the toast timeout or element-id changes, this copy drifts silently.
 
@@ -186,8 +186,8 @@ import { showToast } from '../components/shared.js';
 ### M4 — `document.execCommand('copy')` used as clipboard fallback in two files
 
 **Files:**
-- `/home/hanzla/development/rihal-code/server/lib/html/client/components/shared.js:115`
-- `/home/hanzla/development/rihal-code/server/lib/html/client/views/DecisionsView.js:20`
+- `/home/hanzla/development/rcode/server/lib/html/client/components/shared.js:115`
+- `/home/hanzla/development/rcode/server/lib/html/client/views/DecisionsView.js:20`
 
 `document.execCommand('copy')` is deprecated and removed in most modern browser contexts when the document is not focused or when called from an async handler. The `navigator.clipboard.writeText()` API is already the primary call — the `execCommand` path is a fallback for environments where `clipboard` is unavailable (non-HTTPS, focus issues). In a localhost dashboard this fallback is rarely needed but the deprecated API appearing in two places is a low-urgency correctness concern. If the fallback fires, it does so silently (no indication it succeeded or failed differently).
 
@@ -197,7 +197,7 @@ Note: `DecisionsView.js:20` also contains `CmdHintItem` — a local reimplementa
 
 ### M5 — Stale HTML comment in `shell.js` references "10 un-migrated views" post-deletion
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/shell.js:32-33`
+**File:** `/home/hanzla/development/rcode/server/lib/html/shell.js:32-33`
 
 ```html
 <!-- App renders: sidebar, topbar, migrated views, and frozen placeholder   -->
@@ -212,7 +212,7 @@ This comment was accurate during the coexistence period (sprints 31.1-31.3) but 
 
 ### L1 — `window._preactRefresh` is a surviving window global after the "no window.* globals" cleanup
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/App.js:211-213`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/App.js:211-213`
 
 ```js
 useEffect(() => {
@@ -226,7 +226,7 @@ The comment says this is "for any legacy onclick="manualRefresh()" callers". Spr
 
 ### L2 — `RoadmapView.js` module JSDoc mentions a deferred `window._roadmapControl` that was never implemented
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/views/RoadmapView.js:11-12`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/views/RoadmapView.js:11-12`
 
 The doc comment says: "Keyboard E/C (expand/collapse-all) handled via global keydown in App; this component exposes expandAll/collapseAll via `window._roadmapControl` so App can reach in. (Proper context/ref wiring deferred to 31.4.)" Sprint 31.4 completed but `window._roadmapControl` was never set (confirmed: zero matches in the file body). The E/C keyboard shortcut is therefore not implemented. The comment now describes a deferred feature with no tracking issue and a falsely-implied completion boundary.
 
@@ -234,7 +234,7 @@ The doc comment says: "Keyboard E/C (expand/collapse-all) handled via global key
 
 ### L3 — `App.js` JSDoc (module header) describes the coexistence-seam architecture that no longer exists
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/App.js:11-24`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/App.js:11-24`
 
 The entire "COEXISTENCE-SEAM NOTE" block (lines 11-24) describes how legacy `client-main.js` runs alongside Preact, how `FrozenHost` keeps legacy innerHTML intact, and how `LegacyViewSync` imperatively toggles classes. All three legacy files are deleted and none of this is active. The note should be replaced with an accurate post-31.4 description.
 
@@ -242,7 +242,7 @@ The entire "COEXISTENCE-SEAM NOTE" block (lines 11-24) describes how legacy `cli
 
 ### L4 — `OrchPanel` footer Stop button uses inline `style` to hide/show instead of a class
 
-**File:** `/home/hanzla/development/rihal-code/server/lib/html/client/components/OrchPanel.js:271`
+**File:** `/home/hanzla/development/rcode/server/lib/html/client/components/OrchPanel.js:271`
 
 ```js
 style=${hasStream ? '' : 'display:none'}
