@@ -1173,7 +1173,16 @@ function cmdState(subArgs) {
       console.error(`Warning: existing state.json corrupted (${e.message}). Initializing fresh state.`);
       existing = null;
     }
-    if (existing && !parseFlags(1).force) {
+    // #849: install seeds state.json with _seeded_stub:true and an empty
+    // skeleton. When /rihal-new-project later calls `state init` (without
+    // --force) to bootstrap a real project, the early-return below kept the
+    // stub flag and any install-time phase entries instead of overwriting
+    // them. Treat stub state as reinitializable so real project data wins.
+    const existingIsStub = !!(existing && (
+      existing._seeded_stub === true ||
+      (Array.isArray(existing.phases) && existing.phases.some(p => p && p.name === 'Setup & Scaffolding'))
+    ));
+    if (existing && !existingIsStub && !parseFlags(1).force) {
       return { ok: true, state: existing, message: 'state.json already exists; pass --force to reinitialize' };
     }
     const flags = parseFlags(1);
