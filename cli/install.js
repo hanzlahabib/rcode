@@ -91,6 +91,21 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
  */
 const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf']);
 
+/**
+ * Walk up the directory tree from startDir looking for pnpm-workspace.yaml.
+ * Returns the first directory that contains the file, or null if not found.
+ * Issue #821/#832 — used to detect workspace roots and anchor TARGET_DIR.
+ */
+function findPnpmWorkspaceRoot(startDir) {
+  let dir = startDir;
+  while (true) {
+    if (fs.existsSync(path.join(dir, 'pnpm-workspace.yaml'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return null; // reached filesystem root
+    dir = parent;
+  }
+}
+
 // Zod schema for .rihal/config.yaml validation (#250).
 const ConfigSchema = z.object({
   user_name: z.string().min(1),
@@ -171,7 +186,13 @@ function parseArgs(argv) {
     else if (arg === '--project') opts.projectName = argv[++i];
     else if (arg === '--language') opts.language = argv[++i];
     else if (arg === '--mode') opts.mode = argv[++i];
-    else if (arg === '--ide') { opts.ide = argv[++i]; opts.ideProvided = true; }
+    else if (arg === '--ide') {
+      opts.ide = argv[++i];
+      // Issue #841: normalise 'claude-code' alias — the tool is marketed as
+      // "Claude Code" so users pass --ide claude-code expecting it to work.
+      if (opts.ide === 'claude-code') opts.ide = 'claude';
+      opts.ideProvided = true;
+    }
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
@@ -199,6 +220,28 @@ function parseArgs(argv) {
   // home where Claude Code reads global commands from.
   if (opts.global && !opts.targetProvided) {
     opts.target = os.homedir();
+  }
+  // Issue #821/#832: pnpm workspace anchor.
+  // When `pnpm add -D @hanzlaa/rcode` runs inside a workspace member,
+  // pnpm may change process.cwd() to the workspace root (the directory that
+  // contains pnpm-workspace.yaml). npm sets INIT_CWD to the original member
+  // directory where the user ran the command.
+  // Guard 1: CWD is the workspace root + INIT_CWD points inside it → use INIT_CWD.
+  // Guard 2: workspace root found above CWD → keep CWD (don't walk up).
+  if (!opts.targetProvided && !opts.global) {
+    const cwd = process.cwd();
+    const hasPnpmWorkspaceHere = fs.existsSync(path.join(cwd, 'pnpm-workspace.yaml'));
+    const initCwd = process.env.INIT_CWD;
+    if (hasPnpmWorkspaceHere && initCwd && path.resolve(initCwd) !== path.resolve(cwd)) {
+      // pnpm changed CWD to workspace root; INIT_CWD has the member directory.
+      opts.target = path.resolve(initCwd);
+    } else {
+      // Check if we're already inside a workspace member (workspace root in a parent).
+      const workspaceRoot = findPnpmWorkspaceRoot(path.dirname(cwd));
+      if (workspaceRoot) {
+        opts.target = cwd; // explicit anchor — do not drift to workspace root
+      }
+    }
   }
   if (!opts.projectName) opts.projectName = path.basename(opts.target);
   return opts;
@@ -1512,6 +1555,47 @@ function sweepStaleInstalledFiles(target, newPlan) {
   return removed;
 }
 
+/**
+ * Issue #838 — pnpm lockfile silent failure detection.
+ *
+ * pnpm add -D can exit 0 and print "Done" even when the lockfile is
+ * corrupted, without actually writing package.json. This helper is called
+ * after any pnpm add run (including auto-install flows) to confirm the
+ * package genuinely landed in devDependencies.
+ *
+ * Returns { ok: true } when:
+ *   - no package.json exists in target (nothing to verify)
+ *   - package found in dependencies or devDependencies
+ *
+ * Returns { ok: false, message } when:
+ *   - package.json exists in a pnpm project (pnpm-lock.yaml present) but
+ *     @hanzlaa/rcode is absent from both dep sections — strongly suggests
+ *     a silent pnpm add failure due to a broken lockfile.
+ */
+function verifyPnpmAddDevDep(target) {
+  const pkgPath = path.join(target, 'package.json');
+  const lockPath = path.join(target, 'pnpm-lock.yaml');
+  // Only diagnose when both a package.json and pnpm-lock.yaml exist (pnpm project).
+  if (!fs.existsSync(pkgPath) || !fs.existsSync(lockPath)) return { ok: true };
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const inDeps = Object.prototype.hasOwnProperty.call(pkg.dependencies || {}, '@hanzlaa/rcode');
+    const inDevDeps = Object.prototype.hasOwnProperty.call(pkg.devDependencies || {}, '@hanzlaa/rcode');
+    if (!inDeps && !inDevDeps) {
+      return {
+        ok: false,
+        message:
+          '@hanzlaa/rcode not found in package.json — if you ran `pnpm add -D @hanzlaa/rcode` ' +
+          'and it reported success, your lockfile may be corrupted.\n' +
+          '  Fix: pnpm install --fix-lockfile && pnpm add -D @hanzlaa/rcode',
+      };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: true }; // unreadable package.json — not our problem
+  }
+}
+
 function readPackageVersion() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
@@ -1777,6 +1861,9 @@ async function installInner(opts) {
 
   // Validate IDE(s) — structured error for unsupported editors (#197).
   // SUPPORTED_IDES is the module-level constant (#697 / W4.3).
+  // Issue #841: also accept 'claude-code' as an alias — normalise any that
+  // slipped through resolveIde before reaching this point.
+  opts.ides = opts.ides.map(ide => (ide === 'claude-code' ? 'claude' : ide));
   const unsupported = opts.ides.filter(ide => !SUPPORTED_IDES.includes(ide));
   if (unsupported.length > 0) {
     console.error(`✖ --ide ${unsupported.join(', ')} is not supported in v${readPackageVersion()}.`);
@@ -1786,6 +1873,7 @@ async function installInner(opts) {
     console.error('    cursor       — Cursor IDE');
     console.error('    gemini       — Gemini CLI');
     console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
+    console.error('    windsurf     — Windsurf (Codeium)');
     console.error('    antigravity  — Antigravity (experimental)');
     console.error('');
     console.error('  Tracked for future:');
@@ -2543,7 +2631,8 @@ async function installInner(opts) {
     console.log('');
   }
   console.log(dim('  Refresh anytime:'));
-  console.log(dim('    npx @hanzlaa/rcode@latest install   # pull the latest rcode + brain'));
+  console.log(dim('    pnpm dlx @hanzlaa/rcode@latest install   # recommended (avoids npm 11.x npx issues)'));
+  console.log(dim('    npx @hanzlaa/rcode@latest install        # npm / yarn'));
   console.log(dim(`    /rihal-update v${version}              # pin rcode to a specific version`));
   console.log('');
   console.log(dim('  Want the rcode CLI on your PATH? (optional — needed for rcode version / rcode update):'));
@@ -2576,6 +2665,16 @@ async function installInner(opts) {
         }
       } catch { /* ignore parse errors */ }
     });
+  }
+
+  // Issue #838: verify pnpm add didn't silently fail (broken lockfile).
+  // Only fires in pnpm projects (pnpm-lock.yaml present). Non-blocking.
+  if (!opts.global) {
+    const pnpmCheck = verifyPnpmAddDevDep(opts.target);
+    if (!pnpmCheck.ok) {
+      console.log('  ' + warn(pnpmCheck.message));
+      console.log('');
+    }
   }
 
   // Health check — smoke test that the install actually works (#193).
