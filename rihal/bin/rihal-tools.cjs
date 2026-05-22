@@ -268,9 +268,9 @@ function listInstalledAgents() {
   // Local agents from project manifest
   const local = readAgentManifest().map((row) => row.id).filter(Boolean);
 
-  // Global agents from ~/.rihal/agents/
+  // Global agents from ~/.claude/agents/ (Claude Code install location)
   let global = [];
-  const globalDir = path.join(process.env.HOME || '', '.rihal', 'agents');
+  const globalDir = path.join(process.env.HOME || '', '.claude', 'agents');
   if (fs.existsSync(globalDir)) {
     global = fs.readdirSync(globalDir)
       .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
@@ -409,6 +409,7 @@ function cmdInit(workflowName, rawArgs) {
     scores,
     question_type: questionClassification.type,
     question_signals: questionClassification.signals,
+    mode: config.mode || null,
     config,
     installed_agents: installedAgents,
     paths: {

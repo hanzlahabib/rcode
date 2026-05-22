@@ -92,6 +92,29 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rihal');
 const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf']);
 
 /**
+ * Resolve the stable on-disk location of this package so config.yaml
+ * rihal_source_path doesn't point to a temp npm install directory.
+ * Issue #831 — process.argv[1] may be /tmp/... when installed via npx.
+ * Resolution order: package.json location of @hanzlaa/rcode in global
+ * node_modules, then local node_modules, then argv fallback.
+ */
+function resolveStableSourcePath() {
+  const candidateDirs = [
+    // pnpm/npm global store
+    path.join(process.env.HOME || '', '.pnpm-global', 'node_modules', '@hanzlaa', 'rcode'),
+    path.join(process.env.HOME || '', '.npm-global', 'lib', 'node_modules', '@hanzlaa', 'rcode'),
+    // local node_modules (most common for pnpm add -D)
+    path.join(process.cwd(), 'node_modules', '@hanzlaa', 'rcode'),
+    // argv-based fallback (may be /tmp/... on npx)
+    path.dirname(path.dirname(process.argv[1] || '')),
+  ];
+  for (const dir of candidateDirs) {
+    if (dir && fs.existsSync(path.join(dir, 'package.json'))) return dir;
+  }
+  return path.dirname(path.dirname(process.argv[1] || ''));
+}
+
+/**
  * Walk up the directory tree from startDir looking for pnpm-workspace.yaml.
  * Returns the first directory that contains the file, or null if not found.
  * Issue #821/#832 — used to detect workspace roots and anchor TARGET_DIR.
@@ -1651,7 +1674,7 @@ function generateConfigYaml(opts) {
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
     `commit_planning: ${opts.commitPlanning !== false}`,
-    `rihal_source_path: "${sanitizeYamlValue(path.dirname(path.dirname(process.argv[1])))}/"`,
+    `rihal_source_path: "${sanitizeYamlValue(resolveStableSourcePath())}/"`,
     'workflow:',
     '  research_by_default: false',
     '  plan_checker: true',
