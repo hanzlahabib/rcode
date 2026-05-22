@@ -85,20 +85,6 @@ agents:
       - backlog
     description: Scope, requirements, PRD writing, user stories, and backlog curation.
 
-  - id: rcode-hussain-sm
-    name: Hussain (حسين)
-    skill_path: rcode/skills/agents/hussain-sm
-    role: Scrum Master
-    authority_level: product
-    domain_keywords:
-      - sprint-planning
-      - story-preparation
-      - sprint-status
-      - retrospective
-      - course-correction
-      - agile-ceremonies
-    description: Sprint planning, story preparation, sprint status reporting, retrospectives, and mid-sprint course correction.
-
   - id: rcode-yousef
     name: Yousef (يوسف)
     file_path: rcode/agents/rcode-yousef.md
@@ -286,79 +272,6 @@ agents:
       - migrations
     description: Generalist engineer for implementation tasks spanning frontend and backend. Pairs with Hanzla on complex stories.
 
-  - id: rcode-dalil-scout
-    name: Dalil (دليل)
-    skill_path: rcode/skills/agents/dalil-scout
-    role: Codebase Scout
-    authority_level: analysis
-    domain_keywords:
-      - codebase-discovery
-      - repository-exploration
-      - topic-sweep
-      - architecture-mapping
-      - integrations-audit
-      - project-structure
-    description: Repository discovery, multi-root exploration, focused topic sweeps, and structured codebase documents.
-
-  - id: rcode-raees-orchestrator
-    name: Raees (رئيس)
-    skill_path: rcode/skills/agents/raees-orchestrator
-    role: Project Orchestration Director
-    authority_level: strategic
-    domain_keywords:
-      - orchestration
-      - dispatch
-      - work-routing
-      - phase-sequencing
-      - team-coordination
-      - handoffs
-    description: Dispatches work to the right specialists, sequences phases, identifies parallel vs sequential work, and coordinates handoffs.
-
-  - id: rcode-majlis-council
-    name: Majlis (مجلس)
-    skill_path: rcode/skills/agents/majlis-council
-    role: Multi-Agent Council
-    authority_level: strategic
-    domain_keywords:
-      - council
-      - team-consultation
-      - multi-agent-discussion
-      - crisis-mode
-      - incident-response
-      - cross-domain
-    description: Convenes the rcode team to discuss any topic, collects perspectives from all relevant specialists, and delivers a synthesised answer with dissent noted.
-
-utility_agents:
-  - id: rcode-planner
-    name: rcode Planner
-    role: Phase Planning
-    authority_level: operational
-    domain_keywords:
-      - planning
-      - phase-plan
-      - task-breakdown
-    description: Creates detailed implementation plans from scope and context.
-
-  - id: rcode-executor
-    name: rcode Executor
-    role: Implementation
-    authority_level: operational
-    domain_keywords:
-      - implementation
-      - execution
-      - code-changes
-    description: Executes planned work, commits changes, creates summaries.
-
-  - id: rcode-verifier
-    name: rcode Verifier
-    role: Quality Verification
-    authority_level: quality
-    domain_keywords:
-      - verification
-      - testing
-      - validation
-    description: Verifies phase completion and checks quality gates.
-
 # Council panel routing rules
 # These rules determine which agents are spawned for different question types.
 # Panel scorer (council-panel.cjs) picks from these based on keyword signals.
@@ -416,19 +329,19 @@ tactical_agents:
     authority_level: analysis
     description: Analyzes phase assumptions with evidence from codebase
 
-  - id: rcode-fixer
+  - id: rcode-code-fixer
     name: Code Fixer
-    file_path: rcode/agents/rcode-fixer.md
-    role: Code Fixer
+    file_path: rcode/agents/rcode-code-fixer.md
+    role: Code Fix Specialist
     authority_level: implementation
-    description: Applies code review findings and implements fixes
+    description: Applies code review findings, implements style fixes, and resolves code quality issues identified by reviewers
 
-  - id: rcode-reviewer
+  - id: rcode-code-reviewer
     name: Code Reviewer
-    file_path: rcode/agents/rcode-reviewer.md
-    role: Code Reviewer
+    file_path: rcode/agents/rcode-code-reviewer.md
+    role: Code Review Specialist
     authority_level: quality
-    description: Reviews code for bugs, security issues, quality problems
+    description: Architectural review, code quality assessment, test coverage analysis, and best-practices validation
 
   - id: rcode-codebase-mapper
     name: Codebase Mapper
