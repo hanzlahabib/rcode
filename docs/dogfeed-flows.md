@@ -54,6 +54,27 @@ Creates sprint plan files (SPRINT.md) for a phase.
 
 ---
 
+### Run 1 Final Verdict (pane-2 complete report)
+
+**What worked:**
+- `/rihal-new-project` end-to-end — full phase research, roadmap generation, PROJECT.md, config.yaml, CLAUDE.md, git commit ✅
+- `/rihal-plan` — planner + sprint-checker pipeline, 3 SPRINT.md files generated, checker passed ✅
+- Sprint execution through 3 consecutive sprints (1-1 scaffold, 1-2 SQLite+Drizzle, 1-3 Zustand+repos) ✅
+- TypeScript clean compile as sprint gate — caught @types/jest gap immediately ✅
+- Conventional commit discipline across all sprints ✅
+- `rihal-tools state` — reliable read/write for phase state, sprint tracking, wave overlap ✅
+- Health check: **8/9 pass** — only Check 4 failed (agent-manifest empty, #825)
+
+**What broke (with issue numbers):**
+- `#804 / #825` — `list-agents` always returns empty; agent-manifest.csv is install-stub only; all model lookups fall back to sonnet
+- `#816` — `state.project` and `state.milestone` null after new-project — workflow never calls `state set-project`
+- `#817 / #833` — `roadmap get-phase 1` returns `plans: []` despite SPRINT.md files on disk — tool only tracks plans registered via `rihal-tools roadmap add-plan`, not filesystem discovery
+- `#818` — roadmapper wrote SPRINT.md files during `/rihal-new-project` (scope creep) — causes `has_plans: true` before `/rihal-plan` called
+- `#819 / #829` — `init execute` returns `phase_dir: null, plans: []` — sprint execution required manually passing SPRINT.md path to executor
+- `#822` — `/rihal-sprint-status` skill expects `sprint-status.yaml` artifact that nothing produces — skill is dead on arrival
+
+---
+
 ### Flow C: `/rihal-execute` (Sprint execution)
 
 **What it does:**  
@@ -229,6 +250,21 @@ Before running new-project on a brownfield repo, rcode maps the existing codebas
 | #819 | High | init | phase_dir:null and plans:[] for existing phases |
 | #820 | Medium | execute | state update-progress subcommand missing |
 | #821 | **Critical** | install | rcode installs to pnpm workspace root in monorepos |
+| #822 | **Critical** | sprint-status | skill expects sprint-status.yaml but rihal produces SPRINT.md/SUMMARY.md — dead on arrival |
 | #823 | High | install | npx @hanzlaa/rcode fails on npm 11.x (Node v24) — Unknown command |
 | #824 | Medium | execute | Write tool fails to overwrite existing SUMMARY.md — sprint summary lost on re-run |
+| #825 | High | health | agent-manifest.csv header-only — agents never registered in manifest |
+| #826 | **Critical** | new-project | ROADMAP.md left as stub after new-project — roadmapper subagent never spawned (intermittent) |
+| #827 | High | plan | roadmap get-phase "1" fails when ROADMAP.md uses "Phase 01" leading-zero format |
+| #828 | High | install | list-agents / agent-info look in ~/.rihal/agents/ but agents install to ~/.claude/agents/ |
+| #829 | High | execute | init execute can't resolve phase numbers to directories — only finds files named exactly SPRINT.md |
+| #830 | Medium | state | state.json project field null after install — never populated with project name |
+| #831 | Medium | config | rihal_source_path points to temp npm install dir instead of real project path |
+| #832 | **Critical** | install | (duplicate of #821) pnpm monorepo anchors .rihal/ to workspace root |
+| #833 | High | roadmap | roadmap get-phase returns empty requirements/success_criteria/plans even when ROADMAP.md has content |
+| #834 | Medium | config | init output missing top-level mode field — config.mode not promoted to output |
+| #835 | High | roadmap | roadmap summary subcommand does not exist — docs reference it but it's unimplemented |
+| #836 | High | health | rihal-tools.cjs health subcommand missing from rihal-tools — CLI dispatches it separately |
+| #837 | Medium | execute | (duplicate of #820) state update-progress unknown subcommand |
+| #838 | High | install | pnpm add -D exits 0 + prints success but doesn't write package.json when lockfile is broken |
 
