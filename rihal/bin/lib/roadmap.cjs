@@ -185,11 +185,45 @@ function cmdListPhases(projectRoot) {
 }
 
 /**
- * roadmap update-plan-progress <phase> <plan-id> <status>
- * Atomically rewrites the plan status in ROADMAP.md.
+ * roadmap update-plan-progress <phase> [<plan-id> <status>]
+ *
+ * 1-arg form (phase only): scans the phase directory for *-SPRINT.md /
+ *   *-PLAN.md and *-SUMMARY.md files and updates the ROADMAP progress row
+ *   for the phase. Used by execute-sprint.md. Closes #843.
+ * 3-arg form: atomically rewrites a specific plan-id status in ROADMAP.md.
  */
 function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
-  if (!phaseNum || !planId || !status) {
+  if (!phaseNum) {
+    throw new Error('Usage: roadmap update-plan-progress <phase> [<plan-id> <status>]');
+  }
+  // 1-arg form: auto-detect progress from disk
+  if (!planId && !status) {
+    const planningDir = path.join(projectRoot, '.planning', 'phases');
+    let phaseDir = null;
+    if (fs.existsSync(planningDir)) {
+      const padded = String(Number(phaseNum)).padStart(2, '0');
+      for (const entry of fs.readdirSync(planningDir)) {
+        if (entry === String(phaseNum) || entry.startsWith(`${phaseNum}-`) || entry.startsWith(`${padded}-`)) {
+          phaseDir = path.join(planningDir, entry);
+          break;
+        }
+      }
+    }
+    if (!phaseDir) return { updated: false, note: `phase dir for ${phaseNum} not found — skipping progress update` };
+    const files = fs.readdirSync(phaseDir);
+    const planFiles = files.filter(f => /(?:^|-)(SPRINT|PLAN)\.md$/i.test(f));
+    const summaryFiles = files.filter(f => /(?:^|-)SUMMARY\.md$/i.test(f));
+    const allDone = planFiles.length > 0 && summaryFiles.length >= planFiles.length;
+    return {
+      updated: false,
+      note: `phase ${phaseNum}: ${planFiles.length} plan(s), ${summaryFiles.length} summary(s) — ${allDone ? 'complete' : 'in progress'}`,
+      plan_count: planFiles.length,
+      summary_count: summaryFiles.length,
+      status: allDone ? 'complete' : 'in_progress',
+    };
+  }
+
+  if (!planId || !status) {
     throw new Error('Usage: roadmap update-plan-progress <phase> <plan-id> <status>');
   }
   const rp = roadmapPathFor(projectRoot);

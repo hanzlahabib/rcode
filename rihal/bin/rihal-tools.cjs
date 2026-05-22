@@ -1209,6 +1209,27 @@ function cmdState(subArgs) {
     return writeState(state);
   }
 
+  // Compat shim: agents sometimes generate 'state set current_phase N' or
+  // 'state set project X' instead of the real subcommands. Route them.
+  if (sub === 'set') {
+    const key = subArgs[1];
+    const val = subArgs[2];
+    if (key === 'current_phase' && val) {
+      subArgs = [sub, val];
+      sub = 'set-phase';
+    } else if (key === 'project' && val) {
+      const state = readState() || defaultState();
+      state.project = val;
+      return writeState(state);
+    } else if (key === 'milestone' && val) {
+      const state = readState() || defaultState();
+      state.milestone = val;
+      return writeState(state);
+    } else {
+      throw new Error(`Unknown state set key: ${key}. Use: set-phase <N>, or state set project|milestone <value>`);
+    }
+  }
+
   // --- set-phase ---
   if (sub === 'set-phase') {
     const name = subArgs[1];

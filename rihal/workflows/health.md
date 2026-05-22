@@ -222,8 +222,10 @@ If `ORPHANS > 0`: `⚠ WARN — ${ORPHANS} orphaned worktree-agent-* artifact(s)
 ## Step 7 — Count results and print final summary
 
 **Action:** Count all pass/fail/warn results and display overall status.
+Track SKIPPED checks separately — a skipped check does not count as pass or fail.
 
-Total: `{N}/9 checks passed`
+Total: `{N}/{TOTAL} checks passed` where TOTAL = 9 minus number of skipped checks.
+If any checks were skipped: append `({SKIPPED} skipped — see above)`
 
 If all 9 pass:
 ```
