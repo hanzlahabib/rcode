@@ -170,6 +170,48 @@ Runs 9 checks across state, agents, config, roadmap, and sprint files.
 
 ---
 
+## Run 4 — ReelSpeed Video Service (continued) — `/rihal-map-codebase`
+
+**What it does:**  
+Before running new-project on a brownfield repo, rcode maps the existing codebase using 4 parallel agents.
+
+**Steps observed:**
+1. Detects existing code in `src/` → triggers brownfield path
+2. Spawns 4 parallel `rihal-codebase-mapper` agents:
+   - Map tech stack → writes `STACK.md`, `INTEGRATIONS.md`
+   - Map architecture → writes `ARCHITECTURE.md`
+   - Map conventions and testing → writes `CONVENTIONS.md`
+   - Map concerns and technical debt → writes `CONCERNS.md`
+3. All docs land in `.planning/codebase/`
+4. Main agent waits for all 4 to complete before proceeding to `/rihal-new-project`
+
+**Happy path result:** ✅ First mapper (tech stack) completed — `STACK.md` (168 lines), `INTEGRATIONS.md` (173 lines). Remaining 3 still running.
+
+---
+
+## Run 5 — ReelSpeed Backend — Brownfield new-project
+
+**Date:** 2026-05-22  
+**Project:** `~/development/reelspeed/services/reelspeed-backend`  
+**Stack:** Node.js / Convex / TypeScript
+
+### Flow: Brownfield question prompt in `/rihal-new-project`
+
+**What happens:**
+1. `rcode install` completes (brownfield detected — existing `src/` code)
+2. `/rihal-new-project` runs
+3. **Interactive prompt appears:**
+   ```
+   Is this a greenfield project or brownfield (existing codebase)?
+   ❯ 1. Brownfield — Enhancing/modifying the existing reelspeed-backend
+     2. Greenfield — Treat as new project from scratch
+   ```
+4. User (or orchestrator) selects Brownfield → continues with codebase mapping
+
+**Note:** This interactive AskUserQuestion prompt will block automated orchestration unless the orchestrator monitors and answers it. This is expected behavior but worth documenting for automation scripts.
+
+---
+
 ## Summary of All Issues Filed
 
 | # | Severity | Area | Title |
@@ -187,4 +229,6 @@ Runs 9 checks across state, agents, config, roadmap, and sprint files.
 | #819 | High | init | phase_dir:null and plans:[] for existing phases |
 | #820 | Medium | execute | state update-progress subcommand missing |
 | #821 | **Critical** | install | rcode installs to pnpm workspace root in monorepos |
+| #823 | High | install | npx @hanzlaa/rcode fails on npm 11.x (Node v24) — Unknown command |
+| #824 | Medium | execute | Write tool fails to overwrite existing SUMMARY.md — sprint summary lost on re-run |
 
