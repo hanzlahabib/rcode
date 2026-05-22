@@ -5203,6 +5203,12 @@ function cmdResolveModel(agentId) {
   }
 
   const config = readConfig();
+
+  // model_override bypasses profile entirely — user pinned a specific model id
+  if (config.model_override) {
+    return { model: config.model_override, profile: 'override', agent: agentId };
+  }
+
   const profile = config.model_profile || 'balanced';
   const installedAgents = listInstalledAgents();
 
@@ -6859,6 +6865,50 @@ async function main() {
       case 'resolve-model':
         result = cmdResolveModel(args[0]);
         break;
+      case 'set-model': {
+        // Accepts profile names (balanced/budget/quality/inherit) or model IDs (claude-sonnet-4-6).
+        // Profile names write model_profile and clear model_override.
+        // Model IDs write model_override directly (bypasses profile logic).
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        const input = (args[0] || '').trim();
+        if (!input) {
+          console.error('Usage: set-model <balanced|budget|quality|inherit|claude-MODEL-ID>');
+          process.exit(1);
+        }
+        const PROFILES = new Set(['balanced', 'budget', 'quality', 'inherit']);
+        const MODEL_ALIASES = {
+          'sonnet': 'balanced', 'haiku': 'budget', 'opus': 'quality',
+          'claude-sonnet-4-6': 'balanced', 'claude-haiku-4-5-20251001': 'budget',
+          'claude-opus-4-7': 'quality',
+        };
+        if (PROFILES.has(input)) {
+          cfg.cmdSet(PROJECT_ROOT, 'model_profile', input);
+          cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
+          result = { set: 'model_profile', value: input };
+        } else if (MODEL_ALIASES[input]) {
+          cfg.cmdSet(PROJECT_ROOT, 'model_profile', MODEL_ALIASES[input]);
+          cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
+          result = { set: 'model_profile', value: MODEL_ALIASES[input], alias: input };
+        } else if (input.startsWith('claude-')) {
+          cfg.cmdSet(PROJECT_ROOT, 'model_override', input);
+          result = { set: 'model_override', value: input };
+        } else {
+          console.error(`Unknown model or profile: '${input}'. Valid profiles: balanced, budget, quality, inherit. Or pass a full model ID like claude-sonnet-4-6`);
+          process.exit(1);
+        }
+        break;
+      }
+      case 'get-model': {
+        const config = readConfig();
+        if (config.model_override) {
+          result = { source: 'override', model: config.model_override };
+        } else {
+          const profile = config.model_profile || 'balanced';
+          const MODEL_FOR_PROFILE = { balanced: 'claude-sonnet-4-6', budget: 'claude-haiku-4-5-20251001', quality: 'claude-opus-4-7 (reasoning agents) / claude-sonnet-4-6 (others)', inherit: null };
+          result = { source: 'profile', profile, model: MODEL_FOR_PROFILE[profile] || profile };
+        }
+        break;
+      }
       case 'config':
         if (args[0] === 'set') {
           result = cmdConfigSet(args.slice(1));
@@ -7050,7 +7100,9 @@ async function main() {
         console.log('    yolo_scope config keys: "global" | "phase:N" | "workflow:name"');
         console.log('    yolo_ttl config key: ISO timestamp — yolo auto-expires after this time');
         console.log('  verify schema-drift <phase> [--block]        → detect schema vs migration drift across phase commits');
-        console.log('  resolve-model <profile>                      → resolve model name from profile');
+        console.log('  resolve-model <agent-id>                     → resolve model string for agent under current profile');
+  console.log('  set-model <profile|model-id>                 → set model_profile or model_override in config.yaml');
+  console.log('  get-model                                    → print current effective model (override or profile)');
         console.log('  version                                      → print rihal-tools version');
         console.log('  help                                         → print this help text');
         console.log('');
