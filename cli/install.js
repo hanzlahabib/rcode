@@ -1412,24 +1412,39 @@ function generateAgentManifest(plan, target) {
       rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
     }
   }
-  // Issue #805: when agents were installed globally (~/.claude/agents/), the local
-  // agentDir scan above finds nothing and the manifest stays empty. Also scan the
-  // global agents dir so project manifests reflect globally-installed agents.
-  if (rows.length === 1) {
-    const globalAgentDir = path.join(os.homedir(), '.claude', 'agents');
-    if (fs.existsSync(globalAgentDir)) {
-      const globalFiles = fs.readdirSync(globalAgentDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
-      for (const file of globalFiles) {
-        const filePath = path.join(globalAgentDir, file);
-        const text = fs.readFileSync(filePath, 'utf8');
-        const { frontmatter } = parseFrontmatter(text);
-        const name = frontmatter.name || path.basename(file, '.md');
-        const bareId = name.replace(/^rihal-/, '');
-        if (seen.has(bareId)) continue;
-        seen.add(bareId);
-        const desc = (frontmatter.description || '').replace(/"/g, '""');
-        rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
-      }
+  // Issues #805/#808/#825: always scan known global locations (not gated on
+  // rows.length === 1) so the manifest reflects every installed agent. On a
+  // fresh project install agents may live in ~/.claude/agents/ (global slash
+  // commands) or in the source tree if local copy was skipped via dedup.
+  // Also scan rihal/agents/ in SOURCE_ROOT as a last-resort fallback so the
+  // manifest is never empty when the package itself ships agent definitions.
+  const extraScans = [
+    path.join(os.homedir(), '.claude', 'agents'),
+    path.join(os.homedir(), '.rihal', 'agents'),
+  ];
+  // Final fallback: scan the package source itself.
+  try {
+    const sourceAgentsDir = path.join(SOURCE_ROOT, 'agents');
+    if (fs.existsSync(sourceAgentsDir)) extraScans.push(sourceAgentsDir);
+  } catch { /* SOURCE_ROOT may not be in scope on some paths */ }
+
+  for (const scanDir of extraScans) {
+    if (!fs.existsSync(scanDir)) continue;
+    let files;
+    try {
+      files = fs.readdirSync(scanDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+    } catch { continue; }
+    for (const file of files) {
+      const filePath = path.join(scanDir, file);
+      let text;
+      try { text = fs.readFileSync(filePath, 'utf8'); } catch { continue; }
+      const { frontmatter } = parseFrontmatter(text);
+      const name = frontmatter.name || path.basename(file, '.md');
+      const bareId = name.replace(/^rihal-/, '');
+      if (seen.has(bareId)) continue;
+      seen.add(bareId);
+      const desc = (frontmatter.description || '').replace(/"/g, '""');
+      rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
     }
   }
   return rows.map((r) => r.join(',')).join('\n') + '\n';
