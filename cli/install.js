@@ -2362,8 +2362,12 @@ async function installInner(opts) {
     const stateSrc = path.join(SOURCE_ROOT, 'state.json');
     if (fs.existsSync(stateSrc)) {
       const now = new Date().toISOString();
+      // #809/#830: escape projectName for JSON embedding — quotes/backslashes
+      // would corrupt the resulting state.json. JSON.stringify wraps in quotes;
+      // slice them off because the template already has surrounding quotes.
+      const safeProject = JSON.stringify(String(opts.projectName || path.basename(opts.target))).slice(1, -1);
       let stateContent = fs.readFileSync(stateSrc, 'utf8')
-        .replace(/__PROJECT_NAME__/g, opts.projectName)
+        .replace(/__PROJECT_NAME__/g, safeProject)
         .replace(/__INSTALL_DATE__/g, now);
 
       // Issue #705: the template ships with _seeded_stub:true. If the user

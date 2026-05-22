@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "project": null,
+  "project": "__PROJECT_NAME__",
   "_seeded_stub": true,
   "created": "__INSTALL_DATE__",
   "updated": "__INSTALL_DATE__",
