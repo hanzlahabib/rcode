@@ -12,7 +12,7 @@ sprint: N              # if applicable
 story_id: NN.M         # if dev-story produced this
 generated: <ISO date>
 status: complete | partial | blocked
-verified: false        # flips to true after /rcode:verify-work passes
+verified: false        # flips to true after /rcode-verify-work passes
 ---
 ```
 
@@ -20,7 +20,7 @@ verified: false        # flips to true after /rcode:verify-work passes
 
 ### One-liner
 
-A single line describing what was accomplished. Goes into `/rcode:progress` recent-work bullets, council recaps, milestone summaries. Be specific:
+A single line describing what was accomplished. Goes into `/rcode-progress` recent-work bullets, council recaps, milestone summaries. Be specific:
 
 > ❌ "Added some dashboard improvements"
 > ✅ "Wired live engagement metrics to dashboard top-3 tweets card; updates every 30s via SSE"

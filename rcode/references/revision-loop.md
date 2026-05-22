@@ -25,7 +25,7 @@ When a plan is reviewed (by `rcode-plan-checker`, by a council, or by the user) 
 
 ## Loop bound
 
-Three revisions is the soft cap. If a plan needs four revisions, the underlying disagreement isn't about the plan — it's about scope, requirements, or strategy. Halt the loop, run `/rcode:discuss-phase` or `/rcode:council` to resolve the upstream disagreement, then start a fresh plan.
+Three revisions is the soft cap. If a plan needs four revisions, the underlying disagreement isn't about the plan — it's about scope, requirements, or strategy. Halt the loop, run `/rcode-discuss-phase` or `/rcode-council` to resolve the upstream disagreement, then start a fresh plan.
 
 ## What never happens
 

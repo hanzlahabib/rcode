@@ -1,7 +1,7 @@
 <purpose>
-Diagnose issues surfaced during /rcode:verify-work. For each failed acceptance criterion, identify root cause, classify severity, and decide whether to fix in-flight or file as follow-up.
+Diagnose issues surfaced during /rcode-verify-work. For each failed acceptance criterion, identify root cause, classify severity, and decide whether to fix in-flight or file as follow-up.
 
-Spawned by /rcode:verify-work when verification fails. Not typically called directly by users.
+Spawned by /rcode-verify-work when verification fails. Not typically called directly by users.
 </purpose>
 
 <required_reading>
@@ -14,7 +14,7 @@ Spawned by /rcode:verify-work when verification fails. Not typically called dire
 
 ## 1. Receive failure list
 
-`/rcode:verify-work` passes a structured list of failures:
+`/rcode-verify-work` passes a structured list of failures:
 
 ```json
 [

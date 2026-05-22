@@ -1,6 +1,6 @@
 # Verification Report Template
 
-Used by `/rcode:verify-phase`. Goal-backward analysis of whether the phase actually delivered the goal stated in ROADMAP.md.
+Used by `/rcode-verify-phase`. Goal-backward analysis of whether the phase actually delivered the goal stated in ROADMAP.md.
 
 ## Frontmatter
 

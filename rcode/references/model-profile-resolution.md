@@ -34,7 +34,7 @@ When using the Anthropic API directly, defaults to the latest available model in
 Per-invocation override:
 
 ```bash
-RCODE_MODEL_PROFILE=quality /rcode:execute-phase 04
+RCODE_MODEL_PROFILE=quality /rcode-execute-phase 04
 ```
 
 Survives the session, doesn't persist to config.

@@ -12,7 +12,7 @@ After this workflow writes any SUMMARY.md, updates a story status in epics.md, o
 node .rcode/bin/rcode-tools.cjs state sync --from-disk
 ```
 
-This keeps `.rcode/state.json` in sync with disk — `/rcode:progress`, `/rcode:status`, and `/rcode:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+This keeps `.rcode/state.json` in sync with disk — `/rcode-progress`, `/rcode-status`, and `/rcode-execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
 
 ---
 

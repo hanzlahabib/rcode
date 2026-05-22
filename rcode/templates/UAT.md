@@ -77,4 +77,4 @@ Verdict: PASSED | PARTIAL | FAILED
 
 ## Audit
 
-`/rcode:audit-uat` aggregates UAT.md files across all phases and surfaces outstanding items in one report.
+`/rcode-audit-uat` aggregates UAT.md files across all phases and surfaces outstanding items in one report.

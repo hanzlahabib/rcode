@@ -1,6 +1,6 @@
 # Phase Argument Parsing
 
-Workflows that take a phase argument (`/rcode:plan 04`, `/rcode:execute-phase 999.5`, `/rcode:research-phase 12`) all use the same parsing rules.
+Workflows that take a phase argument (`/rcode-plan 04`, `/rcode-execute-phase 999.5`, `/rcode-research-phase 12`) all use the same parsing rules.
 
 ## Accepted forms
 
@@ -20,7 +20,7 @@ Workflows that take a phase argument (`/rcode:plan 04`, `/rcode:execute-phase 99
 2. Match against the patterns above (regex per row).
 3. Look up the resolved number in `state.phases[]`.
 4. If not found, fall back to looking on disk under `.planning/phases/<NN>-*/`.
-5. If neither, exit non-zero with: `Phase X not found. Run /rcode:status to list known phases.`
+5. If neither, exit non-zero with: `Phase X not found. Run /rcode-status to list known phases.`
 
 ## Strict vs lenient
 

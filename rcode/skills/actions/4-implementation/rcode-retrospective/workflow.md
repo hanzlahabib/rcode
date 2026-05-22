@@ -12,7 +12,7 @@ After this workflow writes any `.planning/` artifact (ROADMAP.md, epics.md, spri
 node .rcode/bin/rcode-tools.cjs state sync --from-disk
 ```
 
-This keeps `.rcode/state.json` in sync with disk — `/rcode:progress`, `/rcode:status`, and `/rcode:execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
+This keeps `.rcode/state.json` in sync with disk — `/rcode-progress`, `/rcode-status`, and `/rcode-execute` all read state.json. Skipping the sync silently drifts them. See `../../_shared/state-sync-rule.md`.
 
 ---
 - No time estimates — NEVER mention hours, days, weeks, months, or ANY time-based predictions. AI has fundamentally changed development speed.
