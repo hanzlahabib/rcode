@@ -1316,6 +1316,26 @@ function generateAgentManifest(plan, target) {
       rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
     }
   }
+  // Issue #805: when agents were installed globally (~/.claude/agents/), the local
+  // agentDir scan above finds nothing and the manifest stays empty. Also scan the
+  // global agents dir so project manifests reflect globally-installed agents.
+  if (rows.length === 1) {
+    const globalAgentDir = path.join(os.homedir(), '.claude', 'agents');
+    if (fs.existsSync(globalAgentDir)) {
+      const globalFiles = fs.readdirSync(globalAgentDir).filter(f => f.startsWith('rihal-') && f.endsWith('.md'));
+      for (const file of globalFiles) {
+        const filePath = path.join(globalAgentDir, file);
+        const text = fs.readFileSync(filePath, 'utf8');
+        const { frontmatter } = parseFrontmatter(text);
+        const name = frontmatter.name || path.basename(file, '.md');
+        const bareId = name.replace(/^rihal-/, '');
+        if (seen.has(bareId)) continue;
+        seen.add(bareId);
+        const desc = (frontmatter.description || '').replace(/"/g, '""');
+        rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
+      }
+    }
+  }
   return rows.map((r) => r.join(',')).join('\n') + '\n';
 }
 
@@ -2133,6 +2153,9 @@ async function installInner(opts) {
   // Write .rihal/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
   const configDir = path.join(opts.target, '.rihal', '_config');
   ensureDir(configDir);
+  // Issue #806: ensure .planning/ exists so /rihal-new-project Write calls succeed
+  // even when seedStarterPlanning returns early (e.g. ROADMAP.md already present).
+  ensureDir(path.join(opts.target, '.planning'));
   fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
   fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
 
