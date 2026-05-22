@@ -10,7 +10,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rihal/config.json` and resolve:
+Load config from `{project-root}/.rihal/config.yaml` (or run `rihal-tools init --json` to get the resolved values) and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`
