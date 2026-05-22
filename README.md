@@ -5,7 +5,11 @@
 > **The AI team that never forgets.** Persistent memory, 45 specialist agents, 109 commands — install once, and your AI IDE gets a project brain that survives every session reset.
 
 ```bash
-npx @hanzlaa/rcode install    # one command, zero dependencies
+# pnpm (recommended — avoids npm 11.x npx issues)
+pnpm dlx @hanzlaa/rcode install
+
+# npm / yarn
+npx @hanzlaa/rcode install
 ```
 
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
@@ -47,7 +51,14 @@ rcode ships in two parts. Run them both up front so nothing surfaces as an after
 **Step 1 — project files (required).** In any project directory (existing codebase OR empty folder):
 
 ```bash
+# Recommended (pnpm — avoids npm 11.x npx compatibility issues):
+pnpm dlx @hanzlaa/rcode install
+
+# Alternative (npm / yarn):
 npx @hanzlaa/rcode install
+
+# Or add as a dev dependency first:
+pnpm add -D @hanzlaa/rcode && ./node_modules/.bin/rcode install
 ```
 
 **Step 2 — `rcode` on your PATH (optional).** For the `rcode` CLI command (e.g. `rcode version`, `rcode update`), install globally once:
