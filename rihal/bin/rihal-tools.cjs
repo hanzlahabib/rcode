@@ -1238,14 +1238,17 @@ function cmdState(subArgs) {
     state.current_phase = name;
     state.current_plan = 0;
     if (!state.phases) state.phases = [];
-    if (!state.phases.some(p => p.name === name)) {
-      // Derive a stable number from the name's leading digits (e.g., "20-foo" → 20)
-      // so downstream lookups by p.number / p.id in sprint add etc. resolve correctly.
-      // Falls back to next sequential position when name has no leading digit.
-      const leadingNum = String(name).match(/^(\d+)/);
-      const number = leadingNum
-        ? parseInt(leadingNum[1], 10)
-        : (state.phases.length + 1);
+    const leadingNum = String(name).match(/^(\d+)/);
+    const number = leadingNum
+      ? parseInt(leadingNum[1], 10)
+      : (state.phases.length + 1);
+    // Match by number OR name to avoid duplicate phantom entries (#853)
+    const existingIdx = state.phases.findIndex(p =>
+      p.name === name ||
+      String(p.number) === String(number) ||
+      String(p.id) === String(number)
+    );
+    if (existingIdx === -1) {
       state.phases.push({
         number,
         id: String(number),
@@ -1254,6 +1257,9 @@ function cmdState(subArgs) {
         completed: null,
         plan_count: 0,
       });
+    } else {
+      // Update name to canonical form when re-entering a phase
+      state.phases[existingIdx].name = name;
     }
     return writeState(state);
   }
