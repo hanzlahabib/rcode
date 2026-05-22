@@ -47,6 +47,35 @@ Write files first, then return. This ensures artifacts persist even if context i
 
 **Handle roadmapper return:**
 
+**Stub guard — verify ROADMAP.md has real content:**
+
+After the agent returns (any return signal), run:
+
+```bash
+ROADMAP_LINES=$(wc -l < .planning/ROADMAP.md 2>/dev/null || echo 0)
+ROADMAP_HAS_PHASE=$(grep -c "^## Phase\|^| [0-9]" .planning/ROADMAP.md 2>/dev/null || echo 0)
+```
+
+If `.planning/ROADMAP.md` does not exist, OR `ROADMAP_LINES < 10`, OR `ROADMAP_HAS_PHASE == 0`:
+
+```
+❌ ROADMAP.md is missing or still a stub (no phase headings detected).
+Re-spawning roadmapper...
+```
+
+Re-spawn rihal-roadmapper with the same prompt. If it fails a second time, output:
+
+```
+❌ roadmapper failed twice — ROADMAP.md was not created.
+Blockers:
+- Check that .planning/REQUIREMENTS.md exists and has content
+- Check that rihal-roadmapper agent is installed: node .rihal/bin/rihal-tools.cjs agent-info rihal-roadmapper
+
+Cannot continue without a valid ROADMAP.md. Fix the blocker and re-run /rihal-new-project.
+```
+
+STOP — do not proceed to approval gate.
+
 **If `## ROADMAP BLOCKED`:**
 
 - Present blocker information
