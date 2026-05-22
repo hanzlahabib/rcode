@@ -81,7 +81,7 @@ Internal team. Who owns which area, who reviews what, who is on holiday this wee
 Active milestone. Goal, phases, current sprint, blockers. The agent reads this before starting any task.
 
 ### `milestones/archive/`
-One file per completed milestone. Used by `/rcode:milestone-summary` and onboarding flows.
+One file per completed milestone. Used by `/rcode-milestone-summary` and onboarding flows.
 
 ### `incidents/known-issues.md`
 Active bugs and workarounds. Searchable so an agent doesn't waste cycles re-debugging a known issue.

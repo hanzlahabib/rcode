@@ -20,10 +20,10 @@ The `999.x` convention fixes all three: parking-lot items have real numeric iden
 
 ### Capturing a parking-lot item
 
-Use `/rcode:plant-seed` — it writes into ROADMAP.md under the parking-lot section AND appends to `state.phases[]` with `status: parking-lot`.
+Use `/rcode-plant-seed` — it writes into ROADMAP.md under the parking-lot section AND appends to `state.phases[]` with `status: parking-lot`.
 
 ```
-Backlog (999.x — promotable with /rcode:state promote-backlog):
+Backlog (999.x — promotable with /rcode-state promote-backlog):
 
   999.1  Cross-post to LinkedIn         — deferred: requires LinkedIn OAuth
   999.2  Auto-DM feature                — deferred: abuse risk
@@ -56,7 +56,7 @@ for p in json.load(sys.stdin).get('state', {}).get('phases', []):
 "
 ```
 
-Or, simpler: `/rcode:progress` includes parking-lot items in its phase listing, labelled as parking-lot when their number matches `999.x`.
+Or, simpler: `/rcode-progress` includes parking-lot items in its phase listing, labelled as parking-lot when their number matches `999.x`.
 
 ---
 
@@ -64,7 +64,7 @@ Or, simpler: `/rcode:progress` includes parking-lot items in its phase listing, 
 
 - Parking-lot items use decimal sub-numbering: `999.1`, `999.2`, ..., `999.99`. No gaps needed — increment by 1.
 - When promoting, pick any available integer phase number (`07`, `12`, `73`). Do not reuse `999.5` for a new parking-lot item after it's been promoted; allocate `999.6` next.
-- Decimal sub-numbering is also available for **urgent insertion** (e.g. `07.1` slotted between `07` and `08`) — see `/rcode:insert-phase` for that flow. Different tool, same numeric grammar.
+- Decimal sub-numbering is also available for **urgent insertion** (e.g. `07.1` slotted between `07` and `08`) — see `/rcode-insert-phase` for that flow. Different tool, same numeric grammar.
 
 ---
 
@@ -73,7 +73,7 @@ Or, simpler: `/rcode:progress` includes parking-lot items in its phase listing, 
 Because parking-lot items become active phases. Keeping them in the same data structure means:
 
 - Zero migration when we promote (`promoted_from` is just metadata).
-- `/rcode:progress` sees everything in one pass — no separate loader.
+- `/rcode-progress` sees everything in one pass — no separate loader.
 - CODEOWNERS rules, reviews, and audit flows work on parking-lot items out of the box.
 
 ---

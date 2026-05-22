@@ -47,11 +47,11 @@ Binary — if either fires, we cut scope or pivot:
 **Goal:** A new Rihalian can open a PR improving their role's skill in under 10 minutes, without reading the 5-component compliance doc first.
 
 - In-editor templates (`rcode/skills/templates/role/`) that pre-fill the correct structure.
-- `/rcode:scaffold-skill --role pm` command that generates a ready-to-fill skill.
+- `/rcode-scaffold-skill --role pm` command that generates a ready-to-fill skill.
 - Automated compliance check in CI (no reviewer time spent on structural issues).
 
 ### v2.5 — Progress/status UX polish
-**Goal:** Running `/rcode:progress` or `/rcode:status` on any project feels instantaneous and actionable — pre-computed CLI output, surfaced insights, and an intent-based Next Up menu instead of a single suggestion.
+**Goal:** Running `/rcode-progress` or `/rcode-status` on any project feels instantaneous and actionable — pre-computed CLI output, surfaced insights, and an intent-based Next Up menu instead of a single suggestion.
 
 - Bundled into v2.0 as M2.5 (issue [#159](https://github.com/hanzlahabib/rihal-code/issues/159)) — listed here for the public roadmap view.
 - Pre-computed CLI output, insight block for drift, intent-tree Next Up.
@@ -62,7 +62,7 @@ Binary — if either fires, we cut scope or pivot:
 ## On the horizon
 
 ### v3.0 — MCP server
-**Goal:** No more `/rcode:update`. The rcode brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
+**Goal:** No more `/rcode-update`. The rcode brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
 
 - Hosted on rcode infra, authenticated via rcode SSO.
 - Migration path: v2.0 and v3.0 run side-by-side for one release, then `brain pull` is deprecated.
@@ -90,7 +90,7 @@ These are ideas that have been raised but have no owner and no window. If you se
 ## How to influence the roadmap
 
 - Open an issue with the `enhancement` label and a clear "why now" statement.
-- Start a `/rcode:council` session in a rcode project to pressure-test the idea with multiple perspectives before filing.
+- Start a `/rcode-council` session in a rcode project to pressure-test the idea with multiple perspectives before filing.
 - PRs that align with a milestone get priority review from the role owner (see CODEOWNERS after M3 lands).
 
 The roadmap changes. This page is updated in the same PR that lands the change — never in isolation, never as a forward-promise without matching scope.

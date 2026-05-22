@@ -11,7 +11,7 @@ pnpm dlx @hanzlaa/rcode install
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 
-Status: `@hanzlaa/rcode` v3.6.20 on npm. 30 automated tests, 45 agents, 109 commands, 85 skills. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.0.0 on npm. 30 automated tests, 45 agents, 116 commands, 85 skills. Actively dogfooded on real projects every week.
 
 ---
 
@@ -23,7 +23,7 @@ That means two things:
 - **The dogfood loop is the test suite.** Every release is run against fresh projects (calories-counter RN, reelspeed services) before publish. Bugs surface as GitHub issues, get fixed, ship.
 - **The tool grows from real friction, not theory.** Half the v3.6.20 fixes came from a single dogfeed session where 3 parallel agents found 50+ real bugs in 4 hours.
 
-If you're a solo dev or small team using Claude Code (or Cursor, Gemini, Codex), rcode gives you the **scaffolding a 10-person engineering org would have**: code review standards, sprint cadence, decision archives, onboarding context — without hiring the org.
+If you're a solo dev or small team using Claude Code (or Cursor, Gemini, VS Code), rcode gives you the **scaffolding a 10-person engineering org would have**: code review standards, sprint cadence, decision archives, onboarding context — without hiring the org.
 
 ---
 
@@ -76,7 +76,7 @@ What you won't get:
 
 I dogfood this hard, so the honest version:
 
-- **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Gemini, Codex. Bring your own keys.
+- **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Gemini, VS Code, Antigravity, Windsurf. Bring your own keys.
 - **Not a multi-agent framework.** No agent-to-agent message bus. One agent reads markdown structure and navigates it.
 - **Not a no-code tool.** You will read markdown files. You will write commit messages. You will type slash commands.
 - **Not finished.** v3.6 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rihal-code/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
@@ -92,7 +92,7 @@ I dogfood this hard, so the honest version:
 | **Specialist agents** | 1 generalist | Define in Python | Define in Python | 45 shipped |
 | **Install** | IDE extension | `pip install` + config | `pip install` + code | `pnpm dlx` — one command |
 | **Infrastructure** | Cloud API | Python server | Vector store + indexer | Zero — pure files |
-| **IDE lock-in** | Cursor only | Framework-specific | Framework-specific | Claude / Cursor / Gemini / Codex |
+| **IDE lock-in** | Cursor only | Framework-specific | Framework-specific | Claude / Cursor / Gemini / VS Code / Antigravity / Windsurf |
 | **Auditability** | Chat scrollback | Tracing dashboard | Tracing dashboard | `git log` |
 
 The point isn't "I beat LangChain." The point is **you don't need LangChain for software delivery**. You need a methodology that survives session resets, and a methodology lives in files.

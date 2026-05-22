@@ -96,7 +96,7 @@ A three-phase release closing gaps found auditing rcode against the `everything-
 
 **Marketability (Phase 30)**
 - Adopted the MIT license (resolves the prior `UNLICENSED` + public-npm contradiction)
-- README cut 535 → ~180 lines; metadata counts reconciled (45 agents, 109 commands, 85 skills, 126 workflows)
+- README cut 535 → ~180 lines; metadata counts reconciled (45 agents, 116 commands, 85 skills, 126 workflows)
 - Onboarding clarified; differentiation table and worked example added
 
 **Test suite:** 341 tests, all passing.

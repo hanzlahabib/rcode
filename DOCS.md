@@ -12,7 +12,7 @@ The single document covering everything you need to use, customise, and contribu
 4. [Core concepts](#4-core-concepts)
 5. [Memory Bank](#5-memory-bank)
 6. [Personas (45 agents)](#6-personas-45-agents)
-7. [Slash commands (109)](#7-slash-commands-109)
+7. [Slash commands (116)](#7-slash-commands-116)
 8. [Skills (85)](#8-skills-85)
 9. [Workflows](#9-workflows)
 10. [Diwan dashboard](#10-diwan-dashboard)
@@ -44,7 +44,7 @@ rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that instal
 - **Persistent project memory** at `.rcode/memory/` — checked into git, browsable in any IDE, visible in the Diwan dashboard
 - **45 distinctive engineering personas** with Arabic-named brand vocabulary (Sadiq, Waleed, Fatima, Dalil, Majlis…)
 - **85 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from rcode's actual production incidents
-- **109 slash commands** for parallel agent debate (`/rcode-council`), sequential pipelines (`/rcode-chain`), quick consultation (`/rcode-discuss`), and end-to-end automation (`/rcode-autonomous`)
+- **116 slash commands** for parallel agent debate (`/rcode-council`), sequential pipelines (`/rcode-chain`), quick consultation (`/rcode-discuss`), and end-to-end automation (`/rcode-autonomous`)
 - **A view-only dashboard** (Diwan) at port 7717 that renders project state, decision logs, and Memory Bank content
 - **Zero runtime dependencies** — pure Node.js with built-in test runner
 
@@ -76,7 +76,7 @@ After install, the project gains:
 | `.rcode/config.yaml` | Project preferences |
 | `.rcode/brain/` | rcode institutional knowledge pulled from upstream |
 | `.claude/agents/` | 45 first-class subagents (for Claude Code) |
-| `.claude/commands/rcode/` | 109 slash commands |
+| `.claude/commands/rcode/` | 116 slash commands |
 | `.claude/skills/` | 85 phrase-activated skills |
 | `.cursor/rules/rcode/` | Cursor commands and rules |
 | `.gemini/rcode/` | Gemini CLI commands and agents |
@@ -315,7 +315,7 @@ Used internally by workflows — usually not invoked directly:
 
 ---
 
-## 7. Slash commands (109)
+## 7. Slash commands (116)
 
 Grouped by purpose. See `docs/REFERENCE.md` and `docs/commands.md` for the full list with arguments.
 
@@ -377,7 +377,7 @@ Grouped by purpose. See `docs/REFERENCE.md` and `docs/commands.md` for the full 
 
 For the canonical reference: [`docs/commands.md`](docs/commands.md) and [`docs/REFERENCE.md`](docs/REFERENCE.md).
 
-### Full command surface (109 commands)
+### Full command surface (116 commands)
 
 #### Router + lifecycle
 `init` · `do` · `help` · `status` · `stats` · `health` · `forensics` · `update`
@@ -848,7 +848,7 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ .rcode/config.yaml present — 412 bytes
     ✓ .rcode/state.json parses — valid JSON
     ✓ agents installed — 45
-    ✓ skills + commands installed — 85 skills + 109 commands
+    ✓ skills + commands installed — 85 skills + 116 commands
 ```
 
 A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
@@ -899,7 +899,7 @@ rcode/                     # the rcode source repo
 │   └── ...
 ├── rcode/                       # the methodology (this is what gets installed)
 │   ├── agents/                  # 45 agent definition files
-│   ├── commands/                # 109 slash command files
+│   ├── commands/                # 116 slash command files
 │   ├── workflows/               # 126 workflow files
 │   ├── skills/                  # 85 SKILL.md files in 3 buckets
 │   │   ├── actions/{1-analysis,2-plan,3-solutioning,4-implementation}/

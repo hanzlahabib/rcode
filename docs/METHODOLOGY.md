@@ -193,7 +193,7 @@ Pipelines aren't just "call a bunch of agents in order." They're **contracts** �
 
 ```mermaid
 graph TD
-    Start([User: /rcode:feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
+    Start([User: /rcode-feature 'add dark mode']) --> Load[Load feature.md command<br/>Pipeline chain:<br/>PM → Waleed → Layla → Haitham+Yousef → Fatima → Khalid]
     Load --> A1["→ Consulting Hussain-PM..."]
     A1 --> R1[PM response:<br/>scope, PRD, success metrics]
     R1 --> A2["→ Handing to Waleed..."]
@@ -393,7 +393,7 @@ If your project is under 10 files or will be thrown away in a week, rcode is ove
 
 ```
 1. Kickoff
-   /rcode:project "name"
+   /rcode-project "name"
    → Sadiq → Waleed → Ahmed → PM → Zahra → Layla → Nasser
    → .rcode/phases/phase-01/brief.md
    → .rcode/decisions/001-stack.md
@@ -401,32 +401,32 @@ If your project is under 10 files or will be thrown away in a week, rcode is ove
    → .rcode/artifacts/design-system/
 
 2. Plan a sprint
-   /rcode:kickoff (for a new phase inside an existing project)
+   /rcode-kickoff (for a new phase inside an existing project)
    → .rcode/phases/phase-{n}/sprints.md
 
 3. Build features
-   /rcode:feature "description"
+   /rcode-feature "description"
    → Hussain-PM → Waleed → Layla → Haitham + Yousef → Fatima → Khalid
    → Code committed, tests passing, deployed
 
 4. UI work
-   /rcode:ui "task"
+   /rcode-ui "task"
    → Zahra → Layla → Haitham → Fatima
 
 5. Strategic questions
-   /rcode:council "question"
+   /rcode-council "question"
    → 13 agents sequential, Noor synthesizes
 
 6. Context reset (as needed)
-   /rcode:progress then manually compact active.md
+   /rcode-progress then manually compact active.md
    → .rcode/context/active.md
 
 7. Bug hunting
-   /rcode:fix "issue"
+   /rcode-fix "issue"
    → Systematic debug, root cause, fix, regression test
 
 8. Quick tasks
-   /rcode:quick "task"
+   /rcode-quick "task"
    → One-shot atomic commit
 
 9. GitHub sync

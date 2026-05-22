@@ -20,7 +20,7 @@ rcode sits in none of these buckets. It is not a chat wrapper, not a code agent,
 
 ---
 
-## Five Structural USPs
+## Six Structural USPs
 
 ### 1. Persistent Memory That Survives Everything
 
@@ -81,9 +81,33 @@ rcode's Memory Bank is **a folder in your repo**. `cat` works. `git blame` works
 
 **Each agent refuses to answer outside their domain.** Ask Waleed (CTO) to write a PRD and he'll tell you to talk to Hussain. Ask Haitham (frontend) about database schema and he'll redirect you to Yousef. This isn't a gimmick — it produces sharper outputs because each agent's prompt is optimised for one job, not diluted across twenty.
 
-**Why 45?** Because real teams have 19 roles (4 strategic, 4 product/design, 5 engineering, 2 quality/ops, 2 content, 2 meta/orchestration) plus 26 specialised sub-agents (planner, executor, verifier, debugger, code-reviewer, integration-checker, etc.) used by workflows. Every one is a separate file you can inspect and modify.
+**Why 45?** Because real teams have role layers. rcode splits them into 16 named personas + 29 workflow specialists:
 
-**No framework does this at install-time.** CrewAI lets you define agents in code — you have to build and maintain them yourself. rcode ships 45 battle-tested agents in one `npx install`.
+**16 named personas** — the team you'd hire:
+- 2 strategic (Sadiq, Ahmed)
+- 1 product (Hussain-PM)
+- 1 growth (Mariam)
+- 2 design (Layla, Zahra)
+- 6 engineering (Waleed, Yousef, Haitham, Zayd, Hanzla, Omar)
+- 1 quality (Fatima)
+- 1 ops (Khalid)
+- 1 content (Noor)
+- 1 management (Nasser)
+
+**29 workflow specialists** — the tactical agents your workflows spawn:
+- 3 planning (planner, roadmapper, remediation-planner)
+- 4 research (phase-researcher, project-researcher, research-synthesizer, advisor-researcher)
+- 4 analysis (assumptions-analyzer, codebase-mapper, deviation-analyzer, profiler)
+- 2 execution (executor, debugger)
+- 2 code (code-reviewer, code-fixer)
+- 5 quality (verifier, sprint-checker, integration-checker, nyquist-auditor, edge-case-hunter)
+- 5 audit (docs, i18n, cross-platform, dep, observability)
+- 2 security (security-adversary, security-auditor)
+- 2 design/UI (ui-auditor, ux-designer)
+
+Every one is a separate file at `rcode/agents/<name>.md` that you can `cat`, edit, fork, or delete.
+
+**No framework does this at install-time.** CrewAI lets you define agents in code — you have to build and maintain them yourself. rcode ships 45 agents in one `pnpm dlx install`, all dogfooded on real projects (calories-counter RN, reelspeed services) before each release.
 
 ---
 
@@ -116,23 +140,23 @@ The chain is enforced. If you try to run `/rcode-create-epics-and-stories` and n
 **rcode needs nothing.**
 
 ```bash
-npx @hanzlaa/rcode install   # done
+pnpm dlx @hanzlaa/rcode install   # done — ~500ms on a fresh project
 ```
 
 What you get is **files**. Markdown files, YAML files, JSON files. Dropped into your repo. Read by your AI IDE natively. No server, no database, no vector store, no API key, no Docker, no Python, no runtime dependency.
 
 | Property | rcode | Agent frameworks |
 |----------|-------|-----------------|
-| Install | `npx install` (one command) | pip/npm + config + env vars + API keys |
+| Install | `pnpm dlx @hanzlaa/rcode install` (one command, ~500ms) | pip/npm + config + env vars + API keys |
 | Runtime | None (files read by IDE) | Python/Node server process |
 | State | Git-tracked markdown | Database / vector store / Redis |
 | Offline | Works on a plane | Requires API connectivity |
 | Debugging | `cat .rcode/memory/project/decisions.md` | Log aggregation + tracing |
 | CI integration | `grep` / `cat` / any shell tool | Docker + SDK + API calls |
 | Collaboration | `git pull` | Shared server + auth |
-| IDE lock-in | None (Claude, Cursor, Gemini, Codex) | Framework-specific |
-| Upgrade | `npx @hanzlaa/rcode update` | Dependency hell |
-| Uninstall | `npx @hanzlaa/rcode uninstall` (creates backup) | Hope nothing breaks |
+| IDE support | Claude, Cursor, Gemini, VS Code, Antigravity, Windsurf | Framework-specific |
+| Upgrade | `pnpm dlx @hanzlaa/rcode update` | Dependency hell |
+| Uninstall | `pnpm dlx @hanzlaa/rcode uninstall` (creates backup) | Hope nothing breaks |
 
 **The simplicity is the moat.** Anyone can read the state. Anyone can debug the state. `git blame` tells you who decided what and when. No vendor lock-in, no opaque database, no "it works on my machine."
 
@@ -171,7 +195,32 @@ Plus 11 engineering-rigor skills that enforce discipline:
 | `rcode-git-flow` | Branching, commits, conflicts aligned to project hierarchy |
 | `rcode-incident-record` | Post-mortem + change record in one flow |
 
-**These aren't checklists someone wrote in a weekend.** They're encoded from incidents that cost real time and real money. The auth-audit skill knows about Keycloak sync drift because a rcode project lived through it. The deploy-unify skill knows about overlapping deploy mechanisms because three deploys broke before we got it right.
+**These aren't checklists someone wrote in a weekend.** They're encoded from incidents on real Rihal projects (where rcode's methodology was first developed before being separated and rebranded). The auth-audit skill knows about Keycloak sync drift because a Rihal project lived through it. The deploy-unify skill knows about overlapping deploy mechanisms because three deploys broke before the team got it right. rcode brings that institutional pain into your project from day one.
+
+---
+
+### 6. Pull Any Public Docs Repo Into Project Context
+
+**The problem:** Every team accumulates institutional knowledge — PR standards, architecture decisions, internal playbooks. Today that lives in Notion, Confluence, a wiki, or a private GitHub repo. AI assistants can't see it because they have no native way to inject "the team's docs" into a project's working context without copy-paste or a custom RAG pipeline.
+
+**How rcode solves it:** Point `rcode/brain/sources.yaml` at any GitHub repo (public or private via `gh auth`), declare which paths to pull, and `rcode-tools brain pull` does sparse-checkout into `.rcode/brain/<dest>/` on install and every `/rcode-update`.
+
+```yaml
+# rcode/brain/sources.yaml
+sources:
+  - name: my-org-standards
+    repo: "https://github.com/my-org/engineering-docs.git"
+    branch: main
+    paths:
+      - "pr-standards.md"
+      - "architecture/**/*.md"
+      - "review-checklist.md"
+    dest: my-org-standards/
+```
+
+**Why this matters:** Every agent in your project now sees your team's standards as part of its base context. No copy-paste. No re-explaining. When the upstream docs repo updates, every project running rcode picks up the change on next `/rcode-update`. A 6-hour cache TTL keeps it fast.
+
+**For an organisation:** fork rcode, fill `sources.yaml` with your org's public docs repo URLs, and you have a company-flavoured rcode where every project starts already oriented to how your team builds.
 
 ---
 
@@ -183,8 +232,9 @@ Any single USP is useful. Together, they compound:
 Memory Bank              → agents never start from zero
   + Specialists          → each agent is sharp, not generic
   + Upstream grounding   → no hallucinated plans
-  + Zero infrastructure  → anyone can adopt in 60 seconds
-  + Battle-tested skills → real-world pain is pre-solved
+  + Zero infrastructure  → anyone can adopt in under a second
+  + Pain-grounded skills → real-world incidents are pre-encoded
+  + Brain pull           → your org's docs ride along
   ─────────────────────────────────────────────────────
   = A project brain that gets smarter with every session
 ```
@@ -224,14 +274,14 @@ No other tool creates this flywheel because no other tool persists project conte
 | Dimension | ChatGPT / Claude | Cursor / Windsurf | CrewAI / AutoGen | **rcode** |
 |-----------|-----------------|-------------------|------------------|-----------|
 | Memory | Per-account, opaque | Per-user, not git-tracked | Requires vector DB | **Git-tracked, per-project, inspectable** |
-| Agents | 1 generalist | 1 generalist with IDE context | Define your own in code | **45 shipped, battle-tested, install-time** |
+| Agents | 1 generalist | 1 generalist with IDE context | Define your own in code | **45 shipped at install time** |
 | Workflow gates | None | None | Build your own | **Structural — refuses without upstream** |
 | Infrastructure | Cloud API | Cloud API + local IDE | Python server + dependencies | **Zero — pure files** |
-| Pain encoding | Generic | Generic | Generic | **8 real-incident skills + 11 rigor skills** |
-| Install | N/A | IDE extension | pip install + config + code | **`npx install` — 60 seconds** |
+| Pain encoding | Generic | Generic | Generic | **8 incident-grounded skills + 11 rigor skills** |
+| Install | N/A | IDE extension | pip install + config + code | **`pnpm dlx install` — under 1 second** |
 | Collaboration | Share chat link | Share workspace | Shared server | **`git pull`** |
 | Offline | ❌ | Partial | ❌ | **✅ Full offline** |
-| IDE lock-in | ChatGPT only | Cursor only | Framework only | **Claude, Cursor, Gemini, Codex** |
+| IDE support | ChatGPT only | Cursor only | Framework only | **Claude, Cursor, Gemini, VS Code, Antigravity, Windsurf** |
 
 ---
 
