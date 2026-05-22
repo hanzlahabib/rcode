@@ -65,7 +65,7 @@ const FORBIDDEN_PATTERNS = [
     description: '`require(\'rcode/...\')` — package-relative require. The CLI is the only thing that should know where `rcode/` lives; templates shell out to `rcode <subcommand>`.',
   },
   {
-    regex: /(?:Load|Read|Open|require\()\s*[^\n]*\brihal\/digests\//,
+    regex: /(?:Load|Read|Open|require\()\s*[^\n]*\brcode\/digests\//,
     description: '`rcode/digests/...` — package-internal digest path. Use `rcode digest <agent>` instead.',
   },
   // BMAD-style pivot (v0.2.0) — these CLI subcommands were deleted and

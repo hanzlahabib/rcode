@@ -35,7 +35,7 @@ test('a known baseline file exists and parses as JSON', () => {
     .filter((f) => f.endsWith('.json'));
   assert.ok(baselineFiles.length >= 5, 'at least 5 baseline files exist');
 
-  const sample = path.join(BASELINE_DIR, 'rihal__agents__rcode-planner.json');
+  const sample = path.join(BASELINE_DIR, 'rcode__agents__rcode-planner.json');
   assert.ok(fs.existsSync(sample), `expected baseline ${sample}`);
   const parsed = JSON.parse(fs.readFileSync(sample, 'utf8'));
   assert.strictEqual(parsed.artifact, 'rcode/agents/rcode-planner.md');

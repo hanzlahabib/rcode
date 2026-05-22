@@ -525,7 +525,7 @@ Stop with `kill $(lsof -t -i:7717)`.
 | Route | Returns |
 |---|---|
 | `/` | Server-rendered HTML dashboard |
-| `/health` | `{"status":"ok","mode":"view-only","rihal_dir":"..."}` |
+| `/health` | `{"status":"ok","mode":"view-only","rcode_dir":"..."}` |
 | `/api/state` | Project state from `.rcode/state.json` + scanner output |
 | `/api/files` | List of `.planning/` markdown files grouped by category |
 | `/api/file?path=<rel>` | Markdown file content (security: paths must be inside project root and end in `.md`) |
