@@ -1159,7 +1159,35 @@ function cmdState(subArgs) {
       return { ok: true, state: existing, message: 'state.json already exists; pass --force to reinitialize' };
     }
     const flags = parseFlags(1);
-    const state = defaultState(flags.project);
+    // Resolve project name: flag > config.yaml > directory basename (#816)
+    let resolvedProject = flags.project || null;
+    if (!resolvedProject) {
+      const configPath = path.join(RIHAL_DIR, 'config.yaml');
+      if (fs.existsSync(configPath)) {
+        try {
+          const cfg = fs.readFileSync(configPath, 'utf8');
+          const m = cfg.match(/^project_name:\s*"?([^"\n]+)"?/m);
+          if (m) resolvedProject = m[1].trim();
+        } catch { /* fallback to basename */ }
+      }
+    }
+    const state = defaultState(resolvedProject);
+    // Resolve milestone from ROADMAP.md if not already set (#816)
+    if (!state.milestone) {
+      const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+      if (fs.existsSync(roadmapPath)) {
+        try {
+          const rm = fs.readFileSync(roadmapPath, 'utf8');
+          const mMatch = rm.match(/\*\*M\d+[^*\n]+\*\*/);
+          if (mMatch) {
+            state.milestone = mMatch[0].replace(/\*\*/g, '').trim();
+          } else {
+            const mLine = rm.match(/[-*]\s+\*?\*?(M\d+[^\n*]+)/);
+            if (mLine) state.milestone = mLine[1].trim();
+          }
+        } catch { /* leave null */ }
+      }
+    }
     return writeState(state);
   }
 
@@ -1202,6 +1230,71 @@ function cmdState(subArgs) {
       current.plan_count = state.current_plan;
     }
     return writeState(state);
+  }
+
+  // --- snapshot --- (#807)
+  // Write current state.json contents to .planning/STATE.md and return state as JSON.
+  if (sub === 'snapshot') {
+    if (!fs.existsSync(statePath)) {
+      return { ok: false, error: 'No state.json — nothing to snapshot.' };
+    }
+    const state = readState();
+    if (!state) return { ok: false, error: 'state.json unreadable' };
+    const statemd = path.join(PLANNING_DIR, 'STATE.md');
+    const now = new Date().toISOString();
+    const lines = [
+      `# State Snapshot`,
+      ``,
+      `**Generated:** ${now}`,
+      `**Project:** ${state.project || '(unset)'}`,
+      `**Milestone:** ${state.milestone || '(unset)'}`,
+      `**Current phase:** ${state.current_phase || '(unset)'}`,
+      `**Current plan:** ${state.current_plan ?? 0}`,
+      `**Current sprint:** ${state.current_sprint || '(none)'}`,
+      ``,
+      `## Raw state.json`,
+      ``,
+      '```json',
+      JSON.stringify(state, null, 2),
+      '```',
+    ];
+    fs.mkdirSync(path.dirname(statemd), { recursive: true });
+    fs.writeFileSync(statemd, lines.join('\n') + '\n');
+    return { ok: true, snapshot_path: path.relative(PROJECT_ROOT, statemd), state };
+  }
+
+  // --- update-progress --- (#820)
+  // Increment current_sprint counter or mark the current sprint complete.
+  // Usage:
+  //   state update-progress                  → increment current_plan by 1
+  //   state update-progress --sprint NN.S    → mark that sprint complete
+  if (sub === 'update-progress') {
+    const flags = parseFlags(1);
+    const state = readState() || defaultState();
+    if (flags.sprint) {
+      // Mark the named sprint complete
+      const targetId = String(flags.sprint);
+      let found = false;
+      for (const phase of (state.phases || [])) {
+        for (const sprint of (phase.sprints || [])) {
+          if (sprint.id === targetId || String(sprint.number) === targetId) {
+            sprint.status = 'completed';
+            sprint.completed_at = sprint.completed_at || new Date().toISOString();
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        return { ok: false, error: `Sprint ${targetId} not found in state` };
+      }
+      const result = writeState(state);
+      return { ...result, sprint_completed: targetId };
+    }
+    // Default: increment current_plan (progress counter)
+    if (typeof state.current_plan !== 'number') state.current_plan = 0;
+    state.current_plan += 1;
+    const result = writeState(state);
+    return { ...result, current_plan: state.current_plan };
   }
 
   // =====================================================================
@@ -7112,6 +7205,8 @@ async function main() {
         console.log('  state init --project <name>                  → create state.json if missing');
         console.log('  state set-phase <name>                       → set current_phase, reset current_plan, append to phases[]');
         console.log('  state advance-plan                           → increment current_plan counter');
+        console.log('  state snapshot                               → write state.json to .planning/STATE.md');
+        console.log('  state update-progress [--sprint NN.S]        → increment current_plan, or mark sprint complete');
         console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>');
         console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');
         console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rihal/decisions.jsonl across all projects');
@@ -7148,7 +7243,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
         // Issue #656 — top-level aliases for intuitive guesses.
         const intuitionAliases = {
           blocker: 'state resolve-blocker',

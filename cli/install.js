@@ -683,13 +683,43 @@ function seedStarterPlanning(target, projectName) {
   if (!fs.existsSync(rihalStateJson)) {
     const now = new Date().toISOString();
     const isStubProject = planningRoadmapIsStub();
+
+    // Resolve project name from config.yaml if available (#816)
+    let resolvedProject = null;
+    const configYamlPath = path.join(target, '.rihal', 'config.yaml');
+    if (fs.existsSync(configYamlPath)) {
+      try {
+        const cfg = fs.readFileSync(configYamlPath, 'utf8');
+        const m = cfg.match(/^project_name:\s*"?([^"\n]+)"?/m);
+        if (m) resolvedProject = m[1].trim();
+      } catch { /* leave null */ }
+    }
+
+    // Sync current_phase from ROADMAP.md if it exists and isn't a stub (#810)
+    let resolvedPhase = null;
+    const roadmapPath = path.join(target, '.planning', 'ROADMAP.md');
+    if (!isStubProject && fs.existsSync(roadmapPath)) {
+      try {
+        const rm = fs.readFileSync(roadmapPath, 'utf8');
+        // Format A — pipe table: | 01 | Phase Name | ...
+        const tableMatch = rm.match(/^\|\s*(\d+(?:\.\d+)?)\s*\|/m);
+        if (tableMatch) {
+          resolvedPhase = String(parseInt(tableMatch[1], 10));
+        } else {
+          // Format B — heading: ## Phase 01 — Name
+          const headMatch = rm.match(/^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)/im);
+          if (headMatch) resolvedPhase = String(parseInt(headMatch[1], 10));
+        }
+      } catch { /* leave null */ }
+    }
+
     const state = {
       version: '1',
-      project: null,
+      project: resolvedProject,
       ...(isStubProject ? { _seeded_stub: true } : {}),
       created: now,
       updated: now,
-      current_phase: null,
+      current_phase: resolvedPhase,
       current_plan: 0,
       current_sprint: null,
       milestone: null,
