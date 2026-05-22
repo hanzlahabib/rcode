@@ -3172,8 +3172,8 @@ function cmdState(subArgs) {
 
     // Walk .rcode/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
     const phasesDir = path.join(PLANNING_DIR, 'phases');
-    const rihalPhasesDir = path.join(RCODE_DIR, 'phases');
-    const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rihalPhasesDir) ? rihalPhasesDir : null);
+    const rcodePhasesDir = path.join(RCODE_DIR, 'phases');
+    const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rcodePhasesDir) ? rcodePhasesDir : null);
     if (sprintRoot) {
       if (!state.sprints) state.sprints = [];
       for (const phaseEntry of fs.readdirSync(sprintRoot)) {

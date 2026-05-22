@@ -445,12 +445,12 @@ async function preCompact() {
       recent_decisions: recentDecisions,
     };
 
-    const rihalDir = path.join(cwd, '.rcode');
-    if (!fs.existsSync(rihalDir)) {
+    const rcodeDir = path.join(cwd, '.rcode');
+    if (!fs.existsSync(rcodeDir)) {
       process.exit(0); // not a rcode project
     }
 
-    const handoffPath = path.join(rihalDir, 'HANDOFF.json');
+    const handoffPath = path.join(rcodeDir, 'HANDOFF.json');
     fs.writeFileSync(handoffPath + '.tmp', JSON.stringify(handoff, null, 2) + '\n');
     fs.renameSync(handoffPath + '.tmp', handoffPath);
 
@@ -484,7 +484,7 @@ async function preCompact() {
     resumeLines.push('Run `/rcode-resume-work` to restore full project context.');
 
     fs.writeFileSync(
-      path.join(rihalDir, '.continue-here.md'),
+      path.join(rcodeDir, '.continue-here.md'),
       resumeLines.join('\n') + '\n'
     );
 

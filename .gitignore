@@ -71,3 +71,7 @@ temp/
 #   .rihal/brain/sources.yaml - brain source manifest
 #   .planning/                - PRD, roadmap, sprints, SUMMARY.md files
 # ===== end rcode-managed gitignore block =====
+
+# Python bytecode
+__pycache__/
+*.pyc
