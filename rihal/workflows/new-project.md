@@ -469,9 +469,13 @@ EOF
 **Commit config.json (guarded):**
 
 ```bash
-git add .planning/config.json 2>/dev/null \
-  && git commit -m "chore: add project config" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .planning/config.json 2>/dev/null; then
+  echo "ℹ .planning/ gitignored — config written, not committed"
+else
+  git add .planning/config.json \
+    && git commit -m "chore: add project config" 2>/dev/null \
+    || echo "ℹ config written; commit skipped (not a git repo or no change)"
+fi
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -656,9 +660,13 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-git add .planning/PROJECT.md 2>/dev/null \
-  && git commit -m "docs: initialize project" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — PROJECT.md written, not committed"
+if git check-ignore -q .planning/PROJECT.md 2>/dev/null; then
+  echo "ℹ .planning/ gitignored — PROJECT.md written, not committed"
+else
+  git add .planning/PROJECT.md \
+    && git commit -m "docs: initialize project" 2>/dev/null \
+    || echo "ℹ PROJECT.md written; commit skipped (not a git repo or no change)"
+fi
 ```
 
 ## 5. Workflow Preferences
@@ -813,9 +821,13 @@ EOF
 **Commit config.json (guarded):**
 
 ```bash
-git add .planning/config.json 2>/dev/null \
-  && git commit -m "chore: add project config" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .planning/config.json 2>/dev/null; then
+  echo "ℹ .planning/ gitignored — config written, not committed"
+else
+  git add .planning/config.json \
+    && git commit -m "chore: add project config" 2>/dev/null \
+    || echo "ℹ config written; commit skipped (not a git repo or no change)"
+fi
 ```
 
 ## 5.1. Sub-Repo Detection
