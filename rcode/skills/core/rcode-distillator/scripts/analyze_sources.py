@@ -9,7 +9,7 @@ detects document types from naming conventions, and suggests groupings for
 related documents (e.g., a brief paired with its discovery notes).
 
 Accepts: file paths, folder paths (scans recursively for .md/.txt/.yaml/.yml/.json),
-or glob patterns. Skips node_modules, .git, __pycache__, .venv, .rihal.
+or glob patterns. Skips node_modules, .git, __pycache__, .venv, .rcode.
 
 Output JSON structure:
   status: "ok" | "error"
@@ -40,7 +40,7 @@ INCLUDE_EXTENSIONS = {".md", ".txt", ".yaml", ".yml", ".json"}
 # Directories to skip when scanning folders
 SKIP_DIRS = {
     "node_modules", ".git", "__pycache__", ".venv", "venv",
-    ".claude", ".rihal", ".cursor", ".vscode",
+    ".claude", ".rcode", ".cursor", ".vscode",
 }
 
 # Approximate chars per token for estimation

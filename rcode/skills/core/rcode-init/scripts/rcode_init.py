@@ -5,31 +5,31 @@
 
 #!/usr/bin/env python3
 """
-Rihal Init — Project configuration bootstrap and config loader.
+rcode-init — Project configuration bootstrap and config loader.
 
 Config files (flat YAML per module):
-  - _rihal/core/config.yaml (core settings — user_name, language, output_folder, etc.)
-  - _rihal/{module}/config.yaml (module settings + core values merged in)
+  - _rcode/core/config.yaml (core settings — user_name, language, output_folder, etc.)
+  - _rcode/{module}/config.yaml (module settings + core values merged in)
 
 Usage:
   # Fast path — load all vars for a module (includes core vars)
-  python rihal_init.py load --module bmb --all --project-root /path
+  python rcode_init.py load --module bmb --all --project-root /path
 
   # Load specific vars with optional defaults
-  python rihal_init.py load --module bmb --vars var1:default1,var2 --project-root /path
+  python rcode_init.py load --module bmb --vars var1:default1,var2 --project-root /path
 
   # Load core only
-  python rihal_init.py load --all --project-root /path
+  python rcode_init.py load --all --project-root /path
 
   # Check if init is needed
-  python rihal_init.py check --project-root /path
-  python rihal_init.py check --module bmb --skill-path /path/to/skill --project-root /path
+  python rcode_init.py check --project-root /path
+  python rcode_init.py check --module bmb --skill-path /path/to/skill --project-root /path
 
   # Resolve module defaults given core answers
-  python rihal_init.py resolve-defaults --module bmb --core-answers '{"output_folder":"..."}' --project-root /path
+  python rcode_init.py resolve-defaults --module bmb --core-answers '{"output_folder":"..."}' --project-root /path
 
   # Write config from answered questions
-  python rihal_init.py write --answers '{"core": {...}, "bmb": {...}}' --project-root /path
+  python rcode_init.py write --answers '{"core": {...}, "bmb": {...}}' --project-root /path
 """
 
 import argparse
@@ -47,7 +47,7 @@ import yaml
 
 def find_project_root(llm_provided=None):
     """
-    Find project root by looking for _rihal folder.
+    Find project root by looking for _rcode folder.
 
     Args:
         llm_provided: Path explicitly provided via --project-root.
@@ -57,16 +57,16 @@ def find_project_root(llm_provided=None):
     """
     if llm_provided:
         candidate = Path(llm_provided)
-        if (candidate / '_rihal').exists():
+        if (candidate / '_rcode').exists():
             return candidate
-        # First run — _rihal won't exist yet but LLM path is still valid
+        # First run — _rcode won't exist yet but LLM path is still valid
         if candidate.is_dir():
             return candidate
 
     for start_dir in [Path.cwd(), Path(__file__).resolve().parent]:
         current_dir = start_dir
         while current_dir != current_dir.parent:
-            if (current_dir / '_rihal').exists():
+            if (current_dir / '_rcode').exists():
                 return current_dir
             current_dir = current_dir.parent
 
@@ -123,7 +123,7 @@ def find_target_module_yaml(module_code, project_root, skill_path=None):
     Search order:
       1. skill_path/assets/module.yaml (calling skill's assets)
       2. skill_path/module.yaml (calling skill's root)
-      3. _rihal/{module_code}/module.yaml (installed module location)
+      3. _rcode/{module_code}/module.yaml (installed module location)
     """
     search_paths = []
 
@@ -133,7 +133,7 @@ def find_target_module_yaml(module_code, project_root, skill_path=None):
         search_paths.append(sp / 'module.yaml')
 
     if project_root and module_code:
-        search_paths.append(Path(project_root) / '_rihal' / module_code / 'module.yaml')
+        search_paths.append(Path(project_root) / '_rcode' / module_code / 'module.yaml')
 
     for path in search_paths:
         if path.exists():
@@ -157,8 +157,8 @@ def load_config_file(path):
 
 
 def load_module_config(module_code, project_root):
-    """Load config for a specific module from _rihal/{module}/config.yaml."""
-    config_path = Path(project_root) / '_rihal' / module_code / 'config.yaml'
+    """Load config for a specific module from _rcode/{module}/config.yaml."""
+    config_path = Path(project_root) / '_rcode' / module_code / 'config.yaml'
     return load_config_file(config_path)
 
 
@@ -215,8 +215,8 @@ def apply_result_template(var_def, raw_value, context):
     """
     Apply a variable's result template to transform the raw user answer.
 
-    E.g., result: "{project-root}/{value}" with value="_rihal-output"
-    becomes "/Users/foo/project/_rihal-output"
+    E.g., result: "{project-root}/{value}" with value="_rcode-output"
+    becomes "/Users/foo/project/_rcode-output"
     """
     result_template = var_def.get('result')
     if not result_template:
@@ -235,7 +235,7 @@ def cmd_load(args):
     """Load config vars — the fast path."""
     project_root = find_project_root(llm_provided=args.project_root)
     if not project_root:
-        print(json.dumps({'error': 'Project root not found (_rihal folder not detected)'}),
+        print(json.dumps({'error': 'Project root not found (_rcode folder not detected)'}),
               file=sys.stderr)
         sys.exit(1)
 
@@ -445,7 +445,7 @@ def cmd_write(args):
             core_config[var_name] = expanded
 
         # Write core config
-        core_dir = project_root / '_rihal' / 'core'
+        core_dir = project_root / '_rcode' / 'core'
         core_dir.mkdir(parents=True, exist_ok=True)
         core_config_path = core_dir / 'config.yaml'
 
@@ -458,7 +458,7 @@ def cmd_write(args):
     elif core_answers_raw:
         # No core_def available — write raw values
         core_config = dict(core_answers_raw)
-        core_dir = project_root / '_rihal' / 'core'
+        core_dir = project_root / '_rcode' / 'core'
         core_dir.mkdir(parents=True, exist_ok=True)
         core_config_path = core_dir / 'config.yaml'
         existing = load_config_file(core_config_path) or {}
@@ -495,7 +495,7 @@ def cmd_write(args):
             context[var_name] = expanded  # Available for subsequent template expansion
 
         # Write module config
-        module_dir = project_root / '_rihal' / module_code
+        module_dir = project_root / '_rcode' / module_code
         module_dir.mkdir(parents=True, exist_ok=True)
         module_config_path = module_dir / 'config.yaml'
 
@@ -527,7 +527,7 @@ def _write_config_file(path, data, module_label):
     from datetime import datetime, timezone
     with open(path, 'w', encoding='utf-8') as f:
         f.write(f'# {module_label} Module Configuration\n')
-        f.write(f'# Generated by rihal-init\n')
+        f.write(f'# Generated by rcode-init\n')
         f.write(f'# Date: {datetime.now(timezone.utc).isoformat()}\n\n')
         yaml.safe_dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
@@ -538,7 +538,7 @@ def _write_config_file(path, data, module_label):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Rihal Init — Project configuration bootstrap and config loader.'
+        description='rcode-init — Project configuration bootstrap and config loader.'
     )
     subparsers = parser.add_subparsers(dest='command')
 
