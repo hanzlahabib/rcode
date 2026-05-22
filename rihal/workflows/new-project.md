@@ -441,40 +441,33 @@ AskUserQuestion([
 ])
 ```
 
-Create `.planning/config.json`:
+Update `.rihal/config.yaml` (created by `/rihal-install`) with auto-mode settings:
 
 ```bash
-mkdir -p .planning
-cat > .planning/config.json <<EOF
-{
-  "mode": "yolo",
-  "granularity": "[selected]",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "balanced",
-  "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true,
-    "auto_advance": true,
-    "_auto_chain_active": true
-  }
-}
-EOF
+node .rihal/bin/rihal-tools.cjs config-set mode yolo
+node .rihal/bin/rihal-tools.cjs config-set granularity "[selected]"
+node .rihal/bin/rihal-tools.cjs config-set parallelization true
+node .rihal/bin/rihal-tools.cjs config-set commit_docs true
+node .rihal/bin/rihal-tools.cjs config-set model_profile balanced
+node .rihal/bin/rihal-tools.cjs config-set workflow.research true
+node .rihal/bin/rihal-tools.cjs config-set workflow.plan_check true
+node .rihal/bin/rihal-tools.cjs config-set workflow.verifier true
+node .rihal/bin/rihal-tools.cjs config-set workflow.nyquist_validation true
+node .rihal/bin/rihal-tools.cjs config-set workflow.auto_advance true
+node .rihal/bin/rihal-tools.cjs config-set workflow._auto_chain_active true
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
 
-**Commit config.json (guarded):**
+**Commit config update (guarded):**
 
 ```bash
-if git check-ignore -q .planning/config.json 2>/dev/null; then
-  echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .rihal/config.yaml 2>/dev/null; then
+  echo "ℹ .rihal/ gitignored — config updated, not committed"
 else
-  git add .planning/config.json \
-    && git commit -m "chore: add project config" 2>/dev/null \
-    || echo "ℹ config written; commit skipped (not a git repo or no change)"
+  git add .rihal/config.yaml \
+    && git commit -m "chore: configure project for rihal" 2>/dev/null \
+    || echo "ℹ config updated; commit skipped (not a git repo or no change)"
 fi
 ```
 
@@ -500,7 +493,7 @@ Ask inline (freeform, NOT AskUserQuestion):
 
 Wait for their response. This gives you the context needed to ask intelligent follow-up questions.
 
-**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.planning/config.json`. When enabled, before asking follow-up questions about a topic:
+**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.rihal/config.yaml` (via `node .rihal/bin/rihal-tools.cjs config-get workflow.research_before_questions`). When enabled, before asking follow-up questions about a topic:
 
 1. Do a brief web search for best practices related to what the user described
 2. Mention key findings naturally as you ask questions
@@ -790,43 +783,36 @@ questions: [
 ]
 ```
 
-Create `.planning/config.json` with all settings:
+Update `.rihal/config.yaml` (created by `/rihal-install`) with collected settings:
 
 ```bash
-mkdir -p .planning
-cat > .planning/config.json <<EOF
-{
-  "mode": "[yolo|interactive]",
-  "granularity": "[selected]",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "[quality|balanced|budget|inherit]",
-  "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true
-  }
-}
-EOF
+node .rihal/bin/rihal-tools.cjs config-set mode "[yolo|interactive]"
+node .rihal/bin/rihal-tools.cjs config-set granularity "[selected]"
+node .rihal/bin/rihal-tools.cjs config-set parallelization true
+node .rihal/bin/rihal-tools.cjs config-set commit_docs true
+node .rihal/bin/rihal-tools.cjs config-set model_profile "[quality|balanced|budget|inherit]"
+node .rihal/bin/rihal-tools.cjs config-set workflow.research true
+node .rihal/bin/rihal-tools.cjs config-set workflow.plan_check true
+node .rihal/bin/rihal-tools.cjs config-set workflow.verifier true
+node .rihal/bin/rihal-tools.cjs config-set workflow.nyquist_validation true
 ```
 
 **Note:** Run `/rihal-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
-- Set `commit_docs: false` in config.json
+- Set `commit_docs: false` via `node .rihal/bin/rihal-tools.cjs config-set commit_docs false`
 - Add `.planning/` to `.gitignore` (create if needed)
 
-**Commit config.json (guarded):**
+**Commit config update (guarded):**
 
 ```bash
-if git check-ignore -q .planning/config.json 2>/dev/null; then
-  echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .rihal/config.yaml 2>/dev/null; then
+  echo "ℹ .rihal/ gitignored — config updated, not committed"
 else
-  git add .planning/config.json \
-    && git commit -m "chore: add project config" 2>/dev/null \
-    || echo "ℹ config written; commit skipped (not a git repo or no change)"
+  git add .rihal/config.yaml \
+    && git commit -m "chore: configure project for rihal" 2>/dev/null \
+    || echo "ℹ config updated; commit skipped (not a git repo or no change)"
 fi
 ```
 
@@ -886,7 +872,7 @@ Present completion summary:
 | Artifact       | Location                    |
 |----------------|-----------------------------|
 | Project        | `.planning/PROJECT.md`      |
-| Config         | `.planning/config.json`     |
+| Config         | `.rihal/config.yaml`        |
 | Research       | `.planning/research/`       |
 | Requirements   | `.planning/REQUIREMENTS.md` |
 | Roadmap        | `.planning/ROADMAP.md`      |
@@ -962,7 +948,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 <output>
 
 - `.planning/PROJECT.md`
-- `.planning/config.json`
+- `.rihal/config.yaml` (updated in place)
 - `.planning/research/` (if research selected)
   - `STACK.md`
   - `FEATURES.md`

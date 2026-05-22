@@ -24,7 +24,7 @@ Task(prompt="
 - .planning/PROJECT.md (Project context)
 - .planning/REQUIREMENTS.md (v1 Requirements)
 - .planning/research/SUMMARY.md (Research findings - if exists)
-- .planning/config.json (Granularity and mode settings)
+- .rihal/config.yaml (Granularity and mode settings — read via `node rihal-tools.cjs config-get <key>`)
 </files_to_read>
 
 ${AGENT_ROADMAPPER}

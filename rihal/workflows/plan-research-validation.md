@@ -173,14 +173,14 @@ SECURITY_BLOCK=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_
 
 Each SPRINT.md must include a <threat_model> block.
 Block on: {SECURITY_BLOCK} severity threats.
-Opt out: set security_enforcement: false in .planning/config.json
+Opt out: set security_enforcement: false in .rihal/config.yaml (`node .rihal/bin/rihal-tools.cjs config-set security_enforcement false`)
 ```
 
 Continue to step 5.6. Security config is passed to the planner in step 8.
 
 ## 5.6. UI Design Contract Gate
 
-> Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.planning/config.json`. If keys are absent, treat as enabled.
+> Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.rihal/config.yaml`. If keys are absent, treat as enabled.
 
 ```bash
 UI_PHASE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")

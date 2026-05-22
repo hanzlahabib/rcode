@@ -180,7 +180,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        - {phase_dir}/{plan_file} (Plan)
        - .planning/PROJECT.md (Project context — core value, requirements, evolution rules)
        - .planning/STATE.md (State)
-       - .planning/config.json (Config, if exists)
+       - .rihal/config.yaml (Config, if exists — read via `node rihal-tools.cjs config-get <key>` or readConfig())
        ${CONTEXT_WINDOW >= 500000 ? `
        - ${phase_dir}/*-CONTEXT.md (User decisions from discuss-phase — honors locked choices)
        - ${phase_dir}/*-RESEARCH.md (Technical research — pitfalls and patterns to follow)

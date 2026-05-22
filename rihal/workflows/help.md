@@ -306,16 +306,12 @@ init → new-project → plan → execute → next → status → ship
 
 ## Configuration reference
 
-`.planning/config.json`:
+`.rihal/config.yaml` (read via `node rihal-tools.cjs config-get <key>` or `readConfig()`):
 
-```json
-{
-  "mode": "interactive",            // or "yolo"
-  "planning": {
-    "commit_docs": true,            // false = .planning/ kept local
-    "search_gitignored": false      // true = ripgrep with --no-ignore
-  }
-}
+```yaml
+mode: interactive            # or yolo
+commit_docs: true            # false = .planning/ kept local
+search_gitignored: false     # true = ripgrep with --no-ignore
 ```
 
 ## Where to find context

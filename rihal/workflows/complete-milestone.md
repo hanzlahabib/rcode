@@ -107,7 +107,6 @@ If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md 
 <config-check>
 
 ```bash
-cat .planning/config.json 2>/dev/null || true
 node .rihal/bin/rihal-tools.cjs config 2>/dev/null || true
 ```
 
