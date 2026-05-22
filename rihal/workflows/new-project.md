@@ -288,9 +288,8 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       "New feature on existing architecture",
-      "Refactoring existing feature",
       "Migration to new tech stack",
-      "Bug fixes and tech debt",
+      "Bug fixes, refactoring and tech debt",
       "Performance optimization"
     ]
   },
