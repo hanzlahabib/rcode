@@ -5962,11 +5962,16 @@ function cmdBrain(args) {
       }
 
       // Cache miss — clone, then warm the cache for next time.
+      // Use --no-checkout + explicit sparse-checkout init + set + checkout
+      // because `git clone --sparse` combined with --filter=blob:none has
+      // an intermittent failure mode where git misreads the URL as a path.
       execSync(
-        `git clone --depth=1 --filter=blob:none --sparse --branch="${branch}" "${repo}" "${tmp}"`,
+        `git clone --depth=1 --filter=blob:none --no-checkout --branch="${branch}" "${repo}" "${tmp}"`,
         { stdio: 'pipe' }
       );
+      execSync(`git -C "${tmp}" sparse-checkout init --no-cone`, { stdio: 'pipe' });
       execSync(`git -C "${tmp}" sparse-checkout set ${sparsePaths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
+      execSync(`git -C "${tmp}" checkout`, { stdio: 'pipe' });
 
       // Warm cache before destination copy so a copy failure to dest still
       // saves the next pull. Replace any stale slot atomically.
