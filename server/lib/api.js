@@ -5,8 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const { scanState, scanMemoryBank } = require('./scanner');
 
-function handleApiState(req, res, rihalDir) {
-  const state = scanState(rihalDir);
+function handleApiState(req, res, rcodeDir) {
+  const state = scanState(rcodeDir);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(state, null, 2));
 }
@@ -150,8 +150,8 @@ function handleApiFile(req, res, projectRoot) {
 }
 
 // Fix #265: hierarchy endpoint
-function handleApiHierarchy(req, res, rihalDir) {
-  const state = scanState(rihalDir);
+function handleApiHierarchy(req, res, rcodeDir) {
+  const state = scanState(rcodeDir);
   const phases = state.raw?.phases || [];
   const hierarchy = {
     milestone: state.milestone || 'M1',
@@ -176,8 +176,8 @@ function handleApiHierarchy(req, res, rihalDir) {
   res.end(JSON.stringify(hierarchy, null, 2));
 }
 
-function handleApiMemory(req, res, rihalDir) {
-  const memory = scanMemoryBank(rihalDir);
+function handleApiMemory(req, res, rcodeDir) {
+  const memory = scanMemoryBank(rcodeDir);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(memory, null, 2));
 }

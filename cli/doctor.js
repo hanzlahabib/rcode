@@ -101,12 +101,12 @@ function runPreflight(cwd, packageRoot) {
   });
 
   // 2. .rcode/ state directory — only check if project is initialized
-  const rihalDir = path.join(cwd, '.rcode');
-  if (fs.existsSync(rihalDir)) {
+  const rcodeDir = path.join(cwd, '.rcode');
+  if (fs.existsSync(rcodeDir)) {
     checks.push({
       label: '.rcode/ writable',
-      status: isWritable(rihalDir) ? 'ok' : 'fail',
-      message: rihalDir,
+      status: isWritable(rcodeDir) ? 'ok' : 'fail',
+      message: rcodeDir,
     });
   } else {
     checks.push({
@@ -169,7 +169,7 @@ function runPreflight(cwd, packageRoot) {
   });
 
   // 6. Agent manifest drift (only if .rcode/ is initialized — indicates installed editors)
-  if (fs.existsSync(rihalDir)) {
+  if (fs.existsSync(rcodeDir)) {
     const editors = [];
     if (fs.existsSync(path.join(cwd, '.claude/skills'))) editors.push('claude');
     if (fs.existsSync(path.join(cwd, '.cursor/rules'))) editors.push('cursor');

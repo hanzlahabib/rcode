@@ -65,7 +65,7 @@ const server = http.createServer((req, res) => {
 
   if (url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', mode: 'view-only', rihal_dir: RCODE_DIR }));
+    res.end(JSON.stringify({ status: 'ok', mode: 'view-only', rcode_dir: RCODE_DIR }));
     return;
   }
 

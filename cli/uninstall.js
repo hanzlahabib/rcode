@@ -247,8 +247,8 @@ function buildPlan(cwd, editors) {
   }
 
   // Check .rcode/ state directory
-  const rihalDir = path.join(cwd, '.rcode');
-  if (fs.existsSync(rihalDir)) {
+  const rcodeDir = path.join(cwd, '.rcode');
+  if (fs.existsSync(rcodeDir)) {
     let fileCount = 0;
     function countFiles(dir) {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -256,7 +256,7 @@ function buildPlan(cwd, editors) {
         else fileCount++;
       }
     }
-    try { countFiles(rihalDir); } catch {}
+    try { countFiles(rcodeDir); } catch {}
     plan.stateDir = { files: fileCount };
   }
 
@@ -358,11 +358,11 @@ function planToPathList(plan, cwd, options = {}) {
   // no recovery. Add them when purging — but EXCLUDE .rcode/backups/ itself
   // (we'd be writing into the dir we're tar-ing).
   if (options.purge) {
-    const rihalDir = path.join(cwd, '.rcode');
-    if (fs.existsSync(rihalDir)) {
+    const rcodeDir = path.join(cwd, '.rcode');
+    if (fs.existsSync(rcodeDir)) {
       // Walk one level deep and add everything except backups/
       try {
-        for (const entry of fs.readdirSync(rihalDir)) {
+        for (const entry of fs.readdirSync(rcodeDir)) {
           if (entry === 'backups') continue;
           paths.push(path.join('.rcode', entry));
         }
@@ -750,7 +750,7 @@ async function runUninstall(args) {
 
   // Handle .rcode/ state directory
   if (plan.stateDir) {
-    const rihalDir = path.join(cwd, '.rcode');
+    const rcodeDir = path.join(cwd, '.rcode');
     let shouldDeleteState = opts.deleteState;
 
     if (!opts.deleteState && !opts.keepState && !opts.yes) {
@@ -771,7 +771,7 @@ async function runUninstall(args) {
     }
 
     if (shouldDeleteState) {
-      const r = safeRmSync(rihalDir, path.resolve(cwd));
+      const r = safeRmSync(rcodeDir, path.resolve(cwd));
       if (r.ok) {
         console.log(`   ✓ removed .rcode/ state directory`);
       } else if (r.reason === 'outside-root') {

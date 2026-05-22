@@ -121,10 +121,10 @@ function buildPhaseTree(projectDir, rawPhases) {
   });
 }
 
-function scanState(rihalDir) {
-  const projectDir = path.dirname(rihalDir);
+function scanState(rcodeDir) {
+  const projectDir = path.dirname(rcodeDir);
   const state = {
-    exists: fs.existsSync(rihalDir),
+    exists: fs.existsSync(rcodeDir),
     projectName: null,
     raw: null,
     rawParseError: null,
@@ -142,7 +142,7 @@ function scanState(rihalDir) {
 
   if (!state.exists) return state;
 
-  const rawResult = safeReadJson(path.join(rihalDir, 'state.json'));
+  const rawResult = safeReadJson(path.join(rcodeDir, 'state.json'));
   if (rawResult && rawResult.__parseError) {
     state.rawParseError = rawResult.__parseError;
     state.raw = null;
@@ -150,7 +150,7 @@ function scanState(rihalDir) {
     state.raw = rawResult;
   }
 
-  const cfg = parseSimpleYaml(safeReadText(path.join(rihalDir, 'config.yaml')));
+  const cfg = parseSimpleYaml(safeReadText(path.join(rcodeDir, 'config.yaml')));
 
   // Fix #260: project name shows '.' — derive from directory name as fallback
   const dirName = path.basename(projectDir);
@@ -241,7 +241,7 @@ function scanState(rihalDir) {
     state.blockers = state.raw.blockers.filter(b => b && (typeof b === 'string' || b.title));
   }
 
-  state.context = safeReadText(path.join(rihalDir, 'context', 'active.md'))
+  state.context = safeReadText(path.join(rcodeDir, 'context', 'active.md'))
     || safeReadText(path.join(projectDir, '.planning', 'CONTEXT.md'));
 
   // Walk .planning/ for file tree
@@ -262,7 +262,7 @@ function scanState(rihalDir) {
   // #12 — surface pending handoff (.rcode/HANDOFF.json) and active context
   // (.rcode/context/active.md) for the dashboard banner + memory-bank summary.
   // Both are no-op when the files don't exist. View-only — no writes.
-  const handoffPath = path.join(rihalDir, 'HANDOFF.json');
+  const handoffPath = path.join(rcodeDir, 'HANDOFF.json');
   if (fs.existsSync(handoffPath)) {
     const ho = safeReadJson(handoffPath);
     if (ho && !ho.__parseError) {
@@ -277,7 +277,7 @@ function scanState(rihalDir) {
     }
   }
 
-  const activeCtx = path.join(rihalDir, 'context', 'active.md');
+  const activeCtx = path.join(rcodeDir, 'context', 'active.md');
   if (fs.existsSync(activeCtx)) {
     try {
       const stat = fs.statSync(activeCtx);
@@ -302,8 +302,8 @@ function scanState(rihalDir) {
  * for the /api/memory endpoint and the dashboard /memory view.
  * Returns { exists: false } when the Memory Bank has not been initialised.
  */
-function scanMemoryBank(rihalDir) {
-  const memoryDir = path.join(rihalDir, 'memory');
+function scanMemoryBank(rcodeDir) {
+  const memoryDir = path.join(rcodeDir, 'memory');
   const result = {
     exists: false,
     initialised: false,

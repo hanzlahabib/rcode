@@ -41,9 +41,9 @@ const MODE_DESCRIPTIONS = {
 
 module.exports = function setMode(args) {
   const cwd = process.cwd();
-  const rihalDir = path.join(cwd, '.rcode');
+  const rcodeDir = path.join(cwd, '.rcode');
 
-  if (!fs.existsSync(rihalDir)) {
+  if (!fs.existsSync(rcodeDir)) {
     console.error(`❌ No .rcode/ directory found in ${cwd}`);
     console.error(`   Run 'rcode install' first.`);
     process.exit(1);

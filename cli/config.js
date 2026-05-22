@@ -87,8 +87,8 @@ module.exports = function config(args) {
 
   // No args OR --list → print everything
   if (opts.positional.length === 0 || opts.list) {
-    const rihalDir = path.join(cwd, '.rcode');
-    if (!fs.existsSync(rihalDir) && !opts.global) {
+    const rcodeDir = path.join(cwd, '.rcode');
+    if (!fs.existsSync(rcodeDir) && !opts.global) {
       console.error(`❌ No .rcode/ directory found in ${cwd}`);
       console.error(`   Run 'rcode install' first, or use --global to manage user defaults.`);
       process.exit(1);
