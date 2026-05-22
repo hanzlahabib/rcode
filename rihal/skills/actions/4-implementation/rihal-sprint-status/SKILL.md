@@ -28,17 +28,21 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Status table: Story | Owner | Status | Blockers | Notes
-- Summary: X/Y stories done, N blockers, recommendation for next action
-- Output to .rihal/progress/status-{date}.md
+- Sprint table: Sprint | Status | Artifacts (SUMMARY.md ✓ / —)
+- Summary: X/Y sprints done, N in-progress, N todo, recommendation for next action
+- Reads from `.planning/phases/<phase-dir>/*-SPRINT.md` and `*-SUMMARY.md`
 - Do NOT invent progress — read from actual file states
 
 ## Examples
 
 ### Happy Path
 **Input:** "What's the sprint status?"
-**Expected behavior:** Scan stories in current sprint, read each story's state (backlog/ready/in-progress/review/done), produce table + summary + recommendation.
+**Expected behavior:** Read state.json for current phase, scan SPRINT.md and SUMMARY.md files in the phase directory, produce table + summary + next-action recommendation.
 
-### Edge Case: No Active Sprint
-**Input:** "Sprint status" (no sprint file exists)
-**Expected behavior:** Respond: "No active sprint found. Run rihal-sprint-planning first."
+### Edge Case: No Active Phase
+**Input:** "Sprint status" (no state.json or no current_phase)
+**Expected behavior:** Respond: "No active phase found. Run /rihal-plan <N> to start a phase."
+
+### Edge Case: No Sprints Executed Yet
+**Input:** "Sprint status" (SPRINT.md files exist but no SUMMARY.md)
+**Expected behavior:** Show all sprints as `todo`, recommend `/rihal-execute <phase>`.

@@ -65,8 +65,8 @@ function extractPhases(content) {
 }
 
 function parseRequirements(section) {
-  // **Requirements** or **Requirements:** followed by numbered or bulleted list
-  const match = section.match(/\*\*Requirements(?::\*\*|\*\*:)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
+  // Matches both bold-style (**Requirements:**) and heading-style (### Requirements)
+  const match = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
   if (!match) return [];
   return match[1].split('\n')
     .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
@@ -74,7 +74,8 @@ function parseRequirements(section) {
 }
 
 function parseSuccessCriteria(section) {
-  const match = section.match(/\*\*Success Criteria\*\*[^\n]*:\s*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
+  // Matches both bold-style (**Success Criteria:**) and heading-style (### Success Criteria)
+  const match = section.match(/(?:\*\*Success Criteria\*\*[^\n]*:|#{1,4}\s*Success Criteria\s*:?)\s*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
   if (!match) return [];
   return match[1].split('\n')
     .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
@@ -120,6 +121,8 @@ function phaseStatus(section) {
  * roadmap get-phase <N> [--pick section]
  * Returns JSON or raw section markdown.
  */
+function normalizePhaseNum(n) { return parseInt(String(n).replace(/^0+/, '') || '0', 10); }
+
 function cmdGetPhase(projectRoot, phaseNum, opts = {}) {
   const rp = roadmapPathFor(projectRoot);
   if (!fs.existsSync(rp)) {
@@ -127,11 +130,31 @@ function cmdGetPhase(projectRoot, phaseNum, opts = {}) {
   }
   const content = fs.readFileSync(rp, 'utf8');
   const phases = extractPhases(content);
-  const match = phases.find((p) => p.number === String(phaseNum));
+  // #813 — normalize leading zeros on both sides before comparing
+  const needle = normalizePhaseNum(phaseNum);
+  const match = phases.find((p) => normalizePhaseNum(p.number) === needle);
   if (!match) return { found: false, phase_number: phaseNum };
 
   if (opts.pick === 'section') {
     return { __raw: match.section };
+  }
+
+  // #833 — fall back to phase directory scan when parsePlans returns nothing
+  let plans = parsePlans(match.section);
+  if (plans.length === 0) {
+    const phasesDir = path.join(projectRoot, '.planning', 'phases');
+    const padded = String(needle).padStart(2, '0');
+    if (fs.existsSync(phasesDir)) {
+      for (const entry of fs.readdirSync(phasesDir)) {
+        if (entry === String(needle) || entry.startsWith(`${needle}-`) || entry.startsWith(`${padded}-`)) {
+          const phaseDir = path.join(phasesDir, entry);
+          plans = fs.readdirSync(phaseDir)
+            .filter((f) => /(?:^|-)(SPRINT|PLAN)\.md$/i.test(f))
+            .map((f) => ({ id: f.replace(/\.md$/i, ''), title: f, status: 'planned' }));
+          break;
+        }
+      }
+    }
   }
 
   return {
@@ -141,7 +164,7 @@ function cmdGetPhase(projectRoot, phaseNum, opts = {}) {
     goal: match.goal,
     requirements: parseRequirements(match.section),
     success_criteria: parseSuccessCriteria(match.section),
-    plans: parsePlans(match.section),
+    plans,
   };
 }
 
@@ -175,7 +198,7 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
   }
   const content = fs.readFileSync(rp, 'utf8');
   const phases = extractPhases(content);
-  const phase = phases.find((p) => p.number === String(phaseNum));
+  const phase = phases.find((p) => normalizePhaseNum(p.number) === normalizePhaseNum(phaseNum));
   if (!phase) return { updated: false, error: `phase ${phaseNum} not found` };
 
   const planEscaped = escapeRegex(planId);
@@ -214,6 +237,25 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
     plan: planId,
     status,
     previous_status: previousStatus,
+  };
+}
+
+/**
+ * roadmap summary — overview of phase counts and active phase.
+ */
+function cmdSummary(projectRoot) {
+  const rp = roadmapPathFor(projectRoot);
+  if (!fs.existsSync(rp)) return { found: false, error: 'ROADMAP.md not found' };
+  const phases = cmdListPhases(projectRoot);
+  const total = phases.length;
+  const completed = phases.filter((p) => p.status === 'complete' || p.status === 'closed').length;
+  const active = phases.find((p) => p.status === 'active') || null;
+  const upcoming = phases.filter((p) => p.status === 'planned');
+  return {
+    total_phases: total,
+    completed_phases: completed,
+    active_phase: active ? { number: active.number, name: active.name } : null,
+    upcoming_phases: upcoming.map((p) => ({ number: p.number, name: p.name })),
   };
 }
 
@@ -266,8 +308,10 @@ function dispatch(projectRoot, subArgs) {
       return cmdUpdatePlanProgress(projectRoot, rest[0], rest[1], rest[2]);
     case 'clear':
       return cmdClear(projectRoot);
+    case 'summary':
+      return cmdSummary(projectRoot);
     default:
-      throw new Error(`Unknown roadmap subcommand: ${sub}. Valid: get-phase, list-phases, update-plan-progress, clear`);
+      throw new Error(`Unknown roadmap subcommand: ${sub}. Valid: get-phase, list-phases, update-plan-progress, clear, summary`);
   }
 }
 
@@ -277,4 +321,5 @@ module.exports = {
   cmdListPhases,
   cmdUpdatePlanProgress,
   cmdClear,
+  cmdSummary,
 };

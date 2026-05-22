@@ -14,23 +14,21 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`
-- `implementation_artifacts`
 - `date` as system-generated current datetime
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
 
 ### Paths
 
-- `sprint_status_file` = `{implementation_artifacts}/sprint-status.yaml`
+- `phases_dir` = `.planning/phases/`
+- `state_file` = `.rihal/state.json`
 
 ### Input Files
 
 | Input | Path | Load Strategy |
 |-------|------|---------------|
-| Sprint status | `{sprint_status_file}` | FULL_LOAD |
-
-### Context
-
-- `project_context` = `**/project-context.md` (load if exists)
+| State | `.rihal/state.json` | FULL_LOAD |
+| Active phase SPRINT.md files | `.planning/phases/<phase-dir>/*-SPRINT.md` | SCAN |
+| Active phase SUMMARY.md files | `.planning/phases/<phase-dir>/*-SUMMARY.md` | SCAN |
 
 ---
 
@@ -54,105 +52,81 @@ Load config from `{project-root}/.rihal/config.json` and resolve:
   </check>
 </step>
 
-<step n="1" goal="Locate sprint status file">
-  <action>Load {project_context} for project-wide patterns and conventions (if exists)</action>
-  <action>Try {sprint_status_file}</action>
-  <check if="file not found">
-    <output>❌ sprint-status.yaml not found.
-Run `/rihal-workflows:sprint-planning` to generate it, then rerun sprint-status.</output>
+<step n="1" goal="Locate active phase">
+  <action>Read `.rihal/state.json` to determine `current_phase`</action>
+  <check if="state.json not found or current_phase missing">
+    <output>❌ No active phase found.
+Run `/rihal-new-project` to initialize a project or `/rihal-plan <N>` to start a phase.</output>
     <action>Exit workflow</action>
   </check>
+  <action>Resolve phase directory: scan `.planning/phases/` for a directory whose name starts with the current phase number (e.g. `23-*` for phase 23)</action>
+  <check if="phase directory not found">
+    <output>❌ Phase directory for phase `{current_phase}` not found in `.planning/phases/`.
+Run `/rihal-plan {current_phase}` to create it.</output>
+    <action>Exit workflow</action>
+  </check>
+  <action>Set `phase_dir` = resolved directory path</action>
   <action>Continue to Step 2</action>
 </step>
 
-<step n="2" goal="Read and parse sprint-status.yaml">
-  <action>Read the FULL file: {sprint_status_file}</action>
-  <action>Parse fields: generated, last_updated, project, project_key, tracking_system, story_location</action>
-  <action>Parse development_status map. Classify keys:</action>
-  - Epics: keys starting with "epic-" (and not ending with "-retrospective")
-  - Retrospectives: keys ending with "-retrospective"
-  - Stories: everything else (e.g., 1-2-login-form)
-  <action>Map legacy story status "drafted" → "ready-for-dev"</action>
-  <action>Count story statuses: backlog, ready-for-dev, in-progress, review, done</action>
-  <action>Map legacy epic status "contexted" → "in-progress"</action>
-  <action>Count epic statuses: backlog, in-progress, done</action>
-  <action>Count retrospective statuses: optional, done</action>
-
-<action>Validate all statuses against known values:</action>
-
-- Valid story statuses: backlog, ready-for-dev, in-progress, review, done, drafted (legacy)
-- Valid epic statuses: backlog, in-progress, done, contexted (legacy)
-- Valid retrospective statuses: optional, done
-
-  <check if="any status is unrecognized">
-    <output>
-⚠️ **Unknown status detected:**
-{{#each invalid_entries}}
-
-- `{{key}}`: "{{status}}" (not recognized)
-  {{/each}}
-
-**Valid statuses:**
-
-- Stories: backlog, ready-for-dev, in-progress, review, done
-- Epics: backlog, in-progress, done
-- Retrospectives: optional, done
-  </output>
-  <ask>How should these be corrected?
-  {{#each invalid_entries}}
-  {{@index}}. {{key}}: "{{status}}" → [select valid status]
-  {{/each}}
-
-Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue without fixing:</ask>
-<check if="user provided corrections">
-<action>Update sprint-status.yaml with corrected values</action>
-<action>Re-parse the file with corrected statuses</action>
-</check>
-</check>
-
-<action>Detect risks:</action>
-
-- IF any story has status "review": suggest `/rihal-workflows:code-review`
-- IF any story has status "in-progress" AND no stories have status "ready-for-dev": recommend staying focused on active story
-- IF all epics have status "backlog" AND no stories have status "ready-for-dev": prompt `/rihal-workflows:create-story`
-- IF `last_updated` timestamp is more than 7 days old (or `last_updated` is missing, fall back to `generated`): warn "sprint-status.yaml may be stale"
-- IF any story key doesn't match an epic pattern (e.g., story "5-1-..." but no "epic-5"): warn "orphaned story detected"
-- IF any epic has status in-progress but has no associated stories: warn "in-progress epic has no stories"
-  </step>
+<step n="2" goal="Read and parse sprint artifacts">
+  <action>Glob `{phase_dir}/*-SPRINT.md` — collect all sprint plan files</action>
+  <action>Glob `{phase_dir}/*-SUMMARY.md` — collect all sprint summary files</action>
+  <check if="no SPRINT.md files found">
+    <output>❌ No sprint files found in `{phase_dir}`.
+Run `/rihal-plan {current_phase}` to create sprint plans.</output>
+    <action>Exit workflow</action>
+  </check>
+  <action>For each SPRINT.md: parse YAML frontmatter to extract `id`, `sprint`, `status` (if present), `wave`, `autonomous`, `must_haves.truths`, `must_haves.artifacts`</action>
+  <action>For each SUMMARY.md: parse YAML frontmatter to extract `sprint`, `status` (complete/in_progress/blocked), `commit`</action>
+  <action>Build sprint inventory: match each SPRINT.md to its SUMMARY.md by sprint ID</action>
+  <action>Classify each sprint:
+    - `done` if a SUMMARY.md exists with `status: complete`
+    - `in_progress` if a SUMMARY.md exists with `status: in_progress` or `status: blocked`
+    - `todo` if no SUMMARY.md exists
+  </action>
+  <action>Count: `count_todo`, `count_in_progress`, `count_done`, `count_total`</action>
+  <action>Detect risks:
+    - IF any sprint is `in_progress` with `status: blocked` in SUMMARY.md: warn "blocked sprint detected"
+    - IF all sprints are `todo` and phase has been started: warn "no sprints have been executed yet"
+    - IF `count_done == count_total`: flag as "all sprints complete — consider /rihal-verify-work"
+    - IF count_in_progress > 1: warn "multiple sprints in progress simultaneously"
+  </action>
+</step>
 
 <step n="3" goal="Select next action recommendation">
   <action>Pick the next recommended workflow using priority:</action>
-  <note>When selecting "first" story: sort by epic number, then story number (e.g., 1-1 before 1-2 before 2-1)</note>
-  1. If any story status == in-progress → recommend `dev-story` for the first in-progress story
-  2. Else if any story status == review → recommend `code-review` for the first review story
-  3. Else if any story status == ready-for-dev → recommend `dev-story`
-  4. Else if any story status == backlog → recommend `create-story`
-  5. Else if any retrospective status == optional → recommend `retrospective`
-  6. Else → All implementation items done; congratulate the user - you both did amazing work together!
-  <action>Store selected recommendation as: next_story_id, next_workflow_id, next_agent (SM/DEV as appropriate)</action>
+  1. If any sprint status == in_progress (blocked) → recommend `/rihal-debug` for the blocked sprint
+  2. Else if any sprint status == in_progress → recommend `/rihal-execute {current_phase}` for first in-progress sprint
+  3. Else if any sprint status == todo → recommend `/rihal-execute {current_phase}` for first todo sprint
+  4. Else if count_done == count_total → recommend `/rihal-verify-work`
+  5. Else → All sprints done; congratulate the user — recommend `/rihal-complete-milestone`
+  <action>Store selected recommendation as: `next_workflow_id`, `next_sprint_id`</action>
 </step>
 
 <step n="4" goal="Display summary">
   <output>
-## 📊 Sprint Status
+## 📊 Sprint Status — Phase {current_phase}
 
-- Project: {{project}} ({{project_key}})
-- Tracking: {{tracking_system}}
-- Status file: {sprint_status_file}
+- Project: {project_name}
+- Phase dir: `{phase_dir}`
 
-**Stories:** backlog {{count_backlog}}, ready-for-dev {{count_ready}}, in-progress {{count_in_progress}}, review {{count_review}}, done {{count_done}}
+**Sprints:** todo {count_todo}, in-progress {count_in_progress}, done {count_done} / {count_total} total
 
-**Epics:** backlog {{epic_backlog}}, in-progress {{epic_in_progress}}, done {{epic_done}}
+| Sprint | Status | Artifacts |
+|--------|--------|-----------|
+{{#each sprints}}
+| {{sprint}} | {{status}} | {{#if summary_exists}}SUMMARY.md ✓{{else}}—{{/if}} |
+{{/each}}
 
-**Next Recommendation:** /rihal-workflows:{{next_workflow_id}} ({{next_story_id}})
+**Next Recommendation:** {{next_workflow_id}}{{#if next_sprint_id}} (sprint {{next_sprint_id}}){{/if}}
 
 {{#if risks}}
 **Risks:**
 {{#each risks}}
-
 - {{this}}
-  {{/each}}
-  {{/if}}
+{{/each}}
+{{/if}}
 
   </output>
   </step>
@@ -160,29 +134,26 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 <step n="5" goal="Offer actions">
   <ask>Pick an option:
 1) Run recommended workflow now
-2) Show all stories grouped by status
-3) Show raw sprint-status.yaml
+2) Show all sprints grouped by status
+3) List SPRINT.md files in phase directory
 4) Exit
 Choice:</ask>
 
   <check if="choice == 1">
-    <output>Run `/rihal-workflows:{{next_workflow_id}}`.
-If the command targets a story, set `story_key={{next_story_id}}` when prompted.</output>
+    <output>Run `{{next_workflow_id}}`.</output>
   </check>
 
   <check if="choice == 2">
     <output>
-### Stories by Status
-- In Progress: {{stories_in_progress}}
-- Review: {{stories_in_review}}
-- Ready for Dev: {{stories_ready_for_dev}}
-- Backlog: {{stories_backlog}}
-- Done: {{stories_done}}
+### Sprints by Status
+- In Progress: {{sprints_in_progress}}
+- Todo: {{sprints_todo}}
+- Done: {{sprints_done}}
     </output>
   </check>
 
   <check if="choice == 3">
-    <action>Display the full contents of {sprint_status_file}</action>
+    <action>List all *-SPRINT.md files found in {phase_dir} with their IDs and wave numbers</action>
   </check>
 
   <check if="choice == 4">
@@ -195,18 +166,14 @@ If the command targets a story, set `story_key={{next_story_id}}` when prompted.
 <!-- ========================= -->
 
 <step n="20" goal="Data mode output">
-  <action>Load and parse {sprint_status_file} same as Step 2</action>
+  <action>Load and classify sprints same as Step 2</action>
   <action>Compute recommendation same as Step 3</action>
   <template-output>next_workflow_id = {{next_workflow_id}}</template-output>
-  <template-output>next_story_id = {{next_story_id}}</template-output>
-  <template-output>count_backlog = {{count_backlog}}</template-output>
-  <template-output>count_ready = {{count_ready}}</template-output>
+  <template-output>next_sprint_id = {{next_sprint_id}}</template-output>
+  <template-output>count_todo = {{count_todo}}</template-output>
   <template-output>count_in_progress = {{count_in_progress}}</template-output>
-  <template-output>count_review = {{count_review}}</template-output>
   <template-output>count_done = {{count_done}}</template-output>
-  <template-output>epic_backlog = {{epic_backlog}}</template-output>
-  <template-output>epic_in_progress = {{epic_in_progress}}</template-output>
-  <template-output>epic_done = {{epic_done}}</template-output>
+  <template-output>count_total = {{count_total}}</template-output>
   <template-output>risks = {{risks}}</template-output>
   <action>Return to caller</action>
 </step>
@@ -215,47 +182,33 @@ If the command targets a story, set `story_key={{next_story_id}}` when prompted.
 <!-- Validate mode -->
 <!-- ========================= -->
 
-<step n="30" goal="Validate sprint-status file">
-  <action>Check that {sprint_status_file} exists</action>
+<step n="30" goal="Validate sprint artifacts">
+  <action>Check that `.rihal/state.json` exists and contains `current_phase`</action>
   <check if="missing">
     <template-output>is_valid = false</template-output>
-    <template-output>error = "sprint-status.yaml missing"</template-output>
-    <template-output>suggestion = "Run sprint-planning to create it"</template-output>
+    <template-output>error = "state.json missing or current_phase not set"</template-output>
+    <template-output>suggestion = "Run /rihal-new-project to initialize"</template-output>
     <action>Return</action>
   </check>
 
-<action>Read and parse {sprint_status_file}</action>
-
-<action>Validate required metadata fields exist: generated, project, project_key, tracking_system, story_location (last_updated is optional for backward compatibility)</action>
-<check if="any required field missing">
-<template-output>is_valid = false</template-output>
-<template-output>error = "Missing required field(s): {{missing_fields}}"</template-output>
-<template-output>suggestion = "Re-run sprint-planning or add missing fields manually"</template-output>
-<action>Return</action>
-</check>
-
-<action>Verify development_status section exists with at least one entry</action>
-<check if="development_status missing or empty">
-<template-output>is_valid = false</template-output>
-<template-output>error = "development_status missing or empty"</template-output>
-<template-output>suggestion = "Re-run sprint-planning or repair the file manually"</template-output>
-<action>Return</action>
-</check>
-
-<action>Validate all status values against known valid statuses:</action>
-
-- Stories: backlog, ready-for-dev, in-progress, review, done (legacy: drafted)
-- Epics: backlog, in-progress, done (legacy: contexted)
-- Retrospectives: optional, done
-  <check if="any invalid status found">
-  <template-output>is_valid = false</template-output>
-  <template-output>error = "Invalid status values: {{invalid_entries}}"</template-output>
-  <template-output>suggestion = "Fix invalid statuses in sprint-status.yaml"</template-output>
-  <action>Return</action>
+  <action>Scan `{phase_dir}/*-SPRINT.md`</action>
+  <check if="no SPRINT.md files found">
+    <template-output>is_valid = false</template-output>
+    <template-output>error = "No SPRINT.md files found in phase directory"</template-output>
+    <template-output>suggestion = "Run /rihal-plan {current_phase} to create sprint plans"</template-output>
+    <action>Return</action>
   </check>
 
-<template-output>is_valid = true</template-output>
-<template-output>message = "sprint-status.yaml valid: metadata complete, all statuses recognized"</template-output>
+  <action>Verify each SPRINT.md has valid YAML frontmatter with required fields: `id`, `sprint`, `phase`</action>
+  <check if="any required field missing">
+    <template-output>is_valid = false</template-output>
+    <template-output>error = "SPRINT.md missing required frontmatter field(s): {{missing_fields}}"</template-output>
+    <template-output>suggestion = "Re-run /rihal-plan or repair the file manually"</template-output>
+    <action>Return</action>
+  </check>
+
+  <template-output>is_valid = true</template-output>
+  <template-output>message = "Sprint artifacts valid: {{count_total}} SPRINT.md files found, {{count_done}} complete"</template-output>
 </step>
 
 </workflow>

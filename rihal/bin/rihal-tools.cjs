@@ -866,8 +866,25 @@ function cmdInitExecute(rawArgs) {
         break;
       }
     }
+    // #819/#829 — if no exact match, try glob for <N>-* and <padded>-* phase dirs
+    if (!phaseDir) {
+      const phaseNumInt = parseInt(target, 10);
+      if (!Number.isNaN(phaseNumInt)) {
+        const phasesRoot = path.join(PLANNING_DIR, 'phases');
+        const padded = String(phaseNumInt).padStart(2, '0');
+        if (fs.existsSync(phasesRoot)) {
+          for (const entry of fs.readdirSync(phasesRoot)) {
+            if (entry === String(phaseNumInt) || entry.startsWith(`${phaseNumInt}-`) || entry.startsWith(`${padded}-`)) {
+              const candidate = path.join(phasesRoot, entry);
+              if (fs.statSync(candidate).isDirectory()) { phaseDir = candidate; break; }
+            }
+          }
+        }
+      }
+    }
     if (phaseDir) {
-      const planFiles = walkFiles(phaseDir).filter((f) => path.basename(f) === 'SPRINT.md' || path.basename(f) === 'PLAN.md');
+      // #819/#829 — match *-SPRINT.md and *-PLAN.md patterns, not just SPRINT.md/PLAN.md
+      const planFiles = walkFiles(phaseDir).filter((f) => /(?:^|-)(SPRINT|PLAN)\.md$/i.test(path.basename(f)));
       plans = planFiles.map((f) => {
         const text = fs.readFileSync(f, 'utf8');
         const { frontmatter } = parseFrontmatter(text);
@@ -7139,6 +7156,16 @@ async function main() {
       case 'milestone-health':
         result = cmdMilestoneHealth();
         break;
+      case 'health': {
+        // Closes #836 — top-level health check so agents can call
+        // `rihal-tools.cjs health` directly without the CLI wrapper.
+        // Returns a combined snapshot: milestone health + state snapshot + project status.
+        const mh = cmdMilestoneHealth();
+        const ss = cmdStateSnapshot();
+        const ps = cmdProjectStatus();
+        result = { ok: mh.ok && ss.ok, milestone_health: mh, state: ss, project: ps };
+        break;
+      }
       case 'version':
         console.log(readPackageVersion());
         return;
