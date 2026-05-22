@@ -416,15 +416,15 @@ Only after showing overlap results (or skipping them), show the execute prompt.
 Extract from INIT JSON:
 
 ```bash
-_rihal_field() { node -e "const o=JSON.parse(process.argv[1]); const v=o[process.argv[2]]; process.stdout.write(v==null?'':String(v))" "$1" "$2"; }
-STATE_PATH=$(_rihal_field "$INIT" state_path)
-ROADMAP_PATH=$(_rihal_field "$INIT" roadmap_path)
-REQUIREMENTS_PATH=$(_rihal_field "$INIT" requirements_path)
-RESEARCH_PATH=$(_rihal_field "$INIT" research_path)
-VERIFICATION_PATH=$(_rihal_field "$INIT" verification_path)
-UAT_PATH=$(_rihal_field "$INIT" uat_path)
-CONTEXT_PATH=$(_rihal_field "$INIT" context_path)
-REVIEWS_PATH=$(_rihal_field "$INIT" reviews_path)
+_rcode_field() { node -e "const o=JSON.parse(process.argv[1]); const v=o[process.argv[2]]; process.stdout.write(v==null?'':String(v))" "$1" "$2"; }
+STATE_PATH=$(_rcode_field "$INIT" state_path)
+ROADMAP_PATH=$(_rcode_field "$INIT" roadmap_path)
+REQUIREMENTS_PATH=$(_rcode_field "$INIT" requirements_path)
+RESEARCH_PATH=$(_rcode_field "$INIT" research_path)
+VERIFICATION_PATH=$(_rcode_field "$INIT" verification_path)
+UAT_PATH=$(_rcode_field "$INIT" uat_path)
+CONTEXT_PATH=$(_rcode_field "$INIT" context_path)
+REVIEWS_PATH=$(_rcode_field "$INIT" reviews_path)
 ```
 
 ## 7.5. Verify Nyquist Artifacts

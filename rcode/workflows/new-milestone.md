@@ -162,7 +162,7 @@ Edit `.planning/STATE.md` in place. Set header + Current Position:
 
 ```yaml
 ---
-rihal_state_version: 1.0
+rcode_state_version: 1.0
 milestone: v[X.Y]
 milestone_name: [Name]
 status: defining_requirements

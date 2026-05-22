@@ -72,10 +72,10 @@ git log --oneline --pretty=format:'%s' -- .rcode rcode/ | head -5
 ```
 
 Extract:
-- **rihal_commits**: count of commits on .rcode or rcode paths
+- **rcode_commits**: count of commits on .rcode or rcode paths
 - **recent_commits**: last 5 commit messages
 
-If `.git/` does not exist, set `rihal_commits` = 0 and omit recent_commits from output.
+If `.git/` does not exist, set `rcode_commits` = 0 and omit recent_commits from output.
 
 ## Step 5 — Format and print output
 
