@@ -24,6 +24,14 @@ External contacts with decision authority. Client name, role, comm channel, resp
 
 <!-- Add entries here -->
 
+### Hanzla Habib — solo builder / maintainer / sole decision authority
+
+- **Owns:** every architectural call, brand surface, release cadence, and dogfeed verdict
+- **Comm:** GitHub (`@hanzlahabib`) for issues/PRs; direct for everything else
+- **Response cadence:** same-day on active work; rcode is a solo side-project shipped in dialogue with Claude
+- **Time zone:** GMT+5 (PK) / GMT+4 (Oman) overlap
+- **Notes:** rcode is built *with* Claude, not just *for* it — the methodology shipped here is the one Hanzla uses to build rcode itself. Every workflow, agent, and skill was designed in dialogue with the same LLM users will be running.
+
 ### npm users — `@hanzlaa/rcode` consumers
 
 - **Owns:** real-world feedback on whether rcode reduces context loss in their projects

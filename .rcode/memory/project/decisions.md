@@ -23,6 +23,46 @@ Append-only. Newest at top. Each entry: date, decision, rationale, alternatives 
 
 <!-- Append new decisions above this line -->
 
+### 2026-05-20 — Hard-break v4.0.0 rebrand (rihal → rcode)
+
+**Decision:** Ship the `rihal` → `rcode` rename as a single breaking v4.0.0 release with no rename shim, no compatibility aliases. Conventional-commits `!` marker on the release commit (`304eebc`).
+**Rationale:** Pre-1.0 user base is small; carrying a shim doubles the maintenance surface. A clean break forces every user to re-install once and removes ambiguity in skill/command discovery.
+**Alternatives considered:** Dual-publish under both names (rejected: install-time confusion, two doc sets). Soft rename with deprecation (rejected: drag, never finishes).
+**Who decided:** Hanzla, solo.
+**Reversibility:** One-way door — v3.x stays on npm but is unsupported.
+
+### 2026-05-20 — File-shipping installer over agent-framework runtime
+
+**Decision:** rcode is shipped as **files** (folders, markdown, slash commands) installed into the user's IDE config dirs. No multi-agent harness, no orchestrator process, no vector DB, no LangChain/AutoGen at runtime.
+**Rationale:** The IDE already provides the agent runtime. Anything extra is weight the user has to debug.
+**Alternatives considered:** Run a daemon orchestrator (rejected: another process to babysit). Ship as a library + framework (rejected: opinions leak into user code).
+**Who decided:** Hanzla; established at project inception, re-confirmed during v4 release prep.
+**Reversibility:** One-way door — the whole product identity rests on this.
+
+### 2026-05-20 — Single agent reads the structure, not multi-agent dispatch
+
+**Decision:** Default flow is one agent navigating folders. Multi-agent only via explicit `/rcode-council` / `/rcode-execute` parallel waves.
+**Rationale:** Multi-agent demos look good but cost tokens linearly and fail unpredictably. A single agent reading a well-organised filesystem already has parallelism via tool calls.
+**Alternatives considered:** Always-on multi-agent dispatch (rejected: cost + flakiness).
+**Who decided:** Hanzla.
+**Reversibility:** Easy — council/execute paths exist when truly needed.
+
+### 2026-05-20 — Markdown over JSON for configuration & instructions
+
+**Decision:** Skills, workflows, agents, and memory all live as markdown with optional YAML frontmatter. JSON only for machine state (`state.json`, `team.yaml` is YAML).
+**Rationale:** Humans read and edit markdown without tooling; LLMs already parse it natively. JSON for configs makes diff review hostile.
+**Alternatives considered:** Pure JSON (rejected: unreadable diffs). TOML (rejected: extra dialect for no win).
+**Who decided:** Hanzla.
+**Reversibility:** Hard — would require rewriting every skill/workflow.
+
+### 2026-05-15 — Hyphen-prefix slash commands (`/rcode-*`) over colon namespace
+
+**Decision:** Public slash commands use `rcode-*` (hyphen) rather than `rcode:*` (colon).
+**Rationale:** Cross-IDE compatibility — Cursor and Gemini surfaces don't all parse the colon form consistently. Hyphen is universal.
+**Alternatives considered:** Colon namespace (rejected per cross-IDE testing during v3.6.x).
+**Who decided:** Hanzla after dogfeed sessions.
+**Reversibility:** Hard once published — users have muscle memory.
+
 ### 2026-04-26 — Plain English over jargon in flag names
 
 **Decision:** Use `--attack` rather than `--adversarial` and `--edge-cases` rather than `--edge-case-hunter` for code-review modes.
