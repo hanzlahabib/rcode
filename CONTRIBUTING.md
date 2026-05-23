@@ -331,6 +331,18 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `references` — files inside `rcode/references/` (extracting agent playbooks to references)
 - `kanban` — `/rcode-kanban` orchestration board workflow and surfaces
 - `orchestrator` — orchestrator panel, SSE streaming, session persistence
+- `orchpanel` — orchestrator panel UI and SSE surface
+- `status` — status reporting surfaces and commands
+- `bin` — `rcode/bin/` scripts and CLI helpers
+- `brain` — `rcode/brain/` cross-project standards content
+- `dogfeed` — dogfeed workflow and self-test gates (alias for `dogfood` at commit scope)
+- `new-project` — new-project scaffold workflow and templates
+- `package` — `package.json` version, scripts, metadata
+- `rcode-tools` — `rcode/bin/rcode-tools.cjs` subcommands and tooling
+- `rihal-tools` — legacy rihal-tools scope (pre-v4 rename); accepted for backward compatibility
+- `team` — `rcode/team.yaml` and roster-level changes
+- `usp` — unique selling-point content and positioning surfaces
+- `v4` — v4.0.0 migration artifacts, rename cascades, and version-gate changes
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
