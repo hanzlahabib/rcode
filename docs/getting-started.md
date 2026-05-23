@@ -9,10 +9,10 @@ A 5-minute guide to installing and running your first command.
 In any project directory:
 
 ```bash
-npx @hanzlaa/rcode install
+pnpm dlx @hanzlaa/rcode install
 ```
 
-Restart your IDE (Claude Code, Cursor, or Gemini CLI). All `/rcode-*` commands now appear when you type `/`.
+Restart your IDE (Claude Code, Cursor, Gemini CLI, VS Code, Antigravity, or Windsurf). All `/rcode-*` commands now appear when you type `/`.
 
 ---
 

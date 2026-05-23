@@ -2,7 +2,7 @@
 
 The Memory Bank is rcode's structured, checked-in project memory. It is the differentiator: a place where AI agents read context first and write to as work happens, so context survives session resets, team changes, and AI memory limits.
 
-This document specifies the structure, semantics, and integration points. The implementation lands in Phase 3 of the rcode plan.
+This document specifies the structure, semantics, and integration points. The implementation shipped in Phase 3 and is live as of v4.0.0 — rcode itself now ships with a populated Memory Bank at `.rcode/memory/` (see commits `da20232`, `817a937`).
 
 ---
 
@@ -154,12 +154,13 @@ A typical session loads ~5K tokens of Memory Bank context and is fully oriented 
 
 ---
 
-## Phase 3 deliverables (forward reference)
+## Phase 3 — shipped in v4.0.0
 
-When Phase 3 completes, this spec becomes the implemented system. Acceptance:
-- A fresh repo running `/rcode-memory-init` produces the directory structure above
-- The Diwan dashboard renders a `/memory` view with file tree + previews
-- Distillates regenerate when sources change
-- All Phase 5 and 6 skills declare and honour their Memory Bank hooks
+The spec above is implemented and live. Verified deliverables:
 
-This spec is the contract Phase 3 implements against.
+- Running `/rcode-memory-init` on a fresh repo produces the directory structure above.
+- The Diwan dashboard renders a `/memory` view with file tree + previews.
+- Distillates regenerate from sources via `/rcode-memory-distill`. The rcode repo itself ships `distillates/project.distillate.md` (6.1K) and `distillates/stack.distillate.md` (2.6K) as canonical examples.
+- Phase 5 and 6 skills declare and honour their Memory Bank hooks (see the integration table above).
+
+This file is now the reference doc for the live system.

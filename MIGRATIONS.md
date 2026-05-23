@@ -6,6 +6,38 @@ Every renamed, merged, or dropped surface across the rcode improvement programme
 
 ---
 
+## v3 → v4 (2026-05-23) — hard break, clean cutover
+
+v4.0.0 is a **hard rename** from the legacy `rihal` branding to `rcode`. There is no auto-migration path. There are also no existing users to break — v4 ships as a clean cutover.
+
+### What changed
+
+| Surface | v3 | v4 |
+|---|---|---|
+| Project directory | `.rihal/` | `.rcode/` |
+| Slash command prefix | `/rihal-*` | `/rcode-*` |
+| Agent prefix | `rihal-*` | `rcode-*` |
+| Skill prefix | `rihal-*` | `rcode-*` |
+| Colon-style slash | `/rihal:foo` | `/rcode-foo` (hyphen only) |
+| Install command | `npx @hanzlaa/rcode install` | `pnpm dlx @hanzlaa/rcode install` |
+| Memory Bank | Skill primitives existed, source bank was empty | rcode now ships with a populated Memory Bank under `.rcode/memory/` (commits `da20232`, `817a937`) |
+| Brain pull | Scaffolded with placeholders | `rcode-tools brain pull` working end-to-end |
+
+### What you do
+
+If you have a v3 install in a project, treat it as uninstalled. Either:
+
+1. **Fresh install** — `rm -rf .rihal/` and run `pnpm dlx @hanzlaa/rcode install`. Re-run `/rcode-init`. Re-create planning artifacts.
+2. **Salvage** — copy any hand-written content out of `.rihal/RIHLA.md`, `.rihal/state.json`, and `.planning/` *before* removing `.rihal/`. Drop the copies into the v4 equivalents (`.rcode/RIHLA.md`, `.rcode/state.json`, `.planning/`).
+
+There is **no scripted migration**. The rename touched 1,000+ files; the safe path is a clean install.
+
+### Why no auto-migration
+
+There were no production v3 users — only the internal dogfood project (this repo). Shipping a migrator would have added 2,000+ lines of code that nobody would ever exercise. Hard cut + this MIGRATIONS section is the honest answer.
+
+---
+
 ## Slash commands
 
 ### Dropped (alias / pure duplicate)
@@ -44,7 +76,7 @@ The underlying workflow files remain — `code-review` delegates to them when th
 | `rcode-architect` | `rcode-waleed` (CTO + Chief Architect — already covered the full architecture scope) |
 | `rcode-tech-writer` | `rcode-noor` (Technical Writer & Presentation Lead — absorbed README, API docs, changelogs, migration guides, inline comments) |
 
-`team.yaml` count: 47 → 45.
+`team.yaml` count: 47 → 46.
 
 ### Capability changes
 

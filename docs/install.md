@@ -1,7 +1,7 @@
 # Installing rcode
 
 Package: [`@hanzlaa/rcode`](https://www.npmjs.com/package/@hanzlaa/rcode) on npm.
-Current version: **v3.4.4** (2026-04-27).
+Current version: **v4.0.0** (2026-05-23).
 
 ---
 
@@ -10,10 +10,10 @@ Current version: **v3.4.4** (2026-04-27).
 In any project directory (existing codebase OR empty folder):
 
 ```bash
-npx @hanzlaa/rcode install
+pnpm dlx @hanzlaa/rcode install
 ```
 
-That's it. One command ships everything. No `npm install -g` needed — npx runs the latest published version every time.
+That's it. One command ships everything. No global install needed — `pnpm dlx` runs the latest published version every time.
 
 ---
 
@@ -24,13 +24,11 @@ After the command completes, your project has:
 | Path | What's inside |
 |------|---------------|
 | `.rcode/` | Config, workflows, references, binary CLI (`rcode-tools.cjs`) |
-| `.claude/agents/` | 44 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
-| `.claude/commands/rcode/` | 93 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
-| `.claude/skills/` | 58 phrase-activated skills |
+| `.claude/agents/` | 46 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
+| `.claude/commands/rcode/` | 116 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
+| `.claude/skills/` | 85 phrase-activated skills |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
-| `rcode/brain/` | rcode standards pulled from upstream (M5 in-progress, currently scaffolds with placeholders) |
-
-Total install footprint: ~3.8 MB, 676 files.
+| `rcode/brain/` | rcode standards pulled from upstream — populated via `rcode-tools brain pull` |
 
 ---
 
@@ -46,7 +44,7 @@ Interactive installs also prompt you on `.planning/` specifically — you choose
 | `.rcode/state.json` | ✅ commit | Decisions log, roadmap pointer, blockers — this is your project's memory |
 | `.rcode/brain/sources.yaml` | ✅ commit | Brain source manifest — collaborators pull the same content |
 | `.planning/` | ✅ commit *(toggle-able)* | PRD, roadmap, sprints, SUMMARY.md — the actual thinking. Set `commit_planning: false` in config to gitignore instead. |
-| `.claude/` | ❌ ignored | Installed skills/agents/commands — 500+ files, regenerate with `rcode install` |
+| `.claude/` | ❌ ignored | Installed skills/agents/commands — regenerate with `rcode install` |
 | `.rcode/bin/`, `.rcode/workflows/`, `.rcode/references/`, `.rcode/commands/`, `.rcode/skills/` | ❌ ignored | Methodology files — re-installed on every update |
 | `.rcode/brain/rcode-github/`, `.rcode/brain/rcode-docs/`, `.rcode/brain/best-practices/` | ❌ ignored | Pulled rcode standards — refresh with `rcode brain pull` |
 | `.rcode/state.json.lock`, `.planning/debug/`, `.planning/_backup/` | ❌ ignored | Runtime noise |
@@ -67,11 +65,9 @@ node .rcode/bin/rcode-tools.cjs gitignore refresh
 
 `gitignore refresh` reads `.rcode/config.yaml` and rewrites the rcode-managed block in `.gitignore`. It's idempotent — safe to run any time, and leaves your non-rcode gitignore entries untouched.
 
-**Without the auto-managed `.gitignore`**, `git add .` would bloat your repo by 676 files (~3.8 MB) — methodology files that regenerate on every install.
-
 The rcode block in `.gitignore` is marked with a sentinel comment:
 ```
-# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====
+# ===== rcode-managed gitignore block (pnpm dlx @hanzlaa/rcode install) =====
 ```
 Re-running install is idempotent — it detects the marker and skips re-appending. Safe to customize entries inside the block, but edits can be overwritten if you ever `sed` it out.
 
@@ -85,15 +81,15 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 
 | Editor | `--ide` | What gets written | Status |
 |--------|---------|------------------|:------:|
-| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rcode/`, `.claude/skills/` | ✅ v2.x |
-| Cursor | `cursor` | `.cursor/rules/rcode-*.mdc` | ✅ v2.x |
-| Gemini CLI | `gemini` | `.gemini/rcode/` | ✅ v2.x |
-| VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v2.x |
-| VS Code native (no Claude Code extension) | `vscode` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
-| JetBrains (IntelliJ / PyCharm) | `jetbrains` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
-| Zed | `zed` | *not yet supported* | 🗓 v3.0 ([#182](https://github.com/hanzlahabib/rihal-code/issues/182)) |
+| Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rcode/`, `.claude/skills/` | ✅ v4 |
+| Cursor | `cursor` | `.cursor/rules/rcode-*.mdc` | ✅ v4 |
+| Gemini CLI | `gemini` | `.gemini/rcode/` | ✅ v4 |
+| VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v4 |
+| VS Code native | `vscode` | `.vscode/` integration | ✅ v4 |
+| Antigravity | `antigravity` | `.antigravity/` | ✅ v4 |
+| Windsurf | `windsurf` | `.windsurf/` | ✅ v4 |
 
-Passing an unsupported `--ide` value prints a clear error with workaround guidance (e.g. VS Code users are pointed at `--ide claude` if they have the Claude Code extension).
+Passing an unsupported `--ide` value prints a clear error with workaround guidance.
 
 ---
 
@@ -101,10 +97,10 @@ Passing an unsupported `--ide` value prints a clear error with workaround guidan
 
 ### Default — full install, guided mode
 ```bash
-npx @hanzlaa/rcode install
+pnpm dlx @hanzlaa/rcode install
 ```
 
-- All 44 agents, 93 commands, 58 skills
+- All 46 agents, 116 commands, 85 skills
 - Mode: `guided` (skills halt at menus for user input)
 - Language: English
 - Model profile: `balanced`
@@ -112,24 +108,26 @@ npx @hanzlaa/rcode install
 
 ### Different IDE
 ```bash
-npx @hanzlaa/rcode install --ide claude    # default
-npx @hanzlaa/rcode install --ide cursor
-npx @hanzlaa/rcode install --ide gemini
+pnpm dlx @hanzlaa/rcode install --ide claude       # default
+pnpm dlx @hanzlaa/rcode install --ide cursor
+pnpm dlx @hanzlaa/rcode install --ide gemini
+pnpm dlx @hanzlaa/rcode install --ide vscode
+pnpm dlx @hanzlaa/rcode install --ide antigravity
+pnpm dlx @hanzlaa/rcode install --ide windsurf
 ```
 
 ### Subset of skills — module-based install
 ```bash
-npx @hanzlaa/rcode install --module core         # council + quick-sync only
-npx @hanzlaa/rcode install --module execution --force
-npx @hanzlaa/rcode install --module discovery --force
+pnpm dlx @hanzlaa/rcode install --module core         # council + quick-sync only
+pnpm dlx @hanzlaa/rcode install --module execution --force
+pnpm dlx @hanzlaa/rcode install --module discovery --force
 ```
 
 Use `--force` when adding a second module on top of an existing install (skips the "already installed" check).
 
 ### Pin a specific version
 ```bash
-npx @hanzlaa/rcode@2.1.0 install
-npx @hanzlaa/rcode@2.0.0 install
+pnpm dlx @hanzlaa/rcode@4.0.0 install
 ```
 
 Version-pinned installs are reproducible — collaborators on the same repo get the same skills + agents.
@@ -170,7 +168,7 @@ If this is a new project, start with:
 ## Updating
 
 ```bash
-npx @hanzlaa/rcode update
+pnpm dlx @hanzlaa/rcode update
 ```
 
 That pulls the latest methodology + refreshes the brain content (see `rcode/brain/`). Your project's `.rcode/config.yaml` and `.rcode/state.json` are preserved — only the methodology files get refreshed.
@@ -178,7 +176,7 @@ That pulls the latest methodology + refreshes the brain content (see `rcode/brai
 To pin to a specific version on update:
 
 ```bash
-/rcode-update v2.0.0   # inside a Claude session
+/rcode-update v4.0.0   # inside a Claude session
 ```
 
 ---
@@ -216,7 +214,7 @@ Install Claude Code first: see https://claude.ai/code. rcode is a package you in
 ### Install succeeds but skills don't activate
 Make sure you're running in the directory that has `.claude/skills/`. Some IDEs require a restart after a new skill folder appears. Claude Code: `Cmd+Shift+P → Reload Window`.
 
-### `npx @hanzlaa/rcode` hangs at "resolving packages"
+### `pnpm dlx @hanzlaa/rcode` hangs at "resolving packages"
 npm registry mirror issue. Try `npm config set registry https://registry.npmjs.org/` then re-run.
 
 ### Collaborator on the same repo sees different skills
@@ -227,21 +225,9 @@ Not yet supported. Re-install with only the modules you want via `--module` flag
 
 ---
 
-## Legacy install command (still works)
-
-The legacy binary name `rcode` is kept as an alias for backward compatibility with older docs:
-
-```bash
-npx rcode install     # works, same as @hanzlaa/rcode install
-```
-
-New docs and CI should prefer `npx @hanzlaa/rcode install`.
-
----
-
 ## Next
 
-- Read [`docs/what-is-rcode.md`](what-is-rcode.md) for the product story.
+- Read [`docs/what-is-rcode-code.md`](what-is-rcode-code.md) for the product story.
 - Read [`docs/TIERS.md`](TIERS.md) to pick what to try first.
-- Read [`docs/ROADMAP.md`](ROADMAP.md) to see where this is going (v3 MCP server on the horizon).
+- Read [`docs/ROADMAP.md`](ROADMAP.md) to see where this is going.
 - If you want to contribute, read [`CONTRIBUTING.md`](../CONTRIBUTING.md) — per-role guide.

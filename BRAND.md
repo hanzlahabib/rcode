@@ -102,16 +102,18 @@ All personas stay. None are dropped. Each has a clear engineering or org-pattern
 |---|---|---|
 | **Ahmed Hassani** | Technology & Development Director | Multi-team coordination, executive alignment |
 | **Nasser (ناصر)** | Engineering Manager | Team operations, growth plans, performance feedback |
-| **Raees (رئيس)** | Project Orchestrator | Dispatching work to specialists, sequencing phases |
 
-### Special
+### Special (skill-only, not in `team.yaml`)
 
 | Persona | Role | When to invoke |
 |---|---|---|
 | **Majlis (مجلس)** | Multi-agent council | Cross-domain questions, formal team consultation |
 | **Dalil (دليل)** | Codebase Scout | Repo discovery, structured codebase audits |
+| **Raees (رئيس)** | Project Orchestrator | Dispatching work to specialists, sequencing phases |
 
-Plus the 26 functional sub-agents (planner, executor, verifier, debugger, code-fixer, etc.) used by workflows. These are utility, not personas.
+Majlis, Dalil, and Raees are not registered as first-class agents — they live as skills (`rcode-majlis-council`, `rcode-dalil-scout`, `rcode-raees-orchestrator`) that compose the 16 named personas above.
+
+The 16 named personas above plus 29 functional sub-agents (planner, executor, verifier, debugger, code-fixer, the auditor family, etc.) make up the 45 entries in `team.yaml`. Functional sub-agents are utility, not personas — they have no Arabic name and are invoked by workflows, not by `/rcode-discuss` or `/rcode-council`.
 
 ---
 
