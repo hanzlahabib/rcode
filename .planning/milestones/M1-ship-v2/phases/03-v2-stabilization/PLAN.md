@@ -15,12 +15,12 @@ milestone: M1
 - REQ-03-UNIFY: Single `rcode/` root — no v1/v2 split
 - REQ-03-INSTALLER: `cli/install.js` — one unified installer
 - REQ-03-CLEAN: Zero ghost agents, zero broken refs
-- REQ-03-NAMING: All BMAD/GSD references removed
+- REQ-03-NAMING: All prior-framework references removed
 - REQ-03-VERSION: Version bumped to 1.0.0-beta.0
 
 ## Approach
 
-Promote `rcode/v2/` to `rcode/` root. Merge install scripts. Audit and purge all ghost agents, orphan digests, broken includes. Rewrite git history to remove BMAD/GSD naming. Slim-split bloated agents.
+Promote `rcode/v2/` to `rcode/` root. Merge install scripts. Audit and purge all ghost agents, orphan digests, broken includes. Rewrite git history to remove prior-framework naming. Slim-split bloated agents.
 
 ## Delivered
 
@@ -32,7 +32,7 @@ Promote `rcode/v2/` to `rcode/` root. Merge install scripts. Audit and purge all
 - Missing sprint-planning workflow added (`09c1c55`)
 - 5 bloated agents slim-split (#103–#107)
 - `new-project.md` split 1460 → 3 files
-- 95 commits rewritten — BMAD/GSD refs removed
+- 95 commits rewritten — prior-framework refs removed
 - `output-realism.md` reference added
 - CHANGELOG: full v1.0.0-beta.0 release notes
 

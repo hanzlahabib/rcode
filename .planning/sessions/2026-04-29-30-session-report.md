@@ -52,7 +52,7 @@
 
 | Commit | What |
 |---|---|
-| `f074fbb` | Purged all GSD / BMAD inspiration-source naming from public surfaces (12 files including ADR rename + rewrite, CHANGELOG, docs, METHODOLOGY) |
+| `f074fbb` | Purged all prior-framework inspiration-source naming from public surfaces (12 files including ADR rename + rewrite, CHANGELOG, docs, METHODOLOGY) |
 | `3baa908` | STATE.md refreshed to current reality (was 2 weeks stale) |
 | `b082041` | TIERS.md counts current; RESEARCH.md template added (#148 + #348) |
 | `ccf17f8` | 4 skills `## Process` → `## Workflow` for compliance (#362) |
@@ -99,7 +99,7 @@ Owned-up failures, no spin:
 1. Initially closed **#200** by re-defining the bar instead of fixing — user pushed back, I reopened and shipped the actual `--strict` flag.
 2. Initially closed **#182** based on code-path presence without runtime test — user pushed back, smoke-tested, found `--yes` only installed claude not detected IDEs, reopened and properly fixed.
 3. **`git add -A`** swept 3 of the in-flight Phase 13 SPRINT files from another session into commit `f074fbb`. Won't repeat — explicit paths or `git add <file>` going forward.
-4. Hallucinated "Auto-advance GSD steps" wasn't a memory entry — surfaced from real GSD/BMAD names lingering in docs/CLI/CHANGELOG. All purged in `f074fbb`.
+4. Hallucinated "Auto-advance prior-framework steps" wasn't a memory entry — surfaced from prior-framework names lingering in docs/CLI/CHANGELOG. All purged in `f074fbb`.
 
 ---
 

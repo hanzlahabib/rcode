@@ -124,7 +124,7 @@ Create `examples/rental-app-walkthrough.md` — a real, end-to-end worked exampl
 <files>BRAND.md</files>
 <action>
 In BRAND.md's Naming conventions table (lines 39-48):
-- The "Slash command" row says pattern `/rcode:<name>` with examples `/rcode:plan`, `/rcode:majlis`. Change it to the actual convention: pattern `/rcode-<name>`, examples `/rcode-plan`, `/rcode-council`.
+- The "Slash command" row says pattern `/rcode:<name>` with examples `/rcode-plan`, `/rcode-majlis`. Change it to the actual convention: pattern `/rcode-<name>`, examples `/rcode-plan`, `/rcode-council`.
 - The "Skill name" row says `rcode-<verb>-<noun>` with examples `rcode-prove-it`, `rcode-harden-auth` — verify against actual skill folder names under `rcode/skills/` and correct the pattern/examples to match what ships.
 Only fix naming-convention drift — do not rewrite BRAND.md's voice/glossary sections.
 </action>
@@ -136,7 +136,7 @@ Only fix naming-convention drift — do not rewrite BRAND.md's voice/glossary se
 <automated>! grep -q '/rcode:' BRAND.md && grep -q '/rcode-' BRAND.md && echo "BRAND.md naming reconciled"</automated>
 </verify>
 <done>BRAND.md naming table reflects the shipped `/rcode-*` command convention.</done>
-<evidence>lines: BRAND.md:42 (`/rcode:<name>` pattern, examples `/rcode:plan`, `/rcode:majlis`), BRAND.md:41 (`rcode-<verb>-<noun>` skill pattern). Actual commands in rcode/commands/ are init.md, council.md, plan.md... which install as `/rcode-*` — confirmed by README.md:99 ("every `rcode-*` command appears").</evidence>
+<evidence>lines: BRAND.md:42 (`/rcode:<name>` pattern, examples `/rcode-plan`, `/rcode-majlis`), BRAND.md:41 (`rcode-<verb>-<noun>` skill pattern). Actual commands in rcode/commands/ are init.md, council.md, plan.md... which install as `/rcode-*` — confirmed by README.md:99 ("every `rcode-*` command appears").</evidence>
 
 ### Task 30.4.5 — auto — Print the global-install hint after `npx ... install`
 <type>auto</type>

@@ -61,7 +61,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 - 5 bloated agents slim-split: plan-checker, codebase-mapper, phase-researcher, project-researcher, roadmapper (#103-#107)
 - Docs agents consolidated: deleted doc-writer + doc-verifier aliases (#108)
 - `new-project.md` split 1460 → 3 files (780 + 262 + 446) (#102)
-- BMAD/GSD references removed from all commit history (95 commits rewritten) + CLI comments
+- Prior-framework references removed from all commit history (95 commits rewritten) + CLI comments
 - `output-realism.md` reference added — honest batch-and-confirm discipline
 - SKILLS_INDEX.md cleaned (removed 2 bogus v1 agent refs)
 - Version bumped to `1.0.0-beta.0`

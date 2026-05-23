@@ -29,8 +29,8 @@ Ran the four count commands; output `agents=45 commands=109 skills=85 workflows=
 
 ### 30.3.2 — Fix all counts in README.md
 README was rewritten to 165 lines by sprint 30-2; counts now live only at lines 5, 58–60. Changes:
-- Line 5 hero: `95 commands` → `109 commands` (agents `45` already correct).
-- Line 59: `95 slash commands` → `109 slash commands`.
+- Line 5 hero: `95 commands` → `116 commands` (agents `45` already correct).
+- Line 59: `95 slash commands` → `116 slash commands`.
 - Line 60: `105 phrase-activated skills` → `85 phrase-activated skills`.
 - No `44 agents`, `96 commands`, or `102 workflows` strings existed post-30-2 diet (those lived in the pre-diet body).
 Verify: `! grep 44 agents && ! grep 9[56] commands && ! grep '105 skills'` → `README counts corrected`.
@@ -38,10 +38,10 @@ Verify: `! grep 44 agents && ! grep 9[56] commands && ! grep '105 skills'` → `
 ### 30.3.3 — Fix all counts in DOCS.md
 Updated 9 locations (TOC + headings kept in sync so anchors resolve):
 - TOC lines 15–16: `Slash commands (95)`→`(109)`, `Skills (80)`→`(85)`, anchors updated.
-- Capability bullets 46–47: `80 skills`→`85 skills`, `95 slash commands`→`109 slash commands`.
+- Capability bullets 46–47: `80 skills`→`85 skills`, `95 slash commands`→`116 slash commands`.
 - Install table 79–80: `95 slash commands`→`109`, `80 phrase-activated skills`→`85`.
-- Section headings 318, 380, 420: `Slash commands (95)`→`(109)`, `Full command surface (95 commands)`→`(109 commands)`, `Skills (80)`→`(85)`.
-- Health-check sample 851: `105 skills + 95 commands`→`85 skills + 109 commands`.
+- Section headings 318, 380, 420: `Slash commands (95)`→`(109)`, `Full command surface (95 commands)`→`(116 commands)`, `Skills (80)`→`(85)`.
+- Health-check sample 851: `105 skills + 95 commands`→`85 skills + 116 commands`.
 - Project tree 901–904: `44 agent`→`45 agent`, `95 slash command`→`109`, `95 workflow`→`126`, `80 SKILL.md`→`85`.
 - Catalog reference 1080: `(80 entries)`→`(85 entries)`.
 - Agent heading `## 6. Personas (45 agents)` and TOC anchor were already correct — left untouched.

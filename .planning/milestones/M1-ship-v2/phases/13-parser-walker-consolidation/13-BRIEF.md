@@ -47,7 +47,7 @@ Read in order:
 ## Project rules that apply
 
 - All rules in `CLAUDE.md` (no AI attribution, no push without explicit approval, no `git add -A`, conventional commits, file size ≤1000 lines, etc.)
-- Auto-memory rules in `~/.claude/projects/-home-hanzla-development-rcode/memory/MEMORY.md` (no leading zeros, no GSD/BMAD references, dogfood the rcode flows, etc.)
+- Auto-memory rules in `~/.claude/projects/-home-hanzla-development-rcode/memory/MEMORY.md` (no leading zeros, no prior-framework references, dogfood the rcode flows, etc.)
 
 ## Suggested next command
 

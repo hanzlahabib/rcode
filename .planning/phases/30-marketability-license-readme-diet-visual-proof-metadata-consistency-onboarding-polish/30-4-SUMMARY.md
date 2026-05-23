@@ -49,7 +49,7 @@ convention.
 
 ### 30.4.4 — Reconcile BRAND.md naming
 - BRAND.md naming-conventions table corrected:
-  - Slash command row: pattern `/rcode:<name>` (examples `/rcode:plan`, `/rcode:majlis`)
+  - Slash command row: pattern `/rcode:<name>` (examples `/rcode-plan`, `/rcode-majlis`)
     → `/rcode-<name>` (examples `/rcode-plan`, `/rcode-council`).
   - Skill name row: pattern `rcode-<verb>-<noun>` (examples `rcode-prove-it`,
     `rcode-harden-auth`) → `rcode-<verb>-<noun>` (examples `rcode-auth-audit`,
