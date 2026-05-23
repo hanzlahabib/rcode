@@ -100,7 +100,7 @@ Passing an unsupported `--ide` value prints a clear error with workaround guidan
 pnpm dlx @hanzlaa/rcode install
 ```
 
-- All 46 agents, 116 commands, 85 skills
+- All 45 agents, 116 commands, 85 skills
 - Mode: `guided` (skills halt at menus for user input)
 - Language: English
 - Model profile: `balanced`

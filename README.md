@@ -13,7 +13,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.0.0 on npm. 30 automated tests, 45 agents, 116 commands, 85 skills. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.0.0 on npm. 339 automated tests across 58 files, 45 agents, 116 commands, 85 skills. Actively dogfooded on real projects every week.
 
 ---
 

@@ -39,11 +39,11 @@ CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for
 
 **Source:** [`rcode/skills/actions/4-implementation/rcode-ci/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-ci/SKILL.md) — 109 lines
 
-### `rcode-review`
+### `rcode-code-review`
 
 **Triggers:** `review this code`, `run`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-review/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-review/SKILL.md) — 44 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md) — 44 lines
 
 ### `rcode-correct-course`
 
