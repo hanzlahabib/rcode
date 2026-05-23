@@ -1,178 +1,129 @@
-# GitHub Labels Configuration
-# This file defines a streamlined label taxonomy for repository management
+# GitHub Labels Configuration for rcode
+# Curated taxonomy applied via the github-label-sync tool or repo settings.
+# 5 groups: priority, type, area, status, lifecycle.
 
-# # Priority Labels
-# - name: "priority: critical"
-#   color: "d73a4a"
-#   description: "Critical issues requiring immediate attention"
+# === Priority (urgency) ===
+- name: "priority: critical"
+  color: "b60205"
+  description: "Blocks release or breaks the product for many users"
 
-# - name: "priority: high"
-#   color: "ff6b35"
-#   description: "High priority issues"
+- name: "priority: high"
+  color: "d93f0b"
+  description: "Important — schedule for the next release"
 
-# - name: "priority: medium"
-#   color: "fbca04"
-#   description: "Medium priority issues"
+- name: "priority: medium"
+  color: "fbca04"
+  description: "Worth doing — schedule when time allows"
 
-# - name: "priority: low"
-#   color: "0e8a16"
-#   description: "Low priority issues"
-
-# # Status Labels
-# - name: "status: triage"
-#   color: "ededed"
-#   description: "Needs initial assessment"
-
-# - name: "status: backlog"
-#   color: "c5def5"
-#   description: "Approved and ready for development"
-
-# - name: "status: in-progress"
-#   color: "ff9500"
-#   description: "Currently being worked on"
-
-# - name: "status: blocked"
-#   color: "b60205"
-#   description: "Blocked by dependencies"
-
-# - name: "status: ready-for-review"
-#   color: "0052cc"
-#   description: "Ready for code review"
-
-# - name: "status: approved"
-#   color: "0e8a16"
-#   description: "Approved and ready for QA"
-
-# - name: "status: qa"
-#   color: "1d76db"
-#   description: "In quality assurance testing"
-
-# - name: "status: done"
-#   color: "28a745"
-#   description: "Completed and verified"
-
-# # Type Labels - Issue types
-# - name: "type: epic"
-#   color: "8B008B"
-#   description: "Contains high level features and should be created from the beginning of the project"
-
-# - name: "type: feature"
-#   color: "0052cc"
-#   description: "A functionality of an application regardless of the domain"
-
-# - name: "type: task"
-#   color: "9932CC"
-#   description: "A specific work to be done and is part of a feature in general"
-
-# - name: "type: bug"
-#   color: "d73a4a"
-#   description: "Something isn't working"
-
-# Development Area Labels
-- name: "area: fe"
-  color: "1d76db"
-  description: "Frontend (UI, components, client-side logic)"
-
-- name: "area: be"
+- name: "priority: low"
   color: "0e8a16"
-  description: "Backend (Server, APIs, database)"
+  description: "Nice to have — no urgency"
 
-- name: "area: ml"
-  color: "5319e7"
-  description: "Machine Learning (Modeling, feature engineering, evaluation)"
+# === Type (kind of work) ===
+- name: "type: bug"
+  color: "d73a4a"
+  description: "Something does not work as documented"
 
-- name: "area: mobile/android"
-  color: "ff7f50"
-  description: "Work related only to Android applications"
+- name: "type: enhancement"
+  color: "a2eeef"
+  description: "New feature or improvement to an existing feature"
 
-- name: "area: mobile/ios"
-  color: "ff69b4"
-  description: "Work related only to iOS applications"
-
-- name: "area: mobile/both"
-  color: "ffa500"
-  description: "Work related to both Android and iOS applications"
-
-- name: "area: security"
-  color: "b60205"
-  description: "Vulnerabilities, audits, fixes"
-
-# Category Labels
-- name: "category: design"
-  color: "f1c40f"
-  description: "Design, wireframes, mockups"
-
-- name: "category: ci/cd"
-  color: "0052cc"
-  description: "Deployment scripts, CI/CD, infrastructure"
-
-- name: "category: documentation"
+- name: "type: docs"
   color: "0075ca"
-  description: "Writing or updating documentation, guides, READMEs"
+  description: "Documentation, README, examples, comments"
 
-- name: "category: chores"
-  color: "8c8c8c"
-  description: "Maintenance, housekeeping, or non-feature work"
+- name: "type: refactor"
+  color: "5319e7"
+  description: "Code restructuring with no behaviour change"
 
-- name: "category: refactor"
-  color: "9932CC"
-  description: "Code restructuring or improvements without adding new functionality"
+- name: "type: perf"
+  color: "1d76db"
+  description: "Performance — speed, memory, token usage"
 
-# Module/Domain Labels (examples - customize based on your project)
-- name: "module: search"
-  color: "FF6347"
-  description: "Search module"
+- name: "type: security"
+  color: "ee0701"
+  description: "Security concern, vulnerability, hardening"
 
-- name: "module: chat"
-  color: "32CD32"
-  description: "Chat module"
+- name: "type: ci"
+  color: "f9d0c4"
+  description: "Continuous integration, GitHub Actions, tests"
 
-- name: "module: agents"
-  color: "4169E1"
-  description: "Agents module"
+- name: "type: chore"
+  color: "e1e4e8"
+  description: "Housekeeping — deps, configs, build scripts"
 
-- name: "module: ai-meet"
-  color: "FF8C00"
-  description: "AI Meet module"
+# === Area (which part of rcode) ===
+- name: "area: cli"
+  color: "c5def5"
+  description: "cli/ — installer, update, uninstall, doctor"
 
-# Effort Size Labels
-# - name: "size: xs"
-#   color: "c2e0c6"
-#   description: "Extra small effort (< 1 day)"
+- name: "area: workflows"
+  color: "c5def5"
+  description: "rcode/workflows/ — slash-command flows"
 
-# - name: "size: s"
-#   color: "c2e0c6"
-#   description: "Small effort (1-2 days)"
+- name: "area: skills"
+  color: "c5def5"
+  description: "rcode/skills/ — phrase-activated playbooks"
 
-# - name: "size: m"
-#   color: "fef2c0"
-#   description: "Medium effort (3-5 days)"
+- name: "area: agents"
+  color: "c5def5"
+  description: "rcode/agents/ — personas and workflow specialists"
 
-# - name: "size: l"
-#   color: "ff9500"
-#   description: "Large effort (1-2 weeks)"
+- name: "area: memory"
+  color: "c5def5"
+  description: "Memory Bank, distillates, .rcode/memory/"
 
-# - name: "size: xl"
-#   color: "d73a4a"
-#   description: "Extra large effort (> 2 weeks)"
+- name: "area: brain"
+  color: "c5def5"
+  description: "rcode/brain/ — external docs pull"
 
-# Special Labels
-- name: "good first issue"
-  color: "7057ff"
-  description: "Good for newcomers"
+- name: "area: dashboard"
+  color: "c5def5"
+  description: "Diwan dashboard at port 7717"
 
-- name: "help wanted"
-  color: "008672"
-  description: "Extra attention is needed"
+- name: "area: tests"
+  color: "c5def5"
+  description: "test/ — compliance, schema, behavioural"
 
-- name: "breaking change"
-  color: "b60205"
-  description: "Introduces breaking changes"
+# === Status (lifecycle within the issue tracker) ===
+- name: "status: needs-triage"
+  color: "fef2c0"
+  description: "Awaiting maintainer review and labelling"
+
+- name: "status: in-progress"
+  color: "0e8a16"
+  description: "Actively being worked on"
+
+- name: "status: blocked"
+  color: "e99695"
+  description: "Cannot proceed — waiting on something"
+
+- name: "status: needs-info"
+  color: "d4c5f9"
+  description: "Awaiting more details from reporter"
+
+- name: "status: ready-for-review"
+  color: "bfdadc"
+  description: "Implementation done, awaiting code review"
+
+# === Resolution (how it closed) ===
+- name: "wontfix"
+  color: "ffffff"
+  description: "Out of scope or working as designed"
 
 - name: "duplicate"
   color: "cfd3d7"
-  description: "This issue or pull request already exists"
+  description: "Already tracked in another issue"
 
-- name: "wontfix"
-  color: "ffffff"
-  description: "This will not be worked on"
+- name: "stale"
+  color: "cccccc"
+  description: "Auto-closed by stale-bot or manual triage"
+
+# === Community ===
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good starting point for new contributors"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Maintainer would welcome a PR"

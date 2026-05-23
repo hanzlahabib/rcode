@@ -3,6 +3,77 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.0.0 (2026-05-23) — open-source release, full `rihal` → `rcode` rename
+
+**BREAKING CHANGE.** Hard cutover from the internal Rihal Code brand to the public rcode open-source project. v3.x configs and installations are not auto-migrated. The project is now MIT-licensed and accepts public contributions.
+
+### Renamed
+
+- Source directory `rihal/` → `rcode/`; installed directory `.rihal/` → `.rcode/`
+- Binaries `rihal-tools.cjs` → `rcode-tools.cjs`, `rihal-hooks.cjs` → `rcode-hooks.cjs`
+- Slash commands `/rihal-*` → `/rcode-*` (116 commands)
+- All 45 agent and 85 skill names: `rihal-foo` → `rcode-foo`
+- Code identifiers: `RIHAL_DIR` → `RCODE_DIR`, `rihal_source_path` → `rcode_source_path`, `.rihalignore` → `.rcodeignore`
+- Brand `Rihal Code` → `rcode` in all prose
+
+Preserved intentionally: `hanzlahabib/rihal-code` GitHub repo URL, `https://rihal.om` (Omani company, unrelated), and the Arabic etymology terms `رحّال` / `طريقة رحال`.
+
+### Added
+
+- **`brain pull`** now works end-to-end against real external GitHub repos. Point `rcode/brain/sources.yaml` at any public or private repo and have its docs land under `.rcode/brain/<dest>/` on every install/update via git sparse-checkout. Verified against `anthropic-quickstarts`. (commit `adf6f7e`)
+- **Memory Bank populated with real content** for the rcode project itself: stack, decisions, glossary, stakeholders, milestones, known-issues. Lossless distillates regenerate via `/rcode-memory-distill` — currently ~2.2K tokens combined for the full bank. (commits `da20232`, `817a937`)
+- **`mode` field** promoted to top-level of `rcode-tools init` output so workflows do not need to dig into nested `config.*`. (`d4c4a59`)
+- **`state set` compatibility shim** routes agent-generated `state set current_phase N` calls to the real `state set-phase` subcommand. (`cdfac2a`)
+- **`roadmap update-plan-progress`** now accepts a 1-arg form (phase only) that scans the phase directory and infers progress from on-disk `*-SPRINT.md` / `*-SUMMARY.md` counts. (`cdfac2a`)
+- **CI badge** and **MIT license badge** in README.
+- **SECURITY.md**, **CODE_OF_CONDUCT.md** (Contributor Covenant 2.1).
+- New 6th USP section in `docs/USP.md`: pull any public GitHub docs repo into project context via `sources.yaml`.
+
+### Changed
+
+- README rewritten around solo-build framing, methodology-as-files, and anti-hype honesty. (`c987624`)
+- USP corrected: command count `109 → 116`, IDE list now reflects actual `SUPPORTED_IDES` (Claude, Cursor, Gemini, VS Code, Antigravity, Windsurf — no Codex), role breakdown corrected to `16 named personas + 29 workflow specialists`, install time updated from "60 seconds" to measured `~500ms`, "battle-tested production" softened to "dogfooded on real projects". (`f1a8f68`)
+- `team.yaml` synced with `rcode/agents/` source: 7 stale orphan entries removed, 2 missing entries added, `utility_agents:` duplicate block deleted. (`f480f11`)
+- `listInstalledAgents()` now scans `~/.claude/agents/` (Claude Code install location) instead of the never-populated `~/.rihal/agents/`. (`d4c4a59`)
+- `resolveStableSourcePath()` walks candidate dirs (global pnpm/npm, local `node_modules`) before falling back to `process.argv[1]`, so `rcode_source_path` in `config.yaml` survives temp `npx` installs. (`d4c4a59`)
+- `state.json` template now seeded with `__PROJECT_NAME__` placeholder substituted from `opts.projectName` during install. (`7af108d`)
+- `agent-manifest.csv` scanner now includes the source agents dir so the manifest is never empty on fresh install. (`9f7fa82`)
+- `cmdInitState` clears install-stub state entries when a real project init runs. (`aa3dc53`)
+- 9 source workflow files migrated from `.planning/config.json` to `.rcode/config.yaml` or `rcode-tools config` subcommand calls. (`c4775c4`)
+- `set-phase` deduplicates by `(name, number, id)` match instead of exact-name only, eliminating phantom duplicate phase entries. (`5870210`)
+- Health-check workflow Step 8 now prints a visible `SKIP` line for the no-active-phase case and adjusts the denominator instead of silently passing.
+- Documentation across `docs/`, `BRAND.md`, `MEMORY_BANK.md`, `MIGRATIONS.md` refreshed for v4 reality. (`6a42bd6`, `d905cb8`)
+
+### Fixed
+
+- **Greedy rename bug**: `rihal-codebase-mapper` had been corrupted to `rcodebase-mapper` by an over-broad `rihal-code → rcode` replacement during the rename batch. Fixed across 33 files. (in `4da7c1e`)
+- **Broken `brain pull` sparse-checkout**: `git clone --depth=1 --filter=blob:none --sparse` had an intermittent failure mode where git misread the URL as a local path. Split into `--no-checkout` + `sparse-checkout init` + `set` + `checkout`. (`adf6f7e`)
+- 25 source files had stale `/rcode:` colon-prefix slash commands instead of the project-standard `/rcode-` hyphen-prefix. (`11028b1`)
+- `rihal-sprint-status` workflow pointed at the non-existent `.rcode/config.json`; now reads `.rcode/config.yaml`. (`662de35`)
+- Guarded commit pattern in `new-project.md` no longer emits a false-positive "gitignored" message on the first run. (`8663434`)
+
+### Removed
+
+- All compatibility shims that read or write to legacy `.rihal/` paths. The hard cutover assumed zero existing users; reinstall from scratch if you were on v3.x.
+- Stale `_pycache_` directories now in `.gitignore`.
+
+### Migration from v3.x
+
+There is no automatic migration. Steps for a clean re-bootstrap:
+
+```bash
+rm -rf .rihal/ .claude/agents/rihal-* .claude/commands/rihal/ .claude/skills/rihal-*
+pnpm dlx @hanzlaa/rcode install
+```
+
+Your `.planning/` artefacts and Memory Bank under `.rihal/memory/` should be moved to `.rcode/memory/` manually before reinstall if you want to preserve them. The structure is identical; only the parent directory name changed.
+
+### Cumulative commit count since v3.6.20
+
+20 commits, 30/30 tests passing on every commit. Full `git log v3.6.20..v4.0.0` for the audit trail.
+
+---
+
 
 ## v3.6.14 (2026-05-19) — pre-release audit fixes
 
