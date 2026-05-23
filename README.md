@@ -152,7 +152,7 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 - **v4.0.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
-- **Test suite**: 30 tests, 100% pass on every release. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
+- **Test suite**: 339 automated tests across 58 files, 100% pass on every release. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
 - **Funding**: none. This is solo work. If your company wants commercial support, [email me](mailto:hanzla.dev@gmail.com).
 
