@@ -283,7 +283,7 @@ Started: 2026-03 · Shipped: 2026-05-16
 - scan.md and verify-work.md missing chains added
 - 6 thin workflow stubs created (create-prd, edit-prd, validate-prd, create-architecture, scaffold-project, retrospective)
 - help.md updated with 11 orphaned workflow entries
-- Also: init.md RIHLA.md recovery + execute.md add-tests offer (pre-phase fixes)
+- Also: init.md JOURNEY.md recovery + execute.md add-tests offer (pre-phase fixes)
 
 **Plans:**
 - 17-1-SPRINT.md → da5bf5a

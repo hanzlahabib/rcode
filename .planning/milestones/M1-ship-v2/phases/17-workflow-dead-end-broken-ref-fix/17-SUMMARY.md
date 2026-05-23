@@ -11,7 +11,7 @@ commit: TBD
 
 Closed all dead-end, broken-ref, and orphan gaps in `rcode/workflows/` surfaced by dogfood audit on 2026-05-01.
 
-Note: Two gaps were fixed before this phase was registered (init.md RIHLA.md recovery + execute.md add-tests offer). This phase closed the remaining 18.
+Note: Two gaps were fixed before this phase was registered (init.md JOURNEY.md recovery + execute.md add-tests offer). This phase closed the remaining 18.
 
 ## Files changed
 

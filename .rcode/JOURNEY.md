@@ -3,21 +3,21 @@
 
 **Written by:** /rihal-init
 **Date:** 2026-05-16
-**Project:** rihal-code
+**Project:** rcode
 **Detected state:** returning (reconfigured via --reset)
 
 ## At a glance
 
 - **Primary language:** JavaScript (Node.js, ESM + .cjs tooling)
-- **Framework signals:** CLI tool (`@hanzlaa/rcode` v3.5.0); dependency-free dashboard server on Node stdlib; Preact-based dashboard client (migration in progress)
+- **Framework signals:** CLI tool (`@hanzlaa/rcode` v4.0.0); dependency-free dashboard server on Node stdlib; Preact-based dashboard client (migration in progress)
 - **Git history:** 50 commits visible, all dated 2026-05-16 (shallow or recent history window)
-- **Top-level dirs:** `cli/`, `rihal/`, `server/`, `dist/`, `docs/`, `examples/`, `scripts/`, `.rihal/`
+- **Top-level dirs:** `cli/`, `rcode/`, `server/`, `dist/`, `docs/`, `examples/`, `scripts/`, `.rcode/`
 
 ## What's here
 
 Rihal Code (`rcode`) — an AI team methodology packaged as an npm tool. One install gives
 AI IDEs a persistent project brain: ~45 specialist agents, 116 commands, and a Memory Bank
-at `.rihal/`. Published on npm as `@hanzlaa/rcode` v3.5.x, tested with `node --test`.
+at `.rcode/`. Published on npm as `@hanzlaa/rcode` v4.0.0, tested with `node --test`.
 
 The full loop runs in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`.
 The Diwan dashboard (`npm run dashboard`) renders project state, decisions, and the Memory

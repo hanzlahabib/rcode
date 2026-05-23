@@ -31,7 +31,7 @@ writes the project baseline:
 
 ```
 .rcode/config.yaml          # language: en, profile: balanced
-.rcode/RIHLA.md             # project identity + conventions
+.rcode/JOURNEY.md             # project identity + conventions
 .planning/PROJECT.md        # one-paragraph definition
 .planning/ROADMAP.md        # empty phase skeleton
 ```

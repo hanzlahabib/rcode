@@ -20,7 +20,7 @@ Detects project state (new / existing / returning), asks for:
 - Model profile (quality, balanced, budget)
 - Branching strategy preference
 
-Creates `.rcode/config.yaml` and `.rcode/RIHLA.md` (project journey baseline).
+Creates `.rcode/config.yaml` and `.rcode/JOURNEY.md` (project journey baseline).
 
 **Related:** `/rcode-settings`, `/rcode-status`
 

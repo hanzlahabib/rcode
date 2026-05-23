@@ -27,7 +27,7 @@ Restart your IDE (Claude Code, Cursor, Gemini CLI, VS Code, Antigravity, or Wind
 2. What's your preferred communication language? (English, Urdu, Arabic)
 3. What's your model profile? (quality, balanced, budget)
 
-Creates `.rcode/config.yaml` and `.rcode/RIHLA.md` as your project baseline, then routes you to the right first action. For a greenfield project it routes into `/rcode-new-project` automatically — that's a sub-path `/rcode-init` calls for you, not a separate command you choose.
+Creates `.rcode/config.yaml` and `.rcode/JOURNEY.md` as your project baseline, then routes you to the right first action. For a greenfield project it routes into `/rcode-new-project` automatically — that's a sub-path `/rcode-init` calls for you, not a separate command you choose.
 
 ---
 

@@ -58,7 +58,7 @@ must_haves:
     - path: "rcode/workflows/help.md"
       provides: "11 orphaned workflow entries added"
   key_links:
-    - from: "init.md RIHLA.md gap"
+    - from: "init.md JOURNEY.md gap"
       to: "fixed in f1b30ac"
       why: "reference"
     - from: "execute.md add-tests gap"
@@ -78,7 +78,7 @@ Audit (2026-05-01) surfaced three classes of gaps in rcode/workflows/:
 - **Orphaned (11):** workflows that exist and work but appear in no routing table — undiscoverable
 
 Already fixed before this phase:
-- `init.md`: RIHLA.md missing on returning state (f1b30ac)
+- `init.md`: JOURNEY.md missing on returning state (f1b30ac)
 - `execute.md`: add-tests never offered at phase completion (prior commit)
 
 ## Wave 1 — Dead ends: append "On Completion" to 9 workflows

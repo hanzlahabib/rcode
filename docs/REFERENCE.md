@@ -36,7 +36,7 @@ No invented capabilities. Everything here is sourced directly from `rcode/comman
 
 | Command | Arguments | What it does |
 |---------|-----------|--------------|
-| `/rcode-init` | `[--reset] [--skip-scan]` | **Start here.** Configure rcode for this project — first command after install. Detects state, asks config questions, writes `.rcode/RIHLA.md`. Run once per project. |
+| `/rcode-init` | `[--reset] [--skip-scan]` | **Start here.** Configure rcode for this project — first command after install. Detects state, asks config questions, writes `.rcode/JOURNEY.md`. Run once per project. |
 | `/rcode-new-project` | `[--auto @document.md]` | Take an idea to a planned roadmap. Questioning → optional research → REQUIREMENTS → ROADMAP. |
 | `/rcode-new-milestone` | `[milestone-name] [--dry-run]` | Start a fresh milestone cycle — initializes ROADMAP, STATE, REQUIREMENTS for the next planning phase. |
 | `/rcode-from-template` | `<template-name> [--project-name "<name>"] [--force]` | Seed `.planning/` from a starter template (`saas-b2b` / `api-backend` / `mobile-app`). |

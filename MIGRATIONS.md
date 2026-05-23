@@ -28,7 +28,7 @@ v4.0.0 is a **hard rename** from the legacy `rihal` branding to `rcode`. There i
 If you have a v3 install in a project, treat it as uninstalled. Either:
 
 1. **Fresh install** — `rm -rf .rihal/` and run `pnpm dlx @hanzlaa/rcode install`. Re-run `/rcode-init`. Re-create planning artifacts.
-2. **Salvage** — copy any hand-written content out of `.rihal/RIHLA.md`, `.rihal/state.json`, and `.planning/` *before* removing `.rihal/`. Drop the copies into the v4 equivalents (`.rcode/RIHLA.md`, `.rcode/state.json`, `.planning/`).
+2. **Salvage** — copy any hand-written content out of `.rihal/JOURNEY.md`, `.rihal/state.json`, and `.planning/` *before* removing `.rihal/`. Drop the copies into the v4 equivalents (`.rcode/JOURNEY.md`, `.rcode/state.json`, `.planning/`).
 
 There is **no scripted migration**. The rename touched 1,000+ files; the safe path is a clean install.
 
