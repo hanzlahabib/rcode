@@ -220,6 +220,8 @@ sources:
 
 **Why this matters:** Every agent in your project now sees your team's standards as part of its base context. No copy-paste. No re-explaining. When the upstream docs repo updates, every project running rcode picks up the change on next `/rcode-update`. A 6-hour cache TTL keeps it fast.
 
+**Try it in 60 seconds.** Point at any public docs repo — say [Anthropic's prompt-engineering tutorial](https://github.com/anthropics/prompt-eng-interactive-tutorial) — drop it into `sources.yaml`, and the next `/rcode-update` puts those docs at `.rcode/brain/anthropic-prompting/` where every agent sees them on session start.
+
 **For an organisation:** fork rcode, fill `sources.yaml` with your org's public docs repo URLs, and you have a company-flavoured rcode where every project starts already oriented to how your team builds.
 
 ---
@@ -254,6 +256,8 @@ No other tool creates this flywheel because no other tool persists project conte
 | **SaaS builders** | The pain skills (auth-audit, deploy-unify, mvp-graduate) are written for your stack. |
 | **Agencies / consultancies** | Client context survives project handoffs. New devs onboard from `.rcode/memory/`, not Slack archaeology. |
 | **AI-native teams** | You already use Claude/Cursor/Gemini daily. rcode makes them 10x better on your specific project. |
+| **OSS contributors using AI** | Your fork's decisions, conventions, and rationale live in `.rcode/memory/` — reviewers can `git diff` your project brain alongside the code. |
+| **AI tooling researchers** | Every primitive is a markdown file. Fork it, instrument it, write a paper on what works — no proprietary runtime in the way. |
 
 ## Who rcode Is NOT For
 
