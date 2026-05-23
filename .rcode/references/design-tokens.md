@@ -48,8 +48,8 @@ The class is asking for `--paid-bg` and `--paid-fg` tokens. Inlining hex silentl
 3. Match is inside `url(...)`, `content:`, `font-family:`, `background-image: url(...)`.
 4. Match is preceded by `//` or inside `/* … */`.
 5. Match is an HTML/URL fragment: `href="#...`, `id="#...`, or `#` followed by non-hex chars.
-6. File path appears in `.rihal/design-tokens-allowlist.txt`.
-7. The exact `file:line:value` triple appears in `.rihal/design-tokens-allowlist.txt`.
+6. File path appears in `.rcode/design-tokens-allowlist.txt`.
+7. The exact `file:line:value` triple appears in `.rcode/design-tokens-allowlist.txt`.
 
 **Named-color trap** (`color: red`, `background: white`): flag too, but only for the CSS-named-color set in property positions:
 
@@ -72,14 +72,14 @@ The class is asking for `--paid-bg` and `--paid-fg` tokens. Inlining hex silentl
   Fix path:
     1. Add to :root      →  --paid-bg: #D1FAE5;  --paid-fg: #065F46;
     2. Replace in class  →  background: var(--paid-bg); color: var(--paid-fg);
-    3. Or waive          →  echo "apps/web/styles/orders.css:42:#D1FAE5" >> .rihal/design-tokens-allowlist.txt
+    3. Or waive          →  echo "apps/web/styles/orders.css:42:#D1FAE5" >> .rcode/design-tokens-allowlist.txt
 
   Files: 1 · Violations: 2 · Waived: 0
 ```
 
 ## Allowlist file format
 
-`.rihal/design-tokens-allowlist.txt` — one waiver per line, blank lines and `#` comments allowed:
+`.rcode/design-tokens-allowlist.txt` — one waiver per line, blank lines and `#` comments allowed:
 
 ```
 # Print stylesheet — Pantone-mandated for the PDF export
@@ -90,9 +90,9 @@ apps/web/styles/legacy/calendar.css:88:#0A0A0A
 
 ## Why a check vs a pre-commit hook
 
-This rule lives in `/rihal-lens-audit` (Lens 11 — Karpathy) because the violation is a Karpathy-shaped defect: code that looks fine but silently degrades a system contract. Users opt in by running the lens or `all`.
+This rule lives in `/rcode-lens-audit` (Lens 11 — Karpathy) because the violation is a Karpathy-shaped defect: code that looks fine but silently degrades a system contract. Users opt in by running the lens or `all`.
 
 A pre-commit hook would catch it sooner but adds friction every commit. The recommended workflow:
 
-- Run `/rihal-lens-audit 11` before opening a PR.
+- Run `/rcode-lens-audit 11` before opening a PR.
 - Add the regex above to `pre-commit` if your team wants enforcement at commit time.

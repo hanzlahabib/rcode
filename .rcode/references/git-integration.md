@@ -1,6 +1,6 @@
 # Git Integration Reference
 
-Defines 3 branching strategies for rihal workflows and when to use each.
+Defines 3 branching strategies for rcode workflows and when to use each.
 
 ---
 
@@ -132,7 +132,7 @@ git commit -m "feat(...): description"
 ### Worktree-Isolation Strategy
 ```bash
 # Workflow commands
-/rihal-do --worktree phase/2-auth
+/rcode-do --worktree phase/2-auth
 # Internally:
 git worktree add .claude/worktrees/phase-2-auth phase/2-auth
 cd .claude/worktrees/phase-2-auth

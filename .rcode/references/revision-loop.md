@@ -1,6 +1,6 @@
 # Plan Revision Loop
 
-When `workflow.plan_checker` is enabled (`/rihal-settings`), `/rihal-plan`
+When `workflow.plan_checker` is enabled (`/rcode-settings`), `/rcode-plan`
 runs the rihal-sprint-checker after the planner. Findings drive a bounded
 revision loop:
 

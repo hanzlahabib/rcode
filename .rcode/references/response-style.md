@@ -1,4 +1,4 @@
-# Rihal Response Style
+# rcode Response Style
 
 Shared reference `@`-included by every council agent. This is a HARD formatting contract, not a suggestion.
 
@@ -57,7 +57,7 @@ That's the whole response. No "Sources:" section unless multiple sources were us
 
 ## When redirecting
 
-Use single-line copy-paste format per `.rihal/references/command-redirect-format.md`. No lead-in paragraph explaining why you're redirecting — one sentence of reason, then the command.
+Use single-line copy-paste format per `.rcode/references/command-redirect-format.md`. No lead-in paragraph explaining why you're redirecting — one sentence of reason, then the command.
 
 ## Session cost footer (when applicable)
 

@@ -34,7 +34,7 @@ Workflows that omit this cause silent format mismatches where the orchestrator c
 ---
 
 
-Visual patterns for user-facing Rihal output. Orchestrators @-reference this file.
+Visual patterns for user-facing rcode output. Orchestrators @-reference this file.
 
 ## Stage Banners
 
@@ -42,7 +42,7 @@ Use for major workflow transitions.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► {STAGE NAME}
+ RCODE ► {STAGE NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -63,20 +63,20 @@ Use for major workflow transitions.
 
 ---
 
-## Routing Output (for /rihal-do, /rihal-next, /rihal-progress)
+## Routing Output (for /rcode-do, /rcode-next, /rcode-progress)
 
 Use this when a router command dispatches to another command:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► ROUTING
+ RCODE ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Input: {user's question or intent}
 Scope: {one-line summary of detected scope}
 {optional: Blocker: {any blockers detected}}
 
-Routing to: /rihal-{target-command}
+Routing to: /rcode-{target-command}
 Reason: {one-line why this command fits}
 
 Handing off to the workflow now.
@@ -149,7 +149,7 @@ Velocity: avg 11 pts (last 3 sprints)
 ## Spawning Indicators
 
 ```
-◆ Spawning rihal-executor...
+◆ Spawning rcode-executor...
 
 ◆ Spawning 4 researchers in parallel...
   → Stack research
@@ -157,7 +157,7 @@ Velocity: avg 11 pts (last 3 sprints)
   → Architecture research
   → Pitfalls research
 
-✓ rihal-executor complete: SUMMARY.md written
+✓ rcode-executor complete: SUMMARY.md written
 ```
 
 ---
@@ -193,7 +193,7 @@ TaskUpdate(taskId: <N>, status: "completed")
 ◼ Write and commit PROJECT.md           ← currently in_progress
 ◻ Run domain research (4 parallel agents + synthesizer)
 ◻ Define REQUIREMENTS.md
-◻ Spawn rihal-roadmapper to build ROADMAP.md
+◻ Spawn rcode-roadmapper to build ROADMAP.md
 ◻ Finalize: STATE.md, CLAUDE.md refresh, commit
 ```
 
@@ -287,8 +287,8 @@ Always at end of major completions.
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/rihal-alternative-1` — description
-- `/rihal-alternative-2` — description
+- `/rcode-alternative-1` — description
+- `/rcode-alternative-2` — description
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -323,12 +323,12 @@ Use standard markdown pipe tables with status symbols:
 
 ---
 
-## Rihal-Specific Elements
+## rcode-Specific Elements
 
 **Majlis banner** (multi-agent council):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MAJLIS CONVENING
+ RCODE ► MAJLIS CONVENING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -354,7 +354,7 @@ the banner, not inside it.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLANNING SPRINT 01.1
+ RCODE ► PLANNING SPRINT 01.1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 التخطيط للسباق 01.1 — يرجى الانتظار
 ```
@@ -389,10 +389,10 @@ translated prose goes outside the art, on its own line(s).
 
 - Varying box/banner widths within same output
 - Mixing banner styles (`===`, `---`, `***`)
-- Skipping `RIHAL ►` prefix in stage banners
+- Skipping `RCODE ►` prefix in stage banners
 - Random emoji (`🚀`, `✨`, `💫`) outside the approved set
 - Missing Next Up block after workflow completions
-- Hardcoding references to other methodologies in rihal's UX
+- Hardcoding references to other methodologies in rcode's UX
 - Embedding Arabic/RTL text inside fixed-width ASCII banners or progress bars
 
 </ui_patterns>

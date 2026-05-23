@@ -13,9 +13,9 @@ Use the standard planning pipeline (`.planning/phases/`) for:
 
 **Example:**
 ```
-/rihal-plan Build authentication system
-/rihal-plan Add user profile pages (depends on auth from Phase 1)
-/rihal-plan Write deployment guide (depends on both phases complete)
+/rcode-plan Build authentication system
+/rcode-plan Add user profile pages (depends on auth from Phase 1)
+/rcode-plan Write deployment guide (depends on both phases complete)
 ```
 
 These run sequentially, each depending on the previous phase's completion.
@@ -34,15 +34,15 @@ Use workspaces (`--workspace` flag) for:
 **Example:**
 ```
 # Main workspace (Q2 roadmap)
-/rihal-plan Build search feature
+/rcode-plan Build search feature
 
 # Parallel workspace (critical bug)
-/rihal-new-workspace Critical Hotfix
-/rihal-plan Fix data corruption --workspace=Critical Hotfix
+/rcode-new-workspace Critical Hotfix
+/rcode-plan Fix data corruption --workspace=Critical Hotfix
 
 # Both run independently
 # Query progress:
-/rihal-list-workspaces
+/rcode-list-workspaces
 ```
 
 ## Decision Matrix
@@ -78,29 +78,29 @@ Use workspaces (`--workspace` flag) for:
 
 ```bash
 # View current phase
-/rihal-status
+/rcode-status
 
 # Execute next phase
-/rihal-execute <phase>
+/rcode-execute <phase>
 
 # Switch to different task within same milestone
-/rihal-quick <small task>
+/rcode-quick <small task>
 ```
 
 ### Workspaces
 
 ```bash
 # List all workspaces
-/rihal-list-workspaces
+/rcode-list-workspaces
 
 # Work within a workspace
-/rihal-plan <task> --workspace=Hotfix
+/rcode-plan <task> --workspace=Hotfix
 
 # Switch to another workspace's context
-/rihal-workspace <name>
+/rcode-workspace <name>
 
 # Return to main planning
-/rihal-workspace main
+/rcode-workspace main
 ```
 
 ## Merging Workspaces Back
@@ -109,7 +109,7 @@ If you started a workspace but it should merge back into main planning:
 
 1. Complete the work in the workspace
 2. Create a phase in main planning that incorporates the workspace's findings
-3. Archive the workspace: `/rihal-remove-workspace <name> --archive`
+3. Archive the workspace: `/rcode-remove-workspace <name> --archive`
 4. Continue in main planning with unified context
 
 ## Common Patterns
@@ -118,27 +118,27 @@ If you started a workspace but it should merge back into main planning:
 
 ```bash
 # Main work (Q2 roadmap)
-/rihal-plan Implement real-time notifications
+/rcode-plan Implement real-time notifications
 
 # Critical bug emerges
-/rihal-new-workspace Critical
-/rihal-plan Fix payment processing --workspace=Critical
+/rcode-new-workspace Critical
+/rcode-plan Fix payment processing --workspace=Critical
 
 # Two parallel tracks
-/rihal-list-workspaces
+/rcode-list-workspaces
 
 # When bug is fixed
-/rihal-complete-workspace Critical
+/rcode-complete-workspace Critical
 # Resume main work
-/rihal-execute <Q2 phase>
+/rcode-execute <Q2 phase>
 ```
 
 ### Pattern: Research + implementation
 
 ```bash
 # Sequential phases (both parts of same feature)
-/rihal-plan Research WebSocket libraries and trade-offs
-/rihal-plan Implement chosen library with tests
+/rcode-plan Research WebSocket libraries and trade-offs
+/rcode-plan Implement chosen library with tests
 # Phase 2 reads Phase 1 findings
 ```
 
@@ -146,16 +146,16 @@ If you started a workspace but it should merge back into main planning:
 
 ```bash
 # Keep experiments separate
-/rihal-new-workspace Experiment: Dark Mode
-/rihal-plan Build dark mode UI --workspace=Experiment
-/rihal-plan Test across 10 browsers --workspace=Experiment
+/rcode-new-workspace Experiment: Dark Mode
+/rcode-plan Build dark mode UI --workspace=Experiment
+/rcode-plan Test across 10 browsers --workspace=Experiment
 
 # Main work continues unaffected
-/rihal-plan Improve search relevance
+/rcode-plan Improve search relevance
 
 # If experiment succeeds, merge into main
 # If it fails, just archive and delete
-/rihal-remove-workspace --archive Experiment
+/rcode-remove-workspace --archive Experiment
 ```
 
 ## Summary

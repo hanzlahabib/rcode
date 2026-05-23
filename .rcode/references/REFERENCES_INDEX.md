@@ -2,8 +2,8 @@
 
 Human-maintained catalogue of which reference files are loaded by which agents and workflows.
 
-Source: `rihal/references/` (tracked in git).
-Runtime: `.rihal/references/` (gitignored, installed by `cli/install.js`).
+Source: `rcode/references/` (tracked in git).
+Runtime: `.rcode/references/` (gitignored, installed by `cli/install.js`).
 
 Update this file whenever you add a new reference or change which agents load it.
 
@@ -70,7 +70,7 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 ## Persona ↔ SKILL.md Mapping (#714)
 
 Persona agents are thin pointers — the bulk of each persona's playbook lives
-in a `SKILL.md` at `rihal/skills/agents/<name>-<role>/SKILL.md` and gets pulled
+in a `SKILL.md` at `rcode/skills/agents/<name>-<role>/SKILL.md` and gets pulled
 in via `@-include`. This keeps agent files dependency-free + IDE-discoverable
 while the playbook can grow without ballooning every spawn.
 

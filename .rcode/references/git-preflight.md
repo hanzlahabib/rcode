@@ -4,7 +4,7 @@ Shared reference `@`-included by every code-touching workflow. Designed by Khali
 
 ## When this runs
 
-Before ANY workflow step that will modify files in the working tree — i.e. before `/rihal-execute`, `/rihal-quick`, `/rihal-dev-story`, `/rihal-code-review-fix`, and any other workflow that writes outside `.planning/`.
+Before ANY workflow step that will modify files in the working tree — i.e. before `/rcode-execute`, `/rcode-quick`, `/rcode-dev-story`, `/rcode-code-review-fix`, and any other workflow that writes outside `.planning/`.
 
 ## The 4 checks
 
@@ -94,7 +94,7 @@ running. AGENTS.md forbids --no-verify; if a hook fails, fix the underlying
 cause.
 ```
 
-The hook only stages and commits. **It does NOT push.** Push always requires fresh user consent per `.rihal/references/no-unauthorized-git-ops.md`.
+The hook only stages and commits. **It does NOT push.** Push always requires fresh user consent per `.rcode/references/no-unauthorized-git-ops.md`.
 
 ## Override flag semantics
 
@@ -110,7 +110,7 @@ Each flag is independent. The user must pass exactly the override they need; the
 
 - Does not run `git fetch` / `git pull` — those are remote operations and need explicit consent (see `no-unauthorized-git-ops.md`).
 - Does not create branches automatically. The failure banner *suggests* the branch name; the user runs the command.
-- Does not block read-only workflows (`/rihal-status`, `/rihal-discuss`, `/rihal-council`, etc.).
+- Does not block read-only workflows (`/rcode-status`, `/rcode-discuss`, `/rcode-council`, etc.).
 
 ## Why a shared reference
 

@@ -2,7 +2,7 @@
 
 Gate prompts enforce safety, reversibility, and clarity at critical decision points. They follow three canonical patterns: **Safety gates** (before risky actions), **Decision gates** (before irreversible commitments), and **Escalation gates** (when uncertainty exceeds tolerance).
 
-All gate prompts reference `.rihal/references/no-unauthorized-git-ops.md` — never allow unauthorized commits, pushes, or force operations.
+All gate prompts reference `.rcode/references/no-unauthorized-git-ops.md` — never allow unauthorized commits, pushes, or force operations.
 
 ---
 
@@ -200,7 +200,7 @@ Enter: `approve` | `revise 1,2` | `abort`
 
 ## No Unauthorized Git Operations
 
-Reference `.rihal/references/no-unauthorized-git-ops.md` before any gate that involves:
+Reference `.rcode/references/no-unauthorized-git-ops.md` before any gate that involves:
 - `git push` (any flag)
 - `git reset --hard`
 - `git rebase`

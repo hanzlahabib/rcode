@@ -1,6 +1,6 @@
 # Model Profiles
 
-Rihal v2 supports four model profile configurations that control which Claude model variant is assigned to each agent. Use the `resolve-model` subcommand to look up the model for a specific agent under the active profile.
+rcode v4 supports four model profile configurations that control which Claude model variant is assigned to each agent. Use the `resolve-model` subcommand to look up the model for a specific agent under the active profile.
 
 ## Profile definitions
 
@@ -45,7 +45,7 @@ No model override. Agents use the model specified by the parent session context 
 
 ## Configuration
 
-The active profile is set in `.rihal/config.yaml` under the key `model_profile`:
+The active profile is set in `.rcode/config.yaml` under the key `model_profile`:
 
 ```yaml
 user_name: User
@@ -62,23 +62,23 @@ If `model_profile` is absent or unrecognized, the default is `balanced`.
 To query the model for an agent under the current profile:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs resolve-model <agent-id>
+node .rcode/bin/rcode-tools.cjs resolve-model <agent-id>
 ```
 
 Example:
 
 ```bash
-$ node .rihal/bin/rihal-tools.cjs resolve-model rihal-sadiq
+$ node .rcode/bin/rcode-tools.cjs resolve-model rihal-sadiq
 claude-3-5-opus-20241022
 
-$ node .rihal/bin/rihal-tools.cjs resolve-model rihal-executor
+$ node .rcode/bin/rcode-tools.cjs resolve-model rihal-executor
 claude-3-5-sonnet-20241022
 ```
 
 When spawning a subagent in a workflow, use the resolved model:
 
 ```bash
-MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model <agent-id>)
+MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model <agent-id>)
 # Pass $MODEL to the Task spawn instruction
 ```
 

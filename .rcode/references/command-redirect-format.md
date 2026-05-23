@@ -1,17 +1,17 @@
-# Rihal Command Redirect Format
+# rcode Command Redirect Format
 
 Shared reference for all agents and workflows when they suggest the user run a different command.
 
 ## The rule
 
-**When suggesting a `/rihal-*` command, print it on a single line for copy-paste.**
+**When suggesting a `/rcode-*` command, print it on a single line for copy-paste.**
 
 The user's terminal-style interface benefits from one-line commands they can select and paste without touching line-wrap issues. Never split a suggested command across multiple lines, never bullet it, never break arguments onto separate rows.
 
 ## Good format
 
 ```
-Run: /rihal-council I'm in Pakistan, USD 1000 budget, want to dropship Gaming + Creator accessories to UAE. Should I build a Next.js custom app or use Shopify?
+Run: /rcode-council I'm in Pakistan, USD 1000 budget, want to dropship Gaming + Creator accessories to UAE. Should I build a Next.js custom app or use Shopify?
 ```
 
 One line. User selects the whole line, pastes, presses enter.
@@ -19,7 +19,7 @@ One line. User selects the whole line, pastes, presses enter.
 ## Bad format — do NOT do this
 
 ```
-Run /rihal-council with the new question:
+Run /rcode-council with the new question:
 "I'm in Pakistan, USD 1000 budget, want to dropship Gaming + Creator accessories to UAE. Should I build a Next.js custom app or use Shopify?"
 ```
 
@@ -29,7 +29,7 @@ Two lines, with quotes, with a lead-in sentence. The user has to reconstruct the
 
 Agents and workflows redirect when:
 - An agent receives a question outside its domain (Sadiq gets a technical question → Waleed)
-- A workflow gets an input type it doesn't handle (`/rihal-plan` gets a decision question → `/rihal-council`)
+- A workflow gets an input type it doesn't handle (`/rcode-plan` gets a decision question → `/rcode-council`)
 - The user's intent would be better served by a different command
 
 ## Template
@@ -39,7 +39,7 @@ Agents and workflows redirect when:
 
 Copy-paste this instead:
 
-/rihal-<command> <exact arguments from user's original input>
+/rcode-<command> <exact arguments from user's original input>
 ```
 
 The third line — the full command — is a single physical line, regardless of length. No wrapping. No quotes around the arguments unless the command itself requires them.
@@ -55,8 +55,8 @@ If multiple commands could fit, list each on its own line as a complete single-l
 ```
 Could be either — pick one:
 
-/rihal-discuss waleed <your question>
-/rihal-council <your question>
+/rcode-discuss waleed <your question>
+/rcode-council <your question>
 ```
 
 Not with lead-in prose for each option.

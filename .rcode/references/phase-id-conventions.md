@@ -15,13 +15,13 @@ The canonical rule for naming a phase in rcode. Issue #718.
 Validate any ID with:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs validate-phase-id <id>
+node .rcode/bin/rcode-tools.cjs validate-phase-id <id>
 ```
 
 Scan an entire ROADMAP at once:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs validate-roadmap
+node .rcode/bin/rcode-tools.cjs validate-roadmap
 ```
 
 ---
@@ -29,7 +29,7 @@ node .rihal/bin/rihal-tools.cjs validate-roadmap
 ## Why these are the only two shapes
 
 **Integer phases (`19`, `22`)** are the natural unit of milestone progress.
-They're added to the end of the roadmap by `/rihal-add-phase` and the
+They're added to the end of the roadmap by `/rcode-add-phase` and the
 `phase add` CLI calculates the next number automatically. This is the
 default — 99% of phases should be integers.
 
@@ -49,7 +49,7 @@ shifting `20→21→22…`.
 
 If you find yourself wanting `A1` or `B1`, you actually want **two
 milestones**: one for audit, one for implementation. Run
-`/rihal-complete-milestone` on the audit milestone before the
+`/rcode-complete-milestone` on the audit milestone before the
 implementation work starts.
 
 ---
@@ -65,14 +65,14 @@ vs `.planning/phases/6-foo`).
 
 ## Where the validator fires
 
-- **`/rihal-add-phase`** — runs `milestone-health` after adding, nudges
-  toward `/rihal-complete-milestone` when ≥8 phases are open.
-- **`/rihal-status`** — surfaces milestone-health gauge when not `healthy`.
+- **`/rcode-add-phase`** — runs `milestone-health` after adding, nudges
+  toward `/rcode-complete-milestone` when ≥8 phases are open.
+- **`/rcode-status`** — surfaces milestone-health gauge when not `healthy`.
 - **CI** (`test/scope-history-parity.test.cjs` style) — a future test
   can call `validate-roadmap` against the committed ROADMAP.md.
 
-Workflows that produce phase IDs from AI freestyle (`/rihal-plan`,
-`/rihal-audit-milestone`) MUST call `validate-phase-id` before writing
+Workflows that produce phase IDs from AI freestyle (`/rcode-plan`,
+`/rcode-audit-milestone`) MUST call `validate-phase-id` before writing
 to disk. If they don't, file an issue.
 
 ---
@@ -82,7 +82,7 @@ to disk. If they don't, file an issue.
 | Open phases | Recommendation | Behavior |
 |-------------|----------------|----------|
 | 0–7 | `healthy` | Quiet — no nudge |
-| 8–11 | `consider-closing` | Soft nudge after `/rihal-add-phase` |
+| 8–11 | `consider-closing` | Soft nudge after `/rcode-add-phase` |
 | ≥12 | `should-close` | Hard nudge with both close + fork commands |
 
 Bump thresholds in a future PR if real-world data shows users want bigger
@@ -93,9 +93,9 @@ without closure are the original symptom.
 
 ## Related
 
-- `rihal/workflows/add-phase.md` — milestone-health check after adding
-- `rihal/workflows/status.md` — milestone-health gauge in status output
-- `rihal/workflows/complete-milestone.md` — the closure workflow
-- `rihal/bin/rihal-tools.cjs` — `validate-phase-id`, `validate-roadmap`,
+- `rcode/workflows/add-phase.md` — milestone-health check after adding
+- `rcode/workflows/status.md` — milestone-health gauge in status output
+- `rcode/workflows/complete-milestone.md` — the closure workflow
+- `rcode/bin/rcode-tools.cjs` — `validate-phase-id`, `validate-roadmap`,
   `milestone-health` subcommands
 - Issue #718 (this file's origin)

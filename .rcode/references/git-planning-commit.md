@@ -23,7 +23,7 @@ plan: <action> <artifact> for <scope>
 
 **Examples:**
 ```
-plan: add execute-phase 02 for Rihal authentication module
+plan: add execute-phase 02 for rcode authentication module
 plan: update roadmap with Q3 milestones
 plan: split phase 3 into 3a (API) and 3b (database)
 plan: revise Phase 1 scope — reduce by 2 tasks
@@ -101,7 +101,7 @@ roadmap: <action> for <timescale>
 
 **Examples:**
 ```
-roadmap: define Q2 2026 milestones for Rihal dashboard
+roadmap: define Q2 2026 milestones for rcode dashboard
 roadmap: plan Phase 6–8 for mobile app redesign
 roadmap: identify technical debt and refactoring priorities
 roadmap: schedule team capacity planning for H2 2026

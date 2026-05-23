@@ -8,7 +8,7 @@ This banner format is mandatory for every `Task(subagent_type=...)` invocation i
 
 ## Persona registry
 
-Each agent has a persona name and a one-line role tag used in the banner. Pull from `rihal/team.yaml` (`name` + `role` fields). For utility agents not in team.yaml, use the fallback table below.
+Each agent has a persona name and a one-line role tag used in the banner. Pull from `rcode/team.yaml` (`name` + `role` fields). For utility agents not in team.yaml, use the fallback table below.
 
 | Agent ID | Persona name | Role tag | Glyph |
 |---|---|---|---|
@@ -130,7 +130,7 @@ Then print a fresh DISPATCH banner.
 
 ## Concurrency: parallel dispatches
 
-If a workflow spawns multiple agents in parallel (e.g. `/rihal-council` summons 4 specialists), print ONE combined banner:
+If a workflow spawns multiple agents in parallel (e.g. `/rcode-council` summons 4 specialists), print ONE combined banner:
 
 ```
 ╭─────────────────────────────────────────────────────────╮

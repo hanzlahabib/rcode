@@ -73,4 +73,4 @@ These patterns indicate placeholder code regardless of file type:
 
 ## Full Details
 
-For complete patterns with grep examples, file-type specifics, and advanced verification strategies, see `/rihal/references/verification-patterns.md` (detailed reference).
+For complete patterns with grep examples, file-type specifics, and advanced verification strategies, see `/rcode/references/verification-patterns.md` (detailed reference).

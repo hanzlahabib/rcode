@@ -45,7 +45,7 @@ Use command-redirect-format.md. One reason, then command.
 <mode_feature_drift>
 **Activated when:** invoked with `--mode=feature-drift` argument or when
 `mode: feature-drift` is present in the orchestrator prompt (called from
-`/rihal-feature-drift` workflow per Phase 6 D-4 — extension flag, not new agent).
+`/rcode-feature-drift` workflow per Phase 6 D-4 — extension flag, not new agent).
 
 **Inputs:**
 - PRD content (may be null — handle gracefully without crashing or speculating)
@@ -96,7 +96,7 @@ Use command-redirect-format.md. One reason, then command.
 </mode_feature_drift>
 
 <mode_phase_status>
-**Activated when:** invoked with `--mode=phase-status` argument or when `mode: phase-status` is present in the orchestrator prompt (called from `/rihal-feature-drift --mode=phase-status` per Phase 8 D-6 — extension flag, not new agent).
+**Activated when:** invoked with `--mode=phase-status` argument or when `mode: phase-status` is present in the orchestrator prompt (called from `/rcode-feature-drift --mode=phase-status` per Phase 8 D-6 — extension flag, not new agent).
 
 **Inputs:**
 - `roadmap_phases[]` — array of phase entries from `roadmap list-phases`. Each: `{number, name, status, goal}`.

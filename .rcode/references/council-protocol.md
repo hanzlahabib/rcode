@@ -1,4 +1,4 @@
-# Rihal Council Protocol
+# rcode Council Protocol
 
 Shared reference document `@`-included by every council-related workflow.
 
@@ -65,7 +65,7 @@ Every council session is saved to `.planning/council-sessions/council-{YYYY-MM-D
 **Date:** {ISO date}
 **Panel:** {names}
 **Mode:** {guided|yolo}
-**Project:** {project name from .rihal/config.yaml}
+**Project:** {project name from .rcode/config.yaml}
 
 ## Question
 {original question}

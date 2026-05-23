@@ -1,8 +1,8 @@
-# Rihal Execution Protocol
+# rcode Execution Protocol
 
 Shared reference `@`-included by `execute.md` workflow and `rihal-executor` subagent.
 
-**Also see:** @.rihal/references/karpathy-guidelines.md for behavioral principles that apply during execution.
+**Also see:** @.rcode/references/karpathy-guidelines.md for behavioral principles that apply during execution.
 
 ## SPRINT.md schema
 
@@ -79,14 +79,14 @@ Type: {human-verify | decision}
 {For human-verify:}
 Please verify: {what to check}
 URL/path: {where to look}
-Resume with: /rihal-execute {plan} --continue
+Resume with: /rcode-execute {plan} --continue
 
 {For decision:}
 Problem: {what the plan assumed that isn't true}
 Option A: {approach} — {trade-off}
 Option B: {approach} — {trade-off}
 Recommendation: {which one and why}
-Resume with: /rihal-execute {plan} --continue --option=A
+Resume with: /rcode-execute {plan} --continue --option=A
 ---
 ```
 

@@ -2,7 +2,7 @@
 
 **Purpose:** single source of truth for action verbs across all Rihal workflows that do intent matching. Without this, each workflow's matcher diverges and Roman Urdu / Hindi / Arabic instructions silently miss.
 
-**How to use from a workflow:** include this file via `@.rihal/references/verb-dictionary.md` and reference categories by name (e.g. *"verbs from §Create"*) instead of restating English-only lists inline.
+**How to use from a workflow:** include this file via `@.rcode/references/verb-dictionary.md` and reference categories by name (e.g. *"verbs from §Create"*) instead of restating English-only lists inline.
 
 **Arabic priority:** Rihal's primary user base operates in Arabic. Native Arabic script (المشروع, مرحلة, راجع) MUST be in every category — transliteration is a fallback for keyboard input only. When you see a new Arabic phrasing in user input, add the native script first, then the transliteration.
 
@@ -106,21 +106,21 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 
 | Scope noun | Aliases (English + Urdu + Arabic) | Maps to (workflow) |
 |---|---|---|
-| milestone | `milestone`, `milestones`, `release`, `version`, `cycle`, **AR:** `معلم`, `إصدار`, `دورة`, `مرحلة كبرى` | `/rihal-new-milestone` |
-| phase | `phase`, `phases`, **AR:** `مرحلة`, `مراحل`, `طور`, `فاز` | `/rihal-add-phase` |
-| story | `story`, `stories`, `user story`, `kahani`, **AR:** `قصة`, `قصص`, `قصة مستخدم` | `/rihal-create-story` |
-| epic | `epic`, `epics`, `epics and stories`, **AR:** `ملحمة`, `ملاحم`, `فصل`, `فصول` | `/rihal-create-epics-and-stories` |
-| sprint | `sprint`, `iteration`, **AR:** `سباق`, `جولة`, `دورة عمل`, `سبرنت` | `/rihal-sprint-planning` |
-| PRD | `PRD`, `requirements doc`, `product requirements`, **AR:** `وثيقة المتطلبات`, `متطلبات المنتج`, `وثيقة المنتج` | `/rihal-create-prd` |
-| roadmap | `roadmap`, `plan` (top-level), **AR:** `خارطة طريق`, `خريطة الطريق`, `خطة عامة` | `/rihal-create-milestone` |
-| council | `council`, `majlis`, `panel`, `mashwara`, `salah`, **AR:** `مجلس`, `شورى`, `لجنة`, `استشارة` | `/rihal-council` |
-| plan (verb form — "plan phase N") | `plan`, **AR:** `خطّط`, `خطة` | `/rihal-plan` |
-| story (impl) | `dev story`, `implement story`, `build story`, **AR:** `نفذ القصة`, `طبّق القصة` | `/rihal-dev-story` |
-| brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna`, **AR:** `عصف ذهني`, `أفكار`, `تفكير` | `/rihal-brainstorm` |
-| review (code) | `code review`, `karpathy`, `check my diff`, **AR:** `مراجعة الكود`, `راجع الكود`, `فحص الكود` | `/rihal-code-review [--karpathy]` |
-| edge cases | `edge cases`, `edge case hunt`, `find edge cases`, `corner cases`, **AR:** `حالات استثنائية`, `حالات حدية`, `حالات نادرة` | `/rihal-review-edge-case-hunter` |
-| debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek`, **AR:** `صحّح`, `أصلح`, `خطأ`, `مشكلة`, `عطل` | `/rihal-debug` |
-| audit | `audit`, `quality audit`, `health check`, **AR:** `تدقيق`, `مراجعة شاملة`, `فحص الجودة`, `جودة` | `/rihal-audit` |
+| milestone | `milestone`, `milestones`, `release`, `version`, `cycle`, **AR:** `معلم`, `إصدار`, `دورة`, `مرحلة كبرى` | `/rcode-new-milestone` |
+| phase | `phase`, `phases`, **AR:** `مرحلة`, `مراحل`, `طور`, `فاز` | `/rcode-add-phase` |
+| story | `story`, `stories`, `user story`, `kahani`, **AR:** `قصة`, `قصص`, `قصة مستخدم` | `/rcode-create-story` |
+| epic | `epic`, `epics`, `epics and stories`, **AR:** `ملحمة`, `ملاحم`, `فصل`, `فصول` | `/rcode-create-epics-and-stories` |
+| sprint | `sprint`, `iteration`, **AR:** `سباق`, `جولة`, `دورة عمل`, `سبرنت` | `/rcode-sprint-planning` |
+| PRD | `PRD`, `requirements doc`, `product requirements`, **AR:** `وثيقة المتطلبات`, `متطلبات المنتج`, `وثيقة المنتج` | `/rcode-create-prd` |
+| roadmap | `roadmap`, `plan` (top-level), **AR:** `خارطة طريق`, `خريطة الطريق`, `خطة عامة` | `/rcode-create-milestone` |
+| council | `council`, `majlis`, `panel`, `mashwara`, `salah`, **AR:** `مجلس`, `شورى`, `لجنة`, `استشارة` | `/rcode-council` |
+| plan (verb form — "plan phase N") | `plan`, **AR:** `خطّط`, `خطة` | `/rcode-plan` |
+| story (impl) | `dev story`, `implement story`, `build story`, **AR:** `نفذ القصة`, `طبّق القصة` | `/rcode-dev-story` |
+| brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna`, **AR:** `عصف ذهني`, `أفكار`, `تفكير` | `/rcode-brainstorm` |
+| review (code) | `code review`, `karpathy`, `check my diff`, **AR:** `مراجعة الكود`, `راجع الكود`, `فحص الكود` | `/rcode-code-review [--karpathy]` |
+| edge cases | `edge cases`, `edge case hunt`, `find edge cases`, `corner cases`, **AR:** `حالات استثنائية`, `حالات حدية`, `حالات نادرة` | `/rcode-review-edge-case-hunter` |
+| debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek`, **AR:** `صحّح`, `أصلح`, `خطأ`, `مشكلة`, `عطل` | `/rcode-debug` |
+| audit | `audit`, `quality audit`, `health check`, **AR:** `تدقيق`, `مراجعة شاملة`, `فحص الجودة`, `جودة` | `/rcode-audit` |
 
 ---
 
@@ -131,24 +131,24 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 ```markdown
 ## Step: Match intent
 
-Apply §Create + scope-noun match per @.rihal/references/verb-dictionary.md.
+Apply §Create + scope-noun match per @.rcode/references/verb-dictionary.md.
 
 If `$QUESTION` contains any verb from §Create AND any scope noun from the
 table above, dispatch directly to the mapped workflow without an
 ambiguity prompt.
 
 Example: "milestone bnao" → §Create matches "bnao", scope matches
-"milestone" → /rihal-new-milestone (with state-aware redirect to
-/rihal-add-phase if a milestone is already active).
+"milestone" → /rcode-new-milestone (with state-aware redirect to
+/rcode-add-phase if a milestone is already active).
 
 Example: "ابدأ مرحلة جديدة" (Arabic — "start a new phase") → §Create
-matches `ابدأ` + scope `مرحلة` + intensifier `جديدة` → /rihal-add-phase.
+matches `ابدأ` + scope `مرحلة` + intensifier `جديدة` → /rcode-add-phase.
 ```
 
 **From an agent file (e.g. `rihal-codebase-mapper.md`) when interpreting the orchestrator prompt:**
 
 ```markdown
-@.rihal/references/verb-dictionary.md
+@.rcode/references/verb-dictionary.md
 
 ## Workflow
 

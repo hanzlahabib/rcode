@@ -1,4 +1,4 @@
-# Rihal Commit Conventions
+# rcode Commit Conventions
 
 Shared reference `@`-included by every workflow that creates or modifies git artifacts.
 
@@ -25,7 +25,7 @@ git log --oneline -50 | grep -oE '^[a-f0-9]+ [a-z]+\([a-z0-9-]+\):' | awk '{prin
 
 **If the project defines scopes, you MUST pick from that list.** Do not invent new scopes (e.g., `branding` when only `web, server, docker, k8s, e2e, docs, ci, deps, ml, strapi` are allowed). A commit that fails the project's semantic PR check wastes the user's CI run and signals the workflow didn't read the repo.
 
-If no project list exists, fall back to the generic rihal scopes in the "Format" section below.
+If no project list exists, fall back to the generic rcode scopes in the "Format" section below.
 
 ## Format
 
@@ -118,7 +118,7 @@ When a Rihal workflow creates a commit on the user's behalf:
 
 1. **Run the "Detect project-local conventions" scan** above. Pick scope from the project's allowed list if one exists.
 2. Stage only the files the workflow actually modified (never `-A`)
-3. Write the subject as `type(scope): subject` using project-local types/scopes when defined, generic rihal scopes only as fallback
+3. Write the subject as `type(scope): subject` using project-local types/scopes when defined, generic rcode scopes only as fallback
 4. If the body adds real value (the why isn't obvious from the diff), include it
 5. Do not sign with AI attribution
 6. Print the commit SHA and one-line summary to the user

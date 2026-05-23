@@ -3,7 +3,7 @@
 Workflows accept a phase argument in two forms:
 
 - **Numeric**: `01`, `2`, `02.1` — resolved via
-  `node .rihal/bin/rihal-tools.cjs init phase-op "$ARG"` to the matching
+  `node .rcode/bin/rcode-tools.cjs init phase-op "$ARG"` to the matching
   phase directory under `.planning/phases/`.
 - **Path**: a direct `.planning/phases/<slug>/PLAN.md` path — used as-is.
 

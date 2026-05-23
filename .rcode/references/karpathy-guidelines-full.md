@@ -1,6 +1,6 @@
 # Karpathy Coding Guidelines
 
-Behavioral guidelines derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls. Every rihal agent that writes, reviews, or refactors code must internalize these four principles.
+Behavioral guidelines derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls. Every rcode agent that writes, reviews, or refactors code must internalize these four principles.
 
 **Tradeoff:** These bias toward caution over speed. For trivial tasks, use judgment.
 
@@ -76,4 +76,4 @@ Agents that write or modify code (rihal-executor, rihal-planner, rihal-noor, rih
 
 ## Credit
 
-Original principles by Andrej Karpathy. Reference implementation by Forrest Chang at github.com/forrestchang/andrej-karpathy-skills. Adapted and extended for rihal's multi-agent architecture.
+Original principles by Andrej Karpathy. Reference implementation by Forrest Chang at github.com/forrestchang/andrej-karpathy-skills. Adapted and extended for rcode's multi-agent architecture.

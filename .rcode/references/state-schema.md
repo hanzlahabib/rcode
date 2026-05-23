@@ -1,6 +1,6 @@
 # State Schema Reference
 
-Documents every top-level field in `state.json`, used by rihal workflows for session persistence.
+Documents every top-level field in `state.json`, used by rcode workflows for session persistence.
 
 ---
 
@@ -34,15 +34,15 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `version`
 **Type:** string  
 **Example:** `"1"`  
-**Written by:** `/rihal-install` (initialization)  
+**Written by:** `/rcode-install` (initialization)  
 **Purpose:** Schema version for compatibility checks. Change if fields added/removed.
 
 ---
 
 ### `project`
 **Type:** string  
-**Example:** `"Rihal v2"`  
-**Written by:** `/rihal-install` (reads from config.yaml)  
+**Example:** `"rcode v4"`  
+**Written by:** `/rcode-install` (reads from config.yaml)  
 **Purpose:** Project name for context and reports.
 
 ---
@@ -50,7 +50,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `created`
 **Type:** ISO date string  
 **Example:** `"2026-04-01T10:30:00Z"`  
-**Written by:** `/rihal-install` (first session)  
+**Written by:** `/rcode-install` (first session)  
 **Purpose:** Timestamp of project creation, never changes.
 
 ---
@@ -66,7 +66,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `current_phase`
 **Type:** string or null  
 **Example:** `"Phase 2: Authentication"` or `null`  
-**Written by:** `/rihal-do`, `/rihal-next`, `/rihal-resume-work`  
+**Written by:** `/rcode-do`, `/rcode-next`, `/rcode-resume-work`  
 **Purpose:** Name of active phase, null if no phase active.
 
 ---
@@ -74,7 +74,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `current_plan`
 **Type:** number  
 **Example:** `2`  
-**Written by:** `/rihal-do --execute` (incremented after each phase completion)  
+**Written by:** `/rcode-do --execute` (incremented after each phase completion)  
 **Purpose:** Counter for plan versions. Increments 1→2→3 as phases complete.
 
 ---
@@ -120,7 +120,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal-do --execute`, `/rihal-next`, sprint/story state tools  
+**Written by:** `/rcode-do --execute`, `/rcode-next`, sprint/story state tools  
 **Purpose:** Tracks phases with nested sprints and stories.
 
 **Sprint fields:**
@@ -176,7 +176,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal-execute` (after each plan completes)  
+**Written by:** `/rcode-execute` (after each plan completes)  
 **Purpose:** Log of each plan execution. The `plan` field is the plan ID string (e.g., "01.02"), not a number.
 
 ---
@@ -194,7 +194,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal-council`, `/rihal-discuss`  
+**Written by:** `/rcode-council`, `/rcode-discuss`  
 **Purpose:** Records architectural/strategic decisions for history.
 
 ---
@@ -213,7 +213,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal-do`, `/rihal-health`  
+**Written by:** `/rcode-do`, `/rcode-health`  
 **Purpose:** Tracks blockers, when identified, which phase, and resolution time.
 
 ---
@@ -227,11 +227,11 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
     "date": "2026-04-04T10:00:00Z",
     "question_slug": "auth-strategy",
     "panel": ["rihal-sadiq", "rihal-waleed", "rihal-fatima"],
-    "artifact_path": "rihal/artifacts/council-sessions/auth-strategy-20260404.md"
+    "artifact_path": "rcode/artifacts/council-sessions/auth-strategy-20260404.md"
   }
 ]
 ```
-**Written by:** `/rihal-council`  
+**Written by:** `/rcode-council`  
 **Purpose:** History of council deliberations, panelists, output artifacts.
 
 ---
@@ -245,11 +245,11 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
     "date": "2026-04-05T14:00:00Z",
     "slug": "implement-login-flow",
     "agents": ["rihal-waleed", "rihal-fatima"],
-    "artifacts_dir": "rihal/artifacts/chains/implement-login-flow-20260405"
+    "artifacts_dir": "rcode/artifacts/chains/implement-login-flow-20260405"
   }
 ]
 ```
-**Written by:** `/rihal-chain`  
+**Written by:** `/rcode-chain`  
 **Purpose:** History of multi-agent chains, participants, work artifacts.
 
 ---
@@ -258,7 +258,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 **Type:** ISO date string  
 **Example:** `"2026-04-12T15:45:30Z"`  
 **Written by:** Every subcommand that runs (updates at session end)  
-**Purpose:** Enables `/rihal-resume-work` to find context from last session.
+**Purpose:** Enables `/rcode-resume-work` to find context from last session.
 
 ---
 
@@ -283,7 +283,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
   }
 ]
 ```
-**Written by:** `/rihal-workstream --create`, `/rihal-do --execute`  
+**Written by:** `/rcode-workstream --create`, `/rcode-do --execute`  
 **Purpose:** Tracks parallel workstreams, which phases belong to each.
 
 ---
@@ -291,7 +291,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `active_workstream`
 **Type:** string or null  
 **Example:** `"Frontend"` or `null`  
-**Written by:** `/rihal-workstream --activate`, `/rihal-do`  
+**Written by:** `/rcode-workstream --activate`, `/rcode-do`  
 **Purpose:** Currently active workstream; null if no workstream focus.
 
 ---
@@ -299,7 +299,7 @@ Documents every top-level field in `state.json`, used by rihal workflows for ses
 ### `model_profile`
 **Type:** string  
 **Example:** `"balanced"` (options: `quality`, `balanced`, `budget`, `inherit`)  
-**Written by:** `/rihal-set-profile`  
+**Written by:** `/rcode-set-profile`  
 **Purpose:** Model selection for council agents. Affects token spend and quality.
 
 ---
@@ -351,16 +351,16 @@ The `state resolve-id <id>` command accepts the following formats:
 
 **Examples:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state resolve-id M1          # → Milestone 1
-node .rihal/bin/rihal-tools.cjs state resolve-id 02          # → Phase 02
-node .rihal/bin/rihal-tools.cjs state resolve-id 01.1        # → Sprint 1 in Phase 01
-node .rihal/bin/rihal-tools.cjs state resolve-id 01.1.03     # → Story 3 in Sprint 01.1
+node .rcode/bin/rcode-tools.cjs state resolve-id M1          # → Milestone 1
+node .rcode/bin/rcode-tools.cjs state resolve-id 02          # → Phase 02
+node .rcode/bin/rcode-tools.cjs state resolve-id 01.1        # → Sprint 1 in Phase 01
+node .rcode/bin/rcode-tools.cjs state resolve-id 01.1.03     # → Story 3 in Sprint 01.1
 ```
 
 **Sprint state commands:**
 ```bash
-node .rihal/bin/rihal-tools.cjs state sprint add --phase 01 --goal "Setup" --velocity 13
-node .rihal/bin/rihal-tools.cjs state story add --title "Login" --points 5
-node .rihal/bin/rihal-tools.cjs state story move --id 01.1.01 --status done
-node .rihal/bin/rihal-tools.cjs state sprint velocity
+node .rcode/bin/rcode-tools.cjs state sprint add --phase 01 --goal "Setup" --velocity 13
+node .rcode/bin/rcode-tools.cjs state story add --title "Login" --points 5
+node .rcode/bin/rcode-tools.cjs state story move --id 01.1.01 --status done
+node .rcode/bin/rcode-tools.cjs state sprint velocity
 ```

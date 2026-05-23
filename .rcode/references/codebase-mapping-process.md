@@ -128,7 +128,7 @@ Read key files identified during exploration. Use Glob and Grep liberally — bu
 </step>
 
 <step name="write_documents">
-Write document(s) to `.rihal/codebase/` using the templates below.
+Write document(s) to `.rcode/codebase/` using the templates below.
 
 **Document naming:** UPPERCASE.md (e.g., STACK.md, ARCHITECTURE.md)
 
@@ -170,7 +170,7 @@ Codebase mapping complete. Documents written to .planning/codebase/.
 
 | When you need... | Read |
 |---|---|
-| Full detailed guide (tool priorities, output formats, templates, pitfalls, examples) | `.rihal/agents-rules/codebase-mapper/detailed-guide.md` |
+| Full detailed guide (tool priorities, output formats, templates, pitfalls, examples) | `.rcode/agents-rules/codebase-mapper/detailed-guide.md` |
 
 Read only when the current task needs the detail. Don't preemptively load.
 </step>
