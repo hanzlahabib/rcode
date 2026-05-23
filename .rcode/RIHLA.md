@@ -16,7 +16,7 @@
 ## What's here
 
 Rihal Code (`rcode`) — an AI team methodology packaged as an npm tool. One install gives
-AI IDEs a persistent project brain: ~45 specialist agents, 109 commands, and a Memory Bank
+AI IDEs a persistent project brain: ~45 specialist agents, 116 commands, and a Memory Bank
 at `.rihal/`. Published on npm as `@hanzlaa/rcode` v3.5.x, tested with `node --test`.
 
 The full loop runs in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`.

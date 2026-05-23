@@ -7,7 +7,7 @@
 
 rcode (`rcode`) is an AI team methodology packaged as an npm tool, published as
 `@hanzlaa/rcode`. A single install gives an AI IDE a persistent project brain — ~45
-specialist agents, 109 commands, and a file-based Memory Bank that survives session resets.
+specialist agents, 116 commands, and a file-based Memory Bank that survives session resets.
 It targets developers using Claude Code, Cursor, Gemini, VS Code, and Antigravity who lose
 context every time their AI assistant resets. rcode fixes this with checked-in state and
 opinionated research → plan → execute → verify → recover workflows, plus a Diwan dashboard

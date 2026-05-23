@@ -36,8 +36,8 @@
 - **`project/decisions.md`** — append every architectural choice as it's made
 - **`milestones/current.md`** — update on milestone phase transitions
 - **`incidents/known-issues.md`** — add when a workaround ships, remove when a real fix lands
-- **`distillates/`** — regenerate via `/rcode:memory-distill` when source files change
-- **Whole bank** — audit via `/rcode:memory-audit` at every milestone close
+- **`distillates/`** — regenerate via `/rcode-memory-distill` when source files change
+- **Whole bank** — audit via `/rcode-memory-audit` at every milestone close
 
 ## Constraints
 

@@ -40,11 +40,13 @@ const path = require('path');
  * functional). Power users running niche commands like /rcode-prfaq or
  * /rcode-ui-phase still get them — they just don't show up in the sidebar.
  */
-// Empty — sidebar stubs with user-invocable:false block direct /rcode-* invocation
-// in Claude Code 2.x. Commands in .claude/commands/ already appear in slash autocomplete.
-// The VS Code sidebar also shows commands directly in CC 2.x, so stubs are redundant.
-// Issue #710: sidebar stubs caused "can only be invoked by Claude" error for users.
-const SIDEBAR_COMMANDS = new Set([]);
+// Minimal set — only the primary entry-point command that users expect to
+// find browsable in the sidebar. CC 2.x shows all .claude/commands/ in slash
+// autocomplete, so stubs are UX sugar only. Issue #710 required trimming
+// from 43 → 1 to avoid "491 descriptions dropped" budget exhaustion.
+const SIDEBAR_COMMANDS = new Set([
+  'do', // primary router — users pick workflows from the sidebar via /rcode-do
+]);
 
 function parseFrontmatter(text) {
   if (!text.startsWith('---\n')) return {};
