@@ -441,7 +441,7 @@ function createBackup(cwd, plan, options = {}) {
  * `## rcode Method Agents (installed)` header and ends at either EOF or the
  * next `## ` top-level heading.
  */
-function stripRihalFromAgentsMd(agentsMdPath) {
+function stripRcodeFromAgentsMd(agentsMdPath) {
   if (!fs.existsSync(agentsMdPath)) return false;
   let content = fs.readFileSync(agentsMdPath, 'utf8');
   let changed = false;
@@ -713,7 +713,7 @@ async function runUninstall(args) {
   // Strip AGENTS.md section
   if (plan.agentsMd) {
     const agentsMdPath = path.join(cwd, 'AGENTS.md');
-    const stripped = stripRihalFromAgentsMd(agentsMdPath);
+    const stripped = stripRcodeFromAgentsMd(agentsMdPath);
     if (stripped) {
       console.log(`   ✓ stripped rcode section from AGENTS.md`);
     }
@@ -756,7 +756,7 @@ async function runUninstall(args) {
     if (!opts.deleteState && !opts.keepState && !opts.yes) {
       console.log();
       console.log(`⚠️  The .rcode/ state directory contains your project data:`);
-      console.log(`   - config.yaml, state.json, RIHLA.md`);
+      console.log(`   - config.yaml, state.json, JOURNEY.md`);
       console.log(`   - phases, decisions, progress, artifacts, context`);
       console.log(`   - ${plan.stateDir.files} files total`);
       console.log();

@@ -12,7 +12,7 @@ module.exports = function tiers(_args, { packageJson }) {
 Everything is organized into 4 tiers + a preview track. Start with 🌱 Starter.
 
 🌱 STARTER — The Golden Path (7 skills)
-   First-time Rihalian. Scaffold → ship, end-to-end.
+   First-time rcode user. Scaffold → ship, end-to-end.
      1. rcode-scaffold-project      "scaffold a new project"
      2. rcode-create-prd            "create a PRD"
      3. rcode-create-story          "create a story"

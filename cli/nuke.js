@@ -87,7 +87,7 @@ function getGlobalNodeModulesDirs() {
  * For a given global node_modules dir, return a list of rcode/rcode package paths.
  * Looks for both @hanzlaa/rcode (current) and @hanzlahabib/rihal-code (legacy).
  */
-function findRihalPackages(globalNodeModules) {
+function findRcodePackages(globalNodeModules) {
   const found = [];
   for (const scope of ['@hanzlaa', '@hanzlahabib']) {
     const scopeDir = path.join(globalNodeModules, scope);
@@ -151,7 +151,7 @@ function getGlobalBinDirs() {
 
 const RCODE_BINS = ['rcode', 'rcode', 'rcode'];
 
-function findRihalBins(binDir) {
+function findRcodeBins(binDir) {
   const found = [];
   for (const name of RCODE_BINS) {
     const p = path.join(binDir, name);
@@ -228,14 +228,14 @@ function buildPlan({ includePlanning }) {
 
   // Global node_modules packages
   for (const { manager, dir } of getGlobalNodeModulesDirs()) {
-    for (const pkg of findRihalPackages(dir)) {
+    for (const pkg of findRcodePackages(dir)) {
       plan.packages.push({ manager, ...pkg });
     }
   }
 
   // Global binaries
   for (const binDir of getGlobalBinDirs()) {
-    for (const bin of findRihalBins(binDir)) {
+    for (const bin of findRcodeBins(binDir)) {
       plan.bins.push({ binDir, ...bin });
     }
   }
