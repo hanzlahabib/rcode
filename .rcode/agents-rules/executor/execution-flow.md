@@ -1,4 +1,4 @@
-# Rihal Executor: Execution Flow Details
+# rcode Executor: Execution Flow Details
 
 ## Full Step-by-Step Execution
 

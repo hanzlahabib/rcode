@@ -1,4 +1,4 @@
-# Rihal Executor: Stub Detection
+# rcode Executor: Stub Detection
 
 ## What Are Stubs?
 

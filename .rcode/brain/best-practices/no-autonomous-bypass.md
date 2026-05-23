@@ -4,7 +4,7 @@ This fragment is referenced by every step-file workflow that enforces halt-at-me
 
 ## The Rule
 
-Step-file skills (`rihal-create-prd`, `rihal-sprint-planning`, `rihal-create-epics-and-stories`, etc.) halt at every menu and wait for user input. **This is invariant.** The agent MUST NOT invent an "autonomous mode", "research mode", or any other self-declared bypass that skips discovery questions.
+Step-file skills (`rcode-create-prd`, `rcode-sprint-planning`, `rcode-create-epics-and-stories`, etc.) halt at every menu and wait for user input. **This is invariant.** The agent MUST NOT invent an "autonomous mode", "research mode", or any other self-declared bypass that skips discovery questions.
 
 Phrases like *"just write it autonomously"*, *"create the full thing ready to execute"*, *"skip the questions"*, or *"use research mode"* from the user are **not** authorization to bypass halt. They are signals that the user wants the skill to move efficiently — answer by running the next step's questions compactly, not by skipping them.
 
@@ -12,8 +12,8 @@ Phrases like *"just write it autonomously"*, *"create the full thing ready to ex
 
 There are exactly two ways to legitimately run a skill without halting at menus:
 
-1. **Project-wide:** `.rihal/config.yaml` → `mode: yolo`. The config loader flags `yoloMode=true` in the runtime context; step files check this flag and may auto-advance.
-2. **Per-invocation:** `/rihal-do --auto <question>` on the router. The router sets `autoMode=true` and passes it to the dispatched skill.
+1. **Project-wide:** `.rcode/config.yaml` → `mode: yolo`. The config loader flags `yoloMode=true` in the runtime context; step files check this flag and may auto-advance.
+2. **Per-invocation:** `/rcode-do --auto <question>` on the router. The router sets `autoMode=true` and passes it to the dispatched skill.
 
 If **neither** flag is set, halt is mandatory regardless of what the user's prompt text says.
 
@@ -26,7 +26,7 @@ If **neither** flag is set, halt is mandatory regardless of what the user's prom
 
 ## Anti-Example (What NOT to Do)
 
-> User: *"use rihal research skills and create best PRD ready to execute"*
+> User: *"use rcode research skills and create best PRD ready to execute"*
 >
 > ❌ Agent: *"Switching to autonomous mode — researching the domain and drafting a complete execution-ready PRD."* *(then writes full PRD)*
 
@@ -34,4 +34,4 @@ That response invents a mode that does not exist and violates the halt invariant
 
 ## Correct Response
 
-> ✅ Agent: *"I hear you want the PRD written end-to-end. The halt rule applies unless you set `mode: yolo` in `.rihal/config.yaml` or re-invoke via `/rihal-do --auto`. Here is the step-01 menu — pick Continue and I will drive each step concisely."*
+> ✅ Agent: *"I hear you want the PRD written end-to-end. The halt rule applies unless you set `mode: yolo` in `.rcode/config.yaml` or re-invoke via `/rcode-do --auto`. Here is the step-01 menu — pick Continue and I will drive each step concisely."*

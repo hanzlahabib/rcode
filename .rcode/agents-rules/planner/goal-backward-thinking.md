@@ -1,4 +1,4 @@
-# Rihal Planner: Goal-Backward Thinking Methodology
+# rcode Planner: Goal-Backward Thinking Methodology
 
 ## The Process: Goal-Backward Derivation
 

@@ -1,4 +1,4 @@
-# Rihal Planner: Task Templates by Type
+# rcode Planner: Task Templates by Type
 
 ## Standard Task Template
 

@@ -1,4 +1,4 @@
-# Rihal Executor: Task Commit Protocol
+# rcode Executor: Task Commit Protocol
 
 ## Commit Workflow for Each Task
 

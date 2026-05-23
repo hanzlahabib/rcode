@@ -1,4 +1,4 @@
-# Rihal Debugger: Scientific Method for Bug Investigation
+# rcode Debugger: Scientific Method for Bug Investigation
 
 ## The Scientific Method in Debugging
 

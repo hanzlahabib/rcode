@@ -1,4 +1,4 @@
-# Rihal Executor: Self-Check Verification
+# rcode Executor: Self-Check Verification
 
 ## Pre-SUMMARY Self-Check
 

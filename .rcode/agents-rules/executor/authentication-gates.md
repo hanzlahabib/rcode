@@ -1,4 +1,4 @@
-# Rihal Executor: Authentication Gates
+# rcode Executor: Authentication Gates
 
 ## Defining Authentication Gates
 

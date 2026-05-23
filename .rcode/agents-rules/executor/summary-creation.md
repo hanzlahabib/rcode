@@ -1,4 +1,4 @@
-# Rihal Executor: Summary Creation
+# rcode Executor: Summary Creation
 
 ## Creating SUMMARY.md After Plan Execution
 
