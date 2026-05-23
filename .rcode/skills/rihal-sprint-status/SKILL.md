@@ -14,7 +14,7 @@ triggers:
   - "sprint progress"
   - "where are we in the sprint"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -29,7 +29,7 @@ Follow the instructions in ./workflow.md.
 
 - Status table: Story | Owner | Status | Blockers | Notes
 - Summary: X/Y stories done, N blockers, recommendation for next action
-- Output to .rihal/progress/status-{date}.md
+- Output to .rcode/progress/status-{date}.md
 - Do NOT invent progress — read from actual file states
 
 ## Examples

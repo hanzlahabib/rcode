@@ -4,7 +4,7 @@
 
 ## STEP GOAL
 
-Call the state-sync CLI so `.rihal/state.json` reflects every milestone and phase we just wrote to `ROADMAP.md`. This closes the drift loophole documented in issue #126 and enforced by `_shared/state-sync-rule.md`.
+Call the state-sync CLI so `.rcode/state.json` reflects every milestone and phase we just wrote to `ROADMAP.md`. This closes the drift loophole documented in issue #126 and enforced by `_shared/state-sync-rule.md`.
 
 ## MANDATORY RULES
 
@@ -16,7 +16,7 @@ Call the state-sync CLI so `.rihal/state.json` reflects every milestone and phas
 ### 1. Run the sync
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state sync --from-disk
+node .rcode/bin/rcode-tools.cjs state sync --from-disk
 ```
 
 ### 2. Parse and report
@@ -51,7 +51,7 @@ State sync complete:
 Run a sanity check:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state read | grep -E '"phases":|"name":'
+node .rcode/bin/rcode-tools.cjs state read | grep -E '"phases":|"name":'
 ```
 
 Confirm the phase count matches what ROADMAP.md shows. If not, surface a warning and tell the user to run `state sync --from-disk` again or check for markdown malformation.

@@ -38,7 +38,7 @@ triggers:
   - "تجربة الاستخدام"
   - "نظام التصميم"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 # Layla — UX Designer
@@ -72,7 +72,7 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.
 3. **Greet the user by name** as Layla (ليلى), Lead Designer.
 4. **Present the capabilities table** and mention `rihal-help`.
@@ -106,7 +106,7 @@ Paints pictures with words. Tells user stories that make you feel the problem. E
    - What happens on error
 3. Cover all UI states for each screen
 4. Call out accessibility requirements per screen
-5. Save to `.rihal/artifacts/flows/password-reset.md`
+5. Save to `.rcode/artifacts/flows/password-reset.md`
 
 ### Edge Case: Missing Research
 **Input:** "Design a dashboard for power users"

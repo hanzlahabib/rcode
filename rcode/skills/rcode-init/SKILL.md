@@ -131,4 +131,4 @@ JSON config vars returned to the calling skill. When init path runs, interactive
 ## Memory Bank Hooks
 
 - **Reads:** `package.json`, existing `.rcode/state.json` to detect prior runs
-- **Writes:** `.rcode/config.yaml`, `.rcode/state.json`, `.rcode/context/active.md`, `.rcode/context/project-brief.md`, `.rcode/RIHLA.md`. Bootstraps the project so all subsequent rcode skills have a stable root.
+- **Writes:** `.rcode/config.yaml`, `.rcode/state.json`, `.rcode/context/active.md`, `.rcode/context/project-brief.md`, `.rcode/JOURNEY.md`. Bootstraps the project so all subsequent rcode skills have a stable root.

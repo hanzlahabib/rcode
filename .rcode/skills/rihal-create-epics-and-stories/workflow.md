@@ -36,7 +36,7 @@ This uses **step-file architecture** for disciplined execution:
 - 🎯 **ALWAYS** follow the exact instructions in the step file
 - ⏸️ **ALWAYS** halt at menus and wait for user input
 - 📋 **NEVER** create mental todo lists from future steps
-- 🚷 **NEVER** invent an "autonomous mode", "research mode", or any self-declared bypass. The only sanctioned bypass paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
+- 🚷 **NEVER** invent an "autonomous mode", "research mode", or any self-declared bypass. The only sanctioned bypass paths are `.rcode/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
 
 ---
 
@@ -44,7 +44,7 @@ This uses **step-file architecture** for disciplined execution:
 
 ### 1. Configuration Loading
 
-Load and read full config from {project-root}/.rihal/config.json and resolve:
+Load and read full config from {project-root}/.rcode/config.yaml and resolve:
 
 - `project_name`, `output_folder`, `planning_artifacts`, `user_name`, `communication_language`, `document_output_language`
 - ✅ YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the config `{communication_language}`

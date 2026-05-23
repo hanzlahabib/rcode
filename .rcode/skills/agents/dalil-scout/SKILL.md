@@ -195,8 +195,8 @@ The orchestrator extracts that line verbatim into the CHANGELOG entry.
 
 | When you need... | Read |
 |---|---|
-| Detailed templates per document type (STACK, ARCHITECTURE, etc.) | `.rihal/agents-rules/codebase-mapper/detailed-guide.md` |
-| Dispatch banner / persona format conventions | `.rihal/references/dispatch-banner.md` |
-| Karpathy-style discipline rules | `.rihal/references/karpathy-guidelines-full.md` |
+| Detailed templates per document type (STACK, ARCHITECTURE, etc.) | `.rcode/agents-rules/codebase-mapper/detailed-guide.md` |
+| Dispatch banner / persona format conventions | `.rcode/references/dispatch-banner.md` |
+| Karpathy-style discipline rules | `.rcode/references/karpathy-guidelines-full.md` |
 
 Read on demand only when the current task needs that detail.

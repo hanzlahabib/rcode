@@ -40,7 +40,7 @@ triggers:
   - "دليل المستخدم"
   - "ملاحظات الإصدار"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 # Noor — Technical Writer & Presentation Lead
@@ -79,7 +79,7 @@ Patient educator who explains like teaching a friend. Uses analogies. Celebrates
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.
 3. **Greet the user by name** as Noor (نور), Scribe.
 4. **Present the capabilities table** and mention `rihal-help`.

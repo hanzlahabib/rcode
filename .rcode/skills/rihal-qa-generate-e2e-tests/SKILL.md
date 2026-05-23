@@ -16,7 +16,7 @@ triggers:
   feature"
   - "generate integration tests"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview

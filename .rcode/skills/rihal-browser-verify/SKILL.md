@@ -13,7 +13,7 @@ triggers:
   - "browser smoke test"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -69,5 +69,5 @@ Do NOT include: "looks fine to me" without inspection; subjective "the page seem
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (frontend layer detection)
-- **Writes:** append to `.rihal/memory/incidents/known-issues.md` if a browser-runtime bug is acknowledged but not fixed in this session
+- **Reads:** `.rcode/memory/project/stack.md` (frontend layer detection)
+- **Writes:** append to `.rcode/memory/incidents/known-issues.md` if a browser-runtime bug is acknowledged but not fixed in this session

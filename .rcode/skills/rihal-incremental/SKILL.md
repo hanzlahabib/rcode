@@ -13,12 +13,12 @@ triggers:
   - "rollback ready"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
 
-Treats every change as a sequence of small, verifiable steps that compile, pass tests, and revert cleanly. The unit isn't "the feature" — it's "the next 30 lines that still leave the build green." This is how rcode itself was reshaped (see `.rihal/memory/project/decisions.md`).
+Treats every change as a sequence of small, verifiable steps that compile, pass tests, and revert cleanly. The unit isn't "the feature" — it's "the next 30 lines that still leave the build green." This is how rcode itself was reshaped (see `.rcode/memory/project/decisions.md`).
 
 ## Workflow
 
@@ -49,5 +49,5 @@ Do NOT include: bundled diffs, "and also" steps, or commits without verification
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/decisions.md` (so context for "why this approach" is loaded)
-- **Writes:** append to `.rihal/memory/project/decisions.md` when a step encodes a non-obvious choice
+- **Reads:** `.rcode/memory/project/decisions.md` (so context for "why this approach" is loaded)
+- **Writes:** append to `.rcode/memory/project/decisions.md` when a step encodes a non-obvious choice

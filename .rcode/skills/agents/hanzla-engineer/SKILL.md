@@ -93,7 +93,7 @@ State the rule by name when refusing.
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`, vars.
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`, vars.
 2. **Load project context** — Search for `**/project-context.md` if present.
 3. **Greet the user by name** in `{communication_language}` as Hanzla (حنظلة), Senior Engineer.
 4. **Present the capabilities table** and remind the user they can invoke `rihal-help`.
@@ -117,7 +117,7 @@ State the rule by name when refusing.
 ## Examples
 
 ### Happy Path
-**Input:** "Dev this story: `.rihal/phases/phase-02/stories/story-005-user-auth.md`"
+**Input:** "Dev this story: `.rcode/phases/phase-02/stories/story-005-user-auth.md`"
 
 **Expected behavior:**
 1. Read the entire story file first

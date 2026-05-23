@@ -27,7 +27,7 @@ triggers:
   - "maximalist"
 license: Adapted from Anthropic's frontend-design skill
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -87,8 +87,8 @@ Do NOT include: Inter or Space Grotesk as default fonts, generic purple/blue gra
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (frontend framework), brand tokens from Zahra if available
-- **Writes:** the implemented frontend files; consider noting design system choices in `.rihal/memory/project/decisions.md`
+- **Reads:** `.rcode/memory/project/stack.md` (frontend framework), brand tokens from Zahra if available
+- **Writes:** the implemented frontend files; consider noting design system choices in `.rcode/memory/project/decisions.md`
 
 ## Detailed reference
 

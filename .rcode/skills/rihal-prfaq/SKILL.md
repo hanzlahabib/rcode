@@ -5,7 +5,7 @@ description: Working Backwards PRFAQ challenge to forge product concepts.
 triggers:
   - "prfaq"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Do NOT use this skill for
@@ -39,7 +39,7 @@ The PRFAQ forces customer-first clarity: write the press release announcing the 
 
 ## On Activation
 
-1. Load config from `{project-root}/.rihal/config.yaml` and resolve::
+1. Load config from `{project-root}/.rcode/config.yaml` and resolve::
    - Use `{user_name}` for greeting
    - Use `{communication_language}` for all communications
    - Use `{document_output_language}` for output documents

@@ -121,12 +121,12 @@ If all validations pass:
 
 ### 7. State Sync (MANDATORY — closes #126)
 
-After saving `.planning/epics.md`, you MUST sync state so `.rihal/state.json` reflects the new epics. Without this, downstream workflows (`/rihal-status`, `/rihal-progress`, `/rihal-execute`) see a divergent picture.
+After saving `.planning/epics.md`, you MUST sync state so `.rcode/state.json` reflects the new epics. Without this, downstream workflows (`/rihal-status`, `/rihal-progress`, `/rihal-execute`) see a divergent picture.
 
 Per `@rihal/skills/_shared/state-sync-rule.md`:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state sync --from-disk
+node .rcode/bin/rcode-tools.cjs state sync --from-disk
 ```
 
 Confirm output reports the epic and story count matching what `epics.md` shows. If counts diverge, surface a warning and inspect the markdown for malformation.

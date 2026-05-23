@@ -15,7 +15,7 @@ triggers:
   - "review completed work"
   - "extract learnings from this sprint"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -30,7 +30,7 @@ Follow the instructions in ./workflow.md.
 
 - Fixed structure: Went Well | Went Poorly | Start Doing | Stop Doing | Continue Doing | Action Items
 - Every action item has an owner and a deadline — no "we should..." without a name
-- Saved to .rihal/progress/retro-{date}.md
+- Saved to .rcode/progress/retro-{date}.md
 - Do NOT include vague action items
 
 ## Examples

@@ -26,7 +26,7 @@ triggers:
   - "السباق التالي"
   - "جدولة السبرنت"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -39,7 +39,7 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Output: .rihal/phases/{phase}/sprint-{N}.md
+- Output: .rcode/phases/{phase}/sprint-{N}.md
 - Fixed structure: Sprint Goal (one sentence) | Assumptions | Duration | Stories (with owners) | Capacity Used/Available | Risks | Definition of Done
 - Stories ranked by priority from epics.md
 - Leave 20% capacity buffer
@@ -59,4 +59,4 @@ Follow the instructions in ./workflow.md.
 
 ### Negative Example: Fabricated Capacity
 **Input:** "Plan the sprint" (no prior capacity info, no `mode: yolo`, no `--auto`)
-**Expected behavior:** DO NOT assume "1 senior FT, 30 pts/week" or any other capacity. DO NOT write `sprint-N.md` until the user provides numeric answers for devs/PTO/velocity. If the user resists, point them at the two sanctioned bypass paths (`.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`). See `../../_shared/no-autonomous-bypass.md`.
+**Expected behavior:** DO NOT assume "1 senior FT, 30 pts/week" or any other capacity. DO NOT write `sprint-N.md` until the user provides numeric answers for devs/PTO/velocity. If the user resists, point them at the two sanctioned bypass paths (`.rcode/config.yaml` → `mode: yolo` or `/rihal-do --auto`). See `../../_shared/no-autonomous-bypass.md`.

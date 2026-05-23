@@ -18,7 +18,7 @@ triggers:
   - "technical
   feasibility for"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -34,7 +34,7 @@ Follow the instructions in ./workflow.md.
 - Report: Problem Framing | Approach Options (3+) | Trade-off Table | Recommended Approach | Risks | Next Steps
 - Each approach is feasible and buildable with known tech
 - Do NOT propose speculative tech without disclaimer
-- Saved to .rihal/artifacts/research/technical-{slug}.md
+- Saved to .rcode/artifacts/research/technical-{slug}.md
 
 ## Examples
 

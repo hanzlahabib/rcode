@@ -15,7 +15,7 @@ triggers:
   - "brownfield analysis"
   - "create LLM-friendly docs"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview

@@ -16,7 +16,7 @@ triggers:
   me understand X industry"
   - "domain research for"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -31,7 +31,7 @@ Follow the instructions in ./workflow.md.
 
 - Report: Domain Overview | Key Players | Terminology Glossary | Common Workflows | Regulatory Notes | References
 - Every claim cited with a source URL or flagged as assumption
-- Saved to .rihal/artifacts/research/domain-{slug}.md
+- Saved to .rcode/artifacts/research/domain-{slug}.md
 - Do NOT include unsourced statistics
 
 ## Examples

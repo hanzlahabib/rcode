@@ -13,7 +13,7 @@ triggers:
   - "ready for real users"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -85,5 +85,5 @@ Each week is reversible: if anything goes sideways, the previous week's state sh
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (current state), `.rihal/memory/incidents/known-issues.md` (operational pain), `.rihal/memory/milestones/current.md`
-- **Writes:** the gap report into `.rihal/memory/change-records/YYYYMMDD-NNN.md`; each week's plan as a phase entry under `.rihal/memory/milestones/current.md`
+- **Reads:** `.rcode/memory/project/stack.md` (current state), `.rcode/memory/incidents/known-issues.md` (operational pain), `.rcode/memory/milestones/current.md`
+- **Writes:** the gap report into `.rcode/memory/change-records/YYYYMMDD-NNN.md`; each week's plan as a phase entry under `.rcode/memory/milestones/current.md`

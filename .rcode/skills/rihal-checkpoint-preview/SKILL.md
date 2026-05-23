@@ -37,7 +37,7 @@ You are assisting the user in reviewing a change.
 
 ## INITIALIZATION
 
-Load and read full config from `{project-root}/.rihal/config.yaml` and resolve:
+Load and read full config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `implementation_artifacts`
 - `planning_artifacts`

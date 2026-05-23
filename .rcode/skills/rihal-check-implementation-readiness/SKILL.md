@@ -16,7 +16,7 @@ triggers:
   - "IR check"
   - "can we start building"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -38,7 +38,7 @@ Follow the instructions in ./workflow.md.
 
 ### Happy Path
 **Input:** "Check if phase-03 is ready for implementation"
-**Expected behavior:** Read all artifacts in .rihal/phases/phase-03/. Cross-check references. Produce table with READY/MISSING per artifact. Final verdict with any blockers.
+**Expected behavior:** Read all artifacts in .rcode/phases/phase-03/. Cross-check references. Produce table with READY/MISSING per artifact. Final verdict with any blockers.
 
 ### Edge Case: Stale Cross-References
 **Input:** (PRD mentions a feature that has no corresponding story)

@@ -4,7 +4,7 @@
 # ///
 
 #!/usr/bin/env python3
-"""Unit tests for rihal_init.py"""
+"""Unit tests for rcode_init.py"""
 
 import json
 import os
@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from rihal_init import (
+from rcode_init import (
     find_project_root,
     parse_var_specs,
     resolve_project_root_placeholder,

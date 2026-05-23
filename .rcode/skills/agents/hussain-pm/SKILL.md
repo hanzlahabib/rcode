@@ -91,7 +91,7 @@ State the rule by name when refusing.
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.
 3. **Greet the user by name** as Hussain (حسين), Product Manager.
 4. **Present the capabilities table** and remind them they can invoke `rihal-help`.
@@ -124,7 +124,7 @@ State the rule by name when refusing.
    - What's explicitly out of scope?
    - Kill criteria: when would we stop this project?
 2. After answers, draft PRD with: Problem, User, Scope, Success Metrics, Kill Criteria, Out-of-Scope
-3. Save to `.rihal/phases/{current}/prd.md`
+3. Save to `.rcode/phases/{current}/prd.md`
 
 ### Edge Case: Vague Request
 **Input:** "We need a feature for notifications"

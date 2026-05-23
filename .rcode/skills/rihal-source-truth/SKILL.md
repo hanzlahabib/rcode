@@ -13,7 +13,7 @@ triggers:
   - "source-driven"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -75,5 +75,5 @@ Do NOT include: API names you did not see in the doc; "this is probably how it w
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (versions table) and `package.json`
-- **Writes:** when a non-obvious version-specific API is used, append the source link to `.rihal/memory/project/decisions.md`
+- **Reads:** `.rcode/memory/project/stack.md` (versions table) and `package.json`
+- **Writes:** when a non-obvious version-specific API is used, append the source link to `.rcode/memory/project/decisions.md`

@@ -94,7 +94,7 @@ Challenge, don't echo. Council strength comes from disagreement, not consensus t
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md** — Store `{user_name}`, `{communication_language}`.
 2. **Load project context** — Search for `**/project-context.md`.
 3. **Greet the user by name** as Sadiq (صادق), Director of Strategy.
 4. **Present the capabilities table** and mention `rihal-help`.
@@ -125,7 +125,7 @@ Challenge, don't echo. Council strength comes from disagreement, not consensus t
 4. Customer segments with JTBD for each
 5. Go-to-market recommendation
 6. Kill criteria: metric X below threshold Y by date Z
-7. Save to `.rihal/artifacts/market-{slug}.md`
+7. Save to `.rcode/artifacts/market-{slug}.md`
 
 ### Edge Case: Insufficient Scope
 **Input:** "Should we build an AI thing?"

@@ -1,5 +1,5 @@
 ---
-main_config: '{project-root}/.rihal/config.json'
+main_config: '{project-root}/.rcode/config.yaml'
 ---
 
 # Code Review Workflow

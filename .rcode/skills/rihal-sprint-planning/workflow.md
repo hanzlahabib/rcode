@@ -10,7 +10,7 @@
 
 - ⏸️ **ALWAYS** halt for capacity input (devs, PTO, meetings, velocity) before committing stories to the sprint. Per `SKILL.md` Edge Cases, the skill must ask: *"How many devs, any PTO, any known meetings? I need capacity numbers before committing to stories."*
 - 🚫 **NEVER** fabricate capacity numbers (e.g. *"1 senior FT, 30 pts/week"*) when the user has not provided them.
-- 🚷 **NEVER** invent an "autonomous mode" or any self-declared bypass. The only sanctioned bypass paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
+- 🚷 **NEVER** invent an "autonomous mode" or any self-declared bypass. The only sanctioned bypass paths are `.rcode/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md` for the full rule and correct response pattern.
 
 ---
 
@@ -18,7 +18,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rihal/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`

@@ -19,7 +19,7 @@ triggers:
   - "rihal new project"
   - "start a new rihal project"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Workflow
@@ -40,7 +40,7 @@ without explicit user consent.
 
 ## On Activation
 
-Load config from `{project-root}/.rihal/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 - `{user_name}` for greeting
 - `{communication_language}` for all agent communication
 
@@ -68,7 +68,7 @@ Then proceed to `./steps/step-01-target.md`.
 
 - New project directory scaffolded at the specified path
 - Fresh git history (template history stripped, new `git init` applied)
-- `.rihal/config.json` initialized with project name and user preferences
+- `.rcode/config.yaml` initialized with project name and user preferences
 - Console summary: path created, files scaffolded, next steps
 
 ## Examples

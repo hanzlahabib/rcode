@@ -18,7 +18,7 @@ triggers:
   milestones"
   - "roadmap for this product"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -47,7 +47,7 @@ Follow the instructions in ./workflow.md.
 
 ### Happy Path
 **Input:** "Create the milestones I need for this project"
-**Expected behavior:** Load the approved PRD. Confirm scope. For each major outcome, propose a milestone with name, window, goal, acceptance, kill criteria. Halt at menu after each milestone for user confirmation. Append to ROADMAP.md only after user selects Continue. Upsert each milestone + its phase stubs into `.rihal/state.json` (see `../../_shared/state-sync-rule.md`).
+**Expected behavior:** Load the approved PRD. Confirm scope. For each major outcome, propose a milestone with name, window, goal, acceptance, kill criteria. Halt at menu after each milestone for user confirmation. Append to ROADMAP.md only after user selects Continue. Upsert each milestone + its phase stubs into `.rcode/state.json` (see `../../_shared/state-sync-rule.md`).
 
 ### Edge Case: No PRD Exists
 **Input:** "Create milestones for social-poster-x" (no prd.md)
@@ -59,4 +59,4 @@ Follow the instructions in ./workflow.md.
 
 ### Negative Example: Request to Bypass the Interview
 **Input:** "just generate the full roadmap autonomously"
-**Expected behavior:** DO NOT invent an "autonomous mode". Point the user to the two sanctioned bypass paths (`.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`) and present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.
+**Expected behavior:** DO NOT invent an "autonomous mode". Point the user to the two sanctioned bypass paths (`.rcode/config.yaml` → `mode: yolo` or `/rihal-do --auto`) and present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.

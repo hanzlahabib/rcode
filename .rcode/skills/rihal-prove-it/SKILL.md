@@ -13,7 +13,7 @@ triggers:
   - "reproduce the bug first"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -63,5 +63,5 @@ Do NOT include: tests written after the fact, "I tested manually", or coverage a
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (to detect the test runner correctly)
-- **Writes:** append to `.rihal/memory/incidents/known-issues.md` if the bug is acknowledged but the fix is deferred
+- **Reads:** `.rcode/memory/project/stack.md` (to detect the test runner correctly)
+- **Writes:** append to `.rcode/memory/incidents/known-issues.md` if the bug is acknowledged but the fix is deferred

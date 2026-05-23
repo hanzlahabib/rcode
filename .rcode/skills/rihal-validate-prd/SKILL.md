@@ -15,7 +15,7 @@ triggers:
   check"
   - "audit the PRD"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -36,7 +36,7 @@ Follow the instructions in ./workflow.md.
 ## Examples
 
 ### Happy Path
-**Input:** "Validate the PRD at .rihal/phases/phase-02/prd.md"
+**Input:** "Validate the PRD at .rcode/phases/phase-02/prd.md"
 **Expected behavior:** Read PRD, check against rubric (problem clarity, measurable success, explicit scope, kill criteria, owner attribution), produce report, deliver verdict.
 
 ### Edge Case: PRD Missing Sections

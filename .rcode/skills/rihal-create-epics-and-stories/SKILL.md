@@ -26,7 +26,7 @@ triggers:
   - "ابني القائمة"
   - "تحليل وثيقة المتطلبات"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -39,7 +39,7 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Produces .rihal/phases/{phase}/epics.md with hierarchical structure
+- Produces .rcode/phases/{phase}/epics.md with hierarchical structure
 - Each epic has: Title | Goal | Assumptions | Stories (list) | Priority | Estimate
 - Each story is independently testable and under 4-hour estimate
 - Do NOT create epics larger than 10 stories — split further

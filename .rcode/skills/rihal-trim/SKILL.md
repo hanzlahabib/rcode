@@ -13,7 +13,7 @@ triggers:
   - "extract dead branches"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -72,5 +72,5 @@ Do NOT include: changes that touch behaviour; "while I'm here, also..."; trimmin
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/decisions.md` (so historical "why this exists" context is loaded — prevents trimming load-bearing complexity)
+- **Reads:** `.rcode/memory/project/decisions.md` (so historical "why this exists" context is loaded — prevents trimming load-bearing complexity)
 - **Writes:** if a trimmed pattern was load-bearing for a documented decision, update the decision's "current code reference" pointer

@@ -13,7 +13,7 @@ triggers:
   - "branch from main"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -89,5 +89,5 @@ Do NOT include: force-pushes to main; commits with AI attribution; bundled commi
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/decisions.md` (so prior branching decisions are loaded)
+- **Reads:** `.rcode/memory/project/decisions.md` (so prior branching decisions are loaded)
 - **Writes:** none directly — the skill drives git, not Memory Bank state

@@ -1,12 +1,12 @@
 ---
 name: rihal-init
 internal: true
-description: "INTERNAL config loader — called by other skills, not by users directly. Loads module config vars from .rihal/. Install puts this in .rihal/skills/, not .claude/skills/."
+description: "INTERNAL config loader — called by other skills, not by users directly. Loads module config vars from .rcode/. Install puts this in .rcode/skills/, not .claude/skills/."
 argument-hint: "[--module=module_code] [--vars=var1:default1,var2] [--skill-path=/path/to/calling/skill]"
 triggers:
   - "init"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -18,11 +18,11 @@ This skill is the configuration entry point for all Rihal skills. It has two mod
 
 Every Rihal skill should call this on activation to get its config vars. The caller never needs to know whether init happened — they just get their config back.
 
-The script `rihal_init.py` is located in this skill's `scripts/` directory. Locate and run it using python for all commands below.
+The script `rcode_init.py` is located in this skill's `scripts/` directory. Locate and run it using python for all commands below.
 
 ## On Activation — Fast Path
 
-Run the `rihal_init.py` script with the `load` subcommand. Pass `--project-root` set to the project root directory.
+Run the `rcode_init.py` script with the `load` subcommand. Pass `--project-root` set to the project root directory.
 
 - If a module code was provided by the calling skill, include `--module {module_code}`
 - To load all vars, include `--all`
@@ -39,7 +39,7 @@ When the fast path fails (config missing for a module), run this init flow.
 
 ### Step 1: Check what needs setup
 
-Run `rihal_init.py` with the `check` subcommand, passing `--module {module_code}`, `--skill-path {calling_skill_path}`, and `--project-root`.
+Run `rcode_init.py` with the `check` subcommand, passing `--module {module_code}`, `--skill-path {calling_skill_path}`, and `--project-root`.
 
 The response tells you what's needed:
 
@@ -67,14 +67,14 @@ The check response includes `core_module` with header, subheader, and variable d
 
 The check response includes `target_module` with the module's questions. Variables may reference core answers in their defaults (e.g., `{output_folder}`).
 
-1. Resolve defaults by running `rihal_init.py` with the `resolve-defaults` subcommand, passing `--module {module_code}`, `--core-answers '{core_answers_json}'`, and `--project-root`
+1. Resolve defaults by running `rcode_init.py` with the `resolve-defaults` subcommand, passing `--module {module_code}`, `--core-answers '{core_answers_json}'`, and `--project-root`
 2. Show the module's `header` and `subheader`
 3. For each variable, present the prompt with resolved default
 4. For `single-select` variables, show options as a numbered list
 
 ### Step 4: Write config
 
-Collect all answers and run `rihal_init.py` with the `write` subcommand, passing `--answers '{all_answers_json}'` and `--project-root`.
+Collect all answers and run `rcode_init.py` with the `write` subcommand, passing `--answers '{all_answers_json}'` and `--project-root`.
 
 The `--answers` JSON format:
 
@@ -102,7 +102,7 @@ The script:
 
 ### Step 5: Return vars
 
-After writing, re-run `rihal_init.py` with the `load` subcommand (same as the fast path) to return resolved vars. Store returned vars as `{var-name}` and return them to the calling skill.
+After writing, re-run `rcode_init.py` with the `load` subcommand (same as the fast path) to return resolved vars. Store returned vars as `{var-name}` and return them to the calling skill.
 
 ## Output Format
 
@@ -130,5 +130,5 @@ JSON config vars returned to the calling skill. When init path runs, interactive
 
 ## Memory Bank Hooks
 
-- **Reads:** `package.json`, existing `.rihal/state.json` to detect prior runs
-- **Writes:** `.rihal/config.yaml`, `.rihal/state.json`, `.rihal/context/active.md`, `.rihal/context/project-brief.md`, `.rihal/RIHLA.md`. Bootstraps the project so all subsequent rcode skills have a stable root.
+- **Reads:** `package.json`, existing `.rcode/state.json` to detect prior runs
+- **Writes:** `.rcode/config.yaml`, `.rcode/state.json`, `.rcode/context/active.md`, `.rcode/context/project-brief.md`, `.rcode/JOURNEY.md`. Bootstraps the project so all subsequent rcode skills have a stable root.

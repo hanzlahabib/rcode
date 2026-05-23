@@ -26,7 +26,7 @@ triggers:
   - "تتبّع السبب"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -90,5 +90,5 @@ Do NOT include: "tried X and it seems to work"; speculative "maybe it's caching"
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/incidents/known-issues.md` (so prior debugging context is loaded), `.rihal/memory/project/stack.md` (Sentry presence)
-- **Writes:** append the root cause to `.rihal/memory/incidents/post-mortems/YYYYMMDD-<slug>.md` when an incident is resolved; remove the entry from `known-issues.md` once the fix is verified in production
+- **Reads:** `.rcode/memory/incidents/known-issues.md` (so prior debugging context is loaded), `.rcode/memory/project/stack.md` (Sentry presence)
+- **Writes:** append the root cause to `.rcode/memory/incidents/post-mortems/YYYYMMDD-<slug>.md` when an incident is resolved; remove the entry from `known-issues.md` once the fix is verified in production

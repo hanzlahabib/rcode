@@ -160,17 +160,17 @@ class TestLoadModuleYaml(unittest.TestCase):
         path = Path(self.temp_dir) / 'module.yaml'
         path.write_text(
             'code: core\n'
-            'name: "Rihal Core Module"\n'
+            'name: "rcode Core Module"\n'
             'header: "Core Config"\n'
             'user_name:\n'
             '  prompt: "What should agents call you?"\n'
-            '  default: "Rihal"\n'
+            '  default: "rcode"\n'
             '  result: "{value}"\n'
         )
         result = load_module_yaml(path)
         self.assertIsNotNone(result)
         self.assertEqual(result['meta']['code'], 'core')
-        self.assertEqual(result['meta']['name'], 'Rihal Core Module')
+        self.assertEqual(result['meta']['name'], 'rcode Core Module')
         self.assertIn('user_name', result['variables'])
         self.assertEqual(result['variables']['user_name']['prompt'], 'What should agents call you?')
 
@@ -178,7 +178,7 @@ class TestLoadModuleYaml(unittest.TestCase):
         path = Path(self.temp_dir) / 'module.yaml'
         path.write_text(
             'code: bmm\n'
-            'name: "Rihal Method"\n'
+            'name: "rcode Method"\n'
             'project_name:\n'
             '  prompt: "Project name?"\n'
             '  default: "{directory_name}"\n'

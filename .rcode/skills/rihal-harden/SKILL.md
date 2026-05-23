@@ -13,7 +13,7 @@ triggers:
   - "before we ship"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -76,8 +76,8 @@ Medium (track):
   · <surface> — <issue>
 
 Memory Bank update:
-  → wrote <count> entries to .rihal/memory/incidents/known-issues.md
-  → wrote audit summary to .rihal/memory/change-records/<date>-001.md
+  → wrote <count> entries to .rcode/memory/incidents/known-issues.md
+  → wrote audit summary to .rcode/memory/change-records/<date>-001.md
 ```
 
 ## Examples
@@ -90,5 +90,5 @@ Memory Bank update:
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (auth layer detection), `.rihal/memory/incidents/post-mortems/` (prior auth/security incidents)
-- **Writes:** `.rihal/memory/incidents/known-issues.md` (deferred findings); `.rihal/memory/change-records/YYYYMMDD-NNN.md` (the audit itself as a change record)
+- **Reads:** `.rcode/memory/project/stack.md` (auth layer detection), `.rcode/memory/incidents/post-mortems/` (prior auth/security incidents)
+- **Writes:** `.rcode/memory/incidents/known-issues.md` (deferred findings); `.rcode/memory/change-records/YYYYMMDD-NNN.md` (the audit itself as a change record)

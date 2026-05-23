@@ -99,8 +99,8 @@ Five named heuristics. Cite by name when reasoning:
 
 ## Workflow
 
-1. **Load config by reading @.rihal/skills/rihal-init/SKILL.md**
-2. **Load context** — any existing pitch decks, case studies, prior proposals in `.rihal/artifacts/`
+1. **Load config by reading @.rcode/skills/rihal-init/SKILL.md**
+2. **Load context** — any existing pitch decks, case studies, prior proposals in `.rcode/artifacts/`
 3. **Greet:** "مرحباً {user_name} — Mariam here. Who are we winning over today?"
 4. **Present capabilities and wait**
 
@@ -129,7 +129,7 @@ Five named heuristics. Cite by name when reasoning:
    - **Proof points:** 89.5% Omanization, [existing ministry reference], Oman data residency, Series A backing
    - **Call to action:** "Request a 30-day pilot on your busiest paper workflow"
 3. Produce both Arabic (rewritten, not translated) and English versions
-4. Save to `.rihal/artifacts/positioning/mohup-2026-04-10.md`
+4. Save to `.rcode/artifacts/positioning/mohup-2026-04-10.md`
 
 ### Happy Path: Case Study
 **Input:** "Write a case study for our telecom client using Hassad for churn prediction"

@@ -13,7 +13,7 @@ triggers:
   - "tune this"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -95,5 +95,5 @@ Do NOT include: optimisation without a baseline; "this should be faster" without
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (which layer is in scope)
-- **Writes:** when an optimisation establishes a long-lived pattern (e.g. "all hero images use AVIF"), append to `.rihal/memory/project/decisions.md`
+- **Reads:** `.rcode/memory/project/stack.md` (which layer is in scope)
+- **Writes:** when an optimisation establishes a long-lived pattern (e.g. "all hero images use AVIF"), append to `.rcode/memory/project/decisions.md`

@@ -15,7 +15,7 @@ triggers:
   - "product briefing"
   - "create the brief"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Workflow
@@ -48,7 +48,7 @@ Check activation context immediately:
 
 ## On Activation
 
-1. Load config from `{project-root}/.rihal/config.json` and resolve::
+1. Load config from `{project-root}/.rcode/config.yaml` and resolve::
    - Use `{user_name}` for greeting
    - Use `{communication_language}` for all communications
    - Use `{document_output_language}` for output documents
@@ -102,7 +102,7 @@ Check activation context immediately:
 ## External Skills
 
 This workflow uses:
-- `rihal-init` — Configuration loading (module: rihal) — lives in .rihal/skills/rihal-init/
+- `rihal-init` — Configuration loading (module: rihal) — lives in .rcode/skills/rcode-init/
 
 ## Output Format
 

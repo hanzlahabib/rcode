@@ -20,7 +20,7 @@ This skill uses the same step-file architecture as `rihal-create-prd` and `rihal
 | 6 | `step-06-phase-stubs.md` | Stub phases under each milestone |
 | 7 | `step-07-backlog.md` | Parking-lot items |
 | 8 | `step-08-write-roadmap.md` | Append milestones to ROADMAP.md |
-| 9 | `step-09-state-sync.md` | Upsert into `.rihal/state.json` (see `_shared/state-sync-rule.md`) |
+| 9 | `step-09-state-sync.md` | Upsert into `.rcode/state.json` (see `_shared/state-sync-rule.md`) |
 | 10 | `step-10-complete.md` | Summary + hand-off |
 
 ## Conventions

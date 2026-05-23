@@ -8,7 +8,7 @@
 - [ ] Velocity is either (a) provided by the user, or (b) pulled from prior sprint retrospective
 - [ ] 20% buffer is applied to the resulting capacity
 
-If any of the above is missing and the session is NOT running with `.rihal/config.yaml` `mode: yolo` or `/rihal-do --auto`, the workflow MUST halt and ask the user — never fabricate numbers.
+If any of the above is missing and the session is NOT running with `.rcode/config.yaml` `mode: yolo` or `/rihal-do --auto`, the workflow MUST halt and ask the user — never fabricate numbers.
 
 ## Core Validation
 

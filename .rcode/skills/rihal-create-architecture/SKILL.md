@@ -19,7 +19,7 @@ triggers:
   - "record the
   decision to use X"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -33,7 +33,7 @@ Follow the instructions in ./workflow.md.
 ## Output Format
 
 - ADR file structure is fixed: Title | Status | Date | Decider | Context | Decision | Consequences | Alternatives Considered
-- Saved to .rihal/decisions/{NNN}-{slug}.md with sequential numbering
+- Saved to .rcode/decisions/{NNN}-{slug}.md with sequential numbering
 - Status values: Proposed / Accepted / Deprecated / Superseded
 - At least 2 alternatives considered, each with explicit rejection reason
 - Do NOT skip the Alternatives section — it's the most important part

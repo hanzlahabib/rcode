@@ -15,7 +15,7 @@ triggers:
   - "competitor scan"
   - "analyze the market for X"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -30,7 +30,7 @@ Follow the instructions in ./workflow.md.
 
 - Report: TAM/SAM/SOM (with sources) | Direct Competitors (3-5) | Indirect Alternatives | Customer Segments | Trends | Recommendation
 - Every number cites a source
-- Saved to .rihal/artifacts/research/market-{slug}.md
+- Saved to .rcode/artifacts/research/market-{slug}.md
 - Do NOT invent market sizes
 
 ## Examples

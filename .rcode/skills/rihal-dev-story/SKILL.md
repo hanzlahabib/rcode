@@ -5,7 +5,7 @@ description: >
   Execute an approved story file by writing tests and code that fulfill
   every acceptance criterion. Activates when the user says "dev this story",
   "implement story {id}", "execute the story", "code the next story", "run
-  dev-story on", or "implement .rihal/phases/{phase}/stories/{file}". Do NOT
+  dev-story on", or "implement .rcode/phases/{phase}/stories/{file}". Do NOT
   use without a prepared story file (use rihal-create-story first).
 triggers:
   - "dev this story"
@@ -14,9 +14,9 @@ triggers:
   - "code the next story"
   - "run
   dev-story on"
-  - "implement .rihal/phases/{phase}/stories/{file}"
+  - "implement .rcode/phases/{phase}/stories/{file}"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -39,7 +39,7 @@ Follow the instructions in ./workflow.md.
 ## Examples
 
 ### Happy Path
-**Input:** "dev this story: .rihal/phases/phase-02/stories/story-005.md"
+**Input:** "dev this story: .rcode/phases/phase-02/stories/story-005.md"
 **Expected behavior:** Read story, execute tasks in order, write tests, run suite after each task, mark checkboxes, update File List.
 
 ### Edge Case: Missing Story

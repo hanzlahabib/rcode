@@ -17,7 +17,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rihal/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`

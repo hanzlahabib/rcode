@@ -13,7 +13,7 @@ triggers:
   - "release workflow"
 user-invocable: true
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -107,5 +107,5 @@ Next steps:
 
 ## Memory Bank Hooks
 
-- **Reads:** `.rihal/memory/project/stack.md` (deploy target)
-- **Writes:** when CI gains a new gate, append to `.rihal/memory/project/decisions.md` with the rationale
+- **Reads:** `.rcode/memory/project/stack.md` (deploy target)
+- **Writes:** when CI gains a new gate, append to `.rcode/memory/project/decisions.md` with the rationale

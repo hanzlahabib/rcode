@@ -1,5 +1,5 @@
 ---
-main_config: '{project-root}/.rihal/config.json'
+main_config: '{project-root}/.rcode/config.yaml'
 outputFile: '{planning_artifacts}/ROADMAP.md'
 inputFile: '{planning_artifacts}/prd.md'
 ---
@@ -33,9 +33,9 @@ This uses **step-file architecture** for disciplined execution:
 - 💾 **ALWAYS** update frontmatter of output files when writing
 - 🎯 **ALWAYS** follow the exact instructions in the step file
 - 📋 **NEVER** create mental todo lists from future steps
-- 🚷 **NEVER** invent an "autonomous mode" or self-declared bypass. The only sanctioned paths are `.rihal/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md`.
+- 🚷 **NEVER** invent an "autonomous mode" or self-declared bypass. The only sanctioned paths are `.rcode/config.yaml` → `mode: yolo` or `/rihal-do --auto`. See `../../_shared/no-autonomous-bypass.md`.
 - 🔗 **NEVER** cite external sources without `WebFetch`. See `../../_shared/research-citation-rule.md`.
-- 🗂️ **ALWAYS** sync every milestone/phase into `.rihal/state.json` after writing to ROADMAP.md. See `../../_shared/state-sync-rule.md`.
+- 🗂️ **ALWAYS** sync every milestone/phase into `.rcode/state.json` after writing to ROADMAP.md. See `../../_shared/state-sync-rule.md`.
 
 ---
 
@@ -79,7 +79,7 @@ Steps (loaded one at a time):
 6. `step-06-phase-stubs.md` — List stub phases under each milestone (no plan detail yet).
 7. `step-07-backlog.md` — Capture parking-lot items.
 8. `step-08-write-roadmap.md` — Append all milestones to ROADMAP.md.
-9. `step-09-state-sync.md` — Upsert milestones + phases into `.rihal/state.json`.
+9. `step-09-state-sync.md` — Upsert milestones + phases into `.rcode/state.json`.
 10. `step-10-complete.md` — Summary, next-step hand-off (`/rihal-create-epics-and-stories` for M1).
 
 Each step halts at a menu: [A]ccept / [P]ropose change / [C]ontinue. Only on `C` does the workflow advance.

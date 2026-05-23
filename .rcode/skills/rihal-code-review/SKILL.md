@@ -28,7 +28,7 @@ triggers:
   - "تدقيق الكود"
   - "جودة الكود"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -44,7 +44,7 @@ Follow the instructions in ./workflow.md.
 - Produces review report with severity per finding: Critical / High / Medium / Low
 - Report table: File:Line | Severity | Issue | Suggested Fix
 - Final verdict: APPROVE / REQUEST CHANGES / BLOCK
-- Saved to .rihal/artifacts/reviews/{pr-id}.md
+- Saved to .rcode/artifacts/reviews/{pr-id}.md
 - Do NOT silently fix issues — the author must decide
 
 ## Examples

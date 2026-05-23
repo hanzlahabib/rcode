@@ -10,7 +10,7 @@
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rihal/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `project_knowledge`
 - `user_name`

@@ -26,7 +26,7 @@ triggers:
   - "القصة التالية"
   - "جهّز القصة للتنفيذ"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -39,7 +39,7 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Story file at .rihal/phases/{phase}/stories/story-{id}.md
+- Story file at .rcode/phases/{phase}/stories/story-{id}.md
 - Fixed sections: Goal | Assumptions | Context | Tasks (checklist) | Acceptance Criteria | Dependencies | File List (empty) | Dev Agent Record (empty)
 - Each task is ≤4 hours, in execution order
 - Acceptance criteria in Given/When/Then — no criterion is valid unless a test can be written against it

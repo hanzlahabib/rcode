@@ -21,7 +21,7 @@ Append `step-10-complete` to `stepsCompleted`. Add `completedAt: {ISO date}`.
 
 Source PRD:     {inputFile}
 Roadmap:        {outputFile}
-State:          .rihal/state.json (synced)
+State:          .rcode/state.json (synced)
 
 Shipped:
   {N} milestones: M1..M{N}

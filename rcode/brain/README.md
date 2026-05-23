@@ -1,6 +1,6 @@
 # rcode/brain — The rcode Context Layer
 
-This directory is populated on install (and on every `/rcode-update`) by `rcode-tools brain pull`. Its job is simple: pull rcode's institutional knowledge — PR/commit/issue standards, architecture decisions, internal guides — into every Rihalian's project so their AI assistant already knows how rcode builds.
+This directory is populated on install (and on every `/rcode-update`) by `rcode-tools brain pull`. Its job is simple: pull rcode's institutional knowledge — PR/commit/issue standards, architecture decisions, internal guides — into every rcode user's project so their AI assistant already knows how rcode builds.
 
 ## Structure
 
@@ -22,7 +22,7 @@ Content is pulled from three kinds of source:
 
 ## Update policy
 
-- Local edits to any file under `rcode/brain/` are **overwritten** on every `/rcode-update`. rcode treats the upstream sources as the single source of truth. If the rcode standard needs to change, the change happens upstream — then every Rihalian benefits.
+- Local edits to any file under `rcode/brain/` are **overwritten** on every `/rcode-update`. rcode treats the upstream sources as the single source of truth. If the rcode standard needs to change, the change happens upstream — then every rcode user benefits.
 - Per-invocation: `node .rcode/bin/rcode-tools.cjs brain pull`.
 - Per project: runs automatically as part of `npx rcode install`.
 

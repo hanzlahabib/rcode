@@ -16,7 +16,7 @@ triggers:
   - "design this screen"
   - "create the design for"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -29,7 +29,7 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- UX spec saved to .rihal/artifacts/ux/{slug}.md
+- UX spec saved to .rcode/artifacts/ux/{slug}.md
 - Fixed sections: User Goal | Flow Steps | Screens with States | Design Tokens Used | Accessibility Notes
 - All UI states listed (default/hover/focus/empty/loading/error/success)
 - Accessibility notes cite WCAG 2.1 AA criteria

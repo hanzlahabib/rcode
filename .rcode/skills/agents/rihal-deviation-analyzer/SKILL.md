@@ -23,7 +23,7 @@ triggers:
   - "انحراف الخطة"
   - "تحليل الانحراف"
 ---
-@.rihal/references/response-style.md
+@.rcode/references/response-style.md
 
 # Rihal Deviation Analyzer
 

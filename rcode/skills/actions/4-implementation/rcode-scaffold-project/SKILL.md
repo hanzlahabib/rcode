@@ -2,7 +2,7 @@
 name: rcode-scaffold-project
 internal: true
 description: >
-  Scaffold a new project for Rihalians using the official rcode template repo.
+  Scaffold a new project for rcode users using the official rcode template repo.
   Activates when the user says "scaffold project", "create project", "new project",
   "initialize project", "setup new project", "scaffold from template", "create from template",
   "rcode new project", or "start a new rcode project". Do NOT use for generating
@@ -30,7 +30,7 @@ user-invocable: true
 
 ## Overview
 
-This skill bootstraps a new Rihalian project by cloning the official rcode template
+This skill bootstraps a new rcode project by cloning the official rcode template
 repository (`https://github.com/rcode-om/template`) into a target directory.
 
 It always clones fresh from GitHub — nothing is stored locally — so if the template

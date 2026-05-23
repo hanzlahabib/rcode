@@ -17,7 +17,7 @@ triggers:
   - "create
   project-context.md"
 ---
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 
 ## Overview
@@ -30,7 +30,7 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Produces .rihal/project-context.md
+- Produces .rcode/project-context.md
 - Sections: Tech Stack | Conventions | Key Patterns | Testing Approach | Folder Structure | Common Commands
 - Keep under 2000 tokens for efficient context loading
 - Do NOT include: historical changes, deprecated sections, or full architecture details
