@@ -369,6 +369,11 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
+server.on('error', (err) => {
+  console.error('[orchestrator] server error:', err.message);
+  process.exit(1);
+});
+
 // WebSocket upgrade — authenticate, validate the storyId, then hand off.
 if (WebSocketServer) {
   const wss = new WebSocketServer({ noServer: true });
