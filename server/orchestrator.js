@@ -337,6 +337,13 @@ function attachWebSocket(ws, storyId) {
 
 // ── server ────────────────────────────────────────────────────────────────────
 
+process.on('unhandledRejection', (reason) => {
+  console.error('[' + new Date().toISOString() + '] [orchestrator] unhandledRejection:', reason && reason.stack || reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[' + new Date().toISOString() + '] [orchestrator] uncaughtException:', err && err.stack || err);
+});
+
 const server = http.createServer(async (req, res) => {
   const method = req.method || '';
   const url    = req.url    || '';
