@@ -67,7 +67,7 @@ test('active phase — writes HANDOFF.json with phase number and current_plan', 
   });
   const result = runHook(dir, { trigger: 'auto' });
   assert.strictEqual(result.status, 0);
-  const handoffPath = path.join(dir, 'HANDOFF.json');
+  const handoffPath = path.join(dir, '.rcode', 'HANDOFF.json');
   assert.ok(fs.existsSync(handoffPath));
   const handoff = JSON.parse(fs.readFileSync(handoffPath, 'utf8'));
   assert.strictEqual(handoff.reason, 'pre-compact');

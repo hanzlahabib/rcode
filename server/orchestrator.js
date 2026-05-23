@@ -353,6 +353,7 @@ const server = http.createServer(async (req, res) => {
 
   const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
 
+  if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
@@ -377,7 +378,8 @@ if (WebSocketServer) {
 server.listen(PORT, '127.0.0.1', () => {
   console.log('\n🤖 rcode Orchestrator');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('   Port:   ' + PORT + '  (127.0.0.1, loopback only)');
+  console.log('   Port:   ' + PORT);
+  console.log('   Bind:   127.0.0.1 (loopback only)');
   console.log('   Token:  ' + AUTH_TOKEN);
   console.log('   PTY:    ' + (pty ? 'node-pty ready' : 'node-pty MISSING'));
   console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));

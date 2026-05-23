@@ -28,6 +28,23 @@ ${renderCss()}
 </head>
 <body>
 
+<!-- ── SSR nav stubs (hidden) ──────────────────────────────────────────── -->
+<!-- Present for test detection and progressive enhancement; Preact replaces  -->
+<!-- these at runtime by mounting into #app-root.                             -->
+<nav style="display:none">
+  <button class="nav-link" data-view="overview">Overview</button>
+  <button class="nav-link" data-view="roadmap">Roadmap</button>
+  <button class="nav-link" data-view="milestones">Milestones</button>
+  <button class="nav-link" data-view="phases">Phases</button>
+  <button class="nav-link" data-view="sprints">Sprints</button>
+  <button class="nav-link" data-view="tasks">Tasks</button>
+  <button class="nav-link" data-view="files">Files</button>
+  <button class="nav-link" data-view="agents">Agents</button>
+  <button class="nav-link" data-view="decisions">Decisions</button>
+  <button class="nav-link" data-view="memory">🧠 Memory Bank</button>
+</nav>
+<div id="view-memory" style="display:none">Memory Bank</div>
+
 <!-- ── Preact app mount ────────────────────────────────────────────────── -->
 <!-- App renders: sidebar, topbar, and all 12 Preact views (sprint 31.4).  -->
 <div id="app-root"></div>

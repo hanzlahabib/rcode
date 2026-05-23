@@ -68,12 +68,12 @@ const FORBIDDEN_PATTERNS = [
     regex: /(?:Load|Read|Open|require\()\s*[^\n]*\brcode\/digests\//,
     description: '`rcode/digests/...` — package-internal digest path. Use `rcode digest <agent>` instead.',
   },
-  // BMAD-style pivot (v0.2.0) — these CLI subcommands were deleted and
+  // v0.2.0 architecture pivot — these CLI subcommands were deleted and
   // replaced with direct Claude Read/Write/Bash file I/O. Any template
   // that still references them is a regression.
   {
     regex: /\brcode\s+(?:sprint|milestone|bug|handoff|preserve|session|story-commit)\b/,
-    description: '`rcode {sprint|milestone|bug|handoff|preserve|session|story-commit}` — these CLI subcommands were removed in the BMAD-style pivot. Slash command templates must instruct Claude to read/write `.rcode/**` files directly via the Read/Write/Bash tools.',
+    description: '`rcode {sprint|milestone|bug|handoff|preserve|session|story-commit}` — these CLI subcommands were removed in the v0.2.0 architecture pivot. Slash command templates must instruct Claude to read/write `.rcode/**` files directly via the Read/Write/Bash tools.',
   },
 ];
 
@@ -215,7 +215,7 @@ test('every known slash command installs and is non-empty', async (t) => {
 });
 
 test('state-mutating slash commands use direct file I/O, not deleted CLI subcommands', async (t) => {
-  // BMAD-style pivot (v0.2.0): slash commands that used to shell out to
+  // v0.2.0 architecture pivot: slash commands that used to shell out to
   // `rcode handoff|preserve|session|sprint|milestone|bug|story-commit`
   // must now instruct Claude to read/write `.rcode/**` files directly
   // using the Read/Write tools. This test locks in that migration — every

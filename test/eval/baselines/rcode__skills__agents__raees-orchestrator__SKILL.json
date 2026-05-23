@@ -21,7 +21,8 @@
     "rcode-raees-dispatch",
     "rcode-raees-handoff",
     "rcode-raees-parallel",
-    "rcode-raees-sequence"
+    "rcode-raees-sequence",
+    "rcode-specific"
   ],
   "tools": [],
   "triggers": [
