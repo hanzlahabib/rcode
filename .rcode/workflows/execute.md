@@ -7,7 +7,7 @@ Execute all plans in a phase using wave-based parallel execution. Orchestrator s
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.
 
-1. **Init state**: `node .rihal/bin/rihal-tools.cjs init execute {N}`
+1. **Init state**: `node .rcode/bin/rihal-tools.cjs init execute {N}`
 2. **Phase index**: list all plans via `phase-plan-index {N}` — extract
    plan count, wave count, autonomy flag per plan, files_modified overlaps
 3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
@@ -73,7 +73,7 @@ wall-clock expectation).
 <three_options>
 Check config mode first:
 ```bash
-CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rihal-settings set mode guided to change.`
@@ -102,7 +102,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXECUTING PHASE {NN}
+ rcode ► EXECUTING PHASE {NN}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -115,7 +115,7 @@ Use TaskCreate at start, one entry per wave:
 Per-wave banner as each begins:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXECUTING WAVE {N}
+ rcode ► EXECUTING WAVE {N}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning {N} rihal-executor agents in parallel...
@@ -129,7 +129,7 @@ Per-agent completion:
 Closure:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PHASE {NN} COMPLETE ✓
+ rcode ► PHASE {NN} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 End with Next Up block routing to /rihal-verify-work or /rihal-next.
@@ -158,15 +158,15 @@ via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
 Read STATE.md before any operation to load project context.
 
-@.rihal/references/agent-contracts.md
-@.rihal/references/context-budget.md
-@.rihal/references/gates.md
-@.rihal/references/karpathy-guidelines.md
-@.rihal/references/execution-protocol.md
+@.rcode/references/agent-contracts.md
+@.rcode/references/context-budget.md
+@.rcode/references/gates.md
+@.rcode/references/karpathy-guidelines.md
+@.rcode/references/execution-protocol.md
 </required_reading>
 
 <available_agent_types>
@@ -203,9 +203,9 @@ If `--wave` is absent, preserve the current behavior of executing all incomplete
 Load all context in one call:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init execute "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init execute "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-executor 2>/dev/null)
+AGENT_SKILLS=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-executor 2>/dev/null)
 ```
 
 Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
@@ -215,7 +215,7 @@ Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelizat
 Read worktree config:
 
 ```bash
-USE_WORKTREES=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.use_worktrees 2>/dev/null || echo "true")
+USE_WORKTREES=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
 When `USE_WORKTREES` is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees.
@@ -223,7 +223,7 @@ When `USE_WORKTREES` is `false`, all executor agents run without `isolation="wor
 Read context window size for adaptive prompt enrichment:
 
 ```bash
-CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+CONTEXT_WINDOW=$(node ".rcode/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 
 # Detect if any SPRINT.md in this phase references a checkpoint — used to lazy-load checkpoints.md
 SPRINT_HAS_CHECKPOINT=$(grep -rl "checkpoint" "${phase_dir}"/*-SPRINT.md 2>/dev/null | head -1)
@@ -253,7 +253,7 @@ inline path for each plan.
 ```bash
 # REQUIRED: prevents stale auto-chain from previous --auto runs
 if [[ ! "$ARGUMENTS" =~ --auto ]]; then
-  node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+  node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
 fi
 ```
 </step>
@@ -333,7 +333,7 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
 
    b. **If "Review first":** Read and display the full plan file. Ask again: Execute, Modify, Skip.
 
-   c. **If "Execute":** Read and follow `.rihal/workflows/execute-sprint.md` **inline**
+   c. **If "Execute":** Read and follow `.rcode/workflows/execute-sprint.md` **inline**
       (do NOT spawn a subagent). Execute tasks one at a time.
 
    d. **After each task:** Pause briefly. If the user intervenes (types anything), stop and address
@@ -372,7 +372,7 @@ Report: "Found {plan_count} plans in {phase_dir} ({incomplete_count} incomplete)
 
 **Update STATE.md for phase start:**
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state begin-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+node ".rcode/bin/rihal-tools.cjs" state begin-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
 ```
 This updates Status, Last Activity, Current focus, Current Position, and plan counts in STATE.md so frontmatter and body text reflect the active phase immediately.
 </step>
@@ -381,7 +381,7 @@ This updates Status, Last Activity, Current focus, Current Position, and plan co
 Load plan inventory with wave grouping in one call:
 
 ```bash
-PLAN_INDEX=$(node ".rihal/bin/rihal-tools.cjs" phase-plan-index "${PHASE_NUMBER}")
+PLAN_INDEX=$(node ".rcode/bin/rihal-tools.cjs" phase-plan-index "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `phase`, `plans[]` (each with `id`, `wave`, `autonomous`, `objective`, `files_modified`, `task_count`, `has_summary`), `waves` (map of wave number → plan IDs), `incomplete`, `has_checkpoints`.
@@ -408,7 +408,7 @@ Report:
 </step>
 
 
-@rihal/workflows/execute-waves.md
+@rcode/workflows/execute-waves.md
 
 
 <step name="checkpoint_handling">
@@ -418,8 +418,8 @@ Plans with `autonomous: false` require user interaction.
 
 Read auto-advance config (chain flag + user preference):
 ```bash
-AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+AUTO_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
 ```
 
 When executor returns a checkpoint AND (`AUTO_CHAIN` is `"true"` OR `AUTO_CFG` is `"true"`):
@@ -480,7 +480,7 @@ After all waves:
 
 **Security gate check:**
 ```bash
-SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 ```
 
@@ -504,7 +504,7 @@ If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_o
 If `WAVE_FILTER` was used, re-run plan discovery after execution:
 
 ```bash
-POST_PLAN_INDEX=$(node ".rihal/bin/rihal-tools.cjs" phase-plan-index "${PHASE_NUMBER}")
+POST_PLAN_INDEX=$(node ".rcode/bin/rihal-tools.cjs" phase-plan-index "${PHASE_NUMBER}")
 ```
 
 Apply the same "incomplete" filtering rules as earlier:
@@ -578,16 +578,16 @@ STOP — do not proceed to `code_review_gate` until all verify commands pass or 
 
 **Config gate (default ON):**
 ```bash
-CODE_REVIEW_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.code_review_enabled 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.code_review_enabled 2>/dev/null || echo "true")
 ```
 
 If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review_enabled=false)" and proceed to `close_parent_artifacts`.
 
 **Resolve reviewer model:**
 ```bash
-REVIEWER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
+REVIEWER_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
 REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
-REVIEWER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
+REVIEWER_SKILLS=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
 # Issue #652 — no leading zeros. Variable name kept for backward compat in this workflow.
 PADDED="${PHASE_NUMBER}"
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
@@ -690,7 +690,7 @@ fi
 
 **2. Find parent UAT file:**
 ```bash
-PARENT_INFO=$(node ".rihal/bin/rihal-tools.cjs" find-phase "${PARENT_PHASE}" --raw)
+PARENT_INFO=$(node ".rcode/bin/rihal-tools.cjs" find-phase "${PARENT_PHASE}" --raw)
 # Extract directory from PARENT_INFO JSON, then find UAT file in that directory
 ```
 
@@ -721,16 +721,16 @@ mv .planning/debug/{slug}.md .planning/debug/resolved/
 
 **6. Commit updated artifacts:**
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
+node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
 ```
 </step>
 
 
-@rihal/workflows/execute-regression-gates.md
+@rcode/workflows/execute-regression-gates.md
 
 
 
-@rihal/workflows/execute-verify-phase-goal.md
+@rcode/workflows/execute-verify-phase-goal.md
 
 
 <step name="uat_gate" priority="blocker">
@@ -756,7 +756,7 @@ fi
 
 1. Mark the phase as `status: executed` (NOT `complete`) via:
    ```bash
-   node ".rihal/bin/rihal-tools.cjs" phase set-status "${PHASE_NUMBER}" executed
+   node ".rcode/bin/rihal-tools.cjs" phase set-status "${PHASE_NUMBER}" executed
    ```
 2. Print the mandatory UAT checklist:
    ```
@@ -790,13 +790,13 @@ The previous behaviour (printing "Next Up: /rihal-verify-work" without state-gat
 **Mark phase complete and update all tracking files:**
 
 ```bash
-COMPLETION=$(node ".rihal/bin/rihal-tools.cjs" phase complete "${PHASE_NUMBER}")
+COMPLETION=$(node ".rcode/bin/rihal-tools.cjs" phase complete "${PHASE_NUMBER}")
 ```
 
 Record execution telemetry (plan count + latest commit hash):
 ```bash
 EXEC_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "")
-node ".rihal/bin/rihal-tools.cjs" state record-execution \
+node ".rcode/bin/rihal-tools.cjs" state record-execution \
   --plan "${PHASE_NUMBER}" \
   --tasks "${PLAN_COUNT}" \
   --hash "${EXEC_HASH}" \
@@ -823,7 +823,7 @@ These items are tracked and will appear in `/rihal-progress` and `/rihal-audit-u
 ```
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
+node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
 ```
 </step>
 
@@ -831,11 +831,11 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-{X}): complete phase execut
 **Auto-copy phase learnings to global store (when enabled).**
 
 This step runs AFTER phase completion and SUMMARY.md is written. It copies any LEARNINGS.md
-entries from the completed phase to the global learnings store at `.rihal/knowledge/`.
+entries from the completed phase to the global learnings store at `.rcode/knowledge/`.
 
 **Check config gate:**
 ```bash
-GL_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get features.global_learnings --raw 2>/dev/null || echo "false")
+GL_ENABLED=$(node ".rcode/bin/rihal-tools.cjs" config-get features.global_learnings --raw 2>/dev/null || echo "false")
 ```
 
 **If `GL_ENABLED` is not `true`:** Skip this step entirely (feature disabled by default).
@@ -845,7 +845,7 @@ GL_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get features.global_learni
 1. Check if LEARNINGS.md exists in the phase directory (use the `phase_dir` value from init context)
 2. If found, copy to global store:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" learnings copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
+node ".rcode/bin/rihal-tools.cjs" learnings copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
 ```
 Copy failure must NOT block phase completion.
 </step>
@@ -866,7 +866,7 @@ PROJECT.md falls behind silently over multiple phases.
 5. Commit the change:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-{X}): evolve PROJECT.md after phase completion" --files .planning/PROJECT.md
+node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-{X}): evolve PROJECT.md after phase completion" --files .planning/PROJECT.md
 ```
 
 **Skip this step if** `.planning/PROJECT.md` does not exist.
@@ -875,16 +875,16 @@ node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-{X}): evolve PROJECT.md aft
 <step name="notify_on_completion">
 **Post phase completion to configured webhooks (Slack / Discord / MS Teams).**
 
-Silent no-op if no webhook URLs are in `.rihal/config.yaml`. Failures are reported but never block the workflow.
+Silent no-op if no webhook URLs are in `.rcode/config.yaml`. Failures are reported but never block the workflow.
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" notify send \
+node ".rcode/bin/rihal-tools.cjs" notify send \
   --title "Phase ${phase_number} complete — ${phase_name}" \
   --body "$(basename "$PWD") · $(git rev-parse --short HEAD) · ${incomplete_count:-0} plan(s) remaining" \
   --event "execute-done" 2>/dev/null || true
 ```
 
-Users configure webhooks by editing `.rihal/config.yaml`:
+Users configure webhooks by editing `.rcode/config.yaml`:
 
 ```yaml
 slack_webhook_url: "https://hooks.slack.com/services/..."
@@ -954,8 +954,8 @@ STOP. Do not proceed to auto-advance or transition.
 1. Parse `--auto` flag from $ARGUMENTS
 2. Read both the chain flag and user preference (chain flag already synced in init step):
    ```bash
-   AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true (AND verification passed with no gaps):**
@@ -969,7 +969,7 @@ STOP. Do not proceed to auto-advance or transition.
 
 Execute the transition workflow inline (do NOT use Task — orchestrator context is ~10-15%, transition needs phase completion data already in context):
 
-Read and follow `.rihal/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
+Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
 
 **If none of `--auto`, `AUTO_CHAIN`, or `AUTO_CFG` is true:**
 

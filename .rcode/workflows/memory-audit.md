@@ -29,11 +29,11 @@ fi
 
 ## Preconditions
 
-- `.rihal/memory/INDEX.md` exists
+- `.rcode/memory/INDEX.md` exists
 
 ## Halt conditions
 
-- Memory Bank not initialised → instruct to run `/rcode:memory-init` first
+- Memory Bank not initialised → instruct to run `/rcode-memory-init` first
 
 ---
 
@@ -41,7 +41,7 @@ fi
 
 ### Step 1 — Catalogue files
 
-Walk `.rihal/memory/` and build a list of every file plus its size and modification time. Include `.gitkeep` files for empty-subdir detection.
+Walk `.rcode/memory/` and build a list of every file plus its size and modification time. Include `.gitkeep` files for empty-subdir detection.
 
 ### Step 2 — Check 1: Stale milestone
 
@@ -55,7 +55,7 @@ For each entry in `incidents/known-issues.md`:
 
 ### Step 4 — Check 3: Template placeholders unfilled
 
-For each `*.md` file under `.rihal/memory/`:
+For each `*.md` file under `.rcode/memory/`:
 - Count occurrences of `{{` literally (template placeholders)
 - Count occurrences of `_(e.g.` (italicised template hints)
 - If either is non-zero, emit an `info` finding listing the file and count
@@ -77,7 +77,7 @@ For `change-records/`, `incidents/post-mortems/`, `milestones/archive/`:
 For each `distillates/*.distillate.md`:
 - Read frontmatter `source-digest`
 - Recompute digest of current source files (per `rcode-memory-distill` rules)
-- If mismatch, emit a `warn` finding suggesting `/rcode:memory-distill`
+- If mismatch, emit a `warn` finding suggesting `/rcode-memory-distill`
 
 ### Step 8 — Render report
 

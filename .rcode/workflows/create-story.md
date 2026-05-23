@@ -95,9 +95,9 @@ DEV_NOTES=$(echo "$STORY_SECTION" | sed -n '/^### Dev Notes/,/^---$/p' | sed '1d
 ## Step 3 — Load References
 
 ```bash
-@.rihal/references/checklist-story-draft.md
-@.rihal/references/checklist-story-dod.md
-@.rihal/references/commit-conventions.md
+@.rcode/references/checklist-story-draft.md
+@.rcode/references/checklist-story-dod.md
+@.rcode/references/commit-conventions.md
 ```
 
 ## Step 4 — Check Entry Gate

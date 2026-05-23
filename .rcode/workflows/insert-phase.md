@@ -1,7 +1,7 @@
 # Workflow: rihal-insert-phase
 
 <purpose>
-Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (2.1, 2.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering subsequent phases. Maintains phase array in `.rihal/state.json` in sort order.
+Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (2.1, 2.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering subsequent phases. Maintains phase array in `.rcode/state.json` in sort order.
 </purpose>
 
 ## Step 0 — Usage check
@@ -45,7 +45,7 @@ Extract `N` (integer part) and `M` (decimal part) for later use.
 Invoke the state subcommand to insert the phase:
 
 ```bash
-RESULT=$(node .rihal/bin/rihal-tools.cjs state insert-phase --number <N.M> --name <name>)
+RESULT=$(node .rcode/bin/rihal-tools.cjs state insert-phase --number <N.M> --name <name>)
 ```
 
 Parse the JSON response for:

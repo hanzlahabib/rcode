@@ -181,7 +181,7 @@ Display startup banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS
+ rcode ► AUTONOMOUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
@@ -238,7 +238,7 @@ Exit cleanly.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ COMPLETE 🎉
+ rcode ► AUTONOMOUS ▸ COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  All phases complete! Nothing left to do.
@@ -283,7 +283,7 @@ For the current phase, display the progress banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%
+ rcode ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -638,7 +638,7 @@ symptom. Log a warning and re-derive from disk:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ --to ${TO_PHASE} REACHED
+ rcode ► AUTONOMOUS ▸ --to ${TO_PHASE} REACHED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Completed through phase ${TO_PHASE} as requested.
@@ -706,7 +706,7 @@ If all phases complete, proceed to lifecycle step.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓
+ rcode ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
@@ -724,7 +724,7 @@ Display lifecycle transition banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ LIFECYCLE
+ rcode ► AUTONOMOUS ▸ LIFECYCLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  All phases complete → Starting lifecycle: audit → complete → cleanup
@@ -805,7 +805,7 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ COMPLETE 🎉
+ rcode ► AUTONOMOUS ▸ COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
@@ -855,7 +855,7 @@ Proceed to iterate.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ STOPPED
+ rcode ► AUTONOMOUS ▸ STOPPED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Completed: {list of completed phases}

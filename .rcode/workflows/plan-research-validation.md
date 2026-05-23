@@ -47,7 +47,7 @@ If user selects "Skip research": skip to step 6.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► RESEARCHING PHASE {X}
+ rcode ► RESEARCHING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning researcher...
@@ -56,7 +56,7 @@ Display banner:
 ### Spawn rihal-phase-researcher
 
 ```bash
-PHASE_DESC=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section)
+PHASE_DESC=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section)
 ```
 
 Research prompt:
@@ -140,7 +140,7 @@ grep -l "## Validation Architecture" "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null ||
 ```
 
 **If found:**
-1. Read template: `.rihal/templates/VALIDATION.md`
+1. Read template: `.rcode/templates/VALIDATION.md`
 2. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md` (use Write tool)
 3. Fill frontmatter: `{N}` → phase number, `{phase-slug}` → slug, `{date}` → current date
 4. Verify:
@@ -157,9 +157,9 @@ test -f "${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md" && echo "VALIDATION_CREATED
 > Skip if `workflow.security_enforcement` is explicitly `false`. Absent = enabled.
 
 ```bash
-SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
-SECURITY_ASVS=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_asvs_level --raw 2>/dev/null || echo "1")
-SECURITY_BLOCK=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_block_on --raw 2>/dev/null || echo "high")
+SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_ASVS=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_asvs_level --raw 2>/dev/null || echo "1")
+SECURITY_BLOCK=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_block_on --raw 2>/dev/null || echo "high")
 ```
 
 **If `SECURITY_CFG` is `false`:** Skip to step 5.6.
@@ -168,7 +168,7 @@ SECURITY_BLOCK=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
+ rcode ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Each SPRINT.md must include a <threat_model> block.
@@ -183,8 +183,8 @@ Continue to step 5.6. Security config is passed to the planner in step 8.
 > Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.planning/config.json`. If keys are absent, treat as enabled.
 
 ```bash
-UI_PHASE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
-UI_GATE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_safety_gate 2>/dev/null || echo "true")
+UI_PHASE_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_GATE_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.ui_safety_gate 2>/dev/null || echo "true")
 ```
 
 **If both are `false`:** Skip to step 6.
@@ -192,7 +192,7 @@ UI_GATE_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_safety_ga
 Check if phase has frontend indicators:
 
 ```bash
-PHASE_SECTION=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" 2>/dev/null)
+PHASE_SECTION=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" 2>/dev/null)
 echo "$PHASE_SECTION" | grep -iE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" > /dev/null 2>&1
 HAS_UI=$?
 ```
@@ -210,7 +210,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 
 Read auto-chain state:
 ```bash
-AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
 ```
 
 **If `AUTO_CHAIN` is `true` (running inside a `--chain` or `--auto` pipeline):**
@@ -256,7 +256,7 @@ Otherwise use AskUserQuestion:
 Check if any files in the phase scope match schema patterns:
 
 ```bash
-PHASE_SECTION=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section 2>/dev/null)
+PHASE_SECTION=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick section 2>/dev/null)
 ```
 
 Scan `PHASE_SECTION`, `CONTEXT.md` (if loaded), and `RESEARCH.md` (if exists) for file paths matching these ORM patterns:

@@ -14,7 +14,7 @@ If empty: `Usage: /rihal-rerun <phase-id|plan-id> (e.g., /rihal-rerun 03 or /rih
 
 ## Step 0.5: Detect Target via Resolve
 
-Run: `node .rihal/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
+Run: `node .rcode/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
 
 If type === "unknown": Return error `ID not found: $ARGUMENTS`
 
@@ -39,7 +39,7 @@ If user says "no" or does not confirm: Stop, return `Cancelled.`
 
 ## Step 2: Mark as Pending in state.json
 
-Read `.rihal/state.json`
+Read `.rcode/state.json`
 
 If `target.type === "phase"`:
 - Find all `executions[].plan_id` in this phase
@@ -73,5 +73,5 @@ The executor will:
 ## On Error
 
 - ID unresolvable → Show error
-- state.json corrupt → "Cannot read state. Check .rihal/state.json"
+- state.json corrupt → "Cannot read state. Check .rcode/state.json"
 - User declines → Stop gracefully

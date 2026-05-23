@@ -25,7 +25,7 @@ STOP — do not proceed.
 
 Extract from `$ARGUMENTS`:
 - `$WORKSPACE_NAME` — the workspace to remove
-- `--archive` flag → copy to `.rihal/workspace-archive/` before deleting
+- `--archive` flag → copy to `.rcode/workspace-archive/` before deleting
 - `--force` flag → skip confirmation prompt
 
 If `$WORKSPACE_NAME` is empty, ask:
@@ -39,7 +39,7 @@ AskUserQuestion(
 
 ## Step 2 — Locate workspace
 
-Read `.rihal/workspaces.csv` and find the row matching `$WORKSPACE_NAME`.
+Read `.rcode/workspaces.csv` and find the row matching `$WORKSPACE_NAME`.
 
 Extract `$WORKSPACE_PATH` from the CSV row.
 
@@ -84,7 +84,7 @@ If user says no, STOP.
 If `--archive` flag:
 
 ```bash
-ARCHIVE_BASE=".rihal/workspace-archive"
+ARCHIVE_BASE=".rcode/workspace-archive"
 mkdir -p "$ARCHIVE_BASE"
 ARCHIVE_PATH="$ARCHIVE_BASE/$(basename $WORKSPACE_PATH)-$(date +%s)"
 cp -r "$WORKSPACE_PATH" "$ARCHIVE_PATH"
@@ -116,11 +116,11 @@ fi
 
 ## Step 6 — Update workspaces registry
 
-Remove the row from `.rihal/workspaces.csv`:
+Remove the row from `.rcode/workspaces.csv`:
 
 ```bash
-grep -v "^$WORKSPACE_NAME," ".rihal/workspaces.csv" > ".rihal/workspaces.csv.tmp"
-mv ".rihal/workspaces.csv.tmp" ".rihal/workspaces.csv"
+grep -v "^$WORKSPACE_NAME," ".rcode/workspaces.csv" > ".rcode/workspaces.csv.tmp"
+mv ".rcode/workspaces.csv.tmp" ".rcode/workspaces.csv"
 ```
 
 ## Step 7 — Report
@@ -160,5 +160,5 @@ If registry update fails:
 ```
 ⚠ Failed to update workspace registry. Manual cleanup:
   rm -rf {WORKSPACE_PATH}
-  Edit: .rihal/workspaces.csv (remove the {WORKSPACE_NAME} line)
+  Edit: .rcode/workspaces.csv (remove the {WORKSPACE_NAME} line)
 ```

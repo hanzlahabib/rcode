@@ -38,7 +38,7 @@ Then stop.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► STATUS — {SNAPSHOT.project}
+ rcode ► STATUS — {SNAPSHOT.project}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ╭─ rcode Status — {SNAPSHOT.project} ─────────────────────╮

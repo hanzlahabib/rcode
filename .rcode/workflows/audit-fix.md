@@ -4,7 +4,7 @@ auto-fixable vs manual-only, spawns executor agents for fixable issues, runs tes
 after each fix, and commits atomically with finding IDs for traceability.
 </purpose>
 
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 
 <available_agent_types>
 - rihal-executor — executes a specific, scoped code change
@@ -52,7 +52,7 @@ Invoke the source audit command and capture output.
 
 For `audit-uat` source:
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init audit-uat 2>/dev/null || echo "{}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init audit-uat 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

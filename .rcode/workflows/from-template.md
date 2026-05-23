@@ -11,7 +11,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► FROM TEMPLATE
+ rcode ► FROM TEMPLATE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -19,7 +19,7 @@ End with a file summary and Next Up routing.
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -46,7 +46,7 @@ STOP.
 
 ```bash
 TEMPLATE="${1}"
-TEMPLATE_DIR=".rihal/templates/projects/${TEMPLATE}"
+TEMPLATE_DIR=".rcode/templates/projects/${TEMPLATE}"
 
 if [ ! -d "$TEMPLATE_DIR" ]; then
   echo "Unknown template: ${TEMPLATE}"
@@ -127,7 +127,7 @@ done
 ## Step 5 — Record the seeding
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-decision \
+node .rcode/bin/rihal-tools.cjs state add-decision \
   "Seeded .planning/ from template '${TEMPLATE}' (project: ${PROJECT_NAME})" 2>/dev/null || true
 ```
 
@@ -169,5 +169,5 @@ Also consider:
 
 ## On Error
 
-- Missing `.rihal/templates/projects/` directory → tell the user their install is missing the module; suggest `rihal-install`
+- Missing `.rcode/templates/projects/` directory → tell the user their install is missing the module; suggest `rihal-install`
 - `sed` substitution failure (unusual characters in project name) → fall back to literal-string `awk` substitution, or ask the user to pass a simpler name via `--project-name`

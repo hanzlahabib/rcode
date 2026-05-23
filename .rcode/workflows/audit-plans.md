@@ -167,7 +167,7 @@ For each sprint file:
 Format all findings into severity groups:
 
 ```
-RIHAL ► AUDIT PLANS
+rcode ► AUDIT PLANS
 
 Scanned: {PHASE_COUNT} phases, {SPRINT_COUNT} sprints
 Milestone: {milestone}

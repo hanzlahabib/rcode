@@ -1,7 +1,7 @@
 # Workflow: rihal-notify-test
 
 <purpose>
-Verify a webhook URL is configured and reachable by posting a "test" message. Use this immediately after adding `slack_webhook_url`, `discord_webhook_url`, or `teams_webhook_url` to `.rihal/config.yaml` so you catch typos and permission errors before relying on notifications from `/rihal-execute`.
+Verify a webhook URL is configured and reachable by posting a "test" message. Use this immediately after adding `slack_webhook_url`, `discord_webhook_url`, or `teams_webhook_url` to `.rcode/config.yaml` so you catch typos and permission errors before relying on notifications from `/rihal-execute`.
 </purpose>
 
 <output_format>
@@ -9,7 +9,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► NOTIFY TEST
+ rcode ► NOTIFY TEST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -17,7 +17,7 @@ End with a per-platform result table: sent / skipped / failed.
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -53,7 +53,7 @@ if echo "$ARGUMENTS" | grep -q -- "--body";  then BODY=$(echo  "$ARGUMENTS" | se
 ONLY_FLAG=""
 [ -n "$ONLY" ] && ONLY_FLAG="--only $ONLY"
 
-RESULT=$(node .rihal/bin/rihal-tools.cjs notify send \
+RESULT=$(node .rcode/bin/rihal-tools.cjs notify send \
   --title "$TITLE" \
   --body "$BODY" \
   --event "notify-test" \
@@ -75,7 +75,7 @@ Parse the JSON result. Show:
 If ALL platforms are `skipped`:
 
 ```
-No webhooks configured. Add at least one to .rihal/config.yaml:
+No webhooks configured. Add at least one to .rcode/config.yaml:
 
   slack_webhook_url: "https://hooks.slack.com/services/..."
   discord_webhook_url: "https://discord.com/api/webhooks/..."

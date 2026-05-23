@@ -28,14 +28,14 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init document-project "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init document-project "$ARGUMENTS")
 ```
 
 Parse:
-- `flags.csv` — path to documentation-requirements.csv (default: `.rihal/documentation-requirements.csv`)
+- `flags.csv` — path to documentation-requirements.csv (default: `.rcode/documentation-requirements.csv`)
 - `flags.auto_file_tasks` — auto-create SPRINT.md for missing docs (default: false)
 - `csv_path` — resolved CSV path
-- `audit_output_path` — `.rihal/DOCS-AUDIT.md` (output)
+- `audit_output_path` — `.rcode/DOCS-AUDIT.md` (output)
 
 ## Step 1 — Load or Create Documentation Requirements
 
@@ -51,10 +51,10 @@ DEPLOYMENT.md,yes,high,devops,2026-04-01,current
 ARCHITECTURE.md,yes,high,architects,2026-01-01,outdated
 ```
 
-**If missing:** Create template at `.rihal/documentation-requirements.csv`:
+**If missing:** Create template at `.rcode/documentation-requirements.csv`:
 
 ```bash
-cat > .rihal/documentation-requirements.csv << 'EOF'
+cat > .rcode/documentation-requirements.csv << 'EOF'
 Document,Required,Priority,Audience,Last Updated,Status
 README.md,yes,high,all,,
 API.md,yes,high,developers,,
@@ -70,7 +70,7 @@ EOF
 For each row in CSV, check if document exists and assess staleness:
 
 ```bash
-for doc in $(cut -d',' -f1 .rihal/documentation-requirements.csv | tail -n +2); do
+for doc in $(cut -d',' -f1 .rcode/documentation-requirements.csv | tail -n +2); do
   if [ -f "$doc" ]; then
     MTIME=$(stat -c %Y "$doc" 2>/dev/null || stat -f %m "$doc" 2>/dev/null)
     NOW=$(date +%s)
@@ -122,7 +122,7 @@ For each missing or stale doc (status=Missing or Stale):
 Create task subtask in state:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rihal-tools.cjs state add-task \
   --title "Write {doc_name}: {purpose}" \
   --description "Audience: {audience}, Priority: {priority}" \
   --effort {effort_hours} \
@@ -160,7 +160,7 @@ Missing docs filed as tasks. Run:
 After audit, if resume-work.md exists, prepend to Step 2:
 
 ```
-If .rihal/DOCS-AUDIT.md exists, check for missing/stale docs:
+If .rcode/DOCS-AUDIT.md exists, check for missing/stale docs:
 
 <!-- DOCS-AUDIT.md is generated at runtime by rihal-tools.cjs docs-audit — not a tracked file -->
 ```

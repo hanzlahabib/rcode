@@ -28,13 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init review-adversarial "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init review-adversarial "$ARGUMENTS")
 ```
 
 Parse:
 - `flags.phase` — specific phase to review (optional)
 - `flags.component` — specific component/file (optional)
-- `review_path` — `.rihal/ADVERSARIAL-REVIEW-{phase}.md` or `.rihal/ADVERSARIAL-REVIEW.md`
+- `review_path` — `.rcode/ADVERSARIAL-REVIEW-{phase}.md` or `.rcode/ADVERSARIAL-REVIEW.md`
 - `targets` — files/components to audit
 
 ## Step 1 — Identify Review Targets
@@ -117,7 +117,7 @@ Task tool call:
 
 ## Step 3 — Store Review and File Tasks
 
-Write review to `.rihal/ADVERSARIAL-REVIEW-{phase}.md`
+Write review to `.rcode/ADVERSARIAL-REVIEW-{phase}.md`
 
 Extract findings:
 - Critical vulnerabilities
@@ -130,7 +130,7 @@ Extract findings:
 For each critical/high finding, optionally file as subtask:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rihal-tools.cjs state add-task \
   --title "Fix {vulnerability_type}: {brief_description}" \
   --severity critical/high/medium \
   --component {component_name}
@@ -138,7 +138,7 @@ node .rihal/bin/rihal-tools.cjs state add-task \
 
 Or add to story AC:
 
-Update `.rihal/story-current.md` acceptance criteria:
+Update `.rcode/story-current.md` acceptance criteria:
 
 ```markdown
 ## Security Requirements

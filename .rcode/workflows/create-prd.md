@@ -9,7 +9,7 @@ Create a Product Requirements Document from scratch through guided facilitation.
 Locate and follow the installed skill:
 
 ```bash
-find .rihal/skills/actions -path "*rihal-create-prd/workflow.md" 2>/dev/null | head -1
+find .rcode/skills/actions -path "*rihal-create-prd/workflow.md" 2>/dev/null | head -1
 ```
 
 Read and follow the workflow at that path. If the path is empty:

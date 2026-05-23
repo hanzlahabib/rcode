@@ -71,7 +71,7 @@ Rules:
 Collect phase artifacts for the review prompt:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -177,7 +177,7 @@ If a CLI fails, log the error and continue with remaining CLIs.
 Display progress:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► CROSS-AI REVIEW — Phase {N}
+ rcode ► CROSS-AI REVIEW — Phase {N}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Reviewing with {CLI}... done ✓
@@ -244,7 +244,7 @@ plans_reviewed: [{list of SPRINT.md files}]
 
 Commit:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
+node ".rcode/bin/rihal-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
 ```
 </step>
 
@@ -253,7 +253,7 @@ Display summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► REVIEW COMPLETE
+ rcode ► REVIEW COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phase {N} reviewed by {count} AI systems.

@@ -6,8 +6,8 @@ Mark a shipped version (v1.0, v1.1, v2.0) as complete. Creates historical record
 
 <required_reading>
 
-1. `.rihal/templates/milestone.md` (if present — otherwise inline templates below)
-2. `.rihal/templates/milestone-archive.md` (if present — otherwise inline templates below)
+1. `.rcode/templates/milestone.md` (if present — otherwise inline templates below)
+2. `.rcode/templates/milestone-archive.md` (if present — otherwise inline templates below)
 3. `.planning/ROADMAP.md`
 4. `.planning/REQUIREMENTS.md`
 5. `.planning/PROJECT.md`
@@ -20,13 +20,13 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COMPLETE MILESTONE
+ rcode ► COMPLETE MILESTONE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Per-step banners: `RIHAL ► VERIFY READINESS`, `RIHAL ► ARCHIVE MILESTONE`, `RIHAL ► EVOLVE PROJECT.md`, `RIHAL ► TAG RELEASE`.
+Per-step banners: `rcode ► VERIFY READINESS`, `rcode ► ARCHIVE MILESTONE`, `rcode ► EVOLVE PROJECT.md`, `rcode ► TAG RELEASE`.
 
-Closing banner: `RIHAL ► MILESTONE v[X.Y] COMPLETE 🎉`.
+Closing banner: `rcode ► MILESTONE v[X.Y] COMPLETE 🎉`.
 
 </output_format>
 
@@ -108,7 +108,7 @@ If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md 
 
 ```bash
 cat .planning/config.json 2>/dev/null || true
-node .rihal/bin/rihal-tools.cjs config 2>/dev/null || true
+node .rcode/bin/rihal-tools.cjs config 2>/dev/null || true
 ```
 
 </config-check>
@@ -579,7 +579,7 @@ See: .planning/PROJECT.md (updated [today])
 Record the milestone completion via decision log:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-decision "Completed milestone v[X.Y] — [Name]"
+node .rcode/bin/rihal-tools.cjs state add-decision "Completed milestone v[X.Y] — [Name]"
 ```
 
 </step>
@@ -591,7 +591,7 @@ node .rihal/bin/rihal-tools.cjs state add-decision "Completed milestone v[X.Y] �
 Check branching strategy and offer merge options.
 
 ```bash
-CONFIG=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null || echo '{}')
+CONFIG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null || echo '{}')
 # Extract branching_strategy, phase_branch_template, milestone_branch_template, commit_docs from config
 BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
 BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -767,7 +767,7 @@ Confirm: "Committed: chore: complete v[X.Y] milestone" (or the gitignored notice
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE v[X.Y] COMPLETE 🎉
+ rcode ► MILESTONE v[X.Y] COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Shipped:

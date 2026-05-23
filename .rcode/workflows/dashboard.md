@@ -1,7 +1,7 @@
 # Workflow: rihal-dashboard
 
 <purpose>
-Start the Diwan view-only dashboard — a local web UI that visualizes .rihal/state.json, .planning/ artifacts, phases, decisions, and council sessions. The dashboard is read-only (no write endpoints) and runs dep-free on Node stdlib.
+Start the Diwan view-only dashboard — a local web UI that visualizes .rcode/state.json, .planning/ artifacts, phases, decisions, and council sessions. The dashboard is read-only (no write endpoints) and runs dep-free on Node stdlib.
 </purpose>
 
 ## Step 0 — Usage check
@@ -31,8 +31,8 @@ DASHBOARD=""
 if [ -f ./server/dashboard.js ]; then
   DASHBOARD="./server/dashboard.js"
 # 2. Installed package copy inside project
-elif [ -f ./.rihal/lib/server/dashboard.js ]; then
-  DASHBOARD="./.rihal/lib/server/dashboard.js"
+elif [ -f ./.rcode/lib/server/dashboard.js ]; then
+  DASHBOARD="./.rcode/lib/server/dashboard.js"
 else
   # 3. Global installs — check npm, pnpm, and yarn roots
   for ROOT in "$(npm root -g 2>/dev/null)" "$(pnpm root -g 2>/dev/null)" "$(yarn global dir 2>/dev/null)/node_modules"; do
@@ -65,7 +65,7 @@ Store the resolved path as `$DASHBOARD`.
 If none found, print:
 ```
 ❌ Dashboard script not found.
-Run `npx @hanzlaa/rcode install` (or `pnpm add -g @hanzlaa/rcode`) to install the package, or check you're inside a project with .rihal/.
+Run `npx @hanzlaa/rcode install` (or `pnpm add -g @hanzlaa/rcode`) to install the package, or check you're inside a project with .rcode/.
 ```
 Exit.
 

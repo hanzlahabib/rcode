@@ -8,7 +8,7 @@ Display current sprint progress: stories by status, points done vs remaining, ve
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► SPRINT {NN.S} STATUS
+ rcode ► SPRINT {NN.S} STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 Use status symbols (✓ done, ◆ in_progress, ○ todo) in story board.

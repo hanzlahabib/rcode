@@ -29,13 +29,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init correct-course "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init correct-course "$ARGUMENTS")
 ```
 
 Parse:
 - `flags.prd` — path to original PRD/requirements document
 - `flags.architecture` — path to original architecture document
-- `deviation_report_path` — `.rihal/DEVIATION-REPORT.md`
+- `deviation_report_path` — `.rcode/DEVIATION-REPORT.md`
 - `remediation_plan_path` — `.planning/plans/corrections/SPRINT.md`
 
 ## Step 1 — Load Original Spec and Current Implementation
@@ -132,10 +132,10 @@ Task tool call:
 ## Step 4 — Generate Report and Plan
 
 Write:
-- `.rihal/DEVIATION-REPORT.md` (analysis)
+- `.rcode/DEVIATION-REPORT.md` (analysis)
 - `.planning/plans/corrections/SPRINT.md` (execution plan)
 
-Also update `.rihal/story-current.md` if exists:
+Also update `.rcode/story-current.md` if exists:
 
 Add section to story file:
 ```markdown

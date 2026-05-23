@@ -1,7 +1,7 @@
 # Workflow: rihal-stats
 
 <purpose>
-Read .rihal/state.json and display project statistics: phases, plans, council sessions, decisions, blockers, timeline, and git stats.
+Read .rcode/state.json and display project statistics: phases, plans, council sessions, decisions, blockers, timeline, and git stats.
 </purpose>
 
 
@@ -23,10 +23,10 @@ STOP — do not proceed.
 
 ## Step 1 — Load state
 
-Read `.rihal/state.json`:
+Read `.rcode/state.json`:
 
 ```bash
-cat .rihal/state.json 2>/dev/null || echo '{}'
+cat .rcode/state.json 2>/dev/null || echo '{}'
 ```
 
 Parse as JSON. If parse fails or file doesn't exist, print:

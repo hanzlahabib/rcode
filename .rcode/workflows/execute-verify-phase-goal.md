@@ -6,7 +6,7 @@ Sub-step of execute.md — verify_phase_goal. Spawns rihal-verifier to confirm t
 Verify phase achieved its GOAL, not just completed tasks.
 
 ```bash
-VERIFIER_SKILLS=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-verifier 2>/dev/null)
+VERIFIER_SKILLS=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-verifier 2>/dev/null)
 ```
 
 ```
@@ -90,7 +90,7 @@ blocked: 0
 
 Commit the file:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "test({phase_num}): persist human verification items as UAT" --files "{phase_dir}/{phase_num}-HUMAN-UAT.md"
+node ".rcode/bin/rihal-tools.cjs" commit "test({phase_num}): persist human verification items as UAT" --files "{phase_dir}/{phase_num}-HUMAN-UAT.md"
 ```
 
 **Step B: Present to user:**

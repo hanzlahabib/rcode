@@ -202,7 +202,7 @@ This records the exact codebase state where the diagnosis was made, so downstrea
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► DIAGNOSIS COMPLETE
+ rcode ► DIAGNOSIS COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Issue (Truth) | Root Cause | Files |

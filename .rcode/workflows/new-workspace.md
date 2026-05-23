@@ -41,7 +41,7 @@ AskUserQuestion(
 Create workspace structure:
 
 ```bash
-WORKSPACE_DIR=".rihal/workspaces/$(echo $WORKSPACE_NAME | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
+WORKSPACE_DIR=".rcode/workspaces/$(echo $WORKSPACE_NAME | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
 mkdir -p "$WORKSPACE_DIR"
 ```
 
@@ -120,7 +120,7 @@ Create `$WORKSPACE_DIR/.workspace-meta.json`:
 
 ## Step 5 — Register workspace
 
-Create or append to `.rihal/workspaces.csv`:
+Create or append to `.rcode/workspaces.csv`:
 
 ```csv
 name,path,created,status,parent
@@ -144,10 +144,10 @@ Switch context:
 
 ## Success Criteria
 
-- Workspace directory created at `.rihal/workspaces/{name}/`
+- Workspace directory created at `.rcode/workspaces/{name}/`
 - ROADMAP.md and STATE.md initialized
 - Workspace metadata file created
-- Workspace registered in `.rihal/workspaces.csv`
+- Workspace registered in `.rcode/workspaces.csv`
 - User can plan/execute within this workspace
 
 ## On Error

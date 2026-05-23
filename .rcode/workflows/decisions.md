@@ -1,7 +1,7 @@
 # Workflow: rihal-decisions
 
 <purpose>
-Surface recent decisions across every Rihal project on this machine. Decisions are mirrored to `~/.rihal/decisions.jsonl` whenever a project runs `state add-decision`. Use this to see what was decided elsewhere, find precedent for a similar call you are about to make, or answer "what did I commit to last week?".
+Surface recent decisions across every Rihal project on this machine. Decisions are mirrored to `~/.rcode/decisions.jsonl` whenever a project runs `state add-decision`. Use this to see what was decided elsewhere, find precedent for a similar call you are about to make, or answer "what did I commit to last week?".
 </purpose>
 
 <output_format>
@@ -9,7 +9,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► DECISIONS (cross-project)
+ rcode ► DECISIONS (cross-project)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -17,7 +17,7 @@ Newest decisions first. One row per decision with project, date, phase, and summ
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -41,7 +41,7 @@ STOP — do not proceed.
 Parse args. If `--this-project` is set:
 
 ```bash
-CURRENT_PROJECT=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).project||'')}catch{}}")
+CURRENT_PROJECT=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).project||'')}catch{}}")
 ```
 
 If non-empty, pass `--project "$CURRENT_PROJECT"` to the next step. If empty, print a warning and fall through to the unfiltered query.
@@ -53,7 +53,7 @@ QUERY_ARGS=()
 [ -n "$LIMIT" ]    && QUERY_ARGS+=(--limit "$LIMIT")
 [ -n "$PROJECT" ]  && QUERY_ARGS+=(--project "$PROJECT")
 [ -n "$SINCE" ]    && QUERY_ARGS+=(--since "$SINCE")
-RESULT=$(node .rihal/bin/rihal-tools.cjs state decisions-global "${QUERY_ARGS[@]}" 2>/dev/null || echo '{"decisions":[],"total":0}')
+RESULT=$(node .rcode/bin/rihal-tools.cjs state decisions-global "${QUERY_ARGS[@]}" 2>/dev/null || echo '{"decisions":[],"total":0}')
 ```
 
 The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:
@@ -61,7 +61,7 @@ The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:
 ```
 No decisions logged yet.
 
-Decisions are mirrored to ~/.rihal/decisions.jsonl whenever /rihal-execute or /rihal-council records one. Run a council or complete a sprint to populate this log.
+Decisions are mirrored to ~/.rcode/decisions.jsonl whenever /rihal-execute or /rihal-council records one. Run a council or complete a sprint to populate this log.
 ```
 
 STOP.
@@ -83,7 +83,7 @@ Format date as `YYYY-MM-DD` (strip time) to keep the table readable. Keep projec
 
 ```
 Showing {rendered}/{total} decisions{ filter suffix }.
-  ~/.rihal/decisions.jsonl  ({size} records)
+  ~/.rcode/decisions.jsonl  ({size} records)
 ```
 
 Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01`.
@@ -96,7 +96,7 @@ Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01
 
 ## Success Criteria
 
-- Empty `~/.rihal/decisions.jsonl` produces a clear empty-state message, not an error
+- Empty `~/.rcode/decisions.jsonl` produces a clear empty-state message, not an error
 - `--project` and `--since` filters pass through to `state decisions-global`
 - Malformed JSONL lines are skipped (handled by rihal-tools reader), not displayed as garbage
 - Newest decision appears first
@@ -104,4 +104,4 @@ Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01
 
 ## On Error
 
-If `~/.rihal/decisions.jsonl` cannot be read (permissions, missing home dir), print the underlying error and suggest `chmod`/`ls -la ~/.rihal/` for diagnosis. Do not crash other workflows — this command is read-only.
+If `~/.rcode/decisions.jsonl` cannot be read (permissions, missing home dir), print the underlying error and suggest `chmod`/`ls -la ~/.rcode/` for diagnosis. Do not crash other workflows — this command is read-only.

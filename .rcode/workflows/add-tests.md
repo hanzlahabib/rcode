@@ -6,7 +6,7 @@ Users currently hand-craft `/rihal-quick` prompts for test generation after each
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 </required_reading>
 
 <process>
@@ -34,7 +34,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -62,7 +62,7 @@ Exit.
 Present banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► ADD TESTS — Phase ${phase_number}: ${phase_name}
+ rcode ► ADD TESTS — Phase ${phase_number}: ${phase_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </step>
@@ -276,7 +276,7 @@ Create a test coverage report and present to user:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► TEST GENERATION COMPLETE
+ rcode ► TEST GENERATION COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Results
@@ -298,7 +298,7 @@ Create a test coverage report and present to user:
 
 Record test generation in project state:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state-snapshot
+node ".rcode/bin/rihal-tools.cjs" state-snapshot
 ```
 
 If there are passing tests to commit:

@@ -4,7 +4,7 @@ Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies RE
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 </required_reading>
 
 <available_agent_types>
@@ -36,7 +36,7 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -92,7 +92,7 @@ FIX_REPORT_PATH="${PHASE_DIR}/${PADDED_PHASE}-REVIEW-FIX.md"
 Check if code review is enabled via config:
 
 ```bash
-CODE_REVIEW_ENABLED=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
 If CODE_REVIEW_ENABLED is "false":
@@ -380,7 +380,7 @@ if [ -f "${FIX_REPORT_PATH}" ]; then
     echo "REVIEW-FIX.md created at ${FIX_REPORT_PATH}"
     
     if [ "$COMMIT_DOCS" = "true" ]; then
-      node ".rihal/bin/rihal-tools.cjs" commit \
+      node ".rcode/bin/rihal-tools.cjs" commit \
         "docs(${PADDED_PHASE}): add code review fix report" \
         --files "${FIX_REPORT_PATH}"
     fi

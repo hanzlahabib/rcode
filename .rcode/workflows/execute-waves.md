@@ -130,9 +130,9 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        contention with other agents, acquire a file-based lock before each
        commit and release it immediately after:
 
-         while ! mkdir .rihal/.commit-lock 2>/dev/null; do sleep 0.5; done
+         while ! mkdir .rcode/.commit-lock 2>/dev/null; do sleep 0.5; done
          git commit -m "..."           # hooks run normally
-         rmdir .rihal/.commit-lock
+         rmdir .rcode/.commit-lock
 
        Hooks run as designed for every commit. AGENTS.md forbids --no-verify;
        hook failures must be fixed at the source, not bypassed. The orchestrator
@@ -140,11 +140,11 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        </parallel_execution>
 
        <execution_context>
-       @.rihal/workflows/execute-sprint.md
-       @.rihal/templates/summary.md
-       @.rihal/references/tdd.md
+       @.rcode/workflows/execute-sprint.md
+       @.rcode/templates/summary.md
+       @.rcode/references/tdd.md
        <!-- checkpoints.md (778 lines) loaded only when a task contains "checkpoint" or a prior wave failed -->
-       ${SPRINT_HAS_CHECKPOINT || PRIOR_WAVE_FAILED ? '@.rihal/references/checkpoints.md' : ''}
+       ${SPRINT_HAS_CHECKPOINT || PRIOR_WAVE_FAILED ? '@.rcode/references/checkpoints.md' : ''}
        </execution_context>
 
        <files_to_read>
@@ -310,7 +310,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
          # Only amend the commit with .planning/ files if commit_docs is enabled (#1783)
-         COMMIT_DOCS=$(node ".rihal/bin/rihal-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
+         COMMIT_DOCS=$(node ".rcode/bin/rihal-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
          if [ "$COMMIT_DOCS" != "false" ]; then
            git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
            git commit --amend --no-edit 2>/dev/null || true
@@ -337,7 +337,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    ```bash
    # Update ROADMAP.md for each completed plan in this wave
    for PLAN_ID in ${WAVE_PLAN_IDS}; do
-     node ".rihal/bin/rihal-tools.cjs" roadmap update-plan-progress "${PHASE_NUMBER}" "${PLAN_ID}" completed
+     node ".rcode/bin/rihal-tools.cjs" roadmap update-plan-progress "${PHASE_NUMBER}" "${PLAN_ID}" completed
    done
 
    ```
@@ -381,7 +381,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
     Before spawning wave N+1, for each plan in the upcoming wave:
     ```bash
-    node ".rihal/bin/rihal-tools.cjs" verify key-links {phase_dir}/{plan}-SPRINT.md
+    node ".rcode/bin/rihal-tools.cjs" verify key-links {phase_dir}/{plan}-SPRINT.md
     ```
 
     If any key-link from a PRIOR wave's artifact fails verification:

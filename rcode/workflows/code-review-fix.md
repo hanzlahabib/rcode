@@ -208,7 +208,7 @@ echo "Fix scope: ${FIX_SCOPE}"
 Use Task() to spawn agent:
 
 ```
-Task(subagent_type="rcode-fixer",
+Task(subagent_type="rcode-code-fixer",
   model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}
@@ -290,7 +290,7 @@ if [ "$AUTO_MODE" = "true" ]; then
     
     # Spawn rcode-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
-    Task(subagent_type="rcode-reviewer",
+    Task(subagent_type="rcode-code-reviewer",
   model="{model}", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
@@ -324,7 +324,7 @@ Do NOT commit the output — the orchestrator handles that.
     # Still has issues — spawn fixer again
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
-    Task(subagent_type="rcode-fixer",
+    Task(subagent_type="rcode-code-fixer",
   model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}

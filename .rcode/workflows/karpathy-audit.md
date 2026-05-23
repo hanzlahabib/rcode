@@ -3,7 +3,7 @@ Audit source code changes against Andrej Karpathy's 4 LLM coding principles. Ide
 </purpose>
 
 <required_reading>
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/karpathy-guidelines.md
 </required_reading>
 
 ## Step 0 — Usage check
@@ -36,7 +36,7 @@ Parse the argument. It can be:
 
 If phase number format:
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

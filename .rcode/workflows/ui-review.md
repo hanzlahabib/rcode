@@ -28,7 +28,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init ui-review "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init ui-review "$ARGUMENTS")
 ```
 
 Parse:
@@ -40,7 +40,7 @@ Parse:
 ## Step 1 — Validate UI-SPEC.md Exists
 
 ```bash
-test -f ".rihal/UI-SPEC.md"
+test -f ".rcode/UI-SPEC.md"
 ```
 
 **If missing:**
@@ -105,8 +105,8 @@ Task tool call:
 ## Step 4 — Generate Audit Report
 
 Store audit report at:
-- `.rihal/UI-REVIEW-{phase-name}.md` (if phase specified)
-- `.rihal/UI-REVIEW.md` (if all phases)
+- `.rcode/UI-REVIEW-{phase-name}.md` (if phase specified)
+- `.rcode/UI-REVIEW.md` (if all phases)
 
 Print:
 ```

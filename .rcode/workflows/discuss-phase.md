@@ -5,13 +5,13 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@.rihal/references/universal-anti-patterns.md
+@.rcode/references/universal-anti-patterns.md
 </required_reading>
 
 <conditional_reading>
 Load these only when the phase involves user-facing features or product decisions:
-- If phase goal contains UI/product/design/integration signals: `@.rihal/references/domain-probes.md` (213 lines of domain-specific question banks)
-- At the final approval step only: `@.rihal/references/gate-prompts.md` (212 lines of quality gate decision trees)
+- If phase goal contains UI/product/design/integration signals: `@.rcode/references/domain-probes.md` (213 lines of domain-specific question banks)
+- At the final approval step only: `@.rcode/references/gate-prompts.md` (212 lines of quality gate decision trees)
 
 To detect phase type before loading:
 ```bash
@@ -150,9 +150,9 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 Phase number from argument (required).
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-advisor 2>/dev/null)
+AGENT_SKILLS_ADVISOR=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-advisor 2>/dev/null)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -171,7 +171,7 @@ Exit workflow.
 
 **Power mode** — If `--power` is present in ARGUMENTS:
 - Skip interactive questioning entirely
-- Read and execute @.rihal/workflows/discuss-phase-power.md end-to-end
+- Read and execute @.rcode/workflows/discuss-phase-power.md end-to-end
 - Do not continue with the steps below
 
 **Auto mode** — If `--auto` is present in ARGUMENTS:
@@ -334,7 +334,7 @@ Check if any pending todos are relevant to this phase's scope. Surfaces backlog 
 
 **Load and match todos:**
 ```bash
-TODO_MATCHES=$(node ".rihal/bin/rihal-tools.cjs" todo match-phase "${PHASE_NUMBER}")
+TODO_MATCHES=$(node ".rcode/bin/rihal-tools.cjs" todo match-phase "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `score`, `reasons`).
@@ -443,7 +443,7 @@ Check if advisor mode should activate:
 
 1. Check for USER-PROFILE.md:
    ```bash
-   PROFILE_PATH=".rihal/USER-PROFILE.md"
+   PROFILE_PATH=".rcode/USER-PROFILE.md"
    ```
    ADVISOR_MODE = file exists at PROFILE_PATH → true, otherwise → false
 
@@ -459,7 +459,7 @@ Check if advisor mode should activate:
 
 3. Resolve model for advisor agents:
    ```bash
-   ADVISOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-advisor-researcher --raw)
+   ADVISOR_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-advisor-researcher --raw)
    ```
 
 If ADVISOR_MODE is false, skip all advisor-specific steps — workflow proceeds with existing conversational flow unchanged.
@@ -610,7 +610,7 @@ Set ADVISOR_MODE=false for discuss_areas — proceed with unstructured discussio
 </step>
 
 
-@rihal/workflows/discuss-phase-discuss-areas.md
+@rcode/workflows/discuss-phase-discuss-areas.md
 
 
 <step name="write_context">
@@ -828,7 +828,7 @@ rm -f "${phase_dir}/${padded_phase}-DISCUSS-CHECKPOINT.json"
 Commit phase context and discussion log:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+node ".rcode/bin/rihal-tools.cjs" commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context"
@@ -838,7 +838,7 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context"
 Update STATE.md with session info:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state record-session \
+node ".rcode/bin/rihal-tools.cjs" state record-session \
   --stopped-at "Phase ${PHASE} context gathered" \
   --resume-file "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
@@ -846,7 +846,7 @@ node ".rihal/bin/rihal-tools.cjs" state record-session \
 Commit STATE.md:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
+node ".rcode/bin/rihal-tools.cjs" commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 
@@ -857,18 +857,18 @@ Check for auto-advance trigger:
 2. **Sync chain flag with intent** — if user invoked manually (no `--auto` and no `--chain`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]] && [[ ! "$ARGUMENTS" =~ --chain ]]; then
-     node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+     node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
    fi
    ```
 3. Read both the chain flag and user preference:
    ```bash
-   AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` or `--chain` flag present AND `AUTO_CHAIN` is not true:** Persist chain flag to config (handles direct usage without new-project):
 ```bash
-node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
+node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
 ```
 
 **If `--auto` flag present OR `--chain` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true:**
@@ -876,7 +876,7 @@ node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► AUTO-ADVANCING TO PLAN
+ rcode ► AUTO-ADVANCING TO PLAN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Context captured. Launching plan...
@@ -893,7 +893,7 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 - **PHASE COMPLETE** → Full chain succeeded. Display:
   ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Rihal ► PHASE ${PHASE} COMPLETE
+   rcode ► PHASE ${PHASE} COMPLETE
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Auto-advance pipeline finished: discuss → plan → execute
@@ -929,7 +929,7 @@ When `--power` flag is present in ARGUMENTS, skip interactive questioning and ex
 
 The power user mode generates ALL questions upfront into machine-readable and human-friendly files, then waits for the user to answer at their own pace before processing all answers in a single pass.
 
-**Full step-by-step instructions:** @.rihal/workflows/discuss-phase-power.md
+**Full step-by-step instructions:** @.rcode/workflows/discuss-phase-power.md
 
 **Summary of flow:**
 1. Run the same phase analysis (gray area identification) as standard mode

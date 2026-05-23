@@ -15,11 +15,11 @@ Append-only surgical update to a single Memory Bank file. Never rewrites, never 
 
 ## Preconditions
 
-- `.rihal/memory/` exists (run `/rcode:memory-init` first)
+- `.rcode/memory/` exists (run `/rcode-memory-init` first)
 
 ## Halt conditions
 
-- `.rihal/memory/` missing → instruct user to init first
+- `.rcode/memory/` missing → instruct user to init first
 - User asks to *change* (not append) an existing entry → refuse, redirect to direct file edit
 - Detected target file does not exist → report and halt (don't create new files in this workflow)
 
@@ -72,7 +72,7 @@ For `change-records/`:
 
 ### Step 5 — Suggest distillate refresh
 
-If the change was to `project/`, `milestones/current.md`, or `incidents/`, suggest `/rcode:memory-distill` to refresh distillates. Optional, not enforced.
+If the change was to `project/`, `milestones/current.md`, or `incidents/`, suggest `/rcode-memory-distill` to refresh distillates. Optional, not enforced.
 
 ---
 
@@ -84,4 +84,4 @@ If the change was to `project/`, `milestones/current.md`, or `incidents/`, sugge
 
 ## Reversibility
 
-`git diff .rihal/memory/` shows exactly one append — easy to revert with `git checkout`.
+`git diff .rcode/memory/` shows exactly one append — easy to revert with `git checkout`.

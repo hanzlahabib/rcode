@@ -3,8 +3,8 @@ Start a new milestone cycle for an existing project. Loads project context, gath
 </purpose>
 
 <required_reading>
-@.rihal/references/output-format.md
-@.rihal/references/commit-conventions.md
+@.rcode/references/output-format.md
+@.rcode/references/commit-conventions.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
@@ -77,7 +77,7 @@ Before writing any files, present a summary and require explicit confirmation:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE SUMMARY
+ rcode ► MILESTONE SUMMARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Milestone v[X.Y]: [Name]**
@@ -184,7 +184,7 @@ rm -f .planning/MILESTONE-CONTEXT.md
 
 Clear leftover phase directories from the previous milestone only if the previous milestone was archived (check `.planning/archive/` exists and contains the prior milestone's dir). If not archived, do NOT delete — prompt user to run `/rihal-complete-milestone` on the prior milestone first.
 
-Load commit conventions (see `@.rihal/references/commit-conventions.md` — run the project-local scan before writing the commit message):
+Load commit conventions (see `@.rcode/references/commit-conventions.md` — run the project-local scan before writing the commit message):
 
 ```bash
 git add .planning/PROJECT.md .planning/STATE.md
@@ -202,10 +202,10 @@ and continue.
 ## 7. Load context and resolve models
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init new-milestone 2>/dev/null)
-AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-info rihal-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(node ".rihal/bin/rihal-tools.cjs" agent-info rihal-research-synthesizer 2>/dev/null)
-AGENT_SKILLS_ROADMAPPER=$(node ".rihal/bin/rihal-tools.cjs" agent-info rihal-roadmapper 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init new-milestone 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rihal-tools.cjs" agent-info rihal-project-researcher 2>/dev/null)
+AGENT_SKILLS_SYNTHESIZER=$(node ".rcode/bin/rihal-tools.cjs" agent-info rihal-research-synthesizer 2>/dev/null)
+AGENT_SKILLS_ROADMAPPER=$(node ".rcode/bin/rihal-tools.cjs" agent-info rihal-roadmapper 2>/dev/null)
 ```
 
 Extract from `INIT` JSON (where available): `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`.
@@ -213,9 +213,9 @@ Extract from `INIT` JSON (where available): `research_enabled`, `current_milesto
 Resolve models per agent:
 
 ```bash
-RESEARCHER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-project-researcher 2>/dev/null)
-SYNTHESIZER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-research-synthesizer 2>/dev/null)
-ROADMAPPER_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-project-researcher 2>/dev/null)
+SYNTHESIZER_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-research-synthesizer 2>/dev/null)
+ROADMAPPER_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-roadmapper 2>/dev/null)
 ```
 
 ## 7.5 Reset-phase safety (only when `--reset-phase-numbers`)
@@ -259,7 +259,7 @@ If `research_enabled=false`:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► RESEARCHING
+ rcode ► RESEARCHING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning 4 researchers in parallel...
@@ -334,7 +334,7 @@ Display:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► RESEARCH COMPLETE ✓
+ rcode ► RESEARCH COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Stack additions:** [from SUMMARY.md]
@@ -348,7 +348,7 @@ Display:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► DEFINING REQUIREMENTS
+ rcode ► DEFINING REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -464,7 +464,7 @@ git add .planning/REQUIREMENTS.md 2>/dev/null && \
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► CREATING ROADMAP
+ rcode ► CREATING ROADMAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning rihal-roadmapper...
@@ -483,7 +483,7 @@ Spawn `rihal-roadmapper` via Task tool:
 - .planning/REQUIREMENTS.md
 - .planning/research/SUMMARY.md (if exists)
 - .planning/MILESTONES.md (if exists)
-- .rihal/config.yaml
+- .rcode/config.yaml
 </files_to_read>
 
 ${AGENT_SKILLS_ROADMAPPER}
@@ -552,20 +552,20 @@ git add .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md 2>/dev
 Also record the milestone start in state and sync roadmapper phases:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state add-decision \
+node ".rcode/bin/rihal-tools.cjs" state add-decision \
   --summary "Started milestone v[X.Y] [Name]: [N] phases, [X] requirements" 2>/dev/null || true
 
 # Sync all roadmapper-created phases into state.json.
 # rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
 # state.json has no phase entries until this runs. Closes #504.
-node ".rihal/bin/rihal-tools.cjs" state sync --from-disk 2>/dev/null || true
+node ".rcode/bin/rihal-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 
 ## 11. Done
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE INITIALIZED ✓
+ rcode ► MILESTONE INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Milestone v[X.Y]: [Name]**
@@ -616,7 +616,7 @@ or
 - **Roadmapper returns ROADMAP BLOCKED:** surface the blocker, collect resolution, re-spawn.
 - **`rihal-tools.cjs state` fails:** continue — state tracking is optional, file artifacts are mandatory.
 - **`.planning/` is gitignored:** write files, print ℹ notice, do not error.
-- **Phase archive completes but state.json write fails mid-sequence:** do NOT re-archive. Tell the user: "Phase archive completed but milestone state was not recorded. Recovery: run `node .rihal/bin/rihal-tools.cjs state sync --from-disk` then re-run `/rihal-new-milestone` — it will detect the existing archive and skip re-archiving."
+- **Phase archive completes but state.json write fails mid-sequence:** do NOT re-archive. Tell the user: "Phase archive completed but milestone state was not recorded. Recovery: run `node .rcode/bin/rihal-tools.cjs state sync --from-disk` then re-run `/rihal-new-milestone` — it will detect the existing archive and skip re-archiving."
 </on_error>
 </content>
 </invoke>

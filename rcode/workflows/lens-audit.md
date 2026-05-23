@@ -193,7 +193,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
@@ -285,7 +285,7 @@ FINDINGS[extensibility] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
@@ -416,7 +416,7 @@ FINDINGS[documentation] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
@@ -443,7 +443,7 @@ FINDINGS[cross-platform] = RESULT
 
 ```
 PRIMARY = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
   
@@ -513,7 +513,7 @@ FINDINGS[sxo] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
@@ -556,7 +556,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="{lens_model}",
   prompt="Variable naming audit in recent code changes. {CONTEXT}
   

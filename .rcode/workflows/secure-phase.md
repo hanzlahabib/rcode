@@ -3,7 +3,7 @@ Verify threat mitigations for a completed phase. Confirm SPRINT.md threat regist
 </purpose>
 
 <required_reading>
-@.rihal/references/ui-brand.md
+@.rcode/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -33,14 +33,14 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
 ```
-Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
+Error: rihal-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `response_language`.
@@ -48,8 +48,8 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 **If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 ```bash
-AUDITOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-security-auditor --raw)
-SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+AUDITOR_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-security-auditor --raw)
+SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
 If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal-settings."
@@ -106,7 +106,7 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Task(
-  prompt="Read .rihal/agents/rihal-security-auditor.md for instructions.\n\n" +
+  prompt="Read .rcode/agents/rihal-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -126,7 +126,7 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `.rihal/templates/SECURITY.md`
+1. Read template from `.rcode/templates/SECURITY.md`
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 
@@ -156,7 +156,7 @@ Do NOT emit next-phase routing. Stop here.
 ## 7. Commit
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update security threat verification"
+node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update security threat verification"
 ```
 
 ## 8. Results + Routing

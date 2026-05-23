@@ -23,8 +23,8 @@ STOP — do not proceed.
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@.rihal/references/questioning.md
-@.rihal/references/domain-probes.md
+@.rcode/references/questioning.md
+@.rcode/references/domain-probes.md
 </required_reading>
 
 <available_agent_types>
@@ -128,7 +128,7 @@ For each selected output, write the file:
 
 Commit if `commit_docs` is enabled:
 ```bash
-node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" commit "docs: capture exploration — {topic_slug}" --files {file_list}
+node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" commit "docs: capture exploration — {topic_slug}" --files {file_list}
 ```
 
 ## Step 6: Close

@@ -55,8 +55,8 @@ No PRD or PROJECT.md found. How should we proceed?
 ## Step 1 — Load References & Gather Deep Context
 
 ```bash
-@.rihal/references/checklist-story-draft.md
-@.rihal/references/commit-conventions.md
+@.rcode/references/checklist-story-draft.md
+@.rcode/references/commit-conventions.md
 ```
 
 **Context gathering varies by mode:**

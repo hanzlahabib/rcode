@@ -28,13 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init review-edge-case-hunter "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init review-edge-case-hunter "$ARGUMENTS")
 ```
 
 Parse:
 - `flags.phase` — specific phase to analyze (optional)
 - `flags.component` — specific component (optional)
-- `output_path` — `.rihal/EDGE-CASES-{phase}.md` or `.rihal/EDGE-CASES.md`
+- `output_path` — `.rcode/EDGE-CASES-{phase}.md` or `.rcode/EDGE-CASES.md`
 - `targets` — files/components to audit
 
 ## Step 1 — Identify Review Targets
@@ -140,7 +140,7 @@ Organize output:
 
 For each critical/high edge case, add to story AC:
 
-Update `.rihal/story-current.md` acceptance criteria:
+Update `.rcode/story-current.md` acceptance criteria:
 
 ```markdown
 ## Edge Case Handling
@@ -155,7 +155,7 @@ Update `.rihal/story-current.md` acceptance criteria:
 Or file as subtasks:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rihal-tools.cjs state add-task \
   --title "Handle edge case: {scenario}" \
   --category edge-case \
   --severity {critical|high}

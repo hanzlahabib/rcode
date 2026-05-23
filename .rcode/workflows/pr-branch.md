@@ -31,7 +31,7 @@ fi
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► PR BRANCH
+ rcode ► PR BRANCH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Branch: {CURRENT_BRANCH}

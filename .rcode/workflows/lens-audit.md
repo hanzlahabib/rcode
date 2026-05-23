@@ -60,7 +60,7 @@ STOP after printing help.
 ## Step 1 — Resolve target lens(es)
 
 ```bash
-TOOL="node .rihal/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rihal-tools.cjs"
 INIT=$($TOOL init 2>/dev/null || echo '{"ok":false}')
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
 RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "english")
@@ -116,7 +116,7 @@ Set `LENSES` from the choice.
 
 ```bash
 # Collect scope context for skill prompts
-SCOPE_DIRS="rihal/ .rihal/"
+SCOPE_DIRS="rihal/ .rcode/"
 [ -d src ] && SCOPE_DIRS="$SCOPE_DIRS src/"
 [ -d lib ] && SCOPE_DIRS="$SCOPE_DIRS lib/"
 SCOPE_SUMMARY="Scope: $SCOPE_DIRS. Response language: $RESPONSE_LANGUAGE."
@@ -385,7 +385,7 @@ RESULT = Task(
   
   Run Lens 9 (Documentation) audit. Check:
   - Workflows missing a '## Next Up' or 'Next Up' footer
-  - Dead @.rihal/ references (file path does not exist in rihal/)
+  - Dead @.rcode/ references (file path does not exist in rihal/)
   - README.md referencing /rihal-<command> that has no command file
   - Skills (SKILL.md) missing required sections: Overview, Workflow, Output Format, Examples
   - CHANGELOG.md more than 5 commits behind HEAD

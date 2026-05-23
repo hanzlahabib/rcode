@@ -16,7 +16,7 @@ STOP — do not proceed.
 
 ## Step 1 — Check for workspaces
 
-Verify `.rihal/workspaces.csv` exists. If not:
+Verify `.rcode/workspaces.csv` exists. If not:
 
 ```
 No workspaces defined yet. Create one:
@@ -28,7 +28,7 @@ STOP.
 
 ## Step 2 — Parse workspaces.csv
 
-Read `.rihal/workspaces.csv` and parse each row:
+Read `.rcode/workspaces.csv` and parse each row:
 
 ```csv
 name,path,created,status,parent
@@ -106,10 +106,10 @@ Otherwise:
 
 ## On Error
 
-If `.rihal/workspaces.csv` is malformed:
+If `.rcode/workspaces.csv` is malformed:
 
 ```
 ⚠ Workspaces file corrupted. Attempting to list from disk:
 ```
 
-Then list directories in `.rihal/workspaces/` directly.
+Then list directories in `.rcode/workspaces/` directly.

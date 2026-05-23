@@ -8,7 +8,7 @@ Orchestrate a parallel panel of Rihal specialist subagents answering a strategic
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MAJLIS CONVENING
+ rcode ► MAJLIS CONVENING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Question: {$ARGUMENTS}
@@ -24,13 +24,13 @@ Per-agent spawn indicator:
   → 🛡️ Fatima (QA)
 ```
 Agent headers when presenting responses: `🧭 **Sadiq (صادق) — Director of Strategy:**`.
-Closure: `RIHAL ► COUNCIL COMPLETE ✓` + Next Up with decision options.
+Closure: `rcode ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 </output_format>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
-@.rihal/references/council-protocol.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
+@.rcode/references/council-protocol.md
 </required_reading>
 
 <process>
@@ -90,7 +90,7 @@ Council spawns 3-5 agents in parallel for debate. For one expert, use:
 Only proceed past this step if the input is a true multi-perspective question (e.g., "should we...?", "is X a good idea?", "which approach is best?").
 
 After Step 0.6 confirmation, proceed to load references by Reading:
-- `.rihal/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
+- `.rcode/references/council-protocol.md` (the 5-step majlis protocol and cross-talk conventions)
 
 <available_agent_types>
 Read the `installed_agents` array from INIT_JSON. Every entry can be invoked as
@@ -110,8 +110,8 @@ Before initialization, gather initial context signals:
 ```bash
 # Check for fresh project indicators
 test -f README.md && echo "has_readme=1" || echo "has_readme=0"
-test -f .rihal/config.yaml && grep -q "user_name:" .rihal/config.yaml && echo "has_config=1" || echo "has_config=0"
-test -f .rihal/state.json && grep -q "phases\|decisions" .rihal/state.json && echo "has_state=1" || echo "has_state=0"
+test -f .rcode/config.yaml && grep -q "user_name:" .rcode/config.yaml && echo "has_config=1" || echo "has_config=0"
+test -f .rcode/state.json && grep -q "phases\|decisions" .rcode/state.json && echo "has_state=1" || echo "has_state=0"
 test -f package.json -o -f Cargo.toml -o -f go.mod -o -f pyproject.toml && echo "has_build=1" || echo "has_build=0"
 ```
 
@@ -139,7 +139,7 @@ Options:
 Call the helper binary once to load all context:
 
 ```bash
-INIT_JSON=$(node .rihal/bin/rihal-tools.cjs init council "$ARGUMENTS")
+INIT_JSON=$(node .rcode/bin/rihal-tools.cjs init council "$ARGUMENTS")
 ```
 
 Parse the JSON for:
@@ -152,9 +152,9 @@ Parse the JSON for:
 - `scores` — object, per-agent scoring for explain mode
 - `question_type` — `"codebase" | "discovery" | "market" | "greenfield"` — drives Step 1 branching
 - `question_signals` — string[], matched phrases that drove the classification
-- `config` — `{ user_name, project_name, language, mode }` from `.rihal/config.yaml`
+- `config` — `{ user_name, project_name, language, mode }` from `.rcode/config.yaml`
 - `paths` — `{ state, planning_root, sessions_dir, references_dir }`
-- `state_exists` — boolean, `.rihal/state.json` present
+- `state_exists` — boolean, `.rcode/state.json` present
 - `installed_agents` — the authoritative list of installed agent ids (for validation)
 - `response_language` — output language from config (null = English)
 
@@ -192,8 +192,8 @@ Run this block ONCE. Target < 2k tokens output. Do not read files not listed her
 
 ```bash
 # Cheap, bounded signals only — orchestrator uses the output to brief subagents.
-test -f .rihal/state.json && cat .rihal/state.json
-test -f .rihal/config.yaml && cat .rihal/config.yaml
+test -f .rcode/state.json && cat .rcode/state.json
+test -f .rcode/config.yaml && cat .rcode/config.yaml
 test -f README.md && head -60 README.md
 
 # Only read build manifests for codebase/release questions
@@ -236,7 +236,7 @@ Do NOT skip this step. A council that answers market questions from training dat
 Also run the minimal codebase scan (config.yaml + README only) so subagents know the team's current capabilities:
 
 ```bash
-test -f .rihal/config.yaml && cat .rihal/config.yaml
+test -f .rcode/config.yaml && cat .rcode/config.yaml
 test -f README.md && head -40 README.md
 ```
 
@@ -387,7 +387,7 @@ Format:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COUNCIL VERDICT
+ rcode ► COUNCIL VERDICT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **One-liners (Round 1)**
@@ -421,7 +421,7 @@ Rules for compact mode:
 
 ### Verbose mode (`--verbose` flag or `output.verbose: true` in config)
 
-Activated by: `--verbose` in `$ARGUMENTS` OR `$(node .rihal/bin/rihal-tools.cjs config-get output.verbose)` equals `"true"`.
+Activated by: `--verbose` in `$ARGUMENTS` OR `$(node .rcode/bin/rihal-tools.cjs config-get output.verbose)` equals `"true"`.
 
 Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 
@@ -445,7 +445,7 @@ Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 ```
 
 Before presenting, load the commit format reference:
-- `.rihal/references/commit-conventions.md` (commit format rules for session-save artifact)
+- `.rcode/references/commit-conventions.md` (commit format rules for session-save artifact)
 
 **Either mode:** the artifact file saved in Step 6 always contains full verbatim text — the compact/verbose flag only controls inline presentation.
 
@@ -545,18 +545,18 @@ Print the artifact path to the user at the end:
 ─── ~50K tokens · {duration}s · {5-agents} agents ───
 ```
 
-(Use the footer format from `.rihal/references/response-style.md#session-cost-footer`)
+(Use the footer format from `.rcode/references/response-style.md#session-cost-footer`)
 
 ### Step 6b — Update state (MANDATORY — do not skip)
 
-After the artifact is written, update `.rihal/state.json` with the council session record and session timestamp. **This step is mandatory — skipping it causes council_sessions[] to remain empty in state.json.** Run silently (no user output for this step).
+After the artifact is written, update `.rcode/state.json` with the council session record and session timestamp. **This step is mandatory — skipping it causes council_sessions[] to remain empty in state.json.** Run silently (no user output for this step).
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state record-council \
+node .rcode/bin/rihal-tools.cjs state record-council \
   --slug "{slug}" \
   --panel "{comma-separated panel names}" \
   --artifact "{artifact path}"
-node .rihal/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rihal-tools.cjs state record-session
 ```
 
 > **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
@@ -577,6 +577,6 @@ node .rihal/bin/rihal-tools.cjs state record-session
 - **Panel contains unknown agent:** print the installed-agent list and exit.
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
 - **All panelists return empty responses:** likely subagents were spawned without proper prompts. Re-check Step 4 prompt construction.
-- **`.rihal/config.yaml` missing:** warn and use defaults (`user_name=User`, `language=English`, `mode=guided`).
+- **`.rcode/config.yaml` missing:** warn and use defaults (`user_name=User`, `language=English`, `mode=guided`).
 
 </process>

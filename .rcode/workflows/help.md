@@ -56,7 +56,7 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | What it does |
 |---------|--------------|
-| `/rihal-init` | First-time setup in this repo. Detects state, asks config questions, writes `.rihal/RIHLA.md`. Run once per project. |
+| `/rihal-init` | First-time setup in this repo. Detects state, asks config questions, writes `.rcode/RIHLA.md`. Run once per project. |
 | `/rihal-new-project` | Take an idea to a planned roadmap. Questioning → optional research → REQUIREMENTS → ROADMAP. |
 | `/rihal-plan <phase>` | Create executable plans for a phase. Produces `SPRINT.md` files. |
 | `/rihal-execute <phase>` | Run all plans in a phase in dependency waves. Updates STATE on completion. |
@@ -236,7 +236,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal-sprint-status` | Sprint progress — stories, points, velocity, burndown. |
 | `/rihal-list-plans` | Table of every SPRINT.md across phases — goal, stories, points, state. |
-| `/rihal-decisions` | Browse decisions across every Rihal project (~/.rihal/decisions.jsonl). |
+| `/rihal-decisions` | Browse decisions across every Rihal project (~/.rcode/decisions.jsonl). |
 | `/rihal-replay <slug>` | Re-run a past council session with the same question — fresh panel round. |
 | `/rihal-export-to-github` | Push phases/stories/decisions to GitHub issues (wraps `rihal-code github-sync`). |
 | `/rihal-notify-test` | Verify Slack/Discord/MS Teams webhook wiring — posts a test message. |

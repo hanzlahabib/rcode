@@ -29,7 +29,7 @@ If no arguments provided, enter interactive mode (Step 2).
 
 ## Step 1.5 — Display current config
 
-Read `.rihal/config.yaml` and print in formatted table:
+Read `.rcode/config.yaml` and print in formatted table:
 
 ```
 Current Rihal Configuration:
@@ -57,7 +57,7 @@ Allowed keys: communication_language, mode, model_profile, branching_strategy
 
 Call:
 ```bash
-node .rihal/bin/rihal-tools.cjs config set --key {key} --value {value}
+node .rcode/bin/rihal-tools.cjs config set --key {key} --value {value}
 ```
 
 Print success:
@@ -96,10 +96,10 @@ STOP.
 
 - [ ] Current config displayed or updated successfully
 - [ ] No validation errors
-- [ ] .rihal/config.yaml reflects changes
+- [ ] .rcode/config.yaml reflects changes
 
 ## On Error
 
 - **Invalid key:** print allowed keys and stop.
-- **.rihal/config.yaml missing:** print "No config found. Run /rihal-init first."
+- **.rcode/config.yaml missing:** print "No config found. Run /rihal-init first."
 - **rihal-tools.cjs missing:** tell user to run `rihal-code install-v2`.

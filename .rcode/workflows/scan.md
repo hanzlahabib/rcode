@@ -73,7 +73,7 @@ Exit.
 ## Step 2: Check for existing documents
 
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init scan 2>/dev/null || echo "{}")
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" init scan 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -172,7 +172,7 @@ mkdir -p .planning/codebase
 
 ## Step 4: Announce dispatch (persona-driven)
 
-Use the canonical dispatch-banner spec at `.rihal/references/dispatch-banner.md`. Read it now if you have not already — it defines the persona-driven first-person hand-off pattern.
+Use the canonical dispatch-banner spec at `.rcode/references/dispatch-banner.md`. Read it now if you have not already — it defines the persona-driven first-person hand-off pattern.
 
 For this workflow, the dispatched agent is `rihal-codebase-mapper` → persona **Dalil (دليل) — Codebase Scout** 🧭.
 
@@ -218,7 +218,7 @@ Task(
   Topic phrase (literal search target, may be empty): {topic-keyword}
   Write results to .planning/codebase/. Produce only: {document_list}.
 
-  REQUIRED — every document must open with a 'Scan Scope' section per `.rihal/agents-rules/codebase-mapper/detailed-guide.md` that declares:
+  REQUIRED — every document must open with a 'Scan Scope' section per `.rcode/agents-rules/codebase-mapper/detailed-guide.md` that declares:
   - Source roots discovered (top-level non-vendored directories)
   - Source roots searched (grep/glob targets)
   - Source roots NOT searched and why
@@ -263,7 +263,7 @@ When refresh mode is active, also include `topic_keyword` (if any) and the resol
 
 ## Step 6: Announce return (persona-driven)
 
-When the agent returns, print the RETURNED banner per `.rihal/references/dispatch-banner.md`. Filled-in template:
+When the agent returns, print the RETURNED banner per `.rcode/references/dispatch-banner.md`. Filled-in template:
 
 ```
 ╭─────────────────────────────────────────────────────────╮

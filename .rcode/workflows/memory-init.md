@@ -1,7 +1,7 @@
 # Workflow: rcode-memory-init
 
 <purpose>
-Bootstrap the rcode Memory Bank for a project. Copies templates from `rihal/templates/memory/` into `.rihal/memory/`, then asks 5 seed questions to populate context. Idempotent: re-running on an initialised project produces a gap report instead of overwriting.
+Bootstrap the rcode Memory Bank for a project. Copies templates from `rihal/templates/memory/` into `.rcode/memory/`, then asks 5 seed questions to populate context. Idempotent: re-running on an initialised project produces a gap report instead of overwriting.
 </purpose>
 
 Bootstraps the rcode Memory Bank in the current project. Idempotent — re-running on an initialised project switches to a gap report instead of overwriting.
@@ -10,19 +10,19 @@ Bootstraps the rcode Memory Bank in the current project. Idempotent — re-runni
 
 ## Inputs
 
-- **Project root** — current working directory; must contain a `.rihal/` folder (created by `rcode install`)
-- **Templates source** — `.rihal/templates/memory/` (copied from `rihal/templates/memory/` on install)
+- **Project root** — current working directory; must contain a `.rcode/` folder (created by `rcode install`)
+- **Templates source** — `.rcode/templates/memory/` (copied from `rihal/templates/memory/` on install)
 
 ## Preconditions
 
-- `.rihal/` exists (rcode is installed in this project)
-- `.rihal/templates/memory/` exists (templates ship with rcode)
+- `.rcode/` exists (rcode is installed in this project)
+- `.rcode/templates/memory/` exists (templates ship with rcode)
 
 ## Halt conditions
 
-- `.rihal/` missing → ask user to run `npx @hanzlaa/rcode install` first, then halt.
-- `.rihal/templates/memory/` missing → report bug, halt.
-- User cancels at any question → leave `.rihal/memory/` partially populated (whatever was seeded) and exit cleanly.
+- `.rcode/` missing → ask user to run `npx @hanzlaa/rcode install` first, then halt.
+- `.rcode/templates/memory/` missing → report bug, halt.
+- User cancels at any question → leave `.rcode/memory/` partially populated (whatever was seeded) and exit cleanly.
 
 ---
 
@@ -31,30 +31,30 @@ Bootstraps the rcode Memory Bank in the current project. Idempotent — re-runni
 ### Step 1 — Detect existing Memory Bank
 
 ```bash
-if [ -f ".rihal/memory/INDEX.md" ]; then
+if [ -f ".rcode/memory/INDEX.md" ]; then
   # Switch to gap-report mode
   exit_with_gap_report
 fi
 ```
 
 If `INDEX.md` exists:
-- List every file under `.rihal/memory/`
+- List every file under `.rcode/memory/`
 - For each, count non-template lines (lines that don't start with `<!--` or contain `_(...)_` placeholders)
 - Print which files are empty / template-only and which are populated
-- Suggest `/rcode:memory-update` for surgical edits and exit
+- Suggest `/rcode-memory-update` for surgical edits and exit
 
 ### Step 2 — Copy templates
 
 ```bash
-mkdir -p .rihal/memory
-cp -R .rihal/templates/memory/. .rihal/memory/
+mkdir -p .rcode/memory
+cp -R .rcode/templates/memory/. .rcode/memory/
 ```
 
 Preserves the directory structure. Includes `.gitkeep` files in empty subdirs.
 
 ### Step 3 — Substitute placeholders
 
-Replace in every `*.md` file under `.rihal/memory/`:
+Replace in every `*.md` file under `.rcode/memory/`:
 - `{{PROJECT_NAME}}` → derived from `package.json` `name`, fallback to directory basename
 - `{{INIT_DATE}}` → today's date in `YYYY-MM-DD` format
 
@@ -74,7 +74,7 @@ Ask each via AskUserQuestion. Accept short answers; do not push for paragraphs.
 
 ### Step 5 — Update state.json
 
-Add or update the `memory_bank` block in `.rihal/state.json`:
+Add or update the `memory_bank` block in `.rcode/state.json`:
 
 ```json
 {
@@ -88,19 +88,19 @@ Add or update the `memory_bank` block in `.rihal/state.json`:
 ### Step 6 — Print summary
 
 Show:
-- File tree of `.rihal/memory/`
+- File tree of `.rcode/memory/`
 - Files seeded vs files still empty
-- Suggested next command: `/rcode:memory-distill`
+- Suggested next command: `/rcode-memory-distill`
 
 ---
 
 ## Post-conditions
 
-- `.rihal/memory/INDEX.md` exists with project name + date filled in
+- `.rcode/memory/INDEX.md` exists with project name + date filled in
 - 4–5 of the seeded files have user-supplied content
-- `.rihal/state.json` records initialisation
+- `.rcode/state.json` records initialisation
 - The Diwan dashboard `/memory` route now renders content (Phase 3 dashboard work)
 
 ## Reversibility
 
-Removing a botched init: `rm -rf .rihal/memory/` and `git checkout -- .rihal/state.json`. No external side effects.
+Removing a botched init: `rm -rf .rcode/memory/` and `git checkout -- .rcode/state.json`. No external side effects.

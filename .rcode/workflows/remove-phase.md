@@ -29,13 +29,13 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${target}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${target}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
 ```
-Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
+Error: rihal-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract: `phase_found`, `phase_dir`, `phase_number`, `commit_docs`, `roadmap_exists`.
@@ -85,13 +85,13 @@ Wait for confirmation.
 **Delegate the entire removal operation to rihal-tools:**
 
 ```bash
-RESULT=$(node ".rihal/bin/rihal-tools.cjs" phase remove "${target}")
+RESULT=$(node ".rcode/bin/rihal-tools.cjs" phase remove "${target}")
 ```
 
 If the phase has executed plans (SUMMARY.md files), rihal-tools will error. Use `--force` only if the user confirms:
 
 ```bash
-RESULT=$(node ".rihal/bin/rihal-tools.cjs" phase remove "${target}" --force)
+RESULT=$(node ".rcode/bin/rihal-tools.cjs" phase remove "${target}" --force)
 ```
 
 The CLI handles:
@@ -108,7 +108,7 @@ Extract from result: `removed`, `directory_deleted`, `renamed_directories`, `ren
 Stage and commit the removal:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
+node ".rcode/bin/rihal-tools.cjs" commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
 ```
 
 The commit message preserves the historical record of what was removed.

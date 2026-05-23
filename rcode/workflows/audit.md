@@ -174,7 +174,7 @@ Run the target's slash command, forwarding remaining args:
 After the sub-workflow returns:
 
 ```
-RIHAL ► AUDIT ({TARGET}) ✓
+rcode ► AUDIT ({TARGET}) ✓
 
 Report: {report_path or "(stdout only)"}
 Findings: {count}

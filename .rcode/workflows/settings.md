@@ -1,7 +1,7 @@
 # Workflow: rihal-settings
 
 <purpose>
-View and edit Rihal project settings stored in `.rihal/config.yaml`. Closes
+View and edit Rihal project settings stored in `.rcode/config.yaml`. Closes
 #233 — replaces the previous broken implementation that wrote flat keys
 nothing read and corrupted the nested `workflow:` / `git:` sections on every
 save.
@@ -45,7 +45,7 @@ nested-safe reader in `rihal/bin/lib/config.cjs`). **Do not** call the legacy
 `config set` — it uses a flat YAML parser and corrupts nested sections.
 
 ```bash
-TOOL="node .rihal/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rihal-tools.cjs"
 $TOOL config-get user_name                            || echo "(unset)"
 $TOOL config-get communication_language               || echo "(unset)"
 $TOOL config-get mode                                 || echo "(unset)"
@@ -63,7 +63,7 @@ $TOOL config-get output.verbose                       || echo "(unset)"
 Render as a table:
 
 ```
-Current Rihal Settings (.rihal/config.yaml)
+Current Rihal Settings (.rcode/config.yaml)
 
   Identity
     user_name                       : {value}
@@ -93,7 +93,7 @@ If invoked as `/rihal-settings show`, STOP here.
 ## Step 1.7 — `get <key>`
 
 ```bash
-node .rihal/bin/rihal-tools.cjs config-get "$KEY"
+node .rcode/bin/rihal-tools.cjs config-get "$KEY"
 ```
 
 Print the result (empty output means unset). STOP.
@@ -112,7 +112,7 @@ Validate the value:
 - `output.verbose` ∈ {true, false}
 
 ```bash
-node .rihal/bin/rihal-tools.cjs config-set "$KEY" "$VALUE"
+node .rcode/bin/rihal-tools.cjs config-set "$KEY" "$VALUE"
 ```
 
 Print:
@@ -149,7 +149,7 @@ the new value, showing the allowed values for that key.
 Then call:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs config-set "{dotted.key}" "{value}"
+node .rcode/bin/rihal-tools.cjs config-set "{dotted.key}" "{value}"
 ```
 
 After each successful write, re-display the affected row so the user sees the
@@ -163,7 +163,7 @@ until the user picks `0` or `done`.
 Print:
 
 ```
-✓ Settings saved to .rihal/config.yaml
+✓ Settings saved to .rcode/config.yaml
 
 Tip: settings take effect on the next workflow run. Use /rihal-settings show
 to verify, or /rihal-resume-work to reload context.
@@ -178,7 +178,7 @@ to verify, or /rihal-resume-work to reload context.
 
 ## On Error
 
-- **`.rihal/config.yaml` missing:** print "No config found. Run /rihal-init first." and STOP.
+- **`.rcode/config.yaml` missing:** print "No config found. Run /rihal-init first." and STOP.
 - **Invalid key:** print the allowed keys from Step 1.5 and STOP.
 - **Invalid value:** print the allowed values for that key and STOP.
 - **`rihal-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.

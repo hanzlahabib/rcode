@@ -10,7 +10,7 @@ Verify argument was provided:
 
 ## Step 1: Resolve ID
 
-Run: `node .rihal/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
+Run: `node .rcode/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
 
 Expected output:
 ```json
@@ -40,7 +40,7 @@ For each SPRINT.md:
 
 1. Print frontmatter as YAML block (title, wave, description)
 2. Print body in full
-3. Read `.rihal/state.json` and extract `executions[].plan_id` matching this plan
+3. Read `.rcode/state.json` and extract `executions[].plan_id` matching this plan
 4. If found, append:
    ```
    Last execution: {timestamp}, {duration_ms}ms, commit {commit_sha}

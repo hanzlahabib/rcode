@@ -23,10 +23,10 @@ STOP — do not proceed.
 
 ## Step 1 — Load state
 
-Read `.rihal/state.json`:
+Read `.rcode/state.json`:
 
 ```bash
-cat .rihal/state.json 2>/dev/null || echo '{}'
+cat .rcode/state.json 2>/dev/null || echo '{}'
 ```
 
 Parse as JSON. If invalid or missing, print:

@@ -9,7 +9,7 @@ Update an existing PRD with revisions or clarifications. Delegates to the rihal-
 Locate and follow the installed skill:
 
 ```bash
-find .rihal/skills/actions -path "*rihal-edit-prd/workflow.md" 2>/dev/null | head -1
+find .rcode/skills/actions -path "*rihal-edit-prd/workflow.md" 2>/dev/null | head -1
 ```
 
 Read and follow the workflow at that path. If the path is empty:

@@ -33,7 +33,7 @@ Read ROADMAP.md. For each planned phase:
 **Display wave plan:**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLAN MILESTONE: {MILESTONE_NAME}
+ rcode ► PLAN MILESTONE: {MILESTONE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Wave 1 (parallel): Phase {N1}, Phase {N2}
@@ -80,7 +80,7 @@ Only advance when all phases in the current wave have a passing CHECK.md.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE PLANNED ✓  {MILESTONE_NAME}
+ rcode ► MILESTONE PLANNED ✓  {MILESTONE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Waves: {N}

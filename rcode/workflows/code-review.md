@@ -388,7 +388,7 @@ done
 Spawn the rcode-reviewer agent:
 
 ```
-Task(subagent_type="rcode-reviewer",
+Task(subagent_type="rcode-code-reviewer",
   model="{model}", prompt="
 <files_to_read>
 ${FILES_TO_READ}

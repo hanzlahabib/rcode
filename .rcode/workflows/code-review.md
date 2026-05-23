@@ -34,7 +34,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 If `$ARGUMENTS` contains `--karpathy`, delegate to the Karpathy 4-principle audit workflow and stop:
 
 ```
-Read and execute @.rihal/workflows/karpathy-audit.md end-to-end with the same arguments minus `--karpathy`.
+Read and execute @.rcode/workflows/karpathy-audit.md end-to-end with the same arguments minus `--karpathy`.
 ```
 
 The standard code-review steps below are skipped when `--karpathy` is set — the karpathy-audit workflow produces its own report.
@@ -44,7 +44,7 @@ The standard code-review steps below are skipped when `--karpathy` is set — th
 If `$ARGUMENTS` contains `--attack`, delegate to the attack-mode review workflow and stop:
 
 ```
-Read and execute @.rihal/workflows/review-adversarial.md end-to-end with the same arguments minus `--attack`.
+Read and execute @.rcode/workflows/review-adversarial.md end-to-end with the same arguments minus `--attack`.
 ```
 
 Attack mode produces a weakness report from a hostile perspective — security vulnerabilities, race conditions, data loss, abuse cases. The standard code-review steps below are skipped when `--attack` is set.
@@ -54,7 +54,7 @@ Attack mode produces a weakness report from a hostile perspective — security v
 If `$ARGUMENTS` contains `--edge-cases`, delegate to the edge-case-hunter workflow and stop:
 
 ```
-Read and execute @.rihal/workflows/review-edge-case-hunter.md end-to-end with the same arguments minus `--edge-cases`.
+Read and execute @.rcode/workflows/review-edge-case-hunter.md end-to-end with the same arguments minus `--edge-cases`.
 ```
 
 Edge-cases mode enumerates boundary conditions by category (input, state, concurrency, network) with severity. The standard code-review steps below are skipped when `--edge-cases` is set.
@@ -66,13 +66,13 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
 ```
-Error: rihal-tools init failed. Verify .rihal/ is installed and state.json is valid.
+Error: rihal-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`, `response_language`.
@@ -130,7 +130,7 @@ fi
 Check if code review is enabled via config:
 
 ```bash
-CODE_REVIEW_ENABLED=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
 If CODE_REVIEW_ENABLED is "false":
@@ -146,14 +146,14 @@ Default is true — only skip on explicit false. This check runs AFTER phase val
 Determine review depth with priority order:
 
 1. DEPTH_OVERRIDE from --depth flag (highest priority)
-2. Config value: `node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" config-get workflow.code_review_depth 2>/dev/null`
+2. Config value: `node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" config-get workflow.code_review_depth 2>/dev/null`
 3. Default: "standard"
 
 ```bash
 if [ -n "$DEPTH_OVERRIDE" ]; then
   REVIEW_DEPTH="$DEPTH_OVERRIDE"
 else
-  CONFIG_DEPTH=$(node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" config-get workflow.code_review_depth 2>/dev/null || echo "")
+  CONFIG_DEPTH=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" config-get workflow.code_review_depth 2>/dev/null || echo "")
   REVIEW_DEPTH="${CONFIG_DEPTH:-standard}"
 fi
 ```
@@ -491,7 +491,7 @@ if [ -f "${REVIEW_PATH}" ]; then
     echo "REVIEW.md created at ${REVIEW_PATH}"
     
     if [ "$COMMIT_DOCS" = "true" ]; then
-      node "$PROJECT_ROOT/.rihal/bin/rihal-tools.cjs" commit \
+      node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" commit \
         "docs(${PADDED_PHASE}): add code review report" \
         --files "${REVIEW_PATH}"
     fi

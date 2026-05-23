@@ -30,10 +30,10 @@ After determining mode, strip the mode flag from `$ARGUMENTS` and pass the remai
 
 Each mode is implemented by an existing workflow. Load and execute end-to-end:
 
-- **todo (default):** read and execute `@.rihal/workflows/add-todo.md` with the cleaned `$ARGUMENTS`. Output identical to `/rihal-add-todo`.
-- **note (`--note`):** read and execute `@.rihal/workflows/note.md`. Output identical to `/rihal-note`.
-- **seed (`--seed`):** read and execute `@.rihal/workflows/plant-seed.md`. Output identical to `/rihal-plant-seed`.
-- **list (`--list`):** read and execute `@.rihal/workflows/check-todos.md`. Output identical to `/rihal-check-todos`.
+- **todo (default):** read and execute `@.rcode/workflows/add-todo.md` with the cleaned `$ARGUMENTS`. Output identical to `/rihal-add-todo`.
+- **note (`--note`):** read and execute `@.rcode/workflows/note.md`. Output identical to `/rihal-note`.
+- **seed (`--seed`):** read and execute `@.rcode/workflows/plant-seed.md`. Output identical to `/rihal-plant-seed`.
+- **list (`--list`):** read and execute `@.rcode/workflows/check-todos.md`. Output identical to `/rihal-check-todos`.
 
 The underlying workflows are unchanged — `/rihal-capture` is a thin router. Behaviour, output format, and side effects are byte-identical to invoking the underlying command directly. This means `/rihal-add-todo "X"` and `/rihal-capture "X"` produce the same disk writes and the same console output.
 

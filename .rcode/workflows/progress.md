@@ -9,14 +9,14 @@ Use whichever name you prefer — they produce the same output.
 </purpose>
 
 <required_reading>
-@.rihal/workflows/status.md
+@.rcode/workflows/status.md
 </required_reading>
 
 <process>
 
 ## Step 1 — Delegate to /rihal-status in verbose mode
 
-Execute the workflow defined in `.rihal/workflows/status.md` end-to-end, with one override:
+Execute the workflow defined in `.rcode/workflows/status.md` end-to-end, with one override:
 
 - Always render in **verbose mode** (full Steps 2–6 output: banner + phases + insights + decisions + blockers + Next Up route tree).
 - Treat `$ARGUMENTS` exactly as `/rihal-status --verbose $ARGUMENTS` would.
@@ -43,4 +43,4 @@ Skip this footer if `$ARGUMENTS` already contains `--no-alias-hint`.
 
 ## On Error
 
-Defer to `.rihal/workflows/status.md` error handling. This workflow adds nothing on top.
+Defer to `.rcode/workflows/status.md` error handling. This workflow adds nothing on top.

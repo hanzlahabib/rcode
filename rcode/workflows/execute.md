@@ -102,7 +102,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXECUTING PHASE {NN}
+ rcode ► EXECUTING PHASE {NN}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -115,7 +115,7 @@ Use TaskCreate at start, one entry per wave:
 Per-wave banner as each begins:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXECUTING WAVE {N}
+ rcode ► EXECUTING WAVE {N}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning {N} rcode-executor agents in parallel...
@@ -129,7 +129,7 @@ Per-agent completion:
 Closure:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PHASE {NN} COMPLETE ✓
+ rcode ► PHASE {NN} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 End with Next Up block routing to /rcode-verify-work or /rcode-next.
@@ -620,7 +620,7 @@ generated: <ISO timestamp>
 Group findings by severity. For each finding include: file path, line reference, description, recommended fix.
 
 ${REVIEWER_SKILLS}",
-  subagent_type="rcode-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="${REVIEWER_MODEL}"
 )
 ```

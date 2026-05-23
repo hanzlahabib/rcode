@@ -135,10 +135,10 @@ fi
 ## Step 1 — Load Story & References
 
 ```bash
-@.rihal/references/checklist-story-draft.md
-@.rihal/references/checklist-story-dod.md
-@.rihal/references/commit-conventions.md
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/checklist-story-draft.md
+@.rcode/references/checklist-story-dod.md
+@.rcode/references/commit-conventions.md
+@.rcode/references/karpathy-guidelines.md
 ```
 
 `STORY_CONTENT`, `STORY_ID`, `STORY_TITLE`, `PERSONA`, `EFFORT` are already set from Step 0.
@@ -297,7 +297,7 @@ feat(story-{N}.{M}): {story-specific description}
 {Why this change, what problem it solves}
 ```
 
-See `.rihal/references/commit-conventions.md` for full rules.
+See `.rcode/references/commit-conventions.md` for full rules.
 
 ---
 

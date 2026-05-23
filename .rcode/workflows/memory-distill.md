@@ -15,12 +15,12 @@ Regenerate Memory Bank distillates with lossless compression. Idempotent.
 
 ## Preconditions
 
-- `.rihal/memory/` exists
-- `.rihal/memory/distillates/` exists (created by `rcode-memory-init`)
+- `.rcode/memory/` exists
+- `.rcode/memory/distillates/` exists (created by `rcode-memory-init`)
 
 ## Halt conditions
 
-- `.rihal/memory/` missing → instruct to run `/rcode:memory-init` first
+- `.rcode/memory/` missing → instruct to run `/rcode-memory-init` first
 - All sources empty (only template placeholders) → warn and exit; no point distilling empty content
 
 ---
@@ -70,7 +70,7 @@ For each target distillate, write:
 ---
 generated: true
 do-not-edit: true
-regenerate-with: /rcode:memory-distill
+regenerate-with: /rcode-memory-distill
 source-digest: <hash>
 generated-at: <ISO datetime>
 source-files:
@@ -104,7 +104,7 @@ Print per-target:
 
 ## Reversibility
 
-Distillates are derived artefacts. Reverting a regeneration: `git checkout .rihal/memory/distillates/`.
+Distillates are derived artefacts. Reverting a regeneration: `git checkout .rcode/memory/distillates/`.
 
 ## On Completion
 

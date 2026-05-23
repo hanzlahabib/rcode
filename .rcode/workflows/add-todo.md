@@ -29,7 +29,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-[ -d .rihal/todos ] || mkdir -p .rihal/todos/pending .rihal/todos/done
+[ -d .rcode/todos ] || mkdir -p .rcode/todos/pending .rcode/todos/done
 ```
 
 Ensure directories exist for organized todo capture.
@@ -62,7 +62,7 @@ Infer area from file paths:
 | `src/db/*`, `database/*` | `database` |
 | `tests/*`, `__tests__/*` | `testing` |
 | `docs/*` | `docs` |
-| `.rihal/*` | `planning` |
+| `.rcode/*` | `planning` |
 | `scripts/*`, `bin/*` | `tooling` |
 | No files or unclear | `general` |
 
@@ -72,7 +72,7 @@ Use existing area if similar match exists.
 <step name="check_duplicates">
 ```bash
 # Search for key words from title in existing todos
-grep -l -i "[key words from title]" .rihal/todos/pending/*.md 2>/dev/null || true
+grep -l -i "[key words from title]" .rcode/todos/pending/*.md 2>/dev/null || true
 ```
 
 If potential duplicate found:
@@ -88,7 +88,7 @@ If overlapping, ask user:
 </step>
 
 <step name="create_file">
-Generate slug for the title and write to `.rihal/todos/pending/{date}-{slug}.md`:
+Generate slug for the title and write to `.rcode/todos/pending/{date}-{slug}.md`:
 
 ```bash
 slug=$(echo "$title" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
@@ -117,9 +117,9 @@ files:
 </step>
 
 <step name="update_state">
-If `.rihal/STATE.md` exists:
+If `.rcode/STATE.md` exists:
 
-1. Count pending todos in .rihal/todos/pending/
+1. Count pending todos in .rcode/todos/pending/
 2. Update "## Pending Todos" section (if exists)
 </step>
 
@@ -127,7 +127,7 @@ If `.rihal/STATE.md` exists:
 Commit the todo and any updated state:
 
 ```bash
-git add .rihal/todos/pending/ .rihal/STATE.md 2>/dev/null || true
+git add .rcode/todos/pending/ .rcode/STATE.md 2>/dev/null || true
 git commit -m "docs: capture todo - $title" 2>/dev/null || true
 ```
 
@@ -136,7 +136,7 @@ Confirm: "Committed: docs: capture todo - [title]"
 
 <step name="confirm">
 ```
-Todo saved: .rihal/todos/pending/[filename]
+Todo saved: .rcode/todos/pending/[filename]
 
   [title]
   Area: [area]

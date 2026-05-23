@@ -7,7 +7,7 @@ Install a Rihal module into the current project. Modules are capability bundles 
 ## Step 0 — Validate module name
 
 ```bash
-MODULES=$(node .rihal/bin/rihal-tools.cjs module list)
+MODULES=$(node .rcode/bin/rihal-tools.cjs module list)
 ```
 
 Parse JSON. If the requested module is not in the available list, print:
@@ -20,7 +20,7 @@ And stop.
 ## Step 1 — Check if already installed
 
 ```bash
-INSTALLED=$(node .rihal/bin/rihal-tools.cjs module installed)
+INSTALLED=$(node .rcode/bin/rihal-tools.cjs module installed)
 ```
 
 If the requested module is already in the installed list:
@@ -32,7 +32,7 @@ And stop.
 ## Step 2 — Check dependencies
 
 ```bash
-CHECK=$(node .rihal/bin/rihal-tools.cjs module check-requires {name})
+CHECK=$(node .rcode/bin/rihal-tools.cjs module check-requires {name})
 ```
 
 If `ok` is false:

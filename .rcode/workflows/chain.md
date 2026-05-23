@@ -45,7 +45,7 @@ Only proceed past this step if the input is a topic or deliverable request (e.g.
 ## Step 1 — Resolve the chain
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init chain "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init chain "$ARGUMENTS")
 ```
 
 Parse:
@@ -137,16 +137,16 @@ Next step:
 ─── ~5K tokens per stage · {duration}s · {stage-count} agents ───
 ```
 
-The "next step" line is a single copy-paste command — see `.rihal/references/command-redirect-format.md`. The footer uses the estimation from `.rihal/references/response-style.md#session-cost-footer`.
+The "next step" line is a single copy-paste command — see `.rcode/references/command-redirect-format.md`. The footer uses the estimation from `.rcode/references/response-style.md#session-cost-footer`.
 
 ## Step 4 — Update state
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state record-chain \
+node .rcode/bin/rihal-tools.cjs state record-chain \
   --slug "{slug}" \
   --agents "{comma-separated}" \
   --artifacts "{chain_dir}"
-node .rihal/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rihal-tools.cjs state record-session
 ```
 
 Silent on failure — state tracking is optional.

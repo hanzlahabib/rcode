@@ -14,7 +14,7 @@ No closure banner (discuss is lightweight). End with optional Next Up if the use
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -44,8 +44,8 @@ Only after the user provides arguments, proceed to Step 0.5.
 Run two checks in parallel — classifier AND panel scorer top-1. Either signal triggers the redirect.
 
 ```bash
-TYPE=$(node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS" 2>/dev/null | grep -o '"type": *"[^"]*"' | cut -d'"' -f4)
-TOP_AGENT=$(node .rihal/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --top 1 2>/dev/null | grep -o '"panel": *\["[^"]*"' | cut -d'"' -f4)
+TYPE=$(node .rcode/bin/rihal-tools.cjs classify-question "$ARGUMENTS" 2>/dev/null | grep -o '"type": *"[^"]*"' | cut -d'"' -f4)
+TOP_AGENT=$(node .rcode/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --top 1 2>/dev/null | grep -o '"panel": *\["[^"]*"' | cut -d'"' -f4)
 ```
 
 **Redirect to council if EITHER condition holds:**
@@ -68,7 +68,7 @@ If either condition holds:
 Only proceed past this step if both checks pass — question is tactical or single-domain (codebase, team, release, design) AND top agent is sadiq/waleed/fatima.
 
 After Step 0.5 confirmation, proceed to load references by Reading:
-- `.rihal/references/council-protocol.md` (agent conventions and response format)
+- `.rcode/references/council-protocol.md` (agent conventions and response format)
 
 <available_agent_types>
 Use these exact `subagent_type` values when calling the Agent tool:
@@ -85,14 +85,14 @@ Use these exact `subagent_type` values when calling the Agent tool:
 Call the helper binary to parse arguments and resolve the agent:
 
 ```bash
-INIT_JSON=$(node .rihal/bin/rihal-tools.cjs init discuss "$ARGUMENTS")
+INIT_JSON=$(node .rcode/bin/rihal-tools.cjs init discuss "$ARGUMENTS")
 ```
 
 Parse the JSON for:
 
 - `agent_id` — resolved agent id (may be `null` if first token wasn't a known agent)
 - `question` — the cleaned question text (with agent name stripped if it was the first token)
-- `config` — `{ user_name, project_name, language, mode }` from `.rihal/config.yaml`
+- `config` — `{ user_name, project_name, language, mode }` from `.rcode/config.yaml`
 - `paths` — `{ state, planning_root, sessions_dir, ... }`
 - `question_type` — classification result
 - `installed_agents` — list of installed agent ids
@@ -104,7 +104,7 @@ Parse the JSON for:
 **If `agent_id` is null:** auto-route to the best agent by calling:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs select-panel "$QUESTION" --top 1
+node .rcode/bin/rihal-tools.cjs select-panel "$QUESTION" --top 1
 ```
 
 Use the first (and only) agent in the returned `panel` array.
@@ -123,7 +123,7 @@ Display name mapping:
 **Only run this if `question_type` is `codebase`, `team`, or `release`.**
 
 ```bash
-test -f .rihal/config.yaml && cat .rihal/config.yaml
+test -f .rcode/config.yaml && cat .rcode/config.yaml
 test -f README.md && head -30 README.md
 git log --oneline -5 2>/dev/null
 ```
@@ -202,17 +202,17 @@ Append footer:
 ─── ~10K tokens · {duration}s · 1 agent ───
 ```
 
-(Use estimation from `.rihal/references/response-style.md#session-cost-footer`)
+(Use estimation from `.rcode/references/response-style.md#session-cost-footer`)
 
 **If no, or `config.mode === 'yolo'`:** skip saving entirely.
 
 ## Step 7 — Update state
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rihal-tools.cjs state record-session
 ```
 
-This records the discuss session in `.rihal/state.json` as `last_session`.
+This records the discuss session in `.rcode/state.json` as `last_session`.
 
 ## On Error
 

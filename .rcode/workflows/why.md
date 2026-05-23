@@ -25,7 +25,7 @@ Parse the question to determine category:
 
 ## Step 2a: Panel Selection Reasoning
 
-Run: `node .rihal/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --explain`
+Run: `node .rcode/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --explain`
 
 Output shows:
 ```json
@@ -55,7 +55,7 @@ Alternative considered: {2nd place agent} scored {score} but lower fit for this 
 
 ## Step 2b: Question Classification
 
-Run: `node .rihal/bin/rihal-tools.cjs classify-question "$ARGUMENTS"`
+Run: `node .rcode/bin/rihal-tools.cjs classify-question "$ARGUMENTS"`
 
 Output shows classification type and signals matched.
 
@@ -83,7 +83,7 @@ Format output as:
 
 ## Step 2c: Deviation Reasoning
 
-Read `.rihal/state.json` and extract `executions[].deviations[]`:
+Read `.rcode/state.json` and extract `executions[].deviations[]`:
 
 For each deviation in the most recent execution:
 
@@ -100,7 +100,7 @@ If no deviations found: `No deviations logged in current state.`
 
 ## Step 2d: General Decision Lookup
 
-Read `.rihal/state.json` and search `decisions[]` for entry matching the topic.
+Read `.rcode/state.json` and search `decisions[]` for entry matching the topic.
 
 If found:
 

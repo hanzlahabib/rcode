@@ -6,8 +6,8 @@ After identifying issues, spawn one debug agent per issue. Each agent investigat
 Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize findings.
 </purpose>
 
-@.rihal/references/karpathy-guidelines.md
-@.rihal/references/thinking-models-debug.md
+@.rcode/references/karpathy-guidelines.md
+@.rcode/references/thinking-models-debug.md
 
 ## Step 0 — Usage check
 
@@ -31,9 +31,9 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 </available_agent_types>
 
 <paths>
-DEBUG_DIR=.rihal/debug
+DEBUG_DIR=.rcode/debug
 
-Debug files use the `.rihal/debug/` path (hidden directory with leading dot).
+Debug files use the `.rcode/debug/` path (hidden directory with leading dot).
 </paths>
 
 <core_principle>
@@ -105,7 +105,7 @@ This runs in parallel - all issues investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-debugger 2>/dev/null)
+AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rihal-tools.cjs agent-skills rihal-debugger 2>/dev/null)
 ```
 
 **Spawn debug agents in parallel:**
@@ -114,7 +114,7 @@ For each issue, fill the debug-subagent-prompt template and spawn:
 
 ```
 Task(
-  prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rihal/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
+  prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rcode/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
   subagent_type="rihal-debugger",
   model="sonnet",
   description="Debug: {truth_short}"
@@ -124,7 +124,7 @@ Task(
 **Never pass `isolation="worktree"` without explicit user consent.** Worktree isolation creates a git worktree, which is a write operation the user may not want. If you believe isolation is genuinely needed (e.g., the debug agent may edit files):
 
 ```bash
-CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Skip isolation — default to no worktree, proceed immediately.
@@ -202,7 +202,7 @@ This records the exact codebase state where the diagnosis was made, so downstrea
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► DIAGNOSIS COMPLETE
+ rcode ► DIAGNOSIS COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Issue (Truth) | Root Cause | Files |

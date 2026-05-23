@@ -9,7 +9,7 @@ Drive milestone phases autonomously — all remaining phases, a range via `--fro
 These rules apply throughout autonomous execution. Violations broke the
 interpos audit (issue #221) — DO NOT regress.
 
-1. **NEVER modify `.rihal/config.yaml`.** Specifically: never write
+1. **NEVER modify `.rcode/config.yaml`.** Specifically: never write
    `mode: yolo`, never call `rihal-tools config-set mode`, never `sed`
    the file. The user's mode preference is sacred. Autonomous behavior
    is governed by the workflow's own internal flags + the `--auto`
@@ -37,12 +37,12 @@ interpos audit (issue #221) — DO NOT regress.
 
 <required_reading>
 
-@.rihal/references/output-format.md
-@.rihal/references/workstream-flag.md
-@.rihal/references/output-realism.md
-@rihal/brain/best-practices/no-autonomous-bypass.md
-@rihal/brain/best-practices/state-sync-rule.md
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/output-format.md
+@.rcode/references/workstream-flag.md
+@.rcode/references/output-realism.md
+@rcode/brain/best-practices/no-autonomous-bypass.md
+@rcode/brain/best-practices/state-sync-rule.md
+@.rcode/references/karpathy-guidelines.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 
@@ -165,9 +165,9 @@ When `--interactive` is set, discuss runs inline with questions (not auto-answer
 Bootstrap via rihal-tools init + state:
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init milestone-op 2>/dev/null || node .rihal/bin/rihal-tools.cjs init)
+INIT=$(node .rcode/bin/rihal-tools.cjs init milestone-op 2>/dev/null || node .rcode/bin/rihal-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
 ```
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`, `response_language`.
@@ -181,7 +181,7 @@ Display startup banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS
+ rcode ► AUTONOMOUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
@@ -238,7 +238,7 @@ Exit cleanly.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ COMPLETE 🎉
+ rcode ► AUTONOMOUS ▸ COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  All phases complete! Nothing left to do.
@@ -273,7 +273,7 @@ Use TaskCreate to register a task per incomplete phase.
 logic as iterate step 4.0):
 
 ```bash
-PROGRESS_REFRESH=$(node .rihal/bin/rihal-tools.cjs progress init 2>/dev/null)
+PROGRESS_REFRESH=$(node .rcode/bin/rihal-tools.cjs progress init 2>/dev/null)
 ```
 
 Update `phase_count` and `completed_phases` from the refresh. This ensures
@@ -283,7 +283,7 @@ For the current phase, display the progress banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%
+ rcode ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -312,7 +312,7 @@ Proceed to 3b.
 **If has_context is false:** Check if discuss is disabled via settings:
 
 ```bash
-SKIP_DISCUSS=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"skip_discuss"[^,}]*' | grep -oE 'true|false' || echo "false")
+SKIP_DISCUSS=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"skip_discuss"[^,}]*' | grep -oE 'true|false' || echo "false")
 ```
 
 **If SKIP_DISCUSS is `true`:** Skip discuss entirely — the ROADMAP phase description is the spec. Display:
@@ -408,7 +408,7 @@ PHASE_SECTION=$(sed -n "/^## Phase ${PHASE_NUM}/,/^## Phase /p" .planning/ROADMA
 echo "$PHASE_SECTION" | grep -iE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" > /dev/null 2>&1
 HAS_UI=$?
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
-UI_PHASE_CFG=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_phase"[^,}]*' | grep -oE 'true|false' || echo "true")
+UI_PHASE_CFG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_phase"[^,}]*' | grep -oE 'true|false' || echo "true")
 ```
 
 **If `HAS_UI` is 0 (frontend indicators found) AND `UI_SPEC_FILE` is empty AND `UI_PHASE_CFG` is not `false`:**
@@ -477,7 +477,7 @@ Auto-invoke code review and fix chain. Autonomous mode chains both review and fi
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "false")
+CODE_REVIEW_ENABLED=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "false")
 ```
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
@@ -573,7 +573,7 @@ This limits gap closure to 1 automatic retry to prevent infinite loops.
 
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
-UI_REVIEW_CFG=$(node .rihal/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_review"[^,}]*' | grep -oE 'true|false' || echo "true")
+UI_REVIEW_CFG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_review"[^,}]*' | grep -oE 'true|false' || echo "true")
 ```
 
 **If `UI_SPEC_FILE` is not empty AND `UI_REVIEW_CFG` is not `false`:**
@@ -594,7 +594,7 @@ Display the review result summary (score from UI-REVIEW.md if produced). Continu
 
 </step>
 
-@rihal/workflows/autonomous-smart-discuss.md
+@rcode/workflows/autonomous-smart-discuss.md
 
 
 <step name="iterate">
@@ -609,7 +609,7 @@ START of every iteration — never rely on values held from the initialize step.
 
 ```bash
 # Re-read the authoritative progress snapshot from the CLI
-PROGRESS_REFRESH=$(node .rihal/bin/rihal-tools.cjs progress init 2>/dev/null)
+PROGRESS_REFRESH=$(node .rcode/bin/rihal-tools.cjs progress init 2>/dev/null)
 ```
 
 Parse `PROGRESS_REFRESH` JSON and update:
@@ -638,7 +638,7 @@ symptom. Log a warning and re-derive from disk:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ --to ${TO_PHASE} REACHED
+ rcode ► AUTONOMOUS ▸ --to ${TO_PHASE} REACHED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Completed through phase ${TO_PHASE} as requested.
@@ -661,7 +661,7 @@ Read STATE.md fresh:
 
 ```bash
 cat .planning/STATE.md
-node .rihal/bin/rihal-tools.cjs state read
+node .rcode/bin/rihal-tools.cjs state read
 ```
 
 Check for blockers in the Blockers/Concerns section. If blockers are found, go to handle_blocker.
@@ -706,7 +706,7 @@ If all phases complete, proceed to lifecycle step.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓
+ rcode ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
@@ -724,7 +724,7 @@ Display lifecycle transition banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ LIFECYCLE
+ rcode ► AUTONOMOUS ▸ LIFECYCLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  All phases complete → Starting lifecycle: audit → complete → cleanup
@@ -805,7 +805,7 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ COMPLETE 🎉
+ rcode ► AUTONOMOUS ▸ COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
@@ -846,7 +846,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 **On "Skip this phase":** Log `Phase {N} ⏭ {Name} — Skipped by user`. Record in state:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-decision "Skipped phase ${PHASE_NUM} in autonomous mode"
+node .rcode/bin/rihal-tools.cjs state add-decision "Skipped phase ${PHASE_NUM} in autonomous mode"
 ```
 
 Proceed to iterate.
@@ -855,7 +855,7 @@ Proceed to iterate.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► AUTONOMOUS ▸ STOPPED
+ rcode ► AUTONOMOUS ▸ STOPPED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Completed: {list of completed phases}
@@ -868,7 +868,7 @@ Proceed to iterate.
 Record blocker in state:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUM}: ${DESCRIPTION}"
+node .rcode/bin/rihal-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUM}: ${DESCRIPTION}"
 ```
 
 </step>

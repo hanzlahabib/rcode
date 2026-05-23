@@ -9,7 +9,7 @@ Validate an existing PRD for completeness, consistency, and testability. Delegat
 Locate and follow the installed skill:
 
 ```bash
-find .rihal/skills/actions -path "*rihal-validate-prd/workflow.md" 2>/dev/null | head -1
+find .rcode/skills/actions -path "*rihal-validate-prd/workflow.md" 2>/dev/null | head -1
 ```
 
 Read and follow the workflow at that path. If the path is empty:

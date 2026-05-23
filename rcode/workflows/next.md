@@ -14,7 +14,7 @@ Print a routing banner when dispatching to the next command:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► ROUTING
+ rcode ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Current: Phase {N} — {name} | Sprint {sprint_id}

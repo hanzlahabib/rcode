@@ -3,12 +3,12 @@
 <purpose>
 Render a human-readable project status dashboard. All data comes from a single `rihal-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rihal-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
 
-**SSOT:** `.rihal/state.json`. `/rihal-status` and `/rihal-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
+**SSOT:** `.rcode/state.json`. `/rihal-status` and `/rihal-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -16,8 +16,8 @@ Render a human-readable project status dashboard. All data comes from a single `
 ## Step 1 — Fetch the snapshot
 
 ```bash
-SNAPSHOT=$(node .rihal/bin/rihal-tools.cjs progress init)
-VERBOSE=$(node .rihal/bin/rihal-tools.cjs config-get output.verbose 2>/dev/null || echo "false")
+SNAPSHOT=$(node .rcode/bin/rihal-tools.cjs progress init)
+VERBOSE=$(node .rcode/bin/rihal-tools.cjs config-get output.verbose 2>/dev/null || echo "false")
 ```
 
 Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
@@ -38,7 +38,7 @@ Then stop.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► STATUS — {SNAPSHOT.project}
+ rcode ► STATUS — {SNAPSHOT.project}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ╭─ Rihal Status — {SNAPSHOT.project} ─────────────────────╮
@@ -59,7 +59,7 @@ After the main dashboard, call `rihal-tools milestone-health` and surface
 a gauge when the milestone is full:
 
 ```bash
-HEALTH=$(node ".rihal/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
+HEALTH=$(node ".rcode/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
 ```
 
 Parse `recommendation`, `open_phases`, `phase_count`. Display ONLY when
@@ -149,4 +149,4 @@ Group routes by letter. If multiple routes share a letter, list them indented. I
 
 - **CLI not found:** "Rihal Code install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
-- **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rihal/bin/rihal-tools.cjs state read"
+- **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rihal-tools.cjs state read"

@@ -12,15 +12,15 @@ npx @hanzlaa/rcode@latest install . --non-destructive --yes
 
 The `--non-destructive` flag (set by default in this workflow) makes the
 installer compare each file's current SHA256 to the SHA256 stored in
-`.rihal/_config/files-manifest.csv` from the previous install:
+`.rcode/_config/files-manifest.csv` from the previous install:
 - Hashes match → file is pristine → safe to overwrite with new version
 - Hashes differ → user has edited it → SKIP and report
 
 Per-project state is ALWAYS preserved (never touched by either mode):
-- `.rihal/config.yaml`
-- `.rihal/state.json` (and `.lock`)
+- `.rcode/config.yaml`
+- `.rcode/state.json` (and `.lock`)
 - `.planning/` (PRD, ROADMAP, sprints, SUMMARY files)
-- `.rihal/brain/` content (refreshed via `brain pull` separately)
+- `.rcode/brain/` content (refreshed via `brain pull` separately)
 </purpose>
 
 
@@ -54,10 +54,10 @@ Store the resolved path (or empty) in `$INSTALLER_PATH`.
 
 ## Step 2 — Read installed manifest
 
-Read `.rihal/_config/files-manifest.csv` from the current project:
+Read `.rcode/_config/files-manifest.csv` from the current project:
 
 ```bash
-cat .rihal/_config/files-manifest.csv
+cat .rcode/_config/files-manifest.csv
 ```
 
 If the file doesn't exist:
@@ -187,7 +187,7 @@ when relevant. Capture it and re-print as a callout so users notice:
 ℹ Files preserved (your customizations were kept):
    - .claude/skills/rihal-create-prd/workflow.md
    - rihal/workflows/sprint-planning.md
-   - .rihal/references/output-format.md
+   - .rcode/references/output-format.md
 
 These will not auto-update on future /rihal-update calls. To force
 their update next time, run /rihal-update --force-overwrite.
@@ -198,7 +198,7 @@ their update next time, run /rihal-update --force-overwrite.
 After installer finishes, refresh the brain content from configured sources (issue #158). This is idempotent and safe to re-run.
 
 ```bash
-node .rihal/bin/rihal-tools.cjs brain pull
+node .rcode/bin/rihal-tools.cjs brain pull
 ```
 
 Parse the JSON output. Report counts to the user:
@@ -222,7 +222,7 @@ Updated files: N
 
 Rihal brain: M sources pulled, K skipped (placeholder URLs)
 
-New version available at: .rihal/
+New version available at: .rcode/
 
 Run /rihal-status to verify installation.
 ```

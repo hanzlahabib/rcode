@@ -5,7 +5,7 @@ Zero-friction — detects and invokes, no confirmation needed.
 </purpose>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
@@ -14,7 +14,7 @@ Print a routing banner when dispatching to the next command:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► ROUTING
+ rcode ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Current: Phase {N} — {name} | Sprint {sprint_id}
@@ -33,9 +33,9 @@ Follow all banner and status-symbol conventions from output-format.md.
 Read project state to determine current position:
 
 ```bash
-STATE=$(node .rihal/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
-SPRINT_STATUS=$(node .rihal/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo '{}')
-VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
+SPRINT_STATUS=$(node .rcode/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo '{}')
+VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
 ```
 
 Also read:
@@ -48,7 +48,7 @@ Extract from state JSON:
 - `phases[]` — all phases with status
 - `velocity_history[]` — sprint velocity data
 
-If no `.planning/` directory AND no `.rihal/state.json`:
+If no `.planning/` directory AND no `.rcode/state.json`:
 ```
 No Rihal project detected. Run `/rihal-new-project` to get started.
 ```

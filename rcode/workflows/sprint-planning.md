@@ -46,11 +46,11 @@ they bypass the capacity gate.
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLANNING SPRINT
+ rcode ► PLANNING SPRINT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
-Closure: `RIHAL ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
+Closure: `rcode ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
 Next Up: `/rcode-execute .planning/phases/{phase}/SPRINT.md`
 </output_format>
 

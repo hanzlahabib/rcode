@@ -15,7 +15,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► REPLAY
+ rcode ► REPLAY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -23,8 +23,8 @@ End with a single-line redirect (per `command-redirect-format.md`) so the user c
 </output_format>
 
 <required_reading>
-@.rihal/references/command-redirect-format.md
-@.rihal/references/output-format.md
+@.rcode/references/command-redirect-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -136,7 +136,7 @@ Where `{agents_suffix}` is `  --agents=a,b,c` if `--agents` was passed, else emp
 Append a lightweight replay record so history is traceable even before council runs:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state add-decision \
+node .rcode/bin/rihal-tools.cjs state add-decision \
   "Replay of council session ${ORIGINAL_SLUG} (${ORIGINAL_DATE}) — re-asking: ${QUESTION:0:80}" \
   2>/dev/null || true
 ```

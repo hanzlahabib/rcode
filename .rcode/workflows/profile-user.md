@@ -28,12 +28,12 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init profile-user "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init profile-user "$ARGUMENTS")
 ```
 
 Parse:
 - `flags.json` — if set, parse as pre-filled profile JSON (skip questions)
-- `profile_path` — `.rihal/USER-PROFILE.md` (output location)
+- `profile_path` — `.rcode/USER-PROFILE.md` (output location)
 
 **If no arguments and `--json` not provided:** Use AskUserQuestion to collect 4 profile dimensions interactively.
 
@@ -132,7 +132,7 @@ Task tool call:
 Store `profile` object in state:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state set-user-profile --json '{json-string}'
+node .rcode/bin/rihal-tools.cjs state set-user-profile --json '{json-string}'
 ```
 
 Print:

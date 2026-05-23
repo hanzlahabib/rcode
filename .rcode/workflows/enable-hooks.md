@@ -24,13 +24,13 @@ STOP — do not proceed.
 ## Step 1 — Load hooks template
 
 ```bash
-cat .rihal/templates/settings-hooks.json
+cat .rcode/templates/settings-hooks.json
 ```
 
 Parse the JSON. If file does not exist, print error and stop:
 
 ```
-Error: .rihal/templates/settings-hooks.json not found. Run 'npx @hanzlaa/rcode install' to reinstall.
+Error: .rcode/templates/settings-hooks.json not found. Run 'npx @hanzlaa/rcode install' to reinstall.
 ```
 
 ## Step 2 — Load or create settings.json
@@ -60,12 +60,12 @@ Write the merged settings.json back to `.claude/settings.json` with proper JSON 
 Verify that the hook binary exists and is executable:
 
 ```bash
-if [ ! -f .rihal/bin/rihal-hooks.cjs ]; then
-  echo "⚠ Hook binary missing at .rihal/bin/rihal-hooks.cjs"
+if [ ! -f .rcode/bin/rihal-hooks.cjs ]; then
+  echo "⚠ Hook binary missing at .rcode/bin/rihal-hooks.cjs"
   echo "  Run: npx @hanzlaa/rcode install --force --yes"
   exit 1
 fi
-node .rihal/bin/rihal-hooks.cjs --help 2>&1 || true
+node .rcode/bin/rihal-hooks.cjs --help 2>&1 || true
 ```
 
 If the binary is missing, print error and stop. Otherwise, test it with `--help` (ignore exit code).
@@ -82,7 +82,7 @@ Enabled guardrails:
   • pre-workflow: Warns if rihal-* commands look suspicious
   • post-commit: Validates commit format and bans "Generated with Claude" patterns
 
-To disable, remove the hooks section from .claude/settings.json or edit .rihal/templates/settings-hooks.json and re-run.
+To disable, remove the hooks section from .claude/settings.json or edit .rcode/templates/settings-hooks.json and re-run.
 ```
 
 ## Success Criteria

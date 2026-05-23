@@ -38,7 +38,7 @@ Initialize docs-update context by scanning the project:
 test -d docs || mkdir -p docs
 
 # Read agent manifest to get model for doc writers
-AGENT_MANIFEST=".rihal/_config/agent-manifest.csv"
+AGENT_MANIFEST=".rcode/_config/agent-manifest.csv"
 if [[ -f "$AGENT_MANIFEST" ]]; then
   DOC_WRITER_MODEL=$(grep -i "rihal-noor" "$AGENT_MANIFEST" | cut -d',' -f3)
 else
@@ -49,7 +49,7 @@ fi
 Extract from project analysis:
 - `doc_writer_model` — model string from agent manifest (never hardcode a model name)
 - `commit_docs` — whether to commit generated files when done (read from `.planning/config.json` if exists)
-- `response_language` — output language from `.rihal/config.yaml` (null = English); if set, include `Respond in {value}.` in all spawned subagent prompts
+- `response_language` — output language from `.rcode/config.yaml` (null = English); if set, include `Respond in {value}.` in all spawned subagent prompts
 - `existing_docs` — find all existing Markdown files with `find docs -name "*.md" 2>/dev/null`
 - `project_type` — detect from: `package.json`, `src/pages/api` or `pages/api`, `bin/` or `cli/`, `LICENSE`, `vercel.json` or `netlify.toml`, `lerna.json` or `pnpm-workspace.yaml`, `test/` or `__tests__/`
 - `doc_tooling` — detect from: `docusaurus.config.js`, `vitepress.config.js`, `mkdocs.yml`, `storybook.js`

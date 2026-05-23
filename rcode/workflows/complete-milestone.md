@@ -20,13 +20,13 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COMPLETE MILESTONE
+ rcode ► COMPLETE MILESTONE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Per-step banners: `RIHAL ► VERIFY READINESS`, `RIHAL ► ARCHIVE MILESTONE`, `RIHAL ► EVOLVE PROJECT.md`, `RIHAL ► TAG RELEASE`.
+Per-step banners: `rcode ► VERIFY READINESS`, `rcode ► ARCHIVE MILESTONE`, `rcode ► EVOLVE PROJECT.md`, `rcode ► TAG RELEASE`.
 
-Closing banner: `RIHAL ► MILESTONE v[X.Y] COMPLETE 🎉`.
+Closing banner: `rcode ► MILESTONE v[X.Y] COMPLETE 🎉`.
 
 </output_format>
 
@@ -766,7 +766,7 @@ Confirm: "Committed: chore: complete v[X.Y] milestone" (or the gitignored notice
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE v[X.Y] COMPLETE 🎉
+ rcode ► MILESTONE v[X.Y] COMPLETE 🎉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Shipped:

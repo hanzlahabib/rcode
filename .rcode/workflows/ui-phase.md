@@ -28,19 +28,19 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init ui-phase "$ARGUMENTS")
+INIT=$(node .rcode/bin/rihal-tools.cjs init ui-phase "$ARGUMENTS")
 ```
 
 Parse:
 - `flags.existing_ui` — path to existing design system or Figma export
 - `flags.design_system` — path to design tokens file
-- `ui_spec_path` — `.rihal/UI-SPEC.md` (output location)
+- `ui_spec_path` — `.rcode/UI-SPEC.md` (output location)
 
 ## Step 1 — Detect Existing UI Assets
 
 If `flags.existing_ui` or `flags.design_system` provided:
 ```bash
-EXISTING=$(node .rihal/bin/rihal-tools.cjs find-files --type=design-tokens)
+EXISTING=$(node .rcode/bin/rihal-tools.cjs find-files --type=design-tokens)
 ```
 
 Load existing design system, extract:
@@ -76,7 +76,7 @@ Task tool call:
 
 Update state with UI-SPEC.md location:
 ```bash
-node .rihal/bin/rihal-tools.cjs state set --ui-spec-path ".rihal/UI-SPEC.md"
+node .rcode/bin/rihal-tools.cjs state set --ui-spec-path ".rcode/UI-SPEC.md"
 ```
 
 Print:
@@ -99,7 +99,7 @@ This spec will guide component development and design consistency.
 In plan.md workflow, add Step 0.6 — **Detect frontend keywords and suggest UI safety gate**
 
 ```bash
-FRONTEND_KEYWORDS=$(node .rihal/bin/rihal-tools.cjs classify-tech --keywords "react,next.js,vue,tailwind,css,ui,component,design,frontend" "$ARGUMENTS")
+FRONTEND_KEYWORDS=$(node .rcode/bin/rihal-tools.cjs classify-tech --keywords "react,next.js,vue,tailwind,css,ui,component,design,frontend" "$ARGUMENTS")
 ```
 
 **If `FRONTEND_KEYWORDS.has_frontend == true` AND UI-SPEC.md missing:**

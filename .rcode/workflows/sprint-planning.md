@@ -26,7 +26,7 @@ Behaviour:
    block are a fallback summary for legacy installs that lack the skill;
    they are NOT the authoritative behaviour.
 3. After SPRINT.md is written, ALWAYS run:
-   `node .rihal/bin/rihal-tools.cjs state sync --from-disk`
+   `node .rcode/bin/rihal-tools.cjs state sync --from-disk`
    so state.sprints[] reflects the new sprint.
 
 If skill files are missing: print
@@ -36,21 +36,21 @@ they bypass the capacity gate.
 </delegate_to_skill>
 
 <required_reading>
-@.rihal/references/output-format.md
-@rihal/brain/best-practices/no-autonomous-bypass.md
-@rihal/brain/best-practices/state-sync-rule.md
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/output-format.md
+@rcode/brain/best-practices/no-autonomous-bypass.md
+@rcode/brain/best-practices/state-sync-rule.md
+@.rcode/references/karpathy-guidelines.md
 </required_reading>
 
 <output_format>
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLANNING SPRINT
+ rcode ► PLANNING SPRINT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
-Closure: `RIHAL ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
+Closure: `rcode ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
 Next Up: `/rihal-execute .planning/phases/{phase}/SPRINT.md`
 </output_format>
 
@@ -75,8 +75,8 @@ STOP — do not proceed.
 ## Step 1 — Load context
 
 ```bash
-STATE=$(node .rihal/bin/rihal-tools.cjs state read)
-VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity)
+STATE=$(node .rcode/bin/rihal-tools.cjs state read)
+VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity)
 ```
 
 Extract:
@@ -133,13 +133,13 @@ After user confirms stories:
 
 ```bash
 # Register sprint in state
-node .rihal/bin/rihal-tools.cjs state sprint add \
+node .rcode/bin/rihal-tools.cjs state sprint add \
   --phase "{phase_name}" \
   --goal "{sprint_goal}" \
   --velocity {velocity_target}
 
 # Register each story
-node .rihal/bin/rihal-tools.cjs state story add \
+node .rcode/bin/rihal-tools.cjs state story add \
   --title "{story_title}" \
   --points {points}
 ```
@@ -154,7 +154,7 @@ Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template 
 ## Step 5 — Start sprint
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state sprint start
+node .rcode/bin/rihal-tools.cjs state sprint start
 ```
 
 ## Step 6 — Summary
@@ -174,7 +174,7 @@ Next:
 ## Output Format
 
 - SPRINT.md at `.planning/phases/{phase_slug}/SPRINT.md`
-- Sprint + stories registered in `.rihal/state.json`
+- Sprint + stories registered in `.rcode/state.json`
 - Console summary with next-step commands
 
 ## Examples

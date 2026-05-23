@@ -24,7 +24,7 @@ STOP — do not proceed.
 ## Step 1 — Parse arguments and flags
 
 Extract from `$ARGUMENTS`:
-- `--global` flag: write to `~/.rihal-notes/` instead of `.rihal/notes/`
+- `--global` flag: write to `~/.rihal-notes/` instead of `.rcode/notes/`
 - Text content: everything else is the note text
 
 ```bash
@@ -42,7 +42,7 @@ If `NOTE_TEXT` is empty:
    Example: /rihal-note refactor auth module to use async/await
    
    Flags:
-   --global  Save to ~/.rihal-notes/ instead of .rihal/notes/
+   --global  Save to ~/.rihal-notes/ instead of .rcode/notes/
 ```
 
 Exit.
@@ -57,7 +57,7 @@ Create filename: `YYYY-MM-DD-{slug}.md`
 
 Determine target directory:
 - If GLOBAL_MODE: `~/.rihal-notes/`
-- Else: `.rihal/notes/`
+- Else: `.rcode/notes/`
 
 ## Step 3 — Build note content with YAML frontmatter
 
@@ -117,14 +117,14 @@ If ARGUMENTS contains `list`:
 
 Call node helper:
 ```bash
-node .rihal/bin/rihal-tools.cjs notes list
+node .rcode/bin/rihal-tools.cjs notes list
 ```
 
 Expected output format: JSON array of recent notes:
 ```json
 [
-  { "path": ".rihal/notes/2026-04-12-refactor-auth.md", "date": "2026-04-12", "slug": "refactor-auth", "summary": "refactor auth module..." },
-  { "path": ".rihal/notes/2026-04-11-api-design.md", "date": "2026-04-11", "slug": "api-design", "summary": "design new API endpoint..." }
+  { "path": ".rcode/notes/2026-04-12-refactor-auth.md", "date": "2026-04-12", "slug": "refactor-auth", "summary": "refactor auth module..." },
+  { "path": ".rcode/notes/2026-04-11-api-design.md", "date": "2026-04-11", "slug": "api-design", "summary": "design new API endpoint..." }
 ]
 ```
 
@@ -142,7 +142,7 @@ Parse and display (10 most recent):
 ## Success Criteria
 
 - [ ] Note saved with YAML frontmatter
-- [ ] File created in `.rihal/notes/` or `~/.rihal-notes/`
+- [ ] File created in `.rcode/notes/` or `~/.rihal-notes/`
 - [ ] Filename follows YYYY-MM-DD-{slug}.md pattern
 - [ ] `promoted` field set to false
 - [ ] Output confirms save location and content

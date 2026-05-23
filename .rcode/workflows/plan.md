@@ -7,7 +7,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLANNING PHASE {NN}
+ rcode ► PLANNING PHASE {NN}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -34,25 +34,25 @@ Spawning indicators:
 Closure:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLAN READY ✓  ({N} stories, {M} points)
+ rcode ► PLAN READY ✓  ({N} stories, {M} points)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 End with Next Up routing to /rihal-execute.
 </output_format>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 <!-- ui-brand.md (254 lines): only load when phase goal/CONTEXT.md contains UI signals (frontend|ui|component|design|style|brand) -->
-${PHASE_GOAL_HAS_UI ? '@.rihal/references/ui-brand.md' : ''}
-@.rihal/references/revision-loop.md
-@.rihal/references/gate-prompts.md
-@.rihal/references/agent-contracts.md
-@.rihal/references/gates.md
-@.rihal/references/karpathy-guidelines.md
-@.rihal/references/thinking-models-planning.md
+${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
+@.rcode/references/revision-loop.md
+@.rcode/references/gate-prompts.md
+@.rcode/references/agent-contracts.md
+@.rcode/references/gates.md
+@.rcode/references/karpathy-guidelines.md
+@.rcode/references/thinking-models-planning.md
 </required_reading>
 
 <available_agent_types>
@@ -69,12 +69,12 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init sprint-plan "$PHASE")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init sprint-plan "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
-AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
-CONTEXT_WINDOW=$(node ".rihal/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
+CONTEXT_WINDOW=$(node ".rcode/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
 PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
@@ -153,13 +153,13 @@ Exit workflow.
 ## 3. Validate Phase
 
 ```bash
-PHASE_INFO=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
 
 
-@rihal/workflows/plan-prd-express.md
+@rcode/workflows/plan-prd-express.md
 
 
 ## 3.6. Handle `--gaps` Mode
@@ -171,7 +171,7 @@ PHASE_INFO=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
 **Step 1: Locate VERIFICATION.md**
 
 ```bash
-PHASE_DIR=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
+PHASE_DIR=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
 # Fallback if --pick dir not supported. TODO(#118): expose roadmap --pick dir cleanly.
 if [[ -z "$PHASE_DIR" ]]; then
   PHASE_DIR=$(ls -d .planning/phases/${padded_phase}-* 2>/dev/null | head -1)
@@ -229,7 +229,7 @@ EXISTING_SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null | tr '\n' ' 
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► GAP-CLOSURE PLANNING — Phase {X}
+ rcode ► GAP-CLOSURE PLANNING — Phase {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Verification report: {VERIFICATION_FILE}
@@ -262,7 +262,7 @@ If `context_path` is not null, display: `Using phase context from: ${context_pat
 
 Read discuss mode for context gate label:
 ```bash
-DISCUSS_MODE=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
 ```
 
 If `TEXT_MODE` is true, present as a plain-text numbered list:
@@ -301,7 +301,7 @@ If "Run discuss-phase first":
   **Exit the sprint-plan workflow. Do not continue.**
 
 
-@rihal/workflows/plan-research-validation.md
+@rcode/workflows/plan-research-validation.md
 
 
 ## 6. Check Existing Plans
@@ -333,7 +333,7 @@ This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down th
 normal pipeline exactly as if no plans existed yet:
 
 1. Proceed to Step 7 (context-paths) and Step 7.5 (Nyquist verification) as normal.
-2. Spawn `rihal-planner` via `@rihal/workflows/plan-spawn-planner.md` (Step 8). The
+2. Spawn `rihal-planner` via `@rcode/workflows/plan-spawn-planner.md` (Step 8). The
    planner subagent is mandatory — the orchestrator must NOT write SPRINT.md
    directly via the `Write` tool. Pass the existing plan list to the planner so
    it picks the next plan number and avoids re-covering shipped tasks.
@@ -417,13 +417,13 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 If missing and Nyquist is still enabled/applicable — ask user:
 1. Re-run: `/rihal-sprint-plan {PHASE} --research ${Rihal_WS}`
 2. Disable Nyquist with the exact command:
-   `node ".rihal/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
+   `node ".rcode/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
 
 Proceed to Step 8 only if user selects 2 or 3.
 
 
-@rihal/workflows/plan-spawn-planner.md
+@rcode/workflows/plan-spawn-planner.md
 
 ## 9. Handle Planner Return
 
@@ -497,7 +497,7 @@ Use AskUserQuestion with these 3 options.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► VERIFYING PLANS
+ rcode ► VERIFYING PLANS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning plan checker...
@@ -680,7 +680,7 @@ Before declaring plans ready, validate the wave-parallelism rule the planner dec
 #     - the later plan (by sprint id) MUST declare sequential: true
 #     - and must list the conflicting files in its frontmatter
 
-node ".rihal/bin/rihal-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+node ".rcode/bin/rihal-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
 ```
 
 The CLI helper returns a JSON report:
@@ -771,7 +771,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list (options already s
 After plans pass all gates, record that planning is complete so STATE.md reflects the new phase status:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+node ".rcode/bin/rihal-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
 ```
 
 This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
@@ -788,19 +788,19 @@ Check for auto-advance trigger:
 2. **Sync chain flag with intent** — if user invoked manually (no `--auto` and no `--chain`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]] && [[ ! "$ARGUMENTS" =~ --chain ]]; then
-     node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+     node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
    fi
    ```
 3. Read both the chain flag and user preference:
    ```bash
-   AUTO_CHAIN=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` or `--chain` flag present AND `AUTO_CHAIN` is not true:** Persist chain flag to config (handles direct invocation without prior discuss-phase):
 ```bash
 if ([[ "$ARGUMENTS" =~ --auto ]] || [[ "$ARGUMENTS" =~ --chain ]]) && [[ "$AUTO_CHAIN" != "true" ]]; then
-  node ".rihal/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
+  node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
 fi
 ```
 
@@ -809,7 +809,7 @@ fi
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► AUTO-ADVANCING TO EXECUTE
+ rcode ► AUTO-ADVANCING TO EXECUTE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Plans ready. Launching execute-phase...
@@ -826,7 +826,7 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 - **PHASE COMPLETE** → Display final summary:
   ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Rihal ► PHASE ${PHASE} COMPLETE ✓
+   rcode ► PHASE ${PHASE} COMPLETE ✓
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Auto-advance pipeline finished.
@@ -863,7 +863,7 @@ fail verdict, or its CHECK.md is missing) — DO NOT emit `PLANNED ✓`. Emit:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► PHASE {X} PLANNED ⚠ (gates skipped)
+ rcode ► PHASE {X} PLANNED ⚠ (gates skipped)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Plans were written but rihal-sprint-checker did not return a passing
@@ -880,7 +880,7 @@ gate-passed states.
 Output this markdown directly (not as a code block):
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► PHASE {X} PLANNED ✓
+ rcode ► PHASE {X} PLANNED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {X}: {Name}** — {N} plan(s) in {M} wave(s)

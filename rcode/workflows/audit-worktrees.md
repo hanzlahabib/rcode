@@ -60,7 +60,7 @@ AHEAD=$(git rev-list HEAD..'<branch>' --count 2>/dev/null || echo "?")
 Build a report table:
 
 ```
-RIHAL ► WORKTREE AUDIT
+rcode ► WORKTREE AUDIT
 ══════════════════════════════════════════════════════════
 
 Orphaned executor artifacts: {TOTAL}

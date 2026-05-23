@@ -8,7 +8,7 @@ Closes the gap where /rihal-quick used to refuse + show a 4-option menu when giv
 </purpose>
 
 <required_reading>
-@.rihal/references/verb-dictionary.md
+@.rcode/references/verb-dictionary.md
 </required_reading>
 
 <process>

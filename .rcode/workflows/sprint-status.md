@@ -8,7 +8,7 @@ Display current sprint progress: stories by status, points done vs remaining, ve
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► SPRINT {NN.S} STATUS
+ rcode ► SPRINT {NN.S} STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 Use status symbols (✓ done, ◆ in_progress, ○ todo) in story board.
@@ -18,7 +18,7 @@ End with Next Up routing based on sprint state.
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <process>
@@ -41,9 +41,9 @@ STOP — do not proceed.
 ## Step 1 — Load sprint data
 
 ```bash
-SPRINT_STATUS=$(node .rihal/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo "")
-VELOCITY=$(node .rihal/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo "0")
-STORIES=$(node .rihal/bin/rihal-tools.cjs state story list 2>/dev/null || echo "")
+SPRINT_STATUS=$(node .rcode/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo "")
+VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo "0")
+STORIES=$(node .rcode/bin/rihal-tools.cjs state story list 2>/dev/null || echo "")
 ```
 
 If `SPRINT_STATUS` is empty:

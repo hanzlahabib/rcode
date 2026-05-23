@@ -7,7 +7,7 @@ state where users had to know about six separate audit/verify commands by
 name (`audit-milestone`, `audit-uat`, `audit-fix`, `code-review --karpathy`,
 `verify-phase`, `verify-work`).
 
-Honours `.rihal/config.yaml`: in `mode: yolo`, the router skips the menu
+Honours `.rcode/config.yaml`: in `mode: yolo`, the router skips the menu
 and auto-picks the most-relevant target based on project state. In
 `mode: guided` (default), it asks.
 </purpose>
@@ -42,7 +42,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 ## Step 1 — Resolve mode + arguments
 
 ```bash
-TOOL="node .rihal/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rihal-tools.cjs"
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
 DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
@@ -109,7 +109,7 @@ sub-workflow.
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
 | fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
-| lens | `rihal/` or `.rihal/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
+| lens | `rihal/` or `.rcode/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
 (closes #234 audit-milestone halt):
@@ -145,7 +145,7 @@ Run the target's slash command, forwarding remaining args:
 
 | target | dispatch |
 |---|---|
-| plans | execute `@.rihal/workflows/audit-plans.md` inline |
+| plans | execute `@.rcode/workflows/audit-plans.md` inline |
 | phase | `/rihal-verify-phase $REST_ARGS` |
 | milestone | `/rihal-audit-milestone $REST_ARGS` |
 | uat | `/rihal-audit-uat $REST_ARGS` |
@@ -159,7 +159,7 @@ Run the target's slash command, forwarding remaining args:
 After the sub-workflow returns:
 
 ```
-RIHAL ► AUDIT ({TARGET}) ✓
+rcode ► AUDIT ({TARGET}) ✓
 
 Report: {report_path or "(stdout only)"}
 Findings: {count}
@@ -184,4 +184,4 @@ Next:
 
 - **Sub-workflow not installed** (slash file missing): `Audit subroute '/rihal-{target}' not found. Run: npx @hanzlaa/rcode install .`
 - **Precondition failed**: print the message from Step 4's table, suggest the unblocking command, STOP.
-- **`.rihal/config.yaml` missing**: treat as `mode: guided`, continue.
+- **`.rcode/config.yaml` missing**: treat as `mode: guided`, continue.

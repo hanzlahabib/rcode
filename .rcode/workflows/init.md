@@ -13,7 +13,7 @@ If `$ARGUMENTS` contains only `--help` or `-h`:
 ```
 Usage: /rihal-init [--reset] [--skip-scan]
 
-  --reset        overwrite existing .rihal/config.yaml and RIHLA.md
+  --reset        overwrite existing .rcode/config.yaml and RIHLA.md
   --skip-scan    skip the codebase scan step
 
 Examples:
@@ -39,9 +39,9 @@ Run detection in parallel:
 
 ```bash
 # Rihal presence
-test -f .rihal/config.yaml && echo "rihal-configured: yes" || echo "rihal-configured: no"
-test -f .rihal/state.json && echo "state-present: yes" || echo "state-present: no"
-test -f .rihal/RIHLA.md && echo "rihla-present: yes" || echo "rihla-present: no"
+test -f .rcode/config.yaml && echo "rihal-configured: yes" || echo "rihal-configured: no"
+test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: no"
+test -f .rcode/RIHLA.md && echo "rihla-present: yes" || echo "rihla-present: no"
 
 # Project presence
 test -d .git && echo "git: yes" || echo "git: no"
@@ -96,7 +96,7 @@ If `state === "returning"` and `--reset` not passed:
 
 Use AskUserQuestion (one batched question with multiple fields if the tool supports; otherwise sequential).
 
-**Pre-fill from existing `.rihal/config.yaml` if present, otherwise from defaults.**
+**Pre-fill from existing `.rcode/config.yaml` if present, otherwise from defaults.**
 
 Questions:
 
@@ -117,26 +117,26 @@ Questions:
 
 ## Step 3 — Write config + state seed
 
-Write `.rihal/config.yaml` via `rihal-tools.cjs config set` (not direct file write):
+Write `.rcode/config.yaml` via `rihal-tools.cjs config set` (not direct file write):
 
 ```bash
-node .rihal/bin/rihal-tools.cjs config set --key user_name --value "{name}"
-node .rihal/bin/rihal-tools.cjs config set --key project_name --value "$(basename $(pwd))"
-node .rihal/bin/rihal-tools.cjs config set --key communication_language --value "{lang}"
-node .rihal/bin/rihal-tools.cjs config set --key mode --value "{mode}"
-node .rihal/bin/rihal-tools.cjs config set --key model_profile --value "{profile}"
-node .rihal/bin/rihal-tools.cjs config set --key git.branching_strategy --value "{strategy}"
+node .rcode/bin/rihal-tools.cjs config set --key user_name --value "{name}"
+node .rcode/bin/rihal-tools.cjs config set --key project_name --value "$(basename $(pwd))"
+node .rcode/bin/rihal-tools.cjs config set --key communication_language --value "{lang}"
+node .rcode/bin/rihal-tools.cjs config set --key mode --value "{mode}"
+node .rcode/bin/rihal-tools.cjs config set --key model_profile --value "{profile}"
+node .rcode/bin/rihal-tools.cjs config set --key git.branching_strategy --value "{strategy}"
 ```
 
 Initialize state.json if missing:
 
 ```bash
-test -f .rihal/state.json || node .rihal/bin/rihal-tools.cjs state init --project "$(basename $(pwd))"
+test -f .rcode/state.json || node .rcode/bin/rihal-tools.cjs state init --project "$(basename $(pwd))"
 ```
 
 ## Step 4 — Scan existing context (skip if `--skip-scan`)
 
-If the project has code (from Step 1 detection), produce `.rihal/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal-map-codebase` or `/rihal-scan` later for deep analysis.
+If the project has code (from Step 1 detection), produce `.rcode/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal-map-codebase` or `/rihal-scan` later for deep analysis.
 
 **Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rihal-scan --refresh --focus tech+arch` immediately after writing RIHLA.md. The refresh path:
 
@@ -162,7 +162,7 @@ git remote -v 2>/dev/null | head -2
 find . -maxdepth 3 -type d ! -path "./node_modules*" ! -path "./.git*" ! -path "./.rihal*" ! -path "./.claude*" ! -path "./.planning*" 2>/dev/null | head -20
 ```
 
-Write `.rihal/RIHLA.md` following this template (don't over-interpret — just record what's seen).
+Write `.rcode/RIHLA.md` following this template (don't over-interpret — just record what's seen).
 
 **Naming note (do NOT remove from the template):** the file is `RIHLA.md`, not `RIHAL.md`. This is intentional — same Arabic root, different word. **Rihal (رحّال)** = the traveler/tool. **Rihla (رحلة)** = the journey/voyage. The product is *Rihal* (the tool you use); the per-project artifact is *Rihla* (your project's journey). The HTML comment in the template below preserves this reminder for anyone who later wonders if it's a typo.
 
@@ -208,7 +208,7 @@ If no code detected, write a minimal RIHLA.md with just the header and a "fresh 
 
 After writing RIHLA.md, populate the two context files that every Rihal skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
 
-**`.rihal/context/active.md`** — Current task context and working state. Write it using the RIHLA.md scan data from Step 4:
+**`.rcode/context/active.md`** — Current task context and working state. Write it using the RIHLA.md scan data from Step 4:
 
 ```markdown
 # Active Context
@@ -240,7 +240,7 @@ After writing RIHLA.md, populate the two context files that every Rihal skill re
 _None yet. Use `/rihal-explore` or `/rihal-council` to surface questions._
 ```
 
-**`.rihal/context/project-brief.md`** — High-level project description. Write it using the RIHLA.md scan data:
+**`.rcode/context/project-brief.md`** — High-level project description. Write it using the RIHLA.md scan data:
 
 ```markdown
 # Project Brief
@@ -267,26 +267,26 @@ _To be refined. Run `/rihal-create-prd` for full requirements discovery._
 Ensure the directory exists before writing:
 
 ```bash
-mkdir -p .rihal/context
+mkdir -p .rcode/context
 ```
 
 **Important:** If `--reset` is passed and the files already have user-written content beyond the template stub, preserve a backup before overwriting:
 
 ```bash
-if [ -s .rihal/context/active.md ] && ! grep -q "Run \`/rihal" .rihal/context/active.md; then
-  cp .rihal/context/active.md .rihal/context/active.md.bak
+if [ -s .rcode/context/active.md ] && ! grep -q "Run \`/rihal" .rcode/context/active.md; then
+  cp .rcode/context/active.md .rcode/context/active.md.bak
 fi
 ```
 
 After writing both files, refresh the memory bank fingerprint so staleness checks see the project as fresh:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs context refresh 2>/dev/null || true
+node .rcode/bin/rihal-tools.cjs context refresh 2>/dev/null || true
 ```
 
 ## Step 5 — Suggest the next step
 
-Print a contextual recommendation, **one line of copy-paste per suggestion** (per `.rihal/references/command-redirect-format.md`):
+Print a contextual recommendation, **one line of copy-paste per suggestion** (per `.rcode/references/command-redirect-format.md`):
 
 **If `fresh`:**
 ```
@@ -326,18 +326,18 @@ Pick up where you left off:
 ## Step 6 — Update state
 
 ```bash
-node .rihal/bin/rihal-tools.cjs state record-session 2>/dev/null || true
+node .rcode/bin/rihal-tools.cjs state record-session 2>/dev/null || true
 ```
 
 Silent if state tools fail.
 
 ## Success Criteria
 
-- [ ] `.rihal/config.yaml` written with user's answers
-- [ ] `.rihal/state.json` exists (created or preserved)
-- [ ] `.rihal/RIHLA.md` written (unless `--skip-scan` or no code)
-- [ ] `.rihal/context/active.md` populated with project state (not the placeholder stub)
-- [ ] `.rihal/context/project-brief.md` populated with project overview (not the placeholder stub)
+- [ ] `.rcode/config.yaml` written with user's answers
+- [ ] `.rcode/state.json` exists (created or preserved)
+- [ ] `.rcode/RIHLA.md` written (unless `--skip-scan` or no code)
+- [ ] `.rcode/context/active.md` populated with project state (not the placeholder stub)
+- [ ] `.rcode/context/project-brief.md` populated with project overview (not the placeholder stub)
 - [ ] State detected correctly (fresh / existing-new-rihal / returning)
 - [ ] Contextual next-step suggestion printed as single-line copy-paste
 

@@ -9,7 +9,7 @@ Write an Architecture Decision Record (ADR) or system design document. Delegates
 Locate and follow the installed skill:
 
 ```bash
-find .rihal/skills/actions -path "*rihal-create-architecture/workflow.md" 2>/dev/null | head -1
+find .rcode/skills/actions -path "*rihal-create-architecture/workflow.md" 2>/dev/null | head -1
 ```
 
 Read and follow the workflow at that path. If the path is empty:

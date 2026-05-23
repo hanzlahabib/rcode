@@ -3,17 +3,17 @@ Analyze freeform text from the user and route to the most appropriate Rihal comm
 </purpose>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
-@.rihal/references/verb-dictionary.md
-@.rihal/references/dispatch-banner.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
+@.rcode/references/verb-dictionary.md
+@.rcode/references/dispatch-banner.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <process>
 
 <step name="auto_init_check">
-Run the auto-init guard from `@.rihal/references/auto-init-guard.md` before anything else.
+Run the auto-init guard from `@.rcode/references/auto-init-guard.md` before anything else.
 If the project is not initialized, complete the inline init flow, then continue.
 </step>
 
@@ -28,7 +28,7 @@ if [[ "$ARGUMENTS" == *"--auto"* ]]; then
   QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
 fi
 # Also auto-dispatch in yolo mode
-CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 if [[ "$CONFIG_MODE" == "yolo" ]]; then
   AUTO_MODE=true
 fi
@@ -120,10 +120,10 @@ If user picks 1-15, invoke that command. If 16, capture text and continue.
 Detect PRD / epics with glob — projects use either singular files (`.planning/prd.md`) OR per-milestone directories (`.planning/prds/v1.8.md`). Closes #377 — false 'create-prd first' redirects on multi-milestone repos.
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" state load 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" state load 2>/dev/null)
 HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
 HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
-PHASE_COUNT=$(node ".rihal/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
+PHASE_COUNT=$(node ".rcode/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
 HAS_PHASES=$([ "$PHASE_COUNT" -gt 0 ] && echo true || echo false)
 
 # State-aware milestone detection (#374) — used by explicit_intent_check
@@ -207,7 +207,7 @@ When the user uses a literal create/make/start verb paired with a scope-noun (mi
 
 This was a real bug: `/rihal-do "milestone bnao aur ... list down karo"` triggered an ambiguity prompt offering new-milestone vs add-phase vs create-epics-and-stories — even though the user literally said "milestone bnao" (= "create a milestone" in Roman Urdu). That second-guessing wasted the user's time and broke trust.
 
-**Verb + scope detection — sourced from `@.rihal/references/verb-dictionary.md`.**
+**Verb + scope detection — sourced from `@.rcode/references/verb-dictionary.md`.**
 
 Match if `$QUESTION` contains any verb from §Create or §Add (English + Roman Urdu/Hindi + Arabic transliteration — full list lives in the dictionary file, do not duplicate here). Pair with a scope noun to determine the route.
 
@@ -314,7 +314,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 If no rule matches, fall back to the classifier:
 
 ```bash
-CLASSIFY=$(node ".rihal/bin/rihal-tools.cjs" classify-question "$QUESTION")
+CLASSIFY=$(node ".rcode/bin/rihal-tools.cjs" classify-question "$QUESTION")
 ```
 
 Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`; drift → `/rihal-feature-drift`. Default: `/rihal-discuss`.
@@ -353,7 +353,7 @@ Which approach fits better?
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► ROUTING
+ rcode ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Input: {first 80 chars of $QUESTION}

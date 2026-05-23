@@ -4,8 +4,8 @@ Initialize a new project through unified flow: questioning, research (optional),
 </purpose>
 
 <required_reading>
-@.rihal/references/auto-init-guard.md
-@.rihal/references/output-format.md
+@.rcode/references/auto-init-guard.md
+@.rcode/references/output-format.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
@@ -15,7 +15,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► NEW PROJECT
+ rcode ► NEW PROJECT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -31,17 +31,17 @@ Use TaskCreate at workflow start to show the full journey:
 Mark one in_progress at a time. Mark completed immediately after each step.
 
 Per-stage banners:
-- `RIHAL ► QUESTIONING`
-- `RIHAL ► RESEARCHING`
-- `RIHAL ► RESEARCH COMPLETE ✓`
-- `RIHAL ► DEFINING REQUIREMENTS`
-- `RIHAL ► CREATING ROADMAP`
-- `RIHAL ► PROJECT INITIALIZED ✓`
+- `rcode ► QUESTIONING`
+- `rcode ► RESEARCHING`
+- `rcode ► RESEARCH COMPLETE ✓`
+- `rcode ► DEFINING REQUIREMENTS`
+- `rcode ► CREATING ROADMAP`
+- `rcode ► PROJECT INITIALIZED ✓`
 
 **Brownfield detection banner** (if existing code found):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► BROWNFIELD DETECTED
+ rcode ► BROWNFIELD DETECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Existing {stack} code found in {path}. Mapping it first will save
@@ -53,7 +53,7 @@ Then AskUserQuestion to route to /rihal-map-codebase before proceeding.
 **Exiting to map-codebase handoff:**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXITING TO CODEBASE MAP
+ rcode ► EXITING TO CODEBASE MAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Per the workflow, mapping runs first. After it finishes I'll re-enter
@@ -92,7 +92,7 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 
 Before any processing, classify the project state into one of:
 
-- **none** — no `.rihal/state.json`, no `.planning/` → proceed
+- **none** — no `.rcode/state.json`, no `.planning/` → proceed
 - **stub** — install-seeded scaffolding only (issue #670) → proceed (overwrite stub)
 - **real** — a previous `/rihal-new-project` ran here → guard, unless `--force`
 
@@ -108,7 +108,7 @@ esac
 #   uninstalled | uninitialized | stub | real
 # (see issue #675 for the contract). Falls back to `none` when
 # rihal-tools is unavailable so the workflow still proceeds.
-PROJECT_STATE=$(node .rihal/bin/rihal-tools.cjs project-status 2>/dev/null \
+PROJECT_STATE=$(node .rcode/bin/rihal-tools.cjs project-status 2>/dev/null \
   | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).status||'none')}catch{console.log('none')}})" \
   || echo "none")
 [ "$PROJECT_STATE" = "uninstalled" ] || [ "$PROJECT_STATE" = "uninitialized" ] && PROJECT_STATE="none"
@@ -124,7 +124,7 @@ Quick actions:
   /rihal-next              find next action
   /rihal-add-phase         add a phase to the current milestone
 
-To start over (overwrites .planning/* and .rihal/state.json):
+To start over (overwrites .planning/* and .rcode/state.json):
   /rihal-new-project --force <description>
   rcode install --reset                        nuclear option — wipes config + state
 ```
@@ -194,14 +194,14 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init new-project 2>/dev/null || node .rihal/bin/rihal-tools.cjs init)
+INIT=$(node .rcode/bin/rihal-tools.cjs init new-project 2>/dev/null || node .rcode/bin/rihal-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_RESEARCHER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
-AGENT_SYNTHESIZER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
-AGENT_ROADMAPPER=$(node .rihal/bin/rihal-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
-RESEARCHER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
-SYNTHESIZER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
-ROADMAPPER_MODEL=$(node .rihal/bin/rihal-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
+AGENT_RESEARCHER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
+AGENT_SYNTHESIZER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
+AGENT_ROADMAPPER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
+SYNTHESIZER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
+ROADMAPPER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
 ```
 
 Parse JSON for: `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
@@ -485,7 +485,7 @@ Proceed to Step 4 (skip Steps 3 and 5).
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► QUESTIONING
+ rcode ► QUESTIONING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -552,7 +552,7 @@ Loop until "Create PROJECT.md" selected.
 **Load project type signals:**
 
 ```bash
-PROJECT_TYPES=$(cat .rihal/references/project-types.yaml 2>/dev/null || true)
+PROJECT_TYPES=$(cat .rcode/references/project-types.yaml 2>/dev/null || true)
 ```
 
 **Classify by signals:**
@@ -579,7 +579,7 @@ If "n": Ask the user to pick from the list.
 
 **If auto mode:** Synthesize from provided document. No "Ready?" gate was shown — proceed directly to commit.
 
-Synthesize all context into `.planning/PROJECT.md`. If `.rihal/templates/project.md` exists, use it. Otherwise use this inline template:
+Synthesize all context into `.planning/PROJECT.md`. If `.rcode/templates/project.md` exists, use it. Otherwise use this inline template:
 
 ```markdown
 # Project: {name}
@@ -666,12 +666,12 @@ git add .planning/PROJECT.md 2>/dev/null \
 
 **If auto mode:** Skip — config was collected in Step 2a. Proceed to Step 5.5.
 
-**Check for global defaults** at `~/.rihal/defaults.json`. If the file exists, offer to use saved defaults:
+**Check for global defaults** at `~/.rcode/defaults.json`. If the file exists, offer to use saved defaults:
 
 ```
 AskUserQuestion([
   {
-    question: "Use your saved default settings? (from ~/.rihal/defaults.json)",
+    question: "Use your saved default settings? (from ~/.rcode/defaults.json)",
     header: "Defaults",
     multiSelect: false,
     options: [
@@ -682,7 +682,7 @@ AskUserQuestion([
 ])
 ```
 
-If "Yes": read `~/.rihal/defaults.json`, use those values for config.json, skip to **Commit config.json** below.
+If "Yes": read `~/.rcode/defaults.json`, use those values for config.json, skip to **Commit config.json** below.
 
 If "No" or file doesn't exist: proceed with the questions below.
 
@@ -851,15 +851,15 @@ Use AskUserQuestion:
 Use models resolved in Step 1: `RESEARCHER_MODEL`, `SYNTHESIZER_MODEL`, `ROADMAPPER_MODEL`.
 
 
-@rihal/workflows/new-project-research-decision.md
+@rcode/workflows/new-project-research-decision.md
 
 
 
-@rihal/workflows/new-project-define-requirements.md
+@rcode/workflows/new-project-define-requirements.md
 
 
 
-@rihal/workflows/new-project-create-roadmap.md
+@rcode/workflows/new-project-create-roadmap.md
 
 ## 9. Done
 
@@ -867,7 +867,7 @@ Present completion summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PROJECT INITIALIZED ✓
+ rcode ► PROJECT INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **[Project Name]**

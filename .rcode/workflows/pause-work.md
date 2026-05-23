@@ -1,7 +1,7 @@
 # Workflow: rihal-pause-work
 
 <purpose>
-Capture full project context and blocking constraints before pausing work. Creates `.rihal/HANDOFF.json` (structured machine-readable handoff) and `.rihal/.continue-here.md` (human-readable summary) for seamless context restoration on resume.
+Capture full project context and blocking constraints before pausing work. Creates `.rcode/HANDOFF.json` (structured machine-readable handoff) and `.rcode/.continue-here.md` (human-readable summary) for seamless context restoration on resume.
 </purpose>
 
 
@@ -35,7 +35,7 @@ STOP — do not proceed.
 [ -d .rihal ] || (echo "❌ Not a Rihal project" && exit 1)
 
 # Load state.json
-cat .rihal/state.json 2>/dev/null || echo "{}"
+cat .rcode/state.json 2>/dev/null || echo "{}"
 
 # Get git status
 git status --short
@@ -74,7 +74,7 @@ Extract from active SPRINT.md:
 ## Step 3 — Collect Blocking Constraints
 
 ```bash
-CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Set `blocking_constraints = ""` and skip to Step 4.
@@ -114,7 +114,7 @@ UNTRACKED=$(echo "$GIT_STATUS" | grep "^?" | awk '{print $2}' | tr '\n' ', ')
 
 ## Step 5 — Build HANDOFF.json
 
-Write `.rihal/HANDOFF.json` with structured data:
+Write `.rcode/HANDOFF.json` with structured data:
 
 ```json
 {
@@ -167,7 +167,7 @@ Write `.rihal/HANDOFF.json` with structured data:
 
 ## Step 6 — Write .continue-here.md
 
-Write `.rihal/.continue-here.md` with human-readable summary:
+Write `.rcode/.continue-here.md` with human-readable summary:
 
 ```markdown
 # Resume from: {timestamp}
@@ -218,9 +218,9 @@ To resume work, run:
 ✓ Work paused successfully!
 
 Handoff saved:
-  - Machine-readable: .rihal/HANDOFF.json
-  - Human-readable: .rihal/.continue-here.md
-  - State snapshot: .rihal/state.json (updated)
+  - Machine-readable: .rcode/HANDOFF.json
+  - Human-readable: .rcode/.continue-here.md
+  - State snapshot: .rcode/state.json (updated)
 
 Current phase: {current_phase or "Not started"}
 Uncommitted changes: {count}

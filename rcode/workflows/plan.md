@@ -7,7 +7,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLANNING PHASE {NN}
+ rcode ► PLANNING PHASE {NN}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -34,7 +34,7 @@ Spawning indicators:
 Closure:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PLAN READY ✓  ({N} stories, {M} points)
+ rcode ► PLAN READY ✓  ({N} stories, {M} points)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 End with Next Up routing to /rcode-execute.

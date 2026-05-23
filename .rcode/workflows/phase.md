@@ -63,9 +63,9 @@ Strip the mode flag and pass remaining args to the underlying workflow.
 
 Each mode is implemented by an existing workflow:
 
-- **add (default):** read and execute `@.rihal/workflows/add-phase.md`. Output identical to `/rihal-add-phase`.
-- **insert (`--insert <parent>`):** read and execute `@.rihal/workflows/insert-phase.md`. Output identical to `/rihal-insert-phase`.
-- **remove (`--remove <id>`):** read and execute `@.rihal/workflows/remove-phase.md`. Output identical to `/rihal-remove-phase`.
+- **add (default):** read and execute `@.rcode/workflows/add-phase.md`. Output identical to `/rihal-add-phase`.
+- **insert (`--insert <parent>`):** read and execute `@.rcode/workflows/insert-phase.md`. Output identical to `/rihal-insert-phase`.
+- **remove (`--remove <id>`):** read and execute `@.rcode/workflows/remove-phase.md`. Output identical to `/rihal-remove-phase`.
 
 The underlying workflows are unchanged — `/rihal-phase` is a thin router. Behaviour, output format, and disk side-effects are byte-identical to invoking the underlying command directly.
 

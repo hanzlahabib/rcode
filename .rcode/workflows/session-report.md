@@ -23,10 +23,10 @@ STOP — do not proceed.
 
 ## Step 1 — Check usage
 
-Verify .rihal/state.json exists:
+Verify .rcode/state.json exists:
 
 ```bash
-test -f .rihal/state.json && echo "exists" || echo "missing"
+test -f .rcode/state.json && echo "exists" || echo "missing"
 ```
 
 If missing, print and stop:
@@ -38,7 +38,7 @@ No state found. Run /rihal-council or execute a plan to initialize state.
 ## Step 2 — Read state
 
 ```bash
-cat .rihal/state.json
+cat .rcode/state.json
 ```
 
 Parse the JSON. Extract:
@@ -82,7 +82,7 @@ Calculate estimated tokens (note: these are rough approximations, not actual mea
 Read context_window from config to calibrate multipliers:
 
 ```bash
-CW=$(node .rihal/bin/rihal-tools.cjs config-get context_window 2>/dev/null || echo "200000")
+CW=$(node .rcode/bin/rihal-tools.cjs config-get context_window 2>/dev/null || echo "200000")
 ```
 
 Scale multipliers: if `CW >= 500000`, multiply by 2× (larger context windows → more content read per agent turn).
@@ -105,7 +105,7 @@ Apply context window scale: `estimate = base × max(1, CW / 200000)`
 Get commits touching rihal paths since state creation:
 
 ```bash
-SINCE_DATE=$(node -e "try{const s=require('fs').readFileSync('.rihal/state.json','utf8');console.log(JSON.parse(s).created||'')}catch(e){}" 2>/dev/null)
+SINCE_DATE=$(node -e "try{const s=require('fs').readFileSync('.rcode/state.json','utf8');console.log(JSON.parse(s).created||'')}catch(e){}" 2>/dev/null)
 if [[ -n "$SINCE_DATE" ]]; then
   git log --since="$SINCE_DATE" --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
 else

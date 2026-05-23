@@ -3,8 +3,8 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </purpose>
 
 <required_reading>
-@.rihal/references/ui-brand.md
-@.rihal/references/karpathy-guidelines.md
+@.rcode/references/ui-brand.md
+@.rcode/references/karpathy-guidelines.md
 </required_reading>
 
 <available_agent_types>
@@ -17,16 +17,16 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-nyquist-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-nyquist-auditor 2>/dev/null)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$(node ".rihal/bin/rihal-tools.cjs" resolve-model rihal-nyquist-auditor --raw)
-NYQUIST_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.nyquist_validation --raw)
+AUDITOR_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-nyquist-auditor --raw)
+NYQUIST_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.nyquist_validation --raw)
 ```
 
 If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal-settings."
@@ -85,7 +85,7 @@ No gaps → skip to Step 6, set `nyquist_compliant: true`.
 ## 4. Present Gap Plan
 
 ```bash
-CONFIG_MODE=$(node .rihal/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Auto-select option 1 ("Fix all gaps") and proceed to Step 5 without asking. Print: `▶ Auto-fixing all gaps (yolo mode).`
@@ -119,7 +119,7 @@ Handle return:
 ## 6. Generate/Update VALIDATION.md
 
 **State B (create):**
-1. Read template from `.rihal/templates/VALIDATION.md`
+1. Read template from `.rcode/templates/VALIDATION.md`
 2. Fill: frontmatter, Test Infrastructure, Per-Task Map, Manual-Only, Sign-Off
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md`
 
@@ -142,7 +142,7 @@ Handle return:
 git add {test_files}
 git commit -m "test(phase-${PHASE}): add Nyquist validation tests"
 
-node ".rihal/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update validation strategy"
+node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update validation strategy"
 ```
 
 ## 8. Results + Routing

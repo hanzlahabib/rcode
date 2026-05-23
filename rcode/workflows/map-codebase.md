@@ -15,7 +15,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MAPPING CODEBASE
+ rcode ► MAPPING CODEBASE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -41,7 +41,7 @@ End with closure banner + top findings summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► CODEBASE MAPPED ✓  ({total} lines across {N} docs)
+ rcode ► CODEBASE MAPPED ✓  ({total} lines across {N} docs)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </output_format>

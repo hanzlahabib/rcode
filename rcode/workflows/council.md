@@ -8,7 +8,7 @@ Orchestrate a parallel panel of rcode specialist subagents answering a strategic
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MAJLIS CONVENING
+ rcode ► MAJLIS CONVENING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Question: {$ARGUMENTS}
@@ -24,7 +24,7 @@ Per-agent spawn indicator:
   → 🛡️ Fatima (QA)
 ```
 Agent headers when presenting responses: `🧭 **Sadiq (صادق) — Director of Strategy:**`.
-Closure: `RIHAL ► COUNCIL COMPLETE ✓` + Next Up with decision options.
+Closure: `rcode ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 </output_format>
 
 <required_reading>
@@ -387,7 +387,7 @@ Format:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COUNCIL VERDICT
+ rcode ► COUNCIL VERDICT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **One-liners (Round 1)**

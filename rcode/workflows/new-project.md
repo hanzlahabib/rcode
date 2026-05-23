@@ -15,7 +15,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► NEW PROJECT
+ rcode ► NEW PROJECT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -31,17 +31,17 @@ Use TaskCreate at workflow start to show the full journey:
 Mark one in_progress at a time. Mark completed immediately after each step.
 
 Per-stage banners:
-- `RIHAL ► QUESTIONING`
-- `RIHAL ► RESEARCHING`
-- `RIHAL ► RESEARCH COMPLETE ✓`
-- `RIHAL ► DEFINING REQUIREMENTS`
-- `RIHAL ► CREATING ROADMAP`
-- `RIHAL ► PROJECT INITIALIZED ✓`
+- `rcode ► QUESTIONING`
+- `rcode ► RESEARCHING`
+- `rcode ► RESEARCH COMPLETE ✓`
+- `rcode ► DEFINING REQUIREMENTS`
+- `rcode ► CREATING ROADMAP`
+- `rcode ► PROJECT INITIALIZED ✓`
 
 **Brownfield detection banner** (if existing code found):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► BROWNFIELD DETECTED
+ rcode ► BROWNFIELD DETECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Existing {stack} code found in {path}. Mapping it first will save
@@ -53,7 +53,7 @@ Then AskUserQuestion to route to /rcode-map-codebase before proceeding.
 **Exiting to map-codebase handoff:**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXITING TO CODEBASE MAP
+ rcode ► EXITING TO CODEBASE MAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Per the workflow, mapping runs first. After it finishes I'll re-enter
@@ -481,7 +481,7 @@ Proceed to Step 4 (skip Steps 3 and 5).
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► QUESTIONING
+ rcode ► QUESTIONING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -864,7 +864,7 @@ Present completion summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► PROJECT INITIALIZED ✓
+ rcode ► PROJECT INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **[Project Name]**

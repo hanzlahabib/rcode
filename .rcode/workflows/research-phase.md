@@ -13,17 +13,17 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 
 ## Step 0: Resolve Model Profile
 
-@.rihal/references/model-profile-resolution.md
+@.rcode/references/model-profile-resolution.md
 
 Resolve model for:
 - `rihal-phase-researcher`
 
 ## Step 1: Normalize and Validate Phase
 
-@.rihal/references/phase-argument-parsing.md
+@.rcode/references/phase-argument-parsing.md
 
 ```bash
-PHASE_INFO=$(node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 If `found` is false: Error and exit.
@@ -39,12 +39,12 @@ If exists: Offer update/view/skip options.
 ## Step 3: Gather Phase Context
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # If INIT is empty or INIT.ok is false: print "Error: rihal-tools init failed." and exit.
 # Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path, response_language
 # If response_language is set, include "Respond in {value}." in all spawned subagent prompts.
-AGENT_SKILLS_RESEARCHER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-researcher 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-researcher 2>/dev/null)
 ```
 
 ## Step 4: Spawn Researcher

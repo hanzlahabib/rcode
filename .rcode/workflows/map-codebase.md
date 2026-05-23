@@ -7,7 +7,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </purpose>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <output_format>
@@ -15,7 +15,7 @@ Open with banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MAPPING CODEBASE
+ rcode ► MAPPING CODEBASE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -41,7 +41,7 @@ End with closure banner + top findings summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► CODEBASE MAPPED ✓  ({total} lines across {N} docs)
+ rcode ► CODEBASE MAPPED ✓  ({total} lines across {N} docs)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </output_format>
@@ -88,9 +88,9 @@ Documents are reference material for the agent when planning/executing. Always i
 Load codebase mapping context:
 
 ```bash
-INIT=$(node .rihal/bin/rihal-tools.cjs init map-codebase)
+INIT=$(node .rcode/bin/rihal-tools.cjs init map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_MAPPER=$(node .rihal/bin/rihal-tools.cjs agent-skills rihal-codebase-mapper 2>/dev/null)
+AGENT_SKILLS_MAPPER=$(node .rcode/bin/rihal-tools.cjs agent-skills rihal-codebase-mapper 2>/dev/null)
 ```
 
 Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `response_language`.
@@ -375,7 +375,7 @@ Continue to commit_codebase_map.
 Commit the codebase map:
 
 ```bash
-node .rihal/bin/rihal-tools.cjs commit "docs: map existing codebase" --files .planning/codebase/*.md
+node .rcode/bin/rihal-tools.cjs commit "docs: map existing codebase" --files .planning/codebase/*.md
 ```
 
 Continue to offer_next.

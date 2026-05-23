@@ -1,5 +1,5 @@
 <purpose>
-Show all changes to .planning/ and .rihal/state.json between two commits, labeled by phase/plan ID.
+Show all changes to .planning/ and .rcode/state.json between two commits, labeled by phase/plan ID.
 </purpose>
 
 ## Step 0: Usage Check
@@ -22,13 +22,13 @@ Usage:
 
 Extract SHAs:
 - If no args: `sha1 = HEAD~1`, `sha2 = HEAD`
-- If `--last`: Read `.rihal/state.json`, extract `sessions[].commit`, use oldest in current session as sha1, HEAD as sha2
+- If `--last`: Read `.rcode/state.json`, extract `sessions[].commit`, use oldest in current session as sha1, HEAD as sha2
 - If explicit SHAs: Use as provided
 
 ## Step 2: Run Git Diff
 
 ```bash
-git diff $sha1 $sha2 -- .planning/ .rihal/state.json
+git diff $sha1 $sha2 -- .planning/ .rcode/state.json
 ```
 
 Capture output.
@@ -44,7 +44,7 @@ For each file in diff output:
 3. Prefix the hunk with: `Phase {id} — {filename}`
 4. Show the diff +/- lines
 
-For `.rihal/state.json`: Show raw diff (no frontmatter parsing)
+For `.rcode/state.json`: Show raw diff (no frontmatter parsing)
 
 Example output:
 
@@ -54,7 +54,7 @@ Phase 01-01 — .planning/phases/01-foundation/01-01-SPRINT.md
   - old line
   + new line
 
-State changes — .rihal/state.json
+State changes — .rcode/state.json
   @@ -12,2 +12,3 @@
   - "status": "pending"
   + "status": "completed"

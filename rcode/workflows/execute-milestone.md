@@ -36,7 +36,7 @@ Filter to phases with status `planned` or `in_progress`. Already `complete` phas
 **Display execution plan:**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► EXECUTE MILESTONE: {MILESTONE_TARGET}
+ rcode ► EXECUTE MILESTONE: {MILESTONE_TARGET}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phases to execute:
@@ -107,7 +107,7 @@ node ".rcode/bin/rcode-tools.cjs" state set-phase "${PHASE_NAME}" 2>/dev/null ||
 After all phases complete:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► MILESTONE COMPLETE ✓  {MILESTONE_TARGET}
+ rcode ► MILESTONE COMPLETE ✓  {MILESTONE_TARGET}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phases executed:   {N}

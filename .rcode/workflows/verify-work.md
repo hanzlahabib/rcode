@@ -8,17 +8,17 @@ User tests, Claude records. One test at a time. Plain text responses.
 Open with banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► VERIFYING SPRINT {NN.S}
+ rcode ► VERIFYING SPRINT {NN.S}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 TaskCreate: one entry per story to verify.
 Per-story status: `✓ Story 01.1.01 — passed`, `✗ Story 01.1.02 — FAILED: {reason}`, `⚠ Story 01.1.03 — partial`.
 If any fail: route to `/rihal-plan --gaps` for remediation.
-If all pass: `RIHAL ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
+If all pass: `rcode ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
 </output_format>
 
 <required_reading>
-@.rihal/references/output-format.md
+@.rcode/references/output-format.md
 </required_reading>
 
 <available_agent_types>
@@ -38,7 +38,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@.rihal/templates/UAT.md
+@.rcode/templates/UAT.md
 </template>
 
 <process>
@@ -47,10 +47,10 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If $ARGUMENTS contains a phase number, load context:
 
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rihal-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rihal/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
 ```
 
 Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
@@ -110,7 +110,7 @@ Before running manual UAT, check whether this phase has a UI component and wheth
 `mcp__playwright__*` or `mcp__puppeteer__*` tools are available in the current session.
 
 ```
-UI_PHASE_FLAG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
+UI_PHASE_FLAG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 ```
 
@@ -250,7 +250,7 @@ Proceed to `present_test`.
 Render the checkpoint from the structured UAT file instead of composing it freehand:
 
 ```bash
-CHECKPOINT=$(node ".rihal/bin/rihal-tools.cjs" uat render-checkpoint --file "$uat_path" --raw 2>/dev/null || echo "")
+CHECKPOINT=$(node ".rcode/bin/rihal-tools.cjs" uat render-checkpoint --file "$uat_path" --raw 2>/dev/null || echo "")
 if [[ "$CHECKPOINT" == @file:* ]]; then CHECKPOINT=$(cat "${CHECKPOINT#@file:}"); fi
 ```
 
@@ -406,7 +406,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node ".rcode/bin/rihal-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -430,7 +430,7 @@ Present summary:
 **If issues == 0:**
 
 ```bash
-SECURITY_CFG=$(node ".rihal/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 ```
 
@@ -476,7 +476,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @.rihal/workflows/diagnose-issues.md
+- Follow @.rcode/workflows/diagnose-issues.md
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Update UAT.md with root causes
@@ -491,7 +491,7 @@ Diagnosis runs automatically - no user prompt. Parallel agents investigate simul
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► PLANNING FIXES
+ rcode ► PLANNING FIXES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning planner for gap closure...
@@ -540,7 +540,7 @@ On return:
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► VERIFYING FIX PLANS
+ rcode ► VERIFYING FIX PLANS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning plan checker...
@@ -644,7 +644,7 @@ Wait for user response.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Rihal ► FIXES READY ✓
+ rcode ► FIXES READY ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {X}: {Name}** — {N} gap(s) diagnosed, {M} fix plan(s) created
