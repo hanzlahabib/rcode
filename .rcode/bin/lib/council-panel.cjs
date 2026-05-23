@@ -2,8 +2,8 @@
  * Council panel selection — pure function that picks the right agents
  * for a given question.
  *
- * This is the v2 version of the scorer, installed alongside rihal-tools.cjs
- * at {project-root}/.rihal/bin/lib/council-panel.cjs. The helper binary
+ * This is the v2 version of the scorer, installed alongside rcode-tools.cjs
+ * at {project-root}/.rcode/bin/lib/council-panel.cjs. The helper binary
  * loads it via require() for the `init council` and `select-panel`
  * subcommands.
  *
@@ -584,7 +584,7 @@ function loadTeamConfig(projectRoot) {
   try {
     const fs = require('fs');
     const path = require('path');
-    const teamYamlPath = path.join(projectRoot, 'rihal', 'v2', 'team.yaml');
+    const teamYamlPath = path.join(projectRoot, 'rcode', 'v2', 'team.yaml');
 
     if (!fs.existsSync(teamYamlPath)) {
       return null; // Use hardcoded fallback

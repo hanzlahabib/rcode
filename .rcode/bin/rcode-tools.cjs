@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * rihal-tools.cjs — the helper binary every Rihal v2 workflow shells out to.
+ * rcode-tools.cjs — the helper binary every rcode v2 workflow shells out to.
  *
  * Design goal: one Bash call per workflow step returns a single JSON blob
  * with every path, flag, and config value the orchestrator needs. This
  * replaces what would otherwise be 5-10 Read calls in the parent context
  * and keeps the orchestrator's context window small.
  *
- * Installed at: {project-root}/.rihal/bin/rihal-tools.cjs
+ * Installed at: {project-root}/.rcode/bin/rcode-tools.cjs
  *
  * Subcommands:
  *   init <workflow-name> "<raw-args>"    → JSON context blob for a workflow
@@ -23,49 +23,49 @@
 const fs = require('fs');
 const path = require('path');
 
-// Resolve project root. This file is installed at {project-root}/.rihal/bin/,
+// Resolve project root. This file is installed at {project-root}/.rcode/bin/,
 // so two levels up is the project.
-// PROJECT_ROOT detection: when installed, this binary lives at <project>/.rihal/bin/rihal-tools.cjs
-// When running from source (rihal/bin/), warn but allow — tests need this path.
+// PROJECT_ROOT detection: when installed, this binary lives at <project>/.rcode/bin/rcode-tools.cjs
+// When running from source (rcode/bin/), warn but allow — tests need this path.
 const _maybeRoot = path.resolve(__dirname, '..', '..');
-const _isInstalled = path.basename(path.dirname(__dirname)) === '.rihal';
-if (!_isInstalled && !process.env.RIHAL_DEV_MODE && !process.env.NODE_TEST_CONTEXT && !process.env.RIHAL_PROJECT_ROOT) {
+const _isInstalled = path.basename(path.dirname(__dirname)) === '.rcode';
+if (!_isInstalled && !process.env.RCODE_DEV_MODE && !process.env.NODE_TEST_CONTEXT && !process.env.RCODE_PROJECT_ROOT) {
   // Source dir, not installed location — warn but proceed (tests run from here)
   if (process.stderr.isTTY) {
-    console.error('Note: rihal-tools.cjs running from source. For full features install with: node cli/install-v2.js <target> --yes');
+    console.error('Note: rcode-tools.cjs running from source. For full features install with: node cli/install-v2.js <target> --yes');
   }
 }
-// Issue #718: RIHAL_PROJECT_ROOT env override lets tests (and future tooling)
+// Issue #718: RCODE_PROJECT_ROOT env override lets tests (and future tooling)
 // retarget the binary at a different project root without symlinking. When
 // unset, behaves identically to before.
-const PROJECT_ROOT = process.env.RIHAL_PROJECT_ROOT
-  ? path.resolve(process.env.RIHAL_PROJECT_ROOT)
+const PROJECT_ROOT = process.env.RCODE_PROJECT_ROOT
+  ? path.resolve(process.env.RCODE_PROJECT_ROOT)
   : _maybeRoot;
-const RIHAL_DIR = path.join(PROJECT_ROOT, '.rihal');
-const CONFIG_DIR = path.join(RIHAL_DIR, '_config');
-const REFS_DIR = path.join(RIHAL_DIR, 'references');
-const WORKFLOWS_DIR = path.join(RIHAL_DIR, 'workflows');
+const RCODE_DIR = path.join(PROJECT_ROOT, '.rcode');
+const CONFIG_DIR = path.join(RCODE_DIR, '_config');
+const REFS_DIR = path.join(RCODE_DIR, 'references');
+const WORKFLOWS_DIR = path.join(RCODE_DIR, 'workflows');
 const PLANNING_DIR = path.join(PROJECT_ROOT, '.planning');
 const SESSIONS_DIR = path.join(PLANNING_DIR, 'council-sessions');
 
-// #473 guard: if CWD has its own .rihal/ but doesn't match the resolved
+// #473 guard: if CWD has its own .rcode/ but doesn't match the resolved
 // PROJECT_ROOT, the user is invoking this binary from a different project.
 // Without this guard, every state-writing subcommand silently targets the
 // installer's repo instead of the user's CWD — surfaced during Phase 12
-// smoke tests when `phase add` polluted the rihal-code repo's ROADMAP
+// smoke tests when `phase add` polluted the rcode repo's ROADMAP
 // while running from /tmp. Refuse to operate with a clear error.
 function assertCwdMatchesProjectRoot() {
   try {
     const cwd = process.cwd();
-    const cwdRihal = path.join(cwd, '.rihal');
-    if (!fs.existsSync(cwdRihal)) return; // no local install — fine
+    const cwdrcode = path.join(cwd, '.rcode');
+    if (!fs.existsSync(cwdrcode)) return; // no local install — fine
     if (path.resolve(cwd) === path.resolve(PROJECT_ROOT)) return; // same project — fine
-    // CWD has its own .rihal/ but is NOT this binary's project. Refuse.
+    // CWD has its own .rcode/ but is NOT this binary's project. Refuse.
     process.stderr.write(
       `Refusing to operate: this binary lives at ${path.dirname(__dirname)}/bin/ ` +
-      `but CWD ${cwd} has its own .rihal/ — running from here would silently ` +
+      `but CWD ${cwd} has its own .rcode/ — running from here would silently ` +
       `target the wrong project (#473). Use the CWD's installed CLI: ` +
-      `node "${cwdRihal}/bin/rihal-tools.cjs" <args>\n`
+      `node "${cwdRcode}/bin/rcode-tools.cjs" <args>\n`
     );
     process.exit(2);
   } catch { /* never crash startup on diagnostic logic */ }
@@ -105,7 +105,7 @@ function parseSimpleYaml(text) {
 }
 
 function readConfig() {
-  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  const configPath = path.join(RCODE_DIR, 'config.yaml');
   if (!fs.existsSync(configPath)) {
     return {
       user_name: 'User',
@@ -129,14 +129,14 @@ function readConfig() {
 }
 
 /**
- * Read .rihal/config.yaml as a nested object (workflow.*, features.*, etc.).
+ * Read .rcode/config.yaml as a nested object (workflow.*, features.*, etc.).
  * Phase 12 / #468 — used by cmdInit to surface workflow feature flags into
  * the init JSON so workflow agents don't re-shell config-get per field.
  * Returns {} when config absent or unreadable.
  */
 function readNestedConfig() {
   try {
-    const configPath = path.join(RIHAL_DIR, 'config.yaml');
+    const configPath = path.join(RCODE_DIR, 'config.yaml');
     if (!fs.existsSync(configPath)) return {};
     const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
     return cfg.parseNestedYaml(fs.readFileSync(configPath, 'utf8')) || {};
@@ -154,8 +154,8 @@ function resolveModelString(agentId) {
   try {
     const installed = listInstalledAgents();
     // Manifest ids are stored bare (e.g. "planner") while workflows reference
-    // them with the rihal- prefix. Try both forms before giving up.
-    const bare = agentId.replace(/^rihal-/, '');
+    // them with the rcode- prefix. Try both forms before giving up.
+    const bare = agentId.replace(/^rcode-/, '');
     const candidate = installed.includes(agentId) ? agentId
                     : installed.includes(bare) ? bare
                     : null;
@@ -273,8 +273,8 @@ function listInstalledAgents() {
   const globalDir = path.join(process.env.HOME || '', '.claude', 'agents');
   if (fs.existsSync(globalDir)) {
     global = fs.readdirSync(globalDir)
-      .filter(f => f.startsWith('rihal-') && f.endsWith('.md'))
-      .map(f => f.replace('rihal-', '').replace('.md', ''));
+      .filter(f => f.startsWith('rcode-') && f.endsWith('.md'))
+      .map(f => f.replace('rcode-', '').replace('.md', ''));
   }
 
   // Merge and deduplicate: local takes precedence if defined in both
@@ -283,7 +283,7 @@ function listInstalledAgents() {
 
 /**
  * Load the council-panel scoring function. Installed at
- * .rihal/bin/lib/council-panel.cjs alongside this helper.
+ * .rcode/bin/lib/council-panel.cjs alongside this helper.
  */
 function loadPanelScorer() {
   const scorerPath = path.join(__dirname, 'lib', 'council-panel.cjs');
@@ -414,15 +414,15 @@ function cmdInit(workflowName, rawArgs) {
     installed_agents: installedAgents,
     paths: {
       project_root: PROJECT_ROOT,
-      rihal: RIHAL_DIR,
+      rcode: RCODE_DIR,
       config_dir: CONFIG_DIR,
       refs: REFS_DIR,
       workflows: WORKFLOWS_DIR,
       planning_root: PLANNING_DIR,
       sessions_dir: SESSIONS_DIR,
-      state: path.join(RIHAL_DIR, 'state.json'),
+      state: path.join(RCODE_DIR, 'state.json'),
     },
-    state_exists: fs.existsSync(path.join(RIHAL_DIR, 'state.json')),
+    state_exists: fs.existsSync(path.join(RCODE_DIR, 'state.json')),
   };
 
   // Phase 10 / #466 — phase-aware fields for phase-op + sprint-plan workflows.
@@ -473,7 +473,7 @@ function cmdInit(workflowName, rawArgs) {
       // Phase status from state.json (complete/executed/in_progress/planned/null).
       // Used by plan.md to show context-aware messaging when plans already exist.
       try {
-        const stateFilePath = path.join(RIHAL_DIR, 'state.json');
+        const stateFilePath = path.join(RCODE_DIR, 'state.json');
         const rawState = fs.existsSync(stateFilePath)
           ? JSON.parse(fs.readFileSync(stateFilePath, 'utf8'))
           : null;
@@ -523,13 +523,13 @@ function cmdInit(workflowName, rawArgs) {
       out.uat_path = (out.phase_dir && out.has_uat)
         ? path.join(out.phase_dir, files0(out.phase_dir, /UAT\.md$/i))
         : null;
-      out.state_path = path.join(RIHAL_DIR, 'state.json');
+      out.state_path = path.join(RCODE_DIR, 'state.json');
       out.roadmap_path = roadmapPath;
       out.requirements_path = fs.existsSync(path.join(PLANNING_DIR, 'REQUIREMENTS.md'))
         ? path.join(PLANNING_DIR, 'REQUIREMENTS.md')
         : null;
 
-      // Defaults consumed by /rihal-plan and /rihal-discuss-phase.
+      // Defaults consumed by /rcode-plan and /rcode-discuss-phase.
       // Accept both bare commit_docs and nested git.commit_docs (settings.md uses git.commit_docs).
       const _rawCommitDocs = config.git?.commit_docs ?? config.commit_docs;
       out.commit_docs = _rawCommitDocs === undefined ? true : String(_rawCommitDocs) !== 'false';
@@ -552,10 +552,10 @@ function cmdInit(workflowName, rawArgs) {
       // Model resolution per active profile. The researcher agent ships as
       // `phase-researcher` in this codebase; resolveModelString falls back to
       // that when the prefixed/bare `researcher` ids aren't present.
-      out.researcher_model = resolveModelString('rihal-researcher')
-        || resolveModelString('rihal-phase-researcher');
-      out.planner_model = resolveModelString('rihal-planner');
-      out.checker_model = resolveModelString('rihal-sprint-checker');
+      out.researcher_model = resolveModelString('rcode-researcher')
+        || resolveModelString('rcode-phase-researcher');
+      out.planner_model = resolveModelString('rcode-planner');
+      out.checker_model = resolveModelString('rcode-sprint-checker');
 
       // Phase requirement IDs — extracted from ROADMAP requirements block.
       out.phase_req_ids = extractReqIds(roadmapPhase ? roadmapPhase.requirements : []);
@@ -629,8 +629,8 @@ function resolveAgentId(rawId, manifest) {
   // 1. Exact match on raw id
   let row = manifest.find((r) => r.id === rawId);
   if (row) return row;
-  // 2. Strip leading rihal- prefix (workflows use prefixed form, manifest is bare)
-  const stripped = rawId.replace(/^rihal-/, '');
+  // 2. Strip leading rcode- prefix (workflows use prefixed form, manifest is bare)
+  const stripped = rawId.replace(/^rcode-/, '');
   if (stripped !== rawId) {
     row = manifest.find((r) => r.id === stripped);
     if (row) return row;
@@ -777,7 +777,7 @@ function cmdClassifyQuestion(raw) {
       'إصلاح', 'كود', 'برنامج', 'نفذ', 'شغل',
     ],
     // Phase 6 — drift / audit / re-audit / extend-existing-artifact signals.
-    // Routes /rihal-do toward /rihal-feature-drift instead of falling
+    // Routes /rcode-do toward /rcode-feature-drift instead of falling
     // through to inline execution. Reinforces classifyScope's drift branch.
     drift: [
       'drift', 'redrift', 're-audit', 'reaudit', 'audit feature', 'audit docs',
@@ -818,7 +818,7 @@ function cmdClassifyQuestion(raw) {
 }
 
 /**
- * init execute — returns context blob for the /rihal-execute workflow.
+ * init execute — returns context blob for the /rcode-execute workflow.
  * Resolves plan_path (single file or phase directory), reads the plan
  * frontmatter, and returns dependency wave groupings.
  */
@@ -927,16 +927,16 @@ function cmdInitExecute(rawArgs) {
     config,
     paths: {
       project_root: PROJECT_ROOT,
-      rihal: RIHAL_DIR,
+      rcode: RCODE_DIR,
       planning_root: PLANNING_DIR,
-      state: path.join(RIHAL_DIR, 'state.json'),
+      state: path.join(RCODE_DIR, 'state.json'),
     },
-    state_exists: fs.existsSync(path.join(RIHAL_DIR, 'state.json')),
+    state_exists: fs.existsSync(path.join(RCODE_DIR, 'state.json')),
   };
 }
 
 /**
- * state <subcommand> — read/write .rihal/state.json for execution tracking.
+ * state <subcommand> — read/write .rcode/state.json for execution tracking.
  *
  * Subcommands:
  *   read                           → print full state.json as formatted JSON
@@ -952,7 +952,7 @@ function cmdInitExecute(rawArgs) {
  *   record-council --slug <s> --panel <csv> --artifact <path>
  */
 function cmdState(subArgs) {
-  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const statePath = path.join(RCODE_DIR, 'state.json');
   const sub = subArgs[0];
 
   /** Parse --key value flags from subArgs starting at index. */
@@ -968,10 +968,10 @@ function cmdState(subArgs) {
     return flags;
   }
 
-  /** Cross-project decision log at ~/.rihal/decisions.jsonl. One JSON record per line. */
+  /** Cross-project decision log at ~/.rcode/decisions.jsonl. One JSON record per line. */
   function globalDecisionsPath() {
     const os = require('os');
-    return path.join(os.homedir(), '.rihal', 'decisions.jsonl');
+    return path.join(os.homedir(), '.rcode', 'decisions.jsonl');
   }
 
   function appendGlobalDecision(record) {
@@ -1059,7 +1059,7 @@ function cmdState(subArgs) {
     }
 
     state.updated = new Date().toISOString();
-    fs.mkdirSync(RIHAL_DIR, { recursive: true });
+    fs.mkdirSync(RCODE_DIR, { recursive: true });
     const lockPath = statePath + '.lock';
     let attempts = 0;
     while (fs.existsSync(lockPath) && attempts < 50) {
@@ -1123,9 +1123,9 @@ function cmdState(subArgs) {
   if (sub === 'read' || sub === 'get') {
     if (!fs.existsSync(statePath)) {
       // Auto-init with defaults if config.yaml exists (install happened).
-      // Removes the "run /rihal-init first" friction — any workflow can
+      // Removes the "run /rcode-init first" friction — any workflow can
       // call `state read` and get a usable state back.
-      const configPath = path.join(RIHAL_DIR, 'config.yaml');
+      const configPath = path.join(RCODE_DIR, 'config.yaml');
       if (fs.existsSync(configPath)) {
         let projectName = path.basename(PROJECT_ROOT);
         try {
@@ -1139,7 +1139,7 @@ function cmdState(subArgs) {
       }
       return {
         ok: false,
-        error: 'No state.json yet. Run /rihal-install to set up this project, or `state init --project <name>` directly.'
+        error: 'No state.json yet. Run /rcode-install to set up this project, or `state init --project <name>` directly.'
       };
     }
     const state = readState();
@@ -1148,7 +1148,7 @@ function cmdState(subArgs) {
   }
 
   // --- clear-stub --- (issue #681)
-  // Explicit way to flip _seeded_stub off. Useful for /rihal-new-project once
+  // Explicit way to flip _seeded_stub off. Useful for /rcode-new-project once
   // PROJECT.md / REQUIREMENTS.md / ROADMAP.md are committed. The auto-clear in
   // writeState() also handles this, but having an explicit subcommand lets
   // workflows be self-documenting and idempotent.
@@ -1174,7 +1174,7 @@ function cmdState(subArgs) {
       existing = null;
     }
     // #849: install seeds state.json with _seeded_stub:true and an empty
-    // skeleton. When /rihal-new-project later calls `state init` (without
+    // skeleton. When /rcode-new-project later calls `state init` (without
     // --force) to bootstrap a real project, the early-return below kept the
     // stub flag and any install-time phase entries instead of overwriting
     // them. Treat stub state as reinitializable so real project data wins.
@@ -1189,7 +1189,7 @@ function cmdState(subArgs) {
     // Resolve project name: flag > config.yaml > directory basename (#816)
     let resolvedProject = flags.project || null;
     if (!resolvedProject) {
-      const configPath = path.join(RIHAL_DIR, 'config.yaml');
+      const configPath = path.join(RCODE_DIR, 'config.yaml');
       if (fs.existsSync(configPath)) {
         try {
           const cfg = fs.readFileSync(configPath, 'utf8');
@@ -1401,7 +1401,7 @@ function cmdState(subArgs) {
 
   // --- logs prune [--dir <path>] [--older-than <days>] [--dry-run] ---
   // Prune dated session-* artifacts (#13). Defaults:
-  //   dir         = .rihal/progress/
+  //   dir         = .rcode/progress/
   //   pattern     = session-*.md
   //   older-than  = 90 days
   //   dry-run     = true (so accidental invocation never deletes)
@@ -1412,7 +1412,7 @@ function cmdState(subArgs) {
     const dryRun = ('dry-run' in flags) || !subArgs.includes('--no-dry-run');
     const dir = flags.dir
       ? path.resolve(PROJECT_ROOT, flags.dir)
-      : path.join(RIHAL_DIR, 'progress');
+      : path.join(RCODE_DIR, 'progress');
     const olderDays = parseInt(flags['older-than'] || '90', 10);
     const pattern = flags.pattern || 'session-*.md';
     const cutoff = Date.now() - olderDays * 24 * 60 * 60 * 1000;
@@ -1806,7 +1806,7 @@ function cmdState(subArgs) {
     };
   }
 
-  // --- decisions-global: query ~/.rihal/decisions.jsonl across all projects ---
+  // --- decisions-global: query ~/.rcode/decisions.jsonl across all projects ---
   if (sub === 'decisions-global') {
     const flags = parseFlags(1);
     const limit = Math.max(1, parseInt(flags.limit || '20', 10));
@@ -2745,7 +2745,7 @@ function cmdState(subArgs) {
       message: typeof recorded === 'number'
         ? (effective === CURRENT_SCHEMA_VERSION
             ? 'Up to date.'
-            : `state.json is at v${effective}, current is v${CURRENT_SCHEMA_VERSION}. Run: rihal-tools state migrate-schema`)
+            : `state.json is at v${effective}, current is v${CURRENT_SCHEMA_VERSION}. Run: rcode-tools state migrate-schema`)
         : 'state.json has no schema_version field — treated as v1. Next write will stamp the explicit field.',
     };
   }
@@ -3170,10 +3170,10 @@ function cmdState(subArgs) {
       }
     }
 
-    // Walk .rihal/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
+    // Walk .rcode/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
     const phasesDir = path.join(PLANNING_DIR, 'phases');
-    const rihalPhasesDir = path.join(RIHAL_DIR, 'phases');
-    const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rihalPhasesDir) ? rihalPhasesDir : null);
+    const rcodePhasesDir = path.join(RCODE_DIR, 'phases');
+    const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rcodePhasesDir) ? rcodePhasesDir : null);
     if (sprintRoot) {
       if (!state.sprints) state.sprints = [];
       for (const phaseEntry of fs.readdirSync(sprintRoot)) {
@@ -3244,7 +3244,7 @@ function cmdState(subArgs) {
     return { ok: true, synced: true, ...parsed, ...(warnings.length ? { warnings } : {}) };
   }
 
-  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, promote-backlog\nRun 'rihal-tools.cjs help' for the full list of state subcommands.`);
+  throw new Error(`Unknown state subcommand: ${sub}.\nCommon: read, set-phase, advance-plan, add-decision, decisions-global, add-blocker, sync, promote-backlog\nRun 'rcode-tools.cjs help' for the full list of state subcommands.`);
 }
 
 /**
@@ -3258,7 +3258,7 @@ function cmdState(subArgs) {
  *                (or at end if absent), and upserts state.phases[].
  *
  * Closes #460. Replaces the broken `phase add` invocation referenced by
- * .rihal/workflows/add-phase.md, which previously hit the dispatcher's
+ * .rcode/workflows/add-phase.md, which previously hit the dispatcher's
  * "Unknown subcommand: phase" path.
  */
 function cmdPhase(subArgs) {
@@ -3309,11 +3309,11 @@ function cmdPhase(subArgs) {
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
 
-    // State lives in .rihal/state.json — same path used by cmdState (line ~634)
+    // State lives in .rcode/state.json — same path used by cmdState (line ~634)
     // and every other state-writing subcommand. Phase 6 dogfood surfaced this:
     // earlier drafts wrote to .planning/state.json, creating an orphan file
     // invisible to `state sync` / `state set-phase` / etc. Closes #462.
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
     let state;
     if (fs.existsSync(statePath)) {
       try {
@@ -3425,8 +3425,8 @@ function cmdPhase(subArgs) {
           `Computed phase number ${next} is unexpectedly large ` +
           `(only ${trackedCount} phases tracked in state.json). ` +
           `ROADMAP.md or the phases/ directory may contain a stale high-number entry. ` +
-          `Inspect with: node rihal-tools.cjs phases list\n` +
-          `Then retry with an explicit number: rihal-tools.cjs phase add "${phaseName}" --number ${trackedCount + 1}`
+          `Inspect with: node rcode-tools.cjs phases list\n` +
+          `Then retry with an explicit number: rcode-tools.cjs phase add "${phaseName}" --number ${trackedCount + 1}`
         );
       }
 
@@ -3445,7 +3445,7 @@ function cmdPhase(subArgs) {
     fs.mkdirSync(directory, { recursive: true });
 
     const entry = `## Phase ${number} — ${phaseName}\n\n` +
-      `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
+      `**Goal:** _TBD — fill in via /rcode-discuss-phase ${number} or edit directly._\n\n` +
       `**Status:** Planned\n\n` +
       `**Plans:**\n- _TBD_\n\n` +
       `**Acceptance:** _TBD_\n\n---\n`;
@@ -3475,7 +3475,7 @@ function cmdPhase(subArgs) {
       plan_count: 0,
     });
     state.updated = new Date().toISOString();
-    // Ensure the directory holding statePath (RIHAL_DIR) exists.
+    // Ensure the directory holding statePath (RCODE_DIR) exists.
     const stateDir = path.dirname(statePath);
     if (!fs.existsSync(stateDir)) {
       fs.mkdirSync(stateDir, { recursive: true });
@@ -3499,9 +3499,9 @@ function cmdPhase(subArgs) {
   if (sub === 'complete') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase complete requires <phase_number>');
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
     if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
     }
     let state;
     try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
@@ -3549,9 +3549,9 @@ function cmdPhase(subArgs) {
   if (sub === 'sync-sprints') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase sync-sprints requires <phase_number>');
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
     if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
     }
     let state;
     try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
@@ -3632,9 +3632,9 @@ function cmdPhase(subArgs) {
       throw new Error(`Invalid status "${newStatus}". Valid: ${validStatuses.join(', ')}`);
     }
 
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
     if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rihal-tools state init' first`);
+      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
     }
     let state;
     try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
@@ -3670,7 +3670,7 @@ function cmdPhase(subArgs) {
 
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
 
     let maxNum = 0;
     if (fs.existsSync(phasesDir)) {
@@ -3731,7 +3731,7 @@ function cmdPhase(subArgs) {
     // Compute starting number via same logic as next-range / phase add
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
-    const statePath = path.join(RIHAL_DIR, 'state.json');
+    const statePath = path.join(RCODE_DIR, 'state.json');
 
     // #769 — the next free number is derived from phase DIRECTORIES only.
     // A directory is the physical "slot taken" signal. ROADMAP.md headings and
@@ -3777,7 +3777,7 @@ function cmdPhase(subArgs) {
       }
       // #769 — a real collision is a state entry that ALSO has a directory on
       // disk (the phase is genuinely already scaffolded). A directory-less
-      // state entry is a phantom — e.g. rihal-roadmapper synced the phase into
+      // state entry is a phantom — e.g. rcode-roadmapper synced the phase into
       // state.json but never created the folder — so reconcile it in place
       // instead of aborting.
       const existingIdx = state.phases.findIndex(p => String(p.number) === number);
@@ -3796,7 +3796,7 @@ function cmdPhase(subArgs) {
       fs.mkdirSync(directory, { recursive: true });
 
       // Append ROADMAP entry — but skip if the roadmap already declares this
-      // phase (#769: rihal-roadmapper writes `## Phase N` sections directly, so
+      // phase (#769: rcode-roadmapper writes `## Phase N` sections directly, so
       // appending a stub here produced a duplicate heading).
       if (fs.existsSync(roadmapPath)) {
         let text = fs.readFileSync(roadmapPath, 'utf8');
@@ -3805,7 +3805,7 @@ function cmdPhase(subArgs) {
           roadmapSkipped.push(number);
         } else {
           const entry = `## Phase ${number} — ${phaseName}\n\n` +
-            `**Goal:** _TBD — fill in via /rihal-discuss-phase ${number} or edit directly._\n\n` +
+            `**Goal:** _TBD — fill in via /rcode-discuss-phase ${number} or edit directly._\n\n` +
             `**Status:** Planned\n\n` +
             `**Plans:**\n- _TBD_\n\n` +
             `**Acceptance:** _TBD_\n\n---\n`;
@@ -3849,7 +3849,7 @@ function cmdPhase(subArgs) {
  * new-project-roadmap workflows.
  *
  * Signature:
- *   rihal-tools.cjs commit "<message>" [--files <path1> <path2> ...]
+ *   rcode-tools.cjs commit "<message>" [--files <path1> <path2> ...]
  *
  * Validates:
  * - conventional-commits format (type(scope): subject)
@@ -3875,7 +3875,7 @@ function cmdCommit(argv) {
   for (let i = 0; i < flagArgs.length; i++) {
     const t = flagArgs[i];
     if (t === '--no-verify') {
-      throw new Error('rihal-tools commit does not bypass hooks. Fix the underlying issue, then re-commit.');
+      throw new Error('rcode-tools commit does not bypass hooks. Fix the underlying issue, then re-commit.');
     }
     if (t === '--files') {
       // Everything remaining is a file path
@@ -3885,7 +3885,7 @@ function cmdCommit(argv) {
   }
 
   if (!message || !message.trim()) {
-    throw new Error('commit requires a message: rihal-tools.cjs commit "type(scope): subject"');
+    throw new Error('commit requires a message: rcode-tools.cjs commit "type(scope): subject"');
   }
 
   // AI attribution rejection (project rule)
@@ -3939,7 +3939,7 @@ function cmdCommit(argv) {
         throw new Error(
           `Cannot stage files — one or more paths are gitignored:\n${gitAddStderr.trim()}\n\n` +
           `Fix: remove the .gitignore entry for the planning directory, or run:\n` +
-          `  node rihal-tools.cjs gitignore status`
+          `  node rcode-tools.cjs gitignore status`
         );
       }
       throw e; // re-throw any other git error
@@ -3980,7 +3980,7 @@ function cmdCommit(argv) {
   }
 
   // Use HEREDOC-style approach: write message to temp file, commit -F
-  const tmpMsgPath = path.join(require('os').tmpdir(), `rihal-commit-msg-${Date.now()}.txt`);
+  const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-commit-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
     execSync(`git commit -F "${tmpMsgPath}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
@@ -4032,7 +4032,7 @@ function cmdGenerateClaudeMd(rawArgs) {
 
 This file is loaded by Claude Code, Codex, and compatible AI coding tools at the start of every session. Rules below are NON-NEGOTIABLE.
 
-> Generated by \`rihal-tools generate-claude-md\` on ${today}. Edit freely after generation.
+> Generated by \`rcode-tools generate-claude-md\` on ${today}. Edit freely after generation.
 
 ---
 
@@ -4076,17 +4076,17 @@ This file is loaded by Claude Code, Codex, and compatible AI coding tools at the
 
 ## Phase Workflow Rules (#475 — non-negotiable)
 
-When creating, planning, or modifying a phase, you MUST go through the rihal toolchain. Direct file writes to \`.planning/phases/\` produce planning artifacts that are invisible to \`/rihal-status\`, \`/rihal-execute\`, \`/rihal-progress\`, and \`roadmap list-phases\`.
+When creating, planning, or modifying a phase, you MUST go through the rcode toolchain. Direct file writes to \`.planning/phases/\` produce planning artifacts that are invisible to \`/rcode-status\`, \`/rcode-execute\`, \`/rcode-progress\`, and \`roadmap list-phases\`.
 
-- **Creating a new phase** → run \`/rihal-add-phase\` (or \`node .rihal/bin/rihal-tools.cjs phase add "<name>"\`). Do NOT \`mkdir .planning/phases/NN-...\` directly.
-- **Writing SPRINT.md / PLAN.md** → run \`/rihal-plan <N>\`. Spawns \`rihal-planner\` + \`rihal-sprint-checker\`. Do NOT \`Write\` SPRINT.md files directly.
-- **Discussing phase scope** → run \`/rihal-discuss-phase <N>\` for medium-risk phases. Writes \`<N>-CONTEXT.md\` with locked decisions.
+- **Creating a new phase** → run \`/rcode-add-phase\` (or \`node .rcode/bin/rcode-tools.cjs phase add "<name>"\`). Do NOT \`mkdir .planning/phases/NN-...\` directly.
+- **Writing SPRINT.md / PLAN.md** → run \`/rcode-plan <N>\`. Spawns \`rcode-planner\` + \`rcode-sprint-checker\`. Do NOT \`Write\` SPRINT.md files directly.
+- **Discussing phase scope** → run \`/rcode-discuss-phase <N>\` for medium-risk phases. Writes \`<N>-CONTEXT.md\` with locked decisions.
 - **Use canonical artifact names**: \`<N>-CONTEXT.md\`, \`<N>-RESEARCH.md\`, \`<N>-PLAN.md\` or \`<N>-NN-SPRINT.md\`, \`<N>-VERIFICATION.md\`, \`<N>-SUMMARY.md\`. Do NOT invent \`SCOPE.md\` / \`REVIEW.md\` / \`EDGE-CASES.md\` as phase artifacts — those belong elsewhere or as agent outputs.
-- **Phase numbering** — sequential integers (\`/rihal-add-phase\`) for new phases; decimal sub-phases (\`100.1\`, \`100.2\` via \`/rihal-insert-phase\`) for hot-fixes branched from a parent. **Do NOT use 1000+ as a hot-track convention** — see [\`docs/phase-numbering.md\`](docs/phase-numbering.md) for the four supported options and when to use each.
+- **Phase numbering** — sequential integers (\`/rcode-add-phase\`) for new phases; decimal sub-phases (\`100.1\`, \`100.2\` via \`/rcode-insert-phase\`) for hot-fixes branched from a parent. **Do NOT use 1000+ as a hot-track convention** — see [\`docs/phase-numbering.md\`](docs/phase-numbering.md) for the four supported options and when to use each.
 
-**Why this is enforced**: every direct \`Write\` to \`.planning/phases/**/SPRINT.md\` without registration is a silent state divergence. Future \`/rihal-status\` reports under-count work. \`/rihal-execute\` can't find the plan. \`/rihal-progress\` shows wrong percentages.
+**Why this is enforced**: every direct \`Write\` to \`.planning/phases/**/SPRINT.md\` without registration is a silent state divergence. Future \`/rcode-status\` reports under-count work. \`/rcode-execute\` can't find the plan. \`/rcode-progress\` shows wrong percentages.
 
-If you have a real reason to bypass (e.g. retroactively documenting a phase that already shipped), put \`<!-- rihal-bypass: <one-line reason> -->\` at the top of the file so it's auditable later. The PreToolUse hook will allow the write through.
+If you have a real reason to bypass (e.g. retroactively documenting a phase that already shipped), put \`<!-- rcode-bypass: <one-line reason> -->\` at the top of the file so it's auditable later. The PreToolUse hook will allow the write through.
 
 ---
 
@@ -4130,7 +4130,7 @@ function cmdCheckImplementationReadiness(rawArgs) {
 
   // Check 1 — .planning/ exists
   if (!fs.existsSync(PLANNING_DIR)) {
-    blockers.push({ severity: 'major', issue: '.planning/ directory missing — run /rihal-new-project first' });
+    blockers.push({ severity: 'major', issue: '.planning/ directory missing — run /rcode-new-project first' });
   }
 
   // Check 2 — ROADMAP exists
@@ -4215,7 +4215,7 @@ function cmdCommitToSubrepo(argv) {
   // Cleaner approach: run git commands directly with cwd: subrepoPath.
   const message = passthrough[0];
   if (!message || !message.trim()) {
-    throw new Error('commit-to-subrepo requires a message: rihal-tools.cjs commit-to-subrepo --subrepo <path> "<message>"');
+    throw new Error('commit-to-subrepo requires a message: rcode-tools.cjs commit-to-subrepo --subrepo <path> "<message>"');
   }
 
   // AI attribution + conventional-commits validation (same rules as cmdCommit).
@@ -4237,7 +4237,7 @@ function cmdCommitToSubrepo(argv) {
   // Check for --no-verify in remaining args (after message at index 0).
   for (let i = 1; i < passthrough.length; i++) {
     if (passthrough[i] === '--no-verify') {
-      throw new Error('rihal-tools commit-to-subrepo does not bypass hooks.');
+      throw new Error('rcode-tools commit-to-subrepo does not bypass hooks.');
     }
   }
 
@@ -4247,7 +4247,7 @@ function cmdCommitToSubrepo(argv) {
     throw new Error(`Nothing staged in subrepo ${subrepo}. Stage files inside the subrepo with git add first.`);
   }
 
-  const tmpMsgPath = path.join(require('os').tmpdir(), `rihal-subrepo-msg-${Date.now()}.txt`);
+  const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-subrepo-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
     execSync(`git commit -F "${tmpMsgPath}"`, { cwd: subrepoPath, stdio: 'pipe' });
@@ -4268,18 +4268,18 @@ function cmdCommitToSubrepo(argv) {
 /**
  * cmdContextRefresh — Phase 11 / #467.
  *
- * Refresh the in-project context cache from .rihal/sources.yaml.
+ * Refresh the in-project context cache from .rcode/sources.yaml.
  * Used by init.md. No-op gracefully when no sources configured.
  */
 function cmdContextRefresh() {
-  const sourcesPath = path.join(RIHAL_DIR, 'sources.yaml');
-  const contextDir = path.join(RIHAL_DIR, 'context');
+  const sourcesPath = path.join(RCODE_DIR, 'sources.yaml');
+  const contextDir = path.join(RCODE_DIR, 'context');
 
   if (!fs.existsSync(sourcesPath)) {
     return {
       ok: true,
       refreshed: false,
-      message: '.rihal/sources.yaml not found — no context to refresh. Configure sources in .rihal/sources.yaml first.',
+      message: '.rcode/sources.yaml not found — no context to refresh. Configure sources in .rcode/sources.yaml first.',
     };
   }
 
@@ -4371,7 +4371,7 @@ function classifyScope(input) {
   const len = text.length;
 
   // Drift / audit / re-audit / extend-existing-artifact intent.
-  // Routes /rihal-do to /rihal-feature-drift instead of falling through to
+  // Routes /rcode-do to /rcode-feature-drift instead of falling through to
   // inline execution (closes the residual edge case from #458).
   if (/\b(drift|re-?audit|stale|out[- ]of[- ]date|fill out (the|this|existing)|extend (audit|plan|phase)|verify (docs|claims) vs (code|reality))\b/i.test(text)) {
     return 'drift';
@@ -4415,7 +4415,7 @@ function classifyScope(input) {
   return 'feature';
 }
 
-/** init plan — context blob for /rihal-plan workflow. */
+/** init plan — context blob for /rcode-plan workflow. */
 function cmdInitPlan(rawArgs) {
   const config = readConfig();
   const tokens = (rawArgs || '').trim().split(/\s+/).filter(Boolean);
@@ -4470,7 +4470,7 @@ function cmdInitPlan(rawArgs) {
   }
 
   if (!description && !resolvedPath) {
-    console.error('rihal-tools warning: no description provided; plan will be named "unnamed". Re-run with a description.');
+    console.error('rcode-tools warning: no description provided; plan will be named "unnamed". Re-run with a description.');
   }
 
   const phaseSlug = flags.phase || (resolvedPath
@@ -4508,16 +4508,16 @@ function cmdInitPlan(rawArgs) {
       workflow: 'plan',
       input_type: 'executable_plan',
       resolved_path: resolvedPath,
-      suggestion: `This file is already an executable plan. Run: /rihal-execute ${path.relative(PROJECT_ROOT, resolvedPath)}`,
+      suggestion: `This file is already an executable plan. Run: /rcode-execute ${path.relative(PROJECT_ROOT, resolvedPath)}`,
       config,
-      paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+      paths: { project_root: PROJECT_ROOT, rcode: RCODE_DIR, planning_root: PLANNING_DIR, state: path.join(RCODE_DIR, 'state.json') },
     };
   }
 
   return {
     workflow: 'plan', input_type: inputType, resolved_path: resolvedPath, description,
     phase_slug: phaseSlug, output_dir: outputDir, scope, flags, config,
-    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+    paths: { project_root: PROJECT_ROOT, rcode: RCODE_DIR, planning_root: PLANNING_DIR, state: path.join(RCODE_DIR, 'state.json') },
   };
 }
 
@@ -4782,7 +4782,7 @@ function fmListField(block, key) {
  * (plan.md Step 12.5, issue #768): two plans in the SAME wave that both list
  * the same path in `files_modified` cannot run in parallel — the later plan
  * (by plan number) must declare `sequential: true`. Returns a JSON report of
- * unresolved conflicts so /rihal-plan can auto-correct the frontmatter.
+ * unresolved conflicts so /rcode-plan can auto-correct the frontmatter.
  */
 function cmdPlanCheckWaveOverlaps(rawArgs) {
   const phaseArg = String(rawArgs || '').trim().split(/\s+/)[0] || '';
@@ -5078,7 +5078,7 @@ function cmdLearningsCopy(args) {
     .map((d) => path.join(phasesDir, d, 'LEARNINGS.md'))
     .filter((p) => fs.existsSync(p));
   if (learnings.length === 0) return { copied: 0, reason: 'no LEARNINGS.md found in any phase' };
-  const globalDir = path.join(process.env.HOME || '', '.rihal', 'learnings');
+  const globalDir = path.join(process.env.HOME || '', '.rcode', 'learnings');
   if (!fs.existsSync(globalDir)) fs.mkdirSync(globalDir, { recursive: true });
   const project = path.basename(PROJECT_ROOT);
   let copied = 0;
@@ -5133,18 +5133,18 @@ function cmdDocsAudit(args) {
 /**
  * cmdWorkflowConfigAudit — scan workflow files for stale config.json refs.
  * Closes #733. Reports every workflow that references .planning/config.json
- * (legacy location) instead of .rihal/config.yaml (current location).
+ * (legacy location) instead of .rcode/config.yaml (current location).
  * Read-only. Fix guidance is printed per-file.
  */
 function cmdWorkflowConfigAudit() {
-  // Check both installed (.rihal/workflows) and source (rihal/workflows) locations
+  // Check both installed (.rcode/workflows) and source (rcode/workflows) locations
   const candidates = [
-    path.join(RIHAL_DIR, 'workflows'),
-    path.join(PROJECT_ROOT, 'rihal', 'workflows'),
+    path.join(RCODE_DIR, 'workflows'),
+    path.join(PROJECT_ROOT, 'rcode', 'workflows'),
   ];
   const workflowsDir = candidates.find(d => fs.existsSync(d));
   if (!workflowsDir) {
-    return { ok: true, audited: 0, hits: [], message: 'No workflows directory found (checked .rihal/workflows and rihal/workflows)' };
+    return { ok: true, audited: 0, hits: [], message: 'No workflows directory found (checked .rcode/workflows and rcode/workflows)' };
   }
   const files = fs.readdirSync(workflowsDir).filter(f => f.endsWith('.md'));
   const JSON_RE = /\.planning\/config\.json|planning\/config\.json/g;
@@ -5172,12 +5172,12 @@ function cmdWorkflowConfigAudit() {
     stale_count: hits.length,
     hits,
     fix_guidance: hits.length > 0
-      ? 'Replace .planning/config.json with .rihal/config.yaml. Use `node rihal-tools.cjs config-get <key>` or readConfig() to read values.'
+      ? 'Replace .planning/config.json with .rcode/config.yaml. Use `node rcode-tools.cjs config-get <key>` or readConfig() to read values.'
       : 'No stale config.json references found.',
   };
 }
 
-/** init chain — context blob for /rihal-chain workflow. */
+/** init chain — context blob for /rcode-chain workflow. */
 function cmdInitChain(rawArgs) {
   const config = readConfig();
   const installedAgents = listInstalledAgents();
@@ -5222,12 +5222,12 @@ function cmdInitChain(rawArgs) {
   const date = new Date().toISOString().slice(0, 10);
   const chainDir = path.join(PLANNING_DIR, 'chains', `${date}-${slug}`);
 
-  // Normalize: if user passed "mariam", check both "mariam" and "rihal-mariam"
+  // Normalize: if user passed "mariam", check both "mariam" and "rcode-mariam"
   chain = chain.map(id => {
     if (installedAgents.includes(id)) return id;
-    if (installedAgents.includes('rihal-' + id)) return 'rihal-' + id;
+    if (installedAgents.includes('rcode-' + id)) return 'rcode-' + id;
     // Try without prefix if user passed full
-    if (id.startsWith('rihal-') && installedAgents.includes(id.slice(6))) return id.slice(6);
+    if (id.startsWith('rcode-') && installedAgents.includes(id.slice(6))) return id.slice(6);
     return id; // will fail validation downstream with proper error
   });
 
@@ -5245,11 +5245,11 @@ function cmdInitChain(rawArgs) {
     installed_agents: installedAgents,
     unknown_agents: unknownAgents,
     presets: PRESETS,
-    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+    paths: { project_root: PROJECT_ROOT, rcode: RCODE_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RCODE_DIR, 'state.json') },
   };
 }
 
-/** init discuss — context blob for /rihal-discuss workflow. */
+/** init discuss — context blob for /rcode-discuss workflow. */
 function cmdInitDiscuss(rawArgs) {
   const config = readConfig();
   const installedAgents = listInstalledAgents();
@@ -5265,14 +5265,14 @@ function cmdInitDiscuss(rawArgs) {
     workflow: 'discuss', agent_id: agentId, question,
     question_type: questionClassification.type, question_signals: questionClassification.signals,
     config, installed_agents: installedAgents,
-    paths: { project_root: PROJECT_ROOT, rihal: RIHAL_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RIHAL_DIR, 'state.json') },
+    paths: { project_root: PROJECT_ROOT, rcode: RCODE_DIR, planning_root: PLANNING_DIR, sessions_dir: SESSIONS_DIR, state: path.join(RCODE_DIR, 'state.json') },
   };
 }
 
 /**
  * module <subcommand> — module system helpers.
  *   list           → available modules from package
- *   installed      → modules listed in .rihal/_config/manifest.yaml
+ *   installed      → modules listed in .rcode/_config/manifest.yaml
  *   check-requires → verify a module's dependencies are installed
  */
 function cmdModule(subArgs) {
@@ -5282,9 +5282,9 @@ function cmdModule(subArgs) {
     // Hardcoded available modules (known at build time)
     return {
       modules: [
-        { name: 'core', description: 'Council agents, /rihal-council, /rihal-discuss, /rihal-status, /rihal-do router, /rihal-help, and state management' },
-        { name: 'execution', description: 'Plan execution — /rihal-execute, /rihal-plan, /rihal-quick, /rihal-debug, /rihal-audit-fix, /rihal-undo' },
-        { name: 'discovery', description: 'Project discovery — /rihal-new-project, /rihal-map-codebase, /rihal-scan, /rihal-explore, /rihal-code-review, /rihal-docs-update' },
+        { name: 'core', description: 'Council agents, /rcode-council, /rcode-discuss, /rcode-status, /rcode-do router, /rcode-help, and state management' },
+        { name: 'execution', description: 'Plan execution — /rcode-execute, /rcode-plan, /rcode-quick, /rcode-debug, /rcode-audit-fix, /rcode-undo' },
+        { name: 'discovery', description: 'Project discovery — /rcode-new-project, /rcode-map-codebase, /rcode-scan, /rcode-explore, /rcode-review, /rcode-docs-update' },
       ]
     };
   }
@@ -5365,13 +5365,13 @@ function cmdResolveModel(agentId) {
 
   // Model assignments per profile (Claude 4 family: opus-4-7, sonnet-4-6, haiku-4-5)
   const QUALITY_AGENTS = {
-    'rihal-sadiq': 'claude-opus-4-7',
-    'rihal-waleed': 'claude-opus-4-7',
-    'rihal-planner': 'claude-opus-4-7',
-    'rihal-sprint-checker': 'claude-opus-4-7',
-    'rihal-fatima': 'claude-sonnet-4-6',
-    'rihal-executor': 'claude-sonnet-4-6',
-    'rihal-verifier': 'claude-sonnet-4-6',
+    'rcode-sadiq': 'claude-opus-4-7',
+    'rcode-waleed': 'claude-opus-4-7',
+    'rcode-planner': 'claude-opus-4-7',
+    'rcode-sprint-checker': 'claude-opus-4-7',
+    'rcode-fatima': 'claude-sonnet-4-6',
+    'rcode-executor': 'claude-sonnet-4-6',
+    'rcode-verifier': 'claude-sonnet-4-6',
   };
 
   if (profile === 'inherit') {
@@ -5428,7 +5428,7 @@ function cmdConfigSet(subArgs) {
 /**
  * notify send — post a message to configured webhook URLs.
  *
- * Config keys read from .rihal/config.yaml (top-level, flat):
+ * Config keys read from .rcode/config.yaml (top-level, flat):
  *   slack_webhook_url   — Slack incoming webhook
  *   discord_webhook_url — Discord webhook
  *   teams_webhook_url   — Microsoft Teams incoming webhook (MessageCard format)
@@ -5437,7 +5437,7 @@ function cmdConfigSet(subArgs) {
  *   --title <t>   required headline
  *   --body <b>    optional detail text
  *   --event <e>   optional short event tag (e.g. "execute-done", "council-done")
- *   --only slack|discord|teams   restrict to one platform (for /rihal-notify-test)
+ *   --only slack|discord|teams   restrict to one platform (for /rcode-notify-test)
  *
  * Returns: { sent: [...], skipped: [...], failed: [...] }
  * Never throws on webhook failure — this runs at the tail of workflows and
@@ -5457,12 +5457,12 @@ async function cmdNotify(subArgs) {
   }
   const title = flags.title || '';
   const body = flags.body || '';
-  const event = flags.event || 'rihal';
+  const event = flags.event || 'rcode';
   const only = flags.only || '';
   if (!title) throw new Error('notify send requires --title <text>');
 
   // Read config
-  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  const configPath = path.join(RCODE_DIR, 'config.yaml');
   const config = fs.existsSync(configPath)
     ? parseSimpleYaml(fs.readFileSync(configPath, 'utf8'))
     : {};
@@ -5532,14 +5532,14 @@ function buildTeamsPayload({ title, body, event, project }) {
 }
 
 /**
- * notes list — glob .rihal/notes/*.md and ~/.rihal-notes/*.md,
+ * notes list — glob .rcode/notes/*.md and ~/.rcode-notes/*.md,
  * parse frontmatter, return sorted array of {path, date, slug, summary}
  * (10 most recent).
  */
 function cmdNotesList() {
   const noteDirs = [
-    path.join(RIHAL_DIR, 'notes'),
-    path.join(process.env.HOME || '', '.rihal-notes'),
+    path.join(RCODE_DIR, 'notes'),
+    path.join(process.env.HOME || '', '.rcode-notes'),
   ];
 
   const notes = [];
@@ -5570,13 +5570,13 @@ function cmdNotesList() {
 }
 
 /**
- * notes count — return count of unpromoted notes in both .rihal/notes
- * and ~/.rihal-notes.
+ * notes count — return count of unpromoted notes in both .rcode/notes
+ * and ~/.rcode-notes.
  */
 function cmdNotesCount() {
   const noteDirs = [
-    path.join(RIHAL_DIR, 'notes'),
-    path.join(process.env.HOME || '', '.rihal-notes'),
+    path.join(RCODE_DIR, 'notes'),
+    path.join(process.env.HOME || '', '.rcode-notes'),
   ];
 
   let count = 0;
@@ -5599,17 +5599,17 @@ function cmdNotesCount() {
 }
 
 /**
- * cmdBrain — pull Rihal brain content from configured sources.
+ * cmdBrain — pull rcode brain content from configured sources.
  *
  * Subcommands:
- *   brain pull           Fetch all configured sources into rihal/brain/
+ *   brain pull           Fetch all configured sources into rcode/brain/
  *   brain pull <name>    Fetch a single named source
  *   brain status         Report cache freshness and placeholder status
  *   brain list           Print configured sources
  *
  * Uses git sparse-checkout so we pull only the paths listed per source.
  * Placeholder URLs (containing `<PLACEHOLDER`) are skipped with a clear
- * message — useful in v2.0 before M5 lands real Rihal repo URLs.
+ * message — useful in v2.0 before M5 lands real rcode repo URLs.
  */
 
 /**
@@ -5621,8 +5621,8 @@ function cmdNotesCount() {
  *
  * Subcommands:
  *   handoff write --from <skill> --to <skill> --phase <N> [--plan <M>] [--context "..."]
- *       Write a handoff token to ~/.rihal/handoffs/{from}-{to}-{date}.json
- *       and also to .rihal/handoff-latest.json for easy pickup by the next agent.
+ *       Write a handoff token to ~/.rcode/handoffs/{from}-{to}-{date}.json
+ *       and also to .rcode/handoff-latest.json for easy pickup by the next agent.
  *
  *   handoff read [--from <skill>]
  *       Read the most recent handoff targeting the current (or specified) skill.
@@ -5630,13 +5630,13 @@ function cmdNotesCount() {
  *       Exits 0 even when no handoff exists (returns {found: false}).
  *
  *   handoff clear
- *       Remove .rihal/handoff-latest.json (signal that the handoff was consumed).
+ *       Remove .rcode/handoff-latest.json (signal that the handoff was consumed).
  */
 function cmdHandoff(args) {
   const os_mod      = require('os');
   const sub         = (args[0] || 'help').trim();
-  const handoffsDir = path.join(os_mod.homedir(), '.rihal', 'handoffs');
-  const latestPath  = path.join(RIHAL_DIR, 'handoff-latest.json');
+  const handoffsDir = path.join(os_mod.homedir(), '.rcode', 'handoffs');
+  const latestPath  = path.join(RCODE_DIR, 'handoff-latest.json');
 
   if (sub === 'write') {
     const fromVal    = args[args.indexOf('--from') + 1]    || null;
@@ -5659,9 +5659,9 @@ function cmdHandoff(args) {
     const fname  = `${fromVal}-${toVal}-${date}.json`;
     const fpath  = path.join(handoffsDir, fname);
     fs.writeFileSync(fpath, JSON.stringify(token, null, 2) + '\n');
-    // Also write the "latest" shortcut into the project .rihal dir
+    // Also write the "latest" shortcut into the project .rcode dir
     try {
-      fs.mkdirSync(RIHAL_DIR, { recursive: true });
+      fs.mkdirSync(RCODE_DIR, { recursive: true });
       fs.writeFileSync(latestPath, JSON.stringify(token, null, 2) + '\n');
     } catch {}
 
@@ -5670,7 +5670,7 @@ function cmdHandoff(args) {
 
   if (sub === 'read') {
     const fromFilter = args[args.indexOf('--from') + 1] || null;
-    // Prefer .rihal/handoff-latest.json (written by the most recent handoff write)
+    // Prefer .rcode/handoff-latest.json (written by the most recent handoff write)
     if (fs.existsSync(latestPath)) {
       try {
         const token = JSON.parse(fs.readFileSync(latestPath, 'utf8'));
@@ -5679,7 +5679,7 @@ function cmdHandoff(args) {
         }
       } catch {}
     }
-    // Fallback: scan ~/.rihal/handoffs/ for most recent matching file
+    // Fallback: scan ~/.rcode/handoffs/ for most recent matching file
     try {
       const files = fs.readdirSync(handoffsDir)
         .filter(f => f.endsWith('.json') && (!fromFilter || f.startsWith(fromFilter + '-')))
@@ -5702,24 +5702,24 @@ function cmdHandoff(args) {
 
 function cmdBrain(args) {
   const sub = args[0] || 'help';
-  // sources.yaml lives under .rihal/brain/ in user installs (v2.2+).
-  // Older installs may have it at rihal/brain/ (pre-v2.2) — fall back for compat.
-  let sourcesPath = path.join(RIHAL_DIR, 'brain', 'sources.yaml');
-  let brainDir = path.join(RIHAL_DIR, 'brain');
+  // sources.yaml lives under .rcode/brain/ in user installs (v2.2+).
+  // Older installs may have it at rcode/brain/ (pre-v2.2) — fall back for compat.
+  let sourcesPath = path.join(RCODE_DIR, 'brain', 'sources.yaml');
+  let brainDir = path.join(RCODE_DIR, 'brain');
   if (!fs.existsSync(sourcesPath)) {
-    const legacyPath = path.join(PROJECT_ROOT, 'rihal', 'brain', 'sources.yaml');
+    const legacyPath = path.join(PROJECT_ROOT, 'rcode', 'brain', 'sources.yaml');
     if (fs.existsSync(legacyPath)) {
       sourcesPath = legacyPath;
-      brainDir = path.join(PROJECT_ROOT, 'rihal', 'brain');
+      brainDir = path.join(PROJECT_ROOT, 'rcode', 'brain');
     }
   }
 
   // Resolve a source's dest directory relative to brainDir.
-  // Accepts legacy absolute-looking values ("rihal/brain/rihal-github/") by
-  // stripping any leading "rihal/brain/" so the resolved path sits inside the
-  // chosen brainDir. New sources.yaml should use bare names ("rihal-github/").
+  // Accepts legacy absolute-looking values ("rcode/brain/rcode-github/") by
+  // stripping any leading "rcode/brain/" so the resolved path sits inside the
+  // chosen brainDir. New sources.yaml should use bare names ("rcode-github/").
   function resolveDest(dest) {
-    const trimmed = String(dest || '').replace(/^rihal\/brain\//, '').replace(/^\/+/, '');
+    const trimmed = String(dest || '').replace(/^rcode\/brain\//, '').replace(/^\/+/, '');
     return path.join(brainDir, trimmed);
   }
 
@@ -5892,13 +5892,13 @@ function cmdBrain(args) {
     }
 
     // External git source — use sparse checkout into a tmp dir then copy.
-    // #170 — global brain cache at ~/.rihal/brain-cache/<sha1(repo+branch+paths)>/.
+    // #170 — global brain cache at ~/.rcode/brain-cache/<sha1(repo+branch+paths)>/.
     // Same source pulled from N projects = N clones today, 1 clone + N copies
     // after this change. Cache TTL is configurable per source (defaults to 6h).
     const { execSync } = require('child_process');
     const crypto = require('crypto');
     const os = require('os');
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rihal-brain-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-brain-'));
     const branch = s.branch || cfg.defaults?.branch || 'main';
     const sparsePaths = Array.isArray(s.paths) ? s.paths : [];
 
@@ -5910,7 +5910,7 @@ function cmdBrain(args) {
       .update(`${repo}\n${branch}\n${sparsePaths.sort().join(',')}`)
       .digest('hex')
       .slice(0, 16);
-    const cacheRoot = path.join(os.homedir(), '.rihal', 'brain-cache');
+    const cacheRoot = path.join(os.homedir(), '.rcode', 'brain-cache');
     const cacheDir = path.join(cacheRoot, cacheKey);
     const cacheManifest = path.join(cacheDir, '.cache-manifest.json');
 
@@ -5952,7 +5952,7 @@ function cmdBrain(args) {
 
     const destPath = resolveDest(s.dest);
     try {
-      // Cache hit path — copy from ~/.rihal/brain-cache/<key>/ directly.
+      // Cache hit path — copy from ~/.rcode/brain-cache/<key>/ directly.
       const cached = readCacheManifest();
       if (cached && isCacheFresh(cached)) {
         fs.mkdirSync(destPath, { recursive: true });
@@ -5962,11 +5962,16 @@ function cmdBrain(args) {
       }
 
       // Cache miss — clone, then warm the cache for next time.
+      // Use --no-checkout + explicit sparse-checkout init + set + checkout
+      // because `git clone --sparse` combined with --filter=blob:none has
+      // an intermittent failure mode where git misreads the URL as a path.
       execSync(
-        `git clone --depth=1 --filter=blob:none --sparse --branch="${branch}" "${repo}" "${tmp}"`,
+        `git clone --depth=1 --filter=blob:none --no-checkout --branch="${branch}" "${repo}" "${tmp}"`,
         { stdio: 'pipe' }
       );
+      execSync(`git -C "${tmp}" sparse-checkout init --no-cone`, { stdio: 'pipe' });
       execSync(`git -C "${tmp}" sparse-checkout set ${sparsePaths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
+      execSync(`git -C "${tmp}" checkout`, { stdio: 'pipe' });
 
       // Warm cache before destination copy so a copy failure to dest still
       // saves the next pull. Replace any stale slot atomically.
@@ -6004,7 +6009,7 @@ function cmdBrain(args) {
  * cmdProgress — single pre-computed progress blob (issue #159).
  *
  * Subcommands:
- *   progress init          Full snapshot — everything /rihal-progress needs.
+ *   progress init          Full snapshot — everything /rcode-progress needs.
  *   progress bar --raw     ASCII bar only (e.g. "[████░░░░] 50%").
  *   progress insights      insights[] array (drift warnings, between-milestone detection).
  *   progress routes        intent-tree routes[] for Next Up menu.
@@ -6017,12 +6022,12 @@ function cmdProgress(args) {
   const rawMode = args.includes('--raw');
   // #200 — opt-in strict mode: exit 1 when insights contain drift/undercount.
   // Off by default (warning preserves the soft-surface UX). Toggle via --strict
-  // flag or RIHAL_STRICT_STATE=true env var. Used by CI / pre-deploy gates.
+  // flag or RCODE_STRICT_STATE=true env var. Used by CI / pre-deploy gates.
   const strictMode = args.includes('--strict')
-    || /^(true|1|yes)$/i.test(process.env.RIHAL_STRICT_STATE || '');
+    || /^(true|1|yes)$/i.test(process.env.RCODE_STRICT_STATE || '');
 
   // Resolve paths — workflow files may run this from any subdirectory.
-  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const statePath = path.join(RCODE_DIR, 'state.json');
   const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
   const phasesDir = path.join(PLANNING_DIR, 'phases');
 
@@ -6133,8 +6138,8 @@ function cmdProgress(args) {
     if (blocking.length === 0) return;
     process.stderr.write('✖ State drift detected — state.json is out of sync with disk.\n');
     for (const i of blocking) process.stderr.write(`  • ${i.message}\n`);
-    process.stderr.write('\n  Auto-fix:  node .rihal/bin/rihal-tools.cjs state sync --from-disk\n');
-    process.stderr.write('  Inspect:   node .rihal/bin/rihal-tools.cjs state read\n');
+    process.stderr.write('\n  Auto-fix:  node .rcode/bin/rcode-tools.cjs state sync --from-disk\n');
+    process.stderr.write('  Inspect:   node .rcode/bin/rcode-tools.cjs state read\n');
     process.exit(1);
   }
 
@@ -6147,7 +6152,7 @@ function cmdProgress(args) {
       insights.push({
         kind: 'drift',
         severity: 'warn',
-        message: `ROADMAP.md has ${roadmapPhases.length} phases, state.json has ${statePhases.length}. Run: node .rihal/bin/rihal-tools.cjs state sync --from-disk`,
+        message: `ROADMAP.md has ${roadmapPhases.length} phases, state.json has ${statePhases.length}. Run: node .rcode/bin/rcode-tools.cjs state sync --from-disk`,
       });
     }
 
@@ -6167,8 +6172,8 @@ function cmdProgress(args) {
     }
 
     // Phantom-complete: phase claimed Complete (in ROADMAP or state) but missing
-    // PLAN.md AND SUMMARY.md on disk. User-visible bug: /rihal-status would
-    // happily report 'all complete' while /rihal-audit correctly flagged the
+    // PLAN.md AND SUMMARY.md on disk. User-visible bug: /rcode-status would
+    // happily report 'all complete' while /rcode-audit correctly flagged the
     // gap because the two read different sources of truth.
     // Surfaced 2026-04-29 in a real session — siraaj phases 07-12 had ROADMAP
     // markers but zero artifacts.
@@ -6195,7 +6200,7 @@ function cmdProgress(args) {
       insights.push({
         kind: 'phantom-complete',
         severity: 'warn',
-        message: `${phantomCompletes.length} phase(s) marked Complete but missing both PLAN.md and SUMMARY.md on disk: ${phantomCompletes.slice(0, 5).join(', ')}. The completion claim is unsupported. Run /rihal-audit phase <N> to inspect.`,
+        message: `${phantomCompletes.length} phase(s) marked Complete but missing both PLAN.md and SUMMARY.md on disk: ${phantomCompletes.slice(0, 5).join(', ')}. The completion claim is unsupported. Run /rcode-audit phase <N> to inspect.`,
       });
     }
 
@@ -6206,7 +6211,7 @@ function cmdProgress(args) {
         insights.push({
           kind: 'between-milestones',
           severity: 'info',
-          message: 'All registered phases complete — effectively between milestones. Consider /rihal-audit-milestone or /rihal-new-milestone.',
+          message: 'All registered phases complete — effectively between milestones. Consider /rcode-audit-milestone or /rcode-new-milestone.',
         });
       }
     }
@@ -6234,7 +6239,7 @@ function cmdProgress(args) {
           insights.push({
             kind: 'stuck-phase',
             severity: 'warn',
-            message: `Phase ${key} is in progress but has no commits in the last 7 days. It may be stuck. Run /rihal-status or /rihal-audit phase ${key} to investigate.`,
+            message: `Phase ${key} is in progress but has no commits in the last 7 days. It may be stuck. Run /rcode-status or /rcode-audit phase ${key} to investigate.`,
           });
         }
       }
@@ -6251,7 +6256,7 @@ function cmdProgress(args) {
     // Issue #653 — never recommend executing a phase whose state.json status
     // is already complete/done/verified, even if its on-disk plan_count >
     // summary_count. Missing second summary file is not the canonical
-    // completion signal; state.json is. Run /rihal-audit phase <N> for
+    // completion signal; state.json is. Run /rcode-audit phase <N> for
     // disk-vs-state drift, but stop steering users into re-executing
     // finished work.
     const isPhaseDone = (p) => {
@@ -6265,7 +6270,7 @@ function cmdProgress(args) {
     }).slice(0, 3);
     for (const p of pendingExec) {
       const k = phaseKey(p);
-      routes.push({ letter: 'A', label: '', command: `/rihal-execute ${k}` });
+      routes.push({ letter: 'A', label: '', command: `/rcode-execute ${k}` });
     }
 
     // Route B — phases with research but no plans
@@ -6273,7 +6278,7 @@ function cmdProgress(args) {
       .filter(([num, d]) => d.has_research && d.plan_count === 0)
       .slice(0, 3);
     for (const [num] of researchOnly) {
-      routes.push({ letter: 'B', label: '', command: `/rihal-plan ${num}` });
+      routes.push({ letter: 'B', label: '', command: `/rcode-plan ${num}` });
     }
 
     // Route B' — in-progress phases without plans
@@ -6286,7 +6291,7 @@ function cmdProgress(args) {
       .slice(0, 2);
     for (const p of inProgressNoPlan) {
       const k = phaseKey(p);
-      routes.push({ letter: 'B', label: '', command: `/rihal-plan ${k}` });
+      routes.push({ letter: 'B', label: '', command: `/rcode-plan ${k}` });
     }
 
     // Route C — close out milestone if everything seems done
@@ -6302,16 +6307,16 @@ function cmdProgress(args) {
       if (unverifiedCount > 0) auditArgs.push(String(unverifiedCount));
       if (hasDrift) auditArgs.push('--fix-drift');
       const auditCmd = auditArgs.length > 0
-        ? `/rihal-audit-milestone ${auditArgs.join(' ')}`
-        : '/rihal-audit-milestone';
+        ? `/rcode-audit-milestone ${auditArgs.join(' ')}`
+        : '/rcode-audit-milestone';
       routes.push({ letter: 'C', label: '', command: auditCmd });
-      routes.push({ letter: 'C', label: '', command: '/rihal-complete-milestone' });
+      routes.push({ letter: 'C', label: '', command: '/rcode-complete-milestone' });
     }
 
     // Fallback — nothing obvious: offer status
     if (routes.length === 0) {
-      routes.push({ letter: 'A', label: '', command: '/rihal-progress' });
-      routes.push({ letter: 'B', label: '', command: '/rihal-council' });
+      routes.push({ letter: 'A', label: '', command: '/rcode-progress' });
+      routes.push({ letter: 'B', label: '', command: '/rcode-council' });
     }
 
     return routes;
@@ -6483,10 +6488,10 @@ function cmdSummaryExtract(args) {
  */
 /**
  * cmdProjectStatus — classify project lifecycle state into one of:
- *   uninstalled    — no .rihal/config.yaml
+ *   uninstalled    — no .rcode/config.yaml
  *   uninitialized  — config present, no state.json
  *   stub           — install-seeded scaffolding only (issue #670)
- *   real           — /rihal-new-project has run
+ *   real           — /rcode-new-project has run
  *
  * Real-project signals (any → real):
  *   - .planning/REQUIREMENTS.md exists
@@ -6497,8 +6502,8 @@ function cmdSummaryExtract(args) {
  * Closes #675 — single source of truth for "is this project initialized."
  */
 function cmdProjectStatus() {
-  const configPath = path.join(RIHAL_DIR, 'config.yaml');
-  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const configPath = path.join(RCODE_DIR, 'config.yaml');
+  const statePath = path.join(RCODE_DIR, 'state.json');
   const planningDir = path.join(PROJECT_ROOT, '.planning');
 
   if (!fs.existsSync(configPath)) return { ok: true, status: 'uninstalled' };
@@ -6540,7 +6545,7 @@ function cmdProjectStatus() {
 /**
  * cmdValidatePhaseId — pure check that a phase ID conforms to rcode convention.
  *
- * Issue #718: workflows like `/rihal-plan` and `/rihal-audit` were producing
+ * Issue #718: workflows like `/rcode-plan` and `/rcode-audit` were producing
  * freestyled IDs like "A1", "B5", "phase-x". Phase IDs must be integer
  * (e.g. "19", "22") or decimal (e.g. "19.1", "22.3" — sub-phases under a
  * parent integer). Anything else gets rejected loudly so the caller can fix
@@ -6652,12 +6657,12 @@ function cmdRoadmapDetectStructure() {
       ...milestoneDirFiles.map(f => `.planning/milestones/${f}`),
     ],
     recommendation: structure === 'monolithic'
-      ? 'Standard layout. Use /rihal-plan and /rihal-execute normally.'
+      ? 'Standard layout. Use /rcode-plan and /rcode-execute normally.'
       : structure === 'per-milestone'
-      ? 'Per-milestone layout detected. Pass the specific ROADMAP file to rihal-roadmapper with --roadmap <path>.'
+      ? 'Per-milestone layout detected. Pass the specific ROADMAP file to rcode-roadmapper with --roadmap <path>.'
       : structure === 'hybrid'
       ? 'Mixed layout. Consolidate to one convention to avoid workflow confusion.'
-      : 'No ROADMAP found. Run /rihal-new-project or /rihal-new-milestone first.',
+      : 'No ROADMAP found. Run /rcode-new-project or /rcode-new-milestone first.',
   };
 }
 
@@ -6666,15 +6671,15 @@ function cmdRoadmapDetectStructure() {
  *
  * Counts open vs done phases under the current milestone and recommends
  * action when the milestone is getting unwieldy. Workflows like
- * /rihal-add-phase and /rihal-status read this to nudge users toward
- * /rihal-complete-milestone before the phase list balloons.
+ * /rcode-add-phase and /rcode-status read this to nudge users toward
+ * /rcode-complete-milestone before the phase list balloons.
  *
  * Thresholds (kept conservative — bump in config later if needed):
  *   - "consider closing" when >= 8 open phases under one milestone
  *   - "should close" when >= 12 open phases (hard nudge)
  */
 function cmdMilestoneHealth() {
-  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const statePath = path.join(RCODE_DIR, 'state.json');
   if (!fs.existsSync(statePath)) return { ok: true, milestone: null, note: 'no state.json' };
   let state;
   try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
@@ -6706,7 +6711,7 @@ function cmdMilestoneHealth() {
 }
 
 function cmdStateSnapshot() {
-  const statePath = path.join(RIHAL_DIR, 'state.json');
+  const statePath = path.join(RCODE_DIR, 'state.json');
   if (!fs.existsSync(statePath)) return { ok: true, state: null };
   let state;
   try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
@@ -6729,7 +6734,7 @@ function cmdStateSnapshot() {
 
 /**
  * cmdGitignore — re-render the rcode-managed block in .gitignore based on
- * current config (specifically commit_planning from .rihal/config.yaml).
+ * current config (specifically commit_planning from .rcode/config.yaml).
  *
  * Subcommands:
  *   gitignore refresh   rewrite the rcode block in-place
@@ -6742,7 +6747,7 @@ function cmdStateSnapshot() {
 function cmdGitignore(args) {
   const sub = args[0] || 'refresh';
   const gitignorePath = path.join(PROJECT_ROOT, '.gitignore');
-  const configPath = path.join(RIHAL_DIR, 'config.yaml');
+  const configPath = path.join(RCODE_DIR, 'config.yaml');
 
   // Read commit_planning from config; default true if missing.
   let commitPlanning = true;
@@ -6774,23 +6779,23 @@ function cmdGitignore(args) {
     '',
     BEGIN,
     '# Added automatically on rcode install. Idempotent — safe to re-run.',
-    '# Edit `commit_planning` in .rihal/config.yaml, then: rihal-tools gitignore refresh',
+    '# Edit `commit_planning` in .rcode/config.yaml, then: rcode-tools gitignore refresh',
     '',
     '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
     '.claude/',
-    '.rihal/bin/',
-    '.rihal/workflows/',
-    '.rihal/references/',
-    '.rihal/commands/',
-    '.rihal/skills/',
+    '.rcode/bin/',
+    '.rcode/workflows/',
+    '.rcode/references/',
+    '.rcode/commands/',
+    '.rcode/skills/',
     '',
-    '# Pulled Rihal brain content (refresh with: rcode brain pull)',
-    '.rihal/brain/rihal-github/',
-    '.rihal/brain/rihal-docs/',
-    '.rihal/brain/best-practices/',
+    '# Pulled rcode brain content (refresh with: rcode brain pull)',
+    '.rcode/brain/rcode-github/',
+    '.rcode/brain/rcode-docs/',
+    '.rcode/brain/best-practices/',
     '',
     '# Runtime noise',
-    '.rihal/state.json.lock',
+    '.rcode/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',
   ];
@@ -6800,9 +6805,9 @@ function cmdGitignore(args) {
   lines.push(
     '',
     '# What you DO commit:',
-    '#   .rihal/config.yaml        - project mode/language/profile/commit_planning',
-    '#   .rihal/state.json         - decisions, roadmap pointer, blockers',
-    '#   .rihal/brain/sources.yaml - brain source manifest',
+    '#   .rcode/config.yaml        - project mode/language/profile/commit_planning',
+    '#   .rcode/state.json         - decisions, roadmap pointer, blockers',
+    '#   .rcode/brain/sources.yaml - brain source manifest',
     commitPlanning
       ? '#   .planning/                - PRD, roadmap, sprints, SUMMARY.md files'
       : '#   (planning artifacts are NOT committed — see commit_planning in config)',
@@ -6885,7 +6890,7 @@ function cmdFindFiles(rawArgs) {
 async function main() {
   const [, , subcommand, ...args] = process.argv;
   // #473 guard runs before any subcommand. Skipped for read-only inspection
-  // so 'rihal-tools version' / 'help' / 'list-agents' work outside the project.
+  // so 'rcode-tools version' / 'help' / 'list-agents' work outside the project.
   const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills']);
   if (!READ_ONLY_SUBCOMMANDS.has(subcommand)) {
     assertCwdMatchesProjectRoot();
@@ -7195,7 +7200,7 @@ async function main() {
         break;
       case 'health': {
         // Closes #836 — top-level health check so agents can call
-        // `rihal-tools.cjs health` directly without the CLI wrapper.
+        // `rcode-tools.cjs health` directly without the CLI wrapper.
         // Returns a combined snapshot: milestone health + state snapshot + project status.
         const mh = cmdMilestoneHealth();
         const ss = cmdStateSnapshot();
@@ -7210,16 +7215,16 @@ async function main() {
       case '--help':
       case '-h':
       case undefined:
-        console.log('Usage: rihal-tools.cjs <init|select-panel|classify-question|agent-info|agent-skills|list-agents|state|module|plan|notes|config|config-get|config-set|roadmap|verify|notify|resolve-model|version|help> [args]');
+        console.log('Usage: rcode-tools.cjs <init|select-panel|classify-question|agent-info|agent-skills|list-agents|state|module|plan|notes|config|config-get|config-set|roadmap|verify|notify|resolve-model|version|help> [args]');
         console.log('');
         console.log('Top-level subcommands:');
-        console.log('  init                                         → initialize .rihal directory structure');
+        console.log('  init                                         → initialize .rcode directory structure');
         console.log('  select-panel                                 → choose council panel members');
         console.log('  classify-question                            → categorize user questions');
         console.log('  agent-info <name>                            → show agent metadata and skills');
         console.log('  agent-skills <name>                          → alias for agent-info');
-        console.log('  list-agents                                  → list all available Rihal agents');
-        console.log('  state <subcommand> [args]                    → manage .rihal/state.json');
+        console.log('  list-agents                                  → list all available rcode agents');
+        console.log('  state <subcommand> [args]                    → manage .rcode/state.json');
         console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
         console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
@@ -7229,7 +7234,7 @@ async function main() {
         console.log('  generate-claude-md [--force]                 → bootstrap a project CLAUDE.md scaffold (refuses to overwrite without --force)');
         console.log('  check-implementation-readiness --phase <N>  → verify preconditions before phase planning; returns {ready, blockers}');
         console.log('  classify-tech --keywords "<keywords>"        → classify tech stack from keywords (frontend/backend/mobile/styling)');
-        console.log('  context refresh                              → refresh .rihal/context/ cache from .rihal/sources.yaml');
+        console.log('  context refresh                              → refresh .rcode/context/ cache from .rcode/sources.yaml');
         console.log('  module <subcommand> [args]                   → module system helpers');
         console.log('  plan <list|validate-evidence|check-wave-overlaps>  → phase/plan operations');
         console.log('  plan validate-evidence <N> [--spot-check]    → enforce <evidence> blocks in SPRINT.md (#649); exit 1 on violation');
@@ -7241,15 +7246,15 @@ async function main() {
         console.log('  uat render-checkpoint --file <p>             → render markdown UAT checkpoint block from file');
         console.log('  requirements mark-complete <ID> [<ID>...]    → flip status to complete in REQUIREMENTS.md');
         console.log('  todo match-phase <N>                         → return todos with matching phase tag');
-        console.log('  learnings copy                               → soft-fail copy of phase LEARNINGS.md to ~/.rihal/learnings/');
+        console.log('  learnings copy                               → soft-fail copy of phase LEARNINGS.md to ~/.rcode/learnings/');
         console.log('  docs-audit                                   → list docs missing per documentation-requirements.csv');
         console.log('  frontmatter get <file> --field <name>        → print one frontmatter field value (empty if absent)');
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
         console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
-        console.log('  config-get <dotted.key>                      → read scalar from .rihal/config.yaml');
-        console.log('  config-set <dotted.key> <value>              → atomically set a value in .rihal/config.yaml');
+        console.log('  config-get <dotted.key>                      → read scalar from .rcode/config.yaml');
+        console.log('  config-set <dotted.key> <value>              → atomically set a value in .rcode/config.yaml');
         console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
         console.log('  handoff write --from <skill> --to <skill> --phase N [--context "..."] → write cross-skill handoff token (#741)');
         console.log('  handoff read [--from <skill>]               → read most recent handoff for this skill (#741)');
@@ -7260,7 +7265,7 @@ async function main() {
         console.log('  resolve-model <agent-id>                     → resolve model string for agent under current profile');
   console.log('  set-model <profile|model-id>                 → set model_profile or model_override in config.yaml');
   console.log('  get-model                                    → print current effective model (override or profile)');
-        console.log('  version                                      → print rihal-tools version');
+        console.log('  version                                      → print rcode-tools version');
         console.log('  help                                         → print this help text');
         console.log('');
         console.log('State subcommands:');
@@ -7272,8 +7277,8 @@ async function main() {
         console.log('  state snapshot                               → write state.json to .planning/STATE.md');
         console.log('  state update-progress [--sprint NN.S]        → increment current_plan, or mark sprint complete');
         console.log('  state record-execution --plan <p> --tasks <n> --duration <ms> --hash <h>');
-        console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rihal/decisions.jsonl');
-        console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rihal/decisions.jsonl across all projects');
+        console.log('  state add-decision "<summary>"               → append to decisions[] + ~/.rcode/decisions.jsonl');
+        console.log('  state decisions-global [--limit N] [--project <name>] [--since <ISO>]  → query ~/.rcode/decisions.jsonl across all projects');
         console.log('  state add-blocker "<description>"            → append to blockers[]');
         console.log('  state resolve-blocker <index>|--all|--phase <N>  --issue <N>|--commit <sha>|--noref  → mark blocker(s) resolved (#654, #656)');
         console.log('  state record-session                         → update last_session timestamp');
@@ -7317,7 +7322,7 @@ async function main() {
           sync: 'state sync',
         };
         if (stateSubs.includes(subcommand)) {
-          console.error(`Did you mean: state ${subcommand}? Run 'rihal-tools.cjs help' for full usage.`);
+          console.error(`Did you mean: state ${subcommand}? Run 'rcode-tools.cjs help' for full usage.`);
         } else if (intuitionAliases[subcommand]) {
           console.error(`'${subcommand}' is not a top-level command. Did you mean: ${intuitionAliases[subcommand]}?`);
         } else {
@@ -7338,9 +7343,9 @@ async function main() {
             .slice(0, 2)
             .filter(x => x.d <= Math.max(2, subcommand.length / 2));
           if (scored.length > 0) {
-            console.error(`Unknown subcommand: ${subcommand}. Closest matches: ${scored.map(s => s.c).join(', ')}. Run 'rihal-tools.cjs help' for full usage.`);
+            console.error(`Unknown subcommand: ${subcommand}. Closest matches: ${scored.map(s => s.c).join(', ')}. Run 'rcode-tools.cjs help' for full usage.`);
           } else {
-            console.error(`Unknown subcommand: ${subcommand}. Run 'rihal-tools.cjs help' for full usage.`);
+            console.error(`Unknown subcommand: ${subcommand}. Run 'rcode-tools.cjs help' for full usage.`);
           }
         }
         process.exit(1);
@@ -7348,14 +7353,14 @@ async function main() {
     }
     console.log(JSON.stringify(result, null, 2));
   } catch (err) {
-    console.error(`rihal-tools error: ${err.message}`);
+    console.error(`rcode-tools error: ${err.message}`);
     if (process.env.DEBUG) console.error(err.stack);
     process.exit(1);
   }
 }
 
 main().catch((err) => {
-  console.error(`rihal-tools error: ${err.message}`);
+  console.error(`rcode-tools error: ${err.message}`);
   if (process.env.DEBUG) console.error(err.stack);
   process.exit(1);
 });

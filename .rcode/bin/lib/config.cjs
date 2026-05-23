@@ -1,5 +1,5 @@
 /**
- * Config — dotted-path get/set for .rihal/config.yaml.
+ * Config — dotted-path get/set for .rcode/config.yaml.
  *
  * Supports single-level nested YAML (e.g. `workflow:\n  discuss_mode: adaptive`)
  * in addition to flat `key: value`. Stdlib-only.
@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 function configPathFor(projectRoot) {
-  return path.join(projectRoot, '.rihal', 'config.yaml');
+  return path.join(projectRoot, '.rcode', 'config.yaml');
 }
 
 /** Parse YAML text into a nested object. Supports one level of indentation. */

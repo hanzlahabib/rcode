@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * rihal-hooks.cjs — opt-in hook runners for edit/workflow/commit guardrails.
+ * rcode-hooks.cjs — opt-in hook runners for edit/workflow/commit guardrails.
  *
  * Subcommands:
  *   pre-edit    — verify file was Read before Edit/Write (exit 2 if not)
- *   pre-workflow — soft warning for rihal-* commands with suspicious args
+ *   pre-workflow — soft warning for rcode-* commands with suspicious args
  *   post-commit — verify commit format and no forbidden patterns
  *   bash-guard  — block dangerous Bash commands before they run (exit 2)
  *   pre-compact — refresh HANDOFF.json before context compaction (#743)
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
- *   compact-nudge — advise /rihal-trim or /clear after N Edit/Write calls (#749)
+ *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -66,7 +66,7 @@ async function preEdit() {
 }
 
 /**
- * pre-workflow: Soft warning for rihal-* commands with suspicious args.
+ * pre-workflow: Soft warning for rcode-* commands with suspicious args.
  * Does not block (exit 0), but prints warning.
  */
 async function preWorkflow() {
@@ -75,8 +75,8 @@ async function preWorkflow() {
     const command = input.command || '';
     const args = input.args || '';
 
-    // Only check rihal-* commands
-    if (!command.startsWith('rihal-')) {
+    // Only check rcode-* commands
+    if (!command.startsWith('rcode-')) {
       process.exit(0);
     }
 
@@ -99,8 +99,8 @@ async function preWorkflow() {
       }
     }
 
-    if (hasSuspiciousPattern && (command === 'rihal-plan' || command === 'rihal-discuss')) {
-      console.warn(`⚠ "${command}" with args: "${args}". Did you mean /rihal-do or /rihal-council?`);
+    if (hasSuspiciousPattern && (command === 'rcode-plan' || command === 'rcode-discuss')) {
+      console.warn(`⚠ "${command}" with args: "${args}". Did you mean /rcode-do or /rcode-council?`);
     }
 
     process.exit(0);
@@ -149,13 +149,13 @@ async function postCommit() {
         // Dereference symlinks so a symlink outside the repo cannot bypass the guard.
         const realPath = fs.realpathSync(resolved);
         const insideRepo = realPath.startsWith(repoRoot + path.sep);
-        // Exception: rihal-tools.cjs writes its commit-message tmp file to
-        // os.tmpdir() (outside the repo) — see rihal-tools.cjs:3668. That path
-        // is rihal-controlled (not attacker input), so allow it explicitly.
-        const isRihalCommitMsgTmp =
+        // Exception: rcode-tools.cjs writes its commit-message tmp file to
+        // os.tmpdir() (outside the repo) — see rcode-tools.cjs:3668. That path
+        // is rcode-controlled (not attacker input), so allow it explicitly.
+        const isRcodeCommitMsgTmp =
           realPath.startsWith(fs.realpathSync(os.tmpdir()) + path.sep) &&
-          /^rihal-commit-msg-\d+\.txt$/.test(path.basename(realPath));
-        if (insideRepo || isRihalCommitMsgTmp) {
+          /^rcode-commit-msg-\d+\.txt$/.test(path.basename(realPath));
+        if (insideRepo || isRcodeCommitMsgTmp) {
           commitMsg += '\n' + fs.readFileSync(resolved, 'utf8');
         }
       } catch {}
@@ -199,7 +199,7 @@ async function postCommit() {
 }
 
 // rm -rf is permitted only against these relative build/cache paths.
-const RM_SAFE_TARGET = /^(?:\.\/)?(?:node_modules|dist|build|coverage|\.next|out|temp|tmp|\.rihal\/cache)(?:\/.*)?$/;
+const RM_SAFE_TARGET = /^(?:\.\/)?(?:node_modules|dist|build|coverage|\.next|out|temp|tmp|\.rcode\/cache)(?:\/.*)?$/;
 
 /**
  * bash-guard: Block dangerous Bash commands before they execute.
@@ -207,7 +207,7 @@ const RM_SAFE_TARGET = /^(?:\.\/)?(?:node_modules|dist|build|coverage|\.next|out
  *
  * Enforces the repo's non-negotiable rules (AGENTS.md): no unapproved
  * `git push`, never `--force`, no `--no-verify`, no unscoped destructive
- * git/rm. An authorized push must be prefixed with `RIHAL_PUSH_OK=1`.
+ * git/rm. An authorized push must be prefixed with `RCODE_PUSH_OK=1`.
  *
  * This guard is best-effort, NOT a security boundary: a determined caller
  * can still craft a bypass (e.g. obscure git aliases). It enforces AGENTS.md
@@ -223,7 +223,7 @@ async function bashGuard() {
     }
 
     const block = (reason, guidance) => {
-      console.error(`⛔ BLOCKED by rihal bash-guard: ${reason}`);
+      console.error(`⛔ BLOCKED by rcode bash-guard: ${reason}`);
       if (guidance) console.error(`   ${guidance}`);
       process.exit(2);
     };
@@ -259,11 +259,11 @@ async function bashGuard() {
 
     // Plain git push requires an explicit per-push authorization token.
     // Token must be a real leading env-var assignment — substring match is
-    // bypassable via 'echo RIHAL_PUSH_OK; git push'.
-    if (isPush && !/^\s*RIHAL_PUSH_OK=1(\s|$)/.test(command)) {
+    // bypassable via 'echo RCODE_PUSH_OK; git push'.
+    if (isPush && !/^\s*RCODE_PUSH_OK=1(\s|$)/.test(command)) {
       block(
         'git push requires explicit human approval.',
-        'If the user authorized THIS push, prefix the command with RIHAL_PUSH_OK=1. See AGENTS.md.'
+        'If the user authorized THIS push, prefix the command with RCODE_PUSH_OK=1. See AGENTS.md.'
       );
     }
 
@@ -321,15 +321,15 @@ async function bashGuard() {
 }
 
 /**
- * pre-compact: Capture rihal session state before context compaction.
+ * pre-compact: Capture rcode session state before context compaction.
  *
  * Triggered by the PreCompact hook. Enriched version (#743 + enhancement):
- *   1. Reads .rihal/state.json + .planning/STATE.md + active SPRINT.md
+ *   1. Reads .rcode/state.json + .planning/STATE.md + active SPRINT.md
  *   2. Collects recent git commits and in-progress task checkboxes
- *   3. Writes enriched .rihal/HANDOFF.json (machine-readable resume file)
- *   4. Writes .rihal/.continue-here.md (paste-ready resume prompt)
+ *   3. Writes enriched .rcode/HANDOFF.json (machine-readable resume file)
+ *   4. Writes .rcode/.continue-here.md (paste-ready resume prompt)
  *   5. Outputs { systemMessage } so Claude sees context immediately after
- *      compaction — enabling /rihal-resume-work to restore full context.
+ *      compaction — enabling /rcode-resume-work to restore full context.
  *
  * Never blocks compaction — any error exits 1 (non-blocking per spec).
  */
@@ -342,7 +342,7 @@ async function preCompact() {
     const cwd = process.cwd();
 
     // ── 1. Load state.json ──────────────────────────────────────────────
-    const statePath = path.join(cwd, '.rihal', 'state.json');
+    const statePath = path.join(cwd, '.rcode', 'state.json');
     let state = null;
     if (fs.existsSync(statePath)) {
       try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
@@ -445,18 +445,18 @@ async function preCompact() {
       recent_decisions: recentDecisions,
     };
 
-    const rihalDir = path.join(cwd, '.rihal');
-    if (!fs.existsSync(rihalDir)) {
-      process.exit(0); // not a rihal project
+    const rcodeDir = path.join(cwd, '.rcode');
+    if (!fs.existsSync(rcodeDir)) {
+      process.exit(0); // not a rcode project
     }
 
-    const handoffPath = path.join(rihalDir, 'HANDOFF.json');
+    const handoffPath = path.join(rcodeDir, 'HANDOFF.json');
     fs.writeFileSync(handoffPath + '.tmp', JSON.stringify(handoff, null, 2) + '\n');
     fs.renameSync(handoffPath + '.tmp', handoffPath);
 
     // ── 8. Write .continue-here.md (paste-ready resume prompt) ───────────
     const resumeLines = [
-      '# Rihal Session Resume',
+      '# rcode Session Resume',
       '',
       `**Compacted:** ${handoff.generated_at}`,
       phaseLabel ? `**Phase:** ${phaseLabel}` : null,
@@ -481,22 +481,22 @@ async function preCompact() {
       resumeLines.push('');
     }
     resumeLines.push('---');
-    resumeLines.push('Run `/rihal-resume-work` to restore full project context.');
+    resumeLines.push('Run `/rcode-resume-work` to restore full project context.');
 
     fs.writeFileSync(
-      path.join(rihalDir, '.continue-here.md'),
+      path.join(rcodeDir, '.continue-here.md'),
       resumeLines.join('\n') + '\n'
     );
 
     // ── 9. Emit systemMessage for Claude post-compaction ─────────────────
-    const msgParts = ['**Rihal context compacted.**'];
+    const msgParts = ['**rcode context compacted.**'];
     if (phaseLabel) msgParts.push(`Active phase: **${phaseLabel}**`);
     if (milestoneHint) msgParts.push(`Milestone: ${milestoneHint}`);
     if (handoff.progress) msgParts.push(`Progress: ${handoff.progress}`);
     if (incompleteTasks.length > 0) {
       msgParts.push(`Next task: ${incompleteTasks[0]}`);
     }
-    msgParts.push('Run `/rihal-resume-work` to restore full context, or `/clear` then paste `.rihal/.continue-here.md`.');
+    msgParts.push('Run `/rcode-resume-work` to restore full context, or `/clear` then paste `.rcode/.continue-here.md`.');
 
     process.stdout.write(JSON.stringify({ systemMessage: msgParts.join(' | ') }) + '\n');
     process.exit(0);
@@ -581,7 +581,7 @@ async function stopVerify() {
  * cost-track: Append per-response token usage to cost.jsonl (#745).
  *
  * Triggered by the Stop hook. Extracts the token usage block from the Stop
- * event payload and appends one JSON line to .rihal/telemetry/cost.jsonl so
+ * event payload and appends one JSON line to .rcode/telemetry/cost.jsonl so
  * session-report can report measured totals. No-op when no usage block is
  * present. Never blocks.
  */
@@ -607,7 +607,7 @@ async function costTrack() {
       record.cache_read_input_tokens = usage.cache_read_input_tokens;
     }
 
-    const telemetryDir = path.join(process.cwd(), '.rihal', 'telemetry');
+    const telemetryDir = path.join(process.cwd(), '.rcode', 'telemetry');
     fs.mkdirSync(telemetryDir, { recursive: true });
     fs.appendFileSync(
       path.join(telemetryDir, 'cost.jsonl'),
@@ -622,10 +622,10 @@ async function costTrack() {
 }
 
 /**
- * compact-nudge: Advise /rihal-trim or /clear after N Edit/Write calls (#749).
+ * compact-nudge: Advise /rcode-trim or /clear after N Edit/Write calls (#749).
  *
  * Triggered by the PreToolUse:Edit|Write hook. Maintains a per-session call
- * counter in a temp file and, once the count crosses RIHAL_NUDGE_THRESHOLD
+ * counter in a temp file and, once the count crosses RCODE_NUDGE_THRESHOLD
  * (default 50), prints an advisory to reclaim context budget. Purely
  * advisory — always exits 0, never blocks a tool call.
  */
@@ -639,7 +639,7 @@ async function compactNudge() {
       input.session_id || input.tool_input?.session_id || 'default';
     const counterPath = path.join(
       os.tmpdir(),
-      'rihal-nudge-' + sessionId + '.count'
+      'rcode-nudge-' + sessionId + '.count'
     );
 
     let count = 0;
@@ -651,10 +651,10 @@ async function compactNudge() {
       fs.writeFileSync(counterPath, String(count));
     } catch {}
 
-    const threshold = parseInt(process.env.RIHAL_NUDGE_THRESHOLD, 10) || 50;
+    const threshold = parseInt(process.env.RCODE_NUDGE_THRESHOLD, 10) || 50;
     if (count >= threshold) {
       console.error(
-        `⚠ rihal compact-nudge: ${count} edits this session. Consider /rihal-trim or /clear to reclaim context budget.`
+        `⚠ rcode compact-nudge: ${count} edits this session. Consider /rcode-trim or /clear to reclaim context budget.`
       );
     }
 
@@ -698,7 +698,7 @@ async function main() {
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rihal-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge');
       process.exit(1);
   }
 }

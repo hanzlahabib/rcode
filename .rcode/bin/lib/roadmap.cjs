@@ -1,7 +1,7 @@
 /**
- * Roadmap — Rihal ROADMAP.md parsing and mutation helpers.
+ * Roadmap — rcode ROADMAP.md parsing and mutation helpers.
  *
- * Self-contained (stdlib only). Subcommands invoked by Rihal workflows:
+ * Self-contained (stdlib only). Subcommands invoked by rcode workflows:
  * get-phase, list-phases, update-plan-progress, clear.
  */
 
@@ -299,7 +299,7 @@ function cmdSummary(projectRoot) {
 function cmdClear(projectRoot) {
   const rp = roadmapPathFor(projectRoot);
   // Derive current version from config.yaml or default v1.0
-  const configPath = path.join(projectRoot, '.rihal', 'config.yaml');
+  const configPath = path.join(projectRoot, '.rcode', 'config.yaml');
   let version = 'v1.0';
   if (fs.existsSync(configPath)) {
     const text = fs.readFileSync(configPath, 'utf8');
