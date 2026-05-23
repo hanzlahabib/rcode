@@ -75,10 +75,10 @@ Majlis (multi-agent council) · Raees (orchestrator) · Zayd (ML) · Hanzla (eng
 
 ### Power tools
 
-- `npx @hanzlaa/rcode dashboard` — launches Diwan view-only dashboard on :7717
-- `npx @hanzlaa/rcode digest` — compact agent summaries
-- `npx @hanzlaa/rcode github-sync` — sync phases/epics/stories to GitHub issues
-- `npx @hanzlaa/rcode context --refresh` — refresh memory bank from current repo state
+- `pnpm dlx @hanzlaa/rcode dashboard` — launches Diwan view-only dashboard on :7717
+- `pnpm dlx @hanzlaa/rcode digest` — compact agent summaries
+- `pnpm dlx @hanzlaa/rcode github-sync` — sync phases/epics/stories to GitHub issues
+- `pnpm dlx @hanzlaa/rcode context --refresh` — refresh memory bank from current repo state
 
 ---
 
@@ -103,7 +103,7 @@ v2 has been merged into the main methodology — there is no separate `rcode/v2/
 
 ## CLI Commands at a Glance
 
-Grouped by purpose (full help: `npx @hanzlaa/rcode help`):
+Grouped by purpose (full help: `pnpm dlx @hanzlaa/rcode help`):
 
 ### Project commands
 `install` · `update` · `uninstall` · `config` · `context` · `github-sync`

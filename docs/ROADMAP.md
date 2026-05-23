@@ -8,52 +8,33 @@ All dates are targets, not commitments. Scope and dates shift when reality shift
 
 ## Shipped
 
-### v1 — Methodology foundation (landed)
-- 35+ agents with cultural identity and hard scope boundaries.
-- 69 slash commands across research, planning, execution, verification, recovery.
+### v1–v3 — Methodology foundation (landed)
+- Phrase-activated skills, slash-command methodology, council/chain/discuss modes.
 - File-based state in `.rcode/`.
 - Intent guards, plan verification, post-execute gates.
 - Global agents at `~/.rcode/agents/` for customization.
 
----
-
-## Current milestone
-
-### v2.0 — rcode Brain in a Box
-[Milestone #4](https://github.com/hanzlahabib/rihal-code/milestone/4) · active
-
-**Goal:** Every Rihalian who installs rcode gets an AI assistant that already knows how rcode builds — PR standards, commit conventions, architecture patterns, PRD shape, sprint cadence.
-
-| Phase | What it delivers | Issue |
-|-------|------------------|-------|
-| M1 — Repositioning | README + `docs/what-is-rcode.md` tell the new story | [#157](https://github.com/hanzlahabib/rihal-code/issues/157) |
-| M2 — Brain ingestion | `rcode/brain/` + `rcode-tools brain pull` + install hook | [#158](https://github.com/hanzlahabib/rihal-code/issues/158) |
-| M2.5 — Elegant /progress | CLI does the thinking, workflow does the rendering, intent-based Next Up | [#159](https://github.com/hanzlahabib/rihal-code/issues/159) |
-| M3 — Role ownership | CODEOWNERS per role folder + CONTRIBUTING.md per-role guide | [#160](https://github.com/hanzlahabib/rihal-code/issues/160) |
-| M4 — Release pipeline | Semver tags, `rcode:update v1.3.0` pinning, GitHub release bundle | [#161](https://github.com/hanzlahabib/rihal-code/issues/161) |
-| M5 — Real rcode content | Fill `sources.yaml` with actual rcode GitHub + docs URLs | [#162](https://github.com/hanzlahabib/rihal-code/issues/162) |
-
-### Kill criteria for v2.0
-Binary — if either fires, we cut scope or pivot:
-
-- After M5 ships, fewer than 3 role-owners open a single PR against their slice within 60 days → per-role contribution model has failed. Revisit.
-- `brain pull` against the real rcode docs repo takes > 10s on fresh install → static model can't scale. Jump to MCP (v3.0) early.
+### v4.0.0 — `rihal-*` → `rcode-*` rename + populated Memory Bank (current)
+- Hard rename across the entire stack: `.rihal/` → `.rcode/`, `/rihal-*` → `/rcode-*`, agent and skill prefixes.
+- 45 agents, 116 slash commands, 85 skills, file-based state in `.rcode/`.
+- Memory Bank ships populated (rcode dogfoods its own bank under `.rcode/memory/`).
+- `brain pull` working end-to-end against real sources.
+- Install via `pnpm dlx @hanzlaa/rcode install`.
 
 ---
 
 ## Next
 
-### v2.1 — Per-role contribution onboarding
-**Goal:** A new Rihalian can open a PR improving their role's skill in under 10 minutes, without reading the 5-component compliance doc first.
+### v4.x — Per-role contribution onboarding
+**Goal:** A new contributor can open a PR improving their role's skill in under 10 minutes, without reading the 5-component compliance doc first.
 
 - In-editor templates (`rcode/skills/templates/role/`) that pre-fill the correct structure.
 - `/rcode-scaffold-skill --role pm` command that generates a ready-to-fill skill.
 - Automated compliance check in CI (no reviewer time spent on structural issues).
 
-### v2.5 — Progress/status UX polish
+### v4.x — Progress/status UX polish
 **Goal:** Running `/rcode-progress` or `/rcode-status` on any project feels instantaneous and actionable — pre-computed CLI output, surfaced insights, and an intent-based Next Up menu instead of a single suggestion.
 
-- Bundled into v2.0 as M2.5 (issue [#159](https://github.com/hanzlahabib/rihal-code/issues/159)) — listed here for the public roadmap view.
 - Pre-computed CLI output, insight block for drift, intent-tree Next Up.
 - Opt-in telemetry on skill invocations so we know what's actually used.
 
@@ -61,17 +42,16 @@ Binary — if either fires, we cut scope or pivot:
 
 ## On the horizon
 
-### v3.0 — MCP server
+### v5.0 — MCP server
 **Goal:** No more `/rcode-update`. The rcode brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
 
 - Hosted on rcode infra, authenticated via rcode SSO.
-- Migration path: v2.0 and v3.0 run side-by-side for one release, then `brain pull` is deprecated.
-- Design doc tracked in [#163](https://github.com/hanzlahabib/rihal-code/issues/163).
+- Migration path: v4.x and v5.0 run side-by-side for one release, then `brain pull` is deprecated.
 
-### v3.x — Internal rcode registry
+### v5.x — Internal rcode registry
 **Goal:** Rihalians install from an internal source, not GitHub. Faster, access-controlled, audit-trailed.
 
-- Replaces `npx @hanzlaa/rcode@latest` as the primary install path for rcode employees.
+- Replaces `pnpm dlx @hanzlaa/rcode@latest` as the primary install path for rcode employees.
 - GitHub release stays available for non-Rihalian contributors and for transparency.
 
 ---

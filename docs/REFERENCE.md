@@ -1,6 +1,6 @@
 # rcode — Complete Reference
 
-All slash commands, agents, and skills available after `npx @hanzlaa/rcode install .`
+All slash commands, agents, and skills available after `pnpm dlx @hanzlaa/rcode install .`
 
 No invented capabilities. Everything here is sourced directly from `rcode/commands/`, `rcode/agents/`, and `rcode/skills/`.
 
@@ -310,7 +310,7 @@ Skills are domain expertise modules. They are loaded automatically when their tr
 
 ## Known Limitations
 
-These are real gaps in the current version (`v2.3.1`):
+These are real gaps in the current version (`v4.0.0`):
 
 1. **`/rcode-plan` requires `.planning/` directory** — the workflow cannot be used inside the rcode repo itself. There is no self-referential project management.
 

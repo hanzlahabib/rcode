@@ -27,10 +27,11 @@ rcode fixes that. One install, and the AI now knows. Every session. Every repo. 
 
 ## What you get when you install it
 
-Running `npx @hanzlaa/rcode install` into a project produces:
+Running `pnpm dlx @hanzlaa/rcode install` into a project produces:
 
-- **55+ phrase-activated skills** (from `/rcode-create-prd` to `/rcode-sprint-planning` to `/rcode-dev-story`) that route your request to the right workflow.
-- **35+ agents** — rcode's team in AI form: Sadiq for strategy, Waleed for architecture, Hussain for product, Layla for UX, Fatima for QA, and more. Each has a hard scope boundary, so you know which one to talk to.
+- **85 phrase-activated skills** (from `/rcode-create-prd` to `/rcode-sprint-planning` to `/rcode-dev-story`) that route your request to the right workflow.
+- **116 slash commands** wired through to the skills, agents, and workflows.
+- **45 agents** — rcode's team in AI form: Sadiq for strategy, Waleed for architecture, Hussain for product, Layla for UX, Fatima for QA, and more. Each has a hard scope boundary, so you know which one to talk to.
 - **File-based state** at `.rcode/` that every workflow reads and writes — project status, decisions, blockers, roadmap, sprints.
 - **The rcode brain** at `rcode/brain/` (pulled fresh on install, refreshable with `/rcode-update`):
   - PR / issue / commit standards from the rcode GitHub org
@@ -61,21 +62,17 @@ Run `/rcode-update` any time to pull the latest. The pulled content is the singl
 
 ---
 
-## What changes from v1 to v2
+## What changed in v4
 
-rcode v1 was a generic AI-engineering methodology. It worked for anyone, and any team could install it.
-
-rcode v2 keeps all of that — and adds the rcode brain layer on top. The repositioning is the product statement: rcode is primarily for Rihalians now. The generic methodology is still there and still works, but the headline feature is the always-current rcode context that makes every Rihalian's AI assistant feel like it's been working at rcode for a year.
+v4.0.0 is the rename release: the `rihal-*` prefix was retired across the entire stack and replaced with `rcode-*`. Memory Bank now ships populated (rcode dogfoods its own bank under `.rcode/memory/`), and `brain pull` is end-to-end working against real sources.
 
 ---
 
 ## Where this is going
 
-- **v2.0** — Brain in a box, static + semi-dynamic pull (where we are).
-- **v2.1** — Full per-role ownership: PM updates PM skills, CTO updates CTO skills. CODEOWNERS enforces. Contributing is one command, one PR.
-- **v2.5** — Progress/status UX overhaul: AI-friendly CLI output, intent-based "next-up" menus, drift detection.
-- **v3.0** — Live MCP server. No more `/rcode-update` needed. The brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
-- **v3.x** — Internal rcode package registry replaces GitHub release as the distribution channel.
+- **v4.x** — Live brain pull on demand, full per-role ownership: PM updates PM skills, CTO updates CTO skills. CODEOWNERS enforces. Contributing is one command, one PR.
+- **v5.0** — Live MCP server. No more `/rcode-update` needed. The brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
+- **v5.x** — Internal rcode package registry replaces GitHub release as the distribution channel.
 
 See `docs/ROADMAP.md` for the full roadmap.
 

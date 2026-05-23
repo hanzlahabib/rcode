@@ -10,7 +10,7 @@ A practical guide to using rcode on your own projects day-to-day.
 
 ```bash
 cd my-project
-npx @hanzlaa/rcode install
+pnpm dlx @hanzlaa/rcode install
 ```
 
 That's it. After install you'll have:
@@ -155,10 +155,10 @@ Say the phrase — Claude matches the skill automatically:
 Switch between quality/balanced/budget/inherit:
 
 ```bash
-npx @hanzlaa/rcode set-profile balanced  # default
-npx @hanzlaa/rcode set-profile quality   # opus for most agents
-npx @hanzlaa/rcode set-profile budget    # haiku for most agents
-npx @hanzlaa/rcode set-profile inherit   # follow session model
+pnpm dlx @hanzlaa/rcode set-profile balanced  # default
+pnpm dlx @hanzlaa/rcode set-profile quality   # opus for most agents
+pnpm dlx @hanzlaa/rcode set-profile budget    # haiku for most agents
+pnpm dlx @hanzlaa/rcode set-profile inherit   # follow session model
 ```
 
 ---
@@ -189,7 +189,7 @@ Workflows call these under the hood — you rarely need them directly.
 ## Dashboard (optional)
 
 ```bash
-npx @hanzlaa/rcode dashboard
+pnpm dlx @hanzlaa/rcode dashboard
 ```
 
 Opens a view-only dashboard at `http://localhost:7717` showing phases, sprints, council sessions, and velocity charts.
@@ -199,7 +199,7 @@ Opens a view-only dashboard at `http://localhost:7717` showing phases, sprints, 
 ## Updating rcode
 
 ```bash
-npx @hanzlaa/rcode update
+pnpm dlx @hanzlaa/rcode update
 ```
 
 Refreshes installed agents/commands/workflows without touching your state or planning artifacts. Backs up the previous state to `.rcode/backups/update-{ts}.tgz`.

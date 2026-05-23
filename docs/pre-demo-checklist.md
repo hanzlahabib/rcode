@@ -1,4 +1,4 @@
-# Pre-Demo Checklist — rcode v2
+# Pre-Demo Checklist — rcode v4
 
 One-page script for when demo time arrives. Work top-to-bottom. Each item is a minute or less except the two **blocker** items at the top.
 
@@ -10,26 +10,26 @@ One-page script for when demo time arrives. Work top-to-bottom. Each item is a m
 GitHub → repo Settings → Billing → Actions spending. Raise the limit, or flip the repo to public for free Actions minutes, or add a self-hosted runner. Without this, no `release.yml` runs, no automated tests, no semantic PR checks.
 
 ### ☐ 2. Wire real rcode URLs ([#162](https://github.com/hanzlahabib/rihal-code/issues/162))
-Open `rcode/brain/sources.yaml`. Replace the two `<PLACEHOLDER>` entries with the actual rcode GitHub org + docs repo URLs. Commit. Push. Tag a patch release (e.g. `v2.0.1`). After this, every fresh install pulls real rcode standards.
+Open `rcode/brain/sources.yaml`. Replace the two `<PLACEHOLDER>` entries with the actual rcode GitHub org + docs repo URLs. Commit. Push. Tag a patch release (e.g. `v4.0.1`). After this, every fresh install pulls real rcode standards.
 
 ---
 
 ## Tag the current state
 
-### ☐ 3. Tag `v2.1.0`
-M2.5 (rebuilt `/progress` and `/status`) is on main. If the tag was missed, run:
+### ☐ 3. Confirm `v4.0.0` tag is published
+If the tag was missed, run:
 ```bash
 git checkout main && git pull
-git tag -a v2.1.0 -m "v2.1.0 — Progress/Status CLI rebuild"
-git push origin v2.1.0
+git tag -a v4.0.0 -m "v4.0.0 — rihal->rcode rename + populated Memory Bank"
+# push only with explicit approval — never automate this
 ```
-Once #165 is fixed, `release.yml` will auto-publish. If #165 isn't fixed, publish manually with `gh release create v2.1.0 ...` (see how v2.0.0 was done).
+Once #165 is fixed, `release.yml` will auto-publish. If #165 isn't fixed, publish manually with `gh release create v4.0.0 ...`.
 
 ### ☐ 4. Verify the installer works against the tag
 In a clean scratch dir:
 ```bash
 mkdir /tmp/rcode-demo && cd /tmp/rcode-demo
-npx @hanzlaa/rcode@latest install
+pnpm dlx @hanzlaa/rcode@latest install
 ls -la .rcode/ .claude/
 node .rcode/bin/rcode-tools.cjs brain pull
 node .rcode/bin/rcode-tools.cjs progress init | head -30
@@ -41,7 +41,7 @@ All four commands should succeed. Brain pull should either fetch real rcode cont
 ## Demo script
 
 ### ☐ 5. Open Claude Code in the scratch dir
-Run `claude` in `/tmp/rcode-demo`. Confirm the 55 skills, 44 agents, 93 commands banner from the install output.
+Run `claude` in `/tmp/rcode-demo`. Confirm the 85 skills, 45 agents, 116 commands banner from the install output.
 
 ### ☐ 6. Show the golden path — 7 skills end-to-end
 Demo flow, in this order:
@@ -66,7 +66,7 @@ This is the punchline — every Rihalian's install has rcode's standards already
 Quick scroll through:
 - `README.md` — lead with the brain framing
 - `docs/what-is-rcode.md` — product story
-- `docs/ROADMAP.md` — v2 → v3 direction (MCP on the horizon)
+- `docs/ROADMAP.md` — v4 → v5 direction (MCP on the horizon)
 - `CONTRIBUTING.md` — per-role "who owns what" table
 
 ---
@@ -79,7 +79,7 @@ Quick scroll through:
 ### ☐ 10. Name the next ask
 Depending on audience:
 
-- **rcode leadership** — approval for v3.0 MCP infrastructure spend (see `docs/adr/0003-mcp-server-for-rcode-brain.md` Q1–Q7).
+- **rcode leadership** — approval for v5.0 MCP infrastructure spend (see `docs/adr/0003-mcp-server-for-rcode-brain.md` Q1–Q7).
 - **rcode engineering** — volunteer role-owners for each skill folder (see CODEOWNERS placeholder — currently all routed to @hanzlahabib).
 - **rcode PMs** — write their first PR against `rcode/skills/actions/2-plan/` to prove the per-role contribution model works before the 60-day kill criterion hits.
 

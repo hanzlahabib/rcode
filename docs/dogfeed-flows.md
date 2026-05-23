@@ -359,7 +359,7 @@ Before running new-project on a brownfield repo, rcode maps the existing codebas
 | #820 | Medium | execute | state update-progress subcommand missing |
 | #821 | **Critical** | install | rcode installs to pnpm workspace root in monorepos |
 | #822 | **Critical** | sprint-status | skill expects sprint-status.yaml but rcode produces SPRINT.md/SUMMARY.md — dead on arrival |
-| #823 | High | install | npx @hanzlaa/rcode fails on npm 11.x (Node v24) — Unknown command |
+| #823 | High | install | pnpm dlx @hanzlaa/rcode fails on npm 11.x (Node v24) — Unknown command |
 | #824 | Medium | execute | Write tool fails to overwrite existing SUMMARY.md — sprint summary lost on re-run |
 | #825 | High | health | agent-manifest.csv header-only — agents never registered in manifest |
 | #826 | **Critical** | new-project | ROADMAP.md left as stub after new-project — roadmapper subagent never spawned (intermittent) |

@@ -21,7 +21,7 @@ In v1.0-beta we unified both into a single landscape under `rcode/`:
 - `rcode/skills/` — 22 action skills + 17 agent skills (preserved from v1)
 - `rcode/references/`, `rcode/bin/`, `rcode/modules/`, `rcode/team.yaml` — v2 infrastructure
 
-One install command (`npx @hanzlaa/rcode install`) ships everything.
+One install command (`pnpm dlx @hanzlaa/rcode install`) ships everything.
 
 ## Why keep this note?
 

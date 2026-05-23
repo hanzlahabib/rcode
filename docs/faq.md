@@ -23,7 +23,7 @@ rcode installs commands by writing to `.claude/commands/rcode/` and `.claude/set
 **A:** Yes, use the `core` module:
 
 ```bash
-npx @hanzlaa/rcode install --module core
+pnpm dlx @hanzlaa/rcode install --module core
 ```
 
 This gives you:
@@ -33,7 +33,7 @@ This gives you:
 
 Then add execution later:
 ```bash
-npx @hanzlaa/rcode install --module execution --force
+pnpm dlx @hanzlaa/rcode install --module execution --force
 ```
 
 ---
@@ -42,7 +42,7 @@ npx @hanzlaa/rcode install --module execution --force
 
 **A:** No. rcode ships as pure files (Markdown, YAML, Node.js binary). Zero npm dependency.
 
-rcode installs via `npx @hanzlaa/rcode install` — it copies files into your project. You don't `npm install` anything.
+rcode installs via `pnpm dlx @hanzlaa/rcode install` — it copies files into your project. You don't `npm install` anything.
 
 ---
 
