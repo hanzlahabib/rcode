@@ -10,6 +10,8 @@ pnpm dlx @hanzlaa/rcode install
 
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
+[![CI](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Status: `@hanzlaa/rcode` v4.0.0 on npm. 30 automated tests, 45 agents, 116 commands, 85 skills. Actively dogfooded on real projects every week.
 
@@ -79,7 +81,7 @@ I dogfood this hard, so the honest version:
 - **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Gemini, VS Code, Antigravity, Windsurf. Bring your own keys.
 - **Not a multi-agent framework.** No agent-to-agent message bus. One agent reads markdown structure and navigates it.
 - **Not a no-code tool.** You will read markdown files. You will write commit messages. You will type slash commands.
-- **Not finished.** v3.6 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rihal-code/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
+- **Not finished.** v4 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rihal-code/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
 - **Not replacing senior engineers.** It gives you their scaffolding (review standards, sprint hygiene, decision archives). You still need judgment for the hard calls.
 
 ---
@@ -148,7 +150,7 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ## Honest state of things
 
-- **v3.6.20** shipped 2026-05-22 with 50+ bug fixes from a full 3-project dogfeed run.
+- **v4.0.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
 - **Test suite**: 30 tests, 100% pass on every release. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
