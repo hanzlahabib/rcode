@@ -179,7 +179,7 @@ export function runAndOpenTerm(storyId, cmd, title) {
   const tok = orchToken();
   if (!tok) return;
 
-  runSession(storyId, cmd).catch(() => {});
+  runSession(storyId, cmd).catch(err => console.error('[orchestrator] session op failed:', err.message));
 }
 
 /**
@@ -218,7 +218,7 @@ export function runStory(storyId) {
  * stopStory — Kanban "Stop" action.
  */
 export function stopStory(storyId) {
-  stopSession(storyId);
+  stopSession(storyId).catch(err => console.error('[orchestrator] session op failed:', err.message));
 }
 
 // ── Command runner ────────────────────────────────────────────────────────────
