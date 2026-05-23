@@ -28,9 +28,9 @@ The single document covering everything you need to use, customise, and contribu
 
 ## 1. What is rcode
 
-rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that installs persistent project context, distinctive engineering personas, and phase-based workflows into your repository for use with Claude Code, Cursor, Gemini, and any compatible AI IDE.
+rcode is a **methodology shipped as files** — folders, markdown, and slash commands that install persistent project context, 45 named engineering personas, and phase-based workflows into your repository. Works with Claude Code, Cursor, Gemini, VS Code, Antigravity, Windsurf, and any AI IDE that reads markdown.
 
-**Built by rcode. Designed for solo devs, startup teams, and SaaS builders.**
+**Open source (MIT). Designed for solo devs, startup teams, agencies, OSS contributors, and anyone tired of re-explaining context to an AI assistant on every session.**
 
 ### The problem rcode solves
 
@@ -61,10 +61,10 @@ rcode is the **memory bank for AI-driven SaaS teams** — a CLI tool that instal
 ### One command in any project directory
 
 ```bash
-npx @hanzlaa/rcode install
+pnpm dlx @hanzlaa/rcode install
 ```
 
-Works in an existing codebase or an empty folder. Requires Node ≥ 18.
+Works in an existing codebase or an empty folder. Requires Node ≥ 18. (If you prefer npm: `npx @hanzlaa/rcode install` works identically.)
 
 After install, the project gains:
 
@@ -1083,4 +1083,4 @@ Open an issue at [`hanzlahabib/rihal-code`](https://github.com/hanzlahabib/rihal
 
 ---
 
-*Built by rcode. Designed for everyone who's tired of AI agents losing context.*
+*Open source under MIT. Built for everyone who's tired of AI agents losing context.*
