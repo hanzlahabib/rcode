@@ -45,7 +45,7 @@ Only proceed past this step if the input is a topic or deliverable request (e.g.
 ## Step 1 — Resolve the chain
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init chain "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init chain "$ARGUMENTS")
 ```
 
 Parse:
@@ -142,11 +142,11 @@ The "next step" line is a single copy-paste command — see `.rcode/references/c
 ## Step 4 — Update state
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state record-chain \
+node .rcode/bin/rcode-tools.cjs state record-chain \
   --slug "{slug}" \
   --agents "{comma-separated}" \
   --artifacts "{chain_dir}"
-node .rcode/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rcode-tools.cjs state record-session
 ```
 
 Silent on failure — state tracking is optional.

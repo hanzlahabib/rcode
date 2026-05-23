@@ -2,8 +2,8 @@
 
 **Focus:** {focus}
 **Documents written:**
-- `.rihal/codebase/{DOC1}.md` ({N} lines)
-- `.rihal/codebase/{DOC2}.md` ({N} lines)
+- `.rcode/codebase/{DOC1}.md` ({N} lines)
+- `.rcode/codebase/{DOC2}.md` ({N} lines)
 
 Ready for orchestrator summary.
 ```
@@ -599,7 +599,7 @@ Ready for orchestrator summary.
 <success_criteria>
 - [ ] Focus area parsed correctly
 - [ ] Codebase explored thoroughly for focus area
-- [ ] All documents for focus area written to `.rihal/codebase/`
+- [ ] All documents for focus area written to `.rcode/codebase/`
 - [ ] Documents follow template structure
 - [ ] File paths included throughout documents
 - [ ] Confirmation returned (not document contents)

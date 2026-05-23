@@ -52,7 +52,7 @@ Invoke the source audit command and capture output.
 
 For `audit-uat` source:
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init audit-uat 2>/dev/null || echo "{}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init audit-uat 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

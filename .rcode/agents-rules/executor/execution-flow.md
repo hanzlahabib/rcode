@@ -5,7 +5,7 @@
 ### Step 1: Load Project State
 Extract project state using the initialization tool:
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init execute "${PHASE}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -89,7 +89,7 @@ For each task in sequence:
 ### Step 5: Summary Creation (Pattern A only)
 After all auto tasks complete:
 1. Create SUMMARY.md at `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
-2. Use @.rihal/templates/summary.md as template
+2. Use @.rcode/templates/summary.md as template
 3. List completed tasks with commit hashes
 4. Document any deviations from plan
 5. Record metrics (task count, file count, duration)
@@ -101,16 +101,16 @@ After all auto tasks complete:
 
 ### Step 6: State Updates
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state advance-plan
-node ".rihal/bin/rihal-tools.cjs" state update-progress
-node ".rihal/bin/rihal-tools.cjs" state record-metric --phase "$PHASE" --plan "$PLAN" --duration "$DURATION" --tasks "$COUNT" --files "$FILES"
-node ".rihal/bin/rihal-tools.cjs" roadmap update-plan-progress "$PHASE_NUMBER"
-node ".rihal/bin/rihal-tools.cjs" requirements mark-complete $REQ_IDS
+node ".rcode/bin/rcode-tools.cjs" state advance-plan
+node ".rcode/bin/rcode-tools.cjs" state update-progress
+node ".rcode/bin/rcode-tools.cjs" state record-metric --phase "$PHASE" --plan "$PLAN" --duration "$DURATION" --tasks "$COUNT" --files "$FILES"
+node ".rcode/bin/rcode-tools.cjs" roadmap update-plan-progress "$PHASE_NUMBER"
+node ".rcode/bin/rcode-tools.cjs" requirements mark-complete $REQ_IDS
 ```
 
 Extract requirement IDs from SPRINT.md frontmatter `requirements:` field.
 
 ### Step 7: Final Commit
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
+node ".rcode/bin/rcode-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```

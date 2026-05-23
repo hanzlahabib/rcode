@@ -41,7 +41,7 @@ STOP — do not proceed.
 Parse args. If `--this-project` is set:
 
 ```bash
-CURRENT_PROJECT=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).project||'')}catch{}}")
+CURRENT_PROJECT=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).project||'')}catch{}}")
 ```
 
 If non-empty, pass `--project "$CURRENT_PROJECT"` to the next step. If empty, print a warning and fall through to the unfiltered query.
@@ -53,7 +53,7 @@ QUERY_ARGS=()
 [ -n "$LIMIT" ]    && QUERY_ARGS+=(--limit "$LIMIT")
 [ -n "$PROJECT" ]  && QUERY_ARGS+=(--project "$PROJECT")
 [ -n "$SINCE" ]    && QUERY_ARGS+=(--since "$SINCE")
-RESULT=$(node .rcode/bin/rihal-tools.cjs state decisions-global "${QUERY_ARGS[@]}" 2>/dev/null || echo '{"decisions":[],"total":0}')
+RESULT=$(node .rcode/bin/rcode-tools.cjs state decisions-global "${QUERY_ARGS[@]}" 2>/dev/null || echo '{"decisions":[],"total":0}')
 ```
 
 The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:

@@ -296,11 +296,11 @@ This annotation is consumed by downstream workflows (`new-project`, `progress`) 
 | 2. Name | 0/2 | Not started | - |
 ```
 
-Reference full template: `.rihal/templates/roadmap.md`
+Reference full template: `.rcode/templates/roadmap.md`
 
 ## STATE.md Structure
 
-Use template from `.rihal/templates/state.md`.
+Use template from `.rcode/templates/state.md`.
 
 Key sections:
 - Project Reference (core value, current focus)
@@ -453,11 +453,11 @@ When files are written and returning to orchestrator:
 ## ROADMAP CREATED
 
 **Files written:**
-- .rihal/ROADMAP.md
-- .rihal/STATE.md
+- .rcode/ROADMAP.md
+- .rcode/STATE.md
 
 **Updated:**
-- .rihal/REQUIREMENTS.md (traceability section)
+- .rcode/REQUIREMENTS.md (traceability section)
 
 ### Summary
 
@@ -483,8 +483,8 @@ When files are written and returning to orchestrator:
 ### Files Ready for Review
 
 User can review actual files:
-- `cat .rihal/ROADMAP.md`
-- `cat .rihal/STATE.md`
+- `cat .rcode/ROADMAP.md`
+- `cat .rcode/STATE.md`
 
 {If gaps found during creation:}
 
@@ -507,9 +507,9 @@ After incorporating user feedback and updating files:
 - {change 2}
 
 **Files updated:**
-- .rihal/ROADMAP.md
-- .rihal/STATE.md (if needed)
-- .rihal/REQUIREMENTS.md (if traceability changed)
+- .rcode/ROADMAP.md
+- .rcode/STATE.md (if needed)
+- .rcode/REQUIREMENTS.md (if traceability changed)
 
 ### Updated Summary
 

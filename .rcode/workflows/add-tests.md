@@ -34,7 +34,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -298,7 +298,7 @@ Create a test coverage report and present to user:
 
 Record test generation in project state:
 ```bash
-node ".rcode/bin/rihal-tools.cjs" state-snapshot
+node ".rcode/bin/rcode-tools.cjs" state-snapshot
 ```
 
 If there are passing tests to commit:

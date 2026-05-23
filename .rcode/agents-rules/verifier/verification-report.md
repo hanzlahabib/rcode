@@ -4,7 +4,7 @@
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
-Create `.rihal/phases/{phase_dir}/{phase_num}-VERIFICATION.md`:
+Create `.rcode/phases/{phase_dir}/{phase_num}-VERIFICATION.md`:
 
 ```markdown
 ---
@@ -108,7 +108,7 @@ Return with:
 
 **Status:** {passed | gaps_found | human_needed}
 **Score:** {N}/{M} must-haves verified
-**Report:** .rihal/phases/{phase_dir}/{phase_num}-VERIFICATION.md
+**Report:** .rcode/phases/{phase_dir}/{phase_num}-VERIFICATION.md
 
 {If passed:}
 All must-haves verified. Phase goal achieved. Ready to proceed.

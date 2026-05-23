@@ -53,7 +53,7 @@ if echo "$ARGUMENTS" | grep -q -- "--body";  then BODY=$(echo  "$ARGUMENTS" | se
 ONLY_FLAG=""
 [ -n "$ONLY" ] && ONLY_FLAG="--only $ONLY"
 
-RESULT=$(node .rcode/bin/rihal-tools.cjs notify send \
+RESULT=$(node .rcode/bin/rcode-tools.cjs notify send \
   --title "$TITLE" \
   --body "$BODY" \
   --event "notify-test" \

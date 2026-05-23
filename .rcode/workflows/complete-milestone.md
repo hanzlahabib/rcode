@@ -108,7 +108,7 @@ If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md 
 
 ```bash
 cat .planning/config.json 2>/dev/null || true
-node .rcode/bin/rihal-tools.cjs config 2>/dev/null || true
+node .rcode/bin/rcode-tools.cjs config 2>/dev/null || true
 ```
 
 </config-check>
@@ -579,7 +579,7 @@ See: .planning/PROJECT.md (updated [today])
 Record the milestone completion via decision log:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-decision "Completed milestone v[X.Y] — [Name]"
+node .rcode/bin/rcode-tools.cjs state add-decision "Completed milestone v[X.Y] — [Name]"
 ```
 
 </step>
@@ -591,7 +591,7 @@ node .rcode/bin/rihal-tools.cjs state add-decision "Completed milestone v[X.Y] �
 Check branching strategy and offer merge options.
 
 ```bash
-CONFIG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null || echo '{}')
+CONFIG=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null || echo '{}')
 # Extract branching_strategy, phase_branch_template, milestone_branch_template, commit_docs from config
 BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
 BASE_BRANCH="${BASE_BRANCH:-main}"

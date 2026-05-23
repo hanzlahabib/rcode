@@ -73,7 +73,7 @@ Exit.
 ## Step 2: Check for existing documents
 
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" init scan 2>/dev/null || echo "{}")
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" init scan 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

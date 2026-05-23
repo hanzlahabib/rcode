@@ -56,7 +56,7 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | What it does |
 |---------|--------------|
-| `/rcode-init` | First-time setup in this repo. Detects state, asks config questions, writes `.rcode/RIHLA.md`. Run once per project. |
+| `/rcode-init` | First-time setup in this repo. Detects state, asks config questions, writes `.rcode/JOURNEY.md`. Run once per project. |
 | `/rcode-new-project` | Take an idea to a planned roadmap. Questioning → optional research → REQUIREMENTS → ROADMAP. |
 | `/rcode-plan <phase>` | Create executable plans for a phase. Produces `SPRINT.md` files. |
 | `/rcode-execute <phase>` | Run all plans in a phase in dependency waves. Updates STATE on completion. |

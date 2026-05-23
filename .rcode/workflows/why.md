@@ -25,7 +25,7 @@ Parse the question to determine category:
 
 ## Step 2a: Panel Selection Reasoning
 
-Run: `node .rcode/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --explain`
+Run: `node .rcode/bin/rcode-tools.cjs select-panel "$ARGUMENTS" --explain`
 
 Output shows:
 ```json
@@ -55,7 +55,7 @@ Alternative considered: {2nd place agent} scored {score} but lower fit for this 
 
 ## Step 2b: Question Classification
 
-Run: `node .rcode/bin/rihal-tools.cjs classify-question "$ARGUMENTS"`
+Run: `node .rcode/bin/rcode-tools.cjs classify-question "$ARGUMENTS"`
 
 Output shows classification type and signals matched.
 

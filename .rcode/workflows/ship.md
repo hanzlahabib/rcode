@@ -44,7 +44,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Parse arguments and load project state:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -57,14 +57,14 @@ Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, 
 
 Also load config for branching strategy:
 ```bash
-CONFIG=$(node ".rcode/bin/rihal-tools.cjs" state load)
+CONFIG=$(node ".rcode/bin/rcode-tools.cjs" state load)
 ```
 
 Extract: `branching_strategy`, `branch_name`.
 
 Detect base branch for PRs and merges:
 ```bash
-BASE_BRANCH=$(node ".rcode/bin/rihal-tools.cjs" config-get git.base_branch 2>/dev/null || echo "")
+BASE_BRANCH=$(node ".rcode/bin/rcode-tools.cjs" config-get git.base_branch 2>/dev/null || echo "")
 if [ -z "$BASE_BRANCH" ] || [ "$BASE_BRANCH" = "null" ]; then
   BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
   BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -223,13 +223,13 @@ Report the PR URL and suggest: "Review the diff at {url}/files"
 Update STATE.md to reflect the shipping action:
 
 ```bash
-node ".rcode/bin/rihal-tools.cjs" state update "Last Activity" "$(date +%Y-%m-%d)"
-node ".rcode/bin/rihal-tools.cjs" state update "Status" "Phase ${PHASE_NUMBER} shipped — PR #${PR_NUMBER}"
+node ".rcode/bin/rcode-tools.cjs" state update "Last Activity" "$(date +%Y-%m-%d)"
+node ".rcode/bin/rcode-tools.cjs" state update "Status" "Phase ${PHASE_NUMBER} shipped — PR #${PR_NUMBER}"
 ```
 
 If `commit_docs` is true:
 ```bash
-node ".rcode/bin/rihal-tools.cjs" commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" --files .planning/STATE.md
+node ".rcode/bin/rcode-tools.cjs" commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" --files .planning/STATE.md
 ```
 </step>
 

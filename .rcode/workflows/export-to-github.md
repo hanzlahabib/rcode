@@ -88,7 +88,7 @@ if echo "$ARGUMENTS" | grep -q -- "--since"; then
 fi
 
 # Pull this project's decisions from the cross-project log
-RESULT=$(node .rcode/bin/rihal-tools.cjs state decisions-global --limit 100 ${SINCE:+--since "$SINCE"} --project "$(node .rcode/bin/rihal-tools.cjs state read | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).project||"")}catch{}}')" 2>/dev/null)
+RESULT=$(node .rcode/bin/rcode-tools.cjs state decisions-global --limit 100 ${SINCE:+--since "$SINCE"} --project "$(node .rcode/bin/rcode-tools.cjs state read | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).project||"")}catch{}}')" 2>/dev/null)
 ```
 
 Render the decisions as a markdown table in the issue body:
@@ -149,7 +149,7 @@ Where `since_suffix` is `, since {ISO}` if `--since` was passed.
 After a successful mutation (either CLI or --decisions), append a decision for traceability:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-decision \
+node .rcode/bin/rcode-tools.cjs state add-decision \
   "Exported ${TARGET_DESCRIPTION} to GitHub: ${ISSUE_OR_SUMMARY_URL}" \
   2>/dev/null || true
 ```

@@ -32,7 +32,7 @@ Always include current year. Use multiple query variations. Mark WebSearch-only 
 Check `brave_search` from orchestrator context. If `true`, use Brave Search for higher quality results:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" websearch "your query" --limit 10
+node ".rcode/bin/rcode-tools.cjs" websearch "your query" --limit 10
 ```
 
 **Options:**
@@ -128,7 +128,7 @@ Never present LOW confidence findings as authoritative.
 
 <output_formats>
 
-All files → `.rihal/research/`
+All files → `.rcode/research/`
 
 ## SUMMARY.md
 
@@ -478,7 +478,7 @@ Run pre-submission checklist (see verification_protocol).
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
-In `.rihal/research/`:
+In `.rcode/research/`:
 1. **SUMMARY.md** — Always
 2. **STACK.md** — Always
 3. **FEATURES.md** — Always
@@ -512,11 +512,11 @@ In `.rihal/research/`:
 
 | File | Purpose |
 |------|---------|
-| .rihal/research/SUMMARY.md | Executive summary with roadmap implications |
-| .rihal/research/STACK.md | Technology recommendations |
-| .rihal/research/FEATURES.md | Feature landscape |
-| .rihal/research/ARCHITECTURE.md | Architecture patterns |
-| .rihal/research/PITFALLS.md | Domain pitfalls |
+| .rcode/research/SUMMARY.md | Executive summary with roadmap implications |
+| .rcode/research/STACK.md | Technology recommendations |
+| .rcode/research/FEATURES.md | Feature landscape |
+| .rcode/research/ARCHITECTURE.md | Architecture patterns |
+| .rcode/research/PITFALLS.md | Domain pitfalls |
 
 ### Confidence Assessment
 
@@ -571,7 +571,7 @@ Research is complete when:
 - [ ] Domain pitfalls catalogued
 - [ ] Source hierarchy followed (Context7 → Official → WebSearch)
 - [ ] All findings have confidence levels
-- [ ] Output files created in `.rihal/research/`
+- [ ] Output files created in `.rcode/research/`
 - [ ] SUMMARY.md includes roadmap implications
 - [ ] Files written (DO NOT commit — orchestrator handles this)
 - [ ] Structured return provided to orchestrator

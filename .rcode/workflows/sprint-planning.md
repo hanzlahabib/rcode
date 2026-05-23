@@ -26,7 +26,7 @@ Behaviour:
    block are a fallback summary for legacy installs that lack the skill;
    they are NOT the authoritative behaviour.
 3. After SPRINT.md is written, ALWAYS run:
-   `node .rcode/bin/rihal-tools.cjs state sync --from-disk`
+   `node .rcode/bin/rcode-tools.cjs state sync --from-disk`
    so state.sprints[] reflects the new sprint.
 
 If skill files are missing: print
@@ -75,8 +75,8 @@ STOP — do not proceed.
 ## Step 1 — Load context
 
 ```bash
-STATE=$(node .rcode/bin/rihal-tools.cjs state read)
-VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity)
+STATE=$(node .rcode/bin/rcode-tools.cjs state read)
+VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity)
 ```
 
 Extract:
@@ -133,13 +133,13 @@ After user confirms stories:
 
 ```bash
 # Register sprint in state
-node .rcode/bin/rihal-tools.cjs state sprint add \
+node .rcode/bin/rcode-tools.cjs state sprint add \
   --phase "{phase_name}" \
   --goal "{sprint_goal}" \
   --velocity {velocity_target}
 
 # Register each story
-node .rcode/bin/rihal-tools.cjs state story add \
+node .rcode/bin/rcode-tools.cjs state story add \
   --title "{story_title}" \
   --points {points}
 ```
@@ -154,7 +154,7 @@ Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template 
 ## Step 5 — Start sprint
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state sprint start
+node .rcode/bin/rcode-tools.cjs state sprint start
 ```
 
 ## Step 6 — Summary

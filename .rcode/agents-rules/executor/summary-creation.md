@@ -66,11 +66,11 @@ Or if clean: **No stubs found.**
 ## State Updates After SUMMARY
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" state advance-plan
-node ".rihal/bin/rihal-tools.cjs" state update-progress
-node ".rihal/bin/rihal-tools.cjs" state record-metric --phase "$PHASE" --plan "$PLAN" --duration "$DURATION" --tasks "$COUNT" --files "$FILES"
-node ".rihal/bin/rihal-tools.cjs" roadmap update-plan-progress "$PHASE_NUMBER"
-node ".rihal/bin/rihal-tools.cjs" requirements mark-complete $REQ_IDS
+node ".rcode/bin/rcode-tools.cjs" state advance-plan
+node ".rcode/bin/rcode-tools.cjs" state update-progress
+node ".rcode/bin/rcode-tools.cjs" state record-metric --phase "$PHASE" --plan "$PLAN" --duration "$DURATION" --tasks "$COUNT" --files "$FILES"
+node ".rcode/bin/rcode-tools.cjs" roadmap update-plan-progress "$PHASE_NUMBER"
+node ".rcode/bin/rcode-tools.cjs" requirements mark-complete $REQ_IDS
 ```
 
 Then final commit with SUMMARY.md + STATE.md + ROADMAP.md + REQUIREMENTS.md

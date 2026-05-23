@@ -6,12 +6,12 @@ Identify files modified in this phase from SUMMARY.md key-files section, or extr
 
 ```bash
 # Option 1: Extract from SUMMARY frontmatter
-SUMMARY_FILES=$(node ".rihal/bin/rihal-tools.cjs" summary-extract "$PHASE_DIR"/*-SUMMARY.md --fields key-files)
+SUMMARY_FILES=$(node ".rcode/bin/rcode-tools.cjs" summary-extract "$PHASE_DIR"/*-SUMMARY.md --fields key-files)
 
 # Option 2: Verify commits exist (if commit hashes documented)
 COMMIT_HASHES=$(grep -oE "[a-f0-9]{7,40}" "$PHASE_DIR"/*-SUMMARY.md | head -10)
 if [ -n "$COMMIT_HASHES" ]; then
-  COMMITS_VALID=$(node ".rihal/bin/rihal-tools.cjs" verify commits $COMMIT_HASHES)
+  COMMITS_VALID=$(node ".rcode/bin/rcode-tools.cjs" verify commits $COMMIT_HASHES)
 fi
 
 # Fallback: grep for files

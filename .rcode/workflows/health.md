@@ -149,8 +149,8 @@ Verify:
 **Action:** Check rihal-tools.cjs exists, is executable, and responds to version command.
 
 ```bash
-test -f .rcode/bin/rihal-tools.cjs && test -x .rcode/bin/rihal-tools.cjs
-node .rcode/bin/rihal-tools.cjs version
+test -f .rcode/bin/rcode-tools.cjs && test -x .rcode/bin/rcode-tools.cjs
+node .rcode/bin/rcode-tools.cjs version
 ```
 
 **Output on pass:**
@@ -171,7 +171,7 @@ Run these after installation checks. Skip if `.rcode/state.json` doesn't exist.
 
 ```bash
 ROADMAP_PHASES=$(grep -c '^## Phase\|^### Phase\|^- Phase' .planning/ROADMAP.md 2>/dev/null || echo 0)
-STATE_PHASES=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('phases',[])) if d else 0)" 2>/dev/null || echo 0)
+STATE_PHASES=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('phases',[])) if d else 0)" 2>/dev/null || echo 0)
 ```
 
 If counts match: `✓ PASS — {N} phases in ROADMAP.md and state.json are in sync`
@@ -180,7 +180,7 @@ If they differ: `⚠ WARN — ROADMAP.md has ${ROADMAP_PHASES} phases, state.jso
 **Check 8 — current phase has a SPRINT.md or CONTEXT.md**
 
 ```bash
-CURRENT=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('current_phase',''))" 2>/dev/null)
+CURRENT=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('current_phase',''))" 2>/dev/null)
 find .planning/phases/*${CURRENT}* -name "*-SPRINT.md" -o -name "*-CONTEXT.md" 2>/dev/null | head -1
 ```
 
@@ -191,7 +191,7 @@ If no file: `⚠ WARN — current phase ${CURRENT} has no SPRINT.md or CONTEXT.m
 **Check 9 — no phantom-complete phases (ROADMAP says complete but no artifacts)**
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state snapshot 2>/dev/null | python3 -c "
+node .rcode/bin/rcode-tools.cjs state snapshot 2>/dev/null | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 insights = d.get('insights', [])

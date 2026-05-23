@@ -1,12 +1,12 @@
 # Debug Session State Management
 
-Debug sessions survive context resets by maintaining state in the `.rihal/debug/` directory. This file describes the state schema and recovery protocol.
+Debug sessions survive context resets by maintaining state in the `.rcode/debug/` directory. This file describes the state schema and recovery protocol.
 
 ---
 
 ## Session State File
 
-**Location:** `.rihal/debug/session.json`
+**Location:** `.rcode/debug/session.json`
 
 **Purpose:** Persist debug progress across context resets.
 
@@ -64,7 +64,7 @@ Debug sessions survive context resets by maintaining state in the `.rihal/debug/
 
 ## Investigation Log
 
-**Location:** `.rihal/debug/investigation.md`
+**Location:** `.rcode/debug/investigation.md`
 
 **Purpose:** Human-readable narrative of debugging steps.
 
@@ -194,7 +194,7 @@ Or ask for further investigation if needed.
 
 If a debug session crashes or context resets:
 
-1. **Check `.rihal/debug/session.json`** — What phase were we in?
+1. **Check `.rcode/debug/session.json`** — What phase were we in?
 2. **Read investigation.md** — What's been tried and ruled out?
 3. **Resume from last phase**:
    - If `phase: "evidence-gathering"` → Continue gathering facts
@@ -209,15 +209,15 @@ If a debug session crashes or context resets:
 
 After debug session completes (checkpoint reached or bug closed):
 
-**Keep `.rihal/debug/investigation.md`** — Archive for future reference
+**Keep `.rcode/debug/investigation.md`** — Archive for future reference
 
 **Archive `session.json`** — Rename to `session-[bug-id]-[date].json`
 
 **Example:**
 ```bash
 # After debugging bug-user-auth-fails
-mv .rihal/debug/session.json \
-   .rihal/debug/archives/session-user-auth-fails-2025-04-14.json
+mv .rcode/debug/session.json \
+   .rcode/debug/archives/session-user-auth-fails-2025-04-14.json
 ```
 
 ---
@@ -229,7 +229,7 @@ If debugging multiple bugs in parallel:
 Create separate directories:
 
 ```
-.rihal/debug/
+.rcode/debug/
   session.json          (current active debug)
   investigation.md      (current active debug)
   
@@ -252,10 +252,10 @@ Before resuming, verify session.json is valid:
 
 ```bash
 # Check required fields
-grep -E "^  \"(bug_id|status|phase)\"" .rihal/debug/session.json
+grep -E "^  \"(bug_id|status|phase)\"" .rcode/debug/session.json
 
 # Validate JSON
-jq empty .rihal/debug/session.json && echo "Valid" || echo "Invalid JSON"
+jq empty .rcode/debug/session.json && echo "Valid" || echo "Invalid JSON"
 ```
 
 If session.json is corrupted, create a new one from investigation.md.

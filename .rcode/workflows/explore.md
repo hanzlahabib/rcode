@@ -128,7 +128,7 @@ For each selected output, write the file:
 
 Commit if `commit_docs` is enabled:
 ```bash
-node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" commit "docs: capture exploration — {topic_slug}" --files {file_list}
+node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" commit "docs: capture exploration — {topic_slug}" --files {file_list}
 ```
 
 ## Step 6: Close

@@ -28,7 +28,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init document-project "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init document-project "$ARGUMENTS")
 ```
 
 Parse:
@@ -122,7 +122,7 @@ For each missing or stale doc (status=Missing or Stale):
 Create task subtask in state:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rcode-tools.cjs state add-task \
   --title "Write {doc_name}: {purpose}" \
   --description "Audience: {audience}, Priority: {priority}" \
   --effort {effort_hours} \

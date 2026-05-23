@@ -165,9 +165,9 @@ When `--interactive` is set, discuss runs inline with questions (not auto-answer
 Bootstrap via rihal-tools init + state:
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init milestone-op 2>/dev/null || node .rcode/bin/rihal-tools.cjs init)
+INIT=$(node .rcode/bin/rcode-tools.cjs init milestone-op 2>/dev/null || node .rcode/bin/rcode-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-STATE=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null || echo '{}')
 ```
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`, `response_language`.
@@ -273,7 +273,7 @@ Use TaskCreate to register a task per incomplete phase.
 logic as iterate step 4.0):
 
 ```bash
-PROGRESS_REFRESH=$(node .rcode/bin/rihal-tools.cjs progress init 2>/dev/null)
+PROGRESS_REFRESH=$(node .rcode/bin/rcode-tools.cjs progress init 2>/dev/null)
 ```
 
 Update `phase_count` and `completed_phases` from the refresh. This ensures
@@ -312,7 +312,7 @@ Proceed to 3b.
 **If has_context is false:** Check if discuss is disabled via settings:
 
 ```bash
-SKIP_DISCUSS=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"skip_discuss"[^,}]*' | grep -oE 'true|false' || echo "false")
+SKIP_DISCUSS=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"skip_discuss"[^,}]*' | grep -oE 'true|false' || echo "false")
 ```
 
 **If SKIP_DISCUSS is `true`:** Skip discuss entirely — the ROADMAP phase description is the spec. Display:
@@ -408,7 +408,7 @@ PHASE_SECTION=$(sed -n "/^## Phase ${PHASE_NUM}/,/^## Phase /p" .planning/ROADMA
 echo "$PHASE_SECTION" | grep -iE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" > /dev/null 2>&1
 HAS_UI=$?
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
-UI_PHASE_CFG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_phase"[^,}]*' | grep -oE 'true|false' || echo "true")
+UI_PHASE_CFG=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"ui_phase"[^,}]*' | grep -oE 'true|false' || echo "true")
 ```
 
 **If `HAS_UI` is 0 (frontend indicators found) AND `UI_SPEC_FILE` is empty AND `UI_PHASE_CFG` is not `false`:**
@@ -477,7 +477,7 @@ Auto-invoke code review and fix chain. Autonomous mode chains both review and fi
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "false")
+CODE_REVIEW_ENABLED=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"code_review"[^,}]*' | grep -oE 'true|false' || echo "false")
 ```
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
@@ -573,7 +573,7 @@ This limits gap closure to 1 automatic retry to prevent infinite loops.
 
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
-UI_REVIEW_CFG=$(node .rcode/bin/rihal-tools.cjs config 2>/dev/null | grep -oE '"ui_review"[^,}]*' | grep -oE 'true|false' || echo "true")
+UI_REVIEW_CFG=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"ui_review"[^,}]*' | grep -oE 'true|false' || echo "true")
 ```
 
 **If `UI_SPEC_FILE` is not empty AND `UI_REVIEW_CFG` is not `false`:**
@@ -609,7 +609,7 @@ START of every iteration — never rely on values held from the initialize step.
 
 ```bash
 # Re-read the authoritative progress snapshot from the CLI
-PROGRESS_REFRESH=$(node .rcode/bin/rihal-tools.cjs progress init 2>/dev/null)
+PROGRESS_REFRESH=$(node .rcode/bin/rcode-tools.cjs progress init 2>/dev/null)
 ```
 
 Parse `PROGRESS_REFRESH` JSON and update:
@@ -661,7 +661,7 @@ Read STATE.md fresh:
 
 ```bash
 cat .planning/STATE.md
-node .rcode/bin/rihal-tools.cjs state read
+node .rcode/bin/rcode-tools.cjs state read
 ```
 
 Check for blockers in the Blockers/Concerns section. If blockers are found, go to handle_blocker.
@@ -846,7 +846,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 **On "Skip this phase":** Log `Phase {N} ⏭ {Name} — Skipped by user`. Record in state:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-decision "Skipped phase ${PHASE_NUM} in autonomous mode"
+node .rcode/bin/rcode-tools.cjs state add-decision "Skipped phase ${PHASE_NUM} in autonomous mode"
 ```
 
 Proceed to iterate.
@@ -868,7 +868,7 @@ Proceed to iterate.
 Record blocker in state:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUM}: ${DESCRIPTION}"
+node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUM}: ${DESCRIPTION}"
 ```
 
 </step>

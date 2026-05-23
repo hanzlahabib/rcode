@@ -28,7 +28,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init review-edge-case-hunter "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init review-edge-case-hunter "$ARGUMENTS")
 ```
 
 Parse:
@@ -155,7 +155,7 @@ Update `.rcode/story-current.md` acceptance criteria:
 Or file as subtasks:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rcode-tools.cjs state add-task \
   --title "Handle edge case: {scenario}" \
   --category edge-case \
   --severity {critical|high}

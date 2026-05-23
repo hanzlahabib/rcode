@@ -5,7 +5,7 @@ Key links are critical connections. If broken, the goal fails even with all arti
 Use rihal-tools for key link verification against must_haves in PLAN frontmatter:
 
 ```bash
-LINKS_RESULT=$(node ".rihal/bin/rihal-tools.cjs" verify key-links "$PLAN_PATH")
+LINKS_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify key-links "$PLAN_PATH")
 ```
 
 Parse JSON result: `{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`

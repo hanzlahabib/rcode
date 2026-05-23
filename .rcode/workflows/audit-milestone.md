@@ -165,7 +165,7 @@ If `PLANS > 0` AND (`GIT_FEAT > 0` OR `APPS > 0`):
     0. Cancel
 ```
 
-In `mode: yolo` (read via `node .rcode/bin/rihal-tools.cjs config-get
+In `mode: yolo` (read via `node .rcode/bin/rcode-tools.cjs config-get
 mode`), auto-pick option 1. In guided mode, ask. STOP after the user
 picks 0 or 2; resume audit at Step 4 after option 1 completes.
 

@@ -117,7 +117,7 @@ If ARGUMENTS contains `list`:
 
 Call node helper:
 ```bash
-node .rcode/bin/rihal-tools.cjs notes list
+node .rcode/bin/rcode-tools.cjs notes list
 ```
 
 Expected output format: JSON array of recent notes:

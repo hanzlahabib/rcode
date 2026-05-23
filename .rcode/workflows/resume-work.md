@@ -20,7 +20,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init resume 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init resume 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

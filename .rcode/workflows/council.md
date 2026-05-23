@@ -139,7 +139,7 @@ Options:
 Call the helper binary once to load all context:
 
 ```bash
-INIT_JSON=$(node .rcode/bin/rihal-tools.cjs init council "$ARGUMENTS")
+INIT_JSON=$(node .rcode/bin/rcode-tools.cjs init council "$ARGUMENTS")
 ```
 
 Parse the JSON for:
@@ -421,7 +421,7 @@ Rules for compact mode:
 
 ### Verbose mode (`--verbose` flag or `output.verbose: true` in config)
 
-Activated by: `--verbose` in `$ARGUMENTS` OR `$(node .rcode/bin/rihal-tools.cjs config-get output.verbose)` equals `"true"`.
+Activated by: `--verbose` in `$ARGUMENTS` OR `$(node .rcode/bin/rcode-tools.cjs config-get output.verbose)` equals `"true"`.
 
 Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 
@@ -552,11 +552,11 @@ Print the artifact path to the user at the end:
 After the artifact is written, update `.rcode/state.json` with the council session record and session timestamp. **This step is mandatory — skipping it causes council_sessions[] to remain empty in state.json.** Run silently (no user output for this step).
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state record-council \
+node .rcode/bin/rcode-tools.cjs state record-council \
   --slug "{slug}" \
   --panel "{comma-separated panel names}" \
   --artifact "{artifact path}"
-node .rcode/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rcode-tools.cjs state record-session
 ```
 
 > **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.

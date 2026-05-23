@@ -1,7 +1,7 @@
 # Workflow: rihal-workstream
 
 <purpose>
-Manage parallel workstreams (milestone tracks) in Rihal. A workstream is an independent execution path with its own phases and tasks. Multiple workstreams can run in parallel, sharing decisions, blockers, and council sessions. This workflow handles creation, switching, listing, and completion of workstreams stored in state.json.
+Manage parallel workstreams (milestone tracks) in rcode. A workstream is an independent execution path with its own phases and tasks. Multiple workstreams can run in parallel, sharing decisions, blockers, and council sessions. This workflow handles creation, switching, listing, and completion of workstreams stored in state.json.
 </purpose>
 
 <required_reading>
@@ -42,7 +42,7 @@ Extract from `$ARGUMENTS`:
 
 Call the state helper:
 ```bash
-RESULT=$(node .rcode/bin/rihal-tools.cjs state workstream-validate "$subcommand" --name "${NAME}" 2>&1)
+RESULT=$(node .rcode/bin/rcode-tools.cjs state workstream-validate "$subcommand" --name "${NAME}" 2>&1)
 ```
 
 If validation fails, print error and STOP.
@@ -55,7 +55,7 @@ If validation fails, print error and STOP.
 
 **Execute:**
 ```bash
-node .rcode/bin/rihal-tools.cjs state workstream-create --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-create failed"}'
+node .rcode/bin/rcode-tools.cjs state workstream-create --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-create failed"}'
 ```
 
 **Output:**
@@ -74,7 +74,7 @@ Set it as active unless user specifies `--no-activate` (not currently supported 
 
 **Execute:**
 ```bash
-node .rcode/bin/rihal-tools.cjs state workstream-switch --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-switch failed"}'
+node .rcode/bin/rcode-tools.cjs state workstream-switch --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-switch failed"}'
 ```
 
 **Output:**
@@ -88,7 +88,7 @@ node .rcode/bin/rihal-tools.cjs state workstream-switch --name "$NAME" 2>/dev/nu
 
 **Execute:**
 ```bash
-node .rcode/bin/rihal-tools.cjs state workstream-list 2>/dev/null || echo '[]'
+node .rcode/bin/rcode-tools.cjs state workstream-list 2>/dev/null || echo '[]'
 ```
 
 **Output (formatted table):**
@@ -104,7 +104,7 @@ API Refactor             ✗       ✗          1       2026-04-09
 
 **Execute:**
 ```bash
-node .rcode/bin/rihal-tools.cjs state workstream-status 2>/dev/null || echo '{"ok":false,"error":"no active workstream"}'
+node .rcode/bin/rcode-tools.cjs state workstream-status 2>/dev/null || echo '{"ok":false,"error":"no active workstream"}'
 ```
 
 **Output:**
@@ -128,7 +128,7 @@ Recent phases:
 
 **Execute:**
 ```bash
-node .rcode/bin/rihal-tools.cjs state workstream-complete --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-complete failed"}'
+node .rcode/bin/rcode-tools.cjs state workstream-complete --name "$NAME" 2>/dev/null || echo '{"ok":false,"error":"workstream-complete failed"}'
 ```
 
 **Output:**

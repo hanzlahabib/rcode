@@ -78,7 +78,7 @@ node "$INSTALLER_PATH" --list-files 2>/dev/null || echo "[]"
 ```
 
 If that flag doesn't exist, walk the source package's `rihal/` directory manually:
-- Find all files in `$(npm root -g)/rihal-code/rihal/` (or local `./rihal/`)
+- Find all files in `$(npm root -g)/@hanzlaa/rcode/rcode/` (or local `./rihal/`)
 - Compute SHA256 for each
 - Store as `$SOURCE_HASHES` (map rel → sha256)
 
@@ -94,7 +94,7 @@ Count each category. Store results in `$ADDED`, `$CHANGED`, `$REMOVED` (arrays o
 
 If all three lists are empty:
 ```
-✓ rihal-code is up to date (no changes detected)
+✓ rcode is up to date (no changes detected)
 ```
 Exit.
 
@@ -103,7 +103,7 @@ Exit.
 Print a human-readable changelog:
 
 ```
-📦 rihal-code Update Available
+📦 rcode Update Available
 
 Added files (3):
   ✨ rihal/commands/update.md
@@ -198,7 +198,7 @@ their update next time, run /rihal-update --force-overwrite.
 After installer finishes, refresh the brain content from configured sources (issue #158). This is idempotent and safe to re-run.
 
 ```bash
-node .rcode/bin/rihal-tools.cjs brain pull
+node .rcode/bin/rcode-tools.cjs brain pull
 ```
 
 Parse the JSON output. Report counts to the user:
@@ -213,7 +213,7 @@ If the user passed a version argument (`/rihal-update v1.3.0`), pass it through 
 Print:
 
 ```
-✓ rihal-code updated successfully
+✓ rcode updated successfully
 
 Updated files: N
   - file-path-1

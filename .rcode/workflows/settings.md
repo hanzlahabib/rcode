@@ -45,7 +45,7 @@ nested-safe reader in `rihal/bin/lib/config.cjs`). **Do not** call the legacy
 `config set` — it uses a flat YAML parser and corrupts nested sections.
 
 ```bash
-TOOL="node .rcode/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rcode-tools.cjs"
 $TOOL config-get user_name                            || echo "(unset)"
 $TOOL config-get communication_language               || echo "(unset)"
 $TOOL config-get mode                                 || echo "(unset)"
@@ -93,7 +93,7 @@ If invoked as `/rihal-settings show`, STOP here.
 ## Step 1.7 — `get <key>`
 
 ```bash
-node .rcode/bin/rihal-tools.cjs config-get "$KEY"
+node .rcode/bin/rcode-tools.cjs config-get "$KEY"
 ```
 
 Print the result (empty output means unset). STOP.
@@ -112,7 +112,7 @@ Validate the value:
 - `output.verbose` ∈ {true, false}
 
 ```bash
-node .rcode/bin/rihal-tools.cjs config-set "$KEY" "$VALUE"
+node .rcode/bin/rcode-tools.cjs config-set "$KEY" "$VALUE"
 ```
 
 Print:
@@ -149,7 +149,7 @@ the new value, showing the allowed values for that key.
 Then call:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs config-set "{dotted.key}" "{value}"
+node .rcode/bin/rcode-tools.cjs config-set "{dotted.key}" "{value}"
 ```
 
 After each successful write, re-display the affected row so the user sees the

@@ -29,7 +29,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${target}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${target}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -85,13 +85,13 @@ Wait for confirmation.
 **Delegate the entire removal operation to rihal-tools:**
 
 ```bash
-RESULT=$(node ".rcode/bin/rihal-tools.cjs" phase remove "${target}")
+RESULT=$(node ".rcode/bin/rcode-tools.cjs" phase remove "${target}")
 ```
 
 If the phase has executed plans (SUMMARY.md files), rihal-tools will error. Use `--force` only if the user confirms:
 
 ```bash
-RESULT=$(node ".rcode/bin/rihal-tools.cjs" phase remove "${target}" --force)
+RESULT=$(node ".rcode/bin/rcode-tools.cjs" phase remove "${target}" --force)
 ```
 
 The CLI handles:
@@ -108,7 +108,7 @@ Extract from result: `removed`, `directory_deleted`, `renamed_directories`, `ren
 Stage and commit the removal:
 
 ```bash
-node ".rcode/bin/rihal-tools.cjs" commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
+node ".rcode/bin/rcode-tools.cjs" commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
 ```
 
 The commit message preserves the historical record of what was removed.

@@ -24,7 +24,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init check-implementation-readiness "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init check-implementation-readiness "$ARGUMENTS")
 ```
 
 Parse:
@@ -97,7 +97,7 @@ fi
 Collect gate results:
 
 ```bash
-GATES=$(node .rcode/bin/rihal-tools.cjs state read-gates)
+GATES=$(node .rcode/bin/rcode-tools.cjs state read-gates)
 OVERALL_STATUS=$([[ "$GATE_PRD" == "✓"* ]] && [[ "$GATE_ARCH" == "✓"* ]] && [[ "$GATE_DEPS" == "✓"* ]] && [[ "$GATE_ASSUMPTIONS" == "✓"* ]] && echo "READY" || echo "BLOCKED")
 ```
 
@@ -157,7 +157,7 @@ In plan.md workflow, **Step 0.8 — Pre-execution Gate** (after decision checkpo
 
 ```bash
 if [[ "$FLAGS_SKIP_GATES" != "true" ]]; then
-  READINESS=$(node .rcode/bin/rihal-tools.cjs check-implementation-readiness)
+  READINESS=$(node .rcode/bin/rcode-tools.cjs check-implementation-readiness)
   if [[ "$READINESS" != "READY" ]]; then
     echo "⚠ Implementation not ready. Resolve blockers before proceeding."
     exit 1
@@ -170,7 +170,7 @@ fi
 In execute.md workflow, **Step 0 — Pre-execution Validation**:
 
 ```bash
-READINESS=$(node .rcode/bin/rihal-tools.cjs check-implementation-readiness --phase "$PHASE")
+READINESS=$(node .rcode/bin/rcode-tools.cjs check-implementation-readiness --phase "$PHASE")
 if [[ "$READINESS" != "READY" ]]; then
   echo "Cannot execute plan — implementation not ready."
   exit 1

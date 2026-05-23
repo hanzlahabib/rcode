@@ -310,7 +310,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
          # Only amend the commit with .planning/ files if commit_docs is enabled (#1783)
-         COMMIT_DOCS=$(node ".rcode/bin/rihal-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
+         COMMIT_DOCS=$(node ".rcode/bin/rcode-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
          if [ "$COMMIT_DOCS" != "false" ]; then
            git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
            git commit --amend --no-edit 2>/dev/null || true
@@ -337,7 +337,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    ```bash
    # Update ROADMAP.md for each completed plan in this wave
    for PLAN_ID in ${WAVE_PLAN_IDS}; do
-     node ".rcode/bin/rihal-tools.cjs" roadmap update-plan-progress "${PHASE_NUMBER}" "${PLAN_ID}" completed
+     node ".rcode/bin/rcode-tools.cjs" roadmap update-plan-progress "${PHASE_NUMBER}" "${PLAN_ID}" completed
    done
 
    ```
@@ -381,7 +381,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
     Before spawning wave N+1, for each plan in the upcoming wave:
     ```bash
-    node ".rcode/bin/rihal-tools.cjs" verify key-links {phase_dir}/{plan}-SPRINT.md
+    node ".rcode/bin/rcode-tools.cjs" verify key-links {phase_dir}/{plan}-SPRINT.md
     ```
 
     If any key-link from a PRIOR wave's artifact fails verification:

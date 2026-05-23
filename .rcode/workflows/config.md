@@ -57,7 +57,7 @@ Allowed keys: communication_language, mode, model_profile, branching_strategy
 
 Call:
 ```bash
-node .rcode/bin/rihal-tools.cjs config set --key {key} --value {value}
+node .rcode/bin/rcode-tools.cjs config set --key {key} --value {value}
 ```
 
 Print success:

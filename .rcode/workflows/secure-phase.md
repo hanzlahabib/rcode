@@ -33,9 +33,9 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
@@ -48,8 +48,8 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 **If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 ```bash
-AUDITOR_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-security-auditor --raw)
-SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-security-auditor --raw)
+SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
 If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal-settings."
@@ -156,7 +156,7 @@ Do NOT emit next-phase routing. Stop here.
 ## 7. Commit
 
 ```bash
-node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update security threat verification"
+node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update security threat verification"
 ```
 
 ## 8. Results + Routing

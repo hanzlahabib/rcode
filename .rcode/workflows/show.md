@@ -10,7 +10,7 @@ Verify argument was provided:
 
 ## Step 1: Resolve ID
 
-Run: `node .rcode/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
+Run: `node .rcode/bin/rcode-tools.cjs state resolve-id "$ARGUMENTS"`
 
 Expected output:
 ```json

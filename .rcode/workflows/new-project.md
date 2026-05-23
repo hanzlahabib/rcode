@@ -108,7 +108,7 @@ esac
 #   uninstalled | uninitialized | stub | real
 # (see issue #675 for the contract). Falls back to `none` when
 # rihal-tools is unavailable so the workflow still proceeds.
-PROJECT_STATE=$(node .rcode/bin/rihal-tools.cjs project-status 2>/dev/null \
+PROJECT_STATE=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null \
   | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).status||'none')}catch{console.log('none')}})" \
   || echo "none")
 [ "$PROJECT_STATE" = "uninstalled" ] || [ "$PROJECT_STATE" = "uninitialized" ] && PROJECT_STATE="none"
@@ -194,14 +194,14 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init new-project 2>/dev/null || node .rcode/bin/rihal-tools.cjs init)
+INIT=$(node .rcode/bin/rcode-tools.cjs init new-project 2>/dev/null || node .rcode/bin/rcode-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_RESEARCHER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
-AGENT_SYNTHESIZER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
-AGENT_ROADMAPPER=$(node .rcode/bin/rihal-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
-RESEARCHER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
-SYNTHESIZER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
-ROADMAPPER_MODEL=$(node .rcode/bin/rihal-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
+AGENT_RESEARCHER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
+AGENT_SYNTHESIZER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
+AGENT_ROADMAPPER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
+SYNTHESIZER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
+ROADMAPPER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
 ```
 
 Parse JSON for: `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.

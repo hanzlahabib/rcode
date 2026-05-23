@@ -42,7 +42,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 ## Step 1 — Resolve mode + arguments
 
 ```bash
-TOOL="node .rcode/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rcode-tools.cjs"
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
 DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```

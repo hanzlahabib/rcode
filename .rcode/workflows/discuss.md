@@ -44,8 +44,8 @@ Only after the user provides arguments, proceed to Step 0.5.
 Run two checks in parallel — classifier AND panel scorer top-1. Either signal triggers the redirect.
 
 ```bash
-TYPE=$(node .rcode/bin/rihal-tools.cjs classify-question "$ARGUMENTS" 2>/dev/null | grep -o '"type": *"[^"]*"' | cut -d'"' -f4)
-TOP_AGENT=$(node .rcode/bin/rihal-tools.cjs select-panel "$ARGUMENTS" --top 1 2>/dev/null | grep -o '"panel": *\["[^"]*"' | cut -d'"' -f4)
+TYPE=$(node .rcode/bin/rcode-tools.cjs classify-question "$ARGUMENTS" 2>/dev/null | grep -o '"type": *"[^"]*"' | cut -d'"' -f4)
+TOP_AGENT=$(node .rcode/bin/rcode-tools.cjs select-panel "$ARGUMENTS" --top 1 2>/dev/null | grep -o '"panel": *\["[^"]*"' | cut -d'"' -f4)
 ```
 
 **Redirect to council if EITHER condition holds:**
@@ -85,7 +85,7 @@ Use these exact `subagent_type` values when calling the Agent tool:
 Call the helper binary to parse arguments and resolve the agent:
 
 ```bash
-INIT_JSON=$(node .rcode/bin/rihal-tools.cjs init discuss "$ARGUMENTS")
+INIT_JSON=$(node .rcode/bin/rcode-tools.cjs init discuss "$ARGUMENTS")
 ```
 
 Parse the JSON for:
@@ -104,7 +104,7 @@ Parse the JSON for:
 **If `agent_id` is null:** auto-route to the best agent by calling:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs select-panel "$QUESTION" --top 1
+node .rcode/bin/rcode-tools.cjs select-panel "$QUESTION" --top 1
 ```
 
 Use the first (and only) agent in the returned `panel` array.
@@ -209,7 +209,7 @@ Append footer:
 ## Step 7 — Update state
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state record-session
+node .rcode/bin/rcode-tools.cjs state record-session
 ```
 
 This records the discuss session in `.rcode/state.json` as `last_session`.

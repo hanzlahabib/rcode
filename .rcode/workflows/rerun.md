@@ -14,7 +14,7 @@ If empty: `Usage: /rihal-rerun <phase-id|plan-id> (e.g., /rihal-rerun 03 or /rih
 
 ## Step 0.5: Detect Target via Resolve
 
-Run: `node .rcode/bin/rihal-tools.cjs state resolve-id "$ARGUMENTS"`
+Run: `node .rcode/bin/rcode-tools.cjs state resolve-id "$ARGUMENTS"`
 
 If type === "unknown": Return error `ID not found: $ARGUMENTS`
 

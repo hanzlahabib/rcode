@@ -171,6 +171,6 @@ git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project inst
 # rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
 # state.json is empty after this step unless we sync it. Without this, every
 # /rihal-status shows "N phases not registered" warnings immediately after init.
-node ".rcode/bin/rihal-tools.cjs" state sync --from-disk 2>/dev/null || true
+node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 

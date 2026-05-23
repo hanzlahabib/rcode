@@ -17,16 +17,16 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-nyquist-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-nyquist-auditor 2>/dev/null)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$(node ".rcode/bin/rihal-tools.cjs" resolve-model rihal-nyquist-auditor --raw)
-NYQUIST_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.nyquist_validation --raw)
+AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-nyquist-auditor --raw)
+NYQUIST_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.nyquist_validation --raw)
 ```
 
 If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal-settings."
@@ -85,7 +85,7 @@ No gaps → skip to Step 6, set `nyquist_compliant: true`.
 ## 4. Present Gap Plan
 
 ```bash
-CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Auto-select option 1 ("Fix all gaps") and proceed to Step 5 without asking. Print: `▶ Auto-fixing all gaps (yolo mode).`
@@ -142,7 +142,7 @@ Handle return:
 git add {test_files}
 git commit -m "test(phase-${PHASE}): add Nyquist validation tests"
 
-node ".rcode/bin/rihal-tools.cjs" commit "docs(phase-${PHASE}): add/update validation strategy"
+node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update validation strategy"
 ```
 
 ## 8. Results + Routing

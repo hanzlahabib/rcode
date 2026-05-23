@@ -16,8 +16,8 @@ Render a human-readable project status dashboard. All data comes from a single `
 ## Step 1 — Fetch the snapshot
 
 ```bash
-SNAPSHOT=$(node .rcode/bin/rihal-tools.cjs progress init)
-VERBOSE=$(node .rcode/bin/rihal-tools.cjs config-get output.verbose 2>/dev/null || echo "false")
+SNAPSHOT=$(node .rcode/bin/rcode-tools.cjs progress init)
+VERBOSE=$(node .rcode/bin/rcode-tools.cjs config-get output.verbose 2>/dev/null || echo "false")
 ```
 
 Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
@@ -59,7 +59,7 @@ After the main dashboard, call `rihal-tools milestone-health` and surface
 a gauge when the milestone is full:
 
 ```bash
-HEALTH=$(node ".rcode/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
+HEALTH=$(node ".rcode/bin/rcode-tools.cjs" milestone-health 2>/dev/null)
 ```
 
 Parse `recommendation`, `open_phases`, `phase_count`. Display ONLY when
@@ -149,4 +149,4 @@ Group routes by letter. If multiple routes share a letter, list them indented. I
 
 - **CLI not found:** "Rihal Code install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
-- **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rihal-tools.cjs state read"
+- **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rcode-tools.cjs state read"

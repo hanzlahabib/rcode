@@ -69,12 +69,12 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init sprint-plan "$PHASE")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init sprint-plan "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
-CONTEXT_WINDOW=$(node ".rcode/bin/rihal-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
+CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
 PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
@@ -153,7 +153,7 @@ Exit workflow.
 ## 3. Validate Phase
 
 ```bash
-PHASE_INFO=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
@@ -171,7 +171,7 @@ PHASE_INFO=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}")
 **Step 1: Locate VERIFICATION.md**
 
 ```bash
-PHASE_DIR=$(node ".rcode/bin/rihal-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
+PHASE_DIR=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
 # Fallback if --pick dir not supported. TODO(#118): expose roadmap --pick dir cleanly.
 if [[ -z "$PHASE_DIR" ]]; then
   PHASE_DIR=$(ls -d .planning/phases/${padded_phase}-* 2>/dev/null | head -1)
@@ -262,7 +262,7 @@ If `context_path` is not null, display: `Using phase context from: ${context_pat
 
 Read discuss mode for context gate label:
 ```bash
-DISCUSS_MODE=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
 ```
 
 If `TEXT_MODE` is true, present as a plain-text numbered list:
@@ -417,7 +417,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 If missing and Nyquist is still enabled/applicable — ask user:
 1. Re-run: `/rihal-sprint-plan {PHASE} --research ${Rihal_WS}`
 2. Disable Nyquist with the exact command:
-   `node ".rcode/bin/rihal-tools.cjs" config-set workflow.nyquist_validation false`
+   `node ".rcode/bin/rcode-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
 
 Proceed to Step 8 only if user selects 2 or 3.
@@ -680,7 +680,7 @@ Before declaring plans ready, validate the wave-parallelism rule the planner dec
 #     - the later plan (by sprint id) MUST declare sequential: true
 #     - and must list the conflicting files in its frontmatter
 
-node ".rcode/bin/rihal-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+node ".rcode/bin/rcode-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
 ```
 
 The CLI helper returns a JSON report:
@@ -771,7 +771,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list (options already s
 After plans pass all gates, record that planning is complete so STATE.md reflects the new phase status:
 
 ```bash
-node ".rcode/bin/rihal-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+node ".rcode/bin/rcode-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
 ```
 
 This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
@@ -788,19 +788,19 @@ Check for auto-advance trigger:
 2. **Sync chain flag with intent** — if user invoked manually (no `--auto` and no `--chain`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]] && [[ ! "$ARGUMENTS" =~ --chain ]]; then
-     node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+     node ".rcode/bin/rcode-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
    fi
    ```
 3. Read both the chain flag and user preference:
    ```bash
-   AUTO_CHAIN=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` or `--chain` flag present AND `AUTO_CHAIN` is not true:** Persist chain flag to config (handles direct invocation without prior discuss-phase):
 ```bash
 if ([[ "$ARGUMENTS" =~ --auto ]] || [[ "$ARGUMENTS" =~ --chain ]]) && [[ "$AUTO_CHAIN" != "true" ]]; then
-  node ".rcode/bin/rihal-tools.cjs" config-set workflow._auto_chain_active true
+  node ".rcode/bin/rcode-tools.cjs" config-set workflow._auto_chain_active true
 fi
 ```
 

@@ -374,7 +374,7 @@ issue:
 ```bash
 PLAN_TEXT=$(cat "$PLAN_PATH")
 VERIFY_RESULT=$(node -e "
-const cr = require('.rihal/bin/lib/code-references.cjs');
+const cr = require('.rcode/bin/lib/code-references.cjs');
 const fs = require('fs');
 const text = fs.readFileSync('$PLAN_PATH', 'utf8');
 const refs = cr.extractReferences(text);

@@ -136,7 +136,7 @@ In `--auto` mode, the discuss step MUST complete in a **single pass**. After wri
 
 Check the pass cap from config:
 ```bash
-MAX_PASSES=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.max_discuss_passes 2>/dev/null || echo "3")
+MAX_PASSES=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.max_discuss_passes 2>/dev/null || echo "3")
 ```
 
 If you have already written and committed CONTEXT.md, the discuss step is complete. Move on.

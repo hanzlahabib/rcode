@@ -274,7 +274,7 @@ Restarting is not giving up — it's getting unstuck.
 
 ## Documentation as You Go
 
-Maintain a log in `.rihal/debug/investigation.md`:
+Maintain a log in `.rcode/debug/investigation.md`:
 
 ```markdown
 ## Bug: [Symptom]

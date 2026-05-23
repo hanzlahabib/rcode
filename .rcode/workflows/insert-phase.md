@@ -45,7 +45,7 @@ Extract `N` (integer part) and `M` (decimal part) for later use.
 Invoke the state subcommand to insert the phase:
 
 ```bash
-RESULT=$(node .rcode/bin/rihal-tools.cjs state insert-phase --number <N.M> --name <name>)
+RESULT=$(node .rcode/bin/rcode-tools.cjs state insert-phase --number <N.M> --name <name>)
 ```
 
 Parse the JSON response for:

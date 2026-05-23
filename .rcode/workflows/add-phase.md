@@ -29,7 +29,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "0")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "0")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -77,7 +77,7 @@ Set `BULK_MODE=true|false` for the next step.
 ```bash
 # In bulk mode, pass only the extracted phase name (not the entire body)
 PHASE_NAME=$( [ "$BULK_MODE" = "true" ] && echo "$EXTRACTED_FIRST_LINE" || echo "$description" )
-RESULT=$(node ".rcode/bin/rihal-tools.cjs" phase add "${PHASE_NAME}")
+RESULT=$(node ".rcode/bin/rcode-tools.cjs" phase add "${PHASE_NAME}")
 ```
 
 The CLI handles:
@@ -108,7 +108,7 @@ If "Roadmap Evolution" section doesn't exist, create it.
 After the phase is added, run the milestone-health gauge (issue #718):
 
 ```bash
-HEALTH=$(node ".rcode/bin/rihal-tools.cjs" milestone-health 2>/dev/null)
+HEALTH=$(node ".rcode/bin/rcode-tools.cjs" milestone-health 2>/dev/null)
 RECOMMENDATION=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).recommendation||'unknown')}catch{console.log('unknown')}})")
 OPEN_COUNT=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).open_phases||0)}catch{console.log(0)}})")
 MILESTONE_NAME=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).milestone||'')}catch{console.log('')}})")

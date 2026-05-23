@@ -28,7 +28,7 @@ if [[ "$ARGUMENTS" == *"--auto"* ]]; then
   QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
 fi
 # Also auto-dispatch in yolo mode
-CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 if [[ "$CONFIG_MODE" == "yolo" ]]; then
   AUTO_MODE=true
 fi
@@ -120,10 +120,10 @@ If user picks 1-15, invoke that command. If 16, capture text and continue.
 Detect PRD / epics with glob — projects use either singular files (`.planning/prd.md`) OR per-milestone directories (`.planning/prds/v1.8.md`). Closes #377 — false 'create-prd first' redirects on multi-milestone repos.
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" state load 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" state load 2>/dev/null)
 HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
 HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
-PHASE_COUNT=$(node ".rcode/bin/rihal-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
+PHASE_COUNT=$(node ".rcode/bin/rcode-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
 HAS_PHASES=$([ "$PHASE_COUNT" -gt 0 ] && echo true || echo false)
 
 # State-aware milestone detection (#374) — used by explicit_intent_check
@@ -314,7 +314,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 If no rule matches, fall back to the classifier:
 
 ```bash
-CLASSIFY=$(node ".rcode/bin/rihal-tools.cjs" classify-question "$QUESTION")
+CLASSIFY=$(node ".rcode/bin/rcode-tools.cjs" classify-question "$QUESTION")
 ```
 
 Parse `type` from JSON — map codebase/team/release → `/rihal-discuss`; market/discovery/greenfield → `/rihal-council`; drift → `/rihal-feature-drift`. Default: `/rihal-discuss`.

@@ -136,7 +136,7 @@ Where `{agents_suffix}` is `  --agents=a,b,c` if `--agents` was passed, else emp
 Append a lightweight replay record so history is traceable even before council runs:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-decision \
+node .rcode/bin/rcode-tools.cjs state add-decision \
   "Replay of council session ${ORIGINAL_SLUG} (${ORIGINAL_DATE}) — re-asking: ${QUESTION:0:80}" \
   2>/dev/null || true
 ```

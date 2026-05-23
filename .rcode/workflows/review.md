@@ -71,7 +71,7 @@ Rules:
 Collect phase artifacts for the review prompt:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -244,7 +244,7 @@ plans_reviewed: [{list of SPRINT.md files}]
 
 Commit:
 ```bash
-node ".rcode/bin/rihal-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
+node ".rcode/bin/rcode-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
 ```
 </step>
 

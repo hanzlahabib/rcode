@@ -22,7 +22,7 @@ For each truth:
 Use rihal-tools for artifact verification against must_haves in PLAN frontmatter:
 
 ```bash
-ARTIFACT_RESULT=$(node ".rihal/bin/rihal-tools.cjs" verify artifacts "$PLAN_PATH")
+ARTIFACT_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify artifacts "$PLAN_PATH")
 ```
 
 Parse JSON result: `{ all_passed, passed, total, artifacts: [{path, exists, issues, passed}] }`

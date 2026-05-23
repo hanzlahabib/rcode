@@ -29,7 +29,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init correct-course "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init correct-course "$ARGUMENTS")
 ```
 
 Parse:

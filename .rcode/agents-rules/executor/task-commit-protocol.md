@@ -113,7 +113,7 @@ echo "Task committed: $HASH"
 ### Multiple Repositories (Sub-repos)
 Use the `commit-to-subrepo` tool:
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit-to-subrepo \
+node ".rcode/bin/rcode-tools.cjs" commit-to-subrepo \
   --repo frontend \
   --message "feat(ui): redesign login form" \
   --files src/pages/login.tsx
@@ -299,10 +299,10 @@ git commit -m "docs(01-auth): complete login feature (frontend: $FRONTEND_HASH, 
 
 ## Automation Note
 
-The `.rihal/bin/rihal-tools.cjs` provides a `commit` helper:
+The `.rcode/bin/rcode-tools.cjs` provides a `commit` helper:
 
 ```bash
-node ".rihal/bin/rihal-tools.cjs" commit "feat(auth): implement login" \
+node ".rcode/bin/rcode-tools.cjs" commit "feat(auth): implement login" \
   --files src/auth.ts src/types/auth.ts
 ```
 

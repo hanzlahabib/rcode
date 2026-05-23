@@ -13,7 +13,7 @@ If `$ARGUMENTS` contains only `--help` or `-h`:
 ```
 Usage: /rcode-init [--reset] [--skip-scan]
 
-  --reset        overwrite existing .rcode/config.yaml and RIHLA.md
+  --reset        overwrite existing .rcode/config.yaml and JOURNEY.md
   --skip-scan    skip the codebase scan step
 
 Examples:
@@ -41,7 +41,7 @@ Run detection in parallel:
 # rcode presence
 test -f .rcode/config.yaml && echo "rcode-configured: yes" || echo "rcode-configured: no"
 test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: no"
-test -f .rcode/RIHLA.md && echo "rihla-present: yes" || echo "rihla-present: no"
+test -f .rcode/JOURNEY.md && echo "rihla-present: yes" || echo "rihla-present: no"
 
 # Project presence
 test -d .git && echo "git: yes" || echo "git: no"
@@ -64,7 +64,7 @@ Classify project into one of four states:
 Print one-line state summary:
 
 ```
-📁 State: {state}  |  Code: {detected or none}  |  Git: {commits or none}  |  Rihla: {present or new}
+📁 State: {state}  |  Code: {detected or none}  |  Git: {commits or none}  |  Journey: {present or new}
 ```
 
 If `state === "returning"` and `--reset` not passed:
@@ -82,12 +82,12 @@ If `state === "returning"` and `--reset` not passed:
   Or run with --reset to reconfigure.
   ```
 
-- If `rihla-present: no` — RIHLA.md is missing from a partial prior init. Do NOT stop. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
+- If `rihla-present: no` — JOURNEY.md is missing from a partial prior init. Do NOT stop. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
 
   ```
   ✓ rcode is already configured here.
 
-  RIHLA.md baseline is missing — completing the scan step now...
+  JOURNEY.md baseline is missing — completing the scan step now...
   ```
 
   Skip Steps 2 and 3 (config already exists). Jump directly to Step 4.
@@ -136,9 +136,9 @@ test -f .rcode/state.json || node .rcode/bin/rcode-tools.cjs state init --projec
 
 ## Step 4 — Scan existing context (skip if `--skip-scan`)
 
-If the project has code (from Step 1 detection), produce `.rcode/RIHLA.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rcode-map-codebase` or `/rcode-scan` later for deep analysis.
+If the project has code (from Step 1 detection), produce `.rcode/JOURNEY.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rcode-map-codebase` or `/rcode-scan` later for deep analysis.
 
-**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rcode-scan --refresh --focus tech+arch` immediately after writing RIHLA.md. The refresh path:
+**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rcode-scan --refresh --focus tech+arch` immediately after writing JOURNEY.md. The refresh path:
 
 - Captures pre-state (commits since last doc mtime, manifest hashes, top-level dirs).
 - Briefs the user on what changed since the last scan.
@@ -146,7 +146,7 @@ If the project has code (from Step 1 detection), produce `.rcode/RIHLA.md`. This
 
 Skip the chain if `--skip-scan` is set, no existing docs are present (nothing stale to refresh), or the user passes `--no-refresh`.
 
-This makes init+reset a true memory-bank refresh — RIHLA baseline updated, codebase docs reconciled with current code, CHANGELOG entry written.
+This makes init+reset a true memory-bank refresh — JOURNEY baseline updated, codebase docs reconciled with current code, CHANGELOG entry written.
 
 Gather (parallel reads, all bounded):
 
@@ -162,13 +162,13 @@ git remote -v 2>/dev/null | head -2
 find . -maxdepth 3 -type d ! -path "./node_modules*" ! -path "./.git*" ! -path "./.rcode*" ! -path "./.claude*" ! -path "./.planning*" 2>/dev/null | head -20
 ```
 
-Write `.rcode/RIHLA.md` following this template (don't over-interpret — just record what's seen).
+Write `.rcode/JOURNEY.md` following this template (don't over-interpret — just record what's seen).
 
-**Naming note (do NOT remove from the template):** the file is `RIHLA.md`, not `RIHAL.md`. This is intentional — same Arabic root, different word. **rcode (رحّال)** = the traveler/tool. **Rihla (رحلة)** = the journey/voyage. The product is *rcode* (the tool you use); the per-project artifact is *Rihla* (your project's journey). The HTML comment in the template below preserves this reminder for anyone who later wonders if it's a typo.
+**Naming note (do NOT remove from the template):** the file is `JOURNEY.md`, not `RIHAL.md`. This is intentional — same Arabic root, different word. **rcode (رحّال)** = the traveler/tool. **Rihla (رحلة)** = the journey/voyage. The product is *rcode* (the tool you use); the per-project artifact is *Rihla* (your project's journey). The HTML comment in the template below preserves this reminder for anyone who later wonders if it's a typo.
 
 ```markdown
-<!-- RIHLA (رحلة) = "the journey". Not a typo of RIHAL (رحّال) = "the traveler" / the tool itself. Same root, different word. This file documents your project's journey; rcode is the tool that walks it with you. -->
-# RIHLA — Project journey baseline
+<!-- JOURNEY — your project's path. Renamed from RIHLA (رحلة, "the journey") in v4.1 for plain-English clarity. -->
+# JOURNEY — Project journey baseline
 
 **Written by:** /rcode-init
 **Date:** {ISO date}
@@ -202,13 +202,13 @@ This file is a journey baseline — intentionally shallow. For deep analysis run
 - `/rcode-explore` — socratic ideation against the codebase
 ```
 
-If no code detected, write a minimal RIHLA.md with just the header and a "fresh project — no code yet" note.
+If no code detected, write a minimal JOURNEY.md with just the header and a "fresh project — no code yet" note.
 
 ## Step 4b — Populate context files
 
-After writing RIHLA.md, populate the two context files that every rcode skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
+After writing JOURNEY.md, populate the two context files that every rcode skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
 
-**`.rcode/context/active.md`** — Current task context and working state. Write it using the RIHLA.md scan data from Step 4:
+**`.rcode/context/active.md`** — Current task context and working state. Write it using the JOURNEY.md scan data from Step 4:
 
 ```markdown
 # Active Context
@@ -240,7 +240,7 @@ After writing RIHLA.md, populate the two context files that every rcode skill re
 _None yet. Use `/rcode-explore` or `/rcode-council` to surface questions._
 ```
 
-**`.rcode/context/project-brief.md`** — High-level project description. Write it using the RIHLA.md scan data:
+**`.rcode/context/project-brief.md`** — High-level project description. Write it using the JOURNEY.md scan data:
 
 ```markdown
 # Project Brief
@@ -303,7 +303,7 @@ Or think through an idea first:
 
 **If `existing-new-rcode`:**
 ```
-✓ rcode configured. RIHLA.md written as your baseline.
+✓ rcode configured. JOURNEY.md written as your baseline.
 
 Recommended first move — understand before changing:
 
@@ -335,7 +335,7 @@ Silent if state tools fail.
 
 - [ ] `.rcode/config.yaml` written with user's answers
 - [ ] `.rcode/state.json` exists (created or preserved)
-- [ ] `.rcode/RIHLA.md` written (unless `--skip-scan` or no code)
+- [ ] `.rcode/JOURNEY.md` written (unless `--skip-scan` or no code)
 - [ ] `.rcode/context/active.md` populated with project state (not the placeholder stub)
 - [ ] `.rcode/context/project-brief.md` populated with project overview (not the placeholder stub)
 - [ ] State detected correctly (fresh / existing-new-rcode / returning)
@@ -347,4 +347,4 @@ Silent if state tools fail.
 - **config.yaml write fails:** print permission error and stop.
 - **git not installed:** skip git detection, still proceed.
 - **rcode-tools.cjs not found:** this command requires the installer to have run — point user to `npx @hanzlaa/rcode install`.
-- **Existing RIHLA.md without `--reset`:** do NOT overwrite; note it in Step 4 output.
+- **Existing JOURNEY.md without `--reset`:** do NOT overwrite; note it in Step 4 output.

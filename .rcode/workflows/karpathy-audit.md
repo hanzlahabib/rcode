@@ -36,7 +36,7 @@ Parse the argument. It can be:
 
 If phase number format:
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rcode/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

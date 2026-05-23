@@ -60,7 +60,7 @@ STOP after printing help.
 ## Step 1 — Resolve target lens(es)
 
 ```bash
-TOOL="node .rcode/bin/rihal-tools.cjs"
+TOOL="node .rcode/bin/rcode-tools.cjs"
 INIT=$($TOOL init 2>/dev/null || echo '{"ok":false}')
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
 RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "english")

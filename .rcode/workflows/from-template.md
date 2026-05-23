@@ -127,7 +127,7 @@ done
 ## Step 5 — Record the seeding
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-decision \
+node .rcode/bin/rcode-tools.cjs state add-decision \
   "Seeded .planning/ from template '${TEMPLATE}' (project: ${PROJECT_NAME})" 2>/dev/null || true
 ```
 

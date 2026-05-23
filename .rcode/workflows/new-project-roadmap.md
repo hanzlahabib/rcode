@@ -157,7 +157,7 @@ If "adjust": Return to scoping.
 **Commit requirements:**
 
 ```bash
-node .rcode/bin/rihal-tools.cjs commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
+node .rcode/bin/rcode-tools.cjs commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 8. Create Roadmap
@@ -297,7 +297,7 @@ Use AskUserQuestion:
 **Generate or refresh project CLAUDE.md before final commit:**
 
 ```bash
-node .rcode/bin/rihal-tools.cjs generate-claude-md
+node .rcode/bin/rcode-tools.cjs generate-claude-md
 ```
 
 This ensures new projects get the default Rihal workflow-enforcement guidance and current project context in `CLAUDE.md`.
@@ -305,7 +305,7 @@ This ensures new projects get the default Rihal workflow-enforcement guidance an
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-node .rcode/bin/rihal-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
+node .rcode/bin/rcode-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
 ```
 
 ## 9. Done
@@ -346,7 +346,7 @@ Exit skill and invoke SlashCommand("/rihal-discuss-phase 1 --auto")
 Check if Phase 1 has UI indicators (look for `**UI hint**: yes` in Phase 1 detail section of ROADMAP.md):
 
 ```bash
-PHASE1_SECTION=$(node .rcode/bin/rihal-tools.cjs roadmap get-phase 1 2>/dev/null)
+PHASE1_SECTION=$(node .rcode/bin/rcode-tools.cjs roadmap get-phase 1 2>/dev/null)
 PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 

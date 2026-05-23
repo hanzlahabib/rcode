@@ -41,9 +41,9 @@ STOP — do not proceed.
 ## Step 1 — Load sprint data
 
 ```bash
-SPRINT_STATUS=$(node .rcode/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo "")
-VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo "0")
-STORIES=$(node .rcode/bin/rihal-tools.cjs state story list 2>/dev/null || echo "")
+SPRINT_STATUS=$(node .rcode/bin/rcode-tools.cjs state sprint status 2>/dev/null || echo "")
+VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity 2>/dev/null || echo "0")
+STORIES=$(node .rcode/bin/rcode-tools.cjs state story list 2>/dev/null || echo "")
 ```
 
 If `SPRINT_STATUS` is empty:

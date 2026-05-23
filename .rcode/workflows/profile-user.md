@@ -28,7 +28,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init profile-user "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init profile-user "$ARGUMENTS")
 ```
 
 Parse:
@@ -132,7 +132,7 @@ Task tool call:
 Store `profile` object in state:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state set-user-profile --json '{json-string}'
+node .rcode/bin/rcode-tools.cjs state set-user-profile --json '{json-string}'
 ```
 
 Print:

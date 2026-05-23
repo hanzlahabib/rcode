@@ -8,8 +8,8 @@ When resuming from a debug checkpoint (after a context reset), use this protocol
 
 Before resuming, verify:
 
-1. **Session state exists:** `.rihal/debug/session.json` present
-2. **Investigation log exists:** `.rihal/debug/investigation.md` readable
+1. **Session state exists:** `.rcode/debug/session.json` present
+2. **Investigation log exists:** `.rcode/debug/investigation.md` readable
 3. **Session is valid:** Check for corrupt JSON, missing fields
 4. **Current phase is clear:** Read `"phase"` field in session.json
 
@@ -219,7 +219,7 @@ Refined into:
 1. Document it in a separate section: "Secondary Issues Found"
 2. Don't fix it now (stay focused on primary bug)
 3. Create a new debug session for it later
-4. Add to `.rihal/debug/backlog.md` if it's not urgent
+4. Add to `.rcode/debug/backlog.md` if it's not urgent
 
 ---
 

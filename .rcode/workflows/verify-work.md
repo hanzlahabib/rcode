@@ -47,10 +47,10 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If $ARGUMENTS contains a phase number, load context:
 
 ```bash
-INIT=$(node ".rcode/bin/rihal-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rihal-tools.cjs" agent-skills rihal-checker 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-checker 2>/dev/null)
 ```
 
 Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
@@ -110,7 +110,7 @@ Before running manual UAT, check whether this phase has a UI component and wheth
 `mcp__playwright__*` or `mcp__puppeteer__*` tools are available in the current session.
 
 ```
-UI_PHASE_FLAG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
+UI_PHASE_FLAG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 ```
 
@@ -250,7 +250,7 @@ Proceed to `present_test`.
 Render the checkpoint from the structured UAT file instead of composing it freehand:
 
 ```bash
-CHECKPOINT=$(node ".rcode/bin/rihal-tools.cjs" uat render-checkpoint --file "$uat_path" --raw 2>/dev/null || echo "")
+CHECKPOINT=$(node ".rcode/bin/rcode-tools.cjs" uat render-checkpoint --file "$uat_path" --raw 2>/dev/null || echo "")
 if [[ "$CHECKPOINT" == @file:* ]]; then CHECKPOINT=$(cat "${CHECKPOINT#@file:}"); fi
 ```
 
@@ -406,7 +406,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-node ".rcode/bin/rihal-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node ".rcode/bin/rcode-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -430,7 +430,7 @@ Present summary:
 **If issues == 0:**
 
 ```bash
-SECURITY_CFG=$(node ".rcode/bin/rihal-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 ```
 

@@ -74,7 +74,7 @@ Extract from active SPRINT.md:
 ## Step 3 — Collect Blocking Constraints
 
 ```bash
-CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Set `blocking_constraints = ""` and skip to Step 4.

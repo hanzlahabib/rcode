@@ -82,7 +82,7 @@ Calculate estimated tokens (note: these are rough approximations, not actual mea
 Read context_window from config to calibrate multipliers:
 
 ```bash
-CW=$(node .rcode/bin/rihal-tools.cjs config-get context_window 2>/dev/null || echo "200000")
+CW=$(node .rcode/bin/rcode-tools.cjs config-get context_window 2>/dev/null || echo "200000")
 ```
 
 Scale multipliers: if `CW >= 500000`, multiply by 2× (larger context windows → more content read per agent turn).

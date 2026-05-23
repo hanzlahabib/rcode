@@ -103,8 +103,8 @@ Auditor returns structured JSON:
 **If `MODE=phase-status` (Phase 8 / #461):**
 
 Spawn `rihal-docs-auditor` with `--mode=phase-status`. Pass:
-- `roadmap_phases[]` — output of `node .rcode/bin/rihal-tools.cjs roadmap list-phases` (post-#464 fix)
-- `phase_dirs[]` — output of `node .rcode/bin/rihal-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
+- `roadmap_phases[]` — output of `node .rcode/bin/rcode-tools.cjs roadmap list-phases` (post-#464 fix)
+- `phase_dirs[]` — output of `node .rcode/bin/rcode-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
 - For each phase, the most recent commit hash that touches files in `${phase_dir}/` (used as a freshness signal)
 
 Auditor returns structured JSON:
@@ -169,7 +169,7 @@ real numeric phase numbering — never invent English-letter labels like
 `P-NEW-AI-1` or `P-FIX-N`. Resolve the next free integer with:
 
 ```bash
-HIGHEST=$(node ".rcode/bin/rihal-tools.cjs" phases list --pick "directories[-1]" 2>/dev/null || echo "")
+HIGHEST=$(node ".rcode/bin/rcode-tools.cjs" phases list --pick "directories[-1]" 2>/dev/null || echo "")
 # Extract leading number; next candidate = N + 1, N + 2, ...
 ```
 
@@ -214,7 +214,7 @@ work is needed.
 The report file itself is committed only when `commit_docs` is true:
 
 ```bash
-COMMIT_DOCS=$(node ".rcode/bin/rihal-tools.cjs" config-get commit_docs 2>/dev/null || echo "false")
+COMMIT_DOCS=$(node ".rcode/bin/rcode-tools.cjs" config-get commit_docs 2>/dev/null || echo "false")
 if [[ "$COMMIT_DOCS" == "true" ]]; then
   git add "${REPORT_PATH}"
   git commit -m "docs(drift): scan ${ISO_DATE}"

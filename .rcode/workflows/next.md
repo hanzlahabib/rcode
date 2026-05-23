@@ -33,9 +33,9 @@ Follow all banner and status-symbol conventions from output-format.md.
 Read project state to determine current position:
 
 ```bash
-STATE=$(node .rcode/bin/rihal-tools.cjs state read 2>/dev/null || echo '{}')
-SPRINT_STATUS=$(node .rcode/bin/rihal-tools.cjs state sprint status 2>/dev/null || echo '{}')
-VELOCITY=$(node .rcode/bin/rihal-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null || echo '{}')
+SPRINT_STATUS=$(node .rcode/bin/rcode-tools.cjs state sprint status 2>/dev/null || echo '{}')
+VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
 ```
 
 Also read:

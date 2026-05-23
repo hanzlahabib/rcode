@@ -105,7 +105,7 @@ This runs in parallel - all issues investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rihal-tools.cjs agent-skills rihal-debugger 2>/dev/null)
+AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rihal-debugger 2>/dev/null)
 ```
 
 **Spawn debug agents in parallel:**
@@ -124,7 +124,7 @@ Task(
 **Never pass `isolation="worktree"` without explicit user consent.** Worktree isolation creates a git worktree, which is a write operation the user may not want. If you believe isolation is genuinely needed (e.g., the debug agent may edit files):
 
 ```bash
-CONFIG_MODE=$(node .rcode/bin/rihal-tools.cjs config-get mode 2>/dev/null || echo "guided")
+CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
 **If `CONFIG_MODE == "yolo"`:** Skip isolation — default to no worktree, proceed immediately.

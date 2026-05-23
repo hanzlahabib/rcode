@@ -3,7 +3,7 @@
 
 Load phase operation context:
 ```bash
-INIT=$(node ".rihal/bin/rihal-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -15,7 +15,7 @@ Orchestrator provides CONTEXT.md content in the verification prompt. If provided
 ls "$phase_dir"/*-SPRINT.md 2>/dev/null
 # Read research for Nyquist validation data
 cat "$phase_dir"/*-RESEARCH.md 2>/dev/null
-node ".rihal/bin/rihal-tools.cjs" roadmap get-phase "$phase_number"
+node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "$phase_number"
 ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 ```
 
@@ -28,7 +28,7 @@ Use rihal-tools to validate plan structure:
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
   echo "=== $plan ==="
-  PLAN_STRUCTURE=$(node ".rihal/bin/rihal-tools.cjs" verify plan-structure "$plan")
+  PLAN_STRUCTURE=$(node ".rcode/bin/rcode-tools.cjs" verify plan-structure "$plan")
   echo "$PLAN_STRUCTURE"
 done
 ```
@@ -46,7 +46,7 @@ Map errors/warnings to verification dimensions:
 Extract must_haves from each plan using rihal-tools:
 
 ```bash
-MUST_HAVES=$(node ".rihal/bin/rihal-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
+MUST_HAVES=$(node ".rcode/bin/rcode-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
 ```
 
 Returns JSON: `{ truths: [...], artifacts: [...], key_links: [...] }`
@@ -91,7 +91,7 @@ For each requirement: find covering task(s), verify action is specific, flag gap
 Use rihal-tools plan-structure verification (already run in Step 2):
 
 ```bash
-PLAN_STRUCTURE=$(node ".rihal/bin/rihal-tools.cjs" verify plan-structure "$PLAN_PATH")
+PLAN_STRUCTURE=$(node ".rcode/bin/rcode-tools.cjs" verify plan-structure "$PLAN_PATH")
 ```
 
 The `tasks` array in the result shows each task's completeness:
@@ -151,7 +151,7 @@ Before step 10, add pre-flight reference verification:
 ```bash
 PLAN_TEXT=$(cat "$PLAN_PATH")
 VERIFY_RESULT=$(node -e "
-const cr = require('.rihal/bin/lib/code-references.cjs');
+const cr = require('.rcode/bin/lib/code-references.cjs');
 const fs = require('fs');
 const text = fs.readFileSync(process.argv[1], 'utf8');
 const refs = cr.extractReferences(text);

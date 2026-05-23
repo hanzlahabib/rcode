@@ -28,7 +28,7 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rihal-tools.cjs init review-adversarial "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init review-adversarial "$ARGUMENTS")
 ```
 
 Parse:
@@ -130,7 +130,7 @@ Extract findings:
 For each critical/high finding, optionally file as subtask:
 
 ```bash
-node .rcode/bin/rihal-tools.cjs state add-task \
+node .rcode/bin/rcode-tools.cjs state add-task \
   --title "Fix {vulnerability_type}: {brief_description}" \
   --severity critical/high/medium \
   --component {component_name}
