@@ -118,7 +118,7 @@ const server = http.createServer((req, res) => {
       if (err) { res.writeHead(404); res.end('Not found'); return; }
       res.writeHead(200, {
         'Content-Type':  'application/javascript; charset=utf-8',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'public, max-age=300',
       });
       res.end(data);
     });
@@ -128,7 +128,7 @@ const server = http.createServer((req, res) => {
   if (url === '/' || url === '/index.html') {
     const state = scanState(RCODE_DIR);
     const html = renderHtml(state, ORCH_TOKEN);
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.end(html);
     return;
   }
