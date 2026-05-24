@@ -1,5 +1,5 @@
 <purpose>
-Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rihal-code-reviewer agent, commits REVIEW.md, and presents results to user.
+Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rcode-code-reviewer agent, commits REVIEW.md, and presents results to user.
 </purpose>
 
 <required_reading>
@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- rihal-code-reviewer: Reviews source files for bugs and quality issues
+- rcode-code-reviewer: Reviews source files for bugs and quality issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -385,10 +385,10 @@ for file in "${REVIEW_FILES[@]}"; do
 done
 ```
 
-Spawn the rihal-code-reviewer agent:
+Spawn the rcode-code-reviewer agent:
 
 ```
-Task(subagent_type="rihal-code-reviewer",
+Task(subagent_type="rcode-code-reviewer",
   model="sonnet", prompt="
 <files_to_read>
 ${FILES_TO_READ}

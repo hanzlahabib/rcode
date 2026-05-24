@@ -1,5 +1,5 @@
 <purpose>
-Sub-step of new-project.md — Step 8 Create Roadmap. Spawns rihal-roadmapper agent to build ROADMAP.md from requirements and project type. Includes approval gate and commit.
+Sub-step of new-project.md — Step 8 Create Roadmap. Spawns rcode-roadmapper agent to build ROADMAP.md from requirements and project type. Includes approval gate and commit.
 </purpose>
 
 ## 8. Create Roadmap
@@ -14,7 +14,7 @@ Display stage banner:
 ◆ Spawning roadmapper...
 ```
 
-Spawn rihal-roadmapper agent:
+Spawn rcode-roadmapper agent:
 
 ```
 Task(prompt="
@@ -42,7 +42,7 @@ Create roadmap:
 
 Write files first, then return. This ensures artifacts persist even if context is lost.
 </instructions>
-", subagent_type="rihal-roadmapper", model="${ROADMAPPER_MODEL}", description="Create roadmap")
+", subagent_type="rcode-roadmapper", model="${ROADMAPPER_MODEL}", description="Create roadmap")
 ```
 
 **Handle roadmapper return:**
@@ -120,7 +120,7 @@ Use AskUserQuestion:
   Update the roadmap based on feedback. Edit files in place.
   Return ROADMAP REVISED with changes made.
   </revision>
-  ", subagent_type="rihal-roadmapper", model="${ROADMAPPER_MODEL}", description="Revise roadmap")
+  ", subagent_type="rcode-roadmapper", model="${ROADMAPPER_MODEL}", description="Revise roadmap")
   ```
 
 - Present revised roadmap
@@ -168,7 +168,7 @@ git add \
 git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project instruction file" 2>/dev/null || true
 
 # Sync all roadmapper-created phases into state.json.
-# rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
+# rcode-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
 # state.json is empty after this step unless we sync it. Without this, every
 # /rihal-status shows "N phases not registered" warnings immediately after init.
 node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true

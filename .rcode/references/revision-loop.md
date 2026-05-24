@@ -1,7 +1,7 @@
 # Plan Revision Loop
 
 When `workflow.plan_checker` is enabled (`/rcode-settings`), `/rcode-plan`
-runs the rihal-sprint-checker after the planner. Findings drive a bounded
+runs the rcode-sprint-checker after the planner. Findings drive a bounded
 revision loop:
 
 1. Planner produces PLAN.md.

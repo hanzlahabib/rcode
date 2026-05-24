@@ -298,9 +298,9 @@ with your icon + name header.
 Spawn all at once:
 
 ```
-(Task tool call with subagent_type = "rihal-sadiq", prompt = <above>)
-(Task tool call with subagent_type = "rihal-waleed", prompt = <above>)
-(Task tool call with subagent_type = "rihal-fatima", prompt = <above>)
+(Task tool call with subagent_type = "rcode-sadiq", prompt = <above>)
+(Task tool call with subagent_type = "rcode-waleed", prompt = <above>)
+(Task tool call with subagent_type = "rcode-fatima", prompt = <above>)
 ```
 
 All in the same assistant response block so they execute concurrently.

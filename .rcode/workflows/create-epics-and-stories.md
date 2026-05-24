@@ -6,7 +6,7 @@ Parse a PRD, PROJECT.md, or project document to generate numbered epic files in 
 
 
 <available_agent_types>
-- `rihal-roadmapper` — reads PRD/context and generates epic structure
+- `rcode-roadmapper` — reads PRD/context and generates epic structure
 </available_agent_types>
 
 ## Step 0 — Parse Arguments & Detect Context Mode
@@ -112,7 +112,7 @@ CODEBASE_QUICK=$(gemini -p "@./ In 200 words: tech stack and main modules only."
 
 ## Step 2 — Generate Epic Structure
 
-Call `rihal-roadmapper` with full context. The prompt MUST enforce proper epic decomposition:
+Call `rcode-roadmapper` with full context. The prompt MUST enforce proper epic decomposition:
 
 ```
 You are a senior product manager breaking down a feature area into epics and stories.

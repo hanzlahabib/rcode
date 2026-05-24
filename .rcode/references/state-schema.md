@@ -226,7 +226,7 @@ Documents every top-level field in `state.json`, used by rcode workflows for ses
   {
     "date": "2026-04-04T10:00:00Z",
     "question_slug": "auth-strategy",
-    "panel": ["rihal-sadiq", "rihal-waleed", "rihal-fatima"],
+    "panel": ["rcode-sadiq", "rcode-waleed", "rcode-fatima"],
     "artifact_path": "rcode/artifacts/council-sessions/auth-strategy-20260404.md"
   }
 ]
@@ -244,7 +244,7 @@ Documents every top-level field in `state.json`, used by rcode workflows for ses
   {
     "date": "2026-04-05T14:00:00Z",
     "slug": "implement-login-flow",
-    "agents": ["rihal-waleed", "rihal-fatima"],
+    "agents": ["rcode-waleed", "rcode-fatima"],
     "artifacts_dir": "rcode/artifacts/chains/implement-login-flow-20260405"
   }
 ]

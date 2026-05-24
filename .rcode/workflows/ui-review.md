@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-ui-auditor` — UI compliance auditor
+- `rcode-ui-auditor` — UI compliance auditor
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -67,11 +67,11 @@ Scan phase/codebase for:
 
 ## Step 3 — Spawn UI Auditor
 
-Spawn `rihal-ui-auditor` subagent:
+Spawn `rcode-ui-auditor` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-ui-auditor"
+  subagent_type: "rcode-ui-auditor"
   description: "Audit UI against UI-SPEC.md"
   prompt: |
     Audit the completed UI implementation against UI-SPEC.md contract.

@@ -73,11 +73,11 @@ After Step 0.5 confirmation, proceed to load references by Reading:
 <available_agent_types>
 Use these exact `subagent_type` values when calling the Agent tool:
 
-- `rihal-sadiq` — 🧭 Sadiq (Strategy)
-- `rihal-waleed` — 🏗️ Waleed (CTO)
-- `rihal-fatima` — 🛡️ Fatima (QA)
-- `rihal-mariam` — 📣 Mariam (Marketing)
-- `rihal-hussain-pm` — 📋 Hussain-PM (Product)
+- `rcode-sadiq` — 🧭 Sadiq (Strategy)
+- `rcode-waleed` — 🏗️ Waleed (CTO)
+- `rcode-fatima` — 🛡️ Fatima (QA)
+- `rcode-mariam` — 📣 Mariam (Marketing)
+- `rcode-hussain-pm` — 📋 Hussain-PM (Product)
 </available_agent_types>
 
 ## Step 1 — Initialize
@@ -156,7 +156,7 @@ Scale your response to the substance — a simple question gets a short answer.
 Start your reply with your icon + name header.
 ```
 
-Use `subagent_type` = `rihal-{agent_id}` (e.g., `rihal-sadiq`).
+Use `subagent_type` = `rihal-{agent_id}` (e.g., `rcode-sadiq`).
 
 ## Step 5 — Print response verbatim
 

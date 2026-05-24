@@ -145,7 +145,7 @@ Example: "ابدأ مرحلة جديدة" (Arabic — "start a new phase") → �
 matches `ابدأ` + scope `مرحلة` + intensifier `جديدة` → /rcode-add-phase.
 ```
 
-**From an agent file (e.g. `rihal-codebase-mapper.md`) when interpreting the orchestrator prompt:**
+**From an agent file (e.g. `rcode-codebase-mapper.md`) when interpreting the orchestrator prompt:**
 
 ```markdown
 @.rcode/references/verb-dictionary.md

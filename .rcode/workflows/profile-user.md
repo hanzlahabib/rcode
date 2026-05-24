@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-profiler` — user classification agent (spawned once per session)
+- `rcode-profiler` — user classification agent (spawned once per session)
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -105,11 +105,11 @@ Collect answers into `profile` object:
 
 **Otherwise:** Use answers from Step 1.
 
-Spawn `rihal-profiler` subagent:
+Spawn `rcode-profiler` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-profiler"
+  subagent_type: "rcode-profiler"
   description: "Generate user profile classification"
   prompt: |
     Generate a USER-PROFILE.md with the following profile data:

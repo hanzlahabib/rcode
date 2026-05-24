@@ -74,7 +74,7 @@ Track `present_layers[]` (subset of `["prd","epics","stories","code"]`).
 <step name="scan_drift">
 **If `MODE=feature` (default):**
 
-Spawn `rihal-docs-auditor` with `--mode=feature-drift`. Pass:
+Spawn `rcode-docs-auditor` with `--mode=feature-drift`. Pass:
 - artifact contents (from previous step)
 - `present_layers[]` so the auditor doesn't claim drift between absent layers
 - code surface paths
@@ -102,7 +102,7 @@ Auditor returns structured JSON:
 
 **If `MODE=phase-status` (Phase 8 / #461):**
 
-Spawn `rihal-docs-auditor` with `--mode=phase-status`. Pass:
+Spawn `rcode-docs-auditor` with `--mode=phase-status`. Pass:
 - `roadmap_phases[]` — output of `node .rcode/bin/rcode-tools.cjs roadmap list-phases` (post-#464 fix)
 - `phase_dirs[]` — output of `node .rcode/bin/rcode-tools.cjs init phase-op N` for each phase number, OR a direct walk of `.planning/phases/*` that captures: dir name, presence of `*-SUMMARY.md`, `*-SPRINT.md`, `*-PLAN.md`, `*-CONTEXT.md`, `*-RESEARCH.md`, `*-VERIFICATION.md`
 - For each phase, the most recent commit hash that touches files in `${phase_dir}/` (used as a freshness signal)
@@ -193,7 +193,7 @@ while pass < 3:
   if trivial_findings is empty: break
 
   for each trivial finding:
-    spawn rihal-noor (writer) with the fix_hint payload
+    spawn rcode-noor (writer) with the fix_hint payload
     after the writer returns, run:
       git add <file>
       git commit -m "fix(drift): <what was stale> → <what's true now>"

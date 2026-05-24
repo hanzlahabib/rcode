@@ -90,7 +90,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
    ```
    Task(
-     subagent_type="rihal-executor",
+     subagent_type="rcode-executor",
   model="sonnet",
      description="Execute plan {plan_number} of phase {phase_number}",
      model="{executor_model}",

@@ -2,9 +2,9 @@
 
 The contract a research-spawning workflow follows when dispatching a research
 subagent and handling its return. Designed to be `@`-included by any workflow
-that spawns a research subagent (`rihal-phase-researcher`,
-`rihal-project-researcher`, `rihal-research-synthesizer`,
-`rihal-codebase-mapper`).
+that spawns a research subagent (`rcode-phase-researcher`,
+`rcode-project-researcher`, `rcode-research-synthesizer`,
+`rcode-codebase-mapper`).
 
 Goal: research subagents get a follow-up gate, the same way executors get a
 verifier gate. A single research dispatch may return a shallow or partial

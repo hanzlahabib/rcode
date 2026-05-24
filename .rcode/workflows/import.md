@@ -1,7 +1,7 @@
 # Import Workflow
 
 <purpose>
-External plan ingestion with conflict detection and agent delegation. Imports an externally-authored plan, detects conflicts against existing project decisions, writes SPRINT.md, and validates via rihal-sprint-checker.
+External plan ingestion with conflict detection and agent delegation. Imports an externally-authored plan, detects conflicts against existing project decisions, writes SPRINT.md, and validates via rcode-sprint-checker.
 </purpose>
 
 External plan ingestion with conflict detection and agent delegation.
@@ -238,11 +238,11 @@ Write the SPRINT.md file to the target directory.
 
 <step name="plan_validate">
 
-Delegate validation to rihal-sprint-checker:
+Delegate validation to rcode-sprint-checker:
 
 ```
 Task({
-  subagent_type: "rihal-sprint-checker",
+  subagent_type: "rcode-sprint-checker",
   prompt: "Validate: .planning/phases/{phase}/{plan}-SPRINT.md — check frontmatter completeness, task structure, and RIHAL conventions. Report any issues."
 })
 ```
@@ -298,7 +298,7 @@ Show: plan filename written, phase directory, validation result, next steps.
 Do NOT:
 - Use markdown tables (`|---|`) in the conflict detection report — use plain-text [BLOCKER]/[WARNING]/[INFO] labels
 - Write SPRINT.md files as `PLAN-01.md` or `plan-01.md` — always use `{NN}-{MM}-SPRINT.md`
-- Use `pbr:sprint-checker` or `pbr:planner` — use `rihal-sprint-checker` and `rihal-planner`
+- Use `pbr:sprint-checker` or `pbr:planner` — use `rcode-sprint-checker` and `rcode-planner`
 - Write `.planning/.active-skill` — this is a PBR pattern with no RIHAL equivalent
 - Reference `pbr-tools`, `pbr:`, or `PLAN-BUILD-RUN` anywhere
 - Write any SPRINT.md file when blockers exist — the safety gate must hold

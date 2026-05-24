@@ -1,6 +1,6 @@
 # rcode Execution Protocol
 
-Shared reference `@`-included by `execute.md` workflow and `rihal-executor` subagent.
+Shared reference `@`-included by `execute.md` workflow and `rcode-executor` subagent.
 
 **Also see:** @.rcode/references/karpathy-guidelines.md for behavioral principles that apply during execution.
 

@@ -172,7 +172,7 @@ Display stage banner:
 ◆ Spawning roadmapper...
 ```
 
-Spawn rihal-roadmapper agent with path references:
+Spawn rcode-roadmapper agent with path references:
 
 ```
 Task(prompt="
@@ -200,7 +200,7 @@ Create roadmap:
 
 Write files first, then return. This ensures artifacts persist even if context is lost.
 </instructions>
-", subagent_type="rihal-roadmapper", model="{roadmapper_model}", description="Create roadmap")
+", subagent_type="rcode-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
 
 **Handle roadmapper return:**
@@ -286,7 +286,7 @@ Use AskUserQuestion:
   Update the roadmap based on feedback. Edit files in place.
   Return ROADMAP REVISED with changes made.
   </revision>
-  ", subagent_type="rihal-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
+  ", subagent_type="rcode-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
   ```
 
 - Present revised roadmap
@@ -424,7 +424,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] Requirements gathered (from research or conversation)
 - [ ] User scoped each category (v1/v2/out of scope)
 - [ ] REQUIREMENTS.md created with REQ-IDs → **committed**
-- [ ] rihal-roadmapper spawned with context
+- [ ] rcode-roadmapper spawned with context
 - [ ] Roadmap files written immediately (not draft)
 - [ ] User feedback incorporated (if any)
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria

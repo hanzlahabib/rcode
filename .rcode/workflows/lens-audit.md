@@ -11,21 +11,21 @@ and GH issue body generation. Never fixes anything; audit-first, fix-second.
 
 | Lens | Name | Primary Skill | Secondary |
 |------|------|--------------|-----------|
-| 1 | Security | `rihal-security-auditor` | `rihal-security-adversary` |
+| 1 | Security | `rcode-security-auditor` | `rcode-security-adversary` |
 | 2 | Performance | `rihal-perf` | — |
-| 3 | Testability | `rihal-fatima` | `rihal-edge-case-hunter` |
-| 4 | Extensibility | `rihal-waleed` | — |
-| 5 | Dep Health | `rihal-dep-auditor` | — |
-| 6 | Error Recovery | `rihal-debugger` | — |
-| 7 | State Machine | `rihal-deviation-analyzer` | — |
-| 8 | i18n | `rihal-i18n-auditor` | — |
-| 9 | Documentation | `rihal-docs-auditor` | — |
-| 10 | Cross-platform | `rihal-cross-platform-auditor` | — |
-| 11 | Karpathy | `rihal-code-reviewer` | `rihal-hanzla` |
-| 12 | SXO/UX | `rihal-layla` | — |
-| 13 | Observability | `rihal-observability-auditor` | — |
-| 14 | Naming | `rihal-codebase-mapper` | `rihal-code-reviewer` |
-| 15 | Coverage | `rihal-nyquist-auditor` | `rihal-fatima` |
+| 3 | Testability | `rcode-fatima` | `rcode-edge-case-hunter` |
+| 4 | Extensibility | `rcode-waleed` | — |
+| 5 | Dep Health | `rcode-dep-auditor` | — |
+| 6 | Error Recovery | `rcode-debugger` | — |
+| 7 | State Machine | `rcode-deviation-analyzer` | — |
+| 8 | i18n | `rcode-i18n-auditor` | — |
+| 9 | Documentation | `rcode-docs-auditor` | — |
+| 10 | Cross-platform | `rcode-cross-platform-auditor` | — |
+| 11 | Karpathy | `rcode-code-reviewer` | `rcode-hanzla` |
+| 12 | SXO/UX | `rcode-layla` | — |
+| 13 | Observability | `rcode-observability-auditor` | — |
+| 14 | Naming | `rcode-codebase-mapper` | `rcode-code-reviewer` |
+| 15 | Coverage | `rcode-nyquist-auditor` | `rcode-fatima` |
 
 ## Step 0 — Usage check
 
@@ -38,9 +38,9 @@ If `$ARGUMENTS` is `--help` or `-h`:
 /rihal-lens-audit <name>         # run by name, e.g. "security", "performance"
 
 Lenses and their primary skills:
-  1.  security         — rihal-security-auditor + rihal-security-adversary
+  1.  security         — rcode-security-auditor + rihal-security-adversary
   2.  performance      — rihal-perf
-  3.  testability      — rihal-fatima + rihal-edge-case-hunter
+  3.  testability      — rcode-fatima + rihal-edge-case-hunter
   4.  extensibility    — rihal-waleed
   5.  dep-health       — rihal-dep-auditor
   6.  error-recovery   — rihal-debugger
@@ -48,11 +48,11 @@ Lenses and their primary skills:
   8.  i18n             — rihal-i18n-auditor
   9.  documentation    — rihal-docs-auditor
   10. cross-platform   — rihal-cross-platform-auditor
-  11. karpathy         — rihal-code-reviewer + rihal-hanzla
+  11. karpathy         — rcode-code-reviewer + rihal-hanzla
   12. sxo              — rihal-layla
   13. observability    — rihal-observability-auditor
-  14. naming           — rihal-codebase-mapper + rihal-code-reviewer
-  15. coverage         — rihal-nyquist-auditor + rihal-fatima
+  14. naming           — rcode-codebase-mapper + rihal-code-reviewer
+  15. coverage         — rcode-nyquist-auditor + rihal-fatima
 ```
 
 STOP after printing help.
@@ -91,21 +91,21 @@ Question:
 Kaun sa lens run karna hai? (Which lens to run?)
 
 Options:
-  1.  security         — rihal-security-auditor (injection, secrets, auth)
+  1.  security         — rcode-security-auditor (injection, secrets, auth)
   2.  performance      — rihal-perf (unbounded reads, wasted passes)
-  3.  testability      — rihal-fatima (coverage gaps, untested paths)
-  4.  extensibility    — rihal-waleed (hardcoded values, scalability)
-  5.  dep-health       — rihal-dep-auditor (CVEs, unused, loose pins)
-  6.  error-recovery   — rihal-debugger (swallowed errors, missing fallbacks)
-  7.  state-machine    — rihal-deviation-analyzer (transitions, schema drift)
-  8.  i18n             — rihal-i18n-auditor (hardcoded strings, RTL, response_language)
-  9.  documentation    — rihal-docs-auditor (Next Up, dead links, 5-component)
-  10. cross-platform   — rihal-cross-platform-auditor (bash-isms, macOS flags)
-  11. karpathy         — rihal-code-reviewer + rihal-hanzla (overengineering, stubs)
-  12. sxo              — rihal-layla (dead-end flows, missing guidance)
-  13. observability    — rihal-observability-auditor (unguarded calls, silent fails)
-  14. naming           — rihal-codebase-mapper (naming drift, PLAN.md vs SPRINT.md)
-  15. coverage         — rihal-nyquist-auditor (parity gaps, untested commands)
+  3.  testability      — rcode-fatima (coverage gaps, untested paths)
+  4.  extensibility    — rcode-waleed (hardcoded values, scalability)
+  5.  dep-health       — rcode-dep-auditor (CVEs, unused, loose pins)
+  6.  error-recovery   — rcode-debugger (swallowed errors, missing fallbacks)
+  7.  state-machine    — rcode-deviation-analyzer (transitions, schema drift)
+  8.  i18n             — rcode-i18n-auditor (hardcoded strings, RTL, response_language)
+  9.  documentation    — rcode-docs-auditor (Next Up, dead links, 5-component)
+  10. cross-platform   — rcode-cross-platform-auditor (bash-isms, macOS flags)
+  11. karpathy         — rcode-code-reviewer + rcode-hanzla (overengineering, stubs)
+  12. sxo              — rcode-layla (dead-end flows, missing guidance)
+  13. observability    — rcode-observability-auditor (unguarded calls, silent fails)
+  14. naming           — rcode-codebase-mapper (naming drift, PLAN.md vs SPRINT.md)
+  15. coverage         — rcode-nyquist-auditor (parity gaps, untested commands)
   16. all              — run all 15 lenses
   0.  cancel
 ```
@@ -142,7 +142,7 @@ Never halt the whole audit because one lens's skill fails.
 
 ```
 PRIMARY = Task(
-  subagent_type="rihal-security-auditor",
+  subagent_type="rcode-security-auditor",
   model="sonnet",
   prompt="Audit-only — do NOT fix anything. {CONTEXT}
   
@@ -160,7 +160,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rihal-security-adversary",
+  subagent_type="rcode-security-adversary",
   model="sonnet",
   prompt="Adversarial security review. {CONTEXT}
   
@@ -182,7 +182,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
@@ -208,7 +208,7 @@ FINDINGS[performance] = RESULT
 
 ```
 PRIMARY = Task(
-  subagent_type="rihal-fatima",
+  subagent_type="rcode-fatima",
   model="sonnet",
   prompt="Audit-only — do NOT write tests. {CONTEXT}
   
@@ -226,7 +226,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rihal-edge-case-hunter",
+  subagent_type="rcode-edge-case-hunter",
   model="sonnet",
   prompt="Enumerate edge cases and boundary conditions. {CONTEXT}
   
@@ -248,7 +248,7 @@ FINDINGS[testability] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rihal-waleed",
+  subagent_type="rcode-waleed",
   model="sonnet",
   prompt="Architecture audit — do NOT redesign anything. {CONTEXT}
   
@@ -274,7 +274,7 @@ FINDINGS[extensibility] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
@@ -300,7 +300,7 @@ FINDINGS[dep-health] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-debugger",
+  subagent_type="rcode-debugger",
   model="sonnet",
   prompt="Error recovery audit — do NOT fix anything. {CONTEXT}
   
@@ -327,7 +327,7 @@ FINDINGS[error-recovery] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-deviation-analyzer",
+  subagent_type="rcode-deviation-analyzer",
   model="sonnet",
   prompt="State machine audit — do NOT modify state. {CONTEXT}
   
@@ -353,7 +353,7 @@ FINDINGS[state-machine] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-i18n-auditor",
+  subagent_type="rcode-i18n-auditor",
   model="sonnet",
   prompt="i18n audit — do NOT add translations. {CONTEXT}
   
@@ -379,7 +379,7 @@ FINDINGS[i18n] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-docs-auditor",
+  subagent_type="rcode-docs-auditor",
   model="sonnet",
   prompt="Documentation audit — do NOT write docs. {CONTEXT}
   
@@ -405,7 +405,7 @@ FINDINGS[documentation] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
@@ -432,7 +432,7 @@ FINDINGS[cross-platform] = RESULT
 
 ```
 PRIMARY = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
   
@@ -448,7 +448,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rihal-hanzla",
+  subagent_type="rcode-hanzla",
   model="sonnet",
   prompt="Implementation quality audit — do NOT refactor. {CONTEXT}
   
@@ -471,7 +471,7 @@ FINDINGS[karpathy] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rihal-layla",
+  subagent_type="rcode-layla",
   model="sonnet",
   prompt="UX flow audit — do NOT redesign flows. {CONTEXT}
   
@@ -497,7 +497,7 @@ FINDINGS[sxo] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
@@ -524,7 +524,7 @@ FINDINGS[observability] = RESULT
 
 ```
 PRIMARY = Task(
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   prompt="Naming consistency audit — do NOT rename anything. {CONTEXT}
   
@@ -540,7 +540,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="sonnet",
   prompt="Variable naming audit in recent code changes. {CONTEXT}
   
@@ -562,7 +562,7 @@ FINDINGS[naming] = merge(PRIMARY, SECONDARY)
 
 ```
 PRIMARY = Task(
-  subagent_type="rihal-nyquist-auditor",
+  subagent_type="rcode-nyquist-auditor",
   model="sonnet",
   prompt="Coverage audit — do NOT generate tests. {CONTEXT}
   
@@ -578,7 +578,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rihal-fatima",
+  subagent_type="rcode-fatima",
   model="sonnet",
   prompt="Release gate — coverage quality check. {CONTEXT}
   

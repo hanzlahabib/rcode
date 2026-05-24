@@ -1,5 +1,5 @@
 <purpose>
-Start a new milestone cycle for an existing project. Loads project context, gathers milestone goals interactively, updates PROJECT.md and STATE.md in-place, optionally runs parallel research, defines scoped requirements with REQ-IDs, spawns rihal-roadmapper to create the phased execution plan, and commits all artifacts. Brownfield equivalent of new-project.
+Start a new milestone cycle for an existing project. Loads project context, gathers milestone goals interactively, updates PROJECT.md and STATE.md in-place, optionally runs parallel research, defines scoped requirements with REQ-IDs, spawns rcode-roadmapper to create the phased execution plan, and commits all artifacts. Brownfield equivalent of new-project.
 </purpose>
 
 <required_reading>
@@ -10,9 +10,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-project-researcher — Researches project-level technical decisions
-- rihal-research-synthesizer — Synthesizes findings from parallel research agents
-- rihal-roadmapper — Creates phased execution roadmaps
+- rcode-project-researcher — Researches project-level technical decisions
+- rcode-research-synthesizer — Synthesizes findings from parallel research agents
+- rcode-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
 <process>
@@ -203,9 +203,9 @@ and continue.
 
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init new-milestone 2>/dev/null)
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rihal-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rihal-research-synthesizer 2>/dev/null)
-AGENT_SKILLS_ROADMAPPER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rihal-roadmapper 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-project-researcher 2>/dev/null)
+AGENT_SKILLS_SYNTHESIZER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-research-synthesizer 2>/dev/null)
+AGENT_SKILLS_ROADMAPPER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-roadmapper 2>/dev/null)
 ```
 
 Extract from `INIT` JSON (where available): `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`.
@@ -213,9 +213,9 @@ Extract from `INIT` JSON (where available): `research_enabled`, `current_milesto
 Resolve models per agent:
 
 ```bash
-RESEARCHER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-project-researcher 2>/dev/null)
-SYNTHESIZER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-research-synthesizer 2>/dev/null)
-ROADMAPPER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-project-researcher 2>/dev/null)
+SYNTHESIZER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-research-synthesizer 2>/dev/null)
+ROADMAPPER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-roadmapper 2>/dev/null)
 ```
 
 ## 7.5 Reset-phase safety (only when `--reset-phase-numbers`)
@@ -270,7 +270,7 @@ If `research_enabled=false`:
 mkdir -p .planning/research
 ```
 
-Spawn 4 parallel `rihal-project-researcher` Task calls in a single assistant response. Each produces one file in `.planning/research/`.
+Spawn 4 parallel `rcode-project-researcher` Task calls in a single assistant response. Each produces one file in `.planning/research/`.
 
 Per-researcher prompt template:
 
@@ -311,7 +311,7 @@ Dimension-specific fields:
 | GATES | Versions current (verify via Context7), rationale WHY, integration considered | Categories clear, complexity noted, deps identified | Integration points identified, new vs modified explicit, build order considers deps | Pitfalls specific to these features, integration pitfalls covered, prevention actionable |
 | FILE | STACK.md | FEATURES.md | ARCHITECTURE.md | PITFALLS.md |
 
-After all 4 complete, spawn `rihal-research-synthesizer`:
+After all 4 complete, spawn `rcode-research-synthesizer`:
 
 ```
 Task(prompt="
@@ -327,7 +327,7 @@ Synthesize research outputs into SUMMARY.md.
 ${AGENT_SKILLS_SYNTHESIZER}
 
 Write to: .planning/research/SUMMARY.md
-", subagent_type='rihal-research-synthesizer', model='${SYNTHESIZER_MODEL}', description='Synthesize research')
+", subagent_type='rcode-research-synthesizer', model='${SYNTHESIZER_MODEL}', description='Synthesize research')
 ```
 
 Display:
@@ -467,14 +467,14 @@ git add .planning/REQUIREMENTS.md 2>/dev/null && \
  rcode ► CREATING ROADMAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning rihal-roadmapper...
+◆ Spawning rcode-roadmapper...
 ```
 
 **Starting phase number:**
 - If `--reset-phase-numbers` is active, start at **Phase 1**
 - Otherwise, continue from the previous milestone's last phase number (v1.7 ended at phase 67 → v1.8 starts at phase 68)
 
-Spawn `rihal-roadmapper` via Task tool:
+Spawn `rcode-roadmapper` via Task tool:
 
 ```
 <planning_context>
@@ -556,7 +556,7 @@ node ".rcode/bin/rcode-tools.cjs" state add-decision \
   --summary "Started milestone v[X.Y] [Name]: [N] phases, [X] requirements" 2>/dev/null || true
 
 # Sync all roadmapper-created phases into state.json.
-# rihal-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
+# rcode-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
 # state.json has no phase entries until this runs. Closes #504.
 node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
@@ -601,7 +601,7 @@ or
 - [ ] Research completed (if selected) — 4 parallel researchers + synthesizer
 - [ ] Requirements gathered and scoped per category
 - [ ] REQUIREMENTS.md created with category-prefixed REQ-IDs
-- [ ] rihal-roadmapper spawned with correct phase numbering context
+- [ ] rcode-roadmapper spawned with correct phase numbering context
 - [ ] Roadmap files written immediately (not draft)
 - [ ] User approval captured before commit
 - [ ] Phase numbering mode respected (continued or reset)

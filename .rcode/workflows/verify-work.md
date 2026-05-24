@@ -23,8 +23,8 @@ If all pass: `rcode ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-planner — Creates detailed plans from phase scope
-- rihal-sprint-checker — Reviews plan quality before execution
+- rcode-planner — Creates detailed plans from phase scope
+- rcode-sprint-checker — Reviews plan quality before execution
 </available_agent_types>
 
 <philosophy>
@@ -49,7 +49,7 @@ If $ARGUMENTS contains a phase number, load context:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-planner 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null)
 AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-checker 2>/dev/null)
 ```
 
@@ -497,7 +497,7 @@ Display:
 ◆ Spawning planner for gap closure...
 ```
 
-Spawn rihal-planner in --gaps mode:
+Spawn rcode-planner in --gaps mode:
 
 ```
 Task(
@@ -522,7 +522,7 @@ Output consumed by /rihal-execute
 Plans must be executable prompts.
 </downstream_consumer>
 """,
-  subagent_type="rihal-planner",
+  subagent_type="rcode-planner",
   model="sonnet",
   model="{planner_model}",
   description="Plan gap fixes for Phase {phase}"
@@ -548,7 +548,7 @@ Display:
 
 Initialize: `iteration_count = 1`
 
-Spawn rihal-sprint-checker:
+Spawn rcode-sprint-checker:
 
 ```
 Task(
@@ -572,7 +572,7 @@ Return one of:
 - ## ISSUES FOUND — structured issue list
 </expected_output>
 """,
-  subagent_type="rihal-sprint-checker",
+  subagent_type="rcode-sprint-checker",
   model="sonnet",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
@@ -591,7 +591,7 @@ On return:
 
 Display: `Sending back to planner for revision... (iteration {N}/3)`
 
-Spawn rihal-planner with revision context:
+Spawn rcode-planner with revision context:
 
 ```
 Task(
@@ -617,7 +617,7 @@ Read existing SPRINT.md files. Make targeted updates to address checker issues.
 Do NOT replan from scratch unless issues are fundamental.
 </instructions>
 """,
-  subagent_type="rihal-planner",
+  subagent_type="rcode-planner",
   model="sonnet",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
@@ -713,8 +713,8 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] Batched writes: on issue, every 5 passes, or completion
 - [ ] Committed on completion
 - [ ] If issues: parallel debug agents diagnose root causes
-- [ ] If issues: rihal-planner creates fix plans (gap_closure mode)
-- [ ] If issues: rihal-sprint-checker verifies fix plans
+- [ ] If issues: rcode-planner creates fix plans (gap_closure mode)
+- [ ] If issues: rcode-sprint-checker verifies fix plans
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
 - [ ] Ready for `/rihal-execute --gaps-only` when complete
 </success_criteria>

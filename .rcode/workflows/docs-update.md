@@ -6,8 +6,8 @@ Generate, update, and verify project documentation — both canonical doc types 
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-noor — Writes and updates project documentation files
-- rihal-docs-auditor — Verifies factual claims in docs against the live codebase
+- rcode-noor — Writes and updates project documentation files
+- rcode-docs-auditor — Verifies factual claims in docs against the live codebase
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -40,7 +40,7 @@ test -d docs || mkdir -p docs
 # Read agent manifest to get model for doc writers
 AGENT_MANIFEST=".rcode/_config/agent-manifest.csv"
 if [[ -f "$AGENT_MANIFEST" ]]; then
-  DOC_WRITER_MODEL=$(grep -i "rihal-noor" "$AGENT_MANIFEST" | cut -d',' -f3)
+  DOC_WRITER_MODEL=$(grep -i "rcode-noor" "$AGENT_MANIFEST" | cut -d',' -f3)
 else
   DOC_WRITER_MODEL="claude-opus"  # fallback
 fi
@@ -152,11 +152,11 @@ Create output directories:
 mkdir -p docs
 ```
 
-For each doc in the queue, spawn a `rihal-noor` agent in parallel waves (up to 3 agents in parallel per wave):
+For each doc in the queue, spawn a `rcode-noor` agent in parallel waves (up to 3 agents in parallel per wave):
 
 ```
 Task(
-  subagent_type="rihal-noor",
+  subagent_type="rcode-noor",
   model="sonnet",
   prompt="
 Generate documentation for {doc_type}.
@@ -174,12 +174,12 @@ Do NOT commit — the orchestrator will handle that.
 
 ## Step 6: Verify generated docs
 
-After all doc writers complete, spawn `rihal-docs-auditor` agents to cross-check all generated content against the live codebase.
+After all doc writers complete, spawn `rcode-docs-auditor` agents to cross-check all generated content against the live codebase.
 
 For each generated doc:
 ```
 Task(
-  subagent_type="rihal-docs-auditor",
+  subagent_type="rcode-docs-auditor",
   model="sonnet",
   prompt="
 Verify this documentation file against the live codebase:

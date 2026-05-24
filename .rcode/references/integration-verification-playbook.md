@@ -1,6 +1,6 @@
 # Integration Verification Playbook
 
-Loaded by `rihal-integration-checker` via `@-include`. Contains the full
+Loaded by `rcode-integration-checker` via `@-include`. Contains the full
 six-step verification process, structured output template, critical rules,
 and success criteria.
 

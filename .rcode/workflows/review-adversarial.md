@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-security-adversary` — adversarial code reviewer (security-focused)
+- `rcode-security-adversary` — adversarial code reviewer (security-focused)
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -59,11 +59,11 @@ Collect:
 
 ## Step 2 — Spawn Adversarial Reviewer
 
-Spawn `rihal-security-adversary` subagent:
+Spawn `rcode-security-adversary` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-security-adversary"
+  subagent_type: "rcode-security-adversary"
   description: "Adversarial security review"
   prompt: |
     Conduct an adversarial security review. Assume a hostile perspective.

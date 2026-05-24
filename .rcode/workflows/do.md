@@ -50,15 +50,15 @@ Match if `$QUESTION` starts with `@<persona> <CODE>` or `@<persona>:<CODE>` — 
 **Persona-name aliases** (lowercased, common nicknames):
 | Alias | Resolves to | Agent file |
 |---|---|---|
-| `sadiq`, `strategy`, `director` | Sadiq | rihal-sadiq |
-| `waleed`, `cto`, `architect` | Waleed | rihal-waleed |
-| `hussain`, `hussain-pm`, `pm` | Hussain | rihal-hussain-pm |
-| `mariam`, `marketing` | Mariam | rihal-mariam |
-| `fatima`, `qa` | Fatima | rihal-fatima |
-| `hanzla`, `dev`, `engineer` | Hanzla | rihal-hanzla |
-| `dalil`, `scout`, `mapper` | Dalil | rihal-codebase-mapper |
-| `khattat`, `planner` | Khattat | rihal-planner |
-| `munaffidh`, `executor` | Munaffidh | rihal-executor |
+| `sadiq`, `strategy`, `director` | Sadiq | rcode-sadiq |
+| `waleed`, `cto`, `architect` | Waleed | rcode-waleed |
+| `hussain`, `hussain-pm`, `pm` | Hussain | rcode-hussain-pm |
+| `mariam`, `marketing` | Mariam | rcode-mariam |
+| `fatima`, `qa` | Fatima | rcode-fatima |
+| `hanzla`, `dev`, `engineer` | Hanzla | rcode-hanzla |
+| `dalil`, `scout`, `mapper` | Dalil | rcode-codebase-mapper |
+| `khattat`, `planner` | Khattat | rcode-planner |
+| `munaffidh`, `executor` | Munaffidh | rcode-executor |
 
 **Behavior:**
 

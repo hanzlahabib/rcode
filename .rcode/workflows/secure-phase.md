@@ -8,7 +8,7 @@ Verify threat mitigations for a completed phase. Confirm SPRINT.md threat regist
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-security-auditor — Verifies threat mitigation coverage
+- rcode-security-auditor — Verifies threat mitigation coverage
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -35,7 +35,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-security-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-security-auditor 2>/dev/null)
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
@@ -48,7 +48,7 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 **If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
 ```bash
-AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-security-auditor --raw)
+AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-security-auditor --raw)
 SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
@@ -106,13 +106,13 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Task(
-  prompt="Read .rcode/agents/rihal-security-auditor.md for instructions.\n\n" +
+  prompt="Read .rcode/agents/rcode-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
     "<constraints>Never modify implementation files. Verify mitigations exist — do not scan for new threats. Escalate implementation gaps.</constraints>" +
     "${AGENT_SKILLS_AUDITOR}",
-  subagent_type="rihal-security-auditor",
+  subagent_type="rcode-security-auditor",
   model="{AUDITOR_MODEL}",
   description="Verify threat mitigations for Phase {N}"
 )

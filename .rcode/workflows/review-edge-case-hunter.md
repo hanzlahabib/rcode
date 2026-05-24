@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-edge-case-hunter` — edge case enumeration agent
+- `rcode-edge-case-hunter` — edge case enumeration agent
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -50,11 +50,11 @@ Collect files by phase or component, extract:
 
 ## Step 2 — Spawn Edge Case Hunter
 
-Spawn `rihal-edge-case-hunter` subagent:
+Spawn `rcode-edge-case-hunter` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-edge-case-hunter"
+  subagent_type: "rcode-edge-case-hunter"
   description: "Enumerate edge cases"
   prompt: |
     Enumerate all edge cases that could cause failures or unexpected behavior.

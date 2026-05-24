@@ -22,7 +22,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-docs-auditor` — documentation compliance auditor
+- `rcode-docs-auditor` — documentation compliance auditor
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -84,11 +84,11 @@ done
 
 ## Step 3 — Spawn Docs Auditor
 
-Spawn `rihal-docs-auditor` subagent:
+Spawn `rcode-docs-auditor` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-docs-auditor"
+  subagent_type: "rcode-docs-auditor"
   description: "Audit documentation coverage and staleness"
   prompt: |
     Audit project documentation against requirements.

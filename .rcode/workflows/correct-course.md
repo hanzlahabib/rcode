@@ -22,8 +22,8 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-- `rihal-deviation-analyzer` — compares spec to implementation, classifies gaps
-- `rihal-remediation-planner` — creates ordered fix plan
+- `rcode-deviation-analyzer` — compares spec to implementation, classifies gaps
+- `rcode-remediation-planner` — creates ordered fix plan
 </available_agent_types>
 
 ## Step 0 — Initialize
@@ -60,11 +60,11 @@ Scan current codebase for:
 
 ## Step 2 — Spawn Deviation Analyzer
 
-Spawn `rihal-deviation-analyzer` subagent:
+Spawn `rcode-deviation-analyzer` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-deviation-analyzer"
+  subagent_type: "rcode-deviation-analyzer"
   description: "Analyze deviations from spec"
   prompt: |
     Compare original spec to current implementation and classify deviations.
@@ -101,11 +101,11 @@ Task tool call:
 
 ## Step 3 — Spawn Remediation Planner
 
-Spawn `rihal-remediation-planner` subagent:
+Spawn `rcode-remediation-planner` subagent:
 
 ```
 Task tool call:
-  subagent_type: "rihal-remediation-planner"
+  subagent_type: "rcode-remediation-planner"
   description: "Create remediation plan"
   prompt: |
     Create an ordered remediation plan based on deviations.

@@ -1,5 +1,5 @@
 <purpose>
-Sub-step of plan.md — Step 8 Spawn rihal-planner Agent. Spawns rihal-planner with full context to generate SPRINT.md plans. Includes deep-work rules and downstream consumer spec.
+Sub-step of plan.md — Step 8 Spawn rcode-planner Agent. Spawns rcode-planner with full context to generate SPRINT.md plans. Includes deep-work rules and downstream consumer spec.
 </purpose>
 
 <filename_convention>
@@ -11,7 +11,7 @@ when a second plan is added later. The plan-number computation in plan.md uses
 `NEXT_PLAN_NUMBER=$((EXISTING_PLAN_COUNT + 1))` and starts at 1 for new phases.
 </filename_convention>
 
-## 8. Spawn rihal-planner Agent
+## 8. Spawn rcode-planner Agent
 
 Display banner:
 ```
@@ -248,7 +248,7 @@ Fix issues inline. No sub-agent needed — this is a quick self-check before the
 ```
 Task(
   prompt=filled_prompt,
-  subagent_type="rihal-planner",
+  subagent_type="rcode-planner",
   model="{model}",
   model="{planner_model}",
   description="Plan Phase {phase}"

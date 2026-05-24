@@ -12,7 +12,7 @@ Read config.json for planning behavior settings.
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-executor — Executes plan tasks, commits, creates SUMMARY.md
+- rcode-executor — Executes plan tasks, commits, creates SUMMARY.md
 </available_agent_types>
 
 <process>
@@ -90,7 +90,7 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="rihal-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="rcode-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -123,7 +123,7 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
 
 1. Parse segment map: checkpoint locations and types
 2. Per segment:
-   - Subagent route: spawn rihal-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
+   - Subagent route: spawn rcode-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
    - Main route: execute tasks using standard flow (step name="execute")
 3. After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → commit → self-check:
    - Verify key-files.created exist on disk with `[ -f ]`

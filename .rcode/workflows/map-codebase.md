@@ -65,7 +65,7 @@ STOP — do not proceed.
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-codebase-mapper — Maps project structure and dependencies
+- rcode-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
 <philosophy>
@@ -90,7 +90,7 @@ Load codebase mapping context:
 ```bash
 INIT=$(node .rcode/bin/rcode-tools.cjs init map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_MAPPER=$(node .rcode/bin/rcode-tools.cjs agent-skills rihal-codebase-mapper 2>/dev/null)
+AGENT_SKILLS_MAPPER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-codebase-mapper 2>/dev/null)
 ```
 
 Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `response_language`.
@@ -158,17 +158,17 @@ Before spawning agents, detect whether the current runtime supports the `Task` t
 </step>
 
 <step name="spawn_agents" condition="Task tool is available">
-Spawn 4 parallel rihal-codebase-mapper agents.
+Spawn 4 parallel rcode-codebase-mapper agents.
 
-Use Task tool with `subagent_type="rihal-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
+Use Task tool with `subagent_type="rcode-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
 
-**CRITICAL:** Use the dedicated `rihal-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
+**CRITICAL:** Use the dedicated `rcode-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
 
 **Agent 1: Tech Focus**
 
 ```
 Task(
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   model="{mapper_model}",
   run_in_background=true,
@@ -190,7 +190,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```
 Task(
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   model="{mapper_model}",
   run_in_background=true,
@@ -212,7 +212,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```
 Task(
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   model="{mapper_model}",
   run_in_background=true,
@@ -234,7 +234,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```
 Task(
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   model="{mapper_model}",
   run_in_background=true,
@@ -314,7 +314,7 @@ Perform all 4 mapping passes sequentially:
 - Explore TODOs, known issues, fragile areas, security patterns
 - Write `.planning/codebase/CONCERNS.md` — Tech debt, bugs, security, performance, fragile areas
 
-Use the same document templates as the `rihal-codebase-mapper` agent. Include actual file paths formatted with backticks.
+Use the same document templates as the `rcode-codebase-mapper` agent. Include actual file paths formatted with backticks.
 
 Continue to verify_output.
 </step>
@@ -431,7 +431,7 @@ End workflow.
 
 <success_criteria>
 - .planning/codebase/ directory created
-- If Task tool available: 4 parallel rihal-codebase-mapper agents spawned with run_in_background=true
+- If Task tool available: 4 parallel rcode-codebase-mapper agents spawned with run_in_background=true
 - If Task tool NOT available: 4 sequential mapping passes performed inline (never using browser_subagent)
 - All 7 codebase documents exist
 - No empty documents (each should have >20 lines)

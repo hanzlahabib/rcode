@@ -9,7 +9,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-nyquist-auditor — Validates verification coverage
+- rcode-nyquist-auditor — Validates verification coverage
 </available_agent_types>
 
 <process>
@@ -19,13 +19,13 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-nyquist-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-nyquist-auditor 2>/dev/null)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rihal-nyquist-auditor --raw)
+AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-nyquist-auditor --raw)
 NYQUIST_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.nyquist_validation --raw)
 ```
 
@@ -99,13 +99,13 @@ Otherwise call AskUserQuestion with gap table and options:
 
 ```
 Task(
-  prompt="Read $HOME/.claude/agents/rihal-nyquist-auditor.md for instructions.\n\n" +
+  prompt="Read $HOME/.claude/agents/rcode-nyquist-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, VALIDATION.md}</files_to_read>" +
     "<gaps>{gap list}</gaps>" +
     "<test_infrastructure>{framework, config, commands}</test_infrastructure>" +
     "<constraints>Never modify impl files. Max 3 debug iterations. Escalate impl bugs.</constraints>" +
     "${AGENT_SKILLS_AUDITOR}",
-  subagent_type="rihal-nyquist-auditor",
+  subagent_type="rcode-nyquist-auditor",
   model="{AUDITOR_MODEL}",
   description="Fill validation gaps for Phase {N}"
 )

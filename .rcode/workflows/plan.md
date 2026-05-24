@@ -1,5 +1,5 @@
 <purpose>
-Create executable phase prompts (SPRINT.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates rihal-phase-researcher, rihal-planner, and rihal-sprint-checker agents with a revision loop (max 3 iterations).
+Create executable phase prompts (SPRINT.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates rcode-phase-researcher, rcode-planner, and rcode-sprint-checker agents with a revision loop (max 3 iterations).
 </purpose>
 
 <output_format>
@@ -14,20 +14,20 @@ Open with banner:
 TaskCreate at start:
 - TaskCreate: "Load phase scope and context"
 - TaskCreate: "Research phase (if enabled)"
-- TaskCreate: "Spawn rihal-planner → SPRINT.md"
-- TaskCreate: "Run rihal-sprint-checker verification"
+- TaskCreate: "Spawn rcode-planner → SPRINT.md"
+- TaskCreate: "Run rcode-sprint-checker verification"
 - TaskCreate: "Revise plan (up to 3 iterations)" — only if checker flags issues
 - TaskCreate: "Commit SPRINT.md + update state"
 
 Spawning indicators:
 ```
-◆ Spawning rihal-phase-researcher...
+◆ Spawning rcode-phase-researcher...
 ✓ Research complete: RESEARCH.md ({N} lines)
 
-◆ Spawning rihal-planner...
+◆ Spawning rcode-planner...
 ✓ Planner complete: SPRINT.md ({N} stories, {M} points)
 
-◆ Spawning rihal-sprint-checker...
+◆ Spawning rcode-sprint-checker...
 ✓ Check complete: {PASS|PARTIAL|FAIL} — see CHECK.md
 ```
 
@@ -57,9 +57,9 @@ ${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-phase-researcher — Researches technical approaches for a phase
-- rihal-planner — Creates detailed plans from phase scope
-- rihal-sprint-checker — Reviews plan quality before execution
+- rcode-phase-researcher — Researches technical approaches for a phase
+- rcode-planner — Creates detailed plans from phase scope
+- rcode-sprint-checker — Reviews plan quality before execution
 </available_agent_types>
 
 <process>
@@ -71,9 +71,9 @@ Load all context in one call (paths only to minimize orchestrator context):
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init sprint-plan "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-phase-researcher 2>/dev/null)
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-sprint-checker 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null)
 CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
@@ -240,7 +240,7 @@ New plan file:       {GAP_PLAN_FILENAME}
 
 **Step 6: Skip ahead**
 
-Control flow jumps directly to step 8 (Spawn rihal-planner). Steps 4 (CONTEXT.md), 5 (Research), and 5.5 (Validation) are ALL skipped when `GAPS_MODE=true`.
+Control flow jumps directly to step 8 (Spawn rcode-planner). Steps 4 (CONTEXT.md), 5 (Research), and 5.5 (Validation) are ALL skipped when `GAPS_MODE=true`.
 
 Step 8 will consume these variables when filling the planner prompt:
 - `GAP_LIST` — serialized list of gaps (id, title, expected, actual, status)
@@ -333,7 +333,7 @@ This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down th
 normal pipeline exactly as if no plans existed yet:
 
 1. Proceed to Step 7 (context-paths) and Step 7.5 (Nyquist verification) as normal.
-2. Spawn `rihal-planner` via `@rcode/workflows/plan-spawn-planner.md` (Step 8). The
+2. Spawn `rcode-planner` via `@rcode/workflows/plan-spawn-planner.md` (Step 8). The
    planner subagent is mandatory — the orchestrator must NOT write SPRINT.md
    directly via the `Write` tool. Pass the existing plan list to the planner so
    it picks the next plan number and avoids re-covering shipped tasks.
@@ -492,7 +492,7 @@ Use AskUserQuestion with these 3 options.
 **If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
 
-## 10. Spawn rihal-sprint-checker Agent
+## 10. Spawn rcode-sprint-checker Agent
 
 Display banner:
 ```
@@ -535,7 +535,7 @@ ${AGENT_SKILLS_CHECKER}
 ```
 Task(
   prompt=checker_prompt,
-  subagent_type="rihal-sprint-checker",
+  subagent_type="rcode-sprint-checker",
   model="sonnet",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
@@ -604,7 +604,7 @@ Halt the workflow with a non-zero exit signal.
 
 Do NOT treat empty / narrative-only checker output as "plan approved". An empty checker output is a malfunction, not a pass.
 
-Parse issue count from checker return: count BLOCKER + WARNING entries in the YAML issues block (structured output from rihal-sprint-checker). If the checker's return contains a populated YAML issues block with `issues: []` (i.e., the plan was approved with no issues AFTER actual checking), treat `issue_count` as 0 and skip the stall check — the plan passed. Proceed to step 13.
+Parse issue count from checker return: count BLOCKER + WARNING entries in the YAML issues block (structured output from rcode-sprint-checker). If the checker's return contains a populated YAML issues block with `issues: []` (i.e., the plan was approved with no issues AFTER actual checking), treat `issue_count` as 0 and skip the stall check — the plan passed. Proceed to step 13.
 
 Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} warnings`
 
@@ -655,7 +655,7 @@ Return what changed.
 ```
 Task(
   prompt=revision_prompt,
-  subagent_type="rihal-planner",
+  subagent_type="rcode-planner",
   model="sonnet",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
@@ -713,7 +713,7 @@ The CLI helper returns a JSON report:
 
 **If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
 
-This closes the gap from #442 — the rule was stated in `rihal-planner.md` but not enforced. Now it's enforced automatically.
+This closes the gap from #442 — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
 
 ## 13. Requirements Coverage Gate
 
@@ -866,7 +866,7 @@ fail verdict, or its CHECK.md is missing) — DO NOT emit `PLANNED ✓`. Emit:
  rcode ► PHASE {X} PLANNED ⚠ (gates skipped)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Plans were written but rihal-sprint-checker did not return a passing
+Plans were written but rcode-sprint-checker did not return a passing
 CHECK.md. Run /rihal-plan {X} --reviews to gate the plans before
 executing, or pass --skip-verify if you accept the risk.
 ```
@@ -944,11 +944,11 @@ If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 
 - [ ] Phase directory created if needed
 - [ ] CONTEXT.md loaded early (step 4) and passed to ALL agents
 - [ ] Research completed (unless --skip-research or --gaps or exists)
-- [ ] rihal-phase-researcher spawned with CONTEXT.md
+- [ ] rcode-phase-researcher spawned with CONTEXT.md
 - [ ] Existing plans checked
-- [ ] rihal-planner spawned with CONTEXT.md + RESEARCH.md
+- [ ] rcode-planner spawned with CONTEXT.md + RESEARCH.md
 - [ ] Plans created (PLANNING COMPLETE or CHECKPOINT handled)
-- [ ] rihal-sprint-checker spawned with CONTEXT.md
+- [ ] rcode-sprint-checker spawned with CONTEXT.md
 - [ ] Verification passed OR user override OR max iterations with user decision
 - [ ] User sees status between agent spawns
 - [ ] User knows next steps

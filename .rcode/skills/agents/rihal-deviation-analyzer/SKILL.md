@@ -8,7 +8,7 @@ description: >
   "root cause of the delay", "compare planned vs actual", "deviation report",
   "what changed in this phase", or "talk to the deviation analyzer". Do NOT use
   for: strategic priority re-evaluation (use Sadiq), scope decisions (use
-  Hussain-PM), or executing remediation (use rihal-remediation-planner).
+  Hussain-PM), or executing remediation (use rcode-remediation-planner).
 triggers:
   - "analyze deviation"
   - "what deviated"

@@ -1,6 +1,6 @@
 # Nyquist Auditor Playbook
 
-Shared reference `@`-included by `rihal-nyquist-auditor`. Holds the execution flow, structured-return formats, and success criteria for filling validation gaps.
+Shared reference `@`-included by `rcode-nyquist-auditor`. Holds the execution flow, structured-return formats, and success criteria for filling validation gaps.
 
 <execution_flow>
 

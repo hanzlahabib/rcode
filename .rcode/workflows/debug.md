@@ -27,7 +27,7 @@ STOP — do not proceed.
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-debugger — Diagnoses and fixes issues
+- rcode-debugger — Diagnoses and fixes issues
 </available_agent_types>
 
 <paths>
@@ -105,7 +105,7 @@ This runs in parallel - all issues investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rihal-debugger 2>/dev/null)
+AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-debugger 2>/dev/null)
 ```
 
 **Spawn debug agents in parallel:**
@@ -115,7 +115,7 @@ For each issue, fill the debug-subagent-prompt template and spawn:
 ```
 Task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rcode/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
-  subagent_type="rihal-debugger",
+  subagent_type="rcode-debugger",
   model="sonnet",
   description="Debug: {truth_short}"
 )

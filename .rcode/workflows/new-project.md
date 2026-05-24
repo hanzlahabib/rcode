@@ -25,7 +25,7 @@ Use TaskCreate at workflow start to show the full journey:
 - TaskCreate: "Write and commit PROJECT.md"
 - TaskCreate: "Run domain research (4 parallel agents + synthesizer)" — if research enabled
 - TaskCreate: "Define REQUIREMENTS.md"
-- TaskCreate: "Spawn rihal-roadmapper to build ROADMAP.md"
+- TaskCreate: "Spawn rcode-roadmapper to build ROADMAP.md"
 - TaskCreate: "Finalize: STATE.md, CLAUDE.md refresh, commit"
 
 Mark one in_progress at a time. Mark completed immediately after each step.
@@ -83,9 +83,9 @@ STOP — do not proceed.
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-project-researcher — Researches project-level technical decisions
-- rihal-research-synthesizer — Synthesizes findings from parallel research agents
-- rihal-roadmapper — Creates phased execution roadmaps
+- rcode-project-researcher — Researches project-level technical decisions
+- rcode-research-synthesizer — Synthesizes findings from parallel research agents
+- rcode-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
 ## Step 0.5 — Detect existing project (stub-aware redirect)
@@ -196,12 +196,12 @@ The document should describe what you want to build.
 ```bash
 INIT=$(node .rcode/bin/rcode-tools.cjs init new-project 2>/dev/null || node .rcode/bin/rcode-tools.cjs init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_RESEARCHER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-project-researcher 2>/dev/null)
-AGENT_SYNTHESIZER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-research-synthesizer 2>/dev/null)
-AGENT_ROADMAPPER=$(node .rcode/bin/rcode-tools.cjs agent-info rihal-roadmapper 2>/dev/null)
-RESEARCHER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-project-researcher 2>/dev/null || echo "sonnet")
-SYNTHESIZER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-research-synthesizer 2>/dev/null || echo "sonnet")
-ROADMAPPER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rihal-roadmapper 2>/dev/null || echo "sonnet")
+AGENT_RESEARCHER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-project-researcher 2>/dev/null)
+AGENT_SYNTHESIZER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-research-synthesizer 2>/dev/null)
+AGENT_ROADMAPPER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-roadmapper 2>/dev/null)
+RESEARCHER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-project-researcher 2>/dev/null || echo "sonnet")
+SYNTHESIZER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-research-synthesizer 2>/dev/null || echo "sonnet")
+ROADMAPPER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-roadmapper 2>/dev/null || echo "sonnet")
 ```
 
 Parse JSON for: `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
@@ -977,7 +977,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 - [ ] Requirements gathered (from research or conversation)
 - [ ] User scoped each category (v1/v2/out of scope)
 - [ ] REQUIREMENTS.md created with REQ-IDs → **committed**
-- [ ] rihal-roadmapper spawned with context
+- [ ] rcode-roadmapper spawned with context
 - [ ] Roadmap files written immediately (not draft)
 - [ ] User feedback incorporated (if any)
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria

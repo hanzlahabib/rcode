@@ -110,7 +110,7 @@ Reason: {explain why}
 ```
 Task(
   prompt=research_prompt,
-  subagent_type="rihal-phase-researcher",
+  subagent_type="rcode-phase-researcher",
   model="sonnet",
   model="{researcher_model}",
   description="Research Phase {phase}"

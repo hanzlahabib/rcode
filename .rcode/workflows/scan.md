@@ -1,5 +1,5 @@
 <purpose>
-Lightweight codebase assessment. Spawns a single rihal-codebase-mapper agent for one focus area,
+Lightweight codebase assessment. Spawns a single rcode-codebase-mapper agent for one focus area,
 producing targeted documents in `.planning/codebase/`.
 </purpose>
 
@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-codebase-mapper — Maps project structure and dependencies
+- rcode-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -174,7 +174,7 @@ mkdir -p .planning/codebase
 
 Use the canonical dispatch-banner spec at `.rcode/references/dispatch-banner.md`. Read it now if you have not already — it defines the persona-driven first-person hand-off pattern.
 
-For this workflow, the dispatched agent is `rihal-codebase-mapper` → persona **Dalil (دليل) — Codebase Scout** 🧭.
+For this workflow, the dispatched agent is `rcode-codebase-mapper` → persona **Dalil (دليل) — Codebase Scout** 🧭.
 
 Print the DISPATCH banner per the spec. Filled-in template for this workflow:
 
@@ -206,7 +206,7 @@ Always first-person. Always include the deliverable path. If a topic phrase isn'
 
 ## Step 5: Spawn mapper agent
 
-Spawn a single `rihal-codebase-mapper` agent. Pass the persona instructions in the prompt so the agent's own response opens in-character.
+Spawn a single `rcode-codebase-mapper` agent. Pass the persona instructions in the prompt so the agent's own response opens in-character.
 
 **Base prompt (always sent):**
 
@@ -226,7 +226,7 @@ Task(
   - If a topic phrase was provided: a literal `grep -rl '<phrase>' <discovered-roots>` run across ALL source roots, with the file count and an excerpt of matches
 
   This scope section is non-negotiable — the orchestrator will reject documents missing it.",
-  subagent_type="rihal-codebase-mapper",
+  subagent_type="rcode-codebase-mapper",
   model="sonnet",
   model="{resolved_model}"
 )

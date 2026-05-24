@@ -118,12 +118,12 @@ Per-wave banner as each begins:
  rcode ► EXECUTING WAVE {N}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning {N} rihal-executor agents in parallel...
+◆ Spawning {N} rcode-executor agents in parallel...
 ```
 
 Per-agent completion:
 ```
-✓ rihal-executor complete: {plan-id} → SUMMARY.md ({N} commits)
+✓ rcode-executor complete: {plan-id} → SUMMARY.md ({N} commits)
 ```
 
 Closure:
@@ -141,7 +141,7 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-spr
 
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
-- **Claude Code:** Uses `Task(subagent_type="rihal-executor",
+- **Claude Code:** Uses `Task(subagent_type="rcode-executor",
   model="sonnet", ...)` — blocks until complete, returns result
 - **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
   sequential inline execution**: read and follow execute-sprint.md directly for each plan
@@ -173,18 +173,18 @@ Read STATE.md before any operation to load project context.
 These are the valid Rihal subagent types registered in .claude/agents/ (or equivalent for your runtime).
 Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
 
-- rihal-executor — Executes plan tasks, commits, creates SUMMARY.md
-- rihal-verifier — Verifies phase completion, checks quality gates
-- rihal-planner — Creates detailed plans from phase scope
-- rihal-phase-researcher — Researches technical approaches for a phase
-- rihal-sprint-checker — Reviews plan quality before execution
-- rihal-debugger — Diagnoses and fixes issues
-- rihal-codebase-mapper — Maps project structure and dependencies
-- rihal-integration-checker — Checks cross-phase integration
-- rihal-nyquist-auditor — Validates verification coverage
-- rihal-ux-designer — Researches UI/UX approaches
-- rihal-ui-auditor — Reviews UI implementation quality
-- rihal-ui-auditor — Audits UI against design requirements
+- rcode-executor — Executes plan tasks, commits, creates SUMMARY.md
+- rcode-verifier — Verifies phase completion, checks quality gates
+- rcode-planner — Creates detailed plans from phase scope
+- rcode-phase-researcher — Researches technical approaches for a phase
+- rcode-sprint-checker — Reviews plan quality before execution
+- rcode-debugger — Diagnoses and fixes issues
+- rcode-codebase-mapper — Maps project structure and dependencies
+- rcode-integration-checker — Checks cross-phase integration
+- rcode-nyquist-auditor — Validates verification coverage
+- rcode-ux-designer — Researches UI/UX approaches
+- rcode-ui-auditor — Reviews UI implementation quality
+- rcode-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
 <process>
@@ -205,7 +205,7 @@ Load all context in one call:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-executor 2>/dev/null)
+AGENT_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-executor 2>/dev/null)
 ```
 
 Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
@@ -242,7 +242,7 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 When `parallelization` is false, plans within a wave execute sequentially.
 
 **Runtime detection for Copilot:**
-Check if the current runtime is Copilot by testing for the `@rihal-executor` agent pattern
+Check if the current runtime is Copilot by testing for the `@rcode-executor` agent pattern
 or absence of the `Task()` subagent API. If running under Copilot, force sequential inline
 execution regardless of the `parallelization` setting — Copilot's subagent completion
 signals are unreliable (see `<runtime_compatibility>`). Set `COPILOT_SEQUENTIAL=true`
@@ -574,7 +574,7 @@ STOP — do not proceed to `code_review_gate` until all verify commands pass or 
 </step>
 
 <step name="code_review_gate" required="true">
-**This step is REQUIRED and must not be skipped.** Spawn `rihal-code-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
+**This step is REQUIRED and must not be skipped.** Spawn `rcode-code-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
 
 **Config gate (default ON):**
 ```bash
@@ -587,7 +587,7 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 ```bash
 REVIEWER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
 REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
-REVIEWER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-code-reviewer 2>/dev/null || echo "")
+REVIEWER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-code-reviewer 2>/dev/null || echo "")
 # Issue #652 — no leading zeros. Variable name kept for backward compat in this workflow.
 PADDED="${PHASE_NUMBER}"
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
@@ -619,7 +619,7 @@ generated: <ISO timestamp>
 Group findings by severity. For each finding include: file path, line reference, description, recommended fix.
 
 ${REVIEWER_SKILLS}",
-  subagent_type="rihal-code-reviewer",
+  subagent_type="rcode-code-reviewer",
   model="${REVIEWER_MODEL}"
 )
 ```

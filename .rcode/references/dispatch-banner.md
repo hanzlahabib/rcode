@@ -12,29 +12,29 @@ Each agent has a persona name and a one-line role tag used in the banner. Pull f
 
 | Agent ID | Persona name | Role tag | Glyph |
 |---|---|---|---|
-| `rihal-sadiq` | Sadiq (صادق) | Director of Strategy | 🧭 |
-| `rihal-waleed` | Waleed (وليد) | CTO / Architect | 🏛️ |
-| `rihal-hussain-pm` | Hussain (حسين) | Product Manager | 📋 |
-| `rihal-mariam` | Mariam (مريم) | Marketing & Growth | 📣 |
-| `rihal-fatima` | Fatima (فاطمة) | QA Lead | 🔍 |
-| `rihal-yousef` | Yousef (يوسف) | Senior Backend Engineer | 🛠️ |
-| `rihal-haitham` | Haitham (هيثم) | Senior Frontend Engineer | 🎨 |
-| `rihal-layla` | Layla (ليلى) | UX Designer | ✏️ |
-| `rihal-zahra` | Zahra (زهراء) | Branding & Creative | 🎭 |
-| `rihal-zayd` | Zayd (زيد) | Senior ML Engineer | 🧠 |
-| `rihal-khalid` | Khalid (خالد) | DevOps & Infrastructure | 🚢 |
-| `rihal-nasser` | Nasser (ناصر) | Engineering Manager | 🤝 |
+| `rcode-sadiq` | Sadiq (صادق) | Director of Strategy | 🧭 |
+| `rcode-waleed` | Waleed (وليد) | CTO / Architect | 🏛️ |
+| `rcode-hussain-pm` | Hussain (حسين) | Product Manager | 📋 |
+| `rcode-mariam` | Mariam (مريم) | Marketing & Growth | 📣 |
+| `rcode-fatima` | Fatima (فاطمة) | QA Lead | 🔍 |
+| `rcode-yousef` | Yousef (يوسف) | Senior Backend Engineer | 🛠️ |
+| `rcode-haitham` | Haitham (هيثم) | Senior Frontend Engineer | 🎨 |
+| `rcode-layla` | Layla (ليلى) | UX Designer | ✏️ |
+| `rcode-zahra` | Zahra (زهراء) | Branding & Creative | 🎭 |
+| `rcode-zayd` | Zayd (زيد) | Senior ML Engineer | 🧠 |
+| `rcode-khalid` | Khalid (خالد) | DevOps & Infrastructure | 🚢 |
+| `rcode-nasser` | Nasser (ناصر) | Engineering Manager | 🤝 |
 | `rihal-ahmed-hassani-director` | Ahmed (أحمد) | Tech & Delivery Director | 🧩 |
-| `rihal-noor` | Noor (نور) | Technical Writer | ✒️ |
-| `rihal-omar` | Omar (عمر) | Software Engineer | ⚙️ |
-| `rihal-hanzla` | Hanzla | Senior Full-Stack Engineer | ⚡ |
-| `rihal-codebase-mapper` | Dalil (دليل) | Codebase Scout | 🧭 |
-| `rihal-planner` | Khattat (خطّاط) | Sprint Planner | 📐 |
-| `rihal-executor` | Munaffidh (منفّذ) | Plan Executor | 🔨 |
-| `rihal-phase-researcher` | Bahith (باحث) | Phase Researcher | 🔬 |
-| `rihal-verifier` | Muhaqqiq (محقّق) | Goal Verifier | ✅ |
-| `rihal-security-auditor` | Hamid (حامد) | Security Auditor | 🛡️ |
-| `rihal-debugger` | Mufattish (مفتّش) | Debug Investigator | 🐛 |
+| `rcode-noor` | Noor (نور) | Technical Writer | ✒️ |
+| `rcode-omar` | Omar (عمر) | Software Engineer | ⚙️ |
+| `rcode-hanzla` | Hanzla | Senior Full-Stack Engineer | ⚡ |
+| `rcode-codebase-mapper` | Dalil (دليل) | Codebase Scout | 🧭 |
+| `rcode-planner` | Khattat (خطّاط) | Sprint Planner | 📐 |
+| `rcode-executor` | Munaffidh (منفّذ) | Plan Executor | 🔨 |
+| `rcode-phase-researcher` | Bahith (باحث) | Phase Researcher | 🔬 |
+| `rcode-verifier` | Muhaqqiq (محقّق) | Goal Verifier | ✅ |
+| `rcode-security-auditor` | Hamid (حامد) | Security Auditor | 🛡️ |
+| `rcode-debugger` | Mufattish (مفتّش) | Debug Investigator | 🐛 |
 
 If an agent is not in this table, derive: `Persona = Title-cased role from team.yaml`, glyph `🤖`.
 

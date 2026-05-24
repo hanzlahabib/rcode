@@ -29,7 +29,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-phase-researcher — Researches specific questions and returns concise findings
+- rcode-phase-researcher — Researches specific questions and returns concise findings
 </available_agent_types>
 
 <process>
@@ -79,7 +79,7 @@ If yes, spawn a research agent:
 ```
 Task(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
-  subagent_type="rihal-phase-researcher"
+  subagent_type="rcode-phase-researcher"
 )
 ```
 

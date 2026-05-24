@@ -47,7 +47,7 @@ Display spawning indicator:
   → Pitfalls research
 ```
 
-Spawn 4 parallel rihal-project-researcher agents:
+Spawn 4 parallel rcode-project-researcher agents:
 
 ```
 Task(prompt="<research_type>
@@ -87,7 +87,7 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 <output>
 Write to: .planning/research/STACK.md
 </output>
-", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Stack research")
+", subagent_type="rcode-project-researcher", model="${RESEARCHER_MODEL}", description="Stack research")
 
 Task(prompt="<research_type>
 Project Research — Features dimension for [domain].
@@ -122,7 +122,7 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 <output>
 Write to: .planning/research/FEATURES.md
 </output>
-", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Features research")
+", subagent_type="rcode-project-researcher", model="${RESEARCHER_MODEL}", description="Features research")
 
 Task(prompt="<research_type>
 Project Research — Architecture dimension for [domain].
@@ -157,7 +157,7 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 <output>
 Write to: .planning/research/ARCHITECTURE.md
 </output>
-", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Architecture research")
+", subagent_type="rcode-project-researcher", model="${RESEARCHER_MODEL}", description="Architecture research")
 
 Task(prompt="<research_type>
 Project Research — Pitfalls dimension for [domain].
@@ -192,7 +192,7 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 <output>
 Write to: .planning/research/PITFALLS.md
 </output>
-", subagent_type="rihal-project-researcher", model="${RESEARCHER_MODEL}", description="Pitfalls research")
+", subagent_type="rcode-project-researcher", model="${RESEARCHER_MODEL}", description="Pitfalls research")
 ```
 
 After all 4 agents complete, spawn synthesizer to create SUMMARY.md:
@@ -216,7 +216,7 @@ ${AGENT_SYNTHESIZER}
 Write to: .planning/research/SUMMARY.md
 Synthesize into: recommended stack, table stakes vs differentiators, architecture outline, top pitfalls to avoid.
 </output>
-", subagent_type="rihal-research-synthesizer", model="${SYNTHESIZER_MODEL}", description="Synthesize research")
+", subagent_type="rcode-research-synthesizer", model="${SYNTHESIZER_MODEL}", description="Synthesize research")
 ```
 
 **Commit research (guarded):**

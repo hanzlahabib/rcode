@@ -1,12 +1,12 @@
 <purpose>
-Research how to implement a phase. Spawns rihal-phase-researcher with phase context.
+Research how to implement a phase. Spawns rcode-phase-researcher with phase context.
 
 Standalone research command. For most workflows, use `/rihal-plan` which integrates research automatically.
 </purpose>
 
 <available_agent_types>
 Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
-- rihal-phase-researcher — Researches technical approaches for a phase
+- rcode-phase-researcher — Researches technical approaches for a phase
 </available_agent_types>
 
 <process>
@@ -16,7 +16,7 @@ Valid Rihal subagent types (use exact names — do not fall back to 'general-pur
 @.rcode/references/model-profile-resolution.md
 
 Resolve model for:
-- `rihal-phase-researcher`
+- `rcode-phase-researcher`
 
 ## Step 1: Normalize and Validate Phase
 
@@ -70,7 +70,7 @@ Phase description: {description}
 <output>
 Write to: .planning/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
 </output>",
-  subagent_type="rihal-phase-researcher",
+  subagent_type="rcode-phase-researcher",
   model="{researcher_model}"
 )
 ```

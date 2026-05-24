@@ -434,7 +434,7 @@ Verify UI-SPEC was created. If still empty after ui-phase, display a non-blockin
 ```
 Task(
   description="Plan phase ${PHASE_NUM}: ${PHASE_NAME}",
-  subagent_type="rihal-planner",
+  subagent_type="rcode-planner",
   run_in_background=true,
   prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-plan\", args=\"${PHASE_NUM}\")"
 )
@@ -457,7 +457,7 @@ Verify plan produced output — check `${PHASE_DIR}` for `*-PLAN.md` or `SPRINT.
 ```
 Task(
   description="Execute phase ${PHASE_NUM}: ${PHASE_NAME}",
-  subagent_type="rihal-executor",
+  subagent_type="rcode-executor",
   run_in_background=true,
   prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-execute\", args=\"${PHASE_NUM} --no-transition\")"
 )

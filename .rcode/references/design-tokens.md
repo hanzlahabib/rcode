@@ -1,6 +1,6 @@
 # Design Tokens Discipline
 
-Shared reference `@`-included by `rihal-code-reviewer` and `rihal-haitham`. Designed by Haitham to close #660.
+Shared reference `@`-included by `rcode-code-reviewer` and `rcode-haitham`. Designed by Haitham to close #660.
 
 ## The rule
 

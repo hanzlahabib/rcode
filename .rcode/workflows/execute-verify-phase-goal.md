@@ -1,12 +1,12 @@
 <purpose>
-Sub-step of execute.md — verify_phase_goal. Spawns rihal-verifier to confirm the phase achieved its GOAL, not just completed tasks. Creates VERIFICATION.md.
+Sub-step of execute.md — verify_phase_goal. Spawns rcode-verifier to confirm the phase achieved its GOAL, not just completed tasks. Creates VERIFICATION.md.
 </purpose>
 
 <step name="verify_phase_goal">
 Verify phase achieved its GOAL, not just completed tasks.
 
 ```bash
-VERIFIER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-verifier 2>/dev/null)
+VERIFIER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-verifier 2>/dev/null)
 ```
 
 ```
@@ -32,7 +32,7 @@ ${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — ver
 </files_to_read>
 
 ${VERIFIER_SKILLS}",
-  subagent_type="rihal-verifier",
+  subagent_type="rcode-verifier",
   model="sonnet",
   model="{verifier_model}"
 )

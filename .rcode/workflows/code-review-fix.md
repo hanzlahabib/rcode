@@ -1,5 +1,5 @@
 <purpose>
-Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rihal-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
+Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rcode-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
 </purpose>
 
 <required_reading>
@@ -8,8 +8,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- rihal-code-fixer: Applies fixes to code review findings
-- rihal-code-reviewer: Reviews source files for bugs and issues
+- rcode-code-fixer: Applies fixes to code review findings
+- rcode-code-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -196,7 +196,7 @@ If REVIEW.md contains a `files_reviewed_list` frontmatter field, use that as the
 </step>
 
 <step name="spawn_fixer">
-Spawn the rihal-code-fixer agent with config:
+Spawn the rcode-code-fixer agent with config:
 
 ```bash
 # Build config for agent
@@ -207,7 +207,7 @@ echo "Fix scope: ${FIX_SCOPE}"
 Use Task() to spawn agent:
 
 ```
-Task(subagent_type="rihal-code-fixer",
+Task(subagent_type="rcode-code-fixer",
   model="sonnet", prompt="
 <files_to_read>
 ${REVIEW_PATH}
@@ -287,9 +287,9 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn rihal-code-reviewer agent to re-review
+    # Spawn rcode-code-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
-    Task(subagent_type="rihal-code-reviewer",
+    Task(subagent_type="rcode-code-reviewer",
   model="sonnet", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
@@ -323,7 +323,7 @@ Do NOT commit the output — the orchestrator handles that.
     # Still has issues — spawn fixer again
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
-    Task(subagent_type="rihal-code-fixer",
+    Task(subagent_type="rcode-code-fixer",
   model="sonnet", prompt="
 <files_to_read>
 ${REVIEW_PATH}

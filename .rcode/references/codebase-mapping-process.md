@@ -1,6 +1,6 @@
 # Codebase Mapping Process
 
-Loaded by `rihal-codebase-mapper` (Dalil) via `@-include`. Contains the full
+Loaded by `rcode-codebase-mapper` (Dalil) via `@-include`. Contains the full
 four-step mapping process: parsing focus area, discovering source roots,
 exploring the codebase with focus-specific bash commands, writing documents
 with mandatory Scan Scope section, and returning confirmation.
