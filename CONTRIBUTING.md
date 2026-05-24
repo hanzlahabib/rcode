@@ -345,6 +345,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `v4` — v4.0.0 migration artifacts, rename cascades, and version-gate changes
 - `observability` — logging, error-handling, silent-failure fixes
 - `audit` — multi-angle audit reports under `audit/`
+- `agent-rules` — `.rcode/agents-rules/` rule files for agent behavior
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
