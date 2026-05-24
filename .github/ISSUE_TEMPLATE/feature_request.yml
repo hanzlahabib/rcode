@@ -1,6 +1,6 @@
 name: "✨ Feature Request"
 description: Request a new feature or enhancement
-labels: ["type: feature", "status: triage"]
+labels: ["type: enhancement", "status: needs-triage"]
 body:
   - type: dropdown
     id: priority
