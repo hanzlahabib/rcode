@@ -1063,6 +1063,12 @@ Open an issue at [`hanzlahabib/rihal-code`](https://github.com/hanzlahabib/rihal
 
 ---
 
+## brain pull
+
+`rcode brain pull` syncs external brain sources declared in `.rcode/brain/sources.yaml` into the project's brain directory. It runs automatically during install and update flows so that downstream references (skills, agents, workflows that point at `.rcode/brain/...`) resolve against fresh content. Run it manually after editing `sources.yaml` or to refresh upstream snapshots. See `CHANGELOG.md` v4.0.0 for the context in which brain-pull went live.
+
+---
+
 ## Appendix — Further reading
 
 - [`README.md`](README.md) — quick intro + install

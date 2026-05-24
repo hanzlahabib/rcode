@@ -70,7 +70,7 @@ Your `.planning/` artefacts and Memory Bank under `.rihal/memory/` should be mov
 
 ### Cumulative commit count since v3.6.20
 
-20 commits, 30/30 tests passing on every commit. Full `git log v3.6.20..v4.0.0` for the audit trail.
+20 commits, 339/339 tests passing on every commit. Full `git log v3.6.20..v4.0.0` for the audit trail.
 
 ---
 
