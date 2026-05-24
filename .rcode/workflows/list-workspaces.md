@@ -1,4 +1,4 @@
-# Workflow: rihal-list-workspaces
+# Workflow: rcode-list-workspaces
 
 <purpose>
 Display all active workspaces with summary status, creation date, and current phase. Use this to understand what parallel work is happening and switch contexts.

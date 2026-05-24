@@ -1,4 +1,4 @@
-# Workflow: rihal-sprint-planning
+# Workflow: rcode-sprint-planning
 
 <purpose>
 Plan the next sprint. Authoritative implementation lives in the

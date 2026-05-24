@@ -1,4 +1,4 @@
-# Workflow: rihal-decisions
+# Workflow: rcode-decisions
 
 <purpose>
 Surface recent decisions across every Rihal project on this machine. Decisions are mirrored to `~/.rcode/decisions.jsonl` whenever a project runs `state add-decision`. Use this to see what was decided elsewhere, find precedent for a similar call you are about to make, or answer "what did I commit to last week?".

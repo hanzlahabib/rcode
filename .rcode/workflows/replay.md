@@ -1,4 +1,4 @@
-# Workflow: rihal-replay
+# Workflow: rcode-replay
 
 <purpose>
 Re-run a past council session with the same question for a fresh panel round. Useful when:

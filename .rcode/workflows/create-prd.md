@@ -1,4 +1,4 @@
-# Workflow: rihal-create-prd
+# Workflow: rcode-create-prd
 
 <purpose>
 Create a Product Requirements Document from scratch through guided facilitation. Delegates to the rihal-create-prd skill.

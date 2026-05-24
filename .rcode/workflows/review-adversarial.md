@@ -1,4 +1,4 @@
-# Workflow: rihal-review-adversarial
+# Workflow: rcode-review-adversarial
 
 <purpose>
 Assume an adversarial/hostile perspective and audit code for weaknesses: SQL injection, XSS, race conditions, data loss scenarios, unauthorized access, abuse cases, denial of service vectors. Output attack/weakness report that feeds into story AC or subtasks.

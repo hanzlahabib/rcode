@@ -1,4 +1,4 @@
-# Workflow: rihal-note
+# Workflow: rcode-note
 
 <purpose>
 Capture inline notes instantly without friction. Appends text to a dated note file with YAML frontmatter. No subagents, no user questions, no bash chains — single Write operation.

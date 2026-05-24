@@ -1,4 +1,4 @@
-# Workflow: rihal-profile-user
+# Workflow: rcode-profile-user
 
 <purpose>
 Classify developer on 4 dimensions: communication style, autonomy preference, domain depth, and iteration speed. Spawn a profiler subagent to ask questions and produce a USER-PROFILE.md artifact with YAML frontmatter + structured classification.

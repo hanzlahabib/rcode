@@ -1,4 +1,4 @@
-# Workflow: rihal-dev-story
+# Workflow: rcode-dev-story
 
 <purpose>
 Wrap a STORY.md file for AI-coder consumption. Produces:

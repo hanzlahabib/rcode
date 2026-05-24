@@ -1,4 +1,4 @@
-# Workflow: rihal-sprint-status
+# Workflow: rcode-sprint-status
 
 <purpose>
 Display current sprint progress: stories by status, points done vs remaining, velocity comparison, and burndown. Quick situational awareness without starting execution.

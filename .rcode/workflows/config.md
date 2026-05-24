@@ -1,4 +1,4 @@
-# Workflow: rihal-config
+# Workflow: rcode-config
 
 <purpose>
 View or interactively edit Rihal project configuration (language, mode, model profile, branching strategy).

@@ -1,4 +1,4 @@
-# Workflow: rihal-update
+# Workflow: rcode-update
 
 <purpose>
 Pull the latest rcode from npm and install it **non-destructively** —

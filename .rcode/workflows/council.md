@@ -1,4 +1,4 @@
-# Workflow: rihal-council
+# Workflow: rcode-council
 
 <purpose>
 Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rihal-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.

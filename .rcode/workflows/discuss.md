@@ -1,4 +1,4 @@
-# Workflow: rihal-discuss
+# Workflow: rcode-discuss
 
 <purpose>
 Orchestrate a single-agent quick sync session. This is the lightweight alternative to council — one agent, one round, conversational tone, no mandatory artifact. Feels like texting one colleague, not calling a board meeting.

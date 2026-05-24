@@ -1,4 +1,4 @@
-# Workflow: rihal-workstream
+# Workflow: rcode-workstream
 
 <purpose>
 Manage parallel workstreams (milestone tracks) in rcode. A workstream is an independent execution path with its own phases and tasks. Multiple workstreams can run in parallel, sharing decisions, blockers, and council sessions. This workflow handles creation, switching, listing, and completion of workstreams stored in state.json.

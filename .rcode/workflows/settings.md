@@ -1,4 +1,4 @@
-# Workflow: rihal-settings
+# Workflow: rcode-settings
 
 <purpose>
 View and edit Rihal project settings stored in `.rcode/config.yaml`. Closes

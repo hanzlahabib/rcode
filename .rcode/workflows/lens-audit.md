@@ -1,4 +1,4 @@
-# Workflow: rihal-lens-audit
+# Workflow: rcode-lens-audit
 
 <purpose>
 Run a structured 15-lens code audit against the current project. Each lens

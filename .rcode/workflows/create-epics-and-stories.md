@@ -1,4 +1,4 @@
-# Workflow: rihal-create-epics-and-stories
+# Workflow: rcode-create-epics-and-stories
 
 <purpose>
 Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rihal-sprint-planning`.

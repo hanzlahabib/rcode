@@ -1,4 +1,4 @@
-# Workflow: rihal-forensics
+# Workflow: rcode-forensics
 
 <purpose>
 Analyze execution history in state.json and filesystem to detect incomplete work. Show timeline of what happened, where it broke, and suggest resume command.

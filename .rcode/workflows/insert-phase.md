@@ -1,4 +1,4 @@
-# Workflow: rihal-insert-phase
+# Workflow: rcode-insert-phase
 
 <purpose>
 Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (2.1, 2.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering subsequent phases. Maintains phase array in `.rcode/state.json` in sort order.

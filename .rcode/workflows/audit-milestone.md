@@ -1,4 +1,4 @@
-# Workflow: rihal-audit-milestone
+# Workflow: rcode-audit-milestone
 
 <purpose>
 Cross-phase audit of milestone completion. Reads all SUMMARY.md files from completed phases, compares their outcomes to the original ROADMAP goals, flags gaps, and generates an audit report showing completion percentage and decision traceability.

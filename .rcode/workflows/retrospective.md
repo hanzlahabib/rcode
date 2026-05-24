@@ -1,4 +1,4 @@
-# Workflow: rihal-retrospective
+# Workflow: rcode-retrospective
 
 <purpose>
 Run an epic retrospective and produce owned action items. Delegates to the rihal-retrospective skill.

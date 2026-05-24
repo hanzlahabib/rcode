@@ -1,4 +1,4 @@
-# Workflow: rihal-inbox
+# Workflow: rcode-inbox
 
 <purpose>
 Triage and review all open GitHub issues and PRs against project contribution templates.

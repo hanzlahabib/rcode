@@ -1,4 +1,4 @@
-# Workflow: rihal-ui-phase
+# Workflow: rcode-ui-phase
 
 <purpose>
 Produce UI-SPEC.md with formalized design contract: color tokens, typography system, component inventory, interaction states, accessibility requirements. Detects frontend keywords (React, Next.js, Vue, Tailwind, CSS, UI) and suggests this workflow early if UI-SPEC.md is absent.

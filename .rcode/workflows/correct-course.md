@@ -1,4 +1,4 @@
-# Workflow: rihal-correct-course
+# Workflow: rcode-correct-course
 
 <purpose>
 Load original PRD and architecture docs, compare against current codebase implementation. Identify deviations, classify by type (scope drift, wrong architecture, missing acceptance criteria, tech debt), and produce ordered remediation plan with updated story file.

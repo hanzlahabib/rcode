@@ -1,4 +1,4 @@
-# Workflow: rihal-check-implementation-readiness
+# Workflow: rcode-check-implementation-readiness
 
 <purpose>
 Pre-execution gate: verify PRD approved, architecture approved, external dependencies identified, and no blocking assumptions remain. Return pass/fail report. Used as guard in plan.md Step 0.8 and execute.md Step 0.

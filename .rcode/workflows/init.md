@@ -1,4 +1,4 @@
-# Workflow: rihal-init
+# Workflow: rcode-init
 
 <purpose>
 Begin the rihla. This is the entry point for configuring Rihal in a project. Runs automatically on first use of any rihal command (via auto-init-guard in do.md), or explicitly via /rihal-init for a full setup with codebase scan.

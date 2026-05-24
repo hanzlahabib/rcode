@@ -1,4 +1,4 @@
-# Workflow: rihal-milestone-summary
+# Workflow: rcode-milestone-summary
 
 <purpose>
 Generate a human-readable summary of the current or specified milestone, including all phases, decisions, outcomes, and lessons learned. Output can be Markdown (default) or PDF. This creates a narrative view of the entire milestone arc.

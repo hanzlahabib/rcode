@@ -1,4 +1,4 @@
-# Workflow: rihal-from-template
+# Workflow: rcode-from-template
 
 <purpose>
 Seed a fresh project's `.planning/` directory from a canonical starter template (saas-b2b, api-backend, mobile-app). Replaces the blank-page moment after `rihal init` with a PROJECT.md skeleton, a ROADMAP.md with typical phases for this kind of project, and a REQUIREMENTS.md of common REQ-IDs.

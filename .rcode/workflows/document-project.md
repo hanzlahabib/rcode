@@ -1,4 +1,4 @@
-# Workflow: rihal-document-project
+# Workflow: rcode-document-project
 
 <purpose>
 Load documentation-requirements.csv, audit current documentation for coverage and staleness, identify missing or outdated docs, and file them as SPRINT.md subtasks or separate plan phases.

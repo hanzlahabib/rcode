@@ -1,4 +1,4 @@
-# Workflow: rihal-enable-hooks
+# Workflow: rcode-enable-hooks
 
 <purpose>
 Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.

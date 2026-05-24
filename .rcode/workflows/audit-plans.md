@@ -1,4 +1,4 @@
-# Workflow: rihal-audit plans
+# Workflow: rcode-audit plans
 
 <purpose>
 Forward-looking planning integrity audit. Reads every SPRINT.md, ROADMAP.md,

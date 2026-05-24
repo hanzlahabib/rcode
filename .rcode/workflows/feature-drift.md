@@ -1,4 +1,4 @@
-# Workflow: rihal-feature-drift
+# Workflow: rcode-feature-drift
 
 <purpose>
 Detect drift between PRD, epics, stories, and code. Report severity-tagged

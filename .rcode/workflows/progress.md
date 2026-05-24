@@ -1,4 +1,4 @@
-# Workflow: rihal-progress
+# Workflow: rcode-progress
 
 <purpose>
 **`/rihal-progress` is an alias of `/rihal-status --verbose`.**

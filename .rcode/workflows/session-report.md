@@ -1,4 +1,4 @@
-# Workflow: rihal-session-report
+# Workflow: rcode-session-report
 
 <purpose>
 Generate a comprehensive session report covering work done, token usage estimation, commits, decisions, blockers, and council sessions. Writes SESSION-REPORT-{date}.md to .planning/ directory.

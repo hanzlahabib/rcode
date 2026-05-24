@@ -1,4 +1,4 @@
-# Workflow: rihal-stats
+# Workflow: rcode-stats
 
 <purpose>
 Read .rcode/state.json and display project statistics: phases, plans, council sessions, decisions, blockers, timeline, and git stats.

@@ -1,4 +1,4 @@
-# Workflow: rihal-scaffold-project
+# Workflow: rcode-scaffold-project
 
 <purpose>
 Scaffold a new project from the official Rihal template repo. Delegates to the rihal-scaffold-project skill.

@@ -1,4 +1,4 @@
-# Workflow: rihal-create-story
+# Workflow: rcode-create-story
 
 <purpose>
 Convert a single story from an EPIC file into a self-contained STORY.md file. This story is ready for `/rihal-dev-story` to be wrapped for AI-coder execution. Entry is gated by checklist-story-draft.md.

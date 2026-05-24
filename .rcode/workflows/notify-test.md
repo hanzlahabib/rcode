@@ -1,4 +1,4 @@
-# Workflow: rihal-notify-test
+# Workflow: rcode-notify-test
 
 <purpose>
 Verify a webhook URL is configured and reachable by posting a "test" message. Use this immediately after adding `slack_webhook_url`, `discord_webhook_url`, or `teams_webhook_url` to `.rcode/config.yaml` so you catch typos and permission errors before relying on notifications from `/rihal-execute`.

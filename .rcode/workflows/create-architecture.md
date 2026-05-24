@@ -1,4 +1,4 @@
-# Workflow: rihal-create-architecture
+# Workflow: rcode-create-architecture
 
 <purpose>
 Write an Architecture Decision Record (ADR) or system design document. Delegates to the rihal-create-architecture skill.

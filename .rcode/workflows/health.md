@@ -1,4 +1,4 @@
-# Workflow: rihal-health
+# Workflow: rcode-health
 
 <purpose>
 Run 9-point health check: 6 installation checks + 3 project-state checks. Each check is pass/fail. Summary at the end.

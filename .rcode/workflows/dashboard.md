@@ -1,4 +1,4 @@
-# Workflow: rihal-dashboard
+# Workflow: rcode-dashboard
 
 <purpose>
 Start the Diwan view-only dashboard — a local web UI that visualizes .rcode/state.json, .planning/ artifacts, phases, decisions, and council sessions. The dashboard is read-only (no write endpoints) and runs dep-free on Node stdlib.

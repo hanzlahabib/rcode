@@ -1,4 +1,4 @@
-# Workflow: rihal-edit-prd
+# Workflow: rcode-edit-prd
 
 <purpose>
 Update an existing PRD with revisions or clarifications. Delegates to the rihal-edit-prd skill.

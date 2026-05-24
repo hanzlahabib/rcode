@@ -1,4 +1,4 @@
-# Workflow: rihal-status
+# Workflow: rcode-status
 
 <purpose>
 Render a human-readable project status dashboard. All data comes from a single `rihal-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rihal-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).

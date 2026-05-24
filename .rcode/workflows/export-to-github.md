@@ -1,4 +1,4 @@
-# Workflow: rihal-export-to-github
+# Workflow: rcode-export-to-github
 
 <purpose>
 Push Rihal state to GitHub as issues, milestones, and (optionally) a Project v2 board. Thin slash-command wrapper around the existing `rihal-code github-sync` CLI, plus a `--decisions` mode that publishes the project's recent decision log as a single tracking issue.

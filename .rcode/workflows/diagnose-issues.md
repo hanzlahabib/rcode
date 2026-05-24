@@ -1,4 +1,4 @@
-# Workflow: rihal-diagnose-issues
+# Workflow: rcode-diagnose-issues
 
 <purpose>
 Reusable diagnosis subroutine called from /rihal-verify-work when

@@ -1,4 +1,4 @@
-# Workflow: rihal-ui-review
+# Workflow: rcode-ui-review
 
 <purpose>
 Retroactively audit completed UI work against the UI-SPEC.md contract. Validates across 6 pillars: color consistency, typography compliance, component inventory coverage, accessibility requirements, responsive behavior, and design coherence. Produces audit report with pass/fail per pillar.

@@ -1,4 +1,4 @@
-# Workflow: rihal-audit
+# Workflow: rcode-audit
 
 <purpose>
 Single entry point for every kind of audit. Asks the user *what* to audit

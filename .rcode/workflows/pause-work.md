@@ -1,4 +1,4 @@
-# Workflow: rihal-pause-work
+# Workflow: rcode-pause-work
 
 <purpose>
 Capture full project context and blocking constraints before pausing work. Creates `.rcode/HANDOFF.json` (structured machine-readable handoff) and `.rcode/.continue-here.md` (human-readable summary) for seamless context restoration on resume.

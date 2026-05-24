@@ -1,4 +1,4 @@
-# Workflow: rihal-validate-prd
+# Workflow: rcode-validate-prd
 
 <purpose>
 Validate an existing PRD for completeness, consistency, and testability. Delegates to the rihal-validate-prd skill.

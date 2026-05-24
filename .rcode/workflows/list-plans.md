@@ -1,4 +1,4 @@
-# Workflow: rihal-list-plans
+# Workflow: rcode-list-plans
 
 <purpose>
 Display a table of all SPRINT.md plans across every phase in `.planning/phases/`. Gives a single-screen view of every plan in the project — phase, sprint ID, goal, story counts, point totals, and execution state. Use before starting new work to see what's already planned or in flight.

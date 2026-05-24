@@ -1,4 +1,4 @@
-# Workflow: rihal-brainstorm
+# Workflow: rcode-brainstorm
 
 <purpose>
 Guided brainstorming session using structured methods. User provides a challenge; the workflow presents available methods, applies the selected one, and generates ideas in a structured format. Output is a brainstorm artifact stored in `.planning/brainstorms/` with the chosen method, raw ideas, and synthesis.

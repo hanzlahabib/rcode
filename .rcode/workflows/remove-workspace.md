@@ -1,4 +1,4 @@
-# Workflow: rihal-remove-workspace
+# Workflow: rcode-remove-workspace
 
 <purpose>
 Remove a workspace and clean up all its artifacts. This is destructive — deleted workspaces cannot be recovered unless `--archive` flag is used. Use when a parallel work stream is complete or abandoned.

@@ -1,4 +1,4 @@
-# Workflow: rihal-new-workspace
+# Workflow: rcode-new-workspace
 
 <purpose>
 Create an isolated workspace for parallel work. Workspaces are independent planning directories with their own ROADMAP, STATE, and phases. Use when multiple concurrent initiatives need to run without interfering (e.g., "Q2 Platform Work" + "Bug Fix Sprint" in parallel).

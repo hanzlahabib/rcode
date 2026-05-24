@@ -1,4 +1,4 @@
-# Workflow: rihal-chain
+# Workflow: rcode-chain
 
 <purpose>
 Run a sequential agent pipeline — each agent receives the previous agent's output as input. Unlike `/rihal-council` (parallel debate with cross-talk), chain is a one-way pipeline for "do research → hand to PM → hand to CTO" patterns. Each stage's output is saved as a first-class artifact the next stage reads.
