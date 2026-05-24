@@ -22,7 +22,7 @@ If all pass: `rcode ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
 </required_reading>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-planner — Creates detailed plans from phase scope
 - rcode-sprint-checker — Reviews plan quality before execution
 </available_agent_types>

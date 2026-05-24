@@ -48,14 +48,14 @@ Parse `$ARGUMENTS` to determine the execution mode:
 - If `--from` is present: extract FILEPATH (the next token after `--from`), set MODE=plan
 - If `--prd` is present: display message that `--prd` is not yet implemented and exit:
   ```
-  RIHAL > --prd mode is planned for a future release. Use --from to import plan files.
+  rcode > --prd mode is planned for a future release. Use --from to import plan files.
   ```
 - If neither flag is found: display usage and exit:
 
 ```
 Usage: /rihal-import --from <path>
 
-  --from <path>   Import an external plan file into Rihal format
+  --from <path>   Import an external plan file into rcode format
 ```
 
 **Validate the file path:**
@@ -95,7 +95,7 @@ Load project context for conflict detection:
 2. Read `.planning/PROJECT.md` — extract project constraints, tech stack, scope boundaries.
    **If PROJECT.md does not exist:** skip constraint checks that rely on it and display:
    ```
-   RIHAL > Note: No PROJECT.md found. Conflict checks against project constraints will be skipped.
+   rcode > Note: No PROJECT.md found. Conflict checks against project constraints will be skipped.
    ```
 3. Read `.planning/REQUIREMENTS.md` — extract existing requirements for overlap and contradiction checks.
    **If REQUIREMENTS.md does not exist:** skip requirement conflict checks and continue.
@@ -114,7 +114,7 @@ Store loaded context for conflict detection in the next step.
 Read the imported file at FILEPATH.
 
 Determine the format:
-- **RIHAL SPRINT.md format**: Has YAML frontmatter with `phase:`, `plan:`, `type:` fields
+- **rcode SPRINT.md format**: Has YAML frontmatter with `phase:`, `plan:`, `type:` fields
 - **Freeform document**: Any other format (markdown spec, design doc, task list, etc.)
 
 Extract from the imported content:
@@ -178,7 +178,7 @@ Display the full Conflict Detection Report:
 
 Display:
 ```
-RIHAL > BLOCKED: {N} blockers must be resolved before import can proceed.
+rcode > BLOCKED: {N} blockers must be resolved before import can proceed.
 ```
 
 Exit WITHOUT writing any files. This is the safety gate — no SPRINT.md is written when blockers exist.
@@ -196,7 +196,7 @@ If user selects "Abort": exit cleanly with message "Import cancelled."
 
 <step name="plan_convert">
 
-Convert the imported content to RIHAL SPRINT.md format.
+Convert the imported content to rcode SPRINT.md format.
 
 Ensure the SPRINT.md has all required frontmatter fields:
 ```yaml
@@ -215,9 +215,9 @@ must_haves:
 ```
 
 **Reject PBR naming conventions in source content:**
-If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to RIHAL `{NN}-{MM}-SPRINT.md` convention during conversion.
+If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to rcode `{NN}-{MM}-SPRINT.md` convention during conversion.
 
-Apply RIHAL naming convention for the output filename:
+Apply rcode naming convention for the output filename:
 - Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-01-SPRINT.md`)
 - NEVER use `PLAN-01.md`, `plan-01.md`, or any other format
 - NN = phase number (zero-padded), MM = plan number within the phase (zero-padded)
@@ -243,7 +243,7 @@ Delegate validation to rcode-sprint-checker:
 ```
 Task({
   subagent_type: "rcode-sprint-checker",
-  prompt: "Validate: .planning/phases/{phase}/{plan}-SPRINT.md — check frontmatter completeness, task structure, and RIHAL conventions. Report any issues."
+  prompt: "Validate: .planning/phases/{phase}/{plan}-SPRINT.md — check frontmatter completeness, task structure, and rcode conventions. Report any issues."
 })
 ```
 
@@ -299,7 +299,7 @@ Do NOT:
 - Use markdown tables (`|---|`) in the conflict detection report — use plain-text [BLOCKER]/[WARNING]/[INFO] labels
 - Write SPRINT.md files as `PLAN-01.md` or `plan-01.md` — always use `{NN}-{MM}-SPRINT.md`
 - Use `pbr:sprint-checker` or `pbr:planner` — use `rcode-sprint-checker` and `rcode-planner`
-- Write `.planning/.active-skill` — this is a PBR pattern with no RIHAL equivalent
+- Write `.planning/.active-skill` — this is a PBR pattern with no rcode equivalent
 - Reference `pbr-tools`, `pbr:`, or `PLAN-BUILD-RUN` anywhere
 - Write any SPRINT.md file when blockers exist — the safety gate must hold
 - Skip path validation on the --from file argument

@@ -7,7 +7,7 @@ Verify threat mitigations for a completed phase. Confirm SPRINT.md threat regist
 </required_reading>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-security-auditor — Verifies threat mitigation coverage
 </available_agent_types>
 
@@ -54,7 +54,7 @@ SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_en
 
 If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal-settings."
 
-Display banner: `Rihal > SECURE PHASE {N}: {name}`
+Display banner: `rcode > SECURE PHASE {N}: {name}`
 
 ## 1. Detect Input State
 
@@ -145,7 +145,7 @@ Handle return:
 **ENFORCING GATE:** If `threats_open > 0` after all options exhausted (user did not accept, not all verified closed):
 
 ```
-Rihal > PHASE {N} SECURITY BLOCKED
+rcode > PHASE {N} SECURITY BLOCKED
 {K} threats open — phase advancement blocked until threats_open: 0
 ▶ Fix mitigations then re-run: /rihal-secure-phase {N}
 ▶ Or document accepted risks in SECURITY.md and re-run.
@@ -163,7 +163,7 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update secur
 
 **Secured (threats_open: 0):**
 ```
-Rihal > PHASE {N} THREAT-SECURE
+rcode > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
 ▶ /rihal-validate {N}    validate test coverage
 ▶ /rihal-verify-work {N}       run UAT

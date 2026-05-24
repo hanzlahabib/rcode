@@ -179,7 +179,7 @@ Incomplete Plans: {count}
 Checkpoints Reached: {count}
   [List each with location and progress]
 
-Recent Rihal Commits: {count}
+Recent rcode Commits: {count}
   [List with hash, message, timestamp]
 
 Recommendation: {recovery suggestion}

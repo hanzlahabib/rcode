@@ -1,7 +1,7 @@
 # Workflow: rcode-enable-hooks
 
 <purpose>
-Merge Rihal opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
+Merge rcode opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
 </purpose>
 
 
@@ -75,7 +75,7 @@ If the binary is missing, print error and stop. Otherwise, test it with `--help`
 Print success message:
 
 ```
-✓ Rihal hooks installed to .claude/settings.json
+✓ rcode hooks installed to .claude/settings.json
 
 Enabled guardrails:
   • pre-edit: Verifies files are Read() before Edit/Write

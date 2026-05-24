@@ -170,7 +170,7 @@ Read STATE.md before any operation to load project context.
 </required_reading>
 
 <available_agent_types>
-These are the valid Rihal subagent types registered in .claude/agents/ (or equivalent for your runtime).
+These are the valid rcode subagent types registered in .claude/agents/ (or equivalent for your runtime).
 Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
 
 - rcode-executor — Executes plan tasks, commits, creates SUMMARY.md
@@ -346,8 +346,8 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
 **Benefits of interactive mode:**
 - No subagent overhead — dramatically lower token usage
 - User catches mistakes early — saves costly verification cycles
-- Maintains Rihal's planning/tracking structure
-- Best for: small phases, bug fixes, verification gaps, learning Rihal
+- Maintains rcode's planning/tracking structure
+- Best for: small phases, bug fixes, verification gaps, learning rcode
 
 **Skip to handle_branching step** (interactive plans execute inline after grouping).
 </step>
@@ -1003,7 +1003,7 @@ For 1M+ context models, consider:
 </context_efficiency>
 
 <failure_handling>
-- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not Rihal. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
+- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not rcode. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → user chooses attempt or skip
 - **All agents in wave fail:** Systemic issue → stop, report for investigation

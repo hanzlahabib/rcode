@@ -76,7 +76,7 @@ For each agent in `chain`, in order:
 Build the prompt for this stage:
 
 ```
-You are stage {N} of {total} in a Rihal chain.
+You are stage {N} of {total} in a rcode chain.
 
 ## Topic
 {topic}

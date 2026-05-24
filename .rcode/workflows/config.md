@@ -1,7 +1,7 @@
 # Workflow: rcode-config
 
 <purpose>
-View or interactively edit Rihal project configuration (language, mode, model profile, branching strategy).
+View or interactively edit rcode project configuration (language, mode, model profile, branching strategy).
 </purpose>
 
 ## Step 0 — Usage check
@@ -32,7 +32,7 @@ If no arguments provided, enter interactive mode (Step 2).
 Read `.rcode/config.yaml` and print in formatted table:
 
 ```
-Current Rihal Configuration:
+Current rcode Configuration:
   user_name              : {value}
   project_name           : {value}
   communication_language : {value}

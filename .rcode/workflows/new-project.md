@@ -82,7 +82,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-project-researcher — Researches project-level technical decisions
 - rcode-research-synthesizer — Synthesizes findings from parallel research agents
 - rcode-roadmapper — Creates phased execution roadmaps
@@ -834,7 +834,7 @@ Strip the `./` prefix (e.g., `./backend` → `backend`).
 Use AskUserQuestion:
 
 - header: "Multi-Repo Workspace"
-- question: "I detected separate git repos in this workspace. Which directories contain code that Rihal should commit to?"
+- question: "I detected separate git repos in this workspace. Which directories contain code that rcode should commit to?"
 - multiSelect: true
 - options: one option per detected directory
 

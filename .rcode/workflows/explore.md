@@ -1,6 +1,6 @@
 <purpose>
 Socratic ideation workflow. Guides the developer through exploring an idea via probing questions,
-offers mid-conversation research when useful, then routes crystallized outputs to Rihal artifacts.
+offers mid-conversation research when useful, then routes crystallized outputs to rcode artifacts.
 </purpose>
 
 
@@ -28,7 +28,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-phase-researcher — Researches specific questions and returns concise findings
 </available_agent_types>
 

@@ -56,7 +56,7 @@ ${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
 </required_reading>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-phase-researcher — Researches technical approaches for a phase
 - rcode-planner — Creates detailed plans from phase scope
 - rcode-sprint-checker — Reviews plan quality before execution

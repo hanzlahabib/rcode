@@ -193,7 +193,7 @@ These will not auto-update on future /rihal-update calls. To force
 their update next time, run /rihal-update --force-overwrite.
 ```
 
-## Step 8 — Pull Rihal brain content (v2.0)
+## Step 8 — Pull rcode brain content (v2.0)
 
 After installer finishes, refresh the brain content from configured sources (issue #158). This is idempotent and safe to re-run.
 
@@ -220,7 +220,7 @@ Updated files: N
   - file-path-2
   ...
 
-Rihal brain: M sources pulled, K skipped (placeholder URLs)
+rcode brain: M sources pulled, K skipped (placeholder URLs)
 
 New version available at: .rcode/
 

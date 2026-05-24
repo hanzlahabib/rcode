@@ -29,7 +29,7 @@ If `$ARGUMENTS` contains `--help` / `-h`:
 /rihal-notify-test [--only slack|discord|teams] [--title "<t>"] [--body "<b>"]
 
   --only <platform>   Limit the test to one platform
-  --title "<t>"       Override test title (default: "Rihal notify test")
+  --title "<t>"       Override test title (default: "rcode notify test")
   --body "<b>"        Override test body
 ```
 
@@ -39,7 +39,7 @@ STOP — do not proceed.
 
 ```bash
 ONLY=""
-TITLE="Rihal notify test"
+TITLE="rcode notify test"
 BODY="If you see this in your channel, webhook wiring works. Sent at $(date -u +%FT%TZ) from project $(basename "$PWD")."
 
 if echo "$ARGUMENTS" | grep -q -- "--only";  then ONLY=$(echo "$ARGUMENTS" | grep -oE -- "--only [a-z]+" | awk '{print $2}'); fi

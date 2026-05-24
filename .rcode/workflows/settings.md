@@ -1,7 +1,7 @@
 # Workflow: rcode-settings
 
 <purpose>
-View and edit Rihal project settings stored in `.rcode/config.yaml`. Closes
+View and edit rcode project settings stored in `.rcode/config.yaml`. Closes
 #233 — replaces the previous broken implementation that wrote flat keys
 nothing read and corrupted the nested `workflow:` / `git:` sections on every
 save.
@@ -63,7 +63,7 @@ $TOOL config-get output.verbose                       || echo "(unset)"
 Render as a table:
 
 ```
-Current Rihal Settings (.rcode/config.yaml)
+Current rcode Settings (.rcode/config.yaml)
 
   Identity
     user_name                       : {value}

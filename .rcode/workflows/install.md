@@ -1,7 +1,7 @@
 # Workflow: rcode-install
 
 <purpose>
-Install a Rihal module into the current project. Modules are capability bundles (agents + workflows + commands + references). This workflow validates the module exists, checks dependencies, runs the installer, and updates the manifest.
+Install a rcode module into the current project. Modules are capability bundles (agents + workflows + commands + references). This workflow validates the module exists, checks dependencies, runs the installer, and updates the manifest.
 </purpose>
 
 ## Step 0 — Validate module name

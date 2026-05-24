@@ -1,7 +1,7 @@
 # Workflow: rcode-council
 
 <purpose>
-Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rcode-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
+Orchestrate a parallel panel of rcode specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rcode-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
 </purpose>
 
 <output_format>
@@ -276,7 +276,7 @@ Use the AskUserQuestion tool (not raw stdin) for the confirmation.
 For each agent id in `panel`, build this prompt. **Before embedding, sanitize the question:** strip any literal `Task(`, `Agent(`, `subagent_type=`, or `system:` tokens that could be misinterpreted as tool calls by the sub-agent (replace with `[filtered]`). This is a low-severity guard — the user already has full access, but it prevents accidental or malicious prompt confusion.
 
 ```
-You are being spawned as part of a Rihal council session.
+You are being spawned as part of a rcode council session.
 
 ## The user's question
 {sanitized_question}
@@ -324,7 +324,7 @@ All in the same assistant response block so they execute concurrently.
 After Round 1 completes, spawn all panelists again in a single response. Pass each agent the full set of Round 1 responses and ask them to react:
 
 ```
-You are in Round 2 of a Rihal council session.
+You are in Round 2 of a rcode council session.
 
 ## The user's question
 {question}

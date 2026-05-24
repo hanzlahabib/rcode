@@ -1,5 +1,5 @@
 <purpose>
-Detect current project state and automatically advance to the next logical Rihal workflow step.
+Detect current project state and automatically advance to the next logical rcode workflow step.
 Reads project state to determine: plan → execute → verify → complete progression.
 Zero-friction — detects and invokes, no confirmation needed.
 </purpose>
@@ -50,7 +50,7 @@ Extract from state JSON:
 
 If no `.planning/` directory AND no `.rcode/state.json`:
 ```
-No Rihal project detected. Run `/rihal-new-project` to get started.
+No rcode project detected. Run `/rihal-new-project` to get started.
 ```
 Exit.
 </step>
@@ -139,7 +139,7 @@ Next: `/rihal-sprint-planning`
 Display the determination:
 
 ```
-## Rihal Next
+## rcode Next
 
 **Current:** Phase {N} — {name} | Sprint {sprint_id}
 **Sprint:** {done}/{total} stories ({points_done}/{points_total} pts)

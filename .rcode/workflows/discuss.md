@@ -137,7 +137,7 @@ Produce a 3-5 line "Context" summary from the output.
 Spawn the resolved agent via the Agent tool with this prompt:
 
 ```
-You are being spawned for a quick Rihal discuss session.
+You are being spawned for a quick rcode discuss session.
 
 ## The user's question
 {question}

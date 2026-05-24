@@ -1,7 +1,7 @@
 # Workflow: rcode-scaffold-project
 
 <purpose>
-Scaffold a new project from the official Rihal template repo. Delegates to the rihal-scaffold-project skill.
+Scaffold a new project from the official rcode template repo. Delegates to the rihal-scaffold-project skill.
 </purpose>
 
 ## Execution
@@ -20,7 +20,7 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## On Completion
 
-/rihal-init — configure Rihal for the scaffolded project
+/rihal-init — configure rcode for the scaffolded project
 /rihal-new-project {name} — design the project with full facilitation
 /rihal-create-prd — write the product requirements document
 

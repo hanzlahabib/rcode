@@ -1,7 +1,7 @@
 # Workflow: rcode-export-to-github
 
 <purpose>
-Push Rihal state to GitHub as issues, milestones, and (optionally) a Project v2 board. Thin slash-command wrapper around the existing `rihal-code github-sync` CLI, plus a `--decisions` mode that publishes the project's recent decision log as a single tracking issue.
+Push rcode state to GitHub as issues, milestones, and (optionally) a Project v2 board. Thin slash-command wrapper around the existing `rihal-code github-sync` CLI, plus a `--decisions` mode that publishes the project's recent decision log as a single tracking issue.
 
 Use this to externalize a phase into GitHub for stakeholders who live in issues, to seed a milestone before starting work, or to publish decisions for team visibility.
 </purpose>
@@ -41,7 +41,7 @@ Targets (mutually exclusive):
 
 Flags (passed through to rihal-code github-sync):
   --repo owner/name         Target repo (default: auto-detect from gh)
-  --with-labels             Create Rihal label taxonomy
+  --with-labels             Create rcode label taxonomy
   --project                 Also create a GitHub Project v2 board
   --no-update / --no-close / --no-update-body / --no-update-labels
   --execute                 Actually mutate (default is dry-run)

@@ -1,7 +1,7 @@
 # Workflow: rcode-init
 
 <purpose>
-Begin the rihla. This is the entry point for configuring Rihal in a project. Runs automatically on first use of any rihal command (via auto-init-guard in do.md), or explicitly via /rihal-init for a full setup with codebase scan.
+Begin the rihla. This is the entry point for configuring rcode in a project. Runs automatically on first use of any rihal command (via auto-init-guard in do.md), or explicitly via /rihal-init for a full setup with codebase scan.
 
 No manual "rcode install" needed per project — just use any /rihal-* command and this triggers automatically when config is missing.
 </purpose>
@@ -30,7 +30,7 @@ Print:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  السلام عليكم — Rihal init
+  السلام عليكم — rcode init
   Configuring your rihla (journey)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -38,7 +38,7 @@ Print:
 Run detection in parallel:
 
 ```bash
-# Rihal presence
+# rcode presence
 test -f .rcode/config.yaml && echo "rihal-configured: yes" || echo "rihal-configured: no"
 test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: no"
 test -f .rcode/JOURNEY.md && echo "rihla-present: yes" || echo "rihla-present: no"
@@ -58,7 +58,7 @@ Classify project into one of four states:
 |-------|--------|---------------------|
 | `fresh` | No code, no git, no rihal | `/rihal-new-project` — let's design it |
 | `existing-new-rihal` | Has code + git, no rihal | `/rihal-scan` or `/rihal-council` — understand before changing |
-| `returning` | Rihal already configured | `/rihal-resume-work` or `/rihal-next` |
+| `returning` | rcode already configured | `/rihal-resume-work` or `/rihal-next` |
 | `reset` | User passed `--reset` flag | Proceed with full reconfigure |
 
 Print one-line state summary:
@@ -72,7 +72,7 @@ If `state === "returning"` and `--reset` not passed:
 - If `rihla-present: yes` — print the standard returning message and STOP:
 
   ```
-  ✓ Rihal is already configured here.
+  ✓ rcode is already configured here.
 
   What next?
     /rihal-resume-work    — pick up where you left off
@@ -85,7 +85,7 @@ If `state === "returning"` and `--reset` not passed:
 - If `rihla-present: no` — JOURNEY.md is missing from a partial prior init. Do NOT stop. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
 
   ```
-  ✓ Rihal is already configured here.
+  ✓ rcode is already configured here.
 
   JOURNEY.md baseline is missing — completing the scan step now...
   ```
@@ -100,12 +100,12 @@ Use AskUserQuestion (one batched question with multiple fields if the tool suppo
 
 Questions:
 
-1. **Your name** (what Rihal calls you in state artifacts)
+1. **Your name** (what rcode calls you in state artifacts)
    - Default: `$USER` environment variable
 2. **Communication language** (how agents talk to you)
    - Options: English, Urdu, Arabic, Roman Urdu, Mixed
    - Default: English
-3. **Mode** (how Rihal proceeds at decision gates)
+3. **Mode** (how rcode proceeds at decision gates)
    - Options: `guided` (confirm at each gate), `yolo` (proceed autonomously)
    - Default: guided
 4. **Model profile** (agent cost vs quality tradeoff)
@@ -206,7 +206,7 @@ If no code detected, write a minimal JOURNEY.md with just the header and a "fres
 
 ## Step 4b — Populate context files
 
-After writing JOURNEY.md, populate the two context files that every Rihal skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
+After writing JOURNEY.md, populate the two context files that every rcode skill reads at runtime. These files are the project's "memory bank" — without them, agents work blind.
 
 **`.rcode/context/active.md`** — Current task context and working state. Write it using the JOURNEY.md scan data from Step 4:
 
@@ -226,12 +226,12 @@ After writing JOURNEY.md, populate the two context files that every Rihal skill 
 ## Active Work
 
 {If returning with --reset: summarize what was in progress from git log}
-{If existing-new-rihal: "Rihal just configured — no active work tracked yet."}
+{If existing-new-rihal: "rcode just configured — no active work tracked yet."}
 {If fresh: "New project — no code yet."}
 
 ## Key Decisions
 
-- Rihal configured with mode: {mode from Step 2}
+- rcode configured with mode: {mode from Step 2}
 - Branching strategy: {strategy from Step 2}
 - Model profile: {profile from Step 2}
 
@@ -290,7 +290,7 @@ Print a contextual recommendation, **one line of copy-paste per suggestion** (pe
 
 **If `fresh`:**
 ```
-✓ Rihal configured. Your journey begins.
+✓ rcode configured. Your journey begins.
 
 Ready to design a new project? Try:
 
@@ -303,7 +303,7 @@ Or think through an idea first:
 
 **If `existing-new-rihal`:**
 ```
-✓ Rihal configured. JOURNEY.md written as your baseline.
+✓ rcode configured. JOURNEY.md written as your baseline.
 
 Recommended first move — understand before changing:
 
@@ -316,7 +316,7 @@ Or strategic question about the codebase:
 
 **If `returning` with `--reset`:**
 ```
-✓ Rihal reconfigured. Prior state preserved in state.json.
+✓ rcode reconfigured. Prior state preserved in state.json.
 
 Pick up where you left off:
 

@@ -64,7 +64,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 STOP — do not proceed.
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
@@ -436,7 +436,7 @@ End workflow.
 - All 7 codebase documents exist
 - No empty documents (each should have >20 lines)
 - Clear completion summary with line counts
-- User offered clear next steps in Rihal style
+- User offered clear next steps in rcode style
 </success_criteria>
 
 ## Success Criteria

@@ -31,8 +31,8 @@ STOP — do not proceed.
 ## Step 1 — Load Project State
 
 ```bash
-# Check Rihal project exists
-[ -d .rihal ] || (echo "❌ Not a Rihal project" && exit 1)
+# Check rcode project exists
+[ -d .rihal ] || (echo "❌ Not a rcode project" && exit 1)
 
 # Load state.json
 cat .rcode/state.json 2>/dev/null || echo "{}"

@@ -1,6 +1,6 @@
 <purpose>
 Create a clean branch for pull requests by filtering out .planning/ commits.
-The PR branch contains only code changes — reviewers don't see Rihal artifacts
+The PR branch contains only code changes — reviewers don't see rcode artifacts
 (SPRINT.md, SUMMARY.md, STATE.md, CONTEXT.md, etc.).
 
 Uses git cherry-pick with path filtering to rebuild a clean history.

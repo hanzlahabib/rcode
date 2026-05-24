@@ -300,7 +300,7 @@ Use AskUserQuestion:
 node .rcode/bin/rcode-tools.cjs generate-claude-md
 ```
 
-This ensures new projects get the default Rihal workflow-enforcement guidance and current project context in `CLAUDE.md`.
+This ensures new projects get the default rcode workflow-enforcement guidance and current project context in `CLAUDE.md`.
 
 **Commit roadmap (after approval or auto mode):**
 
@@ -430,7 +430,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
-- [ ] CLAUDE.md generated with Rihal workflow guidance
+- [ ] CLAUDE.md generated with rcode workflow guidance
 - [ ] User knows next step is `/rihal-discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.

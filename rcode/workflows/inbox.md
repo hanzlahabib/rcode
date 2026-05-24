@@ -122,7 +122,7 @@ For each classified issue, review against its template requirements.
 - **Gate check:** If PR exists linking this issue, does issue have `approved-enhancement`?
 
 **Bug Report Review Checklist:**
-- [ ] RIHAL Version provided
+- [ ] rcode Version provided
 - [ ] Runtime selected
 - [ ] OS selected
 - [ ] Node.js version provided
@@ -258,7 +258,7 @@ Produce a structured triage report:
 
 ```
 ===================================================================
-  RIHAL INBOX TRIAGE — {repo} — {date}
+  rcode INBOX TRIAGE — {repo} — {date}
 ===================================================================
 
 SUMMARY
@@ -336,12 +336,12 @@ Label recommendations:
 **If --close-incomplete:**
 For issues scoring below 50% completeness:
 ```bash
-gh issue close {number} --comment "Closed by RIHAL inbox triage: this issue is missing required fields per the issue template. Missing: {list}. Please reopen with a complete submission. See CONTRIBUTING.md for requirements."
+gh issue close {number} --comment "Closed by rcode inbox triage: this issue is missing required fields per the issue template. Missing: {list}. Please reopen with a complete submission. See CONTRIBUTING.md for requirements."
 ```
 
 For PRs with gate violations:
 ```bash
-gh pr close {number} --comment "Closed by RIHAL inbox triage: this PR does not meet the issue-first requirement. {specific violation}. See CONTRIBUTING.md for the correct process."
+gh pr close {number} --comment "Closed by rcode inbox triage: this PR does not meet the issue-first requirement. {specific violation}. See CONTRIBUTING.md for the correct process."
 ```
 
 Always confirm with the user before closing anything:

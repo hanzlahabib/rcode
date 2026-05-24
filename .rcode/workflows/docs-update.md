@@ -5,7 +5,7 @@ Generate, update, and verify project documentation — both canonical doc types 
 </purpose>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-noor — Writes and updates project documentation files
 - rcode-docs-auditor — Verifies factual claims in docs against the live codebase
 </available_agent_types>

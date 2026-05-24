@@ -8,7 +8,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </required_reading>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-nyquist-auditor — Validates verification coverage
 </available_agent_types>
 
@@ -31,7 +31,7 @@ NYQUIST_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.nyquist_vali
 
 If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal-settings."
 
-Display banner: `Rihal > VALIDATE PHASE {N}: {name}`
+Display banner: `rcode > VALIDATE PHASE {N}: {name}`
 
 ## 1. Detect Input State
 
@@ -149,14 +149,14 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update valid
 
 **Compliant:**
 ```
-Rihal > PHASE {N} IS NYQUIST-COMPLIANT
+rcode > PHASE {N} IS NYQUIST-COMPLIANT
 All requirements have automated verification.
 ▶ Next: /rihal-audit-milestone ${Rihal_WS}
 ```
 
 **Partial:**
 ```
-Rihal > PHASE {N} VALIDATED (PARTIAL)
+rcode > PHASE {N} VALIDATED (PARTIAL)
 {M} automated, {K} manual-only.
 ▶ Retry: /rihal-validate-phase {N} ${Rihal_WS}
 ```

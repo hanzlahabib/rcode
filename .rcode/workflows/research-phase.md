@@ -5,7 +5,7 @@ Standalone research command. For most workflows, use `/rihal-plan` which integra
 </purpose>
 
 <available_agent_types>
-Valid Rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-phase-researcher — Researches technical approaches for a phase
 </available_agent_types>
 

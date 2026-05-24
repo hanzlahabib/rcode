@@ -1,5 +1,5 @@
 <purpose>
-Explain the reasoning behind a Rihal decision: why this panel was selected, why this question was classified, why this deviation was logged, or cite a prior decision from state.json.
+Explain the reasoning behind a rcode decision: why this panel was selected, why this question was classified, why this deviation was logged, or cite a prior decision from state.json.
 </purpose>
 
 ## Step 0: Usage Check

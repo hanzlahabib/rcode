@@ -1,5 +1,5 @@
 <purpose>
-Analyze freeform text from the user and route to the most appropriate Rihal command. This is a dispatcher — it never does the work itself. Match user intent to the best command, confirm the routing, and hand off.
+Analyze freeform text from the user and route to the most appropriate rcode command. This is a dispatcher — it never does the work itself. Match user intent to the best command, confirm the routing, and hand off.
 </purpose>
 
 <required_reading>
@@ -38,7 +38,7 @@ fi
 <step name="persona_shortcut" priority="first-match">
 **Recognize `@persona CODE` shortcuts as the deterministic API surface.**
 
-Every Rihal persona file has a Capabilities table listing 2-3-letter codes (Waleed: ADR/RV/TS/FZ/KS · Hussain-PM: CP/VP/EP/CE/CS/IR/CC · Mariam: MR/ICP/GTM/POS/LP · Fatima: TS/RG/EC/RR/RP/FT · Hanzla: DS/IS/BF/RF/KA/CR · Sadiq: KC/OC/PT/MT/KS · Dalil: SC/MC/RF/TS · Khattat / Munaffidh / Bahith / Muhaqqiq similarly).
+Every rcode persona file has a Capabilities table listing 2-3-letter codes (Waleed: ADR/RV/TS/FZ/KS · Hussain-PM: CP/VP/EP/CE/CS/IR/CC · Mariam: MR/ICP/GTM/POS/LP · Fatima: TS/RG/EC/RR/RP/FT · Hanzla: DS/IS/BF/RF/KA/CR · Sadiq: KC/OC/PT/MT/KS · Dalil: SC/MC/RF/TS · Khattat / Munaffidh / Bahith / Muhaqqiq similarly).
 
 Match if `$QUESTION` starts with `@<persona> <CODE>` or `@<persona>:<CODE>` — case-insensitive on persona, codes uppercase. Examples:
 
@@ -192,7 +192,7 @@ How should we access the external data?
 ```
 
 Then route accordingly:
-- **Option 1:** Continue to `route` step but tag the chosen command with a note to use the external data source. If no Rihal command natively reads the external system, route to `/rihal-discuss` and have the agent guide MCP/API setup.
+- **Option 1:** Continue to `route` step but tag the chosen command with a note to use the external data source. If no rcode command natively reads the external system, route to `/rihal-discuss` and have the agent guide MCP/API setup.
 - **Option 2:** Route to `/rihal-discuss` so the user can paste data into a focused conversation, OR `/rihal-note` to capture, then re-run.
 - **Option 3:** Continue to `route` step normally (likely `/rihal-scan` or `/rihal-map-codebase`) but display a clear caveat: *"Output will be an instrumentation map only — it cannot classify which errors are noisy vs critical."*
 - **Option 4:** Stop. Print the original input back so the user can rephrase.
@@ -411,7 +411,7 @@ Why this is hard: do.md is a router. The moment it does work, two failure modes 
 
 <success_criteria>
 - [ ] Input validated (not empty)
-- [ ] Intent matched to exactly one Rihal command
+- [ ] Intent matched to exactly one rcode command
 - [ ] Ambiguity resolved via user question (if needed)
 - [ ] Scope-uncertainty signals steer to `/rihal-discuss-phase` over planning routes
 - [ ] Project existence checked for routes that require it

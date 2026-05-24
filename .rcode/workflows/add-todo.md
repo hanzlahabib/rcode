@@ -1,5 +1,5 @@
 <purpose>
-Capture an idea, task, or issue that surfaces during a Rihal session as a structured note for later work. Enables "thought → capture → continue" flow without losing context.
+Capture an idea, task, or issue that surfaces during a rcode session as a structured note for later work. Enables "thought → capture → continue" flow without losing context.
 </purpose>
 
 

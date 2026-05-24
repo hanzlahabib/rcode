@@ -41,7 +41,7 @@ Then stop.
  rcode ► STATUS — {SNAPSHOT.project}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-╭─ Rihal Status — {SNAPSHOT.project} ─────────────────────╮
+╭─ rcode Status — {SNAPSHOT.project} ─────────────────────╮
 │ Milestone:  {SNAPSHOT.milestone or "—"}                 │
 │ Phase:      {SNAPSHOT.current_phase or "none started"}  │
 │ Progress:   {SNAPSHOT.bar}                              │
@@ -147,6 +147,6 @@ Group routes by letter. If multiple routes share a letter, list them indented. I
 
 ## On Error
 
-- **CLI not found:** "Rihal Code install missing. Run: npx @hanzlaa/rcode install"
+- **CLI not found:** "rcode Code install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
 - **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rcode-tools.cjs state read"

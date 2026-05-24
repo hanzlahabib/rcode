@@ -1,5 +1,5 @@
 <purpose>
-Safe git revert workflow. Rolls back Rihal phase or plan commits using the phase manifest with dependency checks and a confirmation gate. Uses git revert --no-commit (NEVER git reset) to preserve history.
+Safe git revert workflow. Rolls back rcode phase or plan commits using the phase manifest with dependency checks and a confirmation gate. Uses git revert --no-commit (NEVER git reset) to preserve history.
 </purpose>
 
 
@@ -48,7 +48,7 @@ If no valid argument is provided, display usage and exit:
 Usage: /rihal-undo --last N | --phase NN [--to-snapshot] | --plan NN-MM
 
 Modes:
-  --last N              Show last N Rihal commits for interactive selection
+  --last N              Show last N rcode commits for interactive selection
   --phase NN            Revert all commits for phase NN (uses manifest, fallback to git log)
   --phase NN --to-snapshot
                         Revert every commit between rihal/snapshot/phase-NN and HEAD —
@@ -76,7 +76,7 @@ Unsure what will be reverted? Run first:
 
 /rihal-undo --last 5
 
-to preview the last 5 Rihal commits before choosing.
+to preview the last 5 rcode commits before choosing.
 ```
 
 Use AskUserQuestion with explicit confirmation:
@@ -111,11 +111,11 @@ Run:
 git log --oneline --no-merges -${COUNT}
 ```
 
-Filter for Rihal conventional commits matching `type(scope): message` pattern (e.g., `feat(04-01):`, `docs(03):`, `fix(02-03):`).
+Filter for rcode conventional commits matching `type(scope): message` pattern (e.g., `feat(04-01):`, `docs(03):`, `fix(02-03):`).
 
 Display a numbered list of matching commits:
 ```
-Recent Rihal commits:
+Recent rcode commits:
   1. abc1234 feat(04-01): implement auth endpoint
   2. def5678 docs(03-02): complete plan summary
   3. ghi9012 fix(02-03): correct validation logic

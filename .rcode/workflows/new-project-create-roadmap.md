@@ -135,7 +135,7 @@ The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, 
 ```markdown
 # {INSTRUCTION_FILE} — project instructions
 
-This project uses Rihal for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
+This project uses rcode for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
 
 Common commands:
 - /rihal-progress — check status and next action

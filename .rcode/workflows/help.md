@@ -1,5 +1,5 @@
 <purpose>
-Display the Rihal command reference at the requested tier. Output ONLY the tier section. Do NOT add project-specific analysis, git status, next-step suggestions, or any commentary beyond the reference.
+Display the rcode command reference at the requested tier. Output ONLY the tier section. Do NOT add project-specific analysis, git status, next-step suggestions, or any commentary beyond the reference.
 </purpose>
 
 ## Step 0 — Parse arguments
@@ -32,9 +32,9 @@ Output the matching `<tier-N>` block below verbatim. For `all`, output all three
 ---
 
 <tier-1>
-# Rihal — Tier 1 (Basic)
+# rcode — Tier 1 (Basic)
 
-> **Rihal** is council-driven project automation built for solo agentic work in Claude Code.
+> **rcode** is council-driven project automation built for solo agentic work in Claude Code.
 > Tier 1 is everything you need to ship a small project end-to-end. **8 commands.**
 
 ## Not installed yet?
@@ -75,7 +75,7 @@ init → new-project → plan → execute → next → status → ship
 /rihal-next
 ```
 
-## Files Rihal creates
+## Files rcode creates
 
 ```
 .planning/
@@ -95,7 +95,7 @@ init → new-project → plan → execute → next → status → ship
 ---
 
 <tier-2>
-# Rihal — Tier 2 (Intermediate)
+# rcode — Tier 2 (Intermediate)
 
 > Real-project ops: strategic input, quality gates, capture, and session continuity.
 > Assumes you know Tier 1. **~18 commands.**
@@ -129,7 +129,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-add-phase <name>` | Alias for `/rihal-phase <name>`. |
 | `/rihal-insert-phase <after> <name>` | Alias for `/rihal-phase --insert <after> <name>`. |
 | `/rihal-remove-phase <n>` | Alias for `/rihal-phase --remove <n>`. |
-| `/rihal-quick [flags]` | Small ad-hoc tasks with Rihal guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
+| `/rihal-quick [flags]` | Small ad-hoc tasks with rcode guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
 | `/rihal-fast "<task>"` | Trivial inline task — typo, gitignore tweak, etc. No subagents, ≤3 file edits. *Not yet implemented (#482-B).* |
 
 ## Capture & session continuity
@@ -151,7 +151,7 @@ init → new-project → plan → execute → next → status → ship
 ---
 
 <tier-3>
-# Rihal — Tier 3 (Advanced)
+# rcode — Tier 3 (Advanced)
 
 > Power tools: milestone ops, parallel workspaces, audits, council variants, and rare ops.
 > Assumes Tier 1 + 2. Use these when you know exactly what you need.
@@ -214,9 +214,9 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-scan` | Rapid codebase assessment — lighter than map-codebase. |
 | `/rihal-document-project` | Audit missing/stale docs, file SPRINT tasks for each gap. |
 | `/rihal-docs-update` | Generate or update docs verified against codebase. |
-| `/rihal-install <module>` | Install a Rihal capability bundle into the project. |
-| `/rihal-enable-hooks` | Install optional Rihal hooks into `.claude/settings.json`. |
-| `/rihal-scaffold-project` | Scaffold a new project from the official Rihal template. |
+| `/rihal-install <module>` | Install a rcode capability bundle into the project. |
+| `/rihal-enable-hooks` | Install optional rcode hooks into `.claude/settings.json`. |
+| `/rihal-scaffold-project` | Scaffold a new project from the official rcode template. |
 | `/rihal-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. *Not yet implemented (#481).* |
 
 ## Story-level epics workflow
@@ -236,7 +236,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-sprint-planning` | Compute capacity, prioritize stories, create SPRINT.md. |
 | `/rihal-sprint-status` | Sprint progress — stories, points, velocity, burndown. |
 | `/rihal-list-plans` | Table of every SPRINT.md across phases — goal, stories, points, state. |
-| `/rihal-decisions` | Browse decisions across every Rihal project (~/.rcode/decisions.jsonl). |
+| `/rihal-decisions` | Browse decisions across every rcode project (~/.rcode/decisions.jsonl). |
 | `/rihal-replay <slug>` | Re-run a past council session with the same question — fresh panel round. |
 | `/rihal-export-to-github` | Push phases/stories/decisions to GitHub issues (wraps `rihal-code github-sync`). |
 | `/rihal-notify-test` | Verify Slack/Discord/MS Teams webhook wiring — posts a test message. |
@@ -272,11 +272,11 @@ init → new-project → plan → execute → next → status → ship
 | `/rihal-list-phase-assumptions <n>` | Surface agent's intended approach before planning. |
 | `/rihal-profile-user` | Classify developer on 4 dimensions, produce profile artifact. |
 | `/rihal-dashboard` | Start the Diwan view-only dashboard (port 7717). |
-| `/rihal-health` | 6-point health check of the Rihal installation. |
+| `/rihal-health` | 6-point health check of the rcode installation. |
 | `/rihal-stats` | Phases, plans, decisions, council sessions, timeline. |
 | `/rihal-settings` | Interactive config wizard — model profile, gates, branching. |
-| `/rihal-config` | View or edit Rihal configuration directly. |
-| `/rihal-update` | Update Rihal to latest version with changelog preview. |
+| `/rihal-config` | View or edit rcode configuration directly. |
+| `/rihal-update` | Update rcode to latest version with changelog preview. |
 | `/rihal-note` | (also Tier 2) Inline note capture. |
 
 ## Common compound flows
