@@ -213,7 +213,7 @@ VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
 Error: No VERIFICATION.md found for Phase {X}. Gap-closure planning requires the phase to have run through the verifier first.
 
 Try:
-  /rcode-execute {X} ${Rihal_WS}      # run or re-run execution + verification
+  /rcode-execute {X} ${RCODE_WS}      # run or re-run execution + verification
 ```
 Exit workflow.
 
@@ -322,9 +322,9 @@ If "Run discuss-phase first":
   does not work correctly in nested subcontexts (#1009). Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
-  Run this command first, then re-run /rcode-plan {X} ${Rihal_WS}:
+  Run this command first, then re-run /rcode-plan {X} ${RCODE_WS}:
 
-  /rcode-discuss-phase {X} ${Rihal_WS}
+  /rcode-discuss-phase {X} ${RCODE_WS}
   ```
   **Exit the sprint-plan workflow. Do not continue.**
 
@@ -443,7 +443,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 ```
 
 If missing and Nyquist is still enabled/applicable — ask user:
-1. Re-run: `/rcode-plan {PHASE} --research ${Rihal_WS}`
+1. Re-run: `/rcode-plan {PHASE} --research ${RCODE_WS}`
 2. Disable Nyquist with the exact command:
    `node ".rcode/bin/rcode-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
@@ -845,7 +845,7 @@ Plans ready. Launching execute-phase...
 
 Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
 ```
-Skill(skill="rcode-execute", args="${PHASE} --auto --no-transition ${Rihal_WS}")
+Skill(skill="rcode-execute", args="${PHASE} --auto --no-transition ${RCODE_WS}")
 ```
 
 The `--no-transition` flag tells execute-phase to return status after verification instead of chaining further. This keeps the auto-advance chain flat — each phase runs at the same nesting level rather than spawning deeper Task agents.
@@ -859,14 +859,14 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 
   Auto-advance pipeline finished.
 
-  Next: /rcode-discuss-phase ${NEXT_PHASE} --auto ${Rihal_WS}
+  Next: /rcode-discuss-phase ${NEXT_PHASE} --auto ${RCODE_WS}
   ```
 - **GAPS FOUND / VERIFICATION FAILED** → Display result, stop chain:
   ```
   Auto-advance stopped: Execution needs review.
 
   Review the output above and continue manually:
-  /rcode-execute ${PHASE} ${Rihal_WS}
+  /rcode-execute ${PHASE} ${RCODE_WS}
   ```
 
 **If neither `--auto` nor config enabled:**
@@ -929,7 +929,7 @@ Verification: {Passed | Passed with override | Skipped}
 
 /clear then:
 
-/rcode-execute {X} ${Rihal_WS}
+/rcode-execute {X} ${RCODE_WS}
 
 ───────────────────────────────────────────────────────────────
 

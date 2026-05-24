@@ -205,11 +205,11 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/rcode-execute {phase} ${Rihal_WS})
+1. Execute phase (/rcode-execute {phase} ${RCODE_WS})
    OR
-1. Discuss Phase 3 context (/rcode-discuss-phase 3 ${Rihal_WS}) [if CONTEXT.md missing]
+1. Discuss Phase 3 context (/rcode-discuss-phase 3 ${RCODE_WS}) [if CONTEXT.md missing]
    OR
-1. Plan Phase 3 (/rcode-plan 3 ${Rihal_WS}) [if CONTEXT.md exists or discuss option declined]
+1. Plan Phase 3 (/rcode-plan 3 ${RCODE_WS}) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
 2. Review current phase status
@@ -242,7 +242,7 @@ Based on user selection, route to appropriate workflow:
 
   `/clear` then:
 
-  `/rcode-execute {phase} ${Rihal_WS}`
+  `/rcode-execute {phase} ${RCODE_WS}`
 
   ---
   ```
@@ -256,13 +256,13 @@ Based on user selection, route to appropriate workflow:
 
   `/clear` then:
 
-  `/rcode-plan [phase-number] ${Rihal_WS}`
+  `/rcode-plan [phase-number] ${RCODE_WS}`
 
   ---
 
   **Also available:**
-  - `/rcode-discuss-phase [N] ${Rihal_WS}` — gather context first
-  - `/rcode-research-phase [N] ${Rihal_WS}` — investigate unknowns
+  - `/rcode-discuss-phase [N] ${RCODE_WS}` — gather context first
+  - `/rcode-research-phase [N] ${RCODE_WS}` — investigate unknowns
 
   ---
   ```

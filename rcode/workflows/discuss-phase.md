@@ -163,7 +163,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /rcode-progress ${Rihal_WS} to see available phases.
+Use /rcode-progress ${RCODE_WS} to see available phases.
 ```
 Exit workflow.
 
@@ -264,7 +264,7 @@ Check `has_plans` and `plan_count` from init. **If `has_plans` is true:**
 - header: "Plans exist"
 - question: "Phase [X] already has {plan_count} plan(s) created without user context. Your decisions here won't affect existing plans unless you replan."
 - options:
-  - "Continue and replan after" — Capture context, then run /rcode-plan {X} ${Rihal_WS} to replan
+  - "Continue and replan after" — Capture context, then run /rcode-plan {X} ${RCODE_WS} to replan
   - "View existing plans" — Show plans before deciding
   - "Cancel" — Skip discuss-phase
 
@@ -760,14 +760,14 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/rcode-plan ${PHASE} ${Rihal_WS}`
+`/rcode-plan ${PHASE} ${RCODE_WS}`
 
 ---
 
 **Also available:**
-- `/rcode-discuss-phase ${PHASE} --chain ${Rihal_WS}` — re-run with auto plan+execute after
-- `/rcode-plan ${PHASE} --skip-research ${Rihal_WS}` — plan without research
-- `/rcode-ui-phase ${PHASE} ${Rihal_WS}` — generate UI design contract before planning (if phase has frontend work)
+- `/rcode-discuss-phase ${PHASE} --chain ${RCODE_WS}` — re-run with auto plan+execute after
+- `/rcode-plan ${PHASE} --skip-research ${RCODE_WS}` — plan without research
+- `/rcode-ui-phase ${PHASE} ${RCODE_WS}` — generate UI design contract before planning (if phase has frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -884,7 +884,7 @@ Context captured. Launching plan...
 
 Launch plan using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting — see #686):
 ```
-Skill(skill="rcode-plan", args="${PHASE} --auto ${Rihal_WS}")
+Skill(skill="rcode-plan", args="${PHASE} --auto ${RCODE_WS}")
 ```
 
 This keeps the auto-advance chain flat — discuss, plan, and execute all run at the same nesting level rather than spawning increasingly deep Task agents.
@@ -900,22 +900,22 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 
   /clear then:
 
-  Next: /rcode-discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${Rihal_WS}
+  Next: /rcode-discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${RCODE_WS}
   ```
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /rcode-execute ${PHASE} ${Rihal_WS}
+  Continue: /rcode-execute ${PHASE} ${RCODE_WS}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```
   Auto-advance stopped: Planning needs input.
-  Continue: /rcode-plan ${PHASE} ${Rihal_WS}
+  Continue: /rcode-plan ${PHASE} ${RCODE_WS}
   ```
 - **GAPS FOUND** → Stop chain:
   ```
   Auto-advance stopped: Gaps found during execution.
-  Continue: /rcode-plan ${PHASE} --gaps ${Rihal_WS}
+  Continue: /rcode-plan ${PHASE} --gaps ${RCODE_WS}
   ```
 
 **If none of `--auto`, `--chain`, nor config enabled:**

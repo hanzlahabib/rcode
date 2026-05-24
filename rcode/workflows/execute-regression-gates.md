@@ -81,14 +81,14 @@ Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `un
 
 Check for override:
 ```bash
-SKIP_SCHEMA=$(echo "${Rihal_SKIP_SCHEMA_CHECK:-false}")
+SKIP_SCHEMA=$(echo "${RCODE_SKIP_SCHEMA_CHECK:-false}")
 ```
 
 **If `SKIP_SCHEMA` is `true`:**
 
 Display:
 ```
-⚠ Schema drift detected but Rihal_SKIP_SCHEMA_CHECK=true — bypassing gate.
+⚠ Schema drift detected but RCODE_SKIP_SCHEMA_CHECK=true — bypassing gate.
 
 Schema files changed: {schema_files}
 ORMs requiring push: {unpushed_orms}
@@ -116,7 +116,7 @@ Required push commands:
 
 Options:
 1. Run push command now (recommended) — execute the push, then re-verify
-2. Skip schema check (Rihal_SKIP_SCHEMA_CHECK=true) — bypass this gate
+2. Skip schema check (RCODE_SKIP_SCHEMA_CHECK=true) — bypass this gate
 3. Abort — stop execution and investigate
 ```
 
