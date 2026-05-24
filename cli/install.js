@@ -1587,7 +1587,9 @@ function sweepStaleInstalledFiles(target, newPlan) {
       if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
         fs.rmdirSync(dir);
       }
-    } catch {}
+    } catch (err) {
+      console.error('[install] sweepStaleInstalledFiles: failed to remove empty dir', dir + ':', err?.message || err);
+    }
   }
 
   return removed;
@@ -1840,14 +1842,14 @@ function acquireInstallLock(target) {
       return {
         ok: true,
         release: () => {
-          try { fs.unlinkSync(lockPath); } catch {}
+          try { fs.unlinkSync(lockPath); } catch (err) { console.error('[install] acquireInstallLock: failed to release lock', lockPath + ':', err?.message || err); }
         },
       };
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
       // Lock exists — check if holder is alive.
       let pid = 0;
-      try { pid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10); } catch {}
+      try { pid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10); } catch (err) { console.error('[install] acquireInstallLock: failed to read lock pid from', lockPath + ':', err?.message || err); }
       if (pid && !isAlive(pid)) {
         // Stale lock — remove and retry once.
         try { fs.unlinkSync(lockPath); } catch {}
@@ -2635,7 +2637,9 @@ async function installInner(opts) {
         } catch { /* non-fatal */ }
       }
     }
-  } catch {}
+  } catch (err) {
+    console.error('[install] installInner: failed to count installed agents/commands:', err?.message || err);
+  }
 
   const version = readPackageVersion();
   console.log('');
