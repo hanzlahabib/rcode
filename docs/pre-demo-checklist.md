@@ -60,7 +60,7 @@ ls .rcode/brain/rcode-github/
 ls .rcode/brain/rcode-docs/ | head
 cat .rcode/brain/best-practices/no-autonomous-bypass.md | head -10
 ```
-This is the punchline — every Rihalian's install has rcode's standards already sitting in their project context.
+This is the punchline — every rcode user's install has rcode's standards already sitting in their project context.
 
 ### ☐ 8. Show the docs
 Quick scroll through:
