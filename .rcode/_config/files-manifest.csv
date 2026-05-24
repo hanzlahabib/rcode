@@ -615,7 +615,7 @@ rel,sha256,size
 .rihal/skills/rihal-prfaq/references/internal-faq.md,26eb83f844cda1ed8efb50f4703d61713ada8a64bd27eb387f759f858b5748de,3928
 .rihal/skills/rihal-prfaq/references/press-release.md,c406adb0e2d2cc326cbc45d0174f89d014523448ad82bc272293999d22aec596,4308
 .rihal/skills/rihal-prfaq/references/verdict.md,684806d6f38e126f08350d16909535fbe1e223d50ae337e9ad7f5076d6ee8d17,4262
-.rihal/skills/rihal-prfaq/rihal-manifest.json,3da3d0a00b21c040f17bbc5d63283f23b432a92214634b211a5396ca864b2c7d,458
+.rihal/skills/rihal-prfaq/rcode-manifest.json,3da3d0a00b21c040f17bbc5d63283f23b432a92214634b211a5396ca864b2c7d,458
 .rihal/skills/rihal-product-brief/SKILL.md,04a513d8e9c7d6d533d40f70bed9d63a09cbf73e57438afa99146a3e6d397484,6653
 .rihal/skills/rihal-product-brief/agents/artifact-analyzer.md,dcd8c4bb367fa48ff99c26565d164323b2ae057b09642ba7d1fda1683262be2d,2501
 .rihal/skills/rihal-product-brief/agents/opportunity-reviewer.md,3b6d770c45962397bfecce5d4b001b03fc0e577aa75f7932084b56efe41edc07,1755
@@ -626,7 +626,7 @@ rel,sha256,size
 .rihal/skills/rihal-product-brief/prompts/finalize.md,ca6d125ff9b536c9e7737c7b4a308ae4ec622ee7ccdc6c4c4abc8561089295ee,3933
 .rihal/skills/rihal-product-brief/prompts/guided-elicitation.md,445b7fafb5c1c35a238958d015d413c71ebb8fd3e29dc59d9d68fb581546ee54,3418
 .rihal/skills/rihal-product-brief/resources/brief-template.md,d42f0ef6b154b5c314090be393febabd61de3d8de1ecf926124d40d418552b4b,2304
-.rihal/skills/rihal-product-brief/rihal-manifest.json,ebc52c96687fae47df4730906a17f1dfacee91b30ccf0771cb2925f542bb4c3b,497
+.rihal/skills/rihal-product-brief/rcode-manifest.json,ebc52c96687fae47df4730906a17f1dfacee91b30ccf0771cb2925f542bb4c3b,497
 .rihal/skills/rihal-prove-it/SKILL.md,4e0bd244046a60f93a65e9dde7249ab31c01b5dbef6fc128454d8de3ee4ddc43,2994
 .rihal/skills/rihal-qa-generate-e2e-tests/SKILL.md,e0a468e426c8c5e6cb693d91602881dee3357a72c47eeeb7ab8e13dc835a7e3e,1621
 .rihal/skills/rihal-qa-generate-e2e-tests/checklist.md,3b2c78ce827babb86cafdfd7bd34044bf7c8781fc450097c575c12e942a2d7b3,894

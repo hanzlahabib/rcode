@@ -1,5 +1,5 @@
 {
-  "module-code": "rihal",
+  "module-code": "rcode",
   "replaces-skill": "rihal-create-product-brief",
   "capabilities": [
     {
