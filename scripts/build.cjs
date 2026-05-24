@@ -37,7 +37,7 @@ const result = buildSync({
   ],
   // No banner here — we prepend the shebang + comment manually after build
   // to guarantee exactly one shebang on line 1 regardless of esbuild shebang handling.
-  minify: false,
+  minify: true,
   sourcemap: false,
   logLevel: 'info',
 });
