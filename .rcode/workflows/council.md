@@ -94,7 +94,7 @@ After Step 0.6 confirmation, proceed to load references by Reading:
 
 <available_agent_types>
 Read the `installed_agents` array from INIT_JSON. Every entry can be invoked as
-`subagent_type: "rihal-{id}"`. The classifier and panel scorer will surface only
+`subagent_type: "rcode-{id}"`. The classifier and panel scorer will surface only
 agents present in this list — **do not hardcode agent names here**, use the live
 list from INIT_JSON so new agents added to team.yaml are automatically available.
 

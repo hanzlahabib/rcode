@@ -156,7 +156,7 @@ Scale your response to the substance — a simple question gets a short answer.
 Start your reply with your icon + name header.
 ```
 
-Use `subagent_type` = `rihal-{agent_id}` (e.g., `rcode-sadiq`).
+Use `subagent_type` = `rcode-{agent_id}` (e.g., `rcode-sadiq`).
 
 ## Step 5 — Print response verbatim
 
