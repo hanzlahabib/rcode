@@ -45,8 +45,8 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
 
 # Scoped yolo check — closes #739. Honours yolo_scope and yolo_ttl from config.
-PHASE_NUM=$(echo "$PHASE" | grep -oE '^[0-9]+(\.[0-9]+)?')
-YOLO_STATUS=$(node ".rcode/bin/rcode-tools.cjs" config-check-yolo --phase "${PHASE_NUM}" --workflow execute-sprint 2>/dev/null || echo '{"active":false}')
+PHASE_NUMBER=$(echo "$PHASE" | grep -oE '^[0-9]+(\.[0-9]+)?')
+YOLO_STATUS=$(node ".rcode/bin/rcode-tools.cjs" config-check-yolo --phase "${PHASE_NUMBER}" --workflow execute-sprint 2>/dev/null || echo '{"active":false}')
 YOLO_ACTIVE=$(echo "$YOLO_STATUS" | grep -o '"active":true' | grep -c . || echo 0)
 [ "$YOLO_ACTIVE" -gt 0 ] && CONFIG_MODE="yolo" || CONFIG_MODE=$(node ".rcode/bin/rcode-tools.cjs" config-get mode 2>/dev/null || echo "guided")
 ```

@@ -8,12 +8,12 @@ Sub-step of autonomous.md — smart discuss loop for a single phase. Proposes gr
 
 Run smart discuss for the current phase. Proposes grey area answers in batch tables — the user accepts or overrides per area. Produces identical CONTEXT.md output to regular discuss-phase.
 
-**Inputs:** `PHASE_NUM` (local loop alias for `PHASE_NUMBER` from the iterate loop) from execute_phase. Resolve phase paths:
+**Inputs:** `PHASE_NUMBER` (local loop alias for `PHASE_NUMBER` from the iterate loop) from execute_phase. Resolve phase paths:
 
 ```bash
-PHASE_NUM="${PHASE_NUM}"  # local alias; other workflows use PHASE_NUMBER from init JSON
+PHASE_NUMBER="${PHASE_NUMBER}"  # local alias; other workflows use PHASE_NUMBER from init JSON
 # Issue #652 — no leading zeros. Variable name kept for backward compat.
-PADDED_PHASE="${PHASE_NUM%.*}"
+PADDED_PHASE="${PHASE_NUMBER%.*}"
 PHASE_DIR=".planning/phases/${PADDED_PHASE}-${PHASE_SLUG}"
 ```
 
@@ -95,7 +95,7 @@ A phase is pure infrastructure when ALL are true:
 **If infrastructure-only:** Skip Sub-step 4. Jump directly to Sub-step 5 with minimal CONTEXT.md. Display:
 
 ```
-Phase ${PHASE_NUM}: Infrastructure phase — skipping discuss, writing minimal context.
+Phase ${PHASE_NUMBER}: Infrastructure phase — skipping discuss, writing minimal context.
 ```
 
 **If NOT infrastructure — generate grey area proposals:**
@@ -170,7 +170,7 @@ After all areas are resolved (or infrastructure skip), write the CONTEXT.md file
 Use **exactly** this structure:
 
 ```markdown
-# Phase {PHASE_NUM}: {Phase Name} - Context
+# Phase {PHASE_NUMBER}: {Phase Name} - Context
 
 **Gathered:** {date}
 **Status:** Ready for planning

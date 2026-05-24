@@ -548,7 +548,7 @@ PRIMARY = Task(
   - PLAN.md references that should be SPRINT.md (stale naming)
   - rcode: namespace (colon) that should be rcode- (hyphen)
   - Agent directory names that do not match their SKILL.md name: field
-  - PHASE_NUM variable used where PHASE_NUMBER is the standard
+  - PHASE_NUMBER variable used where PHASE_NUMBER is the standard
   - CamelCase vs snake_case drift in config keys
   
   Return: file:line — drift description [warn|info]

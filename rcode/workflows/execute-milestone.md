@@ -55,7 +55,7 @@ For each pending phase (in ROADMAP order):
 
 **3a. Pre-phase gate:**
 ```bash
-READINESS=$(node ".rcode/bin/rcode-tools.cjs" check-implementation-readiness --phase "${PHASE_NUM}" 2>/dev/null)
+READINESS=$(node ".rcode/bin/rcode-tools.cjs" check-implementation-readiness --phase "${PHASE_NUMBER}" 2>/dev/null)
 READY=$(echo "$READINESS" | grep -o '"ready":true' | grep -c . || echo 0)
 ```
 
@@ -75,7 +75,7 @@ Options:
 ◆ Executing Phase {N}: {name}...
 ```
 
-Invoke `/rcode-execute {PHASE_NUM}` via Skill or Agent dispatch.
+Invoke `/rcode-execute {PHASE_NUMBER}` via Skill or Agent dispatch.
 
 **3c. Verify gate (unless --skip-verify):**
 
