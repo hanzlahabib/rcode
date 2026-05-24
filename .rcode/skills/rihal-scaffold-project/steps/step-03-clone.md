@@ -1,7 +1,7 @@
 # Step 3: Clone Template
 
 ## Goal
-Clone the official Rihal template repository fresh from GitHub into `{target_path}`.
+Clone the official rcode template repository fresh from GitHub into `{target_path}`.
 
 ## Template Source
 ```

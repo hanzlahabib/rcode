@@ -10,15 +10,15 @@
 
 ## Context
 
-rcode v2.0 delivers rcode's institutional context to every Rihalian's project through a **static + semi-dynamic** model: `rcode/brain/sources.yaml` lists upstream repos (GitHub org, rcode docs repo, in-repo best-practices); `rcode-tools brain pull` clones those sources via sparse checkout; the pulled content sits under `rcode/brain/` until the next `/rcode-update`.
+rcode v2.0 delivers rcode's institutional context to every rcode user's project through a **static + semi-dynamic** model: `rcode/brain/sources.yaml` lists upstream repos (GitHub org, rcode docs repo, in-repo best-practices); `rcode-tools brain pull` clones those sources via sparse checkout; the pulled content sits under `rcode/brain/` until the next `/rcode-update`.
 
 This works for v2.0 but has three known limits:
 
-1. **Staleness between updates.** A Rihalian who runs `/rcode-update` on Monday sees Monday's standards all week, even if a critical PR-review rule is updated on Tuesday morning.
+1. **Staleness between updates.** A rcode user who runs `/rcode-update` on Monday sees Monday's standards all week, even if a critical PR-review rule is updated on Tuesday morning.
 2. **Pull cost compounds.** As rcode's doc corpus grows, `brain pull` time grows linearly. The v2.0 kill criterion is 10s on fresh install — we will hit that.
-3. **No audit trail.** There is no record of which Rihalian's project is on which brain version, no telemetry on which standards are actually surfaced to the AI, no way to hot-fix a mistaken standard across all installations.
+3. **No audit trail.** There is no record of which rcode user's project is on which brain version, no telemetry on which standards are actually surfaced to the AI, no way to hot-fix a mistaken standard across all installations.
 
-An **MCP server** (Model Context Protocol) hosted on rcode infrastructure would solve all three. Every Rihalian's IDE would register the rcode MCP server; the AI queries it live for the relevant standard at the moment of relevance; rcode sees aggregate usage and can push updates instantly.
+An **MCP server** (Model Context Protocol) hosted on rcode infrastructure would solve all three. Every rcode user's IDE would register the rcode MCP server; the AI queries it live for the relevant standard at the moment of relevance; rcode sees aggregate usage and can push updates instantly.
 
 This ADR captures the design direction and the open questions we need to answer before writing a single line of server code.
 
@@ -31,7 +31,7 @@ Build a single rcode-hosted MCP server that exposes the rcode brain as:
 - **Resources** — each rcode standard doc (PR standards, commit standards, architecture playbook sections) addressable by URI (e.g. `rcode://standards/pr-standards`).
 - **Tools** — query helpers, e.g. `getReviewChecklistFor(projectType)` returning the right section of the PR-review checklist based on the caller's project type.
 
-The v2.0 static pull remains available as an offline fallback and for non-Rihalians.
+The v2.0 static pull remains available as an offline fallback and for non-rcode-teams.
 
 ---
 
@@ -49,7 +49,7 @@ The v2.0 static pull remains available as an offline fallback and for non-Rihali
 
 ### Q2. Authentication
 
-**Question:** how does the MCP server know the caller is a Rihalian?
+**Question:** how does the MCP server know the caller is a rcode user?
 
 **Options:**
 - A) rcode SSO (Google Workspace? Microsoft? which does rcode use?).
@@ -65,7 +65,7 @@ The v2.0 static pull remains available as an offline fallback and for non-Rihali
 - B) MCP-default — install flips to MCP registration by default; static pull is opt-in.
 - C) Hard cut — v3.0 removes static pull; everyone migrates or pins to v2.x.
 
-**Recommendation:** A for at least one release. Any network outage at rcode should not disable every Rihalian's AI assistant.
+**Recommendation:** A for at least one release. Any network outage at rcode should not disable every rcode user's AI assistant.
 
 ### Q4. Latency budget
 
@@ -80,7 +80,7 @@ The v2.0 static pull remains available as an offline fallback and for non-Rihali
 
 ### Q5. Offline behavior
 
-**Question:** what does a Rihalian's AI see when they are on a plane / at home with bad wifi / on rcode VPN disabled?
+**Question:** what does a rcode user's AI see when they are on a plane / at home with bad wifi / on rcode VPN disabled?
 
 **Decision:** MCP server MUST include an offline cache. The AI sees the last-seen version of each resource, with a warning banner ("brain cache from 2026-05-12 — you may be offline") injected into the first response of a session where live fetch failed.
 
@@ -93,7 +93,7 @@ Initial scope: 10–15 resources, 3 tools. Grow after shipping.
 
 ### Q7. Brain content update pipeline
 
-When a rcode PM edits the PRD-review checklist in the rcode docs repo and merges the PR, how does that change reach a Rihalian's AI within 5 minutes?
+When a rcode PM edits the PRD-review checklist in the rcode docs repo and merges the PR, how does that change reach a rcode user's AI within 5 minutes?
 
 **Options:**
 - A) Webhook from rcode docs repo → MCP server's invalidation endpoint → cache eviction.
@@ -107,19 +107,19 @@ When a rcode PM edits the PRD-review checklist in the rcode docs repo and merges
 ## Consequences
 
 ### Positive
-- Rihalians always see current rcode standards without running `/rcode-update`.
+- rcode users always see current rcode standards without running `/rcode-update`.
 - rcode can push hot-fixes to mistaken standards within minutes.
-- Aggregate telemetry on what the AI actually surfaces to Rihalians — feedback loop for standards that are not landing.
+- Aggregate telemetry on what the AI actually surfaces to rcode users — feedback loop for standards that are not landing.
 - Eliminates the 10s `brain pull` cost on every install.
 
 ### Negative
 - New infrastructure to run and monitor (v2.0 needed no rcode-side infra).
-- Availability coupling — MCP outage degrades every Rihalian's AI.
+- Availability coupling — MCP outage degrades every rcode user's AI.
 - Auth complexity — SSO integration, token rotation, offboarding.
 - Higher initial investment than v2.0's "just `git clone`" approach.
 
 ### Neutral
-- Non-Rihalians can still install rcode; they just skip MCP registration and run on the static pull layer.
+- Non-rcode-team users can still install rcode; they just skip MCP registration and run on the static pull layer.
 
 ---
 

@@ -1,10 +1,10 @@
-# Rihal PRD Purpose
+# rcode PRD Purpose
 
-**The PRD is the top of the required funnel that feeds all subsequent product development work in rhw Rihal Code.**
+**The PRD is the top of the required funnel that feeds all subsequent product development work in rhw rcode.**
 
 ---
 
-## What is a Rihal PRD?
+## What is a rcode PRD?
 
 A dual-audience document serving:
 1. **Human Product Managers and builders** - Vision, strategy, stakeholder communication
@@ -182,7 +182,7 @@ Certain industries have mandatory requirements that must be present:
 
 ---
 
-## Summary: What Makes a Great Rihal PRD?
+## Summary: What Makes a Great rcode PRD?
 
 ✅ **High Information Density** - Every sentence carries weight, zero fluff
 ✅ **Measurable Requirements** - All FRs and NFRs are testable with specific criteria

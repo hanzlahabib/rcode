@@ -8,7 +8,7 @@ triggers:
 
 ## Overview
 
-Checkpoint preview skill for Rihal Code.
+Checkpoint preview skill for rcode.
 
 ## Do NOT use this skill for
 

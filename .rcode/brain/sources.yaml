@@ -2,7 +2,7 @@
 #
 # This file lists upstream repositories whose content is pulled into
 # rcode/brain/ on install and on every `/rcode-update`. Anything pulled
-# here ends up in every Rihalian's project context.
+# here ends up in every rcode user's project context.
 #
 # Repo URLs are placeholders until M5 (issue #162) when Hanzla supplies
 # the real rcode GitHub org and docs repo addresses. `brain pull` will
@@ -26,7 +26,7 @@ sources:
   - name: rcode-github-standards
     description: >
       PR, issue, and commit standards for the rcode GitHub org. Every
-      Rihalian's AI sees these when reviewing or drafting a PR.
+      rcode user's AI sees these when reviewing or drafting a PR.
     repo: "<PLACEHOLDER: github.com/rcode-om/???>"
     branch: main
     paths:

@@ -100,4 +100,4 @@ For detailed information, see:
 
 ---
 
-_Generated using Rihal Code `document-project` workflow_
+_Generated using rcode `document-project` workflow_

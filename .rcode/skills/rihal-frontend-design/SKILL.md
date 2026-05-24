@@ -32,7 +32,7 @@ license: Adapted from Anthropic's frontend-design skill
 
 ## Overview
 
-Builds **original** frontend interfaces with a committed aesthetic direction. Goal: interfaces someone actually remembers. Different from `rihal-clone-website` (which replicates existing sites pixel-for-pixel). Pairs with `rihal-agent-zahra` for brand alignment. Detailed aesthetic guidelines, type pair recommendations, "what to avoid" list, and Rihal-specific RTL guidance live in [`references.md`](references.md).
+Builds **original** frontend interfaces with a committed aesthetic direction. Goal: interfaces someone actually remembers. Different from `rihal-clone-website` (which replicates existing sites pixel-for-pixel). Pairs with `rihal-agent-zahra` for brand alignment. Detailed aesthetic guidelines, type pair recommendations, "what to avoid" list, and rcode-specific RTL guidance live in [`references.md`](references.md).
 
 ## Design Thinking — commit before coding
 

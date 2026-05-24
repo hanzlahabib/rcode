@@ -40,7 +40,7 @@ Understand what the user wants to edit in the PRD, detect PRD format/type, check
 - 🎯 Discover user's edit requirements
 - 🎯 Auto-detect validation reports in PRD folder (use as guide)
 - 🎯 Load validation report if provided (use as guide)
-- 🎯 Detect PRD format (Rihal/legacy)
+- 🎯 Detect PRD format (rcode/legacy)
 - 🎯 Route appropriately based on format
 - 💾 Document discoveries for next step
 - 🚫 FORBIDDEN to proceed without understanding requirements
@@ -61,7 +61,7 @@ Understand what the user wants to edit in the PRD, detect PRD format/type, check
 Load and read the complete file at:
 `{prdPurpose}` (data/prd-purpose.md)
 
-This file defines what makes a great Rihal PRD. Internalize this understanding - it will guide improvement recommendations.
+This file defines what makes a great rcode PRD. Internalize this understanding - it will guide improvement recommendations.
 
 ### 2. Discover PRD to Edit
 
@@ -145,7 +145,7 @@ Please describe the changes you want to make. For example:
 - Fix specific issues (information density, implementation leakage, etc.)
 - Add missing sections or content
 - Improve structure and flow
-- Convert to Rihal format (if legacy PRD)
+- Convert to rcode format (if legacy PRD)
 - General improvements
 - Other changes
 
@@ -159,7 +159,7 @@ Analyze the loaded PRD:
 
 **Extract all ## Level 2 headers** from PRD
 
-**Check for Rihal PRD core sections:**
+**Check for rcode PRD core sections:**
 1. Executive Summary
 2. Success Criteria
 3. Product Scope
@@ -168,13 +168,13 @@ Analyze the loaded PRD:
 6. Non-Functional Requirements
 
 **Classify format:**
-- **Rihal Standard:** 5-6 core sections present
-- **Rihal Variant:** 3-4 core sections present, generally follows Rihal patterns
-- **Legacy (Non-Standard):** Fewer than 3 core sections, does not follow Rihal structure
+- **rcode Standard:** 5-6 core sections present
+- **rcode Variant:** 3-4 core sections present, generally follows rcode patterns
+- **Legacy (Non-Standard):** Fewer than 3 core sections, does not follow rcode structure
 
 ### 8. Route Based on Format and Context
 
-**IF validation report provided OR PRD is Rihal Standard/Variant:**
+**IF validation report provided OR PRD is rcode Standard/Variant:**
 
 Display: "**Edit Requirements Understood**
 
@@ -190,7 +190,7 @@ Read fully and follow: `./step-e-02-review.md`
 
 Display: "**Format Detected:** Legacy PRD
 
-This PRD does not follow Rihal standard structure (only {count}/6 core sections present).
+This PRD does not follow rcode standard structure (only {count}/6 core sections present).
 
 **Your edit goals:** {user's requirements}
 
@@ -200,7 +200,7 @@ Present MENU OPTIONS below for user selection
 
 ### 9. Present MENU OPTIONS (Legacy PRDs Only)
 
-**[C] Convert to Rihal Format** - Convert PRD to Rihal standard structure, then apply your edits
+**[C] Convert to rcode Format** - Convert PRD to rcode standard structure, then apply your edits
 **[E] Edit As-Is** - Apply your edits without converting the format
 **[X] Exit** - Exit and review conversion options
 
@@ -226,7 +226,7 @@ Present MENU OPTIONS below for user selection
 - Auto-detected validation reports loaded and analyzed (when found)
 - Manual validation report loaded and analyzed (if provided)
 - PRD format detected correctly
-- Rihal PRDs proceed directly to review step
+- rcode PRDs proceed directly to review step
 - Legacy PRDs pause and present conversion options
 - User can choose conversion path or edit as-is
 

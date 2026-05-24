@@ -2,7 +2,7 @@
 name: rihal-scaffold-project
 internal: true
 description: >
-  Scaffold a new project for Rihalians using the official Rihal template repo.
+  Scaffold a new project for rcode users using the official rcode template repo.
   Activates when the user says "scaffold project", "create project", "new project",
   "initialize project", "setup new project", "scaffold from template", "create from template",
   "rihal new project", or "start a new rihal project". Do NOT use for generating
@@ -25,11 +25,11 @@ triggers:
 ## Workflow
 
 
-# Scaffold Project from Rihal Template
+# Scaffold Project from rcode Template
 
 ## Overview
 
-This skill bootstraps a new Rihalian project by cloning the official Rihal template
+This skill bootstraps a new rcode project by cloning the official rcode template
 repository (`https://github.com/rihal-om/template`) into a target directory.
 
 It always clones fresh from GitHub — nothing is stored locally — so if the template

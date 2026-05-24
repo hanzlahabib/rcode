@@ -2,7 +2,7 @@
 
 > **The only AI workflow system where agents never start from zero.**
 
-This document frames the five structural advantages that make rcode fundamentally different from every other AI coding tool, agent framework, and workflow system on the market. It's written for potential users evaluating rcode, Rihalians explaining it to clients, and contributors understanding the design philosophy.
+This document frames the five structural advantages that make rcode fundamentally different from every other AI coding tool, agent framework, and workflow system on the market. It's written for potential users evaluating rcode, rcode users explaining it to clients, and contributors understanding the design philosophy.
 
 ---
 
