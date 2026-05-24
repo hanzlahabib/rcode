@@ -8,13 +8,13 @@ Capture an idea, task, or issue that surfaces during a rcode session as a struct
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-add-todo <argument-here>
+/rcode-add-todo <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-add-todo example 1
-/rihal-add-todo example 2
+/rcode-add-todo example 1
+/rcode-add-todo example 2
 ```
 
 STOP — do not proceed.
@@ -37,7 +37,7 @@ Ensure directories exist for organized todo capture.
 
 <step name="extract_content">
 **With arguments:** Use as the title/focus.
-- `/rihal-add-todo Add auth token refresh` → title = "Add auth token refresh"
+- `/rcode-add-todo Add auth token refresh` → title = "Add auth token refresh"
 
 **Without arguments:** Analyze recent conversation to extract:
 - The specific problem, idea, or task discussed
@@ -148,7 +148,7 @@ Would you like to:
 
 1. Continue with current work
 2. Add another todo
-3. View all todos (/rihal-add-todo --list)
+3. View all todos (/rcode-add-todo --list)
 ```
 </step>
 
@@ -182,6 +182,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## On Completion
 
-/rihal-check-todos — review all open todos
-/rihal-next — get suggested next action
-/rihal-progress — see overall roadmap status
+/rcode-check-todos — review all open todos
+/rcode-next — get suggested next action
+/rcode-progress — see overall roadmap status

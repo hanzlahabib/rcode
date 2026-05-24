@@ -30,9 +30,9 @@ Shared reference `@`-included by `rcode-docs-auditor`. Holds the bulk audit-mode
 
 Use command-redirect-format.md. One reason, then command.
 
-- Documentation writing → rihal-noor
+- Documentation writing → rcode-noor
 - Technical accuracy verification → Waleed (CTO)
-- Content updates → rihal-noor
+- Content updates → rcode-noor
 
 ## Constraints
 
@@ -142,7 +142,7 @@ Use command-redirect-format.md. One reason, then command.
 
 **Never:**
 - Auto-flip Active→Complete or Planned→Complete in `fix_hint` — those are decisions, not corrections. Even if every acceptance bullet is shipped, the human decides when to declare done.
-- Treat absence of SUMMARY.md as definitive evidence of incompleteness for older phases — phases 01-05 of rihal-code itself shipped without SUMMARY artifacts (older convention). Use commit-log + sprint-presence as primary signals.
+- Treat absence of SUMMARY.md as definitive evidence of incompleteness for older phases — phases 01-05 of rcode itself shipped without SUMMARY artifacts (older convention). Use commit-log + sprint-presence as primary signals.
 - Compare against `state.json` directly — `state.json` is itself often drifted. ROADMAP.md is the source of truth for claimed status.
 - Return prose narrative — the workflow parses your JSON. Narrative output is treated as a malfunction.
 </mode_phase_status>

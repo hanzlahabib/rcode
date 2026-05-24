@@ -19,13 +19,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-secure-phase <phase>
+/rcode-secure-phase <phase>
 ```
 
 **Examples:**
 ```
-/rihal-secure-phase 01
-/rihal-secure-phase 02.1
+/rcode-secure-phase 01
+/rcode-secure-phase 02.1
 ```
 
 <process>
@@ -52,7 +52,7 @@ AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-security-a
 SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
-If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rihal-settings."
+If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rcode-settings."
 
 Display banner: `rcode > SECURE PHASE {N}: {name}`
 
@@ -66,7 +66,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`SECURITY_FILE` non-empty): Audit existing
 - **State B** (`SECURITY_FILE` empty, `PLAN_FILES` and `SUMMARY_FILES` non-empty): Run from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal-execute {N} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rcode-execute {N} first."
 
 ## 2. Discovery
 
@@ -102,11 +102,11 @@ Call AskUserQuestion with threat table and options:
 2. "Accept all open — document in accepted risks log" → add to SECURITY.md accepted risks, set all CLOSED, Step 6
 3. "Cancel" → exit
 
-## 5. Spawn rihal-security-auditor
+## 5. Spawn rcode-security-auditor
 
 ```
 Task(
-  prompt="Read .rcode/agents/rcode-security-auditor.md for instructions.\n\n" +
+  prompt="Read $HOME/.claude/agents/rcode-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -147,7 +147,7 @@ Handle return:
 ```
 rcode > PHASE {N} SECURITY BLOCKED
 {K} threats open — phase advancement blocked until threats_open: 0
-▶ Fix mitigations then re-run: /rihal-secure-phase {N}
+▶ Fix mitigations then re-run: /rcode-secure-phase {N}
 ▶ Or document accepted risks in SECURITY.md and re-run.
 ```
 
@@ -165,8 +165,8 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update secur
 ```
 rcode > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
-▶ /rihal-validate {N}    validate test coverage
-▶ /rihal-verify-work {N}       run UAT
+▶ /rcode-validate-phase {N}    validate test coverage
+▶ /rcode-verify-work {N}       run UAT
 ```
 
 Display `/clear` reminder.
@@ -204,6 +204,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## ▶ Next Up
 
-- **Issues found:** Address security findings, then re-run `/rihal-secure-phase {phase}`
-- **Clean report:** `/rihal-verify-phase {phase}` — run full verification
-- **Continue execution:** `/rihal-execute {next-phase}` — proceed to next phase
+- **Issues found:** Address security findings, then re-run `/rcode-secure-phase {phase}`
+- /rcode-verify-phase {phase}
+- /rcode-execute {next-phase}

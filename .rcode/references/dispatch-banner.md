@@ -1,8 +1,8 @@
 # Dispatch Banner — Persona-driven hand-off format
 
-**Purpose:** every time a Rihal workflow spawns a sub-agent (mapper, planner, executor, council member, etc.), the user must see WHO is taking over, in their voice, with what scope. Inspired by other persona-driven agent tools — the pattern of an agent introducing itself in first person before working. No silent dispatches.
+**Purpose:** every time a rcode workflow spawns a sub-agent (mapper, planner, executor, council member, etc.), the user must see WHO is taking over, in their voice, with what scope. Inspired by other persona-driven agent tools — the pattern of an agent introducing itself in first person before working. No silent dispatches.
 
-This banner format is mandatory for every `Task(subagent_type=...)` invocation in any Rihal workflow.
+This banner format is mandatory for every `Task(subagent_type=...)` invocation in any rcode workflow.
 
 ---
 
@@ -24,7 +24,7 @@ Each agent has a persona name and a one-line role tag used in the banner. Pull f
 | `rcode-zayd` | Zayd (زيد) | Senior ML Engineer | 🧠 |
 | `rcode-khalid` | Khalid (خالد) | DevOps & Infrastructure | 🚢 |
 | `rcode-nasser` | Nasser (ناصر) | Engineering Manager | 🤝 |
-| `rihal-ahmed-hassani-director` | Ahmed (أحمد) | Tech & Delivery Director | 🧩 |
+| `rcode-ahmed-hassani-director` | Ahmed (أحمد) | Tech & Delivery Director | 🧩 |
 | `rcode-noor` | Noor (نور) | Technical Writer | ✒️ |
 | `rcode-omar` | Omar (عمر) | Software Engineer | ⚙️ |
 | `rcode-hanzla` | Hanzla | Senior Full-Stack Engineer | ⚡ |

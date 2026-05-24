@@ -48,7 +48,7 @@ Existing {stack} code found in {path}. Mapping it first will save
 duplication during planning.
 ```
 
-Then AskUserQuestion to route to /rihal-map-codebase before proceeding.
+Then AskUserQuestion to route to /rcode-map-codebase before proceeding.
 
 **Exiting to map-codebase handoff:**
 ```
@@ -57,9 +57,9 @@ Then AskUserQuestion to route to /rihal-map-codebase before proceeding.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Per the workflow, mapping runs first. After it finishes I'll re-enter
-/rihal-new-project automatically with the map in hand.
+/rcode-new-project automatically with the map in hand.
 
-Handing off to /rihal-map-codebase now.
+Handing off to /rcode-map-codebase now.
 ```
 </output_format>
 
@@ -69,14 +69,14 @@ Handing off to /rihal-map-codebase now.
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-new-project <argument-here>
+/rcode-new-project <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-new-project employee leave request tracker for an Omani government ministry
-/rihal-new-project car rental marketplace SEO site for Dubai
-/rihal-new-project tasbeeh app with Arabic RTL support for Android
+/rcode-new-project employee leave request tracker for an Omani government ministry
+/rcode-new-project car rental marketplace SEO site for Dubai
+/rcode-new-project tasbeeh app with Arabic RTL support for Android
 ```
 
 STOP — do not proceed.
@@ -94,7 +94,7 @@ Before any processing, classify the project state into one of:
 
 - **none** — no `.rcode/state.json`, no `.planning/` → proceed
 - **stub** — install-seeded scaffolding only (issue #670) → proceed (overwrite stub)
-- **real** — a previous `/rihal-new-project` ran here → guard, unless `--force`
+- **real** — a previous `/rcode-new-project` ran here → guard, unless `--force`
 
 ```bash
 # --force / --reinit bypasses the guard entirely (issue #672).
@@ -117,15 +117,15 @@ PROJECT_STATE=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null \
 **If `PROJECT_STATE=real` and `FORCE=false`:** show the guard:
 
 ```
-⚠ A rihal project already exists here.
+⚠ A rcode project already exists here.
 
 Quick actions:
-  /rihal-status            check current state
-  /rihal-next              find next action
-  /rihal-add-phase         add a phase to the current milestone
+  /rcode-status            check current state
+  /rcode-next              find next action
+  /rcode-add-phase         add a phase to the current milestone
 
 To start over (overwrites .planning/* and .rcode/state.json):
-  /rihal-new-project --force <description>
+  /rcode-new-project --force <description>
   rcode install --reset                        nuclear option — wipes config + state
 ```
 
@@ -143,7 +143,7 @@ STOP — do not proceed.
 
 ```bash
 if git rev-parse --git-dir >/dev/null 2>&1; then
-  TAG="pre-rihal-rewrite-$(date +%Y%m%d-%H%M%S)"
+  TAG="pre-rcode-rewrite-$(date +%Y%m%d-%H%M%S)"
   git tag "$TAG" 2>/dev/null && echo "ℹ Rollback tag created: $TAG"
 fi
 ```
@@ -170,7 +170,7 @@ Check if `--auto` flag is present in $ARGUMENTS.
 **Document requirement:**
 Auto mode requires an idea document — either:
 
-- File reference: `/rihal-new-project --auto @prd.md`
+- File reference: `/rcode-new-project --auto @prd.md`
 - Pasted/written text in the prompt
 
 If no document content provided, error:
@@ -179,8 +179,8 @@ If no document content provided, error:
 Error: --auto requires an idea document.
 
 Usage:
-  /rihal-new-project --auto @your-idea.md
-  /rihal-new-project --auto [paste or write your idea here]
+  /rcode-new-project --auto @your-idea.md
+  /rcode-new-project --auto [paste or write your idea here]
 
 The document should describe what you want to build.
 ```
@@ -229,7 +229,7 @@ if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION
 
 All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
 
-**If `project_exists` is true:** Error — project already initialized. Use `/rihal-progress`.
+**If `project_exists` is true:** Error — project already initialized. Use `/rcode-progress`.
 
 **If `has_git` is false:** Initialize git:
 
@@ -259,13 +259,13 @@ Use AskUserQuestion:
 - header: "Codebase"
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
-  - "Map codebase first" — Run /rihal-map-codebase to understand existing architecture (Recommended)
+  - "Map codebase first" — Run /rcode-map-codebase to understand existing architecture (Recommended)
   - "Skip mapping" — Proceed with targeted discovery
 
 **If "Map codebase first":**
 
 ```
-Run `/rihal-map-codebase` first, then return to `/rihal-new-project`
+Run `/rcode-map-codebase` first, then return to `/rcode-new-project`
 ```
 
 Exit command.
@@ -288,9 +288,8 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       "New feature on existing architecture",
-      "Refactoring existing feature",
       "Migration to new tech stack",
-      "Bug fixes and tech debt",
+      "Bug fixes, refactoring and tech debt",
       "Performance optimization"
     ]
   },
@@ -442,37 +441,34 @@ AskUserQuestion([
 ])
 ```
 
-Create `.planning/config.json`:
+Update `.rcode/config.yaml` (created by `/rcode-install`) with auto-mode settings:
 
 ```bash
-mkdir -p .planning
-cat > .planning/config.json <<EOF
-{
-  "mode": "yolo",
-  "granularity": "[selected]",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "balanced",
-  "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true,
-    "auto_advance": true,
-    "_auto_chain_active": true
-  }
-}
-EOF
+node .rcode/bin/rcode-tools.cjs config-set mode yolo
+node .rcode/bin/rcode-tools.cjs config-set granularity "[selected]"
+node .rcode/bin/rcode-tools.cjs config-set parallelization true
+node .rcode/bin/rcode-tools.cjs config-set commit_docs true
+node .rcode/bin/rcode-tools.cjs config-set model_profile balanced
+node .rcode/bin/rcode-tools.cjs config-set workflow.research true
+node .rcode/bin/rcode-tools.cjs config-set workflow.plan_check true
+node .rcode/bin/rcode-tools.cjs config-set workflow.verifier true
+node .rcode/bin/rcode-tools.cjs config-set workflow.nyquist_validation true
+node .rcode/bin/rcode-tools.cjs config-set workflow.auto_advance true
+node .rcode/bin/rcode-tools.cjs config-set workflow._auto_chain_active true
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
 
-**Commit config.json (guarded):**
+**Commit config update (guarded):**
 
 ```bash
-git add .planning/config.json 2>/dev/null \
-  && git commit -m "chore: add project config" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .rcode/config.yaml 2>/dev/null; then
+  echo "ℹ .rcode/ gitignored — config updated, not committed"
+else
+  git add .rcode/config.yaml \
+    && git commit -m "chore: configure project for rcode" 2>/dev/null \
+    || echo "ℹ config updated; commit skipped (not a git repo or no change)"
+fi
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -497,7 +493,7 @@ Ask inline (freeform, NOT AskUserQuestion):
 
 Wait for their response. This gives you the context needed to ask intelligent follow-up questions.
 
-**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.planning/config.json`. When enabled, before asking follow-up questions about a topic:
+**Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.rcode/config.yaml` (via `node .rcode/bin/rcode-tools.cjs config-get workflow.research_before_questions`). When enabled, before asking follow-up questions about a topic:
 
 1. Do a brief web search for best practices related to what the user described
 2. Mention key findings naturally as you ask questions
@@ -628,14 +624,14 @@ Synthesize all context into `.planning/PROJECT.md`. If `.rcode/templates/project
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/rihal-discuss-phase` + `/rihal-plan`):
+**After each phase transition** (via `/rcode-discuss-phase` + `/rcode-plan`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/rihal-complete-milestone`):
+**After each milestone** (via `/rcode-complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -657,9 +653,13 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-git add .planning/PROJECT.md 2>/dev/null \
-  && git commit -m "docs: initialize project" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — PROJECT.md written, not committed"
+if git check-ignore -q .planning/PROJECT.md 2>/dev/null; then
+  echo "ℹ .planning/ gitignored — PROJECT.md written, not committed"
+else
+  git add .planning/PROJECT.md \
+    && git commit -m "docs: initialize project" 2>/dev/null \
+    || echo "ℹ PROJECT.md written; commit skipped (not a git repo or no change)"
+fi
 ```
 
 ## 5. Workflow Preferences
@@ -783,40 +783,37 @@ questions: [
 ]
 ```
 
-Create `.planning/config.json` with all settings:
+Update `.rcode/config.yaml` (created by `/rcode-install`) with collected settings:
 
 ```bash
-mkdir -p .planning
-cat > .planning/config.json <<EOF
-{
-  "mode": "[yolo|interactive]",
-  "granularity": "[selected]",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "[quality|balanced|budget|inherit]",
-  "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true
-  }
-}
-EOF
+node .rcode/bin/rcode-tools.cjs config-set mode "[yolo|interactive]"
+node .rcode/bin/rcode-tools.cjs config-set granularity "[selected]"
+node .rcode/bin/rcode-tools.cjs config-set parallelization true
+node .rcode/bin/rcode-tools.cjs config-set commit_docs true
+node .rcode/bin/rcode-tools.cjs config-set model_profile "[quality|balanced|budget|inherit]"
+node .rcode/bin/rcode-tools.cjs config-set workflow.research true
+node .rcode/bin/rcode-tools.cjs config-set workflow.plan_check true
+node .rcode/bin/rcode-tools.cjs config-set workflow.verifier true
+node .rcode/bin/rcode-tools.cjs config-set workflow.nyquist_validation true
 ```
 
-**Note:** Run `/rihal-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
+**Note:** Run `/rcode-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
-- Set `commit_docs: false` in config.json
+- Set `commit_docs: false` via `node .rcode/bin/rcode-tools.cjs config-set commit_docs false`
 - Add `.planning/` to `.gitignore` (create if needed)
 
-**Commit config.json (guarded):**
+**Commit config update (guarded):**
 
 ```bash
-git add .planning/config.json 2>/dev/null \
-  && git commit -m "chore: add project config" 2>/dev/null \
-  || echo "ℹ .planning/ gitignored — config written, not committed"
+if git check-ignore -q .rcode/config.yaml 2>/dev/null; then
+  echo "ℹ .rcode/ gitignored — config updated, not committed"
+else
+  git add .rcode/config.yaml \
+    && git commit -m "chore: configure project for rcode" 2>/dev/null \
+    || echo "ℹ config updated; commit skipped (not a git repo or no change)"
+fi
 ```
 
 ## 5.1. Sub-Repo Detection
@@ -875,7 +872,7 @@ Present completion summary:
 | Artifact       | Location                    |
 |----------------|-----------------------------|
 | Project        | `.planning/PROJECT.md`      |
-| Config         | `.planning/config.json`     |
+| Config         | `.rcode/config.yaml`        |
 | Research       | `.planning/research/`       |
 | Requirements   | `.planning/REQUIREMENTS.md` |
 | Roadmap        | `.planning/ROADMAP.md`      |
@@ -892,7 +889,7 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke `/rihal-discuss-phase 1 --auto`.
+Exit skill and invoke `/rcode-discuss-phase 1 --auto`.
 
 **If interactive mode:**
 
@@ -914,13 +911,13 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 
 /clear then:
 
-/rihal-discuss-phase 1 — gather context and clarify approach
+/rcode-discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /rihal-ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /rihal-plan 1 — skip discussion, plan directly
+- /rcode-ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /rcode-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -936,12 +933,12 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 
 /clear then:
 
-/rihal-discuss-phase 1 — gather context and clarify approach
+/rcode-discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /rihal-plan 1 — skip discussion, plan directly
+- /rcode-plan 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -951,7 +948,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 <output>
 
 - `.planning/PROJECT.md`
-- `.planning/config.json`
+- `.rcode/config.yaml` (updated in place)
 - `.planning/research/` (if research selected)
   - `STACK.md`
   - `FEATURES.md`
@@ -983,8 +980,8 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
-- [ ] `$INSTRUCTION_FILE` generated (if missing) with rihal workflow guidance
-- [ ] User knows next step is `/rihal-discuss-phase 1`
+- [ ] `$INSTRUCTION_FILE` generated (if missing) with rcode workflow guidance
+- [ ] User knows next step is `/rcode-discuss-phase 1`
 - [ ] No `git push` issued by the workflow (per AGENTS.md)
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist. When `.planning/` is gitignored, files are written but commit is skipped gracefully.

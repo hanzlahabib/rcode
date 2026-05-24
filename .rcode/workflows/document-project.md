@@ -10,13 +10,13 @@ Load documentation-requirements.csv, audit current documentation for coverage an
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-document-project <argument-here>
+/rcode-document-project <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-document-project example 1
-/rihal-document-project example 2
+/rcode-document-project example 1
+/rcode-document-project example 2
 ```
 
 STOP — do not proceed.
@@ -152,7 +152,7 @@ Summary:
 
 Missing docs filed as tasks. Run:
 
-/rihal-plan .planning/plans/documentation-updates/SPRINT.md
+/rcode-plan .planning/plans/documentation-updates/SPRINT.md
 ```
 
 ## Step 5 — Auto-inject into Resume-Work
@@ -181,6 +181,6 @@ If .rcode/DOCS-AUDIT.md exists, check for missing/stale docs:
 
 ## ▶ Next Up
 
-- **Documentation updated:** `/rihal-progress` — see current project state
-- **Proceed to planning:** `/rihal-plan {phase}` — create executable plans
-- **Review with council:** `/rihal-council {question}` — debate approach
+- /rcode-progress
+- /rcode-plan {phase}
+- /rcode-council {question}

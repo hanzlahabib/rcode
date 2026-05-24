@@ -12,7 +12,7 @@ and GH issue body generation. Never fixes anything; audit-first, fix-second.
 | Lens | Name | Primary Skill | Secondary |
 |------|------|--------------|-----------|
 | 1 | Security | `rcode-security-auditor` | `rcode-security-adversary` |
-| 2 | Performance | `rihal-perf` | — |
+| 2 | Performance | `rcode-perf` | — |
 | 3 | Testability | `rcode-fatima` | `rcode-edge-case-hunter` |
 | 4 | Extensibility | `rcode-waleed` | — |
 | 5 | Dep Health | `rcode-dep-auditor` | — |
@@ -21,10 +21,10 @@ and GH issue body generation. Never fixes anything; audit-first, fix-second.
 | 8 | i18n | `rcode-i18n-auditor` | — |
 | 9 | Documentation | `rcode-docs-auditor` | — |
 | 10 | Cross-platform | `rcode-cross-platform-auditor` | — |
-| 11 | Karpathy | `rcode-code-reviewer` | `rcode-hanzla` |
+| 11 | Karpathy | `rcode-reviewer` | `rcode-hanzla` |
 | 12 | SXO/UX | `rcode-layla` | — |
 | 13 | Observability | `rcode-observability-auditor` | — |
-| 14 | Naming | `rcode-codebase-mapper` | `rcode-code-reviewer` |
+| 14 | Naming | `rcode-codebase-mapper` | `rcode-reviewer` |
 | 15 | Coverage | `rcode-nyquist-auditor` | `rcode-fatima` |
 
 ## Step 0 — Usage check
@@ -32,27 +32,27 @@ and GH issue body generation. Never fixes anything; audit-first, fix-second.
 If `$ARGUMENTS` is `--help` or `-h`:
 
 ```
-/rihal-lens-audit                # interactive — asks which lens
-/rihal-lens-audit all            # run all 15 lenses sequentially
-/rihal-lens-audit <N>            # run lens N (1-15) only
-/rihal-lens-audit <name>         # run by name, e.g. "security", "performance"
+/rcode-lens-audit                # interactive — asks which lens
+/rcode-lens-audit all            # run all 15 lenses sequentially
+/rcode-lens-audit <N>            # run lens N (1-15) only
+/rcode-lens-audit <name>         # run by name, e.g. "security", "performance"
 
 Lenses and their primary skills:
-  1.  security         — rcode-security-auditor + rihal-security-adversary
-  2.  performance      — rihal-perf
-  3.  testability      — rcode-fatima + rihal-edge-case-hunter
-  4.  extensibility    — rihal-waleed
-  5.  dep-health       — rihal-dep-auditor
-  6.  error-recovery   — rihal-debugger
-  7.  state-machine    — rihal-deviation-analyzer
-  8.  i18n             — rihal-i18n-auditor
-  9.  documentation    — rihal-docs-auditor
-  10. cross-platform   — rihal-cross-platform-auditor
-  11. karpathy         — rcode-code-reviewer + rihal-hanzla
-  12. sxo              — rihal-layla
-  13. observability    — rihal-observability-auditor
-  14. naming           — rcode-codebase-mapper + rihal-code-reviewer
-  15. coverage         — rcode-nyquist-auditor + rihal-fatima
+  1.  security         — rcode-security-auditor + rcode-security-adversary
+  2.  performance      — rcode-perf
+  3.  testability      — rcode-fatima + rcode-edge-case-hunter
+  4.  extensibility    — rcode-waleed
+  5.  dep-health       — rcode-dep-auditor
+  6.  error-recovery   — rcode-debugger
+  7.  state-machine    — rcode-deviation-analyzer
+  8.  i18n             — rcode-i18n-auditor
+  9.  documentation    — rcode-docs-auditor
+  10. cross-platform   — rcode-cross-platform-auditor
+  11. karpathy         — rcode-reviewer + rcode-hanzla (incl. design-token bypass)
+  12. sxo              — rcode-layla
+  13. observability    — rcode-observability-auditor
+  14. naming           — rcode-codebase-mapper + rcode-reviewer
+  15. coverage         — rcode-nyquist-auditor + rcode-fatima
 ```
 
 STOP after printing help.
@@ -63,7 +63,18 @@ STOP after printing help.
 TOOL="node .rcode/bin/rcode-tools.cjs"
 INIT=$($TOOL init 2>/dev/null || echo '{"ok":false}')
 MODE=$($TOOL config-get mode 2>/dev/null || echo "guided")
-RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "english")
+RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "")
+# Resolve audit model from profile (#723). Order: audit_model → default_model → sonnet.
+LENS_MODEL=$($TOOL config-get audit_model 2>/dev/null \
+  || $TOOL config-get default_model 2>/dev/null \
+  || echo "sonnet")
+# Build an imperative directive only when language is explicitly set (#721).
+# Empty RESPONSE_LANGUAGE = English default, no directive injected.
+if [ -n "$RESPONSE_LANGUAGE" ] && [ "$RESPONSE_LANGUAGE" != "english" ]; then
+  LANG_DIRECTIVE="Respond in $RESPONSE_LANGUAGE. Keep finding IDs, file paths, and CLI commands in English; localise only the human-facing prose."
+else
+  LANG_DIRECTIVE=""
+fi
 ```
 
 If INIT is empty or INIT.ok is false, print error and exit:
@@ -92,7 +103,7 @@ Kaun sa lens run karna hai? (Which lens to run?)
 
 Options:
   1.  security         — rcode-security-auditor (injection, secrets, auth)
-  2.  performance      — rihal-perf (unbounded reads, wasted passes)
+  2.  performance      — rcode-perf (unbounded reads, wasted passes)
   3.  testability      — rcode-fatima (coverage gaps, untested paths)
   4.  extensibility    — rcode-waleed (hardcoded values, scalability)
   5.  dep-health       — rcode-dep-auditor (CVEs, unused, loose pins)
@@ -101,7 +112,7 @@ Options:
   8.  i18n             — rcode-i18n-auditor (hardcoded strings, RTL, response_language)
   9.  documentation    — rcode-docs-auditor (Next Up, dead links, 5-component)
   10. cross-platform   — rcode-cross-platform-auditor (bash-isms, macOS flags)
-  11. karpathy         — rcode-code-reviewer + rcode-hanzla (overengineering, stubs)
+  11. karpathy         — rcode-reviewer + rcode-hanzla (overengineering, stubs)
   12. sxo              — rcode-layla (dead-end flows, missing guidance)
   13. observability    — rcode-observability-auditor (unguarded calls, silent fails)
   14. naming           — rcode-codebase-mapper (naming drift, PLAN.md vs SPRINT.md)
@@ -119,7 +130,7 @@ Set `LENSES` from the choice.
 SCOPE_DIRS="rcode/ .rcode/"
 [ -d src ] && SCOPE_DIRS="$SCOPE_DIRS src/"
 [ -d lib ] && SCOPE_DIRS="$SCOPE_DIRS lib/"
-SCOPE_SUMMARY="Scope: $SCOPE_DIRS. Response language: $RESPONSE_LANGUAGE."
+SCOPE_SUMMARY="Scope: $SCOPE_DIRS.${LANG_DIRECTIVE:+ $LANG_DIRECTIVE}"
 
 # Collect project context for richer prompts
 PROJECT_NAME=$($TOOL config-get project.name 2>/dev/null || basename "$PWD")
@@ -143,7 +154,7 @@ Never halt the whole audit because one lens's skill fails.
 ```
 PRIMARY = Task(
   subagent_type="rcode-security-auditor",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Audit-only — do NOT fix anything. {CONTEXT}
   
   Run Lens 1 (Security) audit. Check:
@@ -161,7 +172,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rcode-security-adversary",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Adversarial security review. {CONTEXT}
   
   Think like an attacker. Find exploitation paths in:
@@ -183,7 +194,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
   Run Lens 2 (Performance) audit. Check:
@@ -209,7 +220,7 @@ FINDINGS[performance] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rcode-fatima",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Audit-only — do NOT write tests. {CONTEXT}
   
   Run Lens 3 (Testability) audit. Check:
@@ -227,7 +238,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rcode-edge-case-hunter",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Enumerate edge cases and boundary conditions. {CONTEXT}
   
   Find:
@@ -249,7 +260,7 @@ FINDINGS[testability] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rcode-waleed",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Architecture audit — do NOT redesign anything. {CONTEXT}
   
   Run Lens 4 (Extensibility) audit. Check:
@@ -275,7 +286,7 @@ FINDINGS[extensibility] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
   Run Lens 5 (Dep Health) audit:
@@ -301,7 +312,7 @@ FINDINGS[dep-health] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-debugger",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Error recovery audit — do NOT fix anything. {CONTEXT}
   
   Run Lens 6 (Error Recovery) audit. Find missing error handling:
@@ -328,7 +339,7 @@ FINDINGS[error-recovery] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-deviation-analyzer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="State machine audit — do NOT modify state. {CONTEXT}
   
   Run Lens 7 (State Machine) audit. Check:
@@ -354,7 +365,7 @@ FINDINGS[state-machine] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-i18n-auditor",
-  model="sonnet",
+  model="{lens_model}",
   prompt="i18n audit — do NOT add translations. {CONTEXT}
   
   Run Lens 8 (i18n) audit. Check:
@@ -380,13 +391,13 @@ FINDINGS[i18n] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-docs-auditor",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Documentation audit — do NOT write docs. {CONTEXT}
   
   Run Lens 9 (Documentation) audit. Check:
   - Workflows missing a '## Next Up' or 'Next Up' footer
   - Dead @.rcode/ references (file path does not exist in rcode/)
-  - README.md referencing /rihal-<command> that has no command file
+  - README.md referencing /rcode-<command> that has no command file
   - Skills (SKILL.md) missing required sections: Overview, Workflow, Output Format, Examples
   - CHANGELOG.md more than 5 commits behind HEAD
   
@@ -406,7 +417,7 @@ FINDINGS[documentation] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
   Run Lens 10 (Cross-platform) audit. Check:
@@ -433,7 +444,7 @@ FINDINGS[cross-platform] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
   
   Run Lens 11 (Karpathy) audit against recent changes (HEAD~20..HEAD):
@@ -442,6 +453,9 @@ PRIMARY = Task(
   Principle 2 (Simplicity First): dead code, unused imports, speculative abstractions
   Principle 3 (Surgical Changes): whitespace-only diffs, reformatting unrelated code
   Principle 4 (Goal-Driven Execution): TODOs, stubs, not-implemented errors, mock data
+  Design-token bypass (#660): raw hex/rgb/hsl/named colors in CSS outside :root
+    or @theme blocks. Two-stage check per @.rcode/references/design-tokens.md.
+    Honor .rcode/design-tokens-allowlist.txt waivers.
   
   Return: file:line — principle N violation — description [critical|warn|info]
   If clean: PASS"
@@ -449,7 +463,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rcode-hanzla",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Implementation quality audit — do NOT refactor. {CONTEXT}
   
   Review recent code (HEAD~10..HEAD) for:
@@ -457,6 +471,8 @@ SECONDARY = Task(
   - Code that could be 3 lines but is 30
   - Unclear variable/function names
   - Missing error messages that would help debug production failures
+  - Design-token bypass: raw hex in CSS classes when a semantic role exists
+    (per @.rcode/references/design-tokens.md)
   
   Return: file:line — description [warn|info]
   If clean: PASS"
@@ -472,10 +488,10 @@ FINDINGS[karpathy] = merge(PRIMARY, SECONDARY)
 ```
 RESULT = Task(
   subagent_type="rcode-layla",
-  model="sonnet",
+  model="{lens_model}",
   prompt="UX flow audit — do NOT redesign flows. {CONTEXT}
   
-  Run Lens 12 (SXO/UX) audit on rihal workflows. Check:
+  Run Lens 12 (SXO/UX) audit on rcode workflows. Check:
   - Dead-end workflows (no Next Up footer, no forward dispatch)
   - AskUserQuestion prompts with no cancel/exit option (option 0)
   - Error-exit paths that print an error but suggest no recovery command
@@ -498,7 +514,7 @@ FINDINGS[sxo] = RESULT
 ```
 RESULT = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
   Run Lens 13 (Observability) audit. Check:
@@ -525,14 +541,14 @@ FINDINGS[observability] = RESULT
 ```
 PRIMARY = Task(
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Naming consistency audit — do NOT rename anything. {CONTEXT}
   
   Run Lens 14 (Naming) audit. Produce a CONVENTIONS scan:
   - PLAN.md references that should be SPRINT.md (stale naming)
-  - rihal: namespace (colon) that should be rihal- (hyphen)
+  - rcode: namespace (colon) that should be rcode- (hyphen)
   - Agent directory names that do not match their SKILL.md name: field
-  - PHASE_NUM variable used where PHASE_NUMBER is the standard
+  - PHASE_NUMBER variable used where PHASE_NUMBER is the standard
   - CamelCase vs snake_case drift in config keys
   
   Return: file:line — drift description [warn|info]
@@ -541,7 +557,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rcode-code-reviewer",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Variable naming audit in recent code changes. {CONTEXT}
   
   Review HEAD~10..HEAD for:
@@ -563,7 +579,7 @@ FINDINGS[naming] = merge(PRIMARY, SECONDARY)
 ```
 PRIMARY = Task(
   subagent_type="rcode-nyquist-auditor",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Coverage audit — do NOT generate tests. {CONTEXT}
   
   Run Lens 15 (Coverage) audit. Fill Nyquist gaps:
@@ -579,7 +595,7 @@ PRIMARY = Task(
 
 SECONDARY = Task(
   subagent_type="rcode-fatima",
-  model="sonnet",
+  model="{lens_model}",
   prompt="Release gate — coverage quality check. {CONTEXT}
   
   Review test strategy gaps:
@@ -633,7 +649,7 @@ For each lens with findings ≥ 1, print a ready-to-file issue template:
 {rows}
 
 ## Reproduce
-Run: `/rihal-audit lens {N}` on commit `{git rev-parse --short HEAD}`
+Run: `/rcode-audit lens {N}` on commit `{git rev-parse --short HEAD}`
 
 ## Suggested fix
 {one-line fix suggestion per critical finding}
@@ -656,7 +672,7 @@ Print to stdout only — do NOT create issues automatically.
 {N}. {lens-name} — {count} findings (primary: {skill})
 ...
 
-Next: file the GH issues above, then run /rihal-audit fix to address them.
+Next: file the GH issues above, then run /rcode-audit fix to address them.
 ```
 
 ## Success Criteria
@@ -682,8 +698,8 @@ Next: file the GH issues above, then run /rihal-audit fix to address them.
 
 ```
 File findings as GH issues:   gh issue create --title "[lens-audit] Lens N..." --body "..."
-Auto-fix what's fixable:       /rihal-audit fix
-Re-run a single lens:          /rihal-audit lens <N>
-Full re-audit after fixes:     /rihal-audit lens all
-View audit settings:           /rihal-settings show
+Auto-fix what's fixable:       /rcode-audit fix
+Re-run a single lens:          /rcode-audit lens <N>
+Full re-audit after fixes:     /rcode-audit lens all
+View audit settings:           /rcode-settings show
 ```

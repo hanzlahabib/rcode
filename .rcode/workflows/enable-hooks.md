@@ -1,7 +1,7 @@
 # Workflow: rcode-enable-hooks
 
 <purpose>
-Merge rcode opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables pre-edit (read-before-edit check), pre-workflow (command hint), and post-commit (format validation) guardrails.
+Merge rcode opt-in hooks from settings-hooks.json into .claude/settings.json. Creates settings.json if missing. Enables all 8 guardrails: pre-edit (read-before-edit check), pre-workflow (command hint), post-commit (format validation), bash-guard (blocks dangerous commands), pre-compact (refreshes HANDOFF.json before context compaction), stop-verify (syntax-checks files changed during the response), cost-track (logs measured token usage to .rcode/telemetry/cost.jsonl), and compact-nudge (advises /rcode-trim or /clear after many edits).
 </purpose>
 
 
@@ -10,13 +10,13 @@ Merge rcode opt-in hooks from settings-hooks.json into .claude/settings.json. Cr
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-enable-hooks <argument-here>
+/rcode-enable-hooks <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-enable-hooks example 1
-/rihal-enable-hooks example 2
+/rcode-enable-hooks example 1
+/rcode-enable-hooks example 2
 ```
 
 STOP — do not proceed.
@@ -79,8 +79,13 @@ Print success message:
 
 Enabled guardrails:
   • pre-edit: Verifies files are Read() before Edit/Write
-  • pre-workflow: Warns if rihal-* commands look suspicious
+  • pre-workflow: Warns if rcode-* commands look suspicious
   • post-commit: Validates commit format and bans "Generated with Claude" patterns
+  • bash-guard: Blocks unapproved git push, --force, --no-verify, and unscoped rm -rf
+  • pre-compact: Refreshes HANDOFF.json before context compaction
+  • stop-verify: Syntax-checks files changed during the response
+  • cost-track: Logs measured token usage to .rcode/telemetry/cost.jsonl
+  • compact-nudge: Advises /rcode-trim or /clear after many edits
 
 To disable, remove the hooks section from .claude/settings.json or edit .rcode/templates/settings-hooks.json and re-run.
 ```

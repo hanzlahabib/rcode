@@ -4,7 +4,7 @@ Shared reference document `@`-included by every council-related workflow.
 
 ## The 5-step majlis
 
-Every Rihal council session follows the same five steps. This is the protocol the orchestrator implements:
+Every rcode council session follows the same five steps. This is the protocol the orchestrator implements:
 
 1. **Initialize** — load config, state, installed agent list, parse arguments.
 2. **Observe** — run a cheap, bounded codebase scan (config, state, git log, top-level files). Produces a 5-8 line factual summary every subagent will be briefed on.
@@ -32,7 +32,7 @@ Agreements without new information are silence. If an agent genuinely has nothin
 
 ## Panel selection (deterministic scoring)
 
-Rihal's council uses a pure-function keyword scorer (`cli/lib/council-panel.cjs`) instead of LLM judgment. This is intentional:
+rcode's council uses a pure-function keyword scorer (`cli/lib/council-panel.cjs`) instead of LLM judgment. This is intentional:
 
 - **Deterministic:** same question produces same panel every time
 - **Testable:** the scoring function has unit tests

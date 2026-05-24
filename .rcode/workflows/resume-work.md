@@ -33,7 +33,7 @@ Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_ex
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
-**If `planning_exists` is false:** This is a new project - route to /rihal-new-project
+**If `planning_exists` is false:** This is a new project - route to /rcode-new-project
 </step>
 
 <step name="load_state">
@@ -89,7 +89,7 @@ fi
 
 **If HANDOFF.json exists:**
 
-- This is the primary resumption source — structured data from `/rihal-pause-work`
+- This is the primary resumption source — structured data from `/rcode-pause-work`
 - Parse `status`, `phase`, `plan`, `task`, `total_tasks`, `next_action`
 - Check `blockers` and `human_actions_pending` — surface these immediately
 - Check `completed_tasks` for `in_progress` items — these need attention first
@@ -145,7 +145,7 @@ Present complete project status to user:
     Resume with: Task tool (resume parameter with agent ID)
 
 [If pending todos exist:]
-📋 [N] pending todos — /rihal-check-todos to review
+📋 [N] pending todos — /rcode-check-todos to review
 
 [If blockers exist:]
 ⚠️  Carried concerns:
@@ -205,11 +205,11 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/rihal-execute {phase} ${Rihal_WS})
+1. Execute phase (/rcode-execute {phase} ${RCODE_WS})
    OR
-1. Discuss Phase 3 context (/rihal-discuss-phase 3 ${Rihal_WS}) [if CONTEXT.md missing]
+1. Discuss Phase 3 context (/rcode-discuss-phase 3 ${RCODE_WS}) [if CONTEXT.md missing]
    OR
-1. Plan Phase 3 (/rihal-plan 3 ${Rihal_WS}) [if CONTEXT.md exists or discuss option declined]
+1. Plan Phase 3 (/rcode-plan 3 ${RCODE_WS}) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
 2. Review current phase status
@@ -242,7 +242,7 @@ Based on user selection, route to appropriate workflow:
 
   `/clear` then:
 
-  `/rihal-execute {phase} ${Rihal_WS}`
+  `/rcode-execute {phase} ${RCODE_WS}`
 
   ---
   ```
@@ -256,13 +256,13 @@ Based on user selection, route to appropriate workflow:
 
   `/clear` then:
 
-  `/rihal-plan [phase-number] ${Rihal_WS}`
+  `/rcode-plan [phase-number] ${RCODE_WS}`
 
   ---
 
   **Also available:**
-  - `/rihal-discuss-phase [N] ${Rihal_WS}` — gather context first
-  - `/rihal-research-phase [N] ${Rihal_WS}` — investigate unknowns
+  - `/rcode-discuss-phase [N] ${RCODE_WS}` — gather context first
+  - `/rcode-research-phase [N] ${RCODE_WS}` — investigate unknowns
 
   ---
   ```

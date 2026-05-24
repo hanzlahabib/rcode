@@ -26,7 +26,7 @@ Newest decisions first. One row per decision with project, date, phase, and summ
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-decisions [--limit N] [--project <name>] [--since <ISO-date>] [--this-project]
+/rcode-decisions [--limit N] [--project <name>] [--since <ISO-date>] [--this-project]
 
   --limit N         Max rows to show (default 20, max 500)
   --project <name>  Filter to one project name (as recorded in state.project)
@@ -61,7 +61,7 @@ The result is JSON: `{decisions: [...], total: N}`. If `decisions` is empty:
 ```
 No decisions logged yet.
 
-Decisions are mirrored to ~/.rcode/decisions.jsonl whenever /rihal-execute or /rihal-council records one. Run a council or complete a sprint to populate this log.
+Decisions are mirrored to ~/.rcode/decisions.jsonl whenever /rcode-execute or /rcode-council records one. Run a council or complete a sprint to populate this log.
 ```
 
 STOP.
@@ -73,7 +73,7 @@ For each decision, show:
 ```
 | Date        | Project          | Phase | Decision                                                                     |
 |-------------|------------------|-------|------------------------------------------------------------------------------|
-| 2026-04-18  | rihal-code       | 04    | Ship list-plans as a table rather than a tree view                           |
+| 2026-04-18  | rcode       | 04    | Ship list-plans as a table rather than a tree view                           |
 | 2026-04-17  | siraaj-platform  | 07    | Migrate queue workers to Fluid Compute for cold-start savings                |
 ```
 
@@ -86,12 +86,12 @@ Showing {rendered}/{total} decisions{ filter suffix }.
   ~/.rcode/decisions.jsonl  ({size} records)
 ```
 
-Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01`.
+Where filter suffix is, for example: ` · project=rcode · since=2026-01-01`.
 
 ## Step 5 — Next Up routing
 
-- If `--this-project` was used and results look thin (fewer than 3) → `Next: /rihal-council "<open question>"  (then decisions flow back here)`
-- Otherwise → `Next: /rihal-decisions --project <name>  for deeper history on one project`
+- If `--this-project` was used and results look thin (fewer than 3) → `Next: /rcode-council "<open question>"  (then decisions flow back here)`
+- Otherwise → `Next: /rcode-decisions --project <name>  for deeper history on one project`
 </process>
 
 ## Success Criteria

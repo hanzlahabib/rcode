@@ -83,7 +83,7 @@ Planner prompt:
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /rihal-discuss-phase — read `<decisions>` for locked choices AND `<code_context>` for existing code patterns, reusable assets, and architectural notes gathered during discuss-phase)
+- {context_path} (USER DECISIONS from /rcode-discuss-phase — read `<decisions>` for locked choices AND `<code_context>` for existing code patterns, reusable assets, and architectural notes gathered during discuss-phase)
 - {research_path} (Technical Research)
 - {verification_path} (Verification Gaps - if --gaps)
 - {uat_path} (UAT Gaps - if --gaps)
@@ -106,7 +106,7 @@ ${AGENT_SKILLS_PLANNER}
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /rihal-execute. Plans need:
+Output consumed by /rcode-execute. Plans need:
 - Frontmatter (wave, depends_on, autonomous, **files_modified** — aggregated list of all file paths from `<files>` blocks across every task; used by executor for intra-wave parallel-safety overlap detection)
 - Tasks in XML format with read_first, files, acceptance_criteria, verify (with `<automated>` child), and done fields (MANDATORY on every task)
 - Verification criteria

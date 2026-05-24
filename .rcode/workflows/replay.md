@@ -19,7 +19,7 @@ Open with banner:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-End with a single-line redirect (per `command-redirect-format.md`) so the user copy-pastes the resulting `/rihal-council` invocation.
+End with a single-line redirect (per `command-redirect-format.md`) so the user copy-pastes the resulting `/rcode-council` invocation.
 </output_format>
 
 <required_reading>
@@ -33,7 +33,7 @@ End with a single-line redirect (per `command-redirect-format.md`) so the user c
 If `$ARGUMENTS` is empty or contains only `--help` / `-h`:
 
 ```
-/rihal-replay <session-path-or-slug> [--agents a,b,c]
+/rcode-replay <session-path-or-slug> [--agents a,b,c]
 
   <session-path-or-slug>   Full path to .planning/council-sessions/council-YYYY-MM-DD-<slug>.md
                            OR just the slug (e.g. "should-i-ship-v2") — the first matching
@@ -69,7 +69,7 @@ fi
 If no sessions directory exists at all:
 
 ```
-No council sessions on disk yet. Run /rihal-council "<question>" to create the first one.
+No council sessions on disk yet. Run /rcode-council "<question>" to create the first one.
 ```
 
 STOP.
@@ -87,7 +87,7 @@ If the extracted question is empty:
 ```
 Could not extract "## Question" heading from $SESSION_FILE. The artifact may be malformed. Open it and copy the question manually:
 
-/rihal-council <question>
+/rcode-council <question>
 ```
 
 STOP.
@@ -126,7 +126,7 @@ Re-running the council with a fresh panel on the original question.
 
 Copy-paste this:
 
-/rihal-council {QUESTION}{agents_suffix}
+/rcode-council {QUESTION}{agents_suffix}
 ```
 
 Where `{agents_suffix}` is `  --agents=a,b,c` if `--agents` was passed, else empty.
@@ -141,7 +141,7 @@ node .rcode/bin/rcode-tools.cjs state add-decision \
   2>/dev/null || true
 ```
 
-The subsequent `/rihal-council` run will attach its own artifact; pairing the two by date + slug lets `/rihal-decisions` and state readers show the replay chain.
+The subsequent `/rcode-council` run will attach its own artifact; pairing the two by date + slug lets `/rcode-decisions` and state readers show the replay chain.
 </process>
 
 ## Success Criteria
@@ -155,6 +155,6 @@ The subsequent `/rihal-council` run will attach its own artifact; pairing the tw
 
 ## On Error
 
-- Missing session directory → tell the user to run `/rihal-council` first
+- Missing session directory → tell the user to run `/rcode-council` first
 - Slug ambiguity → list the top 10 newest matches so the user can paste a fuller path
 - Extraction returns empty → print the path and ask the user to copy the question manually

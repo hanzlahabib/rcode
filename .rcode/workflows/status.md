@@ -3,7 +3,7 @@
 <purpose>
 Render a human-readable project status dashboard. All data comes from a single `rcode-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rcode-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
 
-**SSOT:** `.rcode/state.json`. `/rihal-status` and `/rihal-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
+**SSOT:** `.rcode/state.json`. `/rcode-status` and `/rcode-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
 
 <required_reading>
@@ -22,7 +22,7 @@ VERBOSE=$(node .rcode/bin/rcode-tools.cjs config-get output.verbose 2>/dev/null 
 
 Parse as JSON. If `SNAPSHOT.ok` is not true, print a one-line error and stop.
 
-**Slim mode** (default when `VERBOSE != "true"`): Output Steps 2–3 only (banner + phases list). Skip decisions, blockers detail, and route menu — just print the top route as a single "Next: `/rihal-X`" line. Append `(run /rihal-status --verbose for full detail)`.
+**Slim mode** (default when `VERBOSE != "true"`): Output Steps 2–3 only (banner + phases list). Skip decisions, blockers detail, and route menu — just print the top route as a single "Next: `/rcode-X`" line. Append `(run /rcode-status --verbose for full detail)`.
 
 **Verbose mode** (`VERBOSE == "true"` or `$ARGUMENTS` contains `--verbose`): Full Steps 2–6 output.
 
@@ -67,7 +67,7 @@ Parse `recommendation`, `open_phases`, `phase_count`. Display ONLY when
 
 ```
 ⚠ Milestone health: {open_phases} open / {phase_count} total — {recommendation}
-   → /rihal-complete-milestone to close, or /rihal-new-milestone to fork
+   → /rcode-complete-milestone to close, or /rcode-new-milestone to fork
 ```
 
 When healthy, print nothing — keeps status terse for normal projects.
@@ -118,22 +118,18 @@ Omit a section entirely when its array is empty.
 
 ## Step 6 — Next Up (intent-tree)
 
-Render `SNAPSHOT.routes[]` as a Route A/B/C menu:
+Render `SNAPSHOT.routes[]` as a Route A/B/C menu. Each route is **one line** — the command is the thing you copy and run:
 
 ```
 Next Up:
 
-  [A] {route where letter === "A"}
-      → {route.command}
-
-  [B] {route where letter === "B"}
-      → {route.command}
-
-  [C] {route where letter === "C"}
-      → {route.command}
+  [A] /rcode-execute 4
+  [B] /rcode-plan 5
+  [C] /rcode-audit-milestone 28 --fix-drift
+  [C] /rcode-complete-milestone
 ```
 
-Group routes by letter. If multiple routes share a letter, list them indented. If there are no routes, print the fallback suggestion from the CLI output.
+Format: `  [{letter}] {command}` — no label, no arrow, no indented second line. The command already contains the relevant arguments (phase number, count, flags). Group routes by letter; multiple routes sharing a letter appear on consecutive lines. If there are no routes, print the fallback suggestion from the CLI output.
 
 </process>
 
@@ -147,6 +143,6 @@ Group routes by letter. If multiple routes share a letter, list them indented. I
 
 ## On Error
 
-- **CLI not found:** "rcode Code install missing. Run: npx @hanzlaa/rcode install"
+- **CLI not found:** "rcode install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
 - **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rcode-tools.cjs state read"

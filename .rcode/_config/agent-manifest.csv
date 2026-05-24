@@ -1,1 +1,46 @@
 id,file,name,description,color
+advisor-researcher,.claude/agents/rcode-advisor-researcher.md,rcode-advisor-researcher,"Researches a single gray area decision and returns a structured comparison table with rationale. Spawned by discuss-phase advisor mode.",cyan
+ahmed,.claude/agents/rcode-ahmed.md,rcode-ahmed,"Technology & Development Director — spawned by /rcode-council for delivery timelines, engineering standards, DORA metrics, cross-team coordination, and tech debt prioritization.",blue
+assumptions-analyzer,.claude/agents/rcode-assumptions-analyzer.md,rcode-assumptions-analyzer,"Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode.",cyan
+fixer,.claude/agents/rcode-code-fixer.md,rcode-fixer,"Code Fix Specialist — spawned to apply code review findings, implement style fixes, refactor for maintainability, and resolve code quality issues identified by reviewers.",cyan
+reviewer,.claude/agents/rcode-code-reviewer.md,rcode-reviewer,"Code Review Specialist — spawned for architectural review, code quality assessment, test coverage analysis, and best-practices validation.",purple
+codebase-mapper,.claude/agents/rcode-codebase-mapper.md,rcode-codebase-mapper,"Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load.",cyan
+cross-platform-auditor,.claude/agents/rcode-cross-platform-auditor.md,rcode-cross-platform-auditor,"|",yellow
+debugger,.claude/agents/rcode-debugger.md,rcode-debugger,"Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /rcode-debug orchestrator.",orange
+dep-auditor,.claude/agents/rcode-dep-auditor.md,rcode-dep-auditor,"|",yellow
+deviation-analyzer,.claude/agents/rcode-deviation-analyzer.md,rcode-deviation-analyzer,"Deviation Analyzer — spawned to analyze plan deviations, identify root causes of scope creep, timeline slips, and requirement changes. Generates deviation reports and remediation recommendations.",red
+docs-auditor,.claude/agents/rcode-docs-auditor.md,rcode-docs-auditor,"Documentation Auditor — spawned to audit documentation completeness, accuracy, and quality. Identifies missing docs, outdated content, and gaps between code and documentation.",yellow
+edge-case-hunter,.claude/agents/rcode-edge-case-hunter.md,rcode-edge-case-hunter,"Edge Case Hunter — spawned to enumerate edge cases, boundary conditions, and corner cases for features. Identifies what breaks, what's undefined, and what requires defensive coding.",red
+executor,.claude/agents/rcode-executor.md,rcode-executor,"Executes rcode sprints with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute orchestrator or execute-plan command.",yellow
+fatima,.claude/agents/rcode-fatima.md,rcode-fatima,"|",red
+haitham,.claude/agents/rcode-haitham.md,rcode-haitham,"|",cyan
+hanzla,.claude/agents/rcode-hanzla.md,rcode-hanzla,"|",green
+hussain-pm,.claude/agents/rcode-hussain-pm.md,rcode-hussain-pm,"|",orange
+i18n-auditor,.claude/agents/rcode-i18n-auditor.md,rcode-i18n-auditor,"|",yellow
+integration-checker,.claude/agents/rcode-integration-checker.md,rcode-integration-checker,"Verifies cross-phase integration and E2E flows. Checks that phases connect properly and user workflows complete end-to-end.",blue
+khalid,.claude/agents/rcode-khalid.md,rcode-khalid,"DevOps & Infrastructure Engineer — spawned by /rcode-council for deployment pipelines, CI/CD, container orchestration, cloud infrastructure, monitoring, and release engineering.",orange
+layla,.claude/agents/rcode-layla.md,rcode-layla,"UX Designer — spawned by /rcode-council for user experience design, interaction flows, design systems, accessibility audits, and usability reviews.",cyan
+mariam,.claude/agents/rcode-mariam.md,rcode-mariam,"|",purple
+nasser,.claude/agents/rcode-nasser.md,rcode-nasser,"Software Engineering Manager — spawned by /rcode-council for people operations, 1:1 prep, hiring plans, growth conversations, team health, burnout detection, and squad composition.",yellow
+noor,.claude/agents/rcode-noor.md,rcode-noor,"Technical Writer & Presentation Lead — spawned by /rcode-council and /rcode-docs-update for README files, API docs, architecture diagrams (Mermaid), changelogs, migration guides, and pitch decks.",cyan
+nyquist-auditor,.claude/agents/rcode-nyquist-auditor.md,rcode-nyquist-auditor,"Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements",purple
+observability-auditor,.claude/agents/rcode-observability-auditor.md,rcode-observability-auditor,"|",yellow
+omar,.claude/agents/rcode-omar.md,rcode-omar,"|",green
+phase-researcher,.claude/agents/rcode-phase-researcher.md,rcode-phase-researcher,"Researches how to implement a phase before planning. Produces RESEARCH.md consumed by rcode-planner. Spawned by /rcode-plan orchestrator.",cyan
+planner,.claude/agents/rcode-planner.md,rcode-planner,"Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rcode-plan orchestrator.",green
+profiler,.claude/agents/rcode-profiler.md,rcode-profiler,"User Behavior Profiler — spawned to analyze user behavior patterns, create personas, identify usage flows, and understand user needs from data and feedback.",purple
+project-researcher,.claude/agents/rcode-project-researcher.md,rcode-project-researcher,"Researches domain ecosystem before roadmap creation. Produces files in .rcode/research/ consumed during roadmap creation. Spawned by /rcode-new-project or /rcode-new-milestone orchestrators.",cyan
+remediation-planner,.claude/agents/rcode-remediation-planner.md,rcode-remediation-planner,"Remediation Planner — spawned to plan remediation for issues, blockers, and failures. Creates action plans to recover from deviations, resolve blockers, and get back on track.",orange
+research-synthesizer,.claude/agents/rcode-research-synthesizer.md,rcode-research-synthesizer,"Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Spawned by /rcode-new-project after 4 researcher agents complete.",purple
+roadmapper,.claude/agents/rcode-roadmapper.md,rcode-roadmapper,"Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Spawned by /rcode-new-project orchestrator.",purple
+sadiq,.claude/agents/rcode-sadiq.md,rcode-sadiq,"|",blue
+security-adversary,.claude/agents/rcode-security-adversary.md,rcode-security-adversary,"Security Adversary — spawned for adversarial security review, threat modeling, attack surface analysis, and identifying exploitation paths. Thinks like an attacker to find vulnerabilities.",red
+security-auditor,.claude/agents/rcode-security-auditor.md,rcode-security-auditor,"Security Auditor — spawned for security audits, compliance verification, posture assessment, and remediation verification against security standards and best practices.",purple
+sprint-checker,.claude/agents/rcode-sprint-checker.md,rcode-sprint-checker,"Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rcode-plan orchestrator.",green
+ui-auditor,.claude/agents/rcode-ui-auditor.md,rcode-ui-auditor,"UI Auditor — spawned to audit user interface for usability, consistency, accessibility, and design quality. Identifies UX issues, design inconsistencies, and accessibility gaps.",cyan
+ux-designer,.claude/agents/rcode-ux-designer.md,rcode-ux-designer,"UX & Design Specialist — spawned for UI/UX reviews, design system work, accessibility audits, usability testing strategy, and design-driven decisions.",cyan
+verifier,.claude/agents/rcode-verifier.md,rcode-verifier,"Verifies phase goal achievement through goal-backward analysis. Checks codebase delivers what phase promised, not just that tasks completed. Creates VERIFICATION.md report.",green
+waleed,.claude/agents/rcode-waleed.md,rcode-waleed,"|",green
+yousef,.claude/agents/rcode-yousef.md,rcode-yousef,"|",blue
+zahra,.claude/agents/rcode-zahra.md,rcode-zahra,"Branding & Creative Director — spawned by /rcode-council for brand identity, visual language, typography (Latin + Arabic), color systems, design tokens, and cross-touchpoint brand consistency.",magenta
+zayd,.claude/agents/rcode-zayd.md,rcode-zayd,"Senior ML Engineer — spawned by /rcode-council for machine learning, OCR, LLM integration, RAG/retrieval, vector search, reranking, embeddings, prompt engineering, and evals.",purple

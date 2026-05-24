@@ -42,7 +42,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-council <question> [--full] [--verbose] [--agents=a,b,c] [--explain] [--resume <session-path>]
+/rcode-council <question> [--full] [--verbose] [--agents=a,b,c] [--explain] [--resume <session-path>]
 ```
 
 **Flag semantics:**
@@ -52,12 +52,12 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Examples:**
 ```
-/rihal-council should I start a new project or continue this one?
-/rihal-council --agents=sadiq,waleed,fatima is this plan ready to ship?
-/rihal-council --explain what stack should I use for a multi-tenant SaaS?
-/rihal-council --full should we rewrite the auth layer?
-/rihal-council --verbose --debate deep-dive the TTFT tradeoffs
-/rihal-council --resume .planning/council-sessions/council-2026-04-12-should-i-start.md
+/rcode-council should I start a new project or continue this one?
+/rcode-council --agents=sadiq,waleed,fatima is this plan ready to ship?
+/rcode-council --explain what stack should I use for a multi-tenant SaaS?
+/rcode-council --full should we rewrite the auth layer?
+/rcode-council --verbose --debate deep-dive the TTFT tradeoffs
+/rcode-council --resume .planning/council-sessions/council-2026-04-12-should-i-start.md
 ```
 
 **With --resume:** continue a prior council session with a new question. The prior session context is surfaced to the panel.
@@ -80,11 +80,11 @@ Proceed to Step 1 with the prior session context pre-loaded.
 If `$ARGUMENTS` starts with an agent name (sadiq/waleed/fatima/mariam/hussain-pm) and looks like a question directed at one person (e.g., "ask waleed about X", "what does fatima think"):
 
 ```
-⚠ That looks like a single-agent question — /rihal-discuss is faster.
+⚠ That looks like a single-agent question — /rcode-discuss is faster.
 
 Council spawns 3-5 agents in parallel for debate. For one expert, use:
 
-/rihal-discuss $ARGUMENTS
+/rcode-discuss $ARGUMENTS
 ```
 
 Only proceed past this step if the input is a true multi-perspective question (e.g., "should we...?", "is X a good idea?", "which approach is best?").
@@ -127,11 +127,11 @@ Print warning and use AskUserQuestion to confirm:
 ⚠ This appears to be a fresh project with no context.
 Council answers may be generic without project-specific signal.
 
-Run /rihal-init first for richer context, or proceed anyway?
+Run /rcode-init first for richer context, or proceed anyway?
 ```
 
 Options:
-- "Run /rihal-init first" → Print: `Copy-paste this: /rihal-init` and STOP
+- "Run /rcode-init first" → Print: `Copy-paste this: /rcode-init` and STOP
 - "Proceed anyway" → Continue to Step 2
 
 ## Step 1 — Initialize
@@ -471,7 +471,7 @@ AskUserQuestion:
     - label: "Both — in parallel tracks"
       description: "{only offer if feasible}"
     - label: "Discuss further with {agent-name}"
-      description: "Route to /rihal-discuss for a deeper 1:1"
+      description: "Route to /rcode-discuss for a deeper 1:1"
 ```
 
 After the user picks, emit a one-line decision record and proceed to
@@ -535,7 +535,7 @@ Format each as a checkbox:}
 
 The `{slug}` is a lowercase-hyphenated slug of the first 6 words of the question. Create `{paths.sessions_dir}` if it doesn't exist (`mkdir -p`).
 
-**Follow-ups must NOT be empty.** Every council session produces at least one actionable item. If panelists only asked clarifying questions, the follow-up is "Answer the panel's clarifying questions and re-run /rihal-council".
+**Follow-ups must NOT be empty.** Every council session produces at least one actionable item. If panelists only asked clarifying questions, the follow-up is "Answer the panel's clarifying questions and re-run /rcode-council".
 
 Print the artifact path to the user at the end:
 
@@ -572,7 +572,7 @@ node .rcode/bin/rcode-tools.cjs state record-session
 ## On Error
 
 - **Empty arguments or --help:** print usage block (Step 0), stop.
-- **Single-agent question detected:** redirect to `/rihal-discuss` (Step 0.5).
+- **Single-agent question detected:** redirect to `/rcode-discuss` (Step 0.5).
 - **`rcode-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
 - **Panel contains unknown agent:** print the installed-agent list and exit.
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.

@@ -29,7 +29,7 @@ AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-nyquist-au
 NYQUIST_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.nyquist_validation --raw)
 ```
 
-If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rihal-settings."
+If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rcode-settings."
 
 Display banner: `rcode > VALIDATE PHASE {N}: {name}`
 
@@ -42,7 +42,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`VALIDATION_FILE` non-empty): Audit existing
 - **State B** (`VALIDATION_FILE` empty, `SUMMARY_FILES` non-empty): Reconstruct from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rihal-execute {N} ${Rihal_WS} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rcode-execute {N} ${RCODE_WS} first."
 
 ## 2. Discovery
 
@@ -95,7 +95,7 @@ Otherwise call AskUserQuestion with gap table and options:
 2. "Skip — mark manual-only" → add to Manual-Only, Step 6
 3. "Cancel" → exit
 
-## 5. Spawn rihal-nyquist-auditor
+## 5. Spawn rcode-nyquist-auditor
 
 ```
 Task(
@@ -151,14 +151,14 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update valid
 ```
 rcode > PHASE {N} IS NYQUIST-COMPLIANT
 All requirements have automated verification.
-▶ Next: /rihal-audit-milestone ${Rihal_WS}
+▶ Next: /rcode-audit-milestone ${RCODE_WS}
 ```
 
 **Partial:**
 ```
 rcode > PHASE {N} VALIDATED (PARTIAL)
 {M} automated, {K} manual-only.
-▶ Retry: /rihal-validate-phase {N} ${Rihal_WS}
+▶ Retry: /rcode-validate-phase {N} ${RCODE_WS}
 ```
 
 Display `/clear` reminder.

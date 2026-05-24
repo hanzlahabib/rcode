@@ -10,13 +10,13 @@ Retroactively audit completed UI work against the UI-SPEC.md contract. Validates
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-ui-review <argument-here>
+/rcode-ui-review <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-ui-review example 1
-/rihal-ui-review example 2
+/rcode-ui-review example 1
+/rcode-ui-review example 2
 ```
 
 STOP — do not proceed.
@@ -45,7 +45,7 @@ test -f ".rcode/UI-SPEC.md"
 
 **If missing:**
 ```
-⚠ UI-SPEC.md not found. Run /rihal-ui-phase first to create design contract.
+⚠ UI-SPEC.md not found. Run /rcode-ui-phase first to create design contract.
 ```
 
 Exit.

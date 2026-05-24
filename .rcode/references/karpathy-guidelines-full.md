@@ -14,7 +14,7 @@ Before implementing:
 - If a simpler approach exists, say so. Push back when warranted.
 - If something is unclear, stop. Name what's confusing. Ask.
 
-**Rihal application:** In Round 1 of council/chain, every agent's response must include an `## Assumptions` block listing load-bearing assumptions. rcode-planner must ask via AskUserQuestion before writing a plan when scope is ambiguous. rcode-executor must stop on Rule 4 deviations and return a checkpoint, not silently guess.
+**rcode application:** In Round 1 of council/chain, every agent's response must include an `## Assumptions` block listing load-bearing assumptions. rcode-planner must ask via AskUserQuestion before writing a plan when scope is ambiguous. rcode-executor must stop on Rule 4 deviations and return a checkpoint, not silently guess.
 
 ## 2. Simplicity First
 
@@ -28,7 +28,7 @@ Before implementing:
 
 Test: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-**Rihal application:** rcode-planner tasks must be single-purpose. rcode-executor must not add abstractions during task execution (deviation Rule 2 applies only to missing critical functionality, not speculative flexibility). rihal-code-review explicitly flags overengineering.
+**rcode application:** rcode-planner tasks must be single-purpose. rcode-executor must not add abstractions during task execution (deviation Rule 2 applies only to missing critical functionality, not speculative flexibility). rcode-review explicitly flags overengineering.
 
 ## 3. Surgical Changes
 
@@ -46,7 +46,7 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-**Rihal application:** rcode-executor commits must only include files its tasks touched. The deviation scope boundary (out-of-scope warnings logged to deferred-items.md, not fixed) enforces this. rihal-code-review-fix must not change style in files it's auditing.
+**rcode application:** rcode-executor commits must only include files its tasks touched. The deviation scope boundary (out-of-scope warnings logged to deferred-items.md, not fixed) enforces this. rcode-review-fix must not change style in files it's auditing.
 
 ## 4. Goal-Driven Execution
 
@@ -65,7 +65,7 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-**Rihal application:** Every task in a SPRINT.md must have a "Done when:" clause that's externally verifiable. rcode-executor self-check loop verifies Done-when conditions were met. rcode-sprint-checker rejects plans where tasks have vague success criteria.
+**rcode application:** Every task in a SPRINT.md must have a "Done when:" clause that's externally verifiable. rcode-executor self-check loop verifies Done-when conditions were met. rcode-sprint-checker rejects plans where tasks have vague success criteria.
 
 ## Enforcement
 

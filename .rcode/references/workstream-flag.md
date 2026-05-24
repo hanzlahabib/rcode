@@ -97,10 +97,10 @@ Use workspaces (`--workspace` flag) for:
 /rcode-plan <task> --workspace=Hotfix
 
 # Switch to another workspace's context
-/rcode-workspace <name>
+/rcode-workstream switch --name <name>
 
 # Return to main planning
-/rcode-workspace main
+/rcode-workstream switch --name main
 ```
 
 ## Merging Workspaces Back

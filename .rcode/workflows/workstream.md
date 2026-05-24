@@ -16,20 +16,20 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-workstream create --name <name>
-/rihal-workstream switch --name <name>
-/rihal-workstream list
-/rihal-workstream status
-/rihal-workstream complete --name <name>
+/rcode-workstream create --name <name>
+/rcode-workstream switch --name <name>
+/rcode-workstream list
+/rcode-workstream status
+/rcode-workstream complete --name <name>
 ```
 
 **Examples:**
 ```
-/rihal-workstream create --name "Frontend Redesign"
-/rihal-workstream switch --name "Frontend Redesign"
-/rihal-workstream list
-/rihal-workstream status
-/rihal-workstream complete --name "Backend Migration"
+/rcode-workstream create --name "Frontend Redesign"
+/rcode-workstream switch --name "Frontend Redesign"
+/rcode-workstream list
+/rcode-workstream status
+/rcode-workstream complete --name "Backend Migration"
 ```
 
 Only after the user provides arguments, proceed to Step 1.
@@ -198,12 +198,12 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## On Completion
 
-/rihal-plan {next_phase} — plan next phase in this workstream
-/rihal-next — get suggested next action
-/rihal-progress — see all workstreams and phases
+/rcode-plan {next_phase} — plan next phase in this workstream
+/rcode-next — get suggested next action
+/rcode-progress — see all workstreams and phases
 
 ## ▶ Next Up
 
-- **Workstream created:** `/rihal-execute {workstream-phase}` — begin execution
-- **View all workstreams:** `/rihal-progress` — see parallel workstream status
-- **Stuck:** `/rihal-forensics` — diagnose any blocked workstream
+- /rcode-execute {workstream-phase}
+- /rcode-progress
+- /rcode-forensics

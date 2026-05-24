@@ -4,21 +4,22 @@
 Cross-phase audit of milestone completion. Reads all SUMMARY.md files from completed phases, compares their outcomes to the original ROADMAP goals, flags gaps, and generates an audit report showing completion percentage and decision traceability.
 </purpose>
 
-## Step 0 — Usage check
+## Step 0 — Parse arguments
 
-If `$ARGUMENTS` contains only `--help` or `-h`:
+Parse `$ARGUMENTS`:
+- `--help` or `-h` → print usage and stop:
+  ```
+  /rcode-audit-milestone [<unverified-count>] [--fix-drift] [--strict] [--report]
+  ```
+- A bare integer (e.g. `28`) → `HINT_UNVERIFIED_COUNT = 28` (pre-computed by rcode-status for display; use as expected minimum in the scan)
+- `--fix-drift` → `FIX_DRIFT = true` (after audit, suggest the drift sync command)
+- `--strict` → `STRICT = true`
+- `--report` → `WRITE_REPORT = true`
 
+If `HINT_UNVERIFIED_COUNT` is set, print at the top of the audit output:
 ```
-/rihal-audit-milestone [--strict] [--report]
+ℹ Expecting ~{HINT_UNVERIFIED_COUNT} phases to verify (from rcode-status)
 ```
-
-**Examples:**
-```
-/rihal-audit-milestone
-/rihal-audit-milestone --strict --report
-```
-
-STOP — do not proceed.
 
 ## Step 1 — Locate milestone context
 
@@ -32,7 +33,7 @@ If neither exists:
 ```
 ⚠ No active milestone found. Start a new one:
 
-/rihal-new-milestone <name>
+/rcode-new-milestone <name>
 ```
 
 STOP.
@@ -159,7 +160,7 @@ If `PLANS > 0` AND (`GIT_FEAT > 0` OR `APPS > 0`):
     1. Synthesize SUMMARY.md per phase from SPRINT.md + git log [recommended]
        (groups commits by phase tag like "feat(03-1):", writes a
         first-pass SUMMARY.md the user can edit)
-    2. Run /rihal-verify-phase NN per phase (manual close path)
+    2. Run /rcode-verify-phase NN per phase (manual close path)
     3. Continue audit anyway (only assesses what is documented — likely
        reports 0% goal coverage)
     0. Cancel
@@ -174,7 +175,7 @@ If `PLANS == 0`:
 ```
 ⚠ No phase summaries and no plans found. Have phases been executed?
   Check: {MILESTONE_DIR}/phases/
-  Start one: /rihal-plan
+  Start one: /rcode-plan
 ```
 
 STOP.
@@ -183,5 +184,5 @@ If ROADMAP missing:
 
 ```
 ⚠ ROADMAP.md missing. Cannot audit without original goals.
-  Create one: /rihal-new-milestone
+  Create one: /rcode-new-milestone
 ```

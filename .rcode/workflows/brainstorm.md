@@ -9,14 +9,14 @@ Guided brainstorming session using structured methods. User provides a challenge
 If `$ARGUMENTS` is empty or only contains `--help` or `-h`:
 
 ```
-/rihal-brainstorm <challenge> [--method=METHOD] [--people=N] [--personas=LIST]
+/rcode-brainstorm <challenge> [--method=METHOD] [--people=N] [--personas=LIST]
 ```
 
 **Examples:**
 ```
-/rihal-brainstorm how to improve user onboarding
-/rihal-brainstorm --method=SCAMPER reduce API latency
-/rihal-brainstorm --method=Rolestorming --personas=competitor,child reduce churn
+/rcode-brainstorm how to improve user onboarding
+/rcode-brainstorm --method=SCAMPER reduce API latency
+/rcode-brainstorm --method=Rolestorming --personas=competitor,child reduce churn
 ```
 
 STOP — do not proceed. Only proceed when the user provides a challenge.
@@ -182,8 +182,8 @@ After method execution:
 ## Next Steps
 
 To turn ideas into features/tickets:
-- `/rihal-plan <idea description>` — for detailed implementation plan
-- `/rihal-council is this idea worth pursuing?` — for strategic discussion
+- `/rcode-plan <idea description>` — for detailed implementation plan
+- `/rcode-council is this idea worth pursuing?` — for strategic discussion
 ```
 
 4. Print summary: "{N} ideas generated using {METHOD_NAME}"

@@ -10,13 +10,13 @@ Read .rcode/state.json and display project statistics: phases, plans, council se
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-stats <argument-here>
+/rcode-stats <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-stats example 1
-/rihal-stats example 2
+/rcode-stats example 1
+/rcode-stats example 2
 ```
 
 STOP — do not proceed.
@@ -31,8 +31,8 @@ cat .rcode/state.json 2>/dev/null || echo '{}'
 
 Parse as JSON. If parse fails or file doesn't exist, print:
 ```
-ℹ️ No rihal state found in this project yet.
-Run /rihal-help to get started.
+ℹ️ No rcode state found in this project yet.
+Run /rcode-help to get started.
 ```
 Exit.
 
@@ -72,17 +72,17 @@ git log --oneline --pretty=format:'%s' -- .rcode rcode/ | head -5
 ```
 
 Extract:
-- **rihal_commits**: count of commits on .rcode or rihal paths
+- **rcode_commits**: count of commits on .rcode or rcode paths
 - **recent_commits**: last 5 commit messages
 
-If `.git/` does not exist, set `rihal_commits` = 0 and omit recent_commits from output.
+If `.git/` does not exist, set `rcode_commits` = 0 and omit recent_commits from output.
 
 ## Step 5 — Format and print output
 
 Print a human-readable stats block:
 
 ```
-📊 rihal-stats — Project Timeline
+📊 rcode-stats — Project Timeline
 
 Project: $PROJECT_NAME
 Created: $TIMELINE_START
@@ -109,7 +109,7 @@ Blockers
   Open: N
   Resolved: N
 
-Git Activity (rihal-related)
+Git Activity (rcode-related)
   Commits: N
   Recent:
     - [01.02] message-1

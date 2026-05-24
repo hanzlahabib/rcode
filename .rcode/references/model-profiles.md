@@ -1,6 +1,6 @@
 # Model Profiles
 
-rcode v4 supports four model profile configurations that control which Claude model variant is assigned to each agent. Use the `resolve-model` subcommand to look up the model for a specific agent under the active profile.
+rcode v2 supports four model profile configurations that control which Claude model variant is assigned to each agent. Use the `resolve-model` subcommand to look up the model for a specific agent under the active profile.
 
 ## Profile definitions
 
@@ -68,10 +68,10 @@ node .rcode/bin/rcode-tools.cjs resolve-model <agent-id>
 Example:
 
 ```bash
-$ node .rcode/bin/rcode-tools.cjs resolve-model rihal-sadiq
+$ node .rcode/bin/rcode-tools.cjs resolve-model rcode-sadiq
 claude-3-5-opus-20241022
 
-$ node .rcode/bin/rcode-tools.cjs resolve-model rihal-executor
+$ node .rcode/bin/rcode-tools.cjs resolve-model rcode-executor
 claude-3-5-sonnet-20241022
 ```
 

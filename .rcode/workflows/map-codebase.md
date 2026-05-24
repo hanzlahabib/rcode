@@ -52,13 +52,13 @@ End with closure banner + top findings summary:
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-map-codebase <argument-here>
+/rcode-map-codebase <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-map-codebase example 1
-/rihal-map-codebase example 2
+/rcode-map-codebase example 1
+/rcode-map-codebase example 2
 ```
 
 STOP — do not proceed.
@@ -169,7 +169,7 @@ Use Task tool with `subagent_type="rcode-codebase-mapper"`, `model="{mapper_mode
 ```
 Task(
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase tech stack",
@@ -191,7 +191,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase architecture",
@@ -213,7 +213,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase conventions",
@@ -235,7 +235,7 @@ ${AGENT_SKILLS_MAPPER}"
 ```
 Task(
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase concerns",
@@ -410,14 +410,14 @@ Created .planning/codebase/:
 
 **Initialize project** — use codebase context for planning
 
-`/rihal-new-project`
+`/rcode-new-project`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- Re-run mapping: `/rihal-map-codebase`
+- Re-run mapping: `/rcode-map-codebase`
 - Review specific file: `cat .planning/codebase/STACK.md`
 - Edit any document before proceeding
 

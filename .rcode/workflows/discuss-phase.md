@@ -136,7 +136,7 @@ This is required for Claude Code remote sessions (`/rc` mode) where the Claude A
 cannot forward TUI menu selections back to the host.
 
 Enable text mode:
-- Per-session: pass `--text` flag to any command (e.g., `/rihal-discuss-phase --text`)
+- Per-session: pass `--text` flag to any command (e.g., `/rcode-discuss-phase --text`)
 - Per-project: `rcode-tools config-set workflow.text_mode true`
 
 Text mode applies to ALL workflows in the session, not just discuss-phase.
@@ -144,7 +144,7 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 
 <process>
 
-**Express path available:** If you already have a PRD or acceptance criteria document, use `/rihal-plan {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
+**Express path available:** If you already have a PRD or acceptance criteria document, use `/rcode-plan {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
 
 <step name="initialize" priority="first">
 Phase number from argument (required).
@@ -152,7 +152,7 @@ Phase number from argument (required).
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-advisor 2>/dev/null)
+AGENT_SKILLS_ADVISOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-advisor-researcher 2>/dev/null)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -163,7 +163,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /rihal-progress ${Rihal_WS} to see available phases.
+Use /rcode-progress ${RCODE_WS} to see available phases.
 ```
 Exit workflow.
 
@@ -264,7 +264,7 @@ Check `has_plans` and `plan_count` from init. **If `has_plans` is true:**
 - header: "Plans exist"
 - question: "Phase [X] already has {plan_count} plan(s) created without user context. Your decisions here won't affect existing plans unless you replan."
 - options:
-  - "Continue and replan after" — Capture context, then run /rihal-plan {X} ${Rihal_WS} to replan
+  - "Continue and replan after" — Capture context, then run /rcode-plan {X} ${RCODE_WS} to replan
   - "View existing plans" — Show plans before deciding
   - "Cancel" — Skip discuss-phase
 
@@ -760,14 +760,14 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/rihal-plan ${PHASE} ${Rihal_WS}`
+`/rcode-plan ${PHASE} ${RCODE_WS}`
 
 ---
 
 **Also available:**
-- `/rihal-discuss-phase ${PHASE} --chain ${Rihal_WS}` — re-run with auto plan+execute after
-- `/rihal-plan ${PHASE} --skip-research ${Rihal_WS}` — plan without research
-- `/rihal-ui-phase ${PHASE} ${Rihal_WS}` — generate UI design contract before planning (if phase has frontend work)
+- `/rcode-discuss-phase ${PHASE} --chain ${RCODE_WS}` — re-run with auto plan+execute after
+- `/rcode-plan ${PHASE} --skip-research ${RCODE_WS}` — plan without research
+- `/rcode-ui-phase ${PHASE} ${RCODE_WS}` — generate UI design contract before planning (if phase has frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -884,7 +884,7 @@ Context captured. Launching plan...
 
 Launch plan using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting — see #686):
 ```
-Skill(skill="rihal-plan", args="${PHASE} --auto ${Rihal_WS}")
+Skill(skill="rcode-plan", args="${PHASE} --auto ${RCODE_WS}")
 ```
 
 This keeps the auto-advance chain flat — discuss, plan, and execute all run at the same nesting level rather than spawning increasingly deep Task agents.
@@ -900,22 +900,22 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 
   /clear then:
 
-  Next: /rihal-discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${Rihal_WS}
+  Next: /rcode-discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${RCODE_WS}
   ```
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /rihal-execute ${PHASE} ${Rihal_WS}
+  Continue: /rcode-execute ${PHASE} ${RCODE_WS}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```
   Auto-advance stopped: Planning needs input.
-  Continue: /rihal-plan ${PHASE} ${Rihal_WS}
+  Continue: /rcode-plan ${PHASE} ${RCODE_WS}
   ```
 - **GAPS FOUND** → Stop chain:
   ```
   Auto-advance stopped: Gaps found during execution.
-  Continue: /rihal-plan ${PHASE} --gaps ${Rihal_WS}
+  Continue: /rcode-plan ${PHASE} --gaps ${RCODE_WS}
   ```
 
 **If none of `--auto`, `--chain`, nor config enabled:**

@@ -2,13 +2,14 @@
 Execute small ad-hoc tasks with guarantees. Two real modes the workflow auto-detects:
 
 - **Trivial inline** — single ≤ 3-file change, finishes in 1-2 minutes, no planning needed.
-- **Bulk-task auto-route** — when the input contains many tasks (numbered list with 5+ items, or several distinct bugs/asks), automatically route to /rihal-add-phase with the task list pre-extracted, so the user doesn't have to copy-paste their list a second time.
+- **Bulk-task auto-route** — when the input contains many tasks (numbered list with 5+ items, or several distinct bugs/asks), automatically route to /rcode-add-phase with the task list pre-extracted, so the user doesn't have to copy-paste their list a second time.
 
-Closes the gap where /rihal-quick used to refuse + show a 4-option menu when given many tasks (forcing the user to re-enter the same list into another command).
+Closes the gap where /rcode-quick used to refuse + show a 4-option menu when given many tasks (forcing the user to re-enter the same list into another command).
 </purpose>
 
 <required_reading>
 @.rcode/references/verb-dictionary.md
+@.rcode/references/git-preflight.md
 </required_reading>
 
 <process>
@@ -35,7 +36,7 @@ Match if `$TASK` contains ANY of:
 - > 60 lines total
 - Contains the phrase "buht zada bugs" / "many bugs" / "list of bugs" / "bug list" / "saare bugs" / "all these bugs"
 
-If matched, **AUTO-ROUTE to `/rihal-add-phase`** without asking. Do not refuse, do not show a menu, do not ask the user to repaste.
+If matched, **AUTO-ROUTE to `/rcode-add-phase`** without asking. Do not refuse, do not show a menu, do not ask the user to repaste.
 
 Procedure:
 
@@ -50,16 +51,16 @@ Procedure:
 3. Print the auto-route banner:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    /rihal-quick — AUTO-ROUTING
+    /rcode-quick — AUTO-ROUTING
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    Detected: {N} tasks in input — too many for inline.
    Active milestone: {ACTIVE_MILESTONE or "none"}
-   Routing to: /rihal-add-phase {phase-slug}
+   Routing to: /rcode-add-phase {phase-slug}
    Reason: bulk-detection threshold ({matched signal}) — auto-route avoids
            refusing and forcing you to re-paste the list.
    ```
-4. Dispatch `/rihal-add-phase {phase-slug}` and pass `$TASK` verbatim. The add-phase workflow uses the pre-extracted task list as the phase task list — no user re-entry needed.
+4. Dispatch `/rcode-add-phase {phase-slug}` and pass `$TASK` verbatim. The add-phase workflow uses the pre-extracted task list as the phase task list — no user re-entry needed.
 5. STOP this workflow — add-phase takes over from here.
 
 If the bulk detection does NOT match, continue to scope_check.
@@ -76,8 +77,8 @@ If the task seems non-trivial but did NOT trigger bulk_detection above (e.g., a 
 
 ```
 This is a single task but looks non-trivial. Recommended:
-  /rihal-add-phase — for multi-file refactor / new feature / structural change
-  /rihal-plan      — when scope is clear, jump straight to a SPRINT.md plan
+  /rcode-add-phase — for multi-file refactor / new feature / structural change
+  /rcode-plan      — when scope is clear, jump straight to a SPRINT.md plan
 
 Or paste --force-inline at the end of your input to override and try inline anyway.
 ```
@@ -136,7 +137,7 @@ Common blocker types:
 
 **Stop the loop only when:**
 - All tasks in the list are processed (done / skipped / blocked)
-- A task touches `> 5` files (escalate the rest of the list to /rihal-add-phase)
+- A task touches `> 5` files (escalate the rest of the list to /rcode-add-phase)
 - The user types stop / cancel / pause
 
 At the end of the loop, summarise:
@@ -161,15 +162,20 @@ git commit -m "{type}: {concise description of what changed}"
 </step>
 
 <step name="log_to_state">
-If `.planning/STATE.md` exists with a "Quick Tasks Completed" table, append:
+Append the completed task to `.planning/STATE.md`. Create the section if it
+doesn't exist — projects initialized with `/rcode-new-project` use a STATE.md
+shape that has no "Quick Tasks Completed" table by default (#601). Without
+this fallback the entry was silently dropped on every fresh repo.
 
 ```bash
-if grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
-  echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
+mkdir -p .planning
+if [ ! -f .planning/STATE.md ]; then
+  printf '# Project State\n\n## Quick Tasks Completed\n\n| Date | Type | Task | Status |\n|------|------|------|--------|\n' > .planning/STATE.md
+elif ! grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
+  printf '\n## Quick Tasks Completed\n\n| Date | Type | Task | Status |\n|------|------|------|--------|\n' >> .planning/STATE.md
 fi
+echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
 ```
-
-Skip silently if the table doesn't exist.
 </step>
 
 <step name="done">
@@ -191,12 +197,12 @@ No next-step suggestions. No workflow routing. Just done.
 - NEVER create SPRINT.md or SUMMARY.md files directly (add-phase will, when bulk-routed)
 - NEVER run research or plan-checking inline
 - If bulk_detection matches, auto-route silently — do not stop and ask
-- If a single non-bulk task exceeds 3 file edits and the user did NOT pass `--force-inline`, redirect to /rihal-add-phase or /rihal-plan
+- If a single non-bulk task exceeds 3 file edits and the user did NOT pass `--force-inline`, redirect to /rcode-add-phase or /rcode-plan
 </guardrails>
 
 <success_criteria>
-- [ ] Bulk inputs are auto-routed to /rihal-add-phase without forcing the user to re-paste
+- [ ] Bulk inputs are auto-routed to /rcode-add-phase without forcing the user to re-paste
 - [ ] Trivial inputs are completed inline (single context, ≤3 files, conventional commit)
 - [ ] STATE.md updated if it exists
-- [ ] No self-referential redirects (the old quick.md redirected to /rihal-quick — that infinite loop is closed)
+- [ ] No self-referential redirects (the old quick.md redirected to /rcode-quick — that infinite loop is closed)
 </success_criteria>

@@ -10,13 +10,13 @@ Analyze execution history in state.json and filesystem to detect incomplete work
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-forensics <argument-here>
+/rcode-forensics <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-forensics example 1
-/rihal-forensics example 2
+/rcode-forensics example 1
+/rcode-forensics example 2
 ```
 
 STOP — do not proceed.
@@ -31,7 +31,7 @@ cat .rcode/state.json 2>/dev/null || echo '{}'
 
 Parse as JSON. If invalid or missing, print:
 ```
-ℹ️ No rihal state found. Nothing to diagnose.
+ℹ️ No rcode state found. Nothing to diagnose.
 ```
 Exit.
 
@@ -82,9 +82,9 @@ If found, these indicate partial progress within a phase. Extract:
 
 Store as `$CHECKPOINTS`.
 
-## Step 5 — Scan recent git history for rihal commits
+## Step 5 — Scan recent git history for rcode commits
 
-If `.git/` exists, extract rihal-related commits:
+If `.git/` exists, extract rcode-related commits:
 
 ```bash
 git log --oneline -20 --pretty=format:'%h %s' -- .rcode rcode/ .planning/ 2>/dev/null || echo ""
@@ -111,7 +111,7 @@ Format as:
 ```
 Timeline of Execution
 
-T-5h: Started phase "Feature X" (/rihal-plan feature-x)
+T-5h: Started phase "Feature X" (/rcode-plan feature-x)
 T-3h: Phase created, plan saved to .planning/feature-x/SPRINT.md
 T-2h: Execution began — checkpoint at step 3/8
 T-0h: ❌ FAIL — Execution error: "Dependency not installed"
@@ -130,7 +130,7 @@ Based on what was found:
 You were working on phase "phase-name" and reached checkpoint 3.
 
 To resume:
-  /rihal-resume-work
+  /rcode-resume-work
 ```
 
 **If failed execution with error:**
@@ -142,7 +142,7 @@ Phase "phase-name" failed during execution:
 
 To retry:
   1. Fix the issue noted above
-  2. Run: /rihal-next
+  2. Run: /rcode-next
 ```
 
 **If incomplete plan (PLAN exists, no SUMMARY):**
@@ -152,7 +152,7 @@ To retry:
 Phase "phase-name" was planned but never executed.
 
 To continue:
-  /rihal-execute phase-name
+  /rcode-execute phase-name
 ```
 
 **If no incomplete work found:**
@@ -204,6 +204,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 After reviewing the diagnostic report, pick your recovery path:
 
-- **Phase stuck mid-execution:** `/rihal-resume-work`
-- **Phase planned but not executed:** `/rihal-execute {phase-number}`
-- **No incomplete work found:** `/rihal-progress` — view current state
+- /rcode-resume-work
+- /rcode-execute {phase-number}
+- /rcode-progress

@@ -81,7 +81,7 @@ template.
 
 ## What NOT to put in commits
 
-Per `/home/hanzla/development/rihal-code/CLAUDE.md` and `AGENTS.md`:
+Per `/home/hanzla/development/rcode/CLAUDE.md` and `AGENTS.md`:
 
 - **Never** add `Generated with Claude Code` or `Co-Authored-By: Claude` trailers
 - **Never** add `🤖 Generated` markers
@@ -95,7 +95,7 @@ The project explicitly rejects AI attribution in commit messages. Human authorsh
 Always stage specific files:
 
 ```bash
-git add rihal/agents/rcode-sadiq.md rihal/agents/rcode-waleed.md
+git add rcode/agents/rcode-sadiq.md rcode/agents/rcode-waleed.md
 ```
 
 Not:
@@ -114,7 +114,7 @@ Workflows that produce commits must hand back to the user at the end and wait fo
 
 ## Commit from a workflow
 
-When a Rihal workflow creates a commit on the user's behalf:
+When a rcode workflow creates a commit on the user's behalf:
 
 1. **Run the "Detect project-local conventions" scan** above. Pick scope from the project's allowed list if one exists.
 2. Stage only the files the workflow actually modified (never `-A`)

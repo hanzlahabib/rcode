@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid rihal subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
 - rcode-project-researcher — Researches project-level technical decisions
 - rcode-research-synthesizer — Synthesizes findings from parallel research agents
 - rcode-roadmapper — Creates phased execution roadmaps
@@ -22,20 +22,37 @@ Valid rihal subagent types (use exact names — do not fall back to 'general-pur
 Parse `$ARGUMENTS` before anything else:
 - `--reset-phase-numbers` flag → restart roadmap phase numbering at `1`
 - `--dry-run` flag → show what would be written, do not commit
+- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition (closes #740). When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
 - Remaining text → milestone name (optional)
 
-If the flag is absent, continue phase numbering from the previous milestone.
+If `--from-draft` is absent, continue phase numbering from the previous milestone.
+
+**From-draft mode (closes #740):**
+
+When `FROM_DRAFT_MODE=true`:
+1. Read the draft file at `DRAFT_FILE`. Accept any markdown file — MILESTONE-CONTEXT.md, a scratch doc, or a ROADMAP partial.
+2. Extract milestone name (first `# Heading` or the filename stem), goals list, and any explicit phase list.
+3. Skip the interactive goal-gathering interview (steps 2–4). Jump directly to step 5 (Requirements scoping) using the draft as the source of truth.
+4. Surface a one-line banner:
+   ```
+   ◆ From-draft mode: using {DRAFT_FILE} as milestone definition (skipping goal interview)
+   ```
+5. If `DRAFT_FILE` does not exist, abort:
+   ```
+   Error: --from-draft file not found: {DRAFT_FILE}
+   ```
 
 Read these files in parallel:
 - `.planning/PROJECT.md` — existing project, validated requirements, decisions
 - `.planning/MILESTONES.md` — what shipped previously (may not exist on first milestone)
 - `.planning/STATE.md` — pending todos, blockers
-- `.planning/MILESTONE-CONTEXT.md` — if it exists (from a prior `/rihal-discuss` about the next milestone)
+- `.planning/MILESTONE-CONTEXT.md` — if it exists (from a prior `/rcode-discuss` about the next milestone)
+- `{DRAFT_FILE}` (if `FROM_DRAFT_MODE=true`)
 
 If `.planning/PROJECT.md` does not exist, STOP and redirect:
 
 ```
-⚠ No project initialized. Run /rihal-new-project first.
+⚠ No project initialized. Run /rcode-new-project first.
 ```
 
 ## 2. Gather milestone goals
@@ -132,7 +149,7 @@ This document evolves at phase transitions and milestone boundaries.
 4. Decisions to log? → add to Key Decisions
 5. "What This Is" still accurate? → update if drifted
 
-**After each milestone (via `/rihal-complete-milestone`):**
+**After each milestone (via `/rcode-complete-milestone`):**
 1. Full review of all sections
 2. Core Value check
 3. Audit Out of Scope — reasons still valid?
@@ -145,7 +162,7 @@ Edit `.planning/STATE.md` in place. Set header + Current Position:
 
 ```yaml
 ---
-rihal_state_version: 1.0
+rcode_state_version: 1.0
 milestone: v[X.Y]
 milestone_name: [Name]
 status: defining_requirements
@@ -182,7 +199,7 @@ Delete `MILESTONE-CONTEXT.md` if it exists (consumed):
 rm -f .planning/MILESTONE-CONTEXT.md
 ```
 
-Clear leftover phase directories from the previous milestone only if the previous milestone was archived (check `.planning/archive/` exists and contains the prior milestone's dir). If not archived, do NOT delete — prompt user to run `/rihal-complete-milestone` on the prior milestone first.
+Clear leftover phase directories from the previous milestone only if the previous milestone was archived (check `.planning/archive/` exists and contains the prior milestone's dir). If not archived, do NOT delete — prompt user to run `/rcode-complete-milestone` on the prior milestone first.
 
 Load commit conventions (see `@.rcode/references/commit-conventions.md` — run the project-local scan before writing the commit message):
 
@@ -236,7 +253,7 @@ fi
 If the previous milestone has not been completed/archived, STOP:
 
 ```
-⚠ Prior milestone not archived. Run /rihal-complete-milestone v[prev] before --reset-phase-numbers.
+⚠ Prior milestone not archived. Run /rcode-complete-milestone v[prev] before --reset-phase-numbers.
 ```
 
 ## 8. Research decision
@@ -253,7 +270,7 @@ If `research_enabled=false`:
 - "Skip research (current default)" — go straight to requirements
 - "Research first" — discover patterns, features, architecture for NEW capabilities
 
-**Do NOT persist this choice.** To change the default, the user runs `/rihal-settings`.
+**Do NOT persist this choice.** To change the default, the user runs `/rcode-settings`.
 
 **If "Research first":**
 
@@ -585,9 +602,9 @@ node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true
 
 `/clear` then:
 
-`/rihal-discuss-phase [N]` — gather context and clarify approach
+`/rcode-discuss-phase [N]` — gather context and clarify approach
 or
-`/rihal-plan [N]` — skip discussion, plan directly
+`/rcode-plan [N]` — skip discussion, plan directly
 ```
 
 </process>
@@ -606,17 +623,17 @@ or
 - [ ] User approval captured before commit
 - [ ] Phase numbering mode respected (continued or reset)
 - [ ] All commits made (or gracefully skipped if .planning/ gitignored)
-- [ ] User shown next command: `/rihal-discuss-phase [N]`
+- [ ] User shown next command: `/rcode-discuss-phase [N]`
 </success_criteria>
 
 <on_error>
 - **Empty `$ARGUMENTS` with no conversational context:** ask for milestone name; do not invent one.
-- **No `.planning/PROJECT.md`:** redirect to `/rihal-new-project`.
-- **Prior milestone not archived + `--reset-phase-numbers`:** stop, tell user to run `/rihal-complete-milestone` first.
+- **No `.planning/PROJECT.md`:** redirect to `/rcode-new-project`.
+- **Prior milestone not archived + `--reset-phase-numbers`:** stop, tell user to run `/rcode-complete-milestone` first.
 - **Roadmapper returns ROADMAP BLOCKED:** surface the blocker, collect resolution, re-spawn.
 - **`rcode-tools.cjs state` fails:** continue — state tracking is optional, file artifacts are mandatory.
 - **`.planning/` is gitignored:** write files, print ℹ notice, do not error.
-- **Phase archive completes but state.json write fails mid-sequence:** do NOT re-archive. Tell the user: "Phase archive completed but milestone state was not recorded. Recovery: run `node .rcode/bin/rcode-tools.cjs state sync --from-disk` then re-run `/rihal-new-milestone` — it will detect the existing archive and skip re-archiving."
+- **Phase archive completes but state.json write fails mid-sequence:** do NOT re-archive. Tell the user: "Phase archive completed but milestone state was not recorded. Recovery: run `node .rcode/bin/rcode-tools.cjs state sync --from-disk` then re-run `/rcode-new-milestone` — it will detect the existing archive and skip re-archiving."
 </on_error>
 </content>
 </invoke>

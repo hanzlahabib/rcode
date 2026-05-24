@@ -1,7 +1,7 @@
 # Workflow: rcode-retrospective
 
 <purpose>
-Run an epic retrospective and produce owned action items. Delegates to the rihal-retrospective skill.
+Run an epic retrospective and produce owned action items. Delegates to the rcode-retrospective skill.
 </purpose>
 
 ## Execution
@@ -9,7 +9,7 @@ Run an epic retrospective and produce owned action items. Delegates to the rihal
 Locate and follow the installed skill:
 
 ```bash
-find .rcode/skills/actions -path "*rihal-retrospective/workflow.md" 2>/dev/null | head -1
+find .rcode/skills/actions -path "*rcode-retrospective/workflow.md" 2>/dev/null | head -1
 ```
 
 Read and follow the workflow at that path. If the path is empty:
@@ -20,12 +20,12 @@ Skill not installed — run: npx @hanzlaa/rcode install
 
 ## On Completion
 
-/rihal-correct-course — act on retrospective findings
-/rihal-plan {next} — plan the next phase with retro learnings applied
-/rihal-note — capture retro summary in project memory
+/rcode-correct-course — act on retrospective findings
+/rcode-plan {next} — plan the next phase with retro learnings applied
+/rcode-note — capture retro summary in project memory
 
 ## ▶ Next Up
 
-- **Retrospective complete:** `/rihal-new-milestone` — start the next milestone
-- **Review project state:** `/rihal-progress` — see current roadmap position
-- **Archive milestone:** `/rihal-complete-milestone` — if not already done
+- /rcode-new-milestone
+- /rcode-progress
+- /rcode-complete-milestone

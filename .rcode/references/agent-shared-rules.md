@@ -1,4 +1,4 @@
-# Agent Shared Rules — universal discipline for every Rihal persona
+# Agent Shared Rules — universal discipline for every rcode persona
 
 **Loaded by every `rcode/agents/rcode-*.md` file via `@-include`.** These are the rules every persona inherits regardless of role. Persona-specific rules live in the agent file's Anti-Patterns / Constraints sections (or the linked SKILL.md). This file is the floor — additions only, no overrides.
 

@@ -17,13 +17,13 @@ interpos audit (issue #221) — DO NOT regress.
 
 2. **NEVER skip the methodology chain on greenfield projects.** Before
    the phase loop runs, the prerequisite check (next step) MUST verify:
-   - `.planning/prd.md` exists (else halt → /rihal-create-prd)
-   - ROADMAP.md has milestone structure (else halt → /rihal-create-milestone)
-   - `.planning/epics.md` exists (else halt → /rihal-create-epics-and-stories)
+   - `.planning/prd.md` exists (else halt → /rcode-create-prd)
+   - ROADMAP.md has milestone structure (else halt → /rcode-new-milestone)
+   - `.planning/epics.md` exists (else halt → /rcode-create-epics-and-stories)
    See issue #219 + #229.
 
 3. **NEVER write SPRINT.md directly.** Sprint creation MUST go through
-   the `rihal-sprint-planning` skill so the capacity gate (#127) fires.
+   the `rcode-sprint-planning` skill so the capacity gate (#127) fires.
    If autonomous needs a sprint, invoke the skill — don't shortcut.
 
 4. **ALWAYS call `state sync --from-disk` after writing any
@@ -67,15 +67,15 @@ If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with a clear message:
 ⚠ Cannot run autonomous: missing prerequisite — {what}.
 
 The autonomous flow assumes a project that has already gone through:
-  1. /rihal-create-prd               → produces .planning/prd.md
-  2. /rihal-create-milestone         → produces ROADMAP.md with M1..Mn
-  3. /rihal-create-epics-and-stories → produces .planning/epics.md
-  4. THEN /rihal-autonomous           ← you are here
+  1. /rcode-create-prd               → produces .planning/prd.md
+  2. /rcode-new-milestone         → produces ROADMAP.md with M1..Mn
+  3. /rcode-create-epics-and-stories → produces .planning/epics.md
+  4. THEN /rcode-autonomous           ← you are here
 
-Suggested first step: /rihal-{first-missing-command}
+Suggested first step: /rcode-{first-missing-command}
 
 If you genuinely want to skip these (rare — usually inverted methodology),
-re-invoke with: /rihal-autonomous --skip-prerequisites
+re-invoke with: /rcode-autonomous --skip-prerequisites
 ```
 
 If `SKIP_FLAG=true`: print a warning that downstream workflows may produce low-quality output without upstream artifacts, then proceed.
@@ -174,8 +174,8 @@ Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed
 
 **If `response_language` is set:** include `Respond in {response_language}.` in all spawned subagent prompts.
 
-**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/rihal-new-milestone` first."
-**If `state_exists` is false:** Error — "No STATE.md found. Run `/rihal-new-milestone` first."
+**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/rcode-new-milestone` first."
+**If `state_exists` is false:** Error — "No STATE.md found. Run `/rcode-new-milestone` first."
 
 Display startup banner:
 
@@ -304,7 +304,7 @@ HAS_CONTEXT=$([ -f "${PHASE_DIR}/${PADDED_PHASE}-CONTEXT.md" ] || [ -f "${PHASE_
 **If has_context is true:** Skip discuss — context already gathered. Display:
 
 ```
-Phase ${PHASE_NUM}: Context exists — skipping discuss.
+Phase ${PHASE_NUMBER}: Context exists — skipping discuss.
 ```
 
 Proceed to 3b.
@@ -318,13 +318,13 @@ SKIP_DISCUSS=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"s
 **If SKIP_DISCUSS is `true`:** Skip discuss entirely — the ROADMAP phase description is the spec. Display:
 
 ```
-Phase ${PHASE_NUM}: Discuss skipped (workflow.skip_discuss=true) — using ROADMAP phase goal as spec.
+Phase ${PHASE_NUMBER}: Discuss skipped (workflow.skip_discuss=true) — using ROADMAP phase goal as spec.
 ```
 
 Write a minimal CONTEXT.md so downstream plan-phase has valid input. Extract `goal` and `requirements` from ROADMAP.md for this phase. Write `${PHASE_DIR}/${PADDED_PHASE}-CONTEXT.md` with:
 
 ```markdown
-# Phase {PHASE_NUM}: {Phase Name} - Context
+# Phase {PHASE_NUMBER}: {Phase Name} - Context
 
 **Gathered:** {date}
 **Status:** Ready for planning
@@ -392,19 +392,19 @@ The discuss step in autonomous mode MUST NOT loop. If CONTEXT.md already exists 
 **If `INTERACTIVE` is set:** Run the standard discuss-phase skill inline (asks interactive questions, waits for user answers):
 
 ```
-Skill(skill="rihal-discuss-phase", args="${PHASE_NUM}")
+Skill(skill="rcode-discuss-phase", args="${PHASE_NUMBER}")
 ```
 
 **If `INTERACTIVE` is NOT set:** Execute the smart_discuss step for this phase (batch table proposals, auto-optimized — see smart_discuss step below).
 
-After discuss completes (either mode), verify context was written by checking for CONTEXT.md. If not present → go to handle_blocker: "Discuss for phase ${PHASE_NUM} did not produce CONTEXT.md."
+After discuss completes (either mode), verify context was written by checking for CONTEXT.md. If not present → go to handle_blocker: "Discuss for phase ${PHASE_NUMBER} did not produce CONTEXT.md."
 
 ### 3a.5. UI Design Contract (Frontend Phases)
 
 Check if this phase has frontend indicators and whether a UI-SPEC already exists:
 
 ```bash
-PHASE_SECTION=$(sed -n "/^## Phase ${PHASE_NUM}/,/^## Phase /p" .planning/ROADMAP.md)
+PHASE_SECTION=$(sed -n "/^## Phase ${PHASE_NUMBER}/,/^## Phase /p" .planning/ROADMAP.md)
 echo "$PHASE_SECTION" | grep -iE "UI|interface|frontend|component|layout|page|screen|view|form|dashboard|widget" > /dev/null 2>&1
 HAS_UI=$?
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
@@ -416,11 +416,11 @@ UI_PHASE_CFG=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"u
 Display:
 
 ```
-Phase ${PHASE_NUM}: Frontend phase detected — generating UI design contract...
+Phase ${PHASE_NUMBER}: Frontend phase detected — generating UI design contract...
 ```
 
 ```
-Skill(skill="rihal-ui-phase", args="${PHASE_NUM}")
+Skill(skill="rcode-ui-phase", args="${PHASE_NUMBER}")
 ```
 
 Verify UI-SPEC was created. If still empty after ui-phase, display a non-blocking warning and proceed to 3b.
@@ -433,10 +433,10 @@ Verify UI-SPEC was created. If still empty after ui-phase, display a non-blockin
 
 ```
 Task(
-  description="Plan phase ${PHASE_NUM}: ${PHASE_NAME}",
+  description="Plan phase ${PHASE_NUMBER}: ${PHASE_NAME}",
   subagent_type="rcode-planner",
   run_in_background=true,
-  prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-plan\", args=\"${PHASE_NUM}\")"
+  prompt="Run plan-phase for phase ${PHASE_NUMBER}: Skill(skill=\"rcode-plan\", args=\"${PHASE_NUMBER}\")"
 )
 ```
 
@@ -445,10 +445,10 @@ Store the agent task_id. After discuss for the next phase completes (or if no ne
 **If `INTERACTIVE` is NOT set (default):** Run plan inline as before.
 
 ```
-Skill(skill="rihal-plan", args="${PHASE_NUM}")
+Skill(skill="rcode-plan", args="${PHASE_NUMBER}")
 ```
 
-Verify plan produced output — check `${PHASE_DIR}` for `*-PLAN.md` or `SPRINT.md`. If none → go to handle_blocker: "Plan phase ${PHASE_NUM} did not produce any plans."
+Verify plan produced output — check `${PHASE_DIR}` for `*-PLAN.md` or `SPRINT.md`. If none → go to handle_blocker: "Plan phase ${PHASE_NUMBER} did not produce any plans."
 
 ### 3c. Execute
 
@@ -456,10 +456,10 @@ Verify plan produced output — check `${PHASE_DIR}` for `*-PLAN.md` or `SPRINT.
 
 ```
 Task(
-  description="Execute phase ${PHASE_NUM}: ${PHASE_NAME}",
+  description="Execute phase ${PHASE_NUMBER}: ${PHASE_NAME}",
   subagent_type="rcode-executor",
   run_in_background=true,
-  prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"rihal-execute\", args=\"${PHASE_NUM} --no-transition\")"
+  prompt="Run execute-phase for phase ${PHASE_NUMBER}: Skill(skill=\"rcode-execute\", args=\"${PHASE_NUMBER} --no-transition\")"
 )
 ```
 
@@ -468,7 +468,7 @@ Store the agent task_id. The workflow can now start discussing the next phase wh
 **If `INTERACTIVE` is NOT set (default):** Run execute inline as before.
 
 ```
-Skill(skill="rihal-execute", args="${PHASE_NUM} --no-transition")
+Skill(skill="rcode-execute", args="${PHASE_NUMBER} --no-transition")
 ```
 
 ### 3c.5. Code Review and Fix
@@ -482,12 +482,12 @@ CODE_REVIEW_ENABLED=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep 
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
 ```
-Skill(skill="rihal-code-review", args="${PHASE_NUM}")
+Skill(skill="rcode-review", args="${PHASE_NUMBER}")
 ```
 
 Parse status from REVIEW.md frontmatter. If "clean" or "skipped": proceed to 3d. If findings found: auto-invoke:
 ```
-Skill(skill="rihal-code-review-fix", args="${PHASE_NUM} --auto")
+Skill(skill="rcode-review-fix", args="${PHASE_NUMBER} --auto")
 ```
 
 **Error handling:** If either Skill fails, catch the error, display as non-blocking, and proceed to 3d.
@@ -504,13 +504,13 @@ VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | h
 
 **If VERIFY_STATUS is empty** (no VERIFICATION.md or no status field):
 
-Go to handle_blocker: "Execute phase ${PHASE_NUM} did not produce verification results."
+Go to handle_blocker: "Execute phase ${PHASE_NUMBER} did not produce verification results."
 
 **If `passed`:**
 
 Display:
 ```
-Phase ${PHASE_NUM} ✓ ${PHASE_NAME} — Verification passed
+Phase ${PHASE_NUMBER} ✓ ${PHASE_NAME} — Verification passed
 ```
 
 Proceed to iterate step.
@@ -520,50 +520,50 @@ Proceed to iterate step.
 Read the human_verification section from VERIFICATION.md to get the count and items requiring manual testing.
 
 Display the items, then ask user via AskUserQuestion:
-- **question:** "Phase ${PHASE_NUM} has items needing manual verification. Validate now or continue to next phase?"
+- **question:** "Phase ${PHASE_NUMBER} has items needing manual verification. Validate now or continue to next phase?"
 - **options:** "Validate now" / "Continue without validation"
 
 On **"Validate now"**: Present the specific items from VERIFICATION.md. After user reviews, ask:
 - **question:** "Validation result?"
 - **options:** "All good — continue" / "Found issues"
 
-On "All good — continue": Display `Phase ${PHASE_NUM} ✓ Human validation passed` and proceed to iterate step.
+On "All good — continue": Display `Phase ${PHASE_NUMBER} ✓ Human validation passed` and proceed to iterate step.
 
 On "Found issues": Go to handle_blocker with the user's reported issues as the description.
 
-On **"Continue without validation"**: Display `Phase ${PHASE_NUM} ⏭ Human validation deferred` and proceed to iterate step.
+On **"Continue without validation"**: Display `Phase ${PHASE_NUMBER} ⏭ Human validation deferred` and proceed to iterate step.
 
 **If `gaps_found`:**
 
 Read gap summary from VERIFICATION.md (score and missing items). Display:
 ```
-⚠ Phase ${PHASE_NUM}: ${PHASE_NAME} — Gaps Found
+⚠ Phase ${PHASE_NUMBER}: ${PHASE_NAME} — Gaps Found
 Score: {N}/{M} must-haves verified
 ```
 
 **If `INTERACTIVE` is set:** Ask via AskUserQuestion:
-- **question:** "Gaps found in phase ${PHASE_NUM}. How to proceed?"
+- **question:** "Gaps found in phase ${PHASE_NUMBER}. How to proceed?"
 - **options:** "Run gap closure" / "Continue without fixing" / "Stop autonomous mode"
 - On "Stop": go to handle_blocker
 
-**If `INTERACTIVE` is NOT set (default autonomous):** Auto-select "Run gap closure" — display `⚙ Phase ${PHASE_NUM}: auto-running gap closure` and proceed.
+**If `INTERACTIVE` is NOT set (default autonomous):** Auto-select "Run gap closure" — display `⚙ Phase ${PHASE_NUMBER}: auto-running gap closure` and proceed.
 
 Execute gap closure cycle (limit: 1 attempt):
 
 ```
-Skill(skill="rihal-plan", args="${PHASE_NUM} --gaps")
+Skill(skill="rcode-plan", args="${PHASE_NUMBER} --gaps")
 ```
 
-Verify gap plans were created. If none → go to handle_blocker: "Gap closure planning for phase ${PHASE_NUM} did not produce plans."
+Verify gap plans were created. If none → go to handle_blocker: "Gap closure planning for phase ${PHASE_NUMBER} did not produce plans."
 
 Re-execute:
 ```
-Skill(skill="rihal-execute", args="${PHASE_NUM} --no-transition")
+Skill(skill="rcode-execute", args="${PHASE_NUMBER} --no-transition")
 ```
 
 Re-read verification status. If `passed` or `human_needed`: route normally. If still `gaps_found` after this retry:
 - **If `INTERACTIVE`:** ask "Continue anyway / Stop autonomous mode"
-- **Otherwise:** display `⏭ Phase ${PHASE_NUM}: gaps persist after closure — continuing` and proceed to iterate step.
+- **Otherwise:** display `⏭ Phase ${PHASE_NUMBER}: gaps persist after closure — continuing` and proceed to iterate step.
 
 This limits gap closure to 1 automatic retry to prevent infinite loops.
 
@@ -581,11 +581,11 @@ UI_REVIEW_CFG=$(node .rcode/bin/rcode-tools.cjs config 2>/dev/null | grep -oE '"
 Display:
 
 ```
-Phase ${PHASE_NUM}: Frontend phase with UI-SPEC — running UI review audit...
+Phase ${PHASE_NUMBER}: Frontend phase with UI-SPEC — running UI review audit...
 ```
 
 ```
-Skill(skill="rihal-ui-review", args="${PHASE_NUM}")
+Skill(skill="rcode-ui-review", args="${PHASE_NUMBER}")
 ```
 
 Display the review result summary (score from UI-REVIEW.md if produced). Continue to iterate step regardless of score — UI review is advisory, not blocking.
@@ -644,7 +644,7 @@ symptom. Log a warning and re-derive from disk:
  Completed through phase ${TO_PHASE} as requested.
  Remaining phases were not executed.
 
- Resume with: /rihal-autonomous --from ${next_incomplete_phase}
+ Resume with: /rcode-autonomous --from ${next_incomplete_phase}
 ```
 
 Proceed directly to lifecycle step (which handles partial completion). Exit cleanly.
@@ -681,7 +681,7 @@ Track `PHASES_COMPLETED` (increment after each iterate). Every 3 completed phase
 ```
 ⚠ Context growing — {PHASES_COMPLETED} phases done in this session.
   Tip: /clear now and resume to keep remaining phases lean:
-  /rihal-autonomous --from {next_phase} --to {TO_PHASE}
+  /rcode-autonomous --from {next_phase} --to {TO_PHASE}
   Continue anyway? [Yes, keep going] / [I'll clear now — show resume command]
 ```
 
@@ -712,7 +712,7 @@ If all phases complete, proceed to lifecycle step.
  Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
  Mode: Single phase (--only)
 
- Lifecycle skipped — run /rihal-autonomous without --only
+ Lifecycle skipped — run /rcode-autonomous without --only
  after all phases complete to trigger audit/complete/cleanup.
 ```
 
@@ -734,7 +734,7 @@ Display lifecycle transition banner:
 ### 5a. Audit
 
 ```
-Skill(skill="rihal-audit-milestone")
+Skill(skill="rcode-audit-milestone")
 ```
 
 After audit completes, detect the result:
@@ -782,7 +782,7 @@ Show the summary, then:
 ### 5b. Complete Milestone
 
 ```
-Skill(skill="rihal-complete-milestone", args="${milestone_version}")
+Skill(skill="rcode-complete-milestone", args="${milestone_version}")
 ```
 
 After complete-milestone returns, verify archive output:
@@ -796,7 +796,7 @@ If the archive file does not exist, go to handle_blocker: "Complete milestone di
 ### 5c. Cleanup
 
 ```
-Skill(skill="rihal-cleanup")
+Skill(skill="rcode-cleanup")
 ```
 
 Cleanup shows its own dry-run and asks user for approval internally — this is an acceptable pause since it's an explicit decision about file deletion.
@@ -846,7 +846,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 **On "Skip this phase":** Log `Phase {N} ⏭ {Name} — Skipped by user`. Record in state:
 
 ```bash
-node .rcode/bin/rcode-tools.cjs state add-decision "Skipped phase ${PHASE_NUM} in autonomous mode"
+node .rcode/bin/rcode-tools.cjs state add-decision "Skipped phase ${PHASE_NUMBER} in autonomous mode"
 ```
 
 Proceed to iterate.
@@ -862,13 +862,13 @@ Proceed to iterate.
  Skipped: {list of skipped phases}
  Remaining: {list of remaining phases}
 
- Resume with: /rihal-autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
+ Resume with: /rcode-autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
 ```
 
 Record blocker in state:
 
 ```bash
-node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUM}: ${DESCRIPTION}"
+node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at phase ${PHASE_NUMBER}: ${DESCRIPTION}"
 ```
 
 </step>
@@ -892,7 +892,7 @@ node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] Final completion or stop summary displayed
 - [ ] After all phases complete, lifecycle step is invoked (not manual suggestion)
 - [ ] Lifecycle transition banner displayed before audit
-- [ ] Audit invoked via Skill(skill="rihal-audit-milestone")
+- [ ] Audit invoked via Skill(skill="rcode-audit-milestone")
 - [ ] Audit result routing: passed → auto-continue, gaps_found → user decides, tech_debt → user decides
 - [ ] Complete-milestone invoked via Skill() with ${milestone_version} arg
 - [ ] Cleanup invoked via Skill() — internal confirmation is acceptable

@@ -35,7 +35,7 @@ default — 99% of phases should be integers.
 
 **Decimal sub-phases (`19.1`, `19.2`)** exist for one purpose: inserting
 focused work under an already-defined parent without renumbering everything
-after it. Use `/rihal-phase insert 19.1` (the `phase` subcommand) — the
+after it. Use `/rcode-phase insert 19.1` (the `phase` subcommand) — the
 parent phase stays `19`, the sub-phase fits between `19` and `20` without
 shifting `20→21→22…`.
 

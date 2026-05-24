@@ -1,7 +1,7 @@
 # Workflow: rcode-notify-test
 
 <purpose>
-Verify a webhook URL is configured and reachable by posting a "test" message. Use this immediately after adding `slack_webhook_url`, `discord_webhook_url`, or `teams_webhook_url` to `.rcode/config.yaml` so you catch typos and permission errors before relying on notifications from `/rihal-execute`.
+Verify a webhook URL is configured and reachable by posting a "test" message. Use this immediately after adding `slack_webhook_url`, `discord_webhook_url`, or `teams_webhook_url` to `.rcode/config.yaml` so you catch typos and permission errors before relying on notifications from `/rcode-execute`.
 </purpose>
 
 <output_format>
@@ -26,7 +26,7 @@ End with a per-platform result table: sent / skipped / failed.
 If `$ARGUMENTS` contains `--help` / `-h`:
 
 ```
-/rihal-notify-test [--only slack|discord|teams] [--title "<t>"] [--body "<b>"]
+/rcode-notify-test [--only slack|discord|teams] [--title "<t>"] [--body "<b>"]
 
   --only <platform>   Limit the test to one platform
   --title "<t>"       Override test title (default: "rcode notify test")
@@ -81,7 +81,7 @@ No webhooks configured. Add at least one to .rcode/config.yaml:
   discord_webhook_url: "https://discord.com/api/webhooks/..."
   teams_webhook_url: "https://outlook.office.com/webhook/..."
 
-Then re-run /rihal-notify-test.
+Then re-run /rcode-notify-test.
 ```
 
 If any platform `failed`, echo the failure detail and list common causes:
@@ -95,8 +95,8 @@ If any platform `sent`, print:
 ```
 ✓ Open your channel to confirm the test message appeared.
   Then configure where notifications fire:
-    - /rihal-execute runs post-phase notify automatically
-    - /rihal-council --notify to ping after a council session
+    - /rcode-execute runs post-phase notify automatically
+    - /rcode-council --notify to ping after a council session
 ```
 </process>
 

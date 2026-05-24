@@ -53,7 +53,7 @@ Display banner:
 ◆ Spawning researcher...
 ```
 
-### Spawn rihal-phase-researcher
+### Spawn rcode-phase-researcher
 
 ```bash
 PHASE_DESC=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}" --pick section)
@@ -68,7 +68,7 @@ Answer: "What do I need to know to PLAN this phase well?"
 </objective>
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /rihal-discuss-phase)
+- {context_path} (USER DECISIONS from /rcode-discuss-phase)
 - {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>
@@ -111,7 +111,7 @@ Reason: {explain why}
 Task(
   prompt=research_prompt,
   subagent_type="rcode-phase-researcher",
-  model="sonnet",
+  model="{model}",
   model="{researcher_model}",
   description="Research Phase {phase}"
 )
@@ -173,14 +173,14 @@ SECURITY_BLOCK=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_
 
 Each SPRINT.md must include a <threat_model> block.
 Block on: {SECURITY_BLOCK} severity threats.
-Opt out: set security_enforcement: false in .planning/config.json
+Opt out: set security_enforcement: false in .rcode/config.yaml (`node .rcode/bin/rcode-tools.cjs config-set security_enforcement false`)
 ```
 
 Continue to step 5.6. Security config is passed to the planner in step 8.
 
 ## 5.6. UI Design Contract Gate
 
-> Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.planning/config.json`. If keys are absent, treat as enabled.
+> Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.rcode/config.yaml`. If keys are absent, treat as enabled.
 
 ```bash
 UI_PHASE_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
@@ -217,9 +217,9 @@ AUTO_CHAIN=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow._auto_chain_a
 
 Auto-generate UI-SPEC without prompting:
 ```
-Skill(skill="rihal-ui-phase", args="${PHASE} --auto ${Rihal_WS}")
+Skill(skill="rcode-ui-phase", args="${PHASE} --auto ${RCODE_WS}")
 ```
-After `rihal-ui-phase` returns, re-read:
+After `rcode-ui-phase` returns, re-read:
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 UI_SPEC_PATH="${UI_SPEC_FILE}"
@@ -232,7 +232,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list:
 ```
 Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?
 
-1. Generate UI-SPEC first — Run /rihal-ui-phase {N} then re-run /rihal-sprint-plan {N}
+1. Generate UI-SPEC first — Run /rcode-ui-phase {N} then re-run /rcode-plan {N}
 2. Continue without UI-SPEC
 3. Not a frontend phase
 
@@ -243,7 +243,7 @@ Otherwise use AskUserQuestion:
 - header: "UI Design Contract"
 - question: "Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?"
 - options:
-  - "Generate UI-SPEC first" → Display: "Run `/rihal-ui-phase {N} ${Rihal_WS}` then re-run `/rihal-sprint-plan {N} ${Rihal_WS}`". Exit workflow.
+  - "Generate UI-SPEC first" → Display: "Run `/rcode-ui-phase {N} ${RCODE_WS}` then re-run `/rcode-plan {N} ${RCODE_WS}`". Exit workflow.
   - "Continue without UI-SPEC" → Continue to step 6.
   - "Not a frontend phase" → Continue to step 6.
 

@@ -1,5 +1,5 @@
 <purpose>
-Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rcode-code-reviewer agent, commits REVIEW.md, and presents results to user.
+Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rcode-reviewer agent, commits REVIEW.md, and presents results to user.
 </purpose>
 
 <required_reading>
@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- rcode-code-reviewer: Reviews source files for bugs and quality issues
+- rcode-reviewer: Reviews source files for bugs and quality issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -18,15 +18,15 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-code-review <phase> [--depth=quick|standard|deep] [--files=path1,path2] [--karpathy]
+/rcode-review <phase> [--depth=quick|standard|deep] [--files=path1,path2] [--karpathy]
 ```
 
 **Examples:**
 ```
-/rihal-code-review 01
-/rihal-code-review 02.1 --depth=deep
-/rihal-code-review 03 --files=src/auth.js,src/db.js
-/rihal-code-review HEAD~5..HEAD --karpathy
+/rcode-review 01
+/rcode-review 02.1 --depth=deep
+/rcode-review 03 --files=src/auth.js,src/db.js
+/rcode-review HEAD~5..HEAD --karpathy
 ```
 
 ## Step 0a — Karpathy mode delegation
@@ -91,7 +91,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /rihal-status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /rcode-status to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -268,7 +268,7 @@ if [ ${#REVIEW_FILES[@]} -eq 0 ]; then
   else
     # Fail closed — no reliable diff base found. Do not use arbitrary HEAD~N.
     echo "Warning: No phase commits found for '${PADDED_PHASE}'. Cannot determine reliable diff scope."
-    echo "Use --files flag to specify files explicitly: /rihal-code-review ${PHASE_ARG} --files=file1,file2,..."
+    echo "Use --files flag to specify files explicitly: /rcode-review ${PHASE_ARG} --files=file1,file2,..."
   fi
 fi
 ```
@@ -385,11 +385,11 @@ for file in "${REVIEW_FILES[@]}"; do
 done
 ```
 
-Spawn the rcode-code-reviewer agent:
+Spawn the rcode-reviewer agent:
 
 ```
 Task(subagent_type="rcode-code-reviewer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>
@@ -428,7 +428,7 @@ If the Task() call fails (agent error, timeout, or exception):
 ```
 Error: Code review agent failed: ${error_message}
 
-No REVIEW.md created. You can retry with /rihal-code-review ${PHASE_ARG} or check agent logs.
+No REVIEW.md created. You can retry with /rcode-review ${PHASE_ARG} or check agent logs.
 ```
 
 Do NOT proceed to commit_review step. Do NOT create a partial or empty REVIEW.md. Exit workflow.
@@ -501,7 +501,7 @@ if [ -f "${REVIEW_PATH}" ]; then
   fi
 else
   echo "Warning: Agent completed but REVIEW.md not found at ${REVIEW_PATH}. This may indicate an agent issue."
-  echo "No REVIEW.md to commit. Please retry with /rihal-code-review ${PHASE_ARG}"
+  echo "No REVIEW.md to commit. Please retry with /rcode-review ${PHASE_ARG}"
 fi
 ```
 </step>
@@ -562,7 +562,7 @@ If total findings > 0:
 Full report: ${REVIEW_PATH}
 
 Next steps:
-  /rihal-code-review-fix ${PHASE_NUMBER}  — Auto-fix issues
+  /rcode-review-fix ${PHASE_NUMBER}  — Auto-fix issues
   cat ${REVIEW_PATH}                       — View full report
 ```
 

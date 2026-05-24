@@ -19,14 +19,14 @@ test -f .rcode/config.yaml && echo "rcode-ready" || echo "rcode-not-initialized"
 Tell the user:
 
 ```
-Rihal isn't configured for this project yet. Let me set it up — takes 30 seconds.
+rcode isn't configured for this project yet. Let me set it up — takes 30 seconds.
 ```
 
 **1. Bootstrap local tooling** — copy bin from the global install:
 
 ```bash
 GLOBAL_RIHAL="$HOME/.rcode"
-TOOLS_SRC="$GLOBAL_RCODE/bin/rcode-tools.cjs"
+TOOLS_SRC="$GLOBAL_RIHAL/bin/rcode-tools.cjs"
 
 if [ ! -f "$TOOLS_SRC" ]; then
   echo "ERROR: Global rcode tools not found at $TOOLS_SRC"
@@ -50,9 +50,9 @@ Note: workflows and references are resolved from `~/.rcode/` at runtime — only
 
 | # | Question | Options | Default |
 |---|----------|---------|---------|
-| 1 | Your name (what Rihal calls you) | free text | `$USER` |
+| 1 | Your name (what rcode calls you) | free text | `$USER` |
 | 2 | Language for agent responses | English / Arabic / Urdu / Roman Urdu | English |
-| 3 | Mode (how Rihal handles decision gates) | `guided` / `yolo` | guided |
+| 3 | Mode (how rcode handles decision gates) | `guided` / `yolo` | guided |
 | 4 | Model profile (cost vs quality) | `quality` / `balanced` / `budget` | balanced |
 | 5 | Commit planning artifacts to git? | yes / no | yes |
 
@@ -97,7 +97,7 @@ echo "# Project Brief\n\n_Run /rcode-init for full setup._" > .rcode/context/pro
 **5. Tell the user:**
 
 ```
-✓ Rihal configured for this project.
+✓ rcode configured for this project.
 
 Config saved to .rcode/config.yaml — edit any time.
 Run /rcode-init for a full project scan and context setup.

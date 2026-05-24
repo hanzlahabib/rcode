@@ -17,26 +17,27 @@ and auto-picks the most-relevant target based on project state. In
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-audit                           # interactive — asks what to audit
-/rihal-audit plans [--report]         # → audit-plans (structural + status + deps check)
-/rihal-audit phase [<NN>]              # → /rihal-verify-phase
-/rihal-audit milestone [--strict]      # → /rihal-audit-milestone (with synth fallback)
-/rihal-audit uat                       # → /rihal-audit-uat
-/rihal-audit code [--scope=...]        # → /rihal-code-review --karpathy
-/rihal-audit fix                       # → /rihal-audit-fix
-/rihal-audit work                      # → /rihal-verify-work
-/rihal-audit lens [<1-15> | all]       # → /rihal-lens-audit (15-lens methodology)
+/rcode-audit                           # interactive — asks what to audit
+/rcode-audit plans [--report]         # → audit-plans (structural + status + deps check)
+/rcode-audit phase [<NN>]              # → /rcode-verify-phase
+/rcode-audit milestone [--strict]      # → /rcode-audit-milestone (with synth fallback)
+/rcode-audit uat                       # → /rcode-audit-uat
+/rcode-audit code [--scope=...]        # → /rcode-review --karpathy
+/rcode-audit fix                       # → /rcode-audit-fix
+/rcode-audit work                      # → /rcode-verify-work
+/rcode-audit lens [<1-15> | all]       # → /rcode-lens-audit (15-lens methodology)
+/rcode-audit worktrees [--prune]       # → scan + report orphaned executor worktrees/branches
 ```
 
 **Examples:**
 ```
-/rihal-audit
-/rihal-audit plans
-/rihal-audit plans --report
-/rihal-audit milestone --strict
-/rihal-audit phase 03
-/rihal-audit lens security
-/rihal-audit lens all
+/rcode-audit
+/rcode-audit plans
+/rcode-audit plans --report
+/rcode-audit milestone --strict
+/rcode-audit phase 03
+/rcode-audit lens security
+/rcode-audit lens all
 ```
 
 ## Step 1 — Resolve mode + arguments
@@ -48,7 +49,7 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
 
 Parse `$ARGUMENTS`:
-- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens} → set `$TARGET`, drop it from args, jump to Step 4.
+- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens, worktrees} → set `$TARGET`, drop it from args, jump to Step 4.
 - Empty or unrecognised → continue to Step 2.
 
 ## Step 2 — Detect project state
@@ -70,9 +71,20 @@ as `(no data — skip)`.
 
 ## Step 3 — Ask user (guided mode only)
 
+Also probe for orphaned executor worktrees (add to context for Step 3 menu):
+
+```bash
+ORPHAN_WTS=$(git worktree list --porcelain \
+  | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}' \
+  | wc -l)
+ORPHAN_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null | wc -l)
+ORPHANS=$((ORPHAN_WTS + ORPHAN_BR))
+```
+
 If `$MODE` is `yolo`, skip this step and pick the most relevant target
-automatically (priority: `work` if dirty branch, else `plans` if PLANS>0
-and SUMMARIES<PLANS, else `milestone` if SUMMARIES>0, else `code`).
+automatically (priority: `worktrees` if ORPHANS>0, else `work` if dirty
+branch, else `plans` if PLANS>0 and SUMMARIES<PLANS, else `milestone` if
+SUMMARIES>0, else `code`).
 
 Otherwise call AskUserQuestion:
 
@@ -89,6 +101,7 @@ Options:
   6. auto-fix        — audit then auto-fix findings                    (uses #1–5 output)
   7. work            — verify current branch / WIP                     ({ON_BRANCH}, dirty={DIRTY})
   8. lens            — 15-lens methodology audit                       (security, perf, tests…)
+  9. worktrees       — orphaned executor worktrees/branches            ({ORPHANS} found)
   0. cancel
 ```
 
@@ -102,14 +115,15 @@ sub-workflow.
 
 | target | precondition | failure message |
 |---|---|---|
-| plans | `.planning/ROADMAP.md` exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
-| phase | at least one `.planning/phases/*/PLAN.md` or `*-SPRINT.md` | `No plan file found. Run /rihal-plan first.` |
-| milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rihal-new-milestone first.` |
-| uat | at least one UAT*.md exists | `No UAT files yet. Run /rihal-execute on a phase first.` |
+| plans | `.planning/ROADMAP.md` exists | `No ROADMAP.md. Run /rcode-new-milestone first.` |
+| phase | at least one `.planning/phases/*/PLAN.md` or `*-SPRINT.md` | `No plan file found. Run /rcode-plan first.` |
+| milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rcode-new-milestone first.` |
+| uat | at least one UAT*.md exists | `No UAT files yet. Run /rcode-execute on a phase first.` |
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
-| fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
+| fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rcode-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
-| lens | `rcode/` or `.rcode/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
+| lens | `rcode/` or `.rcode/` directory exists | `No rcode source found. Run: npx @hanzlaa/rcode install .` |
+| worktrees | git repo exists | `Not in a git repo.` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
 (closes #234 audit-milestone halt):
@@ -122,7 +136,7 @@ if [ "$TARGET" = "milestone" ] && [ "$SUMMARIES" -eq 0 ] && [ "$PLANS" -gt 0 ]; 
   echo "  Phases were executed but never formally closed."
   # Offer (yolo: auto-pick 1; guided: ask):
   #   1. Synthesize SUMMARY.md per phase from SPRINT.md + git log    [recommended]
-  #   2. Run /rihal-verify-phase per phase (manual close)
+  #   2. Run /rcode-verify-phase per phase (manual close)
   #   3. Continue audit anyway (will only assess what's documented)
   #   0. Cancel
 fi
@@ -146,13 +160,14 @@ Run the target's slash command, forwarding remaining args:
 | target | dispatch |
 |---|---|
 | plans | execute `@.rcode/workflows/audit-plans.md` inline |
-| phase | `/rihal-verify-phase $REST_ARGS` |
-| milestone | `/rihal-audit-milestone $REST_ARGS` |
-| uat | `/rihal-audit-uat $REST_ARGS` |
-| code | `/rihal-code-review $REST_ARGS --karpathy` |
-| lens | `/rihal-lens-audit $REST_ARGS` |
-| fix | `/rihal-audit-fix $REST_ARGS` |
-| work | `/rihal-verify-work $REST_ARGS` |
+| phase | `/rcode-verify-phase $REST_ARGS` |
+| milestone | `/rcode-audit-milestone $REST_ARGS` |
+| uat | `/rcode-audit-uat $REST_ARGS` |
+| code | `/rcode-review $REST_ARGS --karpathy` |
+| lens | `/rcode-lens-audit $REST_ARGS` |
+| fix | `/rcode-audit-fix $REST_ARGS` |
+| work | `/rcode-verify-work $REST_ARGS` |
+| worktrees | execute `@.rcode/workflows/audit-worktrees.md` inline |
 
 ## Step 6 — Closing summary
 
@@ -165,23 +180,23 @@ Report: {report_path or "(stdout only)"}
 Findings: {count}
 
 Next:
-  /rihal-audit fix         — auto-fix findings classified as auto-fixable
-  /rihal-audit code        — drill into code-quality issues
-  /rihal-audit lens        — 15-lens methodology audit
-  /rihal-settings show     — review which audit gates are enabled
+  /rcode-audit fix         — auto-fix findings classified as auto-fixable
+  /rcode-audit code        — drill into code-quality issues
+  /rcode-audit lens        — 15-lens methodology audit
+  /rcode-settings show     — review which audit gates are enabled
 ```
 
 ## Success Criteria
 
-- [ ] `/rihal-audit` (no args) presents menu in guided mode, auto-picks in yolo
-- [ ] `/rihal-audit milestone` short-circuits the menu
-- [ ] `/rihal-audit lens` dispatches to `/rihal-lens-audit` interactive picker
-- [ ] `/rihal-audit lens security` passes `security` directly to `/rihal-lens-audit`
+- [ ] `/rcode-audit` (no args) presents menu in guided mode, auto-picks in yolo
+- [ ] `/rcode-audit milestone` short-circuits the menu
+- [ ] `/rcode-audit lens` dispatches to `/rcode-lens-audit` interactive picker
+- [ ] `/rcode-audit lens security` passes `security` directly to `/rcode-lens-audit`
 - [ ] When SUMMARY.md absent but SPRINT.md present, milestone offers synthesize/verify/skip — does not dead-halt
 - [ ] Sub-workflow's closing report is surfaced unchanged
 
 ## On Error
 
-- **Sub-workflow not installed** (slash file missing): `Audit subroute '/rihal-{target}' not found. Run: npx @hanzlaa/rcode install .`
+- **Sub-workflow not installed** (slash file missing): `Audit subroute '/rcode-{target}' not found. Run: npx @hanzlaa/rcode install .`
 - **Precondition failed**: print the message from Step 4's table, suggest the unblocking command, STOP.
 - **`.rcode/config.yaml` missing**: treat as `mode: guided`, continue.

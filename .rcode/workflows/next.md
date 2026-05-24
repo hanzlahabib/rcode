@@ -20,7 +20,7 @@ Print a routing banner when dispatching to the next command:
 Current: Phase {N} — {name} | Sprint {sprint_id}
 Status:  {status description}
 
-▶ Next: `/rihal-{command} {args}`
+▶ Next: `/rcode-{command} {args}`
   {One-line explanation}
 ```
 
@@ -50,7 +50,7 @@ Extract from state JSON:
 
 If no `.planning/` directory AND no `.rcode/state.json`:
 ```
-No rcode project detected. Run `/rihal-new-project` to get started.
+No rcode project detected. Run `/rcode-new-project` to get started.
 ```
 Exit.
 </step>
@@ -82,7 +82,7 @@ If found:
 ```
 Stop: Project in error state
 
-Resolve the error before advancing. Run `/rihal-health` to diagnose.
+Resolve the error before advancing. Run `/rcode-health` to diagnose.
 Use `--force` to bypass.
 ```
 Exit.
@@ -104,35 +104,35 @@ Apply routing rules based on state:
 
 **Route 1: No phases exist yet**
 ROADMAP.md exists but no phase directories on disk:
-Next: `/rihal-sprint-planning`
+Next: `/rcode-sprint-planning`
 
 **Route 2: Phase exists but no sprint**
 Current phase directory exists but has no SPRINT.md:
-Next: `/rihal-sprint-planning --phase {current_phase}`
+Next: `/rcode-sprint-planning --phase {current_phase}`
 
 **Route 3: Sprint exists, stories incomplete**
 SPRINT.md exists and has stories with status != done:
-Next: `/rihal-execute .planning/phases/{phase_dir}/SPRINT.md`
+Next: `/rcode-execute .planning/phases/{phase_dir}/SPRINT.md`
 
 **Route 4: All stories done, sprint not closed**
 All stories are done but sprint status is still "active":
-Next: complete the sprint via `rcode-tools.cjs state sprint complete`, then suggest `/rihal-sprint-planning` for next sprint
+Next: complete the sprint via `rcode-tools.cjs state sprint complete`, then suggest `/rcode-sprint-planning` for next sprint
 
 **Route 5: Sprint complete, next phase exists**
 Current phase is complete, next phase exists in ROADMAP:
-Next: `/rihal-sprint-planning --phase {next_phase}`
+Next: `/rcode-sprint-planning --phase {next_phase}`
 
 **Route 6: All phases complete**
 All phases in ROADMAP are complete:
-Next: `/rihal-complete-milestone`
+Next: `/rcode-complete-milestone`
 
 **Route 7: Paused**
 State shows paused_at is set:
-Next: `/rihal-resume-work`
+Next: `/rcode-resume-work`
 
 **Route 8: No sprint system, fallback**
 State has no sprints[] data — legacy or empty project:
-Next: `/rihal-sprint-planning`
+Next: `/rcode-sprint-planning`
 </step>
 
 <step name="show_and_execute">
@@ -144,12 +144,12 @@ Display the determination:
 **Current:** Phase {N} — {name} | Sprint {sprint_id}
 **Sprint:** {done}/{total} stories ({points_done}/{points_total} pts)
 
-Next: `/rihal-{command} {args}`
+Next: `/rcode-{command} {args}`
   {One-line explanation}
 ```
 
 Then immediately invoke the determined command.
-Do not ask for confirmation — `/rihal-next` is zero-friction advancement.
+Do not ask for confirmation — `/rcode-next` is zero-friction advancement.
 </step>
 
 </process>

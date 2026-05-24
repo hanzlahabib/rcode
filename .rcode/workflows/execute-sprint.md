@@ -25,7 +25,9 @@ INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir`, `phase_number`, `plans`, `summaries`, `incomplete_plans`, `state_path`, `config_path`.
+Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir`, `phase_number`, `plans`, `summaries`, `incomplete_plans`, `state_path`, `config_path`, `response_language`.
+
+**If `response_language` is set:** include `Respond in {response_language}.` in every spawned subagent prompt (executor, debugger, gap-closer). VERIFICATION.md, SUMMARY.md, and any human-facing prose must be written in that language. Code, identifiers, commit messages, and file paths stay English.
 
 If `.planning/` missing: error.
 </step>
@@ -41,7 +43,12 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 
 ```bash
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
-# config settings can be fetched via rcode-tools config-get if needed
+
+# Scoped yolo check — closes #739. Honours yolo_scope and yolo_ttl from config.
+PHASE_NUMBER=$(echo "$PHASE" | grep -oE '^[0-9]+(\.[0-9]+)?')
+YOLO_STATUS=$(node ".rcode/bin/rcode-tools.cjs" config-check-yolo --phase "${PHASE_NUMBER}" --workflow execute-sprint 2>/dev/null || echo '{"active":false}')
+YOLO_ACTIVE=$(echo "$YOLO_STATUS" | grep -o '"active":true' | grep -c . || echo 0)
+[ "$YOLO_ACTIVE" -gt 0 ] && CONFIG_MODE="yolo" || CONFIG_MODE=$(node ".rcode/bin/rcode-tools.cjs" config-get mode 2>/dev/null || echo "guided")
 ```
 
 <if mode="yolo">
@@ -61,7 +68,7 @@ PLAN_START_EPOCH=$(date +%s)
 </step>
 
 <step name="create_phase_snapshot">
-Create a pre-execution git tag so `/rihal-undo --phase NN --to-snapshot` can restore to this exact state.
+Create a pre-execution git tag so `/rcode-undo --phase NN --to-snapshot` can restore to this exact state.
 Only runs when inside a git repository (skip silently otherwise).
 
 ```bash
@@ -335,6 +342,51 @@ If new untracked files appeared after running scripts or tools, decide for each:
 
 </task_commit>
 
+<post_step_revert_gate>
+## Post-Step Revert Detection Gate (closes #737)
+
+After committing each task, run a diff check to detect accidental reverts. This catches the class of bug where a task's implementation unknowingly undoes work from a previous task or wave.
+
+**When to run:** After every `git commit` that records a task completion (not after TDD RED commits or style-only commits).
+
+**Detection:**
+```bash
+# Compare current HEAD against the commit that started this plan execution
+# PLAN_START_SHA is captured at plan execution start (before first task commit)
+PLAN_START_SHA="${PLAN_START_SHA:-$(git rev-parse HEAD~${COMPLETED_TASK_COUNT:-1} 2>/dev/null || echo '')}"
+
+if [[ -n "$PLAN_START_SHA" ]]; then
+  REVERTED_FILES=$(git diff --name-only "${PLAN_START_SHA}"..HEAD | xargs -I{} sh -c \
+    'git show '"$PLAN_START_SHA"':{} 2>/dev/null | diff - <(git show HEAD:{} 2>/dev/null) >/dev/null 2>&1 && echo {}' 2>/dev/null || true)
+fi
+
+# Simpler check: look for net-zero or net-negative line delta on committed source files
+STAGED_SUMMARY=$(git diff --stat HEAD~1..HEAD 2>/dev/null | tail -1)
+```
+
+**Revert signal heuristics — flag for review if:**
+1. A source file that was modified by a *previous* task (visible in `git log --oneline -10 -- <file>`) has FEWER lines now than at `PLAN_START_SHA`.
+2. A function or class that was added in a prior task is no longer present in the file at `HEAD`.
+3. `git diff --stat HEAD~1..HEAD` shows a large deletion count with no corresponding additions.
+
+**On revert signal detected:**
+```
+⚠ Revert signal on task {N}: {file} appears to have fewer lines than at plan start.
+  Plan start SHA: {PLAN_START_SHA}
+  Current HEAD:   {current_hash}
+
+Review with: git diff {PLAN_START_SHA}..HEAD -- {file}
+
+Options:
+  a) The reduction is intentional (refactor/simplification) — continue
+  b) Work was accidentally overwritten — fix before proceeding
+```
+
+Pause and present this to the user. Do NOT auto-continue on a revert signal. If the user confirms it's intentional, continue. If it's an accidental revert, restore the lost work before committing the next task.
+
+**Performance:** Skip this check on tasks with zero deletions (`git diff --stat HEAD~1..HEAD | grep -q ' 0 deletions'`) — deletions are the precursor to a revert; pure additions cannot revert prior work.
+</post_step_revert_gate>
+
 <step name="checkpoint_protocol">
 On `type="checkpoint:*"`: automate everything possible first. Checkpoints are for verification/decisions only.
 
@@ -529,9 +581,9 @@ If `USER_SETUP_CREATED=true`: display `⚠️ USER SETUP REQUIRED` with path + e
 
 | Condition | Route | Action |
 |-----------|-------|--------|
-| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/rihal-execute {phase}` + `/rihal-verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rihal-plan-phase {Z+1}` + `/rihal-verify-work {Z}` + `/rihal-discuss-phase {Z+1}` |
-| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/rihal-complete-milestone` + `/rihal-verify-work` + `/rihal-add-phase` |
+| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/rcode-execute {phase}` + `/rcode-verify-work`. STOP here. |
+| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rcode-plan {Z+1}` + `/rcode-verify-work {Z}` + `/rcode-discuss-phase {Z+1}` |
+| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/rcode-complete-milestone` + `/rcode-verify-work` + `/rcode-add-phase` |
 
 All routes: `/clear` first for fresh context.
 </step>

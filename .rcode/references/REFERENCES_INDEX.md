@@ -17,8 +17,8 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 |------|-----------|
 | `assumptions-analyzer-playbook.md` | rcode-assumptions-analyzer |
 | `auditor-shared-checklists.md` | rcode-docs-auditor, rcode-edge-case-hunter, rcode-nyquist-auditor, rcode-security-adversary, rcode-security-auditor, rcode-ui-auditor |
-| `code-fixer-playbook.md` | rcode-code-fixer |
-| `code-reviewer-playbook.md` | rcode-code-reviewer |
+| `code-fixer-playbook.md` | rcode-fixer |
+| `code-reviewer-playbook.md` | rcode-reviewer |
 | `codebase-mapping-process.md` | rcode-codebase-mapper |
 | `debugger-playbook.md` | rcode-debugger |
 | `docs-auditor-playbook.md` | rcode-docs-auditor |
@@ -43,9 +43,9 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 |------|-----------|
 | `agent-shared-rules.md` | rcode-fatima, rcode-hanzla, rcode-hussain-pm, rcode-mariam, rcode-sadiq, rcode-waleed |
 | `codebase-grounding.md` | rcode-ahmed, rcode-fatima, rcode-haitham, rcode-hanzla, rcode-hussain-pm, rcode-khalid, rcode-layla, rcode-mariam, rcode-nasser, rcode-noor, rcode-omar, rcode-sadiq, rcode-waleed, rcode-yousef, rcode-zahra, rcode-zayd |
-| `karpathy-guidelines.md` | rcode-assumptions-analyzer, rcode-code-fixer, rcode-debugger, rcode-deviation-analyzer, rcode-fatima, rcode-haitham, rcode-hanzla, rcode-hussain-pm, rcode-integration-checker, rcode-khalid, rcode-noor, rcode-omar, rcode-phase-researcher, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-ui-auditor, rcode-ux-designer, rcode-waleed, rcode-yousef, rcode-zayd |
-| `karpathy-guidelines-full.md` | rcode-codebase-mapper, rcode-code-reviewer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-nyquist-auditor, rcode-planner, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-verifier |
-| `response-style.md` | rcode-advisor-researcher, rcode-ahmed, rcode-assumptions-analyzer, rcode-codebase-mapper, rcode-code-fixer, rcode-code-reviewer, rcode-debugger, rcode-deviation-analyzer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-haitham, rcode-integration-checker, rcode-khalid, rcode-layla, rcode-nasser, rcode-noor, rcode-nyquist-auditor, rcode-omar, rcode-phase-researcher, rcode-planner, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-ui-auditor, rcode-ux-designer, rcode-verifier, rcode-yousef, rcode-zahra, rcode-zayd |
+| `karpathy-guidelines.md` | rcode-assumptions-analyzer, rcode-fixer, rcode-debugger, rcode-deviation-analyzer, rcode-fatima, rcode-haitham, rcode-hanzla, rcode-hussain-pm, rcode-integration-checker, rcode-khalid, rcode-noor, rcode-omar, rcode-phase-researcher, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-ui-auditor, rcode-ux-designer, rcode-waleed, rcode-yousef, rcode-zayd |
+| `karpathy-guidelines-full.md` | rcode-codebase-mapper, rcode-reviewer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-nyquist-auditor, rcode-planner, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-verifier |
+| `response-style.md` | rcode-advisor-researcher, rcode-ahmed, rcode-assumptions-analyzer, rcode-codebase-mapper, rcode-fixer, rcode-reviewer, rcode-debugger, rcode-deviation-analyzer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-haitham, rcode-integration-checker, rcode-khalid, rcode-layla, rcode-nasser, rcode-noor, rcode-nyquist-auditor, rcode-omar, rcode-phase-researcher, rcode-planner, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-ui-auditor, rcode-ux-designer, rcode-verifier, rcode-yousef, rcode-zahra, rcode-zayd |
 
 ---
 
@@ -76,20 +76,20 @@ while the playbook can grow without ballooning every spawn.
 
 | Persona | Agent file | Playbook |
 |---------|------------|----------|
-| Hanzla | rcode-hanzla.md | rihal/skills/agents/hanzla-engineer/SKILL.md |
-| Waleed | rcode-waleed.md | rihal/skills/agents/waleed-architect/SKILL.md |
-| Sadiq | rcode-sadiq.md | rihal/skills/agents/sadiq-analyst/SKILL.md |
-| Fatima | rcode-fatima.md | rihal/skills/agents/fatima-qa/SKILL.md |
-| Mariam | rcode-mariam.md | rihal/skills/agents/mariam-marketing/SKILL.md |
-| Layla | rcode-layla.md | rihal/skills/agents/layla-designer/SKILL.md |
-| Hussain-PM | rcode-hussain-pm.md | rihal/skills/agents/hussain-pm/SKILL.md |
-| Noor | rcode-noor.md | rihal/skills/agents/noor-writer/SKILL.md |
-| Nasser | rcode-nasser.md | rihal/skills/agents/nasser-eng-manager/SKILL.md |
-| Zahra | rcode-zahra.md | rihal/skills/agents/zahra-branding/SKILL.md |
-| Ahmed | rcode-ahmed.md | rihal/skills/agents/ahmed-hassani-director/SKILL.md |
-| Zayd | rcode-zayd.md | rihal/skills/agents/zayd-ml/SKILL.md |
-| Yousef | rcode-yousef.md | rihal/skills/agents/yousef-backend/SKILL.md |
-| Haitham | rcode-haitham.md | rihal/skills/agents/haitham-frontend/SKILL.md |
+| Hanzla | rcode-hanzla.md | rcode/skills/agents/hanzla-engineer/SKILL.md |
+| Waleed | rcode-waleed.md | rcode/skills/agents/waleed-architect/SKILL.md |
+| Sadiq | rcode-sadiq.md | rcode/skills/agents/sadiq-analyst/SKILL.md |
+| Fatima | rcode-fatima.md | rcode/skills/agents/fatima-qa/SKILL.md |
+| Mariam | rcode-mariam.md | rcode/skills/agents/mariam-marketing/SKILL.md |
+| Layla | rcode-layla.md | rcode/skills/agents/layla-designer/SKILL.md |
+| Hussain-PM | rcode-hussain-pm.md | rcode/skills/agents/hussain-pm/SKILL.md |
+| Noor | rcode-noor.md | rcode/skills/agents/noor-writer/SKILL.md |
+| Nasser | rcode-nasser.md | rcode/skills/agents/nasser-eng-manager/SKILL.md |
+| Zahra | rcode-zahra.md | rcode/skills/agents/zahra-branding/SKILL.md |
+| Ahmed | rcode-ahmed.md | rcode/skills/agents/ahmed-hassani-director/SKILL.md |
+| Zayd | rcode-zayd.md | rcode/skills/agents/zayd-ml/SKILL.md |
+| Yousef | rcode-yousef.md | rcode/skills/agents/yousef-backend/SKILL.md |
+| Haitham | rcode-haitham.md | rcode/skills/agents/haitham-frontend/SKILL.md |
 | Khalid | rcode-khalid.md | *(inline — 99L, no separate playbook)* |
 | Omar | rcode-omar.md | *(inline — 96L, no separate playbook)* |
 

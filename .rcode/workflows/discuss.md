@@ -10,7 +10,7 @@ Lightweight — no full banner. Open with one-line header:
 ◆ Spawning {agent-id}...
 ```
 Agent response opens with header: `🧭 **Sadiq (صادق) — Director of Strategy:**`.
-No closure banner (discuss is lightweight). End with optional Next Up if the user should escalate: `Want to convene full council? /rihal-council <question>`.
+No closure banner (discuss is lightweight). End with optional Next Up if the user should escalate: `Want to convene full council? /rcode-council <question>`.
 </output_format>
 
 <required_reading>
@@ -26,15 +26,15 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-discuss [agent-name] <question>
+/rcode-discuss [agent-name] <question>
 ```
 
 **Examples:**
 ```
-/rihal-discuss sadiq should I pivot this idea?
-/rihal-discuss waleed what stack should I use for a multi-tenant SaaS?
-/rihal-discuss what's the kill criterion for this project?
-/rihal-discuss fatima is this release ready to ship?
+/rcode-discuss sadiq should I pivot this idea?
+/rcode-discuss waleed what stack should I use for a multi-tenant SaaS?
+/rcode-discuss what's the kill criterion for this project?
+/rcode-discuss fatima is this release ready to ship?
 ```
 
 Only after the user provides arguments, proceed to Step 0.5.
@@ -60,9 +60,9 @@ If either condition holds:
 ```
 ⚠ Strategic / market decisions benefit from multiple perspectives.
 
-/rihal-discuss is single-agent. For "should we" questions across domains, use:
+/rcode-discuss is single-agent. For "should we" questions across domains, use:
 
-/rihal-council $ARGUMENTS
+/rcode-council $ARGUMENTS
 ```
 
 Only proceed past this step if both checks pass — question is tactical or single-domain (codebase, team, release, design) AND top agent is sadiq/waleed/fatima.

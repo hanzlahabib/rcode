@@ -27,7 +27,7 @@ End with totals footer and Next Up routing hint.
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-list-plans [--phase <id>] [--status <state>] [--detail]
+/rcode-list-plans [--phase <id>] [--status <state>] [--detail]
 
   --phase <id>     Filter to one phase (e.g. 04 or 04-dashboard-refresh)
   --status <state> Filter by plan state: todo | active | done | blocked
@@ -48,7 +48,7 @@ If `$PHASES_DIR` does not exist, print:
 No plans yet. This project has no `.planning/phases/` directory.
 
 Create the first plan:
-  /rihal-plan "<task description>"
+  /rcode-plan "<task description>"
 ```
 
 STOP.
@@ -119,16 +119,16 @@ Totals: {N} plans · {done_stories}/{total_stories} stories · {done_pts}/{total
 
 Pick ONE suggestion based on the current state:
 
-- If there is an `active` plan → `Next: /rihal-sprint-status --sprint <id>` (that plan's sprint ID)
-- If no active but todos exist → `Next: /rihal-execute .planning/phases/<first-todo-phase>/SPRINT.md`
-- If a plan is `blocked` → `Next: /rihal-correct-course --phase <id>`
-- If all done → `Next: /rihal-new-milestone  (or `/rihal-sprint-planning` for the next sprint)`
+- If there is an `active` plan → `Next: /rcode-sprint-status --sprint <id>` (that plan's sprint ID)
+- If no active but todos exist → `Next: /rcode-execute .planning/phases/<first-todo-phase>/SPRINT.md`
+- If a plan is `blocked` → `Next: /rcode-correct-course --phase <id>`
+- If all done → `Next: /rcode-new-milestone  (or `/rcode-sprint-planning` for the next sprint)`
 
 If unplanned phases exist, also print:
 
 ```
 ⚠ Phases without SPRINT.md: {list}
-  Draft a plan:  /rihal-plan --phase <id>
+  Draft a plan:  /rcode-plan --phase <id>
 ```
 </process>
 

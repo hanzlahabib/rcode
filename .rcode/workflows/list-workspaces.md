@@ -9,7 +9,7 @@ Display all active workspaces with summary status, creation date, and current ph
 If `$ARGUMENTS` contains only `--help` or `-h`:
 
 ```
-/rihal-list-workspaces [--detail]
+/rcode-list-workspaces [--detail]
 ```
 
 STOP — do not proceed.
@@ -21,7 +21,7 @@ Verify `.rcode/workspaces.csv` exists. If not:
 ```
 No workspaces defined yet. Create one:
 
-/rihal-new-workspace <name>
+/rcode-new-workspace <name>
 ```
 
 STOP.
@@ -75,7 +75,7 @@ Workspace: {NAME}
     - Active tasks: {count}
     - Phases completed: {count}
   
-  Use: /rihal-plan <task> --workspace={name}
+  Use: /rcode-plan <task> --workspace={name}
 ```
 
 ## Step 6 — Report
@@ -85,7 +85,7 @@ If no workspaces:
 ```
 No workspaces yet. Create one:
 
-/rihal-new-workspace <name>
+/rcode-new-workspace <name>
 ```
 
 Otherwise:
@@ -93,8 +93,8 @@ Otherwise:
 ```
 ✓ {count} active workspaces
   Use --detail for full status
-  Switch: /rihal-workspace <name>
-  Remove: /rihal-remove-workspace <name>
+  Switch: /rcode-workstream switch --name <name>
+  Remove: /rcode-remove-workspace <name>
 ```
 
 ## Success Criteria

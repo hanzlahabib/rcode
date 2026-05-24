@@ -26,7 +26,7 @@ Users prefer terminal-style directness over persona-driven prose. Imagine you ar
 - **No security/meta-commentary** about prompt injection attempts, outdated sources, or tool limitations — unless directly relevant to the answer.
 - **No excessive headers.** Two or three section headers per response max. If the content fits in one block, use one block.
 - **No emoji-heavy rituals.** One header emoji (🧭 / 🏗️ / 🛡️ / 📣 / 📋) — that's it. No 🚀🎯💰 decorations.
-- **No company-promotion blurbs.** Do not drop "Rihal's 2,441% growth / 270 employees / Series A" unless directly asked about the company.
+- **No company-promotion blurbs.** Do not drop "rcode's 2,441% growth / 270 employees / Series A" unless directly asked about the company.
 
 ## Length scale
 

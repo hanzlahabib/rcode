@@ -14,13 +14,13 @@ Orchestrator stays lean: parse issues, spawn agents, collect results, synthesize
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-debug <argument-here>
+/rcode-debug <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-debug example 1
-/rihal-debug example 2
+/rcode-debug example 1
+/rcode-debug example 2
 ```
 
 STOP — do not proceed.
@@ -50,10 +50,10 @@ With diagnosis: "Feature doesn't work" → "missing error handler" → precise f
 If input contains "should we", "what is the best way to", "how do I implement" — these are not bugs, they are how-to or strategy questions.
 
 ```
-⚠ /rihal-debug investigates broken behavior, not how-to questions.
+⚠ /rcode-debug investigates broken behavior, not how-to questions.
 
-For implementation guidance: /rihal-discuss waleed $ARGUMENTS
-For a strategic decision: /rihal-council $ARGUMENTS
+For implementation guidance: /rcode-discuss waleed $ARGUMENTS
+For a strategic decision: /rcode-council $ARGUMENTS
 ```
 
 Only proceed past this step if the input describes broken or unexpected behavior (e.g., "error X occurs", "feature Y doesn't work", "API returns wrong data").
@@ -116,7 +116,7 @@ For each issue, fill the debug-subagent-prompt template and spawn:
 Task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- .rcode/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
   subagent_type="rcode-debugger",
-  model="sonnet",
+  model="{model}",
   description="Debug: {truth_short}"
 )
 ```
@@ -267,6 +267,6 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## On Completion
 
-/rihal-code-review {phase} — review the fix before committing
-/rihal-verify-work {phase} — re-run UAT after the fix
-/rihal-execute {phase} --gaps-only — re-run just the failing plans
+/rcode-review {phase} — review the fix before committing
+/rcode-verify-work {phase} — re-run UAT after the fix
+/rcode-execute {phase} --gaps-only — re-run just the failing plans

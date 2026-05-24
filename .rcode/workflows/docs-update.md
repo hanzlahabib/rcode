@@ -18,13 +18,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-docs-update [phase]
+/rcode-docs-update [phase]
 ```
 
 **Examples:**
 ```
-/rihal-docs-update
-/rihal-docs-update 02
+/rcode-docs-update
+/rcode-docs-update 02
 ```
 
 <process>
@@ -48,7 +48,7 @@ fi
 
 Extract from project analysis:
 - `doc_writer_model` — model string from agent manifest (never hardcode a model name)
-- `commit_docs` — whether to commit generated files when done (read from `.planning/config.json` if exists)
+- `commit_docs` — whether to commit generated files when done (read from `.rcode/config.yaml` via `node rcode-tools.cjs config-get commit_docs`)
 - `response_language` — output language from `.rcode/config.yaml` (null = English); if set, include `Respond in {value}.` in all spawned subagent prompts
 - `existing_docs` — find all existing Markdown files with `find docs -name "*.md" 2>/dev/null`
 - `project_type` — detect from: `package.json`, `src/pages/api` or `pages/api`, `bin/` or `cli/`, `LICENSE`, `vercel.json` or `netlify.toml`, `lerna.json` or `pnpm-workspace.yaml`, `test/` or `__tests__/`
@@ -157,7 +157,7 @@ For each doc in the queue, spawn a `rcode-noor` agent in parallel waves (up to 3
 ```
 Task(
   subagent_type="rcode-noor",
-  model="sonnet",
+  model="{model}",
   prompt="
 Generate documentation for {doc_type}.
 Output path: {resolved_path}
@@ -180,7 +180,7 @@ For each generated doc:
 ```
 Task(
   subagent_type="rcode-docs-auditor",
-  model="sonnet",
+  model="{model}",
   prompt="
 Verify this documentation file against the live codebase:
 Path: {resolved_path}
@@ -227,10 +227,10 @@ ${ISSUES:+
 Issues to fix:
 {list}
 
-Run /rihal-docs-update --fix to auto-correct found issues.
+Run /rcode-docs-update --fix to auto-correct found issues.
 }
 
-Next: Review docs in your editor or run verification again with /rihal-docs-update
+Next: Review docs in your editor or run verification again with /rcode-docs-update
 ```
 
 </process>

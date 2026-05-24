@@ -1,9 +1,9 @@
 # Workflow: rcode-init
 
 <purpose>
-Begin the rihla. This is the entry point for configuring rcode in a project. Runs automatically on first use of any rihal command (via auto-init-guard in do.md), or explicitly via /rihal-init for a full setup with codebase scan.
+Begin the rihla. This is the entry point for configuring rcode in a project. Runs automatically on first use of any rcode command (via auto-init-guard in do.md), or explicitly via /rcode-init for a full setup with codebase scan.
 
-No manual "rcode install" needed per project — just use any /rihal-* command and this triggers automatically when config is missing.
+No manual "rcode install" needed per project — just use any /rcode-* command and this triggers automatically when config is missing.
 </purpose>
 
 ## Step 0 — Usage check
@@ -11,15 +11,15 @@ No manual "rcode install" needed per project — just use any /rihal-* command a
 If `$ARGUMENTS` contains only `--help` or `-h`:
 
 ```
-Usage: /rihal-init [--reset] [--skip-scan]
+Usage: /rcode-init [--reset] [--skip-scan]
 
   --reset        overwrite existing .rcode/config.yaml and JOURNEY.md
   --skip-scan    skip the codebase scan step
 
 Examples:
-  /rihal-init                  # first-time setup for this project
-  /rihal-init --reset          # reconfigure from scratch
-  /rihal-init --skip-scan      # config only, no codebase read
+  /rcode-init                  # first-time setup for this project
+  /rcode-init --reset          # reconfigure from scratch
+  /rcode-init --skip-scan      # config only, no codebase read
 ```
 
 STOP here if just help was requested.
@@ -39,7 +39,7 @@ Run detection in parallel:
 
 ```bash
 # rcode presence
-test -f .rcode/config.yaml && echo "rihal-configured: yes" || echo "rihal-configured: no"
+test -f .rcode/config.yaml && echo "rcode-configured: yes" || echo "rcode-configured: no"
 test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: no"
 test -f .rcode/JOURNEY.md && echo "rihla-present: yes" || echo "rihla-present: no"
 
@@ -56,9 +56,9 @@ Classify project into one of four states:
 
 | State | Signal | Suggested next step |
 |-------|--------|---------------------|
-| `fresh` | No code, no git, no rihal | `/rihal-new-project` — let's design it |
-| `existing-new-rihal` | Has code + git, no rihal | `/rihal-scan` or `/rihal-council` — understand before changing |
-| `returning` | rcode already configured | `/rihal-resume-work` or `/rihal-next` |
+| `fresh` | No code, no git, no rcode | `/rcode-new-project` — let's design it |
+| `existing-new-rcode` | Has code + git, no rcode | `/rcode-scan` or `/rcode-council` — understand before changing |
+| `returning` | rcode already configured | `/rcode-resume-work` or `/rcode-next` |
 | `reset` | User passed `--reset` flag | Proceed with full reconfigure |
 
 Print one-line state summary:
@@ -75,9 +75,9 @@ If `state === "returning"` and `--reset` not passed:
   ✓ rcode is already configured here.
 
   What next?
-    /rihal-resume-work    — pick up where you left off
-    /rihal-status         — see the dashboard
-    /rihal-next           — suggested next action
+    /rcode-resume-work    — pick up where you left off
+    /rcode-status         — see the dashboard
+    /rcode-next           — suggested next action
 
   Or run with --reset to reconfigure.
   ```
@@ -136,9 +136,9 @@ test -f .rcode/state.json || node .rcode/bin/rcode-tools.cjs state init --projec
 
 ## Step 4 — Scan existing context (skip if `--skip-scan`)
 
-If the project has code (from Step 1 detection), produce `.rcode/JOURNEY.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rihal-map-codebase` or `/rihal-scan` later for deep analysis.
+If the project has code (from Step 1 detection), produce `.rcode/JOURNEY.md`. This is the journey baseline — a lightweight snapshot, not a full audit. Use `/rcode-map-codebase` or `/rcode-scan` later for deep analysis.
 
-**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rihal-scan --refresh --focus tech+arch` immediately after writing JOURNEY.md. The refresh path:
+**Memory-bank refresh on `--reset`.** When `--reset` is passed AND `.planning/codebase/` already contains docs from a previous scan, also chain to `/rcode-scan --refresh --focus tech+arch` immediately after writing JOURNEY.md. The refresh path:
 
 - Captures pre-state (commits since last doc mtime, manifest hashes, top-level dirs).
 - Briefs the user on what changed since the last scan.
@@ -170,10 +170,10 @@ Write `.rcode/JOURNEY.md` following this template (don't over-interpret — just
 <!-- JOURNEY — your project's path. Renamed from RIHLA (رحلة, "the journey") in v4.1 for plain-English clarity. -->
 # JOURNEY — Project journey baseline
 
-**Written by:** /rihal-init
+**Written by:** /rcode-init
 **Date:** {ISO date}
 **Project:** {project_name}
-**Detected state:** {fresh | existing-new-rihal | returning}
+**Detected state:** {fresh | existing-new-rcode | returning}
 
 ## At a glance
 
@@ -197,9 +197,9 @@ Write `.rcode/JOURNEY.md` following this template (don't over-interpret — just
 ## Not scanned
 
 This file is a journey baseline — intentionally shallow. For deep analysis run:
-- `/rihal-map-codebase` — structured codebase documents per focus area
-- `/rihal-scan` — rapid codebase assessment
-- `/rihal-explore` — socratic ideation against the codebase
+- `/rcode-map-codebase` — structured codebase documents per focus area
+- `/rcode-scan` — rapid codebase assessment
+- `/rcode-explore` — socratic ideation against the codebase
 ```
 
 If no code detected, write a minimal JOURNEY.md with just the header and a "fresh project — no code yet" note.
@@ -214,7 +214,7 @@ After writing JOURNEY.md, populate the two context files that every rcode skill 
 # Active Context
 
 **Last updated:** {ISO date}
-**Updated by:** /rihal-init
+**Updated by:** /rcode-init
 
 ## Current State
 
@@ -226,7 +226,7 @@ After writing JOURNEY.md, populate the two context files that every rcode skill 
 ## Active Work
 
 {If returning with --reset: summarize what was in progress from git log}
-{If existing-new-rihal: "rcode just configured — no active work tracked yet."}
+{If existing-new-rcode: "rcode just configured — no active work tracked yet."}
 {If fresh: "New project — no code yet."}
 
 ## Key Decisions
@@ -237,7 +237,7 @@ After writing JOURNEY.md, populate the two context files that every rcode skill 
 
 ## Open Questions
 
-_None yet. Use `/rihal-explore` or `/rihal-council` to surface questions._
+_None yet. Use `/rcode-explore` or `/rcode-council` to surface questions._
 ```
 
 **`.rcode/context/project-brief.md`** — High-level project description. Write it using the JOURNEY.md scan data:
@@ -251,7 +251,7 @@ _None yet. Use `/rihal-explore` or `/rihal-council` to surface questions._
 ## Overview
 
 {If code exists: 3-5 sentence summary derived from README + package manifest — what the project does, who it's for, and the primary tech stack}
-{If fresh: "Project not yet started. Run `/rihal-new-project` to design it."}
+{If fresh: "Project not yet started. Run `/rcode-new-project` to design it."}
 
 ## Technical Stack
 
@@ -261,7 +261,7 @@ _None yet. Use `/rihal-explore` or `/rihal-council` to surface questions._
 
 ## Project Goals
 
-_To be refined. Run `/rihal-create-prd` for full requirements discovery._
+_To be refined. Run `/rcode-create-prd` for full requirements discovery._
 ```
 
 Ensure the directory exists before writing:
@@ -273,7 +273,7 @@ mkdir -p .rcode/context
 **Important:** If `--reset` is passed and the files already have user-written content beyond the template stub, preserve a backup before overwriting:
 
 ```bash
-if [ -s .rcode/context/active.md ] && ! grep -q "Run \`/rihal" .rcode/context/active.md; then
+if [ -s .rcode/context/active.md ] && ! grep -q "Run \`/rcode" .rcode/context/active.md; then
   cp .rcode/context/active.md .rcode/context/active.md.bak
 fi
 ```
@@ -294,24 +294,24 @@ Print a contextual recommendation, **one line of copy-paste per suggestion** (pe
 
 Ready to design a new project? Try:
 
-/rihal-new-project {your-project-name}
+/rcode-new-project {your-project-name}
 
 Or think through an idea first:
 
-/rihal-explore what should I build?
+/rcode-explore what should I build?
 ```
 
-**If `existing-new-rihal`:**
+**If `existing-new-rcode`:**
 ```
 ✓ rcode configured. JOURNEY.md written as your baseline.
 
 Recommended first move — understand before changing:
 
-/rihal-scan
+/rcode-scan
 
 Or strategic question about the codebase:
 
-/rihal-council {your question}
+/rcode-council {your question}
 ```
 
 **If `returning` with `--reset`:**
@@ -320,7 +320,7 @@ Or strategic question about the codebase:
 
 Pick up where you left off:
 
-/rihal-resume-work
+/rcode-resume-work
 ```
 
 ## Step 6 — Update state
@@ -338,7 +338,7 @@ Silent if state tools fail.
 - [ ] `.rcode/JOURNEY.md` written (unless `--skip-scan` or no code)
 - [ ] `.rcode/context/active.md` populated with project state (not the placeholder stub)
 - [ ] `.rcode/context/project-brief.md` populated with project overview (not the placeholder stub)
-- [ ] State detected correctly (fresh / existing-new-rihal / returning)
+- [ ] State detected correctly (fresh / existing-new-rcode / returning)
 - [ ] Contextual next-step suggestion printed as single-line copy-paste
 
 ## On Error

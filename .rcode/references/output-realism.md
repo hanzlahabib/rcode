@@ -1,6 +1,6 @@
 # Output Realism — Batch, Confirm, Don't Silently Overrun
 
-Shared contract for all Rihal agents and workflows that take user requests. Enforces honest pushback when scope can't fit one response, instead of producing thin or truncated output.
+Shared contract for all rcode agents and workflows that take user requests. Enforces honest pushback when scope can't fit one response, instead of producing thin or truncated output.
 
 ## The Rule
 

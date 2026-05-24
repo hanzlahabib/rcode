@@ -9,13 +9,13 @@ offers mid-conversation research when useful, then routes crystallized outputs t
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-explore <argument-here>
+/rcode-explore <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-explore example 1
-/rihal-explore example 2
+/rcode-explore example 1
+/rcode-explore example 2
 ```
 
 STOP — do not proceed.
@@ -124,7 +124,7 @@ For each selected output, write the file:
 - **Seeds:** Create `.planning/seeds/{slug}.md` with frontmatter (title, trigger_condition, planted_date)
 - **Research questions:** Append to `.planning/research/questions.md`
 - **Requirements:** Append to `.planning/REQUIREMENTS.md` with next available REQ ID
-- **Phases:** Use existing `/rihal-add-phase` command via SlashCommand
+- **Phases:** Use existing `/rcode-add-phase` command via SlashCommand
 
 Commit if `commit_docs` is enabled:
 ```bash
@@ -140,7 +140,7 @@ node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" commit "docs: capture exploratio
 **Outputs:** {count} artifact(s) created
 {list of created files}
 
-Continue exploring with `/rihal-explore` or start working with `/rihal-next`.
+Continue exploring with `/rcode-explore` or start working with `/rcode-next`.
 ```
 
 </process>

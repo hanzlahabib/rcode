@@ -10,13 +10,13 @@ Generate a comprehensive session report covering work done, token usage estimati
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-session-report <argument-here>
+/rcode-session-report <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-session-report example 1
-/rihal-session-report example 2
+/rcode-session-report example 1
+/rcode-session-report example 2
 ```
 
 STOP — do not proceed.
@@ -32,7 +32,7 @@ test -f .rcode/state.json && echo "exists" || echo "missing"
 If missing, print and stop:
 
 ```
-No state found. Run /rihal-council or execute a plan to initialize state.
+No state found. Run /rcode-council or execute a plan to initialize state.
 ```
 
 ## Step 2 — Read state
@@ -75,7 +75,40 @@ Extract counts:
 - **Chains:** count of `*-chain.md` files
 - **Discusses:** count of `*-discuss.md` files
 
-## Step 5 — Estimate token usage
+## Step 5 — Token usage (measured or estimated)
+
+### Step 5a — Prefer measured totals from cost.jsonl
+
+If the `cost-track` hook (#745) is enabled, it appends one usage record per
+response to `.rcode/telemetry/cost.jsonl`. Check for it first:
+
+```bash
+test -f .rcode/telemetry/cost.jsonl && echo "measured" || echo "estimated"
+```
+
+**If `.rcode/telemetry/cost.jsonl` exists:** sum the `input_tokens` and
+`output_tokens` across every line and report the **measured** totals — label
+them clearly as "measured":
+
+```bash
+node -e "
+const fs=require('fs');
+let i=0,o=0,n=0;
+for(const l of fs.readFileSync('.rcode/telemetry/cost.jsonl','utf8').split('\n').filter(Boolean)){
+  try{const r=JSON.parse(l);i+=r.input_tokens||0;o+=r.output_tokens||0;n++;}catch{}
+}
+console.log('responses='+n,'input='+i,'output='+o,'total='+(i+o));
+"
+```
+
+Report: `Total (measured): {input} input + {output} output = {total} tokens
+across {responses} responses`. Skip the heuristic estimate below — measured
+data supersedes it.
+
+**If `.rcode/telemetry/cost.jsonl` does NOT exist:** fall back to the heuristic
+estimate in Step 5b and label the result "estimated".
+
+### Step 5b — Heuristic estimate (fallback only)
 
 Calculate estimated tokens (note: these are rough approximations, not actual measurements).
 
@@ -102,7 +135,7 @@ Apply context window scale: `estimate = base × max(1, CW / 200000)`
 
 ## Step 6 — List commits
 
-Get commits touching rihal paths since state creation:
+Get commits touching rcode paths since state creation:
 
 ```bash
 SINCE_DATE=$(node -e "try{const s=require('fs').readFileSync('.rcode/state.json','utf8');console.log(JSON.parse(s).created||'')}catch(e){}" 2>/dev/null)
@@ -135,9 +168,16 @@ Write `.planning/SESSION-REPORT-{YYYY-MM-DD-HHmmss}.md` with this structure:
 - **Blockers Identified:** {count} ({open_count} open)
 - **Commits:** {count}
 
-## Estimated Token Usage
+## Token Usage ({measured|estimated})
 
-**Note:** Token estimates are approximations based on artifact counts.
+**If cost.jsonl exists — measured:**
+
+- Responses tracked: {count}
+- Input tokens: {input}
+- Output tokens: {output}
+- **Total (measured): {grand_total} tokens**
+
+**If cost.jsonl absent — estimated** (approximations based on artifact counts):
 
 - Council Sessions: {count} × 50K = {total}K
 - Chains: {count} × 30K = {total}K
@@ -172,7 +212,7 @@ Write `.planning/SESSION-REPORT-{YYYY-MM-DD-HHmmss}.md` with this structure:
 ## Next Steps
 
 - Address {count} open blocker(s) before proceeding
-- Plan next phase with `/rihal-plan-phase {next_phase}`
+- Plan next phase with `/rcode-plan {next_phase}`
 ```
 
 ## Step 8 — Print confirmation
@@ -207,6 +247,6 @@ Then print summary:
 
 ## On Completion
 
-/rihal-progress — see full roadmap status
-/rihal-next — get suggested next action
-/rihal-resume-work — pick up where you left off
+/rcode-progress — see full roadmap status
+/rcode-next — get suggested next action
+/rcode-resume-work — pick up where you left off

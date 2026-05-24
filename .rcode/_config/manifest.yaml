@@ -1,7 +1,7 @@
-# rcode v4 install manifest
-version: 3.4.33
-installDate: 2026-05-11T12:33:26.447Z
-previous_version: 3.4.27
+# rcode v2 install manifest
+version: 4.0.0
+installDate: 2026-05-24T19:27:43.974Z
+previous_version: 3.4.33
 modules:
   - core
   - discovery

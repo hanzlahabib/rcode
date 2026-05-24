@@ -38,13 +38,13 @@ CHECK=$(node .rcode/bin/rcode-tools.cjs module check-requires {name})
 If `ok` is false:
 ```
 Module '{name}' requires '{missing_module}' to be installed first.
-Run: /rihal-install {missing_module}
+Run: /rcode-install {missing_module}
 ```
 And stop.
 
 ## Step 3 — Run installer
 
-The installer needs to be called with the `--module` flag. Detect the rihal-code package location:
+The installer needs to be called with the `--module` flag. Detect the rcode package location:
 
 ```bash
 npx @hanzlaa/rcode install --module {name} --force --yes
@@ -57,7 +57,7 @@ npx @hanzlaa/rcode install --module {name} --force --yes
    {description from module manifest}
 
 New commands available:
-  /rihal-{command} — {description}
+  /rcode-{command} — {description}
 ```
 
 ## Success Criteria
@@ -73,5 +73,5 @@ New commands available:
 - **Unknown module:** list available modules.
 - **Already installed:** inform user, no-op.
 - **Missing dependencies:** list missing modules, tell user to install them first.
-- **Installer not found:** tell user to install rihal-code package.
+- **Installer not found:** tell user to install rcode package.
 - **Installation fails:** report the specific error and suggest manual installation steps

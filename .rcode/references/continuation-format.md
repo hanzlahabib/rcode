@@ -52,7 +52,6 @@ Standard format for presenting next steps after completing a command or workflow
 
 **Also available:**
 - Review plan before executing
-- `/rcode-list-phase-assumptions 2` — check assumptions
 
 ---
 ```
@@ -91,7 +90,7 @@ Add note that this is the last plan and what comes after:
 
 **Phase 2: Authentication** — JWT login flow with refresh tokens
 
-`/rcode-plan-phase 2`
+`/rcode-plan 2`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -120,7 +119,7 @@ Show completion status before next action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-`/rcode-plan-phase 3`
+`/rcode-plan 3`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -145,7 +144,7 @@ When there's no clear primary action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-**To plan directly:** `/rcode-plan-phase 3`
+**To plan directly:** `/rcode-plan 3`
 
 **To discuss context first:** `/rcode-discuss-phase 3`
 
@@ -222,7 +221,7 @@ User has no idea what 02-03 is about.
 ### Don't: Missing /clear explanation
 
 ```
-`/rcode-plan-phase 3`
+`/rcode-plan 3`
 
 Run /clear first.
 ```
@@ -242,7 +241,7 @@ Sounds like an afterthought. Use "Also available:" instead.
 
 ```
 ```
-/rcode-plan-phase 3
+/rcode-plan 3
 ```
 ```
 

@@ -29,16 +29,16 @@ Per-project state is ALWAYS preserved (never touched by either mode):
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-update                       # pull latest, preserve user-modified files
-/rihal-update v2.4.0                # pin to a specific version
-/rihal-update --force-overwrite     # discard local edits, overwrite all rcode files
+/rcode-update                       # pull latest, preserve user-modified files
+/rcode-update v2.4.0                # pin to a specific version
+/rcode-update --force-overwrite     # discard local edits, overwrite all rcode files
 ```
 
 **Examples:**
 ```
-/rihal-update
-/rihal-update v2.4.0
-/rihal-update --force-overwrite
+/rcode-update
+/rcode-update v2.4.0
+/rcode-update --force-overwrite
 ```
 
 ## Step 1 — Locate installed package
@@ -78,7 +78,7 @@ node "$INSTALLER_PATH" --list-files 2>/dev/null || echo "[]"
 ```
 
 If that flag doesn't exist, walk the source package's `rcode/` directory manually:
-- Find all files in `$(npm root -g)/@hanzlaa/rcode/rcode/` (or local `./rcode/`)
+- Find all files in `$(npm root -g)/rcode/rcode/` (or local `./rcode/`)
 - Compute SHA256 for each
 - Store as `$SOURCE_HASHES` (map rel → sha256)
 
@@ -154,7 +154,7 @@ when they intentionally want to discard their customizations):
 npx @hanzlaa/rcode@latest install . --force-overwrite --yes
 ```
 
-**Version pinning** — if the user passed `/rihal-update v2.4.0`, pass
+**Version pinning** — if the user passed `/rcode-update v2.4.0`, pass
 the version through:
 
 ```bash
@@ -185,12 +185,12 @@ when relevant. Capture it and re-print as a callout so users notice:
 
 ```
 ℹ Files preserved (your customizations were kept):
-   - .claude/skills/rihal-create-prd/workflow.md
+   - .claude/skills/rcode-create-prd/workflow.md
    - rcode/workflows/sprint-planning.md
    - .rcode/references/output-format.md
 
-These will not auto-update on future /rihal-update calls. To force
-their update next time, run /rihal-update --force-overwrite.
+These will not auto-update on future /rcode-update calls. To force
+their update next time, run /rcode-update --force-overwrite.
 ```
 
 ## Step 8 — Pull rcode brain content (v2.0)
@@ -206,7 +206,7 @@ Parse the JSON output. Report counts to the user:
 - `skipped[]` — sources with `<PLACEHOLDER>` URLs (waiting on issue #162 / M5)
 - `errors[]` — sources that failed (network, auth, etc.)
 
-If the user passed a version argument (`/rihal-update v1.3.0`), pass it through to `brain pull` as `--version v1.3.0`. When supported, `brain pull` will pin each source to the commit recorded in that release's `sources.yaml`. Unknown versions: treat as latest and warn.
+If the user passed a version argument (`/rcode-update v1.3.0`), pass it through to `brain pull` as `--version v1.3.0`. When supported, `brain pull` will pin each source to the commit recorded in that release's `sources.yaml`. Unknown versions: treat as latest and warn.
 
 ## Step 9 — Success summary
 
@@ -224,7 +224,7 @@ rcode brain: M sources pulled, K skipped (placeholder URLs)
 
 New version available at: .rcode/
 
-Run /rihal-status to verify installation.
+Run /rcode-status to verify installation.
 ```
 
 ## Success Criteria

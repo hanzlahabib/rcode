@@ -41,7 +41,7 @@ Documents every top-level field in `state.json`, used by rcode workflows for ses
 
 ### `project`
 **Type:** string  
-**Example:** `"rcode v4"`  
+**Example:** `"rcode v2"`  
 **Written by:** `/rcode-install` (reads from config.yaml)  
 **Purpose:** Project name for context and reports.
 

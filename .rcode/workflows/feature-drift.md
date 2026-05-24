@@ -4,7 +4,7 @@
 Detect drift between PRD, epics, stories, and code. Report severity-tagged
 findings; optionally fix trivial items in-place via opt-in `--fix` flag.
 
-Closes the gap between feature-documentation layers that no other rihal tool
+Closes the gap between feature-documentation layers that no other rcode tool
 spans (`docs-update` covers project docs, `correct-course` covers PRD-vs-code
 only, `memory-audit` reports but doesn't fix). Mirrors the writer+verifier
 loop pattern established by `docs-update`.
@@ -164,7 +164,7 @@ Print summary: `{N} drift findings — {trivial}/{minor}/{major}/{critical}`.
 
 **Phase ID convention for "proposed phase" / "Phase candidate" columns.**
 If the report includes a column suggesting where a finding should land
-(e.g. for downstream `/rihal-plan-milestone-gaps`), use the project's
+(e.g. for downstream `/rcode-plan-milestone-gaps`), use the project's
 real numeric phase numbering — never invent English-letter labels like
 `P-NEW-AI-1` or `P-FIX-N`. Resolve the next free integer with:
 

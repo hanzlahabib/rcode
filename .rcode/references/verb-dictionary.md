@@ -1,10 +1,10 @@
 # Verb Dictionary — multilingual intent matching
 
-**Purpose:** single source of truth for action verbs across all Rihal workflows that do intent matching. Without this, each workflow's matcher diverges and Roman Urdu / Hindi / Arabic instructions silently miss.
+**Purpose:** single source of truth for action verbs across all rcode workflows that do intent matching. Without this, each workflow's matcher diverges and Roman Urdu / Hindi / Arabic instructions silently miss.
 
 **How to use from a workflow:** include this file via `@.rcode/references/verb-dictionary.md` and reference categories by name (e.g. *"verbs from §Create"*) instead of restating English-only lists inline.
 
-**Arabic priority:** Rihal's primary user base operates in Arabic. Native Arabic script (المشروع, مرحلة, راجع) MUST be in every category — transliteration is a fallback for keyboard input only. When you see a new Arabic phrasing in user input, add the native script first, then the transliteration.
+**Arabic priority:** rcode's primary user base operates in Arabic. Native Arabic script (المشروع, مرحلة, راجع) MUST be in every category — transliteration is a fallback for keyboard input only. When you see a new Arabic phrasing in user input, add the native script first, then the transliteration.
 
 ---
 
@@ -117,7 +117,7 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 | plan (verb form — "plan phase N") | `plan`, **AR:** `خطّط`, `خطة` | `/rcode-plan` |
 | story (impl) | `dev story`, `implement story`, `build story`, **AR:** `نفذ القصة`, `طبّق القصة` | `/rcode-dev-story` |
 | brainstorm | `brainstorm`, `ideas`, `sochain`, `sochna`, **AR:** `عصف ذهني`, `أفكار`, `تفكير` | `/rcode-brainstorm` |
-| review (code) | `code review`, `karpathy`, `check my diff`, **AR:** `مراجعة الكود`, `راجع الكود`, `فحص الكود` | `/rcode-code-review [--karpathy]` |
+| review (code) | `code review`, `karpathy`, `check my diff`, **AR:** `مراجعة الكود`, `راجع الكود`, `فحص الكود` | `/rcode-review [--karpathy]` |
 | edge cases | `edge cases`, `edge case hunt`, `find edge cases`, `corner cases`, **AR:** `حالات استثنائية`, `حالات حدية`, `حالات نادرة` | `/rcode-review-edge-case-hunter` |
 | debug | `debug`, `fix`, `bug`, `error`, `crash`, `kharab`, `theek`, **AR:** `صحّح`, `أصلح`, `خطأ`, `مشكلة`, `عطل` | `/rcode-debug` |
 | audit | `audit`, `quality audit`, `health check`, **AR:** `تدقيق`, `مراجعة شاملة`, `فحص الجودة`, `جودة` | `/rcode-audit` |

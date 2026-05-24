@@ -16,18 +16,18 @@ wizard writes are settings that workflows actually honour.
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-settings              # show current + interactive edit
-/rihal-settings show         # show current only
-/rihal-settings get <key>    # read a single dotted key (e.g. workflow.discuss_mode)
-/rihal-settings set <key> <value>   # write a single dotted key
+/rcode-settings              # show current + interactive edit
+/rcode-settings show         # show current only
+/rcode-settings get <key>    # read a single dotted key (e.g. workflow.discuss_mode)
+/rcode-settings set <key> <value>   # write a single dotted key
 ```
 
 **Examples:**
 ```
-/rihal-settings show
-/rihal-settings get workflow.research_by_default
-/rihal-settings set workflow.research_by_default true
-/rihal-settings set git.branching_strategy feature-branch
+/rcode-settings show
+/rcode-settings get workflow.research_by_default
+/rcode-settings set workflow.research_by_default true
+/rcode-settings set git.branching_strategy feature-branch
 ```
 
 ## Step 1 — Resolve mode
@@ -88,7 +88,7 @@ Current rcode Settings (.rcode/config.yaml)
     git.commit_docs                 : {value}    # true | false
 ```
 
-If invoked as `/rihal-settings show`, STOP here.
+If invoked as `/rcode-settings show`, STOP here.
 
 ## Step 1.7 — `get <key>`
 
@@ -165,20 +165,20 @@ Print:
 ```
 ✓ Settings saved to .rcode/config.yaml
 
-Tip: settings take effect on the next workflow run. Use /rihal-settings show
-to verify, or /rihal-resume-work to reload context.
+Tip: settings take effect on the next workflow run. Use /rcode-settings show
+to verify, or /rcode-resume-work to reload context.
 ```
 
 ## Success Criteria
 
-- [ ] `/rihal-settings show` prints all 11 keys (no `(unset)` for keys with defaults)
-- [ ] `/rihal-settings set workflow.discuss_mode discuss` round-trips: `config-get` returns `discuss`
+- [ ] `/rcode-settings show` prints all 11 keys (no `(unset)` for keys with defaults)
+- [ ] `/rcode-settings set workflow.discuss_mode discuss` round-trips: `config-get` returns `discuss`
 - [ ] After any save, sibling keys in `workflow:` and `git:` blocks are preserved (no nesting corruption)
 - [ ] Unknown keys are rejected with the allowed-keys table
 
 ## On Error
 
-- **`.rcode/config.yaml` missing:** print "No config found. Run /rihal-init first." and STOP.
+- **`.rcode/config.yaml` missing:** print "No config found. Run /rcode-init first." and STOP.
 - **Invalid key:** print the allowed keys from Step 1.5 and STOP.
 - **Invalid value:** print the allowed values for that key and STOP.
 - **`rcode-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.

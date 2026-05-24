@@ -6,9 +6,9 @@ REQUIREMENTS.md, and STATE.md in the current milestone and checks for:
   1. Structural completeness  — phases with no sprints, sprints with no tasks, tasks missing must_haves
   2. Status consistency       — STATE.md current pointers vs actual sprint/phase status
   3. Dependency integrity     — depends_on and requirements references that don't resolve
-  4. Next action recommendation — one concrete /rihal-* command to run next
+  4. Next action recommendation — one concrete /rcode-* command to run next
 
-Unlike /rihal-audit-milestone (backward-looking), this audit is forward-looking:
+Unlike /rcode-audit-milestone (backward-looking), this audit is forward-looking:
 it checks *planned* items before they are executed.
 </purpose>
 
@@ -17,14 +17,14 @@ it checks *planned* items before they are executed.
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-audit plans [--report] [--strict]
+/rcode-audit plans [--report] [--strict]
 ```
 
 **Examples:**
 ```
-/rihal-audit plans
-/rihal-audit plans --report
-/rihal-audit plans --strict
+/rcode-audit plans
+/rcode-audit plans --report
+/rcode-audit plans --strict
 ```
 
 STOP — do not proceed.
@@ -42,14 +42,14 @@ PHASES_DIR="$PLANNING/phases"
 If `$PLANNING` does not exist:
 ```
 ⚠ No .planning/ directory found.
-  Run /rihal-new-milestone to start a milestone.
+  Run /rcode-new-milestone to start a milestone.
 ```
 STOP.
 
 If `$ROADMAP` does not exist:
 ```
 ⚠ No ROADMAP.md found at $ROADMAP.
-  Run /rihal-new-milestone to define goals.
+  Run /rcode-new-milestone to define goals.
 ```
 STOP.
 
@@ -84,14 +84,14 @@ Initialize counters: `ERRORS=0`, `WARNINGS=0`. Build a findings array.
 For each directory in `$PHASE_DIRS`:
 - If `find "$phase_dir" -name "*-SPRINT.md" | wc -l` returns 0
 - AND no SUMMARY.md exists in that directory (i.e. not yet completed)
-- → WARN: `Phase {phase_id} has no SPRINT.md — run /rihal-plan to create one`
+- → WARN: `Phase {phase_id} has no SPRINT.md — run /rcode-plan to create one`
 
 **A2. Sprint files with no tasks**
 
 For each file in `$SPRINT_FILES`:
 - Read the file and check if a `<tasks>` block exists
 - If `<tasks>` block is empty (no `<task` entries inside it)
-- → WARN: `Sprint {sprint_id} has no tasks — run /rihal-sprint-planning to add stories`
+- → WARN: `Sprint {sprint_id} has no tasks — run /rcode-sprint-planning to add stories`
 
 **A3. Tasks missing must_haves / acceptance criteria**
 
@@ -106,7 +106,7 @@ For each sprint file:
 For each phase ID in `$ROADMAP_PHASES`:
 - Check if a directory matching that ID exists in `$PHASES_DIR`
 - If not, and the phase is not marked as skipped/cancelled in ROADMAP
-- → ERROR: `ROADMAP lists Phase {id} but no directory exists — run /rihal-add-phase {id}`
+- → ERROR: `ROADMAP lists Phase {id} but no directory exists — run /rcode-add-phase {id}`
 
 ### Check B — Status consistency
 
@@ -118,7 +118,7 @@ If the phase directory does not exist:
 - → ERROR: `STATE.md current_phase={id} but that phase directory does not exist`
 
 If a SUMMARY.md exists in that phase directory (meaning it was completed and closed):
-- → WARN: `STATE.md current_phase={id} is already completed (has SUMMARY.md) — run /rihal-next to advance`
+- → WARN: `STATE.md current_phase={id} is already completed (has SUMMARY.md) — run /rcode-next to advance`
 
 **B2. STATE.md current_sprint points to a sprint where all tasks are done**
 
@@ -126,7 +126,7 @@ If STATE.md has a `current_sprint` value:
 - Find the matching SPRINT.md file
 - Count tasks with `status: done` vs total tasks
 - If all tasks are done and sprint status is not `completed`
-- → WARN: `Sprint {sprint_id} all tasks done but not closed — run /rihal-verify-phase to close it`
+- → WARN: `Sprint {sprint_id} all tasks done but not closed — run /rcode-verify-phase to close it`
 
 **B3. Phase directories with a SUMMARY.md but no entry in ROADMAP as completed**
 
@@ -196,15 +196,15 @@ Pick exactly ONE recommended next command based on highest-priority finding:
 
 | Condition (checked in order) | Recommendation |
 |---|---|
-| Any ERROR from Check C (dependency) | `/rihal-plan` — fix dependency before executing |
-| Any ERROR from Check A4 (ROADMAP phase missing) | `/rihal-add-phase {id}` — create the missing phase |
-| Any WARN from B1 (current_phase completed) | `/rihal-next` — advance to the next phase |
-| Any WARN from B2 (sprint all-done not closed) | `/rihal-verify-phase` — close the current sprint |
-| Any WARN from A1 (phase with no sprint) | `/rihal-plan` — create sprint plan for the earliest unplanned phase |
-| Any WARN from A2 (sprint no tasks) | `/rihal-sprint-planning {sprint_id}` — groom the empty sprint |
-| Any WARN from A3 (missing must_haves) | `/rihal-create-story` — add acceptance criteria |
+| Any ERROR from Check C (dependency) | `/rcode-plan` — fix dependency before executing |
+| Any ERROR from Check A4 (ROADMAP phase missing) | `/rcode-add-phase {id}` — create the missing phase |
+| Any WARN from B1 (current_phase completed) | `/rcode-next` — advance to the next phase |
+| Any WARN from B2 (sprint all-done not closed) | `/rcode-verify-phase` — close the current sprint |
+| Any WARN from A1 (phase with no sprint) | `/rcode-plan` — create sprint plan for the earliest unplanned phase |
+| Any WARN from A2 (sprint no tasks) | `/rcode-sprint-planning {sprint_id}` — groom the empty sprint |
+| Any WARN from A3 (missing must_haves) | `/rcode-create-story` — add acceptance criteria |
 | Any WARN from C2 (unknown requirement) | edit `REQUIREMENTS.md` — define the missing requirement |
-| No findings | `/rihal-execute` — plans are clean, execute the next sprint |
+| No findings | `/rcode-execute` — plans are clean, execute the next sprint |
 
 Print as:
 ```
@@ -249,7 +249,7 @@ Format:
 
 ## On Error
 
-- `.planning/` missing → prompt to run `/rihal-new-milestone`
-- ROADMAP.md missing → prompt to run `/rihal-new-milestone`
-- No sprint files found → report as WARNING and recommend `/rihal-plan`
+- `.planning/` missing → prompt to run `/rcode-new-milestone`
+- ROADMAP.md missing → prompt to run `/rcode-new-milestone`
+- No sprint files found → report as WARNING and recommend `/rcode-plan`
 - REQUIREMENTS.md missing → skip C2 check silently (not all projects use it)

@@ -20,16 +20,16 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-scan [--focus tech|arch|quality|concerns|tech+arch] [--refresh] [--reset]
+/rcode-scan [--focus tech|arch|quality|concerns|tech+arch] [--refresh] [--reset]
 ```
 
 **Examples:**
 ```
-/rihal-scan --focus tech
-/rihal-scan --focus arch
-/rihal-scan --focus tech+arch
-/rihal-scan --refresh                 # auto-update stale docs, brief diff, log to CHANGELOG.md
-/rihal-scan --reset --focus tech+arch # silent overwrite (CI / autonomous)
+/rcode-scan --focus tech
+/rcode-scan --focus arch
+/rcode-scan --focus tech+arch
+/rcode-scan --refresh                 # auto-update stale docs, brief diff, log to CHANGELOG.md
+/rcode-scan --reset --focus tech+arch # silent overwrite (CI / autonomous)
 ```
 
 **Refresh flag — memory-bank pattern.** When `--refresh` is passed AND existing docs are present, the orchestrator:
@@ -227,7 +227,7 @@ Task(
 
   This scope section is non-negotiable — the orchestrator will reject documents missing it.",
   subagent_type="rcode-codebase-mapper",
-  model="sonnet",
+  model="{model}",
   model="{resolved_model}"
 )
 ```
@@ -330,21 +330,21 @@ Insert at the TOP of the file body (newest-first), under any pre-existing `# Cha
 ```markdown
 # Changelog — Codebase Memory Bank
 
-This file tracks structural changes between scans. Each entry is auto-written by `/rihal-scan --refresh`. Newest entries first.
+This file tracks structural changes between scans. Each entry is auto-written by `/rcode-scan --refresh`. Newest entries first.
 
 ---
 
 {first entry here}
 ```
 
-This file is **read by future `/rihal-scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
+This file is **read by future `/rcode-scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
 
 ## Step 7: Final cue (orchestrator-level, after RETURNED banner)
 
 The RETURNED banner above is Dalil's voice. After it, the orchestrator may add ONE neutral cue line if the user might want a deeper scan:
 
 ```
-Tip: `/rihal-map-codebase` runs a 4-area parallel scan if you want broader coverage.
+Tip: `/rcode-map-codebase` runs a 4-area parallel scan if you want broader coverage.
 ```
 
 Skip this cue if the user already asked for a focused scan — don't push an upsell.
@@ -376,7 +376,7 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## On Completion
 
-/rihal-council {your question} — strategic question about what was found
-/rihal-plan {N} — plan fixes for discovered issues
-/rihal-explore — go deeper with socratic analysis
-/rihal-next — get suggested next action
+/rcode-council {your question} — strategic question about what was found
+/rcode-plan {N} — plan fixes for discovered issues
+/rcode-explore — go deeper with socratic analysis
+/rcode-next — get suggested next action

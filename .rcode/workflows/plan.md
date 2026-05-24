@@ -37,7 +37,7 @@ Closure:
  rcode ► PLAN READY ✓  ({N} stories, {M} points)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-End with Next Up routing to /rihal-execute.
+End with Next Up routing to /rcode-execute.
 </output_format>
 
 <required_reading>
@@ -90,11 +90,11 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 **File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
 
-**If `planning_exists` is false:** Error — run `/rihal-new-project` first.
+**If `planning_exists` is false:** Error — run `/rcode-new-project` first.
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--prd <filepath>`, `--reviews`, `--text`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`).
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the Claude App.
 
@@ -111,6 +111,34 @@ fi
 
 When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-SPRINT.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
 
+**Detect from-stub mode (closes #736):**
+```bash
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--from-stub($|[[:space:]]) ]]; then
+  FROM_STUB_MODE=true
+else
+  FROM_STUB_MODE=false
+fi
+```
+
+When `FROM_STUB_MODE=true`, the workflow reads an existing stub `SPRINT.md` (or any `*-SPRINT.md`) already present in the phase directory and treats it as the authoritative task list — the researcher and CONTEXT.md gating are skipped. The stub is passed to the planner as `existing_stub_content` so it can refine, expand, and add implementation detail without rewriting the structure. This is the correct flow when a user has partially sketched a plan by hand or a prior workflow run created a skeleton.
+
+**From-stub resolution:**
+```bash
+if [[ "$FROM_STUB_MODE" == "true" ]]; then
+  STUB_FILE=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | head -1)
+  if [[ -z "$STUB_FILE" ]]; then
+    echo "Error: --from-stub requires an existing SPRINT.md in the phase directory."
+    echo "Found: ${PHASE_DIR}"
+    echo "  (create a stub manually then re-run with --from-stub)"
+    exit 1
+  fi
+  STUB_CONTENT=$(cat "$STUB_FILE")
+  echo "◆ From-stub mode: using $(basename $STUB_FILE) as planner input"
+fi
+```
+
+When `FROM_STUB_MODE=true`: skip steps 4 (CONTEXT.md), 5 (Research), 5.5 (Validation strategy). Jump directly to step 8 (Spawn rcode-planner). Pass `STUB_CONTENT` and `STUB_FILE` to the planner prompt so it refines rather than replaces the stub.
+
 **If no phase number:** Detect next unplanned phase from roadmap.
 
 **If `phase_found` is false:** Validate phase exists in ROADMAP.md. If valid, create the directory using `phase_slug` and `padded_phase` from init:
@@ -120,7 +148,7 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
-**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rihal-add-phase` from a bulk `/rihal-quick` or `/rihal-do` route), read it now:
+**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rcode-add-phase` from a bulk `/rcode-quick` or `/rcode-do` route), read it now:
 
 ```bash
 TASKS_FILE=".planning/phases/${padded_phase}-${phase_slug}/TASKS.md"
@@ -130,7 +158,7 @@ HAS_TASKS=$([ -f "$TASKS_FILE" ] && echo true || echo false)
 When `HAS_TASKS=true`:
 - Pass the TASKS.md content to the planner agent as authoritative phase scope. The planner uses it as the input list — each entry becomes a candidate sprint task in SPRINT.md.
 - Surface this in the opening banner: *"Phase scope source: TASKS.md ({N} entries auto-extracted from bulk route on {date})"*.
-- Do NOT re-prompt the user for scope when TASKS.md is present — they already provided the list once at the /rihal-quick or /rihal-do entry point. The whole point of the auto-route chain is that the user doesn't paste the same content multiple times.
+- Do NOT re-prompt the user for scope when TASKS.md is present — they already provided the list once at the /rcode-quick or /rcode-do entry point. The whole point of the auto-route chain is that the user doesn't paste the same content multiple times.
 
 ## 2.5. Validate `--reviews` Prerequisite
 
@@ -144,9 +172,9 @@ Error:
 ```
 No REVIEWS.md found for Phase {N}. Run reviews first:
 
-/rihal-review --phase {N}
+/rcode-review --phase {N}
 
-Then re-run /rihal-sprint-plan {N} --reviews
+Then re-run /rcode-plan {N} --reviews
 ```
 Exit workflow.
 
@@ -185,7 +213,7 @@ VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
 Error: No VERIFICATION.md found for Phase {X}. Gap-closure planning requires the phase to have run through the verifier first.
 
 Try:
-  /rihal-execute {X} ${Rihal_WS}      # run or re-run execution + verification
+  /rcode-execute {X} ${RCODE_WS}      # run or re-run execution + verification
 ```
 Exit workflow.
 
@@ -294,9 +322,9 @@ If "Run discuss-phase first":
   does not work correctly in nested subcontexts (#1009). Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
-  Run this command first, then re-run /rihal-sprint-plan {X} ${Rihal_WS}:
+  Run this command first, then re-run /rcode-plan {X} ${RCODE_WS}:
 
-  /rihal-discuss-phase {X} ${Rihal_WS}
+  /rcode-discuss-phase {X} ${RCODE_WS}
   ```
   **Exit the sprint-plan workflow. Do not continue.**
 
@@ -388,15 +416,15 @@ Only after showing overlap results (or skipping them), show the execute prompt.
 Extract from INIT JSON:
 
 ```bash
-_rihal_field() { node -e "const o=JSON.parse(process.argv[1]); const v=o[process.argv[2]]; process.stdout.write(v==null?'':String(v))" "$1" "$2"; }
-STATE_PATH=$(_rihal_field "$INIT" state_path)
-ROADMAP_PATH=$(_rihal_field "$INIT" roadmap_path)
-REQUIREMENTS_PATH=$(_rihal_field "$INIT" requirements_path)
-RESEARCH_PATH=$(_rihal_field "$INIT" research_path)
-VERIFICATION_PATH=$(_rihal_field "$INIT" verification_path)
-UAT_PATH=$(_rihal_field "$INIT" uat_path)
-CONTEXT_PATH=$(_rihal_field "$INIT" context_path)
-REVIEWS_PATH=$(_rihal_field "$INIT" reviews_path)
+_rcode_field() { node -e "const o=JSON.parse(process.argv[1]); const v=o[process.argv[2]]; process.stdout.write(v==null?'':String(v))" "$1" "$2"; }
+STATE_PATH=$(_rcode_field "$INIT" state_path)
+ROADMAP_PATH=$(_rcode_field "$INIT" roadmap_path)
+REQUIREMENTS_PATH=$(_rcode_field "$INIT" requirements_path)
+RESEARCH_PATH=$(_rcode_field "$INIT" research_path)
+VERIFICATION_PATH=$(_rcode_field "$INIT" verification_path)
+UAT_PATH=$(_rcode_field "$INIT" uat_path)
+CONTEXT_PATH=$(_rcode_field "$INIT" context_path)
+REVIEWS_PATH=$(_rcode_field "$INIT" reviews_path)
 ```
 
 ## 7.5. Verify Nyquist Artifacts
@@ -415,7 +443,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 ```
 
 If missing and Nyquist is still enabled/applicable — ask user:
-1. Re-run: `/rihal-sprint-plan {PHASE} --research ${Rihal_WS}`
+1. Re-run: `/rcode-plan {PHASE} --research ${RCODE_WS}`
 2. Disable Nyquist with the exact command:
    `node ".rcode/bin/rcode-tools.cjs" config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
@@ -448,7 +476,7 @@ If `SPRINT_COUNT > MAX_SPRINTS`:
   This phase is too large — the sprint-checker will be expensive and revision
   loops will multiply the cost.
 
-  Recommended: split this phase into two using /rihal-plan --split {N}
+  Recommended: split this phase into two using /rcode-plan --split {N}
 
 Options:
   1. Split phase now (recommended)
@@ -488,7 +516,7 @@ rest become a follow-up phase
 
 Use AskUserQuestion with these 3 options.
 
-**If "Split":** Use `/rihal-insert-phase` to create the sub-phases, then replan each.
+**If "Split":** Use `/rcode-insert-phase` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
 
@@ -514,7 +542,7 @@ Checker prompt:
 - {PHASE_DIR}/*-SPRINT.md (Plans to verify)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /rihal-discuss-phase)
+- {context_path} (USER DECISIONS from /rcode-discuss-phase)
 - {research_path} (Technical Research — includes Validation Architecture)
 </files_to_read>
 
@@ -536,7 +564,7 @@ ${AGENT_SKILLS_CHECKER}
 Task(
   prompt=checker_prompt,
   subagent_type="rcode-sprint-checker",
-  model="sonnet",
+  model="{model}",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
 )
@@ -598,7 +626,7 @@ If NONE of these evidence markers are present, the checker malfunctioned (return
 ```
 Display: "Sprint-checker returned without evidence of tool use — likely
          malfunctioned (cf. issue #440). Refusing to advance the plan
-         on unverified output. Re-run /rihal-plan or inspect the agent."
+         on unverified output. Re-run /rcode-plan or inspect the agent."
 Halt the workflow with a non-zero exit signal.
 ```
 
@@ -621,7 +649,7 @@ Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} 
   **If `stall_reentry_count >= 2`:**
     Display: `Stall persists after 2 re-planning attempts. The following issues could not be resolved automatically:`
     List the remaining issues from the checker.
-    Suggest: "Consider resolving these issues manually or running `/rihal-debug` to investigate root causes."
+    Suggest: "Consider resolving these issues manually or running `/rcode-debug` to investigate root causes."
     Options: "Proceed anyway" | "Abandon"
     If "Proceed anyway": accept current plans and continue to step 13.
     If "Abandon": stop workflow.
@@ -637,7 +665,7 @@ Revision prompt:
 
 <files_to_read>
 - {PHASE_DIR}/*-SPRINT.md (Existing plans)
-- {context_path} (USER DECISIONS from /rihal-discuss-phase)
+- {context_path} (USER DECISIONS from /rcode-discuss-phase)
 </files_to_read>
 
 ${AGENT_SKILLS_PLANNER}
@@ -656,7 +684,7 @@ Return what changed.
 Task(
   prompt=revision_prompt,
   subagent_type="rcode-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )
@@ -817,7 +845,7 @@ Plans ready. Launching execute-phase...
 
 Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
 ```
-Skill(skill="rihal-execute", args="${PHASE} --auto --no-transition ${Rihal_WS}")
+Skill(skill="rcode-execute", args="${PHASE} --auto --no-transition ${RCODE_WS}")
 ```
 
 The `--no-transition` flag tells execute-phase to return status after verification instead of chaining further. This keeps the auto-advance chain flat — each phase runs at the same nesting level rather than spawning deeper Task agents.
@@ -831,14 +859,14 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 
   Auto-advance pipeline finished.
 
-  Next: /rihal-discuss-phase ${NEXT_PHASE} --auto ${Rihal_WS}
+  Next: /rcode-discuss-phase ${NEXT_PHASE} --auto ${RCODE_WS}
   ```
 - **GAPS FOUND / VERIFICATION FAILED** → Display result, stop chain:
   ```
   Auto-advance stopped: Execution needs review.
 
   Review the output above and continue manually:
-  /rihal-execute ${PHASE} ${Rihal_WS}
+  /rcode-execute ${PHASE} ${RCODE_WS}
   ```
 
 **If neither `--auto` nor config enabled:**
@@ -850,7 +878,7 @@ Route to `<offer_next>` (existing behavior).
 Issue #655 — the success banner is gated on real verification, not vibes.
 Before emitting `PLANNED ✓`, confirm one of these is true:
 
-1. A passing CHECK.md exists at `${PHASE_DIR}/*-CHECK.md` from rihal-sprint-checker
+1. A passing CHECK.md exists at `${PHASE_DIR}/*-CHECK.md` from rcode-sprint-checker
    in this run AND its overall verdict is `pass` (or `pass-with-cautions`).
 2. The user has explicitly said "skip verification" / "override" this run AND that
    override is recorded in the offer-next output's `Verification:` field as
@@ -867,12 +895,12 @@ fail verdict, or its CHECK.md is missing) — DO NOT emit `PLANNED ✓`. Emit:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Plans were written but rcode-sprint-checker did not return a passing
-CHECK.md. Run /rihal-plan {X} --reviews to gate the plans before
+CHECK.md. Run /rcode-plan {X} --reviews to gate the plans before
 executing, or pass --skip-verify if you accept the risk.
 ```
 
-The same rule applies to `VERIFIED ✓` (after /rihal-verify-phase) and
-`DONE ✓` (after /rihal-execute) — the success-tick is reserved for
+The same rule applies to `VERIFIED ✓` (after /rcode-verify-phase) and
+`DONE ✓` (after /rcode-execute) — the success-tick is reserved for
 gate-passed states.
 </banner_emission_gate>
 
@@ -901,15 +929,15 @@ Verification: {Passed | Passed with override | Skipped}
 
 /clear then:
 
-/rihal-execute {X} ${Rihal_WS}
+/rcode-execute {X} ${RCODE_WS}
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
 - cat .planning/phases/{phase-dir}/*-SPRINT.md — review plans
-- /rihal-sprint-plan {X} --research — re-research first
-- /rihal-review --phase {X} --all — peer review plans with external AIs
-- /rihal-sprint-plan {X} --reviews — replan incorporating review feedback
+- /rcode-plan {X} --research — re-research first
+- /rcode-review --phase {X} --all — peer review plans with external AIs
+- /rcode-plan {X} --reviews — replan incorporating review feedback
 
 ───────────────────────────────────────────────────────────────
 </offer_next>
@@ -930,11 +958,11 @@ stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-cod
    Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
    ```
 4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
-5. **Retry:** Restart Claude Code and run `/rihal-sprint-plan` again
+5. **Retry:** Restart Claude Code and run `/rcode-plan` again
 
 If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
 ```
-/rihal-sprint-plan N --skip-research
+/rcode-plan N --skip-research
 ```
 </windows_troubleshooting>
 

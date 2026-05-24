@@ -22,14 +22,14 @@ If `todo_count` is 0:
 ```
 No pending todos.
 
-Todos are captured during work sessions with /rihal-add-todo.
+Todos are captured during work sessions with /rcode-add-todo.
 
 ---
 
 Would you like to:
 
-1. Continue with current phase (/rihal-progress)
-2. Add a todo now (/rihal-add-todo)
+1. Continue with current phase (/rcode-progress)
+2. Add a todo now (/rcode-add-todo)
 ```
 
 Exit.
@@ -37,8 +37,8 @@ Exit.
 
 <step name="parse_filter">
 Check for area filter in arguments:
-- `/rihal-check-todos` → show all
-- `/rihal-check-todos api` → filter to area:api only
+- `/rcode-check-todos` → show all
+- `/rcode-check-todos api` → filter to area:api only
 </step>
 
 <step name="list_todos">
@@ -56,7 +56,7 @@ Pending Todos:
 ---
 
 Reply with a number to view details, or:
-- `/rihal-check-todos [area]` to filter by area
+- `/rcode-check-todos [area]` to filter by area
 - `q` to exit
 ```
 
@@ -110,6 +110,7 @@ Use AskUserQuestion:
   - "Add to phase plan" — include when planning Phase [N]
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
+  - "Cancel" — exit /rcode-check-todos without changing anything
 
 **If no roadmap match:**
 
@@ -118,9 +119,12 @@ Use AskUserQuestion:
 - question: "What would you like to do with this todo?"
 - options:
   - "Work on it now" — move to done, start working
-  - "Create a phase" — /rihal-add-phase with this scope
+  - "Create a phase" — /rcode-add-phase with this scope
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
+  - "Cancel" — exit /rcode-check-todos without changing anything
+
+**If user picks "Cancel" (or hits Esc):** print `Cancelled — todo untouched.` and STOP. Do not proceed to execute_action.
 </step>
 
 <step name="execute_action">
@@ -134,7 +138,7 @@ Update STATE.md todo count. Present problem/solution context. Begin work or ask 
 Note todo reference in phase planning notes. Keep in pending. Return to list or exit.
 
 **Create a phase:**
-Display: `/rihal-add-phase [description from todo]`
+Display: `/rcode-add-phase [description from todo]`
 Keep in pending. User runs command in fresh context.
 
 **Brainstorm approach:**

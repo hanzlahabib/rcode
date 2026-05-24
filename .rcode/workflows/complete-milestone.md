@@ -99,7 +99,7 @@ Requirements: {N}/{M} v1 requirements checked off
 
 MUST present 3 options via AskUserQuestion:
 1. **Proceed anyway** — mark milestone complete with known gaps
-2. **Run audit first** — `/rihal-audit-milestone` to assess gap severity
+2. **Run audit first** — `/rcode-audit-milestone` to assess gap severity
 3. **Abort** — return to development
 
 If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md under `### Known Gaps` with REQ-IDs and descriptions.
@@ -107,7 +107,6 @@ If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md 
 <config-check>
 
 ```bash
-cat .planning/config.json 2>/dev/null || true
 node .rcode/bin/rcode-tools.cjs config 2>/dev/null || true
 ```
 
@@ -436,7 +435,7 @@ find .planning/phases -mindepth 1 -maxdepth 1 -type d -exec mv {} "$ARCHIVE_DIR/
 
 Verify: `✓ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
 
-If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/rihal-cleanup` later to archive retroactively.
+If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/rcode-cleanup` later to archive retroactively.
 
 </step>
 
@@ -492,7 +491,7 @@ After archival, reorganize ROADMAP.md with milestone groupings, then delete orig
 rm .planning/REQUIREMENTS.md
 ```
 
-(ROADMAP.md is retained in its reorganized form. Do NOT delete it — deletion is reserved for between-milestone resets via `/rihal-new-milestone`.)
+(ROADMAP.md is retained in its reorganized form. Do NOT delete it — deletion is reserved for between-milestone resets via `/rcode-new-milestone`.)
 
 </step>
 
@@ -789,7 +788,7 @@ Confirm: "Committed: chore: complete v[X.Y] milestone" (or the gitignored notice
 
 `/clear` then:
 
-`/rihal-new-milestone`
+`/rcode-new-milestone`
 
 ---
 ```
@@ -839,7 +838,7 @@ Milestone completion is successful when:
 - [ ] Known gaps recorded in MILESTONES.md if user proceeded with incomplete requirements
 - [ ] RETROSPECTIVE.md updated with milestone section
 - [ ] Cross-milestone trends updated
-- [ ] User knows next step (/rihal-new-milestone)
+- [ ] User knows next step (/rcode-new-milestone)
 
 </success_criteria>
 </output>

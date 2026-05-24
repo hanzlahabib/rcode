@@ -1,6 +1,6 @@
 <purpose>
 Capture a forward-looking idea as a structured seed file with trigger conditions.
-Seeds auto-surface during /rihal-new-milestone when trigger conditions match the
+Seeds auto-surface during /rcode-new-milestone when trigger conditions match the
 new milestone's scope.
 
 Seeds beat deferred items because they:
@@ -117,7 +117,7 @@ scope: {$SCOPE}
 
 **Trigger:** {$TRIGGER}
 
-This seed should be presented during `/rihal-new-milestone` when the milestone
+This seed should be presented during `/rcode-new-milestone` when the milestone
 scope matches any of these conditions:
 - {trigger condition 1}
 - {trigger condition 2}
@@ -153,8 +153,14 @@ Trigger: {$TRIGGER}
 Scope: {$SCOPE}
 File: .planning/seeds/SEED-{PADDED}-{slug}.md
 
-This seed will surface automatically when you run /rihal-new-milestone
+This seed will surface automatically when you run /rcode-new-milestone
 and the milestone scope matches the trigger condition.
+
+▶ Next Up
+  /rcode-status                 — review current focus before context-switching
+  /rcode-note "{$IDEA}"         — capture related thoughts while fresh
+  /rcode-new-milestone           — start the milestone that will consume this seed
+  /rcode-do                      — return to the dispatcher
 ```
 </step>
 

@@ -24,7 +24,7 @@ Task(prompt="
 - .planning/PROJECT.md (Project context)
 - .planning/REQUIREMENTS.md (v1 Requirements)
 - .planning/research/SUMMARY.md (Research findings - if exists)
-- .planning/config.json (Granularity and mode settings)
+- .rcode/config.yaml (Granularity and mode settings — read via `node rcode-tools.cjs config-get <key>`)
 </files_to_read>
 
 ${AGENT_ROADMAPPER}
@@ -46,6 +46,35 @@ Write files first, then return. This ensures artifacts persist even if context i
 ```
 
 **Handle roadmapper return:**
+
+**Stub guard — verify ROADMAP.md has real content:**
+
+After the agent returns (any return signal), run:
+
+```bash
+ROADMAP_LINES=$(wc -l < .planning/ROADMAP.md 2>/dev/null || echo 0)
+ROADMAP_HAS_PHASE=$(grep -c "^## Phase\|^| [0-9]" .planning/ROADMAP.md 2>/dev/null || echo 0)
+```
+
+If `.planning/ROADMAP.md` does not exist, OR `ROADMAP_LINES < 10`, OR `ROADMAP_HAS_PHASE == 0`:
+
+```
+❌ ROADMAP.md is missing or still a stub (no phase headings detected).
+Re-spawning roadmapper...
+```
+
+Re-spawn rcode-roadmapper with the same prompt. If it fails a second time, output:
+
+```
+❌ roadmapper failed twice — ROADMAP.md was not created.
+Blockers:
+- Check that .planning/REQUIREMENTS.md exists and has content
+- Check that rcode-roadmapper agent is installed: node .rcode/bin/rcode-tools.cjs agent-info rcode-roadmapper
+
+Cannot continue without a valid ROADMAP.md. Fix the blocker and re-run /rcode-new-project.
+```
+
+STOP — do not proceed to approval gate.
 
 **If `## ROADMAP BLOCKED`:**
 
@@ -130,7 +159,7 @@ Use AskUserQuestion:
 
 **Generate or refresh project instruction file before final commit:**
 
-The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rihal workflow docs:
+The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rcode workflow docs:
 
 ```markdown
 # {INSTRUCTION_FILE} — project instructions
@@ -138,12 +167,12 @@ The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, 
 This project uses rcode for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
 
 Common commands:
-- /rihal-progress — check status and next action
-- /rihal-discuss-phase N — gather context before planning phase N
-- /rihal-plan N — create a SPRINT.md for phase N
-- /rihal-execute N — execute a SPRINT.md
-- /rihal-verify-work — conversational UAT
-- /rihal-complete-milestone — archive milestone and reset
+- /rcode-progress — check status and next action
+- /rcode-discuss-phase N — gather context before planning phase N
+- /rcode-plan N — create a SPRINT.md for phase N
+- /rcode-execute N — execute a SPRINT.md
+- /rcode-verify-work — conversational UAT
+- /rcode-complete-milestone — archive milestone and reset
 
 Rules:
 - Never run `git push` without explicit user authorization.
@@ -170,7 +199,7 @@ git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project inst
 # Sync all roadmapper-created phases into state.json.
 # rcode-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
 # state.json is empty after this step unless we sync it. Without this, every
-# /rihal-status shows "N phases not registered" warnings immediately after init.
+# /rcode-status shows "N phases not registered" warnings immediately after init.
 node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 

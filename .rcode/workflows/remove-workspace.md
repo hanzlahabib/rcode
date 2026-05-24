@@ -9,14 +9,14 @@ Remove a workspace and clean up all its artifacts. This is destructive — delet
 If `$ARGUMENTS` is empty or only `--help` or `-h`:
 
 ```
-/rihal-remove-workspace <workspace-name> [--archive] [--force]
+/rcode-remove-workspace <workspace-name> [--archive] [--force]
 ```
 
 **Examples:**
 ```
-/rihal-remove-workspace Bug Fix Sprint
-/rihal-remove-workspace Emergency --force
-/rihal-remove-workspace Old Work --archive
+/rcode-remove-workspace Bug Fix Sprint
+/rcode-remove-workspace Emergency --force
+/rcode-remove-workspace Old Work --archive
 ```
 
 STOP — do not proceed.
@@ -33,7 +33,7 @@ If `$WORKSPACE_NAME` is empty, ask:
 ```
 AskUserQuestion(
   header: "Remove Workspace",
-  question: "Which workspace? (list: /rihal-list-workspaces)"
+  question: "Which workspace? (list: /rcode-list-workspaces)"
 )
 ```
 
@@ -47,7 +47,7 @@ If not found:
 
 ```
 ⚠ Workspace not found: {WORKSPACE_NAME}
-  List workspaces: /rihal-list-workspaces
+  List workspaces: /rcode-list-workspaces
 ```
 
 STOP.
@@ -132,7 +132,7 @@ Print:
   [Archive location: {ARCHIVE_PATH}] (if --archive)
   
 Remaining workspaces: {count}
-List: /rihal-list-workspaces
+List: /rcode-list-workspaces
 ```
 
 ## Success Criteria

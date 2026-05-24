@@ -1,7 +1,7 @@
 # Workflow: rcode-chain
 
 <purpose>
-Run a sequential agent pipeline — each agent receives the previous agent's output as input. Unlike `/rihal-council` (parallel debate with cross-talk), chain is a one-way pipeline for "do research → hand to PM → hand to CTO" patterns. Each stage's output is saved as a first-class artifact the next stage reads.
+Run a sequential agent pipeline — each agent receives the previous agent's output as input. Unlike `/rcode-council` (parallel debate with cross-talk), chain is a one-way pipeline for "do research → hand to PM → hand to CTO" patterns. Each stage's output is saved as a first-class artifact the next stage reads.
 </purpose>
 
 ## Step 0 — Usage check
@@ -9,7 +9,7 @@ Run a sequential agent pipeline — each agent receives the previous agent's out
 If `$ARGUMENTS` is empty, print:
 
 ```
-Usage: /rihal-chain <preset|agent-list> <topic or question>
+Usage: /rcode-chain <preset|agent-list> <topic or question>
 
 Presets (common pipelines):
   research-plan      Mariam (research) → Hussain-PM (scope) → Planner (SPRINT.md)
@@ -18,12 +18,12 @@ Presets (common pipelines):
   full-discovery     Mariam → Sadiq (kill criteria) → Hussain-PM → Waleed → Planner
 
 Custom agents (comma-separated, in order):
-  /rihal-chain mariam,hussain-pm,waleed <topic>
+  /rcode-chain mariam,hussain-pm,waleed <topic>
 
 Examples:
-  /rihal-chain research-plan affiliate site in Dubai for mobile accessories
-  /rihal-chain feasibility migrate our Postgres to Neon serverless
-  /rihal-chain mariam,hussain-pm should we enter the SaaS bookkeeping market in Oman?
+  /rcode-chain research-plan affiliate site in Dubai for mobile accessories
+  /rcode-chain feasibility migrate our Postgres to Neon serverless
+  /rcode-chain mariam,hussain-pm should we enter the SaaS bookkeeping market in Oman?
 ```
 
 STOP here if no arguments.
@@ -33,11 +33,11 @@ STOP here if no arguments.
 If `$ARGUMENTS` is a pure decision question with no topic to work on (patterns like "should we", "A or B", "is X better than Y", "worth it") and does NOT contain a preset name or agent list:
 
 ```
-⚠ /rihal-chain produces deliverables (RESEARCH.md, SCOPE.md, SPRINT.md).
-For decisions only, /rihal-council is the right tool.
+⚠ /rcode-chain produces deliverables (RESEARCH.md, SCOPE.md, SPRINT.md).
+For decisions only, /rcode-council is the right tool.
 
-For a debate: /rihal-council $ARGUMENTS
-For a research-to-plan pipeline: /rihal-chain research-plan $ARGUMENTS
+For a debate: /rcode-council $ARGUMENTS
+For a research-to-plan pipeline: /rcode-chain research-plan $ARGUMENTS
 ```
 
 Only proceed past this step if the input is a topic or deliverable request (e.g., "research affiliate site", "scope mobile app migration", "plan e-commerce platform").
@@ -132,7 +132,7 @@ Artifacts in {chain_dir}/:
   3-planner-SPRINT.md          (Planner, stage 3)
 
 Next step:
-/rihal-execute {chain_dir}/3-planner-SPRINT.md
+/rcode-execute {chain_dir}/3-planner-SPRINT.md
 
 ─── ~5K tokens per stage · {duration}s · {stage-count} agents ───
 ```
@@ -167,14 +167,14 @@ Silent on failure — state tracking is optional.
 | `gtm-to-build` | mariam → hussain-pm → waleed | Market → scope → tech reality check |
 | `full-discovery` | mariam → sadiq → hussain-pm → waleed → planner | Full validation before committing |
 
-## Differences from /rihal-council
+## Differences from /rcode-council
 
-| | /rihal-council | /rihal-chain |
+| | /rcode-council | /rcode-chain |
 |--|--|--|
 | Execution | Parallel (Round 1 + cross-talk Round 2) | Sequential (one at a time) |
 | Output | One session artifact with all agent voices | One artifact per agent |
 | Best for | Debate, disagreement, multiple perspectives | Pipelines where each stage builds on the last |
-| Subsequent use | `/rihal-plan {session}` converts follow-ups to plans | Last stage often IS a SPRINT.md already |
+| Subsequent use | `/rcode-plan {session}` converts follow-ups to plans | Last stage often IS a SPRINT.md already |
 
 ## On Error
 
@@ -183,6 +183,6 @@ Silent on failure — state tracking is optional.
 - **Unknown preset:** list valid presets, stop.
 - **Agent not installed:** print installed agents, suggest closest match.
 - **state.json missing or corrupted:** continue without error — chain artifacts are mandatory, state tracking is optional.
-- **Stage fails to produce artifact:** print stage number, allow `/rihal-chain --continue` to resume.
+- **Stage fails to produce artifact:** print stage number, allow `/rcode-chain --continue` to resume.
 - **Agent returns empty output:** print "Agent produced no output. Check input and retry."
 - **`rcode-tools.cjs` missing:** tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).

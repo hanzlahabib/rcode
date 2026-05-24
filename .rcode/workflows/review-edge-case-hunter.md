@@ -10,13 +10,13 @@ Systematically enumerate edge cases by category (input, state, concurrency, netw
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-review-edge-case-hunter <argument-here>
+/rcode-review-edge-case-hunter <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-review-edge-case-hunter example 1
-/rihal-review-edge-case-hunter example 2
+/rcode-review-edge-case-hunter example 1
+/rcode-review-edge-case-hunter example 2
 ```
 
 STOP — do not proceed.
@@ -196,7 +196,7 @@ AskUserQuestion([
 
 If "Yes, find edge cases":
 ```
-/rihal-review-edge-case-hunter --phase {current_phase}
+/rcode-review-edge-case-hunter --phase {current_phase}
 ```
 
 ## Success Criteria

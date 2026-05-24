@@ -12,8 +12,8 @@ the plan → execute → verify → **ship** loop.
 6. Updates STATE.md with shipping status
 
 **Preconditions (all must be true before running):**
-- `/rihal-execute <phase>` completed
-- `/rihal-verify-phase <phase>` passed (VERIFICATION.md exists with `status: passed`)
+- `/rcode-execute <phase>` completed
+- `/rcode-verify-phase <phase>` passed (VERIFICATION.md exists with `status: passed`)
 - You are on a feature branch (not main/develop directly)
 - `gh` CLI is authenticated (`gh auth status`)
 
@@ -23,14 +23,14 @@ the plan → execute → verify → **ship** loop.
 - Publishing npm packages → use `npm publish`
 - Creating git release tags → use `git tag -a vX.Y.Z && git push --tags`
 - Repos that commit directly to main (`git.branching_strategy: none`)
-- The rihal-code framework repo itself (no phases exist there)
+- The rcode framework repo itself (no phases exist there)
 
 **Typical usage:**
 ```
-/rihal-plan 1          → plan the phase
-/rihal-execute 1       → build it
-/rihal-verify-phase 1  → prove it works
-/rihal-ship 1          → PR it ← you are here
+/rcode-plan 1          → plan the phase
+/rcode-execute 1       → build it
+/rcode-verify-phase 1  → prove it works
+/rcode-ship 1          → PR it ← you are here
 ```
 </purpose>
 
@@ -248,8 +248,8 @@ Requirements: {N} REQ-IDs addressed
 Next steps:
 - Review/approve PR
 - Merge when CI passes
-- /rihal-complete-milestone (if last phase in milestone)
-- /rihal-progress (to see what's next)
+- /rcode-complete-milestone (if last phase in milestone)
+- /rcode-progress (to see what's next)
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -260,9 +260,9 @@ Next steps:
 <offer_next>
 After shipping:
 
-- /rihal-complete-milestone — if all phases in milestone are done
-- /rihal-progress — see overall project state
-- /rihal-execute {next} — continue to next phase
+- /rcode-complete-milestone — if all phases in milestone are done
+- /rcode-progress — see overall project state
+- /rcode-execute {next} — continue to next phase
 </offer_next>
 
 <success_criteria>

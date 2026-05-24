@@ -4,13 +4,13 @@ Re-execute a previously completed phase or plan. Resets its state to pending and
 
 ## Step 0: Usage Check
 
-Verify argument: `/rihal-rerun <phase-id|plan-id>`
+Verify argument: `/rcode-rerun <phase-id|plan-id>`
 
 Examples:
-- `/rihal-rerun 03` — re-run all plans in phase 3
-- `/rihal-rerun 03-02` — re-run specific plan
+- `/rcode-rerun 03` — re-run all plans in phase 3
+- `/rcode-rerun 03-02` — re-run specific plan
 
-If empty: `Usage: /rihal-rerun <phase-id|plan-id> (e.g., /rihal-rerun 03 or /rihal-rerun 03-02)`
+If empty: `Usage: /rcode-rerun <phase-id|plan-id> (e.g., /rcode-rerun 03 or /rcode-rerun 03-02)`
 
 ## Step 0.5: Detect Target via Resolve
 
@@ -55,7 +55,7 @@ Write updated state.json back
 
 ## Step 3: Invoke Execute
 
-Route to `/rihal-execute {target.id}`
+Route to `/rcode-execute {target.id}`
 
 The executor will:
 - See status=pending in state.json

@@ -2,7 +2,7 @@
 
 <purpose>
 Plan the next sprint. Authoritative implementation lives in the
-`rihal-sprint-planning` skill — this workflow delegates to it so every
+`rcode-sprint-planning` skill — this workflow delegates to it so every
 safety rail (capacity gate per #127, halt-at-menu per #124, state-sync
 per #198) fires identically whether the user invokes the slash command
 or the phrase-activated skill.
@@ -13,9 +13,9 @@ back to the in-line implementation.
 </purpose>
 
 <delegate_to_skill>
-Required skill: `rihal-sprint-planning`
-Path:           `.claude/skills/rihal-sprint-planning/SKILL.md`
-Workflow ref:   `.claude/skills/rihal-sprint-planning/workflow.md`
+Required skill: `rcode-sprint-planning`
+Path:           `.claude/skills/rcode-sprint-planning/SKILL.md`
+Workflow ref:   `.claude/skills/rcode-sprint-planning/workflow.md`
 
 Behaviour:
 1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
@@ -51,7 +51,7 @@ Open with banner:
 ```
 TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
 Closure: `rcode ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
-Next Up: `/rihal-execute .planning/phases/{phase}/SPRINT.md`
+Next Up: `/rcode-execute .planning/phases/{phase}/SPRINT.md`
 </output_format>
 
 <process>
@@ -60,14 +60,14 @@ Next Up: `/rihal-execute .planning/phases/{phase}/SPRINT.md`
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-sprint-planning [--phase <NN>] [--velocity <points>] [--goal "Sprint goal"]
+/rcode-sprint-planning [--phase <NN>] [--velocity <points>] [--goal "Sprint goal"]
 ```
 
 **Examples:**
 ```
-/rihal-sprint-planning
-/rihal-sprint-planning --phase 01 --goal "Auth system MVP"
-/rihal-sprint-planning --velocity 13
+/rcode-sprint-planning
+/rcode-sprint-planning --phase 01 --goal "Auth system MVP"
+/rcode-sprint-planning --velocity 13
 ```
 
 STOP — do not proceed.
@@ -86,7 +86,7 @@ Extract:
 
 If no phases in state:
 ```
-No phases found. Run /rihal-new-project first to create a roadmap.
+No phases found. Run /rcode-new-project first to create a roadmap.
 ```
 Exit.
 
@@ -167,8 +167,8 @@ Stories: {count} ({total_points} points)
 Capacity: {velocity_target} points ({buffer}% buffer)
 
 Next:
-  /rihal-execute .planning/phases/{phase}/SPRINT.md   ← execute the sprint
-  /rihal-sprint-status                                ← check progress anytime
+  /rcode-execute .planning/phases/{phase}/SPRINT.md   ← execute the sprint
+  /rcode-sprint-status                                ← check progress anytime
 ```
 
 ## Output Format
@@ -180,7 +180,7 @@ Next:
 ## Examples
 
 ### Happy Path
-**Input:** `/rihal-sprint-planning --phase 01 --goal "Auth MVP"`
+**Input:** `/rcode-sprint-planning --phase 01 --goal "Auth MVP"`
 **Expected:** Load phase scope, estimate stories, present table, confirm, create SPRINT.md + register in state, start sprint.
 
 ### Edge Case: Over capacity
@@ -189,10 +189,10 @@ Next:
 
 ### Edge Case: No scope
 **Input:** Phase has no SCOPE.md or requirements
-**Expected:** "No scope found for this phase. Run /rihal-new-project or write a SCOPE.md first."
+**Expected:** "No scope found for this phase. Run /rcode-new-project or write a SCOPE.md first."
 
 ### Negative Test
-**Input:** `/rihal-sprint-planning` with no phases in state
-**Expected:** Graceful exit suggesting /rihal-new-project.
+**Input:** `/rcode-sprint-planning` with no phases in state
+**Expected:** Graceful exit suggesting /rcode-new-project.
 
 </process>

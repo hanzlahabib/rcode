@@ -91,7 +91,6 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    ```
    Task(
      subagent_type="rcode-executor",
-  model="sonnet",
      description="Execute plan {plan_number} of phase {phase_number}",
      model="{executor_model}",
      isolation="worktree",
@@ -101,6 +100,13 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        Commit each task atomically. Create SUMMARY.md.
        Do NOT update STATE.md or ROADMAP.md — the orchestrator owns those writes after all worktree agents in the wave complete.
        </objective>
+
+       <!--
+         #721 i18n: when init JSON's response_language is set, prepend this line
+         verbatim to the prompt before the objective. Human-facing prose in
+         SUMMARY.md must be in {response_language}; code/identifiers stay English.
+       -->
+       ${response_language ? `Respond in ${response_language}. Write SUMMARY.md prose in ${response_language}; keep code, file paths, identifiers, and commit messages in English.` : ''}
 
        <worktree_branch_check>
        FIRST ACTION before any other work: verify this worktree's branch is based on the correct commit.
@@ -128,11 +134,33 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        <parallel_execution>
        You are running as a PARALLEL executor agent. To avoid pre-commit hook
        contention with other agents, acquire a file-based lock before each
-       commit and release it immediately after:
+       commit and release it immediately after. The spinlock has a 60-second
+       timeout and a stale-lock recovery (older than 5 minutes is broken):
 
-         while ! mkdir .rcode/.commit-lock 2>/dev/null; do sleep 0.5; done
+         LOCK_DIR=".rcode/.commit-lock"
+         LOCK_WAIT=0
+         LOCK_MAX=60         # seconds — abort if we never acquire
+         LOCK_STALE=300      # seconds — assume holder is dead and break
+         while ! mkdir "$LOCK_DIR" 2>/dev/null; do
+           if [ -d "$LOCK_DIR" ]; then
+             AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_DIR" 2>/dev/null || stat -f %m "$LOCK_DIR" 2>/dev/null || echo 0) ))
+             if [ "$AGE" -gt "$LOCK_STALE" ]; then
+               echo "⚠ Breaking stale commit lock (age ${AGE}s > ${LOCK_STALE}s)"
+               rmdir "$LOCK_DIR" 2>/dev/null
+               continue
+             fi
+           fi
+           if [ "$LOCK_WAIT" -ge "$LOCK_MAX" ]; then
+             echo "✖ Failed to acquire commit lock within ${LOCK_MAX}s — aborting wave" >&2
+             exit 1
+           fi
+           sleep 0.5
+           LOCK_WAIT=$(( LOCK_WAIT + 1 ))
+         done
+         trap 'rmdir "$LOCK_DIR" 2>/dev/null' EXIT
          git commit -m "..."           # hooks run normally
-         rmdir .rcode/.commit-lock
+         rmdir "$LOCK_DIR"
+         trap - EXIT
 
        Hooks run as designed for every commit. AGENTS.md forbids --no-verify;
        hook failures must be fixed at the source, not bypassed. The orchestrator
@@ -152,7 +180,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        - {phase_dir}/{plan_file} (Plan)
        - .planning/PROJECT.md (Project context — core value, requirements, evolution rules)
        - .planning/STATE.md (State)
-       - .planning/config.json (Config, if exists)
+       - .rcode/config.yaml (Config, if exists — read via `node rcode-tools.cjs config-get <key>` or readConfig())
        ${CONTEXT_WINDOW >= 500000 ? `
        - ${phase_dir}/*-CONTEXT.md (User decisions from discuss-phase — honors locked choices)
        - ${phase_dir}/*-RESEARCH.md (Technical research — pitfalls and patterns to follow)
@@ -252,8 +280,13 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    When executor agents ran in worktree isolation, their commits land on temporary branches in separate working trees. After the wave completes, merge these changes back and clean up:
 
    ```bash
-   # List worktrees created by this wave's agents
-   WORKTREES=$(git worktree list --porcelain | grep "^worktree " | grep -v "$(pwd)$" | sed 's/^worktree //')
+   # IMPORTANT: only touch worktrees whose branch starts with "worktree-agent-".
+   # Claude Code's EnterWorktree names all auto-created branches with this prefix.
+   # A broad "all non-primary worktrees" grep is dangerous — it would also pick up
+   # manually-created worktrees (feature branches, other milestone workspaces, etc.)
+   # and either corrupt or delete work that wasn't part of this execution.
+   WORKTREES=$(git worktree list --porcelain \
+     | awk '/^worktree /{path=$2} /^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print path}')
 
    for WT in $WORKTREES; do
      # Get the branch name for this worktree
@@ -329,6 +362,26 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    **If `workflow.use_worktrees` is `false`:** Agents ran on the main working tree — skip this step entirely.
 
    **If no worktrees found:** Skip silently — agents may have been spawned without worktree isolation.
+
+   **Post-cleanup verification (mandatory):** After the loop, confirm no `worktree-agent-*` worktrees or branches remain:
+
+   ```bash
+   LEFTOVER_WT=$(git worktree list --porcelain \
+     | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}')
+   LEFTOVER_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null)
+
+   if [ -n "$LEFTOVER_WT" ] || [ -n "$LEFTOVER_BR" ]; then
+     echo "⚠ WORKTREE LEAK: leftover executor artifacts detected after cleanup:"
+     [ -n "$LEFTOVER_WT" ] && echo "  Worktrees: $LEFTOVER_WT"
+     [ -n "$LEFTOVER_BR" ] && echo "  Branches:  $LEFTOVER_BR"
+     echo "  Run: /rcode-audit worktrees  to inspect and prune"
+   else
+     echo "✓ Worktree cleanup verified — no executor artifacts remain"
+   fi
+   ```
+
+   Do NOT silently skip this check. If leaks are found, surface them — the user's next
+   `/rcode-status` should not show surprise worktrees from a previous execution.
 
 5.6. **Post-wave shared artifact update (worktree mode only):**
 

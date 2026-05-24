@@ -9,13 +9,13 @@ Generate a human-readable summary of the current or specified milestone, includi
 If `$ARGUMENTS` contains only `--help` or `-h`:
 
 ```
-/rihal-milestone-summary [--format=markdown|pdf] [--include-decisions]
+/rcode-milestone-summary [--format=markdown|pdf] [--include-decisions]
 ```
 
 **Examples:**
 ```
-/rihal-milestone-summary
-/rihal-milestone-summary --format=pdf --include-decisions
+/rcode-milestone-summary
+/rcode-milestone-summary --format=pdf --include-decisions
 ```
 
 STOP — do not proceed.
@@ -35,7 +35,7 @@ If not found:
 ```
 ⚠ No active milestone. Create one:
 
-/rihal-new-milestone <name>
+/rcode-new-milestone <name>
 ```
 
 STOP. Store path as `$MILESTONE_DIR`.
@@ -188,8 +188,8 @@ If no phase summaries found:
 ```
 ⚠ No phase summaries in milestone. Execute phases first:
 
-/rihal-plan <phase description>
-/rihal-execute <plan-artifact>
+/rcode-plan <phase description>
+/rcode-execute <plan-artifact>
 ```
 
 If ROADMAP.md missing:

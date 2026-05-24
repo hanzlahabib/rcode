@@ -10,13 +10,13 @@ Pre-execution gate: verify PRD approved, architecture approved, external depende
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-check-implementation-readiness <argument-here>
+/rcode-check-implementation-readiness <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-check-implementation-readiness example 1
-/rihal-check-implementation-readiness example 2
+/rcode-check-implementation-readiness example 1
+/rcode-check-implementation-readiness example 2
 ```
 
 STOP — do not proceed.

@@ -10,13 +10,13 @@ Run 9-point health check: 6 installation checks + 3 project-state checks. Each c
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-health <argument-here>
+/rcode-health <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-health example 1
-/rihal-health example 2
+/rcode-health example 1
+/rcode-health example 2
 ```
 
 STOP — do not proceed.
@@ -40,7 +40,7 @@ test -d .rcode && test -w .rcode
 
 **Output on fail:**
 ```
-❌ FAIL — .rcode/ does not exist or is not writable. Run: /rihal-update to repair
+❌ FAIL — .rcode/ does not exist or is not writable. Run: /rcode-update to repair
 ```
 
 ## Step 1 — Verify file manifest exists and is valid CSV
@@ -64,7 +64,7 @@ Verify:
 
 **Output on fail:**
 ```
-❌ FAIL — files-manifest.csv is missing or corrupted. Run: /rihal-update to repair
+❌ FAIL — files-manifest.csv is missing or corrupted. Run: /rcode-update to repair
 ```
 
 ## Step 2 — Verify all manifest files exist and hashes match
@@ -89,7 +89,7 @@ Detect drift: files that exist but hash doesn't match.
 ❌ FAIL — File drift detected: N files changed or missing
   Modified: file1.md, file2.js
   Missing: file3.md
-Run: /rihal-update to repair
+Run: /rcode-update to repair
 ```
 
 ## Step 3 — Verify state.json exists and is valid
@@ -118,7 +118,7 @@ Parse as JSON. Verify top-level keys present:
 
 **Output on fail:**
 ```
-❌ FAIL — state.json is missing or invalid. Run: /rihal-update to repair
+❌ FAIL — state.json is missing or invalid. Run: /rcode-update to repair
 ```
 
 ## Step 4 — Verify agent-manifest.csv is present and populated
@@ -141,7 +141,7 @@ Verify:
 
 **Output on fail:**
 ```
-❌ FAIL — agent-manifest.csv is missing or empty. Run: /rihal-update to repair
+❌ FAIL — agent-manifest.csv is missing or empty. Run: /rcode-update to repair
 ```
 
 ## Step 5 — Verify rcode-tools.cjs is executable and responsive
@@ -160,7 +160,7 @@ node .rcode/bin/rcode-tools.cjs version
 
 **Output on fail:**
 ```
-❌ FAIL — rcode-tools.cjs is missing or broken. Run: /rihal-update to repair
+❌ FAIL — rcode-tools.cjs is missing or broken. Run: /rcode-update to repair
 ```
 
 ## Step 6 — Project state health checks (3 checks)
@@ -175,7 +175,7 @@ STATE_PHASES=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 
 ```
 
 If counts match: `✓ PASS — {N} phases in ROADMAP.md and state.json are in sync`
-If they differ: `⚠ WARN — ROADMAP.md has ${ROADMAP_PHASES} phases, state.json has ${STATE_PHASES}. Run: /rihal-status to investigate`
+If they differ: `⚠ WARN — ROADMAP.md has ${ROADMAP_PHASES} phases, state.json has ${STATE_PHASES}. Run: /rcode-status to investigate`
 
 **Check 8 — current phase has a SPRINT.md or CONTEXT.md**
 
@@ -184,9 +184,9 @@ CURRENT=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "i
 find .planning/phases/*${CURRENT}* -name "*-SPRINT.md" -o -name "*-CONTEXT.md" 2>/dev/null | head -1
 ```
 
-If current_phase is null or empty: skip this check (not started).
+If current_phase is null or empty: print `ℹ SKIP — Check 8: no active phase set (run /rcode-new-project or /rcode-plan to start one)` and treat as skipped (do not count toward pass/fail).
 If file found: `✓ PASS — current phase ${CURRENT} has planning artifacts`
-If no file: `⚠ WARN — current phase ${CURRENT} has no SPRINT.md or CONTEXT.md. Run: /rihal-plan ${CURRENT}`
+If no file: `⚠ WARN — current phase ${CURRENT} has no SPRINT.md or CONTEXT.md. Run: /rcode-plan ${CURRENT}`
 
 **Check 9 — no phantom-complete phases (ROADMAP says complete but no artifacts)**
 
@@ -201,26 +201,43 @@ print(len(phantom))
 ```
 
 If 0 phantoms: `✓ PASS — no phantom-complete phases detected`
-If any: `⚠ WARN — {N} phantom-complete phase(s) detected. Run: /rihal-audit to inspect`
+If any: `⚠ WARN — {N} phantom-complete phase(s) detected. Run: /rcode-audit to inspect`
+
+**Check 10 — no orphaned executor worktrees or branches**
+
+```bash
+ORPHAN_WTS=$(git worktree list --porcelain \
+  | awk '/^branch /{if($2 ~ /refs\/heads\/worktree-agent-/) print $2}' \
+  | wc -l 2>/dev/null || echo 0)
+ORPHAN_BR=$(git branch --list 'worktree-agent-*' 2>/dev/null | wc -l || echo 0)
+ORPHANS=$((ORPHAN_WTS + ORPHAN_BR))
+echo "$ORPHANS"
+```
+
+If `ORPHANS` is 0: `✓ PASS — no orphaned executor worktrees or branches`
+If `ORPHANS > 0`: `⚠ WARN — ${ORPHANS} orphaned worktree-agent-* artifact(s) from a previous /rcode-execute. Run: /rcode-audit worktrees --prune`
 
 ---
 
 ## Step 7 — Count results and print final summary
 
 **Action:** Count all pass/fail/warn results and display overall status.
+Track SKIPPED checks separately — a skipped check does not count as pass or fail.
 
-Total: `{N}/9 checks passed`
+Total: `{N}/{TOTAL} checks passed` where TOTAL = 9 minus number of skipped checks.
+If any checks were skipped: append `({SKIPPED} skipped — see above)`
 
 If all 9 pass:
 ```
-✓ All systems nominal — rihal is healthy
+✓ All systems nominal — rcode is healthy (9/9)
 ```
 
 If fewer than 9 pass:
 ```
 ⚠ {N}/9 checks passed — {M} issue(s) found
-Run: /rihal-update to repair installation issues
-Run: /rihal-status for project-state issues
+Run: /rcode-update to repair installation issues
+Run: /rcode-status for project-state issues
+Run: /rcode-audit worktrees --prune to clean orphaned executor artifacts
 ```
 
 ## Success Criteria
@@ -238,6 +255,6 @@ Run: /rihal-status for project-state issues
 
 ## ▶ Next Up
 
-- **Issues found:** `/rihal-forensics` — deep diagnostic on specific failures
-- **Ready to continue:** `/rihal-do` — interactive router guides next step
-- **Fix specific phase:** `/rihal-correct-course {phase}` — targeted correction
+- /rcode-forensics
+- /rcode-do
+- /rcode-correct-course {phase}

@@ -18,14 +18,14 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
+/rcode-audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
 ```
 
 **Examples:**
 ```
-/rihal-audit-fix
-/rihal-audit-fix --max 10 --severity high
-/rihal-audit-fix --dry-run
+/rcode-audit-fix
+/rcode-audit-fix --max 10 --severity high
+/rcode-audit-fix --dry-run
 ```
 
 <process>
@@ -193,12 +193,12 @@ If arguments are invalid, missing files, or subagent fails:
 
 ## On Completion
 
-/rihal-audit — re-run audit to verify fixes applied correctly
-/rihal-code-review — review the auto-applied changes
-/rihal-progress — see overall project state
+/rcode-audit — re-run audit to verify fixes applied correctly
+/rcode-review — review the auto-applied changes
+/rcode-progress — see overall project state
 
 ## ▶ Next Up
 
-- **Fixes applied:** `/rihal-verify-phase {phase}` — re-verify after fixes
-- **More issues:** `/rihal-audit {phase}` — run audit again to confirm
-- **All clean:** `/rihal-progress` — check project state
+- /rcode-verify-phase {phase}
+- /rcode-audit {phase}
+- /rcode-progress

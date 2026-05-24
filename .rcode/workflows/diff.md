@@ -13,9 +13,9 @@ If invalid args: Show usage
 
 ```
 Usage:
-  /rihal-diff              # Diff HEAD~1 to HEAD
-  /rihal-diff --last       # Diff against last session
-  /rihal-diff abc123 def456  # Diff between commits
+  /rcode-diff              # Diff HEAD~1 to HEAD
+  /rcode-diff --last       # Diff against last session
+  /rcode-diff abc123 def456  # Diff between commits
 ```
 
 ## Step 1: Parse Arguments
@@ -39,7 +39,7 @@ If no changes: Return `No changes between {sha1}..{sha2}`
 
 For each file in diff output:
 
-1. Extract filename: `.planning/phases/01-foundation/01-01-SPRINT.md`
+1. Extract filename: `.planning/phases/01-foundation/01-1-SPRINT.md`
 2. Read that file's YAML frontmatter (if .md): extract phase/plan ID
 3. Prefix the hunk with: `Phase {id} — {filename}`
 4. Show the diff +/- lines
@@ -49,7 +49,7 @@ For `.rcode/state.json`: Show raw diff (no frontmatter parsing)
 Example output:
 
 ```
-Phase 01-01 — .planning/phases/01-foundation/01-01-SPRINT.md
+Phase 01-01 — .planning/phases/01-foundation/01-1-SPRINT.md
   @@ -5,3 +5,4 @@
   - old line
   + new line
@@ -75,6 +75,6 @@ State changes — .rcode/state.json
 
 ## On Completion
 
-/rihal-plan {phase} — plan fixes for changes seen in the diff
-/rihal-execute {phase} — execute the phase
-/rihal-progress — see full roadmap status
+/rcode-plan {phase} — plan fixes for changes seen in the diff
+/rcode-execute {phase} — execute the phase
+/rcode-progress — see full roadmap status

@@ -6,7 +6,7 @@ External plan ingestion with conflict detection and agent delegation. Imports an
 
 External plan ingestion with conflict detection and agent delegation.
 
-- **--from**: Import external plan → conflict detection → write SPRINT.md → validate via rihal-sprint-checker
+- **--from**: Import external plan → conflict detection → write SPRINT.md → validate via rcode-sprint-checker
 
 Future: `--prd` mode (PRD extraction into PROJECT.md + REQUIREMENTS.md + ROADMAP.md) is planned for a follow-up PR.
 
@@ -18,13 +18,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-import --from <path>
+/rcode-import --from <path>
 ```
 
 **Examples:**
 ```
-/rihal-import --from ./external-plan.md
-/rihal-import --from ../other-project/SPRINT.md
+/rcode-import --from ./external-plan.md
+/rcode-import --from ../other-project/SPRINT.md
 ```
 
 ---
@@ -53,7 +53,7 @@ Parse `$ARGUMENTS` to determine the execution mode:
 - If neither flag is found: display usage and exit:
 
 ```
-Usage: /rihal-import --from <path>
+Usage: /rcode-import --from <path>
 
   --from <path>   Import an external plan file into rcode format
 ```
@@ -218,7 +218,7 @@ must_haves:
 If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md`), rename all references to rcode `{NN}-{MM}-SPRINT.md` convention during conversion.
 
 Apply rcode naming convention for the output filename:
-- Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-01-SPRINT.md`)
+- Format: `{NN}-{MM}-SPRINT.md` (e.g., `04-1-SPRINT.md`)
 - NEVER use `PLAN-01.md`, `plan-01.md`, or any other format
 - NN = phase number (zero-padded), MM = plan number within the phase (zero-padded)
 
@@ -252,7 +252,7 @@ Task({
 Display:
 ```
 ⚠  Sprint-checker could not run (subagent error). The plan file was written but validation was skipped.
-   You can validate manually later with: /rihal-discuss fatima review .planning/phases/{phase}/{plan}-SPRINT.md
+   You can validate manually later with: /rcode-discuss fatima review .planning/phases/{phase}/{plan}-SPRINT.md
 ```
 
 Proceed to plan_finalize — do NOT abort the import over a validator failure.

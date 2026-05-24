@@ -8,13 +8,13 @@ Safe git revert workflow. Rolls back rcode phase or plan commits using the phase
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-undo <argument-here>
+/rcode-undo <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-undo example 1
-/rihal-undo example 2
+/rcode-undo example 1
+/rcode-undo example 2
 ```
 
 STOP — do not proceed.
@@ -45,21 +45,21 @@ Parse $ARGUMENTS for the undo mode:
 If no valid argument is provided, display usage and exit:
 
 ```
-Usage: /rihal-undo --last N | --phase NN [--to-snapshot] | --plan NN-MM
+Usage: /rcode-undo --last N | --phase NN [--to-snapshot] | --plan NN-MM
 
 Modes:
   --last N              Show last N rcode commits for interactive selection
   --phase NN            Revert all commits for phase NN (uses manifest, fallback to git log)
   --phase NN --to-snapshot
                         Revert every commit between rcode/snapshot/phase-NN and HEAD —
-                        exact restore to the pre-execution tag created by /rihal-execute
+                        exact restore to the pre-execution tag created by /rcode-execute
   --plan NN-MM          Revert all commits for plan NN-MM
 
 Examples:
-  /rihal-undo --last 5
-  /rihal-undo --phase 03
-  /rihal-undo --phase 03 --to-snapshot
-  /rihal-undo --plan 03-02
+  /rcode-undo --last 5
+  /rcode-undo --phase 03
+  /rcode-undo --phase 03 --to-snapshot
+  /rcode-undo --plan 03-02
 ```
 
 </step>
@@ -74,7 +74,7 @@ Before gathering any commits, display:
 
 Unsure what will be reverted? Run first:
 
-/rihal-undo --last 5
+/rcode-undo --last 5
 
 to preview the last 5 rcode commits before choosing.
 ```
@@ -139,10 +139,10 @@ if ! git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
   cat <<EOF
 No snapshot tag found: ${SNAPSHOT_TAG}
 
-Snapshots are created automatically when /rihal-execute runs for a phase.
+Snapshots are created automatically when /rcode-execute runs for a phase.
 Options:
-  - Drop --to-snapshot and use manifest/git-log fallback:   /rihal-undo --phase ${TARGET_PHASE}
-  - Re-run /rihal-execute <phase> to create a snapshot for future undo
+  - Drop --to-snapshot and use manifest/git-log fallback:   /rcode-undo --phase ${TARGET_PHASE}
+  - Re-run /rcode-execute <phase> to create a snapshot for future undo
 EOF
   exit 0
 fi
@@ -293,7 +293,7 @@ Store the response as REVERT_REASON. Continue to execute_revert.
 
 Run `git status --porcelain`. If the output is non-empty, display the dirty files and abort:
 ```
-Working tree has uncommitted changes. Commit or stash them before running /rihal-undo.
+Working tree has uncommitted changes. Commit or stash them before running /rcode-undo.
 ```
 Exit immediately — do not proceed to any revert operations.
 
@@ -379,13 +379,13 @@ Show next steps:
 
 /clear then:
 
-/rihal-progress
+/rcode-progress
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/rihal-execute ${PHASE}` — re-execute if needed
-- `/rihal-undo --last 1` — undo the revert itself if something went wrong
+- `/rcode-execute ${PHASE}` — re-execute if needed
+- `/rcode-undo --last 1` — undo the revert itself if something went wrong
 
 ───────────────────────────────────────────────────────────────
 ```

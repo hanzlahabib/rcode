@@ -27,13 +27,13 @@ End with Next Up routing based on sprint state.
 If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
-/rihal-sprint-status [--sprint <NN.S>]
+/rcode-sprint-status [--sprint <NN.S>]
 ```
 
 **Examples:**
 ```
-/rihal-sprint-status              # current sprint
-/rihal-sprint-status --sprint 01.2
+/rcode-sprint-status              # current sprint
+/rcode-sprint-status --sprint 01.2
 ```
 
 STOP — do not proceed.
@@ -48,7 +48,7 @@ STORIES=$(node .rcode/bin/rcode-tools.cjs state story list 2>/dev/null || echo "
 
 If `SPRINT_STATUS` is empty:
 ```
-No active sprint. Run /rihal-sprint-planning to create one.
+No active sprint. Run /rcode-sprint-planning to create one.
 ```
 Exit.
 
@@ -96,8 +96,8 @@ REVIEW
 
 Based on data, suggest next action:
 
-- **All stories done:** "Sprint ready to close. Run `/rihal-sprint-planning` for next sprint."
-- **In progress stories exist:** "Continue executing. Run `/rihal-execute` to pick up next story."
+- **All stories done:** "Sprint ready to close. Run `/rcode-sprint-planning` for next sprint."
+- **In progress stories exist:** "Continue executing. Run `/rcode-execute` to pick up next story."
 - **Over capacity (committed > velocity avg):** "Over-committed by {N} points. Consider deferring lowest-priority story."
 - **No stories moved today:** "No progress since last check. Blockers?"
 
@@ -110,15 +110,15 @@ Based on data, suggest next action:
 ## Examples
 
 ### Happy Path
-**Input:** `/rihal-sprint-status`
+**Input:** `/rcode-sprint-status`
 **Expected:** Board showing 3 done / 1 in_progress / 2 todo, 8/13 points, velocity trend stable.
 
 ### Edge Case: No sprint
-**Input:** `/rihal-sprint-status` (no active sprint)
+**Input:** `/rcode-sprint-status` (no active sprint)
 **Expected:** "No active sprint" + suggestion to run sprint-planning.
 
 ### Negative Test
-**Input:** `/rihal-sprint-status --sprint 99.9`
+**Input:** `/rcode-sprint-status --sprint 99.9`
 **Expected:** "Sprint 99.9 not found."
 
 </process>

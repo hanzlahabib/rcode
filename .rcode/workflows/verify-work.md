@@ -1,5 +1,5 @@
 <purpose>
-Validate built features through conversational testing with persistent state. Creates UAT.md that tracks test progress, survives /clear, and feeds gaps into /rihal-plan --gaps.
+Validate built features through conversational testing with persistent state. Creates UAT.md that tracks test progress, survives /clear, and feeds gaps into /rcode-plan --gaps.
 
 User tests, Claude records. One test at a time. Plain text responses.
 </purpose>
@@ -13,8 +13,8 @@ Open with banner:
 ```
 TaskCreate: one entry per story to verify.
 Per-story status: `✓ Story 01.1.01 — passed`, `✗ Story 01.1.02 — FAILED: {reason}`, `⚠ Story 01.1.03 — partial`.
-If any fail: route to `/rihal-plan --gaps` for remediation.
-If all pass: `rcode ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rihal-next`.
+If any fail: route to `/rcode-plan --gaps` for remediation.
+If all pass: `rcode ► SPRINT {NN.S} VERIFIED ✓` + Next Up: `/rcode-next`.
 </output_format>
 
 <required_reading>
@@ -50,7 +50,7 @@ If $ARGUMENTS contains a phase number, load context:
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rihal-checker 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null)
 ```
 
 Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
@@ -95,7 +95,7 @@ If no, continue to `create_uat_file`.
 ```
 No active UAT sessions.
 
-Provide a phase number to start testing (e.g., /rihal-verify-work 4)
+Provide a phase number to start testing (e.g., /rcode-verify-work 4)
 ```
 
 **If no active sessions AND $ARGUMENTS provided:**
@@ -436,31 +436,31 @@ SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 
 If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty:
 ```
-⚠ Security enforcement enabled — /rihal-secure-phase {phase} has not run.
+⚠ Security enforcement enabled — /rcode-secure-phase {phase} has not run.
 Run before advancing to the next phase.
 
 All tests passed. Ready to continue.
 
-- `/rihal-secure-phase {phase}` — security review (required before advancing)
-- `/rihal-plan {next}` — Plan next phase
-- `/rihal-execute {next}` — Execute next phase
-- `/rihal-ui-review {phase}` — visual quality audit (if frontend files were modified)
+- `/rcode-secure-phase {phase}` — security review (required before advancing)
+- `/rcode-plan {next}` — Plan next phase
+- `/rcode-execute {next}` — Execute next phase
+- `/rcode-ui-review {phase}` — visual quality audit (if frontend files were modified)
 ```
 
 If `SECURITY_CFG` is `true` AND `SECURITY_FILE` exists: check frontmatter `threats_open`. If > 0:
 ```
 ⚠ Security gate: {threats_open} threats open
-  /rihal-secure-phase {phase} — resolve before advancing
+  /rcode-secure-phase {phase} — resolve before advancing
 ```
 
 If `SECURITY_CFG` is `false` OR (`SECURITY_FILE` exists AND `threats_open` is `0`):
 ```
 All tests passed. Ready to continue.
 
-- `/rihal-plan {next}` — Plan next phase
-- `/rihal-execute {next}` — Execute next phase
-- `/rihal-secure-phase {phase}` — security review
-- `/rihal-ui-review {phase}` — visual quality audit (if frontend files were modified)
+- `/rcode-plan {next}` — Plan next phase
+- `/rcode-execute {next}` — Execute next phase
+- `/rcode-secure-phase {phase}` — security review
+- `/rcode-ui-review {phase}` — visual quality audit (if frontend files were modified)
 ```
 </step>
 
@@ -518,12 +518,12 @@ ${AGENT_SKILLS_PLANNER}
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /rihal-execute
+Output consumed by /rcode-execute
 Plans must be executable prompts.
 </downstream_consumer>
 """,
   subagent_type="rcode-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Plan gap fixes for Phase {phase}"
 )
@@ -573,7 +573,7 @@ Return one of:
 </expected_output>
 """,
   subagent_type="rcode-sprint-checker",
-  model="sonnet",
+  model="{model}",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
 )
@@ -618,7 +618,7 @@ Do NOT replan from scratch unless issues are fundamental.
 </instructions>
 """,
   subagent_type="rcode-planner",
-  model="sonnet",
+  model="{model}",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )
@@ -634,7 +634,7 @@ Display: `Max iterations reached. {N} issues remain.`
 Offer options:
 1. Force proceed (execute despite issues)
 2. Provide guidance (user gives direction, retry)
-3. Abandon (exit, user runs /rihal-plan manually)
+3. Abandon (exit, user runs /rcode-plan manually)
 
 Wait for user response.
 </step>
@@ -662,7 +662,7 @@ Plans verified and ready for execution.
 
 **Execute fixes** — run fix plans
 
-`/clear` then `/rihal-execute {phase} --gaps-only`
+`/clear` then `/rcode-execute {phase} --gaps-only`
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -716,16 +716,16 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] If issues: rcode-planner creates fix plans (gap_closure mode)
 - [ ] If issues: rcode-sprint-checker verifies fix plans
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
-- [ ] Ready for `/rihal-execute --gaps-only` when complete
+- [ ] Ready for `/rcode-execute --gaps-only` when complete
 </success_criteria>
 
 ## On Completion
 
 When gaps found and fix plans generated:
-  /rihal-execute {phase} --gaps-only — re-execute just the gap plans
-  /rihal-progress — see updated phase status
+  /rcode-execute {phase} --gaps-only — re-execute just the gap plans
+  /rcode-progress — see updated phase status
 
 When all tests pass:
-  /rihal-add-tests {phase} — generate unit + E2E tests for this phase
-  /rihal-next — advance to next phase
-  /rihal-plan {next} — plan the next phase
+  /rcode-add-tests {phase} — generate unit + E2E tests for this phase
+  /rcode-next — advance to next phase
+  /rcode-plan {next} — plan the next phase

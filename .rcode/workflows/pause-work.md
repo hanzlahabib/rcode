@@ -10,13 +10,13 @@ Capture full project context and blocking constraints before pausing work. Creat
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rihal-pause-work <argument-here>
+/rcode-pause-work <argument-here>
 ```
 
 **Examples:**
 ```
-/rihal-pause-work example 1
-/rihal-pause-work example 2
+/rcode-pause-work example 1
+/rcode-pause-work example 2
 ```
 
 STOP — do not proceed.
@@ -208,7 +208,7 @@ No uncommitted changes.
 
 To resume work, run:
 \`\`\`bash
-/rihal-resume-work
+/rcode-resume-work
 \`\`\`
 ```
 
@@ -230,7 +230,7 @@ Blocking constraints:
 
 To resume work, run:
 
-/rihal-resume-work
+/rcode-resume-work
 ```
 
 ## Success Criteria

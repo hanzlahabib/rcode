@@ -45,30 +45,30 @@ temp/
 
 # ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====
 # Added automatically on first rcode install. Idempotent — safe to re-run.
-# Edit `commit_planning` in .rihal/config.yaml to flip planning-artifact tracking.
+# Edit `commit_planning` in .rcode/config.yaml to flip planning-artifact tracking.
 
 # Installed methodology files (regenerate with: npx @hanzlaa/rcode install)
 .claude/
-.rihal/bin/
-.rihal/workflows/
-.rihal/references/
-.rihal/commands/
-.rihal/skills/
+.rcode/bin/
+.rcode/workflows/
+.rcode/references/
+.rcode/commands/
+.rcode/skills/
 
-# Pulled Rihal brain content (refresh with: rcode brain pull)
-.rihal/brain/rihal-github/
-.rihal/brain/rihal-docs/
-.rihal/brain/best-practices/
+# Pulled rcode brain content (refresh with: rcode brain pull)
+.rcode/brain/rcode-github/
+.rcode/brain/rcode-docs/
+.rcode/brain/best-practices/
 
 # Runtime noise
-.rihal/state.json.lock
+.rcode/state.json.lock
 .planning/debug/
 .planning/_backup/
 
 # What you DO commit:
-#   .rihal/config.yaml        - project mode/language/profile/commit_planning
-#   .rihal/state.json         - decisions, roadmap pointer, blockers
-#   .rihal/brain/sources.yaml - brain source manifest
+#   .rcode/config.yaml        - project mode/language/profile/commit_planning
+#   .rcode/state.json         - decisions, roadmap pointer, blockers
+#   .rcode/brain/sources.yaml - brain source manifest
 #   .planning/                - PRD, roadmap, sprints, SUMMARY.md files
 # ===== end rcode-managed gitignore block =====
 

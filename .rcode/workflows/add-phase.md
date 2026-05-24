@@ -11,15 +11,15 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="parse_arguments">
 Parse the command arguments:
 - All arguments become the phase description
-- Example: `/rihal-add-phase Add authentication` → description = "Add authentication"
-- Example: `/rihal-add-phase Fix critical performance issues` → description = "Fix critical performance issues"
+- Example: `/rcode-add-phase Add authentication` → description = "Add authentication"
+- Example: `/rcode-add-phase Fix critical performance issues` → description = "Fix critical performance issues"
 
 If no arguments provided:
 
 ```
 ERROR: Phase description required
-Usage: /rihal-add-phase <description>
-Example: /rihal-add-phase Add authentication system
+Usage: /rcode-add-phase <description>
+Example: /rcode-add-phase Add authentication system
 ```
 
 Exit.
@@ -36,13 +36,13 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 Check `roadmap_exists` from init JSON. If false:
 ```
 ERROR: No roadmap found (.planning/ROADMAP.md)
-Run /rihal-new-project to initialize.
+Run /rcode-new-project to initialize.
 ```
 Exit.
 </step>
 
 <step name="detect_task_list">
-**Detect bulk-task input** — when /rihal-quick or /rihal-do auto-routes a multi-task input here, the entire bug list arrives as `${description}`. Don't put it all in the phase title; extract structure.
+**Detect bulk-task input** — when /rcode-quick or /rcode-do auto-routes a multi-task input here, the entire bug list arrives as `${description}`. Don't put it all in the phase title; extract structure.
 
 Match if `${description}` contains ANY of:
 - 5+ numbered list items (`/^\s*\d+\.\s/m` ≥ 5)
@@ -59,12 +59,12 @@ If matched:
    ```markdown
    # Phase {N} — {phase name} — Tasks
 
-   *Auto-extracted from /rihal-quick or /rihal-do bulk auto-route on {ISO date}.*
+   *Auto-extracted from /rcode-quick or /rcode-do bulk auto-route on {ISO date}.*
 
    {original body, preserved verbatim}
    ```
 
-4. Note in the completion message: "TASKS.md written with N tasks". The downstream /rihal-plan workflow consumes TASKS.md as the input to SPRINT.md generation — no manual re-paste needed.
+4. Note in the completion message: "TASKS.md written with N tasks". The downstream /rcode-plan workflow consumes TASKS.md as the input to SPRINT.md generation — no manual re-paste needed.
 
 If NOT matched (single task), proceed normally — `${description}` is the phase name as-is.
 
@@ -124,8 +124,8 @@ Phase {N} is now in this milestone, but the milestone is well past the
 a milestone boundary — historically this is where roadmaps lose structure.
 
 Recommended next step:
-  /rihal-complete-milestone    close {MILESTONE_NAME} cleanly + archive done phases
-  /rihal-new-milestone         start a fresh milestone for ongoing work
+  /rcode-complete-milestone    close {MILESTONE_NAME} cleanly + archive done phases
+  /rcode-new-milestone         start a fresh milestone for ongoing work
 
 If you genuinely want a giant single-milestone roadmap, ignore this and
 continue. The threshold is conservative on purpose.
@@ -135,7 +135,7 @@ If `RECOMMENDATION` is `consider-closing` (8-11 open phases), softer nudge:
 
 ```
 ℹ Milestone health: {MILESTONE_NAME} has {OPEN_COUNT} open phases — getting full.
-   Consider /rihal-complete-milestone before adding more.
+   Consider /rcode-complete-milestone before adding more.
 ```
 
 If `RECOMMENDATION` is `healthy`, say nothing.
@@ -160,12 +160,12 @@ Roadmap updated: .planning/ROADMAP.md
 
 `/clear` then:
 
-`/rihal-plan {N}`
+`/rcode-plan {N}`
 
 ---
 
 **Also available:**
-- `/rihal-add-phase <description>` — add another phase
+- `/rcode-add-phase <description>` — add another phase
 - Review roadmap
 
 ---

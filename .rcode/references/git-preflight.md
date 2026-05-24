@@ -4,7 +4,7 @@ Shared reference `@`-included by every code-touching workflow. Designed by Khali
 
 ## When this runs
 
-Before ANY workflow step that will modify files in the working tree — i.e. before `/rcode-execute`, `/rcode-quick`, `/rcode-dev-story`, `/rcode-code-review-fix`, and any other workflow that writes outside `.planning/`.
+Before ANY workflow step that will modify files in the working tree — i.e. before `/rcode-execute`, `/rcode-quick`, `/rcode-dev-story`, `/rcode-review-fix`, and any other workflow that writes outside `.planning/`.
 
 ## The 4 checks
 

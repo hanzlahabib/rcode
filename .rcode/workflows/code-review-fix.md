@@ -1,15 +1,16 @@
 <purpose>
-Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rcode-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
+Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rcode-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
 </purpose>
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/git-preflight.md
 </required_reading>
 
 <available_agent_types>
-- rcode-code-fixer: Applies fixes to code review findings
-- rcode-code-reviewer: Reviews source files for bugs and issues
+- rcode-fixer: Applies fixes to code review findings
+- rcode-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -20,13 +21,13 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rihal-code-review-fix <phase> [--auto]
+/rcode-review-fix <phase> [--auto]
 ```
 
 **Examples:**
 ```
-/rihal-code-review-fix 01
-/rihal-code-review-fix 02.1 --auto
+/rcode-review-fix 01
+/rcode-review-fix 02.1 --auto
 ```
 
 <process>
@@ -54,7 +55,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /rihal-status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /rcode-status to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -111,7 +112,7 @@ Verify that REVIEW.md exists:
 
 ```bash
 if [ ! -f "${REVIEW_PATH}" ]; then
-  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /rihal-code-review ${PHASE_ARG} first."
+  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /rcode-review ${PHASE_ARG} first."
   exit 1
 fi
 ```
@@ -196,7 +197,7 @@ If REVIEW.md contains a `files_reviewed_list` frontmatter field, use that as the
 </step>
 
 <step name="spawn_fixer">
-Spawn the rcode-code-fixer agent with config:
+Spawn the rcode-fixer agent with config:
 
 ```bash
 # Build config for agent
@@ -208,7 +209,7 @@ Use Task() to spawn agent:
 
 ```
 Task(subagent_type="rcode-code-fixer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -240,7 +241,7 @@ Check if FIX_REPORT_PATH exists:
 Either way:
 ```
 Some fix commits may already exist in git history — check git log for fix(${PADDED_PHASE}) commits.
-You can retry with /rihal-code-review-fix ${PHASE_ARG}.
+You can retry with /rcode-review-fix ${PHASE_ARG}.
 ```
 
 Exit workflow (skip auto loop).
@@ -287,10 +288,10 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn rcode-code-reviewer agent to re-review
+    # Spawn rcode-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
     Task(subagent_type="rcode-code-reviewer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
 phase_dir: ${PHASE_DIR}
@@ -324,7 +325,7 @@ Do NOT commit the output — the orchestrator handles that.
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
     Task(subagent_type="rcode-code-fixer",
-  model="sonnet", prompt="
+  model="{model}", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -415,7 +416,7 @@ if [ ! -f "${FIX_REPORT_PATH}" ]; then
   echo "The fixer agent may have failed before completing."
   echo "Check git log for any fix(${PADDED_PHASE}) commits."
   echo ""
-  echo "Retry: /rihal-code-review-fix ${PHASE_ARG}"
+  echo "Retry: /rcode-review-fix ${PHASE_ARG}"
   echo ""
   echo "═══════════════════════════════════════════════════════════════"
   exit 1
@@ -472,7 +473,7 @@ if [ "$FIX_STATUS" = "all_fixed" ]; then
   echo "Full report: ${FIX_REPORT_PATH}"
   echo ""
   echo "Next step:"
-  echo "  /rihal-verify-work  — Verify phase completion"
+  echo "  /rcode-verify-work  — Verify phase completion"
   echo ""
 fi
 ```
@@ -486,8 +487,8 @@ if [ "$FIX_STATUS" = "partial" ] || [ "$FIX_STATUS" = "none_fixed" ]; then
   echo ""
   echo "Next steps:"
   echo "  cat ${FIX_REPORT_PATH}                     — View fix report"
-  echo "  /rihal-code-review ${PHASE_NUMBER}         — Re-review code"
-  echo "  /rihal-verify-work                         — Verify phase completion"
+  echo "  /rcode-review ${PHASE_NUMBER}         — Re-review code"
+  echo "  /rcode-verify-work                         — Verify phase completion"
   echo ""
 fi
 ```

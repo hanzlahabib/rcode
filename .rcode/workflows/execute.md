@@ -18,7 +18,7 @@ route back to the user.
    a. **Not on main/master without consent**: if `git branch --show-current`
       returns `main` or `master`, refuse to execute. Suggest:
       `git switch -c <phase>-<plan>-<slug>` (e.g. `git switch -c 8-1-aria`).
-      User can override only by passing `--allow-main` to /rihal-execute and
+      User can override only by passing `--allow-main` to /rcode-execute and
       explicitly typing the override on this turn.
 
    b. **Working tree clean enough**: if `git status --porcelain` shows
@@ -76,7 +76,7 @@ Check config mode first:
 CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 ```
 
-**If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rihal-settings set mode guided to change.`
+**If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rcode-settings set mode guided to change.`
 
 Otherwise, offer three modes via AskUserQuestion. Each option names the tradeoff explicitly:
 
@@ -132,7 +132,7 @@ Closure:
  rcode ► PHASE {NN} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-End with Next Up block routing to /rihal-verify-work or /rihal-next.
+End with Next Up block routing to /rcode-verify-work or /rcode-next.
 </output_format>
 
 <core_principle>
@@ -142,7 +142,7 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-spr
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
 - **Claude Code:** Uses `Task(subagent_type="rcode-executor",
-  model="sonnet", ...)` — blocks until complete, returns result
+  model="{executor_model}", ...)` — blocks until complete, returns result
 - **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
   sequential inline execution**: read and follow execute-sprint.md directly for each plan
   instead of spawning parallel agents. Only attempt parallel spawning if the user
@@ -160,6 +160,7 @@ via filesystem and git state.
 <required_reading>
 @.rcode/references/auto-init-guard.md
 @.rcode/references/output-format.md
+@.rcode/references/git-preflight.md
 Read STATE.md before any operation to load project context.
 
 @.rcode/references/agent-contracts.md
@@ -259,7 +260,7 @@ fi
 </step>
 
 <step name="create_phase_snapshot" priority="first">
-**Create a pre-execution git tag so `/rihal-undo --phase NN --to-snapshot` can restore to this exact state.**
+**Create a pre-execution git tag so `/rcode-undo --phase NN --to-snapshot` can restore to this exact state.**
 
 Only runs when inside a git repository with a valid HEAD (skip silently for fresh/empty repos).
 
@@ -490,13 +491,13 @@ If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty (no SECURITY.md yet):
 Include in the next-steps routing output:
 ```
 ⚠ Security enforcement enabled — run before advancing:
-  /rihal-secure-phase {PHASE} ${Rihal_WS}
+  /rcode-secure-phase {PHASE} ${RCODE_WS}
 ```
 
 If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_open`. If > 0:
 ```
 ⚠ Security gate: {threats_open} threats open
-  /rihal-secure-phase {PHASE} — resolve before advancing
+  /rcode-secure-phase {PHASE} — resolve before advancing
 ```
 </step>
 
@@ -522,8 +523,8 @@ Apply the same "incomplete" filtering rules as earlier:
 
 Selected wave finished successfully. This phase still has incomplete plans, so phase-level verification and completion were intentionally skipped.
 
-/rihal-execute {phase} ${Rihal_WS}                # Continue remaining waves
-/rihal-execute {phase} --wave {next} ${Rihal_WS}  # Run the next wave explicitly
+/rcode-execute {phase} ${RCODE_WS}                # Continue remaining waves
+/rcode-execute {phase} --wave {next} ${RCODE_WS}  # Run the next wave explicitly
 ```
 
 **If no incomplete plans remain after the selected wave finishes:**
@@ -564,7 +565,7 @@ Run each extracted command. Collect results:
   Output: {stderr/stdout}
 
 These are task-level acceptance checks. Fix before proceeding to code review.
-/rihal-debug "verify command failed: {command}" — diagnose the failure
+/rcode-debug "verify command failed: {command}" — diagnose the failure
 ```
 STOP — do not proceed to `code_review_gate` until all verify commands pass or the user explicitly overrides.
 
@@ -574,7 +575,7 @@ STOP — do not proceed to `code_review_gate` until all verify commands pass or 
 </step>
 
 <step name="code_review_gate" required="true">
-**This step is REQUIRED and must not be skipped.** Spawn `rcode-code-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
+**This step is REQUIRED and must not be skipped.** Spawn `rcode-reviewer` to review the phase's source changes. Acts as a BLOCKING gate before the verifier when critical or high findings are present.
 
 **Config gate (default ON):**
 ```bash
@@ -587,7 +588,7 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 ```bash
 REVIEWER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
 REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
-REVIEWER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-code-reviewer 2>/dev/null || echo "")
+REVIEWER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-reviewer 2>/dev/null || echo "")
 # Issue #652 — no leading zeros. Variable name kept for backward compat in this workflow.
 PADDED="${PHASE_NUMBER}"
 REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
@@ -628,12 +629,45 @@ ${REVIEWER_SKILLS}",
 
 **Parse severity counts:**
 ```bash
+# Fail-safe defaults — malformed/missing frontmatter must NOT bypass the gate (#602).
+# Empty string compared against an integer in bash evaluates to false, which
+# would silently let critical findings through. Default missing to a sentinel
+# that fails the gate so a bad REVIEW.md is treated as "block, ask the user".
+REVIEW_STATUS="malformed"
+CRITICAL_COUNT=0
+HIGH_COUNT=0
+MEDIUM_COUNT=0
+LOW_COUNT=0
+REVIEW_PARSE_OK=false
 if [[ -f "$REVIEW_FILE" ]]; then
-  REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
-  CRITICAL_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^critical:" | head -1 | cut -d: -f2 | tr -d ' ')
-  HIGH_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^high:" | head -1 | cut -d: -f2 | tr -d ' ')
-  MEDIUM_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^medium:" | head -1 | cut -d: -f2 | tr -d ' ')
-  LOW_COUNT=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^low:" | head -1 | cut -d: -f2 | tr -d ' ')
+  FRONTMATTER=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE")
+  PARSED_STATUS=$(echo "$FRONTMATTER" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_CRIT=$(echo "$FRONTMATTER"   | grep "^critical:" | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_HIGH=$(echo "$FRONTMATTER"   | grep "^high:"     | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_MED=$(echo "$FRONTMATTER"    | grep "^medium:"   | head -1 | cut -d: -f2 | tr -d ' ')
+  PARSED_LOW=$(echo "$FRONTMATTER"    | grep "^low:"      | head -1 | cut -d: -f2 | tr -d ' ')
+  # Accept the parse only when status + all four counts are present AND counts
+  # are pure digits. Anything else = malformed → block and ask.
+  if [[ -n "$PARSED_STATUS" \
+        && "$PARSED_CRIT" =~ ^[0-9]+$ \
+        && "$PARSED_HIGH" =~ ^[0-9]+$ \
+        && "$PARSED_MED"  =~ ^[0-9]+$ \
+        && "$PARSED_LOW"  =~ ^[0-9]+$ ]]; then
+    REVIEW_STATUS="$PARSED_STATUS"
+    CRITICAL_COUNT="$PARSED_CRIT"
+    HIGH_COUNT="$PARSED_HIGH"
+    MEDIUM_COUNT="$PARSED_MED"
+    LOW_COUNT="$PARSED_LOW"
+    REVIEW_PARSE_OK=true
+  fi
+fi
+
+# Malformed REVIEW.md = treat as a blocking finding. The gate must NEVER
+# silently pass when it can't read the report (#602).
+if [[ "$REVIEW_PARSE_OK" != "true" ]]; then
+  echo "⛔ Code review gate: REVIEW.md missing or malformed at ${REVIEW_FILE}."
+  echo "   Cannot determine severity counts. Treating as blocking — re-run the reviewer."
+  CRITICAL_COUNT=1   # force the gate to block; user can override below
 fi
 ```
 
@@ -656,7 +690,7 @@ Verifier is blocked until critical/high findings are resolved.
 ```
 
 AskUserQuestion with options:
-1. **"Run /rihal-code-review-fix first (recommended)"** — Stop. Print next command: `/rihal-code-review-fix ${PHASE_NUMBER} ${Rihal_WS}`. Do NOT spawn verifier.
+1. **"Run /rcode-review-fix first (recommended)"** — Stop. Print next command: `/rcode-review-fix ${PHASE_NUMBER} ${RCODE_WS}`. Do NOT spawn verifier.
 2. **"Proceed to verifier anyway (high findings unresolved)"** — Log override and continue to `close_parent_artifacts` → `regression_gate` → `verify_phase_goal`.
 3. **"Cancel execution"** — Stop. Report partial completion.
 
@@ -666,7 +700,7 @@ If `CRITICAL_COUNT == 0` AND `HIGH_COUNT == 0` AND (`MEDIUM_COUNT > 0` OR `LOW_C
 ```
 ⚠ Code review found non-blocking findings (medium: ${MEDIUM_COUNT}, low: ${LOW_COUNT}).
   Report: ${REVIEW_FILE}
-  Consider: /rihal-code-review-fix ${PHASE_NUMBER}
+  Consider: /rcode-review-fix ${PHASE_NUMBER}
 ```
 Then continue to `close_parent_artifacts`.
 
@@ -768,22 +802,22 @@ fi
    {list AC items from SPRINT.md}
 
    Recommended next steps:
-   /rihal-add-tests {X} — generate unit + E2E tests before UAT
-   /rihal-verify-work {X} — perform UAT and produce VERIFICATION.md
+   /rcode-add-tests {X} — generate unit + E2E tests before UAT
+   /rcode-verify-work {X} — perform UAT and produce VERIFICATION.md
 
-   /rihal-next will refuse to advance until the UAT gate passes.
+   /rcode-next will refuse to advance until the UAT gate passes.
    ```
 3. STOP the workflow. Do NOT proceed to `update_roadmap`. Do NOT call `phase complete`.
 
 **If `VERIFICATION_STATUS` is `fail`:**
 
-1. Mark the phase as `status: executed` (so /rihal-plan --gaps can run a closure cycle).
+1. Mark the phase as `status: executed` (so /rcode-plan --gaps can run a closure cycle).
 2. Surface the failed AC items.
 3. STOP. Don't mark complete on a failing verification.
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
 
-The previous behaviour (printing "Next Up: /rihal-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
+The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
 </step>
 
 <step name="update_roadmap">
@@ -819,7 +853,7 @@ Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings
 
 {list each warning}
 
-These items are tracked and will appear in `/rihal-progress` and `/rihal-audit-uat`.
+These items are tracked and will appear in `/rcode-progress` and `/rcode-audit-uat`.
 ```
 
 ```bash
@@ -892,7 +926,7 @@ discord_webhook_url: "https://discord.com/api/webhooks/..."
 teams_webhook_url: "https://outlook.office.com/webhook/..."
 ```
 
-Then verify with `/rihal-notify-test`.
+Then verify with `/rcode-notify-test`.
 </step>
 
 <step name="generate_tests">
@@ -910,9 +944,9 @@ If `TEST_FILES` is 0 — no test artifacts were produced during execution. Prese
 ## ✓ Phase {X}: {Name} — Add Tests?
 
 No test files were generated during this phase.
-Run /rihal-add-tests to generate unit + E2E tests from the SUMMARY:
+Run /rcode-add-tests to generate unit + E2E tests from the SUMMARY:
 
-/rihal-add-tests {X} ${Rihal_WS}
+/rcode-add-tests {X} ${RCODE_WS}
 
 Skip if tests are out of scope for this phase (infra, config, docs-only).
 ```
@@ -924,7 +958,7 @@ If `TEST_FILES` is > 0 — tests were written inline. Skip this step silently.
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rihal-plan {X} --gaps`). No additional routing needed — skip auto-advance.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rcode-plan {X} --gaps`). No additional routing needed — skip auto-advance.
 
 **No-transition check (spawned by auto-advance chain):**
 
@@ -975,16 +1009,16 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 
 **STOP. Do not auto-advance. Do not execute transition. Do not plan next phase. Present options to the user and wait.**
 
-**IMPORTANT: There is NO `/rihal-transition` command. Never suggest it. The transition workflow is internal only.**
+**IMPORTANT: There is NO `/rcode-transition` command. Never suggest it. The transition workflow is internal only.**
 
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/rihal-add-tests {X} ${Rihal_WS} — generate unit + E2E tests for this phase
-/rihal-progress ${Rihal_WS} — see updated roadmap
-/rihal-discuss-phase {next} ${Rihal_WS} — discuss next phase before planning
-/rihal-plan {next} ${Rihal_WS} — plan next phase
-/rihal-execute {next} ${Rihal_WS} — execute next phase
+/rcode-add-tests {X} ${RCODE_WS} — generate unit + E2E tests for this phase
+/rcode-progress ${RCODE_WS} — see updated roadmap
+/rcode-discuss-phase {next} ${RCODE_WS} — discuss next phase before planning
+/rcode-plan {next} ${RCODE_WS} — plan next phase
+/rcode-execute {next} ${RCODE_WS} — execute next phase
 ```
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.
@@ -1011,7 +1045,7 @@ For 1M+ context models, consider:
 </failure_handling>
 
 <resumption>
-Re-run `/rihal-execute {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
+Re-run `/rcode-execute {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
 
 STATE.md tracks: last completed plan, current wave, pending checkpoints.
 </resumption>

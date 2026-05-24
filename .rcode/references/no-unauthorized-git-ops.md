@@ -60,7 +60,7 @@ Spawn the debug agent with git worktree isolation?
 
 ## Agent enforcement
 
-Every Rihal agent that can execute shell commands (rcode-executor, rcode-debugger, rcode-planner, rcode-noor, etc.) must:
+Every rcode agent that can execute shell commands (rcode-executor, rcode-debugger, rcode-planner, rcode-noor, etc.) must:
 
 1. Reject any prompt asking them to perform a banned operation without a prior user-confirmed authorization in their input
 2. Surface a warning if a parent workflow or user prompt tries to include a banned flag

@@ -42,7 +42,7 @@ Use for major workflow transitions.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RCODE ► {STAGE NAME}
+ RIHAL ► {STAGE NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -69,7 +69,7 @@ Use this when a router command dispatches to another command:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RCODE ► ROUTING
+ RIHAL ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Input: {user's question or intent}
@@ -328,7 +328,7 @@ Use standard markdown pipe tables with status symbols:
 **Majlis banner** (multi-agent council):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RCODE ► MAJLIS CONVENING
+ RIHAL ► MAJLIS CONVENING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -354,7 +354,7 @@ the banner, not inside it.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RCODE ► PLANNING SPRINT 01.1
+ RIHAL ► PLANNING SPRINT 01.1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 التخطيط للسباق 01.1 — يرجى الانتظار
 ```
@@ -389,7 +389,7 @@ translated prose goes outside the art, on its own line(s).
 
 - Varying box/banner widths within same output
 - Mixing banner styles (`===`, `---`, `***`)
-- Skipping `RCODE ►` prefix in stage banners
+- Skipping `RIHAL ►` prefix in stage banners
 - Random emoji (`🚀`, `✨`, `💫`) outside the approved set
 - Missing Next Up block after workflow completions
 - Hardcoding references to other methodologies in rcode's UX
