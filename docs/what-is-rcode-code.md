@@ -29,7 +29,7 @@ rcode fixes that. One install, and the AI now knows. Every session. Every repo. 
 
 Running `pnpm dlx @hanzlaa/rcode install` into a project produces:
 
-- **85 phrase-activated skills** (from `/rcode-create-prd` to `/rcode-sprint-planning` to `/rcode-dev-story`) that route your request to the right workflow.
+- **86 phrase-activated skills** (from `/rcode-create-prd` to `/rcode-sprint-planning` to `/rcode-dev-story`) that route your request to the right workflow.
 - **116 slash commands** wired through to the skills, agents, and workflows.
 - **45 agents** — rcode's team in AI form: Sadiq for strategy, Waleed for architecture, Hussain for product, Layla for UX, Fatima for QA, and more. Each has a hard scope boundary, so you know which one to talk to.
 - **File-based state** at `.rcode/` that every workflow reads and writes — project status, decisions, blockers, roadmap, sprints.

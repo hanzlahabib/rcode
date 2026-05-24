@@ -26,7 +26,7 @@ After the command completes, your project has:
 | `.rcode/` | Config, workflows, references, binary CLI (`rcode-tools.cjs`) |
 | `.claude/agents/` | 46 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
 | `.claude/commands/rcode/` | 116 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
-| `.claude/skills/` | 85 phrase-activated skills |
+| `.claude/skills/` | 86 phrase-activated skills |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
 | `rcode/brain/` | rcode standards pulled from upstream — populated via `rcode-tools brain pull` |
 
@@ -100,7 +100,7 @@ Passing an unsupported `--ide` value prints a clear error with workaround guidan
 pnpm dlx @hanzlaa/rcode install
 ```
 
-- All 45 agents, 116 commands, 85 skills
+- All 45 agents, 116 commands, 86 skills
 - Mode: `guided` (skills halt at menus for user input)
 - Language: English
 - Model profile: `balanced`

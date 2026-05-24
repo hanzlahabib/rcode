@@ -41,7 +41,7 @@ All four commands should succeed. Brain pull should either fetch real rcode cont
 ## Demo script
 
 ### ☐ 5. Open Claude Code in the scratch dir
-Run `claude` in `/tmp/rcode-demo`. Confirm the 85 skills, 45 agents, 116 commands banner from the install output.
+Run `claude` in `/tmp/rcode-demo`. Confirm the 86 skills, 45 agents, 116 commands banner from the install output.
 
 ### ☐ 6. Show the golden path — 7 skills end-to-end
 Demo flow, in this order:

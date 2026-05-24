@@ -16,7 +16,7 @@ All dates are targets, not commitments. Scope and dates shift when reality shift
 
 ### v4.0.0 — `rihal-*` → `rcode-*` rename + populated Memory Bank (current)
 - Hard rename across the entire stack: `.rihal/` → `.rcode/`, `/rihal-*` → `/rcode-*`, agent and skill prefixes.
-- 45 agents, 116 slash commands, 85 skills, file-based state in `.rcode/`.
+- 45 agents, 116 slash commands, 86 skills, file-based state in `.rcode/`.
 - Memory Bank ships populated (rcode dogfoods its own bank under `.rcode/memory/`).
 - `brain pull` working end-to-end against real sources.
 - Install via `pnpm dlx @hanzlaa/rcode install`.
