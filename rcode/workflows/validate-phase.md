@@ -42,7 +42,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`VALIDATION_FILE` non-empty): Audit existing
 - **State B** (`VALIDATION_FILE` empty, `SUMMARY_FILES` non-empty): Reconstruct from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rcode-execute {N} ${Rihal_WS} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rcode-execute {N} ${RCODE_WS} first."
 
 ## 2. Discovery
 
@@ -151,14 +151,14 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PHASE}): add/update valid
 ```
 rcode > PHASE {N} IS NYQUIST-COMPLIANT
 All requirements have automated verification.
-▶ Next: /rcode-audit-milestone ${Rihal_WS}
+▶ Next: /rcode-audit-milestone ${RCODE_WS}
 ```
 
 **Partial:**
 ```
 rcode > PHASE {N} VALIDATED (PARTIAL)
 {M} automated, {K} manual-only.
-▶ Retry: /rcode-validate-phase {N} ${Rihal_WS}
+▶ Retry: /rcode-validate-phase {N} ${RCODE_WS}
 ```
 
 Display `/clear` reminder.

@@ -217,7 +217,7 @@ AUTO_CHAIN=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow._auto_chain_a
 
 Auto-generate UI-SPEC without prompting:
 ```
-Skill(skill="rcode-ui-phase", args="${PHASE} --auto ${Rihal_WS}")
+Skill(skill="rcode-ui-phase", args="${PHASE} --auto ${RCODE_WS}")
 ```
 After `rcode-ui-phase` returns, re-read:
 ```bash
@@ -243,7 +243,7 @@ Otherwise use AskUserQuestion:
 - header: "UI Design Contract"
 - question: "Phase {N} has frontend indicators but no UI-SPEC.md. Generate a design contract before planning?"
 - options:
-  - "Generate UI-SPEC first" → Display: "Run `/rcode-ui-phase {N} ${Rihal_WS}` then re-run `/rcode-plan {N} ${Rihal_WS}`". Exit workflow.
+  - "Generate UI-SPEC first" → Display: "Run `/rcode-ui-phase {N} ${RCODE_WS}` then re-run `/rcode-plan {N} ${RCODE_WS}`". Exit workflow.
   - "Continue without UI-SPEC" → Continue to step 6.
   - "Not a frontend phase" → Continue to step 6.
 

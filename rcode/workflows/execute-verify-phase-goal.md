@@ -54,7 +54,7 @@ fi
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Present items for human testing, get approval or feedback |
-| `gaps_found` | Present gap summary, offer `/rcode-plan {phase} --gaps ${Rihal_WS}` |
+| `gaps_found` | Present gap summary, offer `/rcode-plan {phase} --gaps ${RCODE_WS}` |
 | `verifier_failed` | Abort: VERIFICATION.md missing/empty/unparseable. Do NOT mark phase complete. Print the verifier-failure message below and exit 1. |
 
 **If verifier_failed:**
@@ -153,11 +153,11 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/rcode-progre
 
 `/clear` then:
 
-`/rcode-plan {X} --gaps ${Rihal_WS}`
+`/rcode-plan {X} --gaps ${RCODE_WS}`
 
 Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
-Also: `/rcode-verify-work {X} ${Rihal_WS}` — manual testing first
+Also: `/rcode-verify-work {X} ${RCODE_WS}` — manual testing first
 ```
 
-Gap closure cycle: `/rcode-plan {X} --gaps ${Rihal_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rcode-execute {X} --gaps-only ${Rihal_WS}` → verifier re-runs.
+Gap closure cycle: `/rcode-plan {X} --gaps ${RCODE_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rcode-execute {X} --gaps-only ${RCODE_WS}` → verifier re-runs.
 </step>
