@@ -41,7 +41,7 @@ All four commands should succeed. Brain pull should either fetch real rcode cont
 ## Demo script
 
 ### ☐ 5. Open Claude Code in the scratch dir
-Run `claude` in `/tmp/rcode-demo`. Confirm the 85 skills, 45 agents, 116 commands banner from the install output.
+Run `claude` in `/tmp/rcode-demo`. Confirm the 86 skills, 45 agents, 116 commands banner from the install output.
 
 ### ☐ 6. Show the golden path — 7 skills end-to-end
 Demo flow, in this order:
@@ -60,7 +60,7 @@ ls .rcode/brain/rcode-github/
 ls .rcode/brain/rcode-docs/ | head
 cat .rcode/brain/best-practices/no-autonomous-bypass.md | head -10
 ```
-This is the punchline — every Rihalian's install has rcode's standards already sitting in their project context.
+This is the punchline — every rcode user's install has rcode's standards already sitting in their project context.
 
 ### ☐ 8. Show the docs
 Quick scroll through:

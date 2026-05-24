@@ -1,6 +1,6 @@
 # rcode — Public Roadmap
 
-This roadmap is published so every Rihalian (and every curious observer) can see where rcode is going next. Each release below has a scope, an acceptance signal, and is tracked in the GitHub milestone linked beside it.
+This roadmap is published so every rcode user (and every curious observer) can see where rcode is going next. Each release below has a scope, an acceptance signal, and is tracked in the GitHub milestone linked beside it.
 
 All dates are targets, not commitments. Scope and dates shift when reality shifts; the roadmap gets updated in the same PR that lands the change.
 
@@ -16,7 +16,7 @@ All dates are targets, not commitments. Scope and dates shift when reality shift
 
 ### v4.0.0 — `rihal-*` → `rcode-*` rename + populated Memory Bank (current)
 - Hard rename across the entire stack: `.rihal/` → `.rcode/`, `/rihal-*` → `/rcode-*`, agent and skill prefixes.
-- 45 agents, 116 slash commands, 85 skills, file-based state in `.rcode/`.
+- 45 agents, 116 slash commands, 86 skills, file-based state in `.rcode/`.
 - Memory Bank ships populated (rcode dogfoods its own bank under `.rcode/memory/`).
 - `brain pull` working end-to-end against real sources.
 - Install via `pnpm dlx @hanzlaa/rcode install`.
@@ -43,16 +43,16 @@ All dates are targets, not commitments. Scope and dates shift when reality shift
 ## On the horizon
 
 ### v5.0 — MCP server
-**Goal:** No more `/rcode-update`. The rcode brain is queried live; every Rihalian's AI always sees the latest rcode standard the moment it's published.
+**Goal:** No more `/rcode-update`. The rcode brain is queried live; every rcode user's AI always sees the latest rcode standard the moment it's published.
 
 - Hosted on rcode infra, authenticated via rcode SSO.
 - Migration path: v4.x and v5.0 run side-by-side for one release, then `brain pull` is deprecated.
 
 ### v5.x — Internal rcode registry
-**Goal:** Rihalians install from an internal source, not GitHub. Faster, access-controlled, audit-trailed.
+**Goal:** rcode users install from an internal source, not GitHub. Faster, access-controlled, audit-trailed.
 
 - Replaces `pnpm dlx @hanzlaa/rcode@latest` as the primary install path for rcode employees.
-- GitHub release stays available for non-Rihalian contributors and for transparency.
+- GitHub release stays available for non-rcode-team contributors and for transparency.
 
 ---
 

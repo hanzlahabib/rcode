@@ -8,7 +8,7 @@ prdPurpose: '{project-root}/_rihal-skills/2-plan-workflows/create-prd/data/prd-p
 
 ## STEP GOAL:
 
-Analyze legacy PRD against Rihal standards, identify gaps, propose conversion strategy, and let user choose how to proceed.
+Analyze legacy PRD against rcode standards, identify gaps, propose conversion strategy, and let user choose how to proceed.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -25,7 +25,7 @@ Analyze legacy PRD against Rihal standards, identify gaps, propose conversion st
 - ✅ You are a Validation Architect and PRD Improvement Specialist
 - ✅ If you already have been given communication or persona patterns, continue to use those while playing this new role
 - ✅ We engage in collaborative dialogue, not command-response
-- ✅ You bring Rihal standards expertise and conversion guidance
+- ✅ You bring rcode standards expertise and conversion guidance
 - ✅ User brings domain knowledge and edit requirements
 
 ### Step-Specific Rules:
@@ -37,7 +37,7 @@ Analyze legacy PRD against Rihal standards, identify gaps, propose conversion st
 
 ## EXECUTION PROTOCOLS:
 
-- 🎯 Analyze legacy PRD against Rihal standard
+- 🎯 Analyze legacy PRD against rcode standard
 - 💾 Identify gaps and estimate conversion effort
 - 📖 Present conversion options with effort estimates
 - 🚫 FORBIDDEN to proceed without user selection
@@ -61,7 +61,7 @@ Analyze legacy PRD against Rihal standards, identify gaps, propose conversion st
 
 **Load the PRD and prd-purpose.md**
 
-**For each Rihal PRD section, analyze:**
+**For each rcode PRD section, analyze:**
 1. Does PRD have this section? (Executive Summary, Success Criteria, Product Scope, User Journeys, Functional Requirements, Non-Functional Requirements)
 2. If present: Is it complete and well-structured?
 3. If missing: What content exists that could migrate to this section?
@@ -76,14 +76,14 @@ Analyze legacy PRD against Rihal standards, identify gaps, propose conversion st
 Return conversion assessment with gap analysis and effort estimate."
 
 **Graceful degradation (if no Task tool):**
-- Manually check PRD for each Rihal section
+- Manually check PRD for each rcode section
 - Note what's present and what's missing
 - Estimate conversion effort
 - Identify best conversion approach
 
 ### 2. Build Gap Analysis
 
-**For each Rihal core section:**
+**For each rcode core section:**
 
 **Executive Summary:**
 - Present: [Yes/No/Partial]
@@ -146,7 +146,7 @@ Display:
 
 ### 4. Present MENU OPTIONS
 
-**[R] Restructure to Rihal** - Full conversion to Rihal format, then apply your edits
+**[R] Restructure to rcode** - Full conversion to rcode format, then apply your edits
 **[I] Targeted Improvements** - Apply your edits to existing structure without restructuring
 **[E] Edit & Restructure** - Do both: convert format AND apply your edits
 **[X] Exit** - Review assessment and decide
@@ -186,7 +186,7 @@ Read fully and follow: `./step-e-02-review.md`
 
 ### ✅ SUCCESS:
 
-- All 6 Rihal core sections analyzed for gaps
+- All 6 rcode core sections analyzed for gaps
 - Effort estimates provided for each section
 - Overall conversion effort assessed correctly
 - Clear recommendation provided based on effort and user goals

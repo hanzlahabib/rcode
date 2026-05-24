@@ -1,7 +1,7 @@
 ---
 name: rihal-git-flow
 internal: true
-description: Branching, commits, conflicts, parallel work — aligned with the Rihal Epic→Feature→Task hierarchy.
+description: Branching, commits, conflicts, parallel work — aligned with the rcode Epic→Feature→Task hierarchy.
 triggers:
   - "git flow"
   - "branching strategy"
@@ -18,7 +18,7 @@ user-invocable: true
 
 ## Overview
 
-The Rihal git workflow: feature branches off main, Conventional Commits, PRs that close issues with `Closes #N`, no force-push to main, no AI attribution in commit messages. Aligned with the Epic→Feature→Task hierarchy in `GITHUB_WORKFLOW.md` so every branch traces back to an issue.
+The rcode git workflow: feature branches off main, Conventional Commits, PRs that close issues with `Closes #N`, no force-push to main, no AI attribution in commit messages. Aligned with the Epic→Feature→Task hierarchy in `GITHUB_WORKFLOW.md` so every branch traces back to an issue.
 
 ## Branching
 

@@ -359,7 +359,7 @@ Load config from `{project-root}/.rcode/config.yaml` and resolve:
   </check>
 
   <action>Report completion</action>
-  <output>**🎯 ULTIMATE Rihal Code STORY CONTEXT CREATED, {user_name}!**
+  <output>**🎯 ULTIMATE rcode STORY CONTEXT CREATED, {user_name}!**
 
     **Story Details:**
     - Story ID: {{story_id}}

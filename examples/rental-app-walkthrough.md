@@ -51,7 +51,7 @@ Excerpt of the council session written to `.planning/council-sessions/`:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COUNCIL SESSION — listings search backend
+ RCODE ► COUNCIL SESSION — listings search backend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🏗️ Waleed (CTO): Postgres `tsvector` + a GIN index covers area/price/keyword
@@ -136,7 +136,7 @@ Post-execute gates:
 ```
 
 ```
-RIHAL ► STATUS
+RCODE ► STATUS
 Phase 1 — listing CRUD + search ........ done (4/4 tasks)
 Decisions ............................. 1 logged (search backend)
 Blockers .............................. none

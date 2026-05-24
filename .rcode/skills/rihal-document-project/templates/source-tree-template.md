@@ -132,4 +132,4 @@ This project is organized into {{parts_count}} distinct parts:
 
 ---
 
-_Generated using Rihal Code `document-project` workflow_
+_Generated using rcode `document-project` workflow_

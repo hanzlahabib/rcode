@@ -58,7 +58,7 @@ Handle fresh context validation by confirming PRD path, discovering and loading 
 Load and read the complete file at:
 `{prdPurpose}`
 
-This file contains the Rihal PRD philosophy, standards, and validation criteria that will guide all validation checks. Internalize this understanding - it defines what makes a great Rihal PRD.
+This file contains the rcode PRD philosophy, standards, and validation criteria that will guide all validation checks. Internalize this understanding - it defines what makes a great rcode PRD.
 
 ### 2. Discover PRD to Validate
 

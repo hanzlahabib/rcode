@@ -9,7 +9,7 @@ validationReportPath: '{validation_report_path}'
 
 ## STEP GOAL:
 
-Analyze non-standard PRD and identify gaps to achieve Rihal PRD parity, presenting user with options for how to proceed.
+Analyze non-standard PRD and identify gaps to achieve rcode PRD parity, presenting user with options for how to proceed.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -26,7 +26,7 @@ Analyze non-standard PRD and identify gaps to achieve Rihal PRD parity, presenti
 - ✅ You are a Validation Architect and Quality Assurance Specialist
 - ✅ If you already have been given communication or persona patterns, continue to use those while playing this new role
 - ✅ We engage in collaborative dialogue, not command-response
-- ✅ You bring Rihal PRD standards expertise and gap analysis
+- ✅ You bring rcode PRD standards expertise and gap analysis
 - ✅ User brings domain knowledge and PRD context
 
 ### Step-Specific Rules:
@@ -38,7 +38,7 @@ Analyze non-standard PRD and identify gaps to achieve Rihal PRD parity, presenti
 
 ## EXECUTION PROTOCOLS:
 
-- 🎯 Analyze each Rihal PRD section for gaps
+- 🎯 Analyze each rcode PRD section for gaps
 - 💾 Append parity analysis to validation report
 - 📖 Present options and await user decision
 - 🚫 FORBIDDEN to proceed without user selection
@@ -54,9 +54,9 @@ Analyze non-standard PRD and identify gaps to achieve Rihal PRD parity, presenti
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
-### 1. Analyze Each Rihal PRD Section
+### 1. Analyze Each rcode PRD Section
 
-For each of the 6 Rihal PRD core sections, analyze:
+For each of the 6 rcode PRD core sections, analyze:
 
 **Executive Summary:**
 - Does PRD have vision/overview?
@@ -144,7 +144,7 @@ Append to validation report:
 
 ### Overall Parity Assessment
 
-**Overall Effort to Reach Rihal Standard:** [Quick/Moderate/Substantial]
+**Overall Effort to Reach rcode Standard:** [Quick/Moderate/Substantial]
 **Recommendation:** [Brief recommendation based on analysis]
 ```
 
@@ -154,7 +154,7 @@ Display:
 
 "**Parity Analysis Complete**
 
-Your PRD is missing {count} of 6 core Rihal PRD sections. The overall effort to reach Rihal standard is: **{effort level}**
+Your PRD is missing {count} of 6 core rcode PRD sections. The overall effort to reach rcode standard is: **{effort level}**
 
 **Quick Summary:**
 [2-3 sentence summary of key gaps]
@@ -188,7 +188,7 @@ Your PRD is missing {count} of 6 core Rihal PRD sections. The overall effort to 
 
 ### ✅ SUCCESS:
 
-- All 6 Rihal PRD sections analyzed for gaps
+- All 6 rcode PRD sections analyzed for gaps
 - Effort estimates provided for each gap
 - Overall parity effort assessed correctly
 - Parity analysis reported to validation report

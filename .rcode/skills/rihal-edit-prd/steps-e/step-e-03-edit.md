@@ -79,12 +79,12 @@ Display: "**Starting PRD Edits**
 - Section to edit: {section_name}
 - Current content: {existing content}
 - Changes needed: {specific changes from plan}
-- Rihal PRD standards: Load from prd-purpose.md
+- rcode PRD standards: Load from prd-purpose.md
 
 **Tasks:**
 1. Read current PRD section
 2. Apply specified changes
-3. Ensure Rihal PRD principles compliance:
+3. Ensure rcode PRD principles compliance:
    - High information density (no filler)
    - Measurable requirements
    - Clear structure
@@ -109,7 +109,7 @@ Apply changes and return updated section."
 - Additions: Create new sections with proper content
 - Updates: Modify existing content per plan
 - Removals: Remove specified content
-- Restructuring: Reformat content to Rihal standard
+- Restructuring: Reformat content to rcode standard
 
 **c) Update PRD file**
 - Apply changes to PRD
@@ -126,12 +126,12 @@ Changes: {brief summary}
 **If conversion mode is "Full restructuring" or "Both":**
 
 **For restructuring:**
-- Reorganize PRD to Rihal standard structure
+- Reorganize PRD to rcode standard structure
 - Ensure proper ## Level 2 headers
 - Reorder sections logically
-- Update PRD frontmatter to match Rihal format
+- Update PRD frontmatter to match rcode format
 
-**Follow Rihal PRD structure:**
+**Follow rcode PRD structure:**
 1. Executive Summary
 2. Success Criteria
 3. Product Scope
@@ -143,7 +143,7 @@ Changes: {brief summary}
 9. Non-Functional Requirements
 
 Display: "**PRD Restructured**
-Rihal standard structure applied.
+rcode standard structure applied.
 {Sections added/reordered}"
 
 ### 5. Update PRD Frontmatter

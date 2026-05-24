@@ -8,7 +8,7 @@ Assemble everything collected in steps 2–7 into a clean, publication-quality R
 
 ## MANDATORY RULES
 
-- 🛑 Use the canonical ROADMAP.md structure (mirrors `docs/ROADMAP.md` pattern in Rihal Code itself).
+- 🛑 Use the canonical ROADMAP.md structure (mirrors `docs/ROADMAP.md` pattern in rcode itself).
 - 🛑 Every milestone: name, window, goal, outcomes, phases, kill criteria.
 - 🛑 Every phase stub: number, name, one-line goal.
 - 🛑 Clean markdown — no debug sections, no "proposed" labels, no step headings.

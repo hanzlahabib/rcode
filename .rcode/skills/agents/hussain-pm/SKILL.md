@@ -1,5 +1,5 @@
 ---
-name: rihal-agent-hussain-pm
+name: rcode-hussain-pm
 description: >
   Product Manager for PRD creation, requirements discovery, user research
   framing, and scope prioritization. Activates when the user says "create
