@@ -5,7 +5,7 @@ mode: yolo
 model_profile: balanced
 commit_planning: true
 model_override: 
-rihal_source_path:
+rcode_source_path:
 workflow:
   research_by_default: false
   plan_checker: true
