@@ -20,8 +20,8 @@ If `$ARGUMENTS` is a bare integer (e.g. `116`, `20`, `7`) with no other words or
 
 ```bash
 # Check if a phase directory matching this number already exists
-PHASE_NUM="$ARGUMENTS"
-EXISTING=$(find .planning/phases -maxdepth 1 -type d -name "${PHASE_NUM}-*" 2>/dev/null | head -1)
+PHASE_NUMBER="$ARGUMENTS"
+EXISTING=$(find .planning/phases -maxdepth 1 -type d -name "${PHASE_NUMBER}-*" 2>/dev/null | head -1)
 ```
 
 If `$EXISTING` is non-empty, the user typed a phase number that already exists — they almost certainly meant to operate on it, not create a new one. Stop and ask:
