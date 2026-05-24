@@ -346,6 +346,9 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `observability` — logging, error-handling, silent-failure fixes
 - `audit` — multi-angle audit reports under `audit/`
 - `agent-rules` — `.rcode/agents-rules/` rule files for agent behavior
+- `cursor` — Cursor IDE rules under `.cursor/rules/rcode/`
+- `i18n` — internationalization, brand strings, and user-visible copy
+- `phase` — phase-lifecycle changes (variable renames, phase-loop fixes); use numeric `<phase-id>` for in-phase commits
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

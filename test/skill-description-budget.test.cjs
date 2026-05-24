@@ -75,7 +75,10 @@ function countOffenders() {
 test('installed skill count is non-trivial (sanity)', () => {
   if (!resolveSkillsDir()) return; // neither project nor global has rcode skills — skip
   const { total } = countOffenders();
-  assert.ok(total > 50, `expected >50 skills, got ${total} — install drift?`);
+  // Post-rebrand (2026-05-25): install ships 49 rcode-* skills to .claude/skills/.
+  // Threshold lowered from >50 to >40 to reflect the condensed catalog while still
+  // catching real install drift (a missing-skill regression would drop count well below 40).
+  assert.ok(total > 40, `expected >40 skills, got ${total} — install drift?`);
 });
 
 test('skill description over-budget count does not exceed baseline', () => {
