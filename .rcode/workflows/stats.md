@@ -67,12 +67,12 @@ Calculate human-readable duration from timeline_start to timeline_end:
 If `.git/` directory exists, run:
 
 ```bash
-git log --oneline --pretty=format:'%s' -- .rihal rihal/ | wc -l
-git log --oneline --pretty=format:'%s' -- .rihal rihal/ | head -5
+git log --oneline --pretty=format:'%s' -- .rcode rcode/ | wc -l
+git log --oneline --pretty=format:'%s' -- .rcode rcode/ | head -5
 ```
 
 Extract:
-- **rihal_commits**: count of commits on .rihal or rihal paths
+- **rihal_commits**: count of commits on .rcode or rihal paths
 - **recent_commits**: last 5 commit messages
 
 If `.git/` does not exist, set `rihal_commits` = 0 and omit recent_commits from output.

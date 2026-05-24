@@ -26,7 +26,7 @@ STOP — do not proceed.
 **Action:** Check if `.rcode/` directory exists and current user can write to it.
 
 ```bash
-test -d .rihal && test -w .rihal
+test -d .rcode && test -w .rcode
 ```
 
 **PASS if:**

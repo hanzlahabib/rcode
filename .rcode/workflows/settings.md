@@ -41,7 +41,7 @@ Parse `$ARGUMENTS`:
 ## Step 1.5 — Show current settings
 
 Read each known key via `rcode-tools.cjs config-get <dotted.key>` (the
-nested-safe reader in `rihal/bin/lib/config.cjs`). **Do not** call the legacy
+nested-safe reader in `rcode/bin/lib/config.cjs`). **Do not** call the legacy
 `config set` — it uses a flat YAML parser and corrupts nested sections.
 
 ```bash

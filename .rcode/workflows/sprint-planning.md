@@ -144,7 +144,7 @@ node .rcode/bin/rcode-tools.cjs state story add \
   --points {points}
 ```
 
-Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template at `rihal/templates/sprint.md`. Fill in:
+Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template at `rcode/templates/sprint.md`. Fill in:
 - Sprint goal
 - Stories table (from user-confirmed list)
 - Capacity section (velocity target, average, buffer)

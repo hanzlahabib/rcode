@@ -32,7 +32,7 @@ STOP — do not proceed.
 
 ```bash
 # Check rcode project exists
-[ -d .rihal ] || (echo "❌ Not a rcode project" && exit 1)
+[ -d .rcode ] || (echo "❌ Not a rcode project" && exit 1)
 
 # Load state.json
 cat .rcode/state.json 2>/dev/null || echo "{}"

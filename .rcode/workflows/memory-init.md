@@ -1,7 +1,7 @@
 # Workflow: rcode-memory-init
 
 <purpose>
-Bootstrap the rcode Memory Bank for a project. Copies templates from `rihal/templates/memory/` into `.rcode/memory/`, then asks 5 seed questions to populate context. Idempotent: re-running on an initialised project produces a gap report instead of overwriting.
+Bootstrap the rcode Memory Bank for a project. Copies templates from `rcode/templates/memory/` into `.rcode/memory/`, then asks 5 seed questions to populate context. Idempotent: re-running on an initialised project produces a gap report instead of overwriting.
 </purpose>
 
 Bootstraps the rcode Memory Bank in the current project. Idempotent — re-running on an initialised project switches to a gap report instead of overwriting.
@@ -11,7 +11,7 @@ Bootstraps the rcode Memory Bank in the current project. Idempotent — re-runni
 ## Inputs
 
 - **Project root** — current working directory; must contain a `.rcode/` folder (created by `rcode install`)
-- **Templates source** — `.rcode/templates/memory/` (copied from `rihal/templates/memory/` on install)
+- **Templates source** — `.rcode/templates/memory/` (copied from `rcode/templates/memory/` on install)
 
 ## Preconditions
 

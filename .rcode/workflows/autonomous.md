@@ -102,7 +102,7 @@ fi
 Create a working branch:
 
 ```bash
-BRANCH_NAME="rihal/autonomous-${milestone_version}-$(date +%Y%m%d-%H%M%S)"
+BRANCH_NAME="rcode/autonomous-${milestone_version}-$(date +%Y%m%d-%H%M%S)"
 git checkout -b "${BRANCH_NAME}"
 ```
 
@@ -920,7 +920,7 @@ node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] `--interactive` compatible with `--only`, `--from`, and `--to` flags
 - [ ] No `git push` issued by the workflow (per AGENTS.md)
 - [ ] Branch created when on main/master (unless --allow-main override)
-- [ ] Branch name follows `rihal/autonomous-{version}-{timestamp}` pattern
+- [ ] Branch name follows `rcode/autonomous-{version}-{timestamp}` pattern
 - [ ] --allow-main flag skips branch creation with warning
 - [ ] Non-main/master branches used as-is without branch creation
 - [ ] PR/merge suggestion displayed at lifecycle completion when branch was created

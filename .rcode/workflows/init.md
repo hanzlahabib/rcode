@@ -159,7 +159,7 @@ test -f go.mod && head -20 go.mod
 test -f .env.example && head -30 .env.example
 git log --oneline -15 2>/dev/null
 git remote -v 2>/dev/null | head -2
-find . -maxdepth 3 -type d ! -path "./node_modules*" ! -path "./.git*" ! -path "./.rihal*" ! -path "./.claude*" ! -path "./.planning*" 2>/dev/null | head -20
+find . -maxdepth 3 -type d ! -path "./node_modules*" ! -path "./.git*" ! -path "./.rcode*" ! -path "./.claude*" ! -path "./.planning*" 2>/dev/null | head -20
 ```
 
 Write `.rcode/JOURNEY.md` following this template (don't over-interpret — just record what's seen).

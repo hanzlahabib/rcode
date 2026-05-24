@@ -77,8 +77,8 @@ Run the installer helper to read the source package's file list:
 node "$INSTALLER_PATH" --list-files 2>/dev/null || echo "[]"
 ```
 
-If that flag doesn't exist, walk the source package's `rihal/` directory manually:
-- Find all files in `$(npm root -g)/@hanzlaa/rcode/rcode/` (or local `./rihal/`)
+If that flag doesn't exist, walk the source package's `rcode/` directory manually:
+- Find all files in `$(npm root -g)/@hanzlaa/rcode/rcode/` (or local `./rcode/`)
 - Compute SHA256 for each
 - Store as `$SOURCE_HASHES` (map rel → sha256)
 
@@ -106,16 +106,16 @@ Print a human-readable changelog:
 📦 rcode Update Available
 
 Added files (3):
-  ✨ rihal/commands/update.md
-  ✨ rihal/workflows/update.md
-  ✨ rihal/commands/stats.md
+  ✨ rcode/commands/update.md
+  ✨ rcode/workflows/update.md
+  ✨ rcode/commands/stats.md
 
 Changed files (2):
-  🔄 rihal/modules/core.yaml
+  🔄 rcode/modules/core.yaml
   🔄 cli/install-v2.js
 
 Removed files (1):
-  ❌ rihal/references/old-style.md
+  ❌ rcode/references/old-style.md
 
 Total: +3 / ~2 / -1
 ```
@@ -186,7 +186,7 @@ when relevant. Capture it and re-print as a callout so users notice:
 ```
 ℹ Files preserved (your customizations were kept):
    - .claude/skills/rihal-create-prd/workflow.md
-   - rihal/workflows/sprint-planning.md
+   - rcode/workflows/sprint-planning.md
    - .rcode/references/output-format.md
 
 These will not auto-update on future /rihal-update calls. To force

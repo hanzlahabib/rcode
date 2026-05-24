@@ -265,7 +265,7 @@ Only runs when inside a git repository with a valid HEAD (skip silently for fres
 
 ```bash
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
-  SNAPSHOT_TAG="rihal/snapshot/phase-${phase_number}"
+  SNAPSHOT_TAG="rcode/snapshot/phase-${phase_number}"
   if git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
     PREV_SHA=$(git rev-parse --short "${SNAPSHOT_TAG}")
     git tag -d "${SNAPSHOT_TAG}" >/dev/null 2>&1

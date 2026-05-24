@@ -107,9 +107,9 @@ Get commits touching rihal paths since state creation:
 ```bash
 SINCE_DATE=$(node -e "try{const s=require('fs').readFileSync('.rcode/state.json','utf8');console.log(JSON.parse(s).created||'')}catch(e){}" 2>/dev/null)
 if [[ -n "$SINCE_DATE" ]]; then
-  git log --since="$SINCE_DATE" --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
+  git log --since="$SINCE_DATE" --oneline -- .rcode rcode/ .planning 2>/dev/null | head -20
 else
-  git log --all --oneline -- .rihal rihal/ .planning 2>/dev/null | head -20
+  git log --all --oneline -- .rcode rcode/ .planning 2>/dev/null | head -20
 fi
 ```
 

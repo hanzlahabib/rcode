@@ -87,12 +87,12 @@ Store as `$CHECKPOINTS`.
 If `.git/` exists, extract rihal-related commits:
 
 ```bash
-git log --oneline -20 --pretty=format:'%h %s' -- .rihal rihal/ .planning/ 2>/dev/null || echo ""
+git log --oneline -20 --pretty=format:'%h %s' -- .rcode rcode/ .planning/ 2>/dev/null || echo ""
 ```
 
 Parse to identify:
-- Last commit on .rihal (install/config changes)
-- Last commit on rihal/ (workflow/agent changes)
+- Last commit on .rcode (install/config changes)
+- Last commit on rcode/ (workflow/agent changes)
 - Last commit on .planning/ (execution artifacts)
 
 Store as `$RECENT_COMMITS`.

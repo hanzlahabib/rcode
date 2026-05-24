@@ -66,7 +66,7 @@ Only runs when inside a git repository (skip silently otherwise).
 
 ```bash
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
-  SNAPSHOT_TAG="rihal/snapshot/phase-${PHASE_NUMBER}"
+  SNAPSHOT_TAG="rcode/snapshot/phase-${PHASE_NUMBER}"
   if git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
     git tag -d "${SNAPSHOT_TAG}" >/dev/null 2>&1
   fi

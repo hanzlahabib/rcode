@@ -116,7 +116,7 @@ Set `LENSES` from the choice.
 
 ```bash
 # Collect scope context for skill prompts
-SCOPE_DIRS="rihal/ .rcode/"
+SCOPE_DIRS="rcode/ .rcode/"
 [ -d src ] && SCOPE_DIRS="$SCOPE_DIRS src/"
 [ -d lib ] && SCOPE_DIRS="$SCOPE_DIRS lib/"
 SCOPE_SUMMARY="Scope: $SCOPE_DIRS. Response language: $RESPONSE_LANGUAGE."
@@ -385,7 +385,7 @@ RESULT = Task(
   
   Run Lens 9 (Documentation) audit. Check:
   - Workflows missing a '## Next Up' or 'Next Up' footer
-  - Dead @.rcode/ references (file path does not exist in rihal/)
+  - Dead @.rcode/ references (file path does not exist in rcode/)
   - README.md referencing /rihal-<command> that has no command file
   - Skills (SKILL.md) missing required sections: Overview, Workflow, Output Format, Examples
   - CHANGELOG.md more than 5 commits behind HEAD
@@ -567,9 +567,9 @@ PRIMARY = Task(
   prompt="Coverage audit — do NOT generate tests. {CONTEXT}
   
   Run Lens 15 (Coverage) audit. Fill Nyquist gaps:
-  - Commands in rihal/commands/ with no parity test entry
+  - Commands in rcode/commands/ with no parity test entry
   - Subagent types referenced in workflows but no SKILL.md directory
-  - Workflows referenced in commands that do not exist in rihal/workflows/
+  - Workflows referenced in commands that do not exist in rcode/workflows/
   - Skills in team.yaml with no corresponding skills/agents/ directory
   - Acceptance criteria rows with no verifiable check (vague 'should work')
   

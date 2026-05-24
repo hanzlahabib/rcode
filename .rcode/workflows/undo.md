@@ -40,7 +40,7 @@ Parse $ARGUMENTS for the undo mode:
 - `--last N` → MODE=last, COUNT=N (integer, default 10 if N missing)
 - `--phase NN` → MODE=phase, TARGET_PHASE=NN (two-digit phase number)
 - `--plan NN-MM` → MODE=plan, TARGET_PLAN=NN-MM (phase-plan ID)
-- `--to-snapshot` → TO_SNAPSHOT=true (only combines with `--phase NN`). Uses the pre-execution git tag `rihal/snapshot/phase-NN` to determine the full commit range to revert — guaranteed to restore exact pre-execution state regardless of manifest accuracy.
+- `--to-snapshot` → TO_SNAPSHOT=true (only combines with `--phase NN`). Uses the pre-execution git tag `rcode/snapshot/phase-NN` to determine the full commit range to revert — guaranteed to restore exact pre-execution state regardless of manifest accuracy.
 
 If no valid argument is provided, display usage and exit:
 
@@ -51,7 +51,7 @@ Modes:
   --last N              Show last N rcode commits for interactive selection
   --phase NN            Revert all commits for phase NN (uses manifest, fallback to git log)
   --phase NN --to-snapshot
-                        Revert every commit between rihal/snapshot/phase-NN and HEAD —
+                        Revert every commit between rcode/snapshot/phase-NN and HEAD —
                         exact restore to the pre-execution tag created by /rihal-execute
   --plan NN-MM          Revert all commits for plan NN-MM
 
@@ -134,7 +134,7 @@ Parse the user's selection into COMMITS list.
 **If `TO_SNAPSHOT` is true:**
 
 ```bash
-SNAPSHOT_TAG="rihal/snapshot/phase-${TARGET_PHASE}"
+SNAPSHOT_TAG="rcode/snapshot/phase-${TARGET_PHASE}"
 if ! git rev-parse --verify "refs/tags/${SNAPSHOT_TAG}" >/dev/null 2>&1; then
   cat <<EOF
 No snapshot tag found: ${SNAPSHOT_TAG}
@@ -397,7 +397,7 @@ Show next steps:
 - [ ] Arguments parsed correctly for all three modes
 - [ ] --phase mode reads .planning/.phase-manifest.json using manifest.phases[TARGET_PHASE].commits
 - [ ] --phase mode falls back to git log if manifest entry missing
-- [ ] --phase --to-snapshot uses rihal/snapshot/phase-NN tag and reverts ${TAG}..HEAD
+- [ ] --phase --to-snapshot uses rcode/snapshot/phase-NN tag and reverts ${TAG}..HEAD
 - [ ] --to-snapshot exits cleanly when the snapshot tag is missing (no surprise no-op)
 - [ ] Dependency check warns when downstream phases have started (MODE=phase)
 - [ ] Dependency check warns when later plans reference target plan outputs (MODE=plan)

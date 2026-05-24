@@ -341,5 +341,5 @@ init → new-project → plan → execute → next → status → ship
 
 ## On Error
 
-- If unable to load or render reference: display fallback `See rihal/workflows/help.md for full reference`
+- If unable to load or render reference: display fallback `See rcode/workflows/help.md for full reference`
 - Handle missing sections gracefully without breaking output

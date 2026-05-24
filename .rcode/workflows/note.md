@@ -24,7 +24,7 @@ STOP — do not proceed.
 ## Step 1 — Parse arguments and flags
 
 Extract from `$ARGUMENTS`:
-- `--global` flag: write to `~/.rihal-notes/` instead of `.rcode/notes/`
+- `--global` flag: write to `~/.rcode-notes/` instead of `.rcode/notes/`
 - Text content: everything else is the note text
 
 ```bash
@@ -42,7 +42,7 @@ If `NOTE_TEXT` is empty:
    Example: /rihal-note refactor auth module to use async/await
    
    Flags:
-   --global  Save to ~/.rihal-notes/ instead of .rcode/notes/
+   --global  Save to ~/.rcode-notes/ instead of .rcode/notes/
 ```
 
 Exit.
@@ -56,7 +56,7 @@ Create filename: `YYYY-MM-DD-{slug}.md`
 - Example: `2026-04-12-refactor-auth-module.md`
 
 Determine target directory:
-- If GLOBAL_MODE: `~/.rihal-notes/`
+- If GLOBAL_MODE: `~/.rcode-notes/`
 - Else: `.rcode/notes/`
 
 ## Step 3 — Build note content with YAML frontmatter
@@ -142,7 +142,7 @@ Parse and display (10 most recent):
 ## Success Criteria
 
 - [ ] Note saved with YAML frontmatter
-- [ ] File created in `.rcode/notes/` or `~/.rihal-notes/`
+- [ ] File created in `.rcode/notes/` or `~/.rcode-notes/`
 - [ ] Filename follows YYYY-MM-DD-{slug}.md pattern
 - [ ] `promoted` field set to false
 - [ ] Output confirms save location and content

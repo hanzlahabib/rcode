@@ -109,7 +109,7 @@ sub-workflow.
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
 | fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rihal-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
-| lens | `rihal/` or `.rcode/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
+| lens | `rcode/` or `.rcode/` directory exists | `No rihal source found. Run: npx @hanzlaa/rcode install .` |
 
 For `milestone` specifically, check the **graceful-degrade** condition
 (closes #234 audit-milestone halt):
