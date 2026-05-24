@@ -19,7 +19,7 @@ For each truth:
 
 ## Step 4: Verify Artifacts (Three Levels)
 
-Use rihal-tools for artifact verification against must_haves in PLAN frontmatter:
+Use rcode-tools for artifact verification against must_haves in PLAN frontmatter:
 
 ```bash
 ARTIFACT_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify artifacts "$PLAN_PATH")

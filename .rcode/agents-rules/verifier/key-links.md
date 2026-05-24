@@ -2,7 +2,7 @@
 
 Key links are critical connections. If broken, the goal fails even with all artifacts present.
 
-Use rihal-tools for key link verification against must_haves in PLAN frontmatter:
+Use rcode-tools for key link verification against must_haves in PLAN frontmatter:
 
 ```bash
 LINKS_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify key-links "$PLAN_PATH")

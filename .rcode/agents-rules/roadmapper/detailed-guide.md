@@ -124,7 +124,7 @@ Track coverage as you go.
 **Integer phases (1, 2, 3):** Planned milestone work.
 
 **Decimal phases (2.1, 2.2):** Urgent insertions after planning.
-- Created via `/rihal-insert-phase`
+- Created via `/rcode-insert-phase`
 - Execute between integers: 1 → 1.1 → 1.2 → 2
 
 **Starting number:**
@@ -285,7 +285,7 @@ Svelte, Next.js, Nuxt
 **UI hint**: yes
 ```
 
-This annotation is consumed by downstream workflows (`new-project`, `progress`) to suggest `/rihal-ui-phase` at the right time. Phases without UI indicators omit the annotation entirely.
+This annotation is consumed by downstream workflows (`new-project`, `progress`) to suggest `/rcode-ui-phase` at the right time. Phases without UI indicators omit the annotation entirely.
 
 ### 3. Progress Table
 
@@ -522,7 +522,7 @@ After incorporating user feedback and updating files:
 
 ### Ready for Planning
 
-Next: `/rihal-plan 1`
+Next: `/rcode-plan 1`
 ```
 
 ## Roadmap Blocked

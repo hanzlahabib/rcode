@@ -1,10 +1,10 @@
-# Rihal Code — Code Owners
+# rcode — Code Owners
 #
 # Routes PR reviews to the right person automatically. Each rule matches
 # a path pattern; only listed owners can approve changes to those paths.
 #
-# When Rihal GitHub teams are created, replace @hanzlahabib with
-# @rihal-om/<team> (e.g. @rihal-om/pm-team for rihal-hussain-pm).
+# When rcode GitHub teams are created, replace @hanzlahabib with
+# @rcode-org/<team> (e.g. @rcode-org/pm-team for rcode-hussain-pm).
 #
 # Catch-all fallback (last rule) points to the repo maintainer.
 
