@@ -130,7 +130,7 @@ Use AskUserQuestion:
 
 **Generate or refresh project instruction file before final commit:**
 
-The rihal-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rihal workflow docs:
+The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rihal workflow docs:
 
 ```markdown
 # {INSTRUCTION_FILE} — project instructions

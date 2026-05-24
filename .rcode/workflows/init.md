@@ -117,7 +117,7 @@ Questions:
 
 ## Step 3 — Write config + state seed
 
-Write `.rcode/config.yaml` via `rihal-tools.cjs config set` (not direct file write):
+Write `.rcode/config.yaml` via `rcode-tools.cjs config set` (not direct file write):
 
 ```bash
 node .rcode/bin/rcode-tools.cjs config set --key user_name --value "{name}"

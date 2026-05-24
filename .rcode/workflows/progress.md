@@ -3,7 +3,7 @@
 <purpose>
 **`/rihal-progress` is an alias of `/rihal-status --verbose`.**
 
-Historically this was a separate workflow with overlapping data and a heavier render. They both read the same source of truth (`rihal-tools progress init`), so we collapsed them: `/rihal-status` is the canonical renderer with built-in slim/verbose modes, and `/rihal-progress` is a thin alias that always runs in verbose mode.
+Historically this was a separate workflow with overlapping data and a heavier render. They both read the same source of truth (`rcode-tools progress init`), so we collapsed them: `/rihal-status` is the canonical renderer with built-in slim/verbose modes, and `/rihal-progress` is a thin alias that always runs in verbose mode.
 
 Use whichever name you prefer — they produce the same output.
 </purpose>

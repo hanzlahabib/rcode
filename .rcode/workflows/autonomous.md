@@ -10,7 +10,7 @@ These rules apply throughout autonomous execution. Violations broke the
 interpos audit (issue #221) — DO NOT regress.
 
 1. **NEVER modify `.rcode/config.yaml`.** Specifically: never write
-   `mode: yolo`, never call `rihal-tools config-set mode`, never `sed`
+   `mode: yolo`, never call `rcode-tools config-set mode`, never `sed`
    the file. The user's mode preference is sacred. Autonomous behavior
    is governed by the workflow's own internal flags + the `--auto`
    invocation flag, NOT by mutating persistent config.
@@ -30,7 +30,7 @@ interpos audit (issue #221) — DO NOT regress.
    .planning/ artifact.** Otherwise state.json drifts and downstream
    workflows lie. See `_shared/state-sync-rule.md` (#198).
 
-5. **ALWAYS record decisions via `rihal-tools state add-decision`.**
+5. **ALWAYS record decisions via `rcode-tools state add-decision`.**
    Never write decision prose to STATE.md. See #224.
 
 </critical_rules>
@@ -162,7 +162,7 @@ When `--only` is set, also set `FROM_PHASE` to the same value so existing filter
 
 When `--interactive` is set, discuss runs inline with questions (not auto-answered), while plan and execute are dispatched as background agents. This keeps the main context lean — only discuss conversations accumulate — while preserving user input on all design decisions.
 
-Bootstrap via rihal-tools init + state:
+Bootstrap via rcode-tools init + state:
 
 ```bash
 INIT=$(node .rcode/bin/rcode-tools.cjs init milestone-op 2>/dev/null || node .rcode/bin/rcode-tools.cjs init)
@@ -199,7 +199,7 @@ If `INTERACTIVE` is set, display: `Mode: Interactive (discuss inline, plan+execu
 
 ## 2. Discover Phases
 
-Parse ROADMAP.md directly (rihal-tools does not expose `roadmap analyze`):
+Parse ROADMAP.md directly (rcode-tools does not expose `roadmap analyze`):
 
 ```bash
 cat .planning/ROADMAP.md

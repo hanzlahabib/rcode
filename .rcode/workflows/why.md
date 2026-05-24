@@ -119,12 +119,12 @@ If not found: `No recorded decision matches "{ARGUMENTS}". Use /rihal-progress t
 ## Success Criteria
 
 - [ ] Category detected correctly
-- [ ] Relevant data fetched from state.json or rihal-tools
+- [ ] Relevant data fetched from state.json or rcode-tools
 - [ ] Output explains the "why" with data and reasoning
 - [ ] Format is scannable (tables, bullets, clear sections)
 
 ## On Error
 
-- rihal-tools error → Show error message
+- rcode-tools error → Show error message
 - state.json missing → `State not initialized. Run /rihal-new-project first.`
 - No match found → Suggest `/rihal-progress` for context

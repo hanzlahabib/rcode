@@ -68,7 +68,7 @@ RESPONSE_LANGUAGE=$($TOOL config-get response_language 2>/dev/null || echo "engl
 
 If INIT is empty or INIT.ok is false, print error and exit:
 ```
-rihal-tools not found. Run: npx @hanzlaa/rcode install .
+rcode-tools not found. Run: npx @hanzlaa/rcode install .
 ```
 
 Parse `$ARGUMENTS`:
@@ -502,7 +502,7 @@ RESULT = Task(
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   
   Run Lens 13 (Observability) audit. Check:
-  - rihal-tools calls without 2>/dev/null or error guard
+  - rcode-tools calls without 2>/dev/null or error guard
   - Task() calls where result is never captured or checked
   - Bare 2>/dev/null at end of line with no || fallback echo
   - INIT= assignments with no .ok check within next 15 lines
@@ -672,7 +672,7 @@ Next: file the GH issues above, then run /rihal-audit fix to address them.
 
 ## On Error
 
-- **rihal-tools not found**: print `Run: npx @hanzlaa/rcode install .` and STOP.
+- **rcode-tools not found**: print `Run: npx @hanzlaa/rcode install .` and STOP.
 - **Lens N out of range (not 1–15)**: print valid range and STOP.
 - **Subagent skill not installed**: note `(skill not available — skipping)`, continue.
 - **Scope dirs empty**: note `(no source files in scope)` per lens, still run dispatch.

@@ -116,7 +116,7 @@ Next: `/rihal-execute .planning/phases/{phase_dir}/SPRINT.md`
 
 **Route 4: All stories done, sprint not closed**
 All stories are done but sprint status is still "active":
-Next: complete the sprint via `rihal-tools.cjs state sprint complete`, then suggest `/rihal-sprint-planning` for next sprint
+Next: complete the sprint via `rcode-tools.cjs state sprint complete`, then suggest `/rihal-sprint-planning` for next sprint
 
 **Route 5: Sprint complete, next phase exists**
 Current phase is complete, next phase exists in ROADMAP:

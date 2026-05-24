@@ -41,7 +41,7 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 
 ```bash
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
-# config settings can be fetched via rihal-tools config-get if needed
+# config settings can be fetched via rcode-tools config-get if needed
 ```
 
 <if mode="yolo">
@@ -433,7 +433,7 @@ Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready f
 </step>
 
 <step name="update_current_position">
-Update STATE.md using rihal-tools:
+Update STATE.md using rcode-tools:
 
 ```bash
 # Advance plan counter (handles last-plan edge case)
@@ -464,7 +464,7 @@ node ".rcode/bin/rcode-tools.cjs" state add-blocker --text-file "${BLOCKER_TEXT_
 </step>
 
 <step name="update_session_continuity">
-Update session info using rihal-tools:
+Update session info using rcode-tools:
 
 ```bash
 node ".rcode/bin/rcode-tools.cjs" state record-session \

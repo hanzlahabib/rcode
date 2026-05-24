@@ -72,7 +72,7 @@ Set `BULK_MODE=true|false` for the next step.
 </step>
 
 <step name="add_phase">
-**Delegate the phase addition to rihal-tools:**
+**Delegate the phase addition to rcode-tools:**
 
 ```bash
 # In bulk mode, pass only the extracted phase name (not the entire body)
@@ -175,7 +175,7 @@ Roadmap updated: .planning/ROADMAP.md
 </process>
 
 <success_criteria>
-- [ ] `rihal-tools phase add` executed successfully
+- [ ] `rcode-tools phase add` executed successfully
 - [ ] Phase directory created
 - [ ] Roadmap updated with new phase entry
 - [ ] STATE.md updated with roadmap evolution note

@@ -1,7 +1,7 @@
 # Workflow: rcode-status
 
 <purpose>
-Render a human-readable project status dashboard. All data comes from a single `rihal-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rihal-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
+Render a human-readable project status dashboard. All data comes from a single `rcode-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rcode-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
 
 **SSOT:** `.rcode/state.json`. `/rihal-status` and `/rihal-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
@@ -55,7 +55,7 @@ the weighted bar as the primary progress indicator to avoid a misleading `0/N (0
 
 ### Milestone health (issue #718)
 
-After the main dashboard, call `rihal-tools milestone-health` and surface
+After the main dashboard, call `rcode-tools milestone-health` and surface
 a gauge when the milestone is full:
 
 ```bash

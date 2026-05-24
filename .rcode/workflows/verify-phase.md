@@ -36,7 +36,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
 ```
-Error: rihal-tools init failed. Verify .rcode/ is installed and state.json is valid.
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `has_plans`, `plan_count`.
@@ -59,7 +59,7 @@ Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **req
 <step name="establish_must_haves">
 **Option A: Must-haves in PLAN frontmatter**
 
-Use rihal-tools to extract must_haves from each PLAN:
+Use rcode-tools to extract must_haves from each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
@@ -109,7 +109,7 @@ For each truth: identify supporting artifacts → check artifact status → chec
 </step>
 
 <step name="verify_artifacts">
-Use rihal-tools for artifact verification against must_haves in each PLAN:
+Use rcode-tools for artifact verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
@@ -152,7 +152,7 @@ wiring or leftover code from plan revisions.
 </step>
 
 <step name="verify_wiring">
-Use rihal-tools for key link verification against must_haves in each PLAN:
+Use rcode-tools for key link verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do

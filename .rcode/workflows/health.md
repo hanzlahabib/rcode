@@ -144,9 +144,9 @@ Verify:
 ❌ FAIL — agent-manifest.csv is missing or empty. Run: /rihal-update to repair
 ```
 
-## Step 5 — Verify rihal-tools.cjs is executable and responsive
+## Step 5 — Verify rcode-tools.cjs is executable and responsive
 
-**Action:** Check rihal-tools.cjs exists, is executable, and responds to version command.
+**Action:** Check rcode-tools.cjs exists, is executable, and responds to version command.
 
 ```bash
 test -f .rcode/bin/rcode-tools.cjs && test -x .rcode/bin/rcode-tools.cjs
@@ -155,12 +155,12 @@ node .rcode/bin/rcode-tools.cjs version
 
 **Output on pass:**
 ```
-✓ PASS — rihal-tools.cjs is executable and responsive
+✓ PASS — rcode-tools.cjs is executable and responsive
 ```
 
 **Output on fail:**
 ```
-❌ FAIL — rihal-tools.cjs is missing or broken. Run: /rihal-update to repair
+❌ FAIL — rcode-tools.cjs is missing or broken. Run: /rihal-update to repair
 ```
 
 ## Step 6 — Project state health checks (3 checks)

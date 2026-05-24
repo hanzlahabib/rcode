@@ -102,4 +102,4 @@ STOP.
 
 - **Invalid key:** print allowed keys and stop.
 - **.rcode/config.yaml missing:** print "No config found. Run /rihal-init first."
-- **rihal-tools.cjs missing:** tell user to run `rihal-code install-v2`.
+- **rcode-tools.cjs missing:** tell user to run `rihal-code install-v2`.

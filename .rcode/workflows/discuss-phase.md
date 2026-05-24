@@ -137,7 +137,7 @@ cannot forward TUI menu selections back to the host.
 
 Enable text mode:
 - Per-session: pass `--text` flag to any command (e.g., `/rihal-discuss-phase --text`)
-- Per-project: `rihal-tools config-set workflow.text_mode true`
+- Per-project: `rcode-tools config-set workflow.text_mode true`
 
 Text mode applies to ALL workflows in the session, not just discuss-phase.
 </answer_validation>

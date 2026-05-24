@@ -40,7 +40,7 @@ Exit.
 
 Extract `N` (integer part) and `M` (decimal part) for later use.
 
-## Step 1 — Call rihal-tools
+## Step 1 — Call rcode-tools
 
 Invoke the state subcommand to insert the phase:
 
@@ -95,7 +95,7 @@ Or continue with current work and return to this phase later.
 
 Phase insertion is complete when:
 
-- [ ] `rihal-tools.cjs state insert-phase` executed successfully
+- [ ] `rcode-tools.cjs state insert-phase` executed successfully
 - [ ] Phase directory created at `.planning/phases/<N.M>-<slug>/`
 - [ ] Phase array in state.json updated with new entry in sort order
 - [ ] User informed of next steps

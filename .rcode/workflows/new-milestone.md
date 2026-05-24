@@ -614,7 +614,7 @@ or
 - **No `.planning/PROJECT.md`:** redirect to `/rihal-new-project`.
 - **Prior milestone not archived + `--reset-phase-numbers`:** stop, tell user to run `/rihal-complete-milestone` first.
 - **Roadmapper returns ROADMAP BLOCKED:** surface the blocker, collect resolution, re-spawn.
-- **`rihal-tools.cjs state` fails:** continue — state tracking is optional, file artifacts are mandatory.
+- **`rcode-tools.cjs state` fails:** continue — state tracking is optional, file artifacts are mandatory.
 - **`.planning/` is gitignored:** write files, print ℹ notice, do not error.
 - **Phase archive completes but state.json write fails mid-sequence:** do NOT re-archive. Tell the user: "Phase archive completed but milestone state was not recorded. Recovery: run `node .rcode/bin/rcode-tools.cjs state sync --from-disk` then re-run `/rihal-new-milestone` — it will detect the existing archive and skip re-archiving."
 </on_error>

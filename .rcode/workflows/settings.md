@@ -40,7 +40,7 @@ Parse `$ARGUMENTS`:
 
 ## Step 1.5 — Show current settings
 
-Read each known key via `rihal-tools.cjs config-get <dotted.key>` (the
+Read each known key via `rcode-tools.cjs config-get <dotted.key>` (the
 nested-safe reader in `rihal/bin/lib/config.cjs`). **Do not** call the legacy
 `config set` — it uses a flat YAML parser and corrupts nested sections.
 
@@ -181,4 +181,4 @@ to verify, or /rihal-resume-work to reload context.
 - **`.rcode/config.yaml` missing:** print "No config found. Run /rihal-init first." and STOP.
 - **Invalid key:** print the allowed keys from Step 1.5 and STOP.
 - **Invalid value:** print the allowed values for that key and STOP.
-- **`rihal-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.
+- **`rcode-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.

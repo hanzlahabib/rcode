@@ -167,7 +167,7 @@ Print the agent's response exactly as returned. No orchestrator note, no round l
 - [ ] Single agent selected and spawned (Sadiq, Waleed, Fatima, Mariam, or Hussain-PM)
 - [ ] Agent response printed verbatim to user
 - [ ] If guided mode and user saves: artifact written to `.planning/council-sessions/discuss-{date}-{slug}.md`
-- [ ] Session recorded in `state.json` via rihal-tools.cjs
+- [ ] Session recorded in `state.json` via rcode-tools.cjs
 
 ## Step 6 — Offer to save (guided mode only)
 
@@ -219,7 +219,7 @@ This records the discuss session in `.rcode/state.json` as `last_session`.
 - **Empty arguments:** print usage block and stop (Step 0).
 - **Question redirects to council:** print redirect message (Step 0.5).
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
-- **`rihal-tools.cjs` not found:** tell the user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
+- **`rcode-tools.cjs` not found:** tell the user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
 - **No installed agents:** print "No agents installed. Run `npx @hanzlaa/rcode install`."
 - **Agent id not in installed list:** print available agents and ask the user to pick one.
 - **Agent returns empty response:** print "Agent responded empty. Check question clarity and retry."

@@ -98,7 +98,7 @@ Where filter suffix is, for example: ` · project=rihal-code · since=2026-01-01
 
 - Empty `~/.rcode/decisions.jsonl` produces a clear empty-state message, not an error
 - `--project` and `--since` filters pass through to `state decisions-global`
-- Malformed JSONL lines are skipped (handled by rihal-tools reader), not displayed as garbage
+- Malformed JSONL lines are skipped (handled by rcode-tools reader), not displayed as garbage
 - Newest decision appears first
 - Table remains readable with long project names / summaries (truncation applied)
 

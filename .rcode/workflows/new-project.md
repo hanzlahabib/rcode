@@ -104,10 +104,10 @@ case " $ARGUMENTS " in
   *" --force "*|*" --reinit "*) FORCE=true ;;
 esac
 
-# Single source of truth: rihal-tools project-status returns one of
+# Single source of truth: rcode-tools project-status returns one of
 #   uninstalled | uninitialized | stub | real
 # (see issue #675 for the contract). Falls back to `none` when
-# rihal-tools is unavailable so the workflow still proceeds.
+# rcode-tools is unavailable so the workflow still proceeds.
 PROJECT_STATE=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null \
   | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).status||'none')}catch{console.log('none')}})" \
   || echo "none")

@@ -1,7 +1,7 @@
 # Workflow: rcode-council
 
 <purpose>
-Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rihal-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
+Orchestrate a parallel panel of Rihal specialist subagents answering a strategic question. This is the v2 council — deterministic panel scoring via `rcode-tools.cjs`, parallel Task-tool spawning (not sequential roleplay), and structured artifact output to `.planning/council-sessions/`.
 </purpose>
 
 <output_format>
@@ -166,7 +166,7 @@ Parse the JSON for:
 
 📁 Session artifact will be saved to: `.planning/council-sessions/council-{date}-{slug}.md`
 
-**Branch on `question_type`** (returned by `rihal-tools.cjs init` as `question_type`):
+**Branch on `question_type`** (returned by `rcode-tools.cjs init` as `question_type`):
 
 - `frontend` — React/UI/a11y/RTL → codebase scan + scan component dirs (`src/components/`, `src/app/`, `src/pages/`)
 - `backend` — API/DB/queue → codebase scan + scan server dirs (`src/api/`, `server/`, `prisma/`)
@@ -559,7 +559,7 @@ node .rcode/bin/rcode-tools.cjs state record-council \
 node .rcode/bin/rcode-tools.cjs state record-session
 ```
 
-> **Note:** If `rihal-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
+> **Note:** If `rcode-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
 
 ## Success Criteria
 
@@ -573,7 +573,7 @@ node .rcode/bin/rcode-tools.cjs state record-session
 
 - **Empty arguments or --help:** print usage block (Step 0), stop.
 - **Single-agent question detected:** redirect to `/rihal-discuss` (Step 0.5).
-- **`rihal-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
+- **`rcode-tools.cjs` not found:** user has v1 installed or package broken. Tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
 - **Panel contains unknown agent:** print the installed-agent list and exit.
 - **state.json missing or corrupted:** continue without error — session artifact is mandatory, state tracking is optional.
 - **All panelists return empty responses:** likely subagents were spawned without proper prompts. Re-check Step 4 prompt construction.

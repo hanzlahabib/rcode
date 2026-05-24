@@ -35,7 +35,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
 ```
-Error: rihal-tools init failed. Verify .rcode/ is installed and state.json is valid.
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract: `phase_found`, `phase_dir`, `phase_number`, `commit_docs`, `roadmap_exists`.
@@ -82,13 +82,13 @@ Wait for confirmation.
 </step>
 
 <step name="execute_removal">
-**Delegate the entire removal operation to rihal-tools:**
+**Delegate the entire removal operation to rcode-tools:**
 
 ```bash
 RESULT=$(node ".rcode/bin/rcode-tools.cjs" phase remove "${target}")
 ```
 
-If the phase has executed plans (SUMMARY.md files), rihal-tools will error. Use `--force` only if the user confirms:
+If the phase has executed plans (SUMMARY.md files), rcode-tools will error. Use `--force` only if the user confirms:
 
 ```bash
 RESULT=$(node ".rcode/bin/rcode-tools.cjs" phase remove "${target}" --force)
@@ -145,7 +145,7 @@ Would you like to:
 
 - Don't remove completed phases (have SUMMARY.md files) without --force
 - Don't remove current or past phases
-- Don't manually renumber — use `rihal-tools phase remove` which handles all renumbering
+- Don't manually renumber — use `rcode-tools phase remove` which handles all renumbering
 - Don't add "removed phase" notes to STATE.md — git commit is the record
 - Don't modify completed phase directories
 </anti_patterns>
@@ -154,7 +154,7 @@ Would you like to:
 Phase removal is complete when:
 
 - [ ] Target phase validated as future/unstarted
-- [ ] `rihal-tools phase remove` executed successfully
+- [ ] `rcode-tools phase remove` executed successfully
 - [ ] Changes committed with descriptive message
 - [ ] User informed of changes
 </success_criteria>
