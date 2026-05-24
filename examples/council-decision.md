@@ -27,7 +27,7 @@ You're deciding whether to build a mobile app or a PWA for your product.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► COUNCIL SESSION
+ RCODE ► COUNCIL SESSION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎯 Sadiq: For an Omani government ministry, mobile-first is expected.
