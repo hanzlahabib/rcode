@@ -72,7 +72,8 @@ function hashFileIfExists(filePath) {
   try {
     const buf = fs.readFileSync(filePath);
     return sha256(buf);
-  } catch {
+  } catch (err) {
+    console.error('[memory-bank] hashFileIfExists: failed to read', filePath + ':', err?.message || err);
     return null;
   }
 }
@@ -107,7 +108,8 @@ function structureFingerprint(cwd) {
       dirs: entries,
       hash: sha256(entries.join('|')),
     };
-  } catch {
+  } catch (err) {
+    console.error('[memory-bank] structureFingerprint: failed to read directory:', err?.message || err);
     return { dirs: [], hash: null };
   }
 }
@@ -124,7 +126,8 @@ function gitFingerprint(cwd) {
       head: sha.stdout.trim(),
       branch: branch.status === 0 ? branch.stdout.trim() : null,
     };
-  } catch {
+  } catch (err) {
+    console.error('[memory-bank] gitFingerprint: git command failed:', err?.message || err);
     return null;
   }
 }
@@ -143,7 +146,8 @@ function commitsBetween(cwd, from, to) {
     );
     if (result.status !== 0) return null;
     return parseInt(result.stdout.trim(), 10);
-  } catch {
+  } catch (err) {
+    console.error('[memory-bank] commitsBetween: git rev-list failed:', err?.message || err);
     return null;
   }
 }
@@ -179,7 +183,8 @@ function readState(cwd) {
   if (!fs.existsSync(p)) return null;
   try {
     return JSON.parse(fs.readFileSync(p, 'utf8'));
-  } catch {
+  } catch (err) {
+    console.error('[memory-bank] readState: failed to parse state.json at', p + ':', err?.message || err);
     return null;
   }
 }
