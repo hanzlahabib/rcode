@@ -17,6 +17,8 @@
  */
 
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 /**
  * Read and parse stdin JSON.
@@ -300,7 +302,7 @@ async function bashGuard() {
       const unsafe =
         targets.length === 0 ||
         targets.some((t) => {
-          if (t.startsWith('/tmp/')) return false;
+          if (t.startsWith(os.tmpdir() + path.sep)) return false;
           if (t.includes('..') || t.includes('*')) return true;
           if (t.startsWith('/') || t.startsWith('~') || t === '.') return true;
           return !RM_SAFE_TARGET.test(t);
@@ -308,7 +310,7 @@ async function bashGuard() {
       if (unsafe) {
         block(
           `rm -rf targets a path outside the safe allowlist: ${targets.join(', ') || '(none)'}`,
-          'Safe targets: node_modules, dist, build, temp, /tmp/*. Confirm anything else with the user.'
+          `Safe targets: node_modules, dist, build, temp, ${os.tmpdir()}${path.sep}*. Confirm anything else with the user.`
         );
       }
     }
