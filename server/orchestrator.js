@@ -337,6 +337,13 @@ function attachWebSocket(ws, storyId) {
 
 // ── server ────────────────────────────────────────────────────────────────────
 
+process.on('unhandledRejection', (reason) => {
+  console.error('[' + new Date().toISOString() + '] [orchestrator] unhandledRejection:', reason && reason.stack || reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[' + new Date().toISOString() + '] [orchestrator] uncaughtException:', err && err.stack || err);
+});
+
 const server = http.createServer(async (req, res) => {
   const method = req.method || '';
   const url    = req.url    || '';
@@ -360,6 +367,11 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
 
   res.writeHead(404); res.end('Not found');
+});
+
+server.on('error', (err) => {
+  console.error('[orchestrator] server error:', err.message);
+  process.exit(1);
 });
 
 // WebSocket upgrade — authenticate, validate the storyId, then hand off.

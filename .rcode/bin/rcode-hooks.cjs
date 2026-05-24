@@ -398,7 +398,9 @@ async function preCompact() {
         cwd, encoding: 'utf8', timeout: 3000,
       }).trim();
       recentCommits = log ? log.split('\n').filter(Boolean) : [];
-    } catch {}
+    } catch (err) {
+      console.error('[hook] git log failed:', err.message);
+    }
 
     // ── 5. Read milestone / roadmap headline ────────────────────────────
     let milestoneHint = state?.milestone || null;
