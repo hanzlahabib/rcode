@@ -21,11 +21,26 @@ function stripFrontmatter(md) {
   return end === -1 ? md : md.slice(end + 4).trimStart();
 }
 
+// Minimal HTML sanitizer for rendered markdown. No DOMPurify dependency on the
+// client, so we strip the dangerous primitives via regex after marked emits
+// HTML: script/iframe/object/embed tags, inline event handlers, and
+// javascript:/data: URLs in href/src. Markdown content comes from the project
+// dir (semi-trusted) but may include attacker-controlled text checked into a
+// repo, so we cannot trust raw HTML passthrough.
+function sanitizeHtml(html) {
+  return String(html)
+    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*\/?>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src|xlink:href)\s*=\s*(["'])\s*(?:javascript|data|vbscript):[^"']*\2/gi, '$1=$2#blocked$2');
+}
+
 function renderMd(md) {
   const clean = stripFrontmatter(md);
-  return (typeof marked !== 'undefined')
-    ? marked.parse(clean)
-    : '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
+  if (typeof marked === 'undefined') {
+    return '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
+  }
+  return sanitizeHtml(marked.parse(clean));
 }
 
 // ---- File tree components ----

@@ -380,7 +380,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('   Port:   ' + PORT);
   console.log('   Bind:   127.0.0.1 (loopback only)');
-  console.log('   Token:  ' + AUTH_TOKEN);
+  console.log('   Token:  ' + AUTH_TOKEN.slice(0, 8) + '... (redacted)');
   console.log('   PTY:    ' + (pty ? 'node-pty ready' : 'node-pty MISSING'));
   console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));
   console.log('   POST /api/run   GET /api/sessions   WS /ws/<id>');
