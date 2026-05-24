@@ -21,6 +21,7 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const SCAN_DIR = path.join(PROJECT_ROOT, 'rcode');
+const RCODE_MIRROR = path.join(PROJECT_ROOT, '.rcode');
 const BASELINE_BROKEN_REFS = 0;
 
 const REF_RE = /@((?:\.rcode|rcode)\/[a-zA-Z0-9_/.\-]+\.md)/g;
@@ -49,12 +50,16 @@ function refResolves(ref) {
 
 function findBrokenRefs() {
   const broken = new Set();
-  for (const f of walk(SCAN_DIR)) {
-    const text = fs.readFileSync(f, 'utf8');
-    let m;
-    while ((m = REF_RE.exec(text)) !== null) {
-      const ref = m[1];
-      if (!refResolves(ref)) broken.add(ref);
+  // Scan both the source tree (rcode/) and the install-mirror (.rcode/)
+  const scanDirs = [SCAN_DIR, RCODE_MIRROR];
+  for (const dir of scanDirs) {
+    for (const f of walk(dir)) {
+      const text = fs.readFileSync(f, 'utf8');
+      let m;
+      while ((m = REF_RE.exec(text)) !== null) {
+        const ref = m[1];
+        if (!refResolves(ref)) broken.add(ref);
+      }
     }
   }
   return [...broken].sort();

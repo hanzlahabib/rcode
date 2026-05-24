@@ -27,6 +27,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const TEAM_YAML = path.join(PROJECT_ROOT, 'rcode', 'team.yaml');
 const SRC_AGENTS = path.join(PROJECT_ROOT, 'rcode', 'agents');
 const INSTALLED_AGENTS = path.join(PROJECT_ROOT, '.claude', 'agents');
+const RCODE_MIRROR = path.join(PROJECT_ROOT, '.rcode');
 
 function parseTeamEntries(text) {
   // Minimal parser — read sequential `- id: X` blocks, capture id +
@@ -97,10 +98,18 @@ function walkMd(dir, out = []) {
 test('every workflow subagent_type= reference resolves to an agent file', () => {
   const re = /subagent_type\s*[:=]\s*['"](rcode-[a-z0-9-]+)['"]/g;
   const refs = new Set();
-  for (const f of walkMd(path.join(PROJECT_ROOT, 'rcode', 'workflows'))) {
-    const t = fs.readFileSync(f, 'utf8');
-    let m;
-    while ((m = re.exec(t)) !== null) refs.add(m[1]);
+  // Scan source tree (rcode/workflows) and install-mirror (.rcode/workflows + .rcode/skills)
+  const scanDirs = [
+    path.join(PROJECT_ROOT, 'rcode', 'workflows'),
+    path.join(RCODE_MIRROR, 'workflows'),
+    path.join(RCODE_MIRROR, 'skills'),
+  ];
+  for (const dir of scanDirs) {
+    for (const f of walkMd(dir)) {
+      const t = fs.readFileSync(f, 'utf8');
+      let m;
+      while ((m = re.exec(t)) !== null) refs.add(m[1]);
+    }
   }
   const installed = fs.existsSync(INSTALLED_AGENTS)
     ? new Set(fs.readdirSync(INSTALLED_AGENTS).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')))
