@@ -23,7 +23,7 @@ ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 
 ## Step 2: Load All Plans
 
-Use rihal-tools to validate plan structure:
+Use rcode-tools to validate plan structure:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
@@ -43,7 +43,7 @@ Map errors/warnings to verification dimensions:
 
 ## Step 3: Parse must_haves
 
-Extract must_haves from each plan using rihal-tools:
+Extract must_haves from each plan using rcode-tools:
 
 ```bash
 MUST_HAVES=$(node ".rcode/bin/rcode-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
@@ -88,7 +88,7 @@ For each requirement: find covering task(s), verify action is specific, flag gap
 
 ## Step 5: Validate Task Structure
 
-Use rihal-tools plan-structure verification (already run in Step 2):
+Use rcode-tools plan-structure verification (already run in Step 2):
 
 ```bash
 PLAN_STRUCTURE=$(node ".rcode/bin/rcode-tools.cjs" verify plan-structure "$PLAN_PATH")
@@ -102,7 +102,7 @@ The `tasks` array in the result shows each task's completeness:
 
 **Check:** valid task type (auto, checkpoint:*, tdd), auto tasks have files/action/verify/done, action is specific, verify is runnable, done is measurable.
 
-**For manual validation of specificity** (rihal-tools checks structure, not content quality):
+**For manual validation of specificity** (rcode-tools checks structure, not content quality):
 ```bash
 grep -B5 "</task>" "$PHASE_DIR"/*-SPRINT.md | grep -v "<verify>"
 ```
@@ -162,7 +162,7 @@ console.log(JSON.stringify(result, null, 2));
 
 Check result:
 - If `summary.ratio < 0.5`: **BLOCKER** — "Plan references files/symbols that don't exist. Plan was built on hallucinated findings."
-- If `summary.ratio >= 0.5 AND < 0.8`: **WARNING** — List missing files/symbols, suggest re-planning with /rihal-debug
+- If `summary.ratio >= 0.5 AND < 0.8`: **WARNING** — List missing files/symbols, suggest re-planning with /rcode-debug
 - If `summary.ratio >= 0.8`: **INFO** — Most references verified, proceed
 
 Append to verification output:
@@ -288,7 +288,7 @@ Return all issues as a structured `issues:` YAML list (see dimension examples fo
 | 01   | 3     | 5     | 1    | Valid  |
 | 02   | 2     | 4     | 2    | Valid  |
 
-Plans verified. Run `/rihal-execute {phase}` to proceed.
+Plans verified. Run `/rcode-execute {phase}` to proceed.
 ```
 
 ## ISSUES FOUND
@@ -326,7 +326,7 @@ Plans verified. Run `/rihal-execute {phase}` to proceed.
 
 <anti_patterns>
 
-**DO NOT** check code existence — that's rihal-verifier's job. You verify plans, not codebase.
+**DO NOT** check code existence — that's rcode-verifier's job. You verify plans, not codebase.
 
 **DO NOT** run the application. Static plan analysis only.
 

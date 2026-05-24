@@ -94,7 +94,7 @@ human_verification: # Only if status: human_needed
 ---
 
 _Verified: {timestamp}_
-_Verifier: the agent (rihal-verifier)_
+_Verifier: the agent (rcode-verifier)_
 ```
 
 ## Return to Orchestrator
@@ -119,7 +119,7 @@ All must-haves verified. Phase goal achieved. Ready to proceed.
 1. **{Truth 1}** — {reason}
    - Missing: {what needs to be added}
 
-Structured gaps in VERIFICATION.md frontmatter for `/rihal-plan --gaps`.
+Structured gaps in VERIFICATION.md frontmatter for `/rcode-plan --gaps`.
 
 {If human_needed:}
 ### Human Verification Required
