@@ -45,15 +45,16 @@ const NOT_YET_MARKER = /\*Not yet implemented[^*]*\*/;
 
 function extractAdvertisedCommands(text) {
   const out = new Set();
-  // Match `/rcode-X` inside markdown table rows (column-1 or backticked
-  // anywhere). Skip any row carrying the not-yet-implemented annotation.
+  // Match `/rcode-X` inside markdown — anywhere the name appears with a
+  // leading backtick. Many help.md rows include args inside the same
+  // backtick pair (e.g. `/rcode-plan <phase>`), so we use a word boundary
+  // after the command name rather than requiring an immediate closing
+  // backtick. Skip any row carrying the not-yet-implemented annotation.
   for (const line of text.split('\n')) {
     if (NOT_YET_MARKER.test(line)) continue;
-    // Prefer rows that look like table rows: `| `/rcode-X` |`
-    const m = line.match(/`\/rcode-([a-z][a-z0-9-]+)`/g);
-    if (!m) continue;
-    for (const ref of m) {
-      const name = ref.replace(/[`\/]/g, '').replace(/^rcode-/, '');
+    const matches = line.matchAll(/`\/rcode-([a-z][a-z0-9-]+)\b/g);
+    for (const m of matches) {
+      const name = m[1];
       // Drop tokens that are obviously not commands (single chars, etc.)
       if (name.length >= 2) out.add(name);
     }
@@ -100,4 +101,24 @@ test('help.md advertises a non-trivial number of commands', () => {
   const text = fs.readFileSync(HELP_MD, 'utf8');
   const advertised = extractAdvertisedCommands(text);
   assert.ok(advertised.size > 30, `expected >30 advertised commands, got ${advertised.size}`);
+});
+
+test('every command in rcode/commands/ is referenced in help.md', () => {
+  // Reverse direction: catches commands added to rcode/commands/ without a help.md entry.
+  // NOTE: as of L15A-01 (sibling branch help-md-missing-commands), ~8 commands are
+  // expected to be absent from help.md. This test will fail until that branch merges.
+  const text = fs.readFileSync(HELP_MD, 'utf8');
+  const advertised = extractAdvertisedCommands(text);
+  const commandFiles = fs.readdirSync(COMMANDS_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => f.replace(/\.md$/, ''))
+    .sort();
+  const missing = commandFiles.filter((cmd) => !advertised.has(cmd));
+  assert.deepEqual(
+    missing,
+    [],
+    `rcode/commands/ files not referenced in help.md (finding L15A-01):\n` +
+      missing.map((c) => `  /rcode-${c}`).join('\n') +
+      `\nEither add the command to help.md or remove the command file.`,
+  );
 });

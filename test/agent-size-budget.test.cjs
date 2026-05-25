@@ -68,12 +68,22 @@ function classify() {
   return { entries };
 }
 
-test('installed agent count is non-trivial (sanity)', () => {
+test('installed agent count is non-trivial (sanity)', (t) => {
+  const dir = resolveAgentsDir();
+  if (!dir) {
+    t.skip('no installed agents found — run rcode install first');
+    return;
+  }
   const { entries } = classify();
   assert.ok(entries.length > 30, `expected >30 agents, got ${entries.length} — install drift?`);
 });
 
-test('no agent exceeds the XL hard cap (1600 lines)', () => {
+test('no agent exceeds the XL hard cap (1600 lines)', (t) => {
+  const dir = resolveAgentsDir();
+  if (!dir) {
+    t.skip('no installed agents found — run rcode install first');
+    return;
+  }
   const { entries } = classify();
   const xl = entries.filter((e) => e.tier === 'XL').sort((a, b) => b.lines - a.lines);
   if (xl.length > 0) {
