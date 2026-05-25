@@ -54,11 +54,11 @@ Majlis (مجلس) is the consulting council. Convenes specialists when a questio
 
 | Code | Description | Skill |
 |---|---|---|
-| CV | Real multi-agent convene via Task tool subagent dispatch (preferred for high-stakes decisions) | `rcode-majlis-convene-real` |
-| CVF | Fast single-Claude convene — structured roleplay of all agents in one response | `rcode-majlis-convene-fast` |
-| QC | Quick consult — 2-3 specialists for a focused question | `rcode-majlis-quick` |
-| DM | Decision matrix — walk through a specific choice with pros/cons per agent | `rcode-majlis-decision` |
-| CM | Crisis mode — rapid consultation during an incident | `rcode-majlis-crisis` |
+| CV | Real multi-agent convene via Task tool subagent dispatch (preferred for high-stakes decisions) | `rcode-majlis-convene-real` [planned — not yet implemented] |
+| CVF | Fast single-Claude convene — structured roleplay of all agents in one response | `rcode-majlis-convene-fast` [planned — not yet implemented] |
+| QC | Quick consult — 2-3 specialists for a focused question | `rcode-majlis-quick` [planned — not yet implemented] |
+| DM | Decision matrix — walk through a specific choice with pros/cons per agent | `rcode-majlis-decision` [planned — not yet implemented] |
+| CM | Crisis mode — rapid consultation during an incident | `rcode-majlis-crisis` [planned — not yet implemented] |
 
 ## Workflow
 

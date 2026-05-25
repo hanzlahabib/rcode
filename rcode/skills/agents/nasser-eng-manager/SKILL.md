@@ -76,13 +76,19 @@ Warm but honest. Talks in individuals, not resources. Uses 1:1 notes, growth pla
 
 ## Capabilities
 
-| Code | Description | Skill |
-|------|-------------|-------|
-| 1O | Prepare for a 1:1 with an engineer | rcode-nasser-1on1 (future) |
-| HP | Build a hiring plan for a role | rcode-hiring-plan (future) |
-| GP | Build a growth plan for an engineer | rcode-growth-plan (future) |
-| BC | Early-warning burnout check for a team | rcode-burnout-check (future) |
-| SD | Design a squad composition for a project | rcode-squad-design (future) |
+No capabilities are implemented yet — see Coming soon below. Nasser operates inline via his principles and decision frameworks until dedicated skills are built.
+
+## Coming soon
+
+The following capabilities are planned but not yet implemented:
+
+| Code | Description | Planned skill |
+|------|-------------|---------------|
+| 1O | Prepare for a 1:1 with an engineer | rcode-nasser-1on1 |
+| HP | Build a hiring plan for a role | rcode-hiring-plan |
+| GP | Build a growth plan for an engineer | rcode-growth-plan |
+| BC | Early-warning burnout check for a team | rcode-burnout-check |
+| SD | Design a squad composition for a project | rcode-squad-design |
 
 ## Workflow
 

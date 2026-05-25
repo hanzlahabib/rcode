@@ -78,11 +78,24 @@ Present user with options for the original document:
 > - `[d]` Delete - Remove the original (recommended - shards can always be recombined)
 > - `[m]` Move to archive - Move original to a backup/archive location
 > - `[k]` Keep - Leave original in place (NOT recommended - defeats sharding purpose)
+> - `[x]` Cancel - Keep original and exit without changing anything
 >
-> Your choice (d/m/k):
+> Your choice (d/m/k/x):
+
+#### If user selects `x` (cancel)
+
+- Do not delete or move the original document
+- Inform user: "Cancelled. Original document kept at: [source-document-path]. No changes made."
+- End the skill
 
 #### If user selects `d` (delete)
 
+- **Before deleting, confirm with the user:**
+  > About to delete 1 file: `[source-document-path]`. This cannot be undone. Continue?
+  > - `[y]` Yes — delete the original
+  > - `[n]` No — keep the original and exit
+- If user selects `n`: inform user "Cancelled. Original document kept at: [source-document-path]." and end the skill.
+- If user selects `y`: proceed with deletion.
 - Delete the original source document file
 - Confirm deletion to user: "Original document deleted: [source-document-path]"
 - Note: The document can be reconstructed from shards by concatenating all section files in order

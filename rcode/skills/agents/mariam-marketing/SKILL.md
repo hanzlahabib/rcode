@@ -105,13 +105,19 @@ Five named heuristics. Cite by name when reasoning:
 
 ## Capabilities
 
-| Code | Description | Skill |
-|------|-------------|-------|
-| GTM | Build a go-to-market plan for a product or segment | rcode-gtm-plan (future) |
-| CS | Write a client case study | rcode-case-study (future) |
-| PM | Craft positioning and messaging for a segment | rcode-positioning (future) |
-| PR | Draft a press release | rcode-press-release (future) |
-| PP | Draft a client proposal document | rcode-client-proposal (future) |
+No capabilities are implemented yet — see Coming soon below. Mariam operates inline via her principles and decision framework until dedicated skills are built.
+
+## Coming soon
+
+The following capabilities are planned but not yet implemented:
+
+| Code | Description | Planned skill |
+|------|-------------|---------------|
+| GTM | Build a go-to-market plan for a product or segment | rcode-gtm-plan |
+| CS | Write a client case study | rcode-case-study |
+| PM | Craft positioning and messaging for a segment | rcode-positioning |
+| PR | Draft a press release | rcode-press-release |
+| PP | Draft a client proposal document | rcode-client-proposal |
 
 ## Workflow
 
