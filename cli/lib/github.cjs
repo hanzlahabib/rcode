@@ -90,7 +90,8 @@ function ensureLabel(name, color, description, { execute = false, dryRun = true 
   // Check if label exists
   const check = runGh(['label', 'list', '--search', name, '--json', 'name'], { allowFailure: true });
   if (check.status === 0) {
-    const labels = JSON.parse(check.stdout || '[]');
+    // external gh CLI output — guard against malformed JSON crashing the process
+    let labels; try { labels = JSON.parse(check.stdout || '[]'); } catch { labels = []; }
     if (labels.some((l) => l.name === name)) {
       return { existed: true, name };
     }
@@ -131,7 +132,8 @@ function createMilestone(title, description, dueDate, { execute = false, dryRun 
   if (result.status !== 0) {
     return { error: result.stderr };
   }
-  const data = JSON.parse(result.stdout);
+  // external gh API response — guard against malformed JSON crashing the process
+  let data; try { data = JSON.parse(result.stdout); } catch { return { error: 'failed to parse milestone response' }; }
   return { created: true, number: data.number, id: data.id, title: data.title, url: data.html_url };
 }
 
@@ -148,7 +150,8 @@ function getIssue(number, { repo = null } = {}) {
   if (result.status !== 0) {
     return { error: result.stderr };
   }
-  return JSON.parse(result.stdout);
+  // external gh API response — guard against malformed JSON crashing the process
+  try { return JSON.parse(result.stdout); } catch { return { error: 'failed to parse issue response' }; }
 }
 
 function createIssue(
@@ -318,7 +321,8 @@ function createProject(owner, title, { execute = false, dryRun = true } = {}) {
   if (result.status !== 0) {
     return { error: result.stderr };
   }
-  return JSON.parse(result.stdout);
+  // external gh CLI output — guard against malformed JSON crashing the process
+  try { return JSON.parse(result.stdout); } catch { return { error: 'failed to parse project response' }; }
 }
 
 function addIssueToProject(projectNumber, owner, issueUrl, { execute = false, dryRun = true } = {}) {
@@ -340,7 +344,8 @@ function addIssueToProject(projectNumber, owner, issueUrl, { execute = false, dr
   if (result.status !== 0) {
     return { error: result.stderr };
   }
-  return JSON.parse(result.stdout);
+  // external gh CLI output — guard against malformed JSON crashing the process
+  try { return JSON.parse(result.stdout); } catch { return { error: 'failed to parse project item response' }; }
 }
 
 // ---------- Rate limit awareness ----------
