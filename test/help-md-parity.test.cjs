@@ -45,15 +45,16 @@ const NOT_YET_MARKER = /\*Not yet implemented[^*]*\*/;
 
 function extractAdvertisedCommands(text) {
   const out = new Set();
-  // Match `/rcode-X` inside markdown table rows (column-1 or backticked
-  // anywhere). Skip any row carrying the not-yet-implemented annotation.
+  // Match `/rcode-X` inside markdown — anywhere the name appears with a
+  // leading backtick. Many help.md rows include args inside the same
+  // backtick pair (e.g. `/rcode-plan <phase>`), so we use a word boundary
+  // after the command name rather than requiring an immediate closing
+  // backtick. Skip any row carrying the not-yet-implemented annotation.
   for (const line of text.split('\n')) {
     if (NOT_YET_MARKER.test(line)) continue;
-    // Prefer rows that look like table rows: `| `/rcode-X` |`
-    const m = line.match(/`\/rcode-([a-z][a-z0-9-]+)`/g);
-    if (!m) continue;
-    for (const ref of m) {
-      const name = ref.replace(/[`\/]/g, '').replace(/^rcode-/, '');
+    const matches = line.matchAll(/`\/rcode-([a-z][a-z0-9-]+)\b/g);
+    for (const m of matches) {
+      const name = m[1];
       // Drop tokens that are obviously not commands (single chars, etc.)
       if (name.length >= 2) out.add(name);
     }
