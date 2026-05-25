@@ -161,7 +161,7 @@ If test structure is ambiguous, ask the user:
 AskUserQuestion(
   header: "Test Structure",
   question: "I found multiple test locations. Where should I create tests?",
-  options: [list discovered locations]
+  options: [list discovered locations, "Cancel — exit without changes"]
 )
 ```
 </step>

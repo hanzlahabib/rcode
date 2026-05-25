@@ -46,11 +46,14 @@ No PRD or PROJECT.md found. How should we proceed?
 
 3. Tell me what you want to build — describe the feature/epic scope and I'll 
    generate stories from that description directly.
+
+0. Cancel — exit without changes.
 ```
 
 - If **1**: invoke `/rcode-new-project` and stop.
 - If **2**: set `CONTEXT_MODE=codebase`
 - If **3**: capture description → set `CONTEXT_MODE=interactive`, `DESCRIPTION=$response`
+- If **0**: print `Cancelled.` and STOP.
 
 ## Step 1 — Load References & Gather Deep Context
 

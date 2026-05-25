@@ -51,7 +51,7 @@ Verify prerequisites:
    ```bash
    gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null
    ```
-   If no repo detected: error — must be in a git repo with a GitHub remote.
+   If no repo detected: error — must be in a git repo with a GitHub remote. Run `git init && git remote add origin <url>` or pass `--repo owner/name` to specify the target repo.
 
 3. **Parse flags:**
    - `--issues` → set REVIEW_ISSUES=true, REVIEW_PRS=false

@@ -65,7 +65,17 @@ Available brainstorming methods:
 
 AskUserQuestion(
   header: "Select Method",
-  question: "Which method? (enter number 1-8 or method name)"
+  question: "Which method? (enter number 1-8 or method name)",
+  options:
+    - "1. SCAMPER"
+    - "2. Random Stimulus"
+    - "3. Reverse Brainstorm"
+    - "4. Brainwriting"
+    - "5. 6-3-5"
+    - "6. Mind Mapping"
+    - "7. Starbursting"
+    - "8. Rolestorming"
+    - "0. Cancel — exit without changes"
 )
 ```
 
