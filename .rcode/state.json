@@ -102,7 +102,7 @@
         {
           "id": "22.2",
           "number": 2,
-          "goal": "Slim rihal/agents/rihal-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_",
+          "goal": "Slim rihal/agents/rcode-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_",
           "status": "complete",
           "stories": [
             {
@@ -125,7 +125,7 @@
         {
           "id": "22.3",
           "number": 3,
-          "goal": "Slim rihal/agents/rihal-research-synthesizer.md from 254 lines to ≤80 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<su",
+          "goal": "Slim rihal/agents/rcode-research-synthesizer.md from 254 lines to ≤80 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<su",
           "status": "complete",
           "stories": [
             {
@@ -148,7 +148,7 @@
         {
           "id": "22.4",
           "number": 4,
-          "goal": "Slim rihal/agents/rihal-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference",
+          "goal": "Slim rihal/agents/rcode-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference",
           "status": "complete",
           "stories": [
             {
