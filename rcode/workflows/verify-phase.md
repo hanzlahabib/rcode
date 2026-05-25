@@ -50,10 +50,12 @@ ls "$phase_dir"/*-SUMMARY.md "$phase_dir"/*-SPRINT.md 2>/dev/null || true
 
 Load full milestone phases for deferred-item filtering (Step 9b):
 ```bash
-node ".rcode/bin/rcode-tools.cjs" roadmap analyze
+ROADMAP_ANALYSIS=$(node ".rcode/bin/rcode-tools.cjs" roadmap analyze 2>/dev/null)
 ```
 
-Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **requirements** from REQUIREMENTS.md if it exists, and **all milestone phases** from roadmap analyze (for cross-referencing gaps against later phases).
+**Fallback (if `roadmap analyze` returns an error or is unimplemented):** Read ROADMAP.md directly (`cat .planning/ROADMAP.md`) to extract the phase list manually. Parse each phase heading and its goal text for use in deferred-item filtering. If ROADMAP.md is missing, skip deferred-item filtering entirely (Step 9b) and treat all gaps as real.
+
+Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **requirements** from REQUIREMENTS.md if it exists, and **all milestone phases** from roadmap analyze or ROADMAP.md direct read (for cross-referencing gaps against later phases).
 </step>
 
 <step name="establish_must_haves">
@@ -113,12 +115,14 @@ Use rcode-tools for artifact verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
-  ARTIFACT_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify artifacts "$plan")
+  ARTIFACT_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify artifacts "$plan" 2>/dev/null)
   echo "=== $plan ===" && echo "$ARTIFACT_RESULT"
 done
 ```
 
-Parse JSON result: `{ all_passed, passed, total, artifacts: [{path, exists, issues, passed}] }`
+**Fallback (if `verify artifacts` returns an error or is unimplemented):** Skip the rcode-tools call and proceed directly to the Level 3 manual grep checks below. Extract artifact paths from PLAN frontmatter `must_haves.artifacts` manually using `grep` on the SPRINT.md file, then verify each path with `test -f`.
+
+Parse JSON result (when available): `{ all_passed, passed, total, artifacts: [{path, exists, issues, passed}] }`
 
 **Artifact status from result:**
 - `exists=false` → MISSING
@@ -156,19 +160,21 @@ Use rcode-tools for key link verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-SPRINT.md; do
-  LINKS_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify key-links "$plan")
+  LINKS_RESULT=$(node ".rcode/bin/rcode-tools.cjs" verify key-links "$plan" 2>/dev/null)
   echo "=== $plan ===" && echo "$LINKS_RESULT"
 done
 ```
 
-Parse JSON result: `{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`
+**Fallback (if `verify key-links` returns an error or is unimplemented):** Skip the rcode-tools call and use the manual grep patterns below directly. Extract `key_links` entries from PLAN frontmatter manually using `grep`, then verify each link with the grep checks in the Fallback patterns table.
+
+Parse JSON result (when available): `{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`
 
 **Link status from result:**
 - `verified=true` → WIRED
 - `verified=false` with "not found" → NOT_WIRED
 - `verified=false` with "Pattern not found" → PARTIAL
 
-**Fallback patterns (if key_links not in must_haves):**
+**Fallback patterns (if key_links not in must_haves, or rcode-tools unavailable):**
 
 | Pattern | Check | Status |
 |---------|-------|--------|
