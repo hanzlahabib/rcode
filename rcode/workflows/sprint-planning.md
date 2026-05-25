@@ -37,8 +37,8 @@ they bypass the capacity gate.
 
 <required_reading>
 @.rcode/references/output-format.md
-@rcode/brain/best-practices/no-autonomous-bypass.md
-@rcode/brain/best-practices/state-sync-rule.md
+@.rcode/brain/best-practices/no-autonomous-bypass.md
+@.rcode/brain/best-practices/state-sync-rule.md
 @.rcode/references/karpathy-guidelines.md
 </required_reading>
 
@@ -82,11 +82,13 @@ VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity)
 Extract:
 - Current phase from state
 - Velocity history + average from velocity output
-- Phase scope from `.planning/phases/{phase}/SCOPE.md` (if exists)
+- Phase scope from `.planning/phases/{phase}/REQUIREMENTS.md` (preferred) or `SCOPE.md` (legacy alias) — both are acceptable; REQUIREMENTS.md is the file created by the standard planning pipeline
 
 If no phases in state:
 ```
-No phases found. Run /rcode-new-project first to create a roadmap.
+No phases found. If you have a ROADMAP.md, sync state first:
+  node .rcode/bin/rcode-tools.cjs state sync --from-disk
+Otherwise run /rcode-new-project first to create a roadmap.
 ```
 Exit.
 
@@ -104,7 +106,7 @@ Store as `velocity_target`.
 
 ## Step 3 — Curate stories
 
-Read phase scope (SCOPE.md, REQUIREMENTS.md, or ROADMAP.md phase section).
+Read phase scope (REQUIREMENTS.md preferred, fall back to SCOPE.md or the ROADMAP.md phase section).
 
 For each requirement/feature in scope:
 1. Break into stories: `As a [user], I want [action] so that [outcome]`
@@ -144,7 +146,7 @@ node .rcode/bin/rcode-tools.cjs state story add \
   --points {points}
 ```
 
-Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template at `rcode/templates/sprint.md`. Fill in:
+Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md`. Use `.rcode/templates/sprint.md` as a template if it exists; otherwise produce the file inline with these sections (the template file may be absent in this install). Fill in:
 - Sprint goal
 - Stories table (from user-confirmed list)
 - Capacity section (velocity target, average, buffer)
@@ -154,8 +156,11 @@ Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md` using the template 
 ## Step 5 — Start sprint
 
 ```bash
-node .rcode/bin/rcode-tools.cjs state sprint start
+# Extract the sprint id written by state sprint add in Step 4 (format: NN.S, e.g. "1.1")
+node .rcode/bin/rcode-tools.cjs state sprint start --sprint "{sprint_id}"
 ```
+
+If `sprint_id` is unavailable, omit the flag — the tool will attempt to start the most recently added sprint. The `--sprint NN.S` flag is required when no sprint is marked active.
 
 ## Step 6 — Summary
 
