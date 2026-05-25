@@ -44,7 +44,8 @@ test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: n
 test -f .rcode/JOURNEY.md && echo "rihla-present: yes" || echo "rihla-present: no"
 
 # Project presence
-test -d .git && echo "git: yes" || echo "git: no"
+# Use git rev-parse instead of test -d .git — in git worktrees .git is a FILE not a dir
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 && echo "git: yes" || echo "git: no"
 ls package.json pyproject.toml Cargo.toml go.mod 2>/dev/null | head -3
 find . -maxdepth 2 -type d \( -name src -o -name app -o -name lib \) 2>/dev/null | head -3
 
@@ -117,15 +118,15 @@ Questions:
 
 ## Step 3 — Write config + state seed
 
-Write `.rcode/config.yaml` via `rcode-tools.cjs config set` (not direct file write):
+Write `.rcode/config.yaml` via `rcode-tools.cjs config-set` (not direct file write):
 
 ```bash
-node .rcode/bin/rcode-tools.cjs config set --key user_name --value "{name}"
-node .rcode/bin/rcode-tools.cjs config set --key project_name --value "$(basename $(pwd))"
-node .rcode/bin/rcode-tools.cjs config set --key communication_language --value "{lang}"
-node .rcode/bin/rcode-tools.cjs config set --key mode --value "{mode}"
-node .rcode/bin/rcode-tools.cjs config set --key model_profile --value "{profile}"
-node .rcode/bin/rcode-tools.cjs config set --key git.branching_strategy --value "{strategy}"
+node .rcode/bin/rcode-tools.cjs config-set user_name "{name}"
+node .rcode/bin/rcode-tools.cjs config-set project_name "$(basename $(pwd))"
+node .rcode/bin/rcode-tools.cjs config-set communication_language "{lang}"
+node .rcode/bin/rcode-tools.cjs config-set mode "{mode}"
+node .rcode/bin/rcode-tools.cjs config-set model_profile "{profile}"
+node .rcode/bin/rcode-tools.cjs config-set git.branching_strategy "{strategy}"
 ```
 
 Initialize state.json if missing:
@@ -281,7 +282,7 @@ fi
 After writing both files, refresh the memory bank fingerprint so staleness checks see the project as fresh:
 
 ```bash
-node .rcode/bin/rcode-tools.cjs context refresh 2>/dev/null || true
+node .rcode/bin/rcode-tools.cjs context refresh >/dev/null 2>&1 || true
 ```
 
 ## Step 5 — Suggest the next step
