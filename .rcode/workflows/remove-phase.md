@@ -158,3 +158,8 @@ Phase removal is complete when:
 - [ ] Changes committed with descriptive message
 - [ ] User informed of changes
 </success_criteria>
+
+## Next Up
+
+- `/rcode-plan` — re-plan remaining phases if scope changed
+- `/rcode-status` — confirm the roadmap looks correct after removal

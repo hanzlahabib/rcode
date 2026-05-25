@@ -29,3 +29,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 - /rcode-validate-prd
 - /rcode-new-milestone
 - /rcode-create-epics-and-stories
+
+## Next Up
+
+- `/rcode-validate-prd` — validate the updated PRD for completeness
+- `/rcode-plan` — re-plan phases if scope changed

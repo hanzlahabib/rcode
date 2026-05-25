@@ -150,9 +150,14 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 Phase number from argument (required).
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-advisor-researcher 2>/dev/null)
+AGENT_SKILLS_ADVISOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-advisor-researcher 2>/dev/null || echo "")
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -960,3 +965,8 @@ The power user mode generates ALL questions upfront into machine-readable and hu
 - `--chain` triggers interactive discuss followed by auto plan+execute (no auto-answering)
 - `--chain` and `--auto` both persist chain flag and auto-advance to plan
 </success_criteria>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase using the decisions captured in CONTEXT.md
+- `/rcode-research-phase` — research implementation details before planning

@@ -158,3 +158,8 @@ The subsequent `/rcode-council` run will attach its own artifact; pairing the tw
 - Missing session directory → tell the user to run `/rcode-council` first
 - Slug ambiguity → list the top 10 newest matches so the user can paste a fuller path
 - Extraction returns empty → print the path and ask the user to copy the question manually
+
+## Next Up
+
+- `/rcode-plan` — plan next steps based on the fresh council round
+- `/rcode-decisions` — review decisions the replayed council produced

@@ -173,3 +173,8 @@ and the milestone scope matches the trigger condition.
 - [ ] Committed to git
 - [ ] User shown confirmation with trigger info
 </success_criteria>
+
+## Next Up
+
+- `/rcode-do` — continue with current work
+- `/rcode-new-milestone` — use seeds when trigger conditions match the new milestone scope

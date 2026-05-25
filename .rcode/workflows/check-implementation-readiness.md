@@ -24,7 +24,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init check-implementation-readiness "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init check-implementation-readiness "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -191,3 +197,8 @@ Allow `--skip-gates` flag to override for emergency situations only.
 - If checklist files missing: treat as FAIL on that gate
 - If state read fails: skip and report gates manually
 - If file not found: treat as FAIL, suggest file location
+
+## Next Up
+
+- `/rcode-execute` — execute the phase if the readiness check passed
+- `/rcode-plan` — fill gaps if the check surfaced missing requirements

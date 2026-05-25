@@ -87,3 +87,8 @@ The three absorbed commands continue to work as first-class aliases. `/rcode-pha
 - [ ] `/rcode-phase --insert 14 "hotfix wave"` produces the same artefacts as `/rcode-insert-phase 14 "hotfix wave"`
 - [ ] `/rcode-phase --remove 99` produces the same artefacts as `/rcode-remove-phase 99`
 - [ ] Unknown flag combinations produce a clear error
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the phase before planning
+- `/rcode-plan` — plan the phase once it is added or inserted

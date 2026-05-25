@@ -250,10 +250,12 @@ Next: Review docs in your editor or run verification again with /rcode-docs-upda
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Project type correctly classified and doc queue assembled (always-on + conditional docs)
+- [ ] User confirmed the queue before generation began
+- [ ] `rcode-noor` doc-writer agents spawned in parallel waves; all docs written to their correct destination paths
+- [ ] `rcode-docs-auditor` agents run after writing; inaccuracies flagged and addressed by the fix loop
+- [ ] Work manifest persisted to `.planning/` so an interrupted run can resume without data loss
+- [ ] All generated docs committed when `commit_docs` config is enabled
 
 ## On Error
 
@@ -262,3 +264,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-verify-work` — verify documentation accuracy against the live codebase
+- `/rcode-ship` — ship with updated docs once verification passes

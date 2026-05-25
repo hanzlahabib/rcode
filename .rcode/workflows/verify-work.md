@@ -49,8 +49,8 @@ If $ARGUMENTS contains a phase number, load context:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init verify-work "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null)
+AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null || echo "")
+AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null || echo "")
 ```
 
 Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
@@ -729,3 +729,8 @@ When all tests pass:
   /rcode-add-tests {phase} — generate unit + E2E tests for this phase
   /rcode-next — advance to next phase
   /rcode-plan {next} — plan the next phase
+
+## Next Up
+
+- `/rcode-ship` — ship if all UAT items pass
+- `/rcode-diagnose-issues` — diagnose root cause for each failing acceptance criterion

@@ -30,7 +30,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init review-adversarial "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init review-adversarial "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -192,3 +198,8 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 - **Vulnerabilities found:** Address security findings, re-run `/rcode-review --attack`
 - /rcode-verify-phase {phase}
 - /rcode-ship {phase}
+
+## Next Up
+
+- `/rcode-secure-phase` — verify threat mitigations for the phase
+- `/rcode-plan` — plan security fix phases for critical findings

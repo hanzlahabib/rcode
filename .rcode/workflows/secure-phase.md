@@ -35,7 +35,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-security-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-security-auditor 2>/dev/null || echo "")
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:
@@ -189,10 +189,12 @@ Display `/clear` reminder.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Security enforcement config verified — workflow exits cleanly when disabled
+- [ ] SPRINT.md threat register parsed and all open threat items enumerated
+- [ ] User gate shown with threat table before `rcode-security-auditor` is spawned
+- [ ] All three auditor return formats handled: `SECURED` routes forward, `OPEN_THREATS` blocks advancement, `ESCALATE` triggers escalation path
+- [ ] `SECURITY.md` created or updated at `.planning/phases/<N>/SECURITY.md`
+- [ ] Remaining open threats block phase advancement — no next-phase routing emitted when `threats_open > 0`
 
 ## On Error
 
@@ -207,3 +209,8 @@ If arguments are invalid, missing files, or subagent fails:
 - **Issues found:** Address security findings, then re-run `/rcode-secure-phase {phase}`
 - /rcode-verify-phase {phase}
 - /rcode-execute {next-phase}
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the full phase goal is met after security mitigations
+- `/rcode-ship` — ship after security and verification gates both pass

@@ -241,3 +241,8 @@ fi
 - [ ] Bounded loop terminates within 3 passes
 - [ ] Report-only mode (no `--fix`) preserves zero file modifications outside the report itself
 </success_criteria>
+
+## Next Up
+
+- `/rcode-correct-course` — produce a remediation plan for detected drift
+- `/rcode-plan` — plan fix phases for drift items

@@ -23,3 +23,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 /rcode-validate-prd — validate the PRD for completeness
 /rcode-new-milestone — build the milestone roadmap from the PRD
 /rcode-edit-prd — revise the PRD
+
+## Next Up
+
+- `/rcode-validate-prd` — validate the new PRD for completeness and testability
+- `/rcode-create-architecture` — design the system architecture once the PRD is approved

@@ -75,3 +75,8 @@ The executor will:
 - ID unresolvable → Show error
 - state.json corrupt → "Cannot read state. Check .rcode/state.json"
 - User declines → Stop gracefully
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal after the re-run
+- `/rcode-status` — confirm state reflects the re-run

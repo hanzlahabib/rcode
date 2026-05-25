@@ -28,7 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init document-project "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init document-project "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -184,3 +190,8 @@ If .rcode/DOCS-AUDIT.md exists, check for missing/stale docs:
 - /rcode-progress
 - /rcode-plan {phase}
 - /rcode-council {question}
+
+## Next Up
+
+- `/rcode-docs-update` — generate or regenerate the documentation
+- `/rcode-plan` — plan documentation phases identified by the audit

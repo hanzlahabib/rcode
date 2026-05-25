@@ -17,9 +17,14 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 ## 0. Initialize
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-nyquist-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-nyquist-auditor 2>/dev/null || echo "")
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
@@ -179,3 +184,8 @@ Display `/clear` reminder.
 - [ ] Test files committed separately
 - [ ] Results with routing presented
 </success_criteria>
+
+## Next Up
+
+- `/rcode-add-tests` — generate the missing tests identified by the Nyquist audit
+- `/rcode-verify-phase` — verify the phase goal after tests are added

@@ -28,7 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init profile-user "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init profile-user "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -160,3 +166,8 @@ This profile will personalize future /rcode-council and /rcode-execute responses
 - If AskUserQuestion fails: retry or skip to default profile
 - If subagent fails: manually create USER-PROFILE.md with frontmatter
 - If state write fails: print warning but continue (profile still written to disk)
+
+## Next Up
+
+- `/rcode-settings` — update project config to match the user profile
+- `/rcode-do` — continue with the profile now informing Claude's behaviour

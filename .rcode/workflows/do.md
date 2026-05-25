@@ -432,3 +432,7 @@ Why this is hard: do.md is a router. The moment it does work, two failure modes 
 </success_criteria>
 </content>
 </invoke>
+## Next Up
+
+- `/rcode-status` — check project state if you're not sure what to do
+- `/rcode-next` — auto-advance to the next logical step

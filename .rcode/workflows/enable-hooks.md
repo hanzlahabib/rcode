@@ -105,3 +105,8 @@ To disable, remove the hooks section from .claude/settings.json or edit .rcode/t
 - **settings.json has invalid JSON:** print error with path and stop.
 - **Permission denied writing .claude/settings.json:** print error and stop.
 - **Merge produces duplicate hooks:** skip duplicates (Step 3).
+
+## Next Up
+
+- `/rcode-settings` — configure additional project settings
+- `/rcode-do` — continue with guardrails now active

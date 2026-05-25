@@ -311,10 +311,12 @@ Next step: /rcode-plan {N}
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Gray-area questions generated into a valid JSON state file covering all identified decision points for the phase
+- [ ] Self-contained HTML companion file renders stats bar, answered/remaining counts, and green-highlights answered questions without a server
+- [ ] `CONTEXT.md` written to `.planning/phases/<N>/CONTEXT.md` in the same format as `/rcode-discuss-phase` output
+- [ ] Unanswered questions preserved as deferred items in `CONTEXT.md` — not silently dropped
+- [ ] `canonical_refs` section present in the generated `CONTEXT.md`
+- [ ] User informed of commands to refresh, finalize, explain, or exit power mode
 
 ## On Error
 
@@ -323,3 +325,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-plan` — plan the phase once all answers are processed into CONTEXT.md
+- `/rcode-research-phase` — research before planning if technical unknowns remain

@@ -157,10 +157,12 @@ Continue exploring with `/rcode-explore` or start working with `/rcode-next`.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Socratic conversation conducted question-by-question — questions asked one at a time, not batched
+- [ ] Contextual research offered at least once during conversation when a knowledge gap is identified
+- [ ] Up to 4 concrete outputs (PRD, epic, architecture doc, etc.) proposed from crystallized ideas
+- [ ] User explicitly selected which outputs to create before any file was written
+- [ ] Selected output files written to the correct rcode destination paths (e.g., `.planning/PROJECT.md`, `.planning/epics/`)
+- [ ] Commit created when `commit_docs` config is enabled
 
 ## On Error
 
@@ -169,3 +171,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-create-prd` — formalize the crystallized idea into a PRD
+- `/rcode-brainstorm` — continue structured brainstorming on the concept
+- `/rcode-prfaq` — stress-test the idea with Working Backwards

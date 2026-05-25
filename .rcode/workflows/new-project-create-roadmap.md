@@ -203,3 +203,8 @@ git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project inst
 node ".rcode/bin/rcode-tools.cjs" state sync --from-disk 2>/dev/null || true
 ```
 
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the first phase with the full roadmap in hand
+- `/rcode-plan` — plan the first phase of the new project

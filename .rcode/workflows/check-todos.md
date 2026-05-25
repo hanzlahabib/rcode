@@ -12,8 +12,13 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init todos)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init todos 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `todo_count`, `todos`, `pending_dir`.
@@ -179,3 +184,8 @@ Confirm: "Committed: docs: start work on todo - [title]"
 - [ ] STATE.md updated if todo count changed
 - [ ] Changes committed to git (if todo moved to done/)
 </success_criteria>
+
+## Next Up
+
+- `/rcode-do` — action the selected todo
+- `/rcode-add-todo` — capture additional ideas before continuing

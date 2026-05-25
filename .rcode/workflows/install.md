@@ -75,3 +75,8 @@ New commands available:
 - **Missing dependencies:** list missing modules, tell user to install them first.
 - **Installer not found:** tell user to install rcode package.
 - **Installation fails:** report the specific error and suggest manual installation steps
+
+## Next Up
+
+- `/rcode-health` — verify the installed module is working
+- `/rcode-do` — use newly available commands from the installed module

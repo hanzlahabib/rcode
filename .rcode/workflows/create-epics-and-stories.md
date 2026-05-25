@@ -46,11 +46,14 @@ No PRD or PROJECT.md found. How should we proceed?
 
 3. Tell me what you want to build — describe the feature/epic scope and I'll 
    generate stories from that description directly.
+
+0. Cancel — exit without changes.
 ```
 
 - If **1**: invoke `/rcode-new-project` and stop.
 - If **2**: set `CONTEXT_MODE=codebase`
 - If **3**: capture description → set `CONTEXT_MODE=interactive`, `DESCRIPTION=$response`
+- If **0**: print `Cancelled.` and STOP.
 
 ## Step 1 — Load References & Gather Deep Context
 
@@ -359,10 +362,11 @@ Next:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] At least one epic file written to `.planning/epics/EPIC-NN.md` with a non-empty stories list
+- [ ] Each epic file contains user stories with acceptance criteria, dev notes, and effort estimates
+- [ ] Epic files numbered sequentially (`EPIC-01`, `EPIC-02`, …) with no gaps
+- [ ] Story IDs follow `EPIC-NN.M` format (e.g., `EPIC-01.1`, `EPIC-01.2`)
+- [ ] No placeholder text remains — output is ready for `/rcode-sprint-planning` consumption
 
 ## On Error
 
@@ -377,3 +381,8 @@ If arguments are invalid, missing files, or subagent fails:
 - /rcode-sprint-planning
 - /rcode-dev-story {story-id}
 - /rcode-edit-prd
+
+## Next Up
+
+- `/rcode-sprint-planning` — plan the sprint from the generated epic files
+- `/rcode-create-story` — develop individual stories into self-contained STORY.md files

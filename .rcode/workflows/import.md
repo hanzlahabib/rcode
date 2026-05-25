@@ -306,10 +306,11 @@ Do NOT:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Input file path validated: no traversal sequences (`..`) and file confirmed to exist before reading
+- [ ] External plan parsed against `.planning/ROADMAP.md` and `.planning/PROJECT.md` for decision conflicts
+- [ ] Conflict report produced listing any contradictions with existing project decisions
+- [ ] `SPRINT.md` written to `.planning/phases/<N>/SPRINT.md` with a non-empty tasks section
+- [ ] `rcode-sprint-checker` validates the imported `SPRINT.md` before workflow completes
 
 ## On Error
 
@@ -318,3 +319,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the imported plan before executing
+- `/rcode-execute` — execute the imported plan

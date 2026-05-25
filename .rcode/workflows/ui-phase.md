@@ -28,7 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init ui-phase "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init ui-phase "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -146,3 +152,8 @@ Run /rcode-ui-phase, then return to /rcode-plan
 - If subagent fails: provide template UI-SPEC.md
 - If frontend detection fails: skip suggestion
 - If config.yaml missing ui_safety_gate: default to true (suggest)
+
+## Next Up
+
+- `/rcode-plan` — plan the UI implementation phase against the spec
+- `/rcode-execute` — implement UI once the spec is approved

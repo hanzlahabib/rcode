@@ -105,7 +105,7 @@ This runs in parallel - all issues investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-debugger 2>/dev/null)
+AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-debugger 2>/dev/null || echo "")
 ```
 
 **Spawn debug agents in parallel:**
@@ -252,10 +252,11 @@ Agents only diagnose—planning handles fixes (no fix application).
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Issues parsed from context and at least one `rcode-debugger` agent spawned in parallel
+- [ ] Root causes collected from all debug agents and synthesized into a unified diagnosis
+- [ ] Debug sessions saved to `.planning/debug/` with per-issue files
+- [ ] Each root cause entry includes: symptom, identified cause, and a concrete suggested fix path
+- [ ] User receives a clear diagnosis with enough detail to proceed to `/rcode-plan`
 
 ## On Error
 
@@ -270,3 +271,8 @@ If arguments are invalid, missing files, or subagent fails:
 /rcode-review {phase} — review the fix before committing
 /rcode-verify-work {phase} — re-run UAT after the fix
 /rcode-execute {phase} --gaps-only — re-run just the failing plans
+
+## Next Up
+
+- `/rcode-plan` — plan the fix based on root causes the debug agents found
+- `/rcode-execute` — execute the fix once the plan is ready

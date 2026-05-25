@@ -71,8 +71,13 @@ Rules:
 Collect phase artifacts for the review prompt:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Read from init: `phase_dir`, `phase_number`, `padded_phase`.
@@ -285,3 +290,8 @@ Clean up temp files.
 - **Issues found:** Fix identified problems, then re-run `/rcode-review`
 - /rcode-ship {phase}
 - /rcode-secure-phase {phase}
+
+## Next Up
+
+- `/rcode-plan` — incorporate cross-AI review feedback into the plan
+- `/rcode-correct-course` — correct deviations flagged by the review panel

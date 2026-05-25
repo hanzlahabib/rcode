@@ -51,7 +51,7 @@ Verify prerequisites:
    ```bash
    gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null
    ```
-   If no repo detected: error — must be in a git repo with a GitHub remote.
+   If no repo detected: error — must be in a git repo with a GitHub remote. Run `git init && git remote add origin <url>` or pass `--repo owner/name` to specify the target repo.
 
 3. **Parse flags:**
    - `--issues` → set REVIEW_ISSUES=true, REVIEW_PRS=false
@@ -404,10 +404,12 @@ After triage:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] All open GitHub issues fetched and classified by type (bug, feature, question, etc.)
+- [ ] Each issue checked against its required template fields; missing fields explicitly flagged
+- [ ] All open PRs fetched and each checked against the PR template checklist
+- [ ] Issue-first gate violations (PRs without a linked issue) identified
+- [ ] Structured compliance report generated with scores and specific action items per item
+- [ ] Auto-actions (labeling, commenting, closing) executed only after explicit user confirmation
 
 ## On Error
 
@@ -416,3 +418,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-plan` — plan fix phases for triaged issues
+- `/rcode-export-to-github` — sync updated rcode state back to GitHub

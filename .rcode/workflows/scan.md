@@ -361,10 +361,11 @@ Skip this cue if the user already asked for a focused scan — don't push an ups
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Focus area correctly parsed from arguments (defaults to `tech+arch` when omitted)
+- [ ] Existing `.planning/codebase/` documents detected and shown with modification dates before overwriting
+- [ ] User prompted for confirmation before any existing document is overwritten
+- [ ] Single `rcode-codebase-mapper` agent spawned with the correct focus area
+- [ ] Output document(s) written to `.planning/codebase/` with more than 20 non-empty lines
 
 ## On Error
 
@@ -380,3 +381,8 @@ If arguments are invalid, missing files, or subagent fails:
 /rcode-plan {N} — plan fixes for discovered issues
 /rcode-explore — go deeper with socratic analysis
 /rcode-next — get suggested next action
+
+## Next Up
+
+- `/rcode-plan` — plan improvements based on the targeted scan findings
+- `/rcode-map-codebase` — run a full codebase map for broader analysis

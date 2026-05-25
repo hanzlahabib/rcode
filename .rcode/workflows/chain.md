@@ -45,7 +45,13 @@ Only proceed past this step if the input is a topic or deliverable request (e.g.
 ## Step 1 — Resolve the chain
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init chain "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init chain "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -186,3 +192,8 @@ Silent on failure — state tracking is optional.
 - **Stage fails to produce artifact:** print stage number, allow `/rcode-chain --continue` to resume.
 - **Agent returns empty output:** print "Agent produced no output. Check input and retry."
 - **`rcode-tools.cjs` missing:** tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
+
+## Next Up
+
+- `/rcode-council` — escalate to a parallel debate panel if one pipeline isn't enough
+- `/rcode-plan` — plan next steps based on the pipeline output

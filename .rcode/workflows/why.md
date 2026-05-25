@@ -128,3 +128,8 @@ If not found: `No recorded decision matches "{ARGUMENTS}". Use /rcode-progress t
 - rcode-tools error → Show error message
 - state.json missing → `State not initialized. Run /rcode-new-project first.`
 - No match found → Suggest `/rcode-progress` for context
+
+## Next Up
+
+- `/rcode-decisions` — review the full decision history for the project
+- `/rcode-do` — continue with work informed by the reasoning

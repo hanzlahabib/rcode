@@ -111,3 +111,8 @@ If any platform `sent`, print:
 
 - Missing `fetch` (Node <18) → the tool call will throw; tell the user to upgrade to Node 20+
 - Corporate proxy blocks outbound HTTPS → failure body will show a network error; suggest `HTTPS_PROXY` env var or testing from outside the proxy
+
+## Next Up
+
+- `/rcode-settings` — configure the webhook URL if the test failed
+- `/rcode-execute` — start execution with notifications now verified

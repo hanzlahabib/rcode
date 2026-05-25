@@ -34,8 +34,13 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`.
@@ -161,7 +166,7 @@ If test structure is ambiguous, ask the user:
 AskUserQuestion(
   header: "Test Structure",
   question: "I found multiple test locations. Where should I create tests?",
-  options: [list discovered locations]
+  options: [list discovered locations, "Cancel — exit without changes"]
 )
 ```
 </step>
@@ -350,3 +355,8 @@ Present next steps:
 - [ ] Coverage gaps documented
 - [ ] Next steps presented to user
 </success_criteria>
+
+## Next Up
+
+- `/rcode-verify-work` — run UAT to confirm tests pass in context
+- `/rcode-code-review` — review test quality before committing

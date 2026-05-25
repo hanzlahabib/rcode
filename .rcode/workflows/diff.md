@@ -78,3 +78,8 @@ State changes — .rcode/state.json
 /rcode-plan {phase} — plan fixes for changes seen in the diff
 /rcode-execute {phase} — execute the phase
 /rcode-progress — see full roadmap status
+
+## Next Up
+
+- `/rcode-status` — get full project status after reviewing the diff
+- `/rcode-do` — continue with your current work

@@ -444,3 +444,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the first phase of the roadmap
+- `/rcode-plan` — plan the first phase immediately

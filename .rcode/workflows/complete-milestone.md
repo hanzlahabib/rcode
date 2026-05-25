@@ -842,3 +842,8 @@ Milestone completion is successful when:
 
 </success_criteria>
 </output>
+
+## Next Up
+
+- `/rcode-new-milestone` — start the next milestone cycle
+- `/rcode-milestone-summary` — generate a narrative summary of the completed milestone

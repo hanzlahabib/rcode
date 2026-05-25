@@ -206,3 +206,8 @@ No next-step suggestions. No workflow routing. Just done.
 - [ ] STATE.md updated if it exists
 - [ ] No self-referential redirects (the old quick.md redirected to /rcode-quick — that infinite loop is closed)
 </success_criteria>
+
+## Next Up
+
+- `/rcode-verify-work` — verify the quick task completed correctly
+- `/rcode-do` — continue with the next task

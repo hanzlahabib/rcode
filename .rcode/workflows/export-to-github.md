@@ -172,3 +172,8 @@ This also mirrors to `~/.rcode/decisions.jsonl` so `/rcode-decisions` surfaces t
 - `gh repo view` fails (no remote) → tell the user to pass `--repo owner/name`, exit
 - `rcode` missing from PATH → fall back to `node ./cli/index.js`; if that also fails, instruct the user to `pnpm install` from the repo root
 - Empty decision log under `--decisions` → print "No decisions to export{since_suffix}. Run /rcode-council or complete a sprint to create some." and exit cleanly
+
+## Next Up
+
+- `/rcode-inbox` — triage the GitHub issues that were created
+- `/rcode-status` — check project state after the export

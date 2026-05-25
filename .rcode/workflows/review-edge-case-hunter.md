@@ -28,7 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init review-edge-case-hunter "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init review-edge-case-hunter "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -212,3 +218,8 @@ If "Yes, find edge cases":
 - If subagent fails: provide template edge-case structure
 - If no edge cases found: report "No new edge cases identified" (acceptable)
 - If too many cases: prioritize by severity, file medium/low in backlog
+
+## Next Up
+
+- `/rcode-add-tests` — generate tests covering the edge cases found
+- `/rcode-plan` — plan fix phases for unhandled critical edge cases

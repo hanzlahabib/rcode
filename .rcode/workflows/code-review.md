@@ -607,10 +607,12 @@ If `--files` validation fails unexpectedly on macOS, install coreutils or use ab
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Config gate (`workflow.code_review`) verified before spawning the reviewer agent
+- [ ] File scope resolved via priority order: `--files` override → SUMMARY.md list → `git diff` fallback; deleted files excluded
+- [ ] `rcode-reviewer` agent spawned with explicit file list, depth setting, and `review_path`
+- [ ] Empty scope (no changed files) results in a clean skip — no agent spawned
+- [ ] `REVIEW.md` written to `.planning/phases/<N>/REVIEW.md` and committed
+- [ ] Results presented inline with a next-step suggestion (e.g., `/rcode-code-review-fix`)
 
 ## On Error
 
@@ -619,3 +621,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-review-fix` — auto-fix the issues surfaced in REVIEW.md
+- `/rcode-verify-phase` — verify phase goal after review is clean

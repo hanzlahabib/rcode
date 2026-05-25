@@ -134,7 +134,7 @@ Present grey areas **one at a time**. For each area (M of N), display a table:
 Then prompt via **AskUserQuestion**:
 - **header:** "Area {M}/{N}"
 - **question:** "Accept these answers for {Area Name}?"
-- **options:** Build dynamically — always "Accept all" first, then "Change Q1" through "Change QN" for each question (up to 4), then "Discuss deeper" last. Cap at 6 explicit options max.
+- **options:** Build dynamically — always "Accept all" first, then "Change Q1" through "Change QN" for each question (up to 4), then "Discuss deeper", then "Skip area — exit this phase discuss" last. Cap at 7 explicit options max.
 
 **On "Accept all":** Record all recommended answers. Move to next area.
 
@@ -246,3 +246,8 @@ Decisions captured: {count} across {area_count} areas
 ```
 
 </step>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase after CONTEXT.md is produced
+- `/rcode-execute` — execute the phase once the plan is ready

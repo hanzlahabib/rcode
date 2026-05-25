@@ -37,8 +37,13 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`.
@@ -520,10 +525,12 @@ echo "════════════════════════�
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Config gate (`workflow.code_review`) verified before any agent is spawned
+- [ ] `REVIEW.md` confirmed present at `.planning/phases/<N>/REVIEW.md`; workflow exits with explicit error if missing
+- [ ] `rcode-fixer` agent spawned with correct `review_path`, `fix_scope`, and `fix_report_path`
+- [ ] `--auto` iteration loop capped at 3 rounds; each round re-reviews only the original file scope
+- [ ] `REVIEW-FIX.md` committed exactly once at the end of all iterations (not per iteration)
+- [ ] Results presented inline with a concrete next-step suggestion (e.g., `git log --oneline`)
 
 ## On Error
 
@@ -532,3 +539,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-verify-work` — run UAT to confirm fixes didn't introduce regressions
+- `/rcode-ship` — ship when all review issues are resolved

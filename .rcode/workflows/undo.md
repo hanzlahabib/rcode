@@ -411,10 +411,12 @@ Show next steps:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Arguments parsed correctly for all three modes (`--phase`, `--plan`, `--to-snapshot`)
+- [ ] Dirty working tree detected and workflow aborts before any `git revert` is attempted
+- [ ] Dependency check warns when downstream phases or plans reference the revert target
+- [ ] Confirmation gate shown to user before any revert command executes
+- [ ] Reverts applied with `git revert --no-commit` in reverse chronological order; a single commit created after staging
+- [ ] `git reset --hard` never used — full git history preserved throughout
 
 ## On Error
 
@@ -423,3 +425,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-status` — verify project state after the revert
+- `/rcode-plan` — re-plan the reverted phase with corrected approach

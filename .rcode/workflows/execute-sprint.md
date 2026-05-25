@@ -21,8 +21,13 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 Load execution context (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir`, `phase_number`, `plans`, `summaries`, `incomplete_plans`, `state_path`, `config_path`, `response_language`.
@@ -601,3 +606,8 @@ All routes: `/clear` first for fresh context.
 - If codebase map exists: map updated with execution changes (or skipped if no significant changes)
 - If USER-SETUP.md created: prominently surfaced in completion output
 </success_criteria>
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal achieved by this sprint
+- `/rcode-code-review` — review code changes produced by the sprint

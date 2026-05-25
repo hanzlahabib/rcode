@@ -312,3 +312,7 @@ Files: `.planning/research/`
 
 **If "Skip research":** Continue to Step 7.
 
+
+## Next Up
+
+- `/rcode-new-project-roadmap` — produce requirements and roadmap from research findings

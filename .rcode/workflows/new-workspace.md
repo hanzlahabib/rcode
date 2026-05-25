@@ -165,3 +165,8 @@ If permissions prevent directory creation:
 ⚠ Cannot create workspace directory. Check permissions:
   {WORKSPACE_DIR}
 ```
+
+## Next Up
+
+- `/rcode-plan` — plan phases in the new workspace
+- `/rcode-list-workspaces` — confirm the workspace was created alongside existing ones

@@ -113,3 +113,8 @@ If `.rcode/workspaces.csv` is malformed:
 ```
 
 Then list directories in `.rcode/workspaces/` directly.
+
+## Next Up
+
+- `/rcode-workstream` — manage workstream switches or completions
+- `/rcode-new-workspace` — create a new parallel workspace

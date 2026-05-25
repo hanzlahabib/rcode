@@ -220,9 +220,9 @@ and continue.
 
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init new-milestone 2>/dev/null)
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-research-synthesizer 2>/dev/null)
-AGENT_SKILLS_ROADMAPPER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-roadmapper 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-project-researcher 2>/dev/null || echo "")
+AGENT_SKILLS_SYNTHESIZER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-research-synthesizer 2>/dev/null || echo "")
+AGENT_SKILLS_ROADMAPPER=$(node ".rcode/bin/rcode-tools.cjs" agent-info rcode-roadmapper 2>/dev/null || echo "")
 ```
 
 Extract from `INIT` JSON (where available): `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`.
@@ -637,3 +637,8 @@ or
 </on_error>
 </content>
 </invoke>
+
+## Next Up
+
+- `/rcode-plan-milestone` — plan all phases in the new milestone
+- `/rcode-discuss-phase` — discuss the first phase before planning

@@ -162,3 +162,8 @@ If registry update fails:
   rm -rf {WORKSPACE_PATH}
   Edit: .rcode/workspaces.csv (remove the {WORKSPACE_NAME} line)
 ```
+
+## Next Up
+
+- `/rcode-list-workspaces` — confirm remaining workspaces after removal
+- `/rcode-do` — continue with current work

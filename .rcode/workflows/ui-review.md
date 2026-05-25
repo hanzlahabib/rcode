@@ -28,7 +28,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init ui-review "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init ui-review "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -132,3 +138,8 @@ Detailed findings: {audit_report_path}
 - If UI-SPEC.md invalid: print error and suggest recreating
 - If codebase has no components: report as INCOMPLETE
 - If audit agent fails: provide template audit report structure
+
+## Next Up
+
+- `/rcode-plan` — plan UI fix phases for pillar failures
+- `/rcode-correct-course` — correct UI deviations from the design spec

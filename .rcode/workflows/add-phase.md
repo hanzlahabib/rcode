@@ -29,8 +29,13 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "0")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "0" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Check `roadmap_exists` from init JSON. If false:
@@ -181,3 +186,8 @@ Roadmap updated: .planning/ROADMAP.md
 - [ ] STATE.md updated with roadmap evolution note
 - [ ] User informed of next steps
 </success_criteria>
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the new phase before planning
+- `/rcode-plan` — plan the newly added phase

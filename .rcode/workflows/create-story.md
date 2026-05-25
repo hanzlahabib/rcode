@@ -283,10 +283,11 @@ Next step: /rcode-dev-story .planning/stories/{story-id}.md
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `STORY.md` written to `.planning/stories/{story-id}.md` with title, acceptance criteria, dev notes, effort estimate, and parent epic reference
+- [ ] Entry gate (`checklist-story-draft.md`) passed before the story file is created
+- [ ] Story ID matches the source epic entry in `EPIC-NN.M` format
+- [ ] Story committed to git with a conventional commit message referencing the story ID
+- [ ] Story file is ready for `/rcode-dev-story` consumption without further editing
 
 ## On Error
 
@@ -295,3 +296,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-dev-story` — wrap the story for AI-coder execution
+- `/rcode-plan` — plan the phase that will implement this story

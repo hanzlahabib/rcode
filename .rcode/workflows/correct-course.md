@@ -29,7 +29,13 @@ STOP — do not proceed.
 ## Step 0 — Initialize
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init correct-course "$ARGUMENTS")
+INIT=$(node .rcode/bin/rcode-tools.cjs init correct-course "$ARGUMENTS" 2>/dev/null)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse:
@@ -194,3 +200,8 @@ Run remediation with:
 - /rcode-execute {phase}
 - /rcode-plan {phase}
 - /rcode-progress
+
+## Next Up
+
+- `/rcode-plan` — plan the remediation phases identified by the deviation report
+- `/rcode-execute` — execute corrections once the plan is ready
