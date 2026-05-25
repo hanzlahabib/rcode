@@ -314,4 +314,7 @@ Display: `Schema files detected ({SCHEMA_ORM}) — [BLOCKING] push task will be 
 
 ## Next Up
 
-- `/rcode-plan-spawn-planner` — spawn the planner agent with research results
+This is a sub-step invoked by `/rcode-plan`. If you reached this directly:
+
+- `/rcode-plan` — re-enter the parent flow which validates research and dispatches the planner
+- `/rcode-status` — see where you are in the current phase lifecycle

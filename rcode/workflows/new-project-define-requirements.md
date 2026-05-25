@@ -161,4 +161,7 @@ git add .planning/REQUIREMENTS.md 2>/dev/null \
 
 ## Next Up
 
-- `/rcode-new-project-create-roadmap` — create the roadmap from the requirements just defined
+This is a sub-step invoked by `/rcode-new-project`. If you reached this directly:
+
+- `/rcode-new-project` — re-enter the parent flow which orchestrates research → requirements → roadmap
+- `/rcode-status` — see where you are in the current project lifecycle

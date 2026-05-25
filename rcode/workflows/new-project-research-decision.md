@@ -248,4 +248,7 @@ Files: `.planning/research/`
 
 ## Next Up
 
-- `/rcode-new-project-define-requirements` — define requirements after the research decision is made
+This is a sub-step invoked by `/rcode-new-project`. If you reached this directly:
+
+- `/rcode-new-project` — re-enter the parent flow which orchestrates research → requirements → roadmap
+- `/rcode-status` — see where you are in the current project lifecycle

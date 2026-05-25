@@ -1,6 +1,6 @@
 # rcode v2 install manifest
 version: 4.0.0
-installDate: 2026-05-25T06:13:45.291Z
+installDate: 2026-05-25T06:42:17.608Z
 modules:
   - core
   - discovery
