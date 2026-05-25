@@ -615,7 +615,7 @@ Set ADVISOR_MODE=false for discuss_areas — proceed with unstructured discussio
 </step>
 
 
-@rcode/workflows/discuss-phase-discuss-areas.md
+@.rcode/workflows/discuss-phase-discuss-areas.md
 
 
 <step name="write_context">
