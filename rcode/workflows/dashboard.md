@@ -44,7 +44,7 @@ else
   done
   # 4. Last resort — resolve via the rcode/rcode binary symlink
   if [ -z "$DASHBOARD" ]; then
-    for BIN in rcode rcode rcode; do
+    for BIN in rcode; do
       BIN_PATH="$(command -v $BIN 2>/dev/null)" || continue
       REAL_BIN="$(readlink -f "$BIN_PATH" 2>/dev/null || python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$BIN_PATH" 2>/dev/null)"
       [ -z "$REAL_BIN" ] && continue

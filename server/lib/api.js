@@ -152,7 +152,26 @@ function handleApiFile(req, res, projectRoot) {
 // Fix #265: hierarchy endpoint
 function handleApiHierarchy(req, res, rcodeDir) {
   const state = scanState(rcodeDir);
-  const phases = state.raw?.phases || [];
+  let phases = state.raw?.phases || [];
+
+  // When state.json has no registered phases, fall back to disk scan so the
+  // hierarchy view is not blank on a fresh install that hasn't run state-sync.
+  if (phases.length === 0) {
+    const phasesDir = path.join(path.dirname(rcodeDir), '.planning', 'phases');
+    try {
+      const dirs = fs.readdirSync(phasesDir, { withFileTypes: true })
+        .filter(d => d.isDirectory() && !d.name.startsWith('.'))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      phases = dirs.map(d => {
+        const m = d.name.match(/^(\d+)-(.+)$/);
+        const id = m ? parseInt(m[1], 10) : d.name;
+        const slug = m ? m[2] : d.name;
+        const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        return { id, name, status: 'planned', sprints: [] };
+      });
+    } catch { /* no phases dir — leave phases empty */ }
+  }
+
   const hierarchy = {
     milestone: state.milestone || 'M1',
     phases: phases.map(p => ({

@@ -219,6 +219,11 @@ function spawnOrchestrator() {
     _orchProc.on('exit', (code, signal) => {
       _orchProc = null;
       if (signal !== 'SIGTERM' && signal !== 'SIGINT') {
+        if (code === 2) {
+          // Port-conflict exit — don't loop. Dashboard stays fully functional.
+          console.log(`[orch] orchestrator port already in use — not restarting. Set ORCH_PORT=<N> env var to use a different port. Dashboard is still functional.`);
+          return;
+        }
         console.log(`[orch] exited (${code}) — restarting in 3s…`);
         setTimeout(spawnOrchestrator, 3000);
       }
