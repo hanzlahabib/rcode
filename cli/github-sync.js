@@ -192,7 +192,8 @@ function loadState(cwd) {
   if (!fs.existsSync(statePath)) {
     return null;
   }
-  return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  // on-disk state file written by users/CI — guard against corruption or partial writes
+  try { return JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { return null; }
 }
 
 function discoverPhases(cwd) {
@@ -344,7 +345,12 @@ function loadSyncMap(cwd) {
   if (!fs.existsSync(mapPath)) {
     return { phases: {}, epics: {}, stories: {}, project: null, labels: [] };
   }
-  return JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+  // on-disk sync map — guard against corruption so a bad write doesn't kill the sync run
+  try {
+    return JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+  } catch {
+    return { phases: {}, epics: {}, stories: {}, project: null, labels: [] };
+  }
 }
 
 function saveSyncMap(cwd, map) {
