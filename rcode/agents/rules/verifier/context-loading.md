@@ -25,8 +25,8 @@ Set `is_re_verification = false`, proceed with Step 1.
 ```bash
 ls "$PHASE_DIR"/*-SPRINT.md 2>/dev/null
 ls "$PHASE_DIR"/*-SUMMARY.md 2>/dev/null
-node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "$PHASE_NUM"
-grep -E "^| $PHASE_NUM" .rcode/REQUIREMENTS.md 2>/dev/null
+node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "$PHASE_NUMBER"
+grep -E "^| $PHASE_NUMBER" .rcode/REQUIREMENTS.md 2>/dev/null
 ```
 
 Extract phase goal from ROADMAP.md — this is the outcome to verify, not the tasks.
@@ -62,7 +62,7 @@ must_haves:
 If no must_haves in frontmatter, check for Success Criteria:
 
 ```bash
-PHASE_DATA=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "$PHASE_NUM" --raw)
+PHASE_DATA=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "$PHASE_NUMBER" --raw)
 ```
 
 Parse the `success_criteria` array from the JSON output. If non-empty:
