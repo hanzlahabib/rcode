@@ -167,10 +167,11 @@ Would you like to:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Todo file created at `.rcode/todos/pending/{date}-{slug}.md` with valid YAML frontmatter (created, title, area, files)
+- [ ] Problem section contains enough context for a future agent to act without re-investigation
+- [ ] Duplicate check performed against existing pending todos; conflict resolved before file creation
+- [ ] `.rcode/STATE.md` updated with pending todo count (if the file exists)
+- [ ] Todo committed to git with a `docs: capture todo - {title}` message
 
 ## On Error
 

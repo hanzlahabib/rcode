@@ -102,10 +102,11 @@ Phase insertion is complete when:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `rcode-tools.cjs state insert-phase` exits 0 and returns a valid JSON result (with `slug` and `directory` fields)
+- [ ] Phase directory created at `.planning/phases/<N.M>-<slug>/`
+- [ ] New phase entry inserted into `.rcode/state.json` phases array in numeric sort order
+- [ ] No existing integer phase numbers displaced or renumbered
+- [ ] User shown next-step commands (`/rcode-plan <N.M>`) and the created directory path
 
 ## On Error
 

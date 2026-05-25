@@ -127,10 +127,11 @@ If any counts are 0, still show them (e.g., "Phases: 0").
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `.rcode/state.json` read successfully (empty object used gracefully when file is missing)
+- [ ] Phase count, plan count, council session count, decision count, and blocker count extracted and displayed
+- [ ] Timeline start date (from `state.created`) and elapsed time shown
+- [ ] Git stats displayed: total rcode commits count and last 5 commit messages
+- [ ] All stats presented in a single formatted output block — no fields silently omitted (zero values shown as `0`)
 
 ## On Error
 

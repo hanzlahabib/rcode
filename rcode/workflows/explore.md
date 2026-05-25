@@ -157,10 +157,12 @@ Continue exploring with `/rcode-explore` or start working with `/rcode-next`.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Socratic conversation conducted question-by-question — questions asked one at a time, not batched
+- [ ] Contextual research offered at least once during conversation when a knowledge gap is identified
+- [ ] Up to 4 concrete outputs (PRD, epic, architecture doc, etc.) proposed from crystallized ideas
+- [ ] User explicitly selected which outputs to create before any file was written
+- [ ] Selected output files written to the correct rcode destination paths (e.g., `.planning/PROJECT.md`, `.planning/epics/`)
+- [ ] Commit created when `commit_docs` config is enabled
 
 ## On Error
 

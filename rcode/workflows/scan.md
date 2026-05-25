@@ -361,10 +361,11 @@ Skip this cue if the user already asked for a focused scan — don't push an ups
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Focus area correctly parsed from arguments (defaults to `tech+arch` when omitted)
+- [ ] Existing `.planning/codebase/` documents detected and shown with modification dates before overwriting
+- [ ] User prompted for confirmation before any existing document is overwritten
+- [ ] Single `rcode-codebase-mapper` agent spawned with the correct focus area
+- [ ] Output document(s) written to `.planning/codebase/` with more than 20 non-empty lines
 
 ## On Error
 

@@ -187,10 +187,11 @@ Recommendation: {recovery suggestion}
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `.rcode/state.json` read and phase/plan execution history extracted (or empty object handled gracefully)
+- [ ] `.planning/` directory scanned for completed SUMMARY.md files, partial artifacts, and orphaned phase directories
+- [ ] Timeline of events constructed showing what completed, what is incomplete, and where execution stopped
+- [ ] Broken or incomplete items identified with specific file paths and phase/plan references
+- [ ] At least one concrete resume command suggested (e.g., `/rcode-execute <N>` or `/rcode-plan <N>`)
 
 ## On Error
 

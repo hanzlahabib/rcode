@@ -229,10 +229,11 @@ Run /rcode-status to verify installation.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `.rcode/_config/files-manifest.csv` read to identify pristine vs. user-modified files (hash comparison)
+- [ ] User-customized files (hash mismatch) preserved and listed in the update report — not silently overwritten
+- [ ] Protected files (`.rcode/config.yaml`, `.rcode/state.json`, `.rcode/brain/`) never overwritten regardless of `--force-overwrite`
+- [ ] Updated files installed via `npx @hanzlaa/rcode@latest install . --non-destructive --yes`
+- [ ] Update report shown listing: overwritten files, preserved files, and any conflicts requiring manual resolution
 
 ## On Error
 

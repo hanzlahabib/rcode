@@ -235,10 +235,10 @@ To resume work, run:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `.rcode/HANDOFF.json` written with structured fields: `project`, `current_phase`, `blocking_constraints`, `uncommitted_files`, and `next_action`
+- [ ] `.rcode/.continue-here.md` written as a human-readable summary with resume instructions
+- [ ] Both files reflect the state of `.rcode/state.json` at the moment of pause (not a stale snapshot)
+- [ ] User receives a clear resume command (e.g., `/rcode-resume-work`) and confirmation of what was saved
 
 ## On Error
 

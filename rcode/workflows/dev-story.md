@@ -423,10 +423,11 @@ Stop and wait for user to proceed. Do NOT auto-spawn.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Target story file located at `.planning/epics/stories/{story-id}.md` or resolved via epic + story ID argument
+- [ ] Entry gate (`checklist-story-draft.md`) passed before execution prompt is produced
+- [ ] Execution prompt includes: full acceptance criteria, explicit file paths for implementation, and development checklist
+- [ ] Exit gate (`checklist-story-dod.md`) referenced in the output so the AI coder knows when done
+- [ ] Story is ready for a pair-programming session without requiring additional context gathering
 
 ## On Error
 

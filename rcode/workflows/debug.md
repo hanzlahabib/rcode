@@ -252,10 +252,11 @@ Agents only diagnose—planning handles fixes (no fix application).
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Issues parsed from context and at least one `rcode-debugger` agent spawned in parallel
+- [ ] Root causes collected from all debug agents and synthesized into a unified diagnosis
+- [ ] Debug sessions saved to `.planning/debug/` with per-issue files
+- [ ] Each root cause entry includes: symptom, identified cause, and a concrete suggested fix path
+- [ ] User receives a clear diagnosis with enough detail to proceed to `/rcode-plan`
 
 ## On Error
 
