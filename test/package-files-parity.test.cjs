@@ -21,7 +21,15 @@ test('every package.json files[] entry exists on disk', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8'));
   const entries = pkg.files || [];
   assert.ok(entries.length > 0, 'package.json files[] is empty — publish would include node_modules');
-  const missing = entries.filter((e) => !fs.existsSync(path.join(PROJECT_ROOT, e))).sort();
+  // dist/ is a build artifact (gitignored) — skip dist entries if not yet built
+  const distDir = path.join(PROJECT_ROOT, 'dist');
+  const distBuilt = fs.existsSync(distDir);
+  const missing = entries
+    .filter((e) => {
+      if (!distBuilt && (e === 'dist/' || e.startsWith('dist/'))) return false;
+      return !fs.existsSync(path.join(PROJECT_ROOT, e));
+    })
+    .sort();
   assert.deepEqual(
     missing,
     [],

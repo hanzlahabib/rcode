@@ -101,3 +101,23 @@ test('help.md advertises a non-trivial number of commands', () => {
   const advertised = extractAdvertisedCommands(text);
   assert.ok(advertised.size > 30, `expected >30 advertised commands, got ${advertised.size}`);
 });
+
+test('every command in rcode/commands/ is referenced in help.md', () => {
+  // Reverse direction: catches commands added to rcode/commands/ without a help.md entry.
+  // NOTE: as of L15A-01 (sibling branch help-md-missing-commands), ~8 commands are
+  // expected to be absent from help.md. This test will fail until that branch merges.
+  const text = fs.readFileSync(HELP_MD, 'utf8');
+  const advertised = extractAdvertisedCommands(text);
+  const commandFiles = fs.readdirSync(COMMANDS_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => f.replace(/\.md$/, ''))
+    .sort();
+  const missing = commandFiles.filter((cmd) => !advertised.has(cmd));
+  assert.deepEqual(
+    missing,
+    [],
+    `rcode/commands/ files not referenced in help.md (finding L15A-01):\n` +
+      missing.map((c) => `  /rcode-${c}`).join('\n') +
+      `\nEither add the command to help.md or remove the command file.`,
+  );
+});
