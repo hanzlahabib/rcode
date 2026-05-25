@@ -311,3 +311,7 @@ Display: `Schema files detected ({SCHEMA_ORM}) — [BLOCKING] push task will be 
 
 **If no schema-relevant files detected:** Skip silently to step 6.
 
+
+## Next Up
+
+- `/rcode-plan-spawn-planner` — spawn the planner agent with research results

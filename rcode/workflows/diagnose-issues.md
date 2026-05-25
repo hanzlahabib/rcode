@@ -85,3 +85,8 @@ Plus an aggregate `DIAGNOSIS-INDEX.md` summarizing all failures and the orchestr
 - **Cannot reproduce** — mark diagnosis status `cannot-reproduce`. Often signals environment drift between verifier and dev. File as follow-up; do not block ship if all other criticals pass.
 - **Bisect inconclusive** — fall back to a hypothesis-driven investigation (read recent commits in the affected file, look for likely causes).
 - **Repair budget exhausted** — STOP. Return control to user with the full diagnosis bundle.
+
+## Next Up
+
+- `/rcode-plan` — plan the fix for each diagnosed root cause
+- `/rcode-execute` — re-execute after the fix is applied

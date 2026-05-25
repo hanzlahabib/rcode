@@ -241,3 +241,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-health` — verify the update succeeded and all checks pass
+- `/rcode-do` — continue with the updated rcode commands

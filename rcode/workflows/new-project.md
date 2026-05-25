@@ -987,3 +987,8 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qiE "UI|interface|frontend|compon
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist. When `.planning/` is gitignored, files are written but commit is skipped gracefully.
 
 </success_criteria>
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the first phase before planning begins
+- `/rcode-plan` — plan the first phase of the new project

@@ -601,3 +601,8 @@ All routes: `/clear` first for fresh context.
 - If codebase map exists: map updated with execution changes (or skipped if no significant changes)
 - If USER-SETUP.md created: prominently surfaced in completion output
 </success_criteria>
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal achieved by this sprint
+- `/rcode-code-review` — review code changes produced by the sprint

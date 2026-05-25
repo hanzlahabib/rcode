@@ -619,3 +619,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-review-fix` — auto-fix the issues surfaced in REVIEW.md
+- `/rcode-verify-phase` — verify phase goal after review is clean

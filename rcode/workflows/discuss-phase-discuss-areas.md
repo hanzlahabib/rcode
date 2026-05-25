@@ -269,3 +269,7 @@ For each question asked, accumulate:
 - Any follow-up notes or clarifications the user provided
 This data is used to generate DISCUSSION-LOG.md in the `write_context` step.
 </step>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase once all grey areas are resolved

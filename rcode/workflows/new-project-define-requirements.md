@@ -158,3 +158,7 @@ git add .planning/REQUIREMENTS.md 2>/dev/null \
   || echo "ℹ .planning/ gitignored — requirements written, not committed"
 ```
 
+
+## Next Up
+
+- `/rcode-new-project-create-roadmap` — create the roadmap from the requirements just defined

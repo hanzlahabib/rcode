@@ -114,3 +114,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the inserted phase before planning
+- `/rcode-plan` — plan the inserted phase immediately

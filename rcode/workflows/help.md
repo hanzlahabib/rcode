@@ -348,3 +348,7 @@ search_gitignored: false     # true = ripgrep with --no-ignore
 
 - If unable to load or render reference: display fallback `See rcode/workflows/help.md for full reference`
 - Handle missing sections gracefully without breaking output
+
+## Next Up
+
+- `/rcode-do` — use any command from the reference you just read

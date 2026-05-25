@@ -29,3 +29,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 - /rcode-plan {phase}
 - /rcode-council {architecture-question}
 - /rcode-create-prd
+
+## Next Up
+
+- `/rcode-validate-prd` — validate the PRD before designing the system
+- `/rcode-plan` — plan implementation once the architecture is approved

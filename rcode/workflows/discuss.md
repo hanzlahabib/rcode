@@ -225,3 +225,8 @@ This records the discuss session in `.rcode/state.json` as `last_session`.
 - **Agent returns empty response:** print "Agent responded empty. Check question clarity and retry."
 
 </process>
+
+## Next Up
+
+- `/rcode-plan` — plan based on the discussion output
+- `/rcode-council` — escalate to a full parallel panel if one agent isn't enough

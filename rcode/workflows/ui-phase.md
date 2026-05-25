@@ -146,3 +146,8 @@ Run /rcode-ui-phase, then return to /rcode-plan
 - If subagent fails: provide template UI-SPEC.md
 - If frontend detection fails: skip suggestion
 - If config.yaml missing ui_safety_gate: default to true (suggest)
+
+## Next Up
+
+- `/rcode-plan` — plan the UI implementation phase against the spec
+- `/rcode-execute` — implement UI once the spec is approved

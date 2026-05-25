@@ -154,3 +154,8 @@ Parse and display (10 most recent):
 - **Empty note text:** print usage and exit
 - **Cannot create directory:** print error, suggest checking permissions
 - **File write fails:** print error, suggest checking disk space
+
+## Next Up
+
+- `/rcode-do` — continue with your current work
+- `/rcode-check-todos` — review all captured notes and todos

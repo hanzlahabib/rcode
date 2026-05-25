@@ -929,3 +929,8 @@ node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] Drift warning logged when current phase number exceeds total
 - [ ] Progress bar always accurate after LLM context compaction
 </success_criteria>
+
+## Next Up
+
+- `/rcode-ship` — push the branch and open a PR after autonomous run completes
+- `/rcode-complete-milestone` — mark the milestone done once all phases shipped

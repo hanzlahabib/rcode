@@ -960,3 +960,8 @@ The power user mode generates ALL questions upfront into machine-readable and hu
 - `--chain` triggers interactive discuss followed by auto plan+execute (no auto-answering)
 - `--chain` and `--auto` both persist chain flag and auto-advance to plan
 </success_criteria>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase using the decisions captured in CONTEXT.md
+- `/rcode-research-phase` — research implementation details before planning

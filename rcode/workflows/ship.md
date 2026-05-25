@@ -272,3 +272,9 @@ After shipping:
 - [ ] STATE.md updated with shipping status
 - [ ] User knows PR number and next steps
 </success_criteria>
+
+## Next Up
+
+- `/rcode-complete-milestone` — mark the milestone done if all phases are now shipped
+- `/rcode-execute` — continue to the next phase after shipping this one
+- `/rcode-progress` — check overall project state after the PR is merged

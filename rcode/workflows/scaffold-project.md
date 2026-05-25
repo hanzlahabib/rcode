@@ -29,3 +29,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 - /rcode-create-prd
 - /rcode-new-milestone
 - /rcode-do
+
+## Next Up
+
+- `/rcode-init` — initialize rcode in the scaffolded project
+- `/rcode-new-project` — complete project setup with requirements and roadmap

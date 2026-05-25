@@ -182,3 +182,8 @@ to verify, or /rcode-resume-work to reload context.
 - **Invalid key:** print the allowed keys from Step 1.5 and STOP.
 - **Invalid value:** print the allowed values for that key and STOP.
 - **`rcode-tools.cjs` missing:** print "Run: npx @hanzlaa/rcode install ." and STOP.
+
+## Next Up
+
+- `/rcode-enable-hooks` — activate guardrail hooks after configuring settings
+- `/rcode-do` — continue with the updated configuration active

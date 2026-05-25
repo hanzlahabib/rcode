@@ -146,3 +146,8 @@ Format: `  [{letter}] {command}` — no label, no arrow, no indented second line
 - **CLI not found:** "rcode install missing. Run: npx @hanzlaa/rcode install"
 - **state.json invalid JSON:** report the CLI's exact error string — the CLI already has a clean error shape.
 - **Unexpected shape:** fall back to the banner + "State present but unreadable. Try: node .rcode/bin/rcode-tools.cjs state read"
+
+## Next Up
+
+- `/rcode-next` — auto-advance to the next logical step based on current state
+- `/rcode-do` — take action on what the status dashboard surfaced

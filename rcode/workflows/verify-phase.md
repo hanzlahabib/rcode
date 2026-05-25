@@ -407,3 +407,8 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - /rcode-complete-milestone
 - /rcode-plan --gaps {phase}
 - /rcode-verify-phase {phase}
+
+## Next Up
+
+- `/rcode-ship` — push and open a PR when VERIFICATION.md is green
+- `/rcode-debug` — diagnose root cause if the phase goal verification failed

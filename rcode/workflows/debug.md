@@ -270,3 +270,8 @@ If arguments are invalid, missing files, or subagent fails:
 /rcode-review {phase} — review the fix before committing
 /rcode-verify-work {phase} — re-run UAT after the fix
 /rcode-execute {phase} --gaps-only — re-run just the failing plans
+
+## Next Up
+
+- `/rcode-plan` — plan the fix based on root causes the debug agents found
+- `/rcode-execute` — execute the fix once the plan is ready

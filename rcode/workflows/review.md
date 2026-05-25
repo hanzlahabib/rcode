@@ -285,3 +285,8 @@ Clean up temp files.
 - **Issues found:** Fix identified problems, then re-run `/rcode-review`
 - /rcode-ship {phase}
 - /rcode-secure-phase {phase}
+
+## Next Up
+
+- `/rcode-plan` — incorporate cross-AI review feedback into the plan
+- `/rcode-correct-course` — correct deviations flagged by the review panel

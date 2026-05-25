@@ -329,3 +329,8 @@ Resume is complete when:
 - [ ] User knows exactly where project stands
 - [ ] Session continuity updated
       </success_criteria>
+
+## Next Up
+
+- `/rcode-next` — auto-advance to the next logical step
+- `/rcode-status` — review full project state after context is restored

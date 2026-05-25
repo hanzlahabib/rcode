@@ -179,3 +179,8 @@ Display `/clear` reminder.
 - [ ] Test files committed separately
 - [ ] Results with routing presented
 </success_criteria>
+
+## Next Up
+
+- `/rcode-add-tests` — generate the missing tests identified by the Nyquist audit
+- `/rcode-verify-phase` — verify the phase goal after tests are added

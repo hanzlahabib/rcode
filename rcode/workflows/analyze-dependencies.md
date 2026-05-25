@@ -142,3 +142,8 @@ After applying: "ROADMAP.md updated. Run `/rcode-execute-milestone` to execute p
 - **Circular deps found:** Fix dependency cycle, then re-run analysis
 - /rcode-execute {phase}
 - /rcode-progress
+
+## Next Up
+
+- `/rcode-plan-milestone` — plan phases in the correct dependency order
+- `/rcode-execute-milestone` — execute phases with dependency-aware wave ordering

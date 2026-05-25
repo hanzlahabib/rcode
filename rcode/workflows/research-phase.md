@@ -106,3 +106,8 @@ gaps in the RESEARCH.md artifact. Then offer the routing options below.
 - `## RESEARCH INCONCLUSIVE` — Show attempts, offer: Add context/Try different mode/Manual
 
 </process>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase using research findings
+- `/rcode-discuss-phase` — discuss research findings before planning

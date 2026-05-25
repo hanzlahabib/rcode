@@ -131,3 +131,8 @@ The server runs until the user kills it. The slash command returns after announc
 ### Negative Test
 **Input:** `/rcode-dashboard --write something`
 **Expected:** Dashboard is view-only. Reject unknown write-related flags.
+
+## Next Up
+
+- `/rcode-status` — get a text-based status if you prefer CLI output
+- `/rcode-do` — take action on findings shown in the dashboard

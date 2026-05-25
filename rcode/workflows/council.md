@@ -580,3 +580,8 @@ node .rcode/bin/rcode-tools.cjs state record-session
 - **`.rcode/config.yaml` missing:** warn and use defaults (`user_name=User`, `language=English`, `mode=guided`).
 
 </process>
+
+## Next Up
+
+- `/rcode-plan` — plan implementation based on the council's recommendation
+- `/rcode-decisions` — review decisions the council produced

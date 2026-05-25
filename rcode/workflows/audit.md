@@ -200,3 +200,8 @@ Next:
 - **Sub-workflow not installed** (slash file missing): `Audit subroute '/rcode-{target}' not found. Run: npx @hanzlaa/rcode install .`
 - **Precondition failed**: print the message from Step 4's table, suggest the unblocking command, STOP.
 - **`.rcode/config.yaml` missing**: treat as `mode: guided`, continue.
+
+## Next Up
+
+- `/rcode-audit-fix` — auto-fix findings surfaced by the audit
+- `/rcode-verify-phase` — verify phase goal after fixes are applied

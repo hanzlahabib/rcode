@@ -104,3 +104,8 @@ Show:
 ## Reversibility
 
 Removing a botched init: `rm -rf .rcode/memory/` and `git checkout -- .rcode/state.json`. No external side effects.
+
+## Next Up
+
+- `/rcode-memory-update` — populate the Memory Bank with project context
+- `/rcode-do` — continue with the Memory Bank now bootstrapped

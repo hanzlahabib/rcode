@@ -5,3 +5,8 @@ Working Backwards PRFAQ challenge. Stress-test a product concept by writing the 
 </purpose>
 
 @rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md
+
+## Next Up
+
+- `/rcode-create-prd` — convert the battle-hardened PRFAQ into a full PRD
+- `/rcode-brainstorm` — continue ideation if the PRFAQ revealed new directions

@@ -144,3 +144,8 @@ If unplanned phases exist, also print:
 ## On Error
 
 If a `SPRINT.md` has malformed frontmatter or a broken stories table, list it under "Unparseable plans" at the bottom with the parse error, and continue rendering the rest. Do not abort the whole listing because one file is bad.
+
+## Next Up
+
+- `/rcode-execute` — execute a plan from the list
+- `/rcode-plan` — create plans for phases that don't have one yet

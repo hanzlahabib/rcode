@@ -161,3 +161,8 @@ If any UNMERGED branches remain, print:
 
 - `git worktree list` fails → print `git not available or not a repo` and stop
 - `git branch -D` fails on a branch → skip it, note it in the report, continue
+
+## Next Up
+
+- `/rcode-status` — check overall project state after cleanup
+- `/rcode-do` — continue with your current work

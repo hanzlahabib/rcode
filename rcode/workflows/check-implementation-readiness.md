@@ -191,3 +191,8 @@ Allow `--skip-gates` flag to override for emergency situations only.
 - If checklist files missing: treat as FAIL on that gate
 - If state read fails: skip and report gates manually
 - If file not found: treat as FAIL, suggest file location
+
+## Next Up
+
+- `/rcode-execute` — execute the phase if the readiness check passed
+- `/rcode-plan` — fill gaps if the check surfaced missing requirements

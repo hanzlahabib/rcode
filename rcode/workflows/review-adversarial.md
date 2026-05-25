@@ -192,3 +192,8 @@ Critical findings filed as blocking AC. High findings as optional tasks.
 - **Vulnerabilities found:** Address security findings, re-run `/rcode-review --attack`
 - /rcode-verify-phase {phase}
 - /rcode-ship {phase}
+
+## Next Up
+
+- `/rcode-secure-phase` — verify threat mitigations for the phase
+- `/rcode-plan` — plan security fix phases for critical findings

@@ -423,3 +423,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-status` — verify project state after the revert
+- `/rcode-plan` — re-plan the reverted phase with corrected approach

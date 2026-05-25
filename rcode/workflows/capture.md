@@ -58,3 +58,8 @@ The four absorbed commands continue to work and are not deprecated yet — they 
 - [ ] `/rcode-capture --seed "scale to 1k users"` produces the same artefacts as `/rcode-plant-seed "scale to 1k users"`
 - [ ] `/rcode-capture --list` produces the same output as `/rcode-check-todos`
 - [ ] No flag combinations are silently ignored — unknown flags surface as a clear error
+
+## Next Up
+
+- `/rcode-check-todos` — review all captured items
+- `/rcode-do` — continue with your current work

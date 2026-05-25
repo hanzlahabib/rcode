@@ -207,3 +207,8 @@ After reviewing the diagnostic report, pick your recovery path:
 - /rcode-resume-work
 - /rcode-execute {phase-number}
 - /rcode-progress
+
+## Next Up
+
+- `/rcode-resume-work` — restore context and pick up where execution stopped
+- `/rcode-rerun` — re-run the phase or plan that failed

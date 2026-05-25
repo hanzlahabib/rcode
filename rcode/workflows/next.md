@@ -160,3 +160,8 @@ Do not ask for confirmation — `/rcode-next` is zero-friction advancement.
 - [ ] Command invoked immediately without user confirmation
 - [ ] Clear status shown before invoking
 </success_criteria>
+
+## Next Up
+
+- `/rcode-do` — describe what you want if auto-detection is unclear
+- `/rcode-status` — review project state before advancing

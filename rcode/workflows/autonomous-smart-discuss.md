@@ -246,3 +246,8 @@ Decisions captured: {count} across {area_count} areas
 ```
 
 </step>
+
+## Next Up
+
+- `/rcode-plan` — plan the phase after CONTEXT.md is produced
+- `/rcode-execute` — execute the phase once the plan is ready

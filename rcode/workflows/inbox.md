@@ -416,3 +416,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-plan` — plan fix phases for triaged issues
+- `/rcode-export-to-github` — sync updated rcode state back to GitHub

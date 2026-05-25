@@ -318,3 +318,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the imported plan before executing
+- `/rcode-execute` — execute the imported plan

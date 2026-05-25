@@ -29,3 +29,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 - /rcode-new-milestone
 - /rcode-edit-prd
 - /rcode-council {prd-question}
+
+## Next Up
+
+- `/rcode-create-architecture` — design the architecture once the PRD is validated
+- `/rcode-edit-prd` — fix completeness gaps the validator flagged

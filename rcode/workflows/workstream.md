@@ -207,3 +207,8 @@ If arguments are invalid, missing files, or subagent fails:
 - /rcode-execute {workstream-phase}
 - /rcode-progress
 - /rcode-forensics
+
+## Next Up
+
+- `/rcode-plan` — plan phases in the active workstream
+- `/rcode-list-workspaces` — view all workspaces and their status

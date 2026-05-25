@@ -212,3 +212,8 @@ If "Yes, find edge cases":
 - If subagent fails: provide template edge-case structure
 - If no edge cases found: report "No new edge cases identified" (acceptable)
 - If too many cases: prioritize by severity, file medium/low in backlog
+
+## Next Up
+
+- `/rcode-add-tests` — generate tests covering the edge cases found
+- `/rcode-plan` — plan fix phases for unhandled critical edge cases
