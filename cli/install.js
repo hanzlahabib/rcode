@@ -1064,11 +1064,15 @@ function installSkills(packageRoot, target, options = {}) {
   let count = 0;
   let skippedGlobal = 0;
 
+  const _internalSkillCache = new Map();
   function isInternalSkill(skillDir) {
+    if (_internalSkillCache.has(skillDir)) return _internalSkillCache.get(skillDir);
     const skillMd = path.join(skillDir, 'SKILL.md');
-    if (!fs.existsSync(skillMd)) return false;
+    if (!fs.existsSync(skillMd)) { _internalSkillCache.set(skillDir, false); return false; }
     const text = fs.readFileSync(skillMd, 'utf8');
-    return /^internal:\s*true\s*$/m.test(text);
+    const result = /^internal:\s*true\s*$/m.test(text);
+    _internalSkillCache.set(skillDir, result);
+    return result;
   }
 
   function hasLocalOverride(destDir) {
@@ -1374,12 +1378,18 @@ function filterPlanByModules(plan, moduleNames) {
 function generateAgentManifest(plan, target) {
   const rows = [['id', 'file', 'name', 'description', 'color']];
   const seen = new Set(); // Track IDs already added to avoid duplicates
+  // Memoize per-file text reads — same agent .md may be visited across loops 1-3.
+  const _textCache = new Map();
+  const readAgentText = (p) => {
+    if (!_textCache.has(p)) _textCache.set(p, fs.readFileSync(p, 'utf8'));
+    return _textCache.get(p);
+  };
 
   for (const entry of plan) {
     if (!entry.rel.startsWith(path.join('.claude', 'agents'))) continue;
     if (!entry.rel.match(/^\.claude[\/\\]agents[\/\\][^\/\\]+\.md$/)) continue;
     const filePath = path.join(target, entry.rel);
-    const text = fs.readFileSync(filePath, 'utf8');
+    const text = readAgentText(filePath);
     const { frontmatter } = parseFrontmatter(text);
     const name = frontmatter.name || path.basename(entry.rel, '.md');
     const bareId = name.replace(/^rcode-/, '');
@@ -1402,7 +1412,7 @@ function generateAgentManifest(plan, target) {
     for (const file of existingFiles) {
       if (alreadyIncluded.has(file)) continue;
       const filePath = path.join(agentDir, file);
-      const text = fs.readFileSync(filePath, 'utf8');
+      const text = readAgentText(filePath);
       const { frontmatter } = parseFrontmatter(text);
       const name = frontmatter.name || path.basename(file, '.md');
       const bareId = name.replace(/^rcode-/, '');
@@ -1437,7 +1447,7 @@ function generateAgentManifest(plan, target) {
     for (const file of files) {
       const filePath = path.join(scanDir, file);
       let text;
-      try { text = fs.readFileSync(filePath, 'utf8'); } catch { continue; }
+      try { text = readAgentText(filePath); } catch { continue; }
       const { frontmatter } = parseFrontmatter(text);
       const name = frontmatter.name || path.basename(file, '.md');
       const bareId = name.replace(/^rcode-/, '');
@@ -1457,11 +1467,17 @@ function generateAgentManifest(plan, target) {
 function generateFilesManifest(plan, target, { mergeExistingManifest = false, extraScanDirs = [] } = {}) {
   const rows = [['rel', 'sha256', 'size']];
   const newRels = new Set();
+  // Memoize Buffer reads — plan loop and merge loop can visit the same file path.
+  const _bufCache = new Map();
+  const readFileBuf = (p) => {
+    if (!_bufCache.has(p)) _bufCache.set(p, fs.readFileSync(p));
+    return _bufCache.get(p);
+  };
 
   for (const entry of plan) {
     const filePath = path.join(target, entry.rel);
     if (!fs.existsSync(filePath)) continue;
-    const buf = fs.readFileSync(filePath);
+    const buf = readFileBuf(filePath);
     const rel = entry.rel.split(path.sep).join('/');
     rows.push([rel, sha256(buf), String(buf.length)]);
     newRels.add(rel);
@@ -1486,7 +1502,7 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
         // is a code-controlled set, but cheap to verify).
         if (rel.startsWith('..') || path.isAbsolute(rel)) continue;
         try {
-          const buf = fs.readFileSync(full);
+          const buf = readFileBuf(full);
           rows.push([rel, sha256(buf), String(buf.length)]);
           newRels.add(rel);
         } catch { /* unreadable file — skip */ }
@@ -1509,7 +1525,7 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
           if (!rel || newRels.has(rel)) continue;
           const full = path.join(target, rel);
           if (!fs.existsSync(full)) continue; // already gone — don't re-add
-          const buf = fs.readFileSync(full);
+          const buf = readFileBuf(full);
           rows.push([rel, sha256(buf), String(buf.length)]);
           newRels.add(rel);
         }
@@ -2044,16 +2060,24 @@ async function installInner(opts) {
     const relForward = entry.rel.split(path.sep).join('/');
     ensureDir(path.dirname(destPath));
 
+    // Per-iteration lazy readers — avoids re-reading destPath / entry.src across
+    // multiple conditional branches within the same loop body (up to 4 reads of
+    // destPath and 5 reads of entry.src in the worst case without this cache).
+    let _destBuf = null;
+    let _srcBuf = null;
+    const readDestBuf = () => { if (!_destBuf) _destBuf = fs.readFileSync(destPath); return _destBuf; };
+    const readSrcBuf = () => { if (!_srcBuf) _srcBuf = fs.readFileSync(entry.src); return _srcBuf; };
+
     // Non-destructive guard (#232): preserve user-modified files.
     // --accept-all (#251) overrides: treat all files as pristine.
     if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
       const priorHash = priorManifest.get(relForward);
       if (priorHash) {
-        const installedContent = fs.readFileSync(destPath, 'utf8');
-        const currentHash = sha256(Buffer.from(installedContent));
+        const installedContent = readDestBuf().toString('utf8');
+        const currentHash = sha256(readDestBuf());
         if (currentHash !== priorHash) {
           // Compute diff stat for display (#251)
-          const srcContent = fs.readFileSync(entry.src, 'utf8');
+          const srcContent = readSrcBuf().toString('utf8');
           const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
           let ins = 0, del = 0;
           for (const line of patch.split('\n')) {
@@ -2072,8 +2096,8 @@ async function installInner(opts) {
     }
 
     if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
-      const existingHash = sha256(fs.readFileSync(destPath));
-      const sourceHash = sha256(fs.readFileSync(entry.src));
+      const existingHash = sha256(readDestBuf());
+      const sourceHash = sha256(readSrcBuf());
       if (existingHash === sourceHash) { skipped++; continue; }
       if (!opts.yes && !opts.nonDestructive) {
         // Buffer the conflict instead of spamming a warning per file (#451).
@@ -2082,8 +2106,8 @@ async function installInner(opts) {
           rel: relForward,
           src: entry.src,
           destPath,
-          existingContent: fs.readFileSync(destPath, 'utf8'),
-          sourceContent: fs.readFileSync(entry.src, 'utf8'),
+          existingContent: readDestBuf().toString('utf8'),
+          sourceContent: readSrcBuf().toString('utf8'),
         });
         skipped++;
         continue;
@@ -2091,14 +2115,14 @@ async function installInner(opts) {
     }
 
     if (fs.existsSync(destPath) && opts.forceOverwrite) {
-      const existing = fs.readFileSync(destPath);
-      const incoming = fs.readFileSync(entry.src);
+      const existing = readDestBuf();
+      const incoming = readSrcBuf();
       if (!existing.equals(incoming)) {
         spinner.update({ text: dim(`overwriting ${entry.rel}`) });
       }
     }
 
-    let content = fs.readFileSync(entry.src, 'utf8');
+    let content = readSrcBuf().toString('utf8');
     if (entry.cursor) content = convertToCursorMdc(content);
     fs.writeFileSync(destPath, content, 'utf8');
     if (entry.executable) fs.chmodSync(destPath, 0o755);
