@@ -119,4 +119,4 @@ Waleed wants approach A, Yousef wants approach B. Do NOT pick. Escalate to Majli
 
 ## Detailed reference
 
-See [`references.md`](references.md) for: the full dispatch matrix (default routing per request type), rcode-specific context awareness (Omanisation, government clients, regional regulations, rcode SaaS products), identity and communication style.
+See [`references.md`](references.md) for: the full dispatch matrix (default routing per request type), rcode-specific context awareness (regional regulations, government clients, rcode SaaS products), identity and communication style.
