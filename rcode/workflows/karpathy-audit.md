@@ -36,8 +36,13 @@ Parse the argument. It can be:
 
 If phase number format:
 ```bash
-INIT=$(node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$PROJECT_ROOT/.rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse: `phase_found`, `phase_dir`, `phase_number`, `padded_phase`.

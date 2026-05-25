@@ -35,7 +35,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-security-auditor 2>/dev/null)
+AGENT_SKILLS_AUDITOR=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-security-auditor 2>/dev/null || echo "")
 ```
 
 If `INIT` is empty or `INIT.ok` is false, print error and exit:

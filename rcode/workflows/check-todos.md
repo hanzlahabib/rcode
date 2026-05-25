@@ -12,8 +12,13 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init todos)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init todos 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `todo_count`, `todos`, `pending_dir`.

@@ -105,7 +105,7 @@ This runs in parallel - all issues investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-debugger 2>/dev/null)
+AGENT_SKILLS_DEBUGGER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-debugger 2>/dev/null || echo "")
 ```
 
 **Spawn debug agents in parallel:**

@@ -88,9 +88,14 @@ Documents are reference material for the agent when planning/executing. Always i
 Load codebase mapping context:
 
 ```bash
-INIT=$(node .rcode/bin/rcode-tools.cjs init map-codebase)
+INIT=$(node .rcode/bin/rcode-tools.cjs init map-codebase 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_MAPPER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-codebase-mapper 2>/dev/null)
+AGENT_SKILLS_MAPPER=$(node .rcode/bin/rcode-tools.cjs agent-skills rcode-codebase-mapper 2>/dev/null || echo "")
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `response_language`.
