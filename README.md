@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-> **A methodology for building software with AI — shipped as files.** Folders, markdown, slash commands. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
+> **A curated composition of the best AI-development practices — shipped as files.** Surgical-change discipline, parallel-agent orchestration, persistent Memory Bank patterns, phase-driven planning — packaged as one workflow for Claude Code power users. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
 
 ```bash
 pnpm dlx @hanzlaa/rcode install
@@ -14,6 +14,12 @@ pnpm dlx @hanzlaa/rcode install
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Status: `@hanzlaa/rcode` v4.0.0 on npm. 339 automated tests across 58 files, 45 agents, 116 commands, 86 skills. Actively dogfooded on real projects every week.
+
+---
+
+## About the author
+
+Built by [Hanzla Habib](https://github.com/hanzlahabib). rcode is a curated composition of the best public AI-development practices — surgical-change discipline, parallel-agent orchestration, persistent Memory Bank patterns, phase-driven planning — packaged as one workflow for Claude Code power users. Every workflow, agent, and skill in this repo was designed in dialogue with the same LLM you'll be running. The methodology shipped here is the one used to build rcode itself.
 
 ---
 
@@ -162,7 +168,7 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 رحّال (Rihāl) means "traveler" in Arabic — someone who carries knowledge between places. The persona names (Sadiq, Waleed, Fatima, Hussain, etc.) are Arabic placeholders. Swap them for your team in `rcode/team.yaml`. The methodology is the persona, not the names.
 
-[rcode](https://rihal.om) is also one of Oman's fastest-growing tech companies — naming inspiration, not commercial affiliation.
+Named for the Arabic root **رحال** (rahhal) — the traveler. rcode walks alongside your code as a persistent companion across sessions.
 
 ---
 
