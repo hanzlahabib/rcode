@@ -262,7 +262,7 @@ function buildPlan({ includePlanning }) {
 
 function printPlan(plan, { dryRun }) {
   const banner = dryRun ? '[DRY RUN — pass --yes to remove]' : '[REMOVING]';
-  console.log(`\n🔥 rcode nuke ${banner}\n`);
+  console.log(`\n🔥 rcode nuke  · by Hanzla Habib  ${banner}\n`);
 
   let total = 0;
   const section = (title, items) => {

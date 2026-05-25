@@ -1,7 +1,7 @@
 <!-- RIHLA (رحلة) = "the journey". Not a typo of RIHAL (رحّال) = "the traveler" / the tool itself. Same root, different word. This file documents your project's journey; Rihal is the tool that walks it with you. -->
 # RIHLA — Project journey baseline
 
-**Written by:** /rihal-init
+**Written by:** /rcode-init
 **Date:** 2026-05-16
 **Project:** rcode
 **Detected state:** returning (reconfigured via --reset)
@@ -15,11 +15,11 @@
 
 ## What's here
 
-Rihal Code (`rcode`) — an AI team methodology packaged as an npm tool. One install gives
+rcode (the tool) — an AI team methodology packaged as an npm tool. One install gives
 AI IDEs a persistent project brain: ~45 specialist agents, 116 commands, and a Memory Bank
 at `.rcode/`. Published on npm as `@hanzlaa/rcode` v4.0.0, tested with `node --test`.
 
-The full loop runs in three commands — `/rihal-council` → `/rihal-plan` → `/rihal-execute`.
+The full loop runs in three commands — `/rcode-council` → `/rcode-plan` → `/rcode-execute`.
 The Diwan dashboard (`npm run dashboard`) renders project state, decisions, and the Memory
 Bank in one view. Core value prop: AI assistants lose context on session reset; Rihal fixes
 this with file-based state, checked-in memory, and opinionated research → plan → execute →
@@ -57,6 +57,6 @@ Current branch: `31-preact-migration` — dashboard client is being migrated to 
 ## Not scanned
 
 This file is a journey baseline — intentionally shallow. For deep analysis run:
-- `/rihal-map-codebase` — structured codebase documents per focus area
-- `/rihal-scan` — rapid codebase assessment
-- `/rihal-explore` — socratic ideation against the codebase
+- `/rcode-map-codebase` — structured codebase documents per focus area
+- `/rcode-scan` — rapid codebase assessment
+- `/rcode-explore` — socratic ideation against the codebase

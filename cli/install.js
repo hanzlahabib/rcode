@@ -358,6 +358,7 @@ function printInstallHeader(targetVersion) {
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzlahabib/rihal-code               ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('by       ') + 'Hanzla Habib' + '                                    ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('╰───────────────────────────────────────────────────────────╯'),
     '',

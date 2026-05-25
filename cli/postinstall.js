@@ -104,7 +104,7 @@ if (isGlobalInstall(process.env, __dirname, process.cwd())) {
 
 function printWelcome() {
   console.log(`
-🕌 rcode installed.
+🕌 rcode installed — by Hanzla Habib
 
 Commands are available globally in every Claude Code project.
 To set up per-project state + planning structure, run inside your project:
