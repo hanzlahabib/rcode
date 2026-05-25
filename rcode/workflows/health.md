@@ -258,3 +258,8 @@ Run: /rcode-audit worktrees --prune to clean orphaned executor artifacts
 - /rcode-forensics
 - /rcode-do
 - /rcode-correct-course {phase}
+
+## Next Up
+
+- `/rcode-install` — install missing components flagged by the health check
+- `/rcode-do` — continue if all 9 checks passed

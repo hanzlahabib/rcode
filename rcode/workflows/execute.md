@@ -1049,3 +1049,9 @@ Re-run `/rcode-execute {phase}` → discover_plans finds completed SUMMARYs → 
 
 STATE.md tracks: last completed plan, current wave, pending checkpoints.
 </resumption>
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal is achieved after execution completes
+- `/rcode-ship` — push the branch and open a PR once verification passes
+- `/rcode-debug` — investigate root cause if any plan fails during execution

@@ -160,3 +160,8 @@ This profile will personalize future /rcode-council and /rcode-execute responses
 - If AskUserQuestion fails: retry or skip to default profile
 - If subagent fails: manually create USER-PROFILE.md with frontmatter
 - If state write fails: print warning but continue (profile still written to disk)
+
+## Next Up
+
+- `/rcode-settings` — update project config to match the user profile
+- `/rcode-do` — continue with the profile now informing Claude's behaviour

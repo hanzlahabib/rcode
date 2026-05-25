@@ -350,3 +350,8 @@ Present next steps:
 - [ ] Coverage gaps documented
 - [ ] Next steps presented to user
 </success_criteria>
+
+## Next Up
+
+- `/rcode-verify-work` — run UAT to confirm tests pass in context
+- `/rcode-code-review` — review test quality before committing

@@ -67,3 +67,8 @@ Separate multiple plans with `---\n`
 /rcode-execute {phase} — execute this phase
 /rcode-plan {phase} — revise the plan
 /rcode-progress — see full roadmap
+
+## Next Up
+
+- `/rcode-execute` — execute the displayed phase plan
+- `/rcode-plan` — revise the plan if it needs changes before execution

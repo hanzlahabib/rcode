@@ -184,3 +184,8 @@ If .rcode/DOCS-AUDIT.md exists, check for missing/stale docs:
 - /rcode-progress
 - /rcode-plan {phase}
 - /rcode-council {question}
+
+## Next Up
+
+- `/rcode-docs-update` — generate or regenerate the documentation
+- `/rcode-plan` — plan documentation phases identified by the audit

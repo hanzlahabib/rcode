@@ -137,3 +137,8 @@ Per-phase lines:
 **Resume:** `/rcode-execute-milestone --wave 3` → skip waves 1-2 (already complete), start from wave 3.
 
 **Dry run:** `/rcode-execute-milestone --dry-run` → print execution plan, exit.
+
+## Next Up
+
+- `/rcode-complete-milestone` — mark the milestone done after all phases pass verification
+- `/rcode-ship` — push the branch and open a PR

@@ -201,3 +201,9 @@ To turn ideas into features/tickets:
 If method execution fails or user cannot articulate challenge:
 - Provide a fallback free-form brainstorm: "Let's just list ideas without structure"
 - Save output as `.planning/brainstorms/{TIMESTAMP}-freeform.md`
+
+## Next Up
+
+- `/rcode-create-prd` — formalize the best ideas into a Product Requirements Document
+- `/rcode-prfaq` — stress-test the concept with a Working Backwards exercise
+- `/rcode-explore` — deepen exploration with Socratic probing

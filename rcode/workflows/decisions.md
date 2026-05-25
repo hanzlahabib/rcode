@@ -105,3 +105,8 @@ Where filter suffix is, for example: ` · project=rcode · since=2026-01-01`.
 ## On Error
 
 If `~/.rcode/decisions.jsonl` cannot be read (permissions, missing home dir), print the underlying error and suggest `chmod`/`ls -la ~/.rcode/` for diagnosis. Do not crash other workflows — this command is read-only.
+
+## Next Up
+
+- `/rcode-plan` — plan with prior decisions in mind
+- `/rcode-do` — continue working informed by the decision history

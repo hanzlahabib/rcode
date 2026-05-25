@@ -122,3 +122,8 @@ Based on data, suggest next action:
 **Expected:** "Sprint 99.9 not found."
 
 </process>
+
+## Next Up
+
+- `/rcode-execute-sprint` — continue sprint execution
+- `/rcode-do` — take action on blocked or at-risk stories

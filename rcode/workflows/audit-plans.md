@@ -253,3 +253,8 @@ Format:
 - ROADMAP.md missing → prompt to run `/rcode-new-milestone`
 - No sprint files found → report as WARNING and recommend `/rcode-plan`
 - REQUIREMENTS.md missing → skip C2 check silently (not all projects use it)
+
+## Next Up
+
+- `/rcode-discuss-phase` — revisit grey-area decisions flagged by the audit
+- `/rcode-plan` — re-plan phases that failed the structural check

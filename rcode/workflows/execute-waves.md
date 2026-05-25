@@ -455,3 +455,8 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
 9. **Proceed to next wave.**
 </step>
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal after waves complete
+- `/rcode-checkpoint-preview` — review wave changes before advancing

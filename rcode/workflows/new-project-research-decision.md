@@ -245,3 +245,7 @@ Files: `.planning/research/`
 
 **If "Skip research":** Continue to Step 7.
 
+
+## Next Up
+
+- `/rcode-new-project-define-requirements` — define requirements after the research decision is made

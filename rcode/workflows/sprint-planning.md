@@ -196,3 +196,8 @@ Next:
 **Expected:** Graceful exit suggesting /rcode-new-project.
 
 </process>
+
+## Next Up
+
+- `/rcode-execute-sprint` — execute the planned sprint
+- `/rcode-sprint-status` — check sprint progress during execution

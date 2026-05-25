@@ -186,3 +186,8 @@ If ROADMAP missing:
 ⚠ ROADMAP.md missing. Cannot audit without original goals.
   Create one: /rcode-new-milestone
 ```
+
+## Next Up
+
+- `/rcode-plan-milestone-gaps` — create fix phases for every gap the audit found
+- `/rcode-complete-milestone` — mark milestone complete when all gaps are resolved

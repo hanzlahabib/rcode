@@ -143,3 +143,8 @@ continue with the next finding — never abort the whole run on a single failure
 - [ ] Default behavior unchanged — `--fix` off by default; report-only path preserved
 - [ ] `--fix` patches only trivial items, each as atomic commit prefixed `fix(memory):`
 - [ ] Report still printed even in `--fix` mode (so user sees what was/wasn't patched)
+
+## Next Up
+
+- `/rcode-memory-update` — patch stale entries surfaced by the audit
+- `/rcode-memory-distill` — regenerate distillates after updating entries

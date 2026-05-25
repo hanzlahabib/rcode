@@ -181,3 +181,8 @@ Roadmap updated: .planning/ROADMAP.md
 - [ ] STATE.md updated with roadmap evolution note
 - [ ] User informed of next steps
 </success_criteria>
+
+## Next Up
+
+- `/rcode-discuss-phase` — discuss the new phase before planning
+- `/rcode-plan` — plan the newly added phase

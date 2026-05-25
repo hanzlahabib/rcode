@@ -380,3 +380,8 @@ If arguments are invalid, missing files, or subagent fails:
 /rcode-plan {N} — plan fixes for discovered issues
 /rcode-explore — go deeper with socratic analysis
 /rcode-next — get suggested next action
+
+## Next Up
+
+- `/rcode-plan` — plan improvements based on the targeted scan findings
+- `/rcode-map-codebase` — run a full codebase map for broader analysis

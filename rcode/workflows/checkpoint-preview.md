@@ -5,3 +5,8 @@ Human-in-the-loop change review. Make sense of a diff, focus attention where it 
 </purpose>
 
 @rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md
+
+## Next Up
+
+- `/rcode-verify-work` — run UAT after approving the diff
+- `/rcode-ship` — ship if the review passed and UAT is green

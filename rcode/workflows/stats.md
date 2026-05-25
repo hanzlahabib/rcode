@@ -139,3 +139,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-status` — get full project dashboard with phase and plan details
+- `/rcode-do` — continue working informed by the stats

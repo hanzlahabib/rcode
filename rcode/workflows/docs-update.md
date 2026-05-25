@@ -262,3 +262,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-verify-work` — verify documentation accuracy against the live codebase
+- `/rcode-ship` — ship with updated docs once verification passes

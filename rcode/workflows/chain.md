@@ -186,3 +186,8 @@ Silent on failure — state tracking is optional.
 - **Stage fails to produce artifact:** print stage number, allow `/rcode-chain --continue` to resume.
 - **Agent returns empty output:** print "Agent produced no output. Check input and retry."
 - **`rcode-tools.cjs` missing:** tell user to run `npx @hanzlaa/rcode install` (or `rcode install` if installed globally).
+
+## Next Up
+
+- `/rcode-council` — escalate to a parallel debate panel if one pipeline isn't enough
+- `/rcode-plan` — plan next steps based on the pipeline output

@@ -207,3 +207,8 @@ If arguments are invalid, missing files, or subagent fails:
 - **Issues found:** Address security findings, then re-run `/rcode-secure-phase {phase}`
 - /rcode-verify-phase {phase}
 - /rcode-execute {next-phase}
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the full phase goal is met after security mitigations
+- `/rcode-ship` — ship after security and verification gates both pass

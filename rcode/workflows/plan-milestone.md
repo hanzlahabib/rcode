@@ -103,3 +103,8 @@ Open with wave-plan banner (step 2). Per-phase progress indicators. Closure bann
 **Resume:** `/rcode-plan-milestone --wave 2` → skip wave 1 (already planned), start from wave 2.
 
 **Dry run:** `/rcode-plan-milestone --dry-run` → print wave assignment, exit.
+
+## Next Up
+
+- `/rcode-execute-milestone` — execute all planned phases in dependency order
+- `/rcode-autonomous` — drive the milestone autonomously after planning

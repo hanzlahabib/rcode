@@ -377,3 +377,8 @@ If arguments are invalid, missing files, or subagent fails:
 - /rcode-sprint-planning
 - /rcode-dev-story {story-id}
 - /rcode-edit-prd
+
+## Next Up
+
+- `/rcode-sprint-planning` — plan the sprint from the generated epic files
+- `/rcode-create-story` — develop individual stories into self-contained STORY.md files

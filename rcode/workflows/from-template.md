@@ -171,3 +171,8 @@ Also consider:
 
 - Missing `.rcode/templates/projects/` directory → tell the user their install is missing the module; suggest `rcode-install`
 - `sed` substitution failure (unusual characters in project name) → fall back to literal-string `awk` substitution, or ask the user to pass a simpler name via `--project-name`
+
+## Next Up
+
+- `/rcode-new-project` — complete project setup with questioning and research
+- `/rcode-plan` — plan the first phase of the templated project

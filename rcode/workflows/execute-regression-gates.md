@@ -129,3 +129,8 @@ If `TEXT_MODE` is true, present as a plain-text numbered list. Otherwise use Ask
 **If user selects option 3:** Stop execution. Report partial completion.
 </step>
 
+
+## Next Up
+
+- `/rcode-verify-phase` — verify the phase goal after regression gates pass
+- `/rcode-debug` — debug regressions if gates failed

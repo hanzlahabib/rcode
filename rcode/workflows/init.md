@@ -348,3 +348,8 @@ Silent if state tools fail.
 - **git not installed:** skip git detection, still proceed.
 - **rcode-tools.cjs not found:** this command requires the installer to have run — point user to `npx @hanzlaa/rcode install`.
 - **Existing JOURNEY.md without `--reset`:** do NOT overwrite; note it in Step 4 output.
+
+## Next Up
+
+- `/rcode-new-project` — start a brand-new project after initialization
+- `/rcode-status` — check state of an existing project after re-init

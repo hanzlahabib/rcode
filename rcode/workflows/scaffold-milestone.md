@@ -58,3 +58,8 @@ One line per created phase directory. Final "Next step" routing.
 - [ ] Phase directories created under `.planning/phases/`
 - [ ] Summary printed with one line per created directory
 - [ ] Next-step routing printed
+
+## Next Up
+
+- `/rcode-plan-milestone` — plan all the scaffolded phases
+- `/rcode-discuss-phase` — discuss the first phase before planning

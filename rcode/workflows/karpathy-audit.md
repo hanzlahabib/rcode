@@ -400,3 +400,8 @@ Auto-fix some issues: /rcode-review-fix {phase}
 - **karpathy-guidelines.md missing:** print "Reference doc missing. Run: npx @hanzlaa/rcode install ." and STOP.
 - **Empty diff:** STOP gracefully, do not run principle checks against an empty input.
 
+
+## Next Up
+
+- `/rcode-review-fix` — fix violations identified by the Karpathy audit
+- `/rcode-verify-work` — verify quality after fixes are applied

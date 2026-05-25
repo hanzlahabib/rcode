@@ -169,3 +169,9 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-create-prd` — formalize the crystallized idea into a PRD
+- `/rcode-brainstorm` — continue structured brainstorming on the concept
+- `/rcode-prfaq` — stress-test the idea with Working Backwards

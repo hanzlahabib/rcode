@@ -85,3 +85,8 @@ If the change was to `project/`, `milestones/current.md`, or `incidents/`, sugge
 ## Reversibility
 
 `git diff .rcode/memory/` shows exactly one append — easy to revert with `git checkout`.
+
+## Next Up
+
+- `/rcode-memory-distill` — regenerate distillates to reflect the update
+- `/rcode-do` — continue working with the updated memory

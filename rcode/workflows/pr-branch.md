@@ -127,3 +127,8 @@ Or use /rcode-ship to create the PR automatically.
 - [ ] Commit messages preserved from original
 - [ ] User shown next steps
 </success_criteria>
+
+## Next Up
+
+- `/rcode-ship` — push the PR branch and open the pull request
+- `/rcode-code-review` — review the PR branch before shipping

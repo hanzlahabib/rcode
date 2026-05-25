@@ -271,3 +271,8 @@ becomes:
 - [ ] Changes committed (includes REQUIREMENTS.md)
 - [ ] User knows to run `/rcode-plan` next
 </success_criteria>
+
+## Next Up
+
+- `/rcode-plan-milestone` — plan all the gap-fix phases that were just created
+- `/rcode-execute-milestone` — execute the milestone once all phases are planned

@@ -981,3 +981,9 @@ If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 
 - [ ] User sees status between agent spawns
 - [ ] User knows next steps
 </success_criteria>
+
+## Next Up
+
+- `/rcode-execute` — execute the SPRINT.md plans the planner produced
+- `/rcode-discuss-phase` — revisit decisions if the sprint-checker flagged grey areas
+- `/rcode-research-phase` — run deeper research if RESEARCH.md was skipped

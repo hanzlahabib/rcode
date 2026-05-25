@@ -295,3 +295,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-dev-story` — wrap the story for AI-coder execution
+- `/rcode-plan` — plan the phase that will implement this story

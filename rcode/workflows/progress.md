@@ -44,3 +44,8 @@ Skip this footer if `$ARGUMENTS` already contains `--no-alias-hint`.
 ## On Error
 
 Defer to `.rcode/workflows/status.md` error handling. This workflow adds nothing on top.
+
+## Next Up
+
+- `/rcode-next` — auto-advance to the next logical step
+- `/rcode-do` — take action on what the progress view surfaced

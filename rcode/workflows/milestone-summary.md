@@ -204,3 +204,8 @@ If PDF conversion fails:
 ⚠ PDF conversion failed. Saving as Markdown instead:
   {file_path}
 ```
+
+## Next Up
+
+- `/rcode-complete-milestone` — officially mark the milestone complete
+- `/rcode-new-milestone` — start the next milestone cycle

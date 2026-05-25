@@ -453,3 +453,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-plan` — plan improvements informed by the codebase analysis
+- `/rcode-scan` — run a targeted scan on a specific area

@@ -161,3 +161,8 @@ Also: `/rcode-verify-work {X} ${RCODE_WS}` — manual testing first
 
 Gap closure cycle: `/rcode-plan {X} --gaps ${RCODE_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rcode-execute {X} --gaps-only ${RCODE_WS}` → verifier re-runs.
 </step>
+
+## Next Up
+
+- `/rcode-ship` — ship if VERIFICATION.md is green
+- `/rcode-debug` — debug if goal verification failed

@@ -637,3 +637,8 @@ or
 </on_error>
 </content>
 </invoke>
+
+## Next Up
+
+- `/rcode-plan-milestone` — plan all phases in the new milestone
+- `/rcode-discuss-phase` — discuss the first phase before planning

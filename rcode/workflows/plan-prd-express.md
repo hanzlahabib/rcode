@@ -106,3 +106,8 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(${padded_phase}): generate contex
 
 **Effect:** This completely bypasses step 4 (Load CONTEXT.md) since we just created it. The rest of the workflow (research, planning, verification) proceeds normally with the PRD-derived context.
 
+
+## Next Up
+
+- `/rcode-plan` — continue with the rest of the planning workflow
+- `/rcode-execute` — execute once the plan is generated

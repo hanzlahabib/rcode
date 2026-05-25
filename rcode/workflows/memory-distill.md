@@ -111,3 +111,8 @@ Distillates are derived artefacts. Reverting a regeneration: `git checkout .rcod
 /rcode-memory-audit — audit all memory files for staleness
 /rcode-next — get suggested next action
 /rcode-resume-work — continue with current work context
+
+## Next Up
+
+- `/rcode-memory-audit` — audit for accuracy after regenerating distillates
+- `/rcode-do` — continue with fresh memory context loaded

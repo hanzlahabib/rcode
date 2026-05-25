@@ -132,3 +132,8 @@ Detailed findings: {audit_report_path}
 - If UI-SPEC.md invalid: print error and suggest recreating
 - If codebase has no components: report as INCOMPLETE
 - If audit agent fails: provide template audit report structure
+
+## Next Up
+
+- `/rcode-plan` — plan UI fix phases for pillar failures
+- `/rcode-correct-course` — correct UI deviations from the design spec

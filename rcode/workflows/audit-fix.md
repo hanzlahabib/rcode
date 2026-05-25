@@ -202,3 +202,8 @@ If arguments are invalid, missing files, or subagent fails:
 - /rcode-verify-phase {phase}
 - /rcode-audit {phase}
 - /rcode-progress
+
+## Next Up
+
+- `/rcode-verify-work` — verify that auto-fixed issues no longer reproduce
+- `/rcode-code-review` — review the generated fixes before shipping

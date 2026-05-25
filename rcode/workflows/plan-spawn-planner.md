@@ -255,3 +255,7 @@ Task(
 )
 ```
 
+
+## Next Up
+
+- `/rcode-execute` — execute the SPRINT.md the planner just produced

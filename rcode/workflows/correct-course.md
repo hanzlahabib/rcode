@@ -194,3 +194,8 @@ Run remediation with:
 - /rcode-execute {phase}
 - /rcode-plan {phase}
 - /rcode-progress
+
+## Next Up
+
+- `/rcode-plan` — plan the remediation phases identified by the deviation report
+- `/rcode-execute` — execute corrections once the plan is ready

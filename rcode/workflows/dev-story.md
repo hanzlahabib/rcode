@@ -435,3 +435,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-execute` — execute the wrapped story
+- `/rcode-verify-work` — verify story completion against acceptance criteria

@@ -29,3 +29,8 @@ Skill not installed — run: npx @hanzlaa/rcode install
 - /rcode-new-milestone
 - /rcode-progress
 - /rcode-complete-milestone
+
+## Next Up
+
+- `/rcode-new-milestone` — start the next milestone with retrospective learnings
+- `/rcode-correct-course` — address action items surfaced by the retrospective

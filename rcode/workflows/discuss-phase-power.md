@@ -323,3 +323,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-plan` — plan the phase once all answers are processed into CONTEXT.md
+- `/rcode-research-phase` — research before planning if technical unknowns remain

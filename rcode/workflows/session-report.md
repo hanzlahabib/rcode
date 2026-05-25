@@ -250,3 +250,8 @@ Then print summary:
 /rcode-progress — see full roadmap status
 /rcode-next — get suggested next action
 /rcode-resume-work — pick up where you left off
+
+## Next Up
+
+- `/rcode-pause-work` — capture handoff context before ending the session
+- `/rcode-new-milestone` — plan the next milestone based on session outcomes

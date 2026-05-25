@@ -150,3 +150,8 @@ Archived:
 - [ ] Changes committed
 
 </success_criteria>
+
+## Next Up
+
+- `/rcode-new-milestone` — start the next milestone after archiving the old one
+- `/rcode-status` — confirm project state after cleanup

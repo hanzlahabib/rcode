@@ -107,3 +107,8 @@ Prerequisites: {what needs to be running/configured}
 </step>
 
 </process>
+
+## Next Up
+
+- `/rcode-verify-work` — work through the outstanding UAT items
+- `/rcode-plan` — plan fix phases for blocked or human-needed items

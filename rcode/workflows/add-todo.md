@@ -185,3 +185,8 @@ If arguments are invalid, missing files, or subagent fails:
 /rcode-check-todos — review all open todos
 /rcode-next — get suggested next action
 /rcode-progress — see overall roadmap status
+
+## Next Up
+
+- `/rcode-check-todos` — view all captured todos
+- `/rcode-do` — continue with your current work

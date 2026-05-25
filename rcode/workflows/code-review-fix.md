@@ -532,3 +532,8 @@ If arguments are invalid, missing files, or subagent fails:
 - Check that required files exist
 - Retry with clearer arguments or report the specific error to the user
 
+
+## Next Up
+
+- `/rcode-verify-work` — run UAT to confirm fixes didn't introduce regressions
+- `/rcode-ship` — ship when all review issues are resolved

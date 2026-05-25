@@ -729,3 +729,8 @@ When all tests pass:
   /rcode-add-tests {phase} — generate unit + E2E tests for this phase
   /rcode-next — advance to next phase
   /rcode-plan {next} — plan the next phase
+
+## Next Up
+
+- `/rcode-ship` — ship if all UAT items pass
+- `/rcode-diagnose-issues` — diagnose root cause for each failing acceptance criterion

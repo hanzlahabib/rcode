@@ -135,3 +135,8 @@ Print:
   npx @hanzlaa/rcode install --force              # install to .claude/skills/
   node --test test/compliance.test.cjs            # verify compliance
 ```
+
+## Next Up
+
+- `/rcode-install` — install the new skill if it's a module dependency
+- `/rcode-do` — use the new skill in your workflow
