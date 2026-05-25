@@ -387,6 +387,17 @@ if (WebSocketServer) {
   });
 }
 
+server.on('error', err => {
+  if (err.code === 'EADDRINUSE') {
+    // Exit with code 2 so the dashboard knows this is a port-conflict (not a crash)
+    // and can suppress the restart loop + print a one-time user hint.
+    console.error(`[orch] port ${PORT} already in use. Set ORCH_PORT=<N> env var to use a different port. Exiting without retry.`);
+    process.exit(2);
+  }
+  console.error('[orch] server error:', err.message);
+  process.exit(1);
+});
+
 server.listen(PORT, '127.0.0.1', () => {
   console.log('\n🤖 rcode Orchestrator');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
