@@ -44,7 +44,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # If INIT is empty or INIT.ok is false: print "Error: rcode-tools init failed." and exit.
 # Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path, response_language
 # If response_language is set, include "Respond in {value}." in all spawned subagent prompts.
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null || echo "")
 ```
 
 ## Step 4: Spawn Researcher

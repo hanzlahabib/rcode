@@ -204,9 +204,14 @@ If `--wave` is absent, preserve the current behavior of executing all incomplete
 Load all context in one call:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE_ARG}")
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init execute "${PHASE_ARG}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-executor 2>/dev/null)
+AGENT_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-executor 2>/dev/null || echo "")
+```
+
+If `INIT` is empty or `INIT.ok` is false, print error and exit:
+```
+Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
 Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
