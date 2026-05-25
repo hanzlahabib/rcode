@@ -306,10 +306,11 @@ Do NOT:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Input file path validated: no traversal sequences (`..`) and file confirmed to exist before reading
+- [ ] External plan parsed against `.planning/ROADMAP.md` and `.planning/PROJECT.md` for decision conflicts
+- [ ] Conflict report produced listing any contradictions with existing project decisions
+- [ ] `SPRINT.md` written to `.planning/phases/<N>/SPRINT.md` with a non-empty tasks section
+- [ ] `rcode-sprint-checker` validates the imported `SPRINT.md` before workflow completes
 
 ## On Error
 

@@ -183,10 +183,11 @@ All workstreams are stored in state.json:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Requested operation (`create`, `switch`, `list`, `status`, or `complete`) dispatched correctly from arguments
+- [ ] `create`: new workstream entry added to `.rcode/state.json` with its own phases array; workstream directory initialized
+- [ ] `switch`: active workstream pointer updated in `state.json`; user informed of the now-current workstream name
+- [ ] `list`/`status`: all workstreams displayed with their phase counts and current status
+- [ ] `complete`: workstream marked complete in `state.json`; user shown a summary of completed phases and work
 
 ## On Error
 

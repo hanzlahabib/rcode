@@ -441,10 +441,11 @@ End workflow.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] `.planning/codebase/` directory created if it did not exist
+- [ ] Four `rcode-codebase-mapper` agents spawned in parallel (or sequentially when Task tool is unavailable)
+- [ ] All 7 codebase documents exist in `.planning/codebase/` with more than 20 lines each — no empty documents
+- [ ] Completion summary printed with document names and line counts
+- [ ] User offered clear next-step commands after mapping completes
 
 ## On Error
 

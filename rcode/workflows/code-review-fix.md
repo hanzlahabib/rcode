@@ -520,10 +520,12 @@ echo "════════════════════════�
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Config gate (`workflow.code_review`) verified before any agent is spawned
+- [ ] `REVIEW.md` confirmed present at `.planning/phases/<N>/REVIEW.md`; workflow exits with explicit error if missing
+- [ ] `rcode-fixer` agent spawned with correct `review_path`, `fix_scope`, and `fix_report_path`
+- [ ] `--auto` iteration loop capped at 3 rounds; each round re-reviews only the original file scope
+- [ ] `REVIEW-FIX.md` committed exactly once at the end of all iterations (not per iteration)
+- [ ] Results presented inline with a concrete next-step suggestion (e.g., `git log --oneline`)
 
 ## On Error
 

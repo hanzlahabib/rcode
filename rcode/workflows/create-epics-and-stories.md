@@ -359,10 +359,11 @@ Next:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] At least one epic file written to `.planning/epics/EPIC-NN.md` with a non-empty stories list
+- [ ] Each epic file contains user stories with acceptance criteria, dev notes, and effort estimates
+- [ ] Epic files numbered sequentially (`EPIC-01`, `EPIC-02`, …) with no gaps
+- [ ] Story IDs follow `EPIC-NN.M` format (e.g., `EPIC-01.1`, `EPIC-01.2`)
+- [ ] No placeholder text remains — output is ready for `/rcode-sprint-planning` consumption
 
 ## On Error
 

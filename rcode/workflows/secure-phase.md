@@ -189,10 +189,12 @@ Display `/clear` reminder.
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] Security enforcement config verified — workflow exits cleanly when disabled
+- [ ] SPRINT.md threat register parsed and all open threat items enumerated
+- [ ] User gate shown with threat table before `rcode-security-auditor` is spawned
+- [ ] All three auditor return formats handled: `SECURED` routes forward, `OPEN_THREATS` blocks advancement, `ESCALATE` triggers escalation path
+- [ ] `SECURITY.md` created or updated at `.planning/phases/<N>/SECURITY.md`
+- [ ] Remaining open threats block phase advancement — no next-phase routing emitted when `threats_open > 0`
 
 ## On Error
 

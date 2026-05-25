@@ -178,10 +178,12 @@ Present the final summary:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] All auto-fixable findings processed sequentially; each committed with its finding ID in the commit message
+- [ ] Tests pass after each committed fix — no broken commits in git history
+- [ ] Failed fixes reverted cleanly with no partial changes left in the working tree
+- [ ] Pipeline stops after the first test failure (non-cascading)
+- [ ] Manual-only findings listed separately for developer attention
+- [ ] `--dry-run` produces a standalone classification table with finding IDs and fixability verdicts
 
 ## On Error
 

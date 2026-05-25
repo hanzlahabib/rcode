@@ -404,10 +404,12 @@ After triage:
 
 ## Success Criteria
 
-- [ ] Task completed as requested
-- [ ] Output saved or reported
-- [ ] State updated if necessary
-- [ ] No errors encountered
+- [ ] All open GitHub issues fetched and classified by type (bug, feature, question, etc.)
+- [ ] Each issue checked against its required template fields; missing fields explicitly flagged
+- [ ] All open PRs fetched and each checked against the PR template checklist
+- [ ] Issue-first gate violations (PRs without a linked issue) identified
+- [ ] Structured compliance report generated with scores and specific action items per item
+- [ ] Auto-actions (labeling, commenting, closing) executed only after explicit user confirmation
 
 ## On Error
 
