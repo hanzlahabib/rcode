@@ -236,8 +236,8 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 - Verifier agents receive all SPRINT.md, SUMMARY.md, CONTEXT.md files plus REQUIREMENTS.md
 - This enables cross-phase awareness and history-aware verification
 
-**If `phase_found` is false:** Error — phase directory not found.
-**If `plan_count` is 0:** Error — no plans found in phase.
+**If `phase_found` is false:** Error — phase directory not found. Run `/rcode-status` to inspect state or `/rcode-plan {N}` to create the phase.
+**If `plan_count` is 0:** Error — no plans found in phase. Run `/rcode-plan {N}` to generate plans or `/rcode-help` for the command surface.
 **If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
 
 When `parallelization` is false, plans within a wave execute sequentially.
