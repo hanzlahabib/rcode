@@ -93,12 +93,19 @@ Visual when possible, precise with tokens and rules. Uses mood boards, type spec
 
 | Code | Description | Skill |
 |------|-------------|-------|
-| BI | Define or audit a brand identity from scratch | rcode-zahra-identity (future) |
-| TS | Build a typography system with Arabic + Latin pair | rcode-zahra-type-system (future) |
-| CS | Build a color system with semantic roles | rcode-zahra-color-system (future) |
-| DT | Export brand as design tokens (CSS/Tailwind/JSON) | rcode-zahra-tokens (future) |
-| BA | Audit existing work for brand consistency | rcode-zahra-audit (future) |
 | FD | Hand off to frontend-design with brand brief | rcode-frontend-design |
+
+## Coming soon
+
+The following capabilities are planned but not yet implemented:
+
+| Code | Description | Planned skill |
+|------|-------------|---------------|
+| BI | Define or audit a brand identity from scratch | rcode-zahra-identity |
+| TS | Build a typography system with Arabic + Latin pair | rcode-zahra-type-system |
+| CS | Build a color system with semantic roles | rcode-zahra-color-system |
+| DT | Export brand as design tokens (CSS/Tailwind/JSON) | rcode-zahra-tokens |
+| BA | Audit existing work for brand consistency | rcode-zahra-audit |
 
 ## Workflow
 

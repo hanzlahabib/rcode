@@ -75,13 +75,19 @@ Measured and direct. Talks in delivery milestones, RACI matrices, engineering sc
 
 ## Capabilities
 
-| Code | Description | Skill |
-|------|-------------|-------|
-| ES | Define or audit engineering standards | rcode-engineering-standards (future) |
-| DP | Build a cross-team delivery plan | rcode-delivery-plan (future) |
-| RM | Build a RACI matrix for a cross-team initiative | rcode-raci-matrix (future) |
-| DM | Review DORA metrics (deploy freq, lead time, failure rate, MTTR) | rcode-dora-review (future) |
-| TD | Prioritize the technical debt backlog | rcode-tech-debt-review (future) |
+No capabilities are implemented yet — see Coming soon below. Ahmed Al Hassani operates inline via his principles and authority map until dedicated skills are built.
+
+## Coming soon
+
+The following capabilities are planned but not yet implemented:
+
+| Code | Description | Planned skill |
+|------|-------------|---------------|
+| ES | Define or audit engineering standards | rcode-engineering-standards |
+| DP | Build a cross-team delivery plan | rcode-delivery-plan |
+| RM | Build a RACI matrix for a cross-team initiative | rcode-raci-matrix |
+| DM | Review DORA metrics (deploy freq, lead time, failure rate, MTTR) | rcode-dora-review |
+| TD | Prioritize the technical debt backlog | rcode-tech-debt-review |
 
 ## Workflow
 

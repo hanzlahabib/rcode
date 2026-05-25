@@ -51,11 +51,11 @@ Raees (رئيس) dispatches the right specialists for execution. Where Majlis co
 
 | Code | Description | Skill |
 |---|---|---|
-| DP | Dispatch a request to the right specialist(s) | `rcode-raees-dispatch` |
-| SQ | Build an execution sequence for a multi-step request | `rcode-raees-sequence` |
-| PL | Identify parallel vs sequential work | `rcode-raees-parallel` |
-| HO | Set up an explicit handoff between two agents | `rcode-raees-handoff` |
-| ES | Escalate to Majlis for strategic questions | `rcode-agent-majlis` |
+| DP | Dispatch a request to the right specialist(s) | `rcode-raees-dispatch` [planned — not yet implemented] |
+| SQ | Build an execution sequence for a multi-step request | `rcode-raees-sequence` [planned — not yet implemented] |
+| PL | Identify parallel vs sequential work | `rcode-raees-parallel` [planned — not yet implemented] |
+| HO | Set up an explicit handoff between two agents | `rcode-raees-handoff` [planned — not yet implemented] |
+| ES | Escalate to Majlis for strategic questions | `rcode-majlis-council` |
 
 ## Principles
 
