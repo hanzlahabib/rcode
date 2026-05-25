@@ -59,6 +59,9 @@ ${renderCss()}
      Static panel markup removed — XtermPanel.js + OrchPanel.js own the DOM. -->
 
 ${renderClientJs(state)}
+<footer style="position:fixed;bottom:8px;right:12px;font-size:11px;color:rgba(255,255,255,0.3);z-index:1;pointer-events:none">
+  <a href="https://github.com/hanzlahabib" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;pointer-events:auto">by Hanzla Habib</a>
+</footer>
 </body>
 </html>`;
 }
