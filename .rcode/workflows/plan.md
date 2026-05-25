@@ -74,7 +74,8 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null || echo "")
 AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null || echo "")
 AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null || echo "")
-CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/dev/null || echo "200000")
+CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/dev/null)
+CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}  # config-get exits 0 with empty output when key absent; || fallback won't fire
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
 PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
@@ -82,7 +83,7 @@ PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
   .planning/ROADMAP.md 2>/dev/null | head -1)
 ```
 
-If `INIT` is empty or `INIT.ok` is false, print error and exit:
+If `INIT` is empty, or `INIT.ok` is false or absent (null/undefined — `init sprint-plan` may omit the key), print error and exit:
 ```
 Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
@@ -192,7 +193,7 @@ PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 **If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
 
 
-@rcode/workflows/plan-prd-express.md
+@.rcode/workflows/plan-prd-express.md
 
 
 ## 3.6. Handle `--gaps` Mode
@@ -295,7 +296,8 @@ If `context_path` is not null, display: `Using phase context from: ${context_pat
 
 Read discuss mode for context gate label:
 ```bash
-DISCUSS_MODE=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.discuss_mode 2>/dev/null)
+DISCUSS_MODE=${DISCUSS_MODE:-discuss}  # config-get exits 0 with empty output when key absent
 ```
 
 If `TEXT_MODE` is true, present as a plain-text numbered list:
@@ -334,7 +336,7 @@ If "Run discuss-phase first":
   **Exit the sprint-plan workflow. Do not continue.**
 
 
-@rcode/workflows/plan-research-validation.md
+@.rcode/workflows/plan-research-validation.md
 
 
 ## 6. Check Existing Plans
@@ -366,7 +368,7 @@ This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down th
 normal pipeline exactly as if no plans existed yet:
 
 1. Proceed to Step 7 (context-paths) and Step 7.5 (Nyquist verification) as normal.
-2. Spawn `rcode-planner` via `@rcode/workflows/plan-spawn-planner.md` (Step 8). The
+2. Spawn `rcode-planner` via `@.rcode/workflows/plan-spawn-planner.md` (Step 8). The
    planner subagent is mandatory — the orchestrator must NOT write SPRINT.md
    directly via the `Write` tool. Pass the existing plan list to the planner so
    it picks the next plan number and avoids re-covering shipped tasks.
@@ -456,7 +458,7 @@ If missing and Nyquist is still enabled/applicable — ask user:
 Proceed to Step 8 only if user selects 2 or 3.
 
 
-@rcode/workflows/plan-spawn-planner.md
+@.rcode/workflows/plan-spawn-planner.md
 
 ## 9. Handle Planner Return
 
@@ -470,7 +472,8 @@ Proceed to Step 8 only if user selects 2 or 3.
 After planner returns `## PLANNING COMPLETE`, immediately count sprint files:
 
 ```bash
-MAX_SPRINTS=$($TOOL config-get workflow.max_sprints_per_phase 2>/dev/null || echo "4")
+MAX_SPRINTS=$($TOOL config-get workflow.max_sprints_per_phase 2>/dev/null)
+MAX_SPRINTS=${MAX_SPRINTS:-4}  # config-get exits 0 with empty output when key absent
 SPRINT_COUNT=$(find "${PHASE_DIR}" -maxdepth 1 -name "*-SPRINT.md" | wc -l | tr -d ' ')
 ```
 
@@ -569,7 +572,6 @@ ${AGENT_SKILLS_CHECKER}
 Task(
   prompt=checker_prompt,
   subagent_type="rcode-sprint-checker",
-  model="{model}",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
 )
@@ -689,7 +691,6 @@ Return what changed.
 Task(
   prompt=revision_prompt,
   subagent_type="rcode-planner",
-  model="{model}",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

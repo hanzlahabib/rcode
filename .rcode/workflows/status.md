@@ -70,11 +70,22 @@ Parse `recommendation`, `open_phases`, `phase_count`. Display ONLY when
    → /rcode-complete-milestone to close, or /rcode-new-milestone to fork
 ```
 
-When healthy, print nothing — keeps status terse for normal projects.
+**State-drift exception:** If `recommendation === "healthy"` AND `phase_count === 0` AND
+`SNAPSHOT.insights[]` is non-empty (drift insights present), the "healthy" reading is a
+false negative caused by state.json being out of sync with disk. In this case print:
+
+```
+⚠ Milestone health: unreadable — state.json not synced with disk.
+   Fix: node .rcode/bin/rcode-tools.cjs state sync --from-disk
+```
+
+When truly healthy (phase_count > 0, no drift insights), print nothing — keeps status terse for normal projects.
 
 ## Step 3 — Phases section
 
 For each entry in `SNAPSHOT.phases[]`:
+
+**Null guard:** If `phase.disk` is `null` or missing (state-disk drift — state.json not yet synced), treat the phase as `○` (planned) and append a note `(disk state unavailable — run: node .rcode/bin/rcode-tools.cjs state sync --from-disk)`. Do NOT attempt to access fields on a null `phase.disk`.
 
 - `▶` if `phase.number === SNAPSHOT.current_phase`
 - `✓` if `phase.disk.summary_count > 0` AND `phase.disk.summary_count >= phase.disk.plan_count` AND `phase.disk.has_verification` (complete + verified; if VERIFICATION.md absent, use `◎` and label "complete-unverified")

@@ -99,7 +99,11 @@ Verify the work is ready to ship:
    ```bash
    git remote -v | head -2
    ```
-   Detect `origin` remote. If no remote: error — can't create PR. Run `git remote add origin <url>` to add a remote, then retry `/rcode-ship`.
+   Detect `origin` remote. If no remote: error — can't create PR.
+
+   **If running in a git worktree** (`.git` is a file, not a directory): remotes are shared with the main repo. Run `git remote -v` from the main repo root to confirm — if the main repo has `origin`, run `git remote add origin <url>` in the worktree context or add the remote in the main repo, then retry `/rcode-ship`.
+
+   **If not in a worktree:** Run `git remote add origin <url>` to add a remote, then retry `/rcode-ship`.
 
 5. **`gh` CLI available?**
    ```bash

@@ -496,7 +496,7 @@ If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty (no SECURITY.md yet):
 Include in the next-steps routing output:
 ```
 ⚠ Security enforcement enabled — run before advancing:
-  /rcode-secure-phase {PHASE} ${RCODE_WS}
+  /rcode-secure-phase {PHASE}
 ```
 
 If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_open`. If > 0:
@@ -528,8 +528,8 @@ Apply the same "incomplete" filtering rules as earlier:
 
 Selected wave finished successfully. This phase still has incomplete plans, so phase-level verification and completion were intentionally skipped.
 
-/rcode-execute {phase} ${RCODE_WS}                # Continue remaining waves
-/rcode-execute {phase} --wave {next} ${RCODE_WS}  # Run the next wave explicitly
+/rcode-execute {phase}                # Continue remaining waves
+/rcode-execute {phase} --wave {next}  # Run the next wave explicitly
 ```
 
 **If no incomplete plans remain after the selected wave finishes:**
@@ -591,7 +591,7 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 
 **Resolve reviewer model:**
 ```bash
-REVIEWER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model code-reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
+REVIEWER_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model reviewer 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
 REVIEWER_MODEL=${REVIEWER_MODEL:-sonnet}
 REVIEWER_SKILLS=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-reviewer 2>/dev/null || echo "")
 # Issue #652 — no leading zeros. Variable name kept for backward compat in this workflow.
@@ -695,7 +695,7 @@ Verifier is blocked until critical/high findings are resolved.
 ```
 
 AskUserQuestion with options:
-1. **"Run /rcode-review-fix first (recommended)"** — Stop. Print next command: `/rcode-review-fix ${PHASE_NUMBER} ${RCODE_WS}`. Do NOT spawn verifier.
+1. **"Run /rcode-review-fix first (recommended)"** — Stop. Print next command: `/rcode-review-fix ${PHASE_NUMBER}`. Do NOT spawn verifier.
 2. **"Proceed to verifier anyway (high findings unresolved)"** — Log override and continue to `close_parent_artifacts` → `regression_gate` → `verify_phase_goal`.
 3. **"Cancel execution"** — Stop. Report partial completion.
 
@@ -951,7 +951,7 @@ If `TEST_FILES` is 0 — no test artifacts were produced during execution. Prese
 No test files were generated during this phase.
 Run /rcode-add-tests to generate unit + E2E tests from the SUMMARY:
 
-/rcode-add-tests {X} ${RCODE_WS}
+/rcode-add-tests {X}
 
 Skip if tests are out of scope for this phase (infra, config, docs-only).
 ```
@@ -1019,11 +1019,11 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/rcode-add-tests {X} ${RCODE_WS} — generate unit + E2E tests for this phase
-/rcode-progress ${RCODE_WS} — see updated roadmap
-/rcode-discuss-phase {next} ${RCODE_WS} — discuss next phase before planning
-/rcode-plan {next} ${RCODE_WS} — plan next phase
-/rcode-execute {next} ${RCODE_WS} — execute next phase
+/rcode-add-tests {X} — generate unit + E2E tests for this phase
+/rcode-progress — see updated roadmap
+/rcode-discuss-phase {next} — discuss next phase before planning
+/rcode-plan {next} — plan next phase
+/rcode-execute {next} — execute next phase
 ```
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.

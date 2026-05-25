@@ -50,7 +50,7 @@ TOP_AGENT=$(node .rcode/bin/rcode-tools.cjs select-panel "$ARGUMENTS" --top 1 2>
 
 **Redirect to council if EITHER condition holds:**
 
-1. `question_type` is `market`, `discovery`, or `greenfield`
+1. `question_type` is `market` or `greenfield` (do NOT redirect on `discovery` — the classifier returns `discovery` as the zero-score fallback for any unrecognised input including feature requests; using it alone as a redirect trigger blocks the most common daily use case)
 2. Top-scoring agent is `mariam` or `hussain-pm` (these signal market/scope intent — better answered by a council)
 
 The classifier can mistype overloaded words like "launch", but the panel scorer uses richer keyword tables (Mariam owns dubai/uae/affiliate/launch/business). Combining both signals catches more cases.
@@ -202,7 +202,7 @@ Append footer:
 ─── ~10K tokens · {duration}s · 1 agent ───
 ```
 
-(Use estimation from `.rcode/references/response-style.md#session-cost-footer`)
+(Estimate from `.rcode/references/response-style.md` — look for the "session cost footer" section; anchor fragments in workflow instructions are fragile so search by heading text if the anchor doesn't resolve)
 
 **If no, or `config.mode === 'yolo'`:** skip saving entirely.
 

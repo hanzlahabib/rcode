@@ -126,7 +126,7 @@ Quick actions:
 
 To start over (overwrites .planning/* and .rcode/state.json):
   /rcode-new-project --force <description>
-  rcode install --reset                        nuclear option — wipes config + state
+  npx @hanzlaa/rcode install --reset           nuclear option — wipes config + state
 ```
 
 STOP — do not proceed.
@@ -199,9 +199,9 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_RESEARCHER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-project-researcher 2>/dev/null)
 AGENT_SYNTHESIZER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-research-synthesizer 2>/dev/null)
 AGENT_ROADMAPPER=$(node .rcode/bin/rcode-tools.cjs agent-info rcode-roadmapper 2>/dev/null)
-RESEARCHER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-project-researcher 2>/dev/null || echo "sonnet")
-SYNTHESIZER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-research-synthesizer 2>/dev/null || echo "sonnet")
-ROADMAPPER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model rcode-roadmapper 2>/dev/null || echo "sonnet")
+RESEARCHER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model project-researcher 2>/dev/null || echo "sonnet")
+SYNTHESIZER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model research-synthesizer 2>/dev/null || echo "sonnet")
+ROADMAPPER_MODEL=$(node .rcode/bin/rcode-tools.cjs resolve-model roadmapper 2>/dev/null || echo "sonnet")
 ```
 
 Parse JSON for: `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
