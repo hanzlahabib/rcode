@@ -115,6 +115,8 @@ init → new-project → plan → execute → next → status → ship
 | Command | When to use |
 |---------|-------------|
 | `/rcode-review` | Adversarial code review of changed files — bugs, security, style. |
+| `/rcode-code-review` | Review source files for bugs, security issues, and code quality problems. |
+| `/rcode-checkpoint-preview [branch]` | Human-in-the-loop diff review — summarizes changes, focuses attention where it matters, walks through testing. Use when you say "checkpoint" or "walk me through this". |
 | `/rcode-review-fix` | Auto-apply fixes from a code-review report. |
 | `/rcode-verify-phase <n>` | Goal-backward audit — does the codebase deliver what the phase promised? |
 | `/rcode-verify-work` | Conversational UAT against acceptance criteria. |
@@ -161,6 +163,9 @@ init → new-project → plan → execute → next → status → ship
 | Command | Use |
 |---------|-----|
 | `/rcode-new-milestone` | Start the next milestone — initializes ROADMAP, REQUIREMENTS, STATE. |
+| `/rcode-plan-milestone [--milestone <name>]` | Plan all phases in a milestone in parallel dependency waves — groups phases into waves, spawns planners in parallel. |
+| `/rcode-execute-milestone [--milestone <name>]` | Execute all phases in the current milestone in dependency order, with verify gates between phases. |
+| `/rcode-scaffold-milestone --names "A|B|C"` | Bulk-create all phase directories for a milestone from a pipe-separated name list or ROADMAP planned phases. |
 | `/rcode-complete-milestone <ver>` | Archive milestone → move to `.planning/milestones/`. |
 | `/rcode-milestone-summary` | Human-readable summary of all phases, decisions, outcomes. |
 | `/rcode-audit-milestone` | Cross-phase audit — verify completion against original goals. |
@@ -180,6 +185,9 @@ init → new-project → plan → execute → next → status → ship
 
 | Command | Use |
 |---------|-----|
+| `/rcode-audit [plans\|phase\|milestone\|uat\|code\|fix\|lens]` | Central audit dispatcher — asks what to audit and routes to the right subroute. Honours config mode. |
+| `/rcode-lens-audit [<1-15> \| all]` | Run a focused audit using one of 15 engineered lenses (security, perf, naming, observability, etc.). |
+| `/rcode-feature-drift [--fix]` | Detect drift between PRD, epics, stories, and code. Severity-tagged report; `--fix` patches trivial items. |
 | `/rcode-secure-phase <n>` | Retroactively verify threat mitigations exist in code. |
 | `/rcode-validate-phase <n>` | Audit Nyquist validation gaps for a completed phase. |
 | `/rcode-add-tests <n>` | Generate unit + E2E tests based on SPRINT/SUMMARY/CONTEXT. |
@@ -217,12 +225,14 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-install <module>` | Install a rcode capability bundle into the project. |
 | `/rcode-enable-hooks` | Install optional rcode hooks into `.claude/settings.json`. |
 | `/rcode-scaffold-project` | Scaffold a new project from the official rcode template. |
+| `/rcode-scaffold-skill --role <role>` | Scaffold a new compliant SKILL.md for a rcode role — eliminates friction of finding folder, copying, and chasing 5-component compliance. |
 | `/rcode-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. *Not yet implemented (#481).* |
 
 ## Story-level epics workflow
 
 | Command | Use |
 |---------|-----|
+| `/rcode-prfaq [<idea>]` | Working Backwards challenge — write the press release before building. Stress-tests a product concept, produces PRFAQ document + PRD distillate. |
 | `/rcode-create-prd` | Create a PRD from scratch through guided facilitation. |
 | `/rcode-edit-prd` | Update an existing PRD with revisions or clarifications. |
 | `/rcode-validate-prd` | Validate an existing PRD for completeness and consistency. |
@@ -266,6 +276,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-inbox` | Triage incoming issues and PRs against contribution templates. |
 | `/rcode-pr-branch` | Create clean PR branch — filter out `.planning/` commits. |
 | `/rcode-autonomous` | Run remaining phases autonomously — plan → execute → verify cycles. |
+| `/rcode-execute-sprint <sprint-file>` | (Internal) Execute a single sprint's SPRINT.md — wrapper over `/rcode-execute` for sprint-specific dispatch. |
 | `/rcode-research-phase <n>` | Standalone research (usually use `/rcode-plan` instead). |
 | `/rcode-analyze-dependencies` | Suggest "Depends on" entries for ROADMAP.md. |
 | `/rcode-profile-user` | Classify developer on 4 dimensions, produce profile artifact. |
