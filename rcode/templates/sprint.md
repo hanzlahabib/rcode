@@ -35,6 +35,22 @@
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 
+## Files Touched
+
+<!-- Planner must populate before handoff to executor. Used by wave-overlap checker and merge reviewers. -->
+
+**Creates:**
+<!-- - `exact/path/new-file.ts` — one-line responsibility -->
+
+**Modifies:**
+<!-- - `exact/path/existing.ts` — what changes -->
+
+**Tests:**
+<!-- - `tests/exact/path/test.ts` — tests for -->
+
+**Aggregator files (append-only — never replace):**
+<!-- - `packages/shared/src/index.ts` — adds export for X -->
+
 ## Sprint Review
 
 <!-- Fill at sprint completion only — omit this section until then -->
