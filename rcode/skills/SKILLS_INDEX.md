@@ -1,6 +1,6 @@
 # rcode — Skills Index
 
-All 87 skills in rcode, organized by category: 23 agent skills, 39 action skills, 25 core skills, plus 2 shared modules.
+All 86 skills in rcode, organized by category: 23 agent skills, 38 action skills, 25 core skills, plus 2 shared modules.
 
 ## Agent Skills (23)
 
@@ -36,7 +36,7 @@ Note: Hussain has two hats — **PM** (strategic product management) and **SM** 
 
 ---
 
-## Action Skills (39)
+## Action Skills (38)
 
 Invoked by agents via the capabilities table in their SKILL.md. Organized by SDLC phase.
 
@@ -63,7 +63,7 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 - `actions/3-solutioning/rcode-check-implementation-readiness` — verify PRD/UX/arch alignment
 - `actions/3-solutioning/rcode-generate-project-context` — generate project-context.md
 
-### 4 — Implementation (22)
+### 4 — Implementation (21)
 - `actions/4-implementation/rcode-dev-story` — execute a story (write tests + code)
 - `actions/4-implementation/rcode-review` — comprehensive code review
 - `actions/4-implementation/rcode-qa-generate-e2e-tests` — generate e2e test suite
@@ -84,8 +84,7 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 - `actions/4-implementation/rcode-prove-it` — test-first development
 - `actions/4-implementation/rcode-source-truth` — cite official docs before writing framework code
 - `actions/4-implementation/rcode-trim` — code simplification
-- `actions/4-implementation/rcode-herdr-orchestration` — orchestrate parallel cld agents inside herdr panes (worktree-per-agent, monitor blocked/idle, merge back)
-- `actions/4-implementation/rcode-autonomous-fix-campaign` — wave-based parallel fix campaign with durable backlog + integration branch + heartbeat (composes on top of rcode-herdr-orchestration)
+- `actions/4-implementation/rcode-herdr-orchestration` — orchestrate parallel cld agents in herdr; single-shot fan-out OR long-running autonomous wave-based fix campaign with durable backlog + integration branch + heartbeat
 
 ---
 
