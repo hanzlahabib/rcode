@@ -13,7 +13,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.0.0 on npm. 339 automated tests across 58 files, 45 agents, 116 commands, 86 skills. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.0.0 on npm. 457 automated tests across 63 files, 45 agents, 116 commands, 87 skills. Actively dogfooded on real projects every week.
 
 ---
 
@@ -42,7 +42,7 @@ Three layers, specialised for software delivery:
 | Layer | What lives here | Example |
 |-------|-----------------|---------|
 | **Memory** | `.rcode/memory/` — git-tracked markdown, lossless distillates | "We chose Postgres over Mongo because of JSON-B + RLS — see ADR-007" |
-| **Skills** | `rcode/skills/` — 85 phrase-activated playbooks | `rcode-sprint-checker` validates file/symbol refs before execute |
+| **Skills** | `rcode/skills/` — 87 phrase-activated playbooks | `rcode-sprint-checker` validates file/symbol refs before execute |
 | **Workflows** | `rcode/workflows/` — orchestrated multi-step paths | `/rcode-plan` runs research → planner → checker → confirm |
 
 Single agent navigates the structure. No LangChain, no AutoGen, no orchestrator process. Just folders the model can read.
