@@ -37,7 +37,7 @@ Single source of truth for the rcode improvement programme. Every task here corr
 
 ## Phase 3 — Memory Bank ✅ done
 
-- [x] Bootstrap `rcode/templates/memory/` directory (13 template files)
+- [x] Bootstrap `rcode/templates/memory/` directory (14 template files)
 - [x] Add `rcode-memory-init` skill + workflow
 - [x] Add `rcode-memory-update` skill + workflow
 - [x] Add `rcode-memory-distill` skill + workflow
