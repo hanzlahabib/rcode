@@ -76,7 +76,7 @@ The underlying workflow files remain — `code-review` delegates to them when th
 | `rcode-architect` | `rcode-waleed` (CTO + Chief Architect — already covered the full architecture scope) |
 | `rcode-tech-writer` | `rcode-noor` (Technical Writer & Presentation Lead — absorbed README, API docs, changelogs, migration guides, inline comments) |
 
-`team.yaml` count: 47 → 46.
+`team.yaml` count: 47 → 45 (further entries trimmed in subsequent merges).
 
 ### Capability changes
 
