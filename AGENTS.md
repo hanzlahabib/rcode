@@ -48,7 +48,7 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 ## Naming & Branding (per `BRAND.md`)
 
-- **Skill names** in frontmatter: `rcode-<verb>-<noun>` for legacy skills; new branded skills use `rcode-<verb>-<noun>` ONLY in slash command surface (`/rcode:<name>`); folder names stay `rcode-*` because `cli/install.js` hardcodes that prefix.
+- **Skill names** in frontmatter: `rcode-<verb>-<noun>` for legacy skills; new branded skills use `rcode-<verb>-<noun>` ONLY in slash command surface (`/rcode-<name>`); folder names stay `rcode-*` because `cli/install.js` hardcodes that prefix.
 - **Persona IDs** in `team.yaml` stay `rcode-<name>` (dashboard scanner reads them by id; renaming breaks rendering).
 - **Persona display names** keep Arabic alongside Latin: `Sadiq (صادق)`, `Dalil (دليل)`, etc.
 - **Concept primitives** (Memory Bank, Distillate, Majlis, Diwan) are named tooling — capitalised, used consistently in user-facing copy.
