@@ -342,3 +342,45 @@ existing pending P1/P2 items ──┘                    ▲
 - A single, quick, one-agent task — just run it directly, no herdr, no worktree.
 - Anything the user wants to watch step-by-step — orchestration is for parallel,
   hands-off batches.
+
+## Output Format
+
+Single-shot mode produces:
+- One git worktree per agent under `../sm-worktrees/<area>/` on branch `audit-<area>` (or
+  `<topic>-<area>`).
+- Per-area audit doc at `.planning/audits/AUDIT-<area>.md` inside the worktree, committed
+  with `git add -f`.
+- A final summary merged back onto the calling branch (master by default) with each
+  agent's commits preserved (no squash unless explicitly requested).
+
+Campaign mode produces:
+- Durable backlog at `.planning/campaign/BACKLOG.md` (committed on the integration
+  branch at Phase 0).
+- Campaign state log at `.planning/campaign/STATE.md` (in-flight + shipped items, TSC
+  baseline drift per wave).
+- Heartbeat file `.planning/campaign/HEARTBEAT` (mtime-refreshed every 30s by the
+  background bash loop).
+- One long-lived integration branch (default `campaign-integration`) with all wave
+  merges. **Master is NOT touched** until Phase 3 with explicit user consent.
+- Per-wave commits authored by sub-agents on `campaign-<area>` branches, merged into
+  the integration branch as each wave completes.
+
+In both modes, the orchestrator's chat output is concise wave/pane status only — the
+real artifact is the committed work on disk.
+
+## Examples
+
+<!-- TODO(P0): replace stubs with real worked examples — see audit
+.planning/audits/AUDIT-skills-compliance.md follow-up #1 -->
+
+**Happy path — single-shot 4-area parallel audit:**
+TODO: walk through a concrete fan-out of a feature audit across 4 worktrees, what each
+agent's prompt looks like, the merge-back flow, and the final TSC check.
+
+**Edge case — sub-agent goes silent / pane stays `working` past wave duration:**
+TODO: describe the peek-and-recover flow (`herdr pane read` + decide continue vs kill
++ revert branch).
+
+**Negative example — when NOT to invoke this skill:**
+TODO: example of a one-line typo fix where invoking herdr orchestration is overkill;
+the right move is to just edit the file directly on the current branch.
