@@ -13,7 +13,7 @@ The single document covering everything you need to use, customise, and contribu
 5. [Memory Bank](#5-memory-bank)
 6. [Personas (45 agents)](#6-personas-45-agents)
 7. [Slash commands (116)](#7-slash-commands-116)
-8. [Skills (85)](#8-skills-85)
+8. [Skills (87)](#8-skills-87)
 9. [Workflows](#9-workflows)
 10. [Diwan dashboard](#10-diwan-dashboard)
 11. [Configuration](#11-configuration)
@@ -43,7 +43,7 @@ rcode is a **methodology shipped as files** — folders, markdown, and slash com
 
 - **Persistent project memory** at `.rcode/memory/` — checked into git, browsable in any IDE, visible in the Diwan dashboard
 - **45 distinctive engineering personas** with Arabic-named brand vocabulary (Sadiq, Waleed, Fatima, Dalil, Majlis…)
-- **85 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from rcode's actual production incidents
+- **87 skills** covering analysis, planning, implementation, security, performance, debugging, and 8 real-pain skills encoded from rcode's actual production incidents
 - **116 slash commands** for parallel agent debate (`/rcode-council`), sequential pipelines (`/rcode-chain`), quick consultation (`/rcode-discuss`), and end-to-end automation (`/rcode-autonomous`)
 - **A view-only dashboard** (Diwan) at port 7717 that renders project state, decision logs, and Memory Bank content
 - **Zero runtime dependencies** — pure Node.js with built-in test runner
@@ -77,7 +77,7 @@ After install, the project gains:
 | `.rcode/brain/` | rcode institutional knowledge pulled from upstream |
 | `.claude/agents/` | 45 first-class subagents (for Claude Code) |
 | `.claude/commands/rcode/` | 116 slash commands |
-| `.claude/skills/` | 85 phrase-activated skills |
+| `.claude/skills/` | 87 phrase-activated skills |
 | `.cursor/rules/rcode/` | Cursor commands and rules |
 | `.gemini/rcode/` | Gemini CLI commands and agents |
 | `.planning/` | Where your project's artefacts land |
@@ -311,7 +311,7 @@ Distinctive named characters that bring focused expertise to specific questions.
 
 Used internally by workflows — usually not invoked directly:
 
-`rcode-planner` · `rcode-executor` · `rcode-verifier` · `rcode-plan-checker` · `rcode-debugger` · `rcode-codebase-mapper` · `rcode-project-researcher` · `rcode-roadmapper` · `rcode-phase-researcher` · `rcode-advisor-researcher` · `rcode-assumptions-analyzer` · `rcode-research-synthesizer` · `rcode-integration-checker` · `rcode-nyquist-auditor` · `rcode-reviewer` · `rcode-fixer` · `rcode-edge-case-hunter` · `rcode-deviation-analyzer` · `rcode-remediation-planner` · `rcode-docs-auditor` · `rcode-doc-verifier` · `rcode-doc-writer` · `rcode-security-auditor` · `rcode-security-adversary` · `rcode-sprint-checker` · `rcode-ui-auditor`
+`rcode-planner` · `rcode-executor` · `rcode-verifier` · `rcode-sprint-checker` · `rcode-debugger` · `rcode-codebase-mapper` · `rcode-project-researcher` · `rcode-roadmapper` · `rcode-phase-researcher` · `rcode-advisor-researcher` · `rcode-assumptions-analyzer` · `rcode-research-synthesizer` · `rcode-integration-checker` · `rcode-nyquist-auditor` · `rcode-code-reviewer` · `rcode-code-fixer` · `rcode-edge-case-hunter` · `rcode-deviation-analyzer` · `rcode-remediation-planner` · `rcode-docs-auditor` · `rcode-security-auditor` · `rcode-security-adversary` · `rcode-ui-auditor`
 
 ---
 
@@ -417,7 +417,7 @@ For the canonical reference: [`docs/commands.md`](docs/commands.md) and [`docs/R
 
 ---
 
-## 8. Skills (85)
+## 8. Skills (87)
 
 Skills are deep, domain-specific instructions invoked by phrase or by other skills. Auto-generated catalogue: [`docs/skills-catalog.md`](docs/skills-catalog.md).
 
@@ -435,7 +435,7 @@ Skills are deep, domain-specific instructions invoked by phrase or by other skil
 
 ### Phase 4 — Implementation (20 skills)
 
-**Original (9):** `rcode-checkpoint-preview` · `rcode-review` · `rcode-correct-course` · `rcode-dev-story` · `rcode-qa-generate-e2e-tests` · `rcode-retrospective` · `rcode-scaffold-project` · `rcode-sprint-planning` · `rcode-sprint-status`
+**Original (9):** `rcode-checkpoint-preview` · `rcode-code-review` · `rcode-correct-course` · `rcode-dev-story` · `rcode-qa-generate-e2e-tests` · `rcode-retrospective` · `rcode-scaffold-project` · `rcode-sprint-planning` · `rcode-sprint-status`
 
 **Engineering rigour (11):** `rcode-incremental` · `rcode-prove-it` · `rcode-source-truth` · `rcode-browser-verify` · `rcode-debug` · `rcode-trim` · `rcode-harden` · `rcode-perf` · `rcode-git-flow` · `rcode-ci` · `rcode-migrate`
 
@@ -503,7 +503,7 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion
 @.rcode/workflows/plan.md
 ```
 
-The largest workflow is `.rcode/workflows/autonomous.md` at 1059 lines. Five workflows exceed 500 lines; this is by design — they orchestrate complex multi-phase processes. Trimming them carries unverified runtime risk and was deferred from the v3.0 programme.
+The largest workflows are `.rcode/workflows/plan.md` and `.rcode/workflows/execute.md` at 1062 lines each; `autonomous.md` is 936 lines. Nine workflows exceed 500 lines; this is by design — they orchestrate complex multi-phase processes. Trimming them carries unverified runtime risk and was deferred from the v3.0 programme.
 
 ---
 
@@ -536,7 +536,7 @@ Stop with `kill $(lsof -t -i:7717)`.
 
 ```
 server/
-├── dashboard.js          # HTTP server + routing (~92 lines)
+├── dashboard.js          # HTTP server + routing (~250 lines)
 └── lib/
     ├── scanner.js        # State scanning from .rcode/ and .rcode/memory/
     ├── api.js            # API route handlers
@@ -546,7 +546,7 @@ server/
         └── client.js     # Client-side JS: routing, rendering
 ```
 
-Total: ~1880 lines across 6 files. View-only by design — no write endpoints, no database, no framework.
+Total: ~3300 lines across 6 files (CSS module accounts for ~2280). View-only by design — no write endpoints, no database, no framework.
 
 ### Views
 
@@ -817,11 +817,11 @@ Means a `team.yaml` entry has `file_path:` pointing to a file that doesn't exist
 ### Running the suite
 
 ```bash
-node --test          # full suite (134 tests, ~2s)
+node --test          # full suite (457 tests, ~10s)
 node --test --test-reporter=spec   # verbose output with test names
 ```
 
-**134 tests · pure Node stdlib (no test runner install needed)**
+**457 tests · pure Node stdlib (no test runner install needed)**
 
 ### Test scenarios
 
@@ -848,7 +848,7 @@ Every install runs 5 automated smoke tests before exiting:
     ✓ .rcode/config.yaml present — 412 bytes
     ✓ .rcode/state.json parses — valid JSON
     ✓ agents installed — 45
-    ✓ skills + commands installed — 85 skills + 116 commands
+    ✓ skills + commands installed — 87 skills + 116 commands
 ```
 
 A failed check prints the debug command and returns exit code 1 so CI catches broken installs.
@@ -900,22 +900,22 @@ rcode/                     # the rcode source repo
 ├── rcode/                       # the methodology (this is what gets installed)
 │   ├── agents/                  # 45 agent definition files
 │   ├── commands/                # 116 slash command files
-│   ├── workflows/               # 126 workflow files
-│   ├── skills/                  # 85 SKILL.md files in 3 buckets
+│   ├── workflows/               # 129 workflow files
+│   ├── skills/                  # 87 SKILL.md files in 3 buckets
 │   │   ├── actions/{1-analysis,2-plan,3-solutioning,4-implementation}/
-│   │   ├── agents/              # 18 persona skills
-│   │   └── core/                # 25 cross-cutting skills
+│   │   ├── agents/              # 23 persona + auditor skills
+│   │   └── core/                # 27 cross-cutting skills
 │   ├── references/              # shared reference files (response style, etc.)
 │   ├── templates/               # project + memory bank templates
 │   ├── modules/                 # module YAMLs grouping skills
 │   ├── config/                  # model-profiles.json
 │   ├── brain/                   # institutional knowledge from upstream
 │   └── team.yaml                # agent registry
-├── server/                      # Diwan dashboard (~1880 lines, no deps)
+├── server/                      # Diwan dashboard (~3300 lines, no deps)
 │   ├── dashboard.js
 │   └── lib/
 ├── scripts/                     # build + catalogue generators
-├── test/                        # node:test suite (120 cases)
+├── test/                        # node:test suite (457 cases)
 ├── docs/                        # extended docs (REFERENCE, commands, agents, TIERS, ADRs)
 └── .github/                     # CI workflows + issue templates
 ```
@@ -1083,7 +1083,7 @@ Open an issue at [`hanzlahabib/rihal-code`](https://github.com/hanzlahabib/rihal
 - [`docs/commands.md`](docs/commands.md) — commands grouped by purpose
 - [`docs/agents.md`](docs/agents.md) — full agent reference
 - [`docs/TIERS.md`](docs/TIERS.md) — beginner / advanced / power-user paths
-- [`docs/skills-catalog.md`](docs/skills-catalog.md) — auto-generated skill catalogue (85 entries)
+- [`docs/skills-catalog.md`](docs/skills-catalog.md) — auto-generated skill catalogue (87 entries)
 - [`docs/install.md`](docs/install.md) — install flavours (modules, IDE, version pinning, yolo mode)
 - [`docs/DAILY-USE.md`](docs/DAILY-USE.md) — day-to-day workflow examples
 
