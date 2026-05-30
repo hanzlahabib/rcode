@@ -237,8 +237,8 @@ Spawned by specific workflows for targeted analysis.
 |-------|-------------|------------|
 | `rcode-codebase-mapper` | Explores codebase, writes structured analysis documents. Focus areas: tech, arch, quality, concerns | `/rcode-map-codebase` |
 | `rcode-debugger` | Investigates bugs using scientific method, manages debug sessions, handles checkpoints | `/rcode-debug` |
-| `rcode-reviewer` | Code quality assessment, bug detection, security issues, standards validation | `/rcode-review` |
-| `rcode-fixer` | Applies code review findings, implements style fixes, refactors for maintainability | `/rcode-review-fix`, `/rcode-audit-fix` |
+| `rcode-code-reviewer` | Code quality assessment, bug detection, security issues, standards validation | `/rcode-review` |
+| `rcode-code-fixer` | Applies code review findings, implements style fixes, refactors for maintainability | `/rcode-review-fix`, `/rcode-audit-fix` |
 | `rcode-integration-checker` | Verifies cross-phase integration and E2E flows | `/rcode-audit-milestone` |
 | `rcode-nyquist-auditor` | Fills validation gaps, generates missing tests, verifies coverage | `/rcode-validate-phase` |
 | `rcode-security-auditor` | Comprehensive security audit, compliance verification, posture assessment | `/rcode-secure-phase` |
@@ -253,6 +253,10 @@ Spawned by specific workflows for targeted analysis.
 | `rcode-edge-case-hunter` | Enumerates edge cases by category with severity | `/rcode-review --edge-cases` |
 | `rcode-assumptions-analyzer` | Analyzes codebase for a phase, returns structured assumptions with evidence | `/rcode-discuss-phase` (assumptions mode) |
 | `rcode-advisor-researcher` | Researches a gray area decision, returns structured comparison table | `/rcode-discuss-phase` (advisor mode) |
+| `rcode-cross-platform-auditor` | Detects bash-isms, macOS-only flags, hardcoded Unix paths, and CRLF line endings | `/rcode-audit` |
+| `rcode-dep-auditor` | Scans for outdated packages, CVEs, unused dependencies, and loose version pins | `/rcode-audit` |
+| `rcode-i18n-auditor` | Detects hardcoded English strings, missing response_language threading, and RTL layout gaps | `/rcode-audit` |
+| `rcode-observability-auditor` | Detects unguarded shell calls, unchecked Task() results, and missing INIT .ok checks | `/rcode-audit` |
 
 ---
 
