@@ -27,6 +27,12 @@ Analyze an existing codebase and produce documentation for both human and LLM co
 
 Follow the instructions in ./workflow.md.
 
+## When NOT to use this skill
+
+Do NOT use for writing net-new documentation from scratch (use a write-document prompt).
+Do NOT invoke when the user wants to document a single file or function — scope this skill
+to whole-codebase or whole-module brownfield analysis only.
+
 ## Output Format
 
 - Produces multi-file documentation: README summary, ARCHITECTURE.md, CONVENTIONS.md, project-context.md

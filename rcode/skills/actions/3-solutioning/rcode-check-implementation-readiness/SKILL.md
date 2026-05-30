@@ -28,6 +28,12 @@ Verify that PRD, UX designs, architecture decisions, and epics/stories are all a
 
 Follow the instructions in ./workflow.md.
 
+## When NOT to use this skill
+
+Do NOT use during active implementation — if work is already in progress, use
+`rcode-correct-course` instead. Do NOT invoke for a single-artifact review (e.g. "check
+this PRD"); scope this skill to cross-artifact alignment checks before a phase starts.
+
 ## Output Format
 
 - Produces an alignment report with checklist format
