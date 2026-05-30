@@ -52,13 +52,30 @@ function findAgentFiles(dir) {
     .map((e) => path.join(dir, e.name));
 }
 
+// Negative-boundary signal — an explicit statement of what a skill does NOT do.
+// Mirrors the same constant in cli/lib/schemas.cjs so both checks stay in sync.
+const NEGATIVE_BOUNDARY_RE = /not for|do not|does not|don't|never\b|audit-only|negative/i;
+
 function checkCompliance(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
+  const { frontmatter, body } = parseFrontmatter(content);
   const missing = [];
   if (!/^name:/m.test(content)) missing.push('name');
   if (!/^description:/m.test(content)) missing.push('description');
+  if (!/^## Overview/m.test(content)) missing.push('Overview section');
   if (!/^## Output Format/m.test(content)) missing.push('Output Format');
   if (!/^## Examples/m.test(content)) missing.push('Examples');
+
+  // Negative-boundary clause (component 1 of the 5-component standard).
+  // Parse the frontmatter description so folded-block YAML is normalized
+  // before the regex runs — "Do\n  NOT" becomes "Do NOT" after normalization.
+  const desc = typeof frontmatter.description === 'string' ? frontmatter.description : '';
+  const hasBoundary =
+    NEGATIVE_BOUNDARY_RE.test(desc) ||
+    /##[^\n]*\bnot\b/i.test(body) ||
+    /\bdo not (use|include)\b/i.test(body);
+  if (!hasBoundary) missing.push('negative-boundary clause');
+
   return missing;
 }
 
