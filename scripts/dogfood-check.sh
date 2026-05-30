@@ -61,7 +61,11 @@ else
   fail "roadmap list-phases returned [] — #464 regression"
 fi
 
-GET_OUT=$($CLI roadmap get-phase 6 2>&1)
+# Derive first available phase number from list-phases so the check survives
+# milestone rollovers where early phase numbers are archived (e.g. phases 1-19
+# live in .planning/milestones/M1-ship-v2/ROADMAP.md after the M1 cutover).
+FIRST_PHASE=$(echo "$LIST_OUT" | grep -oE '"number": "[0-9]+"' | head -1 | grep -oE '[0-9]+')
+GET_OUT=$($CLI roadmap get-phase "${FIRST_PHASE:-20}" 2>&1)
 if echo "$GET_OUT" | grep -q '"found": true'; then
   pass "roadmap get-phase finds heading-style phase (#464 regex part)"
 else
