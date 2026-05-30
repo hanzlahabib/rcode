@@ -3,6 +3,22 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.1.0 (2026-05-30) — readiness fixes: fresh-install doctor, uninstall cleanup, CLI polish
+
+Stability and compliance hardening across doctor, uninstall, bash-guard, roster, and skill scaffolding. No breaking changes; drop-in upgrade from v4.0.0.
+
+### Fixed
+
+- **doctor fresh-install command path (#873)** — `rcode doctor` now exits 0 when run from a freshly-installed directory that has never had rcode in it; the manifest compliance check no longer fails on a missing source tree.
+- **doctor 5-component enforcement (#874)** — doctor enforces the 5-component SKILL.md standard across all 61 skills and surfaces non-compliant files by name.
+- **dogfood phase-derivation for get-phase (#875)** — `scripts/dogfood-check.sh` now validates `roadmap get-phase` against heading-style ROADMAP files, closing a silent pass on malformed phase lookups.
+- **uninstall artifact cleanup + --purge (#876)** — `rcode uninstall` reliably removes `.claude/`, `.cursor/`, `.vscode/` artifacts; new `--purge` flag additionally removes `.rcode/` config, state, and brain directories.
+- **bash-guard test alignment (#877)** — bash-guard hook test corrected: `/tmp/scratch` (outside `os.tmpdir()`) is now asserted blocked, not allowed, matching the real hook's allowlist.
+- **herdr-orchestration SKILL compliance and references split (#878)** — `rcode-herdr-orchestration` SKILL.md trimmed to comply with the 5-component standard; extracted references moved to a new `references.md` sibling file.
+- **roster canonicalization and REFERENCE agents section (#879)** — `agent-manifest.csv` de-duplicated and canonicalized to 45 entries; `docs/REFERENCE.md` gains an Agents section with the full roster.
+- **CLI/UX polish: --help for set-mode/set-profile, github-sync empty-phases exit (#880)** — `set-mode` and `set-profile` now respond to `--help`; `github-sync` exits 0 with a notice when `phases/` is empty rather than erroring; dashboard stop-help updated from `lsof` to `ss -ltnp` for WSL2 compatibility.
+
+---
 ## v4.0.0 (2026-05-23) — open-source release, full `rihal` → `rcode` rename
 
 **BREAKING CHANGE.** Hard cutover from the internal Rihal Code brand to the public rcode open-source project. v3.x configs and installations are not auto-migrated. The project is now MIT-licensed and accepts public contributions.
