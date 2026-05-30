@@ -47,12 +47,25 @@ function readPackageManifest(packageRoot) {
   // Mirror installSkills() walkForSkills: recurse into action bucket dirs
   // (1-analysis, 2-plan, etc.) until a dir with SKILL.md is found, then add
   // the dir name as installed. Bucket dirs themselves are never installed.
+  // Issue #873: skills with `internal: true` in frontmatter are installed to
+  // .rcode/skills/ (not .claude/skills/), so omit them from manifest.actions
+  // to avoid false drift reports.
+  function isInternalSkill(skillDir) {
+    try {
+      const text = fs.readFileSync(path.join(skillDir, 'SKILL.md'), 'utf8');
+      return /^internal:\s*true\s*$/m.test(text);
+    } catch {
+      return false;
+    }
+  }
+
   function walkActions(dir) {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       const full = path.join(dir, entry.name);
       if (fs.existsSync(path.join(full, 'SKILL.md'))) {
+        if (isInternalSkill(full)) continue; // internal → .rcode/skills/, not .claude/skills/
         // Use the name as it lands in .claude/skills/ (installSkills prefixes
         // non-rcode- dirs with 'rcode-', but all current skills already have it)
         const installedName = entry.name.startsWith('rcode-')
