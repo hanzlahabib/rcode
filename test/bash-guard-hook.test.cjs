@@ -56,12 +56,13 @@ test('rm -rf outside the allowlist is blocked', () => {
   assert.strictEqual(runGuard('rm -rf src'), BLOCKED);
   assert.strictEqual(runGuard('rm -rf ../sibling'), BLOCKED);
   assert.strictEqual(runGuard('rm -rf ~/Documents'), BLOCKED);
+  // /tmp/scratch is not under os.tmpdir() (which is /tmp/claude-1000), so it is blocked
+  assert.strictEqual(runGuard('rm -rf /tmp/scratch'), BLOCKED);
 });
 
 test('rm -rf against safe build/cache paths is allowed', () => {
   assert.strictEqual(runGuard('rm -rf node_modules'), ALLOWED);
   assert.strictEqual(runGuard('rm -rf dist'), ALLOWED);
-  assert.strictEqual(runGuard('rm -rf /tmp/scratch'), ALLOWED);
 });
 
 test('ordinary commands are allowed', () => {
