@@ -88,6 +88,47 @@ function stripRcodeGitignoreBlock(text) {
 }
 
 /**
+ * Strip the rcode-managed block from .git/hooks/pre-commit.
+ * Removes the file entirely when only the shebang + rcode block remain.
+ * Returns 'removed' | 'stripped' | 'unchanged' | 'skipped'.
+ */
+function cleanRcodePreCommitHook(cwd) {
+  const hookPath = path.join(cwd, '.git', 'hooks', 'pre-commit');
+  if (!fs.existsSync(hookPath)) return 'skipped';
+
+  const BEGIN = '# ===== rcode-managed pre-commit block =====';
+  const END   = '# ===== end rcode pre-commit block =====';
+
+  let content;
+  try { content = fs.readFileSync(hookPath, 'utf8'); } catch { return 'skipped'; }
+
+  if (!content.includes(BEGIN)) return 'unchanged';
+
+  const startIdx = content.indexOf(BEGIN);
+  const endIdx = content.indexOf(END, startIdx);
+  if (endIdx < 0) return 'unchanged'; // malformed — leave it
+
+  // Trim the newline that precedes BEGIN and the newline that follows END
+  let lo = startIdx;
+  if (lo > 0 && content[lo - 1] === '\n') lo--;
+  let hi = endIdx + END.length;
+  if (hi < content.length && content[hi] === '\n') hi++;
+
+  const stripped = content.slice(0, lo) + content.slice(hi);
+
+  // If only a shebang (or blank) remains, remove the whole file
+  const remnant = stripped.trim();
+  if (remnant === '' || remnant === '#!/bin/sh' || remnant === '#!/bin/bash') {
+    try { fs.unlinkSync(hookPath); return 'removed'; } catch { return 'skipped'; }
+  }
+
+  try {
+    writeFileAtomic(hookPath, stripped, { mode: 0o755 });
+    return 'stripped';
+  } catch { return 'skipped'; }
+}
+
+/**
  * Walk a directory and remove all files/subdirs whose name matches a predicate.
  * Returns the number of entries removed. Always skips local overrides (#382).
  */
@@ -148,7 +189,7 @@ function cleanupEmptyDirs(cwd, relPaths) {
  */
 function buildPlan(cwd, editors) {
   const plan = {
-    claude: { skills: [], commands: [], agents: [] },
+    claude: { skills: [], commands: [], agents: [], agentsRulesDir: false },
     cursor: [],
     windsurf: [],
     antigravity: [],
@@ -194,6 +235,10 @@ function buildPlan(cwd, editors) {
         .readdirSync(agentsDir)
         .filter((name) => name.startsWith('rcode-') && name.endsWith('.md'));
     }
+    // Installer copies rcode/agents/rules/ tree → .claude/agents/rules/ (#876)
+    if (fs.existsSync(path.join(cwd, '.claude/agents/rules'))) {
+      plan.claude.agentsRulesDir = true;
+    }
   }
 
   if (editors.includes('cursor')) {
@@ -201,7 +246,8 @@ function buildPlan(cwd, editors) {
     if (fs.existsSync(cursorDir)) {
       plan.cursor = fs
         .readdirSync(cursorDir)
-        .filter((name) => name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc');
+        // 'rcode' matches the .cursor/rules/rcode/ subdir installed by the cursor IDE path (#876)
+        .filter((name) => name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc' || name === 'rcode');
     }
   }
 
@@ -330,6 +376,9 @@ function planToPathList(plan, cwd, options = {}) {
   }
   for (const name of plan.claude.agents) {
     paths.push(path.join('.claude/agents', name));
+  }
+  if (plan.claude.agentsRulesDir) {
+    paths.push('.claude/agents/rules');
   }
   for (const name of plan.cursor) {
     paths.push(path.join('.cursor/rules', name));
@@ -650,6 +699,17 @@ async function runUninstall(args) {
     removed += nAgents;
     if (nAgents > 0) console.log(`   ✓ removed ${nAgents} Claude agents`);
 
+    // .claude/agents/rules/ — installed by the agent-rules sub-tree (#876)
+    if (plan.claude.agentsRulesDir) {
+      const rulesDir = path.join(cwd, '.claude/agents/rules');
+      const r = safeRmSync(rulesDir, path.resolve(cwd));
+      if (r.ok && r.reason !== 'missing') {
+        console.log(`   ✓ removed .claude/agents/rules/ (agent reference rules)`);
+      } else if (r.reason === 'outside-root') {
+        console.log(`   ⚠ refused to remove .claude/agents/rules/ — symlink resolves outside project root`);
+      }
+    }
+
     // Clean up now-empty .claude/commands and .claude/agents dirs
     try {
       if (fs.existsSync(path.join(cwd, '.claude/commands')) && fs.readdirSync(path.join(cwd, '.claude/commands')).length === 0) {
@@ -664,7 +724,7 @@ async function runUninstall(args) {
   if (editors.includes('cursor')) {
     const cursorDir = path.join(cwd, '.cursor/rules');
     const n = removeMatching(cursorDir, (name) =>
-      name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc',
+      name.startsWith('rcode-') || name === 'rcode.mdc' || name === 'rcode-method.mdc' || name === 'rcode',
     );
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Cursor rules`);
@@ -717,6 +777,29 @@ async function runUninstall(args) {
     if (stripped) {
       console.log(`   ✓ stripped rcode section from AGENTS.md`);
     }
+  }
+
+  // Strip the rcode block from .gitignore — always, not just on --purge (#876)
+  const gitignorePath = path.join(cwd, '.gitignore');
+  if (fs.existsSync(gitignorePath)) {
+    try {
+      const before = fs.readFileSync(gitignorePath, 'utf8');
+      const after = stripRcodeGitignoreBlock(before);
+      if (after !== before) {
+        fs.writeFileSync(gitignorePath, after);
+        console.log(`   ✓ stripped rcode block from .gitignore`);
+      }
+    } catch (err) {
+      console.log(`   ⚠ could not strip .gitignore block: ${err.message}`);
+    }
+  }
+
+  // Remove .git/hooks/pre-commit rcode block (or the whole file if rcode-only) (#876)
+  const hookResult = cleanRcodePreCommitHook(cwd);
+  if (hookResult === 'removed') {
+    console.log(`   ✓ removed .git/hooks/pre-commit (was rcode-only)`);
+  } else if (hookResult === 'stripped') {
+    console.log(`   ✓ stripped rcode block from .git/hooks/pre-commit`);
   }
 
   // Cleanup empty editor directories left behind after removing rcode-*
@@ -784,7 +867,7 @@ async function runUninstall(args) {
     }
   }
 
-  // --purge: also wipe .planning/ artifacts and the rcode .gitignore block.
+  // --purge: also wipe .planning/ artifacts (user project data beyond .rcode/).
   // Without this, "uninstall + reinstall" carries forward stale phases /
   // sprints / SUMMARY files even after .rcode/ is gone.
   if (opts.purge) {
@@ -799,36 +882,6 @@ async function runUninstall(args) {
         console.log(`   ⚠ could not remove .planning/: ${r.reason}`);
       }
     }
-
-    // Strip the rcode-managed block from .gitignore. The installer writes
-    // a fenced block; we remove it cleanly without touching user lines.
-    //
-    // Issue #684: previous regex `/\n?# rcode[\s\S]*?(?=\n\n|\n$|$)/g` was a
-    // footgun — it matched ANY user line starting with "# rcode" (e.g.
-    // "# rcode notes", "# rcode is great") and greedily consumed everything
-    // up to the next blank line, silently nuking user content.
-    //
-    // Three shapes have ever shipped:
-    //   1. Current (install.js:653-654): "# ===== rcode-managed gitignore block ... =====" ... "# ===== end rcode-managed gitignore block ====="
-    //   2. Old fenced markers: "# >>> rcode >>>" ... "# <<< rcode <<<"
-    //   3. Hypothetical legacy single-line "# rcode" — never actually
-    //      committed by any installer version we can find. Removed.
-    //
-    // Both kept patterns require BOTH sentinel markers to be present —
-    // user content with "# rcode" prefix is now safe.
-    const gitignorePath = path.join(cwd, '.gitignore');
-    if (fs.existsSync(gitignorePath)) {
-      try {
-        const before = fs.readFileSync(gitignorePath, 'utf8');
-        const stripped = stripRcodeGitignoreBlock(before);
-        if (stripped !== before) {
-          fs.writeFileSync(gitignorePath, stripped);
-          console.log(`   ✓ stripped rcode block from .gitignore (--purge)`);
-        }
-      } catch (err) {
-        console.log(`   ⚠ could not strip .gitignore block: ${err.message}`);
-      }
-    }
   }
 
   console.log(`\n✅ Uninstall complete. Removed ${removed} files.`);
@@ -836,12 +889,20 @@ async function runUninstall(args) {
     console.log(`   Backup: ${backup.path} (restore with: tar -xzf ${backup.path})`);
   }
 
-  // Hint about the purge flag if the user kept state — closes the user's
-  // most common confusion: "I uninstalled but /rcode-init still says configured."
-  if (plan.stateDir && fs.existsSync(path.join(cwd, '.rcode'))) {
+  // Notice about what was intentionally preserved (#876 — never delete user data silently)
+  const rcodeStillExists = plan.stateDir && fs.existsSync(path.join(cwd, '.rcode'));
+  const planningStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.planning'));
+  if (rcodeStillExists || planningStillExists) {
     console.log();
-    console.log(`ℹ  .rcode/ state was preserved. /rcode-init will detect this on reinstall.`);
-    console.log(`   For a fully clean slate next time, use: rcode uninstall --purge`);
+    console.log(`ℹ  Preserved (your project data — not removed by default):`);
+    if (rcodeStillExists) {
+      console.log(`      .rcode/     phases, decisions, progress, config`);
+      console.log(`                  /rcode-init will detect this on reinstall`);
+    }
+    if (planningStillExists) {
+      console.log(`      .planning/  planning scaffolds (ROADMAP, STATE, PROJECT)`);
+    }
+    console.log(`   To remove these on next uninstall: rcode uninstall --purge`);
   }
 
   // IDE cache reload hint — Claude Code caches the slash-command list in memory.
