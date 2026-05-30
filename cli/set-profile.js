@@ -37,6 +37,16 @@ module.exports = function setProfile(args) {
   const requested = args[0];
   const available = listProfiles();
 
+  if (requested === '--help' || requested === '-h') {
+    console.log(`Usage: rcode set-profile [<name>]`);
+    console.log();
+    console.log(`  rcode set-profile             show current profile + available options`);
+    console.log(`  rcode set-profile <name>      switch to profile <name>`);
+    console.log();
+    console.log(`Available profiles: ${available.join(', ')}`);
+    process.exit(0);
+  }
+
   if (!requested) {
     // Show current profile + available options
     const current = getProjectProfile(cwd);

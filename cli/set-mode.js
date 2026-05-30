@@ -51,6 +51,16 @@ module.exports = function setMode(args) {
 
   const requested = args[0];
 
+  if (requested === '--help' || requested === '-h') {
+    console.log(`Usage: rcode set-mode [<mode>]`);
+    console.log();
+    console.log(`  rcode set-mode               show current mode + explanation`);
+    console.log(`  rcode set-mode <mode>        switch to mode <mode>`);
+    console.log();
+    console.log(`Available modes: ${[...VALID_COMMUNICATION_MODES].join(', ')}`);
+    process.exit(0);
+  }
+
   if (!requested) {
     // Show current + available modes
     const config = loadConfig(cwd);
