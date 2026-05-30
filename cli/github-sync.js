@@ -481,8 +481,9 @@ async function main(args) {
       console.error(`   Check the filter value or run without filters to see available ids.`);
       process.exit(1);
     }
-    console.error(`❌ No phases found in .rcode/phases/.`);
-    process.exit(1);
+    console.log(`ℹ  No phases found in .rcode/phases/ — nothing to sync.`);
+    console.log(`   Run 'rcode init' or create a phase to get started.`);
+    process.exit(0);
   }
 
   console.log(`   ✓ Phases found: ${phases.length}`);
