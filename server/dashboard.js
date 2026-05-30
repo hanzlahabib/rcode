@@ -17,7 +17,7 @@
  *   server/lib/html/client.js    - Client-side JS (routing, rendering, etc.)
  *
  * Run: node server/dashboard.js
- * Stop: kill $(lsof -t -i:7717)
+ * Stop: kill $(ss -ltnp 'sport = :7717' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')
  */
 
 const http    = require('http');
@@ -145,7 +145,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`   Scanning:   ${RCODE_DIR}`);
   console.log(`   Refresh:    30s soft poll`);
   console.log(`   Keys:       R=refresh  1-9=views  F=filter`);
-  console.log(`   Stop:       kill $(lsof -t -i:${PORT})`);
+  console.log(`   Stop:       kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 

@@ -82,6 +82,7 @@ test('installed skill count is non-trivial (sanity)', () => {
 });
 
 test('skill description over-budget count does not exceed baseline', () => {
+  if (!resolveSkillsDir()) return; // no skills installed — skip
   const { offenders } = countOffenders();
   if (offenders.length > BASELINE_OFFENDERS) {
     offenders.sort((a, b) => b.length - a.length);
