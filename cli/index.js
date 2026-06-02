@@ -33,6 +33,7 @@ const COMMANDS = {
   team: require('./team'),
   agent: require('./agent'),
   doctor: require('./doctor'),
+  workflow: require('./workflow'),  // lifecycle bridge for non-Claude runtimes
   'set-profile': require('./set-profile'),
   'set-mode': require('./set-mode'),
   config: require('./config'),
@@ -67,6 +68,21 @@ Usage:
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Memory bank freshness (--check | --refresh | --install-hook)
   github-sync    Sync .rcode/ phases/epics/stories to GitHub (dry-run default)
+
+🔄 LIFECYCLE (Codex / Copilot / Grok bridge)
+  workflow list                List all lifecycle workflow names
+  workflow show <name>         Print a workflow's full instructions to stdout
+  workflow show new-project    → project setup + ROADMAP
+  workflow show create-prd     → write / update the PRD
+  workflow show discuss-phase  → gather phase context
+  workflow show plan           → create a SPRINT plan
+  workflow show execute-sprint → execute a SPRINT
+  workflow show verify-phase   → verify phase completion
+  workflow show retrospective  → retrospective + velocity
+  workflow show ship           → deploy / release workflow
+
+  Non-Claude agents: pipe to your agent instead of using slash commands.
+  Example: rcode workflow show plan | codex run -
 
 👥 TEAM
   team           List the team roster
