@@ -34,11 +34,30 @@ This keeps `.rcode/state.json` in sync with disk — `/rcode-progress`, `/rcode-
 
 ---
 
+## AUTO MODE (--auto / yolo)
+
+**If `--auto` was passed OR `config.mode == "yolo"`:** skip all `<action>WAIT</action>` gates,
+skip all roleplay dialog (Bob/Alice/Charlie personas), and produce the retrospective document
+directly from available artifacts.
+
+Auto-mode steps:
+1. Load config + resolve paths (same as INITIALIZATION below).
+2. Detect epic number automatically (highest epic in sprint-status or implementation_artifacts).
+3. Read epic file, SUMMARY.md, and previous retrospective if present.
+4. Produce the retrospective markdown document at `{implementation_artifacts}/epic-{N}-retro-{date}.md`
+   with sections: Epic Summary, Metrics, Successes, Challenges, Key Learnings, Action Items,
+   Next Epic Preparation.
+5. Update sprint-status.yaml to mark `epic-{N}-retrospective` as done.
+6. Run `node .rcode/bin/rcode-tools.cjs state sync --from-disk`.
+7. Print completion banner and stop — do not run the interactive EXECUTION steps below.
+
+---
+
 ## INITIALIZATION
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rcode/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `project_name`, `user_name`
 - `communication_language`, `document_output_language`
