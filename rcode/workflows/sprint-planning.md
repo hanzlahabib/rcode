@@ -14,8 +14,9 @@ back to the in-line implementation.
 
 <delegate_to_skill>
 Required skill: `rcode-sprint-planning`
-Path:           `.claude/skills/rcode-sprint-planning/SKILL.md`
-Workflow ref:   `.claude/skills/rcode-sprint-planning/workflow.md`
+Path:           `.rcode/skills/rcode-sprint-planning/SKILL.md`
+Workflow ref:   `.rcode/skills/rcode-sprint-planning/workflow.md`
+Fallback path:  `.claude/skills/rcode-sprint-planning/SKILL.md`
 
 Behaviour:
 1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
