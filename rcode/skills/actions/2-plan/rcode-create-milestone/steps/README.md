@@ -4,8 +4,8 @@ This skill uses the same step-file architecture as `rcode-create-prd` and `rcode
 
 ## Status
 
-- All 10 step files are **implemented and production-ready** as of #134.
-- Scaffolded in #129; completed in #134; compliance re-verified in #137.
+- All 10 step files are **implemented and production-ready**.
+- Scaffolded, completed, and compliance-verified across multiple releases.
 - If a step is missing from this directory at runtime, re-install the package — do not fall back to inline generation.
 
 ## Expected Step Files (per workflow.md)

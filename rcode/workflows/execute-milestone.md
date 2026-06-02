@@ -1,5 +1,5 @@
 <purpose>
-Execute all phases in the current milestone in dependency order, with verify gates between waves. Closes #738.
+Execute all phases in the current milestone in dependency order, with verify gates between waves.
 Reads the ROADMAP.md to determine phase ordering, executes each phase via /rcode-execute, runs /rcode-verify-phase after each, and surfaces blockers before advancing.
 </purpose>
 

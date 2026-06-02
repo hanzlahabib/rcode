@@ -3,8 +3,8 @@ Sub-step of plan.md — Step 8 Spawn rcode-planner Agent. Spawns rcode-planner w
 </purpose>
 
 <filename_convention>
-Issue #657 — every SPRINT.md, including the first plan in a phase, uses the
-sequence-numbered form `{phase}-{plan}-SPRINT.md` (no leading zeros per #652).
+Every SPRINT.md, including the first plan in a phase, uses the
+sequence-numbered form `{phase}-{plan}-SPRINT.md` (no leading zeros).
 Examples: `8-1-SPRINT.md`, `8-2-SPRINT.md`. Do NOT emit a bare `{phase}-SPRINT.md`
 or `{phase}-PLAN.md` for the first plan — that creates an inconsistent series
 when a second plan is added later. The plan-number computation in plan.md uses

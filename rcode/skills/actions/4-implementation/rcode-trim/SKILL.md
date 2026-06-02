@@ -66,7 +66,7 @@ Do NOT include: changes that touch behaviour; "while I'm here, also..."; trimmin
 
 **Happy path** — A 220-line component with 4 unused props, 2 dead useState hooks, and 30 lines of commented-out exploration code → trim to 140 lines, behaviour unchanged, tests green.
 
-**Edge case — comment that earns its lines** — `// see issue #234 — Postgres pre-13 doesn't return rowCount on UPSERT, so we re-query`. Don't touch it. The comment captures a constraint that won't be obvious from the code alone.
+**Edge case — comment that earns its lines** — `// see the upstream issue — Postgres pre-13 doesn't return rowCount on UPSERT, so we re-query`. Don't touch it. The comment captures a constraint that won't be obvious from the code alone.
 
 **Negative — "simplify by rewriting"** — User asks to "clean up" a working module. If the rewrite is bigger than the cuts, it's not trimming — it's a refactor. Refuse and route to `rcode-incremental` with a real task.
 

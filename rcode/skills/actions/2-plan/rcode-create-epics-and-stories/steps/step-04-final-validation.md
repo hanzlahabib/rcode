@@ -119,7 +119,7 @@ If all validations pass:
 - Ensure proper formatting
 - Save the final epics.md
 
-### 7. State Sync (MANDATORY — closes #126)
+### 7. State Sync (MANDATORY)
 
 After saving `.planning/epics.md`, you MUST sync state so `.rcode/state.json` reflects the new epics. Without this, downstream workflows (`/rcode-status`, `/rcode-progress`, `/rcode-execute`) see a divergent picture.
 

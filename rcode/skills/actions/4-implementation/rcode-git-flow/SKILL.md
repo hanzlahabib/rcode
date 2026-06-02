@@ -81,7 +81,7 @@ Do NOT include: force-pushes to main; commits with AI attribution; bundled commi
 
 ## Examples
 
-**Happy path** — Issue #387 (refresh README counts) → branch `docs/readme-counts` → 1 commit with subject `docs(readme): refresh agent/command/skill counts and add MIGRATIONS link` → push → PR with `Closes #387` → squash-merge.
+**Happy path** — A tracked issue (refresh README counts) → branch `docs/readme-counts` → 1 commit with subject `docs(readme): refresh agent/command/skill counts and add MIGRATIONS link` → push → PR with `Closes` the tracked issue → squash-merge.
 
 **Edge case — conflict on team.yaml** — Two branches both edit team.yaml. Resolve by: pull both versions, manually merge agent entries (preserve unique IDs), run `node --test test/agents-registry.test.cjs`, commit.
 

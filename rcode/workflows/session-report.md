@@ -79,7 +79,7 @@ Extract counts:
 
 ### Step 5a — Prefer measured totals from cost.jsonl
 
-If the `cost-track` hook (#745) is enabled, it appends one usage record per
+If the `cost-track` hook is enabled, it appends one usage record per
 response to `.rcode/telemetry/cost.jsonl`. Check for it first:
 
 ```bash
