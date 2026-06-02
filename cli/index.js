@@ -99,6 +99,7 @@ Usage:
                  rcode agent --list   to see available agents
   show-model     Show which model each agent uses in the current profile
   dashboard      Start the Diwan view-only dashboard (port 7717)
+                 Starts a view-only dashboard at http://localhost:7717. No write access.
   serve          Alias for dashboard
 
 ⚙️  META
