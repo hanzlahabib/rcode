@@ -1943,8 +1943,8 @@ async function installInner(opts) {
     console.error('  Currently supported:');
     console.error('    claude       — Claude Code native (recommended)');
     console.error('    cursor       — Cursor IDE');
-    console.error('    codex        — OpenAI Codex CLI (uses AGENTS.md + workflow bridge)');
-    console.error('    gemini       — Gemini CLI');
+    console.error('    codex        — Codex CLI');
+    console.error('    gemini       — Gemini CLI (planned — not yet implemented)');
     console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
     console.error('    windsurf     — Windsurf (Codeium)');
     console.error('    antigravity  — Antigravity (experimental)');

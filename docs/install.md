@@ -15,6 +15,12 @@ pnpm dlx @hanzlaa/rcode install
 
 That's it. One command ships everything. No global install needed — `pnpm dlx` runs the latest published version every time.
 
+> **Node 18+ / npm 11.x users:** We recommend pnpm — npm 11.x introduced breaking changes to `npx` that can cause `dlx`-style installs to fail or produce stale caches. Install pnpm once and use it for all rcode commands:
+> ```bash
+> npm install -g pnpm
+> pnpm dlx @hanzlaa/rcode install
+> ```
+
 ---
 
 ## What gets installed
@@ -83,13 +89,30 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 |--------|---------|------------------|:------:|
 | Claude Code (CLI + desktop app) | `claude` *(default)* | `.claude/agents/`, `.claude/commands/rcode/`, `.claude/skills/` | ✅ v4 |
 | Cursor | `cursor` | `.cursor/rules/rcode-*.mdc` | ✅ v4 |
-| Gemini CLI | `gemini` | `.gemini/rcode/` | ✅ v4 |
+| Gemini CLI | `gemini` | `.gemini/rcode/` | ⏳ planned |
 | VS Code *with* Claude Code extension | `claude` | Same as Claude Code — extension reads `.claude/` | ✅ v4 |
 | VS Code native | `vscode` | `.vscode/` integration | ✅ v4 |
 | Antigravity | `antigravity` | `.antigravity/` | ✅ v4 |
 | Windsurf | `windsurf` | `.windsurf/` | ✅ v4 |
 
 Passing an unsupported `--ide` value prints a clear error with workaround guidance.
+
+### Gemini CLI — planned, not yet implemented
+
+`--ide gemini` is tracked but not yet available. When you pass it, the installer exits with an explanation and a workaround.
+
+**Workaround (manual):** Copy the `.gemini/` config from another rcode-enabled project, or bootstrap it from a Claude Code install:
+
+```bash
+# 1. Install via Claude Code as normal
+pnpm dlx @hanzlaa/rcode install --ide claude
+
+# 2. Create the Gemini config directory and add a GEMINI.md pointer
+mkdir -p .gemini
+cp .claude/CLAUDE.md .gemini/GEMINI.md   # adapt as needed for Gemini context
+```
+
+Track the Gemini IDE implementation in the project issue tracker. When it ships, `pnpm dlx @hanzlaa/rcode install --ide gemini` will write `.gemini/rcode/` automatically.
 
 ---
 

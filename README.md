@@ -117,6 +117,9 @@ pnpm dlx @hanzlaa/rcode install
 /rcode-init
 ```
 
+> **Don't have pnpm?** On Node 18+ / npm 11.x we recommend pnpm to avoid `npx` cache issues:
+> `npm install -g pnpm`
+
 `/rcode-init` detects your project state (fresh / existing / returning) and routes to the right first action. For a greenfield project it auto-routes to `/rcode-new-project`.
 
 ### The full loop
