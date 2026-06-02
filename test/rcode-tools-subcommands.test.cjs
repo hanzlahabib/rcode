@@ -207,3 +207,46 @@ test('resolve-id accepts padded input and still finds dir', (t) => {
   const result = json(cwd, ['state', 'resolve-id', '06']);
   assert.strictEqual(result.status, 'found');
 });
+
+// ─── state sync ───────────────────────────────────────────────────────────────
+
+test('state sync parses workflow SPRINT artifacts and preserves velocity history', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        { id: '01', number: '01', name: 'Analytics Dashboard', status: 'active' },
+      ],
+      sprints: [],
+      velocity_history: [
+        { sprint: '01.0', points: 8, completed_at: '2026-06-01T00:00:00.000Z' },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  fs.writeFileSync(
+    path.join(cwd, '.planning', 'ROADMAP.md'),
+    '## Phase 01 — Analytics Dashboard\n\n**Goal:** Build a dashboard\n',
+  );
+  const phaseDir = path.join(cwd, '.planning', 'phases', '01-analytics-dashboard');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(phaseDir, '01-01-SPRINT.md'),
+    '# Sprint 01.1\n\n**Sprint Goal:** Ship the dashboard MVP\n',
+  );
+
+  const result = json(cwd, ['state', 'sync', '--from-disk']);
+  assert.strictEqual(result.sprints_found, 1);
+  assert.strictEqual(result.sprints_upserted, 1);
+
+  const state = json(cwd, ['state', 'read']);
+  assert.deepStrictEqual(state.velocity_history, [
+    { sprint: '01.0', points: 8, completed_at: '2026-06-01T00:00:00.000Z' },
+  ]);
+  assert.ok(
+    state.sprints.some(s => s.key === '01/1' && s.goal === 'Ship the dashboard MVP'),
+    'workflow SPRINT artifact was not synced into state.sprints',
+  );
+});
