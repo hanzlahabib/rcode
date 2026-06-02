@@ -129,3 +129,13 @@ test('health.md runs 9 checks (not 6)', () => {
     'health.md must reference 9 checks (expanded from 6 in issue #561)',
   );
 });
+
+// ─── dashboard.md ─────────────────────────────────────────────────────────────
+
+test('dashboard.md resolves local npm package installs', () => {
+  const text = wf('dashboard.md');
+  assert.ok(
+    /node_modules\/@hanzlaa\/rcode\/server\/dashboard\.js/.test(text),
+    'dashboard.md must check local node_modules before global install fallbacks',
+  );
+});
