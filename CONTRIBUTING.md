@@ -351,6 +351,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `phase` — phase-lifecycle changes (variable renames, phase-loop fixes); use numeric `<phase-id>` for in-phase commits
 - `scaffold` — scaffold-project workflow changes
 - `campaign` — fix-campaign orchestration tracking files
+- `ship` — ship workflow changes
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
