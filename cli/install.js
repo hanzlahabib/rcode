@@ -847,6 +847,7 @@ function ensureRcodeGitignore(target, options = {}) {
     '.rcode/brain/best-practices/',
     '',
     '# Runtime noise',
+    'node_modules/',
     '.rcode/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',

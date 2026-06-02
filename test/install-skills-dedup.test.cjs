@@ -69,6 +69,7 @@ test('install writes the rcode-managed .gitignore block', (t) => {
 
   const gi = fs.readFileSync(path.join(dir, '.gitignore'), 'utf8');
   assert.match(gi, /===== rcode-managed gitignore block/);
+  assert.match(gi, /^node_modules\/$/m);
   assert.match(gi, /===== end rcode-managed gitignore block =====/);
 });
 
