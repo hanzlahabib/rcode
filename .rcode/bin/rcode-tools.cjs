@@ -3896,6 +3896,14 @@ function cmdCommit(argv) {
     throw new Error('commit requires a message: rcode-tools.cjs commit "type(scope): subject"');
   }
 
+  // Verify a git repo exists before any git operation
+  try {
+    const { execSync: _execSyncCheck } = require('child_process');
+    _execSyncCheck('git rev-parse --git-dir', { cwd: PROJECT_ROOT, stdio: 'pipe' });
+  } catch {
+    throw new Error('No git repository found. Run git init first, then re-run this workflow.');
+  }
+
   // AI attribution rejection (project rule)
   const aiPatterns = [
     /co-authored-by:\s*claude/i,
