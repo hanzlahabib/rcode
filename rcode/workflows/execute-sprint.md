@@ -295,6 +295,12 @@ If a commit is BLOCKED by a hook:
 
 After each task (verification passed, done criteria met), commit immediately.
 
+**Preflight — verify git repo exists:**
+```bash
+git rev-parse --git-dir
+```
+If this fails, stop and emit: `No git repository found. Run git init first, then re-run this workflow.`
+
 **1. Check:** `git status --short`
 
 **2. Stage individually** (NEVER `git add .` or `git add -A`):
