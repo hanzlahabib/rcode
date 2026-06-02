@@ -150,6 +150,18 @@ test('config-get key alias — commit_docs resolves git.commit_docs', (t) => {
   assert.strictEqual(withAlias, 'false');
 });
 
+test('config-set normalizes shell-preserved outer quotes', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, ['config-set', 'project_name', '"codex"']);
+  assert.strictEqual(result.value, 'codex');
+
+  const stored = fs.readFileSync(path.join(cwd, '.rcode', 'config.yaml'), 'utf8');
+  assert.match(stored, /^project_name: codex$/m);
+
+  const out = run(cwd, ['config-get', 'project_name']).trim();
+  assert.strictEqual(out, 'codex');
+});
+
 // ─── next-phase-id ────────────────────────────────────────────────────────────
 
 test('next-phase-id returns 1 when no phase dirs exist', (t) => {

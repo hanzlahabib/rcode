@@ -142,12 +142,13 @@ function cmdSet(projectRoot, dottedKey, value) {
   fs.mkdirSync(path.dirname(cp), { recursive: true });
   const existing = fs.existsSync(cp) ? fs.readFileSync(cp, 'utf8') : '';
   const config = parseNestedYaml(existing);
-  setAt(config, dottedKey, value);
+  const normalizedValue = stripQuotes(String(value).trim());
+  setAt(config, dottedKey, normalizedValue);
   const out = serialise(config);
   const tmp = cp + '.tmp';
   fs.writeFileSync(tmp, out, 'utf8');
   fs.renameSync(tmp, cp);
-  return { ok: true, key: dottedKey, value, path: cp };
+  return { ok: true, key: dottedKey, value: normalizedValue, path: cp };
 }
 
 module.exports = {
