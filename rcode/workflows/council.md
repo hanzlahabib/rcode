@@ -29,9 +29,10 @@ Closure: `rcode ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 
 <required_reading>
 @.rcode/references/auto-init-guard.md
-@.rcode/references/output-format.md
 @.rcode/references/council-protocol.md
 </required_reading>
+<!-- output-format.md removed: council is self-contained via <output_format> above.
+     General banner/todo/spawn patterns are defined inline — no 398-line load needed. -->
 
 <process>
 ## Step 0 — Usage check

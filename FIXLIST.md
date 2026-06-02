@@ -54,10 +54,10 @@ Source audits:
 
 ## P2 - Token Waste and Output Quality
 
-11. ✅ FIXED (this branch, partial) — High prompt payload in workflow files.
-    - `retrospective/workflow.md`: added AUTO MODE preamble — skips roleplay dialog entirely in yolo/--auto mode. Full roleplay theater still present for interactive mode but skipped automatically for CI/headless.
-    - `discuss-phase.md`: condensed <philosophy> block (17→3 lines). Conditional reading already minimizes domain-probes.md/gate-prompts.md load.
-    - REMAINING: further reduction of Bob/Alice roleplay bodies in retrospective/workflow.md (risky without full rewrite), and council.md required reading (output-format.md 398 lines).
+11. ✅ FIXED (this branch) — High prompt payload in workflow files.
+    - `retrospective/workflow.md`: AUTO MODE preamble added (previous commit). 4 largest roleplay output blocks (78, 54, 56, 58 lines) collapsed to data-only format — saved ~185 lines (1491→1306). Operative metrics/templates preserved.
+    - `council.md`: removed output-format.md (398 lines) from <required_reading> — council is self-contained via its own <output_format> block. Saves 398 tokens on every council invocation.
+    - `discuss-phase.md`: condensed <philosophy> block (17→3 lines).
 
 12. Duplicate global namespace bloat.
     - Installing `rcode-*` alongside existing `rihal-*` commands/skills doubles visible rosters in some runtimes.

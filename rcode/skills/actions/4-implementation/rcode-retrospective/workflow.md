@@ -514,83 +514,26 @@ Bob (Scrum Master): "No problem. We'll still do a thorough retro on Epic {{epic_
 <action>Ensure key roles present: Product Owner, Scrum Master (facilitating), Devs, Testing/QA, Architect</action>
 
 <output>
-Bob (Scrum Master): "Alright team, everyone's here. Let me set the stage for our retrospective."
-
 ═══════════════════════════════════════════════════════════
 🔄 TEAM RETROSPECTIVE - Epic {{epic_number}}: {{epic_title}}
 ═══════════════════════════════════════════════════════════
 
-Bob (Scrum Master): "Here's what we accomplished together."
-
 **EPIC {{epic_number}} SUMMARY:**
 
-Delivery Metrics:
-
-- Completed: {{completed_stories}}/{{total_stories}} stories ({{completion_percentage}}%)
-- Velocity: {{actual_points}} story points{{#if planned_points}} (planned: {{planned_points}}){{/if}}
-- Duration: {{actual_sprints}} sprints{{#if planned_sprints}} (planned: {{planned_sprints}}){{/if}}
-- Average velocity: {{points_per_sprint}} points/sprint
-
-Quality and Technical:
-
-- Blockers encountered: {{blocker_count}}
-- Technical debt items: {{debt_count}}
-- Test coverage: {{coverage_info}}
-- Production incidents: {{incident_count}}
-
-Business Outcomes:
-
-- Goals achieved: {{goals_met}}/{{total_goals}}
-- Success criteria: {{criteria_status}}
-- Stakeholder feedback: {{feedback_summary}}
-
-Alice (Product Owner): "Those numbers tell a good story. {{completion_percentage}}% completion is {{#if completion_percentage >= 90}}excellent{{else}}something we should discuss{{/if}}."
-
-Charlie (Senior Dev): "I'm more interested in that technical debt number - {{debt_count}} items is {{#if debt_count > 10}}concerning{{else}}manageable{{/if}}."
-
-Dana (QA Engineer): "{{incident_count}} production incidents - {{#if incident_count == 0}}clean epic!{{else}}we should talk about those{{/if}}."
+Delivery: {{completed_stories}}/{{total_stories}} stories ({{completion_percentage}}%) · {{actual_points}} pts · {{actual_sprints}} sprints · {{points_per_sprint}} pts/sprint avg
+Quality: {{blocker_count}} blockers · {{debt_count}} tech-debt items · {{coverage_info}} coverage · {{incident_count}} incidents
+Outcomes: {{goals_met}}/{{total_goals}} goals · {{criteria_status}} · {{feedback_summary}}
 
 {{#if next_epic_exists}}
-═══════════════════════════════════════════════════════════
 **NEXT EPIC PREVIEW:** Epic {{next_epic_num}}: {{next_epic_title}}
-═══════════════════════════════════════════════════════════
-
-Dependencies on Epic {{epic_number}}:
-{{list_dependencies}}
-
-Preparation Needed:
-{{list_preparation_gaps}}
-
-Technical Prerequisites:
-{{list_technical_prereqs}}
-
-Bob (Scrum Master): "And here's what's coming next. Epic {{next_epic_num}} builds on what we just finished."
-
-Elena (Junior Dev): "Wow, that's a lot of dependencies on our work."
-
-Charlie (Senior Dev): "Which means we better make sure Epic {{epic_number}} is actually solid before moving on."
+Dependencies: {{list_dependencies}}
+Preparation gaps: {{list_preparation_gaps}}
+Technical prerequisites: {{list_technical_prereqs}}
 {{/if}}
 
-═══════════════════════════════════════════════════════════
-
-Bob (Scrum Master): "Team assembled for this retrospective:"
-
-{{list_participating_agents}}
-
-Bob (Scrum Master): "{user_name}, you're joining us as Project Lead. Your perspective is crucial here."
-
-{user_name} (Project Lead): [Participating in the retrospective]
-
-Bob (Scrum Master): "Our focus today:"
-
-1. Learning from Epic {{epic_number}} execution
-   {{#if next_epic_exists}}2. Preparing for Epic {{next_epic_num}} success{{/if}}
-
-Bob (Scrum Master): "Ground rules: psychological safety first. No blame, no judgment. We focus on systems and processes, not individuals. Everyone's voice matters. Specific examples are better than generalizations."
-
-Alice (Product Owner): "And everything shared here stays in this room - unless we decide together to escalate something."
-
-Bob (Scrum Master): "Exactly. {user_name}, any questions before we dive in?"
+Participants: {{list_participating_agents}} + {user_name} (Project Lead)
+Focus: (1) Learn from Epic {{epic_number}} · {{#if next_epic_exists}}(2) Prepare Epic {{next_epic_num}}{{/if}}
+Ground rules: No blame — systems focus — psychological safety — specific examples preferred.
 </output>
 
 <action>WAIT for {user_name} to respond or indicate readiness</action>
@@ -893,49 +836,19 @@ Bob (Scrum Master): "I want specific, achievable actions with clear owners. Not 
 - Time-bound: Has clear deadline
 
 <output>
-Bob (Scrum Master): "Based on our discussion, here are the action items I'm proposing..."
-
 ═══════════════════════════════════════════════════════════
 📝 EPIC {{epic_number}} ACTION ITEMS:
 ═══════════════════════════════════════════════════════════
 
 **Process Improvements:**
-
-1. {{action_item_1}}
-   Owner: {{agent_1}}
-   Deadline: {{timeline_1}}
-   Success criteria: {{criteria_1}}
-
-2. {{action_item_2}}
-   Owner: {{agent_2}}
-   Deadline: {{timeline_2}}
-   Success criteria: {{criteria_2}}
-
-Charlie (Senior Dev): "I can own action item 1, but {{timeline_1}} is tight. Can we push it to {{alternative_timeline}}?"
-
-Bob (Scrum Master): "What do others think? Does that timing still work?"
-
-Alice (Product Owner): "{{alternative_timeline}} works for me, as long as it's done before Epic {{next_epic_num}} starts."
-
-Bob (Scrum Master): "Agreed. Updated to {{alternative_timeline}}."
+1. {{action_item_1}} — Owner: {{agent_1}} · Due: {{timeline_1}} · Success: {{criteria_1}}
+2. {{action_item_2}} — Owner: {{agent_2}} · Due: {{timeline_2}} · Success: {{criteria_2}}
 
 **Technical Debt:**
+1. {{debt_item_1}} — Owner: {{agent_3}} · Priority: {{priority_1}} · Effort: {{effort_1}}
+2. {{debt_item_2}} — Owner: {{agent_4}} · Priority: {{priority_2}} · Effort: {{effort_2}}
 
-1. {{debt_item_1}}
-   Owner: {{agent_3}}
-   Priority: {{priority_1}}
-   Estimated effort: {{effort_1}}
-
-2. {{debt_item_2}}
-   Owner: {{agent_4}}
-   Priority: {{priority_2}}
-   Estimated effort: {{effort_2}}
-
-Dana (QA Engineer): "For debt item 1, can we prioritize that as high? It caused testing issues in three different stories."
-
-Charlie (Senior Dev): "I marked it medium because {{reasoning}}, but I hear your point."
-
-Bob (Scrum Master): "{user_name}, this is a priority call. Testing impact vs. {{reasoning}} - how do you want to prioritize it?"
+{user_name}, debt item 1 priority is a call you need to make — testing impact vs. {{reasoning}}.
 </output>
 
 <action>WAIT for {user_name} to help resolve priority discussions</action>
@@ -1017,59 +930,20 @@ Estimated: {{est_4}}
 
 <check if="significant discoveries detected">
   <output>
+🚨 SIGNIFICANT DISCOVERY — Epic {{next_epic_num}} plan needs review
 
-═══════════════════════════════════════════════════════════
-🚨 SIGNIFICANT DISCOVERY ALERT 🚨
-═══════════════════════════════════════════════════════════
+Changes identified:
+1. {{significant_change_1}} — Impact: {{impact_description_1}}
+2. {{significant_change_2}} — Impact: {{impact_description_2}}
+{{#if significant_change_3}}3. {{significant_change_3}} — Impact: {{impact_description_3}}{{/if}}
 
-Bob (Scrum Master): "{user_name}, we need to flag something important."
+Epic {{next_epic_num}} currently assumes: {{wrong_assumption_1}} / {{wrong_assumption_2}}
+Epic {{epic_number}} revealed: {{actual_reality_1}} / {{actual_reality_2}}
+Changes needed: {{list_likely_changes_needed}}
 
-Bob (Scrum Master): "During Epic {{epic_number}}, the team uncovered findings that may require updating the plan for Epic {{next_epic_num}}."
+Recommended: review Epic {{next_epic_num}} definition · update affected stories · hold alignment session{{#if prd_update_needed}} · update PRD{{/if}}
 
-**Significant Changes Identified:**
-
-1. {{significant_change_1}}
-   Impact: {{impact_description_1}}
-
-2. {{significant_change_2}}
-   Impact: {{impact_description_2}}
-
-{{#if significant_change_3}} 3. {{significant_change_3}}
-Impact: {{impact_description_3}}
-{{/if}}
-
-Charlie (Senior Dev): "Yeah, when we discovered {{technical_discovery}}, it fundamentally changed our understanding of {{affected_area}}."
-
-Alice (Product Owner): "And from a product perspective, {{product_discovery}} means Epic {{next_epic_num}}'s stories are based on wrong assumptions."
-
-Dana (QA Engineer): "If we start Epic {{next_epic_num}} as-is, we're going to hit walls fast."
-
-**Impact on Epic {{next_epic_num}}:**
-
-The current plan for Epic {{next_epic_num}} assumes:
-
-- {{wrong_assumption_1}}
-- {{wrong_assumption_2}}
-
-But Epic {{epic_number}} revealed:
-
-- {{actual_reality_1}}
-- {{actual_reality_2}}
-
-This means Epic {{next_epic_num}} likely needs:
-{{list_likely_changes_needed}}
-
-**RECOMMENDED ACTIONS:**
-
-1. Review and update Epic {{next_epic_num}} definition based on new learnings
-2. Update affected stories in Epic {{next_epic_num}} to reflect reality
-3. Consider updating architecture or technical specifications if applicable
-4. Hold alignment session with Product Owner before starting Epic {{next_epic_num}}
-   {{#if prd_update_needed}}5. Update PRD sections affected by new understanding{{/if}}
-
-Bob (Scrum Master): "**Epic Update Required**: YES - Schedule epic planning review session"
-
-Bob (Scrum Master): "{user_name}, this is significant. We need to address this before committing to Epic {{next_epic_num}}'s current plan. How do you want to handle it?"
+{user_name}: how do you want to handle this before committing to Epic {{next_epic_num}}'s current plan?
 </output>
 
 <action>WAIT for {user_name} to decide on how to handle the significant changes</action>
@@ -1293,61 +1167,27 @@ Charlie (Senior Dev): "Better to catch this now than three stories into the next
 <step n="10" goal="Retrospective Closure with Celebration and Commitment">
 
 <output>
-Bob (Scrum Master): "We've covered a lot of ground today. Let me bring this retrospective to a close."
-
 ═══════════════════════════════════════════════════════════
-✅ RETROSPECTIVE COMPLETE
+✅ RETROSPECTIVE COMPLETE — Epic {{epic_number}}: {{epic_title}}
 ═══════════════════════════════════════════════════════════
-
-Bob (Scrum Master): "Epic {{epic_number}}: {{epic_title}} - REVIEWED"
 
 **Key Takeaways:**
-
 1. {{key_lesson_1}}
 2. {{key_lesson_2}}
 3. {{key_lesson_3}}
-   {{#if key_lesson_4}}4. {{key_lesson_4}}{{/if}}
+{{#if key_lesson_4}}4. {{key_lesson_4}}{{/if}}
 
-Alice (Product Owner): "That first takeaway is huge - {{impact_of_lesson_1}}."
+Commitments: {{action_count}} action items · {{prep_task_count}} prep tasks · {{critical_count}} critical path items
 
-Charlie (Senior Dev): "And lesson 2 is something we can apply immediately."
-
-Bob (Scrum Master): "Commitments made today:"
-
-- Action Items: {{action_count}}
-- Preparation Tasks: {{prep_task_count}}
-- Critical Path Items: {{critical_count}}
-
-Dana (QA Engineer): "That's a lot of commitments. We need to actually follow through this time."
-
-Bob (Scrum Master): "Agreed. Which is why we'll review these action items in our next standup."
-
-═══════════════════════════════════════════════════════════
-🎯 NEXT STEPS:
-═══════════════════════════════════════════════════════════
-
-1. Execute Preparation Sprint (Est: {{prep_days}} days)
-2. Complete Critical Path items before Epic {{next_epic_num}}
+**Next Steps:**
+1. Execute Preparation Sprint ({{prep_days}} days)
+2. Complete critical path items before Epic {{next_epic_num}}
 3. Review action items in next standup
-   {{#if epic_update_needed}}4. Hold Epic {{next_epic_num}} planning review session{{else}}4. Begin Epic {{next_epic_num}} planning when preparation complete{{/if}}
+{{#if epic_update_needed}}4. Hold Epic {{next_epic_num}} planning review{{else}}4. Begin Epic {{next_epic_num}} planning when prep complete{{/if}}
 
-Elena (Junior Dev): "{{prep_days}} days of prep work is significant, but necessary."
+Epic {{epic_number}} delivered {{completed_stories}} stories with {{velocity_description}} velocity across {{blocker_count}} blockers.
 
-Alice (Product Owner): "I'll communicate the timeline to stakeholders. They'll understand if we frame it as 'ensuring Epic {{next_epic_num}} success.'"
-
-═══════════════════════════════════════════════════════════
-
-Bob (Scrum Master): "Before we wrap, I want to take a moment to acknowledge the team."
-
-Bob (Scrum Master): "Epic {{epic_number}} delivered {{completed_stories}} stories with {{velocity_description}} velocity. We overcame {{blocker_count}} blockers. We learned a lot. That's real work by real people."
-
-Charlie (Senior Dev): "Hear, hear."
-
-Alice (Product Owner): "I'm proud of what we shipped."
-
-Dana (QA Engineer): "And I'm excited about Epic {{next_epic_num}} - especially now that we're prepared for it."
-
-Bob (Scrum Master): "{user_name}, any final thoughts before we close?"
+{user_name}, any final thoughts before we close?
 </output>
 
 <action>WAIT for {user_name} to share final reflections</action>
@@ -1428,61 +1268,17 @@ Retrospective document was saved successfully, but {sprint_status_file} may need
 <output>
 **✅ Retrospective Complete, {user_name}!**
 
-**Epic Review:**
-
-- Epic {{epic_number}}: {{epic_title}} reviewed
-- Retrospective Status: completed
-- Retrospective saved: {implementation_artifacts}/epic-{{epic_number}}-retro-{date}.md
-
-**Commitments Made:**
-
-- Action Items: {{action_count}}
-- Preparation Tasks: {{prep_task_count}}
-- Critical Path Items: {{critical_count}}
+Epic {{epic_number}}: {{epic_title}} — retrospective saved: `{implementation_artifacts}/epic-{{epic_number}}-retro-{date}.md`
+Commitments: {{action_count}} action items · {{prep_task_count}} prep tasks · {{critical_count}} critical path items
 
 **Next Steps:**
+1. Review `{implementation_artifacts}/epic-{{epic_number}}-retro-{date}.md`
+2. Execute preparation sprint (~{{prep_days}} days) — {{critical_count}} critical items + {{prep_task_count}} prep tasks
+3. Review action items in next standup
+{{#if epic_update_needed}}4. ⚠️ SCHEDULE Epic {{next_epic_num}} planning review — do NOT start until complete{{else}}4. Begin Epic {{next_epic_num}} when prep complete{{/if}}
 
-1. **Review retrospective summary**: {implementation_artifacts}/epic-{{epic_number}}-retro-{date}.md
-
-2. **Execute preparation sprint** (Est: {{prep_days}} days)
-   - Complete {{critical_count}} critical path items
-   - Execute {{prep_task_count}} preparation tasks
-   - Verify all action items are in progress
-
-3. **Review action items in next standup**
-   - Ensure ownership is clear
-   - Track progress on commitments
-   - Adjust timelines if needed
-
-{{#if epic_update_needed}} 4. **IMPORTANT: Schedule Epic {{next_epic_num}} planning review session**
-
-- Significant discoveries from Epic {{epic_number}} require epic updates
-- Review and update affected stories
-- Align team on revised approach
-- Do NOT start Epic {{next_epic_num}} until review is complete
-  {{else}}
-
-4. **Begin Epic {{next_epic_num}} when ready**
-   - Start creating stories with SM agent's `create-story`
-   - Epic will be marked as `in-progress` automatically when first story is created
-   - Ensure all critical path items are done first
-     {{/if}}
-
-**Team Performance:**
-Epic {{epic_number}} delivered {{completed_stories}} stories with {{velocity_summary}}. The retrospective surfaced {{insight_count}} key insights and {{significant_discovery_count}} significant discoveries. The team is well-positioned for Epic {{next_epic_num}} success.
-
-{{#if significant_discovery_count > 0}}
-⚠️ **REMINDER**: Epic update required before starting Epic {{next_epic_num}}
-{{/if}}
-
----
-
-Bob (Scrum Master): "Great session today, {user_name}. The team did excellent work."
-
-Alice (Product Owner): "See you at epic planning!"
-
-Charlie (Senior Dev): "Time to knock out that prep work."
-
+Epic {{epic_number}}: {{completed_stories}} stories · {{velocity_summary}} · {{insight_count}} insights · {{significant_discovery_count}} discoveries
+{{#if significant_discovery_count > 0}}⚠️ Epic update required before starting Epic {{next_epic_num}}{{/if}}
 </output>
 
 </step>
