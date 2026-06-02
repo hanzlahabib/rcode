@@ -463,8 +463,9 @@ function cmdInit(workflowName, rawArgs) {
       out.phase_number = String(phaseNum);
       // Issue #652 — no leading zeros in planning artifacts. The field name
       // 'padded_phase' is kept for workflow backward compat but the value is
-      // now the canonical (unpadded) phase number. The resolver above still
-      // accepts legacy '06-name' directories for older projects.
+      // now the canonical (unpadded) phase number (e.g. "6", not "06").
+      // Workflows MUST NOT rely on this being zero-padded; use phase_number instead.
+      // The resolver above still accepts legacy '06-name' directories for older projects.
       out.padded_phase = String(phaseNum);
       out.phase_name = roadmapPhase ? roadmapPhase.name : null;
       out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
@@ -1367,7 +1368,14 @@ function cmdState(subArgs) {
       String(p.id) === String(flags.phase) ||
       p.name === flags.phase
     );
-    if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state`);
+    if (phaseIdx === -1) {
+      const available = state.phases.map(p => p.number ?? p.id ?? p.name).filter(Boolean).join(', ');
+      throw new Error(
+        `Phase "${flags.phase}" not found in state.json` +
+        (available ? ` (available: ${available})` : '') +
+        `. If state is stale, run: npx rcode state sync --from-disk`
+      );
+    }
     const phase = state.phases[phaseIdx];
 
     // Derive phase number: prefer explicit .number, fallback to array position
