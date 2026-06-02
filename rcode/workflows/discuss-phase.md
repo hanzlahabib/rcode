@@ -39,21 +39,9 @@ Only include domain-probes.md when `HAS_PRODUCT_SIGNALS` is 0.
 </downstream_awareness>
 
 <philosophy>
-**User = founder/visionary. Claude = builder.**
-
-The user knows:
-- How they imagine it working
-- What it should look/feel like
-- What's essential vs nice-to-have
-- Specific behaviors or references they have in mind
-
-The user doesn't know (and shouldn't be asked):
-- Codebase patterns (researcher reads the code)
-- Technical risks (researcher identifies these)
-- Implementation approach (planner figures this out)
-- Success metrics (inferred from the work)
-
-Ask about vision and implementation choices. Capture decisions for downstream agents.
+User = visionary (knows what, not how). Claude = builder (asks about choices, not implementation).
+Ask about vision and decisions. Capture for downstream agents. Never ask about codebase patterns,
+technical risks, or architecture — those are research/planner territory.
 </philosophy>
 
 <scope_guardrail>
