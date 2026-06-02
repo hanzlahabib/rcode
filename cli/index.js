@@ -34,6 +34,10 @@ const COMMANDS = {
   agent: require('./agent'),
   doctor: require('./doctor'),
   workflow: require('./workflow'),  // lifecycle bridge for non-Claude runtimes
+  // Thin lifecycle aliases — delegate to workflow show <name> (#883)
+  plan:    (args, ctx) => require('./workflow')(['show', 'plan',    ...args], ctx),
+  execute: (args, ctx) => require('./workflow')(['show', 'execute-sprint', ...args], ctx),
+  ship:    (args, ctx) => require('./workflow')(['show', 'ship',    ...args], ctx),
   'set-profile': require('./set-profile'),
   'set-mode': require('./set-mode'),
   config: require('./config'),
@@ -70,6 +74,9 @@ Usage:
   github-sync    Sync .rcode/ phases/epics/stories to GitHub (dry-run default)
 
 🔄 LIFECYCLE (Codex / Copilot / Grok bridge)
+  plan                         Print the plan workflow (alias for workflow show plan)
+  execute                      Print the execute-sprint workflow
+  ship                         Print the ship workflow
   workflow list                List all lifecycle workflow names
   workflow show <name>         Print a workflow's full instructions to stdout
   workflow show new-project    → project setup + ROADMAP
@@ -82,6 +89,7 @@ Usage:
   workflow show ship           → deploy / release workflow
 
   Non-Claude agents: pipe to your agent instead of using slash commands.
+  Example: rcode plan | codex run -
   Example: rcode workflow show plan | codex run -
 
 👥 TEAM

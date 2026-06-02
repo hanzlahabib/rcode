@@ -73,9 +73,11 @@ function listWorkflows(workflowsDir) {
 }
 
 function showWorkflow(workflowsDir, name) {
+  // Normalise: strip rcode- prefix so both `plan` and `rcode-plan` resolve (#883)
+  const bare = name.startsWith('rcode-') ? name.slice('rcode-'.length) : name;
   const candidates = [
+    path.join(workflowsDir, `${bare}.md`),
     path.join(workflowsDir, `${name}.md`),
-    path.join(workflowsDir, `rcode-${name}.md`),
   ];
 
   for (const p of candidates) {

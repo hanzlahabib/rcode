@@ -89,7 +89,7 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
  * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
  * sites instead of ten.
  */
-const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf']);
+const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex']);
 
 /**
  * Resolve the stable on-disk location of this package so config.yaml
@@ -372,7 +372,7 @@ function printInstallHeader(targetVersion) {
  * Returns a set like { claude: true, cursor: false, gemini: false }.
  */
 function detectIdeSignals(target) {
-  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false, windsurf: false };
+  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false, windsurf: false, codex: false };
   // 1. Project-local install dirs (strongest signal — they already use one)
   if (fs.existsSync(path.join(target, '.claude'))) signals.claude = true;
   if (fs.existsSync(path.join(target, '.cursor'))) signals.cursor = true;
@@ -396,6 +396,7 @@ function detectIdeSignals(target) {
   if (process.env.CLAUDECODE === '1' || process.env.CLAUDE_CODE_ENTRYPOINT) signals.claude = true;
   if (process.env.VSCODE_PID || /vscode/i.test(process.env.TERM_PROGRAM || '')) signals.vscode = true;
   if (/windsurf/i.test(process.env.TERM_PROGRAM || '')) signals.windsurf = true;
+  if (process.env.CODEX_ENV || /codex/i.test(process.env.TERM_PROGRAM || '')) signals.codex = true;
   return signals;
 }
 
@@ -442,6 +443,7 @@ async function resolveIde(opts) {
     options: [
       { value: 'claude',     label: 'Claude Code',  hint: signals.claude ? '(detected)' : undefined },
       { value: 'cursor',     label: 'Cursor',       hint: signals.cursor ? '(detected)' : undefined },
+      { value: 'codex',      label: 'Codex (OpenAI CLI)', hint: signals.codex ? '(detected)' : '(uses AGENTS.md + workflow bridge)' },
       { value: 'gemini',     label: 'Gemini CLI',   hint: signals.gemini ? '(detected)' : '(beta — limited)' },
       { value: 'vscode',     label: 'VS Code',      hint: signals.vscode ? '(detected)' : '(via Continue / Copilot extensions)' },
       { value: 'antigravity', label: 'Antigravity', hint: '(experimental — installs to .antigravity/)' },
@@ -597,6 +599,18 @@ function getPathsForIde(ide, target) {
       return {
         agentsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'agents'),
         commandsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
+      };
+    case 'codex':
+      // OpenAI Codex CLI reads AGENTS.md from the project root (written by the
+      // claude/vscode install paths). We install agent + command files to .claude/
+      // so multi-IDE installs share files, and the rcode workflow bridge gives
+      // Codex access to lifecycle workflows via `rcode workflow show <name>` (#883).
+      return {
+        agentsDir: path.join(target, '.claude', 'agents'),
+        commandsDir: path.join(target, '.claude', 'commands'),
         workflowsDir: path.join(target, '.rcode', 'workflows'),
         referencesDir: path.join(target, '.rcode', 'references'),
         binDir: path.join(target, '.rcode', 'bin'),
@@ -1929,6 +1943,7 @@ async function installInner(opts) {
     console.error('  Currently supported:');
     console.error('    claude       — Claude Code native (recommended)');
     console.error('    cursor       — Cursor IDE');
+    console.error('    codex        — OpenAI Codex CLI (uses AGENTS.md + workflow bridge)');
     console.error('    gemini       — Gemini CLI');
     console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
     console.error('    windsurf     — Windsurf (Codeium)');
@@ -1944,6 +1959,11 @@ async function installInner(opts) {
   // VS Code installs to .claude/ paths (extension reads from there). Inform the user.
   if (opts.ides.includes('vscode')) {
     console.log('  ' + dim('VS Code → installing to .claude/ paths (read by Claude Code / Continue / Copilot extensions).'));
+  }
+
+  // Codex installs to .claude/ and AGENTS.md; lifecycle via rcode workflow bridge.
+  if (opts.ides.includes('codex')) {
+    console.log('  ' + dim('Codex → installing to .claude/ paths + AGENTS.md. Use `rcode workflow show <name>` to feed workflows to Codex.'));
   }
 
   // Gemini IDE support deferred
@@ -2915,6 +2935,7 @@ async function runInstallWizard(opts) {
     options: [
       { value: 'claude',  label: 'Claude Code',  hint: 'recommended' },
       { value: 'cursor',  label: 'Cursor' },
+      { value: 'codex',   label: 'Codex (OpenAI CLI)', hint: 'AGENTS.md + workflow bridge' },
       { value: 'gemini',  label: 'Gemini CLI',   hint: 'coming soon' },
       { value: 'vscode',  label: 'VS Code',      hint: 'via Continue / Copilot extensions' },
       { value: 'antigravity', label: 'Antigravity', hint: 'experimental' },

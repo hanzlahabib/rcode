@@ -104,6 +104,27 @@ test('agent <valid>: claude-not-found path exits 1 with install URL', () => {
   }
 });
 
+test('agent <rcode-prefixed>: already-prefixed name does not double-prefix (#882)', () => {
+  // Passing 'rcode-executor' should resolve to rcode-executor.md, not rcode-rcode-executor.md
+  const origPath = process.env.PATH;
+  const tmp = require('os').tmpdir();
+  try {
+    process.env.PATH = tmp; // no claude binary — hits the binary check, not the file check
+    const { stderr, exitCode } = captureOutput(() =>
+      agentCli(['rcode-executor'], { packageRoot: PROJECT_ROOT }));
+    // Should NOT see double-prefix in error
+    assert.ok(!/rcode-rcode-/.test(stderr),
+      'already-prefixed name must not produce a double rcode- prefix');
+    // If it exits 1, it must be the claude-binary-not-found error, not a missing agent
+    if (exitCode === 1) {
+      assert.ok(/claude binary not found/.test(stderr),
+        'exit-1 must be the binary guard, not a missing-agent error (which would mean double-prefix bug regressed)');
+    }
+  } finally {
+    process.env.PATH = origPath;
+  }
+});
+
 test('agent --list parity: every emitted name resolves to a real .md file', () => {
   const { stdout } = captureOutput(() =>
     agentCli(['--list'], { packageRoot: PROJECT_ROOT }));

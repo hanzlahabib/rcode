@@ -24,7 +24,9 @@ module.exports = function agent(args, { packageRoot }) {
   }
 
   const name = args[0];
-  const agentName = `rcode-${name}`;
+  // Strip rcode- prefix if already provided so rcode agent rcode-executor works (#882)
+  const bare = name.startsWith('rcode-') ? name.slice('rcode-'.length) : name;
+  const agentName = `rcode-${bare}`;
 
   // Validate agent file exists
   const agentFile = path.join(agentDir, `${agentName}.md`);
