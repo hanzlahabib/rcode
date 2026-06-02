@@ -1,6 +1,6 @@
 ---
 name: rcode-herdr-orchestration
-description: Orchestrate parallel cld agents in herdr — single-shot fan-out OR long-running autonomous wave-based fix campaign with durable backlog and integration branch. Do NOT use for a single quick task; invoke directly without herdr for that.
+description: Orchestrate parallel cld agents in herdr — fan-out or autonomous wave campaign.
 triggers:
   # English — single-shot orchestration
   - "orchestrate agents"
@@ -49,6 +49,10 @@ Two modes: **single-shot** (bounded fan-out, one sitting, merge back done) and
 **autonomous campaign** (100+ commits across waves with durable backlog and integration
 branch). Both share the same golden rules and pane mechanics. See `references.md` for
 the full campaign workflow and deep-dive rules.
+
+**Do NOT use for a single quick task** — invoke the work directly without herdr for that.
+Orchestration overhead (worktrees, panes, monitoring) only pays off across multiple
+independent agents.
 
 ---
 

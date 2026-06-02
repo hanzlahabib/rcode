@@ -14,8 +14,9 @@ back to the in-line implementation.
 
 <delegate_to_skill>
 Required skill: `rcode-sprint-planning`
-Path:           `.claude/skills/rcode-sprint-planning/SKILL.md`
-Workflow ref:   `.claude/skills/rcode-sprint-planning/workflow.md`
+Path:           `.rcode/skills/rcode-sprint-planning/SKILL.md`
+Workflow ref:   `.rcode/skills/rcode-sprint-planning/workflow.md`
+Fallback path:  `.claude/skills/rcode-sprint-planning/SKILL.md`
 
 Behaviour:
 1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
@@ -99,8 +100,9 @@ Exit.
 - Commit max 80% of average (buffer for interrupts + unknowns)
 
 **If no velocity history (first sprint):**
-- Ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
-- Or use `--velocity` flag
+- If `--velocity <N>` flag was supplied, use that value directly and skip the prompt.
+- If `mode == "yolo"` (config) and no `--velocity` flag, default to 10 points and proceed.
+- Otherwise ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
 
 Store as `velocity_target`.
 
@@ -127,7 +129,9 @@ Present story table to user:
 **Capacity check:** Total committed points <= velocity_target.
 If over: "We're at {N} points vs {target} capacity. Move story #{X} to next sprint?"
 
-Wait for user confirmation before proceeding.
+**Automation escape:** if `mode == "yolo"` or `--auto` flag was passed, skip the
+confirmation; automatically move lowest-priority over-capacity stories to backlog
+and proceed. Otherwise wait for user confirmation before proceeding.
 
 ## Step 4 — Create sprint
 

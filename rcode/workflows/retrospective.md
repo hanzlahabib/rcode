@@ -9,7 +9,11 @@ Run an epic retrospective and produce owned action items. Delegates to the rcode
 Locate and follow the installed skill:
 
 ```bash
-find .rcode/skills/actions -path "*rcode-retrospective/workflow.md" 2>/dev/null | head -1
+if [ -f .rcode/skills/rcode-retrospective/workflow.md ]; then
+  printf '%s\n' ".rcode/skills/rcode-retrospective/workflow.md"
+else
+  find .rcode/skills/actions -path "*rcode-retrospective/workflow.md" 2>/dev/null | head -1
+fi
 ```
 
 Read and follow the workflow at that path. If the path is empty:

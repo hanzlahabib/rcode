@@ -29,9 +29,10 @@ Closure: `rcode ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 
 <required_reading>
 @.rcode/references/auto-init-guard.md
-@.rcode/references/output-format.md
 @.rcode/references/council-protocol.md
 </required_reading>
+<!-- output-format.md removed: council is self-contained via <output_format> above.
+     General banner/todo/spawn patterns are defined inline — no 398-line load needed. -->
 
 <process>
 ## Step 0 — Usage check
@@ -101,6 +102,12 @@ list from INIT_JSON so new agents added to team.yaml are automatically available
 Do not invoke `general-purpose` or any agent type not present in
 `installed_agents`. If the scorer surfaces an unknown agent, drop it
 from the panel silently.
+
+**Post-install agent namespace fallback:** If a `Task(subagent_type="rcode-{id}")` call
+fails with "Agent type not found", the runtime has not yet registered the new agent files
+(requires IDE/window reload). In that case retry with `subagent_type="rihal-{id}"` — the
+`rihal-*` agents are content-identical to `rcode-*` (pre-rebrand names). If neither works,
+skip that panelist and log `[council] agent rcode-{id} not available — reload IDE to register`.
 </available_agent_types>
 
 ## Step 1 — Observe

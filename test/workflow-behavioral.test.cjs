@@ -129,3 +129,30 @@ test('health.md runs 9 checks (not 6)', () => {
     'health.md must reference 9 checks (expanded from 6 in issue #561)',
   );
 });
+
+// ─── dashboard.md ─────────────────────────────────────────────────────────────
+
+test('dashboard.md resolves local npm package installs', () => {
+  const text = wf('dashboard.md');
+  assert.ok(
+    /node_modules\/@hanzlaa\/rcode\/server\/dashboard\.js/.test(text),
+    'dashboard.md must check local node_modules before global install fallbacks',
+  );
+});
+
+// ─── skill delegation paths ──────────────────────────────────────────────────
+
+test('delegating workflows resolve flat installed skill paths first', () => {
+  for (const [file, skill] of [
+    ['create-prd.md', 'rcode-create-prd'],
+    ['create-architecture.md', 'rcode-create-architecture'],
+    ['retrospective.md', 'rcode-retrospective'],
+    ['sprint-planning.md', 'rcode-sprint-planning'],
+  ]) {
+    const text = wf(file);
+    assert.ok(
+      text.includes(`.rcode/skills/${skill}/workflow.md`) || text.includes(`.rcode/skills/${skill}/SKILL.md`),
+      `${file} must reference the flat installed .rcode/skills/${skill} path`,
+    );
+  }
+});

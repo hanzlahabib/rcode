@@ -33,8 +33,11 @@ if [ -f ./server/dashboard.js ]; then
 # 2. Installed package copy inside project
 elif [ -f ./.rcode/lib/server/dashboard.js ]; then
   DASHBOARD="./.rcode/lib/server/dashboard.js"
+# 3. Local npm dependency install
+elif [ -f ./node_modules/@hanzlaa/rcode/server/dashboard.js ]; then
+  DASHBOARD="./node_modules/@hanzlaa/rcode/server/dashboard.js"
 else
-  # 3. Global installs — check npm, pnpm, and yarn roots
+  # 4. Global installs — check npm, pnpm, and yarn roots
   for ROOT in "$(npm root -g 2>/dev/null)" "$(pnpm root -g 2>/dev/null)" "$(yarn global dir 2>/dev/null)/node_modules"; do
     [ -z "$ROOT" ] && continue
     if [ -f "$ROOT/@hanzlaa/rcode/server/dashboard.js" ]; then
@@ -42,7 +45,7 @@ else
       break
     fi
   done
-  # 4. Last resort — resolve via the rcode/rcode binary symlink
+  # 5. Last resort — resolve via the rcode/rcode binary symlink
   if [ -z "$DASHBOARD" ]; then
     for BIN in rcode; do
       BIN_PATH="$(command -v $BIN 2>/dev/null)" || continue

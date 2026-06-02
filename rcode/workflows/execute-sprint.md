@@ -4,7 +4,7 @@ Execute a phase prompt (SPRINT.md) and create the outcome summary (SUMMARY.md).
 
 <required_reading>
 Read STATE.md before any operation to load project context.
-Read config.json for planning behavior settings.
+Read config.yaml for planning behavior settings.
 
 @.rcode/references/git-integration.md
 @.rcode/references/karpathy-guidelines.md
@@ -103,6 +103,8 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md
 | Decision | C (main) | Execute entirely in main context |
 
 **Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="rcode-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+
+**Post-install namespace fallback:** If `Task(subagent_type="rcode-executor")` fails with "Agent type not found", the runtime has not yet registered the agent (requires IDE reload after install). Retry with `subagent_type="rihal-executor"`. If that also fails, fall back to Pattern C (execute in main context) and log `[execute-sprint] rcode-executor not available — reload IDE or executing in main context`.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 

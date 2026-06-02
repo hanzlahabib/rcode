@@ -9,7 +9,11 @@ Create a Product Requirements Document from scratch through guided facilitation.
 Locate and follow the installed skill:
 
 ```bash
-find .rcode/skills/actions -path "*rcode-create-prd/workflow.md" 2>/dev/null | head -1
+if [ -f .rcode/skills/rcode-create-prd/workflow.md ]; then
+  printf '%s\n' ".rcode/skills/rcode-create-prd/workflow.md"
+else
+  find .rcode/skills/actions -path "*rcode-create-prd/workflow.md" 2>/dev/null | head -1
+fi
 ```
 
 Read and follow the workflow at that path. If the path is empty:

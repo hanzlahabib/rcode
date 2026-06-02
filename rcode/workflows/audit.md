@@ -18,6 +18,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 
 ```
 /rcode-audit                           # interactive — asks what to audit
+/rcode-audit --auto                    # non-interactive — auto-picks best target from project state
 /rcode-audit plans [--report]         # → audit-plans (structural + status + deps check)
 /rcode-audit phase [<NN>]              # → /rcode-verify-phase
 /rcode-audit milestone [--strict]      # → /rcode-audit-milestone (with synth fallback)
@@ -49,6 +50,8 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 ```
 
 Parse `$ARGUMENTS`:
+- If `--auto` flag is present: strip it from args and force `MODE=yolo` for this invocation
+  (allows non-interactive runs without permanently changing the project config).
 - First word ∈ {plans, phase, milestone, uat, code, fix, work, lens, worktrees} → set `$TARGET`, drop it from args, jump to Step 4.
 - Empty or unrecognised → continue to Step 2.
 

@@ -3170,7 +3170,9 @@ function cmdState(subArgs) {
       }
     }
 
-    // Walk .rcode/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
+    // Walk phase sprint artifacts into state.sprints[] (issue #135).
+    // Support both legacy `sprint-1.md` and workflow-generated
+    // `01-01-SPRINT.md` / `1-1-SPRINT.md` names.
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const rcodePhasesDir = path.join(RCODE_DIR, 'phases');
     const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rcodePhasesDir) ? rcodePhasesDir : null);
@@ -3182,9 +3184,11 @@ function cmdState(subArgs) {
         const phaseNumMatch = phaseEntry.match(/^(\d+(?:\.\d+)?)/);
         const phaseNum = phaseNumMatch ? phaseNumMatch[1] : phaseEntry;
         for (const file of fs.readdirSync(phaseDir)) {
-          const sprintMatch = file.match(/^sprint-(\d+)\.md$/);
+          const sprintMatch =
+            file.match(/^sprint-(\d+)\.md$/i) ||
+            file.match(/^(?:\d+(?:\.\d+)?[-_.])?(\d+)[-_.].*SPRINT\.md$/i);
           if (!sprintMatch) continue;
-          const sprintNum = sprintMatch[1];
+          const sprintNum = String(parseInt(sprintMatch[1], 10));
           const sprintKey = `${phaseNum}/${sprintNum}`;
           parsed.sprints_found += 1;
           const sprintPath = path.join(phaseDir, file);
@@ -6795,6 +6799,7 @@ function cmdGitignore(args) {
     '.rcode/brain/best-practices/',
     '',
     '# Runtime noise',
+    'node_modules/',
     '.rcode/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',
