@@ -3,6 +3,18 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.1.1 (2026-06-03) — cross-IDE harness fixes: double-prefix, codex IDE, lifecycle aliases
+
+Patch release shipping the fixes surfaced by cross-IDE (cld/codex/grok/copilot) re-verification of v4.1.0. No breaking changes; drop-in upgrade.
+
+### Fixed
+
+- **agent double-prefix bug (#882)** — `rcode agent rcode-executor` no longer resolves to `rcode-rcode-executor`; already-prefixed names are stripped before re-prefixing.
+- **workflow-show prefix resolution (#883)** — `npx rcode workflow show rcode-plan` now resolves correctly; prefixed names are normalised at lookup time.
+- **codex IDE support (#883)** — `--ide codex` is now a supported install target; added to `SUPPORTED_IDES`, signal detection, and the install wizard multiselect.
+- **lifecycle aliases (#883)** — Thin `rcode plan`, `rcode execute`, and `rcode ship` top-level commands added as aliases that delegate to `workflow show <name>`.
+
+---
 ## v4.1.0 (2026-05-30) — readiness fixes: fresh-install doctor, uninstall cleanup, CLI polish
 
 Stability and compliance hardening across doctor, uninstall, bash-guard, roster, and skill scaffolding. No breaking changes; drop-in upgrade from v4.0.0.
