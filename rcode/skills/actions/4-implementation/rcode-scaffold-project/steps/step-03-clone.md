@@ -1,4 +1,7 @@
-# Step 3: Clone Template
+# Step 3a: Clone Template (Greenfield Only)
+
+> **Brownfield mode:** If `{brownfield_mode}` is `true`, skip this step entirely
+> and proceed to `step-03-brownfield.md` instead.
 
 ## Goal
 Clone the official rcode template repository fresh from GitHub into `{target_path}`.

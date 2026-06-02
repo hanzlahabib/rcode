@@ -18,8 +18,9 @@ Finalize the scaffolded project and guide the user on next steps.
 - Run only if user confirms.
 
 ### 3. Summary
-Print a clean summary:
+Print a clean summary based on mode:
 
+**Greenfield:**
 ```
 ✅ Project scaffolded successfully!
 
@@ -31,6 +32,19 @@ Next steps:
   cd {target_path}
   pnpm install       ← if not done already
   pnpm dev           ← to start development server
+```
+
+**Brownfield (`--here` mode):**
+```
+✅ rcode initialized in existing project!
+
+📁 Location:  {target_path}
+🗂  Added:     .rcode/config.json
+📝 Note:      No existing files were modified.
+
+Next steps:
+  /rcode-init         ← configure rcode for this project
+  /rcode-new-project  ← design project requirements & roadmap
 ```
 
 ### 4. Suggest next rcode skills

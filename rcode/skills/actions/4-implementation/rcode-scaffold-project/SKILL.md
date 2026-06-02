@@ -2,10 +2,12 @@
 name: rcode-scaffold-project
 internal: true
 description: >
-  Scaffold a new project for rcode users using the official rcode template repo.
+  Scaffold a new project for rcode users using the official rcode template repo,
+  or initialize rcode in an existing project (brownfield / --here mode).
   Activates when the user says "scaffold project", "create project", "new project",
   "initialize project", "setup new project", "scaffold from template", "create from template",
-  "rcode new project", or "start a new rcode project". Do NOT use for generating
+  "rcode new project", "start a new rcode project", "scaffold here", "use here",
+  "scaffold in this project", or "initialize rcode here". Do NOT use for generating
   project context files (use rcode-generate-project-context) or cloning websites
   (use rcode-clone-website).
 triggers:
@@ -18,6 +20,12 @@ triggers:
   - "create from template"
   - "rcode new project"
   - "start a new rcode project"
+  - "scaffold here"
+  - "scaffold --here"
+  - "use current directory"
+  - "scaffold in this project"
+  - "initialize rcode here"
+  - "add rcode to existing project"
 user-invocable: true
 ---
 @.rcode/references/karpathy-guidelines.md
@@ -30,14 +38,21 @@ user-invocable: true
 
 ## Overview
 
-This skill bootstraps a new rcode project by cloning the official rcode template
-repository (`https://github.com/rcode-om/template`) into a target directory.
+This skill operates in two modes:
 
-It always clones fresh from GitHub — nothing is stored locally — so if the template
-is updated, the next scaffold automatically picks up the latest version.
+**Greenfield mode (default):** Bootstraps a new rcode project by cloning the
+official rcode template (`https://github.com/rcode-om/template`) into a target
+directory. Always clones fresh from GitHub.
+
+**Brownfield mode (`--here`):** Initializes rcode in an *existing* project
+without cloning the template. Use this when your codebase already exists and
+you just want to add rcode structure to it. Invoke as:
+`/rcode-scaffold-project --here` or just say "scaffold here" / "add rcode to
+this existing project".
 
 The workflow enforces safety: it never overwrites an existing non-empty directory
-without explicit user consent.
+without explicit user consent (greenfield), and never modifies existing project
+files in brownfield mode.
 
 ## On Activation
 
@@ -53,9 +68,10 @@ Then proceed to `./steps/step-01-target.md`.
 
 | # | Stage | Purpose | File |
 |---|-------|---------|------|
-| 1 | Target Directory | Get + validate destination path | `steps/step-01-target.md` |
-| 2 | Safety Check | Verify folder is empty or get new path | `steps/step-02-safety.md` |
-| 3 | Clone | Clone template repo fresh from GitHub | `steps/step-03-clone.md` |
+| 1 | Target Directory | Get + validate destination path; detect `--here` flag | `steps/step-01-target.md` |
+| 2 | Safety Check | Verify folder is empty or get new path (greenfield); brownfield consent (brownfield) | `steps/step-02-safety.md` |
+| 3a | Clone | Clone template repo fresh from GitHub *(greenfield only)* | `steps/step-03-clone.md` |
+| 3b | Brownfield Init | Overlay rcode structure into existing project *(brownfield only)* | `steps/step-03-brownfield.md` |
 | 4 | Post-Setup | Rename, init git, suggest next steps | `steps/step-04-post-setup.md` |
 
 ## Design Decisions
@@ -63,6 +79,7 @@ Then proceed to `./steps/step-01-target.md`.
 - **Always clone fresh** — never cache template locally. Template updates are free.
 - **No local template copy** — single source of truth is `https://github.com/rcode-om/template`.
 - **Safety first** — never touch a non-empty directory without user approval.
+- **Brownfield never overwrites** — in `--here` mode, existing files are never modified.
 - **Minimal assumptions** — ask before acting on any ambiguity.
 
 ## Output Format
@@ -86,6 +103,16 @@ Then proceed to `./steps/step-01-target.md`.
 **Input:** "scaffold project"
 **Expected:** Ask for project name before proceeding.
 
+### Happy Path — Brownfield (--here)
+**Input:** "/rcode-scaffold-project --here" or "add rcode to this existing project"
+**Expected:** Detect brownfield mode, use current directory, ask for consent, overlay
+`.rcode/` structure only, never touch existing files, summarize what was added.
+
+### Edge Case — Brownfield, .rcode already exists
+**Input:** `--here` flag but `.rcode/` already present in current dir
+**Expected:** "rcode is already initialized here. Run `/rcode-init` to reconfigure."
+
 ### Negative Test
-**Input:** "scaffold my existing repo" (existing non-empty dir provided)
-**Expected:** Safety check triggers. Never overwrites. Offers alternatives.
+**Input:** "scaffold my existing repo" (existing non-empty dir provided, no --here flag)
+**Expected:** Safety check triggers. Never overwrites. Offers alternatives including
+"Use `--here` mode to add rcode to this existing project instead".

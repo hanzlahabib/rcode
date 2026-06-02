@@ -1,7 +1,11 @@
 # Workflow: rcode-scaffold-project
 
 <purpose>
-Scaffold a new project from the official rcode template repo. Delegates to the rcode-scaffold-project skill.
+Scaffold a new project from the official rcode template repo, or initialize rcode
+in an existing project (brownfield mode). Delegates to the rcode-scaffold-project skill.
+
+Use `--here` (or say "scaffold here") to add rcode to an existing directory without
+cloning the template. Existing files are never modified in brownfield mode.
 </purpose>
 
 ## Execution
