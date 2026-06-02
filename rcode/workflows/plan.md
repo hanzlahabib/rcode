@@ -187,6 +187,12 @@ Exit workflow.
 ## 3. Validate Phase
 
 ```bash
+# Stub-ROADMAP guard — emit a warning if ROADMAP.md has no real phase headings.
+ROADMAP_PHASE_COUNT=$(grep -c "^## Phase " "${ROADMAP_PATH}" 2>/dev/null || echo 0)
+if [ "${ROADMAP_PHASE_COUNT}" -eq 0 ]; then
+  echo "⚠ WARN: ROADMAP.md appears to be a stub — add real ## Phase headings before running plan."
+  exit 1
+fi
 PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
