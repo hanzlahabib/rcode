@@ -141,7 +141,7 @@ If `--report` flag set, also print the report to stdout. Otherwise, just save to
 
 ## On Error
 
-If no SUMMARY.md files found, **do not dead-halt** (closes #234). Probe
+If no SUMMARY.md files found, **do not dead-halt**. Probe
 for executed-phase signals and offer recovery options:
 
 ```bash

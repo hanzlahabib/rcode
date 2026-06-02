@@ -4,7 +4,7 @@
 
 ## STEP GOAL
 
-Call the state-sync CLI so `.rcode/state.json` reflects every milestone and phase we just wrote to `ROADMAP.md`. This closes the drift loophole documented in issue #126 and enforced by `_shared/state-sync-rule.md`.
+Call the state-sync CLI so `.rcode/state.json` reflects every milestone and phase we just wrote to `ROADMAP.md`. This closes the state-drift loophole enforced by `_shared/state-sync-rule.md`.
 
 ## MANDATORY RULES
 

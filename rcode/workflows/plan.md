@@ -117,7 +117,7 @@ fi
 
 When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-SPRINT.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
 
-**Detect from-stub mode (closes #736):**
+**Detect from-stub mode:**
 ```bash
 if [[ "$ARGUMENTS" =~ (^|[[:space:]])--from-stub($|[[:space:]]) ]]; then
   FROM_STUB_MODE=true
@@ -154,7 +154,7 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
-**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rcode-add-phase` from a bulk `/rcode-quick` or `/rcode-do` route), read it now:
+**TASKS.md ingestion.** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rcode-add-phase` from a bulk `/rcode-quick` or `/rcode-do` route), read it now:
 
 ```bash
 TASKS_FILE=".planning/phases/${padded_phase}-${phase_slug}/TASKS.md"
@@ -326,7 +326,7 @@ Otherwise use AskUserQuestion:
 If "Continue without context": Proceed to step 5.
 If "Run discuss-phase first":
   **IMPORTANT:** Do NOT invoke discuss-phase as a nested Skill/Task call — AskUserQuestion
-  does not work correctly in nested subcontexts (#1009). Instead, display the command
+  does not work correctly in nested subcontexts. Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
   Run this command first, then re-run /rcode-plan {X} ${RCODE_WS}:
@@ -362,7 +362,7 @@ Always offer exactly three numbered options:
 
 Wait for the user's choice before proceeding. Do not auto-select.
 
-**If user picks option 1 (Add more plans) — issue #650:**
+**If user picks option 1 (Add more plans):**
 
 This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down the
 normal pipeline exactly as if no plans existed yet:
@@ -376,8 +376,7 @@ normal pipeline exactly as if no plans existed yet:
    first-time plan. The "PLANNED ✓" banner is gated on a passing CHECK.md.
 
 A run that emits a SPRINT.md without a corresponding planner Task() invocation
-in the same turn is a malfunction — see issue #650. Stop and report instead of
-shipping a hand-rolled plan.
+in the same turn is a malfunction. Stop and report instead of shipping a hand-rolled plan.
 
 **If user picks option 3 (Replan from scratch):**
 
@@ -390,7 +389,7 @@ still mandatory.
 
 Display a sprint summary table (sprint id → one-line goal).
 
-Then run a **best-effort codebase overlap check** before showing the execute prompt — Closes #596.
+Then run a **best-effort codebase overlap check** before showing the execute prompt.
 
 **This check is always informational. It never blocks, never errors, never fails the workflow.** If any step below cannot complete for any reason, skip it silently and proceed straight to the execute prompt.
 
@@ -534,7 +533,7 @@ It never silently passes a plan where two sprints create the same file.
 - **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
 - **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
 
-**Sprint count guard (token cost protection — closes #584):**
+**Sprint count guard (token cost protection):**
 
 After planner returns `## PLANNING COMPLETE`, immediately count sprint files:
 
@@ -670,7 +669,7 @@ If thinking_partner disabled: skip this block entirely.
 
 ## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
 
-**Mode-based iteration cap (token cost protection — closes #585):**
+**Mode-based iteration cap (token cost protection):**
 
 ```bash
 MAX_ITERATIONS=$($TOOL config-get workflow.max_checker_iterations 2>/dev/null || echo "")
@@ -686,7 +685,7 @@ Track `stall_reentry_count` (starts at 0; incremented each time "Adjust approach
 
 **If iteration_count < MAX_ITERATIONS:**
 
-**Sprint-checker malfunction guard (BLOCKER-class — added in v3.1.0 after #440):**
+**Sprint-checker malfunction guard (BLOCKER-class):**
 
 Before parsing issues, verify the checker actually invoked tools. The checker MUST exhibit at least one of these evidence markers in its return:
 
@@ -695,11 +694,11 @@ Before parsing issues, verify the checker actually invoked tools. The checker MU
 - At least one `path:` field in any block (e.g. `path: src/components/Foo.tsx:42`)
 - A summary line of the form `Verified N of M files` or `Checked N symbols`
 
-If NONE of these evidence markers are present, the checker malfunctioned (returned narrative without invoking tools — see #440). BLOCK execution:
+If NONE of these evidence markers are present, the checker malfunctioned (returned narrative without invoking tools). BLOCK execution:
 
 ```
 Display: "Sprint-checker returned without evidence of tool use — likely
-         malfunctioned (cf. issue #440). Refusing to advance the plan
+         malfunctioned (returned narrative without tool use). Refusing to advance the plan
          on unverified output. Re-run /rcode-plan or inspect the agent."
 Halt the workflow with a non-zero exit signal.
 ```
@@ -771,7 +770,7 @@ Display: `Max iterations reached. {N} issues remain:` + issue list
 
 Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 
-## 12.5. Wave Parallelism File-Overlap Check (added in v3.1.0 after #442)
+## 12.5. Wave Parallelism File-Overlap Check
 
 Before declaring plans ready, validate the wave-parallelism rule the planner declares: **same wave + overlapping `files_modified` = sequential, not parallel**. If two plans share `depends_on` (same wave) and both list the same file in `files_modified`, the planner should have marked the later one `sequential: true`. Catch the cases where it didn't.
 
@@ -814,7 +813,7 @@ The CLI helper returns a JSON report:
 
 **If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
 
-This closes the gap from #442 — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
+This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
 
 ## 13. Requirements Coverage Gate
 
@@ -948,7 +947,7 @@ Route to `<offer_next>` (existing behavior).
 </process>
 
 <banner_emission_gate>
-Issue #655 — the success banner is gated on real verification, not vibes.
+The success banner is gated on real verification, not vibes.
 Before emitting `PLANNED ✓`, confirm one of these is true:
 
 1. A passing CHECK.md exists at `${PHASE_DIR}/*-CHECK.md` from rcode-sprint-checker

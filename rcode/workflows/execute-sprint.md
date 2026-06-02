@@ -350,7 +350,7 @@ If new untracked files appeared after running scripts or tools, decide for each:
 </task_commit>
 
 <post_step_revert_gate>
-## Post-Step Revert Detection Gate (closes #737)
+## Post-Step Revert Detection Gate
 
 After committing each task, run a diff check to detect accidental reverts. This catches the class of bug where a task's implementation unknowingly undoes work from a previous task or wave.
 

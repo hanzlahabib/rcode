@@ -875,7 +875,7 @@ Display banner:
 Context captured. Launching plan...
 ```
 
-Launch plan using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting — see #686):
+Launch plan using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
 ```
 Skill(skill="rcode-plan", args="${PHASE} --auto ${RCODE_WS}")
 ```

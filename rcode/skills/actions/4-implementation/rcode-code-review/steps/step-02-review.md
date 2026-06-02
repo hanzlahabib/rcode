@@ -17,7 +17,7 @@ failed_layers: '' # set at runtime: comma-separated list of layers that failed o
 
 2. Launch parallel subagents without conversation context. If subagents are not available, generate prompt files in `{implementation_artifacts}` — one per reviewer role below — and HALT. Ask the user to run each in a separate session (ideally a different LLM) and paste back the findings. When findings are pasted, resume from this point and proceed to step 3.
 
-   **Subagent mapping** (issue #720): the three reviewer roles below map to actual agents shipped in `.claude/agents/`. The skill names that used to be referenced here (`rcode-review-adversarial-general`, `rcode-review-edge-case-hunter`) are skills, not subagents, and `Task(subagent_type=...)` cannot reach them. Use the agents listed.
+   **Subagent mapping:** the three reviewer roles below map to actual agents shipped in `.claude/agents/`. The skill names that used to be referenced here (`rcode-review-adversarial-general`, `rcode-review-edge-case-hunter`) are skills, not subagents, and `Task(subagent_type=...)` cannot reach them. Use the agents listed.
 
    - **Blind Hunter** — receives `{diff_output}` only. No spec, no context docs, no project access. Dispatch:
      `Task(subagent_type="rcode-security-adversary", model="{review_model}", prompt="<adversarial review of diff>")`. The security-adversary persona's cynical mindset is the right fit for an isolated diff-only review.
