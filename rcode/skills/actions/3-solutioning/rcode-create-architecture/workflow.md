@@ -18,14 +18,26 @@ This uses **micro-file architecture** for disciplined execution:
 
 ---
 
+## AUTO MODE
+
+**If `--auto` was passed in ARGUMENTS OR `config.mode == "yolo"`:**
+- Skip all user-confirmation gates throughout the workflow.
+- In step-01-init: discover input documents automatically, proceed without asking the user to confirm or add files.
+- In all subsequent steps: choose the recommended option at every decision point without prompting.
+- Log each auto-selected choice inline so the output is auditable.
+- This flag persists for the entire workflow invocation (all steps see it).
+
+---
+
 ## INITIALIZATION
 
 ### Configuration Loading
 
-Load config from `{project-root}/.rcode/config.json` and resolve:
+Load config from `{project-root}/.rcode/config.yaml` and resolve:
 
 - `project_name`, `output_folder`, `planning_artifacts`, `user_name`
 - `communication_language`, `document_output_language`, `user_skill_level`
+- `mode` — if `yolo`, treat as `--auto` for this entire invocation
 - `date` as system-generated current datetime
 - ✅ YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the config `{communication_language}`
 

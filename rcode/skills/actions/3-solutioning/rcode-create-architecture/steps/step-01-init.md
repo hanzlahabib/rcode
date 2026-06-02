@@ -70,7 +70,7 @@ Try to discover the following:
 - Project Documentation (generally multiple documents might be found for this in the `{project_knowledge}` or `{project-root}/docs` folder.)
 - Project Context (`**/project-context.md`)
 
-<critical>Confirm what you have found with the user, along with asking if the user wants to provide anything else. Only after this confirmation will you proceed to follow the loading rules</critical>
+<critical>If auto mode is active (--auto flag or config.mode == "yolo"): skip user confirmation — log "Auto mode: proceeding with discovered documents: [list]" and continue directly to Loading Rules. Otherwise: confirm what you have found with the user, ask if they want to provide anything else, and only proceed after confirmation.</critical>
 
 **Loading Rules:**
 

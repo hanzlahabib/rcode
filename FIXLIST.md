@@ -40,11 +40,13 @@ Source audits:
    - `sprint add` rejects phase names and gives no sync hint when state is stale.
    - Manual artifact naming with `001-*` vs `01-*` is under-documented and detection is brittle.
 
-9. ✅ FIXED (this branch, partial) — Guided/default modes block automation.
-   - sprint-planning.md: yolo/--auto mode now bypasses first-sprint velocity prompt and capacity confirmation.
-   - retrospective/workflow.md: added AUTO MODE section skipping all 25 WAIT gates and roleplay dialog.
-   - discuss-phase.md: already had --auto flag; behavior documented and unchanged.
-   - REMAINING: create-architecture, audit interactive gates still need --auto escape.
+9. ✅ FIXED (this branch) — Guided/default modes block automation.
+   - sprint-planning.md: yolo/--auto mode bypasses first-sprint velocity prompt and capacity confirmation.
+   - retrospective/workflow.md: AUTO MODE preamble skips all 25 WAIT gates and roleplay dialog.
+   - discuss-phase.md: already had --auto flag.
+   - audit.md: added explicit --auto flag that forces MODE=yolo for one invocation; updated help text.
+   - create-architecture/workflow.md: added AUTO MODE section + config.json→config.yaml fix.
+   - create-architecture/steps/step-01-init.md: confirmation gate now skipped in auto/yolo mode.
 
 10. Scaffold-project cannot initialize an existing working directory.
     - It is greenfield clone-only, with no `--here` or "planning only" path.
