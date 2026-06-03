@@ -3,6 +3,22 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.1.2 (2026-06-04) — installer UX, workflow quality, and IDE-neutral docs
+
+Patch release shipping Wave 10–11 fixes. No breaking changes; drop-in upgrade.
+
+### Fixed
+- `cli/install.js`: warns when both `rcode-*` and `rihal-*` namespaces are installed; `--dry-run` / `--list-files` preview flags added
+- `rcode/workflows/plan.md`, `execute.md`, `sprint-planning.md`: project-status preflight guard halts on uninitialized/stub projects
+- `rcode/bin/rcode-tools.cjs`: `sprint add` error includes sync hint ("run rcode state sync or /rcode-update")
+- `rcode/workflows/review.md`: null `phase_dir` guard added
+- `rcode/workflows/execute-waves.md`, `execute-regression-gates.md`: Python prerequisites note and planning pseudocode quality checklist
+
+### Docs
+- `docs/install.md`: Grok and Codex CLI added to IDE table; namespace coexistence and dry-run sections added
+- `docs/getting-started.md`: manual invocation note for runtimes without native slash commands
+
+---
 ## v4.1.1 (2026-06-03) — cross-IDE harness fixes: double-prefix, codex IDE, lifecycle aliases
 
 Patch release shipping the fixes surfaced by cross-IDE (cld/codex/grok/copilot) re-verification of v4.1.0. No breaking changes; drop-in upgrade.
