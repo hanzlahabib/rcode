@@ -23,3 +23,8 @@ All items closed. Final test count: 462 pass / 0 fail.
 - [x] Dashboard startup logs full URL + view-only label (#18)
 - [x] Git-repo preflight guard in commit-dependent workflows (#6)
 - [x] Golden-paths project-init checklist + stub-ROADMAP warning (#7)
+
+## Wave 9 — In Flight
+- [ ] W9-A: pnpm install preflight note in execute-sprint + sprint-planning
+- [ ] W9-B: Phase resolver handles 001-* / 01-* / 1-* dir prefixes robustly
+- [ ] W9-C: Lifecycle aliases print actionable next-step after workflow show
