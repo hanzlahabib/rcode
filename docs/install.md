@@ -252,6 +252,10 @@ Not yet supported. Re-install with only the modules you want via `--module` flag
 
 When both `rcode-*` and `rihal-*` namespaces are installed, the skill and command rosters effectively double because the two sets contain near-identical content under different prefixes. This can make the slash-command picker and skill list harder to navigate. If you only need one workflow style, remove the other namespace's files (or reinstall with a single namespace) to keep things lean. The installer will print a yellow warning to stderr when it detects both namespaces present at once.
 
+## Dry run
+
+Pass `--dry-run` (or its alias `--list-files`) to preview every path that would be created or copied, without writing anything to disk. The installer prints `DRY RUN: the following paths would be written:` followed by one `  + <path>` line per file, then exits with code 0. This is useful for auditing what a fresh install or upgrade would touch before you commit to it. Combine with `--yes` and `--ide` to get a non-interactive listing: `npx @hanzlaa/rcode install --dry-run --yes --ide claude`.
+
 ---
 
 ## Next
