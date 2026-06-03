@@ -26,6 +26,12 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
          seen_files[file] = plan
    ```
 
+   **Pseudocode quality checklist — apply before implementing any algorithm derived above:**
+   - No bare `except Exception` — catch specific exceptions
+   - No mutation of a collection while iterating over it
+   - Guard against file overwrites (check if path exists before writing)
+   - Validate inputs before processing
+
    **If overlap is detected:**
    - Warn the user:
      ```
