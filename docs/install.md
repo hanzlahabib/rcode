@@ -248,6 +248,12 @@ Not yet supported. Re-install with only the modules you want via `--module` flag
 
 ---
 
+## Namespace coexistence
+
+When both `rcode-*` and `rihal-*` namespaces are installed, the skill and command rosters effectively double because the two sets contain near-identical content under different prefixes. This can make the slash-command picker and skill list harder to navigate. If you only need one workflow style, remove the other namespace's files (or reinstall with a single namespace) to keep things lean. The installer will print a yellow warning to stderr when it detects both namespaces present at once.
+
+---
+
 ## Next
 
 - Read [`docs/what-is-rcode-code.md`](what-is-rcode-code.md) for the product story.

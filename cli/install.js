@@ -2687,6 +2687,24 @@ async function installInner(opts) {
     console.error('[install] installInner: failed to count installed agents/commands:', err?.message || err);
   }
 
+  // Duplicate-namespace detection: warn when both rcode-* and rihal-* entries exist.
+  // Having both doubles the roster size with near-identical content.
+  try {
+    const skillsDir = path.join(opts.target, '.rcode', 'skills');
+    const claudeCommandsDir = path.join(opts.target, '.claude', 'commands');
+    const dirsToCheck = [skillsDir, claudeCommandsDir];
+    let hasRcode = false, hasRihal = false;
+    for (const dir of dirsToCheck) {
+      if (!fs.existsSync(dir)) continue;
+      const entries = fs.readdirSync(dir);
+      if (entries.some(e => e.startsWith('rcode-'))) hasRcode = true;
+      if (entries.some(e => e.startsWith('rihal-'))) hasRihal = true;
+    }
+    if (hasRcode && hasRihal) {
+      process.stderr.write(pc.yellow('WARNING: rcode-* and rihal-* namespaces both detected — consider removing one to reduce roster size.') + '\n');
+    }
+  } catch { /* non-fatal */ }
+
   const version = readPackageVersion();
   console.log('');
   console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
