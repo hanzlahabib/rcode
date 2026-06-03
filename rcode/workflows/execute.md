@@ -7,6 +7,16 @@ Execute all plans in a phase using wave-based parallel execution. Orchestrator s
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.
 
+0. **Project-status preflight:**
+   ```bash
+   PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+   ```
+   If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+   ```
+   Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+   ```
+   Stop. Do not proceed until `project-status` returns `real`.
+
 1. **Init state**: `node .rcode/bin/rcode-tools.cjs init execute {N}`
 2. **Phase index**: list all plans via `phase-plan-index {N}` — extract
    plan count, wave count, autonomy flag per plan, files_modified overlaps

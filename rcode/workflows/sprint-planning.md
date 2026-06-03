@@ -73,6 +73,20 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 
 STOP — do not proceed.
 
+## Preflight — Project-status check
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+
+```
+Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+```
+
+Stop. Do not proceed until `project-status` returns `real`.
+
 ## Preflight — Dependency check
 
 If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING before planning begins:

@@ -64,6 +64,20 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 <process>
 
+## 0. Project-Status Preflight
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+
+```
+Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+```
+
+Stop. Do not proceed until `project-status` returns `real`.
+
 ## 1. Initialize
 
 Load all context in one call (paths only to minimize orchestrator context):
