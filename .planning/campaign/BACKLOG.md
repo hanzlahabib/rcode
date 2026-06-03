@@ -34,5 +34,11 @@ All items closed. Final test count: 462 pass / 0 fail.
 - [x] W9-B: Phase resolver handles 001-* / 01-* / 1-* dirs + 4 new tests + config-set quote fix
 - [x] W9-C: Lifecycle aliases print actionable next-step after workflow show
 
+## Done (Wave 10)
+- [x] #12: Namespace bloat — warn when rcode-* and rihal-* both detected (cli/install.js + docs/install.md)
+- [x] #13: Installer dry-run — add --dry-run / --list-files preview flags (cli/install.js + docs/install.md)
+- [x] #19: Python prerequisites note added to execute-regression-gates.md + execute-waves.md
+- [x] #20: Planning pseudocode quality checklist added to execute-waves.md
+
 ## CAMPAIGN COMPLETE
-All actionable items drained. Final: 466/0 tests, 29 commits since v4.1.1.
+All actionable items drained. Final: 466/0 tests, 32 commits since v4.1.1.
