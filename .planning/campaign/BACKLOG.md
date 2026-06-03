@@ -40,5 +40,10 @@ All items closed. Final test count: 462 pass / 0 fail.
 - [x] #19: Python prerequisites note added to execute-regression-gates.md + execute-waves.md
 - [x] #20: Planning pseudocode quality checklist added to execute-waves.md
 
+## Done (Wave 11)
+- [x] #7: Golden paths preflight — project-status guard added to plan.md, execute.md, sprint-planning.md
+- [x] #8: Sprint-add sync hint — error message now tells user to run "rcode state sync"; null phase_dir guard in review.md
+- [x] #14: IDE-neutral docs — Grok and Codex CLI rows added to IDE table; manual invocation note in install.md + getting-started.md
+
 ## CAMPAIGN COMPLETE
-All actionable items drained. Final: 466/0 tests, 32 commits since v4.1.1.
+All actionable items drained. Final: 466/0 tests, 35 commits since v4.1.1.
