@@ -447,12 +447,19 @@ function cmdInit(workflowName, rawArgs) {
         } catch { /* parser failure shouldn't break init */ }
       }
 
-      // Find phase directory on disk (matches both '6-name' and legacy '06-name').
+      // Find phase directory on disk (matches '1-name', '01-name', and '001-name' prefixes).
       let phaseDirEntry = null;
       if (fs.existsSync(phasesDir)) {
-        const padded = String(phaseNum).padStart(2, '0');
+        const n = String(phaseNum);
+        const pad2 = n.padStart(2, '0');
+        const pad3 = n.padStart(3, '0');
         for (const entry of fs.readdirSync(phasesDir)) {
-          if (entry === String(phaseNum) || entry.startsWith(`${phaseNum}-`) || entry.startsWith(`${padded}-`)) {
+          if (
+            entry === n ||
+            entry.startsWith(`${n}-`) ||
+            entry.startsWith(`${pad2}-`) ||
+            entry.startsWith(`${pad3}-`)
+          ) {
             phaseDirEntry = entry;
             break;
           }
@@ -463,10 +470,12 @@ function cmdInit(workflowName, rawArgs) {
       out.phase_number = String(phaseNum);
       // Issue #652 — no leading zeros in planning artifacts. The field name
       // 'padded_phase' is kept for workflow backward compat but the value is
-      // now the canonical (unpadded) phase number. The resolver above still
-      // accepts legacy '06-name' directories for older projects.
+      // now the canonical (unpadded) phase number (e.g. "6", not "06").
+      // Workflows MUST NOT rely on this being zero-padded; use phase_number instead.
+      // The resolver above still accepts legacy '06-name' / '006-name' dirs for older projects.
       out.padded_phase = String(phaseNum);
       out.phase_name = roadmapPhase ? roadmapPhase.name : null;
+      // Strip all leading-zero prefix digits so '001-name', '01-name', '1-name' → 'name'.
       out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
       out.phase_dir = phaseDirEntry ? path.join(PLANNING_DIR, 'phases', phaseDirEntry) : null;
 

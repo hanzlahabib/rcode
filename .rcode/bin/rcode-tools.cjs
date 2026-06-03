@@ -447,12 +447,19 @@ function cmdInit(workflowName, rawArgs) {
         } catch { /* parser failure shouldn't break init */ }
       }
 
-      // Find phase directory on disk (matches both '6-name' and legacy '06-name').
+      // Find phase directory on disk (matches '1-name', '01-name', and '001-name' prefixes).
       let phaseDirEntry = null;
       if (fs.existsSync(phasesDir)) {
-        const padded = String(phaseNum).padStart(2, '0');
+        const n = String(phaseNum);
+        const pad2 = n.padStart(2, '0');
+        const pad3 = n.padStart(3, '0');
         for (const entry of fs.readdirSync(phasesDir)) {
-          if (entry === String(phaseNum) || entry.startsWith(`${phaseNum}-`) || entry.startsWith(`${padded}-`)) {
+          if (
+            entry === n ||
+            entry.startsWith(`${n}-`) ||
+            entry.startsWith(`${pad2}-`) ||
+            entry.startsWith(`${pad3}-`)
+          ) {
             phaseDirEntry = entry;
             break;
           }
@@ -465,9 +472,10 @@ function cmdInit(workflowName, rawArgs) {
       // 'padded_phase' is kept for workflow backward compat but the value is
       // now the canonical (unpadded) phase number (e.g. "6", not "06").
       // Workflows MUST NOT rely on this being zero-padded; use phase_number instead.
-      // The resolver above still accepts legacy '06-name' directories for older projects.
+      // The resolver above still accepts legacy '06-name' / '006-name' dirs for older projects.
       out.padded_phase = String(phaseNum);
       out.phase_name = roadmapPhase ? roadmapPhase.name : null;
+      // Strip all leading-zero prefix digits so '001-name', '01-name', '1-name' → 'name'.
       out.phase_slug = phaseDirEntry ? phaseDirEntry.replace(/^\d+-/, '') : null;
       out.phase_dir = phaseDirEntry ? path.join(PLANNING_DIR, 'phases', phaseDirEntry) : null;
 
@@ -1368,14 +1376,7 @@ function cmdState(subArgs) {
       String(p.id) === String(flags.phase) ||
       p.name === flags.phase
     );
-    if (phaseIdx === -1) {
-      const available = state.phases.map(p => p.number ?? p.id ?? p.name).filter(Boolean).join(', ');
-      throw new Error(
-        `Phase "${flags.phase}" not found in state.json` +
-        (available ? ` (available: ${available})` : '') +
-        `. If state is stale, run: npx rcode state sync --from-disk`
-      );
-    }
+    if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state`);
     const phase = state.phases[phaseIdx];
 
     // Derive phase number: prefer explicit .number, fallback to array position
@@ -3178,7 +3179,9 @@ function cmdState(subArgs) {
       }
     }
 
-    // Walk .rcode/phases/*/sprint-*.md — parse sprints into state.sprints[] (issue #135).
+    // Walk phase sprint artifacts into state.sprints[] (issue #135).
+    // Support both legacy `sprint-1.md` and workflow-generated
+    // `01-01-SPRINT.md` / `1-1-SPRINT.md` names.
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const rcodePhasesDir = path.join(RCODE_DIR, 'phases');
     const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rcodePhasesDir) ? rcodePhasesDir : null);
@@ -3190,9 +3193,11 @@ function cmdState(subArgs) {
         const phaseNumMatch = phaseEntry.match(/^(\d+(?:\.\d+)?)/);
         const phaseNum = phaseNumMatch ? phaseNumMatch[1] : phaseEntry;
         for (const file of fs.readdirSync(phaseDir)) {
-          const sprintMatch = file.match(/^sprint-(\d+)\.md$/);
+          const sprintMatch =
+            file.match(/^sprint-(\d+)\.md$/i) ||
+            file.match(/^(?:\d+(?:\.\d+)?[-_.])?(\d+)[-_.].*SPRINT\.md$/i);
           if (!sprintMatch) continue;
-          const sprintNum = sprintMatch[1];
+          const sprintNum = String(parseInt(sprintMatch[1], 10));
           const sprintKey = `${phaseNum}/${sprintNum}`;
           parsed.sprints_found += 1;
           const sprintPath = path.join(phaseDir, file);
@@ -3894,14 +3899,6 @@ function cmdCommit(argv) {
 
   if (!message || !message.trim()) {
     throw new Error('commit requires a message: rcode-tools.cjs commit "type(scope): subject"');
-  }
-
-  // Verify a git repo exists before any git operation
-  try {
-    const { execSync: _execSyncCheck } = require('child_process');
-    _execSyncCheck('git rev-parse --git-dir', { cwd: PROJECT_ROOT, stdio: 'pipe' });
-  } catch {
-    throw new Error('No git repository found. Run git init first, then re-run this workflow.');
   }
 
   // AI attribution rejection (project rule)
@@ -6811,6 +6808,7 @@ function cmdGitignore(args) {
     '.rcode/brain/best-practices/',
     '',
     '# Runtime noise',
+    'node_modules/',
     '.rcode/state.json.lock',
     '.planning/debug/',
     '.planning/_backup/',
