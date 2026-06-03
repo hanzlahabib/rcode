@@ -94,6 +94,8 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 | VS Code native | `vscode` | `.vscode/` integration | ✅ v4 |
 | Antigravity | `antigravity` | `.antigravity/` | ✅ v4 |
 | Windsurf | `windsurf` | `.windsurf/` | ✅ v4 |
+| OpenAI Codex CLI | `codex` | `.rcode/` methodology files only | No native slash commands — invoke workflows by pasting workflow content manually |
+| Grok (xAI) | `grok` | `.rcode/` methodology files only | No native slash commands — invoke workflows by pasting workflow content manually |
 
 Passing an unsupported `--ide` value prints a clear error with workaround guidance.
 
@@ -113,6 +115,8 @@ cp .claude/CLAUDE.md .gemini/GEMINI.md   # adapt as needed for Gemini context
 ```
 
 Track the Gemini IDE implementation in the project issue tracker. When it ships, `pnpm dlx @hanzlaa/rcode install --ide gemini` will write `.gemini/rcode/` automatically.
+
+For runtimes without native slash-command support (Codex CLI, Grok), the `.rcode/` directory and workflow markdown files are available for manual invocation. Paste the relevant workflow content into your agent prompt to run any rcode workflow.
 
 ---
 

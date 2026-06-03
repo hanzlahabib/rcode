@@ -14,6 +14,8 @@ pnpm dlx @hanzlaa/rcode install
 
 Restart your IDE (Claude Code, Cursor, Gemini CLI, VS Code, Antigravity, or Windsurf). All `/rcode-*` commands now appear when you type `/`.
 
+For runtimes without native slash commands (Codex CLI, Grok): the `.rcode/` directory and workflow files are installed — paste any workflow from `rcode/workflows/` directly into your agent to run it.
+
 ---
 
 ## Step 1: Initialize
