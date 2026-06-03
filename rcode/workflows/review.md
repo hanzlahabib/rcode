@@ -82,6 +82,8 @@ Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is va
 
 Read from init: `phase_dir`, `phase_number`, `padded_phase`.
 
+If `phase_dir` is null or empty, STOP and tell the user: "Phase directory not found on disk. Create the phase directory under `.planning/phases/` first (e.g. `mkdir -p .planning/phases/1-name`), then re-run."
+
 Then read:
 1. `.planning/PROJECT.md` (first 80 lines — project context)
 2. Phase section from `.planning/ROADMAP.md`
