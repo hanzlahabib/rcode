@@ -73,6 +73,19 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 
 STOP — do not proceed.
 
+## Preflight — Dependency check
+
+If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING before planning begins:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Sprint planning can continue, but the resulting sprint tasks will fail at execution time
+  unless dependencies are installed first.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
+
 ## Step 1 — Load context
 
 ```bash

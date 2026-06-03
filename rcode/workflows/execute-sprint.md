@@ -17,6 +17,26 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 <process>
 
+<preflight name="dependency_check">
+**Check for uninstalled dependencies:** If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING and stop:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Then re-run the sprint. Proceeding without installed dependencies will cause task failures.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
+
+```bash
+if [ -f package.json ] && [ ! -d node_modules ] || [ -f package.json ] && [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+  echo "⚠ WARNING: package.json found but node_modules/ is missing or empty."
+  echo "  Run: pnpm install (or npm install if pnpm is not available)"
+  echo "  Then re-run the sprint."
+fi
+```
+</preflight>
+
 <step name="init_context" priority="first">
 Load execution context (paths only to minimize orchestrator context):
 
