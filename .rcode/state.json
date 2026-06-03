@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-03T08:35:40.904Z",
+  "updated": "2026-06-03T08:41:07.673Z",
   "current_phase": "Dashboard command runner",
   "current_plan": 4,
   "model_profile": "balanced",
@@ -992,7 +992,352 @@
       "completed_at": "2026-04-17T05:35:16.056Z"
     }
   ],
-  "sprints": [],
+  "sprints": [
+    {
+      "key": "20/1",
+      "phase": "20",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/20-dashboard-ux-quick-wins/20-1-SPRINT.md"
+    },
+    {
+      "key": "21/1",
+      "phase": "21",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/21-dashboard-data-pipeline/21-1-SPRINT.md"
+    },
+    {
+      "key": "22/1",
+      "phase": "22",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-1-SPRINT.md"
+    },
+    {
+      "key": "22/2",
+      "phase": "22",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-2-SPRINT.md"
+    },
+    {
+      "key": "22/3",
+      "phase": "22",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-3-SPRINT.md"
+    },
+    {
+      "key": "22/4",
+      "phase": "22",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-4-SPRINT.md"
+    },
+    {
+      "key": "23/1",
+      "phase": "23",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-1-SPRINT.md"
+    },
+    {
+      "key": "23/2",
+      "phase": "23",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-2-SPRINT.md"
+    },
+    {
+      "key": "23/3",
+      "phase": "23",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-3-SPRINT.md"
+    },
+    {
+      "key": "23/4",
+      "phase": "23",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-4-SPRINT.md"
+    },
+    {
+      "key": "24/1",
+      "phase": "24",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/24-resolve-agent-vs-skill-persona-duplication/24-1-SPRINT.md"
+    },
+    {
+      "key": "25/1",
+      "phase": "25",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/25-rcode-agent-cli-command/25-1-SPRINT.md"
+    },
+    {
+      "key": "26/1",
+      "phase": "26",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/26-reference-index-and-contributing-rule/26-1-SPRINT.md"
+    },
+    {
+      "key": "27/1",
+      "phase": "27",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/27-realtime-kanban-orchestration-dashboard/27-1-SPRINT.md"
+    },
+    {
+      "key": "28/1",
+      "phase": "28",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-1-SPRINT.md"
+    },
+    {
+      "key": "28/2",
+      "phase": "28",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-2-SPRINT.md"
+    },
+    {
+      "key": "28/3",
+      "phase": "28",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-3-SPRINT.md"
+    },
+    {
+      "key": "28/4",
+      "phase": "28",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-4-SPRINT.md"
+    },
+    {
+      "key": "29/1",
+      "phase": "29",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-1-SPRINT.md"
+    },
+    {
+      "key": "29/2",
+      "phase": "29",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-2-SPRINT.md"
+    },
+    {
+      "key": "29/3",
+      "phase": "29",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-3-SPRINT.md"
+    },
+    {
+      "key": "30/1",
+      "phase": "30",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-1-SPRINT.md"
+    },
+    {
+      "key": "30/2",
+      "phase": "30",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-2-SPRINT.md"
+    },
+    {
+      "key": "30/3",
+      "phase": "30",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-3-SPRINT.md"
+    },
+    {
+      "key": "30/4",
+      "phase": "30",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-4-SPRINT.md"
+    },
+    {
+      "key": "31/1",
+      "phase": "31",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-1-SPRINT.md"
+    },
+    {
+      "key": "31/2",
+      "phase": "31",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-2-SPRINT.md"
+    },
+    {
+      "key": "31/3",
+      "phase": "31",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-3-SPRINT.md"
+    },
+    {
+      "key": "31/4",
+      "phase": "31",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-4-SPRINT.md"
+    },
+    {
+      "key": "32/1",
+      "phase": "32",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-1-SPRINT.md"
+    },
+    {
+      "key": "32/2",
+      "phase": "32",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-2-SPRINT.md"
+    },
+    {
+      "key": "32/3",
+      "phase": "32",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-3-SPRINT.md"
+    },
+    {
+      "key": "33/1",
+      "phase": "33",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-1-SPRINT.md"
+    },
+    {
+      "key": "33/2",
+      "phase": "33",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-2-SPRINT.md"
+    },
+    {
+      "key": "33/3",
+      "phase": "33",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-3-SPRINT.md"
+    },
+    {
+      "key": "34/1",
+      "phase": "34",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md"
+    },
+    {
+      "key": "34/2",
+      "phase": "34",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md"
+    },
+    {
+      "key": "35/1",
+      "phase": "35",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md"
+    },
+    {
+      "key": "35/2",
+      "phase": "35",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md"
+    },
+    {
+      "key": "36/1",
+      "phase": "36",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md"
+    },
+    {
+      "key": "36/2",
+      "phase": "36",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md"
+    },
+    {
+      "key": "37/1",
+      "phase": "37",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-1-SPRINT.md"
+    },
+    {
+      "key": "37/2",
+      "phase": "37",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
+    }
+  ],
   "plans": [],
   "milestones": [
     {

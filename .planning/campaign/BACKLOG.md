@@ -28,3 +28,11 @@ All items closed. Final test count: 462 pass / 0 fail.
 - [ ] W9-A: pnpm install preflight note in execute-sprint + sprint-planning
 - [ ] W9-B: Phase resolver handles 001-* / 01-* / 1-* dir prefixes robustly
 - [ ] W9-C: Lifecycle aliases print actionable next-step after workflow show
+
+## Done (Wave 9)
+- [x] W9-A: pnpm install preflight warning in execute-sprint + sprint-planning
+- [x] W9-B: Phase resolver handles 001-* / 01-* / 1-* dirs + 4 new tests + config-set quote fix
+- [x] W9-C: Lifecycle aliases print actionable next-step after workflow show
+
+## CAMPAIGN COMPLETE
+All actionable items drained. Final: 466/0 tests, 29 commits since v4.1.1.
