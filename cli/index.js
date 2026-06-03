@@ -35,9 +35,9 @@ const COMMANDS = {
   doctor: require('./doctor'),
   workflow: require('./workflow'),  // lifecycle bridge for non-Claude runtimes
   // Thin lifecycle aliases — delegate to workflow show <name> (#883)
-  plan:    (args, ctx) => require('./workflow')(['show', 'plan',    ...args], ctx),
-  execute: (args, ctx) => require('./workflow')(['show', 'execute-sprint', ...args], ctx),
-  ship:    (args, ctx) => require('./workflow')(['show', 'ship',    ...args], ctx),
+  plan:    (args, ctx) => lifecycleAlias('plan',           args, ctx),
+  execute: (args, ctx) => lifecycleAlias('execute-sprint', args, ctx),
+  ship:    (args, ctx) => lifecycleAlias('ship',           args, ctx),
   'set-profile': require('./set-profile'),
   'set-mode': require('./set-mode'),
   config: require('./config'),
@@ -118,6 +118,26 @@ Getting started:
 
 Documentation: https://github.com/hanzlahabib/rihal-code
   `.trim());
+}
+
+/**
+ * Lifecycle aliases (plan/execute/ship): show the workflow then print actionable
+ * next-step guidance so the user knows how to actually run it.
+ */
+function lifecycleAlias(workflowName, args, ctx) {
+  require('./workflow')(['show', workflowName, ...args], ctx);
+
+  const hasAuto = args.includes('--auto') || args.includes('--run');
+
+  console.log('\n─────────────────────────────────────────────');
+  console.log(`▶ To run: paste the above into Claude Code as  /${workflowName === 'execute-sprint' ? 'rcode-execute-sprint' : `rcode-${workflowName}`}`);
+  console.log('  or pipe it directly:  rcode ' + (workflowName === 'execute-sprint' ? 'execute' : workflowName) + ' | cld --model sonnet');
+
+  if (hasAuto) {
+    console.log('\n  AUTO mode detected — in Claude Code run:  /rcode-' +
+      (workflowName === 'execute-sprint' ? 'execute-sprint' : workflowName) +
+      ' --auto  (applies yolo defaults, skips confirmation prompts)');
+  }
 }
 
 /**
