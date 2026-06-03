@@ -248,6 +248,12 @@ Not yet supported. Re-install with only the modules you want via `--module` flag
 
 ---
 
+## Dry run
+
+Pass `--dry-run` (or its alias `--list-files`) to preview every path that would be created or copied, without writing anything to disk. The installer prints `DRY RUN: the following paths would be written:` followed by one `  + <path>` line per file, then exits with code 0. This is useful for auditing what a fresh install or upgrade would touch before you commit to it. Combine with `--yes` and `--ide` to get a non-interactive listing: `npx @hanzlaa/rcode install --dry-run --yes --ide claude`.
+
+---
+
 ## Next
 
 - Read [`docs/what-is-rcode-code.md`](what-is-rcode-code.md) for the product story.

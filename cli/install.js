@@ -197,6 +197,9 @@ function parseArgs(argv) {
     silent: false,
     // noPrompt — skip all interactive prompts (used by postinstall auto-run)
     noPrompt: false,
+    // dry-run / list-files — preview paths that would be written, then exit
+    dryRun: false,
+    listFiles: false,
   };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
@@ -231,6 +234,8 @@ function parseArgs(argv) {
     else if (arg === '--global') opts.global = true;
     else if (arg === '--silent') opts.silent = true;
     else if (arg === '--no-prompt') opts.noPrompt = true;
+    else if (arg === '--dry-run') opts.dryRun = true;
+    else if (arg === '--list-files') opts.listFiles = true;
     else if (!arg.startsWith('--')) positional.push(arg);
   }
   if (positional[0]) {
@@ -524,6 +529,8 @@ Options:
   --language <lang>  set communication_language (default: English)
   --mode <guided|yolo> default mode (default: guided)
   --ide <name>       target IDE (claude, cursor, gemini; default: claude)
+  --dry-run          preview what would be written; exit without writing any files
+  --list-files       alias for --dry-run
   --help             this text
 
 Installs (IDE-specific):
@@ -2012,6 +2019,15 @@ async function installInner(opts) {
   }
   if (opts.modules.length > 0) {
     console.log(`  Modules: ${opts.modules.join(', ')}`);
+  }
+
+  // Dry run / list-files — list paths that would be written and exit without writing
+  if (opts.dryRun || opts.listFiles) {
+    console.log('DRY RUN: the following paths would be written:');
+    for (const entry of plan) {
+      console.log('  + ' + entry.rel);
+    }
+    return 0;
   }
 
   // Force-overwrite backup — closes #381. Without this, customized
