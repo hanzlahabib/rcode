@@ -25,6 +25,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
@@ -744,6 +745,26 @@ async function runUninstall(args) {
     const n = removeMatching(agDir, (name) => name.startsWith('rcode-'));
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Antigravity agents`);
+  }
+
+  // Codex native home prompts (~/.codex/prompts/rcode-*.md), installed by the
+  // --global install path. These live OUTSIDE the project, so removeMatching's
+  // project-root guard can't be used — root the safe-rm guard at the prompts
+  // dir instead. Only sweep the rcode- namespace; never touch the user's own
+  // prompts.
+  if (editors.includes('codex')) {
+    const codexDir = path.join(os.homedir(), '.codex', 'prompts');
+    let n = 0;
+    if (fs.existsSync(codexDir)) {
+      const codexRoot = path.resolve(codexDir);
+      for (const entry of fs.readdirSync(codexDir, { withFileTypes: true })) {
+        if (!entry.isFile() || !entry.name.startsWith('rcode-') || !entry.name.endsWith('.md')) continue;
+        const r = safeRmSync(path.join(codexDir, entry.name), codexRoot);
+        if (r.ok) n += 1;
+      }
+    }
+    removed += n;
+    if (n > 0) console.log(`   ✓ removed ${n} Codex prompts`);
   }
 
   // #706 — gemini removal (.gemini/rcode/{agents,commands})
