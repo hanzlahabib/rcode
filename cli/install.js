@@ -1943,6 +1943,7 @@ function installNativeHomeSlashCommands(opts) {
     switch (ide) {
       // >>> CODEX-CASE-ANCHOR (codex agent: case 'codex': installCodexPromptCommands(opts); break;) <<<
       // >>> ANTIGRAVITY-CASE-ANCHOR (antigravity agent: case 'antigravity': installAntigravitySkillCommands(opts); break;) <<<
+      case 'antigravity': installAntigravitySkillCommands(opts); break;
       default:
         break;
     }
@@ -1950,6 +1951,35 @@ function installNativeHomeSlashCommands(opts) {
 }
 
 // >>> ANTIGRAVITY-HELPER-ANCHOR (antigravity agent defines installAntigravitySkillCommands here) <<<
+
+// Antigravity (`agy`) surfaces its `/slash` menu ONLY from skill dirs under
+// ~/.gemini/antigravity/skills/<name>/SKILL.md (its real discovery path — the
+// bundled gsd-* skills there prove it). The project install writes to
+// <project>/.antigravity/rcode/commands, which `agy` never reads, so /rcode-*
+// never appears. This writes each command as a home-dir SKILL.md in the format
+// `agy` expects: just `name` + `description` frontmatter, then the command body.
+function installAntigravitySkillCommands(opts) {
+  const base = path.join(os.homedir(), '.gemini', 'antigravity', 'skills');
+  let n = 0;
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
+    const basename = path.basename(f, '.md');
+    const skillName = `rcode-${basename}`;
+    const src = fs.readFileSync(f, 'utf8');
+    const { frontmatter, body } = parseFrontmatter(src);
+    // Strip the source's own YAML frontmatter (parseFrontmatter returns the
+    // body sans `---` block) so the generated SKILL.md has exactly one
+    // frontmatter block — `agy` chokes on double-nested `---` headers.
+    const description =
+      frontmatter.description ||
+      (body.match(/^#+\s+(.+)$/m)?.[1] || body.split('\n').find((l) => l.trim()) || skillName).trim();
+    const skillDir = path.join(base, skillName);
+    fs.mkdirSync(skillDir, { recursive: true });
+    const out = `---\nname: ${skillName}\ndescription: ${description}\n---\n\n${body.trimStart()}`;
+    fs.writeFileSync(path.join(skillDir, 'SKILL.md'), out);
+    n++;
+  }
+  console.log('  ' + ok(`Antigravity: ${n} /rcode-* skills → ~/.gemini/antigravity/skills/`));
+}
 
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
@@ -3130,3 +3160,5 @@ module.exports.install = install;
 module.exports.SUPPORTED_IDES = SUPPORTED_IDES;
 module.exports.migrateVscodeCommandsLayout = migrateVscodeCommandsLayout;
 module.exports.getPathsForIde = getPathsForIde;
+// Exported for the native home-dir slash-command test (#antigravity-skills).
+module.exports.installNativeHomeSlashCommands = installNativeHomeSlashCommands;
