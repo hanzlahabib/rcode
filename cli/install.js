@@ -89,7 +89,7 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
  * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
  * sites instead of ten.
  */
-const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex']);
+const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex', 'grok']);
 
 /**
  * Resolve the stable on-disk location of this package so config.yaml
@@ -615,6 +615,21 @@ function getPathsForIde(ide, target) {
       // claude/vscode install paths). We install agent + command files to .claude/
       // so multi-IDE installs share files, and the rcode workflow bridge gives
       // Codex access to lifecycle workflows via `rcode workflow show <name>` (#883).
+      // NOTE: Codex surfaces native /slash commands ONLY from ~/.codex/prompts/*.md
+      // (home, startup-loaded) — installed separately by installNativeHomeSlashCommands()
+      // under the opt-in --global flag, since .claude/commands is invisible to Codex.
+      return {
+        agentsDir: path.join(target, '.claude', 'agents'),
+        commandsDir: path.join(target, '.claude', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
+      };
+    case 'grok':
+      // Grok Build (xAI CLI) is Claude-Code-compatible: it reads slash commands
+      // from .claude/commands/*.md (project) and ~/.claude/commands (global), same
+      // as Claude Code. So grok maps to the identical .claude/ layout — verified
+      // live: `/rcode-add-phase` surfaces in grok from these dirs.
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
         commandsDir: path.join(target, '.claude', 'commands'),
@@ -1303,7 +1318,7 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
     const ext = ide === 'cursor' ? '.mdc' : '.md';
     const baseName = path.basename(f, '.md');
-    const outName = (ide === 'claude' || ide === 'vscode')
+    const outName = (ide === 'claude' || ide === 'vscode' || ide === 'grok')
       ? `rcode-${baseName}${ext}`
       : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
@@ -1901,6 +1916,41 @@ function acquireInstallLock(target) {
   return { ok: false, pid: 0, lockPath };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Native home-dir slash-command install.
+//
+// Some agentic CLIs surface their `/slash` command menu ONLY from a fixed
+// home directory (not from project dirs the way Claude Code / Grok do):
+//   • Codex      → ~/.codex/prompts/<name>.md          (flat prompt files)
+//   • Antigravity→ ~/.gemini/antigravity/skills/<name>/SKILL.md (skill dirs)
+// For those tools the normal project install writes files the CLI never reads,
+// so `/rcode-*` never appears. This installs the commands in each CLI's NATIVE
+// format into its NATIVE home dir, gated behind the opt-in `--global` flag.
+//
+// IDEs that read project dirs (claude, grok, cursor, vscode, windsurf) are a
+// no-op here — they already work via getPathsForIde().
+//
+// Each tool's writer lives in its own helper; the dispatcher routes by ide.
+// SOURCE_ROOT/commands/*.md is the canonical command source for all writers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// >>> CODEX-HELPER-ANCHOR (codex agent defines installCodexPromptCommands here) <<<
+
+function installNativeHomeSlashCommands(opts) {
+  if (!opts || !opts.global) return;
+  const ides = Array.isArray(opts.ides) ? opts.ides : [opts.ide].filter(Boolean);
+  for (const ide of ides) {
+    switch (ide) {
+      // >>> CODEX-CASE-ANCHOR (codex agent: case 'codex': installCodexPromptCommands(opts); break;) <<<
+      // >>> ANTIGRAVITY-CASE-ANCHOR (antigravity agent: case 'antigravity': installAntigravitySkillCommands(opts); break;) <<<
+      default:
+        break;
+    }
+  }
+}
+
+// >>> ANTIGRAVITY-HELPER-ANCHOR (antigravity agent defines installAntigravitySkillCommands here) <<<
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1955,6 +2005,7 @@ async function installInner(opts) {
     console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
     console.error('    windsurf     — Windsurf (Codeium)');
     console.error('    antigravity  — Antigravity (experimental)');
+    console.error('    grok         — Grok Build (xAI CLI, Claude-Code-compatible)');
     console.error('');
     console.error('  Tracked for future:');
     console.error('    jetbrains    — IntelliJ / PyCharm');
@@ -2720,6 +2771,14 @@ async function installInner(opts) {
       process.stderr.write(pc.yellow('WARNING: rcode-* and rihal-* namespaces both detected — consider removing one to reduce roster size.') + '\n');
     }
   } catch { /* non-fatal */ }
+
+  // Native home-dir slash commands for CLIs that ONLY surface /commands from
+  // their own home dir (not project dirs). Opt-in via --global. See the fn def.
+  try {
+    installNativeHomeSlashCommands(opts);
+  } catch (err) {
+    process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+  }
 
   const version = readPackageVersion();
   console.log('');
