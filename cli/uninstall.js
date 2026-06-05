@@ -25,6 +25,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { askConfirm, PromptAbortError } = require('./lib/prompts.cjs');
@@ -125,6 +126,35 @@ function cleanRcodePreCommitHook(cwd) {
   try {
     writeFileAtomic(hookPath, stripped, { mode: 0o755 });
     return 'stripped';
+  } catch { return 'skipped'; }
+}
+
+/**
+ * Remove the rcode slash-router hook entry from a CLI hooks JSON file
+ * (codex: ~/.codex/hooks.json UserPromptSubmit, antigravity:
+ * ~/.gemini/antigravity/settings.json UserPrompt) while preserving every
+ * other entry (herdr's, the user's). Matches the router by command substring.
+ * Idempotent + guarded: missing/unparseable files are no-ops.
+ * Returns 'removed' | 'unchanged' | 'skipped'.
+ */
+function removeSlashRouterHook(jsonPath, eventKey) {
+  if (!fs.existsSync(jsonPath)) return 'skipped';
+  let root;
+  try { root = JSON.parse(fs.readFileSync(jsonPath, 'utf8')); } catch { return 'skipped'; }
+  if (!root || typeof root !== 'object' || !root.hooks || !Array.isArray(root.hooks[eventKey])) {
+    return 'unchanged';
+  }
+  const before = root.hooks[eventKey].length;
+  root.hooks[eventKey] = root.hooks[eventKey].filter(group =>
+    !(Array.isArray(group?.hooks) &&
+      group.hooks.some(h => typeof h?.command === 'string' && h.command.includes('rcode-slash-router.cjs'))),
+  );
+  if (root.hooks[eventKey].length === before) return 'unchanged';
+  // Drop the event key entirely if it is now empty, to leave a tidy file.
+  if (root.hooks[eventKey].length === 0) delete root.hooks[eventKey];
+  try {
+    writeFileAtomic(jsonPath, JSON.stringify(root, null, 2) + '\n');
+    return 'removed';
   } catch { return 'skipped'; }
 }
 
@@ -746,6 +776,29 @@ async function runUninstall(args) {
     if (n > 0) console.log(`   ✓ removed ${n} Antigravity agents`);
   }
 
+  // Slash-router hooks (home-dir, CLI-native). Installed only via `--global`
+  // for codex/antigravity; remove the rcode UserPromptSubmit/UserPrompt entry
+  // from each CLI's hooks JSON, leaving herdr + other hooks intact.
+  if (editors.includes('codex')) {
+    const r = removeSlashRouterHook(path.join(os.homedir(), '.codex', 'hooks.json'), 'UserPromptSubmit');
+    if (r === 'removed') console.log(`   ✓ removed rcode slash-router hook from ~/.codex/hooks.json`);
+  }
+  if (editors.includes('antigravity')) {
+    const r = removeSlashRouterHook(path.join(os.homedir(), '.gemini', 'antigravity', 'settings.json'), 'UserPrompt');
+    if (r === 'removed') console.log(`   ✓ removed rcode slash-router hook from ~/.gemini/antigravity/settings.json`);
+  }
+  // The router script + command-body copies are shared by both CLIs; remove
+  // them once if either is in scope.
+  if (editors.includes('codex') || editors.includes('antigravity')) {
+    const home = os.homedir();
+    for (const dir of [path.join(home, '.rcode', 'slash-commands'), path.join(home, '.rcode', 'bin')]) {
+      if (fs.existsSync(dir)) {
+        const rr = safeRmSync(dir, home);
+        if (rr.ok) console.log(`   ✓ removed ${dir}`);
+      }
+    }
+  }
+
   // #706 — gemini removal (.gemini/rcode/{agents,commands})
   if (editors.includes('gemini')) {
     let n = 0;
@@ -925,6 +978,7 @@ module.exports.isLocalOverride = isLocalOverride;
 module.exports.planToPathList = planToPathList;
 module.exports.discoverKnownActionSkills = discoverKnownActionSkills;
 module.exports.stripRcodeGitignoreBlock = stripRcodeGitignoreBlock;
+module.exports.removeSlashRouterHook = removeSlashRouterHook;
 
 // Direct invocation — allow `node cli/uninstall.js [flags]` to run end-to-end.
 // When called via cli/index.js, module.exports is invoked directly.
