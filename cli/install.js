@@ -2407,6 +2407,14 @@ async function installInner(opts) {
     } catch { /* non-fatal */ }
     console.log('');
     console.log(`  ${dim(`${skillsInstalled} skills installed globally`)}`);
+    // Native home-dir slash commands for CLIs that surface /commands ONLY from
+    // their own home dir (codex → ~/.codex/prompts, antigravity →
+    // ~/.gemini/antigravity/skills). Gated on --global, which we are inside.
+    try {
+      installNativeHomeSlashCommands(opts);
+    } catch (err) {
+      process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+    }
     return 0;
   }
 
@@ -2829,14 +2837,6 @@ async function installInner(opts) {
       process.stderr.write(pc.yellow('WARNING: rcode-* and rihal-* namespaces both detected — consider removing one to reduce roster size.') + '\n');
     }
   } catch { /* non-fatal */ }
-
-  // Native home-dir slash commands for CLIs that ONLY surface /commands from
-  // their own home dir (not project dirs). Opt-in via --global. See the fn def.
-  try {
-    installNativeHomeSlashCommands(opts);
-  } catch (err) {
-    process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
-  }
 
   const version = readPackageVersion();
   console.log('');
