@@ -745,6 +745,29 @@ async function runUninstall(args) {
     const n = removeMatching(agDir, (name) => name.startsWith('rcode-'));
     removed += n;
     if (n > 0) console.log(`   ✓ removed ${n} Antigravity agents`);
+
+    // Home-dir parity: `rcode install --global` writes /rcode-* slash commands
+    // as skill dirs under ~/.gemini/antigravity/skills/ (its native discovery
+    // path). Remove ONLY the rcode- namespaced dirs — never touch gsd-* or any
+    // other skill the user installed. removeMatching() guards against the
+    // PROJECT root, so it can't be reused here (these live in $HOME); guard
+    // each removal against the skills base instead, keeping the symlink check.
+    const homeSkills = path.join(os.homedir(), '.gemini', 'antigravity', 'skills');
+    let nHome = 0;
+    if (fs.existsSync(homeSkills)) {
+      for (const entry of fs.readdirSync(homeSkills, { withFileTypes: true })) {
+        if (!entry.name.startsWith('rcode-')) continue;
+        const full = path.join(homeSkills, entry.name);
+        const r = safeRmSync(full, homeSkills);
+        if (!r.ok && r.reason === 'outside-root') {
+          console.log(`   ⚠ refused to remove ${full} — symlink resolves outside skills root`);
+          continue;
+        }
+        nHome++;
+      }
+    }
+    removed += nHome;
+    if (nHome > 0) console.log(`   ✓ removed ${nHome} Antigravity /rcode-* skills from ~/.gemini/antigravity/skills/`);
   }
 
   // Codex native home prompts (~/.codex/prompts/rcode-*.md), installed by the
