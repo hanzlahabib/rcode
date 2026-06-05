@@ -1936,12 +1936,40 @@ function acquireInstallLock(target) {
 
 // >>> CODEX-HELPER-ANCHOR (codex agent defines installCodexPromptCommands here) <<<
 
+/**
+ * Install rcode commands as Codex CLI native prompts.
+ *
+ * Codex surfaces its `/slash` menu ONLY from flat prompt files in
+ * ~/.codex/prompts/<name>.md, loaded at startup. Each file is PLAIN markdown
+ * whose body becomes the prompt — Codex does not understand the rcode YAML
+ * frontmatter, so leaving it in would render as literal text at the top of the
+ * prompt. We therefore strip the leading frontmatter block and prepend a single
+ * `# rcode: <description>` line so the prompt stays self-describing in the menu.
+ * Files are namespaced `rcode-` so uninstall can sweep them without touching the
+ * user's own prompts. Idempotent — overwrites are fine.
+ */
+function installCodexPromptCommands(opts) {
+  const dir = path.join(os.homedir(), '.codex', 'prompts');
+  fs.mkdirSync(dir, { recursive: true });
+  let n = 0;
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
+    const text = fs.readFileSync(f, 'utf8');
+    const { frontmatter, body } = parseFrontmatter(text);
+    const desc = frontmatter.description || frontmatter.name || path.basename(f, '.md');
+    const out = `# rcode: ${desc}\n\n${body.trimStart()}`;
+    fs.writeFileSync(path.join(dir, `rcode-${path.basename(f, '.md')}.md`), out);
+    n++;
+  }
+  console.log('  ' + ok(`Codex: ${n} /rcode-* prompts → ~/.codex/prompts/`));
+}
+
 function installNativeHomeSlashCommands(opts) {
   if (!opts || !opts.global) return;
   const ides = Array.isArray(opts.ides) ? opts.ides : [opts.ide].filter(Boolean);
   for (const ide of ides) {
     switch (ide) {
       // >>> CODEX-CASE-ANCHOR (codex agent: case 'codex': installCodexPromptCommands(opts); break;) <<<
+      case 'codex': installCodexPromptCommands(opts); break;
       // >>> ANTIGRAVITY-CASE-ANCHOR (antigravity agent: case 'antigravity': installAntigravitySkillCommands(opts); break;) <<<
       default:
         break;
