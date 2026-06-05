@@ -3158,3 +3158,4 @@ module.exports.install = install;
 module.exports.SUPPORTED_IDES = SUPPORTED_IDES;
 module.exports.migrateVscodeCommandsLayout = migrateVscodeCommandsLayout;
 module.exports.getPathsForIde = getPathsForIde;
+module.exports.installCodexPromptCommands = installCodexPromptCommands;
