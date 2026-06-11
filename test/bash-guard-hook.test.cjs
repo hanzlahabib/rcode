@@ -16,10 +16,11 @@ const path = require('node:path');
 
 const HOOK = path.resolve(__dirname, '../rcode/bin/rcode-hooks.cjs');
 
-function runGuard(command) {
+function runGuard(command, env) {
   const result = spawnSync(process.execPath, [HOOK, 'bash-guard'], {
     encoding: 'utf8',
     input: JSON.stringify({ tool_input: { command } }),
+    env: env ? { ...process.env, ...env } : process.env,
   });
   return result.status;
 }
@@ -56,8 +57,10 @@ test('rm -rf outside the allowlist is blocked', () => {
   assert.strictEqual(runGuard('rm -rf src'), BLOCKED);
   assert.strictEqual(runGuard('rm -rf ../sibling'), BLOCKED);
   assert.strictEqual(runGuard('rm -rf ~/Documents'), BLOCKED);
-  // /tmp/scratch is not under os.tmpdir() (which is /tmp/claude-1000), so it is blocked
-  assert.strictEqual(runGuard('rm -rf /tmp/scratch'), BLOCKED);
+  // Pin TMPDIR so the assertion holds on any host: with tmpdir at
+  // /tmp/claude-1000, /tmp/scratch falls outside the allowlist. Without the
+  // pin, hosts where os.tmpdir() is /tmp would see this target as allowed.
+  assert.strictEqual(runGuard('rm -rf /tmp/scratch', { TMPDIR: '/tmp/claude-1000' }), BLOCKED);
 });
 
 test('rm -rf against safe build/cache paths is allowed', () => {
