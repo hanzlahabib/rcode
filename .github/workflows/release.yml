@@ -30,16 +30,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
+      # This repo uses pnpm (pnpm-lock.yaml, lockfileVersion 9.0); `npm ci`
+      # fails with EUSAGE because there is no package-lock.json.
       - name: Install build dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build CLI bundle (dist/rcode.js)
-        run: npm run build:cli
+        run: pnpm run build:cli
 
       - name: Verify bundle is self-contained
         run: |
