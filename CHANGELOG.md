@@ -3,6 +3,26 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.2.0 (2026-06-11) — Grok support and slash-command hook router for Codex/Antigravity
+
+Minor release. No breaking changes; drop-in upgrade.
+
+### Added
+- `cli/install.js`: `grok` joins `SUPPORTED_IDES` — Grok Build is Claude-Code-compatible and reads the global `.claude/commands/` layout, so `--ide grok` now installs instead of rejecting
+- `cli/rcode-slash-router.cjs`: dependency-free prompt-submit hook router — intercepts `/rcode-<name> [args]` and injects the command body via `hookSpecificOutput.additionalContext`
+- `cli/install.js`: `--global` install wires the router for Codex (`~/.codex/hooks.json` `UserPromptSubmit`) and Antigravity (`~/.gemini/antigravity/settings.json` `UserPrompt`); hook merge is idempotent and preserves existing third-party entries
+- `cli/uninstall.js`: removes only the rcode hook entry and router files on uninstall, leaving other hooks intact
+- `test/slash-hook-router.test.cjs`: covers routing, hook wiring, and removal
+
+### Fixed
+- `.github/workflows/release.yml`: release job now uses pnpm instead of `npm ci` (repo has no `package-lock.json`), unblocking tag-triggered releases
+- `test/bash-guard-hook.test.cjs`: rm-rf allowlist assertion pins `TMPDIR` so it passes on hosts where `os.tmpdir()` is `/tmp`
+
+### Notes
+- Antigravity router wiring is best-effort: live audit (`.planning/audits/AUDIT-ide-slash-commands.md`) could not confirm `agy` honors `additionalContext` injection
+- File-based Codex/Antigravity slash-command branches (`feat/multi-agent-slash-parity`, `feat/codex-prompts`, `feat/antigravity-skills`) were superseded by the hook router after live verification showed the file approach never surfaces in either CLI
+
+---
 ## v4.1.2 (2026-06-04) — installer UX, workflow quality, and IDE-neutral docs
 
 Patch release shipping Wave 10–11 fixes. No breaking changes; drop-in upgrade.
