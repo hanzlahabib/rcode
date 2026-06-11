@@ -28,7 +28,7 @@ test('SUPPORTED_IDES contains the expected canonical set', () => {
   // intentionally so reviewers see the semantic change.
   assert.deepStrictEqual(
     Array.from(SUPPORTED_IDES).sort(),
-    ['antigravity', 'claude', 'codex', 'cursor', 'gemini', 'vscode', 'windsurf'],
+    ['antigravity', 'claude', 'codex', 'cursor', 'gemini', 'grok', 'vscode', 'windsurf'],
   );
 });
 
