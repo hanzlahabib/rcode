@@ -89,7 +89,7 @@ const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
  * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
  * sites instead of ten.
  */
-const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex']);
+const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex', 'grok']);
 
 /**
  * Resolve the stable on-disk location of this package so config.yaml
@@ -615,6 +615,21 @@ function getPathsForIde(ide, target) {
       // claude/vscode install paths). We install agent + command files to .claude/
       // so multi-IDE installs share files, and the rcode workflow bridge gives
       // Codex access to lifecycle workflows via `rcode workflow show <name>` (#883).
+      // NOTE: Codex surfaces native /slash commands ONLY from ~/.codex/prompts/*.md
+      // (home, startup-loaded) — installed separately by installNativeHomeSlashCommands()
+      // under the opt-in --global flag, since .claude/commands is invisible to Codex.
+      return {
+        agentsDir: path.join(target, '.claude', 'agents'),
+        commandsDir: path.join(target, '.claude', 'commands'),
+        workflowsDir: path.join(target, '.rcode', 'workflows'),
+        referencesDir: path.join(target, '.rcode', 'references'),
+        binDir: path.join(target, '.rcode', 'bin'),
+      };
+    case 'grok':
+      // Grok Build (xAI CLI) is Claude-Code-compatible: it reads slash commands
+      // from .claude/commands/*.md (project) and ~/.claude/commands (global), same
+      // as Claude Code. So grok maps to the identical .claude/ layout — verified
+      // live: `/rcode-add-phase` surfaces in grok from these dirs.
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
         commandsDir: path.join(target, '.claude', 'commands'),
@@ -1303,7 +1318,7 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
     const ext = ide === 'cursor' ? '.mdc' : '.md';
     const baseName = path.basename(f, '.md');
-    const outName = (ide === 'claude' || ide === 'vscode')
+    const outName = (ide === 'claude' || ide === 'vscode' || ide === 'grok')
       ? `rcode-${baseName}${ext}`
       : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
@@ -1901,6 +1916,125 @@ function acquireInstallLock(target) {
   return { ok: false, pid: 0, lockPath };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Native home-dir slash-command install.
+//
+// Some agentic CLIs surface their `/slash` command menu ONLY from a fixed
+// home directory (not from project dirs the way Claude Code / Grok do):
+//   • Codex      → ~/.codex/prompts/<name>.md          (flat prompt files)
+//   • Antigravity→ ~/.gemini/antigravity/skills/<name>/SKILL.md (skill dirs)
+// For those tools the normal project install writes files the CLI never reads,
+// so `/rcode-*` never appears. This installs the commands in each CLI's NATIVE
+// format into its NATIVE home dir, gated behind the opt-in `--global` flag.
+//
+// IDEs that read project dirs (claude, grok, cursor, vscode, windsurf) are a
+// no-op here — they already work via getPathsForIde().
+//
+// Each tool's writer lives in its own helper; the dispatcher routes by ide.
+// SOURCE_ROOT/commands/*.md is the canonical command source for all writers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Codex + Antigravity surface NO file-based slash commands (verified live),
+// but BOTH support a prompt-submit hook (UserPromptSubmit / UserPrompt) that
+// can inject context. We install a hook ROUTER (cli/rcode-slash-router.cjs)
+// into each, plus a home-dir copy of every command body the router reads.
+// See cli/rcode-slash-router.cjs for the runtime contract.
+
+// Shared: copy every command body to ~/.rcode/slash-commands/<name>.md and the
+// router script to ~/.rcode/bin/. A fixed home-dir location lets the hook read
+// commands regardless of the user's cwd. Idempotent (plain overwrite).
+function installSlashRouterCommands(opts) {
+  const home = os.homedir();
+  const cmdDestDir = path.join(home, '.rcode', 'slash-commands');
+  const binDestDir = path.join(home, '.rcode', 'bin');
+  ensureDir(cmdDestDir);
+  ensureDir(binDestDir);
+
+  const srcCmdDir = path.join(SOURCE_ROOT, 'commands');
+  let copied = 0;
+  for (const file of fs.readdirSync(srcCmdDir)) {
+    if (!file.endsWith('.md')) continue;
+    fs.copyFileSync(path.join(srcCmdDir, file), path.join(cmdDestDir, file));
+    copied++;
+  }
+
+  const routerSrc = path.join(PACKAGE_ROOT, 'cli', 'rcode-slash-router.cjs');
+  const routerDest = path.join(binDestDir, 'rcode-slash-router.cjs');
+  fs.copyFileSync(routerSrc, routerDest);
+
+  if (opts && opts.global !== 'silent') {
+    console.log('  ' + ok(`Slash-router: ${copied} command bodies → ~/.rcode/slash-commands/ + router → ~/.rcode/bin/`));
+  }
+  return routerDest;
+}
+
+// The absolute command a hook entry runs. Matched by substring for idempotency
+// and for removal on uninstall — keep the basename stable.
+function slashRouterHookCommand() {
+  return `node "${path.join(os.homedir(), '.rcode', 'bin', 'rcode-slash-router.cjs')}"`;
+}
+
+// Merge a prompt-submit hook entry into an existing CLI hooks JSON file without
+// disturbing any pre-existing entries (e.g. herdr's). `eventKey` is the hook
+// event name that CLI uses (codex: UserPromptSubmit, antigravity: UserPrompt).
+// Idempotent: re-running detects the router by command substring and no-ops.
+function mergeSlashRouterHook(jsonPath, eventKey, command, label) {
+  let root = {};
+  if (fs.existsSync(jsonPath)) {
+    try {
+      root = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) || {};
+    } catch {
+      // Unparseable file — don't clobber the user's config; bail loudly.
+      console.log('  ' + warn(`${label}: ${jsonPath} is not valid JSON — skipped slash-router wiring.`));
+      return false;
+    }
+  }
+  if (!root.hooks || typeof root.hooks !== 'object') root.hooks = {};
+  if (!Array.isArray(root.hooks[eventKey])) root.hooks[eventKey] = [];
+
+  const already = root.hooks[eventKey].some(group =>
+    Array.isArray(group?.hooks) &&
+    group.hooks.some(h => typeof h?.command === 'string' && h.command.includes('rcode-slash-router.cjs')),
+  );
+  if (already) {
+    console.log('  ' + ok(`${label}: slash-router hook already present (idempotent).`));
+    return false;
+  }
+
+  root.hooks[eventKey].push({ hooks: [{ type: 'command', command, timeout: 10 }] });
+  ensureDir(path.dirname(jsonPath));
+  fs.writeFileSync(jsonPath, JSON.stringify(root, null, 2) + '\n');
+  console.log('  ' + ok(`${label}: wired slash-router into ${eventKey} hook (existing hooks preserved).`));
+  return true;
+}
+
+// Codex: ~/.codex/hooks.json, event UserPromptSubmit.
+function installCodexSlashRouterHook(opts) {
+  installSlashRouterCommands(opts);
+  const jsonPath = path.join(os.homedir(), '.codex', 'hooks.json');
+  mergeSlashRouterHook(jsonPath, 'UserPromptSubmit', slashRouterHookCommand(), 'Codex');
+}
+
+// Antigravity: ~/.gemini/antigravity/settings.json, event UserPrompt.
+function installAntigravitySlashRouterHook(opts) {
+  installSlashRouterCommands(opts);
+  const jsonPath = path.join(os.homedir(), '.gemini', 'antigravity', 'settings.json');
+  mergeSlashRouterHook(jsonPath, 'UserPrompt', slashRouterHookCommand(), 'Antigravity');
+}
+
+function installNativeHomeSlashCommands(opts) {
+  if (!opts || !opts.global) return;
+  const ides = Array.isArray(opts.ides) ? opts.ides : [opts.ide].filter(Boolean);
+  for (const ide of ides) {
+    switch (ide) {
+      case 'codex': installCodexSlashRouterHook(opts); break;
+      case 'antigravity': installAntigravitySlashRouterHook(opts); break;
+      default:
+        break;
+    }
+  }
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1955,6 +2089,7 @@ async function installInner(opts) {
     console.error('    vscode       — VS Code (with Claude Code / Continue / Copilot extension)');
     console.error('    windsurf     — Windsurf (Codeium)');
     console.error('    antigravity  — Antigravity (experimental)');
+    console.error('    grok         — Grok Build (xAI CLI, Claude-Code-compatible)');
     console.error('');
     console.error('  Tracked for future:');
     console.error('    jetbrains    — IntelliJ / PyCharm');
@@ -2298,6 +2433,16 @@ async function installInner(opts) {
     } catch { /* non-fatal */ }
     console.log('');
     console.log(`  ${dim(`${skillsInstalled} skills installed globally`)}`);
+
+    // Native home-dir slash commands for CLIs that can't surface file-based
+    // /commands (codex, antigravity) but DO support a prompt-submit hook.
+    // This MUST run inside the --global block: the global path returns here,
+    // before the non-global call site below. Gated on opts.global inside.
+    try {
+      installNativeHomeSlashCommands(opts);
+    } catch (err) {
+      process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+    }
     return 0;
   }
 
@@ -2721,6 +2866,14 @@ async function installInner(opts) {
     }
   } catch { /* non-fatal */ }
 
+  // Native home-dir slash commands for CLIs that ONLY surface /commands from
+  // their own home dir (not project dirs). Opt-in via --global. See the fn def.
+  try {
+    installNativeHomeSlashCommands(opts);
+  } catch (err) {
+    process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+  }
+
   const version = readPackageVersion();
   console.log('');
   console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
@@ -3071,3 +3224,8 @@ module.exports.install = install;
 module.exports.SUPPORTED_IDES = SUPPORTED_IDES;
 module.exports.migrateVscodeCommandsLayout = migrateVscodeCommandsLayout;
 module.exports.getPathsForIde = getPathsForIde;
+// Slash-router (hook-based /rcode-* support for codex + antigravity).
+module.exports.installSlashRouterCommands = installSlashRouterCommands;
+module.exports.installCodexSlashRouterHook = installCodexSlashRouterHook;
+module.exports.installAntigravitySlashRouterHook = installAntigravitySlashRouterHook;
+module.exports.installNativeHomeSlashCommands = installNativeHomeSlashCommands;
