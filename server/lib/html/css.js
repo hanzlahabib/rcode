@@ -1028,11 +1028,6 @@ section .body {
   margin-bottom: 4px;
   line-height: 1.2;
 }
-.agent-card .role {
-  font-size: var(--text-2xs);
-  color: var(--text-tertiary);
-  letter-spacing: -0.006em;
-}
 .real-badge {
   font-size: var(--text-2xs);
   font-weight: 500;
@@ -3750,6 +3745,54 @@ summary:focus-visible,
   z-index: 220;
 }
 .reader-panel {
+/* ════════════════════════════════════════════════════════════════════
+   AGENTS VIEW v2 — card chips + agent detail drawer (appended block)
+   Theme variables only — valid in both dark and [data-theme=light].
+   ════════════════════════════════════════════════════════════════════ */
+.agent-card { cursor: pointer; }
+/* Role rendered as a badge (replaces the plain .role text line). */
+.role-badge {
+  display: inline-block;
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: var(--radius-1);
+  background: var(--accent-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  letter-spacing: -0.006em;
+}
+/* Frontmatter chips — model + tools, shared by cards and the drawer head. */
+.agent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+.agent-chip {
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+.agent-chip--model {
+  color: var(--accent-hover);
+  border-color: var(--accent-border);
+}
+.agent-chip--more { color: var(--text-muted); }
+
+/* Detail drawer — fixed right panel above the mobile sidebar (z 30). */
+.agent-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45); /* intentional: one-off overlay tint; translucency can't be expressed as a theme token */
+  z-index: 50;
+}
+.agent-drawer {
   position: fixed;
   top: 0;
   right: 0;
@@ -3839,6 +3882,84 @@ summary:focus-visible,
 @media (max-width: 768px) {
   .reader-panel { width: 100vw; border-left: none; }
 }
+  width: min(560px, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev-1);
+  border-left: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  z-index: 51;
+  animation: agent-drawer-in 0.18s var(--ease);
+}
+@keyframes agent-drawer-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.agent-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.agent-drawer-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+.agent-drawer-arabic {
+  font-size: var(--text-md);
+  color: var(--accent-primary);
+  font-weight: 400;
+}
+.agent-drawer-close {
+  flex-shrink: 0;
+  width: var(--size-icon-btn, 28px);
+  height: var(--size-icon-btn, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.agent-drawer-close:hover {
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+.agent-drawer-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elev-2);
+}
+.agent-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+}
+.agent-drawer-skeleton { height: 200px; }
+.agent-drawer-empty,
+.agent-drawer-error {
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+.agent-drawer-error { color: var(--accent-red); }
 </style>`;
 }
 

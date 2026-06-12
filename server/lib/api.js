@@ -202,4 +202,49 @@ function handleApiMemory(req, res, rcodeDir) {
   res.end(JSON.stringify(memory));
 }
 
-module.exports = { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory };
+// Parse the scalar keys we surface as card chips out of an agent definition's
+// YAML frontmatter. Deliberately not a YAML parser: only top-level
+// `key: value` scalar lines are read, so multi-line blocks (description: |)
+// are skipped without tracking indentation.
+function parseAgentFrontmatter(raw) {
+  const meta = { name: null, model: null, tools: [], color: null };
+  if (!raw.startsWith('---')) return meta;
+  const end = raw.indexOf('\n---', 3);
+  if (end === -1) return meta;
+  for (const line of raw.slice(3, end).split('\n')) {
+    const m = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1].toLowerCase();
+    const value = m[2].trim();
+    if (!value || value === '|' || value === '>') continue;
+    if (key === 'name')  meta.name  = value;
+    if (key === 'model') meta.model = value;
+    if (key === 'color') meta.color = value;
+    if (key === 'tools') meta.tools = value.split(',').map(t => t.trim()).filter(Boolean);
+  }
+  return meta;
+}
+
+// Read-only roster metadata for the Agents view. Scans the fixed
+// rcode/agents/ directory (no user-supplied paths — nothing to contain) and
+// returns one small frontmatter summary per agent .md file. Full prompt
+// bodies are NOT included; the client fetches those lazily per agent via the
+// existing /api/file handler when a card is opened.
+function handleApiAgents(req, res, projectRoot) {
+  const agentsDir = path.join(projectRoot, 'rcode', 'agents');
+  let entries = [];
+  try { entries = fs.readdirSync(agentsDir, { withFileTypes: true }); }
+  catch { /* no agents dir — return an empty roster */ }
+  const agents = [];
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.endsWith('.md')) continue;
+    let raw;
+    try { raw = fs.readFileSync(path.join(agentsDir, e.name), 'utf8'); }
+    catch { continue; }
+    agents.push({ file: e.name, ...parseAgentFrontmatter(raw) });
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(agents));
+}
+
+module.exports = { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory, handleApiAgents };

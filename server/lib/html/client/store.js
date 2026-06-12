@@ -56,8 +56,6 @@ let _state = {
   // Orchestrator reachability: null = unknown (before first poll),
   // true = reachable, false = unreachable. Written by the 4s session poll.
   orchOnline:       null,
-  // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
-  requestedFile:    null,
   // xterm terminal panel state (driven by orchestrator.js / XtermPanel.js)
   // { open, storyId, title, minimized, fullscreen }
   terminal:         null,

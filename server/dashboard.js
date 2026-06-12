@@ -31,7 +31,7 @@ const { spawn } = require('child_process');
 const CLIENT_DIR = path.join(__dirname, 'lib', 'html', 'client');
 
 const { scanState } = require('./lib/scanner');
-const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory } = require('./lib/api');
+const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory, handleApiAgents } = require('./lib/api');
 const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
@@ -89,6 +89,11 @@ function handleRequest(req, res) {
 
   if (url === '/api/files') {
     handleApiFiles(req, res, PROJECT_ROOT);
+    return;
+  }
+
+  if (url === '/api/agents') {
+    handleApiAgents(req, res, PROJECT_ROOT);
     return;
   }
 
