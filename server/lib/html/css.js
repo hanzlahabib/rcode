@@ -2340,6 +2340,123 @@ footer {
   padding: 24px;
   text-align: center;
 }
+
+/* ── Component: CurrentPhase card + milestone stepper (Row 1, Card 2) ──── */
+.cp-card { gap: 14px; }
+.cp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cp-rocket {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border-radius: 10px;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+}
+.cp-headtext { min-width: 0; }
+.cp-titlerow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cp-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dash-purple);
+}
+.cp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+.cp-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+.cp-progress {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+.cp-dot { margin: 0 6px; }
+.cp-pct { color: var(--dash-text); font-weight: 600; }
+
+.cp-stepper {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  position: relative;
+}
+/* connecting line behind the nodes */
+.cp-stepper::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--dash-border);
+}
+.cp-step {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.cp-node {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--dash-card);
+  border: 2px solid var(--dash-sev-low);
+  color: var(--dash-card);
+  position: relative;
+  z-index: 1;
+}
+.cp-done .cp-node {
+  background: var(--dash-teal);
+  border-color: var(--dash-teal);
+  color: var(--dash-bg);
+}
+.cp-active .cp-node {
+  background: var(--dash-card);
+  border-color: var(--dash-purple);
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
+}
+.cp-label {
+  font-size: 10px;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--dash-text-muted);
+  max-width: 100%;
+}
+.cp-done .cp-label,
+.cp-active .cp-label { color: var(--dash-text); }
 </style>`;
 }
 
