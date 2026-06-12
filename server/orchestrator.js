@@ -222,8 +222,9 @@ const SCROLLBACK_MAX = 256 * 1024;
 // Session: { proc, status, startTime, cmd, cols, rows, scrollback, wsClients:Set }
 const sessions = new Map();
 
-const HISTORY_FILE = path.join(os.homedir(), '.rcode', 'orch-history.json');
-const HISTORY_MAX  = 200; // cap persisted runs so the file cannot grow unbounded
+const HISTORY_FILE     = path.join(os.homedir(), '.rcode', 'orch-history.json');
+const HISTORY_MAX      = 200; // cap persisted runs so the file cannot grow unbounded
+const REJECTIONS_PATH  = path.join(os.homedir(), '.rcode', 'rejections.json');
 
 function loadHistory() {
   try {
@@ -248,6 +249,32 @@ function persistRun(storyId, s, status) {
     fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
   } catch (err) {
     console.error('[orchestrator] failed to persist run history:', err.message);
+  }
+}
+
+// ── Rejection persistence ─────────────────────────────────────────────────────
+
+function readRejections() {
+  try {
+    const raw = fs.readFileSync(REJECTIONS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function appendRejection(entry) {
+  try {
+    const list = readRejections();
+    list.push(entry);
+    const dir = path.dirname(REJECTIONS_PATH);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(REJECTIONS_PATH, JSON.stringify(list, null, 2));
+    return true;
+  } catch (err) {
+    console.error('[orchestrator] failed to persist rejection:', err.message);
+    return false;
   }
 }
 
@@ -518,6 +545,27 @@ async function handleCleanSessions(req, res) {
   json(res, 200, { removed });
 }
 
+async function handleReject(req, res) {
+  const body    = await parseBody(req);
+  const storyId = String(body.storyId || '').trim();
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
+  const text = String(body.reason || '').trim();
+  if (!text) { json(res, 400, { error: 'reason required' }); return; }
+  if (text.length > 2000) { json(res, 400, { error: 'reason too long' }); return; }
+  const entry = {
+    storyId,
+    phase:  body.phase || null,
+    reason: text,
+    ts:     new Date().toISOString(),
+  };
+  if (!appendRejection(entry)) { json(res, 500, { error: 'could not persist rejection' }); return; }
+  json(res, 200, { ok: true, entry });
+}
+
+function handleRejections(res) {
+  json(res, 200, { rejections: readRejections() });
+}
+
 // ── WebSocket data plane ───────────────────────────────────────────────────────
 
 function attachWebSocket(ws, storyId) {
@@ -583,6 +631,8 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
+  if (method === 'POST' && pathOnly === '/api/reject')         { await handleReject(req, res); return; }
+  if (method === 'GET'  && pathOnly === '/api/rejections')     { handleRejections(res); return; }
 
   res.writeHead(404); res.end('Not found');
 });
