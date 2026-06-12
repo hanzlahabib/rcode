@@ -68,7 +68,27 @@ function parseHash() {
 /** Full-width banner shown when /api/state polling is failing. */
 function OfflineBanner({ offline }) {
   if (!offline) return null;
-  return html`<div class="offline-banner">⚠ Dashboard offline — retrying every 30s…</div>`;
+  return html`<div class="offline-banner" role="alert">⚠ Dashboard offline — retrying every 30s…</div>`;
+}
+
+/** Dismissible banner shown when .rcode/state.json failed to parse. */
+function ParseErrorBanner({ error, dismissed }) {
+  if (!error || dismissed) return null;
+  return html`
+    <div class="parse-error-banner" role="alert">
+      <span>⚠ .rcode/state.json is corrupted — data shown may be stale or empty (${error})</span>
+      <button class="banner-dismiss" aria-label="Dismiss"
+        onClick=${() => setState({ parseErrorDismissed: true })}>✕</button>
+    </div>
+  `;
+}
+
+/** Close the mobile slide-in sidebar (no-op on desktop where it is static). */
+function closeMobileSidebar() {
+  const sidebar  = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('show');
 }
 
 /** Thin IDE-style status bar: project path · rcode version · last refresh. */
@@ -93,7 +113,10 @@ export function App() {
   const [{ view, subId }, setRoute] = useState(parseHash);
 
   useEffect(() => {
-    function onHashChange() { setRoute(parseHash()); }
+    function onHashChange() {
+      setRoute(parseHash());
+      closeMobileSidebar(); // navigating from the mobile nav should reveal the view
+    }
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -122,13 +145,13 @@ export function App() {
   }, [theme]);
 
   // ---- Sidebar collapse ----
+  // Class names match the mobile CSS contract: .sidebar.open + #sidebar-backdrop.show
   const toggleSidebar = useCallback(() => {
     const sidebar  = document.querySelector('.sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar) return;
-    const open = sidebar.classList.toggle('sidebar-open');
-    if (backdrop) backdrop.classList.toggle('active', open);
-    document.body.classList.toggle('sidebar-visible', open);
+    const open = sidebar.classList.toggle('open');
+    if (backdrop) backdrop.classList.toggle('show', open);
   }, []);
 
   // ---- Updated-ago display ----
@@ -165,7 +188,11 @@ export function App() {
       lastScannedRef.current = newState.lastScanned;
       scanTimeRef.current = Date.now();
       setUpdatedAgo('just now');
-      const patch = { refreshing: false, offline: false, lastRefresh: Date.now() };
+      const patch = {
+        refreshing: false, offline: false, lastRefresh: Date.now(),
+        // Surface state.json corruption (§1.4) — also clears the banner once fixed.
+        rawParseError: newState.rawParseError || null,
+      };
       // Redesign contract slices (DATA-CONTRACT.md) — derived server-side and
       // returned under newState.dashboard. Keep them fresh on every poll.
       const d = newState.dashboard || {};
@@ -221,13 +248,7 @@ export function App() {
     <div class="app-shell">
       <${Sidebar} activeView=${view} projectName=${storeState.projectName || ''} />
 
-      <div id="sidebar-backdrop" onClick=${() => {
-        const sidebar  = document.querySelector('.sidebar');
-        const backdrop = document.getElementById('sidebar-backdrop');
-        if (sidebar) sidebar.classList.remove('sidebar-open');
-        if (backdrop) backdrop.classList.remove('active');
-        document.body.classList.remove('sidebar-visible');
-      }}></div>
+      <div id="sidebar-backdrop" onClick=${closeMobileSidebar}></div>
 
       <div class="content-area" id="main-content">
         <${Topbar}
@@ -242,6 +263,10 @@ export function App() {
 
         <div class="main-scroll" id="main-scroll">
           <${OfflineBanner} offline=${storeState.offline} />
+          <${ParseErrorBanner}
+            error=${storeState.rawParseError}
+            dismissed=${storeState.parseErrorDismissed}
+          />
           ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
         </div>
 

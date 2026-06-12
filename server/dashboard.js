@@ -60,7 +60,20 @@ function loadOrchToken() {
 const ORCH_TOKEN = loadOrchToken();
 
 // ---------- HTTP Server ----------
+// Every request runs through a try/catch so an unanticipated throw inside a
+// handler (e.g. a pathological .planning tree in the scanner) returns a 500
+// instead of crashing the whole server process.
 const server = http.createServer((req, res) => {
+  try {
+    handleRequest(req, res);
+  } catch (err) {
+    console.error('[dashboard] request handler failed:', err && err.stack || err);
+    if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Internal server error');
+  }
+});
+
+function handleRequest(req, res) {
   const url = req.url || '/';
 
   if (url === '/health') {
@@ -137,7 +150,7 @@ const server = http.createServer((req, res) => {
 
   res.writeHead(404);
   res.end('Not found');
-});
+}
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
@@ -146,7 +159,6 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`   URL:        http://localhost:${PORT}`);
   console.log(`   Scanning:   ${RCODE_DIR}`);
   console.log(`   Refresh:    30s soft poll`);
-  console.log(`   Keys:       R=refresh  1-9=views  F=filter`);
   console.log(`   Stop:       kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });

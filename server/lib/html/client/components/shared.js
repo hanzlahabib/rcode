@@ -12,6 +12,7 @@ import { pctNum, chip as chipDesc, humanDate, pct, currentPhaseId } from '../uti
 import {
   runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
+import { getState } from '../store.js';
 import { Icon } from '../icons-client.js';
 import { TaskPipeline } from './TaskPipeline.js';
 
@@ -22,6 +23,29 @@ export function showToast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ---- pressable ----
+/**
+ * Spreadable props that make a clickable non-button element keyboard
+ * accessible: focusable, announced as a button, activated by Enter/Space.
+ * Usage: html`<div class="item item-clickable" ...${pressable(fn)}>…</div>`
+ */
+export function pressable(onActivate) {
+  return {
+    role: 'button',
+    tabindex: 0,
+    onClick: onActivate,
+    onKeyDown: (e) => {
+      // Ignore keydown bubbling up from nested interactive elements
+      // (e.g. a Run button inside a clickable card row).
+      if (e.target !== e.currentTarget) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onActivate(e);
+      }
+    },
+  };
 }
 
 // ---- Chip ----
@@ -120,7 +144,7 @@ export function CmdHint({ cmd, desc }) {
       });
   }
   return html`
-    <div class="cmd-hint-item" onClick=${handleClick}>
+    <div class="cmd-hint-item" ...${pressable(handleClick)}>
       <span class="cmd-text">${cmd}</span>
       <span class="cmd-desc">${desc}</span>
       <${Icon} name="copy" size=${14} cls="cmd-copy"/>
@@ -150,12 +174,17 @@ export function CmdHints({ hints }) {
  * @param {{ storyId: string, cmd: string, label: string }} props
  */
 export function RunBtn({ storyId, cmd, label }) {
+  // Plain read (not a subscription) — every parent view already re-renders
+  // on store changes, so the disabled state stays current with the 4s poll.
+  const down = getState().orchOnline === false;
   function handleClick(e) {
     e.stopPropagation();
     runAndOpenTerm(storyId, cmd, label);
   }
   return html`
-    <button class="card-run-btn" title=${'Run ' + label} onClick=${handleClick}>
+    <button class="card-run-btn" disabled=${down}
+      title=${down ? 'Orchestrator unreachable' : 'Run ' + label}
+      onClick=${handleClick}>
       ▶ Run
     </button>
   `;
@@ -188,7 +217,7 @@ export function PhaseCard({ phase: p, S }) {
   const borderStyle = isCur ? 'border-left-color:var(--accent-amber)' : '';
   return html`
     <div class=${'item item-clickable'} style=${borderStyle}
-      onClick=${() => { location.hash = 'phases/' + p.id; }}>
+      ...${pressable(() => { location.hash = 'phases/' + p.id; })}>
       <div class="item-title">
         ${sps.length ? html`<${RunBtn} storyId=${'phase-' + p.id} cmd=${'/rcode-execute ' + p.id} label=${'Phase ' + p.id}/>` : null}
         Phase ${p.id} — ${p.name}
@@ -235,7 +264,7 @@ export function SprintCard({ sprint: s, S }) {
     : '';
   return html`
     <div class=${'item item-clickable' + (isCur ? ' sprint-current' : '')} style=${borderStyle}
-      onClick=${() => { location.hash = 'sprints/' + s.id; }}>
+      ...${pressable(() => { location.hash = 'sprints/' + s.id; })}>
       <div class="item-title">
         <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rcode-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
         Sprint ${s.id} — ${s.goal || 'No goal'}
@@ -293,7 +322,8 @@ export function TaskCard({ task: t }) {
   return html`
     <div class="item item-clickable" data-status=${t.status || ''}
       style=${done ? 'opacity:.65' : ''}
-      onClick=${() => setExpanded(e => !e)}>
+      aria-expanded=${expanded}
+      ...${pressable(() => setExpanded(e => !e))}>
       <div class="item-title" style=${done ? 'text-decoration:line-through' : ''}>
         ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${'/rcode-dev-story ' + t.id} label=${'Story ' + t.id}/>` : null}
         ${done ? '✓ ' : ''}${t.title}

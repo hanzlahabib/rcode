@@ -84,14 +84,16 @@ function sortSessions(sessions) {
  * all session and terminal state via runCommandFromUI → runSession.
  */
 function CommandRunner() {
-  useStore(); // subscribe to store updates so isSessionRunning() re-evaluates on each poll
+  // Subscribe to store updates so isSessionRunning() + orchOnline re-evaluate on each poll.
+  const { orchOnline } = useStore();
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
   const [busy, setBusy] = useState(false);
 
   const slug      = selected ? selected.replace(/^\//, '').replace(/\//g, '-') : '';
   const sessionId = slug ? 'cmd-' + slug : '';
   const isRunning = sessionId ? isSessionRunning(sessionId) : false;
-  const disabled  = busy || isRunning;
+  const orchDown  = orchOnline === false;
+  const disabled  = busy || isRunning || orchDown;
 
   // Reset busy 2 s after a Run click — the terminal panel is now open and the
   // session is streaming. Managed via useEffect so the timer is cancelled if
@@ -132,11 +134,13 @@ function CommandRunner() {
         </button>
       </div>
       <div class="cmd-runner-hint">
-        ${isRunning
-          ? html`Command is running — output is streaming to the terminal panel.`
-          : busy
-            ? html`Starting — the terminal panel will open shortly.`
-            : html`Select a command and press Run. Output streams live to the terminal panel.`}
+        ${orchDown
+          ? html`Orchestrator is unreachable — commands cannot run until it is back.`
+          : isRunning
+            ? html`Command is running — output is streaming to the terminal panel.`
+            : busy
+              ? html`Starting — the terminal panel will open shortly.`
+              : html`Select a command and press Run. Output streams live to the terminal panel.`}
       </div>
     </div>
   `;
@@ -145,8 +149,9 @@ function CommandRunner() {
 // ── Root view ─────────────────────────────────────────────────────────────────
 
 export function OrchestrationView() {
-  const { activeSessions } = useStore();
+  const { activeSessions, orchOnline } = useStore();
   const sessions = sortSessions(activeSessions || []);
+  const orchDown = orchOnline === false;
 
   return html`
     <div class="view active" id="view-orchestration">
@@ -155,11 +160,18 @@ export function OrchestrationView() {
         Live agent sessions — run, watch, communicate, stop.
       </div>
 
+      ${orchDown ? html`
+        <div class="orch-down-banner" role="alert">
+          ⚠ Orchestrator unreachable (port 7718) — Run buttons are disabled.
+          Restart the dashboard, or set ORCH_PORT if the port is in use.
+        </div>
+      ` : null}
+
       <${CommandRunner}/>
 
       ${sessions.length === 0 ? html`
         <div class="empty">
-          No active execution.
+          ${orchDown ? 'Session status unavailable while the orchestrator is down.' : 'No active execution.'}
           <div class="empty-action">
             Use the Command Runner above, or run <code>/rcode-execute</code> to
             start a phase or sprint.

@@ -81,7 +81,7 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
           <${Icon} name="brain" size=${15} /> Ask rcode
         </button>
 
-        <button class="tb-btn" type="button" onClick=${shareDashboard} title="Copy dashboard link">
+        <button class="tb-btn tb-btn--share" type="button" onClick=${shareDashboard} title="Copy dashboard link">
           <${Icon} name="link" size=${15} /> Share
         </button>
 

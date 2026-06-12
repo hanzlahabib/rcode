@@ -60,7 +60,7 @@ ${renderCss()}
 </div>
 
 <!-- ── Toast ──────────────────────────────────────────────── -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- Xterm and orchestrator panels are now rendered by Preact (Sprint 31.4).
      Static panel markup removed — XtermPanel.js + OrchPanel.js own the DOM. -->

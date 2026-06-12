@@ -81,6 +81,7 @@ export function Sidebar({ activeView, projectName }) {
           <button
             class=${'sb-nav-link' + (activeView === view ? ' active' : '')}
             data-view=${view}
+            aria-current=${activeView === view ? 'page' : undefined}
             onClick=${() => { location.hash = view; }}
           >
             <span class="sb-nav-ic"><${Icon} name=${icon} size=${16} /></span>

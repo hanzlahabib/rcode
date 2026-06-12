@@ -52,6 +52,8 @@ function clientState(state) {
     workstreams:      state.raw?.workstreams    || [],
     pendingHandoff:   state.pendingHandoff      || null,
     memoryBank:       state.memoryBank          || null,
+    // state.json corruption signal — App.js renders a dismissible banner.
+    rawParseError:    state.rawParseError       || null,
   })
     // Prevent a stray "</script>" inside any string from closing the inline
     // <script> early. Escaping "<" keeps the JSON valid and inert.
