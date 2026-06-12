@@ -7,11 +7,10 @@
  *   1. process.chdir(tmpDir) — puts nuke's CWD in an isolated /tmp tree so it
  *      can't accidentally scan real project files (.claude/, .rcode/, etc.).
  *
- *   2. process.env.HOME = tmpHome — redirects os.homedir() to a clean temp
+ *   2. HOME/USERPROFILE = tmpHome — redirects os.homedir() to a clean temp
  *      dir so getGlobalNodeModulesDirs() / buildPlan() never touch ~/.rcode/.
- *      This also sidesteps a known ReferenceError bug in buildPlan() (line 248):
- *      `plan.globalrcode = globalRcode` — `globalRcode` is undefined; the bug
- *      only fires when ~/.rcode/ actually exists on the machine.
+ *      Both vars are set because os.homedir() reads HOME on POSIX but
+ *      USERPROFILE on Windows.
  *
  * All /tmp dirs created here are removed in finally blocks — no residue.
  *
@@ -57,14 +56,21 @@ function withIsolatedEnv(setup, fn) {
   const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'nuke-home-'));
   const origCwd = process.cwd();
   const origHome = process.env.HOME;
+  const origUserProfile = process.env.USERPROFILE;
   try {
     if (setup) setup(tmpDir);
     process.chdir(tmpDir);
+    // os.homedir() reads HOME on POSIX but USERPROFILE on Windows — set both
+    // so the redirect holds on every platform.
     process.env.HOME = tmpHome;
+    process.env.USERPROFILE = tmpHome;
     return fn(tmpDir, tmpHome);
   } finally {
     process.chdir(origCwd);
-    process.env.HOME = origHome !== undefined ? origHome : '';
+    if (origHome !== undefined) process.env.HOME = origHome;
+    else delete process.env.HOME;
+    if (origUserProfile !== undefined) process.env.USERPROFILE = origUserProfile;
+    else delete process.env.USERPROFILE;
     fs.rmSync(tmpDir, { recursive: true, force: true });
     fs.rmSync(tmpHome, { recursive: true, force: true });
   }

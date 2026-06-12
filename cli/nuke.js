@@ -245,12 +245,12 @@ function buildPlan({ includePlanning }) {
 
   // Global state (~/.rcode/)
   const globalrcode = path.join(home, '.rcode');
-  if (exists(globalrcode)) plan.globalrcode = globalRcode;
+  if (exists(globalrcode)) plan.globalrcode = globalrcode;
 
   // Project-level (CWD only — never recurse, user may have many projects)
   plan.projectClaude = findClaudeArtifacts(path.join(cwd, '.claude'));
   const projectrcode = path.join(cwd, '.rcode');
-  if (exists(projectrcode) && cwd !== home) plan.projectrcode = projectRcode;
+  if (exists(projectrcode) && cwd !== home) plan.projectrcode = projectrcode;
 
   if (includePlanning) {
     const projectPlanning = path.join(cwd, '.planning');
@@ -351,7 +351,7 @@ function executePlan(plan) {
     if (rmrf(a.path)) { console.log(`  ✓ removed ${a.path}`); removed++; }
   }
   if (plan.globalrcode && rmrf(plan.globalrcode)) {
-    console.log(`  ✓ removed ${plan.globalRcode}`); removed++;
+    console.log(`  ✓ removed ${plan.globalrcode}`); removed++;
   }
 
   // Claude artifacts (project)
@@ -359,7 +359,7 @@ function executePlan(plan) {
     if (rmrf(a.path)) { console.log(`  ✓ removed ${a.path}`); removed++; }
   }
   if (plan.projectrcode && rmrf(plan.projectrcode)) {
-    console.log(`  ✓ removed ${plan.projectRcode}`); removed++;
+    console.log(`  ✓ removed ${plan.projectrcode}`); removed++;
   }
   if (plan.projectPlanning && rmrf(plan.projectPlanning)) {
     console.log(`  ✓ removed ${plan.projectPlanning}`); removed++;
