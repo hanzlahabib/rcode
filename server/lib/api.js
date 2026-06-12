@@ -8,7 +8,8 @@ const { scanState, scanMemoryBank } = require('./scanner');
 function handleApiState(req, res, rcodeDir) {
   const state = scanState(rcodeDir);
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(state, null, 2));
+  // Compact JSON — pretty-printing roughly doubled the polled payload.
+  res.end(JSON.stringify(state));
 }
 
 function handleApiFiles(req, res, projectRoot) {
@@ -192,13 +193,13 @@ function handleApiHierarchy(req, res, rcodeDir) {
     })),
   };
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(hierarchy, null, 2));
+  res.end(JSON.stringify(hierarchy));
 }
 
 function handleApiMemory(req, res, rcodeDir) {
   const memory = scanMemoryBank(rcodeDir);
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(memory, null, 2));
+  res.end(JSON.stringify(memory));
 }
 
 module.exports = { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory };

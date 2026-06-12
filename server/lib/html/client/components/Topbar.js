@@ -1,55 +1,99 @@
 /**
- * Topbar component — brand, live dot, updated-ago, action buttons.
+ * Topbar component — redesigned header chrome to match the mockup.
  *
- * Reuses existing CSS classes: header-actions, header-btn, live, hamburger-btn.
+ * Public API is UNCHANGED — App.js still calls:
+ *   <${Topbar} projectName updatedAgo refreshing onRefresh
+ *              onToggleTheme onToggleSidebar themeLabel />
  *
- * Props:
- *   projectName   {string}   — shown in the brand subtitle
- *   updatedAgo    {string}   — text for the "updated N ago" span
- *   onRefresh     {function} — called when Refresh button is clicked
- *   onToggleTheme {function} — called when theme button is clicked
- *   onToggleSidebar {function} — called when hamburger is clicked
- *   themeLabel    {string}   — 'light' or 'dark' — controls which icon the theme button shows
+ * Layout:
+ *   - hamburger (mobile sidebar toggle)
+ *   - greeting: "Welcome back, {user.name}! 👋" + subtitle with project name
+ *   - right group: "Auto-synced {ago}" status dot (click = refresh),
+ *     [Ask rcode] (primary, runs /rcode-next via orchestrator), [Share]
+ *     (copy URL + toast), [...] (more / theme toggle)
+ *
+ * Reads `project { name, user { name } }` from the store; falls back to the
+ * projectName prop. No sample data — without a configured user the greeting
+ * is generic, and without a project name the subtitle stays generic too.
+ * No inline style= attributes — all styling via .tb-* classes in css.js.
  */
 
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
+import { useStore } from '../store.js';
+import { runCommandFromUI } from '../orchestrator.js';
+import { showToast } from './shared.js';
+
+/**
+ * Ask rcode — reuse the existing orchestrator command runner (token-guarded
+ * POST /api/run via window.__ORCH_TOKEN__). "/rcode-next" asks rcode for the
+ * suggested next action and streams it into the terminal panel. No new endpoint.
+ */
+function askRcode() {
+  runCommandFromUI('/rcode-next');
+}
+
+/** Share — copy the dashboard URL to the clipboard and confirm via toast. */
+function shareDashboard() {
+  const url = location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('Dashboard link copied'))
+      .catch(() => showToast(url));
+  } else {
+    showToast(url);
+  }
+}
 
 export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
+  const S = useStore();
+  const project = (S && S.project) || {};
+  const name = project.name || projectName || '';
+  const firstName = (project.user && project.user.name) || '';
+
   return html`
-    <header>
-      <div class="topbar-start-group">
-        <button
-          class="hamburger-btn"
-          id="hamburger-btn"
-          onClick=${onToggleSidebar}
-          aria-label="Toggle menu"
-        >
-          <span></span><span></span><span></span>
-        </button>
-        <div class="brand">
-          <div class="icon"><${Icon} name="building" size=${16} cls="brand-icon"/></div>
-          <div>
-            <h1>Majlis — The Council</h1>
-            <div class="arabic">مجلس · ${projectName || ''}</div>
-          </div>
-        </div>
+    <header class="topbar">
+      <button
+        class="hamburger-btn"
+        id="hamburger-btn"
+        onClick=${onToggleSidebar}
+        aria-label="Toggle menu"
+      >
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="tb-greeting">
+        <h1 class="tb-welcome">${firstName ? 'Welcome back, ' + firstName + '!' : 'Welcome back!'} <span class="tb-wave" aria-hidden="true">👋</span></h1>
+        <p class="tb-sub">${name ? "Here's what's happening with " + name : "Here's what's happening with your project"}</p>
       </div>
-      <div class="header-actions">
-        <span class="live" id="live-dot" title="Live"
-          style=${refreshing ? 'animation-duration:0.7s;background:var(--accent-blue);' : ''}></span>
-        <span id="updated-ago" class="updated-ago">
-          ${refreshing ? '⟳ syncing…' : (updatedAgo || 'just now')}
-        </span>
-        <button class="header-btn" id="refresh-btn" onClick=${onRefresh}>↺ Refresh</button>
-        <!-- icon shows TARGET state (not current): dark→sun means "click to go light"; light→moon means "click to go dark" -->
-        <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme"><${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${14}/></button>
-        <button class="header-btn" onClick=${() => {
-          navigator.clipboard.writeText(location.href);
-          // Show a toast if available
-          const toast = document.getElementById('toast');
-          if (toast) { toast.textContent = 'URL copied!'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
-        }} title="Copy URL">⎘ Link</button>
+
+      <div class="tb-actions">
+        <button
+          class=${'tb-synced' + (refreshing ? ' tb-synced--busy' : '')}
+          onClick=${onRefresh}
+          title="Click to refresh"
+        >
+          <span class="tb-dot"></span>
+          ${refreshing ? 'Syncing…' : 'Auto-synced ' + (updatedAgo || 'just now')}
+        </button>
+
+        <button class="tb-btn tb-btn--primary" type="button" onClick=${askRcode} title="Ask rcode for the next action">
+          <${Icon} name="brain" size=${15} /> Ask rcode
+        </button>
+
+        <button class="tb-btn tb-btn--share" type="button" onClick=${shareDashboard} title="Copy dashboard link">
+          <${Icon} name="link" size=${15} /> Share
+        </button>
+
+        <button
+          class="tb-btn tb-btn--icon"
+          type="button"
+          onClick=${onToggleTheme}
+          title=${'More — switch to ' + (themeLabel === 'light' ? 'dark' : 'light') + ' theme'}
+          aria-label="More options"
+        >
+          <span class="tb-kebab">⋯</span>
+        </button>
       </div>
     </header>
   `;

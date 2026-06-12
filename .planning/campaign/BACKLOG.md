@@ -1,49 +1,18 @@
-# rcode Fix Campaign Backlog — COMPLETE
+# Dashboard Redesign Campaign — Backlog
 
-All items closed. Final test count: 462 pass / 0 fail.
-15 commits since v4.1.1 (1459489).
+Integration branch: `campaign-integration`. Each item = one agent = one worktree.
+Spec: `.planning/campaign/MOCKUP-SPEC.md`. Data shape: `.planning/campaign/DATA-CONTRACT.md`.
 
-## Done (Wave 5)
-- [x] #882: agent double-prefix bug (cli/agent.js)
-- [x] #883: workflow-show prefix resolution, codex IDE, lifecycle aliases
+## Wave 1 — Foundation (blocking; must merge before Wave 2)
+- [ ] A1 — Gap audit: current `server/` dashboard vs mockup → `.planning/audits/AUDIT-dashboard.md` (NO code)
+- [ ] A2 — Foundation: Preact scaffold + design tokens CSS + shell grid + `DATA-CONTRACT.md` + scanner `/api/state` shape
 
-## Done (Wave 6)
-- [x] CHANGELOG v4.1.1 entry (tests 462/0), set-mode yolo verified working
-- [x] sprint add sync hint + padded_phase comment clarification (#8)
-- [x] scaffold-project --here brownfield flag (#10)
-- [x] scaffold + campaign scopes added to AGENTS.md + CONTRIBUTING.md
-
-## Done (Wave 7)
-- [x] Internal issue refs stripped from skill/workflow templates (#15)
-- [x] Install docs: pnpm recommendation + Gemini planned note (#14)
-- [x] ship.md no-remote/no-gh warning + prerequisites block (#3)
-- [x] ship scope added to AGENTS.md + CONTRIBUTING.md
-
-## Done (Wave 8)
-- [x] Dashboard startup logs full URL + view-only label (#18)
-- [x] Git-repo preflight guard in commit-dependent workflows (#6)
-- [x] Golden-paths project-init checklist + stub-ROADMAP warning (#7)
-
-## Wave 9 — In Flight
-- [ ] W9-A: pnpm install preflight note in execute-sprint + sprint-planning
-- [ ] W9-B: Phase resolver handles 001-* / 01-* / 1-* dir prefixes robustly
-- [ ] W9-C: Lifecycle aliases print actionable next-step after workflow show
-
-## Done (Wave 9)
-- [x] W9-A: pnpm install preflight warning in execute-sprint + sprint-planning
-- [x] W9-B: Phase resolver handles 001-* / 01-* / 1-* dirs + 4 new tests + config-set quote fix
-- [x] W9-C: Lifecycle aliases print actionable next-step after workflow show
-
-## Done (Wave 10)
-- [x] #12: Namespace bloat — warn when rcode-* and rihal-* both detected (cli/install.js + docs/install.md)
-- [x] #13: Installer dry-run — add --dry-run / --list-files preview flags (cli/install.js + docs/install.md)
-- [x] #19: Python prerequisites note added to execute-regression-gates.md + execute-waves.md
-- [x] #20: Planning pseudocode quality checklist added to execute-waves.md
-
-## Done (Wave 11)
-- [x] #7: Golden paths preflight — project-status guard added to plan.md, execute.md, sprint-planning.md
-- [x] #8: Sprint-add sync hint — error message now tells user to run "rcode state sync"; null phase_dir guard in review.md
-- [x] #14: IDE-neutral docs — Grok and Codex CLI rows added to IDE table; manual invocation note in install.md + getting-started.md
-
-## CAMPAIGN COMPLETE
-All actionable items drained. Final: 466/0 tests, 35 commits since v4.1.1.
+## Wave 2 — Components (parallel; fork from integration after Wave 1)
+- [ ] A3 — ProgressDonut card (76% ring + legend + task bar)
+- [ ] A4 — CurrentPhase card (phase + 5-step milestone stepper)
+- [ ] A5 — Timeline card (projected launch + line chart + on-track)
+- [ ] A6 — Tasks cards (Completed list + In Progress list with % badges)
+- [ ] A7 — Blockers card (High/Medium/Low severity rows)
+- [ ] A8 — Sidebar nav + Project Health mini-card + user profile footer
+- [ ] A9 — Recent Decisions + Progress Timeline (bottom row)
+- [ ] A10 — Data layer: extend scanner `/api/state` + wire `POST /api/ask` + Share

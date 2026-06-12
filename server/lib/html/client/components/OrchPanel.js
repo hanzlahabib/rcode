@@ -15,7 +15,7 @@
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
-import { orchToken, stopSession, cleanSessions, ORCH_HTTP } from '../orchestrator.js';
+import { orchToken, stopSession, cleanSessions, ORCH_WS } from '../orchestrator.js';
 import { showToast } from './shared.js';
 import { Icon } from '../icons-client.js';
 
@@ -25,7 +25,23 @@ function mkSession(title) {
   return { title: title || 'Session', lines: [], fileOps: [], status: 'starting' };
 }
 
-// ── SSE streams (module-scoped — one EventSource per storyId) ────────────────
+/**
+ * Strip ANSI escape sequences (OSC, CSI, other ESC) and carriage returns so
+ * raw PTY output renders as readable plain-text log lines. The full-fidelity
+ * terminal lives in XtermPanel; this panel is a lightweight log view.
+ */
+function stripAnsi(s) {
+  return String(s)
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, '')
+    .replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, '')
+    .replace(/\x1b[@-_]/g, '')
+    .replace(/\r/g, '');
+}
+
+// ── Live streams (module-scoped — one WebSocket per storyId) ─────────────────
+// The orchestrator's data plane is the PTY WebSocket at /ws/<storyId>
+// (wire frames: {t:'o',d} output, {t:'hist',d} scrollback, {t:'s',s} status).
+// The previous SSE endpoint (/api/stream/<id>) no longer exists on the server.
 const _streams = {};
 
 function closeStream(storyId) {
@@ -35,9 +51,11 @@ function closeStream(storyId) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OrchPanel() {
-  const { orchPanel } = useStore();
+  const { orchPanel, activeSessions } = useStore();
   const open     = !!(orchPanel && orchPanel.open);
   const reqStory = orchPanel && orchPanel.storyId;
+  // Sessions reported by the orchestrator API (4s poll → store.activeSessions).
+  const apiSessions = activeSessions || [];
 
   // sessionsMap: { [storyId]: { title, lines, fileOps, status } }
   const [sessionsMap, setSessionsMap] = useState({});
@@ -72,11 +90,15 @@ export function OrchPanel() {
 
   function connectStream(storyId) {
     const tok = orchToken();
-    const es = new EventSource(
-      ORCH_HTTP + '/api/stream/' + encodeURIComponent(storyId) +
-      '?token=' + encodeURIComponent(tok || '')
+    if (!tok) {
+      showToast('No orchestrator token — restart the dashboard');
+      return;
+    }
+    const ws = new WebSocket(
+      ORCH_WS + '/ws/' + encodeURIComponent(storyId) +
+      '?token=' + encodeURIComponent(tok)
     );
-    _streams[storyId] = es;
+    _streams[storyId] = ws;
 
     function appendLine(storyId, line, cls) {
       setSessionsMap(prev => {
@@ -89,32 +111,24 @@ export function OrchPanel() {
       });
     }
 
+    // Append a multi-line output chunk: the first segment continues the last
+    // streamed line, each newline starts a fresh line element.
     function appendChunk(storyId, chunk) {
       setSessionsMap(prev => {
         const sess = prev[storyId];
         if (!sess) return prev;
-        const lines = sess.lines;
+        const parts = chunk.split('\n');
+        const lines = [...sess.lines];
         const last = lines[lines.length - 1];
         if (last && last.cls === 'kt-stream') {
-          const updated = [...lines];
-          updated[updated.length - 1] = { ...last, text: last.text + chunk };
-          return { ...prev, [storyId]: { ...sess, lines: updated } };
+          lines[lines.length - 1] = { ...last, text: last.text + parts[0] };
+        } else if (parts[0]) {
+          lines.push({ text: parts[0], cls: 'kt-stream' });
         }
-        return {
-          ...prev,
-          [storyId]: { ...sess, lines: [...lines, { text: chunk, cls: 'kt-stream' }] },
-        };
-      });
-    }
-
-    function appendFileOp(storyId, fileOp) {
-      setSessionsMap(prev => {
-        const sess = prev[storyId];
-        if (!sess) return prev;
-        return {
-          ...prev,
-          [storyId]: { ...sess, fileOps: [...sess.fileOps, fileOp] },
-        };
+        for (let i = 1; i < parts.length; i++) {
+          lines.push({ text: parts[i], cls: 'kt-stream' });
+        }
+        return { ...prev, [storyId]: { ...sess, lines } };
       });
     }
 
@@ -126,32 +140,26 @@ export function OrchPanel() {
       });
     }
 
-    es.onmessage = e => {
-      try {
-        const d = JSON.parse(e.data);
-        if (d.chunk)  appendChunk(storyId, d.chunk);
-        if (d.line)   {
-          let cls = 'kt-line';
-          const l = d.line;
-          if (l.startsWith('⚙'))  cls += ' tool';
-          else if (l.startsWith('⚠')) cls += ' warn';
-          else if (l.startsWith('✗')) cls += ' err';
-          else if (l.startsWith('✅')) cls += ' done-line';
-          else if (l.startsWith('▶') || l.startsWith('◉') || l.startsWith('■')) cls += ' meta';
-          appendLine(storyId, l, cls);
-        }
-        if (d.fileOp) appendFileOp(storyId, d.fileOp);
-        if (d.status) {
-          setTabStatus(storyId, d.status);
-          if (d.status === 'done')    appendLine(storyId, '✅ Done', 'kt-line done-line');
-          if (d.status === 'stopped') appendLine(storyId, '■ Stopped', 'kt-line meta');
-          if (d.status !== 'running') { closeStream(storyId); }
-        }
-      } catch { /* ignore parse errors */ }
+    ws.onmessage = e => {
+      let d;
+      try { d = JSON.parse(e.data); } catch { return; }
+      if (!d) return;
+      if (d.t === 'o' || d.t === 'hist') {
+        const text = stripAnsi(d.d);
+        if (text) appendChunk(storyId, text);
+      } else if (d.t === 's') {
+        setTabStatus(storyId, d.s);
+        if (d.s === 'done')    appendLine(storyId, '✅ Done', 'kt-line done-line');
+        if (d.s === 'stopped') appendLine(storyId, '■ Stopped', 'kt-line meta');
+        if (d.s !== 'running' && d.s !== 'starting') closeStream(storyId);
+      }
     };
-    es.onerror = () => {
+    ws.onerror = () => {
       setTabStatus(storyId, 'error');
       closeStream(storyId);
+    };
+    ws.onclose = () => {
+      if (_streams[storyId] === ws) delete _streams[storyId];
     };
   }
 
@@ -159,8 +167,12 @@ export function OrchPanel() {
     setState({ orchPanel: null });
   }, []);
 
+  // Open (or focus) a session tab and attach its live stream. Used both for
+  // locally-opened tabs and for sessions discovered via the orchestrator API.
   function handleTabClick(storyId) {
+    setSessionsMap(prev => prev[storyId] ? prev : { ...prev, [storyId]: mkSession(storyId) });
     setActiveTab(storyId);
+    if (!_streams[storyId]) connectStream(storyId);
   }
 
   function handleTabClose(e, storyId) {
@@ -197,9 +209,13 @@ export function OrchPanel() {
   }
 
   const tabs = Object.keys(sessionsMap);
+  // Sessions the orchestrator knows about that aren't open as tabs yet —
+  // rendered as clickable entries so the panel reflects the API, not just
+  // locally-opened tabs.
+  const apiOnly = apiSessions.filter(s => s.storyId && !sessionsMap[s.storyId]);
   const activeSess = activeTab ? sessionsMap[activeTab] : null;
   const hasStream = activeTab && !!_streams[activeTab];
-  const runningCount = Object.keys(_streams).length;
+  const runningCount = apiSessions.filter(s => s.status === 'running').length;
 
   const panelCls = 'orch-panel' + (open ? ' open' : '');
 
@@ -213,9 +229,9 @@ export function OrchPanel() {
         <button class="orch-panel-close" onClick=${handleClose} title="Close" aria-label="Close panel"><${Icon} name="x" size=${14}/></button>
       </div>
 
-      <!-- Tab strip -->
+      <!-- Tab strip — open tabs first, then API-known sessions not yet opened -->
       <div class="orch-tabs">
-        ${tabs.length === 0 ? html`
+        ${tabs.length === 0 && apiOnly.length === 0 ? html`
           <div class="orch-term-empty orch-empty-tab">
             No active sessions
           </div>
@@ -239,6 +255,17 @@ export function OrchPanel() {
             </button>
           `;
         })}
+        ${apiOnly.map(s => html`
+          <button
+            key=${s.storyId}
+            class="orch-tab"
+            onClick=${() => handleTabClick(s.storyId)}
+            title=${'Attach to ' + s.storyId}
+          >
+            <span class=${'tab-status-dot ' + (s.status || 'starting')}></span>
+            <span>${s.storyId.slice(0, 20)}</span>
+          </button>
+        `)}
       </div>
 
       <!-- Terminal body -->

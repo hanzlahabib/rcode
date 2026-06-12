@@ -1,15 +1,20 @@
 /**
  * Preact + htm ESM runtime — single dependency surface.
  *
- * All esm.sh version pins live here. Every other client module imports
- * from this file so version bumps happen in one place.
+ * Vendored locally under vendor/ so the dashboard works offline /
+ * air-gapped / on CI screens with no internet (no esm.sh dependency).
+ * Every other client module imports from this file so version bumps
+ * happen in one place: replace the vendor/ files and update the pins.
  *
- * Pinned versions (current stable as of 2026-05):
- *   preact  10.24.3
- *   htm      3.1.1
+ * Pinned vendored versions:
+ *   preact  10.24.3  (vendor/preact.js, vendor/preact-hooks.js)
+ *   htm      3.1.1   (vendor/htm.js)
+ *
+ * vendor/preact-hooks.js has its bare `from "preact"` import rewritten
+ * to `from "./preact.js"` so it resolves without an import map.
  */
 
-import { h, render, Fragment } from 'https://esm.sh/preact@10.24.3';
+import { h, render, Fragment } from './vendor/preact.js';
 import {
   useState,
   useEffect,
@@ -17,8 +22,8 @@ import {
   useMemo,
   useCallback,
   useReducer,
-} from 'https://esm.sh/preact@10.24.3/hooks';
-import htmLib from 'https://esm.sh/htm@3.1.1';
+} from './vendor/preact-hooks.js';
+import htmLib from './vendor/htm.js';
 
 // htm bound to Preact's h — use as a tagged template literal: html`<div>...</div>`
 export const html = htmLib.bind(h);

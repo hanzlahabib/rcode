@@ -68,27 +68,40 @@ function parseHash() {
 /** Full-width banner shown when /api/state polling is failing. */
 function OfflineBanner({ offline }) {
   if (!offline) return null;
-  const s = 'display:flex;align-items:center;gap:var(--space-2);'
-    + 'padding:var(--space-2) var(--space-4);background:var(--red,#eb5757);'
-    + 'color:#fff;font-size:var(--text-sm);font-weight:600;';
-  return html`<div style=${s}>⚠ Dashboard offline — retrying every 30s…</div>`;
+  return html`<div class="offline-banner" role="alert">⚠ Dashboard offline — retrying every 30s…</div>`;
+}
+
+/** Dismissible banner shown when .rcode/state.json failed to parse. */
+function ParseErrorBanner({ error, dismissed }) {
+  if (!error || dismissed) return null;
+  return html`
+    <div class="parse-error-banner" role="alert">
+      <span>⚠ .rcode/state.json is corrupted — data shown may be stale or empty (${error})</span>
+      <button class="banner-dismiss" aria-label="Dismiss"
+        onClick=${() => setState({ parseErrorDismissed: true })}>✕</button>
+    </div>
+  `;
+}
+
+/** Close the mobile slide-in sidebar (no-op on desktop where it is static). */
+function closeMobileSidebar() {
+  const sidebar  = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('show');
 }
 
 /** Thin IDE-style status bar: project path · rcode version · last refresh. */
 function StatusBar({ projectRoot, projectName, version, updatedAgo, offline, refreshing }) {
-  const bar = 'display:flex;align-items:center;gap:var(--space-4);height:24px;'
-    + 'padding:0 var(--space-4);background:var(--bg-elev-1);'
-    + 'border-top:1px solid var(--border-subtle);font-family:var(--font-mono);'
-    + 'font-size:var(--text-2xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;';
-  const dot = 'width:6px;height:6px;border-radius:50%;flex-shrink:0;background:'
-    + (offline ? 'var(--red,#eb5757)' : 'var(--accent-green)') + ';'
-    + (refreshing ? 'animation:pulse-dot 1s ease-in-out infinite;' : '');
   const path = projectRoot || projectName || 'no project';
+  const dotCls = 'statusbar-dot'
+    + (offline ? ' statusbar-dot--offline' : '')
+    + (refreshing ? ' statusbar-dot--busy' : '');
   return html`
-    <footer style=${bar}>
-      <span style=${dot}></span>
-      <span style="overflow:hidden;text-overflow:ellipsis;" title=${path}>${path}</span>
-      <span style="margin-left:auto;">rcode v${version || '?'}</span>
+    <footer class="statusbar">
+      <span class=${dotCls}></span>
+      <span class="statusbar-path" title=${path}>${path}</span>
+      <span class="statusbar-version">rcode v${version || '?'}</span>
       <span>${offline ? 'offline' : refreshing ? 'syncing…' : 'updated ' + updatedAgo}</span>
     </footer>
   `;
@@ -100,7 +113,10 @@ export function App() {
   const [{ view, subId }, setRoute] = useState(parseHash);
 
   useEffect(() => {
-    function onHashChange() { setRoute(parseHash()); }
+    function onHashChange() {
+      setRoute(parseHash());
+      closeMobileSidebar(); // navigating from the mobile nav should reveal the view
+    }
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -129,13 +145,13 @@ export function App() {
   }, [theme]);
 
   // ---- Sidebar collapse ----
+  // Class names match the mobile CSS contract: .sidebar.open + #sidebar-backdrop.show
   const toggleSidebar = useCallback(() => {
     const sidebar  = document.querySelector('.sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar) return;
-    const open = sidebar.classList.toggle('sidebar-open');
-    if (backdrop) backdrop.classList.toggle('active', open);
-    document.body.classList.toggle('sidebar-visible', open);
+    const open = sidebar.classList.toggle('open');
+    if (backdrop) backdrop.classList.toggle('show', open);
   }, []);
 
   // ---- Updated-ago display ----
@@ -159,18 +175,43 @@ export function App() {
       const r = await fetch('/api/state');
       if (!r.ok) { setState({ refreshing: false, offline: true }); return; }
       const newState = await r.json();
+      // The server's scan cache keeps lastScanned stable while nothing on
+      // disk changed — same stamp means identical data, so skip the patch
+      // entirely instead of committing fresh object identities that would
+      // re-render every subscribed component.
+      if (lastScannedRef.current && lastScannedRef.current === newState.lastScanned) {
+        scanTimeRef.current = Date.now();
+        setUpdatedAgo('just now');
+        setState({ refreshing: false, offline: false });
+        return;
+      }
       lastScannedRef.current = newState.lastScanned;
       scanTimeRef.current = Date.now();
       setUpdatedAgo('just now');
-      const patch = { refreshing: false, offline: false, lastRefresh: Date.now() };
+      const patch = {
+        refreshing: false, offline: false, lastRefresh: Date.now(),
+        // Surface state.json corruption (§1.4) — also clears the banner once fixed.
+        rawParseError: newState.rawParseError || null,
+      };
+      // Redesign contract slices (DATA-CONTRACT.md) — derived server-side and
+      // returned under newState.dashboard. Keep them fresh on every poll.
+      const d = newState.dashboard || {};
+      Object.assign(patch, {
+        initialized: newState.exists !== false,
+        project:   d.project   || null,
+        progress:  d.progress  || null,
+        timeline:  d.timeline  || null,
+        tasks:     d.tasks     || null,
+        health:    d.health    || null,
+      });
       if (newState.raw) {
         Object.assign(patch, {
-          phases:           newState.phaseTree            || newState.raw.phases || [],
+          phases:           d.phases       || newState.phaseTree || newState.raw.phases || [],
           milestone:        newState.raw.milestone        || '',
-          currentPhase:     newState.raw.current_phase    || null,
+          currentPhase:     d.currentPhase || newState.raw.current_phase || null,
           currentSprint:    newState.raw.current_sprint   || null,
-          decisions:        newState.raw.decisions        || [],
-          blockers:         newState.raw.blockers         || [],
+          decisions:        d.decisions    || newState.raw.decisions || [],
+          blockers:         d.blockers     || newState.raw.blockers  || [],
           council_sessions: newState.raw.council_sessions || [],
           last_session:     newState.raw.last_session     || null,
         });
@@ -207,15 +248,9 @@ export function App() {
     <div class="app-shell">
       <${Sidebar} activeView=${view} projectName=${storeState.projectName || ''} />
 
-      <div id="sidebar-backdrop" onClick=${() => {
-        const sidebar  = document.querySelector('.sidebar');
-        const backdrop = document.getElementById('sidebar-backdrop');
-        if (sidebar) sidebar.classList.remove('sidebar-open');
-        if (backdrop) backdrop.classList.remove('active');
-        document.body.classList.remove('sidebar-visible');
-      }}></div>
+      <div id="sidebar-backdrop" onClick=${closeMobileSidebar}></div>
 
-      <div class="content-area" id="main-content" style="grid-template-rows:44px 1fr auto;">
+      <div class="content-area" id="main-content">
         <${Topbar}
           projectName=${storeState.projectName || ''}
           updatedAgo=${updatedAgo}
@@ -228,6 +263,10 @@ export function App() {
 
         <div class="main-scroll" id="main-scroll">
           <${OfflineBanner} offline=${storeState.offline} />
+          <${ParseErrorBanner}
+            error=${storeState.rawParseError}
+            dismissed=${storeState.parseErrorDismissed}
+          />
           ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
         </div>
 

@@ -34,6 +34,29 @@ export function humanDate(s) {
 }
 
 /**
+ * Display name for the store's `currentPhase`, which may be the contract
+ * object { id, name, status, milestones[] }, a legacy plain string/number
+ * (raw state.json current_phase), or null. Returns '' when absent —
+ * never "[object Object]".
+ */
+export function currentPhaseName(cp) {
+  if (cp == null) return '';
+  if (typeof cp === 'object') return cp.name || (cp.id != null ? String(cp.id) : '');
+  return String(cp);
+}
+
+/**
+ * Identifier for the store's `currentPhase` (same shapes as currentPhaseName).
+ * Prefers the phase id (what commands and phase-card comparisons use);
+ * falls back to the name. Returns '' when absent.
+ */
+export function currentPhaseId(cp) {
+  if (cp == null) return '';
+  if (typeof cp === 'object') return cp.id != null ? String(cp.id) : (cp.name || '');
+  return String(cp);
+}
+
+/**
  * Flatten all sprints across phases.
  * @param {Array} phases — the phases array from the store.
  * @returns {Array} sprints with phaseId and phaseName injected.

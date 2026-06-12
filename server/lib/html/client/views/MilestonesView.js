@@ -9,8 +9,8 @@
 
 import { html } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, allSprints, allTasks } from '../util.js';
-import { CompletionRing, Breadcrumb, Tag, PhaseCard } from '../components/shared.js';
+import { pct, humanDate, allSprints, allTasks, currentPhaseName } from '../util.js';
+import { CompletionRing, Breadcrumb, Tag, PhaseCard, pressable } from '../components/shared.js';
 import { runningTotal } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
 
@@ -94,7 +94,7 @@ export function MilestonesView({ subId }) {
           <div class="attr-grid">
             <${AttrItem} label="Total Phases" value=${phases.length}/>
             <${AttrItem} label="Completed Phases" value=${doneP}/>
-            <${AttrItem} label="Current Phase" value=${S.currentPhase || '—'}/>
+            <${AttrItem} label="Current Phase" value=${currentPhaseName(S.currentPhase) || '—'}/>
             <${AttrItem} label="Current Sprint" value=${S.currentSprint || '—'}/>
             <${AttrItem} label="Tasks Done" value=${done.length + '/' + total.length}/>
             <${AttrItem} label="Progress" value=${pct(done.length, total.length)}/>
@@ -116,7 +116,7 @@ export function MilestonesView({ subId }) {
     <div id="view-milestones" class="view active">
       <div class="view-title">Milestones</div>
       <div class="phase-list">
-        <div class="item item-clickable" onClick=${() => { location.hash = 'milestones/M1'; }}>
+        <div class="item item-clickable" ...${pressable(() => { location.hash = 'milestones/M1'; })}>
           <div style="display:flex;align-items:center;gap:var(--space-4);">
             <${CompletionRing} done=${done.length} total=${total.length}/>
             <div>

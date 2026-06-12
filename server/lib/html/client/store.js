@@ -14,9 +14,19 @@ import { useState, useEffect } from './preact.js';
 const _seed = (typeof window !== 'undefined' && window.__S__) || {};
 
 let _state = {
+  // First-run signal — false only when the server scanned and found no .rcode.
+  initialized:      _seed.initialized      !== false,
+  // Redesign dashboard contract slices (DATA-CONTRACT.md) — read by the Overview
+  // slot components. Derived server-side by scanner.buildDashboard.
+  project:          _seed.project          || null,
+  progress:         _seed.progress         || null,
+  timeline:         _seed.timeline         || null,
+  tasks:            _seed.tasks            || null,
+  health:           _seed.health           || null,
   // Fields injected by client.js / window.__S__
   phases:           _seed.phases           || [],
   milestone:        _seed.milestone        || '',
+  // currentPhase is now the contract object { name, status, milestones[] }.
   currentPhase:     _seed.currentPhase     || null,
   currentSprint:    _seed.currentSprint    || null,
   decisions:        _seed.decisions        || [],
@@ -37,8 +47,15 @@ let _state = {
   refreshing:       false,
   offline:          false,
   lastRefresh:      null,
+  // state.json parse failure message (or null). Surfaced as a dismissible
+  // banner in App.js; parseErrorDismissed is session-local UI state.
+  rawParseError:        _seed.rawParseError || null,
+  parseErrorDismissed:  false,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
+  // Orchestrator reachability: null = unknown (before first poll),
+  // true = reachable, false = unreachable. Written by the 4s session poll.
+  orchOnline:       null,
   // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
   requestedFile:    null,
   // xterm terminal panel state (driven by orchestrator.js / XtermPanel.js)
@@ -107,14 +124,34 @@ export function refresh() {
 
 /**
  * Preact hook. Subscribes the calling component to the store and
- * returns the current state. The component re-renders on every setState().
+ * returns the current state (or the selected slice).
+ *
+ * Without a selector the component re-renders on every setState().
+ * With a selector it re-renders only when the selected value changes
+ * (Object.is), so slice subscribers skip unrelated store traffic:
+ *
+ *   const project = useStore(s => s.project);
+ *
+ * The selector must be pure and is captured on mount — pass a stable
+ * function (module-level or inline reading fixed keys), not one that
+ * closes over changing props.
  */
-export function useStore() {
-  const [state, setLocalState] = useState(getState);
+export function useStore(selector) {
+  const [state, setLocalState] = useState(
+    () => (selector ? selector(_state) : getState())
+  );
   useEffect(() => {
+    const update = (newState) => {
+      if (selector) {
+        const next = selector(newState);
+        setLocalState(prev => (Object.is(prev, next) ? prev : next));
+      } else {
+        setLocalState({ ...newState });
+      }
+    };
     // Resync on mount in case setState was called before mount.
-    setLocalState(getState());
-    const unsub = subscribe(newState => setLocalState({ ...newState }));
+    update(_state);
+    const unsub = subscribe(update);
     return unsub;
   }, []);
   return state;

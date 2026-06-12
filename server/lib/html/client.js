@@ -21,22 +21,39 @@ try { RCODE_VERSION = require('../../../package.json').version || ''; } catch { 
 // Fields the client needs from the scanned state. Kept in sync with
 // store.js initial state and the view components that read it.
 function clientState(state) {
+  // Redesign dashboard contract (.planning/campaign/DATA-CONTRACT.md), derived
+  // by scanner.buildDashboard. Always present and correctly typed.
+  const d = state.dashboard || {};
   return JSON.stringify({
-    phases:           state.phaseTree           || state.raw?.phases || [],
+    // First-run signal: false when the scanned .rcode dir does not exist, so
+    // the Overview shows a "run /rcode-init" state instead of empty cards.
+    initialized:      state.exists !== false,
+    // Redesign contract keys (read by the Overview slot components).
+    project:          d.project      || null,
+    progress:         d.progress     || null,
+    timeline:         d.timeline     || null,
+    tasks:            d.tasks        || null,
+    health:           d.health       || null,
+    // Colliding keys — the contract shapes are supersets, so legacy views and
+    // the redesign read the same field. currentPhase becomes the contract object.
+    phases:           d.phases       || state.phaseTree || state.raw?.phases || [],
+    decisions:        d.decisions    || state.raw?.decisions || [],
+    blockers:         d.blockers     || state.raw?.blockers  || [],
+    currentPhase:     d.currentPhase || state.raw?.current_phase || null,
+    // Existing fields kept working for the legacy views.
     projectName:      state.projectName         || '',
     projectRoot:      state.projectRoot         || '',
     version:          RCODE_VERSION,
     milestone:        state.raw?.milestone      || '',
-    currentPhase:     state.raw?.current_phase  || null,
     currentSprint:    state.raw?.current_sprint || null,
-    decisions:        state.raw?.decisions      || [],
-    blockers:         state.raw?.blockers       || [],
     council_sessions: state.raw?.council_sessions || [],
     last_session:     state.raw?.last_session   || null,
     chains:           state.raw?.chains         || [],
     workstreams:      state.raw?.workstreams    || [],
     pendingHandoff:   state.pendingHandoff      || null,
     memoryBank:       state.memoryBank          || null,
+    // state.json corruption signal — App.js renders a dismissible banner.
+    rawParseError:    state.rawParseError       || null,
   })
     // Prevent a stray "</script>" inside any string from closing the inline
     // <script> early. Escaping "<" keeps the JSON valid and inert.
