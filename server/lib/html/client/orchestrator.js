@@ -281,18 +281,18 @@ export function stopStory(storyId) {
  * Update both when adding a new command.
  */
 export const ALLOWED_COMMANDS = [
-  { cmd: '/rcode-init',          label: 'init — initialise project workspace' },
-  { cmd: '/rcode-status',        label: 'status — phase / sprint status' },
-  { cmd: '/rcode-progress',      label: 'progress — milestone progress' },
-  { cmd: '/rcode-help',          label: 'help — command reference' },
-  { cmd: '/rcode-health',        label: 'health — repo health check' },
-  { cmd: '/rcode-next',          label: 'next — suggest next action' },
-  { cmd: '/rcode-show',          label: 'show — show current plan' },
-  { cmd: '/rcode-list-plans',    label: 'list-plans — list all sprint plans' },
-  { cmd: '/rcode-sprint-status', label: 'sprint-status — sprint execution status' },
-  { cmd: '/rcode-config',        label: 'config — show rcode config' },
-  { cmd: '/rcode-diff',          label: 'diff — diff since last checkpoint' },
-  { cmd: '/rcode-stats',         label: 'stats — project statistics' },
+  { cmd: '/rcode-init',          label: 'init — initialise project workspace',    category: 'Project'  },
+  { cmd: '/rcode-config',        label: 'config — show rcode config',             category: 'Project'  },
+  { cmd: '/rcode-status',        label: 'status — phase / sprint status',         category: 'Status'   },
+  { cmd: '/rcode-progress',      label: 'progress — milestone progress',          category: 'Status'   },
+  { cmd: '/rcode-sprint-status', label: 'sprint-status — sprint execution status',category: 'Status'   },
+  { cmd: '/rcode-stats',         label: 'stats — project statistics',             category: 'Status'   },
+  { cmd: '/rcode-show',          label: 'show — show current plan',               category: 'Planning' },
+  { cmd: '/rcode-list-plans',    label: 'list-plans — list all sprint plans',     category: 'Planning' },
+  { cmd: '/rcode-next',          label: 'next — suggest next action',             category: 'Planning' },
+  { cmd: '/rcode-help',          label: 'help — command reference',               category: 'Inspect'  },
+  { cmd: '/rcode-health',        label: 'health — repo health check',             category: 'Inspect'  },
+  { cmd: '/rcode-diff',          label: 'diff — diff since last checkpoint',      category: 'Inspect'  },
 ];
 
 /**
