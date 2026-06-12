@@ -4,44 +4,11 @@
  * On mount: fetches /api/files to build the grouped file tree.
  * Clicking a file: fetches /api/file?path=... and renders markdown via the
  * global `marked` CDN lib (stays a CDN global — unchanged from legacy).
- *
- * Agent-jump bridge: when the store field `requestedFile` is set (by
- * AgentsView), FilesView picks it up and pre-fills the search filter, then
- * clears the field so subsequent renders don't re-trigger.
  */
 
 import { html, useState, useEffect, useCallback } from '../preact.js';
-import { useStore, setState } from '../store.js';
 import { showToast } from '../components/shared.js';
-
-// ---- Markdown helpers (ported from client-main.js:287-294) ----
-function stripFrontmatter(md) {
-  if (!md.startsWith('---')) return md;
-  const end = md.indexOf('\n---', 3);
-  return end === -1 ? md : md.slice(end + 4).trimStart();
-}
-
-// Minimal HTML sanitizer for rendered markdown. No DOMPurify dependency on the
-// client, so we strip the dangerous primitives via regex after marked emits
-// HTML: script/iframe/object/embed tags, inline event handlers, and
-// javascript:/data: URLs in href/src. Markdown content comes from the project
-// dir (semi-trusted) but may include attacker-controlled text checked into a
-// repo, so we cannot trust raw HTML passthrough.
-function sanitizeHtml(html) {
-  return String(html)
-    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
-    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*\/?>/gi, '')
-    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src|xlink:href)\s*=\s*(["'])\s*(?:javascript|data|vbscript):[^"']*\2/gi, '$1=$2#blocked$2');
-}
-
-function renderMd(md) {
-  const clean = stripFrontmatter(md);
-  if (typeof marked === 'undefined') {
-    return '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
-  }
-  return sanitizeHtml(marked.parse(clean));
-}
+import { renderMd } from '../util.js';
 
 // ---- File tree components ----
 function FileEntry({ file, extraText, onSelect, isSelected }) {
@@ -155,8 +122,6 @@ function FileContent({ path, html: htmlContent, loading, error }) {
 
 // ---- Root FilesView ----
 export function FilesView() {
-  const { requestedFile } = useStore();
-
   const [groups, setGroups]         = useState([]);
   const [loading, setLoading]       = useState(true);
   const [filter, setFilter]         = useState('');
@@ -172,14 +137,6 @@ export function FilesView() {
       .catch(() => setGroups([]))
       .finally(() => setLoading(false));
   }, []);
-
-  // Agent-jump bridge: requestedFile set by AgentsView
-  useEffect(() => {
-    if (!requestedFile) return;
-    setFilter(requestedFile);
-    // Clear the bridge field so this doesn't re-trigger
-    setState({ requestedFile: null });
-  }, [requestedFile]);
 
   const loadFile = useCallback(async (file) => {
     setSelectedPath(file.path);
