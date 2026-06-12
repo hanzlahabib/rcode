@@ -1376,7 +1376,7 @@ function cmdState(subArgs) {
       String(p.id) === String(flags.phase) ||
       p.name === flags.phase
     );
-    if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state`);
+    if (phaseIdx === -1) throw new Error(`Phase "${flags.phase}" not found in state. If the phase exists in ROADMAP.md, run "rcode state sync" or "/rcode-update" to synchronize state first.`);
     const phase = state.phases[phaseIdx];
 
     // Derive phase number: prefer explicit .number, fallback to array position
