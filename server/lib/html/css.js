@@ -4647,6 +4647,38 @@ summary:focus-visible,
   padding-left: var(--space-2);
 }
 /* ── Reject dialog (END) ── */
+
+/* ════════ Sidebar health badges (36-2) ════════ */
+.sidebar-health {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+.health-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-2);
+  background: var(--bg-elev-2);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
+/* Non-zero blocker state — flag with amber to draw attention */
+.health-badge--alert {
+  color: var(--accent-amber);
+}
+/* Zero count — de-emphasise so it reads as "all clear", not an alarm */
+.health-badge--zero {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+/* ════════ Sidebar health badges (END) ════════ */
 </style>`;
 }
 
