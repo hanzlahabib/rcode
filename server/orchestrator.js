@@ -27,6 +27,8 @@
 const http   = require('http');
 const path   = require('path');
 const crypto = require('crypto');
+const fs     = require('fs');
+const os     = require('os');
 const { execFile } = require('child_process');
 
 // @lydell/node-pty ships prebuilt binaries and never invokes node-gyp, so a
@@ -84,6 +86,46 @@ const SCROLLBACK_MAX = 256 * 1024;
 // Map<storyId, Session>
 // Session: { proc, status, startTime, cmd, cols, rows, scrollback, wsClients:Set }
 const sessions = new Map();
+
+// ── run-history persistence ───────────────────────────────────────────────────
+
+const HISTORY_FILE = path.join(os.homedir(), '.rcode', 'orch-history.json');
+const HISTORY_MAX = 200; // cap persisted runs so the file cannot grow unbounded
+
+// Read the persisted history from disk at startup. Returns [] on any error
+// (missing file, bad JSON, permission denied) so startup is never blocked.
+function loadHistory() {
+  try {
+    return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+let history = loadHistory();
+
+// Append one completed run to the in-memory history and flush to disk.
+// A write failure must NOT crash the orchestrator — log and continue.
+function persistRun(storyId, s, status) {
+  const endTime = new Date().toISOString();
+  const durationMs = Date.parse(endTime) - (Date.parse(s.startTime) || Date.parse(endTime));
+  const entry = {
+    storyId,
+    cmd:       s.cmd,
+    status,
+    startTime: s.startTime,
+    endTime,
+    durationMs,
+  };
+  history.push(entry);
+  if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
+  try {
+    fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+  } catch (err) {
+    console.error('[orch] persistRun write failed:', err.message);
+  }
+}
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -269,6 +311,7 @@ async function handleRun(req, res) {
   proc.onExit(({ exitCode, signal }) => {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
+    persistRun(storyId, s, status);
   });
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
