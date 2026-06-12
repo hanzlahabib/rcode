@@ -30,7 +30,8 @@ export function Blockers() {
     <section class="dash-card">
       <div class="bk-head">
         <p class="dash-card-title">Blockers</p>
-        <button class="bk-viewall" type="button">View all</button>
+        <button class="bk-viewall" type="button"
+          onClick=${() => { location.hash = 'tasks'; }}>View all</button>
       </div>
       <ul class="bk-list">
         ${blockers.map((b) => {

@@ -121,6 +121,7 @@ function renderCss() {
   --dash-sev-low:    #9CA3AF; /* gray  — Low    */
   --dash-text:       #E6EDF7; /* primary text */
   --dash-text-muted: #8595AD; /* muted text   */
+  --dash-hover:      rgba(255, 255, 255, 0.04); /* row/button hover wash */
 }
 
 /* Light mode */
@@ -140,6 +141,15 @@ function renderCss() {
   --text-tertiary:  #72727e;
   --text-muted:     #9898a4;
   --accent-bg: rgba(94,106,210,0.08);
+
+  /* Dashboard mockup tokens — light theme. Surfaces/text flip to light;
+     teal/purple/blue/amber accents and severity colors stay the same. */
+  --dash-bg:         #F4F6FB;
+  --dash-card:       #FFFFFF;
+  --dash-border:     #E2E8F0;
+  --dash-text:       #1A2233;
+  --dash-text-muted: #5B6B82;
+  --dash-hover:      rgba(15, 23, 41, 0.05);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -2296,558 +2306,6 @@ footer {
 .cmd-runner-btn:disabled,
 .cmd-runner-btn--busy { opacity: 0.6; cursor: not-allowed; }
 
-/* ── Dashboard redesign — base layout (mockup) ───────────────────── */
-.dash-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 20px;
-}
-.dash-grid .col-4 { grid-column: span 4; }
-.dash-grid .col-6 { grid-column: span 6; }
-.dash-grid .col-12 { grid-column: span 12; }
-@media (max-width: 1100px) {
-  .dash-grid .col-4,
-  .dash-grid .col-6 { grid-column: span 12; }
-}
-.dash-card {
-  background: var(--dash-card);
-  border: 1px solid var(--dash-border);
-  border-radius: 14px;
-  padding: 18px 20px;
-  color: var(--dash-text);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-}
-.dash-card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--dash-text);
-  margin: 0;
-}
-.dash-card-sub {
-  font-size: 12px;
-  color: var(--dash-text-muted);
-  margin: 0;
-}
-.dash-slot {
-  border: 1px dashed var(--dash-border);
-  border-radius: 10px;
-  color: var(--dash-text-muted);
-  font-size: 12px;
-  padding: 24px;
-  text-align: center;
-}
-
-/* ── ProgressDonut — Project Progress card (Row 1, Card 1) ───────── */
-.donut-body {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.donut-ring {
-  position: relative;
-  flex: 0 0 auto;
-  width: 132px;
-  height: 132px;
-}
-.donut-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-.donut-pct {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--dash-text);
-}
-.donut-pct-label {
-  font-size: 11px;
-  color: var(--dash-text-muted);
-}
-.donut-legend {
-  flex: 1 1 auto;
-/* ============================================================
-   CompletedTasks (ct-*) + InProgress (ip-*) cards — Row 2
-   Overview redesign. Appended by tasks agent A6.
-   ============================================================ */
-.ct-head,
-.ip-head {
-/* ── Blockers card (Row 2, Card 3) ───────────────────────────────── */
-.bk-head {
-/* ── Dashboard redesign — Recent Decisions (Row 3, Card 1) ───────── */
-.rd-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.ct-viewall,
-.ip-viewall {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--dash-blue);
-}
-.ct-viewall:hover,
-.ip-viewall:hover {
-  text-decoration: underline;
-}
-.ct-list,
-.ip-list {
-.bk-viewall {
-  background: none;
-  border: none;
-  padding: 0;
-.rd-viewall {
-  background: none;
-  border: none;
-  color: var(--dash-teal);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.bk-viewall:hover { text-decoration: underline; }
-.bk-list {
-  padding: 0;
-}
-.rd-viewall:hover { text-decoration: underline; }
-.rd-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-}
-.donut-legend-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.donut-dot {
-  flex: 0 0 auto;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.donut-dot--done { background: var(--dash-teal); }
-.donut-dot--prog { background: var(--dash-blue); }
-.donut-dot--idle { background: var(--dash-sev-low); }
-.donut-legend-label {
-  flex: 1 1 auto;
-  font-size: 13px;
-  color: var(--dash-text-muted);
-}
-.donut-legend-pct {
-  flex: 0 0 auto;
-  gap: 14px;
-}
-.bk-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: start;
-  column-gap: 10px;
-}
-.bk-icon {
-  font-size: 14px;
-  line-height: 1.4;
-}
-.bk-body { min-width: 0; }
-.bk-title {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--dash-text);
-}
-.donut-summary {
-  font-size: 13px;
-  color: var(--dash-text-muted);
-  margin: 0;
-}
-.donut-summary strong {
-  color: var(--dash-text);
-  font-weight: 700;
-}
-.donut-bar {
-  display: block;
-  width: 100%;
-  height: 6px;
-}
-/* ── Component: CurrentPhase card + milestone stepper (Row 1, Card 2) ──── */
-.cp-card { gap: 14px; }
-.cp-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.cp-rocket {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  border-radius: 10px;
-  background: rgba(167, 139, 250, 0.12);
-  border: 1px solid rgba(167, 139, 250, 0.25);
-}
-.cp-headtext { min-width: 0; }
-.cp-titlerow {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.cp-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--dash-purple);
-}
-.cp-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.rd-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--dash-border);
-}
-.rd-row:last-child { border-bottom: none; }
-.rd-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  color: var(--dash-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rd-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
-  border: 1px solid rgba(167, 139, 250, 0.3);
-}
-.cp-sub {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--dash-text-muted);
-}
-.cp-progress {
-  margin: 0;
-  font-size: 12px;
-  color: var(--dash-text-muted);
-}
-.cp-dot { margin: 0 6px; }
-.cp-pct { color: var(--dash-text); font-weight: 600; }
-
-.cp-stepper {
-  list-style: none;
-  margin: 6px 0 0;
-  padding: 0;
-  display: flex;
-  position: relative;
-}
-/* connecting line behind the nodes */
-.cp-stepper::before {
-  content: "";
-  position: absolute;
-  top: 11px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--dash-border);
-}
-.cp-step {
-  position: relative;
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-.cp-node {
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  background: var(--dash-card);
-  border: 2px solid var(--dash-sev-low);
-  color: var(--dash-card);
-  position: relative;
-  z-index: 1;
-}
-.cp-done .cp-node {
-  background: var(--dash-teal);
-  border-color: var(--dash-teal);
-  color: var(--dash-bg);
-}
-.cp-active .cp-node {
-  background: var(--dash-card);
-  border-color: var(--dash-purple);
-  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
-}
-.cp-label {
-  font-size: 10px;
-  line-height: 1.3;
-  text-align: center;
-  color: var(--dash-text-muted);
-  max-width: 100%;
-}
-.cp-done .cp-label,
-.cp-active .cp-label { color: var(--dash-text); }
-/* ════════════════════════════════════════════════════════════════════
-   Timeline card (.tl-*) — Overview Row 1 Card 3 (projected launch + chart)
-   ════════════════════════════════════════════════════════════════════ */
-.tl-card {
-  gap: 6px;
-}
-.tl-label {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.tl-date {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--dash-teal);
-  margin: 0;
-}
-.tl-days {
-  font-size: 12px;
-  color: var(--dash-text-muted);
-  margin: 0 0 4px 0;
-}
-.tl-chart {
-  width: 100%;
-  height: 88px;
-  display: block;
-  overflow: visible;
-}
-.tl-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
-  font-size: 12px;
-}
-.tl-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--dash-text);
-  font-weight: 600;
-}
-.tl-dot-badge {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dash-teal);
-  display: inline-block;
-}
-.tl-status-risk {
-  color: var(--dash-sev-medium);
-}
-.tl-status-risk .tl-dot-badge {
-  background: var(--dash-sev-medium);
-}
-.tl-note {
-  color: var(--dash-text-muted);
-  gap: 10px;
-}
-.ct-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--dash-text);
-}
-.ct-check {
-  flex: none;
-  color: var(--accent-green);
-}
-.ct-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ct-date {
-  flex: none;
-  font-size: 12px;
-  color: var(--dash-text-muted);
-}
-.ip-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--dash-text);
-}
-.ip-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  white-space: nowrap;
-}
-.rd-badge--approved {
-  color: var(--dash-teal);
-  background: rgba(45, 212, 191, 0.12);
-}
-.rd-badge--rejected {
-  color: var(--dash-sev-high);
-  background: rgba(248, 113, 113, 0.12);
-}
-.rd-badge--proposed {
-  color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
-}
-.rd-date {
-  font-size: 12px;
-  color: var(--dash-text-muted);
-  white-space: nowrap;
-}
-
-/* ── Dashboard redesign — Progress Timeline (Row 3, Card 2) ──────── */
-.pt-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.pt-viewall {
-  background: none;
-  border: none;
-  color: var(--dash-teal);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-.pt-viewall:hover { text-decoration: underline; }
-.pt-ticks {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--dash-text-muted);
-  padding: 0 2px;
-}
-.pt-tick { white-space: nowrap; }
-.pt-track {
-  display: flex;
-  gap: 6px;
-}
-.pt-seg {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--dash-border);
-  border-top: 3px solid var(--dash-sev-low);
-  background: rgba(255, 255, 255, 0.02);
-}
-.pt-seg--done   { border-top-color: var(--dash-teal); }
-.pt-seg--active { border-top-color: var(--dash-purple); }
-.pt-seg--todo   { border-top-color: var(--dash-sev-low); }
-.pt-seg-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dash-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ip-badge {
-  flex: none;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  padding: 4px 9px;
-  border-radius: 999px;
-  color: var(--dash-blue);
-  background: rgba(59, 130, 246, 0.15);
-.bk-desc {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--dash-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.bk-pill {
-  align-self: center;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-  border: 1px solid transparent;
-}
-.bk-sev-high   { color: var(--dash-sev-high);   }
-.bk-sev-medium { color: var(--dash-sev-medium); }
-.bk-sev-low    { color: var(--dash-sev-low);    }
-.bk-pill.bk-sev-high {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
-}
-.bk-pill.bk-sev-medium {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.35);
-}
-.bk-pill.bk-sev-low {
-  background: rgba(156, 163, 175, 0.12);
-  border-color: rgba(156, 163, 175, 0.35);
-.pt-seg-range {
-  font-size: 11px;
-  color: var(--dash-text-muted);
-}
-.pt-seg-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 999px;
-  align-self: flex-start;
-  color: var(--dash-sev-low);
-  background: rgba(156, 163, 175, 0.14);
-}
-.pt-seg--done .pt-seg-badge {
-  color: var(--dash-teal);
-  background: rgba(45, 212, 191, 0.12);
-}
-.pt-seg--active .pt-seg-badge {
-  color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
-}
-@media (max-width: 700px) {
-  .pt-track { flex-direction: column; }
 /* ── Dashboard redesign — sidebar + header chrome + project health ──
    Mockup chrome. Re-declares .sidebar / header layout (later-wins per
    property; mobile position/transform from the base rule are preserved)
@@ -2991,6 +2449,600 @@ footer {
 @media (max-width: 760px) {
   .tb-sub { display: none; }
   .tb-synced { display: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   POLISH — Overview card grid (single source of truth)
+   Replaces the earlier per-agent .dash-grid / .dash-card / donut-* /
+   cp-* / tl-* / ct-* / ip-* / bk-* / rd-* / pt-* blocks, whose
+   interleaved appends left unbalanced braces. ALL dashboard-card CSS
+   lives here — append card changes to this block only.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Global view normalization — every view on the dash palette ──
+   The pre-redesign views (tasks, decisions, phases, sprints, files,
+   agents, memory, kanban …) consume the legacy Linear tokens. Re-mapping
+   those custom properties on .main-scroll bridges ALL views onto the
+   mockup palette — and onto its light-theme flips — without per-view
+   rules. min-height: 0 lets the 1fr grid row shrink so the area scrolls
+   instead of clipping the bottom card row below the fold. */
+.main-scroll {
+  min-height: 0;
+  padding: 26px 28px;
+  background: var(--dash-bg);
+  --bg-page:        var(--dash-bg);
+  --bg-elev-1:      var(--dash-card);
+  --bg-elev-2:      var(--dash-card);
+  --bg-elev-3:      var(--dash-border);
+  --bg-input:       var(--dash-bg);
+  --bg-hover:       var(--dash-hover);
+  --bg-active:      var(--dash-hover);
+  --border-subtle:  var(--dash-border);
+  --border-default: var(--dash-border);
+  --text-primary:   var(--dash-text);
+  --text-secondary: var(--dash-text);
+  --text-tertiary:  var(--dash-text-muted);
+  --text-muted:     var(--dash-text-muted);
+}
+
+/* Legacy list panels pick up the card chrome and roomier rows. */
+.phase-list, .decision-list, .body { border-radius: 14px; }
+.item { padding: 11px 16px; }
+.phase-list .item { padding: 13px 16px; }
+
+/* ── Grid — 12 cols, 20px gaps; wrappers stretch cards to equal row height ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.dash-grid .col-4,
+.dash-grid .col-6,
+.dash-grid .col-12 {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dash-grid .col-4  { grid-column: span 4; }
+.dash-grid .col-6  { grid-column: span 6; }
+.dash-grid .col-12 { grid-column: span 12; }
+.dash-grid .col-4 > .dash-card,
+.dash-grid .col-6 > .dash-card,
+.dash-grid .col-12 > .dash-card { flex: 1 1 auto; }
+@media (max-width: 1100px) {
+  .dash-grid .col-4,
+  .dash-grid .col-6 { grid-column: span 12; }
+}
+
+/* ── Card surface ── */
+.dash-card {
+  /* margin: 0 cancels the global "section" margin-top rule — the
+     cards are section elements and grid gap owns the spacing. */
+  margin: 0;
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  color: var(--dash-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.dash-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+  margin: 0;
+}
+.dash-card-sub {
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  margin: 0;
+}
+
+/* ── Card header row: title left, "View all" link right ── */
+.ct-head, .ip-head, .bk-head, .rd-head, .pt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ct-viewall, .ip-viewall, .bk-viewall, .rd-viewall, .pt-viewall {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dash-teal);
+  white-space: nowrap;
+}
+.ct-viewall:hover, .ip-viewall:hover, .bk-viewall:hover,
+.rd-viewall:hover, .pt-viewall:hover { text-decoration: underline; }
+
+/* ── Shared list shells + row separators (mockup: subtle hairlines) ── */
+.ct-list, .ip-list, .bk-list, .rd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ct-row, .ip-row, .bk-row, .rd-row {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dash-border);
+}
+.ct-row:first-child, .ip-row:first-child,
+.bk-row:first-child, .rd-row:first-child { padding-top: 2px; }
+.ct-row:last-child, .ip-row:last-child,
+.bk-row:last-child, .rd-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ── ProgressDonut — Project Progress (Row 1, Card 1) ── */
+.donut-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.donut-ring {
+  position: relative;
+  flex: 0 0 auto;
+  width: 132px;
+  height: 132px;
+}
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.donut-pct {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dash-text);
+}
+.donut-pct-label {
+  font-size: 11px;
+  color: var(--dash-text-muted);
+}
+.donut-legend {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.donut-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.donut-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.donut-dot--done { background: var(--dash-teal); }
+.donut-dot--prog { background: var(--dash-blue); }
+.donut-dot--idle { background: var(--dash-sev-low); }
+.donut-legend-label {
+  flex: 1 1 auto;
+  font-size: 13px;
+  color: var(--dash-text-muted);
+}
+.donut-legend-pct {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+.donut-summary {
+  font-size: 13px;
+  color: var(--dash-text-muted);
+  margin: 0;
+}
+.donut-summary strong {
+  color: var(--dash-text);
+  font-weight: 700;
+}
+.donut-bar {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* ── CurrentPhase — phase stepper (Row 1, Card 2) ── */
+.cp-card { gap: 14px; }
+.cp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cp-rocket {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border-radius: 10px;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+}
+.cp-headtext { min-width: 0; }
+.cp-titlerow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cp-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dash-purple);
+}
+.cp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  white-space: nowrap;
+}
+.cp-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+.cp-progress {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+.cp-dot { margin: 0 6px; }
+.cp-pct { color: var(--dash-text); font-weight: 600; }
+.cp-stepper {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  position: relative;
+}
+.cp-stepper::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--dash-border);
+}
+.cp-step {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.cp-node {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--dash-card);
+  border: 2px solid var(--dash-sev-low);
+  color: var(--dash-card);
+  position: relative;
+  z-index: 1;
+}
+.cp-done .cp-node {
+  background: var(--dash-teal);
+  border-color: var(--dash-teal);
+  color: var(--dash-bg);
+}
+.cp-active .cp-node {
+  background: var(--dash-card);
+  border-color: var(--dash-purple);
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
+}
+.cp-label {
+  font-size: 10px;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--dash-text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-done .cp-label,
+.cp-active .cp-label { color: var(--dash-text); }
+
+/* ── Timeline — projected launch + sparkline (Row 1, Card 3) ── */
+.tl-card { gap: 6px; }
+.tl-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tl-date {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--dash-teal);
+  margin: 0;
+}
+.tl-days {
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  margin: 0 0 4px 0;
+}
+/* flex:1 + preserveAspectRatio="none" → the sparkline stretches to fill
+   whatever height the equal-height row leaves; min-height guards collapse. */
+.tl-chart {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 84px;
+  display: block;
+  overflow: visible;
+}
+.tl-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.tl-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dash-text);
+  font-weight: 600;
+}
+.tl-dot-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dash-teal);
+  display: inline-block;
+}
+.tl-status-risk { color: var(--dash-sev-medium); }
+.tl-status-risk .tl-dot-badge { background: var(--dash-sev-medium); }
+.tl-note { color: var(--dash-text-muted); }
+
+/* ── CompletedTasks — check + title + date (Row 2, Card 1) ── */
+.ct-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--dash-text);
+}
+.ct-check {
+  flex: none;
+  color: var(--accent-green);
+}
+.ct-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ct-date {
+  flex: none;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+
+/* ── InProgress — title + % pill (Row 2, Card 2) ── */
+.ip-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--dash-text);
+}
+.ip-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ip-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--dash-blue);
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* ── Blockers — icon + title/desc + severity pill (Row 2, Card 3) ── */
+.bk-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  column-gap: 10px;
+}
+.bk-icon {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.bk-body { min-width: 0; }
+.bk-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+.bk-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-pill {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.bk-sev-high   { color: var(--dash-sev-high);   }
+.bk-sev-medium { color: var(--dash-sev-medium); }
+.bk-sev-low    { color: var(--dash-sev-low);    }
+.bk-pill.bk-sev-high {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+.bk-pill.bk-sev-medium {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+.bk-pill.bk-sev-low {
+  background: rgba(156, 163, 175, 0.12);
+  border-color: rgba(156, 163, 175, 0.35);
+}
+
+/* ── RecentDecisions — title + status badge + date (Row 3, Card 1) ── */
+.rd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--dash-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rd-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.rd-badge--approved {
+  color: var(--dash-teal);
+  background: rgba(45, 212, 191, 0.12);
+}
+.rd-badge--rejected {
+  color: var(--dash-sev-high);
+  background: rgba(248, 113, 113, 0.12);
+}
+.rd-badge--proposed {
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+}
+.rd-date {
+  flex: none;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+}
+
+/* ── ProgressTimeline — horizontal phase segments (Row 3, Card 2) ── */
+.pt-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dash-text-muted);
+  padding: 0 2px;
+}
+.pt-tick { white-space: nowrap; }
+.pt-track {
+  display: flex;
+  gap: 6px;
+}
+.pt-seg {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dash-border);
+  border-top: 3px solid var(--dash-sev-low);
+  background: rgba(255, 255, 255, 0.02);
+}
+.pt-seg--done   { border-top-color: var(--dash-teal); }
+.pt-seg--active { border-top-color: var(--dash-purple); }
+.pt-seg--todo   { border-top-color: var(--dash-sev-low); }
+.pt-seg-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dash-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pt-seg-range {
+  font-size: 11px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+}
+.pt-seg-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  align-self: flex-start;
+  color: var(--dash-sev-low);
+  background: rgba(156, 163, 175, 0.14);
+}
+.pt-seg--done .pt-seg-badge {
+  color: var(--dash-teal);
+  background: rgba(45, 212, 191, 0.12);
+}
+.pt-seg--active .pt-seg-badge {
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+}
+@media (max-width: 700px) {
+  .pt-track { flex-direction: column; }
 }
 </style>`;
 }
