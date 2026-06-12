@@ -10,7 +10,8 @@
 import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
 import { allTasks, currentPhaseName } from '../util.js';
-import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
+import { stopStory, openOrchPanel } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { showToast } from '../components/shared.js';
 
 // ---- Column descriptors ----
@@ -49,7 +50,9 @@ function KanbanCard({ task, col, orchDown, onDragStart, onDragEnd }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runStory(sid);
+    openRunnerPicker(e.currentTarget, {
+      kind: 'session', storyId: sid, cmd: '/rcode-dev-story ' + sid, title: sid,
+    });
   }
   function handleStop(e) {
     e.stopPropagation();

@@ -38,15 +38,41 @@ export function refreshOrchToken() {
 
 /**
  * POST /api/run — start a PTY session for storyId.
+ * opts = { runner?, model? } — which agent CLI / model to launch. Omitted →
+ * the server default (claude, no model flag). The server re-validates both.
  * Returns the parsed JSON response (or throws on network error).
  */
-export function runSession(storyId, cmd) {
-  const tok = orchToken();
+export function runSession(storyId, cmd, opts) {
+  const tok  = orchToken();
+  const body = { storyId, cmd };
+  if (opts && opts.runner) {
+    body.runner = opts.runner;
+    if (opts.model) body.model = opts.model;
+  }
   return fetch(ORCH_HTTP + '/api/run', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storyId, cmd }),
+    body: JSON.stringify(body),
   }).then(r => r.json());
+}
+
+/**
+ * GET /api/runners — detected agent CLIs: [{ id, label, available, models }].
+ * The list is fixed for the orchestrator's lifetime (detected once at boot),
+ * so the first successful response is cached; failures are not cached so a
+ * later open retries.
+ */
+let _runnersPromise = null;
+export function fetchRunners() {
+  if (_runnersPromise) return _runnersPromise;
+  const tok = orchToken();
+  _runnersPromise = fetch(ORCH_HTTP + '/api/runners', {
+    headers: { 'Authorization': 'Bearer ' + tok },
+  })
+    .then(r => r.json())
+    .then(d => (d && d.runners) || [])
+    .catch(() => { _runnersPromise = null; return []; });
+  return _runnersPromise;
 }
 
 /**
@@ -188,8 +214,9 @@ function _poll() {
  * @param {string} storyId
  * @param {string} cmd
  * @param {string} title
+ * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
-export function runAndOpenTerm(storyId, cmd, title) {
+export function runAndOpenTerm(storyId, cmd, title, opts) {
   // Open the panel immediately (it shows "connecting" while the session starts).
   setState({
     terminal: {
@@ -204,10 +231,17 @@ export function runAndOpenTerm(storyId, cmd, title) {
   const tok = orchToken();
   if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
 
-  runSession(storyId, cmd).catch(err => {
-    console.error('[orchestrator] session op failed:', err.message);
-    showToast('Could not reach orchestrator — session not started');
-  });
+  runSession(storyId, cmd, opts)
+    .then(data => {
+      // 409 = already running (terminal reattaches); anything else is surfaced.
+      if (data && data.error && !data.error.includes('already running')) {
+        showToast('Run error: ' + data.error);
+      }
+    })
+    .catch(err => {
+      console.error('[orchestrator] session op failed:', err.message);
+      showToast('Could not reach orchestrator — session not started');
+    });
 }
 
 /**
@@ -231,15 +265,6 @@ export function openTermPanel(storyId, title) {
  */
 export function openOrchPanel(storyId) {
   setState({ orchPanel: { open: true, storyId } });
-}
-
-/**
- * runStory — Kanban "Run" action. Moves card to in_progress visually then
- * delegates to runAndOpenTerm.
- */
-export function runStory(storyId) {
-  if (!storyId) return;
-  runAndOpenTerm(storyId, '/rcode-dev-story ' + storyId, storyId);
 }
 
 /**
@@ -283,8 +308,9 @@ export const ALLOWED_COMMANDS = [
  *   - network failure                         → showToast('Could not reach orchestrator')
  *
  * @param {string} cmd  Must be one of ALLOWED_COMMANDS[*].cmd.
+ * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
-export function runCommandFromUI(cmd) {
+export function runCommandFromUI(cmd, opts) {
   if (!cmd) return;
   const slug    = cmd.replace(/^\//, '').replace(/\//g, '-');
   const storyId = 'cmd-' + slug;
@@ -297,7 +323,7 @@ export function runCommandFromUI(cmd) {
   const tok = orchToken();
   if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
 
-  runSession(storyId, cmd)
+  runSession(storyId, cmd, opts)
     .then(data => {
       // 409 = already running (not an error — terminal is already attached).
       if (data && data.error && !data.error.includes('already running')) {

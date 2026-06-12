@@ -8,9 +8,10 @@
  * local terminal.
  *
  * HTTP (control plane):
- *   POST /api/run      { storyId, cmd? }  → spawn a PTY session
+ *   POST /api/run      { storyId, cmd?, runner?, model? } → spawn a PTY session
  *   POST /api/stop     { storyId }        → SIGTERM the PTY
  *   GET  /api/sessions                    → list all sessions
+ *   GET  /api/runners                     → detected agent CLIs + their models
  * WebSocket (data plane):
  *   /ws/<storyId>?token=...               → live terminal I/O
  *
@@ -27,6 +28,7 @@
 const http   = require('http');
 const path   = require('path');
 const crypto = require('crypto');
+const fs     = require('fs');
 const { execFile } = require('child_process');
 
 // @lydell/node-pty ships prebuilt binaries and never invokes node-gyp, so a
@@ -77,6 +79,80 @@ const COMMAND_ALLOWLIST = new Set([
   '/rcode-diff',
   '/rcode-stats',
 ]);
+
+// ── Runner registry ──────────────────────────────────────────────────────────
+// Each entry describes one agent CLI the dashboard can launch. `args` builds
+// the full argv array (never a shell string — user input is never shell-
+// interpolated). `models` is the closed set accepted by POST /api/run; an
+// empty/omitted model means "let the CLI use its own default".
+// The default runner is claude with no model flag — identical argv to the
+// pre-registry behavior, so /api/run calls without {runner, model} are
+// backward compatible.
+const RUNNERS = [
+  {
+    id: 'claude', label: 'Claude Code', bin: CLAUDE_BIN, modelFlag: '--model',
+    models: ['fable-5', 'opus', 'sonnet', 'haiku'],
+    args: (model, prompt) => model
+      ? [prompt, '--dangerously-skip-permissions', '--model', model]
+      : [prompt, '--dangerously-skip-permissions'],
+  },
+  {
+    id: 'codex', label: 'Codex CLI', bin: 'codex', modelFlag: '--model',
+    models: ['gpt-5-codex', 'gpt-5', 'o3'],
+    args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
+  },
+  {
+    id: 'copilot', label: 'GitHub Copilot CLI', bin: 'copilot', modelFlag: '--model',
+    models: ['claude-sonnet-4.5', 'gpt-5'],
+    args: (model, prompt) => model ? ['--model', model, '-p', prompt] : ['-p', prompt],
+  },
+  {
+    id: 'gemini', label: 'Gemini CLI', bin: 'gemini', modelFlag: '--model',
+    models: ['gemini-2.5-pro', 'gemini-2.5-flash'],
+    // -i = interactive mode with an initial prompt (plain `gemini -p` exits
+    // after one response; -i matches the run-then-communicate PTY flow).
+    args: (model, prompt) => model ? ['--model', model, '-i', prompt] : ['-i', prompt],
+  },
+  {
+    id: 'grok', label: 'Grok CLI', bin: 'grok', modelFlag: '--model',
+    models: ['grok-4-latest', 'grok-code-fast-1'],
+    args: (model, prompt) => model ? ['--model', model, '--prompt', prompt] : ['--prompt', prompt],
+  },
+  {
+    id: 'cursor', label: 'Cursor Agent', bin: 'cursor-agent', modelFlag: '--model',
+    models: ['gpt-5', 'sonnet-4.5', 'opus-4.1'],
+    args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
+  },
+  {
+    id: 'antigravity', label: 'Antigravity', bin: 'antigravity', modelFlag: null,
+    models: [],
+    args: (model, prompt) => [prompt],
+  },
+];
+
+// True when `bin` resolves to an executable — either an explicit path (e.g.
+// CLAUDE_BIN=/opt/claude/bin/claude) or a name found on PATH.
+async function binAvailable(bin) {
+  if (!bin) return false;
+  const exts = process.platform === 'win32' ? ['', '.exe', '.cmd', '.bat'] : [''];
+  async function executable(p) {
+    for (const ext of exts) {
+      try { await fs.promises.access(p + ext, fs.constants.X_OK); return true; } catch { /* keep looking */ }
+    }
+    return false;
+  }
+  if (bin.includes('/') || bin.includes(path.sep)) return executable(bin);
+  for (const dir of (process.env.PATH || '').split(path.delimiter)) {
+    if (dir && await executable(path.join(dir, bin))) return true;
+  }
+  return false;
+}
+
+// Availability is detected once at boot and cached on each registry entry.
+// Route handlers await this so an early request never reads a stale flag.
+const runnersReady = Promise.all(
+  RUNNERS.map(async r => { r.available = await binAvailable(r.bin); })
+);
 
 // Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
 const SCROLLBACK_MAX = 256 * 1024;
@@ -166,6 +242,15 @@ const IDLE_THRESHOLD_MS = 20000;
 
 // ── route handlers ────────────────────────────────────────────────────────────
 
+async function handleRunners(res) {
+  await runnersReady;
+  json(res, 200, {
+    runners: RUNNERS.map(r => ({
+      id: r.id, label: r.label, available: !!r.available, models: r.models,
+    })),
+  });
+}
+
 async function handleSessions(res) {
   const current = await gitModified();
   const now = Date.now();
@@ -180,6 +265,8 @@ async function handleSessions(res) {
       status:       s.status,
       pid:          s.proc ? s.proc.pid : null,
       cmd:          s.cmd,
+      runner:       s.runner || 'claude',
+      model:        s.model  || '',
       startTime:    s.startTime,
       clients:      s.wsClients.size,
       filesChanged: changed,
@@ -212,6 +299,26 @@ async function handleRun(req, res) {
     }
   }
 
+  // Runner + model selection — STRICT validation against the registry.
+  // Omitted runner → claude with no model flag (pre-registry behavior).
+  // An explicitly requested runner must exist AND be installed; a model must
+  // be in that runner's closed list. Everything is spawned as an argv array,
+  // so none of these values ever reach a shell.
+  await runnersReady;
+  const runnerId = (body.runner === undefined || body.runner === null || body.runner === '')
+    ? 'claude' : String(body.runner);
+  const runner = RUNNERS.find(r => r.id === runnerId);
+  if (!runner) { json(res, 400, { error: 'unknown runner: ' + runnerId }); return; }
+  if (body.runner !== undefined && body.runner !== null && body.runner !== '' && !runner.available) {
+    json(res, 400, { error: 'runner not installed: ' + runnerId });
+    return;
+  }
+  const model = (body.model === undefined || body.model === null) ? '' : String(body.model);
+  if (model && !runner.models.includes(model)) {
+    json(res, 400, { error: 'invalid model for ' + runnerId + ': ' + model });
+    return;
+  }
+
   if (!pty) {
     json(res, 503, { error: 'interactive terminal unavailable on this platform — run: pnpm add @lydell/node-pty' });
     return;
@@ -233,7 +340,7 @@ async function handleRun(req, res) {
 
   let proc;
   try {
-    proc = pty.spawn(CLAUDE_BIN, [cmd, '--dangerously-skip-permissions'], {
+    proc = pty.spawn(runner.bin, runner.args(model, cmd), {
       name: 'xterm-color',
       cols, rows,
       cwd: PROJECT_ROOT,
@@ -246,6 +353,7 @@ async function handleRun(req, res) {
 
   const s = {
     proc, status: 'running', cmd, cols, rows,
+    runner: runner.id, model,
     startTime:   new Date().toISOString(),
     lastDataAt:  Date.now(),
     scrollback:  '',
@@ -361,6 +469,7 @@ const server = http.createServer(async (req, res) => {
   const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
 
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
+  if (method === 'GET'  && pathOnly === '/api/runners')  { await handleRunners(res); return; }
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
@@ -406,6 +515,6 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('   Token:  ' + AUTH_TOKEN.slice(0, 8) + '... (redacted)');
   console.log('   PTY:    ' + (pty ? 'node-pty ready' : 'node-pty MISSING'));
   console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));
-  console.log('   POST /api/run   GET /api/sessions   WS /ws/<id>');
+  console.log('   POST /api/run   GET /api/sessions   GET /api/runners   WS /ws/<id>');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 });
