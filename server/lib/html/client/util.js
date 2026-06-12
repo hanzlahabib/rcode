@@ -99,6 +99,27 @@ export function chip(status) {
 }
 
 /**
+ * Props for a clickable card row that navigates to a hash route.
+ * Spread onto a list row (`<li ...${rowLink('tasks')}>`) to make it act like
+ * a link: pointer + keyboard activation and an accessible role. Pair with the
+ * `ovr-link` class for the hover/focus affordance.
+ *
+ * @param {string} hash — target hash route without the leading '#'.
+ * @returns {object} Preact props (role, tabindex, onClick, onKeyDown).
+ */
+export function rowLink(hash) {
+  const go = () => { location.hash = hash; };
+  return {
+    role: 'link',
+    tabindex: 0,
+    onClick: go,
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+    },
+  };
+}
+
+/**
  * Human-readable elapsed time since an ISO timestamp.
  * Ported from _orchElapsed() in client-main.js.
  *

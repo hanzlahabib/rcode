@@ -18,7 +18,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
-import { orchElapsed } from '../../util.js';
+import { orchElapsed, rowLink } from '../../util.js';
 import { openOrchPanel } from '../../orchestrator.js';
 import { pressable } from '../shared.js';
 import { TaskPipeline } from '../TaskPipeline.js';
@@ -43,7 +43,7 @@ function LiveRow({ session: s }) {
 export function InProgress() {
   const S = useStore();
   const items = (S.tasks && Array.isArray(S.tasks.inProgress)) ? S.tasks.inProgress : [];
-  const live = (S.activeSessions || []).filter(s => s.status === 'running');
+  const live = (S.activeSessions || []).filter(s => s.status === 'running' || s.status === 'blocked');
 
   return html`
     <section class="dash-card ip-card">
@@ -59,7 +59,7 @@ export function InProgress() {
           <ul class="ip-list">
             ${live.map(s => html`<${LiveRow} key=${'live-' + s.storyId} session=${s}/>`)}
             ${items.map((t, i) => html`
-              <li class="ip-row" key=${t.title + i}>
+              <li class="ip-row ovr-link" key=${t.title + i} ...${rowLink('tasks')}>
                 <span class="ip-title">${t.title}</span>
                 <${TaskPipeline} task=${t} mini=${true}/>
                 ${Number.isFinite(t.pct) ? html`<span class="ip-badge">${t.pct}%</span>` : null}

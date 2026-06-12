@@ -10,7 +10,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
-import { humanDate } from '../../util.js';
+import { humanDate, rowLink } from '../../util.js';
 
 // Map a free-form status string to a badge modifier class.
 function statusClass(status) {
@@ -42,7 +42,7 @@ export function RecentDecisions() {
         : html`
           <ul class="rd-list">
             ${decisions.map((d, i) => html`
-              <li class="rd-row" key=${d.title + i}>
+              <li class="rd-row ovr-link" key=${d.title + i} ...${rowLink('decisions')}>
                 <span class="rd-title">${d.title}</span>
                 ${d.status
                   ? html`<span class=${'rd-badge ' + statusClass(d.status)}>${d.status}</span>`

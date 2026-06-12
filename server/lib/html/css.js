@@ -4871,6 +4871,60 @@ summary:focus-visible,
 }
 .nb-toast-dismiss:hover { color: var(--text-primary); background: var(--bg-active); }
 /* ════════ Blocked-session notifications (l2-notify) (END) ════════ */
+/* ════════ Living overview cards (l3-cards) ════════ */
+/* Hover/keyboard affordance for clickable card rows + timeline segments.
+   Applied alongside existing row classes; self-contained — only .ovr-link
+   selectors live here. */
+.ovr-link {
+  cursor: pointer;
+  border-radius: var(--radius-2);
+  transition: background var(--t-fast) var(--ease);
+}
+.ovr-link:hover { background: var(--bg-hover); }
+.ovr-link:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+/* "Up Next" pill on the Current Phase card — amber, distinct from the
+   active-phase pill, so an upcoming phase never reads as in-flight. */
+.cp-pill--next {
+  color: var(--accent-amber);
+  border-color: var(--accent-amber);
+}
+/* Milestone outlook (Target Launch card without a configured launch_date). */
+.tl-outlook-name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+.tl-outlook {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.tl-outlook-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+}
+.tl-outlook-key { color: var(--text-muted); }
+.tl-outlook-val { color: var(--text-secondary); font-weight: 500; }
+.tl-outlook-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+.tl-outlook-hint code {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+}
+/* ════════ Living overview cards (END) ════════ */
 </style>`;
 }
 
