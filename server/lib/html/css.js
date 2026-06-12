@@ -2538,6 +2538,64 @@ footer {
 }
 .cp-done .cp-label,
 .cp-active .cp-label { color: var(--dash-text); }
+/* ════════════════════════════════════════════════════════════════════
+   Timeline card (.tl-*) — Overview Row 1 Card 3 (projected launch + chart)
+   ════════════════════════════════════════════════════════════════════ */
+.tl-card {
+  gap: 6px;
+}
+.tl-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tl-date {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--dash-teal);
+  margin: 0;
+}
+.tl-days {
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  margin: 0 0 4px 0;
+}
+.tl-chart {
+  width: 100%;
+  height: 88px;
+  display: block;
+  overflow: visible;
+}
+.tl-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.tl-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dash-text);
+  font-weight: 600;
+}
+.tl-dot-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dash-teal);
+  display: inline-block;
+}
+.tl-status-risk {
+  color: var(--dash-sev-medium);
+}
+.tl-status-risk .tl-dot-badge {
+  background: var(--dash-sev-medium);
+}
+.tl-note {
+  color: var(--dash-text-muted);
+}
 </style>`;
 }
 
