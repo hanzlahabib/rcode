@@ -9,7 +9,9 @@ name: dogfood
 #   #465 — workflows reference non-existent CLI subcommands (15 known, gate
 #          fails on any NEW drift beyond the tracked baseline)
 #
-# Designed to run in <30s. Zero deps — Node's built-ins + bash only.
+# Designed to run in <30s. The artifact-schema check shells out to
+# `node --test test/artifact-schema.test.cjs`, which requires devDependencies
+# (zod) — hence the install step (same rationale as test.yml, see #887).
 
 on:
   push:
@@ -27,10 +29,19 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: run dogfood checks
         run: bash scripts/dogfood-check.sh

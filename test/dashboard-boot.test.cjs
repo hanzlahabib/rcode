@@ -34,7 +34,10 @@ function spawnDashboard(port) {
   return proc;
 }
 
-function waitForReady(proc, timeoutMs = 5000) {
+// Generous timeouts: Windows CI runners (especially Node 24.x) take several
+// seconds for first scanState + listener bind — 3s request timeouts flaked
+// there while all other platforms passed (#889).
+function waitForReady(proc, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('dashboard did not start in time')), timeoutMs);
     proc.stdout.on('data', (buf) => {
@@ -53,7 +56,7 @@ function waitForReady(proc, timeoutMs = 5000) {
 
 function get(port, path) {
   return new Promise((resolve, reject) => {
-    const req = http.get({ host: '127.0.0.1', port, path, timeout: 3000 }, (res) => {
+    const req = http.get({ host: '127.0.0.1', port, path, timeout: 10000 }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString() }));
