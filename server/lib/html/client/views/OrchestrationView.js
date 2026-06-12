@@ -12,9 +12,9 @@
 
 import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
+import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning, mergeSessionsAndHistory } from '../orchestrator.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
-import { orchElapsed } from '../util.js';
+import { orchElapsed, humanDate } from '../util.js';
 import { Icon } from '../icons-client.js';
 
 // ── Session card ──────────────────────────────────────────────────────────────
@@ -152,6 +152,87 @@ function CommandRunner() {
   `;
 }
 
+// ── Run history panel ─────────────────────────────────────────────────────────
+
+function durationLabel(ms) {
+  if (!ms || !isFinite(ms) || ms <= 0) return '—';
+  if (ms < 60000) return Math.round(ms / 1000) + 's';
+  if (ms < 3600000) return Math.floor(ms / 60000) + 'm ' + Math.round((ms % 60000) / 1000) + 's';
+  return Math.floor(ms / 3600000) + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
+}
+
+function HistoryRow({ run }) {
+  return html`
+    <div class="hist-row" key=${run.storyId}>
+      <span class=${'term-status-dot ' + run.status}></span>
+      <span class="hist-row-id">${run.storyId}</span>
+      <span class="hist-row-cmd">${run.cmd}</span>
+      <span class="hist-row-duration"><${Icon} name="clock" size=${12}/> ${durationLabel(run.durationMs)}</span>
+      <span class="hist-row-status">${run.status}</span>
+    </div>
+  `;
+}
+
+const STATUS_ORDER = ['done', 'exited', 'stopped', 'error'];
+
+function HistoryPanel() {
+  const { activeSessions, history } = useStore();
+  const merged = mergeSessionsAndHistory(activeSessions, history);
+  const ended = merged.filter(r => r.status !== 'running');
+
+  if (ended.length === 0) {
+    return html`
+      <div class="hist-panel">
+        <div class="hist-panel-title">
+          <${Icon} name="history" size=${16}/> Run History
+        </div>
+        <div class="empty">No past runs yet.</div>
+      </div>
+    `;
+  }
+
+  // Group by status (STATUS_ORDER), then within each group by date label
+  const byStatus = new Map();
+  for (const status of STATUS_ORDER) byStatus.set(status, new Map());
+
+  for (const run of ended) {
+    const bucket = byStatus.get(run.status) || byStatus.get('error');
+    const dateKey = humanDate(run.endTime || run.startTime) || 'Unknown date';
+    if (!bucket.has(dateKey)) bucket.set(dateKey, []);
+    bucket.get(dateKey).push(run);
+  }
+
+  // Sort runs within each date group: newest first
+  for (const dateMap of byStatus.values()) {
+    for (const runs of dateMap.values()) {
+      runs.sort((a, b) => String(b.endTime || b.startTime || '').localeCompare(String(a.endTime || a.startTime || '')));
+    }
+  }
+
+  return html`
+    <div class="hist-panel">
+      <div class="hist-panel-title">
+        <${Icon} name="history" size=${16}/> Run History
+      </div>
+      ${STATUS_ORDER.map(status => {
+        const dateMap = byStatus.get(status);
+        if (!dateMap || dateMap.size === 0) return null;
+        return html`
+          <div class="hist-group" key=${status}>
+            <div class="hist-group-title">${status}</div>
+            ${[...dateMap.entries()].map(([dateKey, runs]) => html`
+              <div key=${dateKey}>
+                <div class="hist-date">${dateKey}</div>
+                ${runs.map(run => html`<${HistoryRow} key=${run.storyId} run=${run}/>`)}
+              </div>
+            `)}
+          </div>
+        `;
+      })}
+    </div>
+  `;
+}
+
 // ── Root view ─────────────────────────────────────────────────────────────────
 
 export function OrchestrationView() {
@@ -190,6 +271,8 @@ export function OrchestrationView() {
           `)}
         </div>
       `}
+
+      <${HistoryPanel}/>
     </div>
   `;
 }

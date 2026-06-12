@@ -53,6 +53,8 @@ let _state = {
   parseErrorDismissed:  false,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
+  // Persisted past runs (populated by startSessionsPoll → fetchHistory)
+  history:          [],
   // Orchestrator reachability: null = unknown (before first poll),
   // true = reachable, false = unreachable. Written by the 4s session poll.
   orchOnline:       null,

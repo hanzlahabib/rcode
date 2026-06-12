@@ -112,6 +112,42 @@ export function fetchSessions() {
   return fetchSessionsWithStatus().then(r => r.sessions);
 }
 
+/**
+ * GET /api/history — return the persisted run history array (or [] on error).
+ */
+export function fetchHistory() {
+  const tok = orchToken();
+  if (!tok) return Promise.resolve([]);
+  return fetch(ORCH_HTTP + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(r => {
+      if (r.status === 401) { refreshOrchToken(); return []; }
+      return r.json().then(d => (d && d.history) || []);
+    })
+    .catch(() => []);
+}
+
+/**
+ * Merge live sessions with persisted history, keyed on storyId.
+ * Live session fields win for most properties; durationMs and endTime are
+ * field-aware: the live record may not have them yet (session still running),
+ * so fall back to the history value if the live field is null/undefined.
+ */
+export function mergeSessionsAndHistory(live, hist) {
+  const byId = new Map();
+  for (const h of hist || []) byId.set(h.storyId, { ...h, source: 'history' });
+  for (const s of live || []) {
+    const h = byId.get(s.storyId) || {};
+    byId.set(s.storyId, {
+      ...h,
+      ...s,
+      source: 'live',
+      durationMs: s.durationMs ?? h.durationMs,
+      endTime:    s.endTime    ?? h.endTime,
+    });
+  }
+  return [...byId.values()];
+}
+
 /** True unless the last session poll found the orchestrator unreachable. */
 export function isOrchOnline() {
   return getState().orchOnline !== false;
@@ -195,14 +231,16 @@ export function stopSessionsPoll() {
 }
 
 function _poll() {
-  fetchSessionsWithStatus().then(({ ok, sessions }) => {
-    // Dedupe: skip the setState when neither the session list nor the
-    // orchestrator-online flag changed — avoids a full-app re-render per poll.
-    const json = JSON.stringify(sessions) + '|' + ok;
-    if (json === _lastSessionsJson) return;
-    _lastSessionsJson = json;
-    setState({ activeSessions: sessions, orchOnline: ok });
-  });
+  Promise.all([fetchSessionsWithStatus(), fetchHistory()])
+    .then(([{ ok, sessions }, history]) => {
+      // Dedupe: skip the setState when neither the session list, the
+      // orchestrator-online flag, nor the history changed — avoids a
+      // full-app re-render per poll tick.
+      const json = JSON.stringify(sessions) + '|' + ok + '|' + JSON.stringify(history);
+      if (json === _lastSessionsJson) return;
+      _lastSessionsJson = json;
+      setState({ activeSessions: sessions, history, orchOnline: ok });
+    });
 }
 
 // ── runAndOpenTerm convenience ────────────────────────────────────────────────
