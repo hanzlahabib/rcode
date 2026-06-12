@@ -21,6 +21,7 @@ import { Topbar } from './Topbar.js';
 import { XtermPanel } from './XtermPanel.js';
 import { OrchPanel } from './OrchPanel.js';
 import { RunnerPicker } from './RunnerPicker.js';
+import { CommandPalette } from './CommandPalette.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
 import { RoadmapView } from '../views/RoadmapView.js';
@@ -248,6 +249,20 @@ export function App() {
     startSessionsPoll();
   }, []);
 
+  // ---- Command palette ----
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen(o => !o);
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   // ---- View rendering ----
   const PreactView = PREACT_VIEWS[view] || null;
 
@@ -290,6 +305,7 @@ export function App() {
       <${XtermPanel} />
       <${OrchPanel} />
       <${RunnerPicker} />
+      <${CommandPalette} open=${paletteOpen} onClose=${() => setPaletteOpen(false)} />
     </div>
   `;
 }
