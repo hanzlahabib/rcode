@@ -4341,6 +4341,42 @@ summary:focus-visible,
   line-height: 16px;
 }
 /* ════════ RunnerPicker (END) ════════ */
+
+/* ── Status summary bar ────────────────────────────────────────── */
+.summary-bar {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.summary-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+.summary-group-label {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.summary-count-chip {
+  display: inline-flex;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-3);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-subtle);
+}
+.summary-count-chip.complete { color: var(--accent-green); }
+.summary-count-chip.active   { color: var(--accent-blue); }
+.summary-count-chip.blocked  { color: var(--accent-red); }
+.summary-count-chip.planned,
+.summary-count-chip.todo     { color: var(--text-secondary); }
 </style>`;
 }
 
