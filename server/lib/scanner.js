@@ -52,6 +52,38 @@ function parseSimpleYaml(text) {
 }
 
 /**
+ * Extract a YAML list value for `key` from frontmatter text.
+ * parseSimpleYaml is scalar-only and drops array values, so list keys
+ * (e.g. `depends_on: [31.1, 31.2]`) need this dedicated extractor.
+ * Handles inline arrays (`key: [a, b]`) and block lists (`key:` followed
+ * by `- item` lines). Returns [] when the key is absent or empty.
+ */
+function parseYamlList(text, key) {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const inlineRe = new RegExp('^' + key + ':\\s*\\[(.*)\\]\\s*$');
+  const blockRe  = new RegExp('^' + key + ':\\s*$');
+  for (let i = 0; i < lines.length; i++) {
+    const inline = lines[i].match(inlineRe);
+    if (inline) {
+      return inline[1].split(',')
+        .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(Boolean);
+    }
+    if (blockRe.test(lines[i])) {
+      const items = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        const m = lines[j].match(/^\s*-\s*(.+)$/);
+        if (!m) break;
+        items.push(m[1].trim().replace(/^['"]|['"]$/g, ''));
+      }
+      return items;
+    }
+  }
+  return [];
+}
+
+/**
  * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
  * which is the committed source of truth. state.json sprint/story records are
  * often incomplete (planner agents write SPRINT.md files without registering
@@ -69,21 +101,23 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
   const list = listCached || makeDirLister();
   const phasesDir = path.join(projectDir, '.planning', 'phases');
   const allEntries = list(phasesDir);
-  if (allEntries === null) return rawPhases;
+  // Every phase carries a dependsOn array (possibly empty) so consumers
+  // (Roadmap PhaseGraph) never branch on its presence.
+  if (allEntries === null) return rawPhases.map(p => ({ ...p, dependsOn: [] }));
   const dirs = allEntries.filter(d => d.isDirectory());
 
   return rawPhases.map(p => {
     const intId = String(p.id || p.number || '').split('.')[0];
-    if (!intId) return p;
+    if (!intId) return { ...p, dependsOn: [] };
     const dir = dirs.find(d => d.name.startsWith(intId + '-') ||
                                d.name.startsWith(intId.padStart(2, '0') + '-'));
-    if (!dir) return p;
+    if (!dir) return { ...p, dependsOn: [] };
 
     const fileEntries = list(path.join(phasesDir, dir.name));
-    if (fileEntries === null) return p;
+    if (fileEntries === null) return { ...p, dependsOn: [] };
     const files = fileEntries.map(e => e.name);
     const sprintFiles = files.filter(f => /-SPRINT\.md$/i.test(f)).sort();
-    if (!sprintFiles.length) return p;
+    if (!sprintFiles.length) return { ...p, dependsOn: [] };
 
     const phaseComplete = /complete|done/i.test(p.status || '');
     const sprints = sprintFiles.map(f => {
@@ -93,7 +127,9 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
       const text = safeReadText(path.join(phasesDir, dir.name, f)) || '';
 
       // Sprint goal: frontmatter `goal:`, else first line of <objective>.
-      const fm = parseSimpleYaml((text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '');
+      const fmText = (text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
+      const fm = parseSimpleYaml(fmText);
+      const dependsOn = parseYamlList(fmText, 'depends_on');
       let goal = fm.goal || '';
       if (!goal) {
         const obj = (text.match(/<objective>\s*([\s\S]*?)<\/objective>/) || [])[1] || '';
@@ -136,10 +172,21 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
         : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
         : 'planned';
 
-      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories };
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories, dependsOn };
     });
 
-    return { ...p, sprints };
+    // Phase-level depends_on: aggregate each sprint's dependsOn, resolve each
+    // sprint ID to its parent phase ID, drop same-phase deps (sibling sprints
+    // are not cross-phase dependencies), dedupe. Real frontmatter mixes ID
+    // forms — "31.2", "29-2", "34-1-SPRINT" — so the phase ID is the leading
+    // integer, not just the part before a dot.
+    const phaseDependsOn = [...new Set(
+      sprints.flatMap(s => s.dependsOn || [])
+        .map(d => (String(d).match(/^(\d+)/) || [])[1] || '')
+        .filter(d => d && d !== intId)
+    )];
+
+    return { ...p, sprints, dependsOn: phaseDependsOn };
   });
 }
 
