@@ -38,7 +38,7 @@ function effCol(task, activeSessions) {
 }
 
 // ---- Card component ----
-function KanbanCard({ task, col, onDragStart, onDragEnd }) {
+function KanbanCard({ task, col, orchDown, onDragStart, onDragEnd }) {
   const sid    = task.id || '';
   const c      = col;
   const isRunning = c === 'in_progress';
@@ -86,7 +86,9 @@ function KanbanCard({ task, col, onDragStart, onDragEnd }) {
       ${sid ? html`
         <div class="kanban-card-actions">
           ${canRun ? html`
-            <button class="kanban-run-btn" onClick=${handleRun}>▶ Run</button>
+            <button class="kanban-run-btn" disabled=${orchDown}
+              title=${orchDown ? 'Orchestrator unreachable' : 'Run ' + sid}
+              onClick=${handleRun}>▶ Run</button>
           ` : isRunning ? html`
             <button class="kanban-stop-btn" onClick=${handleStop}>■ Stop</button>
             <button class="kanban-view-btn" onClick=${handleView}>↗ View</button>
@@ -99,8 +101,19 @@ function KanbanCard({ task, col, onDragStart, onDragEnd }) {
   `;
 }
 
+/**
+ * Orchestrator status dot — reflects the 4s session-poll reachability.
+ * up (green pulse) / down (red) / neutral until the first poll lands.
+ */
+function OrchDot({ online }) {
+  const cls = 'orch-status-dot' + (online === false ? ' down' : online ? ' up' : '');
+  const label = online === false ? 'Orchestrator unreachable'
+    : online ? 'Orchestrator online' : 'Orchestrator status unknown';
+  return html`<span class=${cls} id="orch-dot" title=${label} role="img" aria-label=${label}></span>`;
+}
+
 // ---- Column component ----
-function KanbanColumn({ col, cards, onDragStart, onDragEnd, onDragOver, onDrop }) {
+function KanbanColumn({ col, cards, orchDown, onDragStart, onDragEnd, onDragOver, onDrop }) {
   return html`
     <div class=${'kanban-col ' + col.cssClass} data-col=${col.id}>
       <div class="kanban-col-head">
@@ -120,6 +133,7 @@ function KanbanColumn({ col, cards, onDragStart, onDragEnd, onDragOver, onDrop }
             key=${t.id || t.title}
             task=${t}
             col=${col.id}
+            orchDown=${orchDown}
             onDragStart=${e => onDragStart(e, t)}
             onDragEnd=${onDragEnd}
           />
@@ -131,8 +145,9 @@ function KanbanColumn({ col, cards, onDragStart, onDragEnd, onDragOver, onDrop }
 
 // ---- Root KanbanView ----
 export function KanbanView() {
-  const { phases, activeSessions, currentPhase, milestone } = useStore();
+  const { phases, activeSessions, currentPhase, milestone, orchOnline } = useStore();
   const tasks = allTasks(phases);
+  const orchDown = orchOnline === false;
 
   // ---- Local column state (visual DnD overrides) ----
   // Map<taskId, colId> — overrides the store-derived column for visual-only moves.
@@ -190,7 +205,7 @@ export function KanbanView() {
       <div class="view active" id="view-kanban">
         <div class="kanban-topbar">
           <div class="kanban-topbar-title">
-            <span class="orch-status-dot" id="orch-dot"></span>
+            <${OrchDot} online=${orchOnline} />
             Kanban
           </div>
           <div class="kanban-topbar-actions">
@@ -221,7 +236,7 @@ export function KanbanView() {
     <div class="view active" id="view-kanban">
       <div class="kanban-topbar">
         <div class="kanban-topbar-title">
-          <span class="orch-status-dot" id="orch-dot"></span>
+          <${OrchDot} online=${orchOnline} />
           Kanban
         </div>
         <div class="kanban-topbar-actions">
@@ -235,6 +250,7 @@ export function KanbanView() {
             key=${col.id}
             col=${col}
             cards=${buckets[col.id] || []}
+            orchDown=${orchDown}
             onDragStart=${handleDragStart}
             onDragEnd=${handleDragEnd}
             onDragOver=${handleDragOver}

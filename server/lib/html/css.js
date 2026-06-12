@@ -3466,14 +3466,12 @@ header.topbar {
   color: var(--dash-text);
 }
 
-/* Mobile: App.js toggles .sidebar-open on the sidebar and .active on
-   the backdrop, but the legacy media query only styles .open / .show
-   (which nothing sets) — wire up the real class names. Also let the
-   content column own the full height (legacy 44px first row squashed it). */
+/* Mobile: the content column owns the full height (legacy 44px first row
+   squashed it). Sidebar open/close uses the canonical .sidebar.open /
+   #sidebar-backdrop.show classes from the base mobile block — App.js
+   toggles those same names. */
 @media (max-width: 768px) {
   .app-shell { grid-template-rows: 1fr; }
-  .sidebar.sidebar-open { left: 0; }
-  #sidebar-backdrop.active { display: block; }
 }
 /* ============================================================
    TaskPipeline (tpipe-*) — per-task stage stepper
@@ -3552,6 +3550,96 @@ header.topbar {
 }
 .tpipe--mini .tpipe-line { width: 8px; height: 1.5px; }
 .tpipe--mini .tpipe-blocked { padding: 1px 5px; font-size: 9px; margin-left: 2px; }
+
+/* ════════════════════════════════════════════════════════════════════
+   R3 — accessibility baseline + failure visibility + mobile pass.
+   Owner: r3-access agent. Appended last so it wins ties.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Focus indicators — keyboard-only (:focus-visible) for all interactive
+   chrome. Both themes define --dash-teal, so the ring is visible on the
+   dark and light surfaces alike. */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--dash-teal, #2DD4BF);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Clickable rows/cards get the ring inside their own radius. */
+.item-clickable:focus-visible,
+.cmd-hint-item:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ── Disabled run buttons (orchestrator unreachable) ── */
+.card-run-btn:disabled,
+.kanban-run-btn:disabled,
+.cmd-runner-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── state.json parse-error banner (dismissible, role=alert) ── */
+.parse-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+  background: var(--accent-amber, #F59E0B);
+  color: var(--dash-ink, #06121F);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: 8px;
+}
+.banner-dismiss {
+  flex: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.banner-dismiss:hover { background: rgba(0,0,0,0.12); /* intentional: dim overlay on amber; alpha can't be a theme token */ }
+
+/* ── Orchestrator-down banner (Orchestration view) ── */
+.orch-down-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  margin: var(--space-3) 0;
+  background: color-mix(in srgb, var(--dash-sev-high, var(--accent-red)) 14%, transparent);
+  border: 1px solid var(--dash-sev-high, var(--accent-red));
+  color: var(--dash-text, var(--text-primary));
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* ── Mobile pass (≤768px) — redesigned chrome + overview grid ──
+   Cards already stack via the ≤1100px .dash-grid rule; this tightens
+   spacing and keeps the topbar on one row without horizontal scroll. */
+@media (max-width: 768px) {
+  .main-scroll { padding: 14px 12px; }
+  .dash-grid { gap: 14px; }
+  header { padding: 0 var(--space-4); }
+  .tb-greeting { min-width: 0; }
+  .tb-welcome { font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
+  .tb-actions { gap: 6px; }
+  .tb-btn--share { display: none; }
+  /* Slide-in sidebar sits above the backdrop; backdrop above content. */
+  .sidebar { z-index: 30; }
+  #sidebar-backdrop { z-index: 25; }
+}
 </style>`;
 }
 

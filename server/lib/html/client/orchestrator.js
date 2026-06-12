@@ -62,19 +62,33 @@ export function stopSession(storyId) {
 }
 
 /**
- * GET /api/sessions — return the sessions array (or [] on error).
+ * GET /api/sessions — resolve { ok, sessions }. ok=false means the
+ * orchestrator was unreachable (network failure / no token), which the
+ * session poll records as orchOnline so the UI can show a down state.
  */
-export function fetchSessions() {
+function fetchSessionsWithStatus() {
   const tok = orchToken();
-  if (!tok) return Promise.resolve([]);
+  if (!tok) return Promise.resolve({ ok: false, sessions: [] });
   return fetch(ORCH_HTTP + '/api/sessions', {
     headers: { 'Authorization': 'Bearer ' + tok },
   })
     .then(r => {
-      if (r.status === 401) { refreshOrchToken(); return []; }
-      return r.json().then(d => (d && d.sessions) || []);
+      if (r.status === 401) { refreshOrchToken(); return { ok: true, sessions: [] }; }
+      return r.json().then(d => ({ ok: true, sessions: (d && d.sessions) || [] }));
     })
-    .catch(() => []);
+    .catch(() => ({ ok: false, sessions: [] }));
+}
+
+/**
+ * GET /api/sessions — return the sessions array (or [] on error).
+ */
+export function fetchSessions() {
+  return fetchSessionsWithStatus().then(r => r.sessions);
+}
+
+/** True unless the last session poll found the orchestrator unreachable. */
+export function isOrchOnline() {
+  return getState().orchOnline !== false;
 }
 
 /**
@@ -149,8 +163,8 @@ export function stopSessionsPoll() {
 }
 
 function _poll() {
-  fetchSessions().then(sessions => {
-    setState({ activeSessions: sessions });
+  fetchSessionsWithStatus().then(({ ok, sessions }) => {
+    setState({ activeSessions: sessions, orchOnline: ok });
   });
 }
 
@@ -177,9 +191,12 @@ export function runAndOpenTerm(storyId, cmd, title) {
   });
 
   const tok = orchToken();
-  if (!tok) return;
+  if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
 
-  runSession(storyId, cmd).catch(err => console.error('[orchestrator] session op failed:', err.message));
+  runSession(storyId, cmd).catch(err => {
+    console.error('[orchestrator] session op failed:', err.message);
+    showToast('Could not reach orchestrator — session not started');
+  });
 }
 
 /**

@@ -427,20 +427,29 @@ function scanState(rcodeDir) {
   state.context = safeReadText(path.join(rcodeDir, 'context', 'active.md'))
     || safeReadText(path.join(projectDir, '.planning', 'CONTEXT.md'));
 
-  // Walk .planning/ for file tree
+  // Walk .planning/ for file tree.
+  // Guarded against symlink loops (realpath visited-set) and runaway depth —
+  // an unguarded recursion here would throw/hang inside the request handler.
   const planningDir = path.join(projectDir, '.planning');
-  function walkPlanning(dir, prefix) {
+  const MAX_WALK_DEPTH = 10; // .planning trees are ≤4 levels in practice
+  const visitedDirs = new Set();
+  function walkPlanning(dir, prefix, depth) {
+    if (depth > MAX_WALK_DEPTH) return;
+    let real;
+    try { real = fs.realpathSync(dir); } catch { return; }
+    if (visitedDirs.has(real)) return;
+    visitedDirs.add(real);
     for (const entry of listDir(dir)) {
       const full = path.join(dir, entry.name);
       const rel  = path.join(prefix, entry.name);
       if (entry.isDirectory()) {
-        walkPlanning(full, rel);
+        walkPlanning(full, rel, depth + 1);
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
         state.planningFiles.push({ path: rel, name: entry.name });
       }
     }
   }
-  if (fs.existsSync(planningDir)) walkPlanning(planningDir, '');
+  if (fs.existsSync(planningDir)) walkPlanning(planningDir, '', 0);
 
   // #12 — surface pending handoff (.rcode/HANDOFF.json) and active context
   // (.rcode/context/active.md) for the dashboard banner + memory-bank summary.

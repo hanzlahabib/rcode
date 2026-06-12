@@ -10,7 +10,7 @@
 import { html } from '../preact.js';
 import { useStore } from '../store.js';
 import { pct, humanDate, allSprints, allTasks } from '../util.js';
-import { CompletionRing, Breadcrumb, Tag, PhaseCard } from '../components/shared.js';
+import { CompletionRing, Breadcrumb, Tag, PhaseCard, pressable } from '../components/shared.js';
 import { runningTotal } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
 
@@ -116,7 +116,7 @@ export function MilestonesView({ subId }) {
     <div id="view-milestones" class="view active">
       <div class="view-title">Milestones</div>
       <div class="phase-list">
-        <div class="item item-clickable" onClick=${() => { location.hash = 'milestones/M1'; }}>
+        <div class="item item-clickable" ...${pressable(() => { location.hash = 'milestones/M1'; })}>
           <div style="display:flex;align-items:center;gap:var(--space-4);">
             <${CompletionRing} done=${done.length} total=${total.length}/>
             <div>

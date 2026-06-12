@@ -45,8 +45,15 @@ let _state = {
   refreshing:       false,
   offline:          false,
   lastRefresh:      null,
+  // state.json parse failure message (or null). Surfaced as a dismissible
+  // banner in App.js; parseErrorDismissed is session-local UI state.
+  rawParseError:        _seed.rawParseError || null,
+  parseErrorDismissed:  false,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
+  // Orchestrator reachability: null = unknown (before first poll),
+  // true = reachable, false = unreachable. Written by the 4s session poll.
+  orchOnline:       null,
   // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
   requestedFile:    null,
   // xterm terminal panel state (driven by orchestrator.js / XtermPanel.js)
