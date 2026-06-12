@@ -154,6 +154,30 @@ export function isOrchOnline() {
 }
 
 /**
+ * POST /api/reject — record a structured rejection reason for storyId.
+ * phase is optional. Returns the parsed JSON response.
+ */
+export function submitRejection(storyId, reason, phase) {
+  const tok = orchToken();
+  return fetch(ORCH_HTTP + '/api/reject', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId, reason, phase: phase || null }),
+  }).then(r => r.json());
+}
+
+/**
+ * GET /api/rejections — return the persisted rejections array (or [] on error).
+ */
+export function fetchRejections() {
+  const tok = orchToken();
+  if (!tok) return Promise.resolve([]);
+  return fetch(ORCH_HTTP + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(r => r.ok ? r.json().then(d => (d && d.rejections) || []) : [])
+    .catch(() => []);
+}
+
+/**
  * POST /api/clean-sessions — remove ended sessions.
  * olderThanDays = 0 removes all ended sessions; > 0 keeps recent ones.
  */
@@ -231,15 +255,20 @@ export function stopSessionsPoll() {
 }
 
 function _poll() {
-  Promise.all([fetchSessionsWithStatus(), fetchHistory()])
-    .then(([{ ok, sessions }, history]) => {
+  Promise.all([fetchSessionsWithStatus(), fetchHistory(), fetchRejections()])
+    .then(([{ ok, sessions }, history, rejections]) => {
+      // Merge any recorded rejection onto its matching session by storyId.
+      const byId = {};
+      for (const r of rejections) byId[r.storyId] = r;
+      const merged = sessions.map(s => byId[s.storyId] ? { ...s, rejection: byId[s.storyId] } : s);
+
       // Dedupe: skip the setState when neither the session list, the
       // orchestrator-online flag, nor the history changed — avoids a
       // full-app re-render per poll tick.
-      const json = JSON.stringify(sessions) + '|' + ok + '|' + JSON.stringify(history);
+      const json = JSON.stringify(merged) + '|' + ok + '|' + JSON.stringify(history);
       if (json === _lastSessionsJson) return;
       _lastSessionsJson = json;
-      setState({ activeSessions: sessions, history, orchOnline: ok });
+      setState({ activeSessions: merged, history, orchOnline: ok });
     });
 }
 
