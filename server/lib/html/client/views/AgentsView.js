@@ -1,128 +1,74 @@
 /**
- * AgentsView — Team roster with an agent detail drawer.
+ * AgentsView — Team roster: category sections of rich agent cards plus an
+ * agent detail drawer (components/AgentCard.js).
  *
  * Cards render from the client-side AGENTS roster (agents-data.js) plus a
- * one-shot /api/agents call that returns frontmatter metadata (model, tools)
- * per agent definition — small payload, so cards can show chips without
- * touching prompt bodies.
+ * one-shot /api/agents call that returns frontmatter metadata (description,
+ * model, tools) per agent definition — small payload, so cards can show
+ * summaries and chips without touching prompt bodies.
  *
- * Clicking a card opens a right-side drawer with the agent's FULL prompt:
- * the actual rcode/agents/<file> body fetched lazily through the existing
- * /api/file handler and rendered as markdown. Prompts are fetched one at a
- * time on click (never all at once) and cached per file for the session.
+ * Clicking a card opens the drawer with the agent's FULL prompt: the actual
+ * rcode/agents/<file> body fetched lazily through the existing /api/file
+ * handler and rendered as markdown. Prompts are fetched one at a time on
+ * click (never all at once) and cached per file for the session.
  */
 
-import { html, useState, useEffect, useCallback } from '../preact.js';
-import { renderMd } from '../util.js';
-import { pressable } from '../components/shared.js';
+import { html, useState, useEffect, useCallback, useMemo } from '../preact.js';
+import { AgentCard, AgentDrawer } from '../components/AgentCard.js';
 import { AGENTS } from '../agents-data.js';
 
-const REAL_AGENTS = AGENTS.filter(a => a.real);
-const AI_AGENTS   = AGENTS.filter(a => !a.real);
+// Category sections in display order. Roster `type` values not listed here
+// fall into Specialists so a future type can't silently drop agents.
+const SECTIONS = [
+  { label: 'Leadership',  types: ['leadership'] },
+  { label: 'Engineering', types: ['engineering'] },
+  { label: 'Product',     types: ['product'] },
+  { label: 'Design',      types: ['design'] },
+  { label: 'Quality',     types: ['quality'] },
+  { label: 'Specialists', types: ['support', 'system'] },
+];
+const KNOWN_TYPES = SECTIONS.flatMap(s => s.types);
+
+function agentsForSection(section) {
+  return AGENTS.filter(a =>
+    section.types.includes(a.type) ||
+    (section.label === 'Specialists' && !KNOWN_TYPES.includes(a.type))
+  );
+}
+
+function matchesFilter(agent, meta, filter) {
+  if (!filter) return true;
+  const haystack = [
+    agent.name, agent.role, agent.arabic, agent.type,
+    meta && meta.model, meta && meta.description, meta && (meta.tools || []).join(' '),
+  ].filter(Boolean).join(' ');
+  return haystack.toLowerCase().includes(filter.toLowerCase());
+}
 
 // Session-local prompt cache: file name -> raw markdown. Re-opening a card
 // renders from here instead of refetching.
 const promptCache = new Map();
 
-const MAX_CARD_TOOL_CHIPS = 4;
-
-// ---- Metadata chips (shared by card + drawer) ----
-function MetaChips({ meta, maxTools }) {
-  if (!meta) return null;
-  const tools = meta.tools || [];
-  const shown = maxTools ? tools.slice(0, maxTools) : tools;
-  const extra = tools.length - shown.length;
-  if (!meta.model && !shown.length) return null;
+// ---- Section: sticky header + card grid ----
+function AgentSection({ section, agents, metaByFile, onOpen }) {
+  if (!agents.length) return null;
   return html`
-    <div class="agent-chips">
-      ${meta.model ? html`<span class="agent-chip agent-chip--model">${meta.model}</span>` : null}
-      ${shown.map(t => html`<span class="agent-chip" key=${t}>${t}</span>`)}
-      ${extra > 0 ? html`<span class="agent-chip agent-chip--more">+${extra}</span>` : null}
-    </div>
-  `;
-}
-
-// ---- Single agent card ----
-function AgentCard({ agent, meta, onOpen }) {
-  return html`
-    <div class="agent-card" ...${pressable(() => onOpen(agent))}>
-      <div class="name">
-        ${agent.name}
-        ${agent.real ? html` <span class="real-badge">real</span>` : null}
-        ${' '}<span class="type-badge">${agent.type}</span>
+    <div class="agent-section">
+      <div class="agent-section-head">
+        ${section.label}
+        <span class="agent-section-count">${agents.length}</span>
       </div>
-      <div class="arabic">${agent.arabic}</div>
-      <span class="role-badge">${agent.role}</span>
-      <${MetaChips} meta=${meta} maxTools=${MAX_CARD_TOOL_CHIPS} />
-    </div>
-  `;
-}
-
-// ---- Agent group ----
-function AgentGroup({ label, agents, filter, metaByFile, onOpen }) {
-  const visible = agents.filter(a => {
-    if (!filter) return true;
-    const q = filter.toLowerCase();
-    const meta = a.file ? metaByFile[a.file] : null;
-    const haystack = [
-      a.name, a.role, a.arabic, a.type,
-      meta && meta.model, meta && (meta.tools || []).join(' '),
-    ].filter(Boolean).join(' ');
-    return haystack.toLowerCase().includes(q);
-  });
-  if (!visible.length) return null;
-  return html`
-    <div class="memory-group-header">${label} (${visible.length})</div>
-    <div class="agent-list">
-      ${visible.map(a => html`
-        <${AgentCard}
-          key=${a.name}
-          agent=${a}
-          meta=${a.file ? metaByFile[a.file] : null}
-          onOpen=${onOpen}
-        />
-      `)}
-    </div>
-  `;
-}
-
-// ---- Detail drawer ----
-function AgentDrawer({ agent, meta, prompt, onClose }) {
-  let body;
-  if (!agent.file) {
-    body = html`<div class="agent-drawer-empty">No prompt file on disk — this is a system entry without an agent definition.</div>`;
-  } else if (prompt.loading) {
-    body = html`
-      <div class="skeleton"></div>
-      <div class="agent-drawer-skeleton skeleton"></div>
-    `;
-  } else if (prompt.error) {
-    body = html`<div class="agent-drawer-error">${prompt.error}</div>`;
-  } else if (prompt.text) {
-    body = html`<div class="md-render" dangerouslySetInnerHTML=${{ __html: renderMd(prompt.text) }} />`;
-  } else {
-    body = null;
-  }
-
-  return html`
-    <div class="agent-drawer-backdrop" onClick=${onClose}></div>
-    <aside class="agent-drawer" role="dialog" aria-modal="true" aria-label="${agent.name} — full prompt">
-      <div class="agent-drawer-head">
-        <div>
-          <div class="agent-drawer-name">
-            ${agent.name}
-            <span class="agent-drawer-arabic">${agent.arabic}</span>
-            ${agent.real ? html`<span class="real-badge">real</span>` : null}
-            <span class="type-badge">${agent.type}</span>
-          </div>
-          <span class="role-badge">${agent.role}</span>
-          <${MetaChips} meta=${meta} />
-        </div>
-        <button class="agent-drawer-close" onClick=${onClose} aria-label="Close">×</button>
+      <div class="agent-grid">
+        ${agents.map(a => html`
+          <${AgentCard}
+            key=${a.name}
+            agent=${a}
+            meta=${a.file ? metaByFile[a.file] : null}
+            onOpen=${onOpen}
+          />
+        `)}
       </div>
-      ${agent.file ? html`<div class="agent-drawer-path">rcode/agents/${agent.file}</div>` : null}
-      <div class="agent-drawer-body">${body}</div>
-    </aside>
+    </div>
   `;
 }
 
@@ -142,7 +88,7 @@ export function AgentsView() {
         for (const a of (Array.isArray(list) ? list : [])) map[a.file] = a;
         setMetaByFile(map);
       })
-      .catch(() => { /* chips are progressive enhancement — cards still render */ });
+      .catch(() => { /* chips/summaries are progressive enhancement — cards still render */ });
   }, []);
 
   const openAgent = useCallback(async (agent) => {
@@ -183,10 +129,20 @@ export function AgentsView() {
     return () => document.removeEventListener('keydown', onKey);
   }, [selected, closeDrawer]);
 
+  const sections = useMemo(() =>
+    SECTIONS.map(s => ({
+      section: s,
+      agents: agentsForSection(s).filter(a =>
+        matchesFilter(a, a.file ? metaByFile[a.file] : null, filter)),
+    })),
+  [filter, metaByFile]);
+
+  const visibleCount = sections.reduce((n, s) => n + s.agents.length, 0);
+
   return html`
     <div class="view active" id="view-agents">
       <div class="view-title">Team</div>
-      <div class="filter-bar">
+      <div class="filter-bar agent-filter-bar">
         <input
           class="filter-input"
           type="text"
@@ -194,9 +150,19 @@ export function AgentsView() {
           value=${filter}
           onInput=${e => setFilter(e.target.value)}
         />
+        <span class="agent-count">${visibleCount} agent${visibleCount === 1 ? '' : 's'}</span>
       </div>
-      <${AgentGroup} label="Team" agents=${REAL_AGENTS} filter=${filter} metaByFile=${metaByFile} onOpen=${openAgent} />
-      <${AgentGroup} label="AI Agents" agents=${AI_AGENTS} filter=${filter} metaByFile=${metaByFile} onOpen=${openAgent} />
+      ${visibleCount === 0
+        ? html`<div class="empty">No agents match “${filter}”.</div>`
+        : sections.map(({ section, agents }) => html`
+            <${AgentSection}
+              key=${section.label}
+              section=${section}
+              agents=${agents}
+              metaByFile=${metaByFile}
+              onOpen=${openAgent}
+            />
+          `)}
       ${selected ? html`
         <${AgentDrawer}
           agent=${selected}

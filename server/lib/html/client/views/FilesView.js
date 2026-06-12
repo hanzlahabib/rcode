@@ -107,10 +107,11 @@ export function FilesView() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Agent-jump bridge: requestedFile set by AgentsView
+  // Agent-jump bridge: the agent drawer's "View file in Files" sets
+  // requestedFile to a project-relative path — open it in the reader.
   useEffect(() => {
     if (!requestedFile) return;
-    setFilter(requestedFile);
+    setSelected({ path: requestedFile, label: requestedFile.split('/').pop() });
     // Clear the bridge field so this doesn't re-trigger
     setState({ requestedFile: null });
   }, [requestedFile]);

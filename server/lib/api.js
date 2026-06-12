@@ -202,26 +202,38 @@ function handleApiMemory(req, res, rcodeDir) {
   res.end(JSON.stringify(memory));
 }
 
-// Parse the scalar keys we surface as card chips out of an agent definition's
-// YAML frontmatter. Deliberately not a YAML parser: only top-level
-// `key: value` scalar lines are read, so multi-line blocks (description: |)
-// are skipped without tracking indentation.
+// Parse the keys we surface on agent cards out of an agent definition's
+// YAML frontmatter. Deliberately not a YAML parser: top-level `key: value`
+// scalar lines are read directly; for `description` (usually a `|` block
+// scalar) the first two indented lines are captured as a card-sized summary.
 function parseAgentFrontmatter(raw) {
-  const meta = { name: null, model: null, tools: [], color: null };
+  const meta = { name: null, model: null, tools: [], color: null, description: null };
   if (!raw.startsWith('---')) return meta;
   const end = raw.indexOf('\n---', 3);
   if (end === -1) return meta;
+  let inDescription = false;
+  const descLines = [];
   for (const line of raw.slice(3, end).split('\n')) {
     const m = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
-    if (!m) continue;
-    const key = m[1].toLowerCase();
-    const value = m[2].trim();
-    if (!value || value === '|' || value === '>') continue;
-    if (key === 'name')  meta.name  = value;
-    if (key === 'model') meta.model = value;
-    if (key === 'color') meta.color = value;
-    if (key === 'tools') meta.tools = value.split(',').map(t => t.trim()).filter(Boolean);
+    if (m) {
+      inDescription = false;
+      const key = m[1].toLowerCase();
+      const value = m[2].trim();
+      if (key === 'description') {
+        if (value && value !== '|' && value !== '>') descLines.push(value);
+        else inDescription = true;
+        continue;
+      }
+      if (!value || value === '|' || value === '>') continue;
+      if (key === 'name')  meta.name  = value;
+      if (key === 'model') meta.model = value;
+      if (key === 'color') meta.color = value;
+      if (key === 'tools') meta.tools = value.split(',').map(t => t.trim()).filter(Boolean);
+    } else if (inDescription && descLines.length < 2 && /^\s+\S/.test(line)) {
+      descLines.push(line.trim());
+    }
   }
+  meta.description = descLines.join(' ') || null;
   return meta;
 }
 

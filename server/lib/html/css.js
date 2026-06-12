@@ -3758,28 +3758,171 @@ summary:focus-visible,
   z-index: 221;
 }
 /* ════════════════════════════════════════════════════════════════════
-   AGENTS VIEW v2 — card chips + agent detail drawer (appended block)
-   Theme variables only — valid in both dark and [data-theme=light].
+   AGENTS VIEW v2 — sectioned card grid + agent detail drawer
+   (appended block — theme variables only, valid in dark and
+   [data-theme=light]. Per-role color comes from --agent-accent, set by
+   the agent-accent--<type> variants on the card/drawer root.)
    ════════════════════════════════════════════════════════════════════ */
-.agent-card { cursor: pointer; }
-/* Role rendered as a badge (replaces the plain .role text line). */
+
+/* Per-role accent variants — hue tokens are theme-stable in both modes. */
+.agent-accent--leadership  { --agent-accent: var(--accent-primary); }
+.agent-accent--engineering { --agent-accent: var(--accent-green); }
+.agent-accent--product     { --agent-accent: var(--accent-blue); }
+.agent-accent--design      { --agent-accent: var(--violet); }
+.agent-accent--quality     { --agent-accent: var(--accent-amber); }
+.agent-accent--support     { --agent-accent: var(--dash-teal); }
+.agent-accent--system      { --agent-accent: var(--dash-sev-low); }
+
+/* ── Search bar (same chrome as Files) + result count ── */
+.agent-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.agent-count {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Category sections with sticky headers ── */
+.agent-section-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  margin-top: var(--space-4);
+  background: var(--bg-page);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.agent-section-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ── Card grid ── */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-3);
+}
+
+/* ── Card — overrides the base .agent-card block: hover lift + accent ── */
+.agent-card {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease),
+              border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.30); /* intentional: shadows stay dark in both themes, like --shadow-lg */
+  border-color: color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 45%, var(--border-default));
+}
+.agent-card:focus-visible {
+  outline: none;
+  border-color: var(--agent-accent, var(--accent-primary));
+}
+.agent-card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.agent-card-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.agent-card-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.006em;
+}
+.agent-card-arabic {
+  align-self: flex-start;
+  font-size: var(--text-md);
+  color: color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 75%, var(--text-tertiary));
+  line-height: 1.2;
+}
+.agent-card-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-2xs);
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/* ── Avatar circle with initials ── */
+.agent-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 16%, transparent);
+  color: var(--agent-accent, var(--accent-primary));
+  border: 1px solid color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 32%, transparent);
+}
+.agent-avatar--lg {
+  width: 44px;
+  height: 44px;
+  font-size: var(--text-sm);
+}
+
+/* ── Role badge — tinted by the per-role accent ── */
 .role-badge {
   display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--text-2xs);
   font-weight: 500;
   padding: 1px 6px;
   border-radius: var(--radius-1);
-  background: var(--accent-bg);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 12%, transparent);
+  color: color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 80%, var(--text-primary));
+  border: 1px solid color-mix(in srgb, var(--agent-accent, var(--accent-primary)) 28%, transparent);
   letter-spacing: -0.006em;
 }
-/* Frontmatter chips — model + tools, shared by cards and the drawer head. */
+
+/* ── Frontmatter chips — model + tools, shared by cards and drawer ── */
 .agent-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
 }
 .agent-chip {
   font-size: var(--text-2xs);
@@ -3797,7 +3940,7 @@ summary:focus-visible,
 }
 .agent-chip--more { color: var(--text-muted); }
 
-/* Detail drawer — fixed right panel above the mobile sidebar (z 30). */
+/* ── Detail drawer — fixed right panel above the mobile sidebar (z 30) ── */
 .agent-drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -3915,10 +4058,17 @@ summary:focus-visible,
 .agent-drawer-head {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-5) var(--space-3);
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
+}
+.agent-drawer-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
 }
 .agent-drawer-name {
   display: flex;
@@ -3928,11 +4078,10 @@ summary:focus-visible,
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: var(--space-2);
 }
 .agent-drawer-arabic {
   font-size: var(--text-md);
-  color: var(--accent-primary);
+  color: var(--agent-accent, var(--accent-primary));
   font-weight: 400;
 }
 .agent-drawer-close {
@@ -3955,14 +4104,52 @@ summary:focus-visible,
   color: var(--text-primary);
   border-color: var(--border-default);
 }
-.agent-drawer-path {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  color: var(--text-muted);
+
+/* Meta row — file path + copy + jump-to-Files actions */
+.agent-drawer-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-elev-2);
 }
+.agent-drawer-meta-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+.agent-drawer-btn {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-size: var(--text-2xs);
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.agent-drawer-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.agent-drawer-btn--link {
+  color: var(--accent-hover);
+  border-color: var(--accent-border);
+}
+.agent-drawer-btn--link:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
 .agent-drawer-body {
   flex: 1;
   min-height: 0;
