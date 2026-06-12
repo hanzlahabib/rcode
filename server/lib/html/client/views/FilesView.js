@@ -4,9 +4,14 @@
  * On mount: fetches /api/files to build the grouped file tree.
  * Clicking a file: fetches /api/file?path=... and renders markdown via the
  * global `marked` CDN lib (stays a CDN global — unchanged from legacy).
+ *
+ * Agent-jump bridge: the agent drawer's "View file in Files" sets the store
+ * field `requestedFile` to a project-relative .md path; FilesView loads that
+ * file directly on arrival, then clears the field so it doesn't re-trigger.
  */
 
 import { html, useState, useEffect, useCallback } from '../preact.js';
+import { useStore, setState } from '../store.js';
 import { showToast } from '../components/shared.js';
 import { renderMd } from '../util.js';
 
@@ -122,6 +127,8 @@ function FileContent({ path, html: htmlContent, loading, error }) {
 
 // ---- Root FilesView ----
 export function FilesView() {
+  const { requestedFile } = useStore();
+
   const [groups, setGroups]         = useState([]);
   const [loading, setLoading]       = useState(true);
   const [filter, setFilter]         = useState('');
@@ -156,6 +163,14 @@ export function FilesView() {
       setFileContent({ html: null, loading: false, error: 'Network error.' });
     }
   }, []);
+
+  // Agent-jump bridge: open the file requested by the agent drawer.
+  useEffect(() => {
+    if (!requestedFile) return;
+    loadFile({ path: requestedFile });
+    // Clear the bridge field so this doesn't re-trigger
+    setState({ requestedFile: null });
+  }, [requestedFile, loadFile]);
 
   return html`
     <div class="view active" id="view-files">
