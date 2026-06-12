@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-12T19:02:41.101Z",
+  "updated": "2026-06-12T19:07:34.360Z",
   "current_phase": "status-summary-bar-with-multi-attribute-filtering",
   "current_plan": 4,
   "model_profile": "balanced",
@@ -940,7 +940,15 @@
       "status_updated": "2026-05-16T12:26:35.245Z"
     }
   ],
-  "executions": [],
+  "executions": [
+    {
+      "plan": "34-1",
+      "tasks": 3,
+      "duration_ms": null,
+      "commit_hash": "fe5a042",
+      "committed_at": "2026-06-12T19:02:45.800Z"
+    }
+  ],
   "decisions": [
     {
       "summary": "test A — cross-project memory from rihal-code",
