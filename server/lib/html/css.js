@@ -2382,6 +2382,8 @@ footer {
 .ip-head {
 /* ── Blockers card (Row 2, Card 3) ───────────────────────────────── */
 .bk-head {
+/* ── Dashboard redesign — Recent Decisions (Row 3, Card 1) ───────── */
+.rd-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2407,6 +2409,9 @@ footer {
   background: none;
   border: none;
   padding: 0;
+.rd-viewall {
+  background: none;
+  border: none;
   color: var(--dash-teal);
   font-size: 12px;
   font-weight: 600;
@@ -2414,6 +2419,10 @@ footer {
 }
 .bk-viewall:hover { text-decoration: underline; }
 .bk-list {
+  padding: 0;
+}
+.rd-viewall:hover { text-decoration: underline; }
+.rd-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -2512,6 +2521,25 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+.rd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dash-border);
+}
+.rd-row:last-child { border-bottom: none; }
+.rd-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--dash-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rd-badge {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
@@ -2685,6 +2713,74 @@ footer {
 .ip-title {
   flex: 1 1 auto;
   min-width: 0;
+  white-space: nowrap;
+}
+.rd-badge--approved {
+  color: var(--dash-teal);
+  background: rgba(45, 212, 191, 0.12);
+}
+.rd-badge--rejected {
+  color: var(--dash-sev-high);
+  background: rgba(248, 113, 113, 0.12);
+}
+.rd-badge--proposed {
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+}
+.rd-date {
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Dashboard redesign — Progress Timeline (Row 3, Card 2) ──────── */
+.pt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pt-viewall {
+  background: none;
+  border: none;
+  color: var(--dash-teal);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.pt-viewall:hover { text-decoration: underline; }
+.pt-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dash-text-muted);
+  padding: 0 2px;
+}
+.pt-tick { white-space: nowrap; }
+.pt-track {
+  display: flex;
+  gap: 6px;
+}
+.pt-seg {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dash-border);
+  border-top: 3px solid var(--dash-sev-low);
+  background: rgba(255, 255, 255, 0.02);
+}
+.pt-seg--done   { border-top-color: var(--dash-teal); }
+.pt-seg--active { border-top-color: var(--dash-purple); }
+.pt-seg--todo   { border-top-color: var(--dash-sev-low); }
+.pt-seg-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dash-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2729,6 +2825,29 @@ footer {
 .bk-pill.bk-sev-low {
   background: rgba(156, 163, 175, 0.12);
   border-color: rgba(156, 163, 175, 0.35);
+.pt-seg-range {
+  font-size: 11px;
+  color: var(--dash-text-muted);
+}
+.pt-seg-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  align-self: flex-start;
+  color: var(--dash-sev-low);
+  background: rgba(156, 163, 175, 0.14);
+}
+.pt-seg--done .pt-seg-badge {
+  color: var(--dash-teal);
+  background: rgba(45, 212, 191, 0.12);
+}
+.pt-seg--active .pt-seg-badge {
+  color: var(--dash-purple);
+  background: rgba(167, 139, 250, 0.12);
+}
+@media (max-width: 700px) {
+  .pt-track { flex-direction: column; }
 }
 </style>`;
 }
