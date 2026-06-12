@@ -4561,6 +4561,92 @@ summary:focus-visible,
   font-size: var(--text-sm);
 }
 /* ════════ Command palette (END) ════════ */
+
+/* ── Reject dialog ── */
+.reject-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reject-dialog {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-5);
+  width: min(480px, 90vw);
+}
+.reject-dialog-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+.reject-dialog-input {
+  width: 100%;
+  min-height: 96px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  padding: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  resize: vertical;
+  box-sizing: border-box;
+}
+.reject-dialog-input:focus { outline: none; border-color: var(--accent-primary); }
+.reject-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.reject-cancel {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--space-4);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.reject-cancel:hover { background: var(--bg-hover); color: var(--text-primary); }
+.reject-submit {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--space-4);
+  background: transparent;
+  border: 1px solid rgba(255,107,107,0.4);
+  border-radius: var(--radius-3);
+  color: #ff6b6b;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+}
+.reject-submit:hover:not(:disabled) { background: rgba(255,107,107,0.12); }
+.reject-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.orch-card-rejection {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--accent-red);
+  border-left: 2px solid var(--accent-red);
+  padding-left: var(--space-2);
+}
+/* ── Reject dialog (END) ── */
 </style>`;
 }
 
