@@ -10,7 +10,9 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, allSprints, sprintHints } from '../util.js';
+import { pct, humanDate, allSprints, sprintHints, chip } from '../util.js';
+import { StatusSummaryBar } from '../components/StatusSummaryBar.js';
+import { FilterChips } from '../components/FilterChips.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
@@ -113,7 +115,16 @@ function SprintDetail({ sprint: s, S }) {
   `;
 }
 
-export function SprintsView({ subId }) {
+/** Map a phase id to its milestone bucket (M1 = 1-19, M2 = 20-33, M3 = 34+). */
+function phaseMilestone(id) {
+  const n = parseInt(id, 10);
+  if (n >= 1  && n <= 19) return 'M1';
+  if (n >= 20 && n <= 33) return 'M2';
+  if (n >= 34)            return 'M3';
+  return '';
+}
+
+export function SprintsView({ subId, filters }) {
   const S = useStore();
   const sprints = allSprints(S.phases || []);
   const [filter, setFilter] = useState('');
@@ -136,6 +147,25 @@ export function SprintsView({ subId }) {
   }
 
   // List mode
+  const f = filters || { status: '', milestone: '', date: '' };
+
+  // Build option arrays for FilterChips
+  const seenStatus = new Set();
+  for (const s of sprints) {
+    const cls = chip(s.status).cls;
+    if (cls) seenStatus.add(cls);
+  }
+  const statusOptions    = [...seenStatus].map(v => ({ value: v, label: v }));
+  const milestoneOptions = [
+    { value: 'M1', label: 'M1' },
+    { value: 'M2', label: 'M2' },
+    { value: 'M3', label: 'M3' },
+  ];
+  const dateOptions = [
+    { value: 'has-completed', label: 'Completed'   },
+    { value: 'no-completed',  label: 'In progress' },
+  ];
+
   const curSp = sprints.find(sp => sp.id === S.currentSprint);
   const slHints = [
     ['/rcode-sprint-planning','Plan a new sprint'],
@@ -147,7 +177,7 @@ export function SprintsView({ subId }) {
   }
 
   const q = filter.toLowerCase();
-  const filtered = q
+  let filtered = q
     ? sprints.filter(s =>
         String(s.id).includes(q) ||
         (s.goal || '').toLowerCase().includes(q) ||
@@ -155,9 +185,21 @@ export function SprintsView({ subId }) {
       )
     : sprints;
 
+  if (f.status)    filtered = filtered.filter(s => chip(s.status).cls === f.status);
+  if (f.milestone) filtered = filtered.filter(s => phaseMilestone(s.phaseId) === f.milestone);
+  if (f.date === 'has-completed') filtered = filtered.filter(s => !!s.completed_at);
+  if (f.date === 'no-completed')  filtered = filtered.filter(s => !s.completed_at);
+
   return html`
     <div id="view-sprints" class="view active">
       <div class="view-title">Sprints</div>
+      <${StatusSummaryBar}/>
+      <${FilterChips}
+        filters=${f}
+        statusOptions=${statusOptions}
+        milestoneOptions=${milestoneOptions}
+        dateOptions=${dateOptions}
+      />
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter…"
           value=${filter} onInput=${e => setFilter(e.target.value)}/>
