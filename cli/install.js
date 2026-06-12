@@ -59,6 +59,11 @@ const os = require('os');
 // Ctrl+C mid-write and malicious symlink-traversal during dedup/cleanup.
 const { writeFileAtomic, safeRmSync } = require('./lib/fsutil.cjs');
 
+// HOME-aware home resolution (#889) — os.homedir() ignores a stubbed HOME on
+// Windows (it reads USERPROFILE), so HOME-isolated tests and CI leaked global
+// installs (~/.rcode, ~/.codex, ~/.gemini) into the real profile dir there.
+const { homedir } = require('./lib/homedir.cjs');
+
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
 const { createSpinner } = require('nanospinner');
@@ -247,7 +252,7 @@ function parseArgs(argv) {
   // project directory wrote rcode artifacts to that project, not to the user's
   // home where Claude Code reads global commands from.
   if (opts.global && !opts.targetProvided) {
-    opts.target = os.homedir();
+    opts.target = homedir();
   }
   // Issue #821/#832: pnpm workspace anchor.
   // When `pnpm add -D @hanzlaa/rcode` runs inside a workspace member,
@@ -386,7 +391,7 @@ function detectIdeSignals(target) {
   if (fs.existsSync(path.join(target, '.antigravity'))) signals.antigravity = true;
   if (fs.existsSync(path.join(target, '.windsurf'))) signals.windsurf = true;
   // 2. User-level config dirs
-  const home = os.homedir();
+  const home = homedir();
   if (fs.existsSync(path.join(home, '.claude'))) signals.claude = true;
   if (fs.existsSync(path.join(home, '.cursor'))) signals.cursor = true;
   if (fs.existsSync(path.join(home, '.config', 'Cursor'))) signals.cursor = true;
@@ -1094,7 +1099,7 @@ function installSkills(packageRoot, target, options = {}) {
   // prefix, Claude Code reads from BOTH global and project, showing every
   // /rcode-* twice in the slash picker. Skip the project copy for any rcode-*
   // skill that already lives in the global skills dir.
-  const globalSkillsDir = path.join(os.homedir(), '.claude', 'skills');
+  const globalSkillsDir = path.join(homedir(), '.claude', 'skills');
   const globalRcodeSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
     ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rcode-')))
     : new Set();
@@ -1467,8 +1472,8 @@ function generateAgentManifest(plan, target) {
   // Also scan rcode/agents/ in SOURCE_ROOT as a last-resort fallback so the
   // manifest is never empty when the package itself ships agent definitions.
   const extraScans = [
-    path.join(os.homedir(), '.claude', 'agents'),
-    path.join(os.homedir(), '.rcode', 'agents'),
+    path.join(homedir(), '.claude', 'agents'),
+    path.join(homedir(), '.rcode', 'agents'),
   ];
   // Final fallback: scan the package source itself.
   try {
@@ -1944,7 +1949,7 @@ function acquireInstallLock(target) {
 // router script to ~/.rcode/bin/. A fixed home-dir location lets the hook read
 // commands regardless of the user's cwd. Idempotent (plain overwrite).
 function installSlashRouterCommands(opts) {
-  const home = os.homedir();
+  const home = homedir();
   const cmdDestDir = path.join(home, '.rcode', 'slash-commands');
   const binDestDir = path.join(home, '.rcode', 'bin');
   ensureDir(cmdDestDir);
@@ -1971,7 +1976,7 @@ function installSlashRouterCommands(opts) {
 // The absolute command a hook entry runs. Matched by substring for idempotency
 // and for removal on uninstall — keep the basename stable.
 function slashRouterHookCommand() {
-  return `node "${path.join(os.homedir(), '.rcode', 'bin', 'rcode-slash-router.cjs')}"`;
+  return `node "${path.join(homedir(), '.rcode', 'bin', 'rcode-slash-router.cjs')}"`;
 }
 
 // Merge a prompt-submit hook entry into an existing CLI hooks JSON file without
@@ -2011,14 +2016,14 @@ function mergeSlashRouterHook(jsonPath, eventKey, command, label) {
 // Codex: ~/.codex/hooks.json, event UserPromptSubmit.
 function installCodexSlashRouterHook(opts) {
   installSlashRouterCommands(opts);
-  const jsonPath = path.join(os.homedir(), '.codex', 'hooks.json');
+  const jsonPath = path.join(homedir(), '.codex', 'hooks.json');
   mergeSlashRouterHook(jsonPath, 'UserPromptSubmit', slashRouterHookCommand(), 'Codex');
 }
 
 // Antigravity: ~/.gemini/antigravity/settings.json, event UserPrompt.
 function installAntigravitySlashRouterHook(opts) {
   installSlashRouterCommands(opts);
-  const jsonPath = path.join(os.homedir(), '.gemini', 'antigravity', 'settings.json');
+  const jsonPath = path.join(homedir(), '.gemini', 'antigravity', 'settings.json');
   mergeSlashRouterHook(jsonPath, 'UserPrompt', slashRouterHookCommand(), 'Antigravity');
 }
 
@@ -2450,9 +2455,9 @@ async function installInner(opts) {
   // skip writing agents/commands to the project's .claude/ directory. Without this,
   // running `npx rcode install` in the home dir AND then in a project creates two sets
   // of identical files — Claude Code shows both as duplicate slash commands.
-  const globalClaudeCommands = path.join(os.homedir(), '.claude', 'commands');
+  const globalClaudeCommands = path.join(homedir(), '.claude', 'commands');
   const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
-  const isProjectInstall = opts.target !== os.homedir();
+  const isProjectInstall = opts.target !== homedir();
   // Run dedup even when force:true — only forceOverwrite skips it.
   if (isProjectInstall && !opts.forceOverwrite) {
     try {
@@ -2634,7 +2639,7 @@ async function installInner(opts) {
   }
 
   // ~/.rcode/agents/ global agents directory
-  const globalAgentsDir = path.join(os.homedir(), '.rcode', 'agents');
+  const globalAgentsDir = path.join(homedir(), '.rcode', 'agents');
   ensureDir(globalAgentsDir);
 
   // Issue #702: files-manifest.csv used to be written here, BEFORE
@@ -2819,9 +2824,9 @@ async function installInner(opts) {
     // the project skills folder may have only sidebar stubs while ~/.claude/
     // has the real skills — health check should see those.
     if (agentCount === 0 || commandCount === 0 || skillsInstalled < 20) {
-      const homeAgents = path.join(os.homedir(), '.claude/agents');
-      const homeCommands = path.join(os.homedir(), '.claude/commands');
-      const homeSkills = path.join(os.homedir(), '.claude/skills');
+      const homeAgents = path.join(homedir(), '.claude/agents');
+      const homeCommands = path.join(homedir(), '.claude/commands');
+      const homeSkills = path.join(homedir(), '.claude/skills');
       if (agentCount === 0 && fs.existsSync(homeAgents)) {
         // #669 — count both rcode-* and rcode-* prefixes; missing rcode-
         // branch produced "Agents: 0" alongside "Skills: 120".
