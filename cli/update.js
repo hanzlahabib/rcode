@@ -34,6 +34,8 @@ const { spawnSync } = require('child_process');
 const clack = require('@clack/prompts');
 const { PromptAbortError } = require('./lib/prompts.cjs');
 const { writeFileAtomic } = require('./lib/fsutil.cjs');
+// HOME-aware home resolution (#889): os.homedir() ignores HOME on Windows.
+const { homedir } = require('./lib/homedir.cjs');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const install = require('./install');
 
@@ -102,8 +104,7 @@ function detectInstalledEditors(cwd) {
   // .rcode/config.yaml as the canonical signal — if config exists, the
   // project ran rcode install at least once for claude. The presence of
   // any commands/agents/skills then becomes secondary evidence.
-  const os = require('os');
-  const homeSkills = path.join(os.homedir(), '.claude/skills');
+  const homeSkills = path.join(homedir(), '.claude/skills');
   const projectClaude = (
     (fs.existsSync(path.join(cwd, '.claude/skills')) &&
       fs.readdirSync(path.join(cwd, '.claude/skills')).some(n => n.startsWith('rcode-'))) ||

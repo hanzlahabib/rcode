@@ -20,9 +20,12 @@
 'use strict';
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+// HOME-aware home resolution (#889) — os.homedir() ignores a stubbed HOME
+// on Windows, so tests pointing HOME at a temp dir still scanned the real
+// profile dir there (and tripped over real ~/.rcode state).
+const { homedir } = require('./lib/homedir.cjs');
 
 function exists(p) {
   try { fs.accessSync(p); return true; } catch { return false; }
@@ -37,7 +40,7 @@ function readDirSafe(p) {
  * Returns a list of { manager, dir } — dir may not exist.
  */
 function getGlobalNodeModulesDirs() {
-  const home = os.homedir();
+  const home = homedir();
   const candidates = [];
 
   // npm — npm root -g resolves to the active node version's lib/node_modules.
@@ -106,7 +109,7 @@ function findRcodePackages(globalNodeModules) {
  * Resolve global bin directories where rcode/rcode/rcode may live.
  */
 function getGlobalBinDirs() {
-  const home = os.homedir();
+  const home = homedir();
   const dirs = new Set();
 
   // npm prefix bin
@@ -214,7 +217,7 @@ function findClaudeArtifacts(claudeDir) {
 }
 
 function buildPlan({ includePlanning }) {
-  const home = os.homedir();
+  const home = homedir();
   const cwd = process.cwd();
   const plan = {
     packages: [],
@@ -244,6 +247,8 @@ function buildPlan({ includePlanning }) {
   plan.globalClaude = findClaudeArtifacts(path.join(home, '.claude'));
 
   // Global state (~/.rcode/)
+  // #889: was `= globalRcode` (undefined) — a ReferenceError that only fired
+  // when ~/.rcode existed, crashing every dry-run on machines with global state.
   const globalrcode = path.join(home, '.rcode');
   if (exists(globalrcode)) plan.globalrcode = globalrcode;
 
