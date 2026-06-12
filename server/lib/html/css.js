@@ -3745,6 +3745,18 @@ summary:focus-visible,
   z-index: 220;
 }
 .reader-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(720px, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev-2);
+  border-left: 1px solid var(--border-default);
+  box-shadow: -12px 0 32px rgba(0,0,0,0.35); /* intentional: overlay shadow; alpha can't be a theme token */
+  z-index: 221;
+}
 /* ════════════════════════════════════════════════════════════════════
    AGENTS VIEW v2 — card chips + agent detail drawer (appended block)
    Theme variables only — valid in both dark and [data-theme=light].
