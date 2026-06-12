@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-12T15:39:59.301Z",
-  "current_phase": "Dashboard command runner",
+  "updated": "2026-06-12T19:02:41.101Z",
+  "current_phase": "status-summary-bar-with-multi-attribute-filtering",
   "current_plan": 4,
   "model_profile": "balanced",
   "milestone": "M2 — Hardening & Polish",
@@ -697,8 +697,8 @@
       "number": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
       "goal": "Give the dashboard an Archon-style status summary bar — aggregate count",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T18:58:16.844Z",
       "completed": null,
       "plan_count": 2,
       "sprints": [
@@ -749,7 +749,8 @@
           ]
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.141Z"
+      "status_updated": "2026-05-16T12:26:35.141Z",
+      "plans": 2
     },
     {
       "id": "35",
