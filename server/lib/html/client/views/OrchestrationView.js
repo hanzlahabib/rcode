@@ -14,6 +14,7 @@ import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning, mergeSessionsAndHistory } from '../orchestrator.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
+import { RejectDialog } from '../components/RejectDialog.js';
 import { orchElapsed, humanDate } from '../util.js';
 import { Icon } from '../icons-client.js';
 
@@ -22,6 +23,7 @@ import { Icon } from '../icons-client.js';
 function OrchCard({ session: s }) {
   const running = s.status === 'running';
   const waiting = !!s.waiting;
+  const [showReject, setShowReject] = useState(false);
   const cardCls = 'orch-card orch-' + s.status + (waiting ? ' orch-waiting' : '');
   const badge   = waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
   const dotCls  = 'term-status-dot ' + (waiting ? 'waiting' : s.status);
@@ -55,6 +57,11 @@ function OrchCard({ session: s }) {
         ${' · '}<${Icon} name="eye" size=${12}/> ${s.clients || 0}
         ${s.pid ? html` · pid ${s.pid}` : null}
       </div>
+      ${s.rejection ? html`
+        <div class="orch-card-rejection">
+          Rejected: ${s.rejection.reason}
+        </div>
+      ` : null}
       <div class="orch-card-actions">
         <button class="term-run-btn outline" onClick=${handleTerminal}>
           <${Icon} name="monitor" size=${14}/> Terminal
@@ -62,7 +69,13 @@ function OrchCard({ session: s }) {
         ${running ? html`
           <button class="term-run-btn danger" onClick=${handleStop}>■ Stop</button>
         ` : null}
+        ${waiting ? html`
+          <button class="term-run-btn danger" onClick=${e => { e.stopPropagation(); setShowReject(true); }}>
+            <${Icon} name="alert-triangle" size=${14}/> Reject
+          </button>
+        ` : null}
       </div>
+      ${showReject ? html`<${RejectDialog} session=${s} onClose=${() => setShowReject(false)}/>` : null}
     </div>
   `;
 }
