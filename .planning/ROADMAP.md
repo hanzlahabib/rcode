@@ -305,7 +305,7 @@ is both live and persisted renders exactly once.
 
 **Covers:** HIST-1, HIST-2, HIST-3
 
-**Status:** Planned
+**Status:** In Progress (Plan 1 of 2 complete — 2026-06-12)
 
 **Success criteria:**
 - User opens a history panel listing past orchestration runs grouped by status and date
