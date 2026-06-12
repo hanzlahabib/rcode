@@ -6,6 +6,12 @@ on:
       - edited
       - synchronize
 
+# action-semantic-pull-request reads the PR via the API; with restricted
+# default workflow permissions the GITHUB_TOKEN lacks that scope and the
+# action dies with "Resource not accessible by integration" (#889).
+permissions:
+  pull-requests: read
+
 jobs:
   main:
     runs-on: ubuntu-latest
