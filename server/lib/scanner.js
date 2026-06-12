@@ -171,10 +171,13 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
     });
 
     // Derive phase-level depends_on by aggregating sprint-level depends_on entries.
-    // A sprint depends_on entry is a sprint ID (e.g. "31.2"); take the integer part
-    // before "." as the dependency phase ID. Drop self-references (sibling sprints).
+    // Sprint IDs appear as "NN.S" (dot) or "NN-S" (dash); extract the leading integer
+    // to get the phase ID. Drop self-references (sibling sprints within this phase).
     const phaseDependsOn = [...new Set(
-      sprints.flatMap(s => s.dependsOn || []).map(dep => String(dep).split('.')[0]).filter(depId => depId !== intId)
+      sprints.flatMap(s => s.dependsOn || []).map(dep => {
+        const m = String(dep).match(/^(\d+)/);
+        return m ? m[1] : null;
+      }).filter(depId => depId !== null && depId !== intId)
     )];
 
     return { ...p, sprints, dependsOn: phaseDependsOn };
