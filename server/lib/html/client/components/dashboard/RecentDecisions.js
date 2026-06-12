@@ -10,6 +10,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
+import { humanDate } from '../../util.js';
 
 // Representative sample used when the store slice is empty/undefined.
 const SAMPLE = [
@@ -43,7 +44,7 @@ export function RecentDecisions() {
           <li class="rd-row" key=${d.title + i}>
             <span class="rd-title">${d.title}</span>
             <span class=${'rd-badge ' + statusClass(d.status)}>${d.status || 'Proposed'}</span>
-            <span class="rd-date">${d.date || ''}</span>
+            <span class="rd-date">${humanDate(d.date) || ''}</span>
           </li>
         `)}
       </ul>

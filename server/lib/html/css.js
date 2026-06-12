@@ -121,6 +121,7 @@ function renderCss() {
   --dash-sev-low:    #9CA3AF; /* gray  — Low    */
   --dash-text:       #E6EDF7; /* primary text */
   --dash-text-muted: #8595AD; /* muted text   */
+  --dash-hover:      rgba(255, 255, 255, 0.04); /* row/button hover wash */
 }
 
 /* Light mode */
@@ -140,6 +141,15 @@ function renderCss() {
   --text-tertiary:  #72727e;
   --text-muted:     #9898a4;
   --accent-bg: rgba(94,106,210,0.08);
+
+  /* Dashboard mockup tokens — light theme. Surfaces/text flip to light;
+     teal/purple/blue/amber accents and severity colors stay the same. */
+  --dash-bg:         #F4F6FB;
+  --dash-card:       #FFFFFF;
+  --dash-border:     #E2E8F0;
+  --dash-text:       #1A2233;
+  --dash-text-muted: #5B6B82;
+  --dash-hover:      rgba(15, 23, 41, 0.05);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -2298,20 +2308,220 @@ footer {
 .cmd-runner-btn:disabled,
 .cmd-runner-btn--busy { opacity: 0.6; cursor: not-allowed; }
 
-/* ── Dashboard redesign — base layout (mockup) ───────────────────── */
+/* ── Dashboard redesign — sidebar + header chrome + project health ──
+   Mockup chrome. Re-declares .sidebar / header layout (later-wins per
+   property; mobile position/transform from the base rule are preserved)
+   and adds prefixed sb-* / tb-* / phealth-* classes. Tokens only. */
+
+/* Sidebar shell */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 16px 14px;
+  background: var(--dash-bg);
+  border-right: 1px solid var(--dash-border);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Logo badge */
+.sb-logo { display: flex; align-items: center; gap: 10px; padding: 2px 4px; }
+.sb-logo-badge {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; color: #06121f;
+  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
+}
+.sb-logo-word { font-size: 16px; font-weight: 700; color: var(--dash-text); letter-spacing: -0.01em; }
+
+/* Project switcher */
+.sb-switcher {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 9px 11px; border-radius: 10px;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  color: var(--dash-text); font-size: 13px; font-weight: 600;
+  cursor: pointer; text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sb-switcher:hover { border-color: var(--dash-teal); }
+.sb-switcher-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dash-teal); flex-shrink: 0; }
+.sb-switcher-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-switcher-chev { color: var(--dash-text-muted); font-size: 11px; }
+
+/* Vertical nav */
+.sb-nav { display: flex; flex-direction: column; gap: 2px; }
+.sb-nav-link {
+  display: flex; align-items: center; gap: 11px; width: 100%;
+  padding: 9px 11px; border-radius: 9px;
+  background: transparent; border: 0;
+  color: var(--dash-text-muted); font-size: 13px; font-weight: 500;
+  cursor: pointer; text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.sb-nav-link:hover { background: rgba(255, 255, 255, 0.04); color: var(--dash-text); }
+.sb-nav-link.active { background: rgba(45, 212, 191, 0.12); color: var(--dash-text); font-weight: 600; }
+.sb-nav-link.active .sb-nav-ic { color: var(--dash-teal); }
+.sb-nav-ic { display: inline-flex; color: var(--dash-text-muted); }
+.sb-nav-label { flex: 1; }
+
+/* Health mini-card — pushed toward the bottom above the profile */
+.sb-health { margin-top: auto; }
+
+/* Project Health card */
+.phealth {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px; border-radius: 12px;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+}
+.phealth-title { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dash-text-muted); }
+.phealth-head { display: flex; align-items: baseline; gap: 8px; }
+.phealth-pct { font-size: 26px; font-weight: 800; line-height: 1; color: var(--dash-text); }
+.phealth-pct-sign { font-size: 14px; font-weight: 700; margin-left: 1px; color: var(--dash-text-muted); }
+.phealth-label { font-size: 12px; font-weight: 600; }
+.phealth--good .phealth-label { color: var(--dash-teal); }
+.phealth--warn .phealth-label { color: var(--dash-sev-medium); }
+.phealth--risk .phealth-label { color: var(--dash-sev-high); }
+.phealth-spark { width: 100%; height: 36px; display: block; }
+.phealth-spark-line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.phealth--good .phealth-spark-line { stroke: var(--dash-teal); }
+.phealth--warn .phealth-spark-line { stroke: var(--dash-sev-medium); }
+.phealth--risk .phealth-spark-line { stroke: var(--dash-sev-high); }
+.phealth-spark-area { stroke: none; opacity: 0.14; }
+.phealth--good .phealth-spark-area { fill: var(--dash-teal); }
+.phealth--warn .phealth-spark-area { fill: var(--dash-sev-medium); }
+.phealth--risk .phealth-spark-area { fill: var(--dash-sev-high); }
+
+/* Profile footer */
+.sb-profile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 8px; border-top: 1px solid var(--dash-border);
+}
+.sb-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #06121f;
+  background: linear-gradient(135deg, var(--dash-purple), var(--dash-blue));
+}
+.sb-profile-meta { display: flex; flex-direction: column; min-width: 0; }
+.sb-profile-name { font-size: 13px; font-weight: 600; color: var(--dash-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-profile-email { font-size: 11px; color: var(--dash-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Header (Topbar) */
+.topbar {
+  display: flex; align-items: center; gap: 16px; height: 100%;
+  padding: 0 20px;
+  background: var(--dash-bg);
+  border-bottom: 1px solid var(--dash-border);
+  box-sizing: border-box;
+}
+.tb-greeting { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tb-welcome { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--dash-text); white-space: nowrap; }
+.tb-wave { display: inline-block; }
+.tb-sub { margin: 0; font-size: 11px; line-height: 1.2; color: var(--dash-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.tb-synced {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px; border-radius: 8px;
+  background: transparent; border: 0; cursor: pointer;
+  font-size: 12px; color: var(--dash-text-muted);
+}
+.tb-synced:hover { color: var(--dash-text); }
+.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dash-teal); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18); flex-shrink: 0; }
+.tb-synced--busy .tb-dot { background: var(--dash-blue); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); animation: tb-pulse 0.8s ease-in-out infinite; }
+@keyframes tb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.tb-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 13px; border-radius: 9px;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  color: var(--dash-text); font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, filter 0.15s;
+}
+.tb-btn:hover { border-color: var(--dash-teal); }
+.tb-btn--primary {
+  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
+  border-color: transparent; color: #06121f;
+}
+.tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
+.tb-btn--icon { padding: 8px 11px; }
+.tb-kebab { font-size: 16px; line-height: 1; letter-spacing: 1px; }
+
+@media (max-width: 760px) {
+  .tb-sub { display: none; }
+  .tb-synced { display: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   POLISH — Overview card grid (single source of truth)
+   Replaces the earlier per-agent .dash-grid / .dash-card / donut-* /
+   cp-* / tl-* / ct-* / ip-* / bk-* / rd-* / pt-* blocks, whose
+   interleaved appends left unbalanced braces. ALL dashboard-card CSS
+   lives here — append card changes to this block only.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Global view normalization — every view on the dash palette ──
+   The pre-redesign views (tasks, decisions, phases, sprints, files,
+   agents, memory, kanban …) consume the legacy Linear tokens. Re-mapping
+   those custom properties on .main-scroll bridges ALL views onto the
+   mockup palette — and onto its light-theme flips — without per-view
+   rules. min-height: 0 lets the 1fr grid row shrink so the area scrolls
+   instead of clipping the bottom card row below the fold. */
+.main-scroll {
+  min-height: 0;
+  padding: 26px 28px;
+  background: var(--dash-bg);
+  --bg-page:        var(--dash-bg);
+  --bg-elev-1:      var(--dash-card);
+  --bg-elev-2:      var(--dash-card);
+  --bg-elev-3:      var(--dash-border);
+  --bg-input:       var(--dash-bg);
+  --bg-hover:       var(--dash-hover);
+  --bg-active:      var(--dash-hover);
+  --border-subtle:  var(--dash-border);
+  --border-default: var(--dash-border);
+  --text-primary:   var(--dash-text);
+  --text-secondary: var(--dash-text);
+  --text-tertiary:  var(--dash-text-muted);
+  --text-muted:     var(--dash-text-muted);
+}
+
+/* Legacy list panels pick up the card chrome and roomier rows. */
+.phase-list, .decision-list, .body { border-radius: 14px; }
+.item { padding: 11px 16px; }
+.phase-list .item { padding: 13px 16px; }
+
+/* ── Grid — 12 cols, 20px gaps; wrappers stretch cards to equal row height ── */
 .dash-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 20px;
+  align-items: stretch;
 }
-.dash-grid .col-4 { grid-column: span 4; }
-.dash-grid .col-6 { grid-column: span 6; }
+.dash-grid .col-4,
+.dash-grid .col-6,
+.dash-grid .col-12 {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dash-grid .col-4  { grid-column: span 4; }
+.dash-grid .col-6  { grid-column: span 6; }
 .dash-grid .col-12 { grid-column: span 12; }
+.dash-grid .col-4 > .dash-card,
+.dash-grid .col-6 > .dash-card,
+.dash-grid .col-12 > .dash-card { flex: 1 1 auto; }
 @media (max-width: 1100px) {
   .dash-grid .col-4,
   .dash-grid .col-6 { grid-column: span 12; }
 }
+
+/* ── Card surface ── */
 .dash-card {
+  /* margin: 0 cancels the global "section" margin-top rule — the
+     cards are section elements and grid gap owns the spacing. */
+  margin: 0;
   background: var(--dash-card);
   border: 1px solid var(--dash-border);
   border-radius: 14px;
@@ -2334,16 +2544,49 @@ footer {
   color: var(--dash-text-muted);
   margin: 0;
 }
-.dash-slot {
-  border: 1px dashed var(--dash-border);
-  border-radius: 10px;
-  color: var(--dash-text-muted);
+
+/* ── Card header row: title left, "View all" link right ── */
+.ct-head, .ip-head, .bk-head, .rd-head, .pt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ct-viewall, .ip-viewall, .bk-viewall, .rd-viewall, .pt-viewall {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   font-size: 12px;
-  padding: 24px;
-  text-align: center;
+  font-weight: 600;
+  color: var(--dash-teal);
+  white-space: nowrap;
+}
+.ct-viewall:hover, .ip-viewall:hover, .bk-viewall:hover,
+.rd-viewall:hover, .pt-viewall:hover { text-decoration: underline; }
+
+/* ── Shared list shells + row separators (mockup: subtle hairlines) ── */
+.ct-list, .ip-list, .bk-list, .rd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ct-row, .ip-row, .bk-row, .rd-row {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dash-border);
+}
+.ct-row:first-child, .ip-row:first-child,
+.bk-row:first-child, .rd-row:first-child { padding-top: 2px; }
+.ct-row:last-child, .ip-row:last-child,
+.bk-row:last-child, .rd-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-/* ── ProgressDonut — Project Progress card (Row 1, Card 1) ───────── */
+/* ── ProgressDonut — Project Progress (Row 1, Card 1) ── */
 .donut-body {
   display: flex;
   align-items: center;
@@ -2439,7 +2682,7 @@ footer {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 .donut-legend-row {
@@ -2464,21 +2707,6 @@ footer {
 }
 .donut-legend-pct {
   flex: 0 0 auto;
-  gap: 14px;
-}
-.bk-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: start;
-  column-gap: 10px;
-}
-.bk-icon {
-  font-size: 14px;
-  line-height: 1.4;
-}
-.bk-body { min-width: 0; }
-.bk-title {
-  margin: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--dash-text);
@@ -2496,8 +2724,11 @@ footer {
   display: block;
   width: 100%;
   height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
 }
-/* ── Component: CurrentPhase card + milestone stepper (Row 1, Card 2) ──── */
+
+/* ── CurrentPhase — phase stepper (Row 1, Card 2) ── */
 .cp-card { gap: 14px; }
 .cp-head {
   display: flex;
@@ -2532,32 +2763,14 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-}
-.rd-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--dash-border);
-}
-.rd-row:last-child { border-bottom: none; }
-.rd-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  color: var(--dash-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rd-badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: 999px;
   color: var(--dash-purple);
   background: rgba(167, 139, 250, 0.12);
   border: 1px solid rgba(167, 139, 250, 0.3);
+  white-space: nowrap;
 }
 .cp-sub {
   margin: 2px 0 0;
@@ -2571,7 +2784,6 @@ footer {
 }
 .cp-dot { margin: 0 6px; }
 .cp-pct { color: var(--dash-text); font-weight: 600; }
-
 .cp-stepper {
   list-style: none;
   margin: 6px 0 0;
@@ -2579,7 +2791,6 @@ footer {
   display: flex;
   position: relative;
 }
-/* connecting line behind the nodes */
 .cp-stepper::before {
   content: "";
   position: absolute;
@@ -2629,15 +2840,15 @@ footer {
   text-align: center;
   color: var(--dash-text-muted);
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .cp-done .cp-label,
 .cp-active .cp-label { color: var(--dash-text); }
-/* ════════════════════════════════════════════════════════════════════
-   Timeline card (.tl-*) — Overview Row 1 Card 3 (projected launch + chart)
-   ════════════════════════════════════════════════════════════════════ */
-.tl-card {
-  gap: 6px;
-}
+
+/* ── Timeline — projected launch + sparkline (Row 1, Card 3) ── */
+.tl-card { gap: 6px; }
 .tl-label {
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2654,9 +2865,12 @@ footer {
   color: var(--dash-text-muted);
   margin: 0 0 4px 0;
 }
+/* flex:1 + preserveAspectRatio="none" → the sparkline stretches to fill
+   whatever height the equal-height row leaves; min-height guards collapse. */
 .tl-chart {
   width: 100%;
-  height: 88px;
+  flex: 1 1 auto;
+  min-height: 84px;
   display: block;
   overflow: visible;
 }
@@ -2681,16 +2895,11 @@ footer {
   background: var(--dash-teal);
   display: inline-block;
 }
-.tl-status-risk {
-  color: var(--dash-sev-medium);
-}
-.tl-status-risk .tl-dot-badge {
-  background: var(--dash-sev-medium);
-}
-.tl-note {
-  color: var(--dash-text-muted);
-  gap: 10px;
-}
+.tl-status-risk { color: var(--dash-sev-medium); }
+.tl-status-risk .tl-dot-badge { background: var(--dash-sev-medium); }
+.tl-note { color: var(--dash-text-muted); }
+
+/* ── CompletedTasks — check + title + date (Row 2, Card 1) ── */
 .ct-row {
   display: flex;
   align-items: center;
@@ -2714,6 +2923,8 @@ footer {
   font-size: 12px;
   color: var(--dash-text-muted);
 }
+
+/* ── InProgress — title + % pill (Row 2, Card 2) ── */
 .ip-row {
   display: flex;
   align-items: center;
@@ -2724,6 +2935,93 @@ footer {
 .ip-title {
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ip-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--dash-blue);
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* ── Blockers — icon + title/desc + severity pill (Row 2, Card 3) ── */
+.bk-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  column-gap: 10px;
+}
+.bk-icon {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.bk-body { min-width: 0; }
+.bk-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+.bk-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-pill {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.bk-sev-high   { color: var(--dash-sev-high);   }
+.bk-sev-medium { color: var(--dash-sev-medium); }
+.bk-sev-low    { color: var(--dash-sev-low);    }
+.bk-pill.bk-sev-high {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+.bk-pill.bk-sev-medium {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+.bk-pill.bk-sev-low {
+  background: rgba(156, 163, 175, 0.12);
+  border-color: rgba(156, 163, 175, 0.35);
+}
+
+/* ── RecentDecisions — title + status badge + date (Row 3, Card 1) ── */
+.rd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--dash-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rd-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 .rd-badge--approved {
@@ -2739,28 +3037,13 @@ footer {
   background: rgba(167, 139, 250, 0.12);
 }
 .rd-date {
+  flex: none;
   font-size: 12px;
   color: var(--dash-text-muted);
   white-space: nowrap;
 }
 
-/* ── Dashboard redesign — Progress Timeline (Row 3, Card 2) ──────── */
-.pt-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.pt-viewall {
-  background: none;
-  border: none;
-  color: var(--dash-teal);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-.pt-viewall:hover { text-decoration: underline; }
+/* ── ProgressTimeline — horizontal phase segments (Row 3, Card 2) ── */
 .pt-ticks {
   display: flex;
   justify-content: space-between;
@@ -2841,6 +3124,7 @@ footer {
 .pt-seg-range {
   font-size: 11px;
   color: var(--dash-text-muted);
+  white-space: nowrap;
 }
 .pt-seg-badge {
   font-size: 10px;
