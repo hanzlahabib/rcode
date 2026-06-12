@@ -3894,6 +3894,11 @@ summary:focus-visible,
 @media (max-width: 768px) {
   .reader-panel { width: 100vw; border-left: none; }
 }
+.agent-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: min(560px, 92vw);
   display: flex;
   flex-direction: column;
