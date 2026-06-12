@@ -2340,6 +2340,88 @@ footer {
   padding: 24px;
   text-align: center;
 }
+
+/* ── ProgressDonut — Project Progress card (Row 1, Card 1) ───────── */
+.donut-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.donut-ring {
+  position: relative;
+  flex: 0 0 auto;
+  width: 132px;
+  height: 132px;
+}
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.donut-pct {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dash-text);
+}
+.donut-pct-label {
+  font-size: 11px;
+  color: var(--dash-text-muted);
+}
+.donut-legend {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.donut-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.donut-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.donut-dot--done { background: var(--dash-teal); }
+.donut-dot--prog { background: var(--dash-blue); }
+.donut-dot--idle { background: var(--dash-sev-low); }
+.donut-legend-label {
+  flex: 1 1 auto;
+  font-size: 13px;
+  color: var(--dash-text-muted);
+}
+.donut-legend-pct {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+.donut-summary {
+  font-size: 13px;
+  color: var(--dash-text-muted);
+  margin: 0;
+}
+.donut-summary strong {
+  color: var(--dash-text);
+  font-weight: 700;
+}
+.donut-bar {
+  display: block;
+  width: 100%;
+  height: 6px;
+}
 </style>`;
 }
 
