@@ -1,12 +1,9 @@
-# Campaign State
+# Dashboard Redesign Campaign — State Log
 
-## Baseline (post-Wave-5 merge)
-- main HEAD: $(git rev-parse HEAD)
-- Tests: 461 pass / 1 fail (pre-existing: changelog-version-parity)
-- npm package: @hanzlaa/rcode@4.1.1
+- Integration branch: `campaign-integration` (forked from `main` @ a5d9786)
+- Worktree root: `/home/hanzla/development/rcode-dash-wt/`
+- herdr workspace: `w65215d8185e0e5` (rihal-code)
+- Overrides approved by user: Preact allowed; write endpoint `POST /api/ask` + Share allowed.
 
-## Waves
-| Wave | Branch | Status | Items |
-|------|--------|--------|-------|
-| 5 | fix/gaps-wave5 | MERGED | #882, #883 |
-| 6 | fix/wave6-{a,b,c} | IN FLIGHT | W6-A, W6-B, W6-C |
+## Wave log
+- Wave 1 dispatched: A1 (audit), A2 (foundation). Status: pending.
