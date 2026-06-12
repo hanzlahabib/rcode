@@ -1,86 +1,103 @@
 /**
- * Sidebar component — project label, nav sections, 12 nav-link buttons.
+ * Sidebar component — redesigned chrome to match the mockup.
  *
- * Reuses existing CSS classes from css.js: sidebar, nav-section, nav-link,
- * data-view, active. Emoji replaced with SVG icons from icons-client.js.
+ * Public API is UNCHANGED — App.js still calls:
+ *   <${Sidebar} activeView=${view} projectName=${storeState.projectName} />
+ *
+ * Layout (top → bottom):
+ *   1. rcode logo badge
+ *   2. project switcher (shows project.name)
+ *   3. vertical nav with per-item icons (Overview active by default)
+ *   4. Project Health mini-card (ProjectHealth.js)
+ *   5. user profile footer (avatar initials + name + email)
+ *
+ * Reads `project { name, user { name, email } }` from the store; falls back to
+ * the projectName prop and representative sample data so it renders standalone.
+ * No inline style= attributes — all styling via .sb-* classes in css.js.
  */
 
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
 import { useStore } from '../store.js';
-import { allSprints, allTasks } from '../util.js';
-import { AGENTS } from '../agents-data.js';
+import { ProjectHealth } from './dashboard/ProjectHealth.js';
 
-// Nav structure: [ { section, links: [ { view, icon, label } ] } ]
-const NAV_SECTIONS = [
-  {
-    section: 'Overview',
-    links: [
-      { view: 'overview',      icon: 'home',        label: 'Overview'      },
-      { view: 'orchestration', icon: 'activity',    label: 'Orchestration' },
-      { view: 'roadmap',       icon: 'map',         label: 'Roadmap'       },
-    ],
-  },
-  {
-    section: 'Planning',
-    links: [
-      { view: 'milestones', icon: 'target',      label: 'Milestones' },
-      { view: 'phases',     icon: 'layers',      label: 'Phases'     },
-      { view: 'sprints',    icon: 'zap',         label: 'Sprints'    },
-      { view: 'tasks',      icon: 'checkSquare', label: 'Tasks'      },
-      { view: 'kanban',     icon: 'kanban',      label: 'Kanban'     },
-    ],
-  },
-  {
-    section: 'Workspace',
-    links: [
-      { view: 'files',     icon: 'file',     label: 'Files'     },
-      { view: 'agents',    icon: 'users',    label: 'Agents'    },
-      { view: 'decisions', icon: 'scale',    label: 'Decisions' },
-      { view: 'memory',    icon: 'database', label: 'Memory'    },
-    ],
-  },
+// Single flat nav matching the mockup. `view` is the hash route; items whose
+// view has no dedicated Preact view yet still route by hash (App falls back).
+const NAV_LINKS = [
+  { view: 'overview',     icon: 'home',        label: 'Overview'     },
+  { view: 'tasks',        icon: 'checkSquare', label: 'Tasks'        },
+  { view: 'decisions',    icon: 'scale',       label: 'Decisions'    },
+  { view: 'architecture', icon: 'layers',      label: 'Architecture' },
+  { view: 'documents',    icon: 'file-text',   label: 'Documents'    },
+  { view: 'timeline',     icon: 'clock',       label: 'Timeline'     },
+  { view: 'integrations', icon: 'link',        label: 'Integrations' },
+  { view: 'settings',     icon: 'edit-3',      label: 'Settings'     },
 ];
+
+// Representative fallbacks so the chrome renders before /api/state lands.
+const SAMPLE_PROJECT = {
+  name: 'Acme AI Platform',
+  user: { name: 'Hanzla', email: 'hanzla@example.com' },
+};
+
+/** Two-letter initials from a display name. */
+function initials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 /**
  * Sidebar component.
  *
  * Props:
- *   activeView  {string}  — currently active view key
- *   projectName {string}  — displayed under the "rcode" label
+ *   activeView  {string}  — currently active view key (drives nav highlight)
+ *   projectName {string}  — fallback project name when store has no project slice
  */
 export function Sidebar({ activeView, projectName }) {
   const S = useStore();
-  const counts = {
-    phases:    (S.phases || []).length,
-    sprints:   allSprints(S.phases).length,
-    tasks:     allTasks(S.phases).length,
-    decisions: (S.decisions || []).length,
-    agents:    AGENTS.length,
-  };
+  const project = (S && S.project) || {};
+  const name = project.name || projectName || SAMPLE_PROJECT.name;
+  const user = project.user || SAMPLE_PROJECT.user;
 
   return html`
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-project">
-        <div class="project-label">rcode</div>
-        <span>${projectName || ''}</span>
+      <div class="sb-logo">
+        <span class="sb-logo-badge">r</span>
+        <span class="sb-logo-word">rcode</span>
       </div>
-      <nav>
-        ${NAV_SECTIONS.map(({ section, links }) => html`
-          <div class="nav-section">${section}</div>
-          ${links.map(({ view, icon, label }) => html`
-            <button
-              class=${'nav-link' + (activeView === view ? ' active' : '')}
-              data-view=${view}
-              onClick=${() => { location.hash = view; }}
-            >
-              <${Icon} name=${icon} size=${14} />
-              ${' ' + label}
-              ${counts[view] ? html`<span class="nav-count">${counts[view]}</span>` : null}
-            </button>
-          `)}
+
+      <button class="sb-switcher" type="button" title=${name}>
+        <span class="sb-switcher-dot"></span>
+        <span class="sb-switcher-name">${name}</span>
+        <span class="sb-switcher-chev">▾</span>
+      </button>
+
+      <nav class="sb-nav">
+        ${NAV_LINKS.map(({ view, icon, label }) => html`
+          <button
+            class=${'sb-nav-link' + (activeView === view ? ' active' : '')}
+            data-view=${view}
+            onClick=${() => { location.hash = view; }}
+          >
+            <span class="sb-nav-ic"><${Icon} name=${icon} size=${16} /></span>
+            <span class="sb-nav-label">${label}</span>
+          </button>
         `)}
       </nav>
+
+      <div class="sb-health">
+        <${ProjectHealth} />
+      </div>
+
+      <div class="sb-profile">
+        <span class="sb-avatar">${initials(user.name)}</span>
+        <span class="sb-profile-meta">
+          <span class="sb-profile-name">${user.name || ''}</span>
+          <span class="sb-profile-email">${user.email || ''}</span>
+        </span>
+      </div>
     </aside>
   `;
 }
