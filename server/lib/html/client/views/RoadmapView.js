@@ -45,6 +45,107 @@ function TreeNode({ label, icon, badge, status, children, defaultOpen, onDoubleC
   `;
 }
 
+/** Map a phase status string to a phase-graph CSS class suffix. */
+function graphStatusSlug(status) {
+  if (/complete|done/i.test(status || '')) return 'complete';
+  if (/active|in_progress|progress/i.test(status || '')) return 'in_progress';
+  return 'planned';
+}
+
+/**
+ * Assign each phase a dependency wave: 0 when it has no resolvable deps,
+ * else 1 + max(wave of each dependency). Computed iteratively with a pass
+ * cap of phases.length so a dependency cycle cannot loop forever.
+ * Returns phases annotated with a numeric `wave`.
+ */
+function computeWaves(phases) {
+  const known = new Set(phases.map(p => String(p.id)));
+  const waves = new Map(phases.map(p => [String(p.id), 0]));
+  for (let pass = 0; pass < phases.length; pass++) {
+    let changed = false;
+    for (const p of phases) {
+      const deps = (p.dependsOn || []).map(String).filter(d => known.has(d));
+      if (!deps.length) continue;
+      const w = 1 + Math.max(...deps.map(d => waves.get(d)));
+      if (w !== waves.get(String(p.id))) { waves.set(String(p.id), w); changed = true; }
+    }
+    if (!changed) break;
+  }
+  return phases.map(p => ({ ...p, wave: waves.get(String(p.id)) }));
+}
+
+/**
+ * Hand-rolled inline-SVG dependency graph of the milestone's phases.
+ * Columns are dependency waves (left to right); edges connect each phase
+ * to the phases it depends on. No graph library, no build step.
+ */
+function PhaseGraph({ phases }) {
+  if (!phases || phases.length === 0) return null;
+
+  const PAD = 24, COL_W = 200, ROW_H = 72, NODE_W = 168, NODE_H = 52;
+  const annotated = computeWaves(phases);
+  const maxWave = Math.max(...annotated.map(p => p.wave));
+
+  // Position: column by wave, row by per-column insertion order.
+  const colCounts = new Map();
+  const pos = new Map();
+  let maxRows = 0;
+  for (const p of annotated) {
+    const row = colCounts.get(p.wave) || 0;
+    colCounts.set(p.wave, row + 1);
+    maxRows = Math.max(maxRows, row + 1);
+    pos.set(String(p.id), { x: PAD + p.wave * COL_W, y: PAD + row * ROW_H });
+  }
+  const width = PAD + (maxWave + 1) * COL_W;
+  const height = PAD + maxRows * ROW_H;
+
+  // Edges: dependency right-center → dependent left-center.
+  const edges = [];
+  for (const p of annotated) {
+    for (const d of (p.dependsOn || [])) {
+      const from = pos.get(String(d));
+      const to = pos.get(String(p.id));
+      if (!from || !to) continue;
+      edges.push({
+        key: d + '->' + p.id,
+        x1: from.x + NODE_W, y1: from.y + NODE_H / 2,
+        x2: to.x, y2: to.y + NODE_H / 2,
+      });
+    }
+  }
+
+  return html`
+    <svg class="phase-graph-svg" width=${width} height=${height}
+      viewBox=${'0 0 ' + width + ' ' + height} role="img" aria-label="Phase dependency graph">
+      <defs>
+        <marker id="phase-graph-arrowhead" markerWidth="8" markerHeight="8"
+          refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+          <path class="phase-graph-arrow" d="M0,0 L8,4 L0,8 Z"/>
+        </marker>
+      </defs>
+      ${edges.map(e => html`
+        <line key=${e.key} class="phase-graph-edge"
+          x1=${e.x1} y1=${e.y1} x2=${e.x2} y2=${e.y2}
+          marker-end="url(#phase-graph-arrowhead)"/>
+      `)}
+      ${annotated.map(p => {
+        const { x, y } = pos.get(String(p.id));
+        const name = String(p.name || '');
+        const label = name.length > 18 ? name.slice(0, 18) + '…' : name;
+        return html`
+          <g key=${p.id} style="cursor:pointer"
+            onClick=${() => { location.hash = 'phases/' + p.id; }}>
+            <rect class=${'phase-graph-node phase-graph-' + graphStatusSlug(p.status)}
+              x=${x} y=${y} width=${NODE_W} height=${NODE_H} rx="8"/>
+            <text class="phase-graph-label" x=${x + 12} y=${y + 21}>P${p.id}</text>
+            <text class="phase-graph-sublabel" x=${x + 12} y=${y + 39}>${label}</text>
+          </g>
+        `;
+      })}
+    </svg>
+  `;
+}
+
 /** Leaf node (task row — no expand). */
 function TaskLeaf({ task: t }) {
   const done = t.status === 'done' || t.status === 'completed';
@@ -202,6 +303,10 @@ export function RoadmapView() {
   return html`
     <div id="view-roadmap" class="view active">
       <div class="view-title">Roadmap</div>
+      <details class="phase-graph-wrap" open=${true}>
+        <summary><${Icon} name="layers" size=${14}/> Dependency Graph</summary>
+        <${PhaseGraph} phases=${phases}/>
+      </details>
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter roadmap…"
           value=${filterQuery}
