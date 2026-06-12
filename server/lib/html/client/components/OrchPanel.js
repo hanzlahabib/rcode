@@ -215,7 +215,8 @@ export function OrchPanel() {
   const apiOnly = apiSessions.filter(s => s.storyId && !sessionsMap[s.storyId]);
   const activeSess = activeTab ? sessionsMap[activeTab] : null;
   const hasStream = activeTab && !!_streams[activeTab];
-  const runningCount = apiSessions.filter(s => s.status === 'running').length;
+  // 'blocked' = live PTY waiting for input — still a live session.
+  const runningCount = apiSessions.filter(s => s.status === 'running' || s.status === 'blocked').length;
 
   const panelCls = 'orch-panel' + (open ? ' open' : '');
 

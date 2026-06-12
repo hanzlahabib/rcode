@@ -12,6 +12,7 @@
 
 import { getState, setState } from './store.js';
 import { showToast } from './components/shared.js';
+import { trackBlocked } from './notify.js';
 
 export const ORCH_HTTP = 'http://localhost:7718';
 export const ORCH_WS   = 'ws://localhost:7718';
@@ -202,10 +203,13 @@ export function activeSession(storyId) {
   return (activeSessions || []).find(s => s.storyId === storyId) || null;
 }
 
-/** True when storyId has a session with status==='running'. */
+/**
+ * True when storyId has a live session. 'blocked' is a live PTY waiting for
+ * input (server-side classification of running), so it counts as running here.
+ */
 export function isSessionRunning(storyId) {
   const s = activeSession(storyId);
-  return !!(s && s.status === 'running');
+  return !!(s && (s.status === 'running' || s.status === 'blocked'));
 }
 
 /** Count running sessions touching this sprint (sprint-level + its stories). */
@@ -222,10 +226,10 @@ export function runningInPhase(p) {
   return n;
 }
 
-/** Total count of sessions with status==='running'. */
+/** Total count of live sessions (running or blocked-on-input). */
 export function runningTotal() {
   const { activeSessions } = getState();
-  return (activeSessions || []).filter(s => s.status === 'running').length;
+  return (activeSessions || []).filter(s => s.status === 'running' || s.status === 'blocked').length;
 }
 
 // ── Session poll ──────────────────────────────────────────────────────────────
@@ -269,6 +273,8 @@ function _poll() {
       if (json === _lastSessionsJson) return;
       _lastSessionsJson = json;
       setState({ activeSessions: merged, history, orchOnline: ok });
+      // Detect running→blocked transitions and raise persistent alerts.
+      trackBlocked(merged);
     });
 }
 

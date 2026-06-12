@@ -58,6 +58,9 @@ let _state = {
   // Orchestrator reachability: null = unknown (before first poll),
   // true = reachable, false = unreachable. Written by the 4s session poll.
   orchOnline:       null,
+  // Persistent blocked-session alerts (written by notify.js trackBlocked).
+  // [{ storyId, cmd }] — rendered as clickable toasts by NotifyCenter.js.
+  blockedAlerts:    [],
   // File jump bridge: the agent drawer's "View file in Files" sets this to a
   // project-relative .md path; FilesView opens it on arrival and clears it.
   requestedFile:    null,
