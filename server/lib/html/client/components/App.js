@@ -163,14 +163,24 @@ export function App() {
       scanTimeRef.current = Date.now();
       setUpdatedAgo('just now');
       const patch = { refreshing: false, offline: false, lastRefresh: Date.now() };
+      // Redesign contract slices (DATA-CONTRACT.md) — derived server-side and
+      // returned under newState.dashboard. Keep them fresh on every poll.
+      const d = newState.dashboard || {};
+      Object.assign(patch, {
+        project:   d.project   || null,
+        progress:  d.progress  || null,
+        timeline:  d.timeline  || null,
+        tasks:     d.tasks     || null,
+        health:    d.health    || null,
+      });
       if (newState.raw) {
         Object.assign(patch, {
-          phases:           newState.phaseTree            || newState.raw.phases || [],
+          phases:           d.phases       || newState.phaseTree || newState.raw.phases || [],
           milestone:        newState.raw.milestone        || '',
-          currentPhase:     newState.raw.current_phase    || null,
+          currentPhase:     d.currentPhase || newState.raw.current_phase || null,
           currentSprint:    newState.raw.current_sprint   || null,
-          decisions:        newState.raw.decisions        || [],
-          blockers:         newState.raw.blockers         || [],
+          decisions:        d.decisions    || newState.raw.decisions || [],
+          blockers:         d.blockers     || newState.raw.blockers  || [],
           council_sessions: newState.raw.council_sessions || [],
           last_session:     newState.raw.last_session     || null,
         });

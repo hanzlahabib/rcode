@@ -121,6 +121,188 @@ function buildPhaseTree(projectDir, rawPhases) {
   });
 }
 
+/** Format an ISO timestamp as a short "Mon D" display string; '' when absent. */
+function fmtShort(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/** Format an ISO timestamp (or Date) as YYYY-MM-DD; '' when unparseable. */
+function fmtISODate(iso) {
+  const d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
+/** Map an rcode phase/sprint status string to the contract enum done|active|todo. */
+function toState(status) {
+  if (/complete|done/i.test(status || '')) return 'done';
+  if (/active|in_progress|progress/i.test(status || '')) return 'active';
+  return 'todo';
+}
+
+/**
+ * Derive the redesign dashboard contract (see .planning/campaign/DATA-CONTRACT.md)
+ * from a scanned state object. Pure — reads only what scanState already gathered
+ * (raw, phaseTree, projectName). Where the real .rcode/ scan has no data, falls
+ * back to sensible computed values so every contract key is always present and
+ * correctly typed. Never throws.
+ *
+ * Returns: { project, progress, currentPhase, timeline, tasks, blockers,
+ *            health, decisions, phases } matching the contract exactly.
+ * The `phases` field is the existing rich phaseTree enriched with `range`/`state`
+ * (a superset) so legacy views and the redesign ProgressTimeline both read it.
+ */
+function buildDashboard(state) {
+  const raw  = state.raw || {};
+  const tree = Array.isArray(state.phaseTree) ? state.phaseTree
+             : (Array.isArray(raw.phases) ? raw.phases : []);
+
+  // ---- phases (superset: rich phaseTree + contract range/state) ----
+  const phases = tree.map(p => {
+    const started   = p.started || p.created || null;
+    const completed = p.completed || p.completed_at || null;
+    const range = started || completed
+      ? [fmtShort(started), fmtShort(completed)].filter(Boolean).join(' – ')
+      : '';
+    return { ...p, name: p.name || p.slug || String(p.id || ''), range, state: toState(p.status) };
+  });
+
+  // ---- progress (prefer story counts; fall back to phase-level counts) ----
+  let completed = 0, total = 0, inProg = 0;
+  for (const p of phases) {
+    const sprints = Array.isArray(p.sprints) ? p.sprints : [];
+    const stories = sprints.flatMap(s => Array.isArray(s.stories) ? s.stories : []);
+    for (const st of stories) {
+      total += 1;
+      if (/done|complete/i.test(st.status || '')) completed += 1;
+      else if (p.state === 'active') inProg += 1;
+    }
+  }
+  if (total === 0 && phases.length) {
+    completed = phases.filter(p => p.state === 'done').length;
+    inProg    = phases.filter(p => p.state === 'active').length;
+    total     = phases.length;
+  }
+  const notStarted = Math.max(0, total - completed - inProg);
+  const pct = total ? Math.round((completed / total) * 100) : 0;
+  const progress = { completed, inProgress: inProg, notStarted, total, pct };
+
+  // ---- currentPhase (object: name, status, milestones[]) ----
+  const activePhase = phases.find(p => p.state === 'active')
+    || phases.find(p => p.state === 'todo')
+    || phases[phases.length - 1] || null;
+  const cpSprints = activePhase && Array.isArray(activePhase.sprints) ? activePhase.sprints : [];
+  let milestones = cpSprints.map(s => ({
+    name: (s.goal || ('Sprint ' + (s.number || s.id || ''))).slice(0, 60),
+    state: toState(s.status),
+  }));
+  // Fallback: when the active phase has no sprints, show neighbouring phases as steps.
+  if (!milestones.length && phases.length) {
+    milestones = phases.slice(0, 5).map(p => ({ name: p.name, state: p.state }));
+  }
+  const currentPhase = {
+    name:   (activePhase && activePhase.name) || raw.current_phase || 'No active phase',
+    status: (activePhase && activePhase.status) || 'planned',
+    milestones,
+  };
+
+  // ---- timeline (launch date + on-track + ordered series) ----
+  const velocity = Array.isArray(raw.velocity_history) ? raw.velocity_history : [];
+  let points = velocity.map((v, i) => ({
+    label: 'S' + (v.sprint || (i + 1)),
+    value: Number(v.points) || 0,
+  }));
+  if (!points.length) {
+    // Synthesize a cumulative-completion series across the phase sequence.
+    let acc = 0;
+    points = phases.slice(0, 8).map((p, i) => {
+      if (p.state === 'done') acc += 1;
+      return { label: 'P' + (p.id || (i + 1)), value: total ? Math.round((acc / phases.length) * 100) : acc };
+    });
+  }
+  const launchDate = (() => {
+    const created = raw.created ? new Date(raw.created) : new Date();
+    if (isNaN(created.getTime())) return '';
+    created.setDate(created.getDate() + 120); // ~4-month horizon when no explicit target exists
+    return fmtISODate(created.toISOString());
+  })();
+
+  // ---- blockers ([] when none; shaped to title/desc/severity) ----
+  const rawBlockers = Array.isArray(raw.blockers) ? raw.blockers : [];
+  const blockers = rawBlockers.map(b => {
+    if (typeof b === 'string') return { title: b, desc: '', severity: 'medium' };
+    return {
+      title:    b.title || b.summary || b.name || 'Blocker',
+      desc:     b.desc || b.description || b.detail || '',
+      severity: /high|medium|low/i.test(b.severity || '') ? b.severity.toLowerCase() : 'medium',
+    };
+  });
+
+  // ---- tasks (completed + inProgress) ----
+  const completedTasks = [];
+  const inProgressTasks = [];
+  for (const p of phases) {
+    const sprints = Array.isArray(p.sprints) ? p.sprints : [];
+    for (const s of sprints) {
+      const stories = Array.isArray(s.stories) ? s.stories : [];
+      for (const st of stories) {
+        if (/done|complete/i.test(st.status || '')) {
+          completedTasks.push({ title: st.title || st.id, date: fmtISODate(p.completed || s.completed_at || p.created) });
+        } else if (p.state === 'active') {
+          inProgressTasks.push({ title: st.title || st.id, pct: 50 });
+        }
+      }
+    }
+  }
+  // Fallbacks so the cards are never empty when stories are unregistered in state.json.
+  if (!completedTasks.length) {
+    phases.filter(p => p.state === 'done').slice(-6).forEach(p =>
+      completedTasks.push({ title: p.name, date: fmtISODate(p.completed || p.created) }));
+  }
+  if (!inProgressTasks.length && activePhase) {
+    inProgressTasks.push({ title: activePhase.name, pct: pct || 25 });
+  }
+  const tasks = {
+    completed:  completedTasks.slice(-8).reverse(),
+    inProgress: inProgressTasks.slice(0, 8),
+  };
+
+  // ---- health (score + label + sparkline series) ----
+  const healthPct = Math.max(0, Math.min(100, pct - blockers.length * 10));
+  const healthLabel = healthPct >= 80 ? 'Healthy' : healthPct >= 50 ? 'Steady' : 'At risk';
+  const healthPoints = points.length
+    ? points.map(p => ({ label: p.label, value: p.value }))
+    : [{ label: 'now', value: healthPct }];
+  const health = { pct: healthPct, label: healthLabel, points: healthPoints };
+
+  // ---- decisions (superset: keep raw fields + contract title/status/date) ----
+  const rawDecisions = Array.isArray(raw.decisions) ? raw.decisions : [];
+  const decisions = rawDecisions
+    .map(d => ({
+      ...d,
+      title:  d.title || d.summary || d.decision || 'Decision',
+      status: d.status || 'Approved',
+      date:   d.date || d.created || '',
+    }))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .slice(0, 8);
+
+  // ---- project (identity + current user) ----
+  const cfg = state.config || {};
+  const envUser = (typeof process !== 'undefined' && process.env && process.env.USER) || '';
+  const userName = cfg.user_name
+    || (envUser ? envUser.charAt(0).toUpperCase() + envUser.slice(1) : 'Developer');
+  const project = {
+    name: state.projectName || raw.project_name || raw.project || 'Project',
+    user: { name: userName, email: cfg.user_email || '' },
+  };
+
+  return { project, progress, currentPhase, timeline: { launchDate, onTrack: blockers.length === 0, points }, tasks, blockers, health, decisions, phases };
+}
+
 function scanState(rcodeDir) {
   const projectDir = path.dirname(rcodeDir);
   const state = {
@@ -151,6 +333,7 @@ function scanState(rcodeDir) {
   }
 
   const cfg = parseSimpleYaml(safeReadText(path.join(rcodeDir, 'config.yaml')));
+  state.config = cfg;
 
   // Fix #260: project name shows '.' — derive from directory name as fallback
   const dirName = path.basename(projectDir);
@@ -294,6 +477,13 @@ function scanState(rcodeDir) {
 
   state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases);
 
+  // Derive the redesign dashboard contract (DATA-CONTRACT.md). Attached to the
+  // scan so GET /api/state returns the exact shape and client.js seeds it into
+  // window.__S__. The enriched phaseTree (with range/state) is folded back so
+  // legacy phase consumers also get the superset.
+  state.dashboard = buildDashboard(state);
+  state.phaseTree = state.dashboard.phases;
+
   return state;
 }
 
@@ -372,4 +562,4 @@ function scanMemoryBank(rcodeDir) {
   return result;
 }
 
-module.exports = { scanState, scanMemoryBank, safeReadText, safeReadJson, listDir, parseSimpleYaml };
+module.exports = { scanState, scanMemoryBank, buildDashboard, safeReadText, safeReadJson, listDir, parseSimpleYaml };

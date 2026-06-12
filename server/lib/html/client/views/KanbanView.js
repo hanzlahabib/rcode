@@ -204,7 +204,7 @@ export function KanbanView() {
             <div class="empty-action">
               ${milestone ? html`Milestone <strong>${milestone}</strong>` : null}
               ${milestone && currentPhase ? ' · ' : null}
-              ${currentPhase ? html`Phase <strong>${currentPhase}</strong>` : null}
+              ${currentPhase ? html`Phase <strong>${(currentPhase && currentPhase.name) || currentPhase}</strong>` : null}
               ${' is active.'}
             </div>
           ` : null}

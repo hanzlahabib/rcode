@@ -14,6 +14,29 @@
 
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
+import { runCommandFromUI } from '../orchestrator.js';
+import { showToast } from './shared.js';
+
+/**
+ * Ask rcode — reuse the existing orchestrator command runner (token-guarded
+ * POST /api/run via window.__ORCH_TOKEN__). "/rcode-next" asks rcode for the
+ * suggested next action and streams it into the terminal panel. No new endpoint.
+ */
+function askRcode() {
+  runCommandFromUI('/rcode-next');
+}
+
+/** Share — copy the dashboard URL to the clipboard and confirm via toast. */
+function shareDashboard() {
+  const url = location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('Dashboard link copied'))
+      .catch(() => showToast(url));
+  } else {
+    showToast(url);
+  }
+}
 
 export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
   return html`
@@ -41,15 +64,11 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
         <span id="updated-ago" class="updated-ago">
           ${refreshing ? '⟳ syncing…' : (updatedAgo || 'just now')}
         </span>
+        <button class="header-btn" id="ask-rcode-btn" onClick=${askRcode} title="Ask rcode for the next action">✦ Ask rcode</button>
+        <button class="header-btn" id="share-btn" onClick=${shareDashboard} title="Copy dashboard link">⎘ Share</button>
         <button class="header-btn" id="refresh-btn" onClick=${onRefresh}>↺ Refresh</button>
         <!-- icon shows TARGET state (not current): dark→sun means "click to go light"; light→moon means "click to go dark" -->
         <button class="header-btn" id="theme-btn" onClick=${onToggleTheme} title="Toggle theme"><${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${14}/></button>
-        <button class="header-btn" onClick=${() => {
-          navigator.clipboard.writeText(location.href);
-          // Show a toast if available
-          const toast = document.getElementById('toast');
-          if (toast) { toast.textContent = 'URL copied!'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
-        }} title="Copy URL">⎘ Link</button>
       </div>
     </header>
   `;
