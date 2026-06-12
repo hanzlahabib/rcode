@@ -2051,6 +2051,7 @@ footer {
 .term-status-dot.error   { background: #ff4444; animation: none; }
 .term-status-dot.stopped { background: var(--accent-amber); animation: none; }
 .term-status-dot.connecting { background: var(--accent-blue); animation: pulse 1s infinite; }
+.term-status-dot.exited { background: #ff4444; animation: none; }
 .term-btn {
   height: 22px;
   padding: 0 var(--space-3);
@@ -2218,6 +2219,18 @@ footer {
   display: flex;
   gap: var(--space-2);
 }
+
+/* ── Run history panel ── */
+.hist-panel { margin-top: var(--space-6); }
+.hist-panel-title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); color: var(--text-primary); margin-bottom: var(--space-4); }
+.hist-group { margin-bottom: var(--space-5); }
+.hist-group-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: var(--space-2); }
+.hist-date { font-size: var(--text-2xs); color: var(--text-muted); margin: var(--space-3) 0 var(--space-2); }
+.hist-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); background: var(--bg-elev-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-2); margin-bottom: var(--space-2); }
+.hist-row-id { font-weight: 600; font-size: var(--text-sm); color: var(--text-primary); }
+.hist-row-cmd { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-secondary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-row-duration { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--text-muted); white-space: nowrap; }
+.hist-row-status { margin-left: auto; font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
 
 /* ── Icon alignment helpers (for sprint 32.2 SVG icon sweep) ── */
 .ic {
@@ -4378,6 +4391,49 @@ summary:focus-visible,
 .summary-count-chip.planned,
 .summary-count-chip.todo     { color: var(--text-secondary); }
 
+/* ── Filter chips ────────────────────────────────────────────────── */
+.filter-chips {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.filter-chip-group {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-1);
+  align-items: center;
+}
+.filter-chip {
+  font-size: var(--text-2xs);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-4);
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.filter-chip:hover { border-color: var(--accent-primary); }
+.filter-chip.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+.filter-chip-clear {
+  font-size: var(--text-2xs);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-4);
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.filter-chip-clear:disabled { opacity: 0.4; cursor: default; }
+
 /* ── Phase dependency graph ── */
 .phase-graph-wrap {
   margin-bottom: var(--space-4);
@@ -4423,6 +4479,88 @@ summary:focus-visible,
 }
 .phase-graph-arrow { fill: var(--text-tertiary); }
 /* ── Phase dependency graph (END) ── */
+
+/* ── Command palette (Sprint 36.1 — DSH-4) ─────────────────────────────────
+   z-index reference: #orch-panel slide-in = 50, xterm term-backdrop = 200,
+   xterm term-panel/term-pill = 201, .toast notification layer = 1000.
+   1100 places the palette overlay above every stacking context, including
+   the toast layer (pointer-events:none but must still paint beneath us). */
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+  background: rgba(0, 0, 0, 0.45);
+}
+.cmd-palette {
+  width: 90%;
+  max-width: 560px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.cmd-palette-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.cmd-palette-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.cmd-palette-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+.cmd-palette-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.cmd-palette-group {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: var(--space-3) var(--space-4) var(--space-1);
+}
+.cmd-palette-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+.cmd-palette-item:hover,
+.cmd-palette-item.active { background: var(--bg-hover); }
+.cmd-palette-cmd {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.cmd-palette-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+}
+/* ════════ Command palette (END) ════════ */
 </style>`;
 }
 
