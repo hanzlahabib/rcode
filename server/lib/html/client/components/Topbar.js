@@ -13,7 +13,8 @@
  *     (copy URL + toast), [...] (more / theme toggle)
  *
  * Reads `project { name, user { name } }` from the store; falls back to the
- * projectName prop and a sample so it renders standalone.
+ * projectName prop. No sample data — without a configured user the greeting
+ * is generic, and without a project name the subtitle stays generic too.
  * No inline style= attributes — all styling via .tb-* classes in css.js.
  */
 
@@ -22,8 +23,6 @@ import { Icon } from '../icons-client.js';
 import { useStore } from '../store.js';
 import { runCommandFromUI } from '../orchestrator.js';
 import { showToast } from './shared.js';
-
-const SAMPLE_PROJECT = { name: 'Acme AI Platform', user: { name: 'Hanzla' } };
 
 /**
  * Ask rcode — reuse the existing orchestrator command runner (token-guarded
@@ -49,9 +48,8 @@ function shareDashboard() {
 export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggleTheme, onToggleSidebar, themeLabel }) {
   const S = useStore();
   const project = (S && S.project) || {};
-  const name = project.name || projectName || SAMPLE_PROJECT.name;
-  const user = project.user || SAMPLE_PROJECT.user;
-  const firstName = user.name || SAMPLE_PROJECT.user.name;
+  const name = project.name || projectName || '';
+  const firstName = (project.user && project.user.name) || '';
 
   return html`
     <header class="topbar">
@@ -65,8 +63,8 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
       </button>
 
       <div class="tb-greeting">
-        <h1 class="tb-welcome">Welcome back, ${firstName}! <span class="tb-wave" aria-hidden="true">👋</span></h1>
-        <p class="tb-sub">Here's what's happening with ${name}</p>
+        <h1 class="tb-welcome">${firstName ? 'Welcome back, ' + firstName + '!' : 'Welcome back!'} <span class="tb-wave" aria-hidden="true">👋</span></h1>
+        <p class="tb-sub">${name ? "Here's what's happening with " + name : "Here's what's happening with your project"}</p>
       </div>
 
       <div class="tb-actions">

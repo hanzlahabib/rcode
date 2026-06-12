@@ -25,6 +25,9 @@ function clientState(state) {
   // by scanner.buildDashboard. Always present and correctly typed.
   const d = state.dashboard || {};
   return JSON.stringify({
+    // First-run signal: false when the scanned .rcode dir does not exist, so
+    // the Overview shows a "run /rcode-init" state instead of empty cards.
+    initialized:      state.exists !== false,
     // Redesign contract keys (read by the Overview slot components).
     project:          d.project      || null,
     progress:         d.progress     || null,

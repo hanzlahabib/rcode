@@ -8,7 +8,7 @@
 
 import { html, useState, useMemo } from '../preact.js';
 import { useStore } from '../store.js';
-import { allTasks } from '../util.js';
+import { allTasks, currentPhaseId } from '../util.js';
 import { CmdHints, TaskCard } from '../components/shared.js';
 
 function TaskGrouped({ tasks }) {
@@ -96,8 +96,9 @@ export function TasksView() {
     tHints.push(['/rcode-correct-course','Course-correct blockers']);
   }
 
-  // Empty state
-  const phaseHint = S.currentPhase ? ' ' + S.currentPhase : '';
+  // Empty state — currentPhase is the contract object (or legacy string).
+  const cpId = currentPhaseId(S.currentPhase);
+  const phaseHint = cpId ? ' ' + cpId : '';
 
   return html`
     <div id="view-tasks" class="view active">

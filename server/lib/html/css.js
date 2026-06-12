@@ -3552,6 +3552,85 @@ header.topbar {
 }
 .tpipe--mini .tpipe-line { width: 8px; height: 1.5px; }
 .tpipe--mini .tpipe-blocked { padding: 1px 5px; font-size: 9px; margin-left: 2px; }
+
+/* ── Data-honesty states: card empty states + first-run hero ────────
+   Shared by the Overview slot components when a slice is legitimately
+   empty (no blockers, no phases, no decisions…) and by OverviewView's
+   first-run state when no .rcode project exists. Theme variables only —
+   valid in both dark and [data-theme=light]. */
+.dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--dash-text-muted);
+  font-size: 12px;
+}
+.dash-empty-emoji { font-size: 20px; line-height: 1; }
+.dash-empty-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dash-text);
+  background: var(--dash-hover);
+  border: 1px solid var(--dash-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+/* Decision row without a recorded status — muted dash, no fake badge. */
+.rd-status-none { color: var(--dash-text-muted); font-size: 12px; }
+/* Sidebar progress card before anything is tracked — neutral tone. */
+.phealth--none .phealth-label { color: var(--dash-text-muted); }
+/* Timeline card placeholder when no velocity history is recorded. */
+.tl-nochart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88px;
+  color: var(--dash-text-muted);
+  font-size: 12px;
+  border: 1px dashed var(--dash-border);
+  border-radius: 8px;
+}
+/* First-run hero — Overview when no .rcode project exists. */
+.firstrun {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 64px 24px;
+  text-align: center;
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+}
+.firstrun-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--dash-teal), var(--dash-purple));
+}
+.firstrun-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--dash-text); }
+.firstrun-sub { margin: 0; font-size: 13px; color: var(--dash-text-muted); max-width: 440px; line-height: 1.5; }
+.firstrun-sub code { font-family: var(--font-mono); color: var(--dash-text); }
+.firstrun-cmd {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--dash-teal);
+  background: var(--dash-hover);
+  border: 1px solid var(--dash-border);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
 </style>`;
 }
 

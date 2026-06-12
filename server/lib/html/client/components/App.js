@@ -160,6 +160,7 @@ export function App() {
       // returned under newState.dashboard. Keep them fresh on every poll.
       const d = newState.dashboard || {};
       Object.assign(patch, {
+        initialized: newState.exists !== false,
         project:   d.project   || null,
         progress:  d.progress  || null,
         timeline:  d.timeline  || null,

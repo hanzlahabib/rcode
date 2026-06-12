@@ -11,6 +11,10 @@
  *
  * State is read via useStore() and flows down to the slot components as they
  * are filled in; none of them fetch (see DATA-CONTRACT.md).
+ *
+ * First run: when the server scanned and found no .rcode directory
+ * (store.initialized === false) the card grid is replaced by an honest
+ * get-started state pointing at /rcode-init — no fabricated dashboard.
  */
 
 import { html } from '../preact.js';
@@ -27,7 +31,24 @@ import { ProgressTimeline } from '../components/dashboard/ProgressTimeline.js';
 export function OverviewView() {
   // Subscribe to the store so this view re-renders on state changes; the slot
   // components will read their slices from it as they are built out.
-  useStore();
+  const S = useStore();
+
+  if (S.initialized === false) {
+    return html`
+      <div id="view-overview" class="view active">
+        <div class="firstrun">
+          <div class="firstrun-badge" aria-hidden="true">r</div>
+          <h2 class="firstrun-title">No project initialized</h2>
+          <p class="firstrun-sub">
+            This directory has no <code>.rcode</code> project yet, so there is
+            no data to show. Initialize one to start tracking phases, sprints,
+            and decisions.
+          </p>
+          <code class="firstrun-cmd">/rcode-init</code>
+        </div>
+      </div>
+    `;
+  }
 
   return html`
     <div id="view-overview" class="view active">

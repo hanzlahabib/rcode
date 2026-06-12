@@ -9,7 +9,7 @@
 
 import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
-import { allTasks } from '../util.js';
+import { allTasks, currentPhaseName } from '../util.js';
 import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
 import { showToast } from '../components/shared.js';
 
@@ -200,11 +200,11 @@ export function KanbanView() {
         </div>
         <div class="empty" style="margin:24px;">
           No stories yet.
-          ${(milestone || currentPhase) ? html`
+          ${(milestone || currentPhaseName(currentPhase)) ? html`
             <div class="empty-action">
               ${milestone ? html`Milestone <strong>${milestone}</strong>` : null}
-              ${milestone && currentPhase ? ' · ' : null}
-              ${currentPhase ? html`Phase <strong>${(currentPhase && currentPhase.name) || currentPhase}</strong>` : null}
+              ${milestone && currentPhaseName(currentPhase) ? ' · ' : null}
+              ${currentPhaseName(currentPhase) ? html`Phase <strong>${currentPhaseName(currentPhase)}</strong>` : null}
               ${' is active.'}
             </div>
           ` : null}

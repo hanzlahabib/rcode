@@ -5,25 +5,17 @@
  * each = green check icon + task title + right-aligned date.
  *
  * Reads `tasks.completed[{ title, date }]` from the store. Pure — never fetches.
- * Falls back to a representative sample when the slice is absent so the card
- * renders standalone before data agent A10 populates the store.
- * See .planning/campaign/DATA-CONTRACT.md.
+ * An absent or empty slice renders an honest "No completed tasks yet" state —
+ * never sample data. See .planning/campaign/DATA-CONTRACT.md.
  */
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
 import { humanDate } from '../../util.js';
 
-// Representative sample — used only until the real `tasks` slice exists.
-const SAMPLE = [
-  { title: 'Scaffold server', date: '2026-06-10' },
-  { title: 'Vendor Preact runtime', date: '2026-06-09' },
-  { title: 'Wire data contract', date: '2026-06-08' },
-];
-
 export function CompletedTasks() {
   const S = useStore();
-  const items = (S.tasks && S.tasks.completed) || SAMPLE;
+  const items = (S.tasks && Array.isArray(S.tasks.completed)) ? S.tasks.completed : [];
 
   return html`
     <section class="dash-card ct-card">

@@ -157,6 +157,7 @@ function toState(status) {
  */
 function buildDashboard(state) {
   const raw  = state.raw || {};
+  const cfg  = state.config || {};
   const tree = Array.isArray(state.phaseTree) ? state.phaseTree
              : (Array.isArray(raw.phases) ? raw.phases : []);
 
@@ -190,45 +191,35 @@ function buildDashboard(state) {
   const pct = total ? Math.round((completed / total) * 100) : 0;
   const progress = { completed, inProgress: inProg, notStarted, total, pct };
 
-  // ---- currentPhase (object: name, status, milestones[]) ----
+  // ---- currentPhase (object: id, name, status, milestones[]; null when no phases) ----
   const activePhase = phases.find(p => p.state === 'active')
     || phases.find(p => p.state === 'todo')
     || phases[phases.length - 1] || null;
   const cpSprints = activePhase && Array.isArray(activePhase.sprints) ? activePhase.sprints : [];
-  let milestones = cpSprints.map(s => ({
+  // Milestones are this phase's real sprints only — an empty array means the
+  // phase genuinely has no sprints planned; consumers show that, not neighbours.
+  const milestones = cpSprints.map(s => ({
     name: (s.goal || ('Sprint ' + (s.number || s.id || ''))).slice(0, 60),
     state: toState(s.status),
   }));
-  // Fallback: when the active phase has no sprints, show neighbouring phases as steps.
-  if (!milestones.length && phases.length) {
-    milestones = phases.slice(0, 5).map(p => ({ name: p.name, state: p.state }));
-  }
-  const currentPhase = {
-    name:   (activePhase && activePhase.name) || raw.current_phase || 'No active phase',
-    status: (activePhase && activePhase.status) || 'planned',
+  const currentPhase = activePhase ? {
+    id:     activePhase.id != null ? activePhase.id : null,
+    name:   activePhase.name || raw.current_phase || '',
+    status: activePhase.status || 'planned',
     milestones,
-  };
+  } : null;
 
-  // ---- timeline (launch date + on-track + ordered series) ----
+  // ---- timeline (real values only — no projections, no synthesized series) ----
+  // Points come from recorded velocity_history; [] when the project has none.
   const velocity = Array.isArray(raw.velocity_history) ? raw.velocity_history : [];
-  let points = velocity.map((v, i) => ({
+  const points = velocity.map((v, i) => ({
     label: 'S' + (v.sprint || (i + 1)),
     value: Number(v.points) || 0,
   }));
-  if (!points.length) {
-    // Synthesize a cumulative-completion series across the phase sequence.
-    let acc = 0;
-    points = phases.slice(0, 8).map((p, i) => {
-      if (p.state === 'done') acc += 1;
-      return { label: 'P' + (p.id || (i + 1)), value: total ? Math.round((acc / phases.length) * 100) : acc };
-    });
-  }
-  const launchDate = (() => {
-    const created = raw.created ? new Date(raw.created) : new Date();
-    if (isNaN(created.getTime())) return '';
-    created.setDate(created.getDate() + 120); // ~4-month horizon when no explicit target exists
-    return fmtISODate(created.toISOString());
-  })();
+  // Launch date only when the project declares one (state.json or config.yaml);
+  // null otherwise — the UI shows "not set" instead of an invented date.
+  const launchDate = raw.launch_date || raw.target_date || raw.target_launch
+    || cfg.launch_date || cfg.target_date || null;
 
   // ---- blockers ([] when none; shaped to title/desc/severity) ----
   const rawBlockers = Array.isArray(raw.blockers) ? raw.blockers : [];
@@ -252,7 +243,9 @@ function buildDashboard(state) {
         if (/done|complete/i.test(st.status || '')) {
           completedTasks.push({ title: st.title || st.id, date: fmtISODate(p.completed || s.completed_at || p.created) });
         } else if (p.state === 'active') {
-          inProgressTasks.push({ title: st.title || st.id, pct: 50 });
+          // No per-task progress tracking exists — pct stays null and the UI
+          // omits the percent pill rather than inventing a number.
+          inProgressTasks.push({ title: st.title || st.id, pct: null });
         }
       }
     }
@@ -262,41 +255,53 @@ function buildDashboard(state) {
     phases.filter(p => p.state === 'done').slice(-6).forEach(p =>
       completedTasks.push({ title: p.name, date: fmtISODate(p.completed || p.created) }));
   }
-  if (!inProgressTasks.length && activePhase) {
-    inProgressTasks.push({ title: activePhase.name, pct: pct || 25 });
+  if (!inProgressTasks.length && activePhase && activePhase.state === 'active') {
+    inProgressTasks.push({ title: activePhase.name, pct: null });
   }
   const tasks = {
     completed:  completedTasks.slice(-8).reverse(),
     inProgress: inProgressTasks.slice(0, 8),
   };
 
-  // ---- health (score + label + sparkline series) ----
-  const healthPct = Math.max(0, Math.min(100, pct - blockers.length * 10));
-  const healthLabel = healthPct >= 80 ? 'Healthy' : healthPct >= 50 ? 'Steady' : 'At risk';
-  const healthPoints = points.length
-    ? points.map(p => ({ label: p.label, value: p.value }))
-    : [{ label: 'now', value: healthPct }];
-  const health = { pct: healthPct, label: healthLabel, points: healthPoints };
+  // ---- health (real facts only: story-completion % + blocker count) ----
+  // There is no measured "health" metric in the data model, so the card shows
+  // real completion + blockers instead of an invented composite score. pct is
+  // null (UI shows "—") when nothing is tracked yet. Sparkline only from real
+  // velocity_history — never a synthesized series.
+  const health = total
+    ? {
+        pct,
+        label: blockers.length
+          ? blockers.length + ' blocker' + (blockers.length === 1 ? '' : 's')
+          : 'No blockers',
+        points: points.map(p => ({ label: p.label, value: p.value })),
+      }
+    : { pct: null, label: 'Not started', points: [] };
 
   // ---- decisions (superset: keep raw fields + contract title/status/date) ----
+  // Status stays '' when unrecorded — no default "Approved" badge.
   const rawDecisions = Array.isArray(raw.decisions) ? raw.decisions : [];
   const decisions = rawDecisions
-    .map(d => ({
-      ...d,
-      title:  d.title || d.summary || d.decision || 'Decision',
-      status: d.status || 'Approved',
-      date:   d.date || d.created || '',
-    }))
+    .map(d => {
+      if (typeof d === 'string') return { title: d, status: '', date: '' };
+      return {
+        ...d,
+        title:  d.title || d.summary || d.decision || 'Decision',
+        status: d.status || '',
+        date:   d.date || d.created || '',
+      };
+    })
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
     .slice(0, 8);
 
   // ---- project (identity + current user) ----
-  const cfg = state.config || {};
+  // User comes from config, else the real OS account running the server;
+  // null when neither exists (UI greets generically, hides the profile row).
   const envUser = (typeof process !== 'undefined' && process.env && process.env.USER) || '';
   const userName = cfg.user_name
-    || (envUser ? envUser.charAt(0).toUpperCase() + envUser.slice(1) : 'Developer');
+    || (envUser ? envUser.charAt(0).toUpperCase() + envUser.slice(1) : null);
   const project = {
-    name: state.projectName || raw.project_name || raw.project || 'Project',
+    name: state.projectName || raw.project_name || raw.project || '',
     user: { name: userName, email: cfg.user_email || '' },
   };
 

@@ -14,6 +14,8 @@ import { useState, useEffect } from './preact.js';
 const _seed = (typeof window !== 'undefined' && window.__S__) || {};
 
 let _state = {
+  // First-run signal — false only when the server scanned and found no .rcode.
+  initialized:      _seed.initialized      !== false,
   // Redesign dashboard contract slices (DATA-CONTRACT.md) — read by the Overview
   // slot components. Derived server-side by scanner.buildDashboard.
   project:          _seed.project          || null,

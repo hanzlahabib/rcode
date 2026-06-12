@@ -5,22 +5,14 @@
  * date ticks across the top and one segment per phase (Planning, Design,
  * Development, Testing, Launch). Each segment shows its date range and a state
  * badge: Completed → green, In Progress → purple, Upcoming → gray.
- * Reads `phases[{ name, range, state }]` from the store; falls back to
- * representative sample data so the card renders standalone.
+ * Reads `phases[{ name, range, state }]` from the store. An empty array is
+ * real data — rendered as an honest "No phases yet" state with a command hint,
+ * never substituted with sample phases.
  * See .planning/campaign/DATA-CONTRACT.md. Reads props/store only — no fetch.
  */
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
-
-// Representative sample used when the store slice is empty/undefined.
-const SAMPLE = [
-  { name: 'Planning',    range: 'Jun 1 – Jun 7',   state: 'done'   },
-  { name: 'Design',      range: 'Jun 8 – Jun 14',  state: 'done'   },
-  { name: 'Development', range: 'Jun 15 – Jul 5',  state: 'active' },
-  { name: 'Testing',     range: 'Jul 6 – Jul 19',  state: 'todo'   },
-  { name: 'Launch',      range: 'Jul 20 – Aug 1',  state: 'todo'   },
-];
 
 // Map phase state → label + badge/segment modifier.
 function stateMeta(state) {
@@ -51,7 +43,22 @@ function visibleWindow(phases) {
 
 export function ProgressTimeline() {
   const S = useStore();
-  const all = (S.phases && S.phases.length) ? S.phases : SAMPLE;
+  const all = Array.isArray(S.phases) ? S.phases : [];
+
+  if (!all.length) {
+    return html`
+      <section class="dash-card">
+        <div class="pt-head">
+          <p class="dash-card-title">Progress Timeline</p>
+        </div>
+        <div class="dash-empty">
+          <span>No phases yet</span>
+          <code class="dash-empty-hint">/rcode-plan</code>
+        </div>
+      </section>
+    `;
+  }
+
   const phases = visibleWindow(all);
 
   // Date ticks across the top — the start of each visible phase range, plus

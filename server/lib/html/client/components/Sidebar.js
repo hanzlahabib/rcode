@@ -12,7 +12,8 @@
  *   5. user profile footer (avatar initials + name + email)
  *
  * Reads `project { name, user { name, email } }` from the store; falls back to
- * the projectName prop and representative sample data so it renders standalone.
+ * the projectName prop. No sample data — when no user is configured the
+ * profile footer is hidden, and a missing project name shows "No project".
  * No inline style= attributes — all styling via .sb-* classes in css.js.
  */
 
@@ -34,12 +35,6 @@ const NAV_LINKS = [
   { view: 'settings',     icon: 'edit-3',      label: 'Settings'     },
 ];
 
-// Representative fallbacks so the chrome renders before /api/state lands.
-const SAMPLE_PROJECT = {
-  name: 'Acme AI Platform',
-  user: { name: 'Hanzla', email: 'hanzla@example.com' },
-};
-
 /** Two-letter initials from a display name. */
 function initials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
@@ -58,8 +53,8 @@ function initials(name) {
 export function Sidebar({ activeView, projectName }) {
   const S = useStore();
   const project = (S && S.project) || {};
-  const name = project.name || projectName || SAMPLE_PROJECT.name;
-  const user = project.user || SAMPLE_PROJECT.user;
+  const name = project.name || projectName || 'No project';
+  const user = (project.user && project.user.name) ? project.user : null;
 
   return html`
     <aside class="sidebar" id="sidebar">
@@ -91,13 +86,15 @@ export function Sidebar({ activeView, projectName }) {
         <${ProjectHealth} />
       </div>
 
-      <div class="sb-profile">
-        <span class="sb-avatar">${initials(user.name)}</span>
-        <span class="sb-profile-meta">
-          <span class="sb-profile-name">${user.name || ''}</span>
-          <span class="sb-profile-email">${user.email || ''}</span>
-        </span>
-      </div>
+      ${user ? html`
+        <div class="sb-profile">
+          <span class="sb-avatar">${initials(user.name)}</span>
+          <span class="sb-profile-meta">
+            <span class="sb-profile-name">${user.name}</span>
+            <span class="sb-profile-email">${user.email || ''}</span>
+          </span>
+        </div>
+      ` : null}
     </aside>
   `;
 }

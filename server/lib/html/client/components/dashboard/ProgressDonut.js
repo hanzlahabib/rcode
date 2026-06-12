@@ -10,17 +10,26 @@
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
 
-// Representative sample so the card renders standalone before data agent A10
-// populates the real `progress` slice in the store.
-const SAMPLE = { completed: 18, inProgress: 4, notStarted: 2, total: 24, pct: 76 };
-
 function pctOf(n, total) {
   return total > 0 ? Math.round((n / total) * 100) : 0;
 }
 
 export function ProgressDonut() {
   const S = useStore();
-  const p = S.progress || SAMPLE;
+  const p = S.progress;
+
+  // No tracked work yet (or no project) — honest empty state, no sample donut.
+  if (!p || !p.total) {
+    return html`
+      <section class="dash-card donut-card">
+        <p class="dash-card-title">Project Progress</p>
+        <div class="dash-empty">
+          <span>No tasks tracked yet</span>
+          <code class="dash-empty-hint">/rcode-plan</code>
+        </div>
+      </section>
+    `;
+  }
   const completed = p.completed ?? 0;
   const inProgress = p.inProgress ?? 0;
   const notStarted = p.notStarted ?? 0;

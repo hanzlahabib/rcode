@@ -8,7 +8,7 @@
  */
 
 import { html, useState } from '../preact.js';
-import { pctNum, chip as chipDesc, humanDate, pct } from '../util.js';
+import { pctNum, chip as chipDesc, humanDate, pct, currentPhaseId } from '../util.js';
 import {
   runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
@@ -181,7 +181,9 @@ export function PhaseCard({ phase: p, S }) {
   const sps = p.sprints || [];
   const stories = sps.flatMap(s => s.stories || []);
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
-  const isCur = String(p.id) === String(S && S.currentPhase);
+  // currentPhase is the contract object (or legacy string) — compare by id.
+  const cpId = currentPhaseId(S && S.currentPhase);
+  const isCur = cpId !== '' && String(p.id) === cpId;
   const running = runningInPhase(p);
   const borderStyle = isCur ? 'border-left-color:var(--accent-amber)' : '';
   return html`

@@ -4,26 +4,19 @@
  * "In Progress" card with a "View all" link top-right and a list of rows,
  * each = task title + right-aligned percent badge (blue pill).
  *
- * Reads `tasks.inProgress[{ title, pct }]` from the store. Pure — never fetches.
- * Falls back to a representative sample when the slice is absent so the card
- * renders standalone before data agent A10 populates the store.
- * See .planning/campaign/DATA-CONTRACT.md.
+ * Reads `tasks.inProgress[{ title, pct }]` from the store (pct is null when no
+ * real per-task progress exists — the percent pill is simply omitted). Pure —
+ * never fetches. An absent or empty slice renders an honest "Nothing in
+ * progress" state — never sample data. See .planning/campaign/DATA-CONTRACT.md.
  */
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
 import { TaskPipeline } from '../TaskPipeline.js';
 
-// Representative sample — used only until the real `tasks` slice exists.
-const SAMPLE = [
-  { title: 'Build shell', pct: 60 },
-  { title: 'Wire /api/state', pct: 35 },
-  { title: 'Port overview cards', pct: 80 },
-];
-
 export function InProgress() {
   const S = useStore();
-  const items = (S.tasks && S.tasks.inProgress) || SAMPLE;
+  const items = (S.tasks && Array.isArray(S.tasks.inProgress)) ? S.tasks.inProgress : [];
 
   return html`
     <section class="dash-card ip-card">
