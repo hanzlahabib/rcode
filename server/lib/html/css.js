@@ -2340,6 +2340,81 @@ footer {
   padding: 24px;
   text-align: center;
 }
+
+/* ── Blockers card (Row 2, Card 3) ───────────────────────────────── */
+.bk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bk-viewall {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--dash-teal);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bk-viewall:hover { text-decoration: underline; }
+.bk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bk-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  column-gap: 10px;
+}
+.bk-icon {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.bk-body { min-width: 0; }
+.bk-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+.bk-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-pill {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.bk-sev-high   { color: var(--dash-sev-high);   }
+.bk-sev-medium { color: var(--dash-sev-medium); }
+.bk-sev-low    { color: var(--dash-sev-low);    }
+.bk-pill.bk-sev-high {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+.bk-pill.bk-sev-medium {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+.bk-pill.bk-sev-low {
+  background: rgba(156, 163, 175, 0.12);
+  border-color: rgba(156, 163, 175, 0.35);
+}
 </style>`;
 }
 
