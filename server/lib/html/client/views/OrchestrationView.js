@@ -20,13 +20,29 @@ import { Icon } from '../icons-client.js';
 
 // ── Session card ──────────────────────────────────────────────────────────────
 
+// Tooltip text per session status — shown on the colored status dot.
+const DOT_TITLES = {
+  running: 'Running — output streaming',
+  blocked: 'Blocked — waiting for your input',
+  done:    'Done — exited cleanly',
+  exited:  'Exited',
+  stopped: 'Stopped',
+  error:   'Error',
+};
+
 function OrchCard({ session: s }) {
-  const running = s.status === 'running';
-  const waiting = !!s.waiting;
+  const blocked = s.status === 'blocked';
+  // 'blocked' is a live PTY (server-side classification of running) — keep
+  // the Stop button available for it.
+  const running = s.status === 'running' || blocked;
+  const waiting = blocked || !!s.waiting;
   const [showReject, setShowReject] = useState(false);
   const cardCls = 'orch-card orch-' + s.status + (waiting ? ' orch-waiting' : '');
-  const badge   = waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
-  const dotCls  = 'term-status-dot ' + (waiting ? 'waiting' : s.status);
+  const badge   = blocked
+    ? html`<${Icon} name="alert-triangle" size=${12}/> blocked — needs input`
+    : waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
+  const dotCls  = 'term-status-dot ' + (blocked ? 'blocked' : waiting ? 'waiting' : s.status);
+  const dotTitle = DOT_TITLES[s.status] || s.status;
 
   function handleTerminal(e) {
     e.stopPropagation();
@@ -41,7 +57,7 @@ function OrchCard({ session: s }) {
   return html`
     <div class=${cardCls}>
       <div class="orch-card-head">
-        <span class=${dotCls}></span>
+        <span class=${dotCls} title=${dotTitle}></span>
         <span class="orch-card-id">${s.storyId}</span>
         ${s.runner ? html`
           <span class="runner-badge" title=${'Launched with ' + s.runner + (s.model ? ' (' + s.model + ')' : '')}>
@@ -84,7 +100,11 @@ function OrchCard({ session: s }) {
 
 function sortSessions(sessions) {
   return [...sessions].sort((a, b) => {
-    // Waiting-for-input first (needs attention)
+    // Blocked-on-input first (needs immediate attention)
+    if ((a.status === 'blocked') !== (b.status === 'blocked')) {
+      return a.status === 'blocked' ? -1 : 1;
+    }
+    // Then idle-waiting
     if (!!a.waiting !== !!b.waiting) return a.waiting ? -1 : 1;
     // Then running
     if ((a.status === 'running') !== (b.status === 'running')) {
@@ -191,7 +211,8 @@ const STATUS_ORDER = ['done', 'exited', 'stopped', 'error'];
 function HistoryPanel() {
   const { activeSessions, history } = useStore();
   const merged = mergeSessionsAndHistory(activeSessions, history);
-  const ended = merged.filter(r => r.status !== 'running');
+  // 'blocked' is a live session (waiting for input), not an ended run.
+  const ended = merged.filter(r => r.status !== 'running' && r.status !== 'blocked');
 
   if (ended.length === 0) {
     return html`

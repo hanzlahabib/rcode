@@ -22,6 +22,7 @@ import { XtermPanel } from './XtermPanel.js';
 import { OrchPanel } from './OrchPanel.js';
 import { RunnerPicker } from './RunnerPicker.js';
 import { CommandPalette } from './CommandPalette.js';
+import { BlockedToasts } from './NotifyCenter.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
 import { RoadmapView } from '../views/RoadmapView.js';
@@ -304,6 +305,7 @@ export function App() {
 
       <${XtermPanel} />
       <${OrchPanel} />
+      <${BlockedToasts} />
       <${RunnerPicker} />
       <${CommandPalette} open=${paletteOpen} onClose=${() => setPaletteOpen(false)} />
     </div>

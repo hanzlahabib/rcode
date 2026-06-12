@@ -10,7 +10,9 @@
  * HTTP (control plane):
  *   POST /api/run      { storyId, cmd?, runner?, model? } → spawn a PTY session
  *   POST /api/stop     { storyId }        → SIGTERM the PTY
- *   GET  /api/sessions                    → list all sessions
+ *   GET  /api/sessions                    → list all sessions (status is
+ *        'blocked' instead of 'running' when the PTY is idle on a question —
+ *        see looksBlocked(); each entry also carries lastOutputAt)
  *   GET  /api/runners                     → detected agent CLIs + their models
  *   GET  /api/history                    → completed run history (newest-first)
  * WebSocket (data plane):
@@ -357,6 +359,59 @@ function gitModified() {
 // almost certainly waiting for the user (a question, or end of a turn).
 const IDLE_THRESHOLD_MS = 20000;
 
+// ── Blocked-session detection ─────────────────────────────────────────────────
+// A session is classified "blocked" when its PTY has been silent for at least
+// BLOCKED_IDLE_MS AND the scrollback tail looks like a question / permission
+// prompt / idle input box. Deliberately conservative: both conditions must
+// hold, and the patterns below only match clear ask-the-user shapes.
+const BLOCKED_IDLE_MS   = 10000;
+const BLOCKED_TAIL_CHARS = 2000;
+
+// Strip ANSI escape sequences (OSC, CSI, other ESC) and carriage returns so
+// pattern matching sees plain text, not control bytes.
+function stripAnsi(str) {
+  return String(str)
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, '')
+    .replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, '')
+    .replace(/\x1b[@-_]/g, '')
+    .replace(/\r/g, '');
+}
+
+// Heuristic: does the recent scrollback tail look like the CLI is asking the
+// user something? Checks only the last few visible lines (box-drawing borders
+// removed) for question/permission shapes:
+//   - "Do you want …"            - "[y/n]" / "(y/n)"
+//   - "Enter to select/confirm"  - "❯" idle/selection prompt
+//   - a "1. … / 2. …" option list - a line ending with "?"
+function looksBlocked(scrollback) {
+  const tail = stripAnsi(String(scrollback || '').slice(-BLOCKED_TAIL_CHARS));
+  const lines = tail.split('\n')
+    .map(l => l.replace(/[│┃┆┇┊┋]/g, ' ').replace(/[─━╭╮╰╯└┘┌┐├┤╴╶]+/g, ' ').trim())
+    .filter(Boolean);
+  const recent = lines.slice(-12);
+  if (recent.length === 0) return false;
+  const text = recent.join('\n');
+  if (/\bdo you want\b/i.test(text)) return true;
+  if (/\[y\/n\]|\(y\/n\)/i.test(text)) return true;
+  if (/enter to (select|confirm|continue)|press enter/i.test(text)) return true;
+  if (/❯/.test(recent.slice(-6).join('\n'))) return true;
+  const hasOpt1 = recent.some(l => /^❯?\s*1[.)]\s+\S/.test(l));
+  const hasOpt2 = recent.some(l => /^❯?\s*2[.)]\s+\S/.test(l));
+  if (hasOpt1 && hasOpt2) return true;
+  if (recent.slice(-3).some(l => /\?\s*$/.test(l))) return true;
+  return false;
+}
+
+// Classify a session for /api/sessions: a live PTY whose output has gone
+// idle on a question shape reports 'blocked'; otherwise the lifecycle status
+// (running / done / exited / stopped / error) passes through unchanged.
+function classifyStatus(s, idleMs) {
+  if (s.status === 'running' && idleMs > BLOCKED_IDLE_MS && looksBlocked(s.scrollback)) {
+    return 'blocked';
+  }
+  return s.status;
+}
+
 // ── route handlers ────────────────────────────────────────────────────────────
 
 async function handleRunners(res) {
@@ -380,12 +435,13 @@ async function handleSessions(res) {
     const idleMs = now - (s.lastDataAt || now);
     out.push({
       storyId:      id,
-      status:       s.status,
+      status:       classifyStatus(s, idleMs),
       pid:          s.proc ? s.proc.pid : null,
       cmd:          s.cmd,
       runner:       s.runner || 'claude',
       model:        s.model  || '',
       startTime:    s.startTime,
+      lastOutputAt: s.lastDataAt ? new Date(s.lastDataAt).toISOString() : s.startTime,
       clients:      s.wsClients.size,
       filesChanged: changed,
       idleSeconds:  Math.floor(idleMs / 1000),

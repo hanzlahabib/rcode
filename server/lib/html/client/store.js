@@ -62,6 +62,9 @@ let _state = {
   // Orchestrator reachability: null = unknown (before first poll),
   // true = reachable, false = unreachable. Written by the 4s session poll.
   orchOnline:       null,
+  // Persistent blocked-session alerts (written by notify.js trackBlocked).
+  // [{ storyId, cmd }] — rendered as clickable toasts by NotifyCenter.js.
+  blockedAlerts:    [],
   // File jump bridge: the agent drawer's "View file in Files" sets this to a
   // project-relative .md path; FilesView opens it on arrival and clears it.
   requestedFile:    null,
@@ -84,11 +87,12 @@ export function getState() {
   return { ..._state };
 }
 
-/** Build the storyId → session map for sessions with status === 'running'. */
+/** Build the storyId → session map for LIVE sessions. A 'blocked' session is
+ * a live PTY waiting for input, so it counts as live alongside 'running'. */
 function deriveRunningByStory(sessions) {
   const map = {};
   for (const s of sessions || []) {
-    if (s && s.storyId && s.status === 'running') map[s.storyId] = s;
+    if (s && s.storyId && (s.status === 'running' || s.status === 'blocked')) map[s.storyId] = s;
   }
   return map;
 }

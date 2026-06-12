@@ -57,6 +57,9 @@ const ICONS = {
 
   // Added in sprint 36.1 — command palette search icon
   search:          '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+
+  // Blocked-session notifications — topbar bell
+  bell:            '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
 };
 
 // Render an icon as an inline <svg>. size in px; cls adds extra classes.

@@ -4725,6 +4725,152 @@ summary:focus-visible,
   font-weight: 600;
 }
 /* ════════ Live session join (END) ════════ */
+/* ════════ Blocked-session notifications (l2-notify) (BEGIN) ════════
+   Self-contained block: status-dot palette (teal running / amber blocked /
+   gray exited), topbar bell + dropdown, persistent blocked toasts.
+   Theme variables only — valid in dark and [data-theme=light]. */
+
+@keyframes nb-pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+/* Status dots — teal pulse running, amber blocked, gray exited. Overrides the
+   earlier .term-status-dot palette via cascade (this block loads last). */
+.term-status-dot.running { background: var(--dash-teal); animation: nb-pulse 1.5s infinite; }
+.term-status-dot.blocked { background: var(--accent-amber); animation: nb-pulse 1s infinite; }
+.term-status-dot.waiting { background: var(--accent-amber); animation: nb-pulse 1s infinite; }
+.term-status-dot.exited  { background: var(--text-muted); animation: none; }
+.tab-status-dot.blocked  { background: var(--accent-amber); animation: nb-pulse 1s infinite; }
+
+/* Blocked session card accent in the Orchestration grid */
+.orch-card.orch-blocked {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 0 1px var(--accent-amber) inset;
+}
+
+/* ── Topbar bell ── */
+.nb-bell-wrap { position: relative; display: inline-flex; }
+.nb-bell { position: relative; }
+.nb-bell--alert { color: var(--accent-amber); }
+.nb-bell-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: var(--radius-full);
+  background: var(--accent-amber);
+  color: var(--bg-page);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+.nb-bell-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 1100;
+  min-width: 260px;
+  max-width: 360px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+}
+.nb-bell-title {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  padding: var(--space-2) var(--space-3);
+}
+.nb-bell-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-2);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.nb-bell-item:hover { background: var(--bg-hover); }
+.nb-bell-item-id { font-weight: 600; white-space: nowrap; }
+.nb-bell-item-cmd {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Persistent blocked toasts ── */
+.nb-toasts {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 380px;
+}
+.nb-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--accent-amber);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+.nb-toast:hover { background: var(--bg-hover); }
+.nb-toast-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-amber);
+  animation: nb-pulse 1s infinite;
+  flex-shrink: 0;
+}
+.nb-toast-text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.nb-toast-cmd {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nb-toast-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-1);
+  flex-shrink: 0;
+}
+.nb-toast-dismiss:hover { color: var(--text-primary); background: var(--bg-active); }
+/* ════════ Blocked-session notifications (l2-notify) (END) ════════ */
 </style>`;
 }
 
