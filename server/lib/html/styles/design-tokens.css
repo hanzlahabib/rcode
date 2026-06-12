@@ -1,0 +1,207 @@
+/* =====================================================================
+ * Design tokens — Majlis dashboard redesign (foundation)
+ *
+ * Values are the EXACT tokens from .planning/campaign/MOCKUP-SPEC.md.
+ * Components reference these via CSS custom properties or the token utility
+ * classes below. No component uses an inline `style=` attribute.
+ * ===================================================================== */
+
+:root {
+  /* Surfaces */
+  --bg:            #0F1729; /* deep navy page base */
+  --card:          #111A2E; /* card surface */
+  --card-alt:      #0E1626; /* alternate card surface (inner panels) */
+  --border:        #1E2A44; /* 1px hairline border */
+
+  /* Accents */
+  --teal:          #2DD4BF;
+  --purple:        #A78BFA;
+  --blue:          #3B82F6;
+  --amber:         #F59E0B;
+
+  /* Severity */
+  --sev-high:      #F87171; /* red   — High   */
+  --sev-medium:    #FBBF24; /* amber — Medium */
+  --sev-low:       #9CA3AF; /* gray  — Low    */
+
+  /* Text */
+  --text:          #E6EDF7; /* primary */
+  --text-muted:    #8595AD; /* muted   */
+
+  /* Geometry */
+  --radius:        14px;
+  --gap:           20px;
+  --sidebar-w:     240px;
+
+  /* Typography */
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- Base ---------- */
+.rd-root {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- App shell layout ---------- */
+.rd-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+.rd-main {
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+/* 12-col card grid, 20px gap */
+.rd-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gap);
+}
+
+/* Column spans for the three rows */
+.rd-col-4 { grid-column: span 4; }   /* Row 1 & 2: three cards */
+.rd-col-6 { grid-column: span 6; }   /* Row 3: two cards */
+.rd-col-12 { grid-column: span 12; }
+
+@media (max-width: 1100px) {
+  .rd-col-4, .rd-col-6 { grid-column: span 12; }
+}
+
+/* ---------- Card ---------- */
+.rd-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rd-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.rd-card-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Placeholder slot — visible empty state for un-filled components */
+.rd-slot {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+/* ---------- Sidebar ---------- */
+.rd-sidebar {
+  background: var(--card-alt);
+  border-right: 1px solid var(--border);
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rd-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rd-nav-item {
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.rd-nav-item:hover { color: var(--text); background: var(--card); }
+.rd-nav-item.is-active { color: var(--text); background: var(--card); }
+
+/* ---------- Header ---------- */
+.rd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+}
+
+.rd-header-title { font-size: 20px; font-weight: 700; margin: 0; }
+.rd-header-sub { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+.rd-header-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ---------- Buttons ---------- */
+.rd-btn {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.rd-btn-primary { background: var(--teal); border-color: var(--teal); color: #06231F; }
+.rd-btn-icon { padding: 8px 10px; }
+
+/* ---------- Status dot ---------- */
+.rd-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.rd-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+
+/* ---------- Accent / severity text + chips ---------- */
+.rd-accent-teal   { color: var(--teal); }
+.rd-accent-purple { color: var(--purple); }
+.rd-accent-blue   { color: var(--blue); }
+.rd-accent-amber  { color: var(--amber); }
+
+.rd-text-muted { color: var(--text-muted); }
+
+.rd-sev-high   { color: var(--sev-high); }
+.rd-sev-medium { color: var(--sev-medium); }
+.rd-sev-low    { color: var(--sev-low); }
+
+.rd-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.rd-chip-approved { color: var(--teal); border-color: var(--teal); }
+.rd-chip-high     { color: var(--sev-high); border-color: var(--sev-high); }
+.rd-chip-medium   { color: var(--sev-medium); border-color: var(--sev-medium); }
+.rd-chip-low      { color: var(--sev-low); border-color: var(--sev-low); }
