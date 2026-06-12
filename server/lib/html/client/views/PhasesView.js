@@ -13,7 +13,8 @@ import { pct, humanDate, phaseHints } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
-import { runAndOpenTerm, openTermPanel, runningInPhase } from '../orchestrator.js';
+import { openTermPanel, runningInPhase } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { Icon } from '../icons-client.js';
 
 function AttrItem({ label, value }) {
@@ -60,7 +61,9 @@ function PhaseDetail({ phase: p, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runAndOpenTerm('phase-' + p.id, '/rcode-execute ' + p.id, 'Phase ' + p.id);
+    openRunnerPicker(e.currentTarget, {
+      kind: 'session', storyId: 'phase-' + p.id, cmd: '/rcode-execute ' + p.id, title: 'Phase ' + p.id,
+    });
   }
   function handleTerm(e) {
     e.stopPropagation();

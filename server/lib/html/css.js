@@ -3738,6 +3738,121 @@ summary:focus-visible,
   .sidebar { z-index: 30; }
   #sidebar-backdrop { z-index: 25; }
 }
+
+/* ════════ RunnerPicker — runner + model picker popover (BEGIN) ════════
+   Anchored under the clicked Run button via --rp-x/--rp-y custom
+   properties set from the component ref (no inline style attribute).
+   Built entirely on theme tokens, so it follows dark and
+   [data-theme="light"] automatically. z-index sits above the terminal
+   panel (201) and below the toast (1000). */
+.runner-picker {
+  position: fixed;
+  /* Default off-screen until the component measures + clamps to viewport. */
+  left: var(--rp-x, -9999px);
+  top:  var(--rp-y, -9999px);
+  z-index: 900;
+  width: 248px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-lg);
+}
+.runner-picker-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.runner-picker-hint {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+.runner-picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.runner-picker-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.runner-picker-select {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-3);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+}
+.runner-picker-select:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+.runner-picker-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.runner-picker-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.runner-picker-btn {
+  padding: 5px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-3);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+}
+.runner-picker-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.runner-picker-btn--run {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+}
+.runner-picker-btn--run:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+.runner-picker-btn--run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Runner badge — which CLI/model launched a session (Orchestration cards). */
+.runner-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 7px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 16px;
+}
+/* ════════ RunnerPicker (END) ════════ */
 </style>`;
 }
 

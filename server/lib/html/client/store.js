@@ -64,6 +64,9 @@ let _state = {
   // Orchestrator side-panel state (driven by orchestrator.js / OrchPanel.js)
   // { open, storyId }
   orchPanel:        null,
+  // Runner-picker popover state (driven by components/RunnerPicker.js)
+  // { open, x, y, run: { kind: 'session'|'command', storyId?, cmd, title? } }
+  runnerPicker:     null,
 };
 
 /** Registered subscriber functions. */

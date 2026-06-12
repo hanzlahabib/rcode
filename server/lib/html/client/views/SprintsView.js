@@ -14,7 +14,8 @@ import { pct, humanDate, allSprints, sprintHints } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
-import { runAndOpenTerm, openTermPanel, runningInSprint } from '../orchestrator.js';
+import { openTermPanel, runningInSprint } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { Icon } from '../icons-client.js';
 
 function AttrItem({ label, value }) {
@@ -49,7 +50,9 @@ function SprintDetail({ sprint: s, S }) {
 
   function handleRun(e) {
     e.stopPropagation();
-    runAndOpenTerm('sprint-' + s.id, '/rcode-execute-sprint ' + s.id, 'Sprint ' + s.id);
+    openRunnerPicker(e.currentTarget, {
+      kind: 'session', storyId: 'sprint-' + s.id, cmd: '/rcode-execute-sprint ' + s.id, title: 'Sprint ' + s.id,
+    });
   }
   function handleTerm(e) {
     e.stopPropagation();

@@ -12,7 +12,8 @@
 
 import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
+import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { orchElapsed } from '../util.js';
 import { Icon } from '../icons-client.js';
 
@@ -40,6 +41,11 @@ function OrchCard({ session: s }) {
       <div class="orch-card-head">
         <span class=${dotCls}></span>
         <span class="orch-card-id">${s.storyId}</span>
+        ${s.runner ? html`
+          <span class="runner-badge" title=${'Launched with ' + s.runner + (s.model ? ' (' + s.model + ')' : '')}>
+            ${s.runner}${s.model ? ' · ' + s.model : ''}
+          </span>
+        ` : null}
         <span class="orch-card-badge">${badge}</span>
       </div>
       <div class="orch-card-cmd">${s.cmd || ''}</div>
@@ -104,10 +110,10 @@ function CommandRunner() {
     return () => clearTimeout(t);
   }, [busy]);
 
-  function handleRun() {
+  function handleRun(e) {
     if (!selected || disabled) return;
     setBusy(true);
-    runCommandFromUI(selected);
+    openRunnerPicker(e.currentTarget, { kind: 'command', cmd: selected, title: selected });
   }
 
   return html`

@@ -19,6 +19,7 @@ import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
 import { XtermPanel } from './XtermPanel.js';
 import { OrchPanel } from './OrchPanel.js';
+import { RunnerPicker } from './RunnerPicker.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
 import { RoadmapView } from '../views/RoadmapView.js';
@@ -282,6 +283,7 @@ export function App() {
 
       <${XtermPanel} />
       <${OrchPanel} />
+      <${RunnerPicker} />
     </div>
   `;
 }
