@@ -12,6 +12,7 @@
  *   POST /api/stop     { storyId }        → SIGTERM the PTY
  *   GET  /api/sessions                    → list all sessions
  *   GET  /api/runners                     → detected agent CLIs + their models
+ *   GET  /api/history                    → completed run history (newest-first)
  * WebSocket (data plane):
  *   /ws/<storyId>?token=...               → live terminal I/O
  *
@@ -27,6 +28,7 @@
 
 const http   = require('http');
 const path   = require('path');
+const os     = require('os');
 const crypto = require('crypto');
 const fs     = require('fs');
 const { execFile } = require('child_process');
@@ -220,6 +222,35 @@ const SCROLLBACK_MAX = 256 * 1024;
 // Session: { proc, status, startTime, cmd, cols, rows, scrollback, wsClients:Set }
 const sessions = new Map();
 
+const HISTORY_FILE = path.join(os.homedir(), '.rcode', 'orch-history.json');
+const HISTORY_MAX  = 200; // cap persisted runs so the file cannot grow unbounded
+
+function loadHistory() {
+  try {
+    const raw = fs.readFileSync(HISTORY_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+let history = loadHistory();
+
+function persistRun(storyId, s, status) {
+  const endTime    = new Date().toISOString();
+  const durationMs = Date.parse(endTime) - (Date.parse(s.startTime) || Date.parse(endTime));
+  const entry = { storyId, cmd: s.cmd, status, startTime: s.startTime, endTime, durationMs };
+  history.push(entry);
+  if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
+  try {
+    fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+  } catch (err) {
+    console.error('[orchestrator] failed to persist run history:', err.message);
+  }
+}
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function json(res, code, body) {
@@ -337,6 +368,11 @@ async function handleSessions(res) {
   json(res, 200, { sessions: out });
 }
 
+function handleHistory(res) {
+  const out = [...history].sort((a, b) => String(b.endTime || '').localeCompare(String(a.endTime || '')));
+  json(res, 200, { history: out });
+}
+
 async function handleRun(req, res) {
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
@@ -437,6 +473,7 @@ async function handleRun(req, res) {
   proc.onExit(({ exitCode, signal }) => {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
+    persistRun(storyId, s, status);
   });
 
   // CLIs with no interactive initial-prompt flag (see registry) get the
@@ -542,6 +579,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
   if (method === 'GET'  && pathOnly === '/api/runners')  { await handleRunners(res); return; }
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
+  if (method === 'GET'  && pathOnly === '/api/history')  { handleHistory(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
