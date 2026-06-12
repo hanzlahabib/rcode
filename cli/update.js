@@ -46,7 +46,9 @@ const install = require('./install');
 function readConfigYaml(configPath) {
   const text = fs.readFileSync(configPath, 'utf8');
   const obj = {};
-  for (const raw of text.split('\n')) {
+  // CRLF tolerance (#889): split on \r?\n — a stray \r otherwise defeats the
+  // `#.*$` comment strip ($ won't cross the \r) and leaks comments into values.
+  for (const raw of text.split(/\r?\n/)) {
     const line = raw.replace(/#.*$/, '').trimEnd();
     if (!line) continue;
     if (line.startsWith(' ')) continue; // ignore nested keys (rare; preserved on disk via raw text path)
@@ -68,14 +70,16 @@ function readConfigYaml(configPath) {
  * If the key doesn't exist, append it.
  */
 function setYamlKey(rawText, key, value) {
-  const re = new RegExp(`^${key}:\\s*.*$`, 'm');
+  // CRLF tolerance (#889): [^\S\n]/[^\r\n] keep the match on one line even
+  // when the file uses \r\n (plain \s would walk across the line break).
+  const re = new RegExp(`^${key}:[^\\S\\n]*[^\\r\\n]*$`, 'm');
   const replacement = typeof value === 'string'
     ? `${key}: "${value.replace(/"/g, '\\"')}"`
     : `${key}: ${value}`;
   if (re.test(rawText)) {
     return rawText.replace(re, replacement);
   }
-  return rawText.replace(/\n*$/, '') + `\n${replacement}\n`;
+  return rawText.replace(/(?:\r?\n)*$/, '') + `\n${replacement}\n`;
 }
 
 function parseArgs(args) {

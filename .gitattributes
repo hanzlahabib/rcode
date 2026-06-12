@@ -1,0 +1,11 @@
+# Force LF on checkout for source + fixtures (#889). Windows git defaults to
+# core.autocrlf=true, which CRLF-converts these files and breaks parsers,
+# regexes, and baseline byte-diffs that assume \n.
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf

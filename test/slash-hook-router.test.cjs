@@ -30,7 +30,9 @@ function runRouter(stdinObj, home) {
   return spawnSync('node', [ROUTER], {
     input: JSON.stringify(stdinObj),
     encoding: 'utf8',
-    env: { ...process.env, HOME: home },
+    // os.homedir() reads USERPROFILE on Windows, HOME on posix — set both so
+    // the router resolves the temp home on every platform (#889).
+    env: { ...process.env, HOME: home, USERPROFILE: home },
   });
 }
 

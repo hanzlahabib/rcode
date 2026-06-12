@@ -42,8 +42,9 @@ function readStdin() {
 // Strip a leading YAML frontmatter block (`---\n...\n---`). The frontmatter is
 // CLI-tooling metadata (name/description/allowed-tools) that only confuses the
 // model — we want the executable command body injected, not its header.
+// \r?\n because Windows checkouts may deliver CRLF command bodies (#889).
 function stripFrontmatter(text) {
-  return text.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
 }
 
 function emit(hookEventName, additionalContext) {

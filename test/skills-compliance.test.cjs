@@ -23,6 +23,8 @@ const SKILLS_DIR = path.join(PROJECT_ROOT, 'rcode', 'skills');
 const LINE_BUDGET = 200;
 
 function parseFrontmatter(text) {
+  // CRLF tolerance (#889): Windows checkouts may use \r\n.
+  text = text.replace(/\r\n/g, '\n');
   if (!text.startsWith('---\n')) return { frontmatter: {}, body: text };
   const end = text.indexOf('\n---\n', 4);
   if (end === -1) return { frontmatter: {}, body: text };
