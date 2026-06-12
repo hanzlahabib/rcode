@@ -337,8 +337,8 @@ export function TaskCard({ task: t }) {
         ${t.id ? html`<${Tag}>${t.id}</${Tag}>` : null}
         ${t.sprintId ? html`<${Tag}>Sprint ${t.sprintId}</${Tag}>` : null}
         ${t.phaseId ? html`<${Tag}>Phase ${t.phaseId}</${Tag}>` : null}
-        ${t.id && running ? html`<span class="run-badge">● running</span>` : null}
-        <${TaskPipeline} task=${t}/>
+        ${t.id && running ? html`<span class="run-badge"><span class="live-dot"></span>running</span>` : null}
+        <${TaskPipeline} task=${t} running=${t.id && running}/>
       </div>
       ${expanded ? html`
         <div class="task-detail">

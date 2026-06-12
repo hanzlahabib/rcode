@@ -4679,6 +4679,52 @@ summary:focus-visible,
   opacity: 0.6;
 }
 /* ════════ Sidebar health badges (END) ════════ */
+
+/* ════════ Live session join — tasks/kanban/overview (l1-livetasks) ════════ */
+/* Self-contained: own keyframes, no dependencies on other blocks. */
+@keyframes live-session-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.75); }
+}
+/* Pulsing green dot — marks anything backed by a live orchestrator session */
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  animation: live-session-pulse 1.1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+/* Overview In Progress card — clickable live-session rows (above scanned tasks) */
+.ip-live-row {
+  cursor: pointer;
+  border-radius: var(--radius-2);
+}
+.ip-live-row:hover,
+.ip-live-row:focus-visible {
+  background: rgba(63, 185, 80, 0.08);
+}
+.ip-live-title {
+  font-weight: 500;
+  color: var(--accent-green);
+}
+.ip-live-elapsed {
+  flex: none;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+/* TaskPipeline current node pulses while a live session runs for the task */
+.tpipe-node--live {
+  animation: live-session-pulse 1.1s ease-in-out infinite;
+}
+/* Donut subtitle "· N running now" fragment */
+.donut-live {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+/* ════════ Live session join (END) ════════ */
 </style>`;
 }
 

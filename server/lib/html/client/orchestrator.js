@@ -204,8 +204,8 @@ export function activeSession(storyId) {
 
 /** True when storyId has a session with status==='running'. */
 export function isSessionRunning(storyId) {
-  const s = activeSession(storyId);
-  return !!(s && s.status === 'running');
+  const { runningByStory } = getState();
+  return !!(storyId && runningByStory && runningByStory[storyId]);
 }
 
 /** Count running sessions touching this sprint (sprint-level + its stories). */

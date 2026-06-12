@@ -53,6 +53,10 @@ let _state = {
   parseErrorDismissed:  false,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
+  // Derived join map: storyId → running session. Recomputed automatically by
+  // setState whenever activeSessions is written, so views can join tasks to
+  // live runs without scanning the array (TasksView, Kanban, Overview).
+  runningByStory:   {},
   // Persisted past runs (populated by startSessionsPoll → fetchHistory)
   history:          [],
   // Orchestrator reachability: null = unknown (before first poll),
@@ -80,11 +84,24 @@ export function getState() {
   return { ..._state };
 }
 
+/** Build the storyId → session map for sessions with status === 'running'. */
+function deriveRunningByStory(sessions) {
+  const map = {};
+  for (const s of sessions || []) {
+    if (s && s.storyId && s.status === 'running') map[s.storyId] = s;
+  }
+  return map;
+}
+
 /**
  * Shallow-merge `patch` into state, then notify all subscribers.
  * Only notifies if at least one key actually changed value.
+ * Writing activeSessions also refreshes the derived runningByStory map.
  */
 export function setState(patch) {
+  if ('activeSessions' in patch) {
+    patch = { ...patch, runningByStory: deriveRunningByStory(patch.activeSessions) };
+  }
   let changed = false;
   for (const key of Object.keys(patch)) {
     if (_state[key] !== patch[key]) {
