@@ -1014,6 +1014,49 @@ section .body {
 .summary-count-chip.planned,
 .summary-count-chip.todo     { color: var(--text-secondary); }
 
+/* ── Filter chips ───────────────────────────────────────────────── */
+.filter-chips {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.filter-chip-group {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-1);
+  align-items: center;
+}
+.filter-chip {
+  font-size: var(--text-2xs);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-4);
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.filter-chip:hover { border-color: var(--accent-primary); }
+.filter-chip.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+.filter-chip-clear {
+  font-size: var(--text-2xs);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-4);
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.filter-chip-clear:disabled { opacity: 0.4; cursor: default; }
+
 /* ── Badges ────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
