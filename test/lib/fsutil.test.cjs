@@ -108,9 +108,16 @@ test('writeFileAtomic accepts custom file mode', (t) => {
   const target = path.join(dir, 'executable.sh');
   writeFileAtomic(target, '#!/bin/sh\necho hi\n', { mode: 0o755 });
 
-  const stat = fs.statSync(target);
-  // Mask the mode bits we actually set (permission bits, not type)
-  assert.strictEqual(stat.mode & 0o777, 0o755);
+  assert.strictEqual(fs.readFileSync(target, 'utf8'), '#!/bin/sh\necho hi\n');
+  // POSIX permission bits are a posix-only feature: Windows has no execute
+  // bit and stat() reports a synthesized mode (0o666/0o444) regardless of
+  // the mode passed to open(). The write must still succeed there (asserted
+  // above); the mode itself is only observable on non-Windows.
+  if (process.platform !== 'win32') {
+    const stat = fs.statSync(target);
+    // Mask the mode bits we actually set (permission bits, not type)
+    assert.strictEqual(stat.mode & 0o777, 0o755);
+  }
 });
 
 // safeRmSync — issue #688
@@ -148,12 +155,18 @@ test('safeRmSync only unlinks a top-level symlink — never traverses to its tar
 
 test('safeRmSync refuses paths whose realpath escapes the project root', (t) => {
   const root = makeTempDir();
-  t.after(() => cleanup(root));
+  // A sibling tempdir exists on every platform — unlike /etc/hosts, which is
+  // absent on Windows and made this test pass vacuously (reason 'missing').
+  const outside = makeTempDir();
+  t.after(() => { cleanup(root); cleanup(outside); });
 
-  const result = safeRmSync('/etc/hosts', root);
+  const victim = path.join(outside, 'victim.txt');
+  fs.writeFileSync(victim, 'do not delete');
+
+  const result = safeRmSync(victim, root);
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, 'outside-root');
-  assert.strictEqual(fs.existsSync('/etc/hosts'), true);      // /etc/hosts still there
+  assert.strictEqual(fs.existsSync(victim), true);            // victim still there
 });
 
 test('safeRmSync returns ok with reason=missing for non-existent paths', (t) => {

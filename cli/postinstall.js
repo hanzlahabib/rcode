@@ -14,6 +14,17 @@ const os = require('os');
 const path = require('path');
 
 /**
+ * Path containment check that survives Windows: path.relative normalizes
+ * separators (/ vs \) and compares drive letters case-insensitively, which
+ * a raw startsWith prefix compare does not.
+ */
+function isPathInside(child, parent) {
+  const rel = path.relative(parent, child);
+  if (rel === '') return true;
+  return rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
+}
+
+/**
  * Decide whether the current postinstall invocation represents a GLOBAL
  * `npm install -g @hanzlaa/rcode` (true) or a transitive devDep install
  * inside someone's project (false).
@@ -28,17 +39,16 @@ const path = require('path');
 function isGlobalInstall(env, dirname, cwd) {
   try {
     if (env.npm_config_global === 'true') return true;
-    if (env.PNPM_HOME && dirname.startsWith(env.PNPM_HOME)) return true;
+    if (env.PNPM_HOME && isPathInside(dirname, env.PNPM_HOME)) return true;
     const globalPatterns = [
-      /\/node_modules\/@hanzlaa\/rcode/,
+      /[/\\]node_modules[/\\]@hanzlaa[/\\]rcode/,
       /[/\\]lib[/\\]node_modules[/\\]/,
       /\.nvm[/\\]versions[/\\]/,
       /\.pnpm[/\\]/,
       /\.yarn[/\\]global/,
     ];
     if (globalPatterns.some((re) => re.test(dirname))) return true;
-    const localNodeModules = path.join(cwd, 'node_modules');
-    if (!dirname.startsWith(localNodeModules)) return true;
+    if (!isPathInside(dirname, path.join(cwd, 'node_modules'))) return true;
     return false;
   } catch {
     return false;
