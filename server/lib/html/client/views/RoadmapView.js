@@ -46,6 +46,120 @@ function TreeNode({ label, icon, badge, status, children, defaultOpen, onDoubleC
   `;
 }
 
+/**
+ * Compute dependency waves for phases. Returns phases annotated with a numeric `wave`.
+ * Wave 0 = no dependencies. Wave N = 1 + max wave of all resolved dependencies.
+ * Iterates until stable (guards against cycles). Pure function.
+ */
+function computeWaves(phases) {
+  const byId = new Map(phases.map(p => [String(p.id), p]));
+  const waveMap = new Map(phases.map(p => [String(p.id), 0]));
+  const maxPasses = phases.length + 1;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let changed = false;
+    for (const p of phases) {
+      const deps = Array.isArray(p.dependsOn) ? p.dependsOn : [];
+      const resolvedDeps = deps.filter(d => byId.has(String(d)));
+      if (!resolvedDeps.length) continue;
+      const maxDepWave = Math.max(...resolvedDeps.map(d => waveMap.get(String(d)) || 0));
+      const newWave = maxDepWave + 1;
+      if (newWave > (waveMap.get(String(p.id)) || 0)) {
+        waveMap.set(String(p.id), newWave);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return phases.map(p => ({ ...p, wave: waveMap.get(String(p.id)) || 0 }));
+}
+
+/** Inline SVG dependency graph for phases, laid out by dependency wave column. */
+function PhaseGraph({ phases }) {
+  if (!phases || !phases.length) return null;
+
+  const annotated = computeWaves(phases);
+  const byId = new Map(annotated.map(p => [String(p.id), p]));
+
+  // Group by wave
+  const waveGroups = new Map();
+  for (const p of annotated) {
+    const w = p.wave;
+    if (!waveGroups.has(w)) waveGroups.set(w, []);
+    waveGroups.get(w).push(p);
+  }
+  const maxWave = Math.max(...waveGroups.keys());
+  const maxRows = Math.max(...[...waveGroups.values()].map(g => g.length));
+
+  const NODE_W = 168, NODE_H = 52, COL_GAP = 200, ROW_GAP = 72, PAD = 24;
+  const svgW = PAD + (maxWave + 1) * COL_GAP;
+  const svgH = PAD + maxRows * ROW_GAP;
+
+  // Assign pixel positions to each node
+  const positions = new Map();
+  for (const [wave, group] of waveGroups) {
+    const x = PAD + wave * COL_GAP;
+    group.forEach((p, i) => {
+      positions.set(String(p.id), { x, y: PAD + i * ROW_GAP });
+    });
+  }
+
+  // Build edges
+  const edges = [];
+  for (const p of annotated) {
+    const deps = Array.isArray(p.dependsOn) ? p.dependsOn : [];
+    for (const depId of deps) {
+      const dep = byId.get(String(depId));
+      if (!dep) continue;
+      const from = positions.get(String(dep.id));
+      const to   = positions.get(String(p.id));
+      if (!from || !to) continue;
+      // From right-center of dep node to left-center of p node
+      const x1 = from.x + NODE_W, y1 = from.y + NODE_H / 2;
+      const x2 = to.x,            y2 = to.y + NODE_H / 2;
+      const cx1 = x1 + (x2 - x1) * 0.5, cy1 = y1;
+      const cx2 = x1 + (x2 - x1) * 0.5, cy2 = y2;
+      edges.push(html`<path key=${'e-' + dep.id + '-' + p.id}
+        d=${'M' + x1 + ',' + y1 + ' C' + cx1 + ',' + cy1 + ' ' + cx2 + ',' + cy2 + ' ' + x2 + ',' + y2}
+        class="phase-graph-edge" marker-end="url(#pg-arrow)"/>`);
+    }
+  }
+
+  // Build nodes
+  const nodes = annotated.map(p => {
+    const pos = positions.get(String(p.id));
+    if (!pos) return null;
+    const statusSlug = (p.status || 'planned').replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+    const label = 'P' + p.id;
+    const name  = (p.name || '').slice(0, 18) + ((p.name || '').length > 18 ? '…' : '');
+    return html`
+      <g key=${'n-' + p.id} onClick=${() => { location.hash = 'phases/' + p.id; }} style="cursor:pointer">
+        <rect x=${pos.x} y=${pos.y} width=${NODE_W} height=${NODE_H} rx="8"
+          class=${'phase-graph-node phase-graph-' + statusSlug}/>
+        <text x=${pos.x + 10} y=${pos.y + 18} class="phase-graph-label">${label}</text>
+        <text x=${pos.x + 10} y=${pos.y + 34} class="phase-graph-sublabel">${name}</text>
+      </g>
+    `;
+  });
+
+  return html`
+    <details class="phase-graph-wrap" open>
+      <summary><${Icon} name="layers" size=${14}/> Dependency Graph</summary>
+      <svg class="phase-graph-svg"
+        width=${svgW} height=${svgH}
+        viewBox=${'0 0 ' + svgW + ' ' + svgH}>
+        <defs>
+          <marker id="pg-arrow" markerWidth="8" markerHeight="8"
+            refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" class="phase-graph-arrow"/>
+          </marker>
+        </defs>
+        ${edges}
+        ${nodes}
+      </svg>
+    </details>
+  `;
+}
+
 /** Leaf node (task row — no expand). */
 function TaskLeaf({ task: t }) {
   const done = t.status === 'done' || t.status === 'completed';
@@ -203,6 +317,7 @@ export function RoadmapView() {
   return html`
     <div id="view-roadmap" class="view active">
       <div class="view-title">Roadmap</div>
+      <${PhaseGraph} phases=${phases}/>
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter roadmap…"
           value=${filterQuery}
