@@ -1439,7 +1439,9 @@ footer {
 .kanban-refresh-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
 
 /* ── Orchestrator side panel ────────────────────────────────────── */
-#orch-panel {
+/* Selector matches the Preact component's class="orch-panel" — the legacy
+   id="orch-panel" DOM was removed in the Preact migration (Sprint 31.4). */
+.orch-panel {
   position: fixed;
   top: 0;
   right: 0;
@@ -1456,7 +1458,7 @@ footer {
   transition: transform var(--t-menu) var(--ease);
   box-shadow: -8px 0 32px rgba(0,0,0,0.4);
 }
-#orch-panel.open {
+.orch-panel.open {
   transform: translateX(0);
 }
 
@@ -1911,7 +1913,7 @@ footer {
   .hamburger-btn { display: flex; }
   .content-area { grid-column: 1; }
   .kanban-board { grid-template-columns: repeat(4, 260px); }
-  #orch-panel { max-width: 90vw; min-width: 280px; }
+  .orch-panel { max-width: 90vw; min-width: 280px; }
 }
 
 /* ── Milestones / roadmap dynamic ───────────────────────────── */
@@ -2374,15 +2376,19 @@ footer {
 }
 .donut-legend {
   flex: 1 1 auto;
+}
 /* ============================================================
    CompletedTasks (ct-*) + InProgress (ip-*) cards — Row 2
    Overview redesign. Appended by tasks agent A6.
    ============================================================ */
-.ct-head,
-.ip-head {
 /* ── Blockers card (Row 2, Card 3) ───────────────────────────────── */
-.bk-head {
 /* ── Dashboard redesign — Recent Decisions (Row 3, Card 1) ───────── */
+/* Merge repair: the four card-head rules were spliced into each other
+   mid-rule (unclosed braces nested every later rule). They share one
+   header layout — combined into a single rule. */
+.ct-head,
+.ip-head,
+.bk-head,
 .rd-head {
   display: flex;
   align-items: center;
@@ -2405,10 +2411,15 @@ footer {
 }
 .ct-list,
 .ip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .bk-viewall {
   background: none;
   border: none;
   padding: 0;
+}
 .rd-viewall {
   background: none;
   border: none;
@@ -2794,6 +2805,7 @@ footer {
   border-radius: 999px;
   color: var(--dash-blue);
   background: rgba(59, 130, 246, 0.15);
+}
 .bk-desc {
   margin: 2px 0 0;
   font-size: 12px;
@@ -2825,6 +2837,7 @@ footer {
 .bk-pill.bk-sev-low {
   background: rgba(156, 163, 175, 0.12);
   border-color: rgba(156, 163, 175, 0.35);
+}
 .pt-seg-range {
   font-size: 11px;
   color: var(--dash-text-muted);
@@ -2848,6 +2861,8 @@ footer {
 }
 @media (max-width: 700px) {
   .pt-track { flex-direction: column; }
+}
+
 /* ── Dashboard redesign — sidebar + header chrome + project health ──
    Mockup chrome. Re-declares .sidebar / header layout (later-wins per
    property; mobile position/transform from the base rule are preserved)
@@ -2871,7 +2886,7 @@ footer {
 .sb-logo-badge {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 16px; color: #06121f;
+  font-weight: 800; font-size: 16px; color: var(--dash-ink);
   background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
 }
 .sb-logo-word { font-size: 16px; font-weight: 700; color: var(--dash-text); letter-spacing: -0.01em; }
@@ -2900,7 +2915,7 @@ footer {
   cursor: pointer; text-align: left;
   transition: background 0.15s, color 0.15s;
 }
-.sb-nav-link:hover { background: rgba(255, 255, 255, 0.04); color: var(--dash-text); }
+.sb-nav-link:hover { background: var(--dash-hover); color: var(--dash-text); }
 .sb-nav-link.active { background: rgba(45, 212, 191, 0.12); color: var(--dash-text); font-weight: 600; }
 .sb-nav-link.active .sb-nav-ic { color: var(--dash-teal); }
 .sb-nav-ic { display: inline-flex; color: var(--dash-text-muted); }
@@ -2941,7 +2956,7 @@ footer {
 .sb-avatar {
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #06121f;
+  font-size: 12px; font-weight: 700; color: var(--dash-ink);
   background: linear-gradient(135deg, var(--dash-purple), var(--dash-blue));
 }
 .sb-profile-meta { display: flex; flex-direction: column; min-width: 0; }
@@ -2982,7 +2997,7 @@ footer {
 .tb-btn:hover { border-color: var(--dash-teal); }
 .tb-btn--primary {
   background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
-  border-color: transparent; color: #06121f;
+  border-color: transparent; color: var(--dash-ink);
 }
 .tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
 .tb-btn--icon { padding: 8px 11px; }
@@ -2991,6 +3006,190 @@ footer {
 @media (max-width: 760px) {
   .tb-sub { display: none; }
   .tb-synced { display: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   POLISH — chrome frame (app shell + sidebar + topbar + status bar).
+   Appended LAST so it wins ties against earlier conflicting rules.
+   Owner: p1-chrome agent. Scope: Sidebar / Topbar / App layout only.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Sidebar surface — darker sibling of --dash-card per mockup spec
+     ("Card surface: #0E1626 / #111A2E"); kept separate so the sidebar
+     reads one step below the page base. */
+  --dash-sidebar: #0E1626;
+  /* Ink on accent-filled surfaces (logo badge, avatar, primary button,
+     offline banner) — dark navy reads on the teal/blue gradient in both
+     themes, so it has no light override. */
+  --dash-ink: #06121F;
+  /* Subtle hover overlay for nav items — theme-dependent direction
+     (lighten on dark, darken on light). */
+  --dash-hover: rgba(255, 255, 255, 0.04);
+  /* Plain-text log view (OrchPanel) + xterm panel surround. The xterm
+     canvas itself keeps its own dark JS theme — these style the chrome. */
+  --dash-term-bg:   #050507;
+  --dash-term-text: #C8D8C8;
+  --dash-term-line: #A0C4A0;
+  --dash-term-tool: #7CB8FF;
+}
+
+/* Light theme — same --dash-* tokens, light values. The chrome (and any
+   card CSS built on these tokens) flips with the existing data-theme
+   toggle; accents (teal/purple/blue/amber/severity) stay identical. */
+[data-theme="light"] {
+  --dash-bg:         #F4F6FB;
+  --dash-card:       #FFFFFF;
+  --dash-border:     #E2E8F0;
+  --dash-text:       #1A2233;
+  --dash-text-muted: #5B6B82;
+  --dash-sidebar:    #FFFFFF;
+  --dash-hover:      rgba(15, 23, 41, 0.05);
+  --dash-term-bg:    #F1F5F9;
+  --dash-term-text:  #334155;
+  --dash-term-line:  #166534;
+  --dash-term-tool:  #1D4ED8;
+}
+
+/* Frame: deep-navy base behind chrome AND content so the mockup palette
+   is continuous (legacy body bg is near-black #08090a). */
+.app-shell,
+.main-scroll { background: var(--dash-bg); }
+
+/* Content column: 64px header row (greeting + subtitle need the height),
+   scrollable middle, auto-height status bar. Replaces the inline
+   grid-template-rows that previously lived on #main-content in App.js. */
+.content-area { grid-template-rows: 64px 1fr auto; }
+
+/* Sidebar surface per mockup. */
+.sidebar {
+  background: var(--dash-sidebar);
+  border-right: 1px solid var(--dash-border);
+}
+
+/* The legacy ".sidebar nav" rule (flex:1 + padding) outranks .sb-nav
+   (element+class beats class) and breaks the chrome nav alignment.
+   Re-assert: nav grows so the health card + profile hug the bottom. */
+.sidebar nav.sb-nav {
+  flex: 1 0 auto;
+  padding: 0;
+  gap: 2px;
+}
+
+/* Topbar: solid navy header — disable the legacy frosted-glass "header"
+   element rule (rgba near-black + backdrop blur) that bleeds through. */
+header.topbar {
+  background: var(--dash-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--dash-border);
+}
+.tb-welcome { font-size: 17px; letter-spacing: -0.012em; }
+.tb-sub { font-size: 12px; }
+
+/* Status bar (was inline styles in App.js StatusBar). */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 24px;
+  padding: 0 var(--space-4);
+  background: var(--dash-sidebar);
+  border-top: 1px solid var(--dash-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.statusbar-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  background: var(--dash-teal);
+}
+.statusbar-dot--offline { background: var(--dash-sev-high); }
+.statusbar-dot--busy { animation: pulse-dot 1s ease-in-out infinite; }
+.statusbar-path { overflow: hidden; text-overflow: ellipsis; }
+.statusbar-version { margin-left: auto; }
+
+/* Offline banner (was inline styles in App.js OfflineBanner). */
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--dash-sev-high);
+  color: var(--dash-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* ── Agent Sessions panel (OrchPanel) — themed on --dash-* tokens so it
+   follows the light/dark toggle like the rest of the chrome. */
+.orch-panel {
+  background: var(--dash-sidebar);
+  border-left: 1px solid var(--dash-border);
+}
+.orch-panel-header,
+.orch-panel-footer,
+.orch-files,
+.orch-files-head {
+  background: var(--dash-card);
+  border-color: var(--dash-border);
+}
+.orch-panel-title { color: var(--dash-text); }
+.orch-panel-close { color: var(--dash-text-muted); }
+.orch-panel-close:hover { background: var(--dash-hover); color: var(--dash-text); }
+.orch-tabs { background: var(--dash-sidebar); border-color: var(--dash-border); }
+.orch-tab { color: var(--dash-text-muted); }
+.orch-tab:hover { background: var(--dash-hover); color: var(--dash-text); }
+.orch-tab.active { background: var(--dash-card); color: var(--dash-text); }
+.orch-term-body { background: var(--dash-term-bg); }
+.orch-term-empty,
+.orch-empty-tab,
+.orch-footer-status { color: var(--dash-text-muted); }
+.kt-line { color: var(--dash-term-line); }
+.kt-line.tool { color: var(--dash-term-tool); }
+.kt-line.meta { color: var(--dash-text-muted); }
+.kt-stream { color: var(--dash-term-text); }
+.kt-file { color: var(--dash-text-muted); border-color: var(--dash-border); }
+.orch-footer-btn {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  color: var(--dash-text);
+}
+.orch-footer-btn:hover { background: var(--dash-card); border-color: var(--dash-teal); color: var(--dash-text); }
+
+/* ── xterm terminal panel chrome — same treatment. The xterm canvas keeps
+   its own dark JS theme (it is a real terminal); only the surround themes. */
+.term-panel { background: var(--dash-term-bg); border-top-color: var(--dash-teal); }
+.term-header { background: var(--dash-card); border-color: var(--dash-border); }
+.term-title { color: var(--dash-text); }
+.term-hint {
+  background: var(--dash-card);
+  border-color: var(--dash-border);
+  color: var(--dash-text-muted);
+}
+.term-btn {
+  background: var(--dash-card);
+  border-color: var(--dash-border);
+  color: var(--dash-text);
+}
+.term-btn:hover { background: var(--dash-card); border-color: var(--dash-teal); color: var(--dash-text); }
+.term-pill {
+  background: var(--dash-card);
+  border-color: var(--dash-teal);
+  color: var(--dash-text);
+}
+
+/* Mobile: App.js toggles .sidebar-open on the sidebar and .active on
+   the backdrop, but the legacy media query only styles .open / .show
+   (which nothing sets) — wire up the real class names. Also let the
+   content column own the full height (legacy 44px first row squashed it). */
+@media (max-width: 768px) {
+  .app-shell { grid-template-rows: 1fr; }
+  .sidebar.sidebar-open { left: 0; }
+  #sidebar-backdrop.active { display: block; }
 }
 </style>`;
 }

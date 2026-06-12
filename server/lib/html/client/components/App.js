@@ -68,27 +68,20 @@ function parseHash() {
 /** Full-width banner shown when /api/state polling is failing. */
 function OfflineBanner({ offline }) {
   if (!offline) return null;
-  const s = 'display:flex;align-items:center;gap:var(--space-2);'
-    + 'padding:var(--space-2) var(--space-4);background:var(--red,#eb5757);'
-    + 'color:#fff;font-size:var(--text-sm);font-weight:600;';
-  return html`<div style=${s}>⚠ Dashboard offline — retrying every 30s…</div>`;
+  return html`<div class="offline-banner">⚠ Dashboard offline — retrying every 30s…</div>`;
 }
 
 /** Thin IDE-style status bar: project path · rcode version · last refresh. */
 function StatusBar({ projectRoot, projectName, version, updatedAgo, offline, refreshing }) {
-  const bar = 'display:flex;align-items:center;gap:var(--space-4);height:24px;'
-    + 'padding:0 var(--space-4);background:var(--bg-elev-1);'
-    + 'border-top:1px solid var(--border-subtle);font-family:var(--font-mono);'
-    + 'font-size:var(--text-2xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;';
-  const dot = 'width:6px;height:6px;border-radius:50%;flex-shrink:0;background:'
-    + (offline ? 'var(--red,#eb5757)' : 'var(--accent-green)') + ';'
-    + (refreshing ? 'animation:pulse-dot 1s ease-in-out infinite;' : '');
   const path = projectRoot || projectName || 'no project';
+  const dotCls = 'statusbar-dot'
+    + (offline ? ' statusbar-dot--offline' : '')
+    + (refreshing ? ' statusbar-dot--busy' : '');
   return html`
-    <footer style=${bar}>
-      <span style=${dot}></span>
-      <span style="overflow:hidden;text-overflow:ellipsis;" title=${path}>${path}</span>
-      <span style="margin-left:auto;">rcode v${version || '?'}</span>
+    <footer class="statusbar">
+      <span class=${dotCls}></span>
+      <span class="statusbar-path" title=${path}>${path}</span>
+      <span class="statusbar-version">rcode v${version || '?'}</span>
       <span>${offline ? 'offline' : refreshing ? 'syncing…' : 'updated ' + updatedAgo}</span>
     </footer>
   `;
@@ -225,7 +218,7 @@ export function App() {
         document.body.classList.remove('sidebar-visible');
       }}></div>
 
-      <div class="content-area" id="main-content" style="grid-template-rows:44px 1fr auto;">
+      <div class="content-area" id="main-content">
         <${Topbar}
           projectName=${storeState.projectName || ''}
           updatedAgo=${updatedAgo}
