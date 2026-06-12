@@ -26,15 +26,23 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: pnpm
 
-      # No `npm install` — the project has zero runtime dependencies and
-      # the tests only use Node's built-in test runner. If a contributor
-      # accidentally adds a dep, this step would still pass because node
-      # --test doesn't need it, but the next job catches that.
+      # Install IS required: the suite exercises cli/install.js, cli/update.js,
+      # cli/lib/schemas.cjs and cli/lib/prompts.cjs, which require devDependencies
+      # (zod, picocolors, @clack/prompts). Runtime deps stay gated by the
+      # `zero-dep invariant` job below — this installs build/test tooling only.
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: run tests
         run: node --test
@@ -49,14 +57,18 @@ jobs:
 
       - name: verify package.json has no runtime dependencies
         run: |
-          DEPS=$(jq '.dependencies // {} | length' package.json)
-          if [ "$DEPS" -ne 0 ]; then
-            echo "❌ package.json has $DEPS runtime dependencies."
+          # Sole documented exception: `ws` powers the dashboard orchestrator
+          # terminal (server/orchestrator.js). It is lazy-required with a
+          # graceful fallback, but must ship for `pnpm dlx` users since
+          # `server/` is in the published files list. Anything else fails.
+          BAD=$(jq -r '.dependencies // {} | keys[] | select(. != "ws")' package.json)
+          if [ -n "$BAD" ]; then
+            echo "❌ Unapproved runtime dependencies: $BAD"
             echo "   This project is intentionally zero-dep — see ADR 0001."
             jq '.dependencies' package.json
             exit 1
           fi
-          echo "✓ zero runtime dependencies"
+          echo "✓ runtime dependencies limited to the documented exception (ws)"
 
       - name: verify devDependencies are build-only (no runtime deps allowed)
         run: |
