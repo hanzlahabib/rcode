@@ -52,6 +52,35 @@ function parseSimpleYaml(text) {
 }
 
 /**
+ * Extract an array value from raw YAML frontmatter text by key.
+ * Handles inline arrays (`key: [a, b]`) and block lists (`key:\n  - a\n  - b`).
+ * Returns string[] — empty array when the key is absent or the value is empty.
+ */
+function parseYamlList(text, key) {
+  if (!text || !key) return [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const inlineM = lines[i].match(new RegExp('^' + key + '\\s*:\\s*\\[(.*)\\]\\s*$'));
+    if (inlineM) {
+      return inlineM[1].split(',')
+        .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(Boolean);
+    }
+    const headerM = lines[i].match(new RegExp('^' + key + '\\s*:\\s*$'));
+    if (headerM) {
+      const items = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        const itemM = lines[j].match(/^\s+-\s+(.+)/);
+        if (itemM) items.push(itemM[1].trim().replace(/^['"]|['"]$/g, ''));
+        else if (lines[j].match(/^\s*[a-zA-Z_]/) || lines[j].trim() === '') break;
+      }
+      return items;
+    }
+  }
+  return [];
+}
+
+/**
  * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
  * which is the committed source of truth. state.json sprint/story records are
  * often incomplete (planner agents write SPRINT.md files without registering
@@ -93,7 +122,9 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
       const text = safeReadText(path.join(phasesDir, dir.name, f)) || '';
 
       // Sprint goal: frontmatter `goal:`, else first line of <objective>.
-      const fm = parseSimpleYaml((text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '');
+      const fmRaw = (text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
+      const fm = parseSimpleYaml(fmRaw);
+      const dependsOn = parseYamlList(fmRaw, 'depends_on');
       let goal = fm.goal || '';
       if (!goal) {
         const obj = (text.match(/<objective>\s*([\s\S]*?)<\/objective>/) || [])[1] || '';
@@ -136,10 +167,17 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
         : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
         : 'planned';
 
-      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories };
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories, dependsOn };
     });
 
-    return { ...p, sprints };
+    // Derive phase-level depends_on by aggregating sprint-level depends_on entries.
+    // A sprint depends_on entry is a sprint ID (e.g. "31.2"); take the integer part
+    // before "." as the dependency phase ID. Drop self-references (sibling sprints).
+    const phaseDependsOn = [...new Set(
+      sprints.flatMap(s => s.dependsOn || []).map(dep => String(dep).split('.')[0]).filter(depId => depId !== intId)
+    )];
+
+    return { ...p, sprints, dependsOn: phaseDependsOn };
   });
 }
 
