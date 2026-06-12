@@ -7,9 +7,13 @@
  *   populated     — sections map + distillates / change records / archive / post-mortems
  *
  * Command hints accordion mirrors the legacy cmdAccordion() output.
+ *
+ * Clicking an existing entry opens its content in the shared FileReader
+ * slide-over (same component the Files view uses).
  */
 
 import { html, useState, useEffect } from '../preact.js';
+import { FileReader } from '../components/FileReader.js';
 
 // ---- Command hints accordion ----
 const MEMORY_HINTS = [
@@ -39,7 +43,7 @@ function CmdAccordion({ hints }) {
 }
 
 // ---- Section file list ----
-function SectionGroup({ section, files }) {
+function SectionGroup({ section, files, onOpen }) {
   return html`
     <div>
       <div class="memory-group-header">${section}</div>
@@ -47,8 +51,13 @@ function SectionGroup({ section, files }) {
         ${files.map(f => {
           const status = f.exists ? (f.populated ? '✓' : '○') : '✗';
           const meta   = f.exists ? (f.populated ? 'populated' : 'template only') : 'missing';
+          // Only existing files are openable — missing entries stay inert.
           return html`
-            <div class="item" key=${f.name}>
+            <div
+              class=${'item' + (f.exists ? ' item-clickable' : '')}
+              key=${f.name}
+              onClick=${f.exists ? () => onOpen(f) : undefined}
+            >
               <div class="item-title">${status} ${f.name}</div>
               <div class="item-meta">${meta} · ${f.bytes || 0} bytes</div>
             </div>
@@ -60,14 +69,14 @@ function SectionGroup({ section, files }) {
 }
 
 // ---- Generic list group (distillates, change records, etc.) ----
-function ListGroup({ label, items }) {
+function ListGroup({ label, items, onOpen }) {
   if (!items || !items.length) return null;
   return html`
     <div>
       <div class="memory-group-header">${label} (${items.length})</div>
       <div class="decision-list">
         ${items.map(f => html`
-          <div class="item" key=${f.name}>
+          <div class="item item-clickable" key=${f.name} onClick=${() => onOpen(f)}>
             <div class="item-title">${f.name}</div>
           </div>
         `)}
@@ -81,6 +90,7 @@ export function MemoryView() {
   const [memory, setMemory]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [reader, setReader]   = useState(null); // { path, name } | null
 
   useEffect(() => {
     setLoading(true);
@@ -144,14 +154,21 @@ export function MemoryView() {
       </div>
       <div id="memory-sections">
         ${Object.entries(sections).map(([section, files]) => html`
-          <${SectionGroup} key=${section} section=${section} files=${files} />
+          <${SectionGroup} key=${section} section=${section} files=${files} onOpen=${setReader} />
         `)}
-        <${ListGroup} label="Distillates" items=${memory.distillates} />
-        <${ListGroup} label="Change Records" items=${memory.changeRecords} />
-        <${ListGroup} label="Milestone Archive" items=${memory.archive} />
-        <${ListGroup} label="Post-mortems" items=${memory.postMortems} />
+        <${ListGroup} label="Distillates" items=${memory.distillates} onOpen=${setReader} />
+        <${ListGroup} label="Change Records" items=${memory.changeRecords} onOpen=${setReader} />
+        <${ListGroup} label="Milestone Archive" items=${memory.archive} onOpen=${setReader} />
+        <${ListGroup} label="Post-mortems" items=${memory.postMortems} onOpen=${setReader} />
       </div>
       <${CmdAccordion} hints=${MEMORY_HINTS} />
+      ${reader && html`
+        <${FileReader}
+          path=${reader.path}
+          title=${reader.name}
+          onClose=${() => setReader(null)}
+        />
+      `}
     </div>
   `;
 }

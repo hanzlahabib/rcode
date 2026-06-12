@@ -3738,6 +3738,107 @@ summary:focus-visible,
   .sidebar { z-index: 30; }
   #sidebar-backdrop { z-index: 25; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   FILE READER — shared slide-over for Files + Memory views
+   (components/FileReader.js)
+   ══════════════════════════════════════════════════════════════════ */
+.reader-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45); /* intentional: one-off overlay tint; translucency can't be expressed as a theme token */
+  z-index: 220;
+}
+.reader-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(720px, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev-2);
+  border-left: 1px solid var(--border-default);
+  box-shadow: -12px 0 32px rgba(0,0,0,0.35); /* intentional: overlay shadow; alpha can't be a theme token */
+  z-index: 221;
+}
+.reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.reader-heading { min-width: 0; }
+.reader-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reader-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0;
+}
+.reader-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.reader-copy {
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-3);
+  color: var(--text-secondary);
+  cursor: pointer;
+  letter-spacing: 0;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.reader-copy:hover { background: var(--bg-hover); color: var(--text-primary); }
+.reader-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.reader-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+.reader-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+.reader-error {
+  color: var(--accent-red);
+  font-size: var(--text-xs);
+  padding: var(--space-4);
+}
+.reader-skel-line { margin-bottom: var(--space-3); }
+.reader-skel-block { height: 200px; }
+@media (max-width: 768px) {
+  .reader-panel { width: 100vw; border-left: none; }
+}
 </style>`;
 }
 
