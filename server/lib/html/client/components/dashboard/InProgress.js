@@ -12,6 +12,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
+import { TaskPipeline } from '../TaskPipeline.js';
 
 // Representative sample — used only until the real `tasks` slice exists.
 const SAMPLE = [
@@ -39,7 +40,8 @@ export function InProgress() {
             ${items.map((t, i) => html`
               <li class="ip-row" key=${t.title + i}>
                 <span class="ip-title">${t.title}</span>
-                <span class="ip-badge">${t.pct}%</span>
+                <${TaskPipeline} task=${t} mini=${true}/>
+                ${Number.isFinite(t.pct) ? html`<span class="ip-badge">${t.pct}%</span>` : null}
               </li>
             `)}
           </ul>
