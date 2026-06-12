@@ -11,6 +11,7 @@
  *   POST /api/run      { storyId, cmd? }  → spawn a PTY session
  *   POST /api/stop     { storyId }        → SIGTERM the PTY
  *   GET  /api/sessions                    → list all sessions
+ *   GET  /api/history                     → persisted run history (newest-first)
  * WebSocket (data plane):
  *   /ws/<storyId>?token=...               → live terminal I/O
  *
@@ -232,6 +233,11 @@ async function handleSessions(res) {
   json(res, 200, { sessions: out });
 }
 
+function handleHistory(res) {
+  const out = [...history].sort((a, b) => String(b.endTime || '').localeCompare(String(a.endTime || '')));
+  json(res, 200, { history: out });
+}
+
 async function handleRun(req, res) {
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
@@ -405,6 +411,7 @@ const server = http.createServer(async (req, res) => {
 
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
+  if (method === 'GET'  && pathOnly === '/api/history') { handleHistory(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
