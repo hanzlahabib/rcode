@@ -11,5 +11,8 @@ import { App } from './components/App.js';
 
 const root = document.getElementById('app-root');
 if (root) {
+  // Drop the SSR loading shell — Preact diffs against existing children,
+  // so the spinner must be gone before the first render.
+  root.textContent = '';
   render(html`<${App}/>`, root);
 }

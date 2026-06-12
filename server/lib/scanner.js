@@ -21,6 +21,26 @@ function listDir(dir) {
   try { return fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
 }
 
+/**
+ * Per-scan directory-listing cache. buildPhaseTree and the state.phases
+ * loop walk the same .planning/phases/ directories; one scan previously
+ * issued up to 4 readdirs per phase dir. The returned function memoizes
+ * dirent listings for the lifetime of a single scan.
+ * Returns null (not []) for unreadable dirs so callers can distinguish
+ * "missing dir" from "empty dir" like the raw readdirSync try/catch did.
+ */
+function makeDirLister() {
+  const cache = new Map();
+  return function listCached(dir) {
+    let entries = cache.get(dir);
+    if (entries === undefined) {
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { entries = null; }
+      cache.set(dir, entries);
+    }
+    return entries;
+  };
+}
+
 function parseSimpleYaml(text) {
   if (!text) return {};
   const out = {};
@@ -39,17 +59,18 @@ function parseSimpleYaml(text) {
  * state.json. When a phase has a directory with *-SPRINT.md files, those win;
  * otherwise the raw state.json sprints array is kept as-is.
  *
- * @param {string} projectDir   repo root
- * @param {Array}  rawPhases    state.raw.phases
- * @returns {Array|null}        phases with a populated `sprints` array each
+ * @param {string}   projectDir  repo root
+ * @param {Array}    rawPhases   state.raw.phases
+ * @param {function} [listCached] per-scan dir lister from makeDirLister()
+ * @returns {Array|null}         phases with a populated `sprints` array each
  */
-function buildPhaseTree(projectDir, rawPhases) {
+function buildPhaseTree(projectDir, rawPhases, listCached) {
   if (!Array.isArray(rawPhases)) return null;
+  const list = listCached || makeDirLister();
   const phasesDir = path.join(projectDir, '.planning', 'phases');
-  let dirs;
-  try {
-    dirs = fs.readdirSync(phasesDir, { withFileTypes: true }).filter(d => d.isDirectory());
-  } catch { return rawPhases; }
+  const allEntries = list(phasesDir);
+  if (allEntries === null) return rawPhases;
+  const dirs = allEntries.filter(d => d.isDirectory());
 
   return rawPhases.map(p => {
     const intId = String(p.id || p.number || '').split('.')[0];
@@ -58,8 +79,9 @@ function buildPhaseTree(projectDir, rawPhases) {
                                d.name.startsWith(intId.padStart(2, '0') + '-'));
     if (!dir) return p;
 
-    let files;
-    try { files = fs.readdirSync(path.join(phasesDir, dir.name)); } catch { return p; }
+    const fileEntries = list(path.join(phasesDir, dir.name));
+    if (fileEntries === null) return p;
+    const files = fileEntries.map(e => e.name);
     const sprintFiles = files.filter(f => /-SPRINT\.md$/i.test(f)).sort();
     if (!sprintFiles.length) return p;
 
@@ -308,8 +330,9 @@ function buildDashboard(state) {
   return { project, progress, currentPhase, timeline: { launchDate, onTrack: blockers.length === 0, points }, tasks, blockers, health, decisions, phases };
 }
 
-function scanState(rcodeDir) {
+function scanStateUncached(rcodeDir) {
   const projectDir = path.dirname(rcodeDir);
+  const listCached = makeDirLister();
   const state = {
     exists: fs.existsSync(rcodeDir),
     projectName: null,
@@ -322,8 +345,6 @@ function scanState(rcodeDir) {
     milestone: null,
     currentPhase: null,
     currentSprint: null,
-    planningFiles: [],
-    context: null,
     lastScanned: new Date().toISOString(),
   };
 
@@ -367,10 +388,11 @@ function scanState(rcodeDir) {
         try {
           const intIdFb  = String(p.id || p.number || '').split('.')[0];
           const paddedFb = intIdFb.padStart(2, '0');
-          const dirsFb   = fs.readdirSync(phasesDir2, { withFileTypes: true });
+          const dirsFb   = listCached(phasesDir2) || [];
           const matchFb  = dirsFb.find(d => d.isDirectory() && d.name.startsWith(paddedFb + '-'));
           if (matchFb) {
-            const allMdFb    = fs.readdirSync(path.join(phasesDir2, matchFb.name)).filter(f => f.endsWith('.md'));
+            const allMdFb    = (listCached(path.join(phasesDir2, matchFb.name)) || [])
+              .map(e => e.name).filter(f => f.endsWith('.md'));
             const numberedFb = allMdFb.filter(f => /^\d{2}-\d{2}-/.test(f)).sort().reverse();
             const chosenFb   = numberedFb.length ? numberedFb[0] : allMdFb.sort().reverse()[0];
             if (chosenFb) {
@@ -396,11 +418,12 @@ function scanState(rcodeDir) {
       const padded = intId.padStart(2, '0');
       let phaseDir = null, sprintFile = null;
       try {
-        const dirs = fs.readdirSync(phasesDir, { withFileTypes: true });
+        const dirs = listCached(phasesDir) || [];
         const match = dirs.find(d => d.isDirectory() && d.name.startsWith(padded + '-'));
         if (match) {
           phaseDir = match.name;
-          const allMd = fs.readdirSync(path.join(phasesDir, match.name)).filter(f => f.endsWith('.md'));
+          const allMd = (listCached(path.join(phasesDir, match.name)) || [])
+            .map(e => e.name).filter(f => f.endsWith('.md'));
           const numbered = allMd.filter(f => /^\d{2}-\d{2}-/.test(f)).sort().reverse();
           const chosen = numbered.length ? numbered[0] : allMd.sort().reverse()[0];
           if (chosen) sprintFile = `.planning/phases/${match.name}/${chosen}`;
@@ -429,23 +452,11 @@ function scanState(rcodeDir) {
     state.blockers = state.raw.blockers.filter(b => b && (typeof b === 'string' || b.title));
   }
 
-  state.context = safeReadText(path.join(rcodeDir, 'context', 'active.md'))
-    || safeReadText(path.join(projectDir, '.planning', 'CONTEXT.md'));
-
-  // Walk .planning/ for file tree
-  const planningDir = path.join(projectDir, '.planning');
-  function walkPlanning(dir, prefix) {
-    for (const entry of listDir(dir)) {
-      const full = path.join(dir, entry.name);
-      const rel  = path.join(prefix, entry.name);
-      if (entry.isDirectory()) {
-        walkPlanning(full, rel);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        state.planningFiles.push({ path: rel, name: entry.name });
-      }
-    }
-  }
-  if (fs.existsSync(planningDir)) walkPlanning(planningDir, '');
+  // `context` (full active.md text) and `planningFiles` (the .planning/ walk)
+  // were shipped on every /api/state poll with zero client consumers — the
+  // Files view uses /api/files and the memory summary uses memoryBank.active.
+  // Dropped from the payload; restore behind an explicit ?full param if a
+  // view ever needs them.
 
   // #12 — surface pending handoff (.rcode/HANDOFF.json) and active context
   // (.rcode/context/active.md) for the dashboard banner + memory-bank summary.
@@ -480,7 +491,7 @@ function scanState(rcodeDir) {
     } catch { /* ignore */ }
   }
 
-  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases);
+  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases, listCached);
 
   // Derive the redesign dashboard contract (DATA-CONTRACT.md). Attached to the
   // scan so GET /api/state returns the exact shape and client.js seeds it into
@@ -489,6 +500,62 @@ function scanState(rcodeDir) {
   state.dashboard = buildDashboard(state);
   state.phaseTree = state.dashboard.phases;
 
+  return state;
+}
+
+// ── Scan cache ────────────────────────────────────────────────────────────────
+// Every /api/state poll (per tab, every 30s) and every / load used to pay a
+// full synchronous read+parse of state.json and all SPRINT.md files. Two-layer
+// cache:
+//   1. TTL fast-path — requests within SCAN_TTL_MS share one scan (dedupes the
+//      page-load burst of / + /api/state and concurrent tabs).
+//   2. mtime signature — stat'ing the watched files is ~100× cheaper than
+//      reading + regex-parsing them; when no mtime/size changed, the cached
+//      state (with its ORIGINAL lastScanned stamp) is returned, which also
+//      lets the client skip its store patch on identical data.
+let _scanCache = null; // { rcodeDir, sig, state, ts }
+const SCAN_TTL_MS = 2000;
+
+/** Max directory depth for the signature walk — guards against pathological
+ *  nesting; readdirSync withFileTypes does not follow symlinks, so cycles
+ *  via symlinked dirs are not walked. */
+const SIG_WALK_MAX_DEPTH = 12;
+
+/** Cheap change signature: mtime+size of every file scanState reads. */
+function scanSignature(rcodeDir, projectDir) {
+  const parts = [];
+  const statOne = (f) => {
+    try { const s = fs.statSync(f); parts.push(f + ':' + s.mtimeMs + ':' + s.size); }
+    catch { parts.push(f + ':absent'); }
+  };
+  statOne(path.join(rcodeDir, 'state.json'));
+  statOne(path.join(rcodeDir, 'config.yaml'));
+  statOne(path.join(rcodeDir, 'HANDOFF.json'));
+  statOne(path.join(rcodeDir, 'context', 'active.md'));
+  (function walk(dir, depth) {
+    if (depth > SIG_WALK_MAX_DEPTH) return;
+    for (const e of listDir(dir)) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full, depth + 1);
+      else if (e.isFile() && e.name.endsWith('.md')) statOne(full);
+    }
+  })(path.join(projectDir, '.planning'), 0);
+  return parts.join('|');
+}
+
+function scanState(rcodeDir) {
+  const now = Date.now();
+  if (_scanCache && _scanCache.rcodeDir === rcodeDir && now - _scanCache.ts < SCAN_TTL_MS) {
+    return _scanCache.state;
+  }
+  const projectDir = path.dirname(rcodeDir);
+  const sig = scanSignature(rcodeDir, projectDir);
+  if (_scanCache && _scanCache.rcodeDir === rcodeDir && _scanCache.sig === sig) {
+    _scanCache.ts = now;
+    return _scanCache.state;
+  }
+  const state = scanStateUncached(rcodeDir);
+  _scanCache = { rcodeDir, sig, state, ts: now };
   return state;
 }
 

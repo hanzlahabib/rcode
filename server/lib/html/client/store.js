@@ -117,14 +117,34 @@ export function refresh() {
 
 /**
  * Preact hook. Subscribes the calling component to the store and
- * returns the current state. The component re-renders on every setState().
+ * returns the current state (or the selected slice).
+ *
+ * Without a selector the component re-renders on every setState().
+ * With a selector it re-renders only when the selected value changes
+ * (Object.is), so slice subscribers skip unrelated store traffic:
+ *
+ *   const project = useStore(s => s.project);
+ *
+ * The selector must be pure and is captured on mount — pass a stable
+ * function (module-level or inline reading fixed keys), not one that
+ * closes over changing props.
  */
-export function useStore() {
-  const [state, setLocalState] = useState(getState);
+export function useStore(selector) {
+  const [state, setLocalState] = useState(
+    () => (selector ? selector(_state) : getState())
+  );
   useEffect(() => {
+    const update = (newState) => {
+      if (selector) {
+        const next = selector(newState);
+        setLocalState(prev => (Object.is(prev, next) ? prev : next));
+      } else {
+        setLocalState({ ...newState });
+      }
+    };
     // Resync on mount in case setState was called before mount.
-    setLocalState(getState());
-    const unsub = subscribe(newState => setLocalState({ ...newState }));
+    update(_state);
+    const unsub = subscribe(update);
     return unsub;
   }, []);
   return state;
