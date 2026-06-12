@@ -3475,6 +3475,83 @@ header.topbar {
   .sidebar.sidebar-open { left: 0; }
   #sidebar-backdrop.active { display: block; }
 }
+/* ============================================================
+   TaskPipeline (tpipe-*) — per-task stage stepper
+   Planned → In Progress → Review → Done. Rendered inside task
+   rows (Tasks view via TaskCard) and the Overview In Progress
+   card rows (mini variant). Appended by pipeline agent F1.
+   ============================================================ */
+.tpipe {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  vertical-align: middle;
+}
+.tpipe-node {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  flex: none;
+  color: transparent;
+  background: transparent;
+  border: 1.5px solid var(--dash-sev-low, var(--text-muted));
+}
+.tpipe-node--done {
+  background: var(--dash-teal, var(--accent-green));
+  border-color: var(--dash-teal, var(--accent-green));
+  color: var(--dash-bg, var(--bg-page));
+}
+.tpipe-node--current {
+  border-color: var(--dash-purple, var(--accent-blue));
+  animation: tpipe-pulse 1.6s ease-in-out infinite;
+}
+.tpipe-node--blocked {
+  border-color: var(--dash-sev-high, var(--accent-red));
+  animation: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dash-sev-high, var(--accent-red)) 20%, transparent);
+}
+@keyframes tpipe-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--dash-purple, var(--accent-blue)) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 5px color-mix(in srgb, var(--dash-purple, var(--accent-blue)) 12%, transparent); }
+}
+.tpipe-line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  flex: none;
+  background: color-mix(in srgb, var(--dash-sev-low, var(--text-muted)) 45%, transparent);
+}
+.tpipe-line--done {
+  background: var(--dash-teal, var(--accent-green));
+}
+.tpipe-blocked {
+  flex: none;
+  margin-left: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--dash-sev-high, var(--accent-red));
+  background: color-mix(in srgb, var(--dash-sev-high, var(--accent-red)) 14%, transparent);
+}
+/* Mini variant — overview card rows */
+.tpipe--mini { gap: 2px; }
+.tpipe--mini .tpipe-node {
+  width: 9px;
+  height: 9px;
+  border-width: 1px;
+  font-size: 6px;
+}
+.tpipe--mini .tpipe-line { width: 8px; height: 1.5px; }
+.tpipe--mini .tpipe-blocked { padding: 1px 5px; font-size: 9px; margin-left: 2px; }
 </style>`;
 }
 

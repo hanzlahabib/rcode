@@ -13,6 +13,7 @@ import {
   runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
 import { Icon } from '../icons-client.js';
+import { TaskPipeline } from './TaskPipeline.js';
 
 // ---- Toast helper (shared by CmdHint copy action and any view) ----
 export function showToast(msg) {
@@ -303,6 +304,7 @@ export function TaskCard({ task: t }) {
         ${t.sprintId ? html`<${Tag}>Sprint ${t.sprintId}</${Tag}>` : null}
         ${t.phaseId ? html`<${Tag}>Phase ${t.phaseId}</${Tag}>` : null}
         ${t.id && running ? html`<span class="run-badge">● running</span>` : null}
+        <${TaskPipeline} task=${t}/>
       </div>
       ${expanded ? html`
         <div class="task-detail">
