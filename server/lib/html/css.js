@@ -2340,6 +2340,88 @@ footer {
   padding: 24px;
   text-align: center;
 }
+
+/* ============================================================
+   CompletedTasks (ct-*) + InProgress (ip-*) cards — Row 2
+   Overview redesign. Appended by tasks agent A6.
+   ============================================================ */
+.ct-head,
+.ip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ct-viewall,
+.ip-viewall {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-blue);
+}
+.ct-viewall:hover,
+.ip-viewall:hover {
+  text-decoration: underline;
+}
+.ct-list,
+.ip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ct-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--dash-text);
+}
+.ct-check {
+  flex: none;
+  color: var(--accent-green);
+}
+.ct-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ct-date {
+  flex: none;
+  font-size: 12px;
+  color: var(--dash-text-muted);
+}
+.ip-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--dash-text);
+}
+.ip-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ip-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--dash-blue);
+  background: rgba(59, 130, 246, 0.15);
+}
 </style>`;
 }
 
