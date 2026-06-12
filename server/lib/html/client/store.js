@@ -14,9 +14,17 @@ import { useState, useEffect } from './preact.js';
 const _seed = (typeof window !== 'undefined' && window.__S__) || {};
 
 let _state = {
+  // Redesign dashboard contract slices (DATA-CONTRACT.md) — read by the Overview
+  // slot components. Derived server-side by scanner.buildDashboard.
+  project:          _seed.project          || null,
+  progress:         _seed.progress         || null,
+  timeline:         _seed.timeline         || null,
+  tasks:            _seed.tasks            || null,
+  health:           _seed.health           || null,
   // Fields injected by client.js / window.__S__
   phases:           _seed.phases           || [],
   milestone:        _seed.milestone        || '',
+  // currentPhase is now the contract object { name, status, milestones[] }.
   currentPhase:     _seed.currentPhase     || null,
   currentSprint:    _seed.currentSprint    || null,
   decisions:        _seed.decisions        || [],

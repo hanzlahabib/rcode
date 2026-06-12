@@ -9,7 +9,8 @@
  *   - hamburger (mobile sidebar toggle)
  *   - greeting: "Welcome back, {user.name}! 👋" + subtitle with project name
  *   - right group: "Auto-synced {ago}" status dot (click = refresh),
- *     [Ask rcode] (primary), [Share] (copy URL), [...] (more / theme toggle)
+ *     [Ask rcode] (primary, runs /rcode-next via orchestrator), [Share]
+ *     (copy URL + toast), [...] (more / theme toggle)
  *
  * Reads `project { name, user { name } }` from the store; falls back to the
  * projectName prop and a sample so it renders standalone.
@@ -19,17 +20,29 @@
 import { html } from '../preact.js';
 import { Icon } from '../icons-client.js';
 import { useStore } from '../store.js';
+import { runCommandFromUI } from '../orchestrator.js';
+import { showToast } from './shared.js';
 
 const SAMPLE_PROJECT = { name: 'Acme AI Platform', user: { name: 'Hanzla' } };
 
-/** Copy the current URL and flash the shared toast, if present. */
-function shareUrl() {
-  navigator.clipboard.writeText(location.href).catch(() => {});
-  const toast = document.getElementById('toast');
-  if (toast) {
-    toast.textContent = 'Link copied!';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+/**
+ * Ask rcode — reuse the existing orchestrator command runner (token-guarded
+ * POST /api/run via window.__ORCH_TOKEN__). "/rcode-next" asks rcode for the
+ * suggested next action and streams it into the terminal panel. No new endpoint.
+ */
+function askRcode() {
+  runCommandFromUI('/rcode-next');
+}
+
+/** Share — copy the dashboard URL to the clipboard and confirm via toast. */
+function shareDashboard() {
+  const url = location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('Dashboard link copied'))
+      .catch(() => showToast(url));
+  } else {
+    showToast(url);
   }
 }
 
@@ -66,11 +79,11 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
           ${refreshing ? 'Syncing…' : 'Auto-synced ' + (updatedAgo || 'just now')}
         </button>
 
-        <button class="tb-btn tb-btn--primary" type="button" title="Ask rcode">
+        <button class="tb-btn tb-btn--primary" type="button" onClick=${askRcode} title="Ask rcode for the next action">
           <${Icon} name="brain" size=${15} /> Ask rcode
         </button>
 
-        <button class="tb-btn" type="button" onClick=${shareUrl} title="Copy link">
+        <button class="tb-btn" type="button" onClick=${shareDashboard} title="Copy dashboard link">
           <${Icon} name="link" size=${15} /> Share
         </button>
 
