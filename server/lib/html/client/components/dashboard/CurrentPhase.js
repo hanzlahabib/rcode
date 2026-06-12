@@ -1,11 +1,13 @@
 /**
  * CurrentPhase — Overview redesign, Row 1 Card 2 (Current Phase stepper).
  *
- * Reads `currentPhase { id, name, status, milestones[{name,state}] }` from the
- * store (null when the project has no phases; a legacy plain string from old
- * state.json is tolerated). Renders a rocket tile, the phase name with a
- * status pill, a subtitle derived from the real status, a completion line,
- * then a horizontal milestone stepper built from the phase's real sprints.
+ * Reads `currentPhase { id, name, status, next, startedDaysAgo, currentTask,
+ * milestones[{name,state}] }` from the store (null when the project has no
+ * phases; a legacy plain string from old state.json is tolerated). Renders a
+ * rocket tile, the phase name with a status pill ("Up Next" when nothing is
+ * active and this is the upcoming phase), the in-flight sprint goal as
+ * subtitle, a completion line, then a horizontal milestone stepper built from
+ * the phase's real sprints.
  *
  * Honest states: null phase → "No active phase" + command hint; a phase with
  * no sprints → "No sprints planned yet" instead of a fabricated stepper.
@@ -24,11 +26,11 @@ function statusLabel(status) {
 }
 
 // Subtitle derived from the real phase status — never claims "active" for a
-// phase that isn't.
+// phase that isn't. "executing" is what /rcode-execute writes mid-phase.
 function statusSubtitle(status) {
   const s = String(status || '').toLowerCase();
   if (/complete|done/.test(s)) return 'Completed phase';
-  if (/active|progress/.test(s)) return 'Active development phase';
+  if (/active|progress|executing/.test(s)) return 'Active development phase';
   return 'Not started yet';
 }
 
@@ -62,19 +64,23 @@ export function CurrentPhase() {
       <p class="dash-card-title">Current Phase</p>
 
       <div class="cp-head">
-        <div class="cp-rocket" aria-hidden="true">🚀</div>
+        <div class="cp-rocket" aria-hidden="true">${phase.next ? '🧭' : '🚀'}</div>
         <div class="cp-headtext">
           <div class="cp-titlerow">
             <span class="cp-name">${phase.name}</span>
-            <span class="cp-pill">● ${statusLabel(phase.status)}</span>
+            <span class=${'cp-pill' + (phase.next ? ' cp-pill--next' : '')}>
+              ● ${phase.next ? 'Up Next' : statusLabel(phase.status)}
+            </span>
           </div>
-          <p class="cp-sub">${statusSubtitle(phase.status)}</p>
+          <p class="cp-sub">${phase.next
+            ? 'No phase is active yet — this one is next in line'
+            : (phase.currentTask || statusSubtitle(phase.status))}</p>
         </div>
       </div>
 
       ${pct != null ? html`
         <p class="cp-progress">
-          ${days != null ? html`Started ${days} day${days === 1 ? '' : 's'} ago<span class="cp-dot">•</span>` : null}
+          ${days != null ? html`${days === 0 ? 'Started today' : `Started ${days} day${days === 1 ? '' : 's'} ago`}<span class="cp-dot">•</span>` : null}
           <span class="cp-pct">${done}/${milestones.length} sprints done<span class="cp-dot">•</span>${pct}% complete</span>
         </p>
       ` : null}

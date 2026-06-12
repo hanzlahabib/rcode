@@ -199,11 +199,18 @@ function fmtISODate(iso) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Map an rcode phase/sprint status string to the contract enum done|active|todo. */
+/** Map an rcode phase/sprint status string to the contract enum done|active|todo.
+ *  "executing" is what /rcode-execute writes for an in-flight phase — it must
+ *  map to active or the Overview falls back to a stale planned phase. */
 function toState(status) {
   if (/complete|done/i.test(status || '')) return 'done';
-  if (/active|in_progress|progress/i.test(status || '')) return 'active';
+  if (/active|in_progress|progress|executing/i.test(status || '')) return 'active';
   return 'todo';
+}
+
+/** Slugify a phase name/slug the way state.json records current_phase. */
+function slugify(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 /**
@@ -255,7 +262,19 @@ function buildDashboard(state) {
   const progress = { completed, inProgress: inProg, notStarted, total, pct };
 
   // ---- currentPhase (object: id, name, status, milestones[]; null when no phases) ----
-  const activePhase = phases.find(p => p.state === 'active')
+  // state.json's current_phase is a slug ("phase-foo-bar" or "foo-bar") naming
+  // the phase the team is actually on — prefer it over positional guessing,
+  // since several phases can be `executing` at once (parallel worktrees).
+  const cpSlug = slugify(raw.current_phase);
+  const matchesCp = (p) => {
+    if (!cpSlug) return false;
+    return [slugify(p.slug), slugify(p.name)].some(c =>
+      c && (c === cpSlug || 'phase-' + c === cpSlug || c === 'phase-' + cpSlug));
+  };
+  const cpMatch = phases.find(matchesCp) || null;
+  const activePhase = (cpMatch && cpMatch.state === 'active' ? cpMatch : null)
+    || phases.find(p => p.state === 'active')
+    || (cpMatch && cpMatch.state !== 'done' ? cpMatch : null)
     || phases.find(p => p.state === 'todo')
     || phases[phases.length - 1] || null;
   const cpSprints = activePhase && Array.isArray(activePhase.sprints) ? activePhase.sprints : [];
@@ -265,10 +284,25 @@ function buildDashboard(state) {
     name: (s.goal || ('Sprint ' + (s.number || s.id || ''))).slice(0, 60),
     state: toState(s.status),
   }));
+  // The in-flight sprint (first not-done) — its goal is the card's "what's
+  // happening right now" subtitle; null when all sprints shipped or none exist.
+  const liveSprint = cpSprints.find(s => toState(s.status) !== 'done') || null;
+  let startedDaysAgo = null;
+  if (activePhase && activePhase.started) {
+    const t = new Date(activePhase.started).getTime();
+    if (!isNaN(t)) startedDaysAgo = Math.max(0, Math.floor((Date.now() - t) / 86400000));
+  }
   const currentPhase = activePhase ? {
     id:     activePhase.id != null ? activePhase.id : null,
     name:   activePhase.name || raw.current_phase || '',
     status: activePhase.status || 'planned',
+    // True when nothing is actually active — the card shows "Up next" instead
+    // of implying work is happening.
+    next:   activePhase.state !== 'active',
+    startedDaysAgo,
+    currentTask: liveSprint
+      ? (liveSprint.goal || 'Sprint ' + (liveSprint.number || liveSprint.id || ''))
+      : null,
     milestones,
   } : null;
 

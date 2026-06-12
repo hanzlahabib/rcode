@@ -13,6 +13,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
+import { rowLink } from '../../util.js';
 
 // Map phase state → label + badge/segment modifier.
 function stateMeta(state) {
@@ -83,8 +84,11 @@ export function ProgressTimeline() {
       <div class="pt-track">
         ${phases.map((p, i) => {
           const m = stateMeta(p.state);
+          // Segment deep-links to its phase detail; fall back to the list
+          // when the phase has no id.
+          const target = p.id != null ? 'phases/' + p.id : 'phases';
           return html`
-            <div class=${'pt-seg ' + m.mod} key=${p.name + i}>
+            <div class=${'pt-seg ovr-link ' + m.mod} key=${p.name + i} ...${rowLink(target)}>
               <span class="pt-seg-name">${p.name}</span>
               <span class="pt-seg-range">${p.range || ''}</span>
               <span class="pt-seg-badge">${m.label}</span>

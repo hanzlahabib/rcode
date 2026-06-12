@@ -12,6 +12,7 @@
 
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
+import { rowLink } from '../../util.js';
 import { TaskPipeline } from '../TaskPipeline.js';
 
 export function InProgress() {
@@ -31,7 +32,7 @@ export function InProgress() {
         : html`
           <ul class="ip-list">
             ${items.map((t, i) => html`
-              <li class="ip-row" key=${t.title + i}>
+              <li class="ip-row ovr-link" key=${t.title + i} ...${rowLink('tasks')}>
                 <span class="ip-title">${t.title}</span>
                 <${TaskPipeline} task=${t} mini=${true}/>
                 ${Number.isFinite(t.pct) ? html`<span class="ip-badge">${t.pct}%</span>` : null}
