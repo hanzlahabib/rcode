@@ -9,8 +9,11 @@
  * kind 'session' → runAndOpenTerm(storyId, cmd, title, { runner, model })
  * kind 'command' → runCommandFromUI(cmd, { runner, model })
  *
- * Runner list comes from GET /api/runners (fetchRunners, cached); CLIs that
- * are not installed render disabled with a "not installed" hint. The last
+ * Runner list comes from GET /api/runners (fetchRunners, cached). Runners are
+ * rendered as an option list (not a <select>) so each row can carry a "Beta"
+ * pill (every CLI except claude) and unavailable ones can show their server-
+ * reported reason ('not installed' / 'untested flags') as a disabled tooltip.
+ * A runner with an empty models[] gets no model dropdown at all. The last
  * confirmed runner + model are remembered in localStorage and preselected.
  * Esc and click-outside close the popover. The server re-validates runner
  * and model on POST /api/run — this UI is convenience, not the boundary.
@@ -119,9 +122,8 @@ export function RunnerPicker() {
   const entry  = (runners || []).find(r => r.id === runnerId) || null;
   const models = (entry && entry.models) || [];
 
-  function handleRunnerChange(e) {
-    const next = e.target.value;
-    setRunnerId(next);
+  function handleRunnerSelect(id) {
+    setRunnerId(id);
     setModel(''); // model lists differ per runner — reset to CLI default
   }
 
@@ -148,24 +150,35 @@ export function RunnerPicker() {
       ` : runners.length === 0 ? html`
         <div class="runner-picker-hint">Orchestrator unreachable — cannot list runners.</div>
       ` : html`
-        <label class="runner-picker-field">
-          <span class="runner-picker-label">Agent CLI</span>
-          <select class="runner-picker-select" value=${runnerId} onChange=${handleRunnerChange}>
+        <div class="runner-picker-field">
+          <span class="runner-picker-label" id="runner-picker-cli-label">Agent CLI</span>
+          <div class="runner-picker-list" role="listbox" aria-labelledby="runner-picker-cli-label">
             ${runners.map(r => html`
-              <option key=${r.id} value=${r.id} disabled=${!r.available}>
-                ${r.label}${r.available ? '' : ' — not installed'}
-              </option>
+              <button key=${r.id} type="button" role="option"
+                aria-selected=${r.id === runnerId}
+                class=${'runner-picker-option' + (r.id === runnerId ? ' selected' : '')}
+                disabled=${!r.available}
+                title=${r.available ? r.label : (r.reason || 'not installed')}
+                onClick=${() => handleRunnerSelect(r.id)}>
+                <span class="runner-picker-option-label">${r.label}</span>
+                ${r.beta ? html`<span class="runner-beta-pill">Beta</span>` : null}
+                ${!r.available ? html`
+                  <span class="runner-picker-option-hint">${r.reason || 'not installed'}</span>
+                ` : null}
+              </button>
             `)}
-          </select>
-        </label>
-        <label class="runner-picker-field">
-          <span class="runner-picker-label">Model</span>
-          <select class="runner-picker-select" value=${model} disabled=${!models.length}
-            onChange=${e => setModel(e.target.value)}>
-            <option value="">default</option>
-            ${models.map(m => html`<option key=${m} value=${m}>${m}</option>`)}
-          </select>
-        </label>
+          </div>
+        </div>
+        ${models.length ? html`
+          <label class="runner-picker-field">
+            <span class="runner-picker-label">Model</span>
+            <select class="runner-picker-select" value=${model}
+              onChange=${e => setModel(e.target.value)}>
+              <option value="">default</option>
+              ${models.map(m => html`<option key=${m} value=${m}>${m}</option>`)}
+            </select>
+          </label>
+        ` : null}
       `}
       <div class="runner-picker-actions">
         <button class="runner-picker-btn" onClick=${closeRunnerPicker}>Cancel</button>

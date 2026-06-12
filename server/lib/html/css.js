@@ -3797,9 +3797,72 @@ summary:focus-visible,
   outline: none;
   border-color: var(--accent-border);
 }
-.runner-picker-select:disabled {
-  opacity: 0.55;
+
+/* Runner option list — buttons instead of a <select> so each row can carry
+   a Beta pill and unavailable rows can show their reason inline. */
+.runner-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-3);
+  background: var(--bg-input);
+  padding: 3px;
+}
+.runner-picker-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 5px 8px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-2);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+.runner-picker-option:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.runner-picker-option.selected {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+.runner-picker-option:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+}
+.runner-picker-option-label {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.runner-picker-option-hint {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+/* "Beta" pill — every runner except claude (the first-class default). */
+.runner-beta-pill {
+  flex: 0 0 auto;
+  padding: 0 5px;
+  background: color-mix(in srgb, var(--amber) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  border-radius: var(--radius-full);
+  color: var(--amber);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .runner-picker-actions {
   display: flex;

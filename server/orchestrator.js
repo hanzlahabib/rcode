@@ -84,12 +84,32 @@ const COMMAND_ALLOWLIST = new Set([
 // Each entry describes one agent CLI the dashboard can launch. `args` builds
 // the full argv array (never a shell string — user input is never shell-
 // interpolated). `models` is the closed set accepted by POST /api/run; an
-// empty/omitted model means "let the CLI use its own default".
+// empty/omitted model means "let the CLI use its own default", and an empty
+// models[] hides the model dropdown in the UI entirely.
+//
+// Every args builder below is grounded in the CLI's real `--help` output
+// (verified against the installed versions: codex-cli 0.139.0, grok 0.2.22,
+// copilot 1.0.60). Each launches the CLI's INTERACTIVE entry — we spawn
+// inside a PTY and the user keeps typing after the initial prompt — so
+// headless one-shot flags (`copilot -p`, `gemini -p`, `grok --single`) are
+// deliberately avoided: they exit after one response.
+//
+// `promptViaStdin: true` marks a CLI with no interactive initial-prompt flag
+// (grok): the prompt is written to the PTY as keystrokes once the TUI is up.
+//
+// `beta: true` renders a "Beta" pill in the picker — claude is the first-class
+// default; every other runner is beta. `untested: true` forces a runner
+// unavailable (reason 'untested flags') even when its binary is on PATH:
+// nobody has live-verified its argv, so the picker disables it with a tooltip
+// instead of letting users hit a crash.
+//
 // The default runner is claude with no model flag — identical argv to the
 // pre-registry behavior, so /api/run calls without {runner, model} are
 // backward compatible.
 const RUNNERS = [
   {
+    // claude --help: `claude [prompt]` starts interactive; `--model` takes an
+    // alias ('fable', 'opus', 'sonnet') or a full model id like fable-5.
     id: 'claude', label: 'Claude Code', bin: CLAUDE_BIN, modelFlag: '--model',
     models: ['fable-5', 'opus', 'sonnet', 'haiku'],
     args: (model, prompt) => model
@@ -97,38 +117,72 @@ const RUNNERS = [
       : [prompt, '--dangerously-skip-permissions'],
   },
   {
-    id: 'codex', label: 'Codex CLI', bin: 'codex', modelFlag: '--model',
-    models: ['gpt-5-codex', 'gpt-5', 'o3'],
+    // codex --help: `codex [OPTIONS] [PROMPT]` — positional prompt starts the
+    // interactive TUI (`codex exec` is the NON-interactive path; not used).
+    // `-m, --model <MODEL>`. Model list: gpt-5.5 is the current model on this
+    // install (~/.codex/config.toml model migrations end at gpt-5.5); older
+    // ids are auto-migrated server-side, so only the verified-current one is
+    // offered. Live-verified: in an untrusted directory codex first shows its
+    // own interactive "Do you trust the contents of this directory?" dialog —
+    // that is codex UX, not a launch failure; answer it in the terminal.
+    // A wrong model id does NOT abort the TUI (verified with a bogus id).
+    id: 'codex', label: 'Codex CLI', bin: 'codex', modelFlag: '--model', beta: true,
+    models: ['gpt-5.5'],
     args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
   },
   {
-    id: 'copilot', label: 'GitHub Copilot CLI', bin: 'copilot', modelFlag: '--model',
-    models: ['claude-sonnet-4.5', 'gpt-5'],
-    args: (model, prompt) => model ? ['--model', model, '-p', prompt] : ['-p', prompt],
-  },
-  {
-    id: 'gemini', label: 'Gemini CLI', bin: 'gemini', modelFlag: '--model',
-    models: ['gemini-2.5-pro', 'gemini-2.5-flash'],
-    // -i = interactive mode with an initial prompt (plain `gemini -p` exits
-    // after one response; -i matches the run-then-communicate PTY flow).
+    // copilot --help: `-i, --interactive <prompt>` = "Start interactive mode
+    // and automatically execute this prompt" (NOT `-p`, which is headless and
+    // exits after completion). `--model <model>` documents only 'auto' as a
+    // guaranteed value ("use 'auto' to let Copilot pick automatically").
+    id: 'copilot', label: 'GitHub Copilot CLI', bin: 'copilot', modelFlag: '--model', beta: true,
+    models: ['auto'],
     args: (model, prompt) => model ? ['--model', model, '-i', prompt] : ['-i', prompt],
   },
   {
-    id: 'grok', label: 'Grok CLI', bin: 'grok', modelFlag: '--model',
-    models: ['grok-4-latest', 'grok-code-fast-1'],
-    args: (model, prompt) => model ? ['--model', model, '--prompt', prompt] : ['--prompt', prompt],
+    // gemini --help: `-i, --prompt-interactive <prompt>` = "Execute the
+    // provided prompt and continue in interactive mode"; `-m, --model`.
+    // gemini-2.5-pro / gemini-2.5-flash are the documented stable ids.
+    id: 'gemini', label: 'Gemini CLI', bin: 'gemini', modelFlag: '--model', beta: true,
+    models: ['gemini-2.5-pro', 'gemini-2.5-flash'],
+    args: (model, prompt) => model ? ['--model', model, '-i', prompt] : ['-i', prompt],
   },
   {
-    id: 'cursor', label: 'Cursor Agent', bin: 'cursor-agent', modelFlag: '--model',
-    models: ['gpt-5', 'sonnet-4.5', 'opus-4.1'],
+    // grok --help: the TUI has NO interactive initial-prompt flag — `-p` /
+    // `--prompt-file` are single-turn headless and exit after the response.
+    // So: launch the bare TUI (plus `-m, --model`) and type the prompt into
+    // the PTY after boot (promptViaStdin). Model ids come from the CLI's own
+    // ~/.grok/models_cache.json: grok-build, grok-composer-2.5-fast.
+    id: 'grok', label: 'Grok CLI', bin: 'grok', modelFlag: '--model', beta: true,
+    models: ['grok-build', 'grok-composer-2.5-fast'],
+    promptViaStdin: true,
+    args: (model) => model ? ['--model', model] : [],
+  },
+  {
+    // cursor-agent --help: `cursor-agent [options] [prompt...]` — positional
+    // prompt, interactive by default; `--model <model>` with documented
+    // examples "gpt-5, sonnet-4, sonnet-4-thinking".
+    id: 'cursor', label: 'Cursor Agent', bin: 'cursor-agent', modelFlag: '--model', beta: true,
+    models: ['gpt-5', 'sonnet-4', 'sonnet-4-thinking'],
     args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
   },
   {
-    id: 'antigravity', label: 'Antigravity', bin: 'antigravity', modelFlag: null,
+    // Not installed on any tested machine — its flags have never been
+    // live-verified, so `untested` keeps it disabled (picker tooltip:
+    // 'untested flags') even if an `antigravity` binary appears on PATH.
+    // Remove `untested` only after grounding the argv in its real --help
+    // and a successful spawn test.
+    id: 'antigravity', label: 'Antigravity', bin: 'antigravity', modelFlag: null, beta: true,
+    untested: true,
     models: [],
     args: (model, prompt) => [prompt],
   },
 ];
+
+// How long to wait before typing the initial prompt into a promptViaStdin
+// runner's PTY — the TUI needs to finish mounting or the keystrokes land on
+// a splash screen. PTYs buffer input, so erring high is safe.
+const STDIN_PROMPT_DELAY_MS = 2000;
 
 // True when `bin` resolves to an executable — either an explicit path (e.g.
 // CLAUDE_BIN=/opt/claude/bin/claude) or a name found on PATH.
@@ -148,10 +202,15 @@ async function binAvailable(bin) {
   return false;
 }
 
-// Availability is detected once at boot and cached on each registry entry.
-// Route handlers await this so an early request never reads a stale flag.
+// Availability is detected once at boot and cached on each registry entry,
+// along with a human-readable reason when a runner is unusable. Route
+// handlers await this so an early request never reads a stale flag.
 const runnersReady = Promise.all(
-  RUNNERS.map(async r => { r.available = await binAvailable(r.bin); })
+  RUNNERS.map(async r => {
+    if (r.untested) { r.available = false; r.reason = 'untested flags'; return; }
+    r.available = await binAvailable(r.bin);
+    r.reason = r.available ? '' : 'not installed';
+  })
 );
 
 // Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
@@ -247,6 +306,7 @@ async function handleRunners(res) {
   json(res, 200, {
     runners: RUNNERS.map(r => ({
       id: r.id, label: r.label, available: !!r.available, models: r.models,
+      beta: !!r.beta, reason: r.reason || '',
     })),
   });
 }
@@ -310,7 +370,7 @@ async function handleRun(req, res) {
   const runner = RUNNERS.find(r => r.id === runnerId);
   if (!runner) { json(res, 400, { error: 'unknown runner: ' + runnerId }); return; }
   if (body.runner !== undefined && body.runner !== null && body.runner !== '' && !runner.available) {
-    json(res, 400, { error: 'runner not installed: ' + runnerId });
+    json(res, 400, { error: 'runner unavailable (' + (runner.reason || 'not installed') + '): ' + runnerId });
     return;
   }
   const model = (body.model === undefined || body.model === null) ? '' : String(body.model);
@@ -378,6 +438,17 @@ async function handleRun(req, res) {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
   });
+
+  // CLIs with no interactive initial-prompt flag (see registry) get the
+  // prompt typed into the PTY once their TUI has had time to mount. The
+  // timer is unref'd so it never holds the process open, and the write is
+  // skipped if the session already ended.
+  if (runner.promptViaStdin && cmd) {
+    const t = setTimeout(() => {
+      if (s.status === 'running') { try { proc.write(cmd + '\r'); } catch { /* pty gone */ } }
+    }, STDIN_PROMPT_DELAY_MS);
+    if (t.unref) t.unref();
+  }
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
 }
