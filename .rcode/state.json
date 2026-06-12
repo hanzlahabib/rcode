@@ -2,9 +2,9 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-12T20:03:02.902Z",
+  "updated": "2026-06-12T20:03:41.793Z",
   "current_phase": "phase-dependency-graph-and-structured-rejection-dialogs",
-  "current_plan": 4,
+  "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M2 — Hardening & Polish",
   "phases": [
@@ -879,7 +879,7 @@
       "status": "executing",
       "started": "2026-06-12T19:52:10.476Z",
       "completed": null,
-      "plan_count": 2,
+      "plan_count": 5,
       "sprints": [
         {
           "id": "37.1",
