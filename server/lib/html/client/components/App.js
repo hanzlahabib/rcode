@@ -15,6 +15,7 @@
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { getState, setState, subscribe, registerRefresh } from '../store.js';
 import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
+import { parseFilters } from '../filter-state.js';
 import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
 import { XtermPanel } from './XtermPanel.js';
@@ -54,15 +55,22 @@ const LEGACY_VIEWS = [];
 
 const ALL_VIEWS = Object.keys(PREACT_VIEWS).concat(LEGACY_VIEWS);
 
-/** Parse location.hash into { view, subId } — port of client-main.js:45-49. */
+/** Parse location.hash into { view, subId, filters } — port of client-main.js:45-49. */
 function parseHash() {
-  const raw = location.hash.slice(1) || 'overview';
+  // Strip leading `#` then strip any `?query` suffix before routing so the
+  // query suffix never leaks into `view` or `subId`.
+  const full = location.hash.slice(1) || 'overview';
+  const qMark = full.indexOf('?');
+  const raw   = qMark === -1 ? full : full.slice(0, qMark);
   const slash = raw.indexOf('/');
   const view  = slash === -1 ? raw : raw.slice(0, slash);
-  const subId = slash === -1 ? null : raw.slice(slash + 1);
+  const rawSubId = slash === -1 ? null : raw.slice(slash + 1);
+  // Split subId on `?` so a query suffix never bleeds into the subId value.
+  const subId = rawSubId ? rawSubId.split('?')[0] : null;
   // #263: unknown hash falls back to overview
   const resolvedView = ALL_VIEWS.includes(view) ? view : 'overview';
-  return { view: resolvedView, subId };
+  const filters = parseFilters(location.hash);
+  return { view: resolvedView, subId, filters };
 }
 
 /** Full-width banner shown when /api/state polling is failing. */
@@ -110,7 +118,7 @@ function StatusBar({ projectRoot, projectName, version, updatedAgo, offline, ref
 /** Root App component. No props needed — reads everything from the store. */
 export function App() {
   // ---- Router state ----
-  const [{ view, subId }, setRoute] = useState(parseHash);
+  const [{ view, subId, filters }, setRoute] = useState(parseHash);
 
   useEffect(() => {
     function onHashChange() {
@@ -267,7 +275,7 @@ export function App() {
             error=${storeState.rawParseError}
             dismissed=${storeState.parseErrorDismissed}
           />
-          ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
+          ${PreactView ? html`<${PreactView} subId=${subId} filters=${filters} />` : null}
         </div>
 
         <${StatusBar}
