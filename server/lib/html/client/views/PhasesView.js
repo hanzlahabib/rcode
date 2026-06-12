@@ -9,7 +9,9 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, phaseHints } from '../util.js';
+import { pct, humanDate, phaseHints, chip } from '../util.js';
+import { StatusSummaryBar } from '../components/StatusSummaryBar.js';
+import { FilterChips } from '../components/FilterChips.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
@@ -117,7 +119,16 @@ function PhaseDetail({ phase: p, S }) {
   `;
 }
 
-export function PhasesView({ subId }) {
+/** Map a phase id to its milestone bucket (M1 = 1-19, M2 = 20-33, M3 = 34+). */
+function phaseMilestone(id) {
+  const n = parseInt(id, 10);
+  if (n >= 1  && n <= 19) return 'M1';
+  if (n >= 20 && n <= 33) return 'M2';
+  if (n >= 34)            return 'M3';
+  return '';
+}
+
+export function PhasesView({ subId, filters }) {
   const S = useStore();
   const phases = S.phases || [];
   const [filter, setFilter] = useState('');
@@ -142,6 +153,25 @@ export function PhasesView({ subId }) {
   }
 
   // List mode
+  const f = filters || { status: '', milestone: '', date: '' };
+
+  // Build option arrays for FilterChips
+  const seenStatus = new Set();
+  for (const p of phases) {
+    const cls = chip(p.status).cls;
+    if (cls) seenStatus.add(cls);
+  }
+  const statusOptions    = [...seenStatus].map(v => ({ value: v, label: v }));
+  const milestoneOptions = [
+    { value: 'M1', label: 'M1' },
+    { value: 'M2', label: 'M2' },
+    { value: 'M3', label: 'M3' },
+  ];
+  const dateOptions = [
+    { value: 'has-completed', label: 'Completed'   },
+    { value: 'no-completed',  label: 'In progress' },
+  ];
+
   const allComplete =
     phases.length > 0 &&
     phases.every(ph => ph.status === 'complete' || ph.status === 'completed' || ph.status === 'done');
@@ -157,13 +187,25 @@ export function PhasesView({ subId }) {
   }
 
   const q = filter.toLowerCase();
-  const filtered = q
+  let filtered = q
     ? phases.filter(p => (p.name || '').toLowerCase().includes(q) || String(p.id).includes(q))
     : phases;
+
+  if (f.status)    filtered = filtered.filter(p => chip(p.status).cls === f.status);
+  if (f.milestone) filtered = filtered.filter(p => phaseMilestone(p.id) === f.milestone);
+  if (f.date === 'has-completed') filtered = filtered.filter(p => !!p.completed_at);
+  if (f.date === 'no-completed')  filtered = filtered.filter(p => !p.completed_at);
 
   return html`
     <div id="view-phases" class="view active">
       <div class="view-title">Phases</div>
+      <${StatusSummaryBar}/>
+      <${FilterChips}
+        filters=${f}
+        statusOptions=${statusOptions}
+        milestoneOptions=${milestoneOptions}
+        dateOptions=${dateOptions}
+      />
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter…"
           value=${filter} onInput=${e => setFilter(e.target.value)}/>
