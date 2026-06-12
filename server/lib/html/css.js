@@ -4434,52 +4434,6 @@ summary:focus-visible,
 }
 .filter-chip-clear:disabled { opacity: 0.4; cursor: default; }
 
-/* ── Phase dependency graph ── */
-.phase-graph-wrap {
-  margin-bottom: var(--space-4);
-}
-.phase-graph-wrap summary {
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.phase-graph-wrap summary:hover { background: var(--bg-hover); }
-.phase-graph-svg {
-  max-width: 100%;
-  display: block;
-  overflow: visible;
-}
-.phase-graph-node {
-  fill: var(--bg-elev-2);
-  stroke: var(--border);
-  stroke-width: 1;
-}
-.phase-graph-node:hover { stroke: var(--accent-blue); }
-.phase-graph-complete    { stroke: var(--accent-green); }
-.phase-graph-in_progress { stroke: var(--accent-amber); }
-.phase-graph-planned     { stroke: var(--border); }
-.phase-graph-edge {
-  stroke: var(--text-tertiary);
-  stroke-width: 1.5;
-  fill: none;
-}
-.phase-graph-label {
-  fill: var(--text-primary);
-  font-size: var(--text-xs);
-  font-weight: 600;
-}
-.phase-graph-sublabel {
-  fill: var(--text-secondary);
-  font-size: 10px;
-}
-.phase-graph-arrow { fill: var(--text-tertiary); }
-/* ── Phase dependency graph (END) ── */
-
 /* ── Command palette (Sprint 36.1 — DSH-4) ─────────────────────────────────
    z-index reference: #orch-panel slide-in = 50, xterm term-backdrop = 200,
    xterm term-panel/term-pill = 201, .toast notification layer = 1000.
@@ -4925,6 +4879,158 @@ summary:focus-visible,
   color: var(--text-secondary);
 }
 /* ════════ Living overview cards (END) ════════ */
+
+/* ════════ Phase dependency graph (PhaseGraph.js) ════════
+   Status colors are --pg-* tokens scoped to the panel so both themes flip
+   them without touching the global token block. */
+.pg-panel {
+  --pg-done:    #2dd4bf; /* teal   */
+  --pg-active:  #a78bfa; /* purple */
+  --pg-todo:    var(--text-muted);
+  --pg-blocked: var(--amber);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-4);
+  background: var(--bg-elev-1);
+}
+[data-theme="light"] .pg-panel {
+  --pg-done:   #0d9488;
+  --pg-active: #7c3aed;
+}
+.pg-panel summary {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.pg-panel summary:hover { background: var(--bg-hover); }
+.pg-count {
+  margin-left: auto;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+.pg-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: 0 var(--space-5) var(--space-3);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+.pg-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.pg-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-1);
+  background: var(--bg-elev-3);
+  border: 1.5px solid var(--pg-todo);
+}
+.pg-swatch.pg-done    { border-color: var(--pg-done); }
+.pg-swatch.pg-active  { border-color: var(--pg-active); }
+.pg-swatch.pg-blocked { border-color: var(--pg-blocked); }
+
+/* DAG mode — horizontal scroll when the graph is wider than the panel. */
+.pg-scroll {
+  overflow-x: auto;
+  padding: 0 var(--space-3) var(--space-3);
+}
+.pg-svg { display: block; }
+.pg-node { cursor: pointer; }
+.pg-node rect {
+  fill: var(--bg-elev-2);
+  stroke: var(--pg-todo);
+  stroke-width: 1.5;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.pg-node.pg-done rect    { stroke: var(--pg-done); }
+.pg-node.pg-active rect  { stroke: var(--pg-active); animation: pg-pulse 2s var(--ease) infinite; }
+.pg-node.pg-blocked rect { stroke: var(--pg-blocked); }
+@keyframes pg-pulse {
+  0%, 100% { stroke-opacity: 1;   stroke-width: 1.5; }
+  50%      { stroke-opacity: 0.45; stroke-width: 2.5; }
+}
+.pg-label {
+  fill: var(--text-primary);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  pointer-events: none;
+}
+.pg-sublabel {
+  fill: var(--text-secondary);
+  font-size: 10px;
+  pointer-events: none;
+}
+.pg-edge {
+  stroke: var(--text-tertiary);
+  stroke-width: 1.5;
+  fill: none;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.pg-arrow { fill: var(--text-tertiary); }
+/* Hovering a node spotlights its ancestors + descendants, dims the rest. */
+.pg-hovering .pg-node:not(.pg-related) { opacity: 0.22; }
+.pg-hovering .pg-edge:not(.pg-related) { opacity: 0.12; }
+.pg-edge.pg-related { stroke: var(--accent-primary); stroke-width: 2; }
+.pg-tip rect {
+  fill: var(--bg-elev-3);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.pg-tip text { font-size: var(--text-2xs); fill: var(--text-secondary); pointer-events: none; }
+.pg-tip .pg-tip-title { fill: var(--text-primary); font-weight: 600; }
+
+/* Flow-row mode — no cross-phase dependencies: wrapped chip sequence. */
+.pg-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: 0 var(--space-5) var(--space-2);
+}
+.pg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 220px;
+  padding: var(--space-2) var(--space-3);
+  border: 1.5px solid var(--pg-todo);
+  border-radius: var(--radius-3);
+  background: var(--bg-elev-2);
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
+}
+.pg-chip:hover { background: var(--bg-hover); }
+.pg-chip.pg-done    { border-color: var(--pg-done); }
+.pg-chip.pg-active  { border-color: var(--pg-active); animation: pg-chip-pulse 2s var(--ease) infinite; }
+.pg-chip.pg-blocked { border-color: var(--pg-blocked); }
+@keyframes pg-chip-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%      { box-shadow: 0 0 6px 0 var(--pg-active); }
+}
+.pg-chip-id { font-weight: 600; color: var(--text-primary); }
+.pg-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pg-hint, .pg-empty {
+  padding: 0 var(--space-5) var(--space-3);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+.pg-empty { padding-top: var(--space-2); }
+.pg-empty code { font-family: var(--font-mono); color: var(--text-secondary); }
+/* ════════ Phase dependency graph (END) ════════ */
 </style>`;
 }
 
