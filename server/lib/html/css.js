@@ -3552,6 +3552,27 @@ header.topbar {
 }
 .tpipe--mini .tpipe-line { width: 8px; height: 1.5px; }
 .tpipe--mini .tpipe-blocked { padding: 1px 5px; font-size: 9px; margin-left: 2px; }
+
+/* ── App loading shell — visible until /js/app.js boots (cleared by app.js) ── */
+.app-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; min-height: 100vh; color: var(--dash-text-muted);
+}
+.app-loading-spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid var(--dash-border); border-top-color: var(--dash-teal);
+  animation: app-loading-spin 0.8s linear infinite;
+}
+.app-loading-text { font-size: 13px; margin: 0; }
+@keyframes app-loading-spin { to { transform: rotate(360deg); } }
+
+/* ── Inert project switcher — single-project server, no menu to open ── */
+.sb-switcher--static { cursor: default; }
+.sb-switcher--static:hover { border-color: var(--dash-border); }
+
+/* Nav now lists all 12 views — let it scroll on short viewports instead of
+   pushing the health card / profile footer off-screen. */
+.sb-nav { overflow-y: auto; min-height: 0; }
 </style>`;
 }
 

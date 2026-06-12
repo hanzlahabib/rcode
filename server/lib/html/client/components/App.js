@@ -152,6 +152,16 @@ export function App() {
       const r = await fetch('/api/state');
       if (!r.ok) { setState({ refreshing: false, offline: true }); return; }
       const newState = await r.json();
+      // The server's scan cache keeps lastScanned stable while nothing on
+      // disk changed — same stamp means identical data, so skip the patch
+      // entirely instead of committing fresh object identities that would
+      // re-render every subscribed component.
+      if (lastScannedRef.current && lastScannedRef.current === newState.lastScanned) {
+        scanTimeRef.current = Date.now();
+        setUpdatedAgo('just now');
+        setState({ refreshing: false, offline: false });
+        return;
+      }
       lastScannedRef.current = newState.lastScanned;
       scanTimeRef.current = Date.now();
       setUpdatedAgo('just now');

@@ -21,17 +21,22 @@ import { Icon } from '../icons-client.js';
 import { useStore } from '../store.js';
 import { ProjectHealth } from './dashboard/ProjectHealth.js';
 
-// Single flat nav matching the mockup. `view` is the hash route; items whose
-// view has no dedicated Preact view yet still route by hash (App falls back).
+// Single flat nav — one entry per real Preact view (PREACT_VIEWS in App.js).
+// Keep this list in sync with App.js: a view key absent there silently
+// falls back to Overview, so never add a link without a matching view.
 const NAV_LINKS = [
-  { view: 'overview',     icon: 'home',        label: 'Overview'     },
-  { view: 'tasks',        icon: 'checkSquare', label: 'Tasks'        },
-  { view: 'decisions',    icon: 'scale',       label: 'Decisions'    },
-  { view: 'architecture', icon: 'layers',      label: 'Architecture' },
-  { view: 'documents',    icon: 'file-text',   label: 'Documents'    },
-  { view: 'timeline',     icon: 'clock',       label: 'Timeline'     },
-  { view: 'integrations', icon: 'link',        label: 'Integrations' },
-  { view: 'settings',     icon: 'edit-3',      label: 'Settings'     },
+  { view: 'overview',      icon: 'home',        label: 'Overview'      },
+  { view: 'roadmap',       icon: 'map',         label: 'Roadmap'       },
+  { view: 'milestones',    icon: 'flag',        label: 'Milestones'    },
+  { view: 'phases',        icon: 'layers',      label: 'Phases'        },
+  { view: 'sprints',       icon: 'zap',         label: 'Sprints'       },
+  { view: 'tasks',         icon: 'checkSquare', label: 'Tasks'         },
+  { view: 'kanban',        icon: 'kanban',      label: 'Kanban'        },
+  { view: 'decisions',     icon: 'scale',       label: 'Decisions'     },
+  { view: 'files',         icon: 'file-text',   label: 'Files'         },
+  { view: 'agents',        icon: 'users',       label: 'Agents'        },
+  { view: 'memory',        icon: 'brain',       label: 'Memory'        },
+  { view: 'orchestration', icon: 'terminal',    label: 'Orchestration' },
 ];
 
 // Representative fallbacks so the chrome renders before /api/state lands.
@@ -56,8 +61,9 @@ function initials(name) {
  *   projectName {string}  — fallback project name when store has no project slice
  */
 export function Sidebar({ activeView, projectName }) {
-  const S = useStore();
-  const project = (S && S.project) || {};
+  // Slice subscription — Sidebar only re-renders when the project slice
+  // changes, not on every refreshing/sessions tick.
+  const project = useStore(s => s.project) || {};
   const name = project.name || projectName || SAMPLE_PROJECT.name;
   const user = project.user || SAMPLE_PROJECT.user;
 
@@ -68,11 +74,12 @@ export function Sidebar({ activeView, projectName }) {
         <span class="sb-logo-word">rcode</span>
       </div>
 
-      <button class="sb-switcher" type="button" title=${name}>
+      <!-- Visually inert: the server scans exactly one project, so there is
+           no switcher menu. Rendered as a plain label, no chevron/affordance. -->
+      <div class="sb-switcher sb-switcher--static" title=${name}>
         <span class="sb-switcher-dot"></span>
         <span class="sb-switcher-name">${name}</span>
-        <span class="sb-switcher-chev">▾</span>
-      </button>
+      </div>
 
       <nav class="sb-nav">
         ${NAV_LINKS.map(({ view, icon, label }) => html`

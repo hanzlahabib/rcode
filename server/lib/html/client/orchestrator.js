@@ -132,6 +132,12 @@ export function runningTotal() {
 
 let _pollTimer = null;
 
+// Serialized snapshot of the last committed activeSessions. The 4s poll
+// always produces a NEW array identity, which defeats the store's
+// reference-equality change check — so compare content here and only
+// setState when the sessions actually changed.
+let _lastSessionsJson = null;
+
 /**
  * Start polling /api/sessions every 4 s and writing activeSessions into the
  * store. Components react via useStore(). Safe to call multiple times — only
@@ -150,6 +156,9 @@ export function stopSessionsPoll() {
 
 function _poll() {
   fetchSessions().then(sessions => {
+    const json = JSON.stringify(sessions);
+    if (json === _lastSessionsJson) return;
+    _lastSessionsJson = json;
     setState({ activeSessions: sessions });
   });
 }

@@ -17,7 +17,7 @@ function renderHtml(state, orchToken) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://esm.sh; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' http://localhost:7718 http://127.0.0.1:7718 ws: wss:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' http://localhost:7718 http://127.0.0.1:7718 ws: wss:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Majlis — ${esc(projectName)}</title>
@@ -50,7 +50,14 @@ ${renderCss()}
 
 <!-- ── Preact app mount ────────────────────────────────────────────────── -->
 <!-- App renders: sidebar, topbar, and all 12 Preact views (sprint 31.4).  -->
-<div id="app-root"></div>
+<!-- The loading shell below is visible until app.js boots, then cleared.  -->
+<div id="app-root">
+  <div class="app-loading" role="status">
+    <div class="app-loading-spinner"></div>
+    <p class="app-loading-text">Loading Majlis…</p>
+    <noscript><p class="app-loading-text">This dashboard requires JavaScript.</p></noscript>
+  </div>
+</div>
 
 <!-- ── Toast ──────────────────────────────────────────────── -->
 <div class="toast" id="toast"></div>
