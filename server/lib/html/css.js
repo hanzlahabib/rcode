@@ -104,6 +104,23 @@ function renderCss() {
   --accent-amber: var(--amber);
   --accent-red: var(--red);
   --accent-blue: var(--blue);
+
+  /* ── Dashboard redesign (mockup) tokens ──────────────────────────
+     Exact values from .planning/campaign/MOCKUP-SPEC.md. Namespaced
+     --dash-* so the Overview redesign can adopt the deep-navy mockup
+     palette without disturbing the existing Linear theme above. */
+  --dash-bg:         #0F1729; /* deep navy page base */
+  --dash-card:       #111A2E; /* card surface */
+  --dash-border:     #1E2A44; /* 1px hairline border */
+  --dash-teal:       #2DD4BF;
+  --dash-purple:     #A78BFA;
+  --dash-blue:       #3B82F6;
+  --dash-amber:      #F59E0B;
+  --dash-sev-high:   #F87171; /* red   — High   */
+  --dash-sev-medium: #FBBF24; /* amber — Medium */
+  --dash-sev-low:    #9CA3AF; /* gray  — Low    */
+  --dash-text:       #E6EDF7; /* primary text */
+  --dash-text-muted: #8595AD; /* muted text   */
 }
 
 /* Light mode */
@@ -2278,6 +2295,51 @@ footer {
 .cmd-runner-btn:hover:not(:disabled) { opacity: 0.85; }
 .cmd-runner-btn:disabled,
 .cmd-runner-btn--busy { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Dashboard redesign — base layout (mockup) ───────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+.dash-grid .col-4 { grid-column: span 4; }
+.dash-grid .col-6 { grid-column: span 6; }
+.dash-grid .col-12 { grid-column: span 12; }
+@media (max-width: 1100px) {
+  .dash-grid .col-4,
+  .dash-grid .col-6 { grid-column: span 12; }
+}
+.dash-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  color: var(--dash-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.dash-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text);
+  margin: 0;
+}
+.dash-card-sub {
+  font-size: 12px;
+  color: var(--dash-text-muted);
+  margin: 0;
+}
+.dash-slot {
+  border: 1px dashed var(--dash-border);
+  border-radius: 10px;
+  color: var(--dash-text-muted);
+  font-size: 12px;
+  padding: 24px;
+  text-align: center;
+}
 </style>`;
 }
 

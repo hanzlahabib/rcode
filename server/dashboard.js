@@ -104,10 +104,12 @@ const server = http.createServer((req, res) => {
 
   if (url.startsWith('/js/')) {
     const name = url.slice(4).split('?')[0];
-    // Allow exactly one optional subdirectory (e.g. components/App.js, views/Foo.js)
-    // while still rejecting traversal attempts. The regex blocks `..`, encoded
-    // separators, and anything other than word chars, dots, hyphens, and one `/`.
-    if (!/^(?:[\w.-]+\/)?[\w.-]+\.js$/.test(name)) { res.writeHead(404); res.end('Not found'); return; }
+    // Allow nested subdirectories (e.g. components/App.js, views/Foo.js,
+    // components/dashboard/ProgressDonut.js) while still rejecting traversal.
+    // The regex limits each segment to word chars, dots, and hyphens; the
+    // resolved-path check below is the real traversal guard (a `..` segment
+    // would pass this pattern but fail the CLIENT_DIR containment check).
+    if (!/^(?:[\w.-]+\/)*[\w.-]+\.js$/.test(name)) { res.writeHead(404); res.end('Not found'); return; }
     // Defense-in-depth: resolved path must stay inside CLIENT_DIR even after
     // any OS-level resolution (handles encoded traversal the regex might miss).
     const resolved = path.resolve(CLIENT_DIR, name);
