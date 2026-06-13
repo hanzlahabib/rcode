@@ -9,7 +9,7 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, phaseHints, chip } from '../util.js';
+import { pct, humanDate, phaseHints, chip, phaseMilestone } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
@@ -120,17 +120,6 @@ function PhaseDetail({ phase: p, S }) {
       <${CmdHints} hints=${hints}/>
     </div>
   `;
-}
-
-/**
- * Map a numeric phase id to its milestone bucket.
- * M1 = phases 1–19, M2 = 20–33, M3 = 34+.
- */
-function phaseMilestone(id) {
-  const n = Number(id);
-  if (n <= 19) return 'M1';
-  if (n <= 33) return 'M2';
-  return 'M3';
 }
 
 export function PhasesView({ subId, filters }) {
