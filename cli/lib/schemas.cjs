@@ -35,8 +35,13 @@ const { z } = require('zod');
  * @returns {{ frontmatter: object, body: string }}
  */
 function parseFrontmatter(text) {
-  if (typeof text !== 'string' || !text.startsWith('---\n')) {
+  if (typeof text !== 'string') {
     return { frontmatter: {}, body: text || '' };
+  }
+  // CRLF tolerance (#889): Windows checkouts/user files may use \r\n.
+  text = text.replace(/\r\n/g, '\n');
+  if (!text.startsWith('---\n')) {
+    return { frontmatter: {}, body: text };
   }
   const end = text.indexOf('\n---\n', 4);
   if (end === -1) return { frontmatter: {}, body: text };

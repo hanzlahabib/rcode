@@ -2,46 +2,17 @@
  * FilesView — Preact port of the Files view from client-main.js.
  *
  * On mount: fetches /api/files to build the grouped file tree.
- * Clicking a file: fetches /api/file?path=... and renders markdown via the
- * global `marked` CDN lib (stays a CDN global — unchanged from legacy).
+ * Clicking a file: opens the shared FileReader slide-over, which fetches
+ * /api/file?path=... and renders markdown via the global `marked` CDN lib.
  *
  * Agent-jump bridge: when the store field `requestedFile` is set (by
  * AgentsView), FilesView picks it up and pre-fills the search filter, then
  * clears the field so subsequent renders don't re-trigger.
  */
 
-import { html, useState, useEffect, useCallback } from '../preact.js';
+import { html, useState, useEffect } from '../preact.js';
 import { useStore, setState } from '../store.js';
-import { showToast } from '../components/shared.js';
-
-// ---- Markdown helpers (ported from client-main.js:287-294) ----
-function stripFrontmatter(md) {
-  if (!md.startsWith('---')) return md;
-  const end = md.indexOf('\n---', 3);
-  return end === -1 ? md : md.slice(end + 4).trimStart();
-}
-
-// Minimal HTML sanitizer for rendered markdown. No DOMPurify dependency on the
-// client, so we strip the dangerous primitives via regex after marked emits
-// HTML: script/iframe/object/embed tags, inline event handlers, and
-// javascript:/data: URLs in href/src. Markdown content comes from the project
-// dir (semi-trusted) but may include attacker-controlled text checked into a
-// repo, so we cannot trust raw HTML passthrough.
-function sanitizeHtml(html) {
-  return String(html)
-    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
-    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*\/?>/gi, '')
-    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src|xlink:href)\s*=\s*(["'])\s*(?:javascript|data|vbscript):[^"']*\2/gi, '$1=$2#blocked$2');
-}
-
-function renderMd(md) {
-  const clean = stripFrontmatter(md);
-  if (typeof marked === 'undefined') {
-    return '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
-  }
-  return sanitizeHtml(marked.parse(clean));
-}
+import { FileReader } from '../components/FileReader.js';
 
 // ---- File tree components ----
 function FileEntry({ file, extraText, onSelect, isSelected }) {
@@ -117,51 +88,14 @@ function FileGroup({ group, onSelect, selectedPath, filter }) {
   return null;
 }
 
-// ---- File content pane ----
-function FileContent({ path, html: htmlContent, loading, error }) {
-  if (loading) {
-    return html`
-      <div id="file-view">
-        <div class="skeleton"></div>
-        <div class="skeleton" style="height:200px;"></div>
-      </div>
-    `;
-  }
-  if (error) {
-    return html`
-      <div id="file-view">
-        <div style="color:var(--accent-red);padding:16px;">${error}</div>
-      </div>
-    `;
-  }
-  if (!path || !htmlContent) return html`<div id="file-view"></div>`;
-
-  function copyPath() {
-    navigator.clipboard.writeText(path).then(() => {
-      showToast('Path copied!');
-    }).catch(() => {});
-  }
-
-  return html`
-    <div id="file-view">
-      <div class="file-path-header">
-        <span>${path}</span>
-        <button class="copy-btn" onClick=${copyPath}>Copy</button>
-      </div>
-      <div class="md-render" dangerouslySetInnerHTML=${{ __html: htmlContent }} />
-    </div>
-  `;
-}
-
 // ---- Root FilesView ----
 export function FilesView() {
   const { requestedFile } = useStore();
 
-  const [groups, setGroups]         = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [filter, setFilter]         = useState('');
-  const [selectedPath, setSelectedPath] = useState(null);
-  const [fileContent, setFileContent]   = useState({ html: null, loading: false, error: null });
+  const [groups, setGroups]     = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState('');
+  const [selected, setSelected] = useState(null); // { path, label } | null
 
   // Fetch file tree on mount
   useEffect(() => {
@@ -173,32 +107,14 @@ export function FilesView() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Agent-jump bridge: requestedFile set by AgentsView
+  // Agent-jump bridge: the agent drawer's "View file in Files" sets
+  // requestedFile to a project-relative path — open it in the reader.
   useEffect(() => {
     if (!requestedFile) return;
-    setFilter(requestedFile);
+    setSelected({ path: requestedFile, label: requestedFile.split('/').pop() });
     // Clear the bridge field so this doesn't re-trigger
     setState({ requestedFile: null });
   }, [requestedFile]);
-
-  const loadFile = useCallback(async (file) => {
-    setSelectedPath(file.path);
-    setFileContent({ html: null, loading: true, error: null });
-    try {
-      const resp = await fetch('/api/file?path=' + encodeURIComponent(file.path));
-      if (!resp.ok) {
-        const msg = resp.status === 404
-          ? 'File not found: ' + file.path
-          : 'Failed to load file (HTTP ' + resp.status + ').';
-        setFileContent({ html: null, loading: false, error: msg });
-        return;
-      }
-      const text = await resp.text();
-      setFileContent({ html: renderMd(text), loading: false, error: null });
-    } catch {
-      setFileContent({ html: null, loading: false, error: 'Network error.' });
-    }
-  }, []);
 
   return html`
     <div class="view active" id="view-files">
@@ -222,20 +138,21 @@ export function FilesView() {
                   <${FileGroup}
                     key=${g.group}
                     group=${g}
-                    onSelect=${loadFile}
-                    selectedPath=${selectedPath}
+                    onSelect=${setSelected}
+                    selectedPath=${selected && selected.path}
                     filter=${filter}
                   />
                 `)
           }
         </div>
       </div>
-      <${FileContent}
-        path=${selectedPath}
-        html=${fileContent.html}
-        loading=${fileContent.loading}
-        error=${fileContent.error}
-      />
+      ${selected && html`
+        <${FileReader}
+          path=${selected.path}
+          title=${selected.label}
+          onClose=${() => setSelected(null)}
+        />
+      `}
     </div>
   `;
 }

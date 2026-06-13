@@ -463,7 +463,11 @@ function planToPathList(plan, cwd, options = {}) {
  * still proceed since the user already confirmed the destructive action.
  */
 function createBackup(cwd, plan, options = {}) {
-  const paths = planToPathList(plan, cwd, { purge: options.purge === true });
+  // Tar entry names are always '/'-separated; on Windows planToPathList
+  // produces '\'-joined paths that bsdtar may store verbatim. Normalize so
+  // the archive (and any `tar -tzf` consumer) sees portable paths.
+  const paths = planToPathList(plan, cwd, { purge: options.purge === true })
+    .map((p) => p.split(path.sep).join('/'));
   if (paths.length === 0) {
     return { ok: false, warning: 'nothing to back up' };
   }

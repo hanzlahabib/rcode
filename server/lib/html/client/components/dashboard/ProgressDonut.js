@@ -17,6 +17,8 @@ function pctOf(n, total) {
 export function ProgressDonut() {
   const S = useStore();
   const p = S.progress;
+  // Live orchestrator sessions (derived map, refreshed by the 4s poll).
+  const liveCount = Object.keys(S.runningByStory || {}).length;
 
   // No tracked work yet (or no project) — honest empty state, no sample donut.
   if (!p || !p.total) {
@@ -87,6 +89,7 @@ export function ProgressDonut() {
       </div>
       <p class="donut-summary">
         <strong>${completed}/${total}</strong> tasks completed
+        ${liveCount > 0 ? html` <span class="donut-live">· ${liveCount} running now</span>` : null}
       </p>
       <svg class="donut-bar" width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none">
         <rect x="0" y="0" width="100" height="6" rx="3" fill="var(--dash-border)"/>

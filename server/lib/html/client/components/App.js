@@ -13,12 +13,16 @@
  */
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
+import { parseFilters } from '../filter-state.js';
 import { getState, setState, subscribe, registerRefresh } from '../store.js';
 import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
 import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
 import { XtermPanel } from './XtermPanel.js';
 import { OrchPanel } from './OrchPanel.js';
+import { RunnerPicker } from './RunnerPicker.js';
+import { CommandPalette } from './CommandPalette.js';
+import { BlockedToasts } from './NotifyCenter.js';
 import { OverviewView } from '../views/OverviewView.js';
 import { DecisionsView } from '../views/DecisionsView.js';
 import { RoadmapView } from '../views/RoadmapView.js';
@@ -54,15 +58,20 @@ const LEGACY_VIEWS = [];
 
 const ALL_VIEWS = Object.keys(PREACT_VIEWS).concat(LEGACY_VIEWS);
 
-/** Parse location.hash into { view, subId } — port of client-main.js:45-49. */
+/** Parse location.hash into { view, subId, filters } — port of client-main.js:45-49. */
 function parseHash() {
   const raw = location.hash.slice(1) || 'overview';
-  const slash = raw.indexOf('/');
-  const view  = slash === -1 ? raw : raw.slice(0, slash);
-  const subId = slash === -1 ? null : raw.slice(slash + 1);
+  // Strip ?query suffix before routing so it never leaks into view/subId.
+  const qIdx  = raw.indexOf('?');
+  const path  = qIdx === -1 ? raw : raw.slice(0, qIdx);
+  const slash = path.indexOf('/');
+  const view  = slash === -1 ? path : path.slice(0, slash);
+  // subId must not include the ?query portion.
+  const subId = slash === -1 ? null : path.slice(slash + 1);
   // #263: unknown hash falls back to overview
   const resolvedView = ALL_VIEWS.includes(view) ? view : 'overview';
-  return { view: resolvedView, subId };
+  const filters = parseFilters(location.hash);
+  return { view: resolvedView, subId, filters };
 }
 
 /** Full-width banner shown when /api/state polling is failing. */
@@ -110,7 +119,7 @@ function StatusBar({ projectRoot, projectName, version, updatedAgo, offline, ref
 /** Root App component. No props needed — reads everything from the store. */
 export function App() {
   // ---- Router state ----
-  const [{ view, subId }, setRoute] = useState(parseHash);
+  const [{ view, subId, filters }, setRoute] = useState(parseHash);
 
   useEffect(() => {
     function onHashChange() {
@@ -241,6 +250,20 @@ export function App() {
     startSessionsPoll();
   }, []);
 
+  // ---- Command palette ----
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen(o => !o);
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   // ---- View rendering ----
   const PreactView = PREACT_VIEWS[view] || null;
 
@@ -267,7 +290,7 @@ export function App() {
             error=${storeState.rawParseError}
             dismissed=${storeState.parseErrorDismissed}
           />
-          ${PreactView ? html`<${PreactView} subId=${subId} />` : null}
+          ${PreactView ? html`<${PreactView} subId=${subId} filters=${filters} />` : null}
         </div>
 
         <${StatusBar}
@@ -282,6 +305,9 @@ export function App() {
 
       <${XtermPanel} />
       <${OrchPanel} />
+      <${BlockedToasts} />
+      <${RunnerPicker} />
+      <${CommandPalette} open=${paletteOpen} onClose=${() => setPaletteOpen(false)} />
     </div>
   `;
 }

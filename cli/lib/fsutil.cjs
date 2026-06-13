@@ -115,8 +115,19 @@ function safeRmSync(targetPath, projectRoot) {
     }
   }
 
-  // Real path must stay inside the project root.
-  const root = path.resolve(projectRoot);
+  // Real path must stay inside the project root. The root must be
+  // realpathed too: on macOS os.tmpdir() lives behind a symlink
+  // (/tmp → /private/tmp, /var → /private/var), so comparing a realpathed
+  // target against a merely-resolved root misreports anything under /tmp
+  // as outside-root.
+  let root;
+  try {
+    root = fs.realpathSync(projectRoot);
+  } catch {
+    // Root missing/unreadable — fall back to a lexical resolve; the
+    // containment check below then fails closed for an existing target.
+    root = path.resolve(projectRoot);
+  }
   let resolved;
   try {
     resolved = fs.realpathSync(targetPath);

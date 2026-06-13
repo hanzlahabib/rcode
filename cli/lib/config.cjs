@@ -18,9 +18,11 @@
  */
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { writeJsonAtomic } = require('./fsutil.cjs');
+// HOME-aware home resolution (#889) — os.homedir() ignores a stubbed HOME
+// on Windows, which broke user-level defaults isolation in tests.
+const { homedir } = require('./homedir.cjs');
 
 // ---------- Schema ----------
 
@@ -102,7 +104,7 @@ const VALID_COMMUNICATION_MODES = new Set(['guided', 'yolo']);
 // ---------- Paths ----------
 
 function userLevelPath() {
-  return path.join(os.homedir(), '.rcode', 'defaults.json');
+  return path.join(homedir(), '.rcode', 'defaults.json');
 }
 
 function projectLevelPath(cwd) {

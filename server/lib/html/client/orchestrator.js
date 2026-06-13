@@ -12,6 +12,7 @@
 
 import { getState, setState } from './store.js';
 import { showToast } from './components/shared.js';
+import { trackBlocked } from './notify.js';
 
 export const ORCH_HTTP = 'http://localhost:7718';
 export const ORCH_WS   = 'ws://localhost:7718';
@@ -38,15 +39,41 @@ export function refreshOrchToken() {
 
 /**
  * POST /api/run — start a PTY session for storyId.
+ * opts = { runner?, model? } — which agent CLI / model to launch. Omitted →
+ * the server default (claude, no model flag). The server re-validates both.
  * Returns the parsed JSON response (or throws on network error).
  */
-export function runSession(storyId, cmd) {
-  const tok = orchToken();
+export function runSession(storyId, cmd, opts) {
+  const tok  = orchToken();
+  const body = { storyId, cmd };
+  if (opts && opts.runner) {
+    body.runner = opts.runner;
+    if (opts.model) body.model = opts.model;
+  }
   return fetch(ORCH_HTTP + '/api/run', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storyId, cmd }),
+    body: JSON.stringify(body),
   }).then(r => r.json());
+}
+
+/**
+ * GET /api/runners — detected agent CLIs: [{ id, label, available, models }].
+ * The list is fixed for the orchestrator's lifetime (detected once at boot),
+ * so the first successful response is cached; failures are not cached so a
+ * later open retries.
+ */
+let _runnersPromise = null;
+export function fetchRunners() {
+  if (_runnersPromise) return _runnersPromise;
+  const tok = orchToken();
+  _runnersPromise = fetch(ORCH_HTTP + '/api/runners', {
+    headers: { 'Authorization': 'Bearer ' + tok },
+  })
+    .then(r => r.json())
+    .then(d => (d && d.runners) || [])
+    .catch(() => { _runnersPromise = null; return []; });
+  return _runnersPromise;
 }
 
 /**
@@ -86,9 +113,69 @@ export function fetchSessions() {
   return fetchSessionsWithStatus().then(r => r.sessions);
 }
 
+/**
+ * GET /api/history — return the persisted run history array (or [] on error).
+ */
+export function fetchHistory() {
+  const tok = orchToken();
+  if (!tok) return Promise.resolve([]);
+  return fetch(ORCH_HTTP + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(r => {
+      if (r.status === 401) { refreshOrchToken(); return []; }
+      return r.json().then(d => (d && d.history) || []);
+    })
+    .catch(() => []);
+}
+
+/**
+ * Merge live sessions with persisted history, keyed on storyId.
+ * Live session fields win for most properties; durationMs and endTime are
+ * field-aware: the live record may not have them yet (session still running),
+ * so fall back to the history value if the live field is null/undefined.
+ */
+export function mergeSessionsAndHistory(live, hist) {
+  const byId = new Map();
+  for (const h of hist || []) byId.set(h.storyId, { ...h, source: 'history' });
+  for (const s of live || []) {
+    const h = byId.get(s.storyId) || {};
+    byId.set(s.storyId, {
+      ...h,
+      ...s,
+      source: 'live',
+      durationMs: s.durationMs ?? h.durationMs,
+      endTime:    s.endTime    ?? h.endTime,
+    });
+  }
+  return [...byId.values()];
+}
+
 /** True unless the last session poll found the orchestrator unreachable. */
 export function isOrchOnline() {
   return getState().orchOnline !== false;
+}
+
+/**
+ * POST /api/reject — record a structured rejection reason for storyId.
+ * phase is optional. Returns the parsed JSON response.
+ */
+export function submitRejection(storyId, reason, phase) {
+  const tok = orchToken();
+  return fetch(ORCH_HTTP + '/api/reject', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId, reason, phase: phase || null }),
+  }).then(r => r.json());
+}
+
+/**
+ * GET /api/rejections — return the persisted rejections array (or [] on error).
+ */
+export function fetchRejections() {
+  const tok = orchToken();
+  if (!tok) return Promise.resolve([]);
+  return fetch(ORCH_HTTP + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(r => r.ok ? r.json().then(d => (d && d.rejections) || []) : [])
+    .catch(() => []);
 }
 
 /**
@@ -116,10 +203,13 @@ export function activeSession(storyId) {
   return (activeSessions || []).find(s => s.storyId === storyId) || null;
 }
 
-/** True when storyId has a session with status==='running'. */
+/**
+ * True when storyId has a live session. 'blocked' is a live PTY waiting for
+ * input (server-side classification of running), so it counts as running here.
+ */
 export function isSessionRunning(storyId) {
-  const s = activeSession(storyId);
-  return !!(s && s.status === 'running');
+  const { runningByStory } = getState();
+  return !!(storyId && runningByStory && runningByStory[storyId]);
 }
 
 /** Count running sessions touching this sprint (sprint-level + its stories). */
@@ -136,10 +226,10 @@ export function runningInPhase(p) {
   return n;
 }
 
-/** Total count of sessions with status==='running'. */
+/** Total count of live sessions (running or blocked-on-input). */
 export function runningTotal() {
   const { activeSessions } = getState();
-  return (activeSessions || []).filter(s => s.status === 'running').length;
+  return (activeSessions || []).filter(s => s.status === 'running' || s.status === 'blocked').length;
 }
 
 // ── Session poll ──────────────────────────────────────────────────────────────
@@ -169,14 +259,23 @@ export function stopSessionsPoll() {
 }
 
 function _poll() {
-  fetchSessionsWithStatus().then(({ ok, sessions }) => {
-    // Dedupe: skip the setState when neither the session list nor the
-    // orchestrator-online flag changed — avoids a full-app re-render per poll.
-    const json = JSON.stringify(sessions) + '|' + ok;
-    if (json === _lastSessionsJson) return;
-    _lastSessionsJson = json;
-    setState({ activeSessions: sessions, orchOnline: ok });
-  });
+  Promise.all([fetchSessionsWithStatus(), fetchHistory(), fetchRejections()])
+    .then(([{ ok, sessions }, history, rejections]) => {
+      // Merge any recorded rejection onto its matching session by storyId.
+      const byId = {};
+      for (const r of rejections) byId[r.storyId] = r;
+      const merged = sessions.map(s => byId[s.storyId] ? { ...s, rejection: byId[s.storyId] } : s);
+
+      // Dedupe: skip the setState when neither the session list, the
+      // orchestrator-online flag, nor the history changed — avoids a
+      // full-app re-render per poll tick.
+      const json = JSON.stringify(merged) + '|' + ok + '|' + JSON.stringify(history);
+      if (json === _lastSessionsJson) return;
+      _lastSessionsJson = json;
+      setState({ activeSessions: merged, history, orchOnline: ok });
+      // Detect running→blocked transitions and raise persistent alerts.
+      trackBlocked(merged);
+    });
 }
 
 // ── runAndOpenTerm convenience ────────────────────────────────────────────────
@@ -188,8 +287,9 @@ function _poll() {
  * @param {string} storyId
  * @param {string} cmd
  * @param {string} title
+ * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
-export function runAndOpenTerm(storyId, cmd, title) {
+export function runAndOpenTerm(storyId, cmd, title, opts) {
   // Open the panel immediately (it shows "connecting" while the session starts).
   setState({
     terminal: {
@@ -204,10 +304,17 @@ export function runAndOpenTerm(storyId, cmd, title) {
   const tok = orchToken();
   if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
 
-  runSession(storyId, cmd).catch(err => {
-    console.error('[orchestrator] session op failed:', err.message);
-    showToast('Could not reach orchestrator — session not started');
-  });
+  runSession(storyId, cmd, opts)
+    .then(data => {
+      // 409 = already running (terminal reattaches); anything else is surfaced.
+      if (data && data.error && !data.error.includes('already running')) {
+        showToast('Run error: ' + data.error);
+      }
+    })
+    .catch(err => {
+      console.error('[orchestrator] session op failed:', err.message);
+      showToast('Could not reach orchestrator — session not started');
+    });
 }
 
 /**
@@ -234,15 +341,6 @@ export function openOrchPanel(storyId) {
 }
 
 /**
- * runStory — Kanban "Run" action. Moves card to in_progress visually then
- * delegates to runAndOpenTerm.
- */
-export function runStory(storyId) {
-  if (!storyId) return;
-  runAndOpenTerm(storyId, '/rcode-dev-story ' + storyId, storyId);
-}
-
-/**
  * stopStory — Kanban "Stop" action.
  */
 export function stopStory(storyId) {
@@ -256,18 +354,18 @@ export function stopStory(storyId) {
  * Update both when adding a new command.
  */
 export const ALLOWED_COMMANDS = [
-  { cmd: '/rcode-init',          label: 'init — initialise project workspace' },
-  { cmd: '/rcode-status',        label: 'status — phase / sprint status' },
-  { cmd: '/rcode-progress',      label: 'progress — milestone progress' },
-  { cmd: '/rcode-help',          label: 'help — command reference' },
-  { cmd: '/rcode-health',        label: 'health — repo health check' },
-  { cmd: '/rcode-next',          label: 'next — suggest next action' },
-  { cmd: '/rcode-show',          label: 'show — show current plan' },
-  { cmd: '/rcode-list-plans',    label: 'list-plans — list all sprint plans' },
-  { cmd: '/rcode-sprint-status', label: 'sprint-status — sprint execution status' },
-  { cmd: '/rcode-config',        label: 'config — show rcode config' },
-  { cmd: '/rcode-diff',          label: 'diff — diff since last checkpoint' },
-  { cmd: '/rcode-stats',         label: 'stats — project statistics' },
+  { cmd: '/rcode-init',          label: 'init — initialise project workspace',    category: 'Project'  },
+  { cmd: '/rcode-config',        label: 'config — show rcode config',             category: 'Project'  },
+  { cmd: '/rcode-status',        label: 'status — phase / sprint status',         category: 'Status'   },
+  { cmd: '/rcode-progress',      label: 'progress — milestone progress',          category: 'Status'   },
+  { cmd: '/rcode-sprint-status', label: 'sprint-status — sprint execution status',category: 'Status'   },
+  { cmd: '/rcode-stats',         label: 'stats — project statistics',             category: 'Status'   },
+  { cmd: '/rcode-show',          label: 'show — show current plan',               category: 'Planning' },
+  { cmd: '/rcode-list-plans',    label: 'list-plans — list all sprint plans',     category: 'Planning' },
+  { cmd: '/rcode-next',          label: 'next — suggest next action',             category: 'Planning' },
+  { cmd: '/rcode-help',          label: 'help — command reference',               category: 'Inspect'  },
+  { cmd: '/rcode-health',        label: 'health — repo health check',             category: 'Inspect'  },
+  { cmd: '/rcode-diff',          label: 'diff — diff since last checkpoint',      category: 'Inspect'  },
 ];
 
 /**
@@ -283,8 +381,9 @@ export const ALLOWED_COMMANDS = [
  *   - network failure                         → showToast('Could not reach orchestrator')
  *
  * @param {string} cmd  Must be one of ALLOWED_COMMANDS[*].cmd.
+ * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
-export function runCommandFromUI(cmd) {
+export function runCommandFromUI(cmd, opts) {
   if (!cmd) return;
   const slug    = cmd.replace(/^\//, '').replace(/\//g, '-');
   const storyId = 'cmd-' + slug;
@@ -297,7 +396,7 @@ export function runCommandFromUI(cmd) {
   const tok = orchToken();
   if (!tok) { showToast('No orchestrator token — restart the dashboard'); return; }
 
-  runSession(storyId, cmd)
+  runSession(storyId, cmd, opts)
     .then(data => {
       // 409 = already running (not an error — terminal is already attached).
       if (data && data.error && !data.error.includes('already running')) {

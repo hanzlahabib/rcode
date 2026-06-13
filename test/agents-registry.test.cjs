@@ -43,7 +43,8 @@ function parseTeamYaml(text) {
     }
     current = null;
   }
-  for (const raw of text.split('\n')) {
+  // CRLF tolerance (#889): split on \r?\n so Windows checkouts parse the same.
+  for (const raw of text.split(/\r?\n/)) {
     // team.yaml has 4 top-level sections: agents, utility_agents, routing, tactical_agents.
     // routing has no agent entries; the other three may share ids by design.
     const sectionMatch = raw.match(/^([a-z_]+):\s*$/);

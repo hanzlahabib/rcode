@@ -128,7 +128,10 @@ function normalize(artifactPath) {
   const abs = path.isAbsolute(artifactPath)
     ? artifactPath
     : path.join(PROJECT_ROOT, artifactPath);
-  const text = fs.readFileSync(abs, 'utf8');
+  // CRLF tolerance (#889): Windows checkouts may be \r\n; normalize so the
+  // extracted contract (and therefore the baseline diff) is byte-identical
+  // across platforms.
+  const text = fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n');
   const { fmText, body } = splitFrontmatter(text);
 
   const triggers = sortedUnique([

@@ -5,7 +5,7 @@
  * silently regresses any of these, CI fails before the bad behavior hits npm.
  */
 
-const { test } = require('node:test');
+const { test, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -16,14 +16,32 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const INSTALL_JS = path.join(REPO_ROOT, 'cli', 'install.js');
 const { makeTempDir, cleanup } = require('./helpers.cjs');
 
+// #889: spawn every install with HOME (and USERPROFILE, for any direct
+// os.homedir() reads on Windows) pointed at a throwaway dir. Without this,
+// installs read the runner's REAL home — where parallel test files leak
+// ~/.codex / ~/.gemini on Windows — and IDE auto-detection (--yes installs
+// into every detected IDE) sent the install down a different path that
+// never seeded .rcode/state.json.
+const FAKE_HOME = makeTempDir('rcode-fakehome-');
+after(() => cleanup(FAKE_HOME));
+
 function gitInit(dir) {
   spawnSync('git', ['init', '-q'], { cwd: dir });
 }
 
 function runInstall(target, extra = []) {
-  return spawnSync('node', [INSTALL_JS, '--target', target, '--no-update-check', '--yes', ...extra], {
+  const r = spawnSync('node', [INSTALL_JS, '--target', target, '--no-update-check', '--yes', ...extra], {
     encoding: 'utf8',
+    env: { ...process.env, HOME: FAKE_HOME, USERPROFILE: FAKE_HOME },
   });
+  // Every test here depends on the install succeeding; fail HERE with the
+  // child's output instead of a confusing downstream ENOENT (#889 — Windows
+  // CI failed on a missing state.json three asserts after the real error).
+  assert.strictEqual(
+    r.status, 0,
+    `install exited ${r.status} (signal ${r.signal}, err ${r.error?.message}):\n${r.stderr}\n${r.stdout}`,
+  );
+  return r;
 }
 
 // ────────────────────────────────────────────────────────────────────────

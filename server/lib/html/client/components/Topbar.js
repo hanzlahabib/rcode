@@ -23,6 +23,7 @@ import { Icon } from '../icons-client.js';
 import { useStore } from '../store.js';
 import { runCommandFromUI } from '../orchestrator.js';
 import { showToast } from './shared.js';
+import { BlockedBell } from './NotifyCenter.js';
 
 /**
  * Ask rcode — reuse the existing orchestrator command runner (token-guarded
@@ -76,6 +77,8 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
           <span class="tb-dot"></span>
           ${refreshing ? 'Syncing…' : 'Auto-synced ' + (updatedAgo || 'just now')}
         </button>
+
+        <${BlockedBell} />
 
         <button class="tb-btn tb-btn--primary" type="button" onClick=${askRcode} title="Ask rcode for the next action">
           <${Icon} name="brain" size=${15} /> Ask rcode

@@ -87,7 +87,9 @@ function check() {
       process.stdout.write(`  re-bless with: node test/eval/run-eval.cjs --bless\n`);
       continue;
     }
-    const baseline = fs.readFileSync(file, 'utf8');
+    // CRLF tolerance (#889): a Windows checkout may hand us a \r\n baseline
+    // file; compare LF-normalized so line endings never count as drift.
+    const baseline = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
     if (baseline !== current) {
       drift++;
       process.stdout.write(`\nBEHAVIOR DRIFT: ${artifact}\n`);

@@ -62,6 +62,12 @@ export function Sidebar({ activeView, projectName }) {
   const name = project.name || projectName || 'No project';
   const user = (project.user && project.user.name) ? project.user : null;
 
+  // Full store subscription for live health badge counts.
+  // Re-renders on every setState (sessions poll every 4 s, state refresh every 30 s).
+  const { activeSessions, blockers } = useStore();
+  const sessionCount = (activeSessions || []).filter(s => s.status === 'running').length;
+  const blockerCount = (blockers || []).length;
+
   return html`
     <aside class="sidebar" id="sidebar">
       <div class="sb-logo">
@@ -74,6 +80,23 @@ export function Sidebar({ activeView, projectName }) {
       <div class="sb-switcher sb-switcher--static" title=${name}>
         <span class="sb-switcher-dot"></span>
         <span class="sb-switcher-name">${name}</span>
+      </div>
+
+      <div class="sidebar-health">
+        <span
+          class=${'health-badge' + (sessionCount === 0 ? ' health-badge--zero' : '')}
+          title=${sessionCount + ' active orchestration session' + (sessionCount === 1 ? '' : 's')}
+        >
+          <${Icon} name="activity" size=${12} />
+          ${sessionCount} active
+        </span>
+        <span
+          class=${'health-badge' + (blockerCount > 0 ? ' health-badge--alert' : ' health-badge--zero')}
+          title=${blockerCount + ' blocker' + (blockerCount === 1 ? '' : 's')}
+        >
+          <${Icon} name="alert-triangle" size=${12} />
+          ${blockerCount} blocked
+        </span>
       </div>
 
       <nav class="sb-nav">

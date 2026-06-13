@@ -44,8 +44,17 @@ test('--purge removes .rcode/ and .planning/, leaves backup tarball at .rcode-ba
   t.after(() => cleanup(dir));
   gitInit(dir);
 
-  // Install + seed real-looking project data.
+  // Install + seed real-looking project data. The subject under test is the
+  // PURGE flow, so guarantee its preconditions (.rcode/ with a config marker,
+  // .planning/) directly instead of inheriting them from the installer —
+  // installer platform bugs are covered by the install test suites and must
+  // not cascade into a misleading ENOENT here.
   runInstall(dir);
+  fs.mkdirSync(path.join(dir, '.rcode'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
+  if (!fs.existsSync(path.join(dir, '.rcode', 'config.yaml'))) {
+    fs.writeFileSync(path.join(dir, '.rcode', 'config.yaml'), 'project_name: "foo"\n');
+  }
   fs.writeFileSync(
     path.join(dir, '.rcode', 'state.json'),
     JSON.stringify({ project: 'foo', decisions: [{ id: 'd-1', text: 'important' }] }, null, 2),
@@ -105,10 +114,27 @@ test('--purge with .planning symlinked outside the project root refuses to trave
   gitInit(dir);
 
   runInstall(dir);
+  // Guarantee the uninstaller's "is rcode installed?" marker even if the
+  // installer failed for unrelated platform reasons (see purge test above).
+  fs.mkdirSync(path.join(dir, '.rcode'), { recursive: true });
+  if (!fs.existsSync(path.join(dir, '.rcode', 'config.yaml'))) {
+    fs.writeFileSync(path.join(dir, '.rcode', 'config.yaml'), 'project_name: "foo"\n');
+  }
 
-  // Replace the .planning/ dir with a symlink to /tmp/outside/.
+  // Replace the .planning/ dir with a symlink to a dir outside the project.
   fs.rmSync(path.join(dir, '.planning'), { recursive: true, force: true });
-  fs.symlinkSync(outside, path.join(dir, '.planning'));
+  try {
+    fs.symlinkSync(outside, path.join(dir, '.planning'), 'dir');
+  } catch (err) {
+    if (process.platform === 'win32' && (err.code === 'EPERM' || err.code === 'EACCES')) {
+      // Creating symlinks on Windows needs elevation or Developer Mode, which
+      // contributor machines often lack. Only the FIXTURE is posix-gated —
+      // the safeRmSync guard under test stays active on every platform.
+      t.skip('symlink creation requires elevation on Windows');
+      return;
+    }
+    throw err;
+  }
   fs.writeFileSync(path.join(outside, 'precious.txt'), 'do not delete');
 
   const result = runUninstall(dir, '--purge', '--yes');

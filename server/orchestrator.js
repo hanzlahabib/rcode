@@ -8,9 +8,13 @@
  * local terminal.
  *
  * HTTP (control plane):
- *   POST /api/run      { storyId, cmd? }  → spawn a PTY session
+ *   POST /api/run      { storyId, cmd?, runner?, model? } → spawn a PTY session
  *   POST /api/stop     { storyId }        → SIGTERM the PTY
- *   GET  /api/sessions                    → list all sessions
+ *   GET  /api/sessions                    → list all sessions (status is
+ *        'blocked' instead of 'running' when the PTY is idle on a question —
+ *        see looksBlocked(); each entry also carries lastOutputAt)
+ *   GET  /api/runners                     → detected agent CLIs + their models
+ *   GET  /api/history                    → completed run history (newest-first)
  * WebSocket (data plane):
  *   /ws/<storyId>?token=...               → live terminal I/O
  *
@@ -26,7 +30,9 @@
 
 const http   = require('http');
 const path   = require('path');
+const os     = require('os');
 const crypto = require('crypto');
+const fs     = require('fs');
 const { execFile } = require('child_process');
 
 // @lydell/node-pty ships prebuilt binaries and never invokes node-gyp, so a
@@ -78,12 +84,201 @@ const COMMAND_ALLOWLIST = new Set([
   '/rcode-stats',
 ]);
 
+// ── Runner registry ──────────────────────────────────────────────────────────
+// Each entry describes one agent CLI the dashboard can launch. `args` builds
+// the full argv array (never a shell string — user input is never shell-
+// interpolated). `models` is the closed set accepted by POST /api/run; an
+// empty/omitted model means "let the CLI use its own default", and an empty
+// models[] hides the model dropdown in the UI entirely.
+//
+// Every args builder below is grounded in the CLI's real `--help` output
+// (verified against the installed versions: codex-cli 0.139.0, grok 0.2.22,
+// copilot 1.0.60). Each launches the CLI's INTERACTIVE entry — we spawn
+// inside a PTY and the user keeps typing after the initial prompt — so
+// headless one-shot flags (`copilot -p`, `gemini -p`, `grok --single`) are
+// deliberately avoided: they exit after one response.
+//
+// `promptViaStdin: true` marks a CLI with no interactive initial-prompt flag
+// (grok): the prompt is written to the PTY as keystrokes once the TUI is up.
+//
+// `beta: true` renders a "Beta" pill in the picker — claude is the first-class
+// default; every other runner is beta. `untested: true` forces a runner
+// unavailable (reason 'untested flags') even when its binary is on PATH:
+// nobody has live-verified its argv, so the picker disables it with a tooltip
+// instead of letting users hit a crash.
+//
+// The default runner is claude with no model flag — identical argv to the
+// pre-registry behavior, so /api/run calls without {runner, model} are
+// backward compatible.
+const RUNNERS = [
+  {
+    // claude --help: `claude [prompt]` starts interactive; `--model` takes an
+    // alias ('fable', 'opus', 'sonnet') or a full model id like fable-5.
+    id: 'claude', label: 'Claude Code', bin: CLAUDE_BIN, modelFlag: '--model',
+    models: ['fable-5', 'opus', 'sonnet', 'haiku'],
+    args: (model, prompt) => model
+      ? [prompt, '--dangerously-skip-permissions', '--model', model]
+      : [prompt, '--dangerously-skip-permissions'],
+  },
+  {
+    // codex --help: `codex [OPTIONS] [PROMPT]` — positional prompt starts the
+    // interactive TUI (`codex exec` is the NON-interactive path; not used).
+    // `-m, --model <MODEL>`. Model list: gpt-5.5 is the current model on this
+    // install (~/.codex/config.toml model migrations end at gpt-5.5); older
+    // ids are auto-migrated server-side, so only the verified-current one is
+    // offered. Live-verified: in an untrusted directory codex first shows its
+    // own interactive "Do you trust the contents of this directory?" dialog —
+    // that is codex UX, not a launch failure; answer it in the terminal.
+    // A wrong model id does NOT abort the TUI (verified with a bogus id).
+    id: 'codex', label: 'Codex CLI', bin: 'codex', modelFlag: '--model', beta: true,
+    models: ['gpt-5.5'],
+    args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
+  },
+  {
+    // copilot --help: `-i, --interactive <prompt>` = "Start interactive mode
+    // and automatically execute this prompt" (NOT `-p`, which is headless and
+    // exits after completion). `--model <model>` documents only 'auto' as a
+    // guaranteed value ("use 'auto' to let Copilot pick automatically").
+    id: 'copilot', label: 'GitHub Copilot CLI', bin: 'copilot', modelFlag: '--model', beta: true,
+    models: ['auto'],
+    args: (model, prompt) => model ? ['--model', model, '-i', prompt] : ['-i', prompt],
+  },
+  {
+    // gemini --help: `-i, --prompt-interactive <prompt>` = "Execute the
+    // provided prompt and continue in interactive mode"; `-m, --model`.
+    // gemini-2.5-pro / gemini-2.5-flash are the documented stable ids.
+    id: 'gemini', label: 'Gemini CLI', bin: 'gemini', modelFlag: '--model', beta: true,
+    models: ['gemini-2.5-pro', 'gemini-2.5-flash'],
+    args: (model, prompt) => model ? ['--model', model, '-i', prompt] : ['-i', prompt],
+  },
+  {
+    // grok --help: the TUI has NO interactive initial-prompt flag — `-p` /
+    // `--prompt-file` are single-turn headless and exit after the response.
+    // So: launch the bare TUI (plus `-m, --model`) and type the prompt into
+    // the PTY after boot (promptViaStdin). Model ids come from the CLI's own
+    // ~/.grok/models_cache.json: grok-build, grok-composer-2.5-fast.
+    id: 'grok', label: 'Grok CLI', bin: 'grok', modelFlag: '--model', beta: true,
+    models: ['grok-build', 'grok-composer-2.5-fast'],
+    promptViaStdin: true,
+    args: (model) => model ? ['--model', model] : [],
+  },
+  {
+    // cursor-agent --help: `cursor-agent [options] [prompt...]` — positional
+    // prompt, interactive by default; `--model <model>` with documented
+    // examples "gpt-5, sonnet-4, sonnet-4-thinking".
+    id: 'cursor', label: 'Cursor Agent', bin: 'cursor-agent', modelFlag: '--model', beta: true,
+    models: ['gpt-5', 'sonnet-4', 'sonnet-4-thinking'],
+    args: (model, prompt) => model ? ['--model', model, prompt] : [prompt],
+  },
+  {
+    // Not installed on any tested machine — its flags have never been
+    // live-verified, so `untested` keeps it disabled (picker tooltip:
+    // 'untested flags') even if an `antigravity` binary appears on PATH.
+    // Remove `untested` only after grounding the argv in its real --help
+    // and a successful spawn test.
+    id: 'antigravity', label: 'Antigravity', bin: 'antigravity', modelFlag: null, beta: true,
+    untested: true,
+    models: [],
+    args: (model, prompt) => [prompt],
+  },
+];
+
+// How long to wait before typing the initial prompt into a promptViaStdin
+// runner's PTY — the TUI needs to finish mounting or the keystrokes land on
+// a splash screen. PTYs buffer input, so erring high is safe.
+const STDIN_PROMPT_DELAY_MS = 2000;
+
+// True when `bin` resolves to an executable — either an explicit path (e.g.
+// CLAUDE_BIN=/opt/claude/bin/claude) or a name found on PATH.
+async function binAvailable(bin) {
+  if (!bin) return false;
+  const exts = process.platform === 'win32' ? ['', '.exe', '.cmd', '.bat'] : [''];
+  async function executable(p) {
+    for (const ext of exts) {
+      try { await fs.promises.access(p + ext, fs.constants.X_OK); return true; } catch { /* keep looking */ }
+    }
+    return false;
+  }
+  if (bin.includes('/') || bin.includes(path.sep)) return executable(bin);
+  for (const dir of (process.env.PATH || '').split(path.delimiter)) {
+    if (dir && await executable(path.join(dir, bin))) return true;
+  }
+  return false;
+}
+
+// Availability is detected once at boot and cached on each registry entry,
+// along with a human-readable reason when a runner is unusable. Route
+// handlers await this so an early request never reads a stale flag.
+const runnersReady = Promise.all(
+  RUNNERS.map(async r => {
+    if (r.untested) { r.available = false; r.reason = 'untested flags'; return; }
+    r.available = await binAvailable(r.bin);
+    r.reason = r.available ? '' : 'not installed';
+  })
+);
+
 // Cap kept-in-memory scrollback per session so a long run can't grow unbounded.
 const SCROLLBACK_MAX = 256 * 1024;
 
 // Map<storyId, Session>
 // Session: { proc, status, startTime, cmd, cols, rows, scrollback, wsClients:Set }
 const sessions = new Map();
+
+const HISTORY_FILE     = path.join(os.homedir(), '.rcode', 'orch-history.json');
+const HISTORY_MAX      = 200; // cap persisted runs so the file cannot grow unbounded
+const REJECTIONS_PATH  = path.join(os.homedir(), '.rcode', 'rejections.json');
+
+function loadHistory() {
+  try {
+    const raw = fs.readFileSync(HISTORY_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+let history = loadHistory();
+
+function persistRun(storyId, s, status) {
+  const endTime    = new Date().toISOString();
+  const durationMs = Date.parse(endTime) - (Date.parse(s.startTime) || Date.parse(endTime));
+  const entry = { storyId, cmd: s.cmd, status, startTime: s.startTime, endTime, durationMs };
+  history.push(entry);
+  if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
+  try {
+    fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+  } catch (err) {
+    console.error('[orchestrator] failed to persist run history:', err.message);
+  }
+}
+
+// ── Rejection persistence ─────────────────────────────────────────────────────
+
+function readRejections() {
+  try {
+    const raw = fs.readFileSync(REJECTIONS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function appendRejection(entry) {
+  try {
+    const list = readRejections();
+    list.push(entry);
+    const dir = path.dirname(REJECTIONS_PATH);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(REJECTIONS_PATH, JSON.stringify(list, null, 2));
+    return true;
+  } catch (err) {
+    console.error('[orchestrator] failed to persist rejection:', err.message);
+    return false;
+  }
+}
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -164,7 +359,70 @@ function gitModified() {
 // almost certainly waiting for the user (a question, or end of a turn).
 const IDLE_THRESHOLD_MS = 20000;
 
+// ── Blocked-session detection ─────────────────────────────────────────────────
+// A session is classified "blocked" when its PTY has been silent for at least
+// BLOCKED_IDLE_MS AND the scrollback tail looks like a question / permission
+// prompt / idle input box. Deliberately conservative: both conditions must
+// hold, and the patterns below only match clear ask-the-user shapes.
+const BLOCKED_IDLE_MS   = 10000;
+const BLOCKED_TAIL_CHARS = 2000;
+
+// Strip ANSI escape sequences (OSC, CSI, other ESC) and carriage returns so
+// pattern matching sees plain text, not control bytes.
+function stripAnsi(str) {
+  return String(str)
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, '')
+    .replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, '')
+    .replace(/\x1b[@-_]/g, '')
+    .replace(/\r/g, '');
+}
+
+// Heuristic: does the recent scrollback tail look like the CLI is asking the
+// user something? Checks only the last few visible lines (box-drawing borders
+// removed) for question/permission shapes:
+//   - "Do you want …"            - "[y/n]" / "(y/n)"
+//   - "Enter to select/confirm"  - "❯" idle/selection prompt
+//   - a "1. … / 2. …" option list - a line ending with "?"
+function looksBlocked(scrollback) {
+  const tail = stripAnsi(String(scrollback || '').slice(-BLOCKED_TAIL_CHARS));
+  const lines = tail.split('\n')
+    .map(l => l.replace(/[│┃┆┇┊┋]/g, ' ').replace(/[─━╭╮╰╯└┘┌┐├┤╴╶]+/g, ' ').trim())
+    .filter(Boolean);
+  const recent = lines.slice(-12);
+  if (recent.length === 0) return false;
+  const text = recent.join('\n');
+  if (/\bdo you want\b/i.test(text)) return true;
+  if (/\[y\/n\]|\(y\/n\)/i.test(text)) return true;
+  if (/enter to (select|confirm|continue)|press enter/i.test(text)) return true;
+  if (/❯/.test(recent.slice(-6).join('\n'))) return true;
+  const hasOpt1 = recent.some(l => /^❯?\s*1[.)]\s+\S/.test(l));
+  const hasOpt2 = recent.some(l => /^❯?\s*2[.)]\s+\S/.test(l));
+  if (hasOpt1 && hasOpt2) return true;
+  if (recent.slice(-3).some(l => /\?\s*$/.test(l))) return true;
+  return false;
+}
+
+// Classify a session for /api/sessions: a live PTY whose output has gone
+// idle on a question shape reports 'blocked'; otherwise the lifecycle status
+// (running / done / exited / stopped / error) passes through unchanged.
+function classifyStatus(s, idleMs) {
+  if (s.status === 'running' && idleMs > BLOCKED_IDLE_MS && looksBlocked(s.scrollback)) {
+    return 'blocked';
+  }
+  return s.status;
+}
+
 // ── route handlers ────────────────────────────────────────────────────────────
+
+async function handleRunners(res) {
+  await runnersReady;
+  json(res, 200, {
+    runners: RUNNERS.map(r => ({
+      id: r.id, label: r.label, available: !!r.available, models: r.models,
+      beta: !!r.beta, reason: r.reason || '',
+    })),
+  });
+}
 
 async function handleSessions(res) {
   const current = await gitModified();
@@ -177,10 +435,13 @@ async function handleSessions(res) {
     const idleMs = now - (s.lastDataAt || now);
     out.push({
       storyId:      id,
-      status:       s.status,
+      status:       classifyStatus(s, idleMs),
       pid:          s.proc ? s.proc.pid : null,
       cmd:          s.cmd,
+      runner:       s.runner || 'claude',
+      model:        s.model  || '',
       startTime:    s.startTime,
+      lastOutputAt: s.lastDataAt ? new Date(s.lastDataAt).toISOString() : s.startTime,
       clients:      s.wsClients.size,
       filesChanged: changed,
       idleSeconds:  Math.floor(idleMs / 1000),
@@ -188,6 +449,11 @@ async function handleSessions(res) {
     });
   }
   json(res, 200, { sessions: out });
+}
+
+function handleHistory(res) {
+  const out = [...history].sort((a, b) => String(b.endTime || '').localeCompare(String(a.endTime || '')));
+  json(res, 200, { history: out });
 }
 
 async function handleRun(req, res) {
@@ -212,6 +478,26 @@ async function handleRun(req, res) {
     }
   }
 
+  // Runner + model selection — STRICT validation against the registry.
+  // Omitted runner → claude with no model flag (pre-registry behavior).
+  // An explicitly requested runner must exist AND be installed; a model must
+  // be in that runner's closed list. Everything is spawned as an argv array,
+  // so none of these values ever reach a shell.
+  await runnersReady;
+  const runnerId = (body.runner === undefined || body.runner === null || body.runner === '')
+    ? 'claude' : String(body.runner);
+  const runner = RUNNERS.find(r => r.id === runnerId);
+  if (!runner) { json(res, 400, { error: 'unknown runner: ' + runnerId }); return; }
+  if (body.runner !== undefined && body.runner !== null && body.runner !== '' && !runner.available) {
+    json(res, 400, { error: 'runner unavailable (' + (runner.reason || 'not installed') + '): ' + runnerId });
+    return;
+  }
+  const model = (body.model === undefined || body.model === null) ? '' : String(body.model);
+  if (model && !runner.models.includes(model)) {
+    json(res, 400, { error: 'invalid model for ' + runnerId + ': ' + model });
+    return;
+  }
+
   if (!pty) {
     json(res, 503, { error: 'interactive terminal unavailable on this platform — run: pnpm add @lydell/node-pty' });
     return;
@@ -233,7 +519,7 @@ async function handleRun(req, res) {
 
   let proc;
   try {
-    proc = pty.spawn(CLAUDE_BIN, [cmd, '--dangerously-skip-permissions'], {
+    proc = pty.spawn(runner.bin, runner.args(model, cmd), {
       name: 'xterm-color',
       cols, rows,
       cwd: PROJECT_ROOT,
@@ -246,6 +532,7 @@ async function handleRun(req, res) {
 
   const s = {
     proc, status: 'running', cmd, cols, rows,
+    runner: runner.id, model,
     startTime:   new Date().toISOString(),
     lastDataAt:  Date.now(),
     scrollback:  '',
@@ -269,7 +556,19 @@ async function handleRun(req, res) {
   proc.onExit(({ exitCode, signal }) => {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
+    persistRun(storyId, s, status);
   });
+
+  // CLIs with no interactive initial-prompt flag (see registry) get the
+  // prompt typed into the PTY once their TUI has had time to mount. The
+  // timer is unref'd so it never holds the process open, and the write is
+  // skipped if the session already ended.
+  if (runner.promptViaStdin && cmd) {
+    const t = setTimeout(() => {
+      if (s.status === 'running') { try { proc.write(cmd + '\r'); } catch { /* pty gone */ } }
+    }, STDIN_PROMPT_DELAY_MS);
+    if (t.unref) t.unref();
+  }
 
   json(res, 200, { storyId, pid: proc.pid, status: 'running' });
 }
@@ -300,6 +599,27 @@ async function handleCleanSessions(req, res) {
     removed++;
   }
   json(res, 200, { removed });
+}
+
+async function handleReject(req, res) {
+  const body    = await parseBody(req);
+  const storyId = String(body.storyId || '').trim();
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
+  const text = String(body.reason || '').trim();
+  if (!text) { json(res, 400, { error: 'reason required' }); return; }
+  if (text.length > 2000) { json(res, 400, { error: 'reason too long' }); return; }
+  const entry = {
+    storyId,
+    phase:  body.phase || null,
+    reason: text,
+    ts:     new Date().toISOString(),
+  };
+  if (!appendRejection(entry)) { json(res, 500, { error: 'could not persist rejection' }); return; }
+  json(res, 200, { ok: true, entry });
+}
+
+function handleRejections(res) {
+  json(res, 200, { rejections: readRejections() });
 }
 
 // ── WebSocket data plane ───────────────────────────────────────────────────────
@@ -361,10 +681,14 @@ const server = http.createServer(async (req, res) => {
   const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
 
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
+  if (method === 'GET'  && pathOnly === '/api/runners')  { await handleRunners(res); return; }
   if (method === 'GET'  && pathOnly === '/api/sessions') { await handleSessions(res); return; }
+  if (method === 'GET'  && pathOnly === '/api/history')  { handleHistory(res); return; }
   if (method === 'POST' && pathOnly === '/api/run')      { await handleRun(req, res);  return; }
   if (method === 'POST' && pathOnly === '/api/stop')     { await handleStop(req, res); return; }
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
+  if (method === 'POST' && pathOnly === '/api/reject')         { await handleReject(req, res); return; }
+  if (method === 'GET'  && pathOnly === '/api/rejections')     { handleRejections(res); return; }
 
   res.writeHead(404); res.end('Not found');
 });
@@ -406,6 +730,6 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('   Token:  ' + AUTH_TOKEN.slice(0, 8) + '... (redacted)');
   console.log('   PTY:    ' + (pty ? 'node-pty ready' : 'node-pty MISSING'));
   console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));
-  console.log('   POST /api/run   GET /api/sessions   WS /ws/<id>');
+  console.log('   POST /api/run   GET /api/sessions   GET /api/runners   WS /ws/<id>');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 });

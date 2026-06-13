@@ -34,6 +34,8 @@ const { spawnSync } = require('child_process');
 const clack = require('@clack/prompts');
 const { PromptAbortError } = require('./lib/prompts.cjs');
 const { writeFileAtomic } = require('./lib/fsutil.cjs');
+// HOME-aware home resolution (#889): os.homedir() ignores HOME on Windows.
+const { homedir } = require('./lib/homedir.cjs');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const install = require('./install');
 
@@ -46,7 +48,9 @@ const install = require('./install');
 function readConfigYaml(configPath) {
   const text = fs.readFileSync(configPath, 'utf8');
   const obj = {};
-  for (const raw of text.split('\n')) {
+  // CRLF tolerance (#889): split on \r?\n — a stray \r otherwise defeats the
+  // `#.*$` comment strip ($ won't cross the \r) and leaks comments into values.
+  for (const raw of text.split(/\r?\n/)) {
     const line = raw.replace(/#.*$/, '').trimEnd();
     if (!line) continue;
     if (line.startsWith(' ')) continue; // ignore nested keys (rare; preserved on disk via raw text path)
@@ -68,14 +72,16 @@ function readConfigYaml(configPath) {
  * If the key doesn't exist, append it.
  */
 function setYamlKey(rawText, key, value) {
-  const re = new RegExp(`^${key}:\\s*.*$`, 'm');
+  // CRLF tolerance (#889): [^\S\n]/[^\r\n] keep the match on one line even
+  // when the file uses \r\n (plain \s would walk across the line break).
+  const re = new RegExp(`^${key}:[^\\S\\n]*[^\\r\\n]*$`, 'm');
   const replacement = typeof value === 'string'
     ? `${key}: "${value.replace(/"/g, '\\"')}"`
     : `${key}: ${value}`;
   if (re.test(rawText)) {
     return rawText.replace(re, replacement);
   }
-  return rawText.replace(/\n*$/, '') + `\n${replacement}\n`;
+  return rawText.replace(/(?:\r?\n)*$/, '') + `\n${replacement}\n`;
 }
 
 function parseArgs(args) {
@@ -98,8 +104,7 @@ function detectInstalledEditors(cwd) {
   // .rcode/config.yaml as the canonical signal — if config exists, the
   // project ran rcode install at least once for claude. The presence of
   // any commands/agents/skills then becomes secondary evidence.
-  const os = require('os');
-  const homeSkills = path.join(os.homedir(), '.claude/skills');
+  const homeSkills = path.join(homedir(), '.claude/skills');
   const projectClaude = (
     (fs.existsSync(path.join(cwd, '.claude/skills')) &&
       fs.readdirSync(path.join(cwd, '.claude/skills')).some(n => n.startsWith('rcode-'))) ||

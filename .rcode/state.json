@@ -2,9 +2,9 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-12T15:39:59.301Z",
-  "current_phase": "Dashboard command runner",
-  "current_plan": 4,
+  "updated": "2026-06-13T08:46:20.179Z",
+  "current_phase": "phase-dependency-graph-and-structured-rejection-dialogs",
+  "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M2 — Hardening & Polish",
   "phases": [
@@ -756,8 +756,8 @@
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
       "goal": "Persist past orchestration runs on the orchestrator service and surface them",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:51:42.903Z",
       "completed": null,
       "plan_count": 2,
       "sprints": [
@@ -808,15 +808,16 @@
           ]
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.176Z"
+      "status_updated": "2026-05-16T12:26:35.176Z",
+      "plans": 2
     },
     {
       "id": "36",
       "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
       "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:51:53.546Z",
       "completed": null,
       "plan_count": 2,
       "sprints": [
@@ -867,17 +868,18 @@
           ]
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.211Z"
+      "status_updated": "2026-05-16T12:26:35.211Z",
+      "plans": 2
     },
     {
       "id": "37",
       "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
       "goal": "Render the milestone's phases as a lightweight hand-rolled SVG dependency",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:52:10.476Z",
       "completed": null,
-      "plan_count": 2,
+      "plan_count": 5,
       "sprints": [
         {
           "id": "37.1",
@@ -936,7 +938,8 @@
           ]
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.245Z"
+      "status_updated": "2026-05-16T12:26:35.245Z",
+      "plans": 2
     }
   ],
   "executions": [],

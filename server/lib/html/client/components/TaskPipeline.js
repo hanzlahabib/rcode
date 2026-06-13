@@ -12,8 +12,11 @@
  * fallback. Unknown/missing status renders as Planned — never crashes.
  *
  * Props:
- *   task — { status?, pct?, title? } (anything else ignored)
- *   mini — smaller variant for overview card rows
+ *   task    — { status?, pct?, title? } (anything else ignored)
+ *   mini    — smaller variant for overview card rows
+ *   running — a live orchestrator session exists for this task; pins the
+ *             stepper at In Progress (unless further along) and pulses the
+ *             current node so live work is visible at a glance
  */
 
 import { html } from '../preact.js';
@@ -32,9 +35,11 @@ export function taskStageIndex(task) {
   return 0;
 }
 
-export function TaskPipeline({ task, mini }) {
+export function TaskPipeline({ task, mini, running }) {
   const t = task || {};
-  const cur = taskStageIndex(t);
+  // A live session means work is happening NOW — never show it as Planned,
+  // but don't demote a task already at Review/Done.
+  const cur = running ? Math.max(taskStageIndex(t), 1) : taskStageIndex(t);
   const blocked = /blocked/i.test(String(t.status || ''));
   // Number of fully-completed stages. When the task is done the Done node
   // itself is filled, so all four count as complete.
@@ -55,6 +60,7 @@ export function TaskPipeline({ task, mini }) {
     if (isDone) { cls += ' tpipe-node--done'; state = 'complete'; }
     else if (isCurrent) {
       cls += blocked ? ' tpipe-node--current tpipe-node--blocked' : ' tpipe-node--current';
+      if (running && !blocked && cur < 3) cls += ' tpipe-node--live';
       state = blocked ? 'blocked' : 'current';
     }
     parts.push(html`

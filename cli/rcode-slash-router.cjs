@@ -24,7 +24,11 @@ const path = require('path');
 // Command bodies are copied here by the installer (installSlashRouterCommands).
 // A fixed home-dir location means the hook can always read them regardless of
 // the user's current working directory.
-const COMMANDS_DIR = path.join(os.homedir(), '.rcode', 'slash-commands');
+// HOME wins over os.homedir() (#889): os.homedir() ignores HOME on Windows
+// (it reads USERPROFILE), so HOME-redirected runs (tests, git-bash) would read
+// the wrong profile dir. Inlined — this script is copied standalone to
+// ~/.rcode/bin/ and must stay dependency-free (no ./lib requires).
+const COMMANDS_DIR = path.join(process.env.HOME || os.homedir(), '.rcode', 'slash-commands');
 
 // Matches `/rcode-<name>` at the very start, optional whitespace, then the
 // rest of the line(s) as arguments. `\b` ends the command name so trailing
@@ -42,8 +46,9 @@ function readStdin() {
 // Strip a leading YAML frontmatter block (`---\n...\n---`). The frontmatter is
 // CLI-tooling metadata (name/description/allowed-tools) that only confuses the
 // model — we want the executable command body injected, not its header.
+// \r?\n because Windows checkouts may deliver CRLF command bodies (#889).
 function stripFrontmatter(text) {
-  return text.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
 }
 
 function emit(hookEventName, additionalContext) {

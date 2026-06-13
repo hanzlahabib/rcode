@@ -10,7 +10,8 @@
 import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
 import { allTasks, currentPhaseName } from '../util.js';
-import { runStory, stopStory, openOrchPanel } from '../orchestrator.js';
+import { stopStory, openOrchPanel } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { showToast } from '../components/shared.js';
 
 // ---- Column descriptors ----
@@ -30,26 +31,26 @@ function kanbanCol(status) {
 }
 
 /** Return the effective column, hoisting to in_progress if a live session exists. */
-function effCol(task, activeSessions) {
-  const running = Array.isArray(activeSessions)
-    ? activeSessions.some(s => s.storyId === task.id && s.status === 'running')
-    : false;
-  return (task.id && running) ? 'in_progress' : kanbanCol(task.status);
+function effCol(task, runningByStory) {
+  const running = !!(task.id && runningByStory && runningByStory[task.id]);
+  return running ? 'in_progress' : kanbanCol(task.status);
 }
 
 // ---- Card component ----
-function KanbanCard({ task, col, orchDown, onDragStart, onDragEnd }) {
+function KanbanCard({ task, col, live, orchDown, onDragStart, onDragEnd }) {
   const sid    = task.id || '';
   const c      = col;
-  const isRunning = c === 'in_progress';
-  const canRun    = c === 'todo' || c === 'blocked';
+  const isRunning = !!live; // live orchestrator session, not just status
+  const canRun    = !isRunning && (c === 'todo' || c === 'blocked');
   const pts       = task.points ? task.points + 'p' : null;
   const phase     = task.phaseId ? 'P' + task.phaseId : null;
   const sprintMeta = [pts, phase].filter(Boolean).join(' · ');
 
   function handleRun(e) {
     e.stopPropagation();
-    runStory(sid);
+    openRunnerPicker(e.currentTarget, {
+      kind: 'session', storyId: sid, cmd: '/rcode-dev-story ' + sid, title: sid,
+    });
   }
   function handleStop(e) {
     e.stopPropagation();
@@ -80,7 +81,7 @@ function KanbanCard({ task, col, orchDown, onDragStart, onDragEnd }) {
       ` : null}
       ${isRunning ? html`
         <div class="card-run-indicator" id=${'run-ind-' + sid}>
-          <span class="run-pulse"></span>running
+          <span class="live-dot"></span>running
         </div>
       ` : null}
       ${sid ? html`
@@ -113,7 +114,7 @@ function OrchDot({ online }) {
 }
 
 // ---- Column component ----
-function KanbanColumn({ col, cards, orchDown, onDragStart, onDragEnd, onDragOver, onDrop }) {
+function KanbanColumn({ col, cards, runningByStory, orchDown, onDragStart, onDragEnd, onDragOver, onDrop }) {
   return html`
     <div class=${'kanban-col ' + col.cssClass} data-col=${col.id}>
       <div class="kanban-col-head">
@@ -133,6 +134,7 @@ function KanbanColumn({ col, cards, orchDown, onDragStart, onDragEnd, onDragOver
             key=${t.id || t.title}
             task=${t}
             col=${col.id}
+            live=${!!(t.id && runningByStory && runningByStory[t.id])}
             orchDown=${orchDown}
             onDragStart=${e => onDragStart(e, t)}
             onDragEnd=${onDragEnd}
@@ -145,7 +147,7 @@ function KanbanColumn({ col, cards, orchDown, onDragStart, onDragEnd, onDragOver
 
 // ---- Root KanbanView ----
 export function KanbanView() {
-  const { phases, activeSessions, currentPhase, milestone, orchOnline } = useStore();
+  const { phases, runningByStory, currentPhase, milestone, orchOnline } = useStore();
   const tasks = allTasks(phases);
   const orchDown = orchOnline === false;
 
@@ -156,7 +158,7 @@ export function KanbanView() {
 
   function getColFor(task) {
     if (visualMoves[task.id]) return visualMoves[task.id];
-    return effCol(task, activeSessions);
+    return effCol(task, runningByStory);
   }
 
   // Build buckets
@@ -250,6 +252,7 @@ export function KanbanView() {
             key=${col.id}
             col=${col}
             cards=${buckets[col.id] || []}
+            runningByStory=${runningByStory}
             orchDown=${orchDown}
             onDragStart=${handleDragStart}
             onDragEnd=${handleDragEnd}
