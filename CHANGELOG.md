@@ -3,6 +3,16 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.3.2 (2026-06-13) — Dashboard refactor follow-ups
+
+Patch release. No behavior changes; internal cleanup from a code-review pass.
+
+### Changed
+- `server/lib/html/client/util.js`: hoisted shared `phaseMilestone` derivation into util and removed the duplicated copies in `PhasesView.js` / `SprintsView.js`
+- `server/lib/html/client/components/StatusSummaryBar.js`: added `sessionChip()` for consistent session-status vocabulary
+- `server/orchestrator.js` / `server/dashboard.js`: minor follow-up polish
+
+---
 ## v4.3.1 (2026-06-13) — Banner cleanup + clearer dashboard/orchestrator URLs
 
 Patch release. No behavior changes.
