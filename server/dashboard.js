@@ -160,11 +160,12 @@ function handleRequest(req, res) {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-  console.log(`   Mode:       view-only`);
-  console.log(`   URL:        http://localhost:${PORT}`);
-  console.log(`   Scanning:   ${RCODE_DIR}`);
-  console.log(`   Refresh:    30s soft poll`);
-  console.log(`   Stop:       kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
+  console.log(`   👉 OPEN THIS:  http://localhost:${PORT}`);
+  console.log(`   Mode:          view-only`);
+  console.log(`   Scanning:      ${RCODE_DIR}`);
+  console.log(`   Refresh:       30s soft poll`);
+  console.log(`   Note:          port ${PORT + 1} is the internal orchestrator API — not for the browser`);
+  console.log(`   Stop:          kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 
@@ -224,7 +225,7 @@ function spawnOrchestrator() {
   try {
     _orchProc = spawn(process.execPath, [ORCH_BIN], {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env, ORCH_TOKEN, RCODE_DIR, PROJECT_ROOT },
+      env: { ...process.env, ORCH_TOKEN, RCODE_DIR, PROJECT_ROOT, DASH_PORT: String(PORT) },
       stdio: 'pipe',
     });
     _orchProc.stdout.on('data', chunk => {

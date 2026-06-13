@@ -676,9 +676,24 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
   if (method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
-
   const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
+
+  // Friendly landing for browser navigation (no token needed). Hitting this
+  // port directly is a common mistake — the orchestrator is the INTERNAL API,
+  // not the dashboard. Point people at the dashboard instead of a bare 401.
+  if (method === 'GET' && (pathOnly === '/' || pathOnly === '/favicon.ico')) {
+    const dashUrl = 'http://localhost:' + (process.env.DASH_PORT || '7717');
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end('<!doctype html><meta charset="utf-8"><title>rcode orchestrator</title>'
+      + '<body style="font-family:system-ui,sans-serif;background:#05080f;color:#e6edf7;'
+      + 'display:grid;place-items:center;height:100vh;margin:0;text-align:center">'
+      + '<div><h1 style="color:#2dd4bf;margin:0 0 .5rem">rcode orchestrator</h1>'
+      + '<p style="color:#8595ad">This is the internal API (port ' + PORT + ') — not the dashboard.</p>'
+      + '<p>Open the dashboard → <a style="color:#a78bfa" href="' + dashUrl + '">' + dashUrl + '</a></p></div>');
+    return;
+  }
+
+  if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
 
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
   if (method === 'GET'  && pathOnly === '/api/runners')  { await handleRunners(res); return; }

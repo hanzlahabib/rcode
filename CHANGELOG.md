@@ -3,13 +3,15 @@
 All notable changes to rcode are documented here.
 
 ---
-## v4.3.1 (2026-06-13) — Retire stale `RIHAL ►` banner residue
+## v4.3.1 (2026-06-13) — Banner cleanup + clearer dashboard/orchestrator URLs
 
 Patch release. No behavior changes.
 
 ### Fixed
 - `rcode/references/output-format.md` + `rcode/skills/.../rcode-create-milestone/steps/step-10-complete.md`: stage-banner prefix `RIHAL ►` → `RCODE ►` (leftover from the v4.0.0 rename — workflows were still printing the old brand in stage headers)
 - `rcode/references/auto-init-guard.md`: internal `GLOBAL_RIHAL` shell var renamed to `GLOBAL_RCODE`
+- `server/orchestrator.js`: hitting the orchestrator port (7718) in a browser returned a bare `{"error":"unauthorized"}`; it now serves a friendly landing page that points to the dashboard. The `/api/*` endpoints stay token-guarded.
+- `server/dashboard.js`: startup banner now highlights the dashboard URL to open (`👉 OPEN THIS`) and labels port 7718 as the internal orchestrator API (not for the browser); passes `DASH_PORT` to the orchestrator so its landing page links back correctly
 
 ---
 ## v4.3.0 (2026-06-13) — Majlis dashboard redesign: live orchestration, multi-runner, dependency graph
