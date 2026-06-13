@@ -3774,6 +3774,46 @@ summary:focus-visible,
   .sidebar { z-index: 30; }
   #sidebar-backdrop { z-index: 25; }
 }
+
+/* ── Phase dependency graph ────────────────────────────────────── */
+.phase-graph-wrap { margin-bottom: var(--space-4); }
+.phase-graph-wrap summary {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+.phase-graph-wrap summary:hover { background: var(--bg-hover); }
+.phase-graph-svg {
+  max-width: 100%;
+  display: block;
+  overflow: visible;
+}
+.phase-graph-node {
+  fill: var(--bg-elev-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.phase-graph-node:hover { stroke: var(--accent-blue); }
+.phase-graph-complete   { stroke: var(--accent-green); }
+.phase-graph-in_progress { stroke: var(--accent-amber); }
+.phase-graph-planned    { stroke: var(--border); }
+.phase-graph-edge {
+  stroke: var(--text-tertiary);
+  stroke-width: 1.5;
+  fill: none;
+}
+.phase-graph-label {
+  fill: var(--text-primary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.phase-graph-sublabel {
+  fill: var(--text-secondary);
+  font-size: 10px;
+}
+.phase-graph-arrow { fill: var(--text-tertiary); }
 </style>`;
 }
 
