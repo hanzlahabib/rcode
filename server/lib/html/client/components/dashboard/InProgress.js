@@ -7,7 +7,8 @@
  *   1. Live orchestrator sessions (store.activeSessions, status==='running') —
  *      pulsing dot, title from storyId (or the command for cmd-* runs),
  *      elapsed time since startTime; clicking opens the session's orchestrator
- *      panel (existing openOrchPanel mechanism).
+ *      panel — opens the interactive xterm terminal (openTermPanel) since
+ *      these rows are always live sessions you may want to talk to.
  *   2. Scanned tasks from `tasks.inProgress[{ title, pct }]` (pct null → the
  *      percent pill is omitted).
  *
@@ -19,7 +20,7 @@
 import { html } from '../../preact.js';
 import { useStore } from '../../store.js';
 import { orchElapsed, rowLink } from '../../util.js';
-import { openOrchPanel } from '../../orchestrator.js';
+import { openTermPanel } from '../../orchestrator.js';
 import { pressable } from '../shared.js';
 import { TaskPipeline } from '../TaskPipeline.js';
 
@@ -31,8 +32,8 @@ function sessionTitle(s) {
 
 function LiveRow({ session: s }) {
   return html`
-    <li class="ip-row ip-live-row" title=${'Open session ' + s.storyId}
-      ...${pressable(() => openOrchPanel(s.storyId))}>
+    <li class="ip-row ip-live-row" title=${'Open terminal for ' + s.storyId}
+      ...${pressable(() => openTermPanel(s.storyId, sessionTitle(s)))}>
       <span class="live-dot"></span>
       <span class="ip-title ip-live-title">${sessionTitle(s)}</span>
       <span class="ip-live-elapsed">${orchElapsed(s.startTime)}</span>
