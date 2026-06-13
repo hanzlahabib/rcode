@@ -3,6 +3,15 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.3.1 (2026-06-13) — Retire stale `RIHAL ►` banner residue
+
+Patch release. No behavior changes.
+
+### Fixed
+- `rcode/references/output-format.md` + `rcode/skills/.../rcode-create-milestone/steps/step-10-complete.md`: stage-banner prefix `RIHAL ►` → `RCODE ►` (leftover from the v4.0.0 rename — workflows were still printing the old brand in stage headers)
+- `rcode/references/auto-init-guard.md`: internal `GLOBAL_RIHAL` shell var renamed to `GLOBAL_RCODE`
+
+---
 ## v4.3.0 (2026-06-13) — Majlis dashboard redesign: live orchestration, multi-runner, dependency graph
 
 Minor release. No breaking changes; drop-in upgrade. Bundles the v4.2.0 changes (never published) plus a major dashboard overhaul and cross-platform test hardening.

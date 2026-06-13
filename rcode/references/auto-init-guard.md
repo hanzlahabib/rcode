@@ -25,8 +25,8 @@ rcode isn't configured for this project yet. Let me set it up — takes 30 secon
 **1. Bootstrap local tooling** — copy bin from the global install:
 
 ```bash
-GLOBAL_RIHAL="$HOME/.rcode"
-TOOLS_SRC="$GLOBAL_RIHAL/bin/rcode-tools.cjs"
+GLOBAL_RCODE="$HOME/.rcode"
+TOOLS_SRC="$GLOBAL_RCODE/bin/rcode-tools.cjs"
 
 if [ ! -f "$TOOLS_SRC" ]; then
   echo "ERROR: Global rcode tools not found at $TOOLS_SRC"

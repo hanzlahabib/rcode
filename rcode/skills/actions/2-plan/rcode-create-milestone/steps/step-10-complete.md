@@ -16,7 +16,7 @@ Append `step-10-complete` to `stepsCompleted`. Add `completedAt: {ISO date}`.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RIHAL ► ROADMAP CREATED
+ RCODE ► ROADMAP CREATED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Source PRD:     {inputFile}
