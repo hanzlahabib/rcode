@@ -3,6 +3,28 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.3.0 (2026-06-13) — Majlis dashboard redesign: live orchestration, multi-runner, dependency graph
+
+Minor release. No breaking changes; drop-in upgrade. Bundles the v4.2.0 changes (never published) plus a major dashboard overhaul and cross-platform test hardening.
+
+### Added
+- **Dashboard redesign** — the Majlis dashboard (`server/`) is rebuilt to a navy analytics layout with a full theme system (`--dash-*` tokens, working dark + light), an overview of nine cards (progress donut, current phase + milestone stepper, timeline, completed/in-progress tasks, blockers by severity, project health, recent decisions, progress timeline), and a polished sidebar with live health badges
+- **File + Memory readers** — clicking a file or memory entry opens a shared slide-over reader (`server/lib/html/client/components/FileReader.js`) rendering markdown
+- **Agents view** — team-grouped cards with role badges and tool chips; clicking an agent opens a drawer with its full prompt (`/api/file` extended to read `rcode/agents/*.md`)
+- **Multi-runner picker** — Run buttons let you choose the agent CLI (Claude + Codex/Copilot/Gemini/Grok/Cursor/Antigravity behind a `Beta` badge) and model; argv builders are grounded in each CLI's real flags, with availability detection and disabled entries for untested/missing CLIs (`GET /api/runners`)
+- **Live orchestration** — running sessions now surface across Tasks, Kanban and the Overview In Progress card (pulsing indicators, elapsed time, click-to-open terminal); blocked-session detection raises a notification banner + topbar bell, with running/blocked/exited status dots everywhere
+- **Run history** — orchestrator persists completed runs to `~/.rcode/orch-history.json`, served via `GET /api/history`
+- **Phase dependency graph** — inline-SVG DAG on the Roadmap view, layered by `depends_on`, with hover highlighting and click-to-navigate
+- **Per-task pipeline** — every task row shows a stage stepper derived from real status
+- `.gitattributes` — forces `eol=lf` on source/fixtures so Windows checkouts stop CRLF-breaking parsers and baselines
+
+### Fixed
+- **Cross-platform tests** — resolves Windows + macOS suite failures (path handling via `path.join`/`path.sep`, `safeRmSync` realpath containment for macOS `/private/tmp`, POSIX-only mode assertions guarded, symlink tests skipped on win32, CRLF-tolerant parsers); the full suite now passes on Ubuntu/macOS/Windows across Node 18–24
+- **CI** — `test.yml` and `dogfood.yml` install devDependencies (suite exercises `cli/*` which needs `zod`/`picocolors`/`@clack/prompts`); `ws` documented as the sole allowed runtime dependency; semantic-PR workflow granted `pull-requests: read`
+- **Data integrity** — dashboard components no longer show sample-as-real data; honest empty states throughout; fabricated metrics replaced with real values or "—"
+- **Runtime** — preact/htm vendored locally (offline-safe), scanner mtime cache, poll re-render dedupe, slice-level store subscriptions; mobile layout + accessibility baseline pass
+
+---
 ## v4.2.0 (2026-06-11) — Grok support and slash-command hook router for Codex/Antigravity
 
 Minor release. No breaking changes; drop-in upgrade.
