@@ -81,6 +81,22 @@ export function allTasks(phases) {
 }
 
 /**
+ * Map a numeric phase id to its milestone bucket.
+ * Single source of truth — imported by PhasesView and SprintsView so that
+ * milestone boundaries (19, 33) never diverge between the two views.
+ * M1 = phases 1–19, M2 = 20–33, M3 = 34+.
+ *
+ * @param {number|string} id — phase id
+ * @returns {'M1'|'M2'|'M3'}
+ */
+export function phaseMilestone(id) {
+  const n = Number(id);
+  if (n <= 19) return 'M1';
+  if (n <= 33) return 'M2';
+  return 'M3';
+}
+
+/**
  * Return a status chip descriptor — NOT an HTML string.
  * Components decide how to render the CSS class and label.
  *
@@ -95,6 +111,31 @@ export function chip(status) {
     s === 'blocked'   ? 'blocked' :
     s === 'planned'   ? 'planned' :
     s === 'todo'      ? 'todo'    : 'other';
+  return { cls, label: status };
+}
+
+/**
+ * Return a status chip descriptor for orchestrator session statuses.
+ * Session objects use a different vocabulary than phases/sprints
+ * ('running', 'stopped', 'starting', 'error'), so a separate normaliser
+ * keeps the two status domains from coupling inside chip().
+ *
+ * Mapping:
+ *   running  → 'sess-running'  (accent-blue — live activity)
+ *   starting → 'sess-starting' (amber — transient / pending)
+ *   stopped  → 'sess-stopped'  (text-secondary — idle / muted)
+ *   error    → 'sess-error'    (accent-red — needs attention)
+ *
+ * @param {string} status
+ * @returns {{ cls: string, label: string }}
+ */
+export function sessionChip(status) {
+  const s = String(status || '').toLowerCase();
+  const cls =
+    s === 'running'  ? 'sess-running'  :
+    s === 'starting' ? 'sess-starting' :
+    s === 'error'    ? 'sess-error'    :
+    s === 'stopped'  ? 'sess-stopped'  : 'sess-stopped';
   return { cls, label: status };
 }
 

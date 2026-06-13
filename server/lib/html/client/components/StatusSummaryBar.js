@@ -9,7 +9,7 @@
 
 import { html } from '../preact.js';
 import { useStore } from '../store.js';
-import { allSprints, chip } from '../util.js';
+import { allSprints, chip, sessionChip } from '../util.js';
 
 /**
  * Build a `{ [cls]: count }` map from an array of items by normalising each
@@ -22,6 +22,24 @@ function countByStatus(items) {
   const map = {};
   for (const item of items) {
     const { cls } = chip(item.status || '');
+    map[cls] = (map[cls] || 0) + 1;
+  }
+  return map;
+}
+
+/**
+ * Build a `{ [cls]: count }` map from session objects using `sessionChip()`
+ * rather than the phase/sprint-oriented `chip()`. Sessions carry a distinct
+ * status vocabulary ('running', 'stopped', 'starting', 'error') that maps to
+ * separate CSS classes so they can be styled independently.
+ *
+ * @param {Array<{ status: string }>} sessions
+ * @returns {Object.<string, number>}
+ */
+function countSessionsByStatus(sessions) {
+  const map = {};
+  for (const session of sessions) {
+    const { cls } = sessionChip(session.status || '');
     map[cls] = (map[cls] || 0) + 1;
   }
   return map;
@@ -58,7 +76,7 @@ export function StatusSummaryBar() {
 
   const phaseCounts   = countByStatus(phases);
   const sprintCounts  = countByStatus(sprints);
-  const sessionCounts = countByStatus(sessions);
+  const sessionCounts = countSessionsByStatus(sessions);
 
   const hasPhases   = phases.length > 0;
   const hasSprints  = sprints.length > 0;

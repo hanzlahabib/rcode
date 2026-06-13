@@ -4390,6 +4390,11 @@ summary:focus-visible,
 .summary-count-chip.blocked  { color: var(--accent-red); }
 .summary-count-chip.planned,
 .summary-count-chip.todo     { color: var(--text-secondary); }
+/* Session status chips — use sessionChip() vocabulary, not chip() */
+.summary-count-chip.sess-running  { color: var(--accent-blue); }
+.summary-count-chip.sess-starting { color: var(--amber); }
+.summary-count-chip.sess-stopped  { color: var(--text-secondary); }
+.summary-count-chip.sess-error    { color: var(--accent-red); }
 
 /* ── Filter chips ────────────────────────────────────────────────── */
 .filter-chips {
