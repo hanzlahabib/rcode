@@ -280,6 +280,22 @@ function appendRejection(entry) {
   }
 }
 
+// ── Board overlay ─────────────────────────────────────────────────────────────
+// Writes a single entry to .rcode/board-overrides.json. The scanner reads this
+// file on every scan and applies it on top of derived story statuses.
+function setTaskOverride(storyId, status, runner) {
+  const overridesPath = path.join(PROJECT_ROOT, '.rcode', 'board-overrides.json');
+  let overrides = {};
+  try {
+    const raw = fs.readFileSync(overridesPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) overrides = parsed;
+  } catch { overrides = {}; }
+  overrides[storyId] = { status, runner: runner || null, updatedAt: new Date().toISOString() };
+  fs.mkdirSync(path.dirname(overridesPath), { recursive: true });
+  fs.writeFileSync(overridesPath, JSON.stringify(overrides, null, 2));
+}
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function json(res, code, body) {
@@ -557,6 +573,14 @@ async function handleRun(req, res) {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
     persistRun(storyId, s, status);
+    if (status === 'done'
+        && !storyId.startsWith('cmd-')
+        && !storyId.startsWith('sprint-')
+        && !storyId.startsWith('phase-')) {
+      try { setTaskOverride(storyId, 'done', null); } catch (err) {
+        console.error('[orchestrator] board-overrides write failed:', err.message);
+      }
+    }
   });
 
   // CLIs with no interactive initial-prompt flag (see registry) get the
@@ -620,6 +644,23 @@ async function handleReject(req, res) {
 
 function handleRejections(res) {
   json(res, 200, { rejections: readRejections() });
+}
+
+const TASK_STATUS_ENUM = new Set(['todo', 'in_progress', 'blocked', 'done']);
+
+async function handleTaskStatus(req, res) {
+  const body    = await parseBody(req);
+  const storyId = String(body.storyId || '').trim();
+  if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
+  const status = String(body.status || '').trim();
+  if (!TASK_STATUS_ENUM.has(status)) { json(res, 400, { error: 'invalid status — must be one of todo,in_progress,blocked,done' }); return; }
+  try {
+    setTaskOverride(storyId, status, null);
+  } catch (err) {
+    console.error('[orchestrator] handleTaskStatus write failed:', err.message);
+    json(res, 500, { error: 'could not write board-overrides' }); return;
+  }
+  json(res, 200, { ok: true });
 }
 
 // ── WebSocket data plane ───────────────────────────────────────────────────────
@@ -704,6 +745,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && pathOnly === '/api/clean-sessions') { await handleCleanSessions(req, res); return; }
   if (method === 'POST' && pathOnly === '/api/reject')         { await handleReject(req, res); return; }
   if (method === 'GET'  && pathOnly === '/api/rejections')     { handleRejections(res); return; }
+  if (method === 'POST' && pathOnly === '/api/task-status')    { await handleTaskStatus(req, res); return; }
 
   res.writeHead(404); res.end('Not found');
 });

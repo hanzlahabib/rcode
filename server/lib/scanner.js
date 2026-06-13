@@ -93,9 +93,10 @@ function parseYamlList(text, key) {
  * @param {function} [listCached] per-scan dir lister from makeDirLister()
  * @returns {Array|null}         phases with a populated `sprints` array each
  */
-function buildPhaseTree(projectDir, rawPhases, listCached) {
+function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
   if (!Array.isArray(rawPhases)) return null;
   const list = listCached || makeDirLister();
+  const ov = (overrides && typeof overrides === 'object' && !Array.isArray(overrides)) ? overrides : {};
   const phasesDir = path.join(projectDir, '.planning', 'phases');
   const allEntries = list(phasesDir);
   if (allEntries === null) return rawPhases;
@@ -144,6 +145,7 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
           title:  titleM ? titleM[1].trim() : `Task ${stories.length + 1}`,
           status: phaseComplete ? 'done' : 'todo',
         };
+        if (ov[story.id]) story.status = ov[story.id].status;
         if (acM && acM[1].trim()) story.acceptance = acM[1].trim();
         stories.push(story);
       }
@@ -153,10 +155,11 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
         const headRe = /^#{2,4}\s+(?:Story|Task)\s+([^\s—–-]+)\s*[—–-]\s*(.+?)\s*$/gm;
         let hm;
         while ((hm = headRe.exec(text))) {
+          const hId = hm[1].trim();
           stories.push({
-            id:     hm[1].trim(),
+            id:     hId,
             title:  hm[2].trim(),
-            status: phaseComplete ? 'done' : 'todo',
+            status: ov[hId] ? ov[hId].status : (phaseComplete ? 'done' : 'todo'),
           });
         }
       }
@@ -566,7 +569,14 @@ function scanStateUncached(rcodeDir) {
     } catch { /* ignore */ }
   }
 
-  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases, listCached);
+  let boardOverrides = {};
+  try {
+    const ovRaw = fs.readFileSync(path.join(rcodeDir, 'board-overrides.json'), 'utf8');
+    const ovParsed = JSON.parse(ovRaw);
+    if (ovParsed && typeof ovParsed === 'object' && !Array.isArray(ovParsed)) boardOverrides = ovParsed;
+  } catch { boardOverrides = {}; }
+
+  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases, listCached, boardOverrides);
 
   // Derive the redesign dashboard contract (DATA-CONTRACT.md). Attached to the
   // scan so GET /api/state returns the exact shape and client.js seeds it into
@@ -607,6 +617,7 @@ function scanSignature(rcodeDir, projectDir) {
   statOne(path.join(rcodeDir, 'config.yaml'));
   statOne(path.join(rcodeDir, 'HANDOFF.json'));
   statOne(path.join(rcodeDir, 'context', 'active.md'));
+  statOne(path.join(rcodeDir, 'board-overrides.json'));
   (function walk(dir, depth) {
     if (depth > SIG_WALK_MAX_DEPTH) return;
     for (const e of listDir(dir)) {
