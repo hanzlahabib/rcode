@@ -1451,9 +1451,9 @@ footer {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 440px;
-  max-width: 42vw;
-  min-width: 320px;
+  width: var(--orch-w, 720px);
+  max-width: 70vw;
+  min-width: 360px;
   background: var(--bg-elev-1);
   border-left: 1px solid var(--border-subtle);
   display: flex;
@@ -1462,6 +1462,20 @@ footer {
   transform: translateX(100%);
   transition: transform var(--t-menu) var(--ease);
   box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+}
+.orch-panel-resize {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 10;
+}
+.orch-panel-resize:hover,
+.orch-panel-resize.dragging {
+  background: var(--accent, #5865f2);
+  opacity: 0.35;
 }
 .orch-panel.open {
   transform: translateX(0);
