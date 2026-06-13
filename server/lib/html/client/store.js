@@ -53,10 +53,20 @@ let _state = {
   parseErrorDismissed:  false,
   // Live orchestrator sessions (populated by startSessionsPoll in orchestrator.js)
   activeSessions:   [],
+  // Derived join map: storyId → running session. Recomputed automatically by
+  // setState whenever activeSessions is written, so views can join tasks to
+  // live runs without scanning the array (TasksView, Kanban, Overview).
+  runningByStory:   {},
+  // Persisted past runs (populated by startSessionsPoll → fetchHistory)
+  history:          [],
   // Orchestrator reachability: null = unknown (before first poll),
   // true = reachable, false = unreachable. Written by the 4s session poll.
   orchOnline:       null,
-  // File jump bridge: AgentsView sets this to a slug so FilesView opens it.
+  // Persistent blocked-session alerts (written by notify.js trackBlocked).
+  // [{ storyId, cmd }] — rendered as clickable toasts by NotifyCenter.js.
+  blockedAlerts:    [],
+  // File jump bridge: the agent drawer's "View file in Files" sets this to a
+  // project-relative .md path; FilesView opens it on arrival and clears it.
   requestedFile:    null,
   // xterm terminal panel state (driven by orchestrator.js / XtermPanel.js)
   // { open, storyId, title, minimized, fullscreen }
@@ -64,6 +74,9 @@ let _state = {
   // Orchestrator side-panel state (driven by orchestrator.js / OrchPanel.js)
   // { open, storyId }
   orchPanel:        null,
+  // Runner-picker popover state (driven by components/RunnerPicker.js)
+  // { open, x, y, run: { kind: 'session'|'command', storyId?, cmd, title? } }
+  runnerPicker:     null,
 };
 
 /** Registered subscriber functions. */
@@ -74,11 +87,25 @@ export function getState() {
   return { ..._state };
 }
 
+/** Build the storyId → session map for LIVE sessions. A 'blocked' session is
+ * a live PTY waiting for input, so it counts as live alongside 'running'. */
+function deriveRunningByStory(sessions) {
+  const map = {};
+  for (const s of sessions || []) {
+    if (s && s.storyId && (s.status === 'running' || s.status === 'blocked')) map[s.storyId] = s;
+  }
+  return map;
+}
+
 /**
  * Shallow-merge `patch` into state, then notify all subscribers.
  * Only notifies if at least one key actually changed value.
+ * Writing activeSessions also refreshes the derived runningByStory map.
  */
 export function setState(patch) {
+  if ('activeSessions' in patch) {
+    patch = { ...patch, runningByStory: deriveRunningByStory(patch.activeSessions) };
+  }
   let changed = false;
   for (const key of Object.keys(patch)) {
     if (_state[key] !== patch[key]) {

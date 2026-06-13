@@ -4,7 +4,7 @@ communication_language: Mixed
 mode: yolo
 model_profile: balanced
 commit_planning: true
-model_override: 
+model_override:
 rcode_source_path:
 workflow:
   research_by_default: false

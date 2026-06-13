@@ -1,13 +1,16 @@
 /**
  * Timeline — Overview redesign, Row 1 Card 3.
  *
- * Target-launch card: label, launch date (only when the project declares one —
- * "Not set" otherwise, never a projected/invented date), a velocity sparkline
- * drawn only from real recorded `velocity_history`, and a footer reporting the
- * real open-blocker count (no hardcoded "No major delays").
+ * Target-launch card. With a configured launch date: countdown + a velocity
+ * sparkline drawn only from real recorded `velocity_history` + the real
+ * open-blocker count. Without one, the dead space becomes a "Milestone
+ * outlook": current milestone name, phases done/total, latest recorded
+ * velocity, and a hint that launch_date in .rcode/config.yaml enables the
+ * countdown — never a projected/invented date.
  *
- * Reads the `timeline { launchDate, onTrack, points[] }` slice plus `blockers`
- * from the store. See DATA-CONTRACT.md. No fetch.
+ * Reads the `timeline { launchDate, onTrack, points[] }` slice plus
+ * `blockers`, `milestone`, and `phases` from the store. See DATA-CONTRACT.md.
+ * No fetch.
  */
 
 import { html } from '../../preact.js';
@@ -58,9 +61,7 @@ export function Timeline() {
 
   const hasDate = !!timeline.launchDate;
   const days = hasDate ? daysUntil(timeline.launchDate) : null;
-  const daysLine = !hasDate
-    ? 'No launch date set'
-    : days == null ? 'Launch scheduled' : `In ${days} day${days === 1 ? '' : 's'}`;
+  const daysLine = days == null ? 'Launch scheduled' : `In ${days} day${days === 1 ? '' : 's'}`;
 
   let chart = null;
   if (points.length >= 2) {
@@ -93,19 +94,50 @@ export function Timeline() {
     ? `${blockers.length} open blocker${blockers.length === 1 ? '' : 's'}`
     : 'No open blockers';
 
+  const footer = html`
+    <div class="tl-footer">
+      <span class=${'tl-status' + (blockers.length ? ' tl-status-risk' : '')}>
+        <span class="tl-dot-badge"></span>${blockerNote}
+      </span>
+    </div>
+  `;
+
+  if (!hasDate) {
+    // No launch date configured — show a milestone outlook built from real
+    // store data instead of a dead "—" date.
+    const phases = Array.isArray(S.phases) ? S.phases : [];
+    const phasesDone = phases.filter(p => String(p.state).toLowerCase() === 'done').length;
+    const latest = points.length ? points[points.length - 1] : null;
+    return html`
+      <section class="dash-card tl-card">
+        <p class="dash-card-sub tl-label">Milestone Outlook</p>
+        <p class="tl-outlook-name">${S.milestone || 'No milestone set'}</p>
+        <ul class="tl-outlook">
+          <li class="tl-outlook-row">
+            <span class="tl-outlook-key">Phases</span>
+            <span class="tl-outlook-val">${phases.length ? `${phasesDone}/${phases.length} done` : 'None planned'}</span>
+          </li>
+          <li class="tl-outlook-row">
+            <span class="tl-outlook-key">Latest velocity</span>
+            <span class="tl-outlook-val">${latest ? `${latest.value} pts (${latest.label})` : 'Not recorded'}</span>
+          </li>
+        </ul>
+        ${chart}
+        <p class="tl-outlook-hint">Set <code>launch_date</code> in <code>.rcode/config.yaml</code> to track a launch countdown</p>
+        ${footer}
+      </section>
+    `;
+  }
+
   return html`
     <section class="dash-card tl-card">
       <p class="dash-card-sub tl-label">Target Launch</p>
-      <p class="tl-date">${hasDate ? displayDate(timeline.launchDate) : '—'}</p>
+      <p class="tl-date">${displayDate(timeline.launchDate)}</p>
       <p class="tl-days">${daysLine}</p>
 
       ${chart}
 
-      <div class="tl-footer">
-        <span class=${'tl-status' + (blockers.length ? ' tl-status-risk' : '')}>
-          <span class="tl-dot-badge"></span>${blockerNote}
-        </span>
-      </div>
+      ${footer}
     </section>
   `;
 }

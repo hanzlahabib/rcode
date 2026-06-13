@@ -16,7 +16,9 @@ import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
 import { pctNum, sprintHints, phaseHints } from '../util.js';
 import { Chip, ProgressBar, CmdHints, RunBtn, RunningBadge } from '../components/shared.js';
-import { runningInPhase, runAndOpenTerm } from '../orchestrator.js';
+import { runningInPhase } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
+import { PhaseGraph } from '../components/PhaseGraph.js';
 import { Icon } from '../icons-client.js';
 
 /**
@@ -202,6 +204,7 @@ export function RoadmapView() {
   return html`
     <div id="view-roadmap" class="view active">
       <div class="view-title">Roadmap</div>
+      <${PhaseGraph} phases=${phases}/>
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter roadmap…"
           value=${filterQuery}
@@ -218,11 +221,11 @@ export function RoadmapView() {
             </span>
             <span class="ms-actions">
               <button class="card-run-btn" title="Execute every remaining phase (autonomous run — pauses at checkpoints)"
-                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-execute-all', '/rcode-autonomous', 'Execute all phases'); }}>
+                onClick=${e => { e.stopPropagation(); openRunnerPicker(e.currentTarget, { kind: 'session', storyId: 'milestone-execute-all', cmd: '/rcode-autonomous', title: 'Execute all phases' }); }}>
                 <${Icon} name="play" size=${12}/> Run All
               </button>
               <button class="card-run-btn ms-audit-btn" title="Audit the whole milestone"
-                onClick=${e => { e.stopPropagation(); runAndOpenTerm('milestone-audit', '/rcode-audit-milestone', 'Audit milestone'); }}>
+                onClick=${e => { e.stopPropagation(); openRunnerPicker(e.currentTarget, { kind: 'session', storyId: 'milestone-audit', cmd: '/rcode-audit-milestone', title: 'Audit milestone' }); }}>
                 <${Icon} name="clipboard-list" size=${12}/> Audit
               </button>
             </span>

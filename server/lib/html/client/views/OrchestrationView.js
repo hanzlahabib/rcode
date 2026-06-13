@@ -12,18 +12,37 @@
 
 import { html, useState, useEffect } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel, runCommandFromUI, ALLOWED_COMMANDS, isSessionRunning } from '../orchestrator.js';
-import { orchElapsed } from '../util.js';
+import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning, mergeSessionsAndHistory } from '../orchestrator.js';
+import { openRunnerPicker } from '../components/RunnerPicker.js';
+import { RejectDialog } from '../components/RejectDialog.js';
+import { orchElapsed, humanDate } from '../util.js';
 import { Icon } from '../icons-client.js';
 
 // ── Session card ──────────────────────────────────────────────────────────────
 
+// Tooltip text per session status — shown on the colored status dot.
+const DOT_TITLES = {
+  running: 'Running — output streaming',
+  blocked: 'Blocked — waiting for your input',
+  done:    'Done — exited cleanly',
+  exited:  'Exited',
+  stopped: 'Stopped',
+  error:   'Error',
+};
+
 function OrchCard({ session: s }) {
-  const running = s.status === 'running';
-  const waiting = !!s.waiting;
+  const blocked = s.status === 'blocked';
+  // 'blocked' is a live PTY (server-side classification of running) — keep
+  // the Stop button available for it.
+  const running = s.status === 'running' || blocked;
+  const waiting = blocked || !!s.waiting;
+  const [showReject, setShowReject] = useState(false);
   const cardCls = 'orch-card orch-' + s.status + (waiting ? ' orch-waiting' : '');
-  const badge   = waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
-  const dotCls  = 'term-status-dot ' + (waiting ? 'waiting' : s.status);
+  const badge   = blocked
+    ? html`<${Icon} name="alert-triangle" size=${12}/> blocked — needs input`
+    : waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
+  const dotCls  = 'term-status-dot ' + (blocked ? 'blocked' : waiting ? 'waiting' : s.status);
+  const dotTitle = DOT_TITLES[s.status] || s.status;
 
   function handleTerminal(e) {
     e.stopPropagation();
@@ -38,8 +57,13 @@ function OrchCard({ session: s }) {
   return html`
     <div class=${cardCls}>
       <div class="orch-card-head">
-        <span class=${dotCls}></span>
+        <span class=${dotCls} title=${dotTitle}></span>
         <span class="orch-card-id">${s.storyId}</span>
+        ${s.runner ? html`
+          <span class="runner-badge" title=${'Launched with ' + s.runner + (s.model ? ' (' + s.model + ')' : '')}>
+            ${s.runner}${s.model ? ' · ' + s.model : ''}
+          </span>
+        ` : null}
         <span class="orch-card-badge">${badge}</span>
       </div>
       <div class="orch-card-cmd">${s.cmd || ''}</div>
@@ -49,6 +73,11 @@ function OrchCard({ session: s }) {
         ${' · '}<${Icon} name="eye" size=${12}/> ${s.clients || 0}
         ${s.pid ? html` · pid ${s.pid}` : null}
       </div>
+      ${s.rejection ? html`
+        <div class="orch-card-rejection">
+          Rejected: ${s.rejection.reason}
+        </div>
+      ` : null}
       <div class="orch-card-actions">
         <button class="term-run-btn outline" onClick=${handleTerminal}>
           <${Icon} name="monitor" size=${14}/> Terminal
@@ -56,7 +85,13 @@ function OrchCard({ session: s }) {
         ${running ? html`
           <button class="term-run-btn danger" onClick=${handleStop}>■ Stop</button>
         ` : null}
+        ${waiting ? html`
+          <button class="term-run-btn danger" onClick=${e => { e.stopPropagation(); setShowReject(true); }}>
+            <${Icon} name="alert-triangle" size=${14}/> Reject
+          </button>
+        ` : null}
       </div>
+      ${showReject ? html`<${RejectDialog} session=${s} onClose=${() => setShowReject(false)}/>` : null}
     </div>
   `;
 }
@@ -65,7 +100,11 @@ function OrchCard({ session: s }) {
 
 function sortSessions(sessions) {
   return [...sessions].sort((a, b) => {
-    // Waiting-for-input first (needs attention)
+    // Blocked-on-input first (needs immediate attention)
+    if ((a.status === 'blocked') !== (b.status === 'blocked')) {
+      return a.status === 'blocked' ? -1 : 1;
+    }
+    // Then idle-waiting
     if (!!a.waiting !== !!b.waiting) return a.waiting ? -1 : 1;
     // Then running
     if ((a.status === 'running') !== (b.status === 'running')) {
@@ -104,10 +143,10 @@ function CommandRunner() {
     return () => clearTimeout(t);
   }, [busy]);
 
-  function handleRun() {
+  function handleRun(e) {
     if (!selected || disabled) return;
     setBusy(true);
-    runCommandFromUI(selected);
+    openRunnerPicker(e.currentTarget, { kind: 'command', cmd: selected, title: selected });
   }
 
   return html`
@@ -142,6 +181,88 @@ function CommandRunner() {
               ? html`Starting — the terminal panel will open shortly.`
               : html`Select a command and press Run. Output streams live to the terminal panel.`}
       </div>
+    </div>
+  `;
+}
+
+// ── Run history panel ─────────────────────────────────────────────────────────
+
+function durationLabel(ms) {
+  if (!ms || !isFinite(ms) || ms <= 0) return '—';
+  if (ms < 60000) return Math.round(ms / 1000) + 's';
+  if (ms < 3600000) return Math.floor(ms / 60000) + 'm ' + Math.round((ms % 60000) / 1000) + 's';
+  return Math.floor(ms / 3600000) + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
+}
+
+function HistoryRow({ run }) {
+  return html`
+    <div class="hist-row" key=${run.storyId}>
+      <span class=${'term-status-dot ' + run.status}></span>
+      <span class="hist-row-id">${run.storyId}</span>
+      <span class="hist-row-cmd">${run.cmd}</span>
+      <span class="hist-row-duration"><${Icon} name="clock" size=${12}/> ${durationLabel(run.durationMs)}</span>
+      <span class="hist-row-status">${run.status}</span>
+    </div>
+  `;
+}
+
+const STATUS_ORDER = ['done', 'exited', 'stopped', 'error'];
+
+function HistoryPanel() {
+  const { activeSessions, history } = useStore();
+  const merged = mergeSessionsAndHistory(activeSessions, history);
+  // 'blocked' is a live session (waiting for input), not an ended run.
+  const ended = merged.filter(r => r.status !== 'running' && r.status !== 'blocked');
+
+  if (ended.length === 0) {
+    return html`
+      <div class="hist-panel">
+        <div class="hist-panel-title">
+          <${Icon} name="history" size=${16}/> Run History
+        </div>
+        <div class="empty">No past runs yet.</div>
+      </div>
+    `;
+  }
+
+  // Group by status (STATUS_ORDER), then within each group by date label
+  const byStatus = new Map();
+  for (const status of STATUS_ORDER) byStatus.set(status, new Map());
+
+  for (const run of ended) {
+    const bucket = byStatus.get(run.status) || byStatus.get('error');
+    const dateKey = humanDate(run.endTime || run.startTime) || 'Unknown date';
+    if (!bucket.has(dateKey)) bucket.set(dateKey, []);
+    bucket.get(dateKey).push(run);
+  }
+
+  // Sort runs within each date group: newest first
+  for (const dateMap of byStatus.values()) {
+    for (const runs of dateMap.values()) {
+      runs.sort((a, b) => String(b.endTime || b.startTime || '').localeCompare(String(a.endTime || a.startTime || '')));
+    }
+  }
+
+  return html`
+    <div class="hist-panel">
+      <div class="hist-panel-title">
+        <${Icon} name="history" size=${16}/> Run History
+      </div>
+      ${STATUS_ORDER.map(status => {
+        const dateMap = byStatus.get(status);
+        if (!dateMap || dateMap.size === 0) return null;
+        return html`
+          <div class="hist-group" key=${status}>
+            <div class="hist-group-title">${status}</div>
+            ${[...dateMap.entries()].map(([dateKey, runs]) => html`
+              <div key=${dateKey}>
+                <div class="hist-date">${dateKey}</div>
+                ${runs.map(run => html`<${HistoryRow} key=${run.storyId} run=${run}/>`)}
+              </div>
+            `)}
+          </div>
+        `;
+      })}
     </div>
   `;
 }
@@ -184,6 +305,8 @@ export function OrchestrationView() {
           `)}
         </div>
       `}
+
+      <${HistoryPanel}/>
     </div>
   `;
 }

@@ -99,6 +99,27 @@ export function chip(status) {
 }
 
 /**
+ * Props for a clickable card row that navigates to a hash route.
+ * Spread onto a list row (`<li ...${rowLink('tasks')}>`) to make it act like
+ * a link: pointer + keyboard activation and an accessible role. Pair with the
+ * `ovr-link` class for the hover/focus affordance.
+ *
+ * @param {string} hash — target hash route without the leading '#'.
+ * @returns {object} Preact props (role, tabindex, onClick, onKeyDown).
+ */
+export function rowLink(hash) {
+  const go = () => { location.hash = hash; };
+  return {
+    role: 'link',
+    tabindex: 0,
+    onClick: go,
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+    },
+  };
+}
+
+/**
  * Human-readable elapsed time since an ISO timestamp.
  * Ported from _orchElapsed() in client-main.js.
  *
@@ -198,4 +219,38 @@ export function phaseHints(p) {
       ['/rcode-sprint-planning','Plan next sprint in Phase ' + pid],
     ];
   }
+}
+
+// ---- Markdown helpers (moved from FilesView so AgentsView can share) ----
+
+/** Strip a leading YAML frontmatter block from a markdown string. */
+export function stripFrontmatter(md) {
+  if (!md.startsWith('---')) return md;
+  const end = md.indexOf('\n---', 3);
+  return end === -1 ? md : md.slice(end + 4).trimStart();
+}
+
+/**
+ * Minimal HTML sanitizer for rendered markdown. No DOMPurify dependency on
+ * the client, so we strip the dangerous primitives via regex after marked
+ * emits HTML: script/iframe/object/embed tags, inline event handlers, and
+ * javascript:/data: URLs in href/src. Markdown content comes from the project
+ * dir (semi-trusted) but may include attacker-controlled text checked into a
+ * repo, so we cannot trust raw HTML passthrough.
+ */
+export function sanitizeHtml(html) {
+  return String(html)
+    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*(script|iframe|object|embed|link|meta|style)\b[^>]*\/?>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src|xlink:href)\s*=\s*(["'])\s*(?:javascript|data|vbscript):[^"']*\2/gi, '$1=$2#blocked$2');
+}
+
+/** Render markdown to sanitized HTML via the global `marked` CDN lib. */
+export function renderMd(md) {
+  const clean = stripFrontmatter(md);
+  if (typeof marked === 'undefined') {
+    return '<pre>' + clean.replace(/</g, '&lt;') + '</pre>';
+  }
+  return sanitizeHtml(marked.parse(clean));
 }

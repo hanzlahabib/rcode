@@ -10,11 +10,12 @@
 import { html, useState } from '../preact.js';
 import { pctNum, chip as chipDesc, humanDate, pct, currentPhaseId } from '../util.js';
 import {
-  runAndOpenTerm, isSessionRunning, runningInSprint, runningInPhase,
+  isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
 import { getState } from '../store.js';
 import { Icon } from '../icons-client.js';
 import { TaskPipeline } from './TaskPipeline.js';
+import { openRunnerPicker } from './RunnerPicker.js';
 
 // ---- Toast helper (shared by CmdHint copy action and any view) ----
 export function showToast(msg) {
@@ -170,7 +171,8 @@ export function CmdHints({ hints }) {
 
 // ---- RunBtn ----
 /**
- * Compact run button. Calls runAndOpenTerm from orchestrator.js.
+ * Compact run button. Opens the runner/model picker popover anchored to the
+ * button; the picker launches the session via runAndOpenTerm.
  * @param {{ storyId: string, cmd: string, label: string }} props
  */
 export function RunBtn({ storyId, cmd, label }) {
@@ -179,7 +181,7 @@ export function RunBtn({ storyId, cmd, label }) {
   const down = getState().orchOnline === false;
   function handleClick(e) {
     e.stopPropagation();
-    runAndOpenTerm(storyId, cmd, label);
+    openRunnerPicker(e.currentTarget, { kind: 'session', storyId, cmd, title: label });
   }
   return html`
     <button class="card-run-btn" disabled=${down}
@@ -335,8 +337,8 @@ export function TaskCard({ task: t }) {
         ${t.id ? html`<${Tag}>${t.id}</${Tag}>` : null}
         ${t.sprintId ? html`<${Tag}>Sprint ${t.sprintId}</${Tag}>` : null}
         ${t.phaseId ? html`<${Tag}>Phase ${t.phaseId}</${Tag}>` : null}
-        ${t.id && running ? html`<span class="run-badge">● running</span>` : null}
-        <${TaskPipeline} task=${t}/>
+        ${t.id && running ? html`<span class="run-badge"><span class="live-dot"></span>running</span>` : null}
+        <${TaskPipeline} task=${t} running=${t.id && running}/>
       </div>
       ${expanded ? html`
         <div class="task-detail">

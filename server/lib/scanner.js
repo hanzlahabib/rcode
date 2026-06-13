@@ -52,6 +52,35 @@ function parseSimpleYaml(text) {
 }
 
 /**
+ * Extract an array value from raw YAML frontmatter text by key.
+ * Handles inline arrays (`key: [a, b]`) and block lists (`key:\n  - a\n  - b`).
+ * Returns string[] — empty array when the key is absent or the value is empty.
+ */
+function parseYamlList(text, key) {
+  if (!text || !key) return [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const inlineM = lines[i].match(new RegExp('^' + key + '\\s*:\\s*\\[(.*)\\]\\s*$'));
+    if (inlineM) {
+      return inlineM[1].split(',')
+        .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(Boolean);
+    }
+    const headerM = lines[i].match(new RegExp('^' + key + '\\s*:\\s*$'));
+    if (headerM) {
+      const items = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        const itemM = lines[j].match(/^\s+-\s+(.+)/);
+        if (itemM) items.push(itemM[1].trim().replace(/^['"]|['"]$/g, ''));
+        else if (lines[j].match(/^\s*[a-zA-Z_]/) || lines[j].trim() === '') break;
+      }
+      return items;
+    }
+  }
+  return [];
+}
+
+/**
  * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
  * which is the committed source of truth. state.json sprint/story records are
  * often incomplete (planner agents write SPRINT.md files without registering
@@ -93,7 +122,9 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
       const text = safeReadText(path.join(phasesDir, dir.name, f)) || '';
 
       // Sprint goal: frontmatter `goal:`, else first line of <objective>.
-      const fm = parseSimpleYaml((text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '');
+      const fmRaw = (text.match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
+      const fm = parseSimpleYaml(fmRaw);
+      const dependsOn = parseYamlList(fmRaw, 'depends_on');
       let goal = fm.goal || '';
       if (!goal) {
         const obj = (text.match(/<objective>\s*([\s\S]*?)<\/objective>/) || [])[1] || '';
@@ -136,10 +167,20 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
         : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
         : 'planned';
 
-      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories };
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories, dependsOn };
     });
 
-    return { ...p, sprints };
+    // Derive phase-level depends_on by aggregating sprint-level depends_on entries.
+    // Sprint IDs appear as "NN.S" (dot) or "NN-S" (dash); extract the leading integer
+    // to get the phase ID. Drop self-references (sibling sprints within this phase).
+    const phaseDependsOn = [...new Set(
+      sprints.flatMap(s => s.dependsOn || []).map(dep => {
+        const m = String(dep).match(/^(\d+)/);
+        return m ? m[1] : null;
+      }).filter(depId => depId !== null && depId !== intId)
+    )];
+
+    return { ...p, sprints, dependsOn: phaseDependsOn };
   });
 }
 
@@ -158,11 +199,18 @@ function fmtISODate(iso) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Map an rcode phase/sprint status string to the contract enum done|active|todo. */
+/** Map an rcode phase/sprint status string to the contract enum done|active|todo.
+ *  "executing" is what /rcode-execute writes for an in-flight phase — it must
+ *  map to active or the Overview falls back to a stale planned phase. */
 function toState(status) {
   if (/complete|done/i.test(status || '')) return 'done';
-  if (/active|in_progress|progress/i.test(status || '')) return 'active';
+  if (/active|in_progress|progress|executing/i.test(status || '')) return 'active';
   return 'todo';
+}
+
+/** Slugify a phase name/slug the way state.json records current_phase. */
+function slugify(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 /**
@@ -214,7 +262,19 @@ function buildDashboard(state) {
   const progress = { completed, inProgress: inProg, notStarted, total, pct };
 
   // ---- currentPhase (object: id, name, status, milestones[]; null when no phases) ----
-  const activePhase = phases.find(p => p.state === 'active')
+  // state.json's current_phase is a slug ("phase-foo-bar" or "foo-bar") naming
+  // the phase the team is actually on — prefer it over positional guessing,
+  // since several phases can be `executing` at once (parallel worktrees).
+  const cpSlug = slugify(raw.current_phase);
+  const matchesCp = (p) => {
+    if (!cpSlug) return false;
+    return [slugify(p.slug), slugify(p.name)].some(c =>
+      c && (c === cpSlug || 'phase-' + c === cpSlug || c === 'phase-' + cpSlug));
+  };
+  const cpMatch = phases.find(matchesCp) || null;
+  const activePhase = (cpMatch && cpMatch.state === 'active' ? cpMatch : null)
+    || phases.find(p => p.state === 'active')
+    || (cpMatch && cpMatch.state !== 'done' ? cpMatch : null)
     || phases.find(p => p.state === 'todo')
     || phases[phases.length - 1] || null;
   const cpSprints = activePhase && Array.isArray(activePhase.sprints) ? activePhase.sprints : [];
@@ -224,10 +284,25 @@ function buildDashboard(state) {
     name: (s.goal || ('Sprint ' + (s.number || s.id || ''))).slice(0, 60),
     state: toState(s.status),
   }));
+  // The in-flight sprint (first not-done) — its goal is the card's "what's
+  // happening right now" subtitle; null when all sprints shipped or none exist.
+  const liveSprint = cpSprints.find(s => toState(s.status) !== 'done') || null;
+  let startedDaysAgo = null;
+  if (activePhase && activePhase.started) {
+    const t = new Date(activePhase.started).getTime();
+    if (!isNaN(t)) startedDaysAgo = Math.max(0, Math.floor((Date.now() - t) / 86400000));
+  }
   const currentPhase = activePhase ? {
     id:     activePhase.id != null ? activePhase.id : null,
     name:   activePhase.name || raw.current_phase || '',
     status: activePhase.status || 'planned',
+    // True when nothing is actually active — the card shows "Up next" instead
+    // of implying work is happening.
+    next:   activePhase.state !== 'active',
+    startedDaysAgo,
+    currentTask: liveSprint
+      ? (liveSprint.goal || 'Sprint ' + (liveSprint.number || liveSprint.id || ''))
+      : null,
     milestones,
   } : null;
 
