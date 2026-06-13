@@ -38,6 +38,10 @@ const { renderHtml } = require('./lib/html/shell');
 const PORT = parseInt(process.env.PORT || '7717', 10);
 const RCODE_DIR = process.env.RCODE_DIR || path.join(process.cwd(), '.rcode');
 const PROJECT_ROOT = path.dirname(RCODE_DIR);
+// Fallback root for agent prompts when rcode is installed as a package (not run
+// from inside the rcode source repo). server/dashboard.js lives at <pkg>/server/,
+// so <pkg> is one level up.
+const PACKAGE_ROOT = path.join(__dirname, '..');
 
 // Shared orchestrator token — passed to the orchestrator via env and embedded
 // in the HTML. Persisted to ~/.rcode/orch-token so it stays STABLE across
@@ -93,12 +97,12 @@ function handleRequest(req, res) {
   }
 
   if (url === '/api/agents') {
-    handleApiAgents(req, res, PROJECT_ROOT);
+    handleApiAgents(req, res, PROJECT_ROOT, PACKAGE_ROOT);
     return;
   }
 
   if (url.startsWith('/api/file')) {
-    handleApiFile(req, res, PROJECT_ROOT);
+    handleApiFile(req, res, PROJECT_ROOT, PACKAGE_ROOT);
     return;
   }
 
