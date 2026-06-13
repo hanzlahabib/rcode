@@ -50,6 +50,9 @@ function closeStream(storyId) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const STORAGE_KEY = 'rcode-orch-panel-w';
+const MIN_W = 360;
+
 export function OrchPanel() {
   const { orchPanel, activeSessions } = useStore();
   const open     = !!(orchPanel && orchPanel.open);
@@ -60,7 +63,15 @@ export function OrchPanel() {
   // sessionsMap: { [storyId]: { title, lines, fileOps, status } }
   const [sessionsMap, setSessionsMap] = useState({});
   const [activeTab,   setActiveTab  ] = useState(null);
-  const bodyRef = useRef(null);
+  const bodyRef  = useRef(null);
+  const panelRef = useRef(null);
+
+  // Restore saved width on open
+  useEffect(() => {
+    if (!open || !panelRef.current) return;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) panelRef.current.style.setProperty('--orch-w', saved + 'px');
+  }, [open]);
 
   // Scroll to bottom whenever lines change for the active tab
   useEffect(() => {
@@ -167,6 +178,35 @@ export function OrchPanel() {
     setState({ orchPanel: null });
   }, []);
 
+  // Horizontal resize via the left-edge drag handle
+  function handleResizeDown(e) {
+    e.preventDefault();
+    const startX = e.clientX;
+    const el = panelRef.current;
+    if (!el) return;
+    const startW = el.getBoundingClientRect().width;
+    const handle = e.currentTarget;
+    handle.classList.add('dragging');
+
+    function onMove(ev) {
+      const delta = startX - ev.clientX;
+      const maxW = Math.floor(window.innerWidth * 0.7);
+      const w = Math.min(maxW, Math.max(MIN_W, startW + delta));
+      el.style.setProperty('--orch-w', w + 'px');
+    }
+
+    function onUp(ev) {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      handle.classList.remove('dragging');
+      const w = Math.round(el.getBoundingClientRect().width);
+      localStorage.setItem(STORAGE_KEY, w);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
   // Open (or focus) a session tab and attach its live stream. Used both for
   // locally-opened tabs and for sessions discovered via the orchestrator API.
   function handleTabClick(storyId) {
@@ -221,7 +261,8 @@ export function OrchPanel() {
   const panelCls = 'orch-panel' + (open ? ' open' : '');
 
   return html`
-    <div class=${panelCls}>
+    <div class=${panelCls} ref=${panelRef}>
+      <div class="orch-panel-resize" onMouseDown=${handleResizeDown}></div>
       <div class="orch-panel-header">
         <div class="orch-panel-title">
           <span class=${'orch-status-dot' + (runningCount > 0 ? ' up' : '')}></span>
