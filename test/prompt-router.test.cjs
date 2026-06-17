@@ -90,6 +90,42 @@ test('non-matching prompt exits 0 with empty stdout', () => {
   assert.strictEqual(result.stdout, '', 'non-match must produce no output');
 });
 
+// ─── 3b. Tightened keywords — previously-broad matches must NOT nudge ────────
+
+test('"what does this error message mean" must not nudge (M3: error narrowed)', () => {
+  // Bare 'error' was too broad; now only multi-word debug phrases match.
+  const result = runRouter({ prompt: 'what does this error message mean?' });
+
+  assert.strictEqual(result.status, 0);
+  assert.strictEqual(result.stdout, '', '"error" in a question must not trigger debug nudge');
+});
+
+test('"I did research on this topic" must not nudge (M3: research narrowed)', () => {
+  // Past-tense reference to research is not navigation intent.
+  const result = runRouter({ prompt: 'I did research on this topic already' });
+
+  assert.strictEqual(result.status, 0);
+  assert.strictEqual(result.stdout, '', 'past-tense "research" reference must not trigger explore nudge');
+});
+
+test('"how do I format a string in JS?" must not nudge (M3: how-do removed)', () => {
+  // Factual "how do" questions are not research-phase navigation intent.
+  const result = runRouter({ prompt: 'how do I format a string in JS?' });
+
+  assert.strictEqual(result.status, 0);
+  assert.strictEqual(result.stdout, '', '"how do" factual question must not trigger explore nudge');
+});
+
+test('"getting an error when I deploy" must nudge to /rcode-debug (M3: multi-word match)', () => {
+  // Multi-word debug phrase should still route correctly.
+  const result = runRouter({ prompt: 'I am getting an error when I deploy the service' });
+
+  assert.strictEqual(result.status, 0);
+  assert.ok(result.stdout.length > 0, '"getting an error" must still emit debug nudge');
+  const out = JSON.parse(result.stdout);
+  assert.ok(/rcode-debug/.test(out.hookSpecificOutput.additionalContext));
+});
+
 // ─── 4. Leading /rcode- is silent (slash router handles it) ──────────────────
 
 test('prompt starting with /rcode- is silent', () => {

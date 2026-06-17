@@ -649,9 +649,11 @@ const INTENT_TABLE = [
     command: '/rcode-map-codebase',
   },
   // do.md: "A bug, error, crash, failure, or something broken" → /rcode-debug
+  // 'error' alone is too broad (matches "what does this error mean?" etc.).
+  // Use multi-word forms that signal debug intent rather than a question.
   {
     intent: 'debug',
-    keywords: ['bug', 'error', 'crash', 'failure', 'broken', 'not working', 'fails', 'exception', 'traceback'],
+    keywords: ['bug', 'getting an error', 'throwing an error', 'error in the', 'fix the error', 'debug this', 'crash', 'failure', 'broken', 'not working', 'fails', 'exception', 'traceback'],
     command: '/rcode-debug',
   },
   // do.md: "Audit code quality, 'review changes', 'karpathy', 'check my diff', 'too complex'" → /rcode-review --karpathy
@@ -673,9 +675,11 @@ const INTENT_TABLE = [
     command: '/rcode-brainstorm',
   },
   // do.md: "Exploring, researching, comparing, or 'how does X work'" → /rcode-research-phase
+  // 'research' alone fires on "based on my research..." (past-tense reference, not navigation intent).
+  // 'how does'/'how do' fire on any factual question — removed in favour of intent-bearing phrases.
   {
     intent: 'explore',
-    keywords: ['explore', 'research', 'how does', 'how do', 'comparing', 'investigate', 'look into', 'understand how'],
+    keywords: ['explore', 'research phase', 'do some research', 'comparing', 'investigate', 'look into', 'understand how'],
     command: '/rcode-research-phase',
   },
   // do.md: "Scope unclear, 'which one', 'better UX', 'how should X look'" → /rcode-discuss-phase
