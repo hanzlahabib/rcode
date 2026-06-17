@@ -84,6 +84,68 @@ test('do.md routing table parser finds a non-empty command set (sanity)', () => 
   );
 });
 
+// ── Reverse drift guard ────────────────────────────────────────────────────────
+// This test guards against NEW do.md routes being silently added without a
+// conscious decision to either cover them in INTENT_TABLE or add them to this
+// allowlist. It does NOT fail when a known-uncovered route is absent — partial
+// INTENT_TABLE coverage is intentional (see sprint 38 spec). It DOES fail when
+// a route appears in do.md that is neither in INTENT_TABLE nor in the allowlist,
+// because that means a maintainer added a route without making a coverage choice.
+//
+// To add a new do.md route: either add a matching INTENT_TABLE entry (preferred)
+// or add the route to KNOWN_UNCOVERED_ROUTES below with a justification comment.
+const KNOWN_UNCOVERED_ROUTES = new Set([
+  '/rcode-add-tests',          // targeted add — not a free-prompt trigger
+  '/rcode-autonomous',         // explicit command, no natural-language nudge needed
+  '/rcode-complete-milestone', // lifecycle event — user knows when to run it
+  '/rcode-council',            // routed to from classifier fallback, not keyword
+  '/rcode-create-story',       // granular — user reaches via epics-stories flow
+  '/rcode-dev-story',          // implementation detail — reached via story flow
+  '/rcode-execute',            // explicit execution command
+  '/rcode-list-plans',         // status-query — user-driven, not prompt-triggered
+  '/rcode-note',               // single-word captures — too broad to keyword-match safely
+  '/rcode-phase',              // bare integer dispatch; handled by slash router
+  '/rcode-plan-milestone-gaps',// post-planning utility — user-driven
+  '/rcode-prfaq',              // ideation command — reaches via brainstorm or direct
+  '/rcode-progress',           // status-query — user-driven
+  '/rcode-quick',              // small-task shortcut — any prompt could qualify
+  '/rcode-resume-work',        // session-restore — explicit intent
+  '/rcode-sprint-status',      // status-query — user-driven
+  '/rcode-verify-work',        // post-build review — user-driven
+]);
+
+test('new do.md routes not in INTENT_TABLE must be in the known-uncovered allowlist', () => {
+  // This test catches when a route is added to do.md in a future phase without
+  // updating either INTENT_TABLE (coverage) or KNOWN_UNCOVERED_ROUTES (allowlist).
+  const doMdText = fs.readFileSync(DO_MD, 'utf8');
+  const { routeSet } = parseDoMdRoutes(doMdText);
+
+  const { INTENT_TABLE } = require(HOOKS);
+  const covered = new Set(INTENT_TABLE.map((e) => e.command.trim().split(/\s+/)[0]));
+
+  // Routes in do.md that are neither covered nor allowlisted — these are new and
+  // require a conscious coverage decision.
+  const unaccounted = [];
+  for (const route of routeSet) {
+    if (!covered.has(route) && !KNOWN_UNCOVERED_ROUTES.has(route)) {
+      unaccounted.push(route);
+    }
+  }
+
+  assert.strictEqual(
+    unaccounted.length,
+    0,
+    [
+      `${unaccounted.length} do.md route(s) are neither covered by INTENT_TABLE nor listed in`,
+      `KNOWN_UNCOVERED_ROUTES in test/prompt-router-table-sync.test.cjs:`,
+      ...unaccounted.map((r) => `  ${r}`),
+      '',
+      'Either add a matching INTENT_TABLE entry in rcode/bin/rcode-hooks.cjs',
+      'or add the route to KNOWN_UNCOVERED_ROUTES with a justification comment.',
+    ].join('\n')
+  );
+});
+
 test('every INTENT_TABLE command exists as a route in do.md routing table', () => {
   const doMdText = fs.readFileSync(DO_MD, 'utf8');
   const { routeSet } = parseDoMdRoutes(doMdText);
