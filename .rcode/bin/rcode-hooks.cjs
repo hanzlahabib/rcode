@@ -20,6 +20,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execSync, spawnSync } = require('child_process');
 
 /**
  * Read and parse stdin JSON.
@@ -338,8 +339,6 @@ async function bashGuard() {
  */
 async function preCompact() {
   try {
-    const path = require('path');
-    const { execSync } = require('child_process');
     await readInputJson(); // drain the PreCompact event payload
 
     const cwd = process.cwd();
@@ -519,8 +518,6 @@ async function preCompact() {
  */
 async function stopVerify() {
   try {
-    const path = require('path');
-    const { spawnSync } = require('child_process');
     const input = await readInputJson();
 
     let changed =
@@ -787,7 +784,6 @@ function readPromptNudgeToggle(cwd) {
  */
 function isStateStaleFallbackTrue(cwd) {
   try {
-    const { execSync } = require('child_process');
     const statePath = path.join(cwd, '.rcode', 'state.json');
     const planningDir = path.join(cwd, '.planning');
     const hasPlanning = fs.existsSync(planningDir);
