@@ -1027,3 +1027,9 @@
   "schema_version": 1
 }
 ```
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 38 added: Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)

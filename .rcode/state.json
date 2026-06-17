@@ -2,11 +2,11 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-13T09:58:42.222Z",
+  "updated": "2026-06-17T20:49:16.522Z",
   "current_phase": "phase-dependency-graph-and-structured-rejection-dialogs",
   "current_plan": 6,
   "model_profile": "balanced",
-  "milestone": "M2 — Hardening & Polish",
+  "milestone": "M3 — Archon Dashboard Port",
   "phases": [
     {
       "id": "20",
@@ -29,7 +29,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-02T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/20-dashboard-ux-quick-wins/20-1-SPRINT.md"
         }
       ]
     },
@@ -54,7 +55,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": null,
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/21-dashboard-data-pipeline/21-1-SPRINT.md"
         }
       ]
     },
@@ -97,7 +99,8 @@
               "title": "Commit the three reference files",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-1-SPRINT.md"
         },
         {
           "id": "22.2",
@@ -120,7 +123,8 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-2-SPRINT.md"
         },
         {
           "id": "22.3",
@@ -143,7 +147,8 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-3-SPRINT.md"
         },
         {
           "id": "22.4",
@@ -166,7 +171,8 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-4-SPRINT.md"
         }
       ]
     },
@@ -180,7 +186,57 @@
       "created": "2026-05-10T07:56:42.058Z",
       "started": "2026-05-10T00:00:00.000Z",
       "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 0
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "23.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-1-SPRINT.md"
+        },
+        {
+          "id": "23.2",
+          "number": 2,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-2-SPRINT.md"
+        },
+        {
+          "id": "23.3",
+          "number": 3,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-3-SPRINT.md"
+        },
+        {
+          "id": "23.4",
+          "number": 4,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-4-SPRINT.md"
+        }
+      ]
     },
     {
       "id": "24",
@@ -203,7 +259,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-10T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/24-resolve-agent-vs-skill-persona-duplication/24-1-SPRINT.md"
         }
       ]
     },
@@ -228,7 +285,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-10T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/25-rcode-agent-cli-command/25-1-SPRINT.md"
         }
       ]
     },
@@ -242,7 +300,21 @@
       "created": "2026-05-10T07:56:42.231Z",
       "started": "2026-05-10T00:00:00.000Z",
       "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 1
+      "plan_count": 1,
+      "sprints": [
+        {
+          "id": "26.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/26-reference-index-and-contributing-rule/26-1-SPRINT.md"
+        }
+      ]
     },
     {
       "id": "27",
@@ -254,7 +326,21 @@
       "created": "2026-05-15T06:13:02.904Z",
       "started": "2026-05-16T00:00:00.000Z",
       "completed": "2026-05-16T00:00:00.000Z",
-      "plan_count": 0
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "27.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/27-realtime-kanban-orchestration-dashboard/27-1-SPRINT.md"
+        }
+      ]
     },
     {
       "id": "28",
@@ -277,7 +363,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-1-SPRINT.md"
         },
         {
           "id": "28.2",
@@ -288,7 +375,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-2-SPRINT.md"
         },
         {
           "id": "28.3",
@@ -299,7 +387,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-3-SPRINT.md"
         },
         {
           "id": "28.4",
@@ -310,7 +399,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-4-SPRINT.md"
         }
       ],
       "plans": 4,
@@ -337,7 +427,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-1-SPRINT.md"
         },
         {
           "id": "29.2",
@@ -348,7 +439,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-2-SPRINT.md"
         },
         {
           "id": "29.3",
@@ -359,7 +451,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-3-SPRINT.md"
         }
       ],
       "plans": 3,
@@ -386,7 +479,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-1-SPRINT.md"
         },
         {
           "id": "30.2",
@@ -397,7 +491,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-2-SPRINT.md"
         },
         {
           "id": "30.3",
@@ -408,7 +503,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-3-SPRINT.md"
         },
         {
           "id": "30.4",
@@ -419,7 +515,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-4-SPRINT.md"
         }
       ],
       "plans": 4,
@@ -476,7 +573,8 @@
               "title": "Manual regression sweep — foundation",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-1-SPRINT.md"
         },
         {
           "id": "31.2",
@@ -514,7 +612,8 @@
               "title": "Manual regression sweep — planning views",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-2-SPRINT.md"
         },
         {
           "id": "31.3",
@@ -552,7 +651,8 @@
               "title": "Manual regression sweep — complex views",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-3-SPRINT.md"
         },
         {
           "id": "31.4",
@@ -590,7 +690,8 @@
               "title": "Final full-dashboard regression sweep",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-4-SPRINT.md"
         }
       ],
       "completed_at": "2026-05-16"
@@ -617,7 +718,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-1-SPRINT.md"
         },
         {
           "id": "32.2",
@@ -628,7 +730,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-2-SPRINT.md"
         },
         {
           "id": "32.3",
@@ -639,7 +742,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-3-SPRINT.md"
         }
       ]
     },
@@ -664,7 +768,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-1-SPRINT.md"
         },
         {
           "id": "33.2",
@@ -675,7 +780,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-2-SPRINT.md"
         },
         {
           "id": "33.3",
@@ -686,7 +792,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-3-SPRINT.md"
         }
       ],
       "plans": 3,
@@ -723,7 +830,8 @@
               "title": "Build StatusSummaryBar component with phase/sprint/session count chips",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md"
         },
         {
           "id": "34.2",
@@ -746,7 +854,8 @@
               "title": "Mount summary bar + filter chips into SprintsView and apply the filters prop",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md"
         }
       ],
       "status_updated": "2026-05-16T12:26:35.141Z"
@@ -777,7 +886,8 @@
               "title": "Expose GET /api/history read endpoint",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md"
         },
         {
           "id": "35.2",
@@ -805,7 +915,8 @@
               "title": "Add history panel CSS using design tokens",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md"
         }
       ],
       "status_updated": "2026-05-16T12:26:35.176Z",
@@ -847,7 +958,8 @@
               "title": "Add command palette CSS to css.js",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md"
         },
         {
           "id": "36.2",
@@ -865,7 +977,8 @@
               "title": "Pass blockers through App refresh and add health-badge CSS",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md"
         }
       ],
       "status_updated": "2026-05-16T12:26:35.211Z",
@@ -902,7 +1015,8 @@
               "title": "Add design-token CSS for the phase dependency graph",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-1-SPRINT.md"
         },
         {
           "id": "37.2",
@@ -935,11 +1049,64 @@
               "title": "Add design-token CSS for the reject overlay, dialog, and recorded-rejection row",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
         }
       ],
       "status_updated": "2026-05-16T12:26:35.245Z",
       "plans": 2
+    },
+    {
+      "id": "38",
+      "number": "38",
+      "name": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
+      "slug": "proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892",
+      "goal": "Make rcode proactive. Add an opt-in `UserPromptSubmit` hook — a deterministic,",
+      "status": "planned",
+      "created": "2026-06-17T19:23:58.193Z",
+      "started": null,
+      "completed": null,
+      "plan_count": 0,
+      "sprints": [
+        {
+          "id": "38.1",
+          "number": 1,
+          "goal": "\"Add the prompt-router subcommand to rcode-hooks.cjs — keyword-match the user's prompt against the do.md-derived routing table, respect the prompt_nudge toggle + per-session dedupe, emit a memory-framed additionalContext advisory, and swallow every error (exit 0 silent).\"",
+          "status": "planned",
+          "velocity_target": 13,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-1-SPRINT.md"
+        },
+        {
+          "id": "38.2",
+          "number": 2,
+          "goal": "\"Wire the prompt-router as a UserPromptSubmit hook into settings-hooks.json and the opt-in enable-hooks flow, plus declare the prompt_nudge config key, so the proactive nudge installs for Claude Code only when the user opts in. Idempotent merge, never on by default.\"",
+          "status": "planned",
+          "velocity_target": 8,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-2-SPRINT.md"
+        },
+        {
+          "id": "38.3",
+          "number": 3,
+          "goal": "\"Prevent silent drift: add a sync test that asserts every command the INTENT_TABLE routes to actually appears in the do.md routing table (the single source of truth), so a future edit to do.md that removes/renames a command fails CI rather than leaving the nudge pointing at a dead command.\"",
+          "status": "planned",
+          "velocity_target": 3,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-3-SPRINT.md"
+        }
+      ],
+      "plans": 3,
+      "planned_at": "2026-06-17T19:40:30.458Z"
     }
   ],
   "executions": [],
@@ -987,7 +1154,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "33.1",
+  "current_sprint": "38.3",
   "velocity_history": [
     {
       "sprint": "04.1",
