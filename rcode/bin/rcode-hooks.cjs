@@ -11,6 +11,7 @@
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
+ *   prompt-router — nudge toward rcode commands for memory consistency (#892)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -623,6 +624,312 @@ async function costTrack() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT_TABLE — keyword map for prompt-router (#892)
+//
+// WHY: When a user types a free-form prompt that matches a known rcode workflow,
+// we nudge them toward the matching command so the outcome is captured in
+// .rcode/state.json. Work done outside rcode commands never lands in state.
+//
+// Single source of truth: rcode/workflows/do.md routing table (lines ~285-320,
+// "If the text describes..."). Keep in sync — see test/prompt-router-table-sync.test.cjs
+// (Sprint 38.3).
+//
+// Order: first-match-wins, mirroring do.md's "Apply the first matching rule".
+// More-specific keyword sets come before broad ones.
+// ─────────────────────────────────────────────────────────────────────────────
+const INTENT_TABLE = [
+  // do.md: "Starting a new project, 'set up', 'initialize'" → /rcode-new-project
+  {
+    intent: 'new-project',
+    keywords: ['set up a new project', 'initialize a new project', 'start a new project', 'create a new project'],
+    command: '/rcode-new-project',
+  },
+  // do.md: "Mapping or analyzing an existing codebase" → /rcode-map-codebase
+  {
+    intent: 'map-codebase',
+    keywords: ['map the codebase', 'map this codebase', 'analyze the codebase', 'analyse the codebase', 'map existing codebase'],
+    command: '/rcode-map-codebase',
+  },
+  // do.md: "A bug, error, crash, failure, or something broken" → /rcode-debug
+  {
+    intent: 'debug',
+    keywords: ['bug', 'error', 'crash', 'failure', 'broken', 'not working', 'fails', 'exception', 'traceback'],
+    command: '/rcode-debug',
+  },
+  // do.md: "Audit code quality, 'review changes', 'karpathy', 'check my diff', 'too complex'" → /rcode-review --karpathy
+  {
+    intent: 'audit-karpathy',
+    keywords: ['audit', 'review changes', 'check my diff', 'karpathy', 'too complex', 'complexity', 'code review'],
+    command: '/rcode-review --karpathy',
+  },
+  // do.md: "Walk through a change, 'checkpoint', 'explain this diff', 'human review'" → /rcode-checkpoint-preview
+  {
+    intent: 'checkpoint',
+    keywords: ['checkpoint', 'explain this diff', 'human review', 'walk through the change', 'walk through this change'],
+    command: '/rcode-checkpoint-preview',
+  },
+  // do.md: "Brainstorm, generate ideas, 'explore options', 'what could we do'" → /rcode-brainstorm
+  {
+    intent: 'brainstorm',
+    keywords: ['brainstorm', 'generate ideas', 'explore options', 'what could we do', 'ideate', 'ideas for'],
+    command: '/rcode-brainstorm',
+  },
+  // do.md: "Exploring, researching, comparing, or 'how does X work'" → /rcode-research-phase
+  {
+    intent: 'explore',
+    keywords: ['explore', 'research', 'how does', 'how do', 'comparing', 'investigate', 'look into', 'understand how'],
+    command: '/rcode-research-phase',
+  },
+  // do.md: "Scope unclear, 'which one', 'better UX', 'how should X look'" → /rcode-discuss-phase
+  {
+    intent: 'discuss',
+    keywords: ['which one', 'better ux', 'how should', 'still have confusion', 'conflicting', 'discuss the scope'],
+    command: '/rcode-discuss-phase',
+  },
+  // do.md: "A complex task: refactoring, migration, multi-file architecture, system redesign" → /rcode-add-phase
+  {
+    intent: 'add-phase',
+    keywords: ['refactor', 'migration', 'multi-file', 'system redesign', 'multi file', 'large refactor', 'architectural'],
+    command: '/rcode-add-phase',
+  },
+  // do.md: "'Sprint planning', 'plan the sprint', 'next sprint'" → /rcode-sprint-planning
+  {
+    intent: 'sprint-planning',
+    keywords: ['sprint planning', 'plan the sprint', 'next sprint', 'what\'s in this sprint', "what's in this sprint"],
+    command: '/rcode-sprint-planning',
+  },
+  // do.md: "Executing a sprint, 'run the sprint', 'start sprint'" → /rcode-execute-sprint
+  {
+    intent: 'execute-sprint',
+    keywords: ['run the sprint', 'start sprint', 'execute sprint', 'work on sprint'],
+    command: '/rcode-execute-sprint',
+  },
+  // do.md: "Planning a specific phase, 'plan phase N'" → /rcode-plan
+  {
+    intent: 'plan',
+    keywords: ["let's plan", 'plan phase', 'plan this', 'let me plan', 'planning phase', 'create a plan'],
+    command: '/rcode-plan',
+  },
+  // do.md: "'Create milestones', 'plan milestones', 'create roadmap'" → /rcode-new-milestone
+  {
+    intent: 'new-milestone',
+    keywords: ['create milestones', 'plan milestones', 'create roadmap', 'break project into milestones', 'new milestone', 'what milestones'],
+    command: '/rcode-new-milestone',
+  },
+  // do.md: "Break milestone into epics/stories, 'create stories', 'user stories', 'epics'" → /rcode-create-epics-and-stories
+  {
+    intent: 'epics-stories',
+    keywords: ['create epics', 'user stories', 'create stories', 'epics and stories', 'break into epics'],
+    command: '/rcode-create-epics-and-stories',
+  },
+  // do.md: "Drift / out-of-date / 'audit feature docs' / 'fill out existing PRD'" → /rcode-feature-drift
+  {
+    intent: 'feature-drift',
+    keywords: ['out of date', 'out-of-date', 'verify docs', 'audit feature docs', 'fill out existing', 'prd drift', 'docs vs code'],
+    command: '/rcode-feature-drift',
+  },
+  // do.md: "General audit / re-audit / extend / fill out / expand an existing artifact" → /rcode-audit
+  {
+    intent: 'audit',
+    keywords: ['re-audit', 'extend the audit', 'fill out the', 'expand the', 're audit'],
+    command: '/rcode-audit',
+  },
+];
+
+/**
+ * Inline flat-YAML parser — mirrors parseSimpleYaml in rcode-tools.cjs:91.
+ * Supports `key: value` lines only; strips `#` comments; unquotes.
+ * Kept inline so this file stays standalone (no cross-file require).
+ */
+function parseSimpleYamlInline(text) {
+  const out = {};
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/#.*$/, '').trim();
+    if (!line) continue;
+    const colonAt = line.indexOf(':');
+    if (colonAt === -1) continue;
+    const key = line.slice(0, colonAt).trim();
+    let val = line.slice(colonAt + 1).trim();
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+    if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+    out[key] = val;
+  }
+  return out;
+}
+
+/**
+ * Read prompt_nudge from .rcode/config.yaml.
+ * Returns 'every' | 'once-per-intent' | 'when-stale' | 'off'.
+ * Defaults to 'every' when key is absent, file is missing, or value is unknown.
+ */
+function readPromptNudgeToggle(cwd) {
+  const VALID = new Set(['every', 'once-per-intent', 'when-stale', 'off']);
+  try {
+    const cfgPath = path.join(cwd, '.rcode', 'config.yaml');
+    const text = fs.readFileSync(cfgPath, 'utf8');
+    const parsed = parseSimpleYamlInline(text);
+    const val = (parsed.prompt_nudge || '').trim().toLowerCase();
+    return VALID.has(val) ? val : 'every';
+  } catch {
+    return 'every';
+  }
+}
+
+/**
+ * Determine whether a nudge is stale enough to fire under 'when-stale' mode.
+ *
+ * Heuristic: fire when .rcode/state.json exists AND its mtime is older than
+ * the most recent git commit timestamp, OR when state.json is absent in a
+ * .planning/ project. This is cheap and best-effort — if any check fails the
+ * function returns true (treat as stale = fire). All I/O is wrapped in
+ * try/catch to preserve the fail-open contract.
+ */
+function isStateStaleFallbackTrue(cwd) {
+  try {
+    const { execSync } = require('child_process');
+    const statePath = path.join(cwd, '.rcode', 'state.json');
+    const planningDir = path.join(cwd, '.planning');
+    const hasPlanning = fs.existsSync(planningDir);
+
+    if (!fs.existsSync(statePath)) {
+      // No state.json at all — if there IS a .planning/ dir, that means we're
+      // in a project that should have state but doesn't: treat as stale.
+      return hasPlanning;
+    }
+
+    // state.json exists — check its mtime vs last commit timestamp.
+    const stateMtime = fs.statSync(statePath).mtimeMs;
+    let lastCommitTs = null;
+    try {
+      const tsStr = execSync('git log -1 --format=%ct 2>/dev/null', {
+        cwd, encoding: 'utf8', timeout: 2000,
+      }).trim();
+      if (tsStr) lastCommitTs = parseInt(tsStr, 10) * 1000;
+    } catch { /* git unavailable or no commits */ }
+
+    if (lastCommitTs === null) return false; // can't determine, don't nag
+    return stateMtime < lastCommitTs;
+  } catch {
+    return true; // fail open: treat as stale
+  }
+}
+
+/**
+ * prompt-router: Nudge user toward rcode commands for memory consistency (#892).
+ *
+ * Runs on UserPromptSubmit. Reads stdin JSON synchronously (mirror
+ * cli/rcode-slash-router.cjs — NOT the async readInputJson() which rejects on
+ * bad JSON). Keyword-matches against INTENT_TABLE (derived from
+ * rcode/workflows/do.md lines ~285-320). On match, emits a one-line advisory
+ * via hookSpecificOutput.additionalContext. Gated by prompt_nudge config toggle.
+ * Always exits 0 with no output on any error or non-match.
+ */
+function promptRouter() {
+  try {
+    // Read stdin synchronously — mirrors cli/rcode-slash-router.cjs readStdin().
+    let raw = '';
+    try {
+      raw = fs.readFileSync(0, 'utf8');
+    } catch {
+      process.exit(0);
+    }
+
+    if (!raw.trim()) process.exit(0);
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      process.exit(0);
+    }
+
+    // Multi-spelling prompt field fallback — mirrors rcode-slash-router.cjs.
+    const prompt =
+      data.prompt ??
+      data.user_prompt ??
+      data.userPrompt ??
+      data.message ??
+      data.input ??
+      '';
+
+    if (typeof prompt !== 'string' || !prompt.trim()) process.exit(0);
+
+    const trimmed = prompt.trimStart();
+
+    // Skip prompts that already start with /rcode- — slash router handles those.
+    if (/^\/rcode-/.test(trimmed)) process.exit(0);
+
+    const hookEventName =
+      data.hook_event_name || data.hookEventName || 'UserPromptSubmit';
+    const cwd = process.cwd();
+
+    // ── Config toggle ────────────────────────────────────────────────────
+    const nudgeMode = readPromptNudgeToggle(cwd);
+    if (nudgeMode === 'off') process.exit(0);
+
+    // ── when-stale: check if state is stale ──────────────────────────────
+    if (nudgeMode === 'when-stale' && !isStateStaleFallbackTrue(cwd)) {
+      process.exit(0);
+    }
+
+    // ── Keyword match (first-match-wins, case-insensitive) ───────────────
+    const lower = prompt.toLowerCase();
+    let matched = null;
+    for (const entry of INTENT_TABLE) {
+      for (const kw of entry.keywords) {
+        if (lower.includes(kw.toLowerCase())) {
+          matched = entry;
+          break;
+        }
+      }
+      if (matched) break;
+    }
+
+    if (!matched) process.exit(0);
+
+    // ── once-per-intent dedupe ───────────────────────────────────────────
+    if (nudgeMode === 'once-per-intent') {
+      const sessionId =
+        data.session_id || data.tool_input?.session_id || 'default';
+      const dedupeFile = path.join(
+        os.tmpdir(),
+        'rcode-prompt-nudge-' + sessionId + '.json'
+      );
+      try {
+        let seen = [];
+        try {
+          seen = JSON.parse(fs.readFileSync(dedupeFile, 'utf8'));
+          if (!Array.isArray(seen)) seen = [];
+        } catch { /* first run or missing file */ }
+
+        if (seen.includes(matched.intent)) process.exit(0);
+
+        seen.push(matched.intent);
+        try { fs.writeFileSync(dedupeFile, JSON.stringify(seen)); } catch {}
+      } catch {
+        // dedupe file unreadable/locked → fire anyway (fail open)
+      }
+    }
+
+    // ── Emit memory-framed advisory ──────────────────────────────────────
+    const advisory =
+      `rcode tip: this looks like ${matched.intent} work — consider ${matched.command} so the outcome is captured in .rcode/state.json. ` +
+      `Decisions made outside rcode commands won't persist; run /rcode-memory-update to keep long-term memory consistent.`;
+
+    const payload = {
+      hookSpecificOutput: {
+        hookEventName,
+        additionalContext: advisory,
+      },
+    };
+    process.stdout.write(JSON.stringify(payload));
+  } catch {
+    // Fail open — never break the host CLI's prompt.
+  }
+  process.exit(0);
+}
+
 /**
  * compact-nudge: Advise /rcode-trim or /clear after N Edit/Write calls (#749).
  *
@@ -698,9 +1005,12 @@ async function main() {
     case 'compact-nudge':
       await compactNudge();
       break;
+    case 'prompt-router':
+      promptRouter(); // synchronous — exits inside; never falls through to async path
+      break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge|prompt-router');
       process.exit(1);
   }
 }
