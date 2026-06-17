@@ -158,6 +158,9 @@ const ConfigSchema = z.object({
   git: z.object({
     branching_strategy: z.string().optional(),
   }).optional(),
+  // Declared for validation only — default ('every') lives in the hook (rcode-hooks.cjs prompt-router).
+  // Install does NOT write this key; the feature stays dormant until hooks are opted into via /rcode-enable-hooks.
+  prompt_nudge: z.enum(['every', 'once-per-intent', 'when-stale', 'off']).optional(),
 }).passthrough();
 
 /**
