@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-17T20:59:29.298Z",
+  "updated": "2026-06-17T21:02:04.289Z",
   "current_phase": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
   "current_plan": 6,
   "model_profile": "balanced",
