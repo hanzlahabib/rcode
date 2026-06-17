@@ -890,8 +890,14 @@ function promptRouter() {
 
     // ── once-per-intent dedupe ───────────────────────────────────────────
     if (nudgeMode === 'once-per-intent') {
+      // Fallback key: parent PID + hourly bucket — scopes naturally to the
+      // current shell session without requiring session_id in the payload.
+      // Without this, every session shares 'default' and a dedupe file from
+      // session A silences nudges in session B permanently.
+      const sessionFallback =
+        String(process.ppid) + '-' + String(Math.floor(Date.now() / 3600000));
       const sessionId =
-        data.session_id || data.tool_input?.session_id || 'default';
+        data.session_id || data.tool_input?.session_id || sessionFallback;
       const dedupeFile = path.join(
         os.tmpdir(),
         'rcode-prompt-nudge-' + sessionId + '.json'
