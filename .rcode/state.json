@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-17T21:02:04.289Z",
+  "updated": "2026-06-17T22:34:14.771Z",
   "current_phase": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1062,7 +1062,7 @@
       "name": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
       "slug": "proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892",
       "goal": "Make rcode proactive. Add an opt-in `UserPromptSubmit` hook — a deterministic,",
-      "status": "executing",
+      "status": "complete",
       "created": "2026-06-17T19:23:58.193Z",
       "started": "2026-06-17T20:50:13.617Z",
       "completed": null,
@@ -1106,10 +1106,20 @@
         }
       ],
       "plans": 3,
-      "planned_at": "2026-06-17T19:40:30.458Z"
+      "planned_at": "2026-06-17T19:40:30.458Z",
+      "status_updated": "2026-06-17T22:34:04.252Z",
+      "completed_at": "2026-06-17"
     }
   ],
-  "executions": [],
+  "executions": [
+    {
+      "plan": "38",
+      "tasks": 3,
+      "duration_ms": null,
+      "commit_hash": "321ff91",
+      "committed_at": "2026-06-17T22:34:04.313Z"
+    }
+  ],
   "decisions": [
     {
       "summary": "test A — cross-project memory from rihal-code",
