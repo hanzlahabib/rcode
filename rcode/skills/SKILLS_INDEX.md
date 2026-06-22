@@ -1,6 +1,6 @@
 # rcode — Skills Index
 
-All 86 skills in rcode, organized by category: 23 agent skills, 38 action skills, 25 core skills, plus 2 shared modules.
+All 87 skills in rcode, organized by category: 23 agent skills, 38 action skills, 26 core skills, plus 2 shared modules.
 
 ## Agent Skills (23)
 
@@ -88,11 +88,12 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 
 ---
 
-## Core Skills (25)
+## Core Skills (26)
 
 Shared utilities used across agents and workflows.
 
 - `core/rcode-init` — INTERNAL config loader (installs to .rcode/skills/, not .claude/skills/)
+- `core/rcode-lazy` — always-on YAGNI/simplicity lens; prevents bloat before code is written (rcode-trim removes it after)
 - `core/rcode-help` — meta-help on available skills
 - `core/rcode-brainstorming` — structured brainstorming workflow
 - `core/rcode-advanced-elicitation` — advanced requirements elicitation

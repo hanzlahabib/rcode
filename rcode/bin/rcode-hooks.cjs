@@ -662,6 +662,14 @@ const INTENT_TABLE = [
     keywords: ['audit', 'review changes', 'check my diff', 'karpathy', 'too complex', 'complexity', 'code review'],
     command: '/rcode-review --karpathy',
   },
+  // do.md: "Make it simpler, 'be lazy', 'simplest solution', 'yagni', 'over-engineered'" → /rcode-lazy
+  // Generative simplicity lens (before code is written); /rcode-trim removes bloat after.
+  // 'simplify' alone is too broad (overlaps rcode-trim's existing-code territory) — use intent-bearing phrases.
+  {
+    intent: 'lazy',
+    keywords: ['be lazy', 'lazy mode', 'simplest solution', 'yagni', 'over-engineered', 'over-engineering', 'kam code likho'],
+    command: '/rcode-lazy',
+  },
   // do.md: "Walk through a change, 'checkpoint', 'explain this diff', 'human review'" → /rcode-checkpoint-preview
   {
     intent: 'checkpoint',
