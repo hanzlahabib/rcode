@@ -166,6 +166,31 @@ function resolveModelString(agentId) {
 }
 
 /**
+ * Canonical phase-status vocabulary (#897).
+ *
+ * `normalizeStatus()` maps any ROADMAP status marker (✅, "Complete",
+ * "Shipped", "In Progress", …) to one of three canonical tokens:
+ * 'complete' | 'in_progress' | 'planned'. `DONE_STATUSES` is the set every
+ * consumer (milestone-health, /rcode-next, progress) must treat as finished —
+ * kept here as the single source of truth to prevent the vocabulary drift that
+ * let 'complete' phases read as still-open. `STATUS_RANK` orders the tokens so
+ * `state sync` only ever *upgrades* a phase's status and never regresses an
+ * execution-set 'complete' back to 'planned' because a ROADMAP row omitted it.
+ */
+const DONE_STATUSES = new Set(['complete', 'completed', 'verified', 'shipped']);
+const STATUS_RANK = {
+  planned: 0, todo: 0,
+  in_progress: 1, 'in-progress': 1, executing: 1,
+  complete: 2, completed: 2, verified: 2, shipped: 2,
+};
+function normalizeStatus(raw) {
+  const s = String(raw || '').toLowerCase();
+  if (/[✅✓]|\b(complete|completed|done|shipped|verified)\b/.test(s)) return 'complete';
+  if (/\b(in[\s_-]?progress|executing|active|wip)\b/.test(s)) return 'in_progress';
+  return 'planned';
+}
+
+/**
  * Extract REQ-IDs (REQ-FOO, REQ-FOO-BAR) from a ROADMAP requirements list.
  * Phase 12 / #468 — feeds plan.md's `phase_req_ids` field. Returns deduped
  * array in source order. Empty array when no IDs match.
@@ -3058,12 +3083,13 @@ function cmdState(subArgs) {
       parsed.phases_normalized = beforeClean - cleaned.length;
       state.phases = cleaned;
 
-      const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
+      const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
         if (seenNums.has(phaseNum)) return;
         seenNums.add(phaseNum);
         parsed.phases_found += 1;
+        const status = phaseStatus || 'planned';
         // Dedup against id, number, AND name — schema drift between writers means
         // older entries carry .id while newer carry .number. Checking only one
         // field caused duplicate entries (e.g. issue #482-A: phases 10-13 each
@@ -3080,6 +3106,14 @@ function cmdState(subArgs) {
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
+          // Upgrade-only (#897): adopt the ROADMAP status when it is more
+          // advanced than what state already holds, but never regress an
+          // execution-set status (e.g. 'complete') back to 'planned' just
+          // because a ROADMAP row omits the marker.
+          const cur = state.phases[existingIdx].status || 'planned';
+          if ((STATUS_RANK[status] || 0) > (STATUS_RANK[cur] || 0)) {
+            state.phases[existingIdx].status = status;
+          }
         } else {
           // Write both id and number on every new entry so dedup works regardless
           // of which schema future readers expect.
@@ -3088,7 +3122,7 @@ function cmdState(subArgs) {
             number: phaseNum,
             name: phaseName,
             goal: phaseGoal,
-            status: 'planned',
+            status,
             started: null,
             completed: null,
             plan_count: 0,
@@ -3100,10 +3134,18 @@ function cmdState(subArgs) {
       // Format A — pipe tables
       // Phase number: \d+ (not \d{1,3}) — high numbers like 1001 are valid for
       // hot-track parking-lot phases per parking-lot-convention.md.
-      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      // Group 4 captures any cells AFTER the goal cell so a trailing status
+      // column ("| ✅ Complete |") is parsed (#897). Status is read only from
+      // those trailing cells — never the goal prose, which may itself contain
+      // a word like "complete".
+      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|(.*)$/gm;
       let m;
       while ((m = rowRe.exec(roadmap)) !== null) {
-        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
+        const name = m[2].trim();
+        let status = normalizeStatus(m[4] || '');
+        // A trailing ✅/✓ in the name itself also signals completion.
+        if (status === 'planned' && /[✅✓]/.test(name)) status = 'complete';
+        upsertPhase(m[1].trim(), name, m[3].trim(), status);
       }
 
       // Format B — heading style
@@ -3113,7 +3155,12 @@ function cmdState(subArgs) {
         const name = m[2].trim();
         const after = roadmap.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
         const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
-        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '');
+        // Status from an explicit "**Status:** …" line in the block (#897), or a
+        // trailing ✅/✓ on the heading itself (e.g. "## Phase 34 — Name ✅").
+        const statusMatch = after.match(/\*\*Status:?\*\*\s*([^\n]+)/i);
+        let status = normalizeStatus(statusMatch ? statusMatch[1] : '');
+        if (status === 'planned' && /[✅✓]/.test(name)) status = 'complete';
+        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '', status);
       }
     }
 
@@ -6701,11 +6748,12 @@ function cmdMilestoneHealth() {
   const milestone = state.milestone || null;
   const phases = Array.isArray(state.phases) ? state.phases : [];
   // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
-  // 'completed' | 'verified' | 'shipped'. Treat anything not in
-  // {completed, verified, shipped} as open.
-  const doneStatuses = new Set(['completed', 'verified', 'shipped']);
-  const open = phases.filter(p => !doneStatuses.has(p.status));
-  const done = phases.filter(p => doneStatuses.has(p.status));
+  // 'complete' | 'completed' | 'verified' | 'shipped'. DONE_STATUSES (#897) is
+  // the canonical finished-set shared with the sync parser and /rcode-next; it
+  // includes 'complete' (singular), which the disk-derived writer emits and
+  // this counter previously omitted — causing complete phases to read as open.
+  const open = phases.filter(p => !DONE_STATUSES.has(p.status) && !p.completed);
+  const done = phases.filter(p => DONE_STATUSES.has(p.status) || p.completed);
 
   let recommendation = 'healthy';
   if (open.length >= 12) recommendation = 'should-close';
