@@ -12,22 +12,24 @@ triggers:
   - run performance lens
   - run testability lens
   - run all lenses
-  - 15 lens audit
+  - 16 lens audit
+  - yagni lens
+  - over-engineering audit
 not-for:
   - phase audit (use /rcode-audit phase)
   - milestone audit (use /rcode-audit milestone)
   - karpathy audit without lens context (use /rcode-review --karpathy)
-description: Run a structured 15-lens code audit. Picks one lens or all 15 sequentially. Prints findings and ready-to-paste GitHub issue bodies. Never auto-fixes — audit-first.
-argument-hint: "[<1-15> | <lens-name> | all]"
+description: Run a structured 16-lens code audit. Picks one lens or all 16 sequentially. Prints findings and ready-to-paste GitHub issue bodies. Never auto-fixes — audit-first.
+argument-hint: "[<1-16> | <lens-name> | all]"
 allowed-tools: Read, Write, Bash, AskUserQuestion
 ---
 
 ## Overview
 
-15-lens audit entry point. Each lens is an independent inspection angle:
+16-lens audit entry point. Each lens is an independent inspection angle:
 security, performance, testability, extensibility, dep-health, error-recovery,
 state-machine, i18n, documentation, cross-platform, karpathy, sxo,
-observability, naming, coverage.
+observability, naming, coverage, yagni.
 
 Runs the selected lens(es), prints labelled findings, outputs GH issue bodies
 for each lens with findings. Never modifies files — audit-first, fix-second.
@@ -66,5 +68,5 @@ foldable GitHub issue bodies ready to copy-paste or pipe to `gh issue create`.
 **Negative — wrong lens number:**
 ```
 /rcode-lens-audit 99
-→ Error: lens must be 1-15 or a lens name. Run /rcode-lens-audit --help.
+→ Error: lens must be 1-16 or a lens name. Run /rcode-lens-audit --help.
 ```
