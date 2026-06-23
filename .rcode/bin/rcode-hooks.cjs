@@ -932,10 +932,14 @@ function promptRouter() {
       }
     }
 
-    // ── Emit memory-framed advisory ──────────────────────────────────────
+    // ── Emit advisory ────────────────────────────────────────────────────
+    // #907 RC2: lead with the directive ("use X"), not a soft "consider" — a
+    // gentle memory-framed tip loses the skill-selection race to imperative
+    // SessionStart primers (e.g. superpowers' "you MUST invoke"). The memory
+    // rationale stays, but as the fallback note rather than the headline.
     const advisory =
-      `rcode tip: this looks like ${matched.intent} work — consider ${matched.command} so the outcome is captured in .rcode/state.json. ` +
-      `Decisions made outside rcode commands won't persist; run /rcode-memory-update to keep long-term memory consistent.`;
+      `Use ${matched.command} for this ${matched.intent} task — it's the rcode workflow built for it, and it records the outcome in .rcode/state.json. ` +
+      `Prefer it over handling this ad-hoc; if you do proceed manually, run /rcode-memory-update afterward so long-term memory stays consistent.`;
 
     const payload = {
       hookSpecificOutput: {
