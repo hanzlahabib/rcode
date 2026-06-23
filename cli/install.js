@@ -370,7 +370,7 @@ function printInstallHeader(targetVersion) {
     pc.cyan('│') + '   ' + dim('A persistent context-brain for your editor') + '             ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('version  ') + pc.green('v' + v) + '                                          ' + pc.cyan('│'),
-    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzlahabib/rihal-code               ' + pc.cyan('│'),
+    pc.cyan('│') + '   ' + dim('docs     ') + 'github.com/hanzlahabib/rcode               ' + pc.cyan('│'),
     pc.cyan('│') + '   ' + dim('by       ') + 'Hanzla Habib' + '                                    ' + pc.cyan('│'),
     pc.cyan('│') + '                                                           ' + pc.cyan('│'),
     pc.cyan('╰───────────────────────────────────────────────────────────╯'),
@@ -726,7 +726,7 @@ function seedStarterPlanning(target, projectName) {
   // planning artifacts. See issues #670 #671 #676.
   const STUB_BANNER =
     `<!-- INSTALL STUB — overwritten by /rcode-new-project. Delete this file or run\n` +
-    `     /rcode-new-project before committing. See https://github.com/hanzlahabib/rihal-code/issues/670 -->\n\n`;
+    `     /rcode-new-project before committing. See https://github.com/hanzlahabib/rcode/issues/670 -->\n\n`;
 
   fs.writeFileSync(projectPath,
     STUB_BANNER +

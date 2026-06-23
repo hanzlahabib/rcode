@@ -134,7 +134,7 @@ More:
   rcode help         # all commands (grouped)
   rcode dashboard    # view-only Diwan on :7717
 
-Docs: https://github.com/hanzlahabib/rihal-code
+Docs: https://github.com/hanzlahabib/rcode
 `);
 }
 

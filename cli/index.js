@@ -116,7 +116,7 @@ Getting started:
   rcode tiers        # see the Golden Path
   rcode set-profile  # choose model profile (quality | balanced | budget)
 
-Documentation: https://github.com/hanzlahabib/rihal-code
+Documentation: https://github.com/hanzlahabib/rcode
   `.trim());
 }
 
