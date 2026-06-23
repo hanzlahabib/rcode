@@ -13,6 +13,13 @@ A campaign with too few agents underuses parallelism; too many causes merge conf
 - **Maximum: 5.** Above 5 the merge stage becomes painful and TSC regressions compound across simultaneous changes.
 - **Sequential or concurrent waves?** Concurrent only if you have >8 distinct unrelated areas AND the merge bookkeeping is automated. Default is sequential: dispatch wave → merge → dispatch wave.
 
+### Shared coordination doc
+Every wave agent reads `.planning/campaign/SHARED.md` **before starting**, and appends a one-line claim the moment it picks up an area:
+```
+<area> — agent <N> — <status>
+```
+e.g. `crm-pipeline — agent 2 — claimed`. This stops two parallel agents in the same wave from silently grabbing the same area or file domain. The orchestrator seeds the file at wave dispatch; agents only append, never rewrite. Statuses progress `claimed` → `working` → `done` (or `skipped: <reason>`). If an agent finds its target area already claimed, it stops and reports back instead of duplicating work.
+
 ### Wave scope rules
 Each agent in a wave must:
 - Own a **distinct audit area** (no two agents touching the same file domain).
@@ -45,6 +52,20 @@ For each backlog item, score before assigning to a wave:
 - Target: 10-15 min per wave.
 - Past 25 min: peek at all panes, identify stuck agents, decide kill-or-wait.
 - Hard stop: 45 min. If a wave hasn't produced commits in 45 min, something is wrong — abort and re-dispatch.
+
+### Log cost per wave
+After each wave dispatch, append a one-line cost/agent-count note to `.planning/campaign/STATE.md` so the running campaign total stays visible (and the cost ceiling in `orchestrator-rhythm.md` can be checked against it):
+```
+wave 3: 4 agents dispatched, ~12 min target — running total: 11 agent-runs
+```
+
+### Optional reviewer agent
+For waves that touch **overlapping areas**, or campaigns running **more than 3 waves**, add one reviewer agent that runs *after* the wave's coders finish but *before* the merge step. The reviewer:
+- Reads all branch diffs for the wave (`git diff campaign-integration..<branch>` per branch).
+- Flags conflicts, scope drift, and duplicated work across the branches.
+- Reports to `.planning/campaign/STATE.md` (or a `REVIEW-wave-<N>.md`) — it does NOT merge.
+
+Keep it **optional**. For small bounded work (3-4 distinct, non-overlapping areas), the flat fan-out stays the default — a reviewer agent there is pure overhead. Add it only when the conflict surface or campaign length justifies the extra agent-run.
 
 ## Examples
 

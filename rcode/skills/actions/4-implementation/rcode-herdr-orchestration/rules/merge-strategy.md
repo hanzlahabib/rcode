@@ -27,6 +27,23 @@ fi
 ```
 **Never compound regressions across waves.**
 
+### Per-agent verification gate (beyond compile)
+A passing TSC count proves the tree compiles — it does NOT prove the agent did the work it claimed. Before merging a branch, verify **inside the worktree**:
+
+1. **Task/audit doc exists and claims the work.** The agent's `.planning/audits/AUDIT-<area>.md` (or task doc) must exist and describe what it changed. No doc → no merge.
+2. **`pnpm test` (or the project test command) passes for the affected area.** Run the scoped suite, not just the type-checker.
+3. **Lint is clean or unchanged.** Run the project linter; a new lint regression blocks the merge the same way a TSC regression does.
+4. **The diff is non-trivial and on-topic.** `git diff campaign-integration..<branch> --stat` — an empty diff, a whitespace-only diff, or edits outside the agent's area mean the agent didn't actually do the work. Reject and re-dispatch.
+
+Only after all four pass does the branch enter the smallest-first merge order.
+
+### Resolvable provenance
+A wave is NOT "verified" until each claimed change has an **openable evidence reference** — a passing test name you can run, a diff hunk you can read, a real `file:line` you can open. A self-declared boolean (`verified: true`, `confidence: 0.94`) is not provenance; it's a claim about provenance.
+
+**If provenance can't resolve, the gate FAILS** — treat the change as unverified and block the merge.
+
+Failure mode to watch for: a verifier that stamps `"verified / 94% confidence"` while its citation layer actually renders `[object Object]` has verified *nothing*. The boolean looks green; the evidence underneath is broken. Always click through to the citation — if the reference doesn't open to the thing it claims, the verification is void regardless of the confidence number.
+
 ### Conflict resolution (delegates to herdr-orchestration)
 - Content conflicts: read both sides, keep the **more-complete superset side**, remove markers, syntax-check, stage, commit. (See herdr-orchestration rules.)
 - AA conflicts (add/add): peek both versions; if nearly identical, keep the canonical owner's version. The "owner" is the branch whose audit doc claimed the feature.

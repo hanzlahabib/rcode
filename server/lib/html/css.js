@@ -770,6 +770,46 @@ section .body {
 }
 .task-detail-row strong { color: var(--text-muted); font-weight: 500; min-width: 64px; flex-shrink: 0; }
 .task-detail-cmds { margin-top: var(--space-3); }
+/* ── Per-task actions + result (#905) ───────────────────────────── */
+.task-actions {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+.task-actions-title {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+.task-actions-list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.task-action-step {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.task-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elev-2);
+  border-left: 2px solid var(--accent-green);
+  border-radius: var(--radius-4);
+}
+.task-outcome-label {
+  color: var(--accent-green);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.task-outcome-text { color: var(--text-secondary); line-height: 1.45; }
 .task-expand-icon {
   font-size: 8px;
   color: var(--text-muted);

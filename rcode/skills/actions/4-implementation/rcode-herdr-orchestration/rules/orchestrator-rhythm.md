@@ -56,6 +56,9 @@ If the user picks (c) or skips: NEVER claim "Scheduling 20-min wakeup" in chat �
 | Phase 3 (draining last waves) | 270s | Sub-agents finishing close to each other; don't miss the last |
 | Idle (waiting on stuck pane) | 1200s | Sub-agent stuck — give it room or surface it |
 
+### Cost ceiling — estimate before dispatch
+Before dispatching a wave, the orchestrator estimates `agents × wave-duration` (and, across the campaign, the running sum of all waves) as a rough cost proxy. If a planned campaign exceeds a ceiling — by default **~20 agent-waves** or any explicit token/budget cap the user gave — the orchestrator STOPS and asks the user to confirm before continuing rather than burning budget silently. A 17-wave × 4-agent campaign is ~68 agent-runs; surface that number up front so the user can scope it down.
+
 ### Stop conditions
 The heartbeat should stop ONLY when ALL three are true:
 - Every herdr pane is `idle` or `done`
@@ -95,6 +98,12 @@ If the orchestrator hits auto-compact mid-campaign, the first turn after must:
 4. Resume from Phase 2 of the workflow. Do not redispatch waves that are already in flight.
 
 ## Anti-Patterns
+
+### Pane status is text-scraping — trust it loosely
+
+**Problem**: `agent_status` (`working`/`blocked`/`idle`) is *inferred from the pane's visible text*, not a real process signal. A stuck agent — frozen mid-output, hung on a network call, or wedged in a loop — leaves its last tokens on screen and can read `working` indefinitely. A green `working` is not proof of progress.
+**Rule (timeout heuristic, now mandatory)**: if a pane reads `working` for **25 min straight**, `herdr pane read <id>` and inspect the actual output. If there's no new progress since the last peek (no new commit, same last line), `C-c` the pane and re-dispatch the item in the next wave. Do not wait out a silently-dead agent on the strength of its status string.
+**Optional reinforcement**: have each agent emit a heartbeat marker line periodically (e.g. `echo "[hb] wave-3 still alive $(date -u +%T)"`); then "no new `[hb]` line in N min" is a far more reliable stuck-signal than the scraped status.
 
 ### Polling every 60s
 

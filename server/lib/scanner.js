@@ -81,6 +81,23 @@ function parseYamlList(text, key) {
 }
 
 /**
+ * Parse a SPRINT.md <action> block into an ordered list of action steps.
+ * Action blocks are numbered ("1. …\n2. …"); each step may span several lines.
+ * Whitespace within a step is collapsed so each renders as one readable line.
+ * Falls back to non-empty lines when the block is not numbered. Returns [].
+ */
+function parseActionSteps(raw) {
+  if (!raw) return [];
+  const t = raw.trim();
+  if (!t) return [];
+  const matches = [...t.matchAll(/(?:^|\n)\s*\d+\.\s+([\s\S]*?)(?=\n\s*\d+\.\s|$)/g)];
+  if (matches.length) {
+    return matches.map(m => m[1].replace(/\s+/g, ' ').trim()).filter(Boolean);
+  }
+  return t.split('\n').map(l => l.replace(/^[-*]\s+/, '').trim()).filter(Boolean);
+}
+
+/**
  * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
  * which is the committed source of truth. state.json sprint/story records are
  * often incomplete (planner agents write SPRINT.md files without registering
@@ -147,6 +164,14 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
         };
         if (ov[story.id]) story.status = ov[story.id].status;
         if (acM && acM[1].trim()) story.acceptance = acM[1].trim();
+        // Per-task execution transparency (#905): the ordered <action> steps
+        // (what the task does) + the <done> outcome (the result). Read-only —
+        // parsed from the same SPRINT.md text already loaded above.
+        const actionM = tm[2].match(/<action>\s*([\s\S]*?)\s*<\/action>/);
+        const doneM   = tm[2].match(/<done>\s*([\s\S]*?)\s*<\/done>/);
+        const steps   = actionM ? parseActionSteps(actionM[1]) : [];
+        if (steps.length) story.actions = steps;
+        if (doneM && doneM[1].trim()) story.outcome = doneM[1].replace(/\s+/g, ' ').trim();
         stories.push(story);
       }
       // Fallback for pre-<task> SPRINT.md format (phases 20-30 era):
