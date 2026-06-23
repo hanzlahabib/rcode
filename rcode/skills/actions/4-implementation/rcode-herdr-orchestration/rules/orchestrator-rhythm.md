@@ -99,6 +99,12 @@ If the orchestrator hits auto-compact mid-campaign, the first turn after must:
 
 ## Anti-Patterns
 
+### Pane status is text-scraping — trust it loosely
+
+**Problem**: `agent_status` (`working`/`blocked`/`idle`) is *inferred from the pane's visible text*, not a real process signal. A stuck agent — frozen mid-output, hung on a network call, or wedged in a loop — leaves its last tokens on screen and can read `working` indefinitely. A green `working` is not proof of progress.
+**Rule (timeout heuristic, now mandatory)**: if a pane reads `working` for **25 min straight**, `herdr pane read <id>` and inspect the actual output. If there's no new progress since the last peek (no new commit, same last line), `C-c` the pane and re-dispatch the item in the next wave. Do not wait out a silently-dead agent on the strength of its status string.
+**Optional reinforcement**: have each agent emit a heartbeat marker line periodically (e.g. `echo "[hb] wave-3 still alive $(date -u +%T)"`); then "no new `[hb]` line in N min" is a far more reliable stuck-signal than the scraped status.
+
 ### Polling every 60s
 
 **Problem**: Wakeup interval shorter than 270s burns the Anthropic prompt cache repeatedly without any real work happening (sub-agents need minutes between commits).
