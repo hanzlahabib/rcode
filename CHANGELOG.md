@@ -3,6 +3,25 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.3.3 (2026-06-23) — Cross-IDE accuracy + intent-router reach
+
+Marketing-readiness pass: make rcode actually work and read truthfully across
+non-Claude IDEs, and stop the intent-router losing planning/architecture prompts.
+
+### Added
+- Per-task **actions + results** in the Diwan dashboard (GOAP-style execution transparency) (#905)
+- Intent-router keyword coverage for `integration`/`integrate`, `please plan`, `scope this`, `design this`, `architect this` so planning/architecture prompts route to rcode (#907)
+
+### Changed
+- Intent-router advisory is now **directive** ("use X for this task"), not a soft "consider" tip, so it competes with imperative SessionStart primers (#907)
+- Installer **warns** when `--ide codex`/`antigravity` is selected without `--global` (the slash-router hook only wires on a global install) (#908)
+- Docs (`install.md`, `getting-started.md`, README): correct the Codex/Grok slash-command story (UserPromptSubmit hook router, not "paste manually"); replace the false "Gemini" IDE-support claim with Codex; fix legacy `rihal-code` repo URLs (#909)
+- herdr-orchestration skill: shared mid-wave doc, verify-beyond-TSC gate, wave cost budget, reviewer agent, blast-radius safety, retro (#898–904, #906)
+
+### Fixed
+- README hero images now committed (`brand/`) — were 404ing on GitHub (#909)
+
+---
 ## v4.3.2 (2026-06-13) — Dashboard refactor follow-ups
 
 Patch release. No behavior changes; internal cleanup from a code-review pass.
