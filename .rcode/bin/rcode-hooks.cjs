@@ -662,6 +662,14 @@ const INTENT_TABLE = [
     keywords: ['audit', 'review changes', 'check my diff', 'karpathy', 'too complex', 'complexity', 'code review'],
     command: '/rcode-review --karpathy',
   },
+  // do.md: "Make it simpler, 'be lazy', 'simplest solution', 'yagni', 'over-engineered'" → /rcode-lazy
+  // Generative simplicity lens (before code is written); /rcode-trim removes bloat after.
+  // 'simplify' alone is too broad (overlaps rcode-trim's existing-code territory) — use intent-bearing phrases.
+  {
+    intent: 'lazy',
+    keywords: ['be lazy', 'lazy mode', 'simplest solution', 'yagni', 'over-engineered', 'over-engineering', 'kam code likho'],
+    command: '/rcode-lazy',
+  },
   // do.md: "Walk through a change, 'checkpoint', 'explain this diff', 'human review'" → /rcode-checkpoint-preview
   {
     intent: 'checkpoint',
@@ -685,13 +693,19 @@ const INTENT_TABLE = [
   // do.md: "Scope unclear, 'which one', 'better UX', 'how should X look'" → /rcode-discuss-phase
   {
     intent: 'discuss',
-    keywords: ['which one', 'better ux', 'how should', 'still have confusion', 'conflicting', 'discuss the scope'],
+    keywords: ['which one', 'better ux', 'how should', 'still have confusion', 'conflicting', 'discuss the scope', 'design this', 'architect this'],
     command: '/rcode-discuss-phase',
   },
-  // do.md: "A complex task: refactoring, migration, multi-file architecture, system redesign" → /rcode-add-phase
+  // do.md: "A complex task: refactoring, migration, multi-file architecture, system redesign,
+  // integrating a new system/service" → /rcode-add-phase
+  // 'integration'/'integrate' catch "let's do X integration", "integrate with Y" — feature-sized
+  // architectural work that belongs in a phase, not an ad-hoc edit (#907).
+  // Known mild false-positive: "run the integration tests" also matches → a harmless soft
+  // nudge toward /rcode-add-phase. Accepted: catching real integration work outweighs it,
+  // and no clean substring separates "X integration" from "integration test".
   {
     intent: 'add-phase',
-    keywords: ['refactor', 'migration', 'multi-file', 'system redesign', 'multi file', 'large refactor', 'architectural'],
+    keywords: ['refactor', 'migration', 'multi-file', 'system redesign', 'multi file', 'large refactor', 'architectural', 'integration', 'integrate'],
     command: '/rcode-add-phase',
   },
   // do.md: "'Sprint planning', 'plan the sprint', 'next sprint'" → /rcode-sprint-planning
@@ -709,7 +723,7 @@ const INTENT_TABLE = [
   // do.md: "Planning a specific phase, 'plan phase N'" → /rcode-plan
   {
     intent: 'plan',
-    keywords: ["let's plan", 'plan phase', 'plan this', 'let me plan', 'planning phase', 'create a plan'],
+    keywords: ["let's plan", 'plan phase', 'plan this', 'let me plan', 'planning phase', 'create a plan', 'please plan', 'plan and think', 'scope this', 'scope the feature'],
     command: '/rcode-plan',
   },
   // do.md: "'Create milestones', 'plan milestones', 'create roadmap'" → /rcode-new-milestone
