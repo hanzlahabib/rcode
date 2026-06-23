@@ -118,6 +118,8 @@ Full Phase 0-3 protocol, integration-branch rules, wave cadence, and anti-patter
 in **`references.md`** (sibling file). Key constraints:
 
 - Maintain one `campaign-integration` branch; sub-agents fork from it, never master.
+- Each wave agent reads `.planning/campaign/SHARED.md` first and appends a one-line claim
+  (`area — agent N — status`) so same-wave agents don't duplicate work.
 - Wave size: 3-5 agents, 10-15 min per wave. ScheduleWakeup ends EVERY turn.
 - Phase 3: show user the full diff + ask explicitly how to land (PR / merge / squash / leave).
 - Never push to origin master without an explicit yes — per campaign, not per session.
