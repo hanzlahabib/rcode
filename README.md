@@ -2,11 +2,15 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-<p align="center"><img src="brand/hero-receipt.png" alt="rcode benchmark output: 497 tests, 0 failing · 45 agents, 116 commands · 1 runtime dependency" width="760"></p>
+<p align="center"><img src="brand/dashboard-overview.png" alt="rcode Diwan dashboard — the live project cockpit: an 83%-complete progress donut, the current phase executing, in-progress tasks with step-by-step progress, milestone outlook, recent decisions, and a progress timeline" width="860"></p>
 
-### 497 tests. Zero failing. Read the script.
+### An engineering org in a folder — and you can watch it work.
 
-*An engineering org in a folder — and every number below is reproducible with one command (`node benchmarks/facts.cjs`). Marketing rounds up; this repo ships the receipts.*
+*A roster of specialist agents, phase-driven delivery, and a persistent Memory Bank — running as plain files your IDE reads. Every number is reproducible with one command (`node benchmarks/facts.cjs`); marketing rounds up, this repo ships the receipts: **497 tests, 0 failing · 45 agents · 116 commands · 1 runtime dependency**.*
+
+<p align="center"><img src="brand/dashboard-team.png" alt="rcode agent roster grouped by function — Leadership (Sadiq / strategy, Waleed / CTO, Ahmed / delivery, Nasser / eng manager), Engineering (Omar, Haitham / frontend, Yousef / backend, Zayd / ML, Khalid / DevOps), Product (Hussain / PM, Mariam / marketing), each card showing its role and tools" width="860"></p>
+
+<p align="center"><sub>The <a href="docs/install.md">Diwan dashboard</a> (view-only, <code>node server/dashboard.js</code>) — your project's phases, sprints, agents, decisions, and live orchestration, read straight from the files in <code>.rcode/</code>.</sub></p>
 
 > **A curated composition of the best AI-development practices — shipped as files.** Surgical-change discipline, parallel-agent orchestration, persistent Memory Bank patterns, phase-driven planning — packaged as one workflow for Claude Code power users. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
 
@@ -122,6 +126,8 @@ The point isn't "I beat LangChain." The point is **you don't need LangChain for 
 > ```bash
 > node benchmarks/facts.cjs
 > ```
+
+<p align="center"><img src="brand/hero-receipt.png" alt="benchmarks/facts.cjs output — 497 tests, 0 failing · 45 agents · 116 commands · 1 runtime dependency, computed from files on disk" width="720"></p>
 
 | Metric | Value | Why it's not a vanity number |
 |---|---|---|
