@@ -59,6 +59,14 @@ After each wave dispatch, append a one-line cost/agent-count note to `.planning/
 wave 3: 4 agents dispatched, ~12 min target — running total: 11 agent-runs
 ```
 
+### Optional reviewer agent
+For waves that touch **overlapping areas**, or campaigns running **more than 3 waves**, add one reviewer agent that runs *after* the wave's coders finish but *before* the merge step. The reviewer:
+- Reads all branch diffs for the wave (`git diff campaign-integration..<branch>` per branch).
+- Flags conflicts, scope drift, and duplicated work across the branches.
+- Reports to `.planning/campaign/STATE.md` (or a `REVIEW-wave-<N>.md`) — it does NOT merge.
+
+Keep it **optional**. For small bounded work (3-4 distinct, non-overlapping areas), the flat fan-out stays the default — a reviewer agent there is pure overhead. Add it only when the conflict surface or campaign length justifies the extra agent-run.
+
 ## Examples
 
 ### Good wave-1 composition (from real session)
