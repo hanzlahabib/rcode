@@ -74,6 +74,16 @@ independent agents.
 
 ---
 
+## Safety — blast radius of skip-permissions agents
+
+Every orchestrated agent runs `cld` (= `claude --dangerously-skip-permissions`). There is **no human gate** on local destructive commands — an agent can `rm`, `git reset --hard`, overwrite files, or run any shell command without asking. So:
+
+- **Scope each agent prompt to its own worktree + area only.** State the worktree path and branch explicitly, and tell the agent to stay inside it.
+- **Worktree isolation is the only containment.** With permissions skipped, a per-agent git worktree is the single boundary that keeps one agent's mistakes from touching another's work or the main tree.
+- **Never point an autonomous agent at a shared or important tree** (your main checkout, a production clone, anything you can't afford to lose). Always a throwaway worktree.
+
+---
+
 ## herdr CLI reference
 
 ```bash
