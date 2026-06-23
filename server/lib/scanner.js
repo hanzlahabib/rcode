@@ -81,6 +81,23 @@ function parseYamlList(text, key) {
 }
 
 /**
+ * Parse a SPRINT.md <action> block into an ordered list of action steps.
+ * Action blocks are numbered ("1. …\n2. …"); each step may span several lines.
+ * Whitespace within a step is collapsed so each renders as one readable line.
+ * Falls back to non-empty lines when the block is not numbered. Returns [].
+ */
+function parseActionSteps(raw) {
+  if (!raw) return [];
+  const t = raw.trim();
+  if (!t) return [];
+  const matches = [...t.matchAll(/(?:^|\n)\s*\d+\.\s+([\s\S]*?)(?=\n\s*\d+\.\s|$)/g)];
+  if (matches.length) {
+    return matches.map(m => m[1].replace(/\s+/g, ' ').trim()).filter(Boolean);
+  }
+  return t.split('\n').map(l => l.replace(/^[-*]\s+/, '').trim()).filter(Boolean);
+}
+
+/**
  * Derive the phase → sprint → story tree from the .planning/phases/ filesystem,
  * which is the committed source of truth. state.json sprint/story records are
  * often incomplete (planner agents write SPRINT.md files without registering
@@ -93,9 +110,10 @@ function parseYamlList(text, key) {
  * @param {function} [listCached] per-scan dir lister from makeDirLister()
  * @returns {Array|null}         phases with a populated `sprints` array each
  */
-function buildPhaseTree(projectDir, rawPhases, listCached) {
+function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
   if (!Array.isArray(rawPhases)) return null;
   const list = listCached || makeDirLister();
+  const ov = (overrides && typeof overrides === 'object' && !Array.isArray(overrides)) ? overrides : {};
   const phasesDir = path.join(projectDir, '.planning', 'phases');
   const allEntries = list(phasesDir);
   if (allEntries === null) return rawPhases;
@@ -144,7 +162,16 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
           title:  titleM ? titleM[1].trim() : `Task ${stories.length + 1}`,
           status: phaseComplete ? 'done' : 'todo',
         };
+        if (ov[story.id]) story.status = ov[story.id].status;
         if (acM && acM[1].trim()) story.acceptance = acM[1].trim();
+        // Per-task execution transparency (#905): the ordered <action> steps
+        // (what the task does) + the <done> outcome (the result). Read-only —
+        // parsed from the same SPRINT.md text already loaded above.
+        const actionM = tm[2].match(/<action>\s*([\s\S]*?)\s*<\/action>/);
+        const doneM   = tm[2].match(/<done>\s*([\s\S]*?)\s*<\/done>/);
+        const steps   = actionM ? parseActionSteps(actionM[1]) : [];
+        if (steps.length) story.actions = steps;
+        if (doneM && doneM[1].trim()) story.outcome = doneM[1].replace(/\s+/g, ' ').trim();
         stories.push(story);
       }
       // Fallback for pre-<task> SPRINT.md format (phases 20-30 era):
@@ -153,10 +180,11 @@ function buildPhaseTree(projectDir, rawPhases, listCached) {
         const headRe = /^#{2,4}\s+(?:Story|Task)\s+([^\s—–-]+)\s*[—–-]\s*(.+?)\s*$/gm;
         let hm;
         while ((hm = headRe.exec(text))) {
+          const hId = hm[1].trim();
           stories.push({
-            id:     hm[1].trim(),
+            id:     hId,
             title:  hm[2].trim(),
-            status: phaseComplete ? 'done' : 'todo',
+            status: ov[hId] ? ov[hId].status : (phaseComplete ? 'done' : 'todo'),
           });
         }
       }
@@ -566,7 +594,14 @@ function scanStateUncached(rcodeDir) {
     } catch { /* ignore */ }
   }
 
-  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases, listCached);
+  let boardOverrides = {};
+  try {
+    const ovRaw = fs.readFileSync(path.join(rcodeDir, 'board-overrides.json'), 'utf8');
+    const ovParsed = JSON.parse(ovRaw);
+    if (ovParsed && typeof ovParsed === 'object' && !Array.isArray(ovParsed)) boardOverrides = ovParsed;
+  } catch { boardOverrides = {}; }
+
+  state.phaseTree = buildPhaseTree(projectDir, state.raw && state.raw.phases, listCached, boardOverrides);
 
   // Derive the redesign dashboard contract (DATA-CONTRACT.md). Attached to the
   // scan so GET /api/state returns the exact shape and client.js seeds it into
@@ -607,6 +642,7 @@ function scanSignature(rcodeDir, projectDir) {
   statOne(path.join(rcodeDir, 'config.yaml'));
   statOne(path.join(rcodeDir, 'HANDOFF.json'));
   statOne(path.join(rcodeDir, 'context', 'active.md'));
+  statOne(path.join(rcodeDir, 'board-overrides.json'));
   (function walk(dir, depth) {
     if (depth > SIG_WALK_MAX_DEPTH) return;
     for (const e of listDir(dir)) {

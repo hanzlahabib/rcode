@@ -361,3 +361,32 @@ gates that capture a reason and record it against the run/phase for later review
 **Grounding:** `server/lib/scanner.js` extended to expose phase `depends_on` for the
 graph; rejection capture posts to the orchestrator service (:7718), reusing the
 phase-29 auth/bash-guard boundary — `dashboard.js` stays view-only.
+
+---
+
+## Phase 38 — Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)
+
+**Goal:** Make rcode proactive. Add an opt-in `UserPromptSubmit` hook — a deterministic,
+no-LLM mirror of the routing table in `rcode/workflows/do.md` — that keyword-matches the
+user's prompt to the right rcode command and emits a one-line advisory (via the
+`additionalContext` path already proven by `cli/rcode-slash-router.cjs`) framed around
+long-term memory consistency. Today rcode is purely pull-based: nothing fires unless the
+user types `/rcode-*`, so planning/exploration/audit work never lands in `.rcode/state.json`
+or `.planning/`. This closes that gap. Covers GitHub issue #892.
+
+**Status:** Planned
+
+**Constraints:**
+- Runs on every prompt → must be near-zero cost, dependency-free Node stdlib, never block (exit 0 on any error — same safety contract as the existing slash router)
+- Keyword table derives from `do.md` (single source of truth — no silent fork)
+- Installed only via opt-in `/rcode-enable-hooks`; wired into the Claude install path in `cli/install.js` (currently hook-free)
+
+**Plans:**
+- _TBD — generate via /rcode-plan 38_
+
+**Acceptance:**
+- A new `prompt-router` subcommand in `rcode/bin/rcode-hooks.cjs` emits a correct, memory-framed nudge for planning/explore/audit-shaped prompts (e.g. "explore this feature" → `/rcode-explore`/`/rcode-brainstorm`; "audit X" → `/rcode-audit`/`/rcode-lens-audit`; "let's plan X" → `/rcode-plan` + note on `state.json`)
+- Emits nothing (exit 0) on non-matching prompts and on any internal error
+- A `.rcode/config.yaml` toggle controls aggressiveness (`every | once-per-intent | when-stale | off`); default `every`, `off` fully silences
+- `UserPromptSubmit` matcher added to `rcode/templates/settings-hooks.json` and wired for Claude Code via `/rcode-enable-hooks`
+- Tests cover: match, no-match, error-swallow, per-session dedupe, and the config toggle

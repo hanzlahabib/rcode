@@ -158,6 +158,9 @@ const ConfigSchema = z.object({
   git: z.object({
     branching_strategy: z.string().optional(),
   }).optional(),
+  // Declared for validation only — default ('every') lives in the hook (rcode-hooks.cjs prompt-router).
+  // Install does NOT write this key; the feature stays dormant until hooks are opted into via /rcode-enable-hooks.
+  prompt_nudge: z.enum(['every', 'once-per-intent', 'when-stale', 'off']).optional(),
 }).passthrough();
 
 /**
@@ -2111,6 +2114,13 @@ async function installInner(opts) {
   // Codex installs to .claude/ and AGENTS.md; lifecycle via rcode workflow bridge.
   if (opts.ides.includes('codex')) {
     console.log('  ' + dim('Codex → installing to .claude/ paths + AGENTS.md. Use `rcode workflow show <name>` to feed workflows to Codex.'));
+    // #908: /rcode-* slash commands in Codex are wired via the UserPromptSubmit
+    // hook in ~/.codex/hooks.json, which installNativeHomeSlashCommands() only
+    // writes on a GLOBAL install. A project-local install silently leaves Codex
+    // with no working slash commands — warn instead of implying success.
+    if (!opts.global) {
+      console.log('  ' + warn('Codex /rcode-* slash commands need a GLOBAL install — re-run with `--global` to wire the ~/.codex/hooks.json router. This project-local install does NOT enable them.'));
+    }
   }
 
   // Gemini IDE support deferred
@@ -2128,6 +2138,10 @@ async function installInner(opts) {
   if (opts.ides.includes('antigravity')) {
     console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rcode/{agents,commands}/.'));
     console.log('  ' + dim('If Antigravity expects a different path, adjust .rcode/config.yaml and re-run.'));
+    // #908: same as Codex — the UserPrompt hook is only wired on a global install.
+    if (!opts.global) {
+      console.log('  ' + warn('Antigravity /rcode-* slash commands need a GLOBAL install — re-run with `--global`. This project-local install does NOT wire the hook.'));
+    }
   }
 
   // Validate requested modules exist

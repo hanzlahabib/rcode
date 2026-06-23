@@ -179,6 +179,19 @@ export function fetchRejections() {
 }
 
 /**
+ * POST /api/task-status — persist a kanban column move for storyId.
+ * status is the target column id (todo | in_progress | blocked | done).
+ */
+export function setTaskStatus(storyId, status) {
+  const tok = orchToken();
+  return fetch(ORCH_HTTP + '/api/task-status', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storyId, status }),
+  }).then(r => r.json()).catch(() => ({}));
+}
+
+/**
  * POST /api/clean-sessions — remove ended sessions.
  * olderThanDays = 0 removes all ended sessions; > 0 keeps recent ones.
  */

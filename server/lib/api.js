@@ -120,7 +120,7 @@ function handleApiFiles(req, res, projectRoot) {
   res.end(JSON.stringify(groups));
 }
 
-function handleApiFile(req, res, projectRoot) {
+function handleApiFile(req, res, projectRoot, packageRoot) {
   const url = req.url || '';
   const params = new URLSearchParams(url.split('?')[1] || '');
   const relPath = params.get('path') || '';
@@ -128,24 +128,33 @@ function handleApiFile(req, res, projectRoot) {
     res.writeHead(400); res.end('Missing path parameter'); return;
   }
   // Fix #321: decode URL-encoded characters before resolving
-  const decoded = decodeURIComponent(relPath);
-  const resolved = path.resolve(projectRoot, decoded.replace(/^\//, ''));
-  if (!resolved.startsWith(projectRoot + path.sep) && resolved !== projectRoot) {
-    res.writeHead(403); res.end('Forbidden'); return;
-  }
-  // Dereference symlinks so a symlink outside projectRoot cannot bypass the guard
-  let realResolved;
-  try { realResolved = fs.realpathSync(resolved); }
-  catch { res.writeHead(404); res.end('File not found'); return; }
-  if (!realResolved.startsWith(projectRoot + path.sep) && realResolved !== projectRoot) {
-    res.writeHead(403); res.end('Forbidden'); return;
-  }
-  if (!resolved.endsWith('.md')) {
+  const decoded = decodeURIComponent(relPath).replace(/^\//, '');
+
+  if (!decoded.endsWith('.md')) {
     res.writeHead(403); res.end('Forbidden: only .md files'); return;
   }
-  let content;
-  try { content = fs.readFileSync(resolved, 'utf8'); }
-  catch { res.writeHead(404); res.end('File not found'); return; }
+
+  // Helper: try to read `decoded` relative to `root`; returns content string or null.
+  function tryRead(root) {
+    const resolved = path.resolve(root, decoded);
+    if (!resolved.startsWith(root + path.sep) && resolved !== root) return null;
+    let real;
+    try { real = fs.realpathSync(resolved); } catch { return null; }
+    if (!real.startsWith(root + path.sep) && real !== root) return null;
+    try { return fs.readFileSync(resolved, 'utf8'); } catch { return null; }
+  }
+
+  // For rcode/agents/ paths fall back to the package install dir when the file
+  // doesn't exist under the project root (rcode installed as a dependency).
+  const isAgentPath = decoded.startsWith('rcode/agents/');
+  let content = tryRead(projectRoot);
+  if (content === null && isAgentPath && packageRoot && packageRoot !== projectRoot) {
+    content = tryRead(packageRoot);
+  }
+
+  if (content === null) {
+    res.writeHead(404); res.end('File not found'); return;
+  }
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end(content);
 }
@@ -242,11 +251,17 @@ function parseAgentFrontmatter(raw) {
 // returns one small frontmatter summary per agent .md file. Full prompt
 // bodies are NOT included; the client fetches those lazily per agent via the
 // existing /api/file handler when a card is opened.
-function handleApiAgents(req, res, projectRoot) {
-  const agentsDir = path.join(projectRoot, 'rcode', 'agents');
+function handleApiAgents(req, res, projectRoot, packageRoot) {
+  // Prefer the project's own rcode/agents/ dir; fall back to the package install
+  // dir so the drawer works in any project where rcode is an npm dependency.
+  let agentsDir = path.join(projectRoot, 'rcode', 'agents');
   let entries = [];
-  try { entries = fs.readdirSync(agentsDir, { withFileTypes: true }); }
-  catch { /* no agents dir — return an empty roster */ }
+  try { entries = fs.readdirSync(agentsDir, { withFileTypes: true }); } catch { /* ignore */ }
+  const mdEntries = entries.filter(e => e.isFile() && e.name.endsWith('.md'));
+  if (mdEntries.length === 0 && packageRoot && packageRoot !== projectRoot) {
+    agentsDir = path.join(packageRoot, 'rcode', 'agents');
+    try { entries = fs.readdirSync(agentsDir, { withFileTypes: true }); } catch { entries = []; }
+  }
   const agents = [];
   for (const e of entries) {
     if (!e.isFile() || !e.name.endsWith('.md')) continue;

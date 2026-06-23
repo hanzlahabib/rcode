@@ -10,7 +10,7 @@
 import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
 import { allTasks, currentPhaseName } from '../util.js';
-import { stopStory, openOrchPanel } from '../orchestrator.js';
+import { stopStory, openOrchPanel, openTermPanel, setTaskStatus } from '../orchestrator.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { showToast } from '../components/shared.js';
 
@@ -56,6 +56,12 @@ function KanbanCard({ task, col, live, orchDown, onDragStart, onDragEnd }) {
     e.stopPropagation();
     stopStory(sid);
   }
+  // Live session → full interactive xterm terminal (you can type to the agent).
+  function handleTerm(e) {
+    e.stopPropagation();
+    openTermPanel(sid, sid);
+  }
+  // Ended session → lightweight read-only log view (no live TUI to mangle).
   function handleView(e) {
     e.stopPropagation();
     openOrchPanel(sid);
@@ -92,7 +98,7 @@ function KanbanCard({ task, col, live, orchDown, onDragStart, onDragEnd }) {
               onClick=${handleRun}>▶ Run</button>
           ` : isRunning ? html`
             <button class="kanban-stop-btn" onClick=${handleStop}>■ Stop</button>
-            <button class="kanban-view-btn" onClick=${handleView}>↗ View</button>
+            <button class="kanban-view-btn" onClick=${handleTerm}>↗ Terminal</button>
           ` : html`
             <button class="kanban-view-btn" onClick=${handleView}>↗ Logs</button>
           `}
@@ -188,9 +194,32 @@ export function KanbanView() {
 
   function handleDrop(e, colId) {
     if (!dragging || !dragging.id) return;
-    setVisualMoves(prev => ({ ...prev, [dragging.id]: colId }));
+    const taskId = dragging.id;
+    const prevCol = effCol(dragging, runningByStory);
+    const isRunning = !!(runningByStory && runningByStory[taskId]);
+
+    // Optimistic visual move
+    setVisualMoves(prev => ({ ...prev, [taskId]: colId }));
+
+    const anchor = document.querySelector('[data-story-id="' + taskId + '"]') || e.currentTarget;
+
+    if (colId === 'in_progress' && (prevCol === 'todo' || prevCol === 'blocked') && !isRunning) {
+      openRunnerPicker(anchor, {
+        kind: 'session', storyId: taskId, cmd: '/rcode-dev-story ' + taskId, title: taskId,
+      });
+      setTaskStatus(taskId, 'in_progress').then(() => {
+        refresh();
+        setVisualMoves(prev => { const n = { ...prev }; delete n[taskId]; return n; });
+      });
+    } else {
+      setTaskStatus(taskId, colId).then(() => {
+        refresh();
+        setVisualMoves(prev => { const n = { ...prev }; delete n[taskId]; return n; });
+      });
+      showToast('Moved to ' + (COLS.find(c => c.id === colId)?.label || colId));
+    }
+
     setDragging(null);
-    showToast('Moved (visual only — not persisted)'); // visual only — not persisted
   }
 
   // ---- Manual refresh ----

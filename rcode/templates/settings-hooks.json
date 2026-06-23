@@ -1,5 +1,5 @@
 {
-  "_comment": "pre-edit hook is currently advisory (logs warning, does not block). Full session-read tracking requires PostToolUse Read hook to write state file. Implemented in follow-up.",
+  "_comment": "pre-edit hook is currently advisory (logs warning, does not block). Full session-read tracking requires PostToolUse Read hook to write state file. Implemented in follow-up. prompt-router (UserPromptSubmit) is advisory — emits additionalContext to nudge toward the right rcode command; never blocks.",
   "hooks": {
     "PreToolUse": [
       {
@@ -67,6 +67,17 @@
           {
             "type": "command",
             "command": "node .rcode/bin/rcode-hooks.cjs cost-track"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs prompt-router"
           }
         ]
       }

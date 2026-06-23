@@ -2,6 +2,12 @@
 
 <div dir="rtl">طريقة رحال</div>
 
+<p align="center"><img src="brand/hero-receipt.png" alt="rcode benchmark output: 497 tests, 0 failing · 45 agents, 116 commands · 1 runtime dependency" width="760"></p>
+
+### 497 tests. Zero failing. Read the script.
+
+*An engineering org in a folder — and every number below is reproducible with one command (`node benchmarks/facts.cjs`). Marketing rounds up; this repo ships the receipts.*
+
 > **A curated composition of the best AI-development practices — shipped as files.** Surgical-change discipline, parallel-agent orchestration, persistent Memory Bank patterns, phase-driven planning — packaged as one workflow for Claude Code power users. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
 
 ```bash
@@ -10,10 +16,10 @@ pnpm dlx @hanzlaa/rcode install
 
 [![npm version](https://img.shields.io/npm/v/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
 [![downloads](https://img.shields.io/npm/dw/@hanzlaa/rcode)](https://www.npmjs.com/package/@hanzlaa/rcode)
-[![CI](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rihal-code/actions/workflows/test.yml)
+[![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.0.0 on npm. 457 automated tests across 63 files, 45 agents, 116 commands, 87 skills. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.3.2 on npm. 497 automated tests (100% green) across 61 files · 45 agents · 116 commands · 129 workflows · 88 skills · **1 runtime dependency**. Every number here is reproducible — run `node benchmarks/facts.cjs`. Actively dogfooded on real projects every week.
 
 ---
 
@@ -31,18 +37,20 @@ That means two things:
 - **The dogfood loop is the test suite.** Every release is run against fresh projects (calories-counter RN, reelspeed services) before publish. Bugs surface as GitHub issues, get fixed, ship.
 - **The tool grows from real friction, not theory.** Half the v3.6.20 fixes came from a single dogfeed session where 3 parallel agents found 50+ real bugs in 4 hours.
 
-If you're a solo dev or small team using Claude Code (or Cursor, Gemini, VS Code), rcode gives you the **scaffolding a 10-person engineering org would have**: code review standards, sprint cadence, decision archives, onboarding context — without hiring the org.
+If you're a solo dev or small team using Claude Code (or Cursor, Codex, VS Code), rcode gives you the **scaffolding a 10-person engineering org would have**: code review standards, sprint cadence, decision archives, onboarding context — without hiring the org.
 
 ---
 
 ## What it actually is
+
+<p align="center"><img src="brand/hero-org-in-folder.png" alt="rcode is an engineering org in a folder: agents, commands, workflows, and skills as plain markdown" width="760"></p>
 
 Three layers, specialised for software delivery:
 
 | Layer | What lives here | Example |
 |-------|-----------------|---------|
 | **Memory** | `.rcode/memory/` — git-tracked markdown, lossless distillates | "We chose Postgres over Mongo because of JSON-B + RLS — see ADR-007" |
-| **Skills** | `rcode/skills/` — 87 phrase-activated playbooks | `rcode-sprint-checker` validates file/symbol refs before execute |
+| **Skills** | `rcode/skills/` — 88 phrase-activated playbooks | `rcode-sprint-checker` validates file/symbol refs before execute |
 | **Workflows** | `rcode/workflows/` — orchestrated multi-step paths | `/rcode-plan` runs research → planner → checker → confirm |
 
 Single agent navigates the structure. No LangChain, no AutoGen, no orchestrator process. Just folders the model can read.
@@ -84,10 +92,10 @@ What you won't get:
 
 I dogfood this hard, so the honest version:
 
-- **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Gemini, VS Code, Antigravity, Windsurf. Bring your own keys.
+- **Not a chatbot wrapper.** Zero opinions about which LLM. Works with Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. Bring your own keys.
 - **Not a multi-agent framework.** No agent-to-agent message bus. One agent reads markdown structure and navigates it.
 - **Not a no-code tool.** You will read markdown files. You will write commit messages. You will type slash commands.
-- **Not finished.** v4 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rihal-code/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
+- **Not finished.** v4 is solid for solo and small-team work. Open issues are tracked at the [issues page](https://github.com/hanzlahabib/rcode/issues) — most P1 bugs get fixed within 48 hours of a dogfeed run.
 - **Not replacing senior engineers.** It gives you their scaffolding (review standards, sprint hygiene, decision archives). You still need judgment for the hard calls.
 
 ---
@@ -100,10 +108,31 @@ I dogfood this hard, so the honest version:
 | **Specialist agents** | 1 generalist | Define in Python | Define in Python | 45 shipped |
 | **Install** | IDE extension | `pip install` + config | `pip install` + code | `pnpm dlx` — one command |
 | **Infrastructure** | Cloud API | Python server | Vector store + indexer | Zero — pure files |
-| **IDE lock-in** | Cursor only | Framework-specific | Framework-specific | Claude / Cursor / Gemini / VS Code / Antigravity / Windsurf |
+| **IDE lock-in** | Cursor only | Framework-specific | Framework-specific | Claude / Cursor / Codex / VS Code / Antigravity / Windsurf |
 | **Auditability** | Chat scrollback | Tracing dashboard | Tracing dashboard | `git log` |
 
 The point isn't "I beat LangChain." The point is **you don't need LangChain for software delivery**. You need a methodology that survives session resets, and a methodology lives in files.
+
+---
+
+## By the numbers
+
+> **Marketing teams round up. This repo ships the script.** Every figure below is computed by [`benchmarks/facts.cjs`](benchmarks/facts.cjs) from files on disk and local CLI timings — no network, no LLM calls, no hand-entered numbers. Clone the repo and run it:
+>
+> ```bash
+> node benchmarks/facts.cjs
+> ```
+
+| Metric | Value | Why it's not a vanity number |
+|---|---|---|
+| **Portable methodology corpus** | **94,481 lines** of markdown | A 10-person eng org's playbooks (agents + commands + workflows + skills + references) — as files you own and grep, not a SaaS you rent. |
+| **Automated tests** | **497**, 100% passing across 61 files | The methodology is *guarded*, not vibes. CI runs them on every push; `node --test` reproduces locally in seconds. |
+| **Tested CLI engine** | **9,005 lines** (`rcode-tools.cjs` + `lib/`) | The deterministic brain — routing, state, planning math — is real code under test, not prompt soup. |
+| **Runtime dependencies** | **1** (`ws`, for the dashboard socket) | The view-only dashboard is pure Node stdlib. Almost nothing to audit, nothing to CVE-scan, nothing to break on `npm install`. |
+| **Specialist agents / commands / workflows / skills** | **45 / 116 / 129 / 88** | An entire engineering org, phrase-activated, that travels with you across Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. |
+| **Core-op latency** | **~33 ms**, **0 LLM tokens** (best-of-7) | Intent routing, state reads, and milestone-health are deterministic *local* compute — a few ms over Node's own cold-start floor. The orchestration layer doesn't burn API tokens on bookkeeping the way pure-LLM agent frameworks do. |
+
+**The headline:** an entire software-delivery methodology — 94k lines of it — guarded by 497 tests, riding on a single runtime dependency, with an orchestration brain that costs **zero tokens** to think. Not a viral prompt. A system you can verify line by line.
 
 ---
 
@@ -159,9 +188,9 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ## Honest state of things
 
-- **v4.0.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
+- **v4.3.2** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
-- **Test suite**: 339 automated tests across 58 files, 100% pass on every release. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
+- **Test suite**: 497 automated tests across 61 files, 100% pass on every release (run `node --test`). Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
 - **Funding**: none. This is solo work. If your company wants commercial support, [email me](mailto:hanzla.dev@gmail.com).
 

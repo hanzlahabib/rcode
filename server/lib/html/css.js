@@ -770,6 +770,46 @@ section .body {
 }
 .task-detail-row strong { color: var(--text-muted); font-weight: 500; min-width: 64px; flex-shrink: 0; }
 .task-detail-cmds { margin-top: var(--space-3); }
+/* ── Per-task actions + result (#905) ───────────────────────────── */
+.task-actions {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+.task-actions-title {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+.task-actions-list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.task-action-step {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.task-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elev-2);
+  border-left: 2px solid var(--accent-green);
+  border-radius: var(--radius-4);
+}
+.task-outcome-label {
+  color: var(--accent-green);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.task-outcome-text { color: var(--text-secondary); line-height: 1.45; }
 .task-expand-icon {
   font-size: 8px;
   color: var(--text-muted);
@@ -1451,9 +1491,9 @@ footer {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 440px;
-  max-width: 42vw;
-  min-width: 320px;
+  width: var(--orch-w, 720px);
+  max-width: 70vw;
+  min-width: 360px;
   background: var(--bg-elev-1);
   border-left: 1px solid var(--border-subtle);
   display: flex;
@@ -1462,6 +1502,20 @@ footer {
   transform: translateX(100%);
   transition: transform var(--t-menu) var(--ease);
   box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+}
+.orch-panel-resize {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 10;
+}
+.orch-panel-resize:hover,
+.orch-panel-resize.dragging {
+  background: var(--accent, #5865f2);
+  opacity: 0.35;
 }
 .orch-panel.open {
   transform: translateX(0);

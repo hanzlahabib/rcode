@@ -290,6 +290,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rcode-prfaq` | Stress-test concept before committing sprint capacity |
 | Brainstorm, generate ideas, "explore options", "what could we do" | `/rcode-brainstorm` | Structured ideation before planning |
 | Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rcode-review --karpathy` | 4-principle code audit against recent diff |
+| Make it simpler, "be lazy", "lazy mode", "simplest solution", "yagni", "over-engineered", "kam code likho" | `/rcode-lazy` | Generative simplicity lens — YAGNI before code is written (rcode-trim removes bloat after the fact) |
 | Walk through a change, "checkpoint", "explain this diff", "human review" | `/rcode-checkpoint-preview` | Human-in-the-loop diff walkthrough |
 | Exploring, researching, comparing, or "how does X work" | `/rcode-research-phase` | Domain research before planning |
 | Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rcode-discuss-phase` | Decisions not yet locked — gather before planning |
