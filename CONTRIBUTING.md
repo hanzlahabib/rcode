@@ -279,6 +279,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `templates` — memory bank or pitch templates
 - `dashboard` — Majlis/Diwan server
 - `docs` — README, METHODOLOGY, SKILLS_INDEX, USER-GUIDE, FAQ
+- `getting-started` — the `docs/getting-started.md` onboarding guide
 - `config` — team.yaml, config.yaml
 - `github` — CI/CD, issue templates, PR templates
 - `cli` — `cli/*.js` and `rcode/bin/rcode-tools.cjs`
