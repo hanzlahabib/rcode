@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-23T06:44:02.291Z",
+  "updated": "2026-06-17T22:34:14.771Z",
   "current_phase": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1516,30 +1516,6 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
-    },
-    {
-      "key": "38/1",
-      "phase": "38",
-      "number": "1",
-      "goal": "\"Add the prompt-router subcommand to rcode-hooks.cjs — keyword-match the user's prompt against the do.md-derived routing table, respect the prompt_nudge toggle + per-session dedupe, emit a memory-framed additionalContext advisory, and swallow every error (exit 0 silent).\"",
-      "status": "planned",
-      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-1-SPRINT.md"
-    },
-    {
-      "key": "38/2",
-      "phase": "38",
-      "number": "2",
-      "goal": "\"Wire the prompt-router as a UserPromptSubmit hook into settings-hooks.json and the opt-in enable-hooks flow, plus declare the prompt_nudge config key, so the proactive nudge installs for Claude Code only when the user opts in. Idempotent merge, never on by default.\"",
-      "status": "planned",
-      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-2-SPRINT.md"
-    },
-    {
-      "key": "38/3",
-      "phase": "38",
-      "number": "3",
-      "goal": "\"Prevent silent drift: add a sync test that asserts every command the INTENT_TABLE routes to actually appears in the do.md routing table (the single source of truth), so a future edit to do.md that removes/renames a command fails CI rather than leaving the nudge pointing at a dead command.\"",
-      "status": "planned",
-      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-3-SPRINT.md"
     }
   ],
   "plans": [],
