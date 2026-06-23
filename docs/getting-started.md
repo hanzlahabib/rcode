@@ -12,9 +12,9 @@ In any project directory:
 pnpm dlx @hanzlaa/rcode install
 ```
 
-Restart your IDE (Claude Code, Cursor, Gemini CLI, VS Code, Antigravity, or Windsurf). All `/rcode-*` commands now appear when you type `/`.
+Restart your IDE (Claude Code, Cursor, VS Code, or Windsurf). All `/rcode-*` commands now appear when you type `/`.
 
-For runtimes without native slash commands (Codex CLI, Grok): the `.rcode/` directory and workflow files are installed — paste any workflow from `rcode/workflows/` directly into your agent to run it.
+**Codex CLI:** install globally (`pnpm dlx @hanzlaa/rcode install --global --ide codex`), enable `hooks = true` in `~/.codex/config.toml`, then **type** `/rcode-<name>` — a UserPromptSubmit hook injects the command (Codex has no `/` menu, so they won't autocomplete). See the Codex section in [install.md](install.md). **Grok** reads global `~/.claude/`, so a global install surfaces `/rcode-*` directly. Gemini CLI install is not yet implemented.
 
 ---
 
