@@ -52,6 +52,19 @@ git commit -m "chore(campaign): backlog snapshot at wave <N>"
 ```
 The `-f` is required if `.planning/` is gitignored (common in Rihal projects).
 
+### Campaign retro (optional)
+At campaign end, append a short `.planning/campaign/RETRO.md` so the *next* campaign on this repo starts smarter:
+- Wave sizes actually used (and which felt right vs too big).
+- What stalled — areas that needed re-dispatch, conflict hotspots, agents that went silent.
+- What merged clean on the first pass.
+
+```bash
+git add -f .planning/campaign/RETRO.md
+git commit -m "chore(campaign): retro notes for next campaign"
+```
+
+**YAGNI tension (be honest)**: this is speculative tooling — a second campaign on the same repo may never happen, and a RETRO doc no one reads is exactly the kind of over-engineering Lens 16 flags. Write it only when a follow-up campaign is genuinely likely; for a one-off campaign, skip it.
+
 ## Examples
 
 ### Building backlog from audit docs
