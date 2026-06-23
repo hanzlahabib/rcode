@@ -94,8 +94,8 @@ Remove the rcode block from `.gitignore`. You own your repo. Just know that ever
 | VS Code native | `vscode` | `.vscode/` integration | ✅ v4 |
 | Antigravity | `antigravity` | `.antigravity/` | ✅ v4 |
 | Windsurf | `windsurf` | `.windsurf/` | ✅ v4 |
-| OpenAI Codex CLI | `codex` | `.rcode/` methodology files only | No native slash commands — invoke workflows by pasting workflow content manually |
-| Grok (xAI) | `grok` | `.rcode/` methodology files only | No native slash commands — invoke workflows by pasting workflow content manually |
+| OpenAI Codex CLI | `codex` | `.rcode/` + (on `--global`) `~/.codex/hooks.json` router + `~/.rcode/slash-commands/` | ✅ `/rcode-*` via UserPromptSubmit hook — see Codex section below |
+| Grok (xAI) | `grok` | Reads global `~/.claude/commands/` (Claude-compatible) | ✅ `/rcode-*` via a global `~/.claude` install |
 
 Passing an unsupported `--ide` value prints a clear error with workaround guidance.
 
@@ -116,7 +116,32 @@ cp .claude/CLAUDE.md .gemini/GEMINI.md   # adapt as needed for Gemini context
 
 Track the Gemini IDE implementation in the project issue tracker. When it ships, `pnpm dlx @hanzlaa/rcode install --ide gemini` will write `.gemini/rcode/` automatically.
 
-For runtimes without native slash-command support (Codex CLI, Grok), the `.rcode/` directory and workflow markdown files are available for manual invocation. Paste the relevant workflow content into your agent prompt to run any rcode workflow.
+### Codex CLI — slash commands via the UserPromptSubmit hook
+
+Codex has no file-based slash-command *menu*, but it does support a `UserPromptSubmit`
+hook. rcode installs a router into `~/.codex/hooks.json` that, when you **type**
+`/rcode-<name> [args]`, injects the matching command body into the turn.
+
+Two requirements (both easy to miss):
+
+```bash
+# 1. Install GLOBALLY targeting codex — the hook + command bodies are global
+#    (~/.codex/hooks.json, ~/.rcode/slash-commands/). A project-local install
+#    does NOT wire them (the installer now warns you — see #908).
+pnpm dlx @hanzlaa/rcode install --global --ide codex
+
+# 2. Make sure codex hooks are enabled in ~/.codex/config.toml:
+#    [features]
+#    hooks = true
+```
+
+Then **reload your Codex session** and type a command, e.g. `/rcode-add-phase`.
+
+> **No autocomplete.** `/rcode-*` will *not* appear in Codex's `/` menu — Codex has no
+> file-based slash-command list. You type the full command; the hook does the rest.
+
+**Grok** is Claude-Code-compatible and reads `~/.claude/commands/`, so a global
+`pnpm dlx @hanzlaa/rcode install --global` makes `/rcode-*` available there directly.
 
 ---
 
