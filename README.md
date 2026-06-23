@@ -2,7 +2,7 @@
 
 <div dir="rtl">طريقة رحال</div>
 
-<p align="center"><img src="brand/dashboard-overview.png" alt="rcode Diwan dashboard — the live project cockpit: an 83%-complete progress donut, the current phase executing, in-progress tasks with step-by-step progress, milestone outlook, recent decisions, and a progress timeline" width="860"></p>
+<p align="center"><img src="brand/dashboard-tour.gif" alt="rcode Diwan dashboard tour — cycling through the project cockpit (progress donut, current phase executing, milestone outlook), the specialist agent roster, the Kanban board (TODO / in-progress / done), and the phase-driven delivery view" width="860"></p>
 
 ### An engineering org in a folder — and you can watch it work.
 
