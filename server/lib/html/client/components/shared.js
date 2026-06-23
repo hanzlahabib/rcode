@@ -354,6 +354,20 @@ export function TaskCard({ task: t }) {
           ` : null}
           ${t.acceptance ? html`<div class="task-detail-row"><strong>Acceptance:</strong> ${t.acceptance}</div>` : null}
           ${t.assignee ? html`<div class="task-detail-row"><strong>Assignee:</strong> ${t.assignee}</div>` : null}
+          ${(t.actions && t.actions.length) ? html`
+            <div class="task-actions">
+              <div class="task-actions-title">Actions performed</div>
+              <ol class="task-actions-list">
+                ${t.actions.map((step, i) => html`<li key=${i} class="task-action-step">${step}</li>`)}
+              </ol>
+            </div>
+          ` : null}
+          ${t.outcome ? html`
+            <div class="task-outcome">
+              <span class="task-outcome-label">Result</span>
+              <span class="task-outcome-text">${t.outcome}</span>
+            </div>
+          ` : null}
           ${taskCmds.length ? html`
             <div class="task-detail-cmds">
               ${taskCmds.map(([cmd, desc]) => html`<${CmdHint} key=${cmd} cmd=${cmd} desc=${desc}/>`)}
