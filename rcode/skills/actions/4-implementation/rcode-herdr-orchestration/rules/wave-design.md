@@ -53,6 +53,12 @@ For each backlog item, score before assigning to a wave:
 - Past 25 min: peek at all panes, identify stuck agents, decide kill-or-wait.
 - Hard stop: 45 min. If a wave hasn't produced commits in 45 min, something is wrong — abort and re-dispatch.
 
+### Log cost per wave
+After each wave dispatch, append a one-line cost/agent-count note to `.planning/campaign/STATE.md` so the running campaign total stays visible (and the cost ceiling in `orchestrator-rhythm.md` can be checked against it):
+```
+wave 3: 4 agents dispatched, ~12 min target — running total: 11 agent-runs
+```
+
 ## Examples
 
 ### Good wave-1 composition (from real session)

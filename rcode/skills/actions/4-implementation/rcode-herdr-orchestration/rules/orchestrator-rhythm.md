@@ -56,6 +56,9 @@ If the user picks (c) or skips: NEVER claim "Scheduling 20-min wakeup" in chat �
 | Phase 3 (draining last waves) | 270s | Sub-agents finishing close to each other; don't miss the last |
 | Idle (waiting on stuck pane) | 1200s | Sub-agent stuck — give it room or surface it |
 
+### Cost ceiling — estimate before dispatch
+Before dispatching a wave, the orchestrator estimates `agents × wave-duration` (and, across the campaign, the running sum of all waves) as a rough cost proxy. If a planned campaign exceeds a ceiling — by default **~20 agent-waves** or any explicit token/budget cap the user gave — the orchestrator STOPS and asks the user to confirm before continuing rather than burning budget silently. A 17-wave × 4-agent campaign is ~68 agent-runs; surface that number up front so the user can scope it down.
+
 ### Stop conditions
 The heartbeat should stop ONLY when ALL three are true:
 - Every herdr pane is `idle` or `done`
