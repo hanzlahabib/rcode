@@ -4426,6 +4426,7 @@ summary:focus-visible,
   align-items: center;
 }
 .filter-chip {
+  font-family: var(--font-sans);
   font-size: var(--text-2xs);
   padding: 3px var(--space-3);
   border-radius: var(--radius-4);
@@ -4442,6 +4443,7 @@ summary:focus-visible,
   border-color: var(--accent-primary);
 }
 .filter-chip-clear {
+  font-family: var(--font-sans);
   font-size: var(--text-2xs);
   padding: 3px var(--space-3);
   border-radius: var(--radius-4);
@@ -4451,6 +4453,7 @@ summary:focus-visible,
   cursor: pointer;
   transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
+.filter-chip-clear:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-chip-clear:disabled { opacity: 0.4; cursor: default; }
 
 /* ── Command palette (Sprint 36.1 — DSH-4) ─────────────────────────────────

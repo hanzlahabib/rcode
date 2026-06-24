@@ -892,9 +892,15 @@ After plans pass all gates, record that planning is complete so STATE.md reflect
 
 ```bash
 node ".rcode/bin/rcode-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+
+# Register the just-written SPRINT.md files into the canonical nested
+# phase.sprints[] so the Diwan dashboard reflects them. Without this, the
+# dashboard reads phase.sprints[] (empty) and keeps showing "Run /rcode-plan"
+# even though the plans exist on disk.
+node ".rcode/bin/rcode-tools.cjs" state sync --from-disk
 ```
 
-This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
+This updates STATUS to "Ready to execute", sets the correct plan count, timestamps Last Activity, and syncs the new sprints into state so the dashboard shows them.
 
 ## 14. Present Final Status
 

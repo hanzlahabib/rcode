@@ -257,8 +257,86 @@ test('state sync parses workflow SPRINT artifacts and preserves velocity history
   assert.deepStrictEqual(state.velocity_history, [
     { sprint: '01.0', points: 8, completed_at: '2026-06-01T00:00:00.000Z' },
   ]);
+  // Sprints must land in the CANONICAL nested phase.sprints[] — the location the
+  // dashboard (allSprints) and scanner.js read. A flat top-level state.sprints[]
+  // orphans them and the dashboard shows "Run /rcode-plan" despite SPRINT.md on disk.
+  const phase = state.phases.find(p => String(p.number) === '01');
+  assert.ok(phase, 'phase 01 should exist after sync');
   assert.ok(
-    state.sprints.some(s => s.key === '01/1' && s.goal === 'Ship the dashboard MVP'),
-    'workflow SPRINT artifact was not synced into state.sprints',
+    (phase.sprints || []).some(s => s.id === '01.1' && s.goal === 'Ship the dashboard MVP'),
+    'workflow SPRINT artifact was not synced into phase.sprints[]',
   );
+});
+
+// ─── state sync — phase status parsing (#897) ──────────────────────────────────
+
+test('state sync (#897) parses **Status:** ✅ Complete and marks the phase complete', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [{ id: '1', number: '1', name: 'Foundations', status: 'planned' }],
+      decisions: [], blockers: [], council_sessions: [], executions: [],
+    },
+  });
+  fs.writeFileSync(
+    path.join(cwd, '.planning', 'ROADMAP.md'),
+    '## Phase 1 — Foundations\n\n**Status:** ✅ Complete (verified 2026-06-16)\n**Goal:** Lay the groundwork\n',
+  );
+  json(cwd, ['state', 'sync', '--from-disk']);
+  const state = json(cwd, ['state', 'read']);
+  const phase = state.phases.find(p => String(p.number) === '1');
+  assert.strictEqual(phase.status, 'complete', 'ROADMAP "✅ Complete" must sync to status: complete');
+});
+
+test('state sync (#897) parses a trailing status column in a pipe table', (t) => {
+  const cwd = setup(t, {
+    state: { phases: [], decisions: [], blockers: [], council_sessions: [], executions: [] },
+  });
+  fs.writeFileSync(
+    path.join(cwd, '.planning', 'ROADMAP.md'),
+    [
+      '| # | Phase | Goal | Status |',
+      '|---|-------|------|--------|',
+      '| 1 | Foundations | Lay the groundwork | ✅ Complete |',
+      '| 2 | Build | Ship it | Planned |',
+    ].join('\n') + '\n',
+  );
+  json(cwd, ['state', 'sync', '--from-disk']);
+  const state = json(cwd, ['state', 'read']);
+  assert.strictEqual(state.phases.find(p => String(p.number) === '1').status, 'complete');
+  // Goal prose must never be mistaken for status; an explicit "Planned" cell stays planned.
+  assert.strictEqual(state.phases.find(p => String(p.number) === '2').status, 'planned');
+});
+
+test('state sync (#897) never regresses an execution-set complete back to planned', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [{ id: '1', number: '1', name: 'Foundations', status: 'complete' }],
+      decisions: [], blockers: [], council_sessions: [], executions: [],
+    },
+  });
+  // ROADMAP row omits any status marker — upgrade-only logic must keep 'complete'.
+  fs.writeFileSync(
+    path.join(cwd, '.planning', 'ROADMAP.md'),
+    '## Phase 1 — Foundations\n\n**Goal:** Lay the groundwork\n',
+  );
+  json(cwd, ['state', 'sync', '--from-disk']);
+  const state = json(cwd, ['state', 'read']);
+  assert.strictEqual(state.phases.find(p => String(p.number) === '1').status, 'complete');
+});
+
+test('milestone-health (#897) counts complete/completed phases as done', (t) => {
+  const cwd = setup(t, {
+    state: {
+      milestone: 'M1',
+      phases: [
+        { id: '1', number: '1', name: 'A', status: 'complete' },
+        { id: '2', number: '2', name: 'B', status: 'completed' },
+        { id: '3', number: '3', name: 'C', status: 'planned' },
+      ],
+      decisions: [], blockers: [], council_sessions: [], executions: [],
+    },
+  });
+  const result = json(cwd, ['milestone-health']);
+  assert.strictEqual(result.completed_phases, 2, "'complete' (singular) must count as done");
+  assert.strictEqual(result.open_phases, 1);
 });

@@ -9,7 +9,7 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, phaseHints, chip, phaseMilestone } from '../util.js';
+import { pct, humanDate, phaseHints, chip, phaseMilestone, humanLabel } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
@@ -151,7 +151,7 @@ export function PhasesView({ subId, filters }) {
 
   // Build option lists for FilterChips
   const distinctStatus = [...new Set(phases.map(p => chip(p.status).cls))].filter(Boolean);
-  const statusOptions = distinctStatus.map(cls => ({ value: cls, label: cls }));
+  const statusOptions = distinctStatus.map(cls => ({ value: cls, label: humanLabel(cls) }));
   const milestoneOptions = [
     { value: 'M1', label: 'M1' },
     { value: 'M2', label: 'M2' },
@@ -196,6 +196,7 @@ export function PhasesView({ subId, filters }) {
         statusOptions=${statusOptions}
         milestoneOptions=${milestoneOptions}
         dateOptions=${dateOptions}
+        viewPath="phases"
       />
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter…"

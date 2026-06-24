@@ -28,7 +28,7 @@ Behaviour:
    they are NOT the authoritative behaviour.
 3. After SPRINT.md is written, ALWAYS run:
    `node .rcode/bin/rcode-tools.cjs state sync --from-disk`
-   so state.sprints[] reflects the new sprint.
+   so the canonical nested phase.sprints[] (which the dashboard reads) reflects the new sprint.
 
 If skill files are missing: print
 "Sprint-planning skill not installed. Run: npx @hanzlaa/rcode install"

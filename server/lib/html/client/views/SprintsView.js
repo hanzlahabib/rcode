@@ -10,7 +10,7 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, allSprints, sprintHints, chip, phaseMilestone } from '../util.js';
+import { pct, humanDate, allSprints, sprintHints, chip, phaseMilestone, humanLabel } from '../util.js';
 import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
@@ -145,7 +145,7 @@ export function SprintsView({ subId, filters }) {
 
   // Build option lists for FilterChips
   const distinctStatus = [...new Set(sprints.map(s => chip(s.status).cls))].filter(Boolean);
-  const statusOptions = distinctStatus.map(cls => ({ value: cls, label: cls }));
+  const statusOptions = distinctStatus.map(cls => ({ value: cls, label: humanLabel(cls) }));
   const milestoneOptions = [
     { value: 'M1', label: 'M1' },
     { value: 'M2', label: 'M2' },
@@ -190,6 +190,7 @@ export function SprintsView({ subId, filters }) {
         statusOptions=${statusOptions}
         milestoneOptions=${milestoneOptions}
         dateOptions=${dateOptions}
+        viewPath="sprints"
       />
       <div class="filter-bar">
         <input class="filter-input" type="text" placeholder="Filter…"

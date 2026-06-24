@@ -115,6 +115,25 @@ export function chip(status) {
 }
 
 /**
+ * Map a normalised status class (the `cls` returned by `chip()`) to a
+ * human-readable filter label. Filter chips show these instead of raw class
+ * names so users see "In Progress" rather than the internal "active".
+ *
+ * @param {string} cls — normalised status class
+ * @returns {string}
+ */
+export function humanLabel(cls) {
+  switch (cls) {
+    case 'complete': return 'Done';
+    case 'active':   return 'In Progress';
+    case 'blocked':  return 'Blocked';
+    case 'planned':  return 'Planned';
+    case 'todo':     return 'To Do';
+    default:         return 'Other';
+  }
+}
+
+/**
  * Return a status chip descriptor for orchestrator session statuses.
  * Session objects use a different vocabulary than phases/sprints
  * ('running', 'stopped', 'starting', 'error'), so a separate normaliser
