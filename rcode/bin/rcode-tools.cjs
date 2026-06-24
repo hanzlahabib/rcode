@@ -2073,14 +2073,73 @@ function cmdState(subArgs) {
     const implPrefixRe = /^[a-f0-9]+ (feat|fix|refactor|perf|style|test|chore)\(/i;
     const implLines = gitLog.split('\n').filter(l => implPrefixRe.test(l));
 
+    // Read ROADMAP.md once so we can look up each phase's declared status.
+    // Fix #897 — sync-from-git was ignoring ROADMAP status entirely, causing
+    // all phases to stay as 'planned' even when ROADMAP said 'complete'.
+    let roadmapText = '';
+    try {
+      const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+      if (fs.existsSync(roadmapPath)) roadmapText = fs.readFileSync(roadmapPath, 'utf8');
+    } catch { /* ignore — ROADMAP is optional */ }
+
+    // Normalise raw status strings from ROADMAP into canonical state.json vocabulary.
+    // Mirrors the normalizeStatus() defined in the `state sync` handler.
+    function normalizeStatusSFG(raw) {
+      if (!raw) return 'planned';
+      const s = String(raw).toLowerCase().replace(/[✅\s]/g, '');
+      if (['complete','completed','shipped','verified','done'].includes(s)) return 'complete';
+      if (['executing','in_progress','inprogress','active','started'].includes(s)) return 'in_progress';
+      return 'planned';
+    }
+
+    // Returns the status declared in ROADMAP for a given phase number, or null
+    // if the phase isn't found. Handles both pipe-table and heading-block formats.
+    function readPhaseStatusFromRoadmap(phaseNum) {
+      if (!roadmapText) return null;
+      // Pipe-table row: | <num> | <name> | <goal> | <status> |
+      const tableRe = new RegExp(
+        `^\\|\\s*${phaseNum.replace('.', '\\.')}\\s*\\|[^|]+\\|[^|]*\\|(?:\\s*([^|\\n]*?)\\s*\\|)?`,
+        'm'
+      );
+      const tableMatch = roadmapText.match(tableRe);
+      if (tableMatch && tableMatch[1] !== undefined) return normalizeStatusSFG(tableMatch[1]);
+
+      // Heading-block format: ## Phase <num> — <name>\n...**Status:** <value>
+      const headRe = new RegExp(
+        `^#{2,4}\\s*Phase\\s+${phaseNum.replace('.', '\\.')}\\s*[—\\-:]`,
+        'm'
+      );
+      const headMatch = headRe.exec(roadmapText);
+      if (headMatch) {
+        const after = roadmapText.slice(headMatch.index + headMatch[0].length).split('\n').slice(0, 8).join('\n');
+        const statusMatch = after.match(/\*\*Status:\*\*\s*(.+)/i);
+        if (statusMatch) return normalizeStatusSFG(statusMatch[1].trim());
+      }
+      return null;
+    }
+
     let syncedPhases = 0;
     let syncedSprints = 0;
+
+    const statusRankSFG = { complete: 3, verified: 3, executed: 2, in_progress: 1, planned: 0 };
 
     const phases = Array.isArray(state.phases) ? state.phases : [];
     for (const phase of phases) {
       if (!phase) continue;
       const num = String(phase.number || phase.id || '').trim();
       if (!num) continue;
+
+      // Read the phase's declared status from ROADMAP and apply it when it
+      // advances the current status — never downgrade. (#897)
+      const roadmapStatus = readPhaseStatusFromRoadmap(num);
+      if (roadmapStatus) {
+        const currentRank = statusRankSFG[phase.status] ?? 0;
+        const roadmapRank = statusRankSFG[roadmapStatus] ?? 0;
+        if (roadmapRank > currentRank) {
+          phase.status = roadmapStatus;
+          syncedPhases++;
+        }
+      }
 
       // Check if any implementation commit references this phase number.
       // Matches patterns: "phase 1", "phase 1.", "1.1", "(1)", "#1 "
@@ -2115,8 +2174,12 @@ function cmdState(subArgs) {
           }
         }
         if (phase.status !== 'complete' && phase.status !== 'verified') {
-          phase.status = 'executed';
-          syncedPhases++;
+          // Git evidence upgrades to 'executed' only when ROADMAP doesn't already
+          // report a higher status (complete/verified already applied above).
+          if ((statusRankSFG['executed'] ?? 0) > (statusRankSFG[phase.status] ?? 0)) {
+            phase.status = 'executed';
+            syncedPhases++;
+          }
         }
       }
     }
