@@ -4178,7 +4178,84 @@ function cmdPhase(subArgs) {
     return { ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone`);
+  // =====================================================================
+  // phase scaffold-all — materialise folders for every phase in ROADMAP.md
+  // that lacks a directory under .planning/phases/.
+  // Closes #731. No --names arg required — reads the ROADMAP table directly.
+  // Only creates directories; does NOT create .md files inside them.
+  // =====================================================================
+  if (sub === 'scaffold-all') {
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const phasesDir   = path.join(PLANNING_DIR, 'phases');
+
+    if (!fs.existsSync(roadmapPath)) {
+      throw new Error(`No ROADMAP.md found at ${roadmapPath} — run /rcode-init first`);
+    }
+
+    const roadmap = fs.readFileSync(roadmapPath, 'utf8');
+
+    // Collect (number, name) pairs from pipe-table rows: | N | Phase Name | ...
+    // Also pick up ## Phase N — Name headings as a fallback.
+    const phases = [];
+    const seen = new Set();
+
+    // Table rows: | 8 | Feature X | ...
+    const tableRe = /^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|/gm;
+    let m;
+    while ((m = tableRe.exec(roadmap)) !== null) {
+      const num = m[1];
+      const name = m[2].trim();
+      // Skip header rows (e.g. "Phase" as the number column)
+      if (!seen.has(num) && /^\d+$/.test(num)) {
+        seen.add(num);
+        phases.push({ num: num.padStart(2, '0'), rawNum: num, name });
+      }
+    }
+
+    // Heading rows: ## Phase 8 — Feature X
+    const headRe = /^#{2,4}\s*Phase\s+(\d+)\s*[—–-]\s*(.+?)\s*$/gm;
+    while ((m = headRe.exec(roadmap)) !== null) {
+      const num = m[1];
+      const name = m[2].trim();
+      if (!seen.has(num)) {
+        seen.add(num);
+        phases.push({ num: num.padStart(2, '0'), rawNum: num, name });
+      }
+    }
+
+    if (phases.length === 0) {
+      return { ok: true, message: 'No phases found in ROADMAP.md — nothing to scaffold', created: [], existed: [] };
+    }
+
+    const created = [];
+    const existed = [];
+
+    for (const p of phases) {
+      const slug = p.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (!slug) continue; // skip rows with no usable name (e.g. header rows)
+
+      const dirName = `${p.num}-${slug}`;
+      const dirPath = path.join(phasesDir, dirName);
+
+      if (fs.existsSync(dirPath)) {
+        existed.push(dirPath);
+        console.log(`Exists:  ${dirPath}`);
+      } else {
+        fs.mkdirSync(dirPath, { recursive: true });
+        created.push(dirPath);
+        console.log(`Created: ${dirPath}`);
+      }
+    }
+
+    return { ok: true, created: created.length, existed: existed.length, dirs: { created, existed } };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone, scaffold-all`);
 }
 
 /**
@@ -7647,6 +7724,7 @@ async function main() {
         console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
         console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
+        console.log('  phase scaffold-all                           → create missing phase folders for all phases in ROADMAP.md (#731)');
         console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
