@@ -156,6 +156,7 @@ Apply this guard BEFORE the routing table below:
 | "sprint planning", "plan the sprint" | `HAS_EPICS=false` | `/rcode-create-epics-and-stories` first | Sprints draw stories from epics. No epics = no stories to schedule. |
 | "create stories", "epics" | `HAS_PRD=false` | `/rcode-create-prd` first | Epics decompose a milestone. Milestone needs PRD. |
 | "create milestones", "roadmap" | `HAS_PRD=false` | `/rcode-create-prd` first | Roadmap is derived from PRD success metrics. |
+| "run the content factory", "cluster keywords", "brief location pages", "audit my SEO" | `HAS_PRD=false` | `/rcode-new-project` | SEO work requires project context — keyword strategy and content architecture are anchored to a specific domain/PROJECT.md |
 
 When the guard fires, print a clear message:
 
@@ -317,6 +318,21 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Completing a milestone, shipping, releasing | `/rcode-complete-milestone` | Milestone lifecycle |
 | Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rcode-feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
 | General audit / re-audit / extend / fill out / expand an existing artifact | `/rcode-audit` | Unified audit entry — picks artifact type and re-runs |
+> **SEO route guard:** Skills in this block assume a project context exists (`.planning/PROJECT.md`). If absent, the `HAS_PRD` check in `<step name="check_project">` redirects to `/rcode-new-project`.
+
+| **— SEO / Content intent —** | | |
+| "audit my SEO", "why am I not ranking", "traffic dropped", "ranking dropped", "seo recovery", "crawl errors" | `/rcode-do` → `seo-audit` | Full technical + on-page + content audit across the site |
+| "per-page audit", "audit this page", "score this URL", "on-page audit" | `/rcode-do` → `on-page-seo-auditor` | Single-page scored report with fix priorities |
+| "core web vitals", "cwv fix", "technical seo", "crawl budget", "indexation", "mobile usability", "site speed" | `/rcode-do` → `technical-seo-checker` | Technical SEO: CWV, crawl, indexing, mobile, speed, architecture, redirects |
+| "keyword research", "cluster keywords", "topic map", "keyword clustering", "find keywords" | `/rcode-do` → `seo-growth-orchestrator` (delegates to `claude-seo:seo-cluster`) | Strategy orchestrator produces cluster map from seed keywords |
+| "content brief", "write SEO content", "blog post", "seo article", "content with E-E-A-T" | `/rcode-do` → `seo-content-writer` | E-E-A-T-aware prose generation with brief adherence checks |
+| "content factory", "programmatic pages", "scale content", "brief location pages", "brief service pages", "run the content factory" | `/rcode-do` → `seo-content-factory` | 10-agent pipeline: competitor research → expansion → clustering → briefs → writing → interlinking → programmatic gen → schema → refresh |
+| "build seo site", "build affiliate site", "niche site", "build content site", "seo site scaffold" | `/rcode-do` → `seo-site-builder` | End-to-end site scaffold with SEO architecture baked in |
+| "local seo", "google business profile", "gbp", "citations", "nap audit", "rank-and-rent" | `/rcode-do` → `rank-and-rent-local-seo` (delegates to `claude-seo:seo-local`) | Local niche selection, city×service matrix, GBP signals, NAP, citations |
+| "schema markup", "structured data", "rich results", "json-ld", "faq schema" | `/rcode-do` → `claude-seo:seo-schema` | Schema generation and validation for all supported types |
+| "ai search", "geo seo", "llms.txt", "ai overviews", "perplexity", "chatgpt visibility", "aeo" | `/rcode-do` → `claude-seo:seo-geo` | GEO/AEO optimization: entity disambiguation, AI answer targeting, llms.txt |
+| "backlinks", "link building", "guest posts", "link acquisition", "digital pr" | `/rcode-do` → `seo-growth-orchestrator` | Backlink acquisition play within the 5-play growth strategy |
+| **— end SEO block —** | | |
 | A specific, actionable, small task (add feature, fix typo, update config) | `/rcode-quick` | Self-contained, single executor |
 | Market/discovery/greenfield question (from classify) | `/rcode-council` | Needs multi-perspective discovery |
 
