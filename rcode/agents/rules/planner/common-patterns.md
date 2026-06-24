@@ -371,3 +371,22 @@ If your work doesn't match any pattern:
 4. Document the rationale in the plan
 
 Novel patterns are fine — just ensure they're still decomposed correctly.
+
+---
+
+## Known Stack Constraints
+
+Hard-won version constraints and format requirements that the planner must honour
+when generating `devDependencies`, scaffold files, or code snippets. Getting these
+wrong causes runtime crashes or build failures that are hard to diagnose.
+
+### Mobile / Expo
+
+**Expo SDK 55+ requires TypeScript ≥ 5.4**
+
+`tsconfig.base.json` in Expo SDK 55 sets `"module": "preserve"`, which TypeScript
+< 5.4 does not support and will error on at compile time.
+
+- When generating `devDependencies` for any Expo SDK 50+ project, always specify
+  `"typescript": "~5.8.0"` (or at minimum `"~5.4.0"`).
+- **Never** emit `"typescript": "~5.3.x"` for an Expo project.
