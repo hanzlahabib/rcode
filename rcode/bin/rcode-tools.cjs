@@ -1254,6 +1254,18 @@ function cmdState(subArgs) {
     const name = subArgs[1];
     if (!name) throw new Error('set-phase requires a phase name argument');
     const state = readState() || defaultState();
+    // Fix #854 — mark the previously active phase as completed before switching.
+    if (state.current_phase && state.current_phase !== name && state.phases && state.phases.length > 0) {
+      const prevIdx = state.phases.findIndex(p =>
+        p.name === state.current_phase ||
+        String(p.number) === String(state.current_phase) ||
+        String(p.id) === String(state.current_phase)
+      );
+      if (prevIdx !== -1 && state.phases[prevIdx].status !== 'completed') {
+        state.phases[prevIdx].status = 'completed';
+        state.phases[prevIdx].completed = new Date().toISOString();
+      }
+    }
     state.current_phase = name;
     state.current_plan = 0;
     if (!state.phases) state.phases = [];
@@ -1280,7 +1292,17 @@ function cmdState(subArgs) {
       // Update name to canonical form when re-entering a phase
       state.phases[existingIdx].name = name;
     }
-    return writeState(state);
+    const spResult = writeState(state);
+    // Fix #855 — keep config.yaml in sync when set-phase writes state.json.
+    // One-way guard: only sync if config.yaml is already present (i.e. project is initialised).
+    try {
+      const cfgLib = require(path.join(__dirname, 'lib', 'config.cjs'));
+      const existingCfgPhase = cfgLib.cmdGet(PROJECT_ROOT, 'current_phase');
+      if (String(existingCfgPhase || '') !== String(name)) {
+        cfgLib.cmdSet(PROJECT_ROOT, 'current_phase', name);
+      }
+    } catch (_) { /* config.yaml may not exist yet; silently skip */ }
+    return spResult;
   }
 
   // --- advance-plan ---
@@ -7195,7 +7217,19 @@ async function main() {
       }
       case 'config-set': {
         const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
-        result = cfg.cmdSet(PROJECT_ROOT, args[0], args.slice(1).join(' '));
+        const csKey = args[0];
+        const csVal = args.slice(1).join(' ');
+        result = cfg.cmdSet(PROJECT_ROOT, csKey, csVal);
+        // Fix #855 — keep state.json in sync when current_phase is updated via config-set.
+        // One-way: config-set → state.json. The set-phase path writes config.yaml separately (below).
+        if (csKey === 'current_phase' && csVal) {
+          const stJson = readState() || defaultState();
+          if (stJson.current_phase !== csVal) {
+            stJson.current_phase = csVal;
+            stJson.current_plan = 0;
+            writeState(stJson);
+          }
+        }
         break;
       }
       case 'config-check-yolo': {
