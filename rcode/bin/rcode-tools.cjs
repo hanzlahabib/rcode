@@ -7371,6 +7371,22 @@ function cmdFindFiles(rawArgs) {
   return { ok: true, type, matches };
 }
 
+// Closes #739 — parse human duration strings into milliseconds.
+// Supports: '30m' → 1800000, '2h' → 7200000, '1d' → 86400000.
+function parseDuration(str) {
+  if (!str || typeof str !== 'string') return 3600000; // default 1h
+  const m = str.trim().match(/^(\d+(?:\.\d+)?)([smhd]?)$/i);
+  if (!m) return 3600000;
+  const n = parseFloat(m[1]);
+  switch ((m[2] || 'h').toLowerCase()) {
+    case 'd': return Math.round(n * 86400000);
+    case 'h': return Math.round(n * 3600000);
+    case 'm': return Math.round(n * 60000);
+    case 's': return Math.round(n * 1000);
+    default:  return Math.round(n * 3600000);
+  }
+}
+
 async function main() {
   const [, , subcommand, ...args] = process.argv;
   // #473 guard runs before any subcommand. Skipped for read-only inspection
@@ -7569,6 +7585,42 @@ async function main() {
         console.log(JSON.stringify(result, null, 2));
         return;
       }
+      case 'validate': {
+        // #747 — schema checks for state.json and config.yaml.
+        // Usage: rcode-tools validate state|config|all
+        const target = args[0] || 'all';
+        if (!['state', 'config', 'all'].includes(target)) {
+          console.error(`Unknown validate target: '${target}'. Valid: state, config, all`);
+          process.exit(1);
+        }
+        const validateErrors = [];
+
+        if (target === 'state' || target === 'all') {
+          const state = readState();
+          if (!state) {
+            validateErrors.push('state: state.json not found or empty');
+          } else {
+            if (!state.current_phase) validateErrors.push('state: missing current_phase');
+            if (!state.current_milestone) validateErrors.push('state: missing current_milestone');
+            if (state.schema_version !== 2) validateErrors.push(`state: schema_version should be 2, got ${state.schema_version}`);
+            if (!Array.isArray(state.phases) && typeof state.phases !== 'object') validateErrors.push('state: phases must be array or object');
+          }
+        }
+
+        if (target === 'config' || target === 'all') {
+          const config = readConfig();
+          if (!config.project_name) validateErrors.push('config: missing project_name');
+          if (!config.current_phase && !config.phase) validateErrors.push('config: missing current_phase or phase');
+        }
+
+        if (validateErrors.length) {
+          validateErrors.forEach(e => console.error('❌ ' + e));
+          process.exit(1);
+        } else {
+          console.log('✅ All artifacts valid');
+        }
+        return;
+      }
       case 'roadmap': {
         const roadmap = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
         const r = roadmap.dispatch(PROJECT_ROOT, args);
@@ -7645,6 +7697,79 @@ async function main() {
           }
         }
         result = { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+        break;
+      }
+      case 'yolo': {
+        // Closes #739 — scoped yolo mode with TTL and milestone/phase scope.
+        // Usage:
+        //   yolo scoped --ttl 2h --scope milestone   → enable for current milestone
+        //   yolo scoped --ttl 30m --scope phase       → enable for current phase
+        //   yolo off                                  → disable immediately
+        //   yolo status                               → show current yolo state
+        const sub = args[0];
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        switch (sub) {
+          case 'scoped': {
+            const ttlArg = (args.find(a => a.startsWith('--ttl='))?.slice(6))
+              || (args.indexOf('--ttl') !== -1 ? args[args.indexOf('--ttl') + 1] : null)
+              || '1h';
+            const scope = (args.find(a => a.startsWith('--scope='))?.slice(8))
+              || (args.indexOf('--scope') !== -1 ? args[args.indexOf('--scope') + 1] : null)
+              || 'phase';
+            const ms = parseDuration(ttlArg);
+            const expires = Date.now() + ms;
+            const st = readState() || {};
+            st.yolo = {
+              enabled: true,
+              expires,
+              scope,
+              milestone: st.current_milestone || null,
+              phase: st.current_phase || null,
+            };
+            writeState(st);
+            // Also persist to config.yaml so config-check-yolo can read it.
+            cfg.cmdSet(PROJECT_ROOT, 'mode', 'yolo');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', scope === 'milestone'
+              ? `milestone:${st.current_milestone || 'unknown'}`
+              : `phase:${st.current_phase || 'unknown'}`);
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', new Date(expires).toISOString());
+            result = { ok: true, enabled: true, scope, ttl: ttlArg, expires: new Date(expires).toISOString() };
+            console.log(`Yolo mode: enabled (${scope} scope, expires in ${ttlArg})`);
+            break;
+          }
+          case 'off': {
+            const st = readState() || {};
+            st.yolo = { enabled: false };
+            writeState(st);
+            cfg.cmdSet(PROJECT_ROOT, 'mode', 'guided');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', '');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', '');
+            result = { ok: true, enabled: false };
+            console.log('Yolo mode: off');
+            break;
+          }
+          case 'status': {
+            const st = readState() || {};
+            const y = st.yolo;
+            if (!y?.enabled || Date.now() > (y.expires || 0)) {
+              result = { active: false };
+              console.log('Yolo mode: off');
+            } else {
+              const remainingMs = y.expires - Date.now();
+              const remainingMin = Math.round(remainingMs / 60000);
+              result = { active: true, scope: y.scope, expires: new Date(y.expires).toISOString(), remaining_min: remainingMin };
+              console.log(`Yolo mode: on (${y.scope} scope, ${remainingMin}m remaining)`);
+            }
+            break;
+          }
+          default: {
+            console.error('Usage: yolo <scoped|off|status>');
+            console.error('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>');
+            console.error('  yolo off');
+            console.error('  yolo status');
+            process.exit(1);
+          }
+        }
         break;
       }
       case 'verify': {
@@ -7753,6 +7878,9 @@ async function main() {
         console.log('  config-get <dotted.key>                      → read scalar from .rcode/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rcode/config.yaml');
         console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
+        console.log('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>  → enable scoped yolo with TTL (#739)');
+        console.log('  yolo off                                     → disable yolo mode immediately');
+        console.log('  yolo status                                  → show current yolo state and remaining TTL');
         console.log('  handoff write --from <skill> --to <skill> --phase N [--context "..."] → write cross-skill handoff token (#741)');
         console.log('  handoff read [--from <skill>]               → read most recent handoff for this skill (#741)');
         console.log('  handoff clear                               → consume (clear) the latest handoff token (#741)');
