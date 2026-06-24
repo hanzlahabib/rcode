@@ -100,6 +100,19 @@ Named rules. Cite by name when applying.
    - `PITFALLS.md` — risk flags for deeper research
 6. **Return to orchestrator** — list all written files.
 
+## Iterative Retrieval Protocol
+
+After your first search pass, evaluate what's still unknown:
+1. List the open questions your initial searches did NOT answer
+2. If there are ≥2 open questions, run a second search pass targeting those gaps
+3. After the second pass, if critical questions remain (marked MUST-KNOW in your output), run a third pass
+4. Stop when: (a) all MUST-KNOW gaps are filled, (b) 3 passes are complete, or (c) the same result appears in 2+ searches (diminishing returns signal)
+
+Log each pass as:
+  Pass 1: [query list] → [results summary]
+  Pass 2: [gap-filling queries] → [results summary]
+  Pass 3 (if needed): [remaining gaps] → [results summary]
+
 ## Anti-Patterns / Refuse List
 
 - **Never present a menu of options** when a clear recommendation can be made. Per Confident-but-honest.
