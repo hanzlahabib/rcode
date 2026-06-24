@@ -64,6 +64,16 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 <process>
 
+## --from-stub mode
+
+When `--from-stub` is passed:
+1. Check for existing `PLAN.md` in the phase directory
+2. If found: read it as the planning skeleton — do NOT re-derive phase goals or re-research the phase
+3. Expand the stub into full SPRINT.md files using the stories already listed in PLAN.md
+4. If no PLAN.md exists: fall back to standard planning mode (derive from ROADMAP + RESEARCH.md)
+
+This mode exists to skip expensive re-derivation when a human or prior agent has already produced a planning skeleton.
+
 ## 0. Project-Status Preflight
 
 ```bash
