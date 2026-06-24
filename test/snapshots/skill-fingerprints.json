@@ -1,0 +1,490 @@
+{
+  "rcode/skills/agents/ahmed-hassani-director/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 157
+  },
+  "rcode/skills/agents/dalil-scout/SKILL.md": {
+    "triggerCount": 21,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 136
+  },
+  "rcode/skills/agents/fatima-qa/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 159
+  },
+  "rcode/skills/agents/haitham-frontend/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 152
+  },
+  "rcode/skills/agents/hanzla-engineer/SKILL.md": {
+    "triggerCount": 21,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 160
+  },
+  "rcode/skills/agents/hussain-pm/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 168
+  },
+  "rcode/skills/agents/hussain-sm/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 142
+  },
+  "rcode/skills/agents/layla-designer/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 126
+  },
+  "rcode/skills/agents/majlis-council/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 117
+  },
+  "rcode/skills/agents/mariam-marketing/SKILL.md": {
+    "triggerCount": 23,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 189
+  },
+  "rcode/skills/agents/nasser-eng-manager/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 163
+  },
+  "rcode/skills/agents/noor-writer/SKILL.md": {
+    "triggerCount": 23,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 135
+  },
+  "rcode/skills/agents/raees-orchestrator/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 123
+  },
+  "rcode/skills/agents/rcode-cross-platform-auditor/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": true,
+    "lineCount": 164
+  },
+  "rcode/skills/agents/rcode-dep-auditor/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": true,
+    "lineCount": 153
+  },
+  "rcode/skills/agents/rcode-deviation-analyzer/SKILL.md": {
+    "triggerCount": 12,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 80
+  },
+  "rcode/skills/agents/rcode-i18n-auditor/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": true,
+    "lineCount": 154
+  },
+  "rcode/skills/agents/rcode-observability-auditor/SKILL.md": {
+    "triggerCount": 16,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": true,
+    "lineCount": 158
+  },
+  "rcode/skills/agents/sadiq-analyst/SKILL.md": {
+    "triggerCount": 20,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 164
+  },
+  "rcode/skills/agents/waleed-architect/SKILL.md": {
+    "triggerCount": 21,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 155
+  },
+  "rcode/skills/agents/yousef-backend/SKILL.md": {
+    "triggerCount": 21,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 165
+  },
+  "rcode/skills/agents/zahra-branding/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 180
+  },
+  "rcode/skills/agents/zayd-ml/SKILL.md": {
+    "triggerCount": 24,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 156
+  },
+  "rcode/skills/actions/1-analysis/rcode-document-project/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 52
+  },
+  "rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 146
+  },
+  "rcode/skills/actions/1-analysis/rcode-product-brief/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 124
+  },
+  "rcode/skills/actions/1-analysis/research/rcode-domain-research/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 47
+  },
+  "rcode/skills/actions/1-analysis/research/rcode-market-research/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 46
+  },
+  "rcode/skills/actions/1-analysis/research/rcode-technical-research/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 49
+  },
+  "rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md": {
+    "triggerCount": 14,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 59
+  },
+  "rcode/skills/actions/2-plan/rcode-create-milestone/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 64
+  },
+  "rcode/skills/actions/2-plan/rcode-create-prd/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 81
+  },
+  "rcode/skills/actions/2-plan/rcode-create-story/SKILL.md": {
+    "triggerCount": 14,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 60
+  },
+  "rcode/skills/actions/2-plan/rcode-create-ux-design/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 48
+  },
+  "rcode/skills/actions/2-plan/rcode-edit-prd/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 46
+  },
+  "rcode/skills/actions/2-plan/rcode-frontend-design/SKILL.md": {
+    "triggerCount": 12,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 97
+  },
+  "rcode/skills/actions/2-plan/rcode-validate-prd/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 46
+  },
+  "rcode/skills/actions/3-solutioning/rcode-check-implementation-readiness/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 53
+  },
+  "rcode/skills/actions/3-solutioning/rcode-create-architecture/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 51
+  },
+  "rcode/skills/actions/3-solutioning/rcode-generate-project-context/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 48
+  },
+  "rcode/skills/actions/4-implementation/rcode-browser-verify/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 74
+  },
+  "rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 76
+  },
+  "rcode/skills/actions/4-implementation/rcode-ci/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 116
+  },
+  "rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md": {
+    "triggerCount": 16,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 60
+  },
+  "rcode/skills/actions/4-implementation/rcode-correct-course/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 47
+  },
+  "rcode/skills/actions/4-implementation/rcode-debug/SKILL.md": {
+    "triggerCount": 22,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 200
+  },
+  "rcode/skills/actions/4-implementation/rcode-dev-story/SKILL.md": {
+    "triggerCount": 6,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 81
+  },
+  "rcode/skills/actions/4-implementation/rcode-git-flow/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 94
+  },
+  "rcode/skills/actions/4-implementation/rcode-harden/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 99
+  },
+  "rcode/skills/actions/4-implementation/rcode-herdr-orchestration/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": true,
+    "lineCount": 162
+  },
+  "rcode/skills/actions/4-implementation/rcode-incremental/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 54
+  },
+  "rcode/skills/actions/4-implementation/rcode-migrate/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 94
+  },
+  "rcode/skills/actions/4-implementation/rcode-perf/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 100
+  },
+  "rcode/skills/actions/4-implementation/rcode-prove-it/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 68
+  },
+  "rcode/skills/actions/4-implementation/rcode-qa-generate-e2e-tests/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 48
+  },
+  "rcode/skills/actions/4-implementation/rcode-retrospective/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 46
+  },
+  "rcode/skills/actions/4-implementation/rcode-scaffold-project/SKILL.md": {
+    "triggerCount": 15,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 119
+  },
+  "rcode/skills/actions/4-implementation/rcode-source-truth/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 80
+  },
+  "rcode/skills/actions/4-implementation/rcode-sprint-planning/SKILL.md": {
+    "triggerCount": 14,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 64
+  },
+  "rcode/skills/actions/4-implementation/rcode-sprint-status/SKILL.md": {
+    "triggerCount": 5,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 49
+  },
+  "rcode/skills/actions/4-implementation/rcode-trim/SKILL.md": {
+    "triggerCount": 8,
+    "hasOutputFormat": true,
+    "hasExamples": true,
+    "hasOverview": true,
+    "hasNegativeBoundary": false,
+    "lineCount": 77
+  }
+}

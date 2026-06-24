@@ -15,7 +15,8 @@
     "build": "node scripts/build.cjs",
     "prepack": "node scripts/prepack-strip.cjs && node scripts/build.cjs",
     "postpack": "node scripts/postpack-restore.cjs",
-    "dogfood": "bash scripts/dogfood-check.sh"
+    "dogfood": "bash scripts/dogfood-check.sh",
+    "test:skills": "node test/skill-snapshot.test.cjs"
   },
   "files": [
     "cli/",
