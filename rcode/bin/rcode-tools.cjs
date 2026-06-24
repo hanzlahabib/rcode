@@ -4178,14 +4178,15 @@ function cmdCommit(argv) {
   const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-commit-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
-    execSync(`git commit -F "${tmpMsgPath}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+    // execFileSync — no shell, so tmpMsgPath with special chars cannot inject (#754).
+    execFileSync('git', ['commit', '-F', tmpMsgPath], { cwd: PROJECT_ROOT, stdio: 'pipe' });
   } finally {
     try { fs.unlinkSync(tmpMsgPath); } catch {}
   }
 
   // Capture the new HEAD SHA for return value
-  const sha = execSync('git rev-parse HEAD', { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
-  const filesChanged = execSync(`git show --stat --format="" ${sha}`, { cwd: PROJECT_ROOT, encoding: 'utf8' })
+  const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
+  const filesChanged = execFileSync('git', ['show', '--stat', '--format=', sha], { cwd: PROJECT_ROOT, encoding: 'utf8' })
     .trim().split('\n').filter(Boolean);
 
   return {
@@ -4436,7 +4437,7 @@ function cmdCommitToSubrepo(argv) {
     }
   }
 
-  const { execSync } = require('child_process');
+  const { execSync, execFileSync: execFileSyncLocal } = require('child_process');
   const status = execSync('git diff --cached --name-only', { cwd: subrepoPath, encoding: 'utf8' }).trim();
   if (!status) {
     throw new Error(`Nothing staged in subrepo ${subrepo}. Stage files inside the subrepo with git add first.`);
@@ -4445,12 +4446,13 @@ function cmdCommitToSubrepo(argv) {
   const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-subrepo-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
-    execSync(`git commit -F "${tmpMsgPath}"`, { cwd: subrepoPath, stdio: 'pipe' });
+    // execFileSync — no shell, so tmpMsgPath with special chars cannot inject (#754).
+    execFileSyncLocal('git', ['commit', '-F', tmpMsgPath], { cwd: subrepoPath, stdio: 'pipe' });
   } finally {
     try { fs.unlinkSync(tmpMsgPath); } catch {}
   }
 
-  const sha = execSync('git rev-parse HEAD', { cwd: subrepoPath, encoding: 'utf8' }).trim();
+  const sha = execFileSyncLocal('git', ['rev-parse', 'HEAD'], { cwd: subrepoPath, encoding: 'utf8' }).trim();
   return {
     ok: true,
     subrepo,
@@ -6090,7 +6092,7 @@ function cmdBrain(args) {
     // #170 — global brain cache at ~/.rcode/brain-cache/<sha1(repo+branch+paths)>/.
     // Same source pulled from N projects = N clones today, 1 clone + N copies
     // after this change. Cache TTL is configurable per source (defaults to 6h).
-    const { execSync } = require('child_process');
+    const { execSync, execFileSync: execFileSyncBrain } = require('child_process');
     const crypto = require('crypto');
     const os = require('os');
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-brain-'));
@@ -6160,13 +6162,15 @@ function cmdBrain(args) {
       // Use --no-checkout + explicit sparse-checkout init + set + checkout
       // because `git clone --sparse` combined with --filter=blob:none has
       // an intermittent failure mode where git misreads the URL as a path.
-      execSync(
-        `git clone --depth=1 --filter=blob:none --no-checkout --branch="${branch}" "${repo}" "${tmp}"`,
-        { stdio: 'pipe' }
-      );
-      execSync(`git -C "${tmp}" sparse-checkout init --no-cone`, { stdio: 'pipe' });
-      execSync(`git -C "${tmp}" sparse-checkout set ${sparsePaths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
-      execSync(`git -C "${tmp}" checkout`, { stdio: 'pipe' });
+      // execFileSync — repo/branch/tmp/sparsePaths from user config; no shell so
+      // values with spaces, quotes, or semicolons cannot inject commands (#754).
+      execFileSyncBrain('git', [
+        'clone', '--depth=1', '--filter=blob:none', '--no-checkout',
+        `--branch=${branch}`, repo, tmp,
+      ], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'sparse-checkout', 'init', '--no-cone'], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'sparse-checkout', 'set', ...sparsePaths], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'checkout'], { stdio: 'pipe' });
 
       // Warm cache before destination copy so a copy failure to dest still
       // saves the next pull. Replace any stale slot atomically.
@@ -6175,7 +6179,7 @@ function cmdBrain(args) {
         fs.mkdirSync(cacheDir, { recursive: true });
         copyTree(tmp, cacheDir);
         const commitSha = (() => {
-          try { return execSync(`git -C "${tmp}" rev-parse HEAD`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim(); }
+          try { return execFileSyncBrain('git', ['-C', tmp, 'rev-parse', 'HEAD'], { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim(); }
           catch { return null; }
         })();
         fs.writeFileSync(cacheManifest, JSON.stringify({
