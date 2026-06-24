@@ -2,39 +2,22 @@
 name: rcode-herdr-orchestration
 description: Orchestrate parallel cld agents in herdr — fan-out or autonomous wave campaign.
 triggers:
-  # English — single-shot orchestration
   - "orchestrate agents"
   - "run agents in herdr"
   - "parallel audit"
   - "spin up agents"
-  - "use herdr to do"
-  - "split work across panes"
   - "fan out work in herdr"
   - "multi-agent in herdr"
-  # English — autonomous campaign mode
   - "autonomous fix campaign"
-  - "auto mode"
-  - "auto loop"
   - "run waves of agents"
-  - "dispatch waves"
-  - "100+ commits"
   - "keep working until done"
-  - "complete site audit and fix"
-  # Roman Urdu / Hindi
   - "herdr mein chalao"
-  - "parallel agents lagao"
-  - "panes mein todo"
-  - "ek saath kai agents"
-  - "auto mode chalao"
-  - "waves mein fix karo"
-  - "campaign chalao"
-  # Arabic native
   - "شغّل وكلاء بالتوازي"
-  - "وزّع العمل على عدة وكلاء"
-  - "استخدم herdr"
   - "حملة إصلاح تلقائية"
-  - "موجات من الوكلاء"
-  - "وضع تلقائي"
+not-for:
+  - single-agent or single-file tasks (run directly, no herdr overhead)
+  - interactive step-through work (use /rcode-execute --interactive)
+  - deployment or push operations (herdr only commits locally)
 user-invocable: true
 ---
 
