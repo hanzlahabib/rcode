@@ -6876,6 +6876,10 @@ function cmdRoadmapDetectStructure() {
  * Thresholds (kept conservative — bump in config later if needed):
  *   - "consider closing" when >= 8 open phases under one milestone
  *   - "should close" when >= 12 open phases (hard nudge)
+ *
+ * Fix #893 — open-phase count is now scoped to the CURRENT milestone only.
+ * Phases that belong to a prior milestone (different ## MN heading in
+ * ROADMAP.md) are excluded so M2 phases never inflate M3's count.
  */
 function cmdMilestoneHealth() {
   const statePath = path.join(RCODE_DIR, 'state.json');
@@ -6884,8 +6888,64 @@ function cmdMilestoneHealth() {
   try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
   catch (e) { return { ok: false, error: `invalid state.json: ${e.message}` }; }
 
-  const milestone = state.milestone || null;
-  const phases = Array.isArray(state.phases) ? state.phases : [];
+  // Prefer state.milestone; fall back to state.current_milestone for compat.
+  const milestone = state.milestone || state.current_milestone || null;
+  const allPhases = Array.isArray(state.phases) ? state.phases : [];
+
+  // --- milestone-scoped phase filtering (#893) ---
+  // Parse ROADMAP.md to find which phase numbers belong to the current
+  // milestone heading (## M1, ## Milestone 2, etc.). When ROADMAP is absent
+  // or the milestone can't be matched, fall back to ALL phases so the health
+  // check still works on unstructured projects.
+  let milestonePhasesNumbers = null; // null = no filtering
+  const roadmapPath = path.join(PROJECT_ROOT, '.planning', 'ROADMAP.md');
+  if (milestone && fs.existsSync(roadmapPath)) {
+    try {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const lines = text.split('\n');
+      // Find the heading that matches the current milestone label.
+      // Accepted forms: "## M3", "## Milestone 3", "## M3 — Some Title", etc.
+      const milestoneId = String(milestone).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const milestoneHeadRe = new RegExp(`^#{1,3}\\s+${milestoneId}[\\s—:\\-]`, 'i');
+      const milestoneHeadBareRe = new RegExp(`^#{1,3}\\s+${milestoneId}\\s*$`, 'i');
+      // Any milestone-level heading that is NOT a Phase heading
+      const anyMilestoneHeadRe = /^#{1,3}\s+(?!Phase\s)/i;
+
+      let inCurrentMilestone = false;
+      const phaseNums = new Set();
+      const phaseRowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|/;
+      const phaseHeadRe = /^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)/i;
+
+      for (const line of lines) {
+        if (milestoneHeadRe.test(line) || milestoneHeadBareRe.test(line)) {
+          inCurrentMilestone = true;
+          continue;
+        }
+        // A different milestone-level heading ends this section
+        if (inCurrentMilestone && anyMilestoneHeadRe.test(line) &&
+            !milestoneHeadRe.test(line) && !milestoneHeadBareRe.test(line)) {
+          break;
+        }
+        if (inCurrentMilestone) {
+          const rm = phaseRowRe.exec(line);
+          if (rm) { phaseNums.add(rm[1]); continue; }
+          const rh = phaseHeadRe.exec(line);
+          if (rh) { phaseNums.add(rh[1]); }
+        }
+      }
+      if (phaseNums.size > 0) milestonePhasesNumbers = phaseNums;
+    } catch { /* ROADMAP unreadable — skip filtering */ }
+  }
+
+  // Select only phases that belong to the current milestone, or all if
+  // ROADMAP filtering wasn't possible.
+  const phases = milestonePhasesNumbers
+    ? allPhases.filter(p => {
+        const num = String(p.number ?? p.id ?? '').trim();
+        return milestonePhasesNumbers.has(num);
+      })
+    : allPhases;
+
   // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
   // 'complete' | 'completed' | 'verified' | 'shipped'. Treat anything not in
   // that set as open. Fix #897 — 'complete' was excluded, causing
@@ -6907,6 +6967,7 @@ function cmdMilestoneHealth() {
     recommendation,
     threshold_consider: 8,
     threshold_should: 12,
+    milestone_scoped: milestonePhasesNumbers !== null,
   };
 }
 
