@@ -15,6 +15,69 @@ function roadmapPathFor(projectRoot) {
 }
 
 /**
+ * Resolve the active ROADMAP file path for a project.
+ *
+ * Convention detection (#734):
+ *   1. Single file — .planning/ROADMAP.md (primary / existing behaviour)
+ *   2. Per-milestone — .planning/ROADMAP-M<N>.md, e.g. ROADMAP-M3.md
+ *      Selects the file that matches state.current_milestone when present;
+ *      falls back to the lexicographically last file when no state is set.
+ *
+ * Returns { path, convention, milestone } where convention is
+ * 'single' | 'per-milestone'.
+ */
+function resolveRoadmapPath(projectRoot) {
+  const single = path.join(projectRoot, '.planning', 'ROADMAP.md');
+  if (fs.existsSync(single)) {
+    return { path: single, convention: 'single', milestone: null };
+  }
+
+  // Scan for ROADMAP-M*.md files
+  const planningDir = path.join(projectRoot, '.planning');
+  let milestoneFiles = [];
+  if (fs.existsSync(planningDir)) {
+    milestoneFiles = fs.readdirSync(planningDir)
+      .filter(f => /^ROADMAP-M\d+\.md$/i.test(f))
+      .sort();
+  }
+
+  if (milestoneFiles.length === 0) {
+    // Neither convention found — return the canonical path (callers handle missing file)
+    return { path: single, convention: 'single', milestone: null };
+  }
+
+  // Read state.json to find current_milestone
+  const stateJsonPath = path.join(projectRoot, '.rcode', 'state.json');
+  let currentMilestone = null;
+  if (fs.existsSync(stateJsonPath)) {
+    try {
+      const st = JSON.parse(fs.readFileSync(stateJsonPath, 'utf8'));
+      currentMilestone = st.current_milestone || null;
+    } catch { /* non-fatal */ }
+  }
+
+  // Try to match by milestone id (e.g. "M3", "3", "milestone-3")
+  let matched = null;
+  if (currentMilestone) {
+    const numMatch = String(currentMilestone).match(/(\d+)/);
+    const milestoneNum = numMatch ? numMatch[1] : null;
+    if (milestoneNum) {
+      matched = milestoneFiles.find(f => {
+        const m = f.match(/^ROADMAP-M(\d+)\.md$/i);
+        return m && m[1] === milestoneNum;
+      });
+    }
+  }
+
+  // Fall back to the last file in sorted order
+  if (!matched) matched = milestoneFiles[milestoneFiles.length - 1];
+
+  const resolvedPath = path.join(planningDir, matched);
+  const milestoneLabel = matched.replace(/^ROADMAP-M(\d+)\.md$/i, 'M$1');
+  return { path: resolvedPath, convention: 'per-milestone', milestone: milestoneLabel };
+}
+
+/**
  * Extract all phase sections. Each returned entry includes:
  *   number, name, goal, section (raw markdown slice), headerIndex, sectionEnd
  */
@@ -143,7 +206,7 @@ function phaseStatus(section) {
 function normalizePhaseNum(n) { return parseInt(String(n).replace(/^0+/, '') || '0', 10); }
 
 function cmdGetPhase(projectRoot, phaseNum, opts = {}) {
-  const rp = roadmapPathFor(projectRoot);
+  const { path: rp } = resolveRoadmapPath(projectRoot);
   if (!fs.existsSync(rp)) {
     return { found: false, error: 'ROADMAP.md not found', phase_number: phaseNum };
   }
@@ -188,7 +251,7 @@ function cmdGetPhase(projectRoot, phaseNum, opts = {}) {
 }
 
 function cmdListPhases(projectRoot) {
-  const rp = roadmapPathFor(projectRoot);
+  const { path: rp } = resolveRoadmapPath(projectRoot);
   if (!fs.existsSync(rp)) return [];
   const content = fs.readFileSync(rp, 'utf8');
   // Phase 10 / #466 — prefer the parsed Status field from extractPhases over
@@ -293,7 +356,7 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
   if (!planId || !status) {
     throw new Error('Usage: roadmap update-plan-progress <phase> <plan-id> <status>');
   }
-  const rp = roadmapPathFor(projectRoot);
+  const { path: rp } = resolveRoadmapPath(projectRoot);
   if (!fs.existsSync(rp)) {
     return { updated: false, error: 'ROADMAP.md not found' };
   }
@@ -345,7 +408,7 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
  * roadmap summary — overview of phase counts and active phase.
  */
 function cmdSummary(projectRoot) {
-  const rp = roadmapPathFor(projectRoot);
+  const { path: rp } = resolveRoadmapPath(projectRoot);
   if (!fs.existsSync(rp)) return { found: false, error: 'ROADMAP.md not found' };
   const phases = cmdListPhases(projectRoot);
   const total = phases.length;
@@ -364,6 +427,8 @@ function cmdSummary(projectRoot) {
  * roadmap clear — archive and scaffold.
  */
 function cmdClear(projectRoot) {
+  // Clear always targets the canonical single-file path — per-milestone files
+  // are managed per-milestone and not cleared globally.
   const rp = roadmapPathFor(projectRoot);
   // Derive current version from config.yaml or default v1.0
   const configPath = path.join(projectRoot, '.rcode', 'config.yaml');
@@ -389,6 +454,43 @@ function cmdClear(projectRoot) {
   return { cleared: true, archived, version, roadmap: rp };
 }
 
+/**
+ * roadmap detect — report which ROADMAP convention is in use (#734).
+ *
+ * Outputs a human-readable line and returns structured JSON.
+ * Examples:
+ *   single: .planning/ROADMAP.md
+ *   per-milestone: .planning/ROADMAP-M3.md (current)
+ */
+function cmdDetect(projectRoot) {
+  const resolved = resolveRoadmapPath(projectRoot);
+  const exists = fs.existsSync(resolved.path);
+  const rel = path.relative(projectRoot, resolved.path);
+
+  if (resolved.convention === 'single') {
+    const label = exists ? `single: ${rel}` : `single: ${rel} (not found)`;
+    return { __raw: label, convention: 'single', path: rel, exists, milestone: null };
+  }
+
+  // per-milestone — also list all available milestone files
+  const planningDir = path.join(projectRoot, '.planning');
+  const allFiles = fs.existsSync(planningDir)
+    ? fs.readdirSync(planningDir).filter(f => /^ROADMAP-M\d+\.md$/i.test(f)).sort()
+    : [];
+
+  const label = exists
+    ? `per-milestone: ${rel} (current)`
+    : `per-milestone: ${rel} (current, not found)`;
+  return {
+    __raw: label,
+    convention: 'per-milestone',
+    path: rel,
+    exists,
+    milestone: resolved.milestone,
+    all_milestone_files: allFiles.map(f => path.join('.planning', f)),
+  };
+}
+
 function dispatch(projectRoot, subArgs) {
   const sub = subArgs[0];
   const rest = subArgs.slice(1);
@@ -411,8 +513,10 @@ function dispatch(projectRoot, subArgs) {
       return cmdClear(projectRoot);
     case 'summary':
       return cmdSummary(projectRoot);
+    case 'detect':
+      return cmdDetect(projectRoot);
     default:
-      throw new Error(`Unknown roadmap subcommand: ${sub}. Valid: get-phase, list-phases, update-plan-progress, clear, summary`);
+      throw new Error(`Unknown roadmap subcommand: ${sub}. Valid: get-phase, list-phases, update-plan-progress, clear, summary, detect`);
   }
 }
 
@@ -423,4 +527,6 @@ module.exports = {
   cmdUpdatePlanProgress,
   cmdClear,
   cmdSummary,
+  cmdDetect,
+  resolveRoadmapPath,
 };
