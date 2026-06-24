@@ -66,11 +66,30 @@ function extractPhases(content) {
 
 function parseRequirements(section) {
   // Matches both bold-style (**Requirements:**) and heading-style (### Requirements)
-  const match = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
-  if (!match) return [];
-  return match[1].split('\n')
-    .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
-    .filter(Boolean);
+  // followed by a list block.
+  const listMatch = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
+  if (listMatch) {
+    return listMatch[1].split('\n')
+      .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
+      .filter(Boolean);
+  }
+
+  // Also capture REQ-IDs from inline lines like:
+  //   **REQs:** REQ-004, REQ-010, REQ-020
+  //   Requirements: REQ-001, REQ-002
+  //   **Covers:** REQ-001, REQ-003
+  // Collect every line in the section that contains REQ-\d+ patterns.
+  const seen = new Set();
+  const out = [];
+  const reqIdRe = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
+  for (const line of section.split('\n')) {
+    if (!/REQ-/i.test(line)) continue;
+    const ids = line.match(reqIdRe) || [];
+    for (const id of ids) {
+      if (!seen.has(id)) { seen.add(id); out.push(id); }
+    }
+  }
+  return out;
 }
 
 function parseSuccessCriteria(section) {
