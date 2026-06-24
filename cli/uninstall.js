@@ -950,7 +950,17 @@ async function runUninstall(args) {
   const rcodeStillExists = plan.stateDir && fs.existsSync(path.join(cwd, '.rcode'));
   const planningStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.planning'));
   const agentsRulesStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.claude/agents/rules'));
-  const cursorStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.cursor'));
+  // Only flag .cursor/ as residue if rcode files are still inside it — the dir
+  // may exist for unrelated Cursor user config that was never touched by rcode.
+  const cursorStillExists = !opts.purge && (() => {
+    const rulesDir = path.join(cwd, '.cursor/rules');
+    if (!fs.existsSync(rulesDir)) return false;
+    try {
+      return fs.readdirSync(rulesDir).some(
+        (f) => f.startsWith('rcode-') || f === 'rcode.mdc' || f === 'rcode-method.mdc' || f === 'rcode',
+      );
+    } catch { return false; }
+  })();
   const gitignoreBlockStillExists = !opts.purge && (() => {
     try {
       const gi = path.join(cwd, '.gitignore');
@@ -959,7 +969,15 @@ async function runUninstall(args) {
       return txt.includes('# ===== rcode-managed gitignore block') || txt.includes('# >>> rcode >>>');
     } catch { return false; }
   })();
-  const preCommitStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.git/hooks/pre-commit'));
+  // Only flag pre-commit as residue if the rcode block is still present inside
+  // it — the hook file may exist for user-written scripts unrelated to rcode.
+  const preCommitStillExists = !opts.purge && (() => {
+    const hookPath = path.join(cwd, '.git/hooks/pre-commit');
+    if (!fs.existsSync(hookPath)) return false;
+    try {
+      return fs.readFileSync(hookPath, 'utf8').includes('# ===== rcode-managed pre-commit block =====');
+    } catch { return false; }
+  })();
 
   if (rcodeStillExists || planningStillExists || agentsRulesStillExists || cursorStillExists || gitignoreBlockStillExists || preCommitStillExists) {
     console.log();
