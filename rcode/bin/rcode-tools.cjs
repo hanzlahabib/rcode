@@ -3592,6 +3592,23 @@ function cmdPhase(subArgs) {
 
     if (fs.existsSync(roadmapPath)) {
       let text = fs.readFileSync(roadmapPath, 'utf8');
+
+      // #895 — Validate state.milestone against ROADMAP before inserting.
+      // Find the last top-level milestone heading ("# M\d+" or "## M\d+") in
+      // ROADMAP.md. That is the active milestone — use it as the insertion
+      // target and correct state.milestone if it is stale.
+      const milestoneHeadingRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+      let lastMilestoneLabel = null;
+      let mh;
+      while ((mh = milestoneHeadingRe.exec(text)) !== null) {
+        // Skip the generic "## Milestones" index heading.
+        if (/^milestones?\s*$/i.test(mh[1].trim())) continue;
+        lastMilestoneLabel = mh[1].trim();
+      }
+      if (lastMilestoneLabel && lastMilestoneLabel !== (state.milestone || '')) {
+        state.milestone = lastMilestoneLabel;
+      }
+
       const backlogMatch = text.match(/^##\s+Backlog\b/m);
       if (backlogMatch) {
         const backlogIdx = backlogMatch.index;
