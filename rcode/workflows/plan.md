@@ -49,9 +49,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 ${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
 @.rcode/references/revision-loop.md
 @.rcode/references/gate-prompts.md
-@.rcode/references/agent-contracts.md
-@.rcode/references/gates.md
 @.rcode/references/karpathy-guidelines.md
+<!-- Read .rcode/references/agent-contracts.md only if defining or debugging agent contracts -->
+<!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic -->
 @.rcode/references/thinking-models-planning.md
 </required_reading>
 

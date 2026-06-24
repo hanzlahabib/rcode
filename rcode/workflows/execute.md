@@ -183,11 +183,11 @@ via filesystem and git state.
 @.rcode/references/git-preflight.md
 Read STATE.md before any operation to load project context.
 
-@.rcode/references/agent-contracts.md
-@.rcode/references/context-budget.md
-@.rcode/references/gates.md
 @.rcode/references/karpathy-guidelines.md
 @.rcode/references/execution-protocol.md
+<!-- Read .rcode/references/agent-contracts.md only if debugging agent contract violations -->
+<!-- Read .rcode/references/context-budget.md only if context degradation guidance is needed -->
+<!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic -->
 </required_reading>
 
 <available_agent_types>
