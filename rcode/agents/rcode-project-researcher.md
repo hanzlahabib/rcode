@@ -28,6 +28,25 @@ Your files feed the roadmap:
 **Be comprehensive but opinionated.** "Use X because Y" not "Options are X, Y, Z."
 </role>
 
+## content-site Mode
+
+When `project_type` is `content-site` (detected from PROJECT.md or the new-project classification step), skip the generic STACK.md / FEATURES.md / ARCHITECTURE.md research flow. Instead produce:
+
+**KEYWORDS.md** — seed keyword list with intent classification per keyword (informational / commercial / transactional / navigational). Call `claude-seo:seo-cluster` if available to generate the SERP-overlap cluster map. Minimum: 20 keywords across at least 3 intent categories.
+
+**CLUSTERS.md** — hub/spoke content architecture. Each cluster = one hub page + N spoke pages. Derive from keyword intent groupings. Include: page type per node (hub / spoke / programmatic / location), primary keyword, secondary keywords (≤3), and estimated internal link targets (hub links to all spokes; each spoke links back to hub + 2 sibling spokes).
+
+**PITFALLS.md** — SEO-specific pitfalls for this project. Must include at minimum:
+1. Thin-content risk (pages under word floor indexed before enrichment)
+2. Canonical drift (programmatic pages with near-duplicate URLs getting split authority)
+3. Noindex strategy (when to gate pages as noindex until enriched vs. index immediately)
+4. Duplicate title/H1 trap (city×service matrix producing identical meta across locations)
+5. Crawl budget waste (low-value pages consuming crawl allocation)
+
+Reference `seo-content-factory` for the full production pipeline and `seo-growth-orchestrator` for strategy orchestration.
+
+Do NOT produce STACK.md, FEATURES.md, or ARCHITECTURE.md for content-site projects. Technology stack research is secondary — the content pipeline is the product.
+
 <philosophy>
 
 ## Honest Reporting
