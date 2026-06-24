@@ -521,7 +521,7 @@ only surface at install time.
 ### For dashboard changes
 1. `node server/dashboard.js` starts cleanly
 2. Visit `http://localhost:7717` — all sections render
-3. Stop with `kill $(lsof -t -i:7717)`
+3. Stop with `kill $(ss -ltnp 'sport = :7717' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`
 
 ### For new workflows
 1. Read the workflow instructions end-to-end as if executing it

@@ -146,7 +146,7 @@ Asks 5 questions, populates `.rcode/memory/` with the project goal, stack, miles
 node server/dashboard.js
 ```
 
-Visit `http://localhost:7717`. Browse phases, decisions, files, agents, and Memory Bank in one view. Stop with `kill $(lsof -t -i:7717)`.
+Visit `http://localhost:7717`. Browse phases, decisions, files, agents, and Memory Bank in one view. Stop with `kill $(ss -ltnp 'sport = :7717' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`.
 
 ---
 
@@ -518,7 +518,7 @@ node server/dashboard.js
 # defaults to PORT=7717
 ```
 
-Stop with `kill $(lsof -t -i:7717)`.
+Stop with `kill $(ss -ltnp 'sport = :7717' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`.
 
 ### Routes
 
@@ -784,7 +784,7 @@ Or boot the dashboard at `/health` for a JSON status.
 Another instance is on port 7717:
 
 ```bash
-kill $(lsof -t -i:7717)
+kill $(ss -ltnp 'sport = :7717' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')
 node server/dashboard.js
 ```
 
