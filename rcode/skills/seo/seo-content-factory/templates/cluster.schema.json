@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "clusters.json — A3 output",
+  "type": "object",
+  "required": ["hubs"],
+  "properties": {
+    "hubs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hub_page", "spokes", "page_kind"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hub_page": {
+            "type": "object",
+            "required": ["slug", "type", "keyword"],
+            "properties": {
+              "slug": { "type": "string" },
+              "type": { "enum": ["money", "supporting", "blog"] },
+              "keyword": { "type": "string" }
+            }
+          },
+          "page_kind": { "enum": ["programmatic", "editorial"] },
+          "dimensions": {
+            "type": "object",
+            "description": "Required when page_kind=programmatic",
+            "properties": {
+              "service": { "type": "string" },
+              "vary_by": { "type": "string", "description": "registry file e.g. industries.ts" }
+            }
+          },
+          "spokes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["slug", "type", "keyword", "page_kind", "min_words", "cluster_id"],
+              "properties": {
+                "slug": { "type": "string" },
+                "type": { "enum": ["money", "supporting", "blog"] },
+                "keyword": { "type": "string" },
+                "page_kind": { "enum": ["programmatic", "editorial"] },
+                "min_words": { "type": "integer", "minimum": 600 },
+                "cluster_id": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

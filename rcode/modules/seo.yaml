@@ -1,0 +1,22 @@
+name: seo
+version: "1.0"
+description: "Full-spectrum SEO skills — content factory, growth orchestrator, audits, writer, site builder, local SEO, on-page and technical auditors"
+requires:
+  - core
+agents: []
+workflows: []
+commands:
+  - seo-content-factory
+  - seo-growth-orchestrator
+  - seo-audit
+  - on-page-seo-auditor
+  - technical-seo-checker
+  - seo-content-writer
+  - seo-site-builder
+  - rank-and-rent-local-seo
+references:
+  # claude-seo plugin agents — NOT bundled. Install separately: npx @hanzlaa/claude-seo install
+  # Routing rules in do.md reference: seo-cluster, seo-programmatic, seo-schema, seo-geo,
+  # seo-local, seo-sxo, seo-technical, seo-content, seo-backlinks, seo-ecommerce,
+  # seo-maps, seo-page, seo-performance, seo-sitemap, seo-drift, seo-dataforseo
+  - claude-seo-plugin-agents.md

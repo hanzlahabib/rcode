@@ -140,6 +140,23 @@ When a user picks capability `DS`, Claude invokes the `rcode-dev-story` skill.
 
 ---
 
+## SEO Module (8)
+
+Full-spectrum SEO skills — content factory, growth orchestrator, audits, writer, site builder, local SEO, on-page and technical auditors.
+
+| Skill | Path | Description |
+|---|---|---|
+| **seo-content-factory** | `rcode/skills/seo/seo-content-factory/` | Continuous organic-traffic growth via produced SEO pages; the production line for content-driven strategies |
+| **seo-growth-orchestrator** | `rcode/skills/seo/seo-growth-orchestrator/` | Strategic SEO orchestrator across five plays: local, affiliate, technical, content-factory, and e-commerce |
+| **seo-audit** | `rcode/skills/seo/seo-audit/` | Full-spectrum SEO audit covering on-page, technical, content, and backlink signals |
+| **on-page-seo-auditor** | `rcode/skills/seo/on-page-seo-auditor/` | On-page analysis covering title tags, meta, headings, keyword integration, and CTR optimization |
+| **technical-seo-checker** | `rcode/skills/seo/technical-seo-checker/` | Technical SEO audit covering crawlability, robots.txt, sitemaps, Core Web Vitals, and indexability |
+| **seo-content-writer** | `rcode/skills/seo/seo-content-writer/` | SEO-optimized content writing with natural keyword integration and E-E-A-T quality signals |
+| **seo-site-builder** | `rcode/skills/seo/seo-site-builder/` | End-to-end affiliate content site builder: niche discovery, keyword analysis, competitor intel, and site build |
+| **rank-and-rent-local-seo** | `rcode/skills/seo/rank-and-rent-local-seo/` | Rank-and-rent local SEO business playbook: niche selection, long-tail targeting, multi-city expansion |
+
+---
+
 ## Licensing
 
 Free to use and adapt.

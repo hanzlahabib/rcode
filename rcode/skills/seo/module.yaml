@@ -1,0 +1,20 @@
+code: seo
+name: "rcode SEO Module"
+
+header: "rcode SEO Module Configuration"
+subheader: "Configure the SEO module for your rcode installation.\nThese settings apply to all SEO skills: content factory, growth orchestrator, audits, and local SEO."
+
+default_seo_vertical:
+  prompt: "What is your primary SEO vertical? (local, affiliate, technical, content-factory, e-commerce, saas, publisher, agency)"
+  default: "general"
+  result: "{value}"
+
+gsc_access:
+  prompt: "Do you have Google Search Console access for the target domain? (yes/no)"
+  default: "no"
+  result: "{value}"
+
+content_quality_gate:
+  prompt: "Minimum word count for SEO content pieces?"
+  default: "1200"
+  result: "{value}"
