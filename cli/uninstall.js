@@ -949,17 +949,41 @@ async function runUninstall(args) {
   // Notice about what was intentionally preserved (#876 — never delete user data silently)
   const rcodeStillExists = plan.stateDir && fs.existsSync(path.join(cwd, '.rcode'));
   const planningStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.planning'));
-  if (rcodeStillExists || planningStillExists) {
+  const agentsRulesStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.claude/agents/rules'));
+  const cursorStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.cursor'));
+  const gitignoreBlockStillExists = !opts.purge && (() => {
+    try {
+      const gi = path.join(cwd, '.gitignore');
+      if (!fs.existsSync(gi)) return false;
+      const txt = fs.readFileSync(gi, 'utf8');
+      return txt.includes('# ===== rcode-managed gitignore block') || txt.includes('# >>> rcode >>>');
+    } catch { return false; }
+  })();
+  const preCommitStillExists = !opts.purge && fs.existsSync(path.join(cwd, '.git/hooks/pre-commit'));
+
+  if (rcodeStillExists || planningStillExists || agentsRulesStillExists || cursorStillExists || gitignoreBlockStillExists || preCommitStillExists) {
     console.log();
-    console.log(`ℹ  Preserved (your project data — not removed by default):`);
+    console.log(`ℹ  Preserved (use --purge to remove all of these):`);
     if (rcodeStillExists) {
-      console.log(`      .rcode/     phases, decisions, progress, config`);
-      console.log(`                  /rcode-init will detect this on reinstall`);
+      console.log(`      .rcode/                    project state, config, decisions`);
     }
     if (planningStillExists) {
-      console.log(`      .planning/  planning scaffolds (ROADMAP, STATE, PROJECT)`);
+      console.log(`      .planning/                 ROADMAP, STATE, PROJECT scaffolds`);
     }
-    console.log(`   To remove these on next uninstall: rcode uninstall --purge`);
+    if (agentsRulesStillExists) {
+      console.log(`      .claude/agents/rules/      agent rule files`);
+    }
+    if (cursorStillExists) {
+      console.log(`      .cursor/                   Cursor IDE integration`);
+    }
+    if (gitignoreBlockStillExists) {
+      console.log(`      .gitignore                 rcode-managed block still present`);
+    }
+    if (preCommitStillExists) {
+      console.log(`      .git/hooks/                pre-commit hook still present`);
+    }
+    console.log();
+    console.log(`   Full cleanup: rcode uninstall --purge`);
   }
 
   // IDE cache reload hint — Claude Code caches the slash-command list in memory.

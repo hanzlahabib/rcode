@@ -64,6 +64,10 @@ Usage:
   init           Alias for install
   update         Refresh skill files (backs up .rcode/ state first)
   uninstall      Remove rcode from the current project
+                 --yes      Skip confirmation prompts
+                 --purge    Remove everything: .rcode/ state, .planning/ scaffolds,
+                            .claude/agents/rules/, .cursor/ rcode files,
+                            .gitignore block, and .git/hooks/pre-commit
   remove         Alias for uninstall
   nuke           Wipe ALL rcode/rcode installs everywhere (global packages,
                  binaries, ~/.claude/* rcode artifacts, ~/.rcode/, project artifacts)
