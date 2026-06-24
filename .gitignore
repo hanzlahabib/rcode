@@ -72,6 +72,9 @@ temp/
 #   .planning/                - PRD, roadmap, sprints, SUMMARY.md files
 # ===== end rcode-managed gitignore block =====
 
+# npm prepack strip backup (auto-deleted by postpack; guard against crash mid-pack)
+package.json.prepack-backup
+
 # Python bytecode
 __pycache__/
 *.pyc
