@@ -64,6 +64,20 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 <process>
 
+## 0. Project-Status Preflight
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+
+```
+Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+```
+
+Stop. Do not proceed until `project-status` returns `real`.
+
 ## 1. Initialize
 
 Load all context in one call (paths only to minimize orchestrator context):
@@ -117,7 +131,7 @@ fi
 
 When `GAPS_MODE=true`, the workflow switches to **gap-closure planning**: read the phase's VERIFICATION.md, extract verification gaps classified `gap_found` or `partial`, and produce a single new numbered plan file (`NNN-NN-SPRINT.md`) that closes them. Research, CONTEXT.md gating, and VALIDATION.md creation are skipped — gaps are grounded in already-shipped code, not new design work.
 
-**Detect from-stub mode (closes #736):**
+**Detect from-stub mode:**
 ```bash
 if [[ "$ARGUMENTS" =~ (^|[[:space:]])--from-stub($|[[:space:]]) ]]; then
   FROM_STUB_MODE=true
@@ -154,7 +168,7 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
-**TASKS.md ingestion (#385 chain).** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rcode-add-phase` from a bulk `/rcode-quick` or `/rcode-do` route), read it now:
+**TASKS.md ingestion.** If the phase directory contains a `TASKS.md` file (typically auto-extracted by `/rcode-add-phase` from a bulk `/rcode-quick` or `/rcode-do` route), read it now:
 
 ```bash
 TASKS_FILE=".planning/phases/${padded_phase}-${phase_slug}/TASKS.md"
@@ -187,6 +201,12 @@ Exit workflow.
 ## 3. Validate Phase
 
 ```bash
+# Stub-ROADMAP guard — emit a warning if ROADMAP.md has no real phase headings.
+ROADMAP_PHASE_COUNT=$(grep -c "^## Phase " "${ROADMAP_PATH}" 2>/dev/null || echo 0)
+if [ "${ROADMAP_PHASE_COUNT}" -eq 0 ]; then
+  echo "⚠ WARN: ROADMAP.md appears to be a stub — add real ## Phase headings before running plan."
+  exit 1
+fi
 PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
@@ -326,7 +346,7 @@ Otherwise use AskUserQuestion:
 If "Continue without context": Proceed to step 5.
 If "Run discuss-phase first":
   **IMPORTANT:** Do NOT invoke discuss-phase as a nested Skill/Task call — AskUserQuestion
-  does not work correctly in nested subcontexts (#1009). Instead, display the command
+  does not work correctly in nested subcontexts. Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
   Run this command first, then re-run /rcode-plan {X} ${RCODE_WS}:
@@ -362,7 +382,7 @@ Always offer exactly three numbered options:
 
 Wait for the user's choice before proceeding. Do not auto-select.
 
-**If user picks option 1 (Add more plans) — issue #650:**
+**If user picks option 1 (Add more plans):**
 
 This is **NOT** a license to hand-write a new SPRINT.md inline. Continue down the
 normal pipeline exactly as if no plans existed yet:
@@ -376,8 +396,7 @@ normal pipeline exactly as if no plans existed yet:
    first-time plan. The "PLANNED ✓" banner is gated on a passing CHECK.md.
 
 A run that emits a SPRINT.md without a corresponding planner Task() invocation
-in the same turn is a malfunction — see issue #650. Stop and report instead of
-shipping a hand-rolled plan.
+in the same turn is a malfunction. Stop and report instead of shipping a hand-rolled plan.
 
 **If user picks option 3 (Replan from scratch):**
 
@@ -390,7 +409,7 @@ still mandatory.
 
 Display a sprint summary table (sprint id → one-line goal).
 
-Then run a **best-effort codebase overlap check** before showing the execute prompt — Closes #596.
+Then run a **best-effort codebase overlap check** before showing the execute prompt.
 
 **This check is always informational. It never blocks, never errors, never fails the workflow.** If any step below cannot complete for any reason, skip it silently and proceed straight to the execute prompt.
 
@@ -460,6 +479,73 @@ Proceed to Step 8 only if user selects 2 or 3.
 
 @.rcode/workflows/plan-spawn-planner.md
 
+## 8.5. File-Ownership & Conflict-Avoidance
+
+After the planner returns SPRINT.md files, run these checks before advancing to step 9.
+These rules were added after overnight parallel builds exposed silent merge-time data loss
+(calorie-calculator-ai, 2026-05-26). The wave-overlap CLI check in step 12.5 catches
+same-wave/same-file issues mechanically; this step catches plan-level ownership gaps earlier.
+
+**Step 1 — Build the cross-sprint file manifest.**
+
+Read each SPRINT.md produced this run and collect its `files_modified:` frontmatter list.
+Produce a de-duplicated map: `file → [sprint_ids that touch it]`.
+
+```bash
+# Quick grep of frontmatter to build the manifest
+grep -A 50 "^files_modified:" "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null
+```
+
+**Step 2 — Flag collisions.**
+
+For each file that appears in 2+ sprint lists:
+
+| Type | Rule |
+|------|------|
+| Two sprints **create** the same file | Plan defect — merge tasks or sequence; only one sprint may create a file |
+| Two same-wave sprints **modify** the same file | Later sprint MUST have `sequential: true` + `sequential_after:` in frontmatter |
+| An aggregator file touched by multiple sprints | Each sprint's `<action>` must use append-only `Edit`, not `Write` |
+
+Aggregator patterns (known high-collision targets):
+- `**/index.ts`, `**/index.tsx` (barrel exports)
+- `**/store/index.ts`, `**/store/index.js`
+- `**/types/index.ts`, `**/types.ts`
+- `main.py`, `app.py`, `router/__init__.py`, `**/__init__.py`
+- `package.json` (scripts / deps blocks)
+
+**Step 3 — Verify-command accuracy.**
+
+Scan every `<verify><automated>` block for raw tool invocations (`tsc --noEmit`, `eslint .`,
+`jest`, `vitest`). If found, check `package.json` scripts and replace with the `pnpm run <script>`
+equivalent. Mismatch example from overnight build: plan wrote `tsc --noEmit` but the project's
+script was named `type-check`.
+
+**Step 4 — Report and gate.**
+
+If any creation collision found → **BLOCK plan acceptance**. Edit the colliding sprint to remove
+the duplicate creation task (have the second sprint import/extend from the first sprint's output).
+
+If any modify-collision found in the same wave → edit the later sprint's frontmatter immediately:
+```yaml
+sequential: true
+sequential_after: <earlier_sprint_id>
+conflicting_files: [<shared_files...>]
+```
+
+Display a summary:
+```
+File-Ownership Check:
+  ✓ N files with single owner
+  ⚠ M aggregator files — append-only instructions verified
+  ✗ K creation collisions (blocked — fixed inline)
+  ~ J sequential flags added
+```
+
+If no issues: `File-Ownership Check: ✓ no collisions.`
+
+**This check is informational for warnings and blocking for creation collisions.**
+It never silently passes a plan where two sprints create the same file.
+
 ## 9. Handle Planner Return
 
 - **`## PLANNING COMPLETE`:** Display plan count. If `--skip-verify` or `plan_checker_enabled` is false (from init): skip to step 13. Otherwise: step 10.
@@ -467,7 +553,7 @@ Proceed to Step 8 only if user selects 2 or 3.
 - **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
 - **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
 
-**Sprint count guard (token cost protection — closes #584):**
+**Sprint count guard (token cost protection):**
 
 After planner returns `## PLANNING COMPLETE`, immediately count sprint files:
 
@@ -603,7 +689,7 @@ If thinking_partner disabled: skip this block entirely.
 
 ## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
 
-**Mode-based iteration cap (token cost protection — closes #585):**
+**Mode-based iteration cap (token cost protection):**
 
 ```bash
 MAX_ITERATIONS=$($TOOL config-get workflow.max_checker_iterations 2>/dev/null || echo "")
@@ -619,7 +705,7 @@ Track `stall_reentry_count` (starts at 0; incremented each time "Adjust approach
 
 **If iteration_count < MAX_ITERATIONS:**
 
-**Sprint-checker malfunction guard (BLOCKER-class — added in v3.1.0 after #440):**
+**Sprint-checker malfunction guard (BLOCKER-class):**
 
 Before parsing issues, verify the checker actually invoked tools. The checker MUST exhibit at least one of these evidence markers in its return:
 
@@ -628,11 +714,11 @@ Before parsing issues, verify the checker actually invoked tools. The checker MU
 - At least one `path:` field in any block (e.g. `path: src/components/Foo.tsx:42`)
 - A summary line of the form `Verified N of M files` or `Checked N symbols`
 
-If NONE of these evidence markers are present, the checker malfunctioned (returned narrative without invoking tools — see #440). BLOCK execution:
+If NONE of these evidence markers are present, the checker malfunctioned (returned narrative without invoking tools). BLOCK execution:
 
 ```
 Display: "Sprint-checker returned without evidence of tool use — likely
-         malfunctioned (cf. issue #440). Refusing to advance the plan
+         malfunctioned (returned narrative without tool use). Refusing to advance the plan
          on unverified output. Re-run /rcode-plan or inspect the agent."
 Halt the workflow with a non-zero exit signal.
 ```
@@ -704,7 +790,7 @@ Display: `Max iterations reached. {N} issues remain:` + issue list
 
 Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 
-## 12.5. Wave Parallelism File-Overlap Check (added in v3.1.0 after #442)
+## 12.5. Wave Parallelism File-Overlap Check
 
 Before declaring plans ready, validate the wave-parallelism rule the planner declares: **same wave + overlapping `files_modified` = sequential, not parallel**. If two plans share `depends_on` (same wave) and both list the same file in `files_modified`, the planner should have marked the later one `sequential: true`. Catch the cases where it didn't.
 
@@ -747,7 +833,7 @@ The CLI helper returns a JSON report:
 
 **If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
 
-This closes the gap from #442 — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
+This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
 
 ## 13. Requirements Coverage Gate
 
@@ -806,9 +892,15 @@ After plans pass all gates, record that planning is complete so STATE.md reflect
 
 ```bash
 node ".rcode/bin/rcode-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+
+# Register the just-written SPRINT.md files into the canonical nested
+# phase.sprints[] so the Diwan dashboard reflects them. Without this, the
+# dashboard reads phase.sprints[] (empty) and keeps showing "Run /rcode-plan"
+# even though the plans exist on disk.
+node ".rcode/bin/rcode-tools.cjs" state sync --from-disk
 ```
 
-This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
+This updates STATUS to "Ready to execute", sets the correct plan count, timestamps Last Activity, and syncs the new sprints into state so the dashboard shows them.
 
 ## 14. Present Final Status
 
@@ -881,7 +973,7 @@ Route to `<offer_next>` (existing behavior).
 </process>
 
 <banner_emission_gate>
-Issue #655 — the success banner is gated on real verification, not vibes.
+The success banner is gated on real verification, not vibes.
 Before emitting `PLANNED ✓`, confirm one of these is true:
 
 1. A passing CHECK.md exists at `${PHASE_DIR}/*-CHECK.md` from rcode-sprint-checker

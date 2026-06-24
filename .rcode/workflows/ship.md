@@ -34,6 +34,45 @@ the plan → execute → verify → **ship** loop.
 ```
 </purpose>
 
+<prerequisites>
+
+**Required before running `/rcode-ship`:**
+
+1. **Git remote configured** — `git remote -v` must list at least one remote (typically `origin`). Without a remote, the push and PR steps will fail.
+2. **`gh` CLI authenticated** — `gh auth status` must succeed. Without this, PR creation will fail.
+3. **Clean working tree** — no uncommitted changes (`git status --short` returns nothing).
+4. **On a feature branch** — not on `main` or `develop` directly.
+5. **Verification passed** — `/rcode-verify-phase <phase>` must have run and produced a VERIFICATION.md with `status: passed`.
+
+</prerequisites>
+
+<warning>
+
+**If your workspace has no git remote or `gh` is not authenticated, the push and PR steps will fail.**
+
+Check before running:
+```bash
+git remote -v          # must list at least one remote
+gh auth status         # must exit 0
+```
+
+**Manual fallbacks if these are missing:**
+
+- **No remote:** Add one with `git remote add origin <repo-url>`, then re-run `/rcode-ship`. Or push manually:
+  ```bash
+  git push origin <branch>
+  ```
+  Then open a PR via the GitHub web UI at `https://github.com/<owner>/<repo>/compare/<branch>`.
+
+- **`gh` not authenticated:** Run `gh auth login` to authenticate, then re-run `/rcode-ship`. Or create the PR directly at:
+  ```
+  https://github.com/<owner>/<repo>/compare/<branch>
+  ```
+
+- **Git worktree context:** If `.git` is a file (not a directory), you are in a worktree. Remotes are shared with the main repo — run `git remote -v` from the main repo root to verify. If the main repo has `origin`, the worktree inherits it automatically.
+
+</warning>
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>

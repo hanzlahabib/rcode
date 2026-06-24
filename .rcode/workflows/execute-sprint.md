@@ -4,7 +4,7 @@ Execute a phase prompt (SPRINT.md) and create the outcome summary (SUMMARY.md).
 
 <required_reading>
 Read STATE.md before any operation to load project context.
-Read config.json for planning behavior settings.
+Read config.yaml for planning behavior settings.
 
 @.rcode/references/git-integration.md
 @.rcode/references/karpathy-guidelines.md
@@ -16,6 +16,26 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 </available_agent_types>
 
 <process>
+
+<preflight name="dependency_check">
+**Check for uninstalled dependencies:** If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING and stop:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Then re-run the sprint. Proceeding without installed dependencies will cause task failures.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
+
+```bash
+if [ -f package.json ] && [ ! -d node_modules ] || [ -f package.json ] && [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+  echo "⚠ WARNING: package.json found but node_modules/ is missing or empty."
+  echo "  Run: pnpm install (or npm install if pnpm is not available)"
+  echo "  Then re-run the sprint."
+fi
+```
+</preflight>
 
 <step name="init_context" priority="first">
 Load execution context (paths only to minimize orchestrator context):
@@ -103,6 +123,8 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md
 | Decision | C (main) | Execute entirely in main context |
 
 **Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="rcode-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+
+**Post-install namespace fallback:** If `Task(subagent_type="rcode-executor")` fails with "Agent type not found", the runtime has not yet registered the agent (requires IDE reload after install). Retry with `subagent_type="rihal-executor"`. If that also fails, fall back to Pattern C (execute in main context) and log `[execute-sprint] rcode-executor not available — reload IDE or executing in main context`.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -293,6 +315,12 @@ If a commit is BLOCKED by a hook:
 
 After each task (verification passed, done criteria met), commit immediately.
 
+**Preflight — verify git repo exists:**
+```bash
+git rev-parse --git-dir
+```
+If this fails, stop and emit: `No git repository found. Run git init first, then re-run this workflow.`
+
 **1. Check:** `git status --short`
 
 **2. Stage individually** (NEVER `git add .` or `git add -A`):
@@ -348,7 +376,7 @@ If new untracked files appeared after running scripts or tools, decide for each:
 </task_commit>
 
 <post_step_revert_gate>
-## Post-Step Revert Detection Gate (closes #737)
+## Post-Step Revert Detection Gate
 
 After committing each task, run a diff check to detect accidental reverts. This catches the class of bug where a task's implementation unknowingly undoes work from a previous task or wave.
 

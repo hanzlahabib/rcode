@@ -32,6 +32,9 @@ if [ -f "package.json" ]; then
 elif [ -f "Cargo.toml" ]; then
   cargo test 2>&1
 elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+  # Python prerequisites: ensure Python 3.10+ is active (python --version).
+  # Install dependencies (pip install -r requirements.txt or uv sync).
+  # Activate your venv if applicable before running tests.
   python -m pytest ${REGRESSION_FILES} -q --tb=short 2>&1
 fi
 ```

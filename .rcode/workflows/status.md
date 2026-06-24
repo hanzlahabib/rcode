@@ -1,7 +1,7 @@
 # Workflow: rcode-status
 
 <purpose>
-Render a human-readable project status dashboard. All data comes from a single `rcode-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rcode-tools.cjs` `cmdProgress` for the source-of-truth logic (issue #159 M2.5).
+Render a human-readable project status dashboard. All data comes from a single `rcode-tools progress init` call — this workflow does NOT parse ROADMAP.md, walk SUMMARY.md files, or grep state.json itself. Rendering only. See `rcode-tools.cjs` `cmdProgress` for the source-of-truth logic.
 
 **SSOT:** `.rcode/state.json`. `/rcode-status` and `/rcode-progress` both call the same CLI so they cannot disagree. If the CLI reports a drift insight, surface it — do not silently compensate.
 </purpose>
@@ -53,7 +53,7 @@ Then stop.
 If `SNAPSHOT.weighted_progress > 0` but `SNAPSHOT.completed_count === 0`, display
 the weighted bar as the primary progress indicator to avoid a misleading `0/N (0%)`.
 
-### Milestone health (issue #718)
+### Milestone health
 
 After the main dashboard, call `rcode-tools milestone-health` and surface
 a gauge when the milestone is full:
@@ -108,7 +108,7 @@ Phases:
 
 If a phase number starts with `999.`, render with a `🅿` marker and the label `(parking lot)`.
 
-## Step 4 — Insights (NEW — issue #159)
+## Step 4 — Insights
 
 If `SNAPSHOT.insights[]` is non-empty, print above the Next Up section:
 

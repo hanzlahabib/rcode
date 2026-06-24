@@ -881,6 +881,10 @@ Present completion summary:
 **[N] phases** | **[X] requirements** | Ready to build ✓
 ```
 
+> **Verify before planning:**
+> (a) `.planning/ROADMAP.md` contains real `## Phase N` headings — open it and add them if the file is still a stub.
+> (b) Run `npx rcode state sync --from-disk` to populate `.rcode/state.json` with the phases array so downstream commands (`/rcode-plan`, `/rcode-execute-sprint`, etc.) can read the phase list.
+
 **If auto mode:**
 
 ```

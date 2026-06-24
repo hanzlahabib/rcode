@@ -14,8 +14,9 @@ back to the in-line implementation.
 
 <delegate_to_skill>
 Required skill: `rcode-sprint-planning`
-Path:           `.claude/skills/rcode-sprint-planning/SKILL.md`
-Workflow ref:   `.claude/skills/rcode-sprint-planning/workflow.md`
+Path:           `.rcode/skills/rcode-sprint-planning/SKILL.md`
+Workflow ref:   `.rcode/skills/rcode-sprint-planning/workflow.md`
+Fallback path:  `.claude/skills/rcode-sprint-planning/SKILL.md`
 
 Behaviour:
 1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
@@ -27,7 +28,7 @@ Behaviour:
    they are NOT the authoritative behaviour.
 3. After SPRINT.md is written, ALWAYS run:
    `node .rcode/bin/rcode-tools.cjs state sync --from-disk`
-   so state.sprints[] reflects the new sprint.
+   so the canonical nested phase.sprints[] (which the dashboard reads) reflects the new sprint.
 
 If skill files are missing: print
 "Sprint-planning skill not installed. Run: npx @hanzlaa/rcode install"
@@ -72,6 +73,33 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 
 STOP — do not proceed.
 
+## Preflight — Project-status check
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+
+```
+Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+```
+
+Stop. Do not proceed until `project-status` returns `real`.
+
+## Preflight — Dependency check
+
+If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING before planning begins:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Sprint planning can continue, but the resulting sprint tasks will fail at execution time
+  unless dependencies are installed first.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
+
 ## Step 1 — Load context
 
 ```bash
@@ -99,8 +127,9 @@ Exit.
 - Commit max 80% of average (buffer for interrupts + unknowns)
 
 **If no velocity history (first sprint):**
-- Ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
-- Or use `--velocity` flag
+- If `--velocity <N>` flag was supplied, use that value directly and skip the prompt.
+- If `mode == "yolo"` (config) and no `--velocity` flag, default to 10 points and proceed.
+- Otherwise ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
 
 Store as `velocity_target`.
 
@@ -127,7 +156,9 @@ Present story table to user:
 **Capacity check:** Total committed points <= velocity_target.
 If over: "We're at {N} points vs {target} capacity. Move story #{X} to next sprint?"
 
-Wait for user confirmation before proceeding.
+**Automation escape:** if `mode == "yolo"` or `--auto` flag was passed, skip the
+confirmation; automatically move lowest-priority over-capacity stories to backlog
+and proceed. Otherwise wait for user confirmation before proceeding.
 
 ## Step 4 — Create sprint
 

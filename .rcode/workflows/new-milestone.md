@@ -22,12 +22,12 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 Parse `$ARGUMENTS` before anything else:
 - `--reset-phase-numbers` flag → restart roadmap phase numbering at `1`
 - `--dry-run` flag → show what would be written, do not commit
-- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition (closes #740). When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
+- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition. When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
 - Remaining text → milestone name (optional)
 
 If `--from-draft` is absent, continue phase numbering from the previous milestone.
 
-**From-draft mode (closes #740):**
+**From-draft mode:**
 
 When `FROM_DRAFT_MODE=true`:
 1. Read the draft file at `DRAFT_FILE`. Accept any markdown file — MILESTONE-CONTEXT.md, a scratch doc, or a ROADMAP partial.

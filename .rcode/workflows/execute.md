@@ -7,12 +7,22 @@ Execute all plans in a phase using wave-based parallel execution. Orchestrator s
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.
 
+0. **Project-status preflight:**
+   ```bash
+   PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+   ```
+   If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+   ```
+   Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+   ```
+   Stop. Do not proceed until `project-status` returns `real`.
+
 1. **Init state**: `node .rcode/bin/rcode-tools.cjs init execute {N}`
 2. **Phase index**: list all plans via `phase-plan-index {N}` — extract
    plan count, wave count, autonomy flag per plan, files_modified overlaps
 3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
    error flag, existing VERIFICATION.md with FAIL items without overrides
-4. **Branch check** (issue #659): confirm current git branch is appropriate
+4. **Branch check**: confirm current git branch is appropriate
    for the work. Two checks, both blocking:
 
    a. **Not on main/master without consent**: if `git branch --show-current`
@@ -773,7 +783,7 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PARENT_PHASE}): resolve U
 
 
 <step name="uat_gate" priority="blocker">
-**UAT gate (added in v3.1.0 after #443 / #448):**
+**UAT gate:**
 
 Before marking the phase complete, verify a passing VERIFICATION.md exists for this phase. Without it, the phase advances to `status: executed` (work done, awaiting verification) — not `status: complete`.
 
@@ -822,7 +832,7 @@ fi
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
 
-The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
+The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT.
 </step>
 
 <step name="update_roadmap">

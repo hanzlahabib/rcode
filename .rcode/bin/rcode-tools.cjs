@@ -166,6 +166,31 @@ function resolveModelString(agentId) {
 }
 
 /**
+ * Canonical phase-status vocabulary (#897).
+ *
+ * `normalizeStatus()` maps any ROADMAP status marker (✅, "Complete",
+ * "Shipped", "In Progress", …) to one of three canonical tokens:
+ * 'complete' | 'in_progress' | 'planned'. `DONE_STATUSES` is the set every
+ * consumer (milestone-health, /rcode-next, progress) must treat as finished —
+ * kept here as the single source of truth to prevent the vocabulary drift that
+ * let 'complete' phases read as still-open. `STATUS_RANK` orders the tokens so
+ * `state sync` only ever *upgrades* a phase's status and never regresses an
+ * execution-set 'complete' back to 'planned' because a ROADMAP row omitted it.
+ */
+const DONE_STATUSES = new Set(['complete', 'completed', 'verified', 'shipped']);
+const STATUS_RANK = {
+  planned: 0, todo: 0,
+  in_progress: 1, 'in-progress': 1, executing: 1,
+  complete: 2, completed: 2, verified: 2, shipped: 2,
+};
+function normalizeStatus(raw) {
+  const s = String(raw || '').toLowerCase();
+  if (/[✅✓]|\b(complete|completed|done|shipped|verified)\b/.test(s)) return 'complete';
+  if (/\b(in[\s_-]?progress|executing|active|wip)\b/.test(s)) return 'in_progress';
+  return 'planned';
+}
+
+/**
  * Extract REQ-IDs (REQ-FOO, REQ-FOO-BAR) from a ROADMAP requirements list.
  * Phase 12 / #468 — feeds plan.md's `phase_req_ids` field. Returns deduped
  * array in source order. Empty array when no IDs match.
@@ -3058,12 +3083,13 @@ function cmdState(subArgs) {
       parsed.phases_normalized = beforeClean - cleaned.length;
       state.phases = cleaned;
 
-      const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
+      const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
         if (seenNums.has(phaseNum)) return;
         seenNums.add(phaseNum);
         parsed.phases_found += 1;
+        const status = phaseStatus || 'planned';
         // Dedup against id, number, AND name — schema drift between writers means
         // older entries carry .id while newer carry .number. Checking only one
         // field caused duplicate entries (e.g. issue #482-A: phases 10-13 each
@@ -3080,6 +3106,14 @@ function cmdState(subArgs) {
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
+          // Upgrade-only (#897): adopt the ROADMAP status when it is more
+          // advanced than what state already holds, but never regress an
+          // execution-set status (e.g. 'complete') back to 'planned' just
+          // because a ROADMAP row omits the marker.
+          const cur = state.phases[existingIdx].status || 'planned';
+          if ((STATUS_RANK[status] || 0) > (STATUS_RANK[cur] || 0)) {
+            state.phases[existingIdx].status = status;
+          }
         } else {
           // Write both id and number on every new entry so dedup works regardless
           // of which schema future readers expect.
@@ -3088,7 +3122,7 @@ function cmdState(subArgs) {
             number: phaseNum,
             name: phaseName,
             goal: phaseGoal,
-            status: 'planned',
+            status,
             started: null,
             completed: null,
             plan_count: 0,
@@ -3100,10 +3134,18 @@ function cmdState(subArgs) {
       // Format A — pipe tables
       // Phase number: \d+ (not \d{1,3}) — high numbers like 1001 are valid for
       // hot-track parking-lot phases per parking-lot-convention.md.
-      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      // Group 4 captures any cells AFTER the goal cell so a trailing status
+      // column ("| ✅ Complete |") is parsed (#897). Status is read only from
+      // those trailing cells — never the goal prose, which may itself contain
+      // a word like "complete".
+      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|(.*)$/gm;
       let m;
       while ((m = rowRe.exec(roadmap)) !== null) {
-        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
+        const name = m[2].trim();
+        let status = normalizeStatus(m[4] || '');
+        // A trailing ✅/✓ in the name itself also signals completion.
+        if (status === 'planned' && /[✅✓]/.test(name)) status = 'complete';
+        upsertPhase(m[1].trim(), name, m[3].trim(), status);
       }
 
       // Format B — heading style
@@ -3113,7 +3155,12 @@ function cmdState(subArgs) {
         const name = m[2].trim();
         const after = roadmap.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
         const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
-        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '');
+        // Status from an explicit "**Status:** …" line in the block (#897), or a
+        // trailing ✅/✓ on the heading itself (e.g. "## Phase 34 — Name ✅").
+        const statusMatch = after.match(/\*\*Status:?\*\*\s*([^\n]+)/i);
+        let status = normalizeStatus(statusMatch ? statusMatch[1] : '');
+        if (status === 'planned' && /[✅✓]/.test(name)) status = 'complete';
+        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '', status);
       }
     }
 
@@ -3179,44 +3226,79 @@ function cmdState(subArgs) {
       }
     }
 
-    // Walk phase sprint artifacts into state.sprints[] (issue #135).
-    // Support both legacy `sprint-1.md` and workflow-generated
-    // `01-01-SPRINT.md` / `1-1-SPRINT.md` names.
+    // Walk phase sprint artifacts into the CANONICAL nested phase.sprints[]
+    // (state-schema.md: "phases with nested sprints"). The dashboard (allSprints)
+    // and scanner.js both read phase.sprints[] — NOT a flat top-level state.sprints[].
+    // Writing to a flat array here silently orphaned every disk-planned sprint, so
+    // the dashboard showed "Run /rcode-plan" even when SPRINT.md files existed.
+    // We now upsert into phase.sprints[] using the same shape `state sprint add`
+    // produces, preserving any execution status/velocity already in state.
+    // Supported names: legacy `sprint-1.md`, workflow `NNN-NN-SPRINT.md` /
+    // `NNN-SPRINT.md`, `SPRINT-NN.S.md`, and a bare `SPRINT.md` (single sprint).
     const phasesDir = path.join(PLANNING_DIR, 'phases');
     const rcodePhasesDir = path.join(RCODE_DIR, 'phases');
     const sprintRoot = fs.existsSync(phasesDir) ? phasesDir : (fs.existsSync(rcodePhasesDir) ? rcodePhasesDir : null);
+    parsed.sprints_orphaned = 0;
     if (sprintRoot) {
-      if (!state.sprints) state.sprints = [];
+      if (!state.phases) state.phases = [];
       for (const phaseEntry of fs.readdirSync(sprintRoot)) {
         const phaseDir = path.join(sprintRoot, phaseEntry);
         if (!fs.statSync(phaseDir).isDirectory()) continue;
-        const phaseNumMatch = phaseEntry.match(/^(\d+(?:\.\d+)?)/);
+        // Phase dirs are `NNN-name` (numbered) or `eNN-name` (label). Capture the
+        // leading token so we can attach sprints to their canonical phase entry.
+        const phaseNumMatch = phaseEntry.match(/^(e?\d+(?:\.\d+)?)/i);
         const phaseNum = phaseNumMatch ? phaseNumMatch[1] : phaseEntry;
+        // Resolve the phase entry these sprints belong to. Numbered phases come
+        // from ROADMAP (already upserted above); match by number/id.
+        const phase = state.phases.find(p =>
+          String(p.number) === phaseNum ||
+          String(p.id) === phaseNum
+        );
         for (const file of fs.readdirSync(phaseDir)) {
-          const sprintMatch =
-            file.match(/^sprint-(\d+)\.md$/i) ||
-            file.match(/^(?:\d+(?:\.\d+)?[-_.])?(\d+)[-_.].*SPRINT\.md$/i);
-          if (!sprintMatch) continue;
-          const sprintNum = String(parseInt(sprintMatch[1], 10));
-          const sprintKey = `${phaseNum}/${sprintNum}`;
+          // Derive the sprint number WITHIN the phase from the filename. The
+          // phase-number prefix (which equals phaseNum) must be stripped first,
+          // otherwise `NNN-SPRINT.md` mis-reads the phase number as the sprint
+          // number. `NNN-SPRINT.md` and bare `SPRINT.md` are single-sprint → 1.
+          let sprintNum = null;
+          let sm;
+          if ((sm = file.match(/^sprint-(\d+)\.md$/i))) {
+            sprintNum = sm[1];                                   // legacy sprint-1.md
+          } else if ((sm = file.match(/^SPRINT[-_.]\d+\.(\d+)\.md$/i))) {
+            sprintNum = sm[1];                                   // SPRINT-120.1.md
+          } else if (/SPRINT\.md$/i.test(file)) {                // NNN-NN-SPRINT / NNN-SPRINT / SPRINT
+            const stem = file.replace(/\.md$/i, '').replace(/[-_.]?SPRINT$/i, '');
+            const nums = stem.split(/[-_.]/).filter(t => /^\d+$/.test(t));
+            sprintNum = nums.length >= 2 ? nums[nums.length - 1] : '1';
+          }
+          if (sprintNum === null) continue;
+          sprintNum = String(parseInt(sprintNum, 10));
           parsed.sprints_found += 1;
           const sprintPath = path.join(phaseDir, file);
           const sprintText = fs.readFileSync(sprintPath, 'utf8');
           const goalMatch = sprintText.match(/(?:^goal:\s*(.+)$|\*\*Sprint Goal:\*\*\s*(.+))/im);
           const goal = goalMatch ? (goalMatch[1] || goalMatch[2] || '').trim() : '';
-          const existing = state.sprints.find(s => s.key === sprintKey);
+          // No canonical phase entry (e.g. unregistered label phase) → can't attach
+          // where the dashboard reads. Count it so sync output is honest, don't drop
+          // it into an orphaned array nobody renders.
+          if (!phase) { parsed.sprints_orphaned += 1; continue; }
+          if (!Array.isArray(phase.sprints)) phase.sprints = [];
+          const sprintId = `${phaseNum}.${sprintNum}`;
+          const existing = phase.sprints.find(s => String(s.id) === sprintId || String(s.number) === sprintNum);
           if (existing) {
-            existing.phase = phaseNum;
-            existing.number = sprintNum;
+            // State is authoritative for status/velocity — only refresh goal + file.
             if (goal) existing.goal = goal;
             existing.file = path.relative(PROJECT_ROOT, sprintPath);
           } else {
-            state.sprints.push({
-              key: sprintKey,
-              phase: phaseNum,
-              number: sprintNum,
+            phase.sprints.push({
+              id: sprintId,
+              number: parseInt(sprintNum, 10),
               goal,
               status: 'planned',
+              velocity_target: null,
+              velocity_actual: null,
+              started_at: null,
+              completed_at: null,
+              stories: [],
               file: path.relative(PROJECT_ROOT, sprintPath),
             });
             parsed.sprints_upserted += 1;
@@ -3225,8 +3307,44 @@ function cmdState(subArgs) {
       }
     }
 
-    if (!parsed.roadmap_exists && !parsed.epics_exists && parsed.sprints_found === 0) {
-      throw new Error(`state sync --from-disk: no ROADMAP.md, epics.md, or sprint files found`);
+    // Reconcile council sessions from disk artifacts into state.council_sessions[]
+    // (same drift class as sprints: the council workflow writes a markdown artifact
+    // to disk, but if its state-write step is skipped — e.g. the panel was dispatched
+    // manually rather than through the full skill — the dashboard never sees it).
+    // Sources: .planning/council-sessions/council-YYYY-MM-DD-<slug>.md
+    //          .rcode/progress/majlis-YYYY-MM-DD[-<slug>].md
+    parsed.councils_found = 0;
+    parsed.councils_upserted = 0;
+    if (!Array.isArray(state.council_sessions)) state.council_sessions = [];
+    const councilSources = [
+      { dir: path.join(PLANNING_DIR, 'council-sessions'), re: /^council-(\d{4}-\d{2}-\d{2})-(.+)\.md$/i },
+      { dir: path.join(RCODE_DIR, 'progress'), re: /^majlis-(\d{4}-\d{2}-\d{2})(?:-(.+))?\.md$/i },
+    ];
+    for (const src of councilSources) {
+      if (!fs.existsSync(src.dir)) continue;
+      for (const file of fs.readdirSync(src.dir)) {
+        const m = file.match(src.re);
+        if (!m) continue;
+        parsed.councils_found += 1;
+        const artifactPath = path.relative(PROJECT_ROOT, path.join(src.dir, file));
+        if (state.council_sessions.some(c => c.artifact_path === artifactPath)) continue;
+        const text = fs.readFileSync(path.join(src.dir, file), 'utf8');
+        const panelMatch = text.match(/^\*\*Panel:\*\*\s*(.+)$/im);
+        const panel = panelMatch
+          ? panelMatch[1].split(',').map(s => s.replace(/\([^)]*\)/g, '').trim()).filter(Boolean)
+          : [];
+        state.council_sessions.push({
+          date: m[1],
+          question_slug: (m[2] || 'session').trim(),
+          panel,
+          artifact_path: artifactPath,
+        });
+        parsed.councils_upserted += 1;
+      }
+    }
+
+    if (!parsed.roadmap_exists && !parsed.epics_exists && parsed.sprints_found === 0 && parsed.councils_found === 0) {
+      throw new Error(`state sync --from-disk: no ROADMAP.md, epics.md, sprint, or council files found`);
     }
 
     // Issue #478 — prune state phases not present in ROADMAP.
@@ -6701,11 +6819,12 @@ function cmdMilestoneHealth() {
   const milestone = state.milestone || null;
   const phases = Array.isArray(state.phases) ? state.phases : [];
   // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
-  // 'completed' | 'verified' | 'shipped'. Treat anything not in
-  // {completed, verified, shipped} as open.
-  const doneStatuses = new Set(['completed', 'verified', 'shipped']);
-  const open = phases.filter(p => !doneStatuses.has(p.status));
-  const done = phases.filter(p => doneStatuses.has(p.status));
+  // 'complete' | 'completed' | 'verified' | 'shipped'. DONE_STATUSES (#897) is
+  // the canonical finished-set shared with the sync parser and /rcode-next; it
+  // includes 'complete' (singular), which the disk-derived writer emits and
+  // this counter previously omitted — causing complete phases to read as open.
+  const open = phases.filter(p => !DONE_STATUSES.has(p.status) && !p.completed);
+  const done = phases.filter(p => DONE_STATUSES.has(p.status) || p.completed);
 
   let recommendation = 'healthy';
   if (open.length >= 12) recommendation = 'should-close';
