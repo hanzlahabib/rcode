@@ -105,27 +105,46 @@ function parseSimpleYaml(text) {
 }
 
 function readConfig() {
-  const configPath = path.join(RCODE_DIR, 'config.yaml');
-  if (!fs.existsSync(configPath)) {
-    return {
-      user_name: 'User',
-      project_name: path.basename(PROJECT_ROOT),
-      language: 'English',
-      mode: 'guided',
-    };
+  // #733 — try config.yaml first, fall back to config.json, return defaults when neither exists.
+  const yamlPath = path.join(RCODE_DIR, 'config.yaml');
+  const jsonPath = path.join(RCODE_DIR, 'config.json');
+
+  if (fs.existsSync(yamlPath)) {
+    try {
+      const parsed = parseSimpleYaml(fs.readFileSync(yamlPath, 'utf8'));
+      return {
+        ...parsed,  // spread all parsed keys (model_profile, branching_strategy, etc.)
+        user_name: parsed.user_name || 'User',
+        project_name: parsed.project_name || path.basename(PROJECT_ROOT),
+        language: parsed.communication_language || parsed.language || 'English',
+        mode: parsed.mode || 'guided',
+      };
+    } catch (e) {
+      throw new Error(`Failed to read config.yaml: ${e.message}`);
+    }
   }
-  try {
-    const parsed = parseSimpleYaml(fs.readFileSync(configPath, 'utf8'));
-    return {
-      ...parsed,  // spread all parsed keys (model_profile, branching_strategy, etc.)
-      user_name: parsed.user_name || 'User',
-      project_name: parsed.project_name || path.basename(PROJECT_ROOT),
-      language: parsed.communication_language || parsed.language || 'English',
-      mode: parsed.mode || 'guided',
-    };
-  } catch (e) {
-    throw new Error(`Failed to read config.yaml: ${e.message}`);
+
+  if (fs.existsSync(jsonPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      return {
+        ...parsed,
+        user_name: parsed.user_name || 'User',
+        project_name: parsed.project_name || path.basename(PROJECT_ROOT),
+        language: parsed.communication_language || parsed.language || 'English',
+        mode: parsed.mode || 'guided',
+      };
+    } catch (e) {
+      throw new Error(`Failed to read config.json: ${e.message}`);
+    }
   }
+
+  return {
+    user_name: 'User',
+    project_name: path.basename(PROJECT_ROOT),
+    language: 'English',
+    mode: 'guided',
+  };
 }
 
 /**
@@ -959,6 +978,7 @@ function cmdInitExecute(rawArgs) {
  *   resolve-blocker <index>        → set blockers[index].resolved = true
  *   record-session                 → update last_session timestamp
  *   record-council --slug <s> --panel <csv> --artifact <path>
+ *   sync-from-git                  → recover phase/sprint state from git commit history (#915)
  */
 function cmdState(subArgs) {
   const statePath = path.join(RCODE_DIR, 'state.json');
@@ -1010,10 +1030,73 @@ function cmdState(subArgs) {
       throw new Error('state.json exceeds 10 MB limit — possible corruption');
     }
     try {
-      return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      const raw = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      return migrateState(raw);
     } catch (e) {
       throw new Error(`Invalid JSON in state.json: ${e.message}`);
     }
+  }
+
+  /**
+   * migrateState — pure normalizer that upgrades any legacy state shape to v2.
+   *
+   * v0: { milestone: string, no phases[], no schema_version }
+   * v1: { phases[] with mixed shapes, schema_version: 1 }
+   * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
+   *
+   * This function is PURE — it never writes to disk. readState() calls it on
+   * every read so all callers transparently receive v2-shaped data. (#735)
+   */
+  function migrateState(raw) {
+    if (!raw || typeof raw !== 'object') return raw;
+    const state = Object.assign({}, raw);
+
+    // --- milestones[] array (v0 → v2) ---
+    // v0 state has milestone as a plain string and no milestones array.
+    if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
+      state.milestones = [{
+        id: state.milestone,
+        name: state.milestone,
+        status: 'active',
+      }];
+    }
+    if (!Array.isArray(state.milestones)) {
+      state.milestones = [];
+    }
+
+    // --- phases[] uniform shape (v1 → v2) ---
+    // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
+    if (Array.isArray(state.phases)) {
+      state.phases = state.phases.map(p => {
+        if (!p || typeof p !== 'object') return p;
+        // Resolve number: prefer p.number, fall back to numeric part of p.id
+        let number = p.number ?? null;
+        if (number === null && typeof p.id === 'string') {
+          const m = p.id.match(/^(\d+(?:\.\d+)?)/);
+          if (m) number = m[1];
+        }
+        // Resolve id: prefer p.id, synthesize from number
+        const id = p.id ?? (number !== null ? String(number) : undefined);
+        return {
+          number: number ?? p.id ?? null,
+          id: id ?? null,
+          name: p.name ?? null,
+          status: p.status ?? 'planned',
+          started: p.started ?? null,
+          completed: p.completed ?? null,
+          sprints: Array.isArray(p.sprints) ? p.sprints : [],
+          // Preserve any extra fields that callers may rely on
+          ...Object.fromEntries(
+            Object.entries(p).filter(([k]) =>
+              !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
+            )
+          ),
+        };
+      });
+    }
+
+    state.schema_version = 2;
+    return state;
   }
 
   /** Atomic write: write to temp file then rename. */
@@ -1105,11 +1188,10 @@ function cmdState(subArgs) {
     const now = new Date().toISOString();
     return {
       version: '1',
-      // #8 — explicit schema_version field for future migration framework.
-      // Bump when the shape changes. `state schema-status` / `state migrate-schema`
-      // read this. Existing state files without the field are treated as v1
-      // (backwards-compat — never crash on legacy state).
-      schema_version: 1,
+      // #8 / #735 — explicit schema_version field for migration framework.
+      // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
+      // older state files transparently on read. New state starts at v2.
+      schema_version: 2,
       project: projectName || path.basename(PROJECT_ROOT),
       created: now,
       updated: now,
@@ -1117,6 +1199,7 @@ function cmdState(subArgs) {
       current_plan: 0,
       current_sprint: null,
       phases: [],
+      milestones: [],
       velocity_history: [],
       executions: [],
       decisions: [],
@@ -1253,6 +1336,18 @@ function cmdState(subArgs) {
     const name = subArgs[1];
     if (!name) throw new Error('set-phase requires a phase name argument');
     const state = readState() || defaultState();
+    // Fix #854 — mark the previously active phase as completed before switching.
+    if (state.current_phase && state.current_phase !== name && state.phases && state.phases.length > 0) {
+      const prevIdx = state.phases.findIndex(p =>
+        p.name === state.current_phase ||
+        String(p.number) === String(state.current_phase) ||
+        String(p.id) === String(state.current_phase)
+      );
+      if (prevIdx !== -1 && state.phases[prevIdx].status !== 'completed') {
+        state.phases[prevIdx].status = 'completed';
+        state.phases[prevIdx].completed = new Date().toISOString();
+      }
+    }
     state.current_phase = name;
     state.current_plan = 0;
     if (!state.phases) state.phases = [];
@@ -1279,7 +1374,36 @@ function cmdState(subArgs) {
       // Update name to canonical form when re-entering a phase
       state.phases[existingIdx].name = name;
     }
-    return writeState(state);
+    // #894 — Proactively sync state.milestone from ROADMAP when set-phase is called.
+    // If ROADMAP.md is readable, find its last active milestone heading and update
+    // state.milestone if it differs (state can go stale after milestone transitions).
+    try {
+      const roadmapPathSP = path.join(PLANNING_DIR, 'ROADMAP.md');
+      if (fs.existsSync(roadmapPathSP)) {
+        const rmText = fs.readFileSync(roadmapPathSP, 'utf8');
+        const mhRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+        let lastLabel = null, mhM;
+        while ((mhM = mhRe.exec(rmText)) !== null) {
+          if (/^milestones?\s*$/i.test(mhM[1].trim())) continue;
+          lastLabel = mhM[1].trim();
+        }
+        if (lastLabel && lastLabel !== (state.milestone || '')) {
+          state.milestone = lastLabel;
+        }
+      }
+    } catch (_) { /* ROADMAP unreadable; leave milestone as-is */ }
+
+    const spResult = writeState(state);
+    // Fix #855 — keep config.yaml in sync when set-phase writes state.json.
+    // One-way guard: only sync if config.yaml is already present (i.e. project is initialised).
+    try {
+      const cfgLib = require(path.join(__dirname, 'lib', 'config.cjs'));
+      const existingCfgPhase = cfgLib.cmdGet(PROJECT_ROOT, 'current_phase');
+      if (String(existingCfgPhase || '') !== String(name)) {
+        cfgLib.cmdSet(PROJECT_ROOT, 'current_phase', name);
+      }
+    } catch (_) { /* config.yaml may not exist yet; silently skip */ }
+    return spResult;
   }
 
   // --- advance-plan ---
@@ -1927,6 +2051,83 @@ function cmdState(subArgs) {
       artifact_path: flags.artifact || '',
     });
     return writeState(state);
+  }
+
+  // --- sync-from-git ---
+  // Recover execution state by inspecting git log for implementation commits.
+  // For each phase that has sprints, checks whether feat:/fix:/refactor: commits
+  // referencing that phase number exist. If so, marks sprints completed and phase
+  // as executed (not complete — verifier should still run). Issue #915.
+  if (sub === 'sync-from-git') {
+    const state = readState();
+    if (!state) return { ok: false, error: 'No state.json — run `state init` first.' };
+
+    const { execSync } = require('child_process');
+    let gitLog = '';
+    try {
+      gitLog = execSync('git log --oneline', { cwd: PROJECT_ROOT, encoding: 'utf8' });
+    } catch (e) {
+      return { ok: false, error: `git log failed: ${e.message}` };
+    }
+
+    const implPrefixRe = /^[a-f0-9]+ (feat|fix|refactor|perf|style|test|chore)\(/i;
+    const implLines = gitLog.split('\n').filter(l => implPrefixRe.test(l));
+
+    let syncedPhases = 0;
+    let syncedSprints = 0;
+
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    for (const phase of phases) {
+      if (!phase) continue;
+      const num = String(phase.number || phase.id || '').trim();
+      if (!num) continue;
+
+      // Check if any implementation commit references this phase number.
+      // Matches patterns: "phase 1", "phase 1.", "1.1", "(1)", "#1 "
+      const phaseNumEscaped = num.replace('.', '\\.');
+      const phaseRe = new RegExp(
+        `(phase\\s*${phaseNumEscaped}[^\\d]|\\b${phaseNumEscaped}\\.\\d|\\(${phaseNumEscaped}\\)|\\s${phaseNumEscaped}\\s)`,
+        'i'
+      );
+      const hasImplCommit = implLines.some(l => phaseRe.test(l));
+
+      // Also check if SUMMARY.md exists for this phase
+      let hasSummary = false;
+      try {
+        const phaseDirs = fs.existsSync(PLANNING_DIR)
+          ? fs.readdirSync(PLANNING_DIR).filter(d => {
+              const m = d.match(/^(\d+)/);
+              return m && m[1] === num;
+            })
+          : [];
+        if (phaseDirs.length > 0) {
+          const summaryPath = path.join(PLANNING_DIR, phaseDirs[0], 'SUMMARY.md');
+          hasSummary = fs.existsSync(summaryPath);
+        }
+      } catch { /* ignore fs errors */ }
+
+      const sprints = Array.isArray(phase.sprints) ? phase.sprints : [];
+      if ((hasImplCommit || hasSummary) && sprints.length > 0) {
+        for (const sprint of sprints) {
+          if (sprint && sprint.status !== 'completed') {
+            sprint.status = 'completed';
+            syncedSprints++;
+          }
+        }
+        if (phase.status !== 'complete' && phase.status !== 'verified') {
+          phase.status = 'executed';
+          syncedPhases++;
+        }
+      }
+    }
+
+    writeState(state);
+    return {
+      ok: true,
+      message: `Synced ${syncedPhases} phases, ${syncedSprints} sprints from git history`,
+      synced_phases: syncedPhases,
+      synced_sprints: syncedSprints,
+    };
   }
 
   // --- record-chain ---
@@ -3058,7 +3259,19 @@ function cmdState(subArgs) {
       parsed.phases_normalized = beforeClean - cleaned.length;
       state.phases = cleaned;
 
-      const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
+      // Normalise any raw status string from ROADMAP into the canonical
+      // vocabulary used by state.json: 'complete' | 'in_progress' | 'planned'.
+      // Fix #897 — status was never read from ROADMAP, so every phase always
+      // landed as 'planned' regardless of what the doc said.
+      function normalizeStatus(raw) {
+        if (!raw) return 'planned';
+        const s = String(raw).toLowerCase().replace(/[✅\s]/g, '');
+        if (['complete','completed','shipped','verified','done'].includes(s)) return 'complete';
+        if (['executing','in_progress','inprogress','active','started'].includes(s)) return 'in_progress';
+        return 'planned';
+      }
+
+      const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
         if (seenNums.has(phaseNum)) return;
@@ -3074,12 +3287,21 @@ function cmdState(subArgs) {
           String(p.id) === phaseNum ||
           p.name === phaseName
         );
+        // Status precedence for advancement: complete > in_progress > planned.
+        // A phase should never be downgraded by ROADMAP re-sync.
+        const statusRank = { complete: 2, in_progress: 1, planned: 0 };
+        const incomingStatus = normalizeStatus(phaseStatus);
         if (existingIdx >= 0) {
           // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
+          // Only advance status — never downgrade an existing phase's status via sync.
+          const currentRank = statusRank[normalizeStatus(state.phases[existingIdx].status)] ?? 0;
+          if ((statusRank[incomingStatus] ?? 0) > currentRank) {
+            state.phases[existingIdx].status = incomingStatus;
+          }
         } else {
           // Write both id and number on every new entry so dedup works regardless
           // of which schema future readers expect.
@@ -3088,7 +3310,7 @@ function cmdState(subArgs) {
             number: phaseNum,
             name: phaseName,
             goal: phaseGoal,
-            status: 'planned',
+            status: incomingStatus,
             started: null,
             completed: null,
             plan_count: 0,
@@ -3100,10 +3322,12 @@ function cmdState(subArgs) {
       // Format A — pipe tables
       // Phase number: \d+ (not \d{1,3}) — high numbers like 1001 are valid for
       // hot-track parking-lot phases per parking-lot-convention.md.
-      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      // The optional 4th capture group reads the status column when present
+      // (fix #897 — status was silently dropped before).
+      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|(?:\s*([^|\n]*?)\s*\|)?/gm;
       let m;
       while ((m = rowRe.exec(roadmap)) !== null) {
-        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
+        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim(), m[4] || '');
       }
 
       // Format B — heading style
@@ -3113,7 +3337,11 @@ function cmdState(subArgs) {
         const name = m[2].trim();
         const after = roadmap.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
         const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
-        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '');
+        // Fix #897 — read **Status:** from the post-heading block so heading-format
+        // ROADMAPs propagate phase status into state just like pipe-table format.
+        const statusMatch = after.match(/\*\*Status:\*\*\s*(.+)/i);
+        const phaseStatus = statusMatch ? statusMatch[1].trim() : '';
+        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '', phaseStatus);
       }
     }
 
@@ -3251,6 +3479,25 @@ function cmdState(subArgs) {
     }
     if (parsed.epics_exists && parsed.epics_found === 0) {
       warnings.push('epics.md exists but no epics parsed — check "## EPIC-NN" or "## Epic N" heading format.');
+    }
+
+    // #894 — Proactively sync state.milestone from ROADMAP on state sync.
+    // After upserting phases from ROADMAP, also derive the active milestone from
+    // the last top-level milestone heading and correct state.milestone if stale.
+    if (parsed.roadmap_exists) {
+      try {
+        const rmSync = fs.readFileSync(roadmapPath, 'utf8');
+        const syncMhRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+        let syncLastLabel = null, syncMhM;
+        while ((syncMhM = syncMhRe.exec(rmSync)) !== null) {
+          if (/^milestones?\s*$/i.test(syncMhM[1].trim())) continue;
+          syncLastLabel = syncMhM[1].trim();
+        }
+        if (syncLastLabel && syncLastLabel !== (state.milestone || '')) {
+          state.milestone = syncLastLabel;
+          parsed.milestone_synced = syncLastLabel;
+        }
+      } catch (_) { /* ROADMAP unreadable at write time; leave milestone as-is */ }
     }
 
     writeState(state);
@@ -3465,6 +3712,23 @@ function cmdPhase(subArgs) {
 
     if (fs.existsSync(roadmapPath)) {
       let text = fs.readFileSync(roadmapPath, 'utf8');
+
+      // #895 — Validate state.milestone against ROADMAP before inserting.
+      // Find the last top-level milestone heading ("# M\d+" or "## M\d+") in
+      // ROADMAP.md. That is the active milestone — use it as the insertion
+      // target and correct state.milestone if it is stale.
+      const milestoneHeadingRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+      let lastMilestoneLabel = null;
+      let mh;
+      while ((mh = milestoneHeadingRe.exec(text)) !== null) {
+        // Skip the generic "## Milestones" index heading.
+        if (/^milestones?\s*$/i.test(mh[1].trim())) continue;
+        lastMilestoneLabel = mh[1].trim();
+      }
+      if (lastMilestoneLabel && lastMilestoneLabel !== (state.milestone || '')) {
+        state.milestone = lastMilestoneLabel;
+      }
+
       const backlogMatch = text.match(/^##\s+Backlog\b/m);
       if (backlogMatch) {
         const backlogIdx = backlogMatch.index;
@@ -3996,14 +4260,15 @@ function cmdCommit(argv) {
   const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-commit-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
-    execSync(`git commit -F "${tmpMsgPath}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+    // execFileSync — no shell, so tmpMsgPath with special chars cannot inject (#754).
+    execFileSync('git', ['commit', '-F', tmpMsgPath], { cwd: PROJECT_ROOT, stdio: 'pipe' });
   } finally {
     try { fs.unlinkSync(tmpMsgPath); } catch {}
   }
 
   // Capture the new HEAD SHA for return value
-  const sha = execSync('git rev-parse HEAD', { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
-  const filesChanged = execSync(`git show --stat --format="" ${sha}`, { cwd: PROJECT_ROOT, encoding: 'utf8' })
+  const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: PROJECT_ROOT, encoding: 'utf8' }).trim();
+  const filesChanged = execFileSync('git', ['show', '--stat', '--format=', sha], { cwd: PROJECT_ROOT, encoding: 'utf8' })
     .trim().split('\n').filter(Boolean);
 
   return {
@@ -4254,7 +4519,7 @@ function cmdCommitToSubrepo(argv) {
     }
   }
 
-  const { execSync } = require('child_process');
+  const { execSync, execFileSync: execFileSyncLocal } = require('child_process');
   const status = execSync('git diff --cached --name-only', { cwd: subrepoPath, encoding: 'utf8' }).trim();
   if (!status) {
     throw new Error(`Nothing staged in subrepo ${subrepo}. Stage files inside the subrepo with git add first.`);
@@ -4263,12 +4528,13 @@ function cmdCommitToSubrepo(argv) {
   const tmpMsgPath = path.join(require('os').tmpdir(), `rcode-subrepo-msg-${Date.now()}.txt`);
   fs.writeFileSync(tmpMsgPath, message);
   try {
-    execSync(`git commit -F "${tmpMsgPath}"`, { cwd: subrepoPath, stdio: 'pipe' });
+    // execFileSync — no shell, so tmpMsgPath with special chars cannot inject (#754).
+    execFileSyncLocal('git', ['commit', '-F', tmpMsgPath], { cwd: subrepoPath, stdio: 'pipe' });
   } finally {
     try { fs.unlinkSync(tmpMsgPath); } catch {}
   }
 
-  const sha = execSync('git rev-parse HEAD', { cwd: subrepoPath, encoding: 'utf8' }).trim();
+  const sha = execFileSyncLocal('git', ['rev-parse', 'HEAD'], { cwd: subrepoPath, encoding: 'utf8' }).trim();
   return {
     ok: true,
     subrepo,
@@ -5908,7 +6174,7 @@ function cmdBrain(args) {
     // #170 — global brain cache at ~/.rcode/brain-cache/<sha1(repo+branch+paths)>/.
     // Same source pulled from N projects = N clones today, 1 clone + N copies
     // after this change. Cache TTL is configurable per source (defaults to 6h).
-    const { execSync } = require('child_process');
+    const { execSync, execFileSync: execFileSyncBrain } = require('child_process');
     const crypto = require('crypto');
     const os = require('os');
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-brain-'));
@@ -5978,13 +6244,15 @@ function cmdBrain(args) {
       // Use --no-checkout + explicit sparse-checkout init + set + checkout
       // because `git clone --sparse` combined with --filter=blob:none has
       // an intermittent failure mode where git misreads the URL as a path.
-      execSync(
-        `git clone --depth=1 --filter=blob:none --no-checkout --branch="${branch}" "${repo}" "${tmp}"`,
-        { stdio: 'pipe' }
-      );
-      execSync(`git -C "${tmp}" sparse-checkout init --no-cone`, { stdio: 'pipe' });
-      execSync(`git -C "${tmp}" sparse-checkout set ${sparsePaths.map(p => `"${p}"`).join(' ')}`, { stdio: 'pipe' });
-      execSync(`git -C "${tmp}" checkout`, { stdio: 'pipe' });
+      // execFileSync — repo/branch/tmp/sparsePaths from user config; no shell so
+      // values with spaces, quotes, or semicolons cannot inject commands (#754).
+      execFileSyncBrain('git', [
+        'clone', '--depth=1', '--filter=blob:none', '--no-checkout',
+        `--branch=${branch}`, repo, tmp,
+      ], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'sparse-checkout', 'init', '--no-cone'], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'sparse-checkout', 'set', ...sparsePaths], { stdio: 'pipe' });
+      execFileSyncBrain('git', ['-C', tmp, 'checkout'], { stdio: 'pipe' });
 
       // Warm cache before destination copy so a copy failure to dest still
       // saves the next pull. Replace any stale slot atomically.
@@ -5993,7 +6261,7 @@ function cmdBrain(args) {
         fs.mkdirSync(cacheDir, { recursive: true });
         copyTree(tmp, cacheDir);
         const commitSha = (() => {
-          try { return execSync(`git -C "${tmp}" rev-parse HEAD`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim(); }
+          try { return execFileSyncBrain('git', ['-C', tmp, 'rev-parse', 'HEAD'], { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim(); }
           catch { return null; }
         })();
         fs.writeFileSync(cacheManifest, JSON.stringify({
@@ -6690,6 +6958,10 @@ function cmdRoadmapDetectStructure() {
  * Thresholds (kept conservative — bump in config later if needed):
  *   - "consider closing" when >= 8 open phases under one milestone
  *   - "should close" when >= 12 open phases (hard nudge)
+ *
+ * Fix #893 — open-phase count is now scoped to the CURRENT milestone only.
+ * Phases that belong to a prior milestone (different ## MN heading in
+ * ROADMAP.md) are excluded so M2 phases never inflate M3's count.
  */
 function cmdMilestoneHealth() {
   const statePath = path.join(RCODE_DIR, 'state.json');
@@ -6698,12 +6970,69 @@ function cmdMilestoneHealth() {
   try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
   catch (e) { return { ok: false, error: `invalid state.json: ${e.message}` }; }
 
-  const milestone = state.milestone || null;
-  const phases = Array.isArray(state.phases) ? state.phases : [];
+  // Prefer state.milestone; fall back to state.current_milestone for compat.
+  const milestone = state.milestone || state.current_milestone || null;
+  const allPhases = Array.isArray(state.phases) ? state.phases : [];
+
+  // --- milestone-scoped phase filtering (#893) ---
+  // Parse ROADMAP.md to find which phase numbers belong to the current
+  // milestone heading (## M1, ## Milestone 2, etc.). When ROADMAP is absent
+  // or the milestone can't be matched, fall back to ALL phases so the health
+  // check still works on unstructured projects.
+  let milestonePhasesNumbers = null; // null = no filtering
+  const roadmapPath = path.join(PROJECT_ROOT, '.planning', 'ROADMAP.md');
+  if (milestone && fs.existsSync(roadmapPath)) {
+    try {
+      const text = fs.readFileSync(roadmapPath, 'utf8');
+      const lines = text.split('\n');
+      // Find the heading that matches the current milestone label.
+      // Accepted forms: "## M3", "## Milestone 3", "## M3 — Some Title", etc.
+      const milestoneId = String(milestone).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const milestoneHeadRe = new RegExp(`^#{1,3}\\s+${milestoneId}[\\s—:\\-]`, 'i');
+      const milestoneHeadBareRe = new RegExp(`^#{1,3}\\s+${milestoneId}\\s*$`, 'i');
+      // Any milestone-level heading that is NOT a Phase heading
+      const anyMilestoneHeadRe = /^#{1,3}\s+(?!Phase\s)/i;
+
+      let inCurrentMilestone = false;
+      const phaseNums = new Set();
+      const phaseRowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|/;
+      const phaseHeadRe = /^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)/i;
+
+      for (const line of lines) {
+        if (milestoneHeadRe.test(line) || milestoneHeadBareRe.test(line)) {
+          inCurrentMilestone = true;
+          continue;
+        }
+        // A different milestone-level heading ends this section
+        if (inCurrentMilestone && anyMilestoneHeadRe.test(line) &&
+            !milestoneHeadRe.test(line) && !milestoneHeadBareRe.test(line)) {
+          break;
+        }
+        if (inCurrentMilestone) {
+          const rm = phaseRowRe.exec(line);
+          if (rm) { phaseNums.add(rm[1]); continue; }
+          const rh = phaseHeadRe.exec(line);
+          if (rh) { phaseNums.add(rh[1]); }
+        }
+      }
+      if (phaseNums.size > 0) milestonePhasesNumbers = phaseNums;
+    } catch { /* ROADMAP unreadable — skip filtering */ }
+  }
+
+  // Select only phases that belong to the current milestone, or all if
+  // ROADMAP filtering wasn't possible.
+  const phases = milestonePhasesNumbers
+    ? allPhases.filter(p => {
+        const num = String(p.number ?? p.id ?? '').trim();
+        return milestonePhasesNumbers.has(num);
+      })
+    : allPhases;
+
   // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
-  // 'completed' | 'verified' | 'shipped'. Treat anything not in
-  // {completed, verified, shipped} as open.
-  const doneStatuses = new Set(['completed', 'verified', 'shipped']);
+  // 'complete' | 'completed' | 'verified' | 'shipped'. Treat anything not in
+  // that set as open. Fix #897 — 'complete' was excluded, causing
+  // milestone-health to report done phases as open.
+  const doneStatuses = new Set(['complete', 'completed', 'verified', 'shipped']);
   const open = phases.filter(p => !doneStatuses.has(p.status));
   const done = phases.filter(p => doneStatuses.has(p.status));
 
@@ -6720,6 +7049,7 @@ function cmdMilestoneHealth() {
     recommendation,
     threshold_consider: 8,
     threshold_should: 12,
+    milestone_scoped: milestonePhasesNumbers !== null,
   };
 }
 
@@ -7117,7 +7447,19 @@ async function main() {
       }
       case 'config-set': {
         const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
-        result = cfg.cmdSet(PROJECT_ROOT, args[0], args.slice(1).join(' '));
+        const csKey = args[0];
+        const csVal = args.slice(1).join(' ');
+        result = cfg.cmdSet(PROJECT_ROOT, csKey, csVal);
+        // Fix #855 — keep state.json in sync when current_phase is updated via config-set.
+        // One-way: config-set → state.json. The set-phase path writes config.yaml separately (below).
+        if (csKey === 'current_phase' && csVal) {
+          const stJson = readState() || defaultState();
+          if (stJson.current_phase !== csVal) {
+            stJson.current_phase = csVal;
+            stJson.current_plan = 0;
+            writeState(stJson);
+          }
+        }
         break;
       }
       case 'config-check-yolo': {
@@ -7296,6 +7638,7 @@ async function main() {
         console.log('  state add-blocker "<description>"            → append to blockers[]');
         console.log('  state resolve-blocker <index>|--all|--phase <N>  --issue <N>|--commit <sha>|--noref  → mark blocker(s) resolved (#654, #656)');
         console.log('  state record-session                         → update last_session timestamp');
+        console.log('  state sync-from-git                          → recover phase/sprint state from git commit history (#915)');
         console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
         console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
         console.log('  state insert-phase --number <N.M> --name <slug>');
