@@ -1292,6 +1292,25 @@ function cmdState(subArgs) {
       // Update name to canonical form when re-entering a phase
       state.phases[existingIdx].name = name;
     }
+    // #894 — Proactively sync state.milestone from ROADMAP when set-phase is called.
+    // If ROADMAP.md is readable, find its last active milestone heading and update
+    // state.milestone if it differs (state can go stale after milestone transitions).
+    try {
+      const roadmapPathSP = path.join(PLANNING_DIR, 'ROADMAP.md');
+      if (fs.existsSync(roadmapPathSP)) {
+        const rmText = fs.readFileSync(roadmapPathSP, 'utf8');
+        const mhRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+        let lastLabel = null, mhM;
+        while ((mhM = mhRe.exec(rmText)) !== null) {
+          if (/^milestones?\s*$/i.test(mhM[1].trim())) continue;
+          lastLabel = mhM[1].trim();
+        }
+        if (lastLabel && lastLabel !== (state.milestone || '')) {
+          state.milestone = lastLabel;
+        }
+      }
+    } catch (_) { /* ROADMAP unreadable; leave milestone as-is */ }
+
     const spResult = writeState(state);
     // Fix #855 — keep config.yaml in sync when set-phase writes state.json.
     // One-way guard: only sync if config.yaml is already present (i.e. project is initialised).
@@ -3378,6 +3397,25 @@ function cmdState(subArgs) {
     }
     if (parsed.epics_exists && parsed.epics_found === 0) {
       warnings.push('epics.md exists but no epics parsed — check "## EPIC-NN" or "## Epic N" heading format.');
+    }
+
+    // #894 — Proactively sync state.milestone from ROADMAP on state sync.
+    // After upserting phases from ROADMAP, also derive the active milestone from
+    // the last top-level milestone heading and correct state.milestone if stale.
+    if (parsed.roadmap_exists) {
+      try {
+        const rmSync = fs.readFileSync(roadmapPath, 'utf8');
+        const syncMhRe = /^#{1,2}\s+(M\d+[^\n]*)/gm;
+        let syncLastLabel = null, syncMhM;
+        while ((syncMhM = syncMhRe.exec(rmSync)) !== null) {
+          if (/^milestones?\s*$/i.test(syncMhM[1].trim())) continue;
+          syncLastLabel = syncMhM[1].trim();
+        }
+        if (syncLastLabel && syncLastLabel !== (state.milestone || '')) {
+          state.milestone = syncLastLabel;
+          parsed.milestone_synced = syncLastLabel;
+        }
+      } catch (_) { /* ROADMAP unreadable at write time; leave milestone as-is */ }
     }
 
     writeState(state);
