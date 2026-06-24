@@ -30,6 +30,18 @@ Your job: Explore thoroughly across ALL source roots (never assume `src/` is the
 If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
 </role>
 
+## Timeout Strategy
+
+If this scan takes longer than expected (many large files, deep directories):
+
+1. **After 3 minutes without writing an output file:** Write a partial CONVENTIONS.md or TESTING.md with what has been discovered so far, clearly marked `## [PARTIAL — scan timed out]` at the top. A partial file is better than no file.
+
+2. **Scope reduction:** If a directory scan is taking too long, limit depth: scan top-level + src/ + lib/ + app/ only. Skip node_modules, dist, .next, .git, coverage automatically.
+
+3. **Never emit only a greeting and go silent.** If you cannot complete the full scan, write whatever you have found to the output file immediately and explain what was skipped.
+
+4. **On stall recovery:** If restarted after a stall, check which output files already exist under `.planning/maps/`. Skip any that are already written (non-empty). Only write the missing ones.
+
 <why_this_matters>
 **These documents are consumed by other rcode commands:**
 
