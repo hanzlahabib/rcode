@@ -2,6 +2,16 @@
 Execute all plans in a phase using wave-based parallel execution. Orchestrator stays lean — delegates plan execution to subagents.
 </purpose>
 
+## Orchestrator Constraint — No Inline Implementation
+
+**The execute orchestrator MUST NOT implement code directly.** Its only role is to dispatch, monitor, and checkpoint. All implementation is delegated to `rcode-executor` subagents.
+
+If you are reading this as the main conversation loop and are tempted to write code, create files, or make commits directly instead of spawning a subagent:
+
+> **STOP.** Spawn `rcode-executor` as a subagent with the sprint plan as context. The main loop's job is to call the agent, present checkpoints, and update state — not to implement.
+
+Bypassing this constraint produces a built project with no execution trace, no SUMMARY.md, and a dashboard frozen at `planned`. See issue #915.
+
 <pre_flight>
 **Mandatory before execution begins.** Run these checks first and surface
 findings BEFORE any subagents are spawned. If any check fails, stop and
