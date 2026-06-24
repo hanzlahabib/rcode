@@ -10,7 +10,7 @@
  *   pre-compact — refresh HANDOFF.json before context compaction (#743)
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
- *   stop        — unified Stop hook: hedging-language detection (#744)
+ *   stop        — unified Stop hook: hedging-language detection (#744) + token logging (#745)
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
  *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
@@ -673,13 +673,8 @@ function readPromptNudgeToggle(cwd) {
 }
 
 /**
- * Determine whether a nudge is stale enough to fire under 'when-stale' mode.
- *
- * Heuristic: fire when .rcode/state.json exists AND its mtime is older than
- * the most recent git commit timestamp, OR when state.json is absent in a
- * .planning/ project. This is cheap and best-effort — if any check fails the
- * function returns true (treat as stale = fire). All I/O is wrapped in
- * try/catch to preserve the fail-open contract.
+ * Returns true when state.json is older than the last commit, or absent in a .planning/ project.
+ * Fail-open: returns true on any I/O error so the nudge fires rather than silently skips.
  */
 function isStateStaleFallbackTrue(cwd) {
   try {
@@ -711,14 +706,9 @@ function isStateStaleFallbackTrue(cwd) {
 }
 
 /**
- * prompt-router: Nudge user toward rcode commands for memory consistency (#892).
- *
- * Runs on UserPromptSubmit. Reads stdin JSON synchronously (mirror
- * cli/rcode-slash-router.cjs — NOT the async readInputJson() which rejects on
- * bad JSON). Keyword-matches against INTENT_TABLE (derived from
- * rcode/workflows/do.md lines ~285-320). On match, emits a one-line advisory
- * via hookSpecificOutput.additionalContext. Gated by prompt_nudge config toggle.
- * Always exits 0 with no output on any error or non-match.
+ * prompt-router: Nudge toward rcode commands for memory consistency (#892).
+ * Reads stdin synchronously (NOT async — rejects bad JSON). Keyword-matches INTENT_TABLE,
+ * emits additionalContext advisory. Gated by prompt_nudge config. Always exits 0.
  */
 function promptRouter() {
   try {
@@ -837,11 +827,7 @@ function promptRouter() {
 
 /**
  * compact-nudge: Advise /rcode-trim or /clear after N Edit/Write calls (#749).
- *
- * Triggered by the PreToolUse:Edit|Write hook. Maintains a per-session call
- * counter in a temp file and, once the count crosses RCODE_NUDGE_THRESHOLD
- * (default 50), prints an advisory to reclaim context budget. Purely
- * advisory — always exits 0, never blocks a tool call.
+ * Maintains a per-session counter; warns at RCODE_NUDGE_THRESHOLD (default 50). Advisory only.
  */
 async function compactNudge() {
   try {
@@ -914,9 +900,11 @@ async function preToolUse() {
 }
 
 /**
- * stop: Stop hook — hedging-language detection (#744).
+ * stop: Stop hook — hedging-language detection (#744) + token/cost logging (#745).
  * Warns when response text suggests incomplete execution ("I'll implement this", etc.).
- * Never blocks. Token logging lives in cost-track (#745).
+ * Appends per-response token usage to ~/.rcode/logs/token-usage.jsonl.
+ * Rates: $3/M input, $15/M output (Sonnet 4.x approximation).
+ * Never blocks.
  */
 async function stopHandler() {
   try {
@@ -933,6 +921,20 @@ async function stopHandler() {
       process.stderr.write(
         '[rcode] Stop hook: response contains hedging language — verify implementation is complete\n'
       );
+    }
+    const usage = input?.usage;
+    if (usage && typeof usage === 'object') {
+      const logDir = path.join(os.homedir(), '.rcode', 'logs');
+      fs.mkdirSync(logDir, { recursive: true });
+      const entry = JSON.stringify({
+        ts: new Date().toISOString(),
+        input: usage.input_tokens || 0,
+        output: usage.output_tokens || 0,
+        cost_usd:
+          ((usage.input_tokens || 0) * 3) / 1e6 +
+          ((usage.output_tokens || 0) * 15) / 1e6,
+      });
+      fs.appendFileSync(path.join(logDir, 'token-usage.jsonl'), entry + '\n');
     }
     process.exit(0);
   } catch (err) {
