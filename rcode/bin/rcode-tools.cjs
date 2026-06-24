@@ -3158,7 +3158,19 @@ function cmdState(subArgs) {
       parsed.phases_normalized = beforeClean - cleaned.length;
       state.phases = cleaned;
 
-      const upsertPhase = (phaseNum, phaseName, phaseGoal) => {
+      // Normalise any raw status string from ROADMAP into the canonical
+      // vocabulary used by state.json: 'complete' | 'in_progress' | 'planned'.
+      // Fix #897 — status was never read from ROADMAP, so every phase always
+      // landed as 'planned' regardless of what the doc said.
+      function normalizeStatus(raw) {
+        if (!raw) return 'planned';
+        const s = String(raw).toLowerCase().replace(/[✅\s]/g, '');
+        if (['complete','completed','shipped','verified','done'].includes(s)) return 'complete';
+        if (['executing','in_progress','inprogress','active','started'].includes(s)) return 'in_progress';
+        return 'planned';
+      }
+
+      const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
         if (seenNums.has(phaseNum)) return;
@@ -3174,12 +3186,21 @@ function cmdState(subArgs) {
           String(p.id) === phaseNum ||
           p.name === phaseName
         );
+        // Status precedence for advancement: complete > in_progress > planned.
+        // A phase should never be downgraded by ROADMAP re-sync.
+        const statusRank = { complete: 2, in_progress: 1, planned: 0 };
+        const incomingStatus = normalizeStatus(phaseStatus);
         if (existingIdx >= 0) {
           // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
           state.phases[existingIdx].name = phaseName;
           if (phaseGoal) state.phases[existingIdx].goal = phaseGoal;
+          // Only advance status — never downgrade an existing phase's status via sync.
+          const currentRank = statusRank[normalizeStatus(state.phases[existingIdx].status)] ?? 0;
+          if ((statusRank[incomingStatus] ?? 0) > currentRank) {
+            state.phases[existingIdx].status = incomingStatus;
+          }
         } else {
           // Write both id and number on every new entry so dedup works regardless
           // of which schema future readers expect.
@@ -3188,7 +3209,7 @@ function cmdState(subArgs) {
             number: phaseNum,
             name: phaseName,
             goal: phaseGoal,
-            status: 'planned',
+            status: incomingStatus,
             started: null,
             completed: null,
             plan_count: 0,
@@ -3200,10 +3221,12 @@ function cmdState(subArgs) {
       // Format A — pipe tables
       // Phase number: \d+ (not \d{1,3}) — high numbers like 1001 are valid for
       // hot-track parking-lot phases per parking-lot-convention.md.
-      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|/gm;
+      // The optional 4th capture group reads the status column when present
+      // (fix #897 — status was silently dropped before).
+      const rowRe = /^\|\s*(\d+(?:\.\d+)?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|(?:\s*([^|\n]*?)\s*\|)?/gm;
       let m;
       while ((m = rowRe.exec(roadmap)) !== null) {
-        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim());
+        upsertPhase(m[1].trim(), m[2].trim(), m[3].trim(), m[4] || '');
       }
 
       // Format B — heading style
@@ -3213,7 +3236,11 @@ function cmdState(subArgs) {
         const name = m[2].trim();
         const after = roadmap.slice(headRe.lastIndex).split(/\n/).slice(0, 8).join('\n');
         const goalMatch = after.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
-        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '');
+        // Fix #897 — read **Status:** from the post-heading block so heading-format
+        // ROADMAPs propagate phase status into state just like pipe-table format.
+        const statusMatch = after.match(/\*\*Status:\*\*\s*(.+)/i);
+        const phaseStatus = statusMatch ? statusMatch[1].trim() : '';
+        upsertPhase(num, name, goalMatch ? goalMatch[1].trim() : '', phaseStatus);
       }
     }
 
@@ -6801,9 +6828,10 @@ function cmdMilestoneHealth() {
   const milestone = state.milestone || null;
   const phases = Array.isArray(state.phases) ? state.phases : [];
   // "Open" = not done. State schema uses status: 'planned' | 'in_progress' |
-  // 'completed' | 'verified' | 'shipped'. Treat anything not in
-  // {completed, verified, shipped} as open.
-  const doneStatuses = new Set(['completed', 'verified', 'shipped']);
+  // 'complete' | 'completed' | 'verified' | 'shipped'. Treat anything not in
+  // that set as open. Fix #897 — 'complete' was excluded, causing
+  // milestone-health to report done phases as open.
+  const doneStatuses = new Set(['complete', 'completed', 'verified', 'shipped']);
   const open = phases.filter(p => !doneStatuses.has(p.status));
   const done = phases.filter(p => doneStatuses.has(p.status));
 
