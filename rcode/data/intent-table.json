@@ -1,0 +1,87 @@
+[
+  {
+    "intent": "new-project",
+    "keywords": ["set up a new project", "initialize a new project", "start a new project", "create a new project"],
+    "command": "/rcode-new-project"
+  },
+  {
+    "intent": "map-codebase",
+    "keywords": ["map the codebase", "map this codebase", "analyze the codebase", "analyse the codebase", "map existing codebase"],
+    "command": "/rcode-map-codebase"
+  },
+  {
+    "intent": "debug",
+    "keywords": ["bug", "getting an error", "throwing an error", "error in the", "fix the error", "debug this", "crash", "failure", "broken", "not working", "fails", "exception", "traceback"],
+    "command": "/rcode-debug"
+  },
+  {
+    "intent": "audit-karpathy",
+    "keywords": ["audit", "review changes", "check my diff", "karpathy", "too complex", "complexity", "code review"],
+    "command": "/rcode-review --karpathy"
+  },
+  {
+    "intent": "lazy",
+    "keywords": ["be lazy", "lazy mode", "simplest solution", "yagni", "over-engineered", "over-engineering", "kam code likho"],
+    "command": "/rcode-lazy"
+  },
+  {
+    "intent": "checkpoint",
+    "keywords": ["checkpoint", "explain this diff", "human review", "walk through the change", "walk through this change"],
+    "command": "/rcode-checkpoint-preview"
+  },
+  {
+    "intent": "brainstorm",
+    "keywords": ["brainstorm", "generate ideas", "explore options", "what could we do", "ideate", "ideas for"],
+    "command": "/rcode-brainstorm"
+  },
+  {
+    "intent": "explore",
+    "keywords": ["explore", "research phase", "do some research", "comparing", "investigate", "look into", "understand how"],
+    "command": "/rcode-research-phase"
+  },
+  {
+    "intent": "discuss",
+    "keywords": ["which one", "better ux", "how should", "still have confusion", "conflicting", "discuss the scope", "design this", "architect this"],
+    "command": "/rcode-discuss-phase"
+  },
+  {
+    "intent": "add-phase",
+    "keywords": ["refactor", "migration", "multi-file", "system redesign", "multi file", "large refactor", "architectural", "integration", "integrate"],
+    "command": "/rcode-add-phase"
+  },
+  {
+    "intent": "sprint-planning",
+    "keywords": ["sprint planning", "plan the sprint", "next sprint", "what's in this sprint"],
+    "command": "/rcode-sprint-planning"
+  },
+  {
+    "intent": "execute-sprint",
+    "keywords": ["run the sprint", "start sprint", "execute sprint", "work on sprint"],
+    "command": "/rcode-execute-sprint"
+  },
+  {
+    "intent": "plan",
+    "keywords": ["let's plan", "plan phase", "plan this", "let me plan", "planning phase", "create a plan", "please plan", "plan and think", "scope this", "scope the feature"],
+    "command": "/rcode-plan"
+  },
+  {
+    "intent": "new-milestone",
+    "keywords": ["create milestones", "plan milestones", "create roadmap", "break project into milestones", "new milestone", "what milestones"],
+    "command": "/rcode-new-milestone"
+  },
+  {
+    "intent": "epics-stories",
+    "keywords": ["create epics", "user stories", "create stories", "epics and stories", "break into epics"],
+    "command": "/rcode-create-epics-and-stories"
+  },
+  {
+    "intent": "feature-drift",
+    "keywords": ["out of date", "out-of-date", "verify docs", "audit feature docs", "fill out existing", "prd drift", "docs vs code"],
+    "command": "/rcode-feature-drift"
+  },
+  {
+    "intent": "audit",
+    "keywords": ["re-audit", "extend the audit", "fill out the", "expand the", "re audit"],
+    "command": "/rcode-audit"
+  }
+]

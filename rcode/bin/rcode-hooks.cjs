@@ -635,122 +635,13 @@ async function costTrack() {
 // Order: first-match-wins, mirroring do.md's "Apply the first matching rule".
 // More-specific keyword sets come before broad ones.
 // ─────────────────────────────────────────────────────────────────────────────
-const INTENT_TABLE = [
-  // do.md: "Starting a new project, 'set up', 'initialize'" → /rcode-new-project
-  {
-    intent: 'new-project',
-    keywords: ['set up a new project', 'initialize a new project', 'start a new project', 'create a new project'],
-    command: '/rcode-new-project',
-  },
-  // do.md: "Mapping or analyzing an existing codebase" → /rcode-map-codebase
-  {
-    intent: 'map-codebase',
-    keywords: ['map the codebase', 'map this codebase', 'analyze the codebase', 'analyse the codebase', 'map existing codebase'],
-    command: '/rcode-map-codebase',
-  },
-  // do.md: "A bug, error, crash, failure, or something broken" → /rcode-debug
-  // 'error' alone is too broad (matches "what does this error mean?" etc.).
-  // Use multi-word forms that signal debug intent rather than a question.
-  {
-    intent: 'debug',
-    keywords: ['bug', 'getting an error', 'throwing an error', 'error in the', 'fix the error', 'debug this', 'crash', 'failure', 'broken', 'not working', 'fails', 'exception', 'traceback'],
-    command: '/rcode-debug',
-  },
-  // do.md: "Audit code quality, 'review changes', 'karpathy', 'check my diff', 'too complex'" → /rcode-review --karpathy
-  {
-    intent: 'audit-karpathy',
-    keywords: ['audit', 'review changes', 'check my diff', 'karpathy', 'too complex', 'complexity', 'code review'],
-    command: '/rcode-review --karpathy',
-  },
-  // do.md: "Make it simpler, 'be lazy', 'simplest solution', 'yagni', 'over-engineered'" → /rcode-lazy
-  // Generative simplicity lens (before code is written); /rcode-trim removes bloat after.
-  // 'simplify' alone is too broad (overlaps rcode-trim's existing-code territory) — use intent-bearing phrases.
-  {
-    intent: 'lazy',
-    keywords: ['be lazy', 'lazy mode', 'simplest solution', 'yagni', 'over-engineered', 'over-engineering', 'kam code likho'],
-    command: '/rcode-lazy',
-  },
-  // do.md: "Walk through a change, 'checkpoint', 'explain this diff', 'human review'" → /rcode-checkpoint-preview
-  {
-    intent: 'checkpoint',
-    keywords: ['checkpoint', 'explain this diff', 'human review', 'walk through the change', 'walk through this change'],
-    command: '/rcode-checkpoint-preview',
-  },
-  // do.md: "Brainstorm, generate ideas, 'explore options', 'what could we do'" → /rcode-brainstorm
-  {
-    intent: 'brainstorm',
-    keywords: ['brainstorm', 'generate ideas', 'explore options', 'what could we do', 'ideate', 'ideas for'],
-    command: '/rcode-brainstorm',
-  },
-  // do.md: "Exploring, researching, comparing, or 'how does X work'" → /rcode-research-phase
-  // 'research' alone fires on "based on my research..." (past-tense reference, not navigation intent).
-  // 'how does'/'how do' fire on any factual question — removed in favour of intent-bearing phrases.
-  {
-    intent: 'explore',
-    keywords: ['explore', 'research phase', 'do some research', 'comparing', 'investigate', 'look into', 'understand how'],
-    command: '/rcode-research-phase',
-  },
-  // do.md: "Scope unclear, 'which one', 'better UX', 'how should X look'" → /rcode-discuss-phase
-  {
-    intent: 'discuss',
-    keywords: ['which one', 'better ux', 'how should', 'still have confusion', 'conflicting', 'discuss the scope', 'design this', 'architect this'],
-    command: '/rcode-discuss-phase',
-  },
-  // do.md: "A complex task: refactoring, migration, multi-file architecture, system redesign,
-  // integrating a new system/service" → /rcode-add-phase
-  // 'integration'/'integrate' catch "let's do X integration", "integrate with Y" — feature-sized
-  // architectural work that belongs in a phase, not an ad-hoc edit (#907).
-  // Known mild false-positive: "run the integration tests" also matches → a harmless soft
-  // nudge toward /rcode-add-phase. Accepted: catching real integration work outweighs it,
-  // and no clean substring separates "X integration" from "integration test".
-  {
-    intent: 'add-phase',
-    keywords: ['refactor', 'migration', 'multi-file', 'system redesign', 'multi file', 'large refactor', 'architectural', 'integration', 'integrate'],
-    command: '/rcode-add-phase',
-  },
-  // do.md: "'Sprint planning', 'plan the sprint', 'next sprint'" → /rcode-sprint-planning
-  {
-    intent: 'sprint-planning',
-    keywords: ['sprint planning', 'plan the sprint', 'next sprint', 'what\'s in this sprint', "what's in this sprint"],
-    command: '/rcode-sprint-planning',
-  },
-  // do.md: "Executing a sprint, 'run the sprint', 'start sprint'" → /rcode-execute-sprint
-  {
-    intent: 'execute-sprint',
-    keywords: ['run the sprint', 'start sprint', 'execute sprint', 'work on sprint'],
-    command: '/rcode-execute-sprint',
-  },
-  // do.md: "Planning a specific phase, 'plan phase N'" → /rcode-plan
-  {
-    intent: 'plan',
-    keywords: ["let's plan", 'plan phase', 'plan this', 'let me plan', 'planning phase', 'create a plan', 'please plan', 'plan and think', 'scope this', 'scope the feature'],
-    command: '/rcode-plan',
-  },
-  // do.md: "'Create milestones', 'plan milestones', 'create roadmap'" → /rcode-new-milestone
-  {
-    intent: 'new-milestone',
-    keywords: ['create milestones', 'plan milestones', 'create roadmap', 'break project into milestones', 'new milestone', 'what milestones'],
-    command: '/rcode-new-milestone',
-  },
-  // do.md: "Break milestone into epics/stories, 'create stories', 'user stories', 'epics'" → /rcode-create-epics-and-stories
-  {
-    intent: 'epics-stories',
-    keywords: ['create epics', 'user stories', 'create stories', 'epics and stories', 'break into epics'],
-    command: '/rcode-create-epics-and-stories',
-  },
-  // do.md: "Drift / out-of-date / 'audit feature docs' / 'fill out existing PRD'" → /rcode-feature-drift
-  {
-    intent: 'feature-drift',
-    keywords: ['out of date', 'out-of-date', 'verify docs', 'audit feature docs', 'fill out existing', 'prd drift', 'docs vs code'],
-    command: '/rcode-feature-drift',
-  },
-  // do.md: "General audit / re-audit / extend / fill out / expand an existing artifact" → /rcode-audit
-  {
-    intent: 'audit',
-    keywords: ['re-audit', 'extend the audit', 'fill out the', 'expand the', 're audit'],
-    command: '/rcode-audit',
-  },
-];
+// INTENT_TABLE — loaded from data file to keep this file under 1000 lines (#896)
+const INTENT_TABLE = JSON.parse(
+  require('fs').readFileSync(
+    require('path').join(__dirname, '..', 'data', 'intent-table.json'),
+    'utf8'
+  )
+);
 
 /**
  * Inline flat-YAML parser — mirrors parseSimpleYaml in rcode-tools.cjs:91.
