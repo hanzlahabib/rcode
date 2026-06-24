@@ -375,6 +375,22 @@ If new untracked files appeared after running scripts or tools, decide for each:
 
 </task_commit>
 
+<hook_revert_detection_gate>
+## Post-Step Hook Revert Detection Gate
+
+After each task that writes or edits files, run:
+```bash
+git diff --name-only HEAD
+```
+If a file that was supposed to be written by this step shows NO diff (i.e. git thinks it's clean), that file was reverted by a hook. STOP — do NOT mark the step done. Report:
+```
+⚠ Revert detected: <filename> was written by this step but shows no diff vs HEAD.
+  Likely cause: a linter or pre-commit hook reverted the file.
+  Action required: inspect the hook output in the last git commit attempt, fix the root cause, then re-run this task.
+```
+Do not proceed to the next task until all expected file changes survive the git diff check.
+</hook_revert_detection_gate>
+
 <post_step_revert_gate>
 ## Post-Step Revert Detection Gate
 
