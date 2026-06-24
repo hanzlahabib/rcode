@@ -366,6 +366,7 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
       their feedback before continuing. Otherwise proceed to next task.
 
    e. **After plan complete:** Show results, commit, create SUMMARY.md, then present next plan.
+      **Overwrite guard:** If the SUMMARY.md file already exists from a previous run, delete it first with `rm -f <path>` before writing the new version. Never append to or skip an existing SUMMARY.md — always overwrite with the current sprint's completion data.
 
 3. After all plans: proceed to verification (same as normal mode).
 

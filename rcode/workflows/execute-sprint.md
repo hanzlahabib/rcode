@@ -497,6 +497,12 @@ If user_setup exists: create `{phase}-USER-SETUP.md` using template `.rcode/temp
 </step>
 
 <step name="create_summary">
+**Overwrite guard:** If `{phase}-{plan}-SUMMARY.md` already exists at `.planning/phases/XX-name/`, delete it first before writing:
+```bash
+rm -f ".planning/phases/XX-name/{phase}-{plan}-SUMMARY.md"
+```
+Never append to or skip an existing SUMMARY.md — always overwrite with the current sprint's completion data. Silently continuing with a stale SUMMARY.md is a critical bug.
+
 Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `.rcode/templates/summary.md`.
 
 **Frontmatter:** phase, plan, subsystem, tags | requires/provides/affects | tech-stack.added/patterns | key-files.created/modified | key-decisions | requirements-completed (**MUST** copy `requirements` array from SPRINT.md frontmatter verbatim) | duration ($DURATION), completed ($PLAN_END_TIME date).
