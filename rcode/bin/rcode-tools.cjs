@@ -7391,7 +7391,7 @@ async function main() {
   const [, , subcommand, ...args] = process.argv;
   // #473 guard runs before any subcommand. Skipped for read-only inspection
   // so 'rcode-tools version' / 'help' / 'list-agents' work outside the project.
-  const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills']);
+  const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills', 'validate']);
   if (!READ_ONLY_SUBCOMMANDS.has(subcommand)) {
     assertCwdMatchesProjectRoot();
   }
@@ -7874,7 +7874,9 @@ async function main() {
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
-        console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
+        console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear|detect>  → .planning/ROADMAP.md operations');
+        console.log('  roadmap detect                               → report ROADMAP convention in use (single vs per-milestone) (#734)');
+        console.log('  validate <state|config|all>                  → schema checks for state.json and config.yaml (#747)');
         console.log('  config-get <dotted.key>                      → read scalar from .rcode/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rcode/config.yaml');
         console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
