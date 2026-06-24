@@ -41,6 +41,8 @@ Create roadmap:
 6. Return ROADMAP CREATED with summary
 
 Write files first, then return. This ensures artifacts persist even if context is lost.
+
+**Scope constraint:** rcode-roadmapper creates ONLY: ROADMAP.md, STATE.md, and one PHASE.md per phase directory (if requested). It MUST NOT create SPRINT.md, PLAN.md, or any sprint-level planning files. Sprint planning is handled exclusively by `/rcode-plan`. If you find yourself about to write a SPRINT.md file, STOP — that file is out of scope for this agent.
 </instructions>
 ", subagent_type="rcode-roadmapper", model="${ROADMAPPER_MODEL}", description="Create roadmap")
 ```

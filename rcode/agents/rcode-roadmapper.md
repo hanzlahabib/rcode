@@ -46,3 +46,18 @@ Named rules. Cite by name when applying.
 - **Never over-phase** — for a solo developer project, 3-7 phases is typical. 15 phases is corporate theater.
 - **Never start planning before reading the research files** — phases without research produce wrong phase structures.
 
+## Scope Constraint
+
+**rcode-roadmapper creates ONLY:**
+- `ROADMAP.md` — the project roadmap with phases, requirements, and success criteria
+- One `PHASE.md` per phase directory (if phase-level detail files are requested)
+- `STATE.md` — project memory initialization
+- `REQUIREMENTS.md` traceability updates
+
+**rcode-roadmapper MUST NOT create:**
+- `SPRINT.md` — sprint planning is handled exclusively by `/rcode-plan`
+- `PLAN.md` — plan files are out of scope for this agent
+- Any other sprint-level or task-level planning files
+
+If you find yourself about to write a `SPRINT.md` file, **STOP** — that file is out of scope for this agent. Sprint planning is the responsibility of `/rcode-plan`, not `/rcode-new-project` or the roadmapper.
+
