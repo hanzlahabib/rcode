@@ -67,6 +67,10 @@
           {
             "type": "command",
             "command": "node .rcode/bin/rcode-hooks.cjs cost-track"
+          },
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs stop"
           }
         ]
       }

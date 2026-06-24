@@ -10,6 +10,7 @@
  *   pre-compact — refresh HANDOFF.json before context compaction (#743)
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
+ *   stop        — unified Stop hook: hedging-language detection (#744)
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
  *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
@@ -622,21 +623,9 @@ async function costTrack() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INTENT_TABLE — keyword map for prompt-router (#892)
-//
-// WHY: When a user types a free-form prompt that matches a known rcode workflow,
-// we nudge them toward the matching command so the outcome is captured in
-// .rcode/state.json. Work done outside rcode commands never lands in state.
-//
-// Single source of truth: rcode/workflows/do.md routing table (lines ~285-320,
-// "If the text describes..."). Keep in sync — see test/prompt-router-table-sync.test.cjs
-// (Sprint 38.3).
-//
-// Order: first-match-wins, mirroring do.md's "Apply the first matching rule".
-// More-specific keyword sets come before broad ones.
-// ─────────────────────────────────────────────────────────────────────────────
-// INTENT_TABLE — loaded from data file to keep this file under 1000 lines (#896)
+// INTENT_TABLE — keyword map for prompt-router (#892).
+// Source of truth: rcode/workflows/do.md routing table (~285-320). First-match-wins.
+// Loaded from data file to keep this file under 1000 lines (#896).
 const INTENT_TABLE = JSON.parse(
   require('fs').readFileSync(
     require('path').join(__dirname, '..', 'data', 'intent-table.json'),
@@ -890,18 +879,7 @@ async function compactNudge() {
   }
 }
 
-/**
- * Heuristic: should we nudge the executor to /compact before this tool call?
- *
- * Fires on Read or Bash calls that target known large planning files
- * (RESEARCH.md, SUMMARY.md, ROADMAP.md). These files routinely run 500-2000+
- * lines and reading them late in a long session pushes the context window past
- * the point of no return. The nudge goes to stderr only — it never blocks.
- *
- * @param {string} toolName   - The tool being invoked (e.g. "Read", "Bash")
- * @param {object} toolInput  - The tool_input object from the hook payload
- * @returns {boolean}
- */
+/** Returns true when a Read/Bash targets known large planning files (RESEARCH/SUMMARY/ROADMAP). */
 function shouldNudgeCompact(toolName, toolInput) {
   if (toolName !== 'Read' && toolName !== 'Bash') return false;
   const target = toolInput?.file_path || toolInput?.command || '';
@@ -936,6 +914,34 @@ async function preToolUse() {
 }
 
 /**
+ * stop: Stop hook — hedging-language detection (#744).
+ * Warns when response text suggests incomplete execution ("I'll implement this", etc.).
+ * Never blocks. Token logging lives in cost-track (#745).
+ */
+async function stopHandler() {
+  try {
+    const input = await readInputJson();
+    const responseText = input?.response || '';
+    const HEDGING_PATTERNS = [
+      /I'll\s+implement\s+this/i,
+      /I\s+would\s+add/i,
+      /you\s+could\s+add/i,
+      /TODO:/,
+    ];
+    const incomplete = HEDGING_PATTERNS.some((re) => re.test(responseText));
+    if (incomplete) {
+      process.stderr.write(
+        '[rcode] Stop hook: response contains hedging language — verify implementation is complete\n'
+      );
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error(`Hook error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
  * Main entry point.
  */
 async function main() {
@@ -963,6 +969,9 @@ async function main() {
     case 'cost-track':
       await costTrack();
       break;
+    case 'stop':
+      await stopHandler();
+      break;
     case 'compact-nudge':
       await compactNudge();
       break;
@@ -974,7 +983,7 @@ async function main() {
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge|pre-tool-use|prompt-router');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router');
       process.exit(1);
   }
 }
