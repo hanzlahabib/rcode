@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-17T22:34:14.771Z",
+  "updated": "2026-06-24T14:11:01.627Z",
   "current_phase": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1109,6 +1109,58 @@
       "planned_at": "2026-06-17T19:40:30.458Z",
       "status_updated": "2026-06-17T22:34:04.252Z",
       "completed_at": "2026-06-17"
+    },
+    {
+      "id": "39",
+      "number": "39",
+      "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
+      "slug": "seo-module",
+      "goal": "Close the rcode gap that causes content/SEO sites to be planned generically (as `web-app`) with no keyword clustering, E-E-A-T gates, or internal-link architecture. Implement four changes: (1) add `content-site` project type to `project-types.yaml` with full-spectrum SEO signals (local, affiliate, programmatic, technical, editorial, e-commerce, AI search, link-building — not just rank-and-rent), (2) route `content-site` projects in `rcode-project-researcher` to dedicated SEO skill agents, (3) add comprehensive SEO intent routing to `do.md` covering all SEO disciplines, (4) bundle 8 production-grade SEO skills from `~/.agents/skills/` into `rcode/skills/seo/` as an installable `--modules seo` module and wire the full `claude-seo:*` plugin fleet (17 agents). Closes #911, #912, #913, #914.",
+      "status": "planned",
+      "created": "2026-06-24T13:51:28.383Z",
+      "started": null,
+      "completed": null,
+      "plan_count": 3,
+      "sprints": [
+        {
+          "id": "39.1",
+          "number": 1,
+          "goal": "Add full-spectrum content-site project type to project-types.yaml and branch rcode-project-researcher on it",
+          "status": "planned",
+          "velocity_target": 10,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-1-SPRINT.md"
+        },
+        {
+          "id": "39.2",
+          "number": 2,
+          "goal": "Add comprehensive SEO intent routing to do.md covering all SEO disciplines",
+          "status": "planned",
+          "velocity_target": 8,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-2-SPRINT.md"
+        },
+        {
+          "id": "39.3",
+          "number": 3,
+          "goal": "Bundle 8 SEO skills from ~/.agents/skills/ into rcode/skills/seo/ as installable seo module",
+          "status": "planned",
+          "velocity_target": 10,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-3-SPRINT.md"
+        }
+      ],
+      "plans": 3,
+      "planned_at": "2026-06-24T14:00:00.000Z"
     }
   ],
   "executions": [
@@ -1516,6 +1568,54 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
+    },
+    {
+      "key": "38/1",
+      "phase": "38",
+      "number": "1",
+      "goal": "\"Add the prompt-router subcommand to rcode-hooks.cjs — keyword-match the user's prompt against the do.md-derived routing table, respect the prompt_nudge toggle + per-session dedupe, emit a memory-framed additionalContext advisory, and swallow every error (exit 0 silent).\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-1-SPRINT.md"
+    },
+    {
+      "key": "38/2",
+      "phase": "38",
+      "number": "2",
+      "goal": "\"Wire the prompt-router as a UserPromptSubmit hook into settings-hooks.json and the opt-in enable-hooks flow, plus declare the prompt_nudge config key, so the proactive nudge installs for Claude Code only when the user opts in. Idempotent merge, never on by default.\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-2-SPRINT.md"
+    },
+    {
+      "key": "38/3",
+      "phase": "38",
+      "number": "3",
+      "goal": "\"Prevent silent drift: add a sync test that asserts every command the INTENT_TABLE routes to actually appears in the do.md routing table (the single source of truth), so a future edit to do.md that removes/renames a command fails CI rather than leaving the nudge pointing at a dead command.\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-3-SPRINT.md"
+    },
+    {
+      "key": "39/1",
+      "phase": "39",
+      "number": "1",
+      "goal": "\"Add the content-site project type to project-types.yaml and update rcode-project-researcher to branch on it — enabling keyword-first discovery for any SEO project (#911, #912).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-1-SPRINT.md"
+    },
+    {
+      "key": "39/2",
+      "phase": "39",
+      "number": "2",
+      "goal": "\"Add full-spectrum SEO routing rules to rcode/workflows/do.md so every SEO intent (keyword research, content factory, audits, local SEO, schema, AI search, backlinks, technical) routes to the correct skill instead of falling through to the generic classifier (#913).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-2-SPRINT.md"
+    },
+    {
+      "key": "39/3",
+      "phase": "39",
+      "number": "3",
+      "goal": "\"Copy the 8 SEO skills from ~/.agents/skills/ into rcode/skills/seo/, create module.yaml and module registration in rcode/modules/seo.yaml, so `npx @hanzlaa/rcode install --modules seo` installs them as a first-class rcode module (#914).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-3-SPRINT.md"
     }
   ],
   "plans": [],

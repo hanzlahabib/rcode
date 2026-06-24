@@ -249,6 +249,19 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 41 — SEO Module: bundle top-notch SEO skills as a native rcode module
+
+**Goal:** _TBD — fill in via /rcode-discuss-phase 41 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
@@ -390,3 +403,26 @@ or `.planning/`. This closes that gap. Covers GitHub issue #892.
 - A `.rcode/config.yaml` toggle controls aggressiveness (`every | once-per-intent | when-stale | off`); default `every`, `off` fully silences
 - `UserPromptSubmit` matcher added to `rcode/templates/settings-hooks.json` and wired for Claude Code via `/rcode-enable-hooks`
 - Tests cover: match, no-match, error-swallow, per-session dedupe, and the config toggle
+
+---
+
+## Phase 39 — SEO Module: bundle top-notch SEO skills as a native rcode module
+
+**Goal:** Close the rcode gap that causes content/SEO sites to be planned generically (as `web-app`) with no keyword clustering, E-E-A-T gates, or internal-link architecture. Implement four changes: (1) add `content-site` project type to `project-types.yaml` with full-spectrum SEO signals (local, affiliate, programmatic, technical, editorial, e-commerce, AI search, link-building — not just rank-and-rent), (2) route `content-site` projects in `rcode-project-researcher` to dedicated SEO skill agents, (3) add comprehensive SEO intent routing to `do.md` covering all SEO disciplines, (4) bundle 8 production-grade SEO skills from `~/.agents/skills/` into `rcode/skills/seo/` as an installable `--modules seo` module and wire the full `claude-seo:*` plugin fleet (17 agents). Closes #911, #912, #913, #914.
+
+**Covers:** #911, #912, #913, #914
+
+**Status:** Planned
+
+**Success criteria:**
+- `/rcode-new-project rank-and-rent mobile repair lead-gen site for Abu Dhabi (programmatic SEO)` classifies as `content-site`, not `web-app`, and asks SEO-specific discovery questions
+- `rcode-project-researcher` for a `content-site` project produces `KEYWORDS.md` and `CLUSTERS.md` instead of generic `STACK.md`
+- "run the content factory" / "cluster my keywords" / "audit my SEO" via `do.md` routes to the correct SEO skill
+- `npx @hanzlaa/rcode install --modules seo` installs 8 bundled SEO skills into `.rcode/skills/`
+- `seo-content-factory` runs end-to-end for a content-site project
+- No existing project types, routing rules, or skills are broken
+
+**Grounding:** `rcode/references/project-types.yaml` (add `content-site` entry after line 270), `rcode/agents/rcode-project-researcher.md` (conditional branch), `rcode/workflows/do.md` (routing table), new `rcode/skills/seo/` directory with 8 skills symlinked/copied from `~/.agents/skills/`
+
+**Plans:**
+- _TBD — generate via /rcode-plan 39_
