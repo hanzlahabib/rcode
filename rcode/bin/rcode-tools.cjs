@@ -105,27 +105,46 @@ function parseSimpleYaml(text) {
 }
 
 function readConfig() {
-  const configPath = path.join(RCODE_DIR, 'config.yaml');
-  if (!fs.existsSync(configPath)) {
-    return {
-      user_name: 'User',
-      project_name: path.basename(PROJECT_ROOT),
-      language: 'English',
-      mode: 'guided',
-    };
+  // #733 — try config.yaml first, fall back to config.json, return defaults when neither exists.
+  const yamlPath = path.join(RCODE_DIR, 'config.yaml');
+  const jsonPath = path.join(RCODE_DIR, 'config.json');
+
+  if (fs.existsSync(yamlPath)) {
+    try {
+      const parsed = parseSimpleYaml(fs.readFileSync(yamlPath, 'utf8'));
+      return {
+        ...parsed,  // spread all parsed keys (model_profile, branching_strategy, etc.)
+        user_name: parsed.user_name || 'User',
+        project_name: parsed.project_name || path.basename(PROJECT_ROOT),
+        language: parsed.communication_language || parsed.language || 'English',
+        mode: parsed.mode || 'guided',
+      };
+    } catch (e) {
+      throw new Error(`Failed to read config.yaml: ${e.message}`);
+    }
   }
-  try {
-    const parsed = parseSimpleYaml(fs.readFileSync(configPath, 'utf8'));
-    return {
-      ...parsed,  // spread all parsed keys (model_profile, branching_strategy, etc.)
-      user_name: parsed.user_name || 'User',
-      project_name: parsed.project_name || path.basename(PROJECT_ROOT),
-      language: parsed.communication_language || parsed.language || 'English',
-      mode: parsed.mode || 'guided',
-    };
-  } catch (e) {
-    throw new Error(`Failed to read config.yaml: ${e.message}`);
+
+  if (fs.existsSync(jsonPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      return {
+        ...parsed,
+        user_name: parsed.user_name || 'User',
+        project_name: parsed.project_name || path.basename(PROJECT_ROOT),
+        language: parsed.communication_language || parsed.language || 'English',
+        mode: parsed.mode || 'guided',
+      };
+    } catch (e) {
+      throw new Error(`Failed to read config.json: ${e.message}`);
+    }
   }
+
+  return {
+    user_name: 'User',
+    project_name: path.basename(PROJECT_ROOT),
+    language: 'English',
+    mode: 'guided',
+  };
 }
 
 /**
@@ -1011,10 +1030,73 @@ function cmdState(subArgs) {
       throw new Error('state.json exceeds 10 MB limit — possible corruption');
     }
     try {
-      return JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      const raw = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      return migrateState(raw);
     } catch (e) {
       throw new Error(`Invalid JSON in state.json: ${e.message}`);
     }
+  }
+
+  /**
+   * migrateState — pure normalizer that upgrades any legacy state shape to v2.
+   *
+   * v0: { milestone: string, no phases[], no schema_version }
+   * v1: { phases[] with mixed shapes, schema_version: 1 }
+   * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
+   *
+   * This function is PURE — it never writes to disk. readState() calls it on
+   * every read so all callers transparently receive v2-shaped data. (#735)
+   */
+  function migrateState(raw) {
+    if (!raw || typeof raw !== 'object') return raw;
+    const state = Object.assign({}, raw);
+
+    // --- milestones[] array (v0 → v2) ---
+    // v0 state has milestone as a plain string and no milestones array.
+    if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
+      state.milestones = [{
+        id: state.milestone,
+        name: state.milestone,
+        status: 'active',
+      }];
+    }
+    if (!Array.isArray(state.milestones)) {
+      state.milestones = [];
+    }
+
+    // --- phases[] uniform shape (v1 → v2) ---
+    // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
+    if (Array.isArray(state.phases)) {
+      state.phases = state.phases.map(p => {
+        if (!p || typeof p !== 'object') return p;
+        // Resolve number: prefer p.number, fall back to numeric part of p.id
+        let number = p.number ?? null;
+        if (number === null && typeof p.id === 'string') {
+          const m = p.id.match(/^(\d+(?:\.\d+)?)/);
+          if (m) number = m[1];
+        }
+        // Resolve id: prefer p.id, synthesize from number
+        const id = p.id ?? (number !== null ? String(number) : undefined);
+        return {
+          number: number ?? p.id ?? null,
+          id: id ?? null,
+          name: p.name ?? null,
+          status: p.status ?? 'planned',
+          started: p.started ?? null,
+          completed: p.completed ?? null,
+          sprints: Array.isArray(p.sprints) ? p.sprints : [],
+          // Preserve any extra fields that callers may rely on
+          ...Object.fromEntries(
+            Object.entries(p).filter(([k]) =>
+              !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
+            )
+          ),
+        };
+      });
+    }
+
+    state.schema_version = 2;
+    return state;
   }
 
   /** Atomic write: write to temp file then rename. */
@@ -1106,11 +1188,10 @@ function cmdState(subArgs) {
     const now = new Date().toISOString();
     return {
       version: '1',
-      // #8 — explicit schema_version field for future migration framework.
-      // Bump when the shape changes. `state schema-status` / `state migrate-schema`
-      // read this. Existing state files without the field are treated as v1
-      // (backwards-compat — never crash on legacy state).
-      schema_version: 1,
+      // #8 / #735 — explicit schema_version field for migration framework.
+      // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
+      // older state files transparently on read. New state starts at v2.
+      schema_version: 2,
       project: projectName || path.basename(PROJECT_ROOT),
       created: now,
       updated: now,
@@ -1118,6 +1199,7 @@ function cmdState(subArgs) {
       current_plan: 0,
       current_sprint: null,
       phases: [],
+      milestones: [],
       velocity_history: [],
       executions: [],
       decisions: [],
