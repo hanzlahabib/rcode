@@ -66,11 +66,30 @@ function extractPhases(content) {
 
 function parseRequirements(section) {
   // Matches both bold-style (**Requirements:**) and heading-style (### Requirements)
-  const match = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
-  if (!match) return [];
-  return match[1].split('\n')
-    .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
-    .filter(Boolean);
+  // followed by a list block.
+  const listMatch = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
+  if (listMatch) {
+    return listMatch[1].split('\n')
+      .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
+      .filter(Boolean);
+  }
+
+  // Also capture REQ-IDs from inline lines like:
+  //   **REQs:** REQ-004, REQ-010, REQ-020
+  //   Requirements: REQ-001, REQ-002
+  //   **Covers:** REQ-001, REQ-003
+  // Collect every line in the section that contains REQ-\d+ patterns.
+  const seen = new Set();
+  const out = [];
+  const reqIdRe = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
+  for (const line of section.split('\n')) {
+    if (!/REQ-/i.test(line)) continue;
+    const ids = line.match(reqIdRe) || [];
+    for (const id of ids) {
+      if (!seen.has(id)) { seen.add(id); out.push(id); }
+    }
+  }
+  return out;
 }
 
 function parseSuccessCriteria(section) {
@@ -176,12 +195,60 @@ function cmdListPhases(projectRoot) {
   // the legacy phaseStatus() heuristic, which only matched literal "completed"
   // in the header and missed our **Status:** Complete convention. Fall back to
   // phaseStatus() only when extractPhases couldn't parse a Status line.
-  return extractPhases(content).map((p) => ({
+  const phases = extractPhases(content).map((p) => ({
     number: p.number,
     name: p.name,
     status: p.status === 'unknown' ? phaseStatus(p.section) : p.status,
     status_raw: p.status_raw,
   }));
+
+  // Fix #856 — state.current_phase is authoritative for which phase is in_progress.
+  // ROADMAP.md may carry a stale "Active" marker from a previous phase after
+  // `state set-phase` has moved forward. Read state.json and override statuses so
+  // exactly one phase (the current one) gets in_progress, and any other phase that
+  // ROADMAP still labels active/in_progress is demoted to planned.
+  const stateJsonPath = path.join(projectRoot, '.rcode', 'state.json');
+  let currentPhase = null;
+  if (fs.existsSync(stateJsonPath)) {
+    try {
+      const st = JSON.parse(fs.readFileSync(stateJsonPath, 'utf8'));
+      currentPhase = st.current_phase || null;
+    } catch { /* non-fatal — fall through to ROADMAP-only statuses */ }
+  }
+
+  if (!currentPhase) return phases;
+
+  // Extract the numeric prefix from current_phase (e.g. "02-correctness-fixes" → "2").
+  const numPrefixMatch = String(currentPhase).match(/^(\d+)/);
+  const leadingNum = numPrefixMatch ? String(parseInt(numPrefixMatch[1], 10)) : null;
+
+  let matched = false;
+  return phases.map((p) => {
+    // Normalize the ROADMAP phase number (strip leading zeros) for comparison.
+    const normNum = String(parseInt(String(p.number), 10));
+    const isCurrentPhase =
+      !matched && (
+        p.name === currentPhase ||
+        (leadingNum !== null && normNum === leadingNum) ||
+        String(p.number) === String(currentPhase)
+      );
+    if (isCurrentPhase) {
+      matched = true;
+      // Only promote to in_progress if not already complete/closed.
+      const s = String(p.status || '').toLowerCase();
+      if (s !== 'complete' && s !== 'closed') {
+        return { ...p, status: 'in_progress' };
+      }
+      return p;
+    }
+    // Demote any other phase that ROADMAP still marks active/in_progress —
+    // state.current_phase is the single source of truth for the active phase.
+    const s = String(p.status || '').toLowerCase();
+    if (s === 'active' || s === 'in_progress') {
+      return { ...p, status: 'planned' };
+    }
+    return p;
+  });
 }
 
 /**
