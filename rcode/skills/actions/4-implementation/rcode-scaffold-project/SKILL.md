@@ -74,6 +74,53 @@ Then proceed to `./steps/step-01-target.md`.
 | 3b | Brownfield Init | Overlay rcode structure into existing project *(brownfield only)* | `steps/step-03-brownfield.md` |
 | 4 | Post-Setup | Rename, init git, suggest next steps | `steps/step-04-post-setup.md` |
 
+## Post-Clone Checklist (Greenfield)
+
+After cloning the template and before handing off to the user, run these steps in order:
+
+### 1. pnpm-first — Install Dependencies with pnpm
+
+**Never use `npm install`.** Always install with pnpm:
+
+```bash
+corepack enable pnpm   # ensure pnpm is available via corepack
+pnpm install           # install all dependencies
+```
+
+If `package.json` contains a `packageManager` field, verify it is set to a `pnpm@x.y.z` string. If it is missing or set to `npm`, update it to `pnpm` before installing.
+
+### 2. Node.js 20+ Verification
+
+Check `.nvmrc` (if present) and the `engines.node` field in `package.json`. If either targets Node 16 or Node 18, update to `>=20.0.0`:
+
+- `.nvmrc`: change content to `20`
+- `package.json` `engines.node`: change `>=16.0.0` or `>=18.0.0` to `>=20.0.0`
+
+Report the result to the user: "Node target verified: 20+" or "Node target updated from X to 20+".
+
+### 3. Modern Dependency Check
+
+Scan the scaffolded `package.json` for known deprecated packages and flag them to the user:
+
+| Found | Suggestion |
+|-------|-----------|
+| `moment` | Replace with `date-fns` (tree-shakeable, no-timezone footgun) |
+| `axios` | Native `fetch` is available in Node 18+; only keep `axios` if fetch polyfill is needed |
+| `request` | Unmaintained — use native `fetch` or `undici` |
+
+Do **not** auto-remove these; surface the finding and let the user decide.
+
+### 4. rcode Config Scaffold
+
+After cloning, create `.rcode/config.yaml` with starter content if it does not already exist:
+
+```yaml
+project_name: "{PROJECT_NAME}"
+current_phase: 1
+```
+
+Replace `{PROJECT_NAME}` with the actual project name supplied by the user. Do not overwrite an existing `.rcode/config.yaml`.
+
 ## Design Decisions
 
 - **Always clone fresh** — never cache template locally. Template updates are free.
@@ -81,12 +128,24 @@ Then proceed to `./steps/step-01-target.md`.
 - **Safety first** — never touch a non-empty directory without user approval.
 - **Brownfield never overwrites** — in `--here` mode, existing files are never modified.
 - **Minimal assumptions** — ask before acting on any ambiguity.
+- **pnpm always** — never use npm or yarn for installs; always use pnpm via corepack.
+
+### Safety Check: What "non-empty" means
+
+A directory is considered **non-empty** (and therefore protected) if it contains **any files or directories other than**:
+- `.git/` (git metadata only)
+- `README.md` (bare readme with no project code)
+
+Everything else — including `package.json`, `src/`, `.rcode/`, `node_modules/`, dotfiles like `.env` — counts as content. If any such file is present, the safety check triggers and the user must explicitly consent before the skill proceeds.
 
 ## Output Format
 
 - New project directory scaffolded at the specified path
 - Fresh git history (template history stripped, new `git init` applied)
-- `.rcode/config.json` initialized with project name and user preferences
+- `.rcode/config.yaml` initialized with project name and current phase
+- Dependencies installed via `pnpm install`
+- Node.js target verified or updated to 20+
+- Deprecated dependency findings reported (if any)
 - Console summary: path created, files scaffolded, next steps
 
 ## Examples
