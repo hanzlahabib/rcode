@@ -959,6 +959,7 @@ function cmdInitExecute(rawArgs) {
  *   resolve-blocker <index>        → set blockers[index].resolved = true
  *   record-session                 → update last_session timestamp
  *   record-council --slug <s> --panel <csv> --artifact <path>
+ *   sync-from-git                  → recover phase/sprint state from git commit history (#915)
  */
 function cmdState(subArgs) {
   const statePath = path.join(RCODE_DIR, 'state.json');
@@ -1927,6 +1928,83 @@ function cmdState(subArgs) {
       artifact_path: flags.artifact || '',
     });
     return writeState(state);
+  }
+
+  // --- sync-from-git ---
+  // Recover execution state by inspecting git log for implementation commits.
+  // For each phase that has sprints, checks whether feat:/fix:/refactor: commits
+  // referencing that phase number exist. If so, marks sprints completed and phase
+  // as executed (not complete — verifier should still run). Issue #915.
+  if (sub === 'sync-from-git') {
+    const state = readState();
+    if (!state) return { ok: false, error: 'No state.json — run `state init` first.' };
+
+    const { execSync } = require('child_process');
+    let gitLog = '';
+    try {
+      gitLog = execSync('git log --oneline', { cwd: PROJECT_ROOT, encoding: 'utf8' });
+    } catch (e) {
+      return { ok: false, error: `git log failed: ${e.message}` };
+    }
+
+    const implPrefixRe = /^[a-f0-9]+ (feat|fix|refactor|perf|style|test|chore)\(/i;
+    const implLines = gitLog.split('\n').filter(l => implPrefixRe.test(l));
+
+    let syncedPhases = 0;
+    let syncedSprints = 0;
+
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    for (const phase of phases) {
+      if (!phase) continue;
+      const num = String(phase.number || phase.id || '').trim();
+      if (!num) continue;
+
+      // Check if any implementation commit references this phase number.
+      // Matches patterns: "phase 1", "phase 1.", "1.1", "(1)", "#1 "
+      const phaseNumEscaped = num.replace('.', '\\.');
+      const phaseRe = new RegExp(
+        `(phase\\s*${phaseNumEscaped}[^\\d]|\\b${phaseNumEscaped}\\.\\d|\\(${phaseNumEscaped}\\)|\\s${phaseNumEscaped}\\s)`,
+        'i'
+      );
+      const hasImplCommit = implLines.some(l => phaseRe.test(l));
+
+      // Also check if SUMMARY.md exists for this phase
+      let hasSummary = false;
+      try {
+        const phaseDirs = fs.existsSync(PLANNING_DIR)
+          ? fs.readdirSync(PLANNING_DIR).filter(d => {
+              const m = d.match(/^(\d+)/);
+              return m && m[1] === num;
+            })
+          : [];
+        if (phaseDirs.length > 0) {
+          const summaryPath = path.join(PLANNING_DIR, phaseDirs[0], 'SUMMARY.md');
+          hasSummary = fs.existsSync(summaryPath);
+        }
+      } catch { /* ignore fs errors */ }
+
+      const sprints = Array.isArray(phase.sprints) ? phase.sprints : [];
+      if ((hasImplCommit || hasSummary) && sprints.length > 0) {
+        for (const sprint of sprints) {
+          if (sprint && sprint.status !== 'completed') {
+            sprint.status = 'completed';
+            syncedSprints++;
+          }
+        }
+        if (phase.status !== 'complete' && phase.status !== 'verified') {
+          phase.status = 'executed';
+          syncedPhases++;
+        }
+      }
+    }
+
+    writeState(state);
+    return {
+      ok: true,
+      message: `Synced ${syncedPhases} phases, ${syncedSprints} sprints from git history`,
+      synced_phases: syncedPhases,
+      synced_sprints: syncedSprints,
+    };
   }
 
   // --- record-chain ---
@@ -7296,6 +7374,7 @@ async function main() {
         console.log('  state add-blocker "<description>"            → append to blockers[]');
         console.log('  state resolve-blocker <index>|--all|--phase <N>  --issue <N>|--commit <sha>|--noref  → mark blocker(s) resolved (#654, #656)');
         console.log('  state record-session                         → update last_session timestamp');
+        console.log('  state sync-from-git                          → recover phase/sprint state from git commit history (#915)');
         console.log('  state record-council --slug <s> --panel <csv> --artifact <path>');
         console.log('  state record-chain --slug <s> --agents <csv> --artifacts <path>');
         console.log('  state insert-phase --number <N.M> --name <slug>');
