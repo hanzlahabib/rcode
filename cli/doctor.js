@@ -67,10 +67,17 @@ function checkCompliance(filePath) {
   if (!/^## Examples/m.test(content)) missing.push('Examples');
 
   // Negative-boundary clause (component 1 of the 5-component standard).
-  // Parse the frontmatter description so folded-block YAML is normalized
-  // before the regex runs — "Do\n  NOT" becomes "Do NOT" after normalization.
+  // Three valid locations, checked in order:
+  //   a) frontmatter `not-for:` array with at least one entry (canonical YAML form)
+  //   b) a boundary phrase in the frontmatter `description` field
+  //   c) a "## Do NOT use" heading or "do not use/include" in the body
+  // Bug #874: only (b) and (c) were checked, missing skills that use (a).
+  const notForField = frontmatter['not-for'];
+  const hasNotForField =
+    Array.isArray(notForField) && notForField.length > 0;
   const desc = typeof frontmatter.description === 'string' ? frontmatter.description : '';
   const hasBoundary =
+    hasNotForField ||
     NEGATIVE_BOUNDARY_RE.test(desc) ||
     /##[^\n]*\bnot\b/i.test(body) ||
     /\bdo not (use|include)\b/i.test(body);
@@ -188,7 +195,18 @@ function runPreflight(cwd, packageRoot) {
   // 6. Agent manifest drift (only if .rcode/ is initialized — indicates installed editors)
   if (fs.existsSync(rcodeDir)) {
     const editors = [];
-    if (fs.existsSync(path.join(cwd, '.claude/skills'))) editors.push('claude');
+    // Detect Claude install via flat .claude/commands/rcode-*.md (installer writes
+    // slash commands flat, not under a subdirectory) or .claude/skills as a fallback
+    // for legacy layouts. Bug #873: checking only .claude/skills missed fresh installs.
+    const claudeCommandsDir = path.join(cwd, '.claude/commands');
+    const hasClaudeFlatCommands =
+      fs.existsSync(claudeCommandsDir) &&
+      fs.readdirSync(claudeCommandsDir).some(
+        (f) => f.startsWith('rcode-') && f.endsWith('.md'),
+      );
+    if (hasClaudeFlatCommands || fs.existsSync(path.join(cwd, '.claude/skills'))) {
+      editors.push('claude');
+    }
     if (fs.existsSync(path.join(cwd, '.cursor/rules'))) editors.push('cursor');
     if (fs.existsSync(path.join(cwd, '.windsurf/rules'))) editors.push('windsurf');
     if (fs.existsSync(path.join(cwd, '.antigravity/agents'))) editors.push('antigravity');
