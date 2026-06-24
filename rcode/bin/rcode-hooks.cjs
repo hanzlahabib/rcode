@@ -11,6 +11,7 @@
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
+ *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
  *
  * All subcommands read stdin JSON from the hook execution context.
@@ -890,6 +891,51 @@ async function compactNudge() {
 }
 
 /**
+ * Heuristic: should we nudge the executor to /compact before this tool call?
+ *
+ * Fires on Read or Bash calls that target known large planning files
+ * (RESEARCH.md, SUMMARY.md, ROADMAP.md). These files routinely run 500-2000+
+ * lines and reading them late in a long session pushes the context window past
+ * the point of no return. The nudge goes to stderr only — it never blocks.
+ *
+ * @param {string} toolName   - The tool being invoked (e.g. "Read", "Bash")
+ * @param {object} toolInput  - The tool_input object from the hook payload
+ * @returns {boolean}
+ */
+function shouldNudgeCompact(toolName, toolInput) {
+  if (toolName !== 'Read' && toolName !== 'Bash') return false;
+  const target = toolInput?.file_path || toolInput?.command || '';
+  return /RESEARCH\.md|SUMMARY\.md|ROADMAP\.md/.test(target);
+}
+
+/**
+ * pre-tool-use: Strategic compact nudge before large file reads (#749).
+ *
+ * Triggered by the PreToolUse hook (Read + Bash tool names). Checks whether
+ * the tool call targets a known large planning file and, if so, writes an
+ * advisory line to stderr so the executor sees it without being interrupted.
+ * Always exits 0 — never blocks the tool call.
+ */
+async function preToolUse() {
+  try {
+    const input = await readInputJson();
+    const toolName = input.tool_name || input.toolName || '';
+    const toolInput = input.tool_input || input.toolInput || {};
+
+    if (shouldNudgeCompact(toolName, toolInput)) {
+      process.stderr.write(
+        '[rcode] Context nearing limit — consider /compact before the next large file read\n'
+      );
+    }
+
+    process.exit(0);
+  } catch {
+    // Advisory hook must never break the session.
+    process.exit(0);
+  }
+}
+
+/**
  * Main entry point.
  */
 async function main() {
@@ -920,12 +966,15 @@ async function main() {
     case 'compact-nudge':
       await compactNudge();
       break;
+    case 'pre-tool-use':
+      await preToolUse();
+      break;
     case 'prompt-router':
       promptRouter(); // synchronous — exits inside; never falls through to async path
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge|prompt-router');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge|pre-tool-use|prompt-router');
       process.exit(1);
   }
 }
