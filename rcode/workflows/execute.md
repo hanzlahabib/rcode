@@ -1047,6 +1047,9 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 /rcode-execute {next} — execute next phase
 ```
 
+**Next step — paste this to verify:**
+> /rcode-verify {X}
+
 Only suggest the commands listed above. Do not invent or hallucinate command names.
 </step>
 

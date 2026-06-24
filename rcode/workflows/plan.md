@@ -1023,6 +1023,9 @@ Verification: {Passed | Passed with override | Skipped}
 
 /rcode-execute {X} ${RCODE_WS}
 
+**Next step — paste this to execute:**
+> /rcode-execute {X}
+
 ───────────────────────────────────────────────────────────────
 
 **Also available:**

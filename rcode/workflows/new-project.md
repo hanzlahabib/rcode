@@ -885,6 +885,9 @@ Present completion summary:
 > (a) `.planning/ROADMAP.md` contains real `## Phase N` headings — open it and add them if the file is still a stub.
 > (b) Run `npx rcode state sync --from-disk` to populate `.rcode/state.json` with the phases array so downstream commands (`/rcode-plan`, `/rcode-execute-sprint`, etc.) can read the phase list.
 
+**Next step — paste this to start planning:**
+> /rcode-plan 1 — [Phase 1 Name from ROADMAP.md]
+
 **If auto mode:**
 
 ```
