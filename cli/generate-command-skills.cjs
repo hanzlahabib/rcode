@@ -100,7 +100,7 @@ description: >
   Sidebar entry — invokes the same workflow as /rcode-${cmdName}.
 triggers:
 ${triggers.map((t) => `  - "${t}"`).join('\n')}
-user-invocable: false
+user-invocable: true
 generated: true
 generated-by: rcode-install-v${version}
 source: rcode/commands/${cmdName}.md
