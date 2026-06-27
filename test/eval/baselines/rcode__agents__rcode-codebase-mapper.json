@@ -2,6 +2,7 @@
   "artifact": "rcode/agents/rcode-codebase-mapper.md",
   "negativeBoundaries": [],
   "routingKeywords": [
+    "Timeout Strategy",
     "dispatches",
     "rcode-execute",
     "rcode-map-codebase",

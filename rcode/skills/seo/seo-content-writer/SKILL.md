@@ -1,5 +1,5 @@
 ---
-name: seo-content-writer
+name: rcode-seo-content-writer
 description: 'Write SEO blog posts, articles, landing pages with keyword integration, header optimization, and snippet targeting. SEO文章写作/内容优化'
 version: "9.0.0"
 license: Apache-2.0
@@ -28,63 +28,19 @@ metadata:
     - SEO글쓰기
     - redaccion-seo
   triggers:
-    # EN-formal
     - "write SEO content"
     - "create blog post"
     - "write an article"
-    - "content writing"
     - "draft optimized content"
-    - "write for SEO"
     - "SEO copywriting"
-    - "blog writing"
-    # EN-casual
     - "write me a blog post"
-    - "write me an article"
     - "help me write about"
-    - "draft an article about"
-    - "I need a blog post"
-    - "create content for my site"
-    # EN-question
     - "how do I write content that ranks"
     - "how to write SEO friendly content"
-    - "what makes content rank well"
-    # EN-competitor
-    - "SurferSEO alternative"
-    - "Clearscope alternative"
-    - "Jasper AI alternative for SEO"
-    # ZH-pro
-    - "SEO文章写作"
-    - "SEO内容创作"
-    - "博客写作"
-    - "内容优化"
-    - "内容创作"
-    # ZH-casual
-    - "帮我写文章"
-    - "写一篇博客"
-    - "排名上不去"
-    - "帮我写SEO文章"
-    - "写一篇SEO文章"
-    # JA
-    - "SEOライティング"
-    - "SEO記事作成"
-    - "ブログ記事作成"
-    - "SEOコンテンツ"
-    # KO
-    - "SEO 글쓰기"
-    - "블로그 작성"
-    - "SEO 콘텐츠 작성"
-    - "블로그 글 작성해줘"
-    - "이 주제로 글 써봐"
-    # ES
-    - "redacción SEO"
-    - "escribir artículo SEO"
-    - "contenido optimizado"
-    # PT
-    - "redação SEO"
-    - "escrever artigo SEO"
-    # Misspellings
-    - "SEO copywritting"
-    - "writting SEO content"
+    - "SEO文章写作"        # ZH
+    - "SEOライティング"     # JA
+    # NOTE: for auditing existing pages use rcode-on-page-seo-auditor;
+    #       for site-wide content programs use rcode-seo-content-factory.
 ---
 
 # SEO Content Writer
@@ -215,49 +171,6 @@ When a user requests SEO content, run these nine steps in order:
 - [ ] Readability score appropriate for target audience
 - [ ] Source of each data point clearly stated (~~SEO tool data, user-provided, or estimated)
 
-## Example
+## More
 
-**User**: "Write an SEO-optimized article about 'email marketing best practices' targeting small businesses"
-
-**Output** (abbreviated):
-- H1: `Email Marketing Best Practices: A 2026 Guide for Small Businesses` (keyword front-loaded; audience + year qualifier)
-- Meta description: `Get 12 proven email marketing tactics that lift open rates 34% for small businesses. DMA-backed data, real subject-line examples, and a 30-day playbook.` (~156 chars, CTA implied, stat hook)
-- Structure: H2 for each of 12 tactics, bullet lists, comparison table (Mailchimp vs Brevo vs ConvertKit), 6-question FAQ (40-60 word answers for featured snippets), CTA conclusion.
-
-> **Reference**: See [references/seo-writing-checklist.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/seo-writing-checklist.md) for the full article with statistics citations, H1/H2/H3 hierarchy, and FAQ section.
-
-## Content Type Templates
-
-Quick-start prompts: How-to guide, Comparison article, Listicle, Ultimate guide. See [references/instructions-detail.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md#content-type-templates) for all 4 templates.
-
-## Tips for Success
-
-Match intent, front-load value, use data, write for humans first, include visuals, update regularly. Full list in [references/instructions-detail.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md#tips-for-success).
-
-
-### Save Results
-
-After delivering content or optimization output to the user, ask:
-
-> "Save these results for future sessions?"
-
-If yes, write a dated summary to `memory/content/YYYY-MM-DD-<topic>.md` containing:
-- One-line description of what was created
-- Target keyword and content type
-- Open loops or items needing review
-- Source data references
-
-**Gate check recommended**: Run content-quality-auditor before publishing (PostToolUse hook will remind automatically).
-
-If any findings should influence ongoing strategy, recommend promoting key conclusions to `memory/hot-cache.md`.
-
-## Reference Materials
-
-- [Instructions Detail](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md) - Full step-by-step workflow, CORE-EEAT constraints, issue classification, content type templates, tips
-- [SEO Writing Checklist](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/seo-writing-checklist.md) - On-page SEO checklist, writing template, featured snippet patterns, full example
-- [Title Formulas](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/title-formulas.md) - Proven headline formulas, power words, CTR patterns
-- [Content Structure Templates](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/content-structure-templates.md) - Templates for blog posts, comparisons, listicles, how-tos, pillar pages
-
-## Next Best Skill
-
-- **Primary**: [content-quality-auditor](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/content-quality-auditor/SKILL.md) — gate the draft before publishing or handing it off.
+Worked example, content-type templates, tips, and reference materials live in [`references.md`](references.md).

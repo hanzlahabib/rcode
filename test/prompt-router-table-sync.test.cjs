@@ -101,6 +101,7 @@ const KNOWN_UNCOVERED_ROUTES = new Set([
   '/rcode-council',            // routed to from classifier fallback, not keyword
   '/rcode-create-story',       // granular — user reaches via epics-stories flow
   '/rcode-dev-story',          // implementation detail — reached via story flow
+  '/rcode-do',                 // the router itself — never routes to itself
   '/rcode-execute',            // explicit execution command
   '/rcode-list-plans',         // status-query — user-driven, not prompt-triggered
   '/rcode-note',               // single-word captures — too broad to keyword-match safely

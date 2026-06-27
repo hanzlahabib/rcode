@@ -194,6 +194,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-audit-fix` | Autonomous audit-to-fix pipeline — find, classify, fix, test, commit. |
 | `/rcode-review --karpathy` | Audit recent code against Karpathy's 4 LLM coding principles. |
 | `/rcode-karpathy-audit` | Full Karpathy engineering principles audit across the codebase. |
+| `/rcode-lazy "<task>"` | Lazy senior-dev lens — force the simplest solution that works (YAGNI, stdlib first) before writing code. |
 | `/rcode-check-implementation-readiness` | Verify a feature is fully ready to implement before writing code. |
 | `/rcode-review-edge-case-hunter` | Hunt for edge cases and boundary conditions before execution. |
 | `/rcode-diagnose-issues` | Triage and diagnose systemic issues before a debug session. |

@@ -8,9 +8,4 @@ allowed-tools:
   - Skill
 ---
 
-Invoke the `rcode-lazy` skill (via the Skill tool) and apply it to: $ARGUMENTS
-
-`rcode-lazy` is the always-on "lazy senior dev" lens — it forces the simplest
-solution that actually works (YAGNI, stdlib before custom code, native platform
-features before dependencies, one line before fifty) before any code is written.
-Pass `--intensity=lite|full|ultra` through if the user provided it; default is `full`.
+@.rcode/workflows/lazy.md

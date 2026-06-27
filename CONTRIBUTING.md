@@ -353,6 +353,12 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `scaffold` — scaffold-project workflow changes
 - `campaign` — fix-campaign orchestration tracking files
 - `ship` — ship workflow changes
+- `do-router` — `/rcode-do` intent-router table and dispatch logic
+- `milestone-health` — milestone-health scoring in rcode-tools
+- `modules` — installable capability bundles under `rcode/skills/<module>/`
+- `project-types` — project-type templates and detection
+- `roadmapper` — roadmap generation agent/workflow
+- `token` — token-budget and cost-tracking logic
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
