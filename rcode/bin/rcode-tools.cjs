@@ -2278,12 +2278,16 @@ function cmdState(subArgs) {
     }
 
     writeState(state);
+    // #942 — surface the milestone close nudge for inserted phases too.
+    const insHealth = milestoneCloseNudge();
     return {
       ok: true,
       phase_number: phaseNumber,
       name: phaseName,
       slug: slug,
       directory: path.join(PLANNING_DIR, 'phases', `${phaseNumber}-${slug}`),
+      milestone_health: insHealth.milestone_health,
+      ...(insHealth.nudge ? { nudge: insHealth.nudge } : {}),
     };
   }
 
@@ -3822,12 +3826,17 @@ function cmdPhase(subArgs) {
     }
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
+    // #942 — surface the milestone close nudge from the CLI itself so it can't
+    // be bypassed by adding phases outside the add-phase workflow.
+    const { milestone_health, nudge } = milestoneCloseNudge();
     return {
       ok: true,
       phase_number: number,
       name: phaseName,
       slug,
       directory: path.relative(PROJECT_ROOT, directory),
+      milestone_health,
+      ...(nudge ? { nudge } : {}),
     };
   }
 
@@ -4175,7 +4184,13 @@ function cmdPhase(subArgs) {
     if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
-    return { ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped };
+    // #942 — same milestone close nudge for the bulk-draft path.
+    const bulkHealth = milestoneCloseNudge();
+    return {
+      ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped,
+      milestone_health: bulkHealth.milestone_health,
+      ...(bulkHealth.nudge ? { nudge: bulkHealth.nudge } : {}),
+    };
   }
 
   // =====================================================================
@@ -7224,6 +7239,33 @@ function cmdMilestoneHealth() {
     threshold_should: 12,
     milestone_scoped: milestonePhasesNumbers !== null,
   };
+}
+
+// #942 — build a milestone-health summary + human-readable nudge for any
+// phase-adding code path (single add, bulk draft, plan, insert) so the
+// "milestone has too many open phases" guidance can't be bypassed by adding
+// phases outside the add-phase workflow. Returns { milestone_health, nudge }.
+function milestoneCloseNudge() {
+  let h;
+  try { h = cmdMilestoneHealth(); } catch { return { milestone_health: null, nudge: null }; }
+  if (!h || !h.ok) return { milestone_health: null, nudge: null };
+  const summary = {
+    open_phases: h.open_phases,
+    recommendation: h.recommendation,
+    threshold_should: h.threshold_should,
+    threshold_consider: h.threshold_consider,
+  };
+  let nudge = null;
+  if (h.recommendation === 'should-close') {
+    nudge = `Milestone "${h.milestone || 'current'}" has ${h.open_phases} open phases ` +
+      `(≥${h.threshold_should}). Consider /rcode-complete-milestone to archive done ` +
+      `phases, then /rcode-new-milestone for ongoing work — before adding more.`;
+  } else if (h.recommendation === 'consider-closing') {
+    nudge = `Milestone "${h.milestone || 'current'}" has ${h.open_phases} open phases ` +
+      `(≥${h.threshold_consider}). Getting large — /rcode-complete-milestone + ` +
+      `/rcode-new-milestone will keep the roadmap navigable.`;
+  }
+  return { milestone_health: summary, nudge };
 }
 
 function cmdStateSnapshot() {

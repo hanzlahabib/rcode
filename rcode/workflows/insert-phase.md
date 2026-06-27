@@ -83,6 +83,14 @@ Next steps:
 Or continue with current work and return to this phase later.
 ```
 
+## Step 3.5 — Surface milestone-health nudge (#942)
+
+`state insert-phase` returns a `nudge` field when the milestone has too many
+open phases (≥8 = consider, ≥12 = should-close). If `RESULT.nudge` is present,
+print it verbatim so the user is guided toward `/rcode-complete-milestone` +
+`/rcode-new-milestone` instead of silently accumulating phases. If absent, say
+nothing.
+
 ## Anti-patterns
 
 - Don't insert before Phase 1 (decimal 0.1 makes no sense)

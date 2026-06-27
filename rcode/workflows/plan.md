@@ -906,6 +906,23 @@ node ".rcode/bin/rcode-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" 
 
 This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
 
+## 13c. Milestone-health nudge (#942)
+
+After recording completion, check whether the milestone has accumulated too many
+open phases — so planning the Nth phase of a sprawling milestone guides the user
+toward closing it instead of silently growing the roadmap:
+
+```bash
+HEALTH=$(node ".rcode/bin/rcode-tools.cjs" milestone-health 2>/dev/null)
+REC=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).recommendation||'')}catch{console.log('')}})")
+OPEN=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).open_phases||0)}catch{console.log(0)}})")
+```
+
+- If `REC` is `should-close` (≥12 open): surface a hard nudge recommending
+  `/rcode-complete-milestone` then `/rcode-new-milestone`.
+- If `REC` is `consider-closing` (8–11 open): softer nudge.
+- If `healthy`: say nothing.
+
 ## 14. Present Final Status
 
 Route to `<offer_next>` OR `auto_advance` depending on flags/config.
