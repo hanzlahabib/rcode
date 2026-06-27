@@ -21,6 +21,7 @@ import { Topbar } from './Topbar.js';
 import { XtermPanel } from './XtermPanel.js';
 import { OrchPanel } from './OrchPanel.js';
 import { RunnerPicker } from './RunnerPicker.js';
+import { RunConfirmDialog } from './RunConfirmDialog.js';
 import { CommandPalette } from './CommandPalette.js';
 import { BlockedToasts } from './NotifyCenter.js';
 import { OverviewView } from '../views/OverviewView.js';
@@ -307,6 +308,7 @@ export function App() {
       <${OrchPanel} />
       <${BlockedToasts} />
       <${RunnerPicker} />
+      <${RunConfirmDialog} pending=${storeState.runConfirm} />
       <${CommandPalette} open=${paletteOpen} onClose=${() => setPaletteOpen(false)} />
     </div>
   `;

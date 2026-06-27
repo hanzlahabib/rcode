@@ -4613,6 +4613,20 @@ summary:focus-visible,
   box-sizing: border-box;
 }
 .reject-dialog-input:focus { outline: none; border-color: var(--accent-primary); }
+.run-confirm-body {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+.run-confirm-body p { margin: 0 0 var(--space-2); }
+.run-confirm-cmd {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  padding: var(--space-2);
+  word-break: break-all;
+}
+.run-confirm-cmd code { font-family: var(--font-mono, monospace); color: var(--text-primary); }
 .reject-dialog-actions {
   display: flex;
   justify-content: flex-end;

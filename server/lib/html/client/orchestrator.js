@@ -303,6 +303,17 @@ function _poll() {
  * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
 export function runAndOpenTerm(storyId, cmd, title, opts) {
+  // #916 — spawning an orchestrator session launches a real agent with
+  // permissions skipped. Gate it behind an explicit confirmation dialog
+  // instead of running on the first click. The dialog calls execRunAndOpenTerm
+  // on confirm.
+  setState({
+    runConfirm: { kind: 'story', storyId, cmd, title: title || storyId, opts: opts || null },
+  });
+}
+
+/** The actual spawn — invoked only after the user confirms (see #916). */
+export function execRunAndOpenTerm(storyId, cmd, title, opts) {
   // Open the panel immediately (it shows "connecting" while the session starts).
   setState({
     terminal: {
@@ -398,6 +409,16 @@ export const ALLOWED_COMMANDS = [
  */
 export function runCommandFromUI(cmd, opts) {
   if (!cmd) return;
+  // #916 — gate command-runner spawns behind the same confirmation dialog.
+  const title = cmd + ' (command runner)';
+  setState({
+    runConfirm: { kind: 'command', cmd, title, opts: opts || null },
+  });
+}
+
+/** The actual command-runner spawn — invoked only after the user confirms. */
+export function execRunCommandFromUI(cmd, opts) {
+  if (!cmd) return;
   const slug    = cmd.replace(/^\//, '').replace(/\//g, '-');
   const storyId = 'cmd-' + slug;
   const title   = cmd + ' (command runner)';
@@ -417,4 +438,21 @@ export function runCommandFromUI(cmd, opts) {
       }
     })
     .catch(() => showToast('Could not reach orchestrator'));
+}
+
+/** Confirm the pending run (from the #916 dialog) and dispatch the real spawn. */
+export function confirmPendingRun() {
+  const rc = getState().runConfirm;
+  setState({ runConfirm: null });
+  if (!rc) return;
+  if (rc.kind === 'command') {
+    execRunCommandFromUI(rc.cmd, rc.opts);
+  } else {
+    execRunAndOpenTerm(rc.storyId, rc.cmd, rc.title, rc.opts);
+  }
+}
+
+/** Dismiss the pending-run confirmation without spawning. */
+export function cancelPendingRun() {
+  setState({ runConfirm: null });
 }

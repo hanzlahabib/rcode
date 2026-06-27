@@ -77,6 +77,10 @@ let _state = {
   // Runner-picker popover state (driven by components/RunnerPicker.js)
   // { open, x, y, run: { kind: 'session'|'command', storyId?, cmd, title? } }
   runnerPicker:     null,
+  // #916 — pending orchestrator-run confirmation. When set, RunConfirmDialog
+  // renders and the spawn waits for explicit user approval.
+  // { kind: 'story'|'command', storyId?, cmd, title, opts }
+  runConfirm:       null,
 };
 
 /** Registered subscriber functions. */
