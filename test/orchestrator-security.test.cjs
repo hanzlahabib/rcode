@@ -94,3 +94,41 @@ test('GET /api/stream with wrong token → 401', async () => {
   const r = await request({ method: 'GET', path: '/api/stream/good-1?token=wrongtoken' });
   assert.strictEqual(r.status, 401);
 });
+
+// #919 — non-cmd session with a free-form (non-slash) cmd is rejected 403.
+test('POST /api/run non-cmd session with free-form prompt → 403', async () => {
+  const r = await request({
+    method: 'POST', path: '/api/run',
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+  }, JSON.stringify({ storyId: 'phase-3', cmd: 'rm -rf / please' }));
+  assert.strictEqual(r.status, 403);
+});
+
+// #919 — non-cmd session with a slash command is allowed past the gate
+// (it won't actually spawn because CLAUDE_BIN=true, but it must NOT 403).
+test('POST /api/run non-cmd session with slash command → not 403', async () => {
+  const r = await request({
+    method: 'POST', path: '/api/run',
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+  }, JSON.stringify({ storyId: 'phase-3', cmd: '/rcode-dev-story phase-3' }));
+  assert.notStrictEqual(r.status, 403);
+});
+
+// #921 — an oversized request body is rejected, not buffered unbounded.
+// 2 MB exceeds the 1 MB cap; the socket is destroyed and the handler 400s
+// on the resulting empty body (invalid storyId).
+test('POST /api/run with >1MB body → not 2xx (body cap enforced)', async () => {
+  const huge = JSON.stringify({ storyId: 'good-1', cmd: '/x' + 'A'.repeat(2 * 1024 * 1024) });
+  let status = 0;
+  try {
+    const r = await request({
+      method: 'POST', path: '/api/run',
+      headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    }, huge);
+    status = r.status;
+  } catch {
+    // socket destroyed mid-write also satisfies the cap (no unbounded buffer)
+    status = 0;
+  }
+  assert.ok(status === 0 || status >= 400, `expected rejection, got ${status}`);
+});

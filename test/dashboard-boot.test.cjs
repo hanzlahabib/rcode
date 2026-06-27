@@ -79,7 +79,7 @@ test('dashboard: boots and serves /health, /api/state, /api/memory', async (t) =
   assert.equal(health.status, 200);
   const healthJson = JSON.parse(health.body);
   assert.equal(healthJson.status, 'ok');
-  assert.equal(healthJson.mode, 'view-only');
+  assert.equal(healthJson.mode, 'live'); // #916 — dashboard is not view-only; it can orchestrate
 
   const state = await get(port, '/api/state');
   assert.equal(state.status, 200);

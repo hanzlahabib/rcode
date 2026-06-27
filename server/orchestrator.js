@@ -116,6 +116,12 @@ const RUNNERS = [
     // alias ('fable', 'opus', 'sonnet') or a full model id like fable-5.
     id: 'claude', label: 'Claude Code', bin: CLAUDE_BIN, modelFlag: '--model',
     models: ['fable-5', 'opus', 'sonnet', 'haiku'],
+    // #918 — orchestrated sessions run in a detached PTY with no human at the
+    // keyboard to answer permission prompts, so the agent is launched with
+    // --dangerously-skip-permissions. This is a real privilege grant: the
+    // agent can run any local command without a gate. Containment relies on
+    // (a) the loopback-only + token-gated API and (b) running in the project
+    // CWD. A visible warning is emitted at spawn time (see handleRun).
     args: (model, prompt) => model
       ? [prompt, '--dangerously-skip-permissions', '--model', model]
       : [prompt, '--dangerously-skip-permissions'],
@@ -332,11 +338,30 @@ function validStoryId(id) {
     && STORY_ID_RE.test(id);
 }
 
+// Cap request bodies so a malicious or buggy caller can't exhaust memory by
+// streaming an unbounded payload (#921). 1 MB is far more than any legitimate
+// run/stop/reject body. On overflow we destroy the socket and resolve {} —
+// the handler then rejects it as an invalid body.
+const MAX_BODY_BYTES = 1 * 1024 * 1024;
+
 function parseBody(req) {
   return new Promise(resolve => {
     let buf = '';
-    req.on('data', c => buf += c);
-    req.on('end', () => { try { resolve(JSON.parse(buf)); } catch { resolve({}); } });
+    let size = 0;
+    let aborted = false;
+    req.on('data', c => {
+      if (aborted) return;
+      size += c.length;
+      if (size > MAX_BODY_BYTES) {
+        aborted = true;
+        try { req.destroy(); } catch {}
+        resolve({});
+        return;
+      }
+      buf += c;
+    });
+    req.on('end', () => { if (!aborted) { try { resolve(JSON.parse(buf)); } catch { resolve({}); } } });
+    req.on('error', () => { if (!aborted) { aborted = true; resolve({}); } });
   });
 }
 
@@ -492,6 +517,17 @@ async function handleRun(req, res) {
       json(res, 403, { error: 'command not in allowlist', cmd: reqCmd });
       return;
     }
+  } else if (typeof body.cmd === 'string' && body.cmd.trim() !== '') {
+    // #919 — non-cmd sessions (dev-runs: phase-N, sprint-N.M, task ids) may
+    // supply an explicit cmd, but it MUST be a slash command (e.g.
+    // "/rcode-dev-story phase-3"). Free-form prompt text is rejected so the
+    // allowlist isn't trivially bypassed by using a non-cmd- storyId. The
+    // default path (no body.cmd) uses "/rcode-dev-story <storyId>" — also a
+    // slash command — so this never blocks the normal flow.
+    if (!body.cmd.trim().startsWith('/')) {
+      json(res, 403, { error: 'non-command sessions must run a slash command (got free-form prompt)' });
+      return;
+    }
   }
 
   // Runner + model selection — STRICT validation against the registry.
@@ -532,6 +568,11 @@ async function handleRun(req, res) {
   // run-then-communicate flow we want.
   const cmd  = String(body.cmd || `/rcode-dev-story ${storyId}`);
   const cols = 120, rows = 30;
+
+  // #918 — make the privilege grant audible. Every orchestrated run launches
+  // the agent with permissions skipped; surface it in the server log so it's
+  // never silent.
+  console.warn(`[orchestrator] ⚠ spawning ${runner.id} for "${storyId}" with permissions SKIPPED — agent can run any local command in ${PROJECT_ROOT}`);
 
   let proc;
   try {

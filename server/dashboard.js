@@ -77,12 +77,29 @@ const server = http.createServer((req, res) => {
   }
 });
 
+// #917 — return false when the request carries an Origin/Referer header that
+// points at a host other than this dashboard. A missing Origin (typical for a
+// same-origin GET) is allowed. This blocks cross-origin browser exfiltration of
+// the orchestrator token without breaking the dashboard's own fetches.
+function sameOrigin(req) {
+  const h = req.headers || {};
+  const candidate = h.origin || h.referer;
+  if (!candidate) return true; // no Origin/Referer → same-origin GET or non-browser
+  try {
+    const host = new URL(candidate).host; // e.g. "localhost:7717"
+    const allowed = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
+    return allowed.has(host);
+  } catch {
+    return false; // unparseable Origin → reject
+  }
+}
+
 function handleRequest(req, res) {
   const url = req.url || '/';
 
   if (url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', mode: 'view-only', rcode_dir: RCODE_DIR }));
+    res.end(JSON.stringify({ status: 'ok', mode: 'live', rcode_dir: RCODE_DIR }));
     return;
   }
 
@@ -118,7 +135,17 @@ function handleRequest(req, res) {
 
   // Lets the client fetch the current orchestrator token at runtime, so a
   // long-open tab can self-heal instead of 401'ing if the token ever drifts.
+  // #917 — same-origin guard: a cross-origin page (e.g. a malicious site open
+  // in another tab) must not be able to fetch the orchestrator token via the
+  // browser and then drive the orchestrator. Browsers always attach an Origin
+  // header on cross-origin fetches; same-origin GETs typically omit it. So we
+  // reject only when an Origin is PRESENT and does not match our own host.
   if (url === '/api/orch-token') {
+    if (!sameOrigin(req)) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'cross-origin request rejected' }));
+      return;
+    }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ token: ORCH_TOKEN }));
     return;
@@ -165,7 +192,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`   👉 OPEN THIS:  http://localhost:${PORT}`);
-  console.log(`   Mode:          view-only`);
+  console.log(`   Mode:          live (read + orchestration)`);
   console.log(`   Scanning:      ${RCODE_DIR}`);
   console.log(`   Refresh:       30s soft poll`);
   console.log(`   Note:          port ${PORT + 1} is the internal orchestrator API — not for the browser`);
@@ -183,42 +210,16 @@ server.listen(PORT, '127.0.0.1', () => {
 function ensurePty(done) {
   try { require.resolve('@lydell/node-pty'); done(); return; } catch {}
 
-  const pkgRoot = path.join(__dirname, '..');
-
-  // @lydell/node-pty is already declared in optionalDependencies, so a plain
-  // lockfile-respecting `install` pulls it in without mutating package.json.
-  // Use pnpm when the repo is pnpm-managed — `npm install` fights pnpm's
-  // symlinked node_modules and stalls. End-user installs use npm.
-  const usePnpm = fs.existsSync(path.join(pkgRoot, 'pnpm-lock.yaml'));
-  const cmd  = usePnpm ? 'pnpm' : 'npm';
-  const args = usePnpm
-    ? ['install', '--ignore-scripts']
-    : ['install', '--ignore-scripts', '--no-audit', '--no-fund'];
-
-  console.log('[setup] Installing interactive-terminal support (@lydell/node-pty)…');
-  let settled = false;
-  const finish = (ok) => {
-    if (settled) return;
-    settled = true;
-    console.log(ok ? '[setup] Interactive terminal ready.'
-                    : '[setup] node-pty install incomplete — terminal stays unavailable.');
-    done();
-  };
-
-  let child;
-  try {
-    child = spawn(cmd, args, {
-      cwd: pkgRoot, stdio: 'inherit', shell: process.platform === 'win32',
-    });
-  } catch (err) {
-    console.log('[setup] node-pty install could not start:', err.message);
-    finish(false);
-    return;
-  }
-  const timer = setTimeout(() => { try { child.kill(); } catch {} }, 180000);
-  child.on('exit',  code => { clearTimeout(timer); finish(code === 0); });
-  child.on('error', err  => { clearTimeout(timer);
-    console.log('[setup] node-pty install error:', err.message); finish(false); });
+  // #922 — do NOT run `pnpm/npm install` as a side effect of opening the
+  // dashboard. Package mutation + network access on a "view my project" action
+  // is surprising and unwanted. @lydell/node-pty is an optionalDependency; if
+  // it's absent the dashboard works fully except the interactive terminal,
+  // which degrades with a clear message. The user installs it explicitly when
+  // they want orchestration.
+  console.log('[setup] Interactive terminal support (@lydell/node-pty) is not installed.');
+  console.log('[setup] The dashboard runs fine without it; the in-browser terminal stays disabled.');
+  console.log('[setup] To enable it, run:  pnpm add @lydell/node-pty');
+  done();
 }
 
 // ── Auto-spawn orchestrator (port 7718) ──────────────────────────
