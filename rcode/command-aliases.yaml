@@ -1,0 +1,16 @@
+# Command → workflow aliases (#933)
+#
+# Most rcode commands @-include a workflow of the SAME name
+# (rcode/commands/<x>.md → @.rcode/workflows/<x>.md). A few intentionally point
+# to a differently-named workflow. Declare each one here so parity tooling and
+# audits treat it as a sanctioned alias, not drift.
+#
+# Format:  <command-basename>: <workflow-basename>   # why
+#
+# Enforced by test/command-alias-parity.test.cjs: every command whose @-included
+# workflow name differs from the command name MUST appear below, and every entry
+# below must correspond to a real mismatch (no stale entries).
+
+aliases:
+  config: settings          # config.md is the user-facing name; the workflow is settings.md
+  review-fix: code-review-fix # review-fix.md is the short command; the workflow is code-review-fix.md

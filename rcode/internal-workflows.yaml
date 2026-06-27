@@ -1,0 +1,26 @@
+# Internal workflows (#939)
+#
+# These workflows have no user-facing slash command on purpose — they are
+# sub-steps spawned by other workflows/commands, not invoked directly. Declaring
+# them here lets parity tooling distinguish "internal by design" from "missing a
+# command" (a real bug).
+#
+# Enforced by test/internal-workflow-parity.test.cjs: every workflow without a
+# same-named command must be either an alias target (rcode/command-aliases.yaml)
+# or listed below; every entry below must be a real command-less workflow.
+
+internal:
+  - audit-plans                      # spawned by /rcode-audit
+  - audit-worktrees                  # spawned by orchestration cleanup
+  - autonomous-smart-discuss         # sub-step of /rcode-autonomous
+  - discuss-phase-discuss-areas      # sub-step of /rcode-discuss-phase
+  - execute-regression-gates         # post-execute gate, spawned by /rcode-execute
+  - execute-verify-phase-goal        # goal-backward check, spawned by /rcode-execute
+  - execute-waves                    # wave batching, spawned by /rcode-execute-sprint
+  - new-project-create-roadmap       # sub-step of /rcode-new-project
+  - new-project-define-requirements  # sub-step of /rcode-new-project
+  - new-project-research-decision    # sub-step of /rcode-new-project
+  - plan-prd-express                 # express path, spawned by /rcode-plan
+  - plan-research-validation         # sub-step of /rcode-plan
+  - plan-spawn-planner               # planner dispatch, spawned by /rcode-plan
+  - review-adversarial               # adversarial pass, spawned by /rcode-review

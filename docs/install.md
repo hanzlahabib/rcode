@@ -30,9 +30,9 @@ After the command completes, your project has:
 | Path | What's inside |
 |------|---------------|
 | `.rcode/` | Config, workflows, references, binary CLI (`rcode-tools.cjs`) |
-| `.claude/agents/` | 46 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
-| `.claude/commands/rcode/` | 116 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
-| `.claude/skills/` | 86 phrase-activated skills |
+| `.claude/agents/` | 45 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
+| `.claude/commands/rcode/` | 117 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
+| `.claude/skills/` | 96 phrase-activated skills |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
 | `rcode/brain/` | rcode standards pulled from upstream — populated via `rcode-tools brain pull` |
 
@@ -152,7 +152,7 @@ Then **reload your Codex session** and type a command, e.g. `/rcode-add-phase`.
 pnpm dlx @hanzlaa/rcode install
 ```
 
-- All 45 agents, 116 commands, 86 skills
+- All 45 agents, 117 commands, 96 skills
 - Mode: `guided` (skills halt at menus for user input)
 - Language: English
 - Model profile: `balanced`
