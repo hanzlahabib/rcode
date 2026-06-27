@@ -224,6 +224,23 @@ Named for the Arabic root **رحال** (rahhal) — the traveler. rcode walks al
 
 ---
 
+## 💙 Feedback welcome
+
+rcode is built and maintained by one person. If you hit a rough edge, a confusing command, or anything that doesn't work — please share it. Every report, even a one-liner, makes the tool better for everyone.
+
+**Post an issue in 30 seconds → [github.com/hanzlahabib/rcode/issues/new](https://github.com/hanzlahabib/rcode/issues/new)**
+
+Quick template:
+```
+Title:  what you were trying to do
+Body:   what happened vs what you expected
+        + the command or phrase you used
+```
+
+Thank you for using rcode. 🙏
+
+---
+
 ## Credits
 
 - [Andrej Karpathy's coding observations](https://github.com/forrestchang/andrej-karpathy-skills) (MIT) — wired into the code-review agents as hard constraints.

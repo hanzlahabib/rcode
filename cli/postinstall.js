@@ -132,9 +132,29 @@ To set up per-project state + planning structure, run inside your project:
 
 More:
   rcode help         # all commands (grouped)
-  rcode dashboard    # view-only Diwan on :7717
+  rcode dashboard    # Diwan project dashboard on :7717
 
 Docs: https://github.com/hanzlahabib/rcode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 💙 Thank you for using rcode!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ This package is built and maintained by one person.
+ Every piece of feedback — a bug, a rough edge, a
+ confusing command — makes it meaningfully better.
+
+ Hit a problem? Post it in 30 seconds:
+
+   https://github.com/hanzlahabib/rcode/issues/new
+
+ Quick template (just paste and fill):
+   Title:  what you were trying to do
+   Body:   what happened vs what you expected
+           + paste the command or phrase you used
+
+ Even a one-line report helps. Thank you. 🙏
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
 }
 
