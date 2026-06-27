@@ -871,7 +871,16 @@ The CLI handles:
 - Updating REQUIREMENTS.md traceability
 - Scanning for verification debt (returns `warnings` array)
 
-Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings`, `has_warnings`.
+Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings`, `has_warnings`, `open_phases_remaining`, `nudge`.
+
+**If `nudge` is present (#943 — no open phases remain, milestone finished):**
+Surface it verbatim so the user is guided forward instead of stranded:
+```
+✓ Milestone complete — all phases done.
+{nudge}
+```
+Do not auto-advance past a finished milestone; let the user choose
+`/rcode-complete-milestone` or `/rcode-new-milestone`.
 
 **If has_warnings is true:**
 ```

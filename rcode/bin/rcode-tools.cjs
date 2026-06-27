@@ -3738,22 +3738,30 @@ function cmdPhase(subArgs) {
       // value at the scales we operate. Applies to phases, sprints, epics, stories,
       // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
 
-      // #583 sanity guard: prevent phantom phase numbers caused by stale high-number
-      // entries in ROADMAP.md or phases/ (e.g. a prior phantom "## Phase 1009" left
-      // in ROADMAP triggers the next add to produce 1010). If computed next is more
-      // than 50 above the count of currently tracked phases, the maxNum source is
-      // suspect. Abort and require an explicit --number N to override.
-      const trackedCount = state.phases.filter(p => {
-        const n = parseInt(String(p.number || ''), 10);
-        return !Number.isNaN(n) && n > 0;
-      }).length;
-      if (next > trackedCount + 50) {
+      // #583 / #944 sanity guard: prevent phantom phase numbers caused by stale
+      // high-number entries in ROADMAP.md or phases/ (e.g. a prior phantom
+      // "## Phase 1009" left in ROADMAP triggers the next add to produce 1010).
+      //
+      // The guard must NOT misfire on an INTENTIONAL high-base numbering scheme
+      // (e.g. a milestone that deliberately numbers phases 1031, 1032, …). The
+      // discriminant: is the high number an actual TRACKED phase in state.json,
+      // or only a ROADMAP/dir entry that state has never seen?
+      //   - next === maxTracked + 1  → contiguous with real tracked phases →
+      //     intentional, allow regardless of absolute magnitude.
+      //   - maxNum (overall) sits far ABOVE maxTracked → a non-tracked phantom
+      //     is driving the number → suspect, abort.
+      const trackedNums = state.phases
+        .map(p => parseInt(String(p.number || ''), 10))
+        .filter(n => !Number.isNaN(n) && n > 0);
+      const trackedCount = trackedNums.length;
+      const maxTracked = trackedNums.length ? Math.max(...trackedNums) : 0;
+      if (maxNum > maxTracked && (maxNum - maxTracked) > 50) {
         throw new Error(
-          `Computed phase number ${next} is unexpectedly large ` +
-          `(only ${trackedCount} phases tracked in state.json). ` +
-          `ROADMAP.md or the phases/ directory may contain a stale high-number entry. ` +
+          `Computed phase number ${next} is driven by a non-tracked entry ` +
+          `(highest in ROADMAP/phases = ${maxNum}, highest in state.json = ${maxTracked}). ` +
+          `ROADMAP.md or the phases/ directory likely contains a stale high-number entry. ` +
           `Inspect with: node rcode-tools.cjs phases list\n` +
-          `Then retry with an explicit number: rcode-tools.cjs phase add "${phaseName}" --number ${trackedCount + 1}`
+          `Then retry with an explicit number: rcode-tools.cjs phase add "${phaseName}" --number ${maxTracked + 1}`
         );
       }
 
@@ -3875,6 +3883,19 @@ function cmdPhase(subArgs) {
       .sort((a, b) => parseInt(String(a.number), 10) - parseInt(String(b.number), 10))[0] || null;
 
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+
+    // #943 — when no open phases remain, the milestone is effectively finished.
+    // Surface the close/next guidance from this chokepoint so finishing the
+    // last phase via execute/verify/dev-story doesn't strand the user (the
+    // guidance previously only appeared in /rcode-status or progress insights).
+    const doneStatuses = new Set(['complete', 'completed', 'verified', 'shipped']);
+    const openRemaining = state.phases.filter(p => !doneStatuses.has(p.status)).length;
+    let nudge = null;
+    if (openRemaining === 0 && state.phases.length > 0) {
+      nudge = 'All phases are complete — this milestone is finished. ' +
+        'Run /rcode-complete-milestone to archive it, then /rcode-new-milestone to start the next.';
+    }
+
     return {
       ok: true,
       phase: phaseRef,
@@ -3883,6 +3904,8 @@ function cmdPhase(subArgs) {
       next_phase: next ? next.number : null,
       next_phase_name: next ? (next.name || null) : null,
       is_last_phase: !next,
+      open_phases_remaining: openRemaining,
+      ...(nudge ? { nudge } : {}),
       warnings: [],
       has_warnings: false,
     };
