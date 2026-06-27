@@ -48,7 +48,7 @@ Demo flow, in this order:
 
 1. `/rcode-scaffold-project` — show project init
 2. `/rcode-create-prd` — ask a short PRD question; demo the halt-at-menu discovery (this is the #124 fix in action)
-3. `/rcode-create-milestone` — turn the PRD into a roadmap with binary kill criteria (the #134 step files show their value here)
+3. `/rcode-new-milestone` — turn the PRD into a roadmap with binary kill criteria (the #134 step files show their value here)
 4. `/rcode-create-epics-and-stories` — decompose M1 into stories
 5. `/rcode-sprint-planning` — demo the capacity gate (asks for devs/PTO/velocity — #127 in action)
 6. `/rcode-dev-story` — implement one story

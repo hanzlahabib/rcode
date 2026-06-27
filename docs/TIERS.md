@@ -44,7 +44,7 @@ For teams running multiple sprints with formal ceremonies and design work.
 | `rcode-frontend-design` | Typography, colours, motion, spatial design | "design this UI" or `/rcode-frontend-design` |
 | `rcode-qa-generate-e2e-tests` | Generate end-to-end test cases | "generate e2e tests" or `/rcode-qa-generate-e2e-tests` |
 | `rcode-retrospective` | Run a retro, capture action items | "run retrospective" or `/rcode-retrospective` |
-| `rcode-create-milestone` | Create milestone definition | "create a milestone" or `/rcode-create-milestone` |
+| `rcode-new-milestone` | Create milestone definition | "create a milestone" or `/rcode-new-milestone` |
 
 ### Agents (8)
 

@@ -18,7 +18,7 @@ user-invocable: true
 
 - **Refining an existing PRD** — use `rcode-create-prd` or `rcode-edit-prd`.
 - **Brainstorming raw ideas** before there's a concept — use `rcode-brainstorming` first; PRFAQ assumes a candidate concept exists.
-- **Sprint or phase planning** — use `rcode-sprint-planning` / `rcode-create-milestone`.
+- **Sprint or phase planning** — use `rcode-sprint-planning` / `rcode-new-milestone`.
 - **Pure market research with no product hypothesis** — use a research workflow.
 - **Single-question Q&A** — PRFAQ runs a multi-stage gauntlet; for a one-off answer, just answer.
 

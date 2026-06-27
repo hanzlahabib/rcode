@@ -1,6 +1,6 @@
 # Running rcode Autonomously
 
-Most rcode skills (create-prd, create-milestone, create-epics-and-stories, sprint-planning) use **step-file architecture**: they halt at every menu and wait for user input. This is the default and it is deliberate — the product of these skills is only as good as the discovery that produces them.
+Most rcode skills (create-prd, new-milestone, create-epics-and-stories, sprint-planning) use **step-file architecture**: they halt at every menu and wait for user input. This is the default and it is deliberate — the product of these skills is only as good as the discovery that produces them.
 
 There are exactly two sanctioned ways to run these skills without halting at menus. Any other "autonomous mode" an agent declares is invented and should be rejected (see issue #124).
 

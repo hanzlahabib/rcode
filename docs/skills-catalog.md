@@ -63,11 +63,11 @@ CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for
 
 **Source:** [`rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md) — 45 lines
 
-### `rcode-create-milestone`
+### `rcode-new-milestone`
 
 **Triggers:** `create milestones`, `plan milestones`, `create roadmap`, `what milestones do I need`, `break this project into`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-create-milestone/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-milestone/SKILL.md) — 60 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-new-milestone/SKILL.md`](../rcode/skills/actions/2-plan/rcode-new-milestone/SKILL.md)
 
 ### `rcode-create-prd`
 

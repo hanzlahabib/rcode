@@ -284,7 +284,7 @@ Skills are domain expertise modules. They are loaded automatically when their tr
 | `rcode-validate-prd` | Validate PRD, review PRD quality | PRD quality report — density, measurability, traceability, domain compliance |
 | `rcode-create-epics-and-stories` | Create epics, generate stories | Numbered epic files in `.planning/epics/` with user stories and AC |
 | `rcode-create-story` | Create story, dev story | Self-contained STORY.md from epic — full AC, dev notes, implementation guidance |
-| `rcode-create-milestone` | Create milestone, plan milestone | Milestone definition with phases, goals, and success criteria |
+| `rcode-new-milestone` | Create milestone, plan milestone | Milestone definition with phases, goals, and success criteria |
 | `rcode-create-ux-design` | Create UX design, design flows | UX design document with user flows, wireframe descriptions, interaction states |
 | `rcode-frontend-design` | Frontend design, UI spec | UI-SPEC.md with color tokens, typography, component inventory, accessibility |
 

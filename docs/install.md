@@ -208,7 +208,7 @@ If this is a new project, start with:
 ```
 /rcode-scaffold-project      — guided project init
 /rcode-create-prd            — PRD through structured facilitation
-/rcode-create-milestone      — design the M1..Mn roadmap from the PRD
+/rcode-new-milestone         — design the M1..Mn roadmap from the PRD
 /rcode-create-epics-and-stories   — break M1 into sprint-ready stories
 /rcode-sprint-planning       — capacity-gated sprint plan
 /rcode-dev-story             — implement one story end-to-end

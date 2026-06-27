@@ -112,7 +112,7 @@ These are matched alongside §Create / §Add / §Plan verbs to determine the dis
 | epic | `epic`, `epics`, `epics and stories`, **AR:** `ملحمة`, `ملاحم`, `فصل`, `فصول` | `/rcode-create-epics-and-stories` |
 | sprint | `sprint`, `iteration`, **AR:** `سباق`, `جولة`, `دورة عمل`, `سبرنت` | `/rcode-sprint-planning` |
 | PRD | `PRD`, `requirements doc`, `product requirements`, **AR:** `وثيقة المتطلبات`, `متطلبات المنتج`, `وثيقة المنتج` | `/rcode-create-prd` |
-| roadmap | `roadmap`, `plan` (top-level), **AR:** `خارطة طريق`, `خريطة الطريق`, `خطة عامة` | `/rcode-create-milestone` |
+| roadmap | `roadmap`, `plan` (top-level), **AR:** `خارطة طريق`, `خريطة الطريق`, `خطة عامة` | `/rcode-new-milestone` |
 | council | `council`, `majlis`, `panel`, `mashwara`, `salah`, **AR:** `مجلس`, `شورى`, `لجنة`, `استشارة` | `/rcode-council` |
 | plan (verb form — "plan phase N") | `plan`, **AR:** `خطّط`, `خطة` | `/rcode-plan` |
 | story (impl) | `dev story`, `implement story`, `build story`, **AR:** `نفذ القصة`, `طبّق القصة` | `/rcode-dev-story` |

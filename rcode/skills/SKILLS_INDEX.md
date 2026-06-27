@@ -56,7 +56,7 @@ Invoked by agents via the capabilities table in their SKILL.md. Organized by SDL
 - `actions/2-plan/rcode-frontend-design` — typography, colours, motion, spatial design
 - `actions/2-plan/rcode-create-epics-and-stories` — break down PRD into epics and stories
 - `actions/2-plan/rcode-create-story` — prepare a dev-ready user story
-- `actions/2-plan/rcode-create-milestone` — create milestone definition
+- `actions/2-plan/rcode-new-milestone` — create milestone definition
 
 ### 3 — Solutioning (3)
 - `actions/3-solutioning/rcode-create-architecture` — architectural decision record (ADR)
