@@ -132,7 +132,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-insert-phase <after> <name>` | Alias for `/rcode-phase --insert <after> <name>`. |
 | `/rcode-remove-phase <n>` | Alias for `/rcode-phase --remove <n>`. |
 | `/rcode-quick [flags]` | Small ad-hoc tasks with rcode guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
-| `/rcode-fast "<task>"` | Trivial inline task — typo, gitignore tweak, etc. No subagents, ≤3 file edits. *Not yet implemented (#482-B).* |
 
 ## Capture & session continuity
 
@@ -226,7 +225,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-enable-hooks` | Install optional rcode hooks into `.claude/settings.json`. |
 | `/rcode-scaffold-project` | Scaffold a new project from the official rcode template. |
 | `/rcode-scaffold-skill --role <role>` | Scaffold a new compliant SKILL.md for a rcode role — eliminates friction of finding folder, copying, and chasing 5-component compliance. |
-| `/rcode-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. *Not yet implemented (#481).* |
 
 ## Story-level epics workflow
 

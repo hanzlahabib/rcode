@@ -6,11 +6,11 @@
 
 ### An engineering org in a folder — and you can watch it work.
 
-*A roster of specialist agents, phase-driven delivery, and a persistent Memory Bank — running as plain files your IDE reads. Every number is reproducible with one command (`node benchmarks/facts.cjs`); marketing rounds up, this repo ships the receipts: **497 tests, 0 failing · 45 agents · 116 commands · 1 runtime dependency**.*
+*A roster of specialist agents, phase-driven delivery, and a persistent Memory Bank — running as plain files your IDE reads. **45 agents · 116 commands · 1 runtime dependency** — test count and CI status tracked by the badge above.*
 
 <p align="center"><img src="brand/dashboard-team.png" alt="rcode agent roster grouped by function — Leadership (Sadiq / strategy, Waleed / CTO, Ahmed / delivery, Nasser / eng manager), Engineering (Omar, Haitham / frontend, Yousef / backend, Zayd / ML, Khalid / DevOps), Product (Hussain / PM, Mariam / marketing), each card showing its role and tools" width="860"></p>
 
-<p align="center"><sub>The <a href="docs/install.md">Diwan dashboard</a> (view-only, <code>node server/dashboard.js</code>) — your project's phases, sprints, agents, decisions, and live orchestration, read straight from the files in <code>.rcode/</code>.</sub></p>
+<p align="center"><sub>The <a href="docs/install.md">Diwan dashboard</a> (<code>node server/dashboard.js</code>) — your project's phases, sprints, agents, decisions, and live orchestration, read straight from the files in <code>.rcode/</code>.</sub></p>
 
 > **A curated composition of the best AI-development practices — shipped as files.** Surgical-change discipline, parallel-agent orchestration, persistent Memory Bank patterns, phase-driven planning — packaged as one workflow for Claude Code power users. No multi-agent harness. No vector DB. Your IDE keeps the methodology; the project keeps the memory.
 
@@ -23,7 +23,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.3.2 on npm. 497 automated tests (100% green) across 61 files · 45 agents · 116 commands · 129 workflows · 88 skills · **1 runtime dependency**. Every number here is reproducible — run `node benchmarks/facts.cjs`. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.4.0 on npm. 45 agents · 116 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
 
 ---
 

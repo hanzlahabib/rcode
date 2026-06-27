@@ -1,7 +1,7 @@
 # Installing rcode
 
 Package: [`@hanzlaa/rcode`](https://www.npmjs.com/package/@hanzlaa/rcode) on npm.
-Current version: **v4.0.0** (2026-05-23).
+Current version: **v4.4.0** (2026-06-25).
 
 ---
 
