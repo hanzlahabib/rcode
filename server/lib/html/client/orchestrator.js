@@ -373,9 +373,19 @@ export function stopStory(storyId) {
 
 // ── Command runner ────────────────────────────────────────────────────────────
 /**
- * Client-side allowlist — mirrors the server COMMAND_ALLOWLIST.
- * The server always re-validates; this list drives the picker dropdown only.
- * Update both when adding a new command.
+ * Client-side command-runner allowlist — mirrors the server COMMAND_ALLOWLIST.
+ *
+ * #932 — this is INTENTIONALLY a small, curated subset of the ~117 rcode
+ * commands, NOT the full set. The command runner spawns a real agent with
+ * permissions skipped straight from the browser, so only commands that are
+ * SAFE to run unattended are exposed here: read-only status/inspection
+ * (status, progress, stats, health, diff, show, list-plans, help) plus the two
+ * idempotent setup commands (init, config). Destructive or long-running
+ * commands (execute, autonomous, ship, dev-story, …) are deliberately omitted
+ * — run those from your IDE where you can supervise them. The server
+ * re-validates against COMMAND_ALLOWLIST regardless; this list only drives the
+ * picker dropdown. Keep both in sync when adding a command, and only add one
+ * here if it is safe to run unattended.
  */
 export const ALLOWED_COMMANDS = [
   { cmd: '/rcode-init',          label: 'init — initialise project workspace',    category: 'Project'  },

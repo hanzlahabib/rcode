@@ -127,6 +127,11 @@ export function CommandPalette({ open, onClose }) {
           }
         </div>
 
+        <div class="cmd-palette-footer">
+          Safe read-only / setup commands only. Run execute, autonomous, and
+          other destructive commands from your IDE where you can supervise them.
+        </div>
+
       </div>
     </div>
   `;

@@ -4573,6 +4573,13 @@ summary:focus-visible,
   padding: var(--space-6) var(--space-4);
   font-size: var(--text-sm);
 }
+.cmd-palette-footer {
+  border-top: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
 /* ════════ Command palette (END) ════════ */
 
 /* ── Reject dialog ── */
