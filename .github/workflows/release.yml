@@ -46,6 +46,12 @@ jobs:
       - name: Install build dependencies
         run: pnpm install --frozen-lockfile
 
+      # Gate the release on a green suite. Without this a tag could publish with
+      # failing tests — exactly how v4.4.0 shipped with 8 red tests while the
+      # README claimed "0 failing" (dogfood finding #941).
+      - name: Run test suite (release gate)
+        run: pnpm test
+
       - name: Build CLI bundle (dist/rcode.js)
         run: pnpm run build:cli
 
