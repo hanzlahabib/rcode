@@ -3,6 +3,13 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.4.4 (2026-06-28) — Milestone-close nudge can't be bypassed
+
+### Fixed
+
+- **Phase-threshold guidance now fires from the CLI** (#942) — the "milestone has too many open phases → close it" nudge previously lived only in `add-phase.md` prose, so adding phases via the CLI (`phase add --number`), the bulk-draft path, or `state insert-phase` bypassed it. A real project reached 93 open phases in one milestone with no guidance. The nudge is now emitted from every phase-add chokepoint (returns `milestone_health` + a `nudge` string at ≥8 / ≥12 open phases); `plan.md` and `insert-phase.md` surface it too. Any entry point now guides toward `/rcode-complete-milestone` + `/rcode-new-milestone`.
+
+---
 ## v4.4.3 (2026-06-27) — Security hardening + green suite + manifests
 
 Closes the full audit backlog: dashboard/orchestrator security, a fully green
