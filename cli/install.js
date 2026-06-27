@@ -825,15 +825,20 @@ function seedStarterPlanning(target, projectName) {
 
     const state = {
       version: '1',
-      project: resolvedProject,
+      // #940 — match the canonical schema (cli/lib/schemas.cjs stateSchema):
+      // schema_version is required, milestones is a plural array. Without these
+      // a freshly-installed state.json failed `rcode-tools validate` until the
+      // first migrateState() read. Write conformant state up front.
+      schema_version: 2,
+      project: resolvedProject || path.basename(target),
       ...(isStubProject ? { _seeded_stub: true } : {}),
       created: now,
       updated: now,
       current_phase: resolvedPhase,
       current_plan: 0,
       current_sprint: null,
-      milestone: null,
       phases: [],
+      milestones: [],
       executions: [],
       decisions: [],
       blockers: [],

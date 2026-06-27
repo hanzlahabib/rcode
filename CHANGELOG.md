@@ -3,6 +3,29 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.4.2 (2026-06-27) — Fresh-install verification fixes
+
+Follow-up to v4.4.1 from a real fresh-install verification. Fixes a `validate`
+crash, aligns installed `state.json` with the canonical schema, ships the
+benchmark script, and corrects stale README numbers.
+
+### Fixed
+
+- **`rcode-tools validate` crashed** with `readState is not defined` (nested function unreachable from the validate switch); now reads `state.json` at module scope (#940)
+- **`validate` miswired against a phantom schema** — checked `current_milestone` (doesn't exist), required `current_phase` (null on fresh installs), and required `current_phase` in `config.yaml` (lives in state). Now validates the real schema and is lenient on fresh/stub projects (#940)
+- **Installed `state.json` was non-conformant** — `install.js` now writes `schema_version: 2`, `milestones: []` (plural array), and a non-null `project`, matching `cli/lib/schemas.cjs` (#940)
+- **`/rcode-lazy` referenced a stale source path** (`@rcode/skills/...`); the command now invokes the `rcode-lazy` skill by name, resolving under both global and local installs (#929 follow-up)
+- **README "By the numbers" was stale/false** — claimed "497 tests, 0 failing / 100% passing" (actual: 495 tests); removed the stale receipt screenshot and corrected all counts to match `benchmarks/facts.cjs`; no longer asserts a green suite while tests fail (#927)
+
+### Added
+
+- **`benchmarks/` now committed** — `facts.cjs` and friends ship in the repo so the README's "clone and run it" instruction works; generated `results/` are gitignored
+
+### Note
+
+- rcode-tools remains zero-runtime-dependency — `validate` uses hand-rolled checks, not the zod-based `schemas.cjs` (a devDependency)
+
+---
 ## v4.4.1 (2026-06-27) — Audit fixes: install hygiene, dead commands, security
 
 Bug-fix patch from a community usefulness + security audit. No new features.

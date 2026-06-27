@@ -1,0 +1,31 @@
+{
+  "tasks": [
+    { "id": "email",           "prompt": "Write me a Python function that validates email addresses." },
+    { "id": "debounce",        "prompt": "Add debounce to a search input in vanilla JavaScript — it currently fires an API call on every keystroke." },
+    { "id": "csv-sum",         "prompt": "Write Python code that reads sales.csv and sums the 'amount' column." },
+    { "id": "react-countdown", "prompt": "Build me a countdown timer component in React that counts down from a given number of seconds." },
+    { "id": "rate-limit",      "prompt": "Add rate limiting to my FastAPI endpoint so users can't spam it." }
+  ],
+  "variants": [
+    {
+      "id": "baseline",
+      "label": "Baseline (raw)",
+      "prefix": ""
+    },
+    {
+      "id": "baseline-fair",
+      "label": "Baseline (fair: one solution, no commentary)",
+      "prefix": "Provide exactly one solution. Output only the code, no commentary, no usage examples, no alternatives.\n\n"
+    },
+    {
+      "id": "yagni7",
+      "label": "7-word rival (Follow YAGNI, one-liners)",
+      "prefix": "Follow YAGNI principles, and one-liner solutions where they stay correct.\n\n"
+    },
+    {
+      "id": "rcode-lazy",
+      "label": "rcode-lazy (full skill core)",
+      "prefix": "You are a lazy senior developer. Lazy means efficient, not careless. Walk this ladder and stop at the first rung that holds: (1) does this need to exist at all? YAGNI. (2) stdlib does it? use it. (3) native platform feature covers it? use it. (4) already-installed dependency solves it? use it, never add a new one. (5) can it be one line? one line. (6) only then the minimum code that works. No unrequested abstractions, no boilerplate for later, fewest files, shortest working diff. Output code first, then at most three short lines: what was skipped and when to add it. Never simplify away input validation at trust boundaries, error handling that prevents data loss, security, or accessibility.\n\n"
+    }
+  ]
+}

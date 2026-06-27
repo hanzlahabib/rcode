@@ -23,7 +23,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.4.1 on npm. 45 agents · 116 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.4.2 on npm. 45 agents · 116 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
 
 ---
 
@@ -127,18 +127,18 @@ The point isn't "I beat LangChain." The point is **you don't need LangChain for 
 > node benchmarks/facts.cjs
 > ```
 
-<p align="center"><img src="brand/hero-receipt.png" alt="benchmarks/facts.cjs output — 497 tests, 0 failing · 45 agents · 116 commands · 1 runtime dependency, computed from files on disk" width="720"></p>
-
 | Metric | Value | Why it's not a vanity number |
 |---|---|---|
-| **Portable methodology corpus** | **94,481 lines** of markdown | A 10-person eng org's playbooks (agents + commands + workflows + skills + references) — as files you own and grep, not a SaaS you rent. |
-| **Automated tests** | **497**, 100% passing across 61 files | The methodology is *guarded*, not vibes. CI runs them on every push; `node --test` reproduces locally in seconds. |
-| **Tested CLI engine** | **9,005 lines** (`rcode-tools.cjs` + `lib/`) | The deterministic brain — routing, state, planning math — is real code under test, not prompt soup. |
-| **Runtime dependencies** | **1** (`ws`, for the dashboard socket) | The view-only dashboard is pure Node stdlib. Almost nothing to audit, nothing to CVE-scan, nothing to break on `npm install`. |
-| **Specialist agents / commands / workflows / skills** | **45 / 116 / 129 / 88** | An entire engineering org, phrase-activated, that travels with you across Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. |
-| **Core-op latency** | **~33 ms**, **0 LLM tokens** (best-of-7) | Intent routing, state reads, and milestone-health are deterministic *local* compute — a few ms over Node's own cold-start floor. The orchestration layer doesn't burn API tokens on bookkeeping the way pure-LLM agent frameworks do. |
+| **Portable methodology corpus** | **~105,000 lines** of markdown | A 10-person eng org's playbooks (agents + commands + workflows + skills + references) — as files you own and grep, not a SaaS you rent. |
+| **Automated tests** | **495** across 62 files | The methodology is *guarded*, not vibes. Live pass/fail status is on the CI badge above; `node --test` (or `node benchmarks/facts.cjs`) reproduces locally in seconds. |
+| **Tested CLI engine** | **~9,700 lines** (`rcode-tools.cjs` + `lib/`) | The deterministic brain — routing, state, planning math — is real code under test, not prompt soup. |
+| **Runtime dependencies** | **1** (`ws`, for the dashboard socket) | The dashboard is otherwise pure Node stdlib. Almost nothing to audit, nothing to CVE-scan, nothing to break on `npm install`. |
+| **Specialist agents / commands / workflows / skills** | **45 / 117 / 129 / 96** | An entire engineering org, phrase-activated, that travels with you across Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. |
+| **Core-op latency** | **~60 ms**, **0 LLM tokens** (best-of-7) | Intent routing, state reads, and milestone-health are deterministic *local* compute — a few ms over Node's own cold-start floor. The orchestration layer doesn't burn API tokens on bookkeeping the way pure-LLM agent frameworks do. |
 
-**The headline:** an entire software-delivery methodology — 94k lines of it — guarded by 497 tests, riding on a single runtime dependency, with an orchestration brain that costs **zero tokens** to think. Not a viral prompt. A system you can verify line by line.
+> Counts above are produced by `node benchmarks/facts.cjs` and may drift slightly between releases — run it for the exact current figures.
+
+**The headline:** an entire software-delivery methodology — ~105k lines of it — guarded by a real test suite, riding on a single runtime dependency, with an orchestration brain that costs **zero tokens** to think. Not a viral prompt. A system you can verify line by line.
 
 ---
 

@@ -34,6 +34,9 @@ output/
 dist/
 image.png
 
+# Benchmark generated output (scripts are tracked, raw runs are not)
+benchmarks/results/
+
 # Agent-behavior eval harness (#746): raw/uncommitted eval output is
 # ephemeral; normalized baselines under test/eval/baselines/ ARE committed.
 test/eval/raw/

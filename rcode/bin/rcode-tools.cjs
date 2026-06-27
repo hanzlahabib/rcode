@@ -7596,21 +7596,43 @@ async function main() {
         const validateErrors = [];
 
         if (target === 'state' || target === 'all') {
-          const state = readState();
-          if (!state) {
-            validateErrors.push('state: state.json not found or empty');
+          // Read state.json directly — readState() is scoped inside cmdState()
+          // and isn't reachable here (#940). Validate against the REAL schema:
+          // phases[] + milestones[], current_phase nullable on fresh installs.
+          const statePathV = path.join(RCODE_DIR, 'state.json');
+          if (!fs.existsSync(statePathV)) {
+            validateErrors.push('state: state.json not found — run rcode install');
           } else {
-            if (!state.current_phase) validateErrors.push('state: missing current_phase');
-            if (!state.current_milestone) validateErrors.push('state: missing current_milestone');
-            if (state.schema_version !== 2) validateErrors.push(`state: schema_version should be 2, got ${state.schema_version}`);
-            if (!Array.isArray(state.phases) && typeof state.phases !== 'object') validateErrors.push('state: phases must be array or object');
+            let state = null;
+            try {
+              state = JSON.parse(fs.readFileSync(statePathV, 'utf8'));
+            } catch (e) {
+              validateErrors.push(`state: invalid JSON — ${e.message}`);
+            }
+            if (state) {
+              // current_phase is legitimately null on a fresh / stub project,
+              // so do NOT require it. milestones is an array (no current_milestone field).
+              // schema_version 1 is valid on disk — migrateState() upgrades it to 2
+              // transparently on read, so accept either and only flag the unknown.
+              if (state.schema_version != null && ![1, 2].includes(state.schema_version)) {
+                validateErrors.push(`state: unknown schema_version ${state.schema_version} (expected 1 or 2)`);
+              }
+              if (state.phases != null && !Array.isArray(state.phases) && typeof state.phases !== 'object') {
+                validateErrors.push('state: phases must be an array or object');
+              }
+              if (state.milestones != null && !Array.isArray(state.milestones)) {
+                validateErrors.push('state: milestones must be an array');
+              }
+            }
           }
         }
 
         if (target === 'config' || target === 'all') {
+          // config.yaml holds project identity + workflow prefs only — it does
+          // NOT track current_phase (that lives in state.json). Only require
+          // the fields config actually owns (#940).
           const config = readConfig();
           if (!config.project_name) validateErrors.push('config: missing project_name');
-          if (!config.current_phase && !config.phase) validateErrors.push('config: missing current_phase or phase');
         }
 
         if (validateErrors.length) {
