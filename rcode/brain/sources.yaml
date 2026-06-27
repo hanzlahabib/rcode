@@ -22,6 +22,16 @@ defaults:
   # Set to false for public repos (faster, no auth needed).
   private: true
 
+# SECURITY (#925): `brain pull` clones these repos into every user's project
+# context, so it enforces a supply-chain guard:
+#   - Only github.com repos under an approved org are pulled
+#     (BRAIN_ALLOWED_ORGS in rcode-tools.cjs: hanzlahabib, rcode-om).
+#   - Each source SHOULD pin a commit via `ref: <40-char SHA>` — a moving
+#     `branch:` is mutable and a force-push changes what you pull. Sources
+#     without a `ref:` are skipped unless RCODE_BRAIN_ALLOW_UNVERIFIED=1.
+# Override only for trusted local testing:
+#   RCODE_BRAIN_ALLOW_UNVERIFIED=1 node .rcode/bin/rcode-tools.cjs brain pull
+
 sources:
   - name: rcode-github-standards
     description: >

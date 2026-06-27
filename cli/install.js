@@ -205,6 +205,9 @@ function parseArgs(argv) {
     silent: false,
     // noPrompt — skip all interactive prompts (used by postinstall auto-run)
     noPrompt: false,
+    // localOnly (#938) — force a self-contained project install: write all
+    // skills locally instead of deferring to global ~/.claude/skills.
+    localOnly: false,
     // dry-run / list-files — preview paths that would be written, then exit
     dryRun: false,
     listFiles: false,
@@ -240,6 +243,7 @@ function parseArgs(argv) {
     else if (arg === '--no-git-hooks') opts.gitHooks = false;         // #199
     else if (arg === '--git-hooks') opts.gitHooks = true;             // #199
     else if (arg === '--global') opts.global = true;
+    else if (arg === '--local-only') opts.localOnly = true; // #938 — force self-contained install (don't defer to global skills)
     else if (arg === '--silent') opts.silent = true;
     else if (arg === '--no-prompt') opts.noPrompt = true;
     else if (arg === '--dry-run') opts.dryRun = true;
@@ -2474,7 +2478,9 @@ async function installInner(opts) {
   // of identical files — Claude Code shows both as duplicate slash commands.
   const globalClaudeCommands = path.join(homedir(), '.claude', 'commands');
   const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
-  const isProjectInstall = opts.target !== homedir();
+  // #938 — --local-only forces a self-contained install: treat it as NOT a
+  // global-deferring project install so all skills/commands are written locally.
+  const isProjectInstall = opts.target !== homedir() && !opts.localOnly;
   // Run dedup even when force:true — only forceOverwrite skips it.
   if (isProjectInstall && !opts.forceOverwrite) {
     try {
@@ -2677,6 +2683,12 @@ async function installInner(opts) {
   let skillsInstalled = skillsResult.count;
   if (skillsResult.skippedGlobal > 0) {
     console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rcode skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
+    // #938 — make the global dependency explicit. When local skills are skipped
+    // the project relies on whatever rcode version is installed globally; a
+    // collaborator without a global install (or on a different version) gets
+    // different behavior. Tell the user how to force a self-contained install.
+    console.log('  ' + dim('  ↳ This project now depends on your GLOBAL rcode install for those skills.'));
+    console.log('  ' + dim('    For a self-contained project (e.g. for collaborators/CI), reinstall with --local-only.'));
   }
 
   // Generate install-time skill stubs that mirror sidebar-worthy slash commands.

@@ -6310,6 +6310,39 @@ function cmdBrain(args) {
       continue;
     }
 
+    // #925 — supply-chain guard. `brain pull` clones a remote repo and copies
+    // its content into every rcode user's project context, so an attacker who
+    // can edit sources.yaml (or a typo) must not silently pull untrusted code.
+    // Only allow github.com URLs under an approved org allowlist; anything else
+    // is rejected unless the user explicitly opts in with
+    // RCODE_BRAIN_ALLOW_UNVERIFIED=1. Pinning to a commit SHA (source.ref) is
+    // recommended over a moving branch — warn when a source tracks a branch.
+    const BRAIN_ALLOWED_HOSTS = new Set(['github.com']);
+    const BRAIN_ALLOWED_ORGS = new Set(['hanzlahabib', 'rcode-om']);
+    if (process.env.RCODE_BRAIN_ALLOW_UNVERIFIED !== '1') {
+      let host = '', org = '';
+      const mm = repo.match(/(?:https?:\/\/|git@)([^/:]+)[/:]([^/]+)\//);
+      if (mm) { host = mm[1]; org = mm[2]; }
+      if (!BRAIN_ALLOWED_HOSTS.has(host) || !BRAIN_ALLOWED_ORGS.has(org)) {
+        report.skipped.push({
+          name: s.name,
+          reason: `repo not in brain allowlist (${host || 'unknown host'}/${org || '?'}). ` +
+            `Add the org to BRAIN_ALLOWED_ORGS or set RCODE_BRAIN_ALLOW_UNVERIFIED=1 to override.`,
+        });
+        continue;
+      }
+      if (!s.ref) {
+        // Tracking a branch is mutable — a force-push changes what you pull.
+        // Not fatal, but surface it so maintainers can pin a SHA via `ref:`.
+        report.skipped.push({
+          name: s.name,
+          reason: `no pinned 'ref:' SHA — tracking branch '${s.branch || root.defaults.branch || 'main'}' is mutable. ` +
+            `Pin a commit SHA in sources.yaml, or set RCODE_BRAIN_ALLOW_UNVERIFIED=1 to pull the branch tip.`,
+        });
+        continue;
+      }
+    }
+
     // External git source — use sparse checkout into a tmp dir then copy.
     // #170 — global brain cache at ~/.rcode/brain-cache/<sha1(repo+branch+paths)>/.
     // Same source pulled from N projects = N clones today, 1 clone + N copies

@@ -57,8 +57,20 @@ function isGlobalInstall(env, dirname, cwd) {
 
 // Skip in CI or test environments. Tests that import this module bypass
 // the top-level effect by checking require.main !== module.
+//
+// #924 — opt-out for users who install the package globally but do NOT want
+// their ~/.claude mutated (e.g. inspecting the package, or managing the global
+// install themselves). Setting RCODE_NO_POSTINSTALL=1 (or the npm-config
+// equivalent `npm install -g @hanzlaa/rcode --rcode-no-postinstall`) skips the
+// auto-install entirely; the user can run `rcode install --global` later. Note:
+// `npm install --ignore-scripts` already prevents this script from running at all.
 if (require.main === module) {
   if (process.env.CI || process.env.NODE_ENV === 'test') {
+    process.exit(0);
+  }
+  if (process.env.RCODE_NO_POSTINSTALL === '1' || process.env.npm_config_rcode_no_postinstall) {
+    process.stderr.write('\nrcode: skipping global auto-install (RCODE_NO_POSTINSTALL set).\n');
+    process.stderr.write("       Run 'rcode install --global' when you want /rcode-* commands.\n\n");
     process.exit(0);
   }
   runPostInstall();
