@@ -3,11 +3,17 @@
 All notable changes to rcode are documented here.
 
 ---
-## v4.4.4 (2026-06-28) — Milestone-close nudge can't be bypassed
+## v4.4.4 (2026-06-28) — Milestone guidance can't be bypassed
+
+A cluster of "the signal is computed but only surfaced if you run the right
+command" gaps — guidance moved to the CLI chokepoints so no entry point skips it.
 
 ### Fixed
 
-- **Phase-threshold guidance now fires from the CLI** (#942) — the "milestone has too many open phases → close it" nudge previously lived only in `add-phase.md` prose, so adding phases via the CLI (`phase add --number`), the bulk-draft path, or `state insert-phase` bypassed it. A real project reached 93 open phases in one milestone with no guidance. The nudge is now emitted from every phase-add chokepoint (returns `milestone_health` + a `nudge` string at ≥8 / ≥12 open phases); `plan.md` and `insert-phase.md` surface it too. Any entry point now guides toward `/rcode-complete-milestone` + `/rcode-new-milestone`.
+- **Phase-threshold guidance fires from the CLI** (#942) — the "milestone has too many open phases → close it" nudge previously lived only in `add-phase.md` prose, so adding phases via the CLI (`phase add --number`), the bulk-draft path, or `state insert-phase` bypassed it. A real project reached 93 open phases in one milestone with no guidance. Now emitted from every phase-add chokepoint (returns `milestone_health` + a `nudge` at ≥8 / ≥12 open); `plan.md` + `insert-phase.md` surface it.
+- **Auto phase-number guard no longer misfires on high-base schemes** (#944) — the guard compared the next number against the phase *count*, so an intentional 1031-style scheme aborted and forced `--number` on every add (which then bypassed #942). Now it compares against the max *tracked* number: a contiguous next (`maxTracked+1`) is always allowed; only a non-tracked ROADMAP/dir entry >50 above the tracked max is treated as a phantom.
+- **End-of-milestone nudge on completion** (#943) — `phase complete` was silent when the last phase finished; it now emits a milestone-complete nudge (→ `/rcode-complete-milestone` / `/rcode-new-milestone`) when no open phases remain, and `execute.md` surfaces it instead of auto-advancing past a finished milestone.
+- **`workflow-config-audit` is now gated** (#945) — the stale-`config.json` scanner had no consumer; a test runs it and fails on any stale reference.
 
 ---
 ## v4.4.3 (2026-06-27) — Security hardening + green suite + manifests
