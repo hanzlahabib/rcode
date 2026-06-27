@@ -480,7 +480,8 @@ async function resolveIde(opts) {
  */
 async function resolveCommitPlanning(opts) {
   if (opts.commitPlanning !== null) return opts.commitPlanning;
-  if (opts.noPrompt || opts.global) return false; // global install: no planning artifacts
+  if (opts.global) return false; // global install: no planning artifacts
+  if (opts.noPrompt) return true; // non-interactive project install: commit planning by default (#936)
 
   // Issue #685: on re-install, read the existing .rcode/config.yaml and use
   // its commit_planning value as the default. Otherwise the new prompt
@@ -744,10 +745,8 @@ function seedStarterPlanning(target, projectName) {
     `**Milestone: M1 — Initial Delivery** (v1.0)\n` +
     `Started: ${today} · Current\n\n` +
     `---\n\n` +
-    `## Phase 01 — Setup & Scaffolding\n\n` +
-    `**Goal:** Lay the foundation. Replace this with your first phase when ready.\n\n` +
-    `**Status:** Planned\n\n` +
-    `**Acceptance:** Working dev environment; first feature in progress.\n\n` +
+    `> **No phases yet.** Run \`/rcode-new-project\` to design your roadmap,\n` +
+    `> or \`/rcode-add-phase <name>\` to add your first phase manually.\n\n` +
     `---\n\n` +
     `## Backlog\n\n` +
     `Ideas and future phases go here.\n`
@@ -758,7 +757,7 @@ function seedStarterPlanning(target, projectName) {
     `# ${name} — State\n\n` +
     `**Last updated:** ${today}\n` +
     `**Milestone:** M1 — Initial Delivery\n` +
-    `**Current phase:** 01 — Setup & Scaffolding\n` +
+    `**Current phase:** none — run /rcode-new-project or /rcode-add-phase\n` +
     `**Branch:** main\n\n` +
     `---\n\n` +
     `## Decisions\n\n_None yet._\n\n` +
@@ -1753,7 +1752,6 @@ function generateConfigYaml(opts) {
     `mode: "${sanitizeYamlValue(opts.mode)}"`,
     `model_profile: "balanced"`,
     `commit_planning: ${opts.commitPlanning !== false}`,
-    `rcode_source_path: "${sanitizeYamlValue(resolveStableSourcePath())}/"`,
     'workflow:',
     '  research_by_default: false',
     '  plan_checker: true',
