@@ -23,7 +23,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.4.0 on npm. 45 agents · 116 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.4.1 on npm. 45 agents · 116 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
 
 ---
 

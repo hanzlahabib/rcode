@@ -3,6 +3,29 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.4.1 (2026-06-27) — Audit fixes: install hygiene, dead commands, security
+
+Bug-fix patch from a community usefulness + security audit. No new features.
+
+### Fixed
+
+- **Fresh install state drift** — ROADMAP.md stub no longer includes a `## Phase 01` heading; `progress init` no longer warns about 0-vs-1 phase mismatch on a brand-new project (#935)
+- **Machine path in config** — `rcode_source_path` removed from generated `.rcode/config.yaml`; committed configs are now identical across machines (#937)
+- **`--no-prompt` planning default** — `rcode install --yes` now defaults `commit_planning: true` so CI/automated installs version planning files alongside code (#936)
+- **Dead `/rcode-lazy` route** — added `rcode/commands/lazy.md` so the router's "be lazy / YAGNI" entry resolves to a real slash command (#929)
+- **`/rcode-create-milestone` references** — renamed to `/rcode-new-milestone` across 8 doc and workflow files (#928)
+- **Help listed unimplemented commands** — `/rcode-fast` and `/rcode-bootstrap` ("not yet implemented") removed from help output (#930)
+- **`ws` DoS vulnerability** — bumped from `^8.20.1` to `^8.21.0` (#920)
+- **Skill stubs blocked direct invocation** — generated `.claude/skills/rcode-*/SKILL.md` stubs now have `user-invocable: true`; `/rcode-do` and others no longer show "can only be invoked by Claude" when typed directly
+- **README stale version and test count** — version updated to v4.4.0→v4.4.1; hardcoded test count replaced with CI badge reference (#926)
+- **`benchmarks/facts.cjs` false claim** — removed unresolvable `node benchmarks/facts.cjs` command from README (#927)
+- **Dashboard "view-only" label** — removed from README and installer welcome message; dashboard is not view-only (#916 partial)
+
+### Added
+
+- **Feedback prompt in installer** — `pnpm dlx @hanzlaa/rcode install` now shows a thank-you note and 30-second issue-reporting guide at the end
+
+---
 ## v4.3.3 (2026-06-23) — Cross-IDE accuracy + intent-router reach
 
 Marketing-readiness pass: make rcode actually work and read truthfully across
