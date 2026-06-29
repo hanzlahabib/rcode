@@ -1,5 +1,5 @@
 {
-  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rcode/bin → .rcode/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475).",
+  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rcode/bin → .rcode/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475), (3) UserPromptSubmit prompt-router nudge (#892), (4) SessionStart greeter (#947).",
   "hooks": {
     "PreToolUse": [
       {
@@ -19,6 +19,28 @@
           {
             "type": "command",
             "command": ".claude/hooks/sync-bin-on-edit.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs prompt-router"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .rcode/bin/rcode-hooks.cjs session-start"
           }
         ]
       }

@@ -15,3 +15,8 @@ workflow:
   _auto_chain_active: false
 git:
   branching_strategy: feature-branch
+
+# prompt_nudge controls how aggressively the UserPromptSubmit hook nudges toward rcode commands.
+# Valid values: every (default) | once-per-intent | when-stale | off
+# Uncomment and set to change behavior:
+# prompt_nudge: every
