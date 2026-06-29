@@ -23,6 +23,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
+const { resolveActivePhase, readSprintProgress, readRecentCommits, readMilestoneHint } = require('./lib/state-reader.cjs');
 
 /**
  * Read and parse stdin JSON.
@@ -353,67 +354,16 @@ async function preCompact() {
     }
 
     // ── 2. Determine active phase ────────────────────────────────────────
-    const phases = Array.isArray(state?.phases) ? state.phases : [];
-    const executing = phases.find((p) => p && p.status === 'executing');
-    const matched = phases.find(
-      (p) => p && (p.name === state?.current_phase || p.number === state?.current_phase)
-    );
-    const activePhase = executing || matched || null;
-    const phaseLabel = activePhase
-      ? (activePhase.number || activePhase.name || state?.current_phase)
-      : (state?.current_phase || null);
+    const { activePhase, phaseLabel } = resolveActivePhase(state);
 
     // ── 3. Read active SPRINT.md (incomplete tasks) ──────────────────────
-    const incompleteTasks = [];
-    const completedCount = { done: 0, total: 0 };
-    const planningBase = path.join(cwd, '.planning', 'phases');
-    if (phaseLabel && fs.existsSync(planningBase)) {
-      try {
-        const phaseDirs = fs.readdirSync(planningBase)
-          .filter(d => d.startsWith(String(phaseLabel)));
-        for (const pd of phaseDirs) {
-          const pdPath = path.join(planningBase, pd);
-          if (!fs.statSync(pdPath).isDirectory()) continue;
-          const sprintFiles = fs.readdirSync(pdPath)
-            .filter(f => f.endsWith('-SPRINT.md'))
-            .sort()
-            .reverse(); // most recent first
-          if (sprintFiles.length === 0) continue;
-          const sprintText = fs.readFileSync(path.join(pdPath, sprintFiles[0]), 'utf8');
-          for (const line of sprintText.split('\n')) {
-            const done = /^\s*-\s*\[x\]/i.test(line);
-            const pending = /^\s*-\s*\[ \]/.test(line);
-            if (done || pending) completedCount.total++;
-            if (done) completedCount.done++;
-            if (pending) {
-              const task = line.replace(/^\s*-\s*\[ \]\s*/, '').trim();
-              if (task) incompleteTasks.push(task);
-            }
-          }
-          break; // use first matching phase dir only
-        }
-      } catch {}
-    }
+    const { completedCount, incompleteTasks } = readSprintProgress(phaseLabel, cwd);
 
     // ── 4. Recent git commits ────────────────────────────────────────────
-    let recentCommits = [];
-    try {
-      const log = execSync('git log --oneline -5 --no-decorate 2>/dev/null', {
-        cwd, encoding: 'utf8', timeout: 3000,
-      }).trim();
-      recentCommits = log ? log.split('\n').filter(Boolean) : [];
-    } catch {}
+    const recentCommits = readRecentCommits(cwd);
 
     // ── 5. Read milestone / roadmap headline ────────────────────────────
-    let milestoneHint = state?.milestone || null;
-    if (!milestoneHint) {
-      for (const rp of ['.planning/ROADMAP.md', '.planning/milestones/ROADMAP.md']) {
-        const full = path.join(cwd, rp);
-        if (!fs.existsSync(full)) continue;
-        const m = fs.readFileSync(full, 'utf8').match(/^##\s+Milestone\s+(M\d+[^\n]*)/m);
-        if (m) { milestoneHint = m[1].trim(); break; }
-      }
-    }
+    const milestoneHint = readMilestoneHint(state, cwd);
 
     // ── 6. Read last 3 decisions from STATE.md ───────────────────────────
     let recentDecisions = [];
