@@ -888,6 +888,7 @@ function ensureRcodeGitignore(target, options = {}) {
     '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
     '.claude/',
     '.rcode/bin/',
+    '.rcode/data/',
     '.rcode/workflows/',
     '.rcode/references/',
     '.rcode/commands/',
@@ -1310,6 +1311,12 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
   }
 
+  // .rcode/data/
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'data'))) {
+    const rel = path.relative(path.join(SOURCE_ROOT, 'data'), f);
+    plan.push({ src: f, rel: path.join('.rcode', 'data', rel) });
+  }
+
   // .rcode/templates/projects/  — starter templates consumed by /rcode-from-template
   const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
   const relProjectTemplates = path.relative(target, path.join(target, '.rcode', 'templates', 'projects'));
@@ -1418,6 +1425,7 @@ function filterPlanByModules(plan, moduleNames) {
   // Always include bin/ (shared infrastructure, not module-specific)
   return plan.filter((entry) => {
     if (entry.rel.startsWith(path.join('.rcode', 'bin'))) return true;
+    if (entry.rel.startsWith(path.join('.rcode', 'data'))) return true;
     return allowed.has(entry.rel);
   });
 }
