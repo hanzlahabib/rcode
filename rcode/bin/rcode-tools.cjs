@@ -4554,6 +4554,16 @@ If you have a real reason to bypass (e.g. retroactively documenting a phase that
 
 ---
 
+## rcode Command Routing
+
+Before handling planning, exploration, auditing, refactoring, or multi-step build work ad-hoc, check whether a matching rcode command exists first.
+
+**How to check:** read \`.rcode/workflows/do.md\` (installed by rcode) for the intent → command routing table — it is the single source of truth. Common cases: planning a phase → \`/rcode-plan\`, adding a phase → \`/rcode-add-phase\`, exploring/brainstorming → \`/rcode-brainstorm\`, auditing → \`/rcode-audit\`, executing a sprint → \`/rcode-execute\`, mapping the codebase → \`/rcode-map-codebase\`. Always consult \`do.md\` — never infer from memory alone, as the table changes with the release.
+
+**Why:** rcode commands record outcomes in \`.rcode/state.json\` and \`.planning/\`. Work done ad-hoc creates silent state divergence. If you must proceed ad-hoc, run \`/rcode-memory-update\` afterward to keep long-term memory consistent.
+
+---
+
 **This file is part of the project. Treat it as load-bearing.**
 `;
 
