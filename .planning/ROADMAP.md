@@ -262,6 +262,32 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 13 — thirteenth phase
+
+**Goal:** _TBD — fill in via /rcode-discuss-phase 13 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
+## Phase 42 — Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)
+
+**Goal:** _TBD — fill in via /rcode-discuss-phase 42 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
