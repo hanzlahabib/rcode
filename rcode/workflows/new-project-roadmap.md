@@ -302,12 +302,12 @@ Use AskUserQuestion:
 node .rcode/bin/rcode-tools.cjs generate-claude-md
 ```
 
-This ensures new projects get the default rcode workflow-enforcement guidance and current project context in `CLAUDE.md`.
+This ensures new projects get the default rcode workflow-enforcement guidance and current project context in `CLAUDE.md` and `AGENTS.md` (the cross-tool standard read by Codex, Cursor, Windsurf, Antigravity, and Gemini). `AGENTS.md` is only written when absent — an install-managed roster section is preserved.
 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-node .rcode/bin/rcode-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
+node .rcode/bin/rcode-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md AGENTS.md
 ```
 
 ## 9. Done

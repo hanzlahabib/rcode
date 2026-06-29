@@ -4459,15 +4459,21 @@ function cmdCommit(argv) {
 }
 
 /**
- * cmdGenerateClaudeMd — Phase 11 / #467 / closes part of #465.
+ * cmdGenerateClaudeMd — Phase 11 / #467 / closes part of #465. Phase 42 / #946.
  *
- * Bootstrap a project CLAUDE.md scaffold. Used by new-project-roadmap.md.
- * Refuses to overwrite an existing CLAUDE.md unless --force is set.
+ * Bootstrap project agent-rules scaffolds. Writes the same rule set to both
+ * CLAUDE.md (Claude Code, Grok) and AGENTS.md (the cross-tool open standard read
+ * by Codex, Cursor, Windsurf, Antigravity, Gemini) so the rcode Command Routing
+ * rule reaches every supported agent — not just Claude. Used by
+ * new-project-roadmap.md. Refuses to overwrite an existing CLAUDE.md unless
+ * --force is set; AGENTS.md is written when absent (or with --force) so an
+ * install-managed roster section is never clobbered.
  */
 function cmdGenerateClaudeMd(rawArgs) {
   const args = (rawArgs || '').split(/\s+/).filter(Boolean);
   const force = args.includes('--force');
   const claudeMdPath = path.join(PROJECT_ROOT, 'CLAUDE.md');
+  const agentsMdPath = path.join(PROJECT_ROOT, 'AGENTS.md');
 
   if (fs.existsSync(claudeMdPath) && !force) {
     throw new Error(`CLAUDE.md already exists at ${claudeMdPath}. Use --force to overwrite.`);
@@ -4567,12 +4573,27 @@ Before handling planning, exploration, auditing, refactoring, or multi-step buil
 **This file is part of the project. Treat it as load-bearing.**
 `;
 
+  const claudeExisted = fs.existsSync(claudeMdPath);
   fs.writeFileSync(claudeMdPath, content);
+
+  // Mirror the same rules to AGENTS.md (the cross-tool standard Codex, Cursor,
+  // Windsurf, Antigravity, and Gemini read). Skip when it already exists without
+  // --force so an install-appended "## rcode Agents (installed)" roster survives.
+  const agentsExisted = fs.existsSync(agentsMdPath);
+  const wroteAgents = !agentsExisted || force;
+  if (wroteAgents) {
+    fs.writeFileSync(agentsMdPath, content);
+  }
+
   return {
     ok: true,
     path: path.relative(PROJECT_ROOT, claudeMdPath),
+    paths: wroteAgents
+      ? [path.relative(PROJECT_ROOT, claudeMdPath), path.relative(PROJECT_ROOT, agentsMdPath)]
+      : [path.relative(PROJECT_ROOT, claudeMdPath)],
     project_name: projectName,
-    overwritten: force && fs.existsSync(claudeMdPath),
+    overwritten: force && claudeExisted,
+    agents_md_skipped: !wroteAgents,
   };
 }
 
