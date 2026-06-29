@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-29T13:08:56.553Z",
-  "current_phase": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
+  "updated": "2026-06-29T14:12:44.091Z",
+  "current_phase": "Ambient adoption hooks",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
@@ -1179,8 +1179,8 @@
       "id": "42",
       "number": "42",
       "name": "Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-29T14:09:26.123Z",
       "completed": null,
       "sprints": [
         {
