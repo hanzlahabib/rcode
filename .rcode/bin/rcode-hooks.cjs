@@ -14,6 +14,7 @@
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
  *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
+ *   session-start — emit one-line project status primer at session open (#947)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -23,6 +24,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
+const { resolveActivePhase, readSprintProgress, readRecentCommits, readMilestoneHint } = require('./lib/state-reader.cjs');
 
 /**
  * Read and parse stdin JSON.
@@ -353,67 +355,16 @@ async function preCompact() {
     }
 
     // ── 2. Determine active phase ────────────────────────────────────────
-    const phases = Array.isArray(state?.phases) ? state.phases : [];
-    const executing = phases.find((p) => p && p.status === 'executing');
-    const matched = phases.find(
-      (p) => p && (p.name === state?.current_phase || p.number === state?.current_phase)
-    );
-    const activePhase = executing || matched || null;
-    const phaseLabel = activePhase
-      ? (activePhase.number || activePhase.name || state?.current_phase)
-      : (state?.current_phase || null);
+    const { activePhase, phaseLabel } = resolveActivePhase(state);
 
     // ── 3. Read active SPRINT.md (incomplete tasks) ──────────────────────
-    const incompleteTasks = [];
-    const completedCount = { done: 0, total: 0 };
-    const planningBase = path.join(cwd, '.planning', 'phases');
-    if (phaseLabel && fs.existsSync(planningBase)) {
-      try {
-        const phaseDirs = fs.readdirSync(planningBase)
-          .filter(d => d.startsWith(String(phaseLabel)));
-        for (const pd of phaseDirs) {
-          const pdPath = path.join(planningBase, pd);
-          if (!fs.statSync(pdPath).isDirectory()) continue;
-          const sprintFiles = fs.readdirSync(pdPath)
-            .filter(f => f.endsWith('-SPRINT.md'))
-            .sort()
-            .reverse(); // most recent first
-          if (sprintFiles.length === 0) continue;
-          const sprintText = fs.readFileSync(path.join(pdPath, sprintFiles[0]), 'utf8');
-          for (const line of sprintText.split('\n')) {
-            const done = /^\s*-\s*\[x\]/i.test(line);
-            const pending = /^\s*-\s*\[ \]/.test(line);
-            if (done || pending) completedCount.total++;
-            if (done) completedCount.done++;
-            if (pending) {
-              const task = line.replace(/^\s*-\s*\[ \]\s*/, '').trim();
-              if (task) incompleteTasks.push(task);
-            }
-          }
-          break; // use first matching phase dir only
-        }
-      } catch {}
-    }
+    const { completedCount, incompleteTasks } = readSprintProgress(phaseLabel, cwd);
 
     // ── 4. Recent git commits ────────────────────────────────────────────
-    let recentCommits = [];
-    try {
-      const log = execSync('git log --oneline -5 --no-decorate 2>/dev/null', {
-        cwd, encoding: 'utf8', timeout: 3000,
-      }).trim();
-      recentCommits = log ? log.split('\n').filter(Boolean) : [];
-    } catch {}
+    const recentCommits = readRecentCommits(cwd);
 
     // ── 5. Read milestone / roadmap headline ────────────────────────────
-    let milestoneHint = state?.milestone || null;
-    if (!milestoneHint) {
-      for (const rp of ['.planning/ROADMAP.md', '.planning/milestones/ROADMAP.md']) {
-        const full = path.join(cwd, rp);
-        if (!fs.existsSync(full)) continue;
-        const m = fs.readFileSync(full, 'utf8').match(/^##\s+Milestone\s+(M\d+[^\n]*)/m);
-        if (m) { milestoneHint = m[1].trim(); break; }
-      }
-    }
+    const milestoneHint = readMilestoneHint(state, cwd);
 
     // ── 6. Read last 3 decisions from STATE.md ───────────────────────────
     let recentDecisions = [];
@@ -944,6 +895,35 @@ async function stopHandler() {
 }
 
 /**
+ * session-start: Emit a one-line project status primer at session open. (#947)
+ * Uses resolveActivePhase from state-reader.cjs. Advisory only — exits 0 on any error.
+ */
+function sessionStart() {
+  try {
+    try { fs.readFileSync(0, 'utf8'); } catch { /* drain stdin */ }
+    const cwd = process.cwd();
+    const statePath = path.join(cwd, '.rcode', 'state.json');
+    if (!fs.existsSync(statePath)) process.exit(0);
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { process.exit(0); }
+    const { activePhase, phaseLabel } = resolveActivePhase(state);
+    if (!phaseLabel) process.exit(0);
+    const phaseKey = String(activePhase?.number ?? phaseLabel);
+    const phaseSprints = (Array.isArray(state.sprints) ? state.sprints : []).filter(s => String(s.phase) === phaseKey);
+    const doneCount = phaseSprints.filter(s => s.status === 'completed' || s.status === 'complete').length;
+    const sprintSummary = phaseSprints.length > 0 ? `${doneCount}/${phaseSprints.length} sprints done` : 'no sprints yet';
+    const phaseStatus = activePhase?.status || 'planned';
+    const nextCmd = phaseStatus === 'executing' ? '/rcode-execute'
+      : phaseStatus === 'complete' ? '/rcode-add-phase'
+      : phaseSprints.length === 0 ? `/rcode-plan ${phaseLabel}`
+      : '/rcode-execute';
+    const primer = `\u{1F4CD} Phase ${phaseLabel} ${phaseStatus} · ${sprintSummary} · next: ${nextCmd}`;
+    process.stdout.write(JSON.stringify({ systemMessage: primer }) + '\n');
+  } catch { /* fail open — never block session start */ }
+  process.exit(0);
+}
+
+/**
  * Main entry point.
  */
 async function main() {
@@ -983,9 +963,12 @@ async function main() {
     case 'prompt-router':
       promptRouter(); // synchronous — exits inside; never falls through to async path
       break;
+    case 'session-start':
+      sessionStart();
+      break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router|session-start');
       process.exit(1);
   }
 }
