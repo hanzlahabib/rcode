@@ -288,6 +288,19 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 43 — Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)
+
+**Goal:** _TBD — fill in via /rcode-discuss-phase 43 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)

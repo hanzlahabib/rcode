@@ -2,15 +2,15 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-29T14:35:14.424Z",
+  "updated": "2026-06-29T15:29:27.270Z",
   "current_phase": "Ambient adoption hooks",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
   "phases": [
     {
-      "number": "20",
       "id": "20",
+      "number": "20",
       "name": "Dashboard UX Quick Wins",
       "status": "complete",
       "started": "2026-05-02T00:00:00.000Z",
@@ -35,8 +35,8 @@
       "plan_count": 0
     },
     {
-      "number": "21",
       "id": "21",
+      "number": "21",
       "name": "Dashboard Data Pipeline",
       "status": "planned",
       "started": null,
@@ -61,8 +61,8 @@
       "plan_count": 0
     },
     {
-      "number": "22",
       "id": "22",
+      "number": "22",
       "name": "Agent Slim: Top-3 via References",
       "status": "complete",
       "started": "2026-05-10T08:14:58.085Z",
@@ -177,8 +177,8 @@
       "plans": 4
     },
     {
-      "number": "23",
       "id": "23",
+      "number": "23",
       "name": "Agent Slim: Remaining 24 via Reference Clusters",
       "status": "complete",
       "started": "2026-05-10T00:00:00.000Z",
@@ -239,8 +239,8 @@
       "plan_count": 0
     },
     {
-      "number": "24",
       "id": "24",
+      "number": "24",
       "name": "Resolve Agent vs Skill Persona Duplication",
       "status": "complete",
       "started": "2026-05-10T00:00:00.000Z",
@@ -265,8 +265,8 @@
       "plan_count": 0
     },
     {
-      "number": "25",
       "id": "25",
+      "number": "25",
       "name": "rcode Agent CLI Command",
       "status": "complete",
       "started": "2026-05-10T00:00:00.000Z",
@@ -291,8 +291,8 @@
       "plan_count": 0
     },
     {
-      "number": "26",
       "id": "26",
+      "number": "26",
       "name": "Reference Index and Contributing Rule",
       "status": "complete",
       "started": "2026-05-10T00:00:00.000Z",
@@ -317,8 +317,8 @@
       "plan_count": 1
     },
     {
-      "number": "27",
       "id": "27",
+      "number": "27",
       "name": "Realtime Kanban Orchestration Dashboard",
       "status": "complete",
       "started": "2026-05-16T00:00:00.000Z",
@@ -343,8 +343,8 @@
       "plan_count": 0
     },
     {
-      "number": "28",
       "id": "28",
+      "number": "28",
       "name": "Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval",
       "status": "complete",
       "started": "2026-05-15T00:00:00.000Z",
@@ -407,8 +407,8 @@
       "planned_at": "2026-05-15T13:59:48.106Z"
     },
     {
-      "number": "29",
       "id": "29",
+      "number": "29",
       "name": "Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping",
       "status": "complete",
       "started": "2026-05-15T00:00:00.000Z",
@@ -459,8 +459,8 @@
       "planned_at": "2026-05-15T14:26:37.115Z"
     },
     {
-      "number": "30",
       "id": "30",
+      "number": "30",
       "name": "Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish",
       "status": "complete",
       "started": "2026-05-15T00:00:00.000Z",
@@ -523,8 +523,8 @@
       "planned_at": "2026-05-15T14:26:37.157Z"
     },
     {
-      "number": "31",
       "id": "31",
+      "number": "31",
       "name": "Preact migration — Majlis dashboard client",
       "status": "complete",
       "started": "2026-05-15T23:10:19.852Z",
@@ -697,8 +697,8 @@
       "completed_at": "2026-05-16"
     },
     {
-      "number": "32",
       "id": "32",
+      "number": "32",
       "name": "Dashboard theming — design tokens and emoji-to-SVG icon sweep",
       "status": "complete",
       "started": null,
@@ -748,8 +748,8 @@
       "status_updated": "2026-05-16T01:26:44.807Z"
     },
     {
-      "number": "33",
       "id": "33",
+      "number": "33",
       "name": "Dashboard command runner — run init and rcode commands through the UI",
       "status": "complete",
       "started": "2026-05-16T01:49:09.891Z",
@@ -800,8 +800,8 @@
       "status_updated": "2026-05-16T02:15:23.421Z"
     },
     {
-      "number": "34",
       "id": "34",
+      "number": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
       "status": "planned",
       "started": null,
@@ -861,8 +861,8 @@
       "status_updated": "2026-05-16T12:26:35.141Z"
     },
     {
-      "number": "35",
       "id": "35",
+      "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
       "status": "executing",
       "started": "2026-06-12T19:51:42.903Z",
@@ -923,8 +923,8 @@
       "plans": 2
     },
     {
-      "number": "36",
       "id": "36",
+      "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
       "status": "executing",
       "started": "2026-06-12T19:51:53.546Z",
@@ -985,8 +985,8 @@
       "plans": 2
     },
     {
-      "number": "37",
       "id": "37",
+      "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
       "status": "executing",
       "started": "2026-06-12T19:52:10.476Z",
@@ -1057,8 +1057,8 @@
       "plans": 2
     },
     {
-      "number": "38",
       "id": "38",
+      "number": "38",
       "name": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
       "status": "complete",
       "started": "2026-06-17T20:50:13.617Z",
@@ -1111,8 +1111,8 @@
       "completed_at": "2026-06-17"
     },
     {
-      "number": "39",
       "id": "39",
+      "number": "39",
       "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
       "status": "planned",
       "started": null,
@@ -1163,8 +1163,8 @@
       "planned_at": "2026-06-24T14:00:00.000Z"
     },
     {
-      "number": "13",
       "id": "13",
+      "number": "13",
       "name": "thirteenth phase",
       "status": "planned",
       "started": null,
@@ -1176,8 +1176,8 @@
       "plan_count": 0
     },
     {
-      "number": "42",
       "id": "42",
+      "number": "42",
       "name": "Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)",
       "status": "executed",
       "started": "2026-06-29T14:09:26.123Z",
@@ -1224,6 +1224,33 @@
       "plans": 3,
       "planned_at": "2026-06-29T13:06:03.743Z",
       "status_updated": "2026-06-29T14:35:14.381Z"
+    },
+    {
+      "id": "43",
+      "number": "43",
+      "name": "Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "sprints": [
+        {
+          "id": "43.1",
+          "number": 1,
+          "goal": "Ship rcode/data/ to consumers; fix installer and sync hook so rcode-hooks.cjs stops ENOENT-crashing (#952)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "ship-rcodedata-to-consumers-fix-installer-sync-hook-so-hooks-stop-enoent-crashing-952",
+      "goal": "_TBD — fill in via /rcode-discuss-phase 43 or edit directly._",
+      "created": "2026-06-29T15:25:31.348Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-06-29T15:29:27.195Z"
     }
   ],
   "executions": [
@@ -1286,7 +1313,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "42.3",
+  "current_sprint": "43.1",
   "velocity_history": [
     {
       "sprint": "04.1",
@@ -1710,6 +1737,14 @@
       "goal": "\"Dogfood both hooks in this repo: merge UserPromptSubmit (prompt-router) + SessionStart (session-start) into .claude/settings.json without clobbering the two existing dev hooks; verify prompt_nudge config default. (#892)\"",
       "status": "planned",
       "file": ".planning/phases/42-ambient-adoption-hooks-make-rcode-self-surfacing-sessionstart-greeter-agentsmd-routing-rule-activate-prompt-router-nudge/42-3-SPRINT.md"
+    },
+    {
+      "key": "43/1",
+      "phase": "43",
+      "number": "1",
+      "goal": "\"Ship rcode/data/ to consumers via installer and sync hook so .rcode/data/intent-table.json is present on install and rcode-hooks.cjs stops ENOENT-crashing (#952)\"",
+      "status": "planned",
+      "file": ".planning/phases/43-ship-rcodedata-to-consumers-fix-installer-sync-hook-so-hooks-stop-enoent-crashing-952/43-1-SPRINT.md"
     }
   ],
   "plans": [],

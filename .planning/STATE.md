@@ -1034,3 +1034,4 @@
 
 - Phase 38 added: Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)
 - Phase 42 added: Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)
+- Phase 43 added: Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)
