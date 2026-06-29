@@ -14,6 +14,7 @@
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
  *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
+ *   session-start — emit one-line project status primer at session open (#947)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -894,6 +895,35 @@ async function stopHandler() {
 }
 
 /**
+ * session-start: Emit a one-line project status primer at session open. (#947)
+ * Uses resolveActivePhase from state-reader.cjs. Advisory only — exits 0 on any error.
+ */
+function sessionStart() {
+  try {
+    try { fs.readFileSync(0, 'utf8'); } catch { /* drain stdin */ }
+    const cwd = process.cwd();
+    const statePath = path.join(cwd, '.rcode', 'state.json');
+    if (!fs.existsSync(statePath)) process.exit(0);
+    let state;
+    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { process.exit(0); }
+    const { activePhase, phaseLabel } = resolveActivePhase(state);
+    if (!phaseLabel) process.exit(0);
+    const phaseKey = String(activePhase?.number ?? phaseLabel);
+    const phaseSprints = (Array.isArray(state.sprints) ? state.sprints : []).filter(s => String(s.phase) === phaseKey);
+    const doneCount = phaseSprints.filter(s => s.status === 'completed' || s.status === 'complete').length;
+    const sprintSummary = phaseSprints.length > 0 ? `${doneCount}/${phaseSprints.length} sprints done` : 'no sprints yet';
+    const phaseStatus = activePhase?.status || 'planned';
+    const nextCmd = phaseStatus === 'executing' ? '/rcode-execute'
+      : phaseStatus === 'complete' ? '/rcode-add-phase'
+      : phaseSprints.length === 0 ? `/rcode-plan ${phaseLabel}`
+      : '/rcode-execute';
+    const primer = `\u{1F4CD} Phase ${phaseLabel} ${phaseStatus} · ${sprintSummary} · next: ${nextCmd}`;
+    process.stdout.write(JSON.stringify({ systemMessage: primer }) + '\n');
+  } catch { /* fail open — never block session start */ }
+  process.exit(0);
+}
+
+/**
  * Main entry point.
  */
 async function main() {
@@ -933,9 +963,12 @@ async function main() {
     case 'prompt-router':
       promptRouter(); // synchronous — exits inside; never falls through to async path
       break;
+    case 'session-start':
+      sessionStart();
+      break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router|session-start');
       process.exit(1);
   }
 }
