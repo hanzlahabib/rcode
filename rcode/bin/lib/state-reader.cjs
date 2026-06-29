@@ -14,7 +14,10 @@ const { execSync } = require('child_process');
  */
 function resolveActivePhase(state) {
   const phases = Array.isArray(state?.phases) ? state.phases : [];
-  const executing = phases.find((p) => p && p.status === 'executing');
+  // M1 (#952 review): when several phases are concurrently 'executing', tie-break
+  // to the LAST one in roadmap order (highest-numbered / most-recently-added) —
+  // that is the newest active work the greeter should surface, not the oldest.
+  const executing = phases.findLast((p) => p && p.status === 'executing');
   const matched = phases.find(
     (p) => p && (p.name === state?.current_phase || p.number === state?.current_phase)
   );
@@ -81,6 +84,11 @@ function readRecentCommits(cwd) {
 /**
  * Read the milestone hint from state.json or .planning/ROADMAP.md.
  * Returns a string or null.
+ *
+ * L1 (#952 review): the per-file readFileSync is wrapped in a silent catch by
+ * design — a milestone hint is advisory, so an unreadable ROADMAP (permissions,
+ * race) must degrade to "no hint", never propagate and break an advisory hook.
+ * This is an intentional resilience improvement over the original inline code.
  */
 function readMilestoneHint(state, cwd) {
   if (state?.milestone) return state.milestone;

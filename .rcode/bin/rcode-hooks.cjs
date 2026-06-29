@@ -577,12 +577,22 @@ async function costTrack() {
 // INTENT_TABLE — keyword map for prompt-router (#892).
 // Source of truth: rcode/workflows/do.md routing table (~285-320). First-match-wins.
 // Loaded from data file to keep this file under 1000 lines (#896).
-const INTENT_TABLE = JSON.parse(
-  require('fs').readFileSync(
-    require('path').join(__dirname, '..', 'data', 'intent-table.json'),
-    'utf8'
-  )
-);
+//
+// Fail-open (#952 review H1): the load is wrapped so a MISSING data file degrades
+// the prompt-router to a no-op instead of throwing at module-require time, which
+// would crash EVERY hook subcommand (bash-guard, pre-edit, session-start, …) —
+// not just the router. The installer-side fix (ship rcode/data/) is tracked in #952.
+let INTENT_TABLE = [];
+try {
+  INTENT_TABLE = JSON.parse(
+    require('fs').readFileSync(
+      require('path').join(__dirname, '..', 'data', 'intent-table.json'),
+      'utf8'
+    )
+  );
+} catch {
+  INTENT_TABLE = [];
+}
 
 /**
  * Inline flat-YAML parser — mirrors parseSimpleYaml in rcode-tools.cjs:91.
