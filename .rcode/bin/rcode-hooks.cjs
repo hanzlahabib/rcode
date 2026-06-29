@@ -10,7 +10,9 @@
  *   pre-compact — refresh HANDOFF.json before context compaction (#743)
  *   stop-verify — syntax-check files changed during the response (#744)
  *   cost-track  — append per-response token usage to cost.jsonl (#745)
+ *   stop        — unified Stop hook: hedging-language detection (#744) + token logging (#745)
  *   compact-nudge — advise /rcode-trim or /clear after N Edit/Write calls (#749)
+ *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
  *
  * All subcommands read stdin JSON from the hook execution context.
@@ -621,136 +623,15 @@ async function costTrack() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INTENT_TABLE — keyword map for prompt-router (#892)
-//
-// WHY: When a user types a free-form prompt that matches a known rcode workflow,
-// we nudge them toward the matching command so the outcome is captured in
-// .rcode/state.json. Work done outside rcode commands never lands in state.
-//
-// Single source of truth: rcode/workflows/do.md routing table (lines ~285-320,
-// "If the text describes..."). Keep in sync — see test/prompt-router-table-sync.test.cjs
-// (Sprint 38.3).
-//
-// Order: first-match-wins, mirroring do.md's "Apply the first matching rule".
-// More-specific keyword sets come before broad ones.
-// ─────────────────────────────────────────────────────────────────────────────
-const INTENT_TABLE = [
-  // do.md: "Starting a new project, 'set up', 'initialize'" → /rcode-new-project
-  {
-    intent: 'new-project',
-    keywords: ['set up a new project', 'initialize a new project', 'start a new project', 'create a new project'],
-    command: '/rcode-new-project',
-  },
-  // do.md: "Mapping or analyzing an existing codebase" → /rcode-map-codebase
-  {
-    intent: 'map-codebase',
-    keywords: ['map the codebase', 'map this codebase', 'analyze the codebase', 'analyse the codebase', 'map existing codebase'],
-    command: '/rcode-map-codebase',
-  },
-  // do.md: "A bug, error, crash, failure, or something broken" → /rcode-debug
-  // 'error' alone is too broad (matches "what does this error mean?" etc.).
-  // Use multi-word forms that signal debug intent rather than a question.
-  {
-    intent: 'debug',
-    keywords: ['bug', 'getting an error', 'throwing an error', 'error in the', 'fix the error', 'debug this', 'crash', 'failure', 'broken', 'not working', 'fails', 'exception', 'traceback'],
-    command: '/rcode-debug',
-  },
-  // do.md: "Audit code quality, 'review changes', 'karpathy', 'check my diff', 'too complex'" → /rcode-review --karpathy
-  {
-    intent: 'audit-karpathy',
-    keywords: ['audit', 'review changes', 'check my diff', 'karpathy', 'too complex', 'complexity', 'code review'],
-    command: '/rcode-review --karpathy',
-  },
-  // do.md: "Make it simpler, 'be lazy', 'simplest solution', 'yagni', 'over-engineered'" → /rcode-lazy
-  // Generative simplicity lens (before code is written); /rcode-trim removes bloat after.
-  // 'simplify' alone is too broad (overlaps rcode-trim's existing-code territory) — use intent-bearing phrases.
-  {
-    intent: 'lazy',
-    keywords: ['be lazy', 'lazy mode', 'simplest solution', 'yagni', 'over-engineered', 'over-engineering', 'kam code likho'],
-    command: '/rcode-lazy',
-  },
-  // do.md: "Walk through a change, 'checkpoint', 'explain this diff', 'human review'" → /rcode-checkpoint-preview
-  {
-    intent: 'checkpoint',
-    keywords: ['checkpoint', 'explain this diff', 'human review', 'walk through the change', 'walk through this change'],
-    command: '/rcode-checkpoint-preview',
-  },
-  // do.md: "Brainstorm, generate ideas, 'explore options', 'what could we do'" → /rcode-brainstorm
-  {
-    intent: 'brainstorm',
-    keywords: ['brainstorm', 'generate ideas', 'explore options', 'what could we do', 'ideate', 'ideas for'],
-    command: '/rcode-brainstorm',
-  },
-  // do.md: "Exploring, researching, comparing, or 'how does X work'" → /rcode-research-phase
-  // 'research' alone fires on "based on my research..." (past-tense reference, not navigation intent).
-  // 'how does'/'how do' fire on any factual question — removed in favour of intent-bearing phrases.
-  {
-    intent: 'explore',
-    keywords: ['explore', 'research phase', 'do some research', 'comparing', 'investigate', 'look into', 'understand how'],
-    command: '/rcode-research-phase',
-  },
-  // do.md: "Scope unclear, 'which one', 'better UX', 'how should X look'" → /rcode-discuss-phase
-  {
-    intent: 'discuss',
-    keywords: ['which one', 'better ux', 'how should', 'still have confusion', 'conflicting', 'discuss the scope', 'design this', 'architect this'],
-    command: '/rcode-discuss-phase',
-  },
-  // do.md: "A complex task: refactoring, migration, multi-file architecture, system redesign,
-  // integrating a new system/service" → /rcode-add-phase
-  // 'integration'/'integrate' catch "let's do X integration", "integrate with Y" — feature-sized
-  // architectural work that belongs in a phase, not an ad-hoc edit (#907).
-  // Known mild false-positive: "run the integration tests" also matches → a harmless soft
-  // nudge toward /rcode-add-phase. Accepted: catching real integration work outweighs it,
-  // and no clean substring separates "X integration" from "integration test".
-  {
-    intent: 'add-phase',
-    keywords: ['refactor', 'migration', 'multi-file', 'system redesign', 'multi file', 'large refactor', 'architectural', 'integration', 'integrate'],
-    command: '/rcode-add-phase',
-  },
-  // do.md: "'Sprint planning', 'plan the sprint', 'next sprint'" → /rcode-sprint-planning
-  {
-    intent: 'sprint-planning',
-    keywords: ['sprint planning', 'plan the sprint', 'next sprint', 'what\'s in this sprint', "what's in this sprint"],
-    command: '/rcode-sprint-planning',
-  },
-  // do.md: "Executing a sprint, 'run the sprint', 'start sprint'" → /rcode-execute-sprint
-  {
-    intent: 'execute-sprint',
-    keywords: ['run the sprint', 'start sprint', 'execute sprint', 'work on sprint'],
-    command: '/rcode-execute-sprint',
-  },
-  // do.md: "Planning a specific phase, 'plan phase N'" → /rcode-plan
-  {
-    intent: 'plan',
-    keywords: ["let's plan", 'plan phase', 'plan this', 'let me plan', 'planning phase', 'create a plan', 'please plan', 'plan and think', 'scope this', 'scope the feature'],
-    command: '/rcode-plan',
-  },
-  // do.md: "'Create milestones', 'plan milestones', 'create roadmap'" → /rcode-new-milestone
-  {
-    intent: 'new-milestone',
-    keywords: ['create milestones', 'plan milestones', 'create roadmap', 'break project into milestones', 'new milestone', 'what milestones'],
-    command: '/rcode-new-milestone',
-  },
-  // do.md: "Break milestone into epics/stories, 'create stories', 'user stories', 'epics'" → /rcode-create-epics-and-stories
-  {
-    intent: 'epics-stories',
-    keywords: ['create epics', 'user stories', 'create stories', 'epics and stories', 'break into epics'],
-    command: '/rcode-create-epics-and-stories',
-  },
-  // do.md: "Drift / out-of-date / 'audit feature docs' / 'fill out existing PRD'" → /rcode-feature-drift
-  {
-    intent: 'feature-drift',
-    keywords: ['out of date', 'out-of-date', 'verify docs', 'audit feature docs', 'fill out existing', 'prd drift', 'docs vs code'],
-    command: '/rcode-feature-drift',
-  },
-  // do.md: "General audit / re-audit / extend / fill out / expand an existing artifact" → /rcode-audit
-  {
-    intent: 'audit',
-    keywords: ['re-audit', 'extend the audit', 'fill out the', 'expand the', 're audit'],
-    command: '/rcode-audit',
-  },
-];
+// INTENT_TABLE — keyword map for prompt-router (#892).
+// Source of truth: rcode/workflows/do.md routing table (~285-320). First-match-wins.
+// Loaded from data file to keep this file under 1000 lines (#896).
+const INTENT_TABLE = JSON.parse(
+  require('fs').readFileSync(
+    require('path').join(__dirname, '..', 'data', 'intent-table.json'),
+    'utf8'
+  )
+);
 
 /**
  * Inline flat-YAML parser — mirrors parseSimpleYaml in rcode-tools.cjs:91.
@@ -792,13 +673,8 @@ function readPromptNudgeToggle(cwd) {
 }
 
 /**
- * Determine whether a nudge is stale enough to fire under 'when-stale' mode.
- *
- * Heuristic: fire when .rcode/state.json exists AND its mtime is older than
- * the most recent git commit timestamp, OR when state.json is absent in a
- * .planning/ project. This is cheap and best-effort — if any check fails the
- * function returns true (treat as stale = fire). All I/O is wrapped in
- * try/catch to preserve the fail-open contract.
+ * Returns true when state.json is older than the last commit, or absent in a .planning/ project.
+ * Fail-open: returns true on any I/O error so the nudge fires rather than silently skips.
  */
 function isStateStaleFallbackTrue(cwd) {
   try {
@@ -830,14 +706,9 @@ function isStateStaleFallbackTrue(cwd) {
 }
 
 /**
- * prompt-router: Nudge user toward rcode commands for memory consistency (#892).
- *
- * Runs on UserPromptSubmit. Reads stdin JSON synchronously (mirror
- * cli/rcode-slash-router.cjs — NOT the async readInputJson() which rejects on
- * bad JSON). Keyword-matches against INTENT_TABLE (derived from
- * rcode/workflows/do.md lines ~285-320). On match, emits a one-line advisory
- * via hookSpecificOutput.additionalContext. Gated by prompt_nudge config toggle.
- * Always exits 0 with no output on any error or non-match.
+ * prompt-router: Nudge toward rcode commands for memory consistency (#892).
+ * Reads stdin synchronously (NOT async — rejects bad JSON). Keyword-matches INTENT_TABLE,
+ * emits additionalContext advisory. Gated by prompt_nudge config. Always exits 0.
  */
 function promptRouter() {
   try {
@@ -956,11 +827,7 @@ function promptRouter() {
 
 /**
  * compact-nudge: Advise /rcode-trim or /clear after N Edit/Write calls (#749).
- *
- * Triggered by the PreToolUse:Edit|Write hook. Maintains a per-session call
- * counter in a temp file and, once the count crosses RCODE_NUDGE_THRESHOLD
- * (default 50), prints an advisory to reclaim context budget. Purely
- * advisory — always exits 0, never blocks a tool call.
+ * Maintains a per-session counter; warns at RCODE_NUDGE_THRESHOLD (default 50). Advisory only.
  */
 async function compactNudge() {
   try {
@@ -998,6 +865,84 @@ async function compactNudge() {
   }
 }
 
+/** Returns true when a Read/Bash targets known large planning files (RESEARCH/SUMMARY/ROADMAP). */
+function shouldNudgeCompact(toolName, toolInput) {
+  if (toolName !== 'Read' && toolName !== 'Bash') return false;
+  const target = toolInput?.file_path || toolInput?.command || '';
+  return /RESEARCH\.md|SUMMARY\.md|ROADMAP\.md/.test(target);
+}
+
+/**
+ * pre-tool-use: Strategic compact nudge before large file reads (#749).
+ *
+ * Triggered by the PreToolUse hook (Read + Bash tool names). Checks whether
+ * the tool call targets a known large planning file and, if so, writes an
+ * advisory line to stderr so the executor sees it without being interrupted.
+ * Always exits 0 — never blocks the tool call.
+ */
+async function preToolUse() {
+  try {
+    const input = await readInputJson();
+    const toolName = input.tool_name || input.toolName || '';
+    const toolInput = input.tool_input || input.toolInput || {};
+
+    if (shouldNudgeCompact(toolName, toolInput)) {
+      process.stderr.write(
+        '[rcode] Context nearing limit — consider /compact before the next large file read\n'
+      );
+    }
+
+    process.exit(0);
+  } catch {
+    // Advisory hook must never break the session.
+    process.exit(0);
+  }
+}
+
+/**
+ * stop: Stop hook — hedging-language detection (#744) + token/cost logging (#745).
+ * Warns when response text suggests incomplete execution ("I'll implement this", etc.).
+ * Appends per-response token usage to ~/.rcode/logs/token-usage.jsonl.
+ * Rates: $3/M input, $15/M output (Sonnet 4.x approximation).
+ * Never blocks.
+ */
+async function stopHandler() {
+  try {
+    const input = await readInputJson();
+    const responseText = input?.response || '';
+    const HEDGING_PATTERNS = [
+      /I'll\s+implement\s+this/i,
+      /I\s+would\s+add/i,
+      /you\s+could\s+add/i,
+      /TODO:/,
+    ];
+    const incomplete = HEDGING_PATTERNS.some((re) => re.test(responseText));
+    if (incomplete) {
+      process.stderr.write(
+        '[rcode] Stop hook: response contains hedging language — verify implementation is complete\n'
+      );
+    }
+    const usage = input?.usage;
+    if (usage && typeof usage === 'object') {
+      const logDir = path.join(os.homedir(), '.rcode', 'logs');
+      fs.mkdirSync(logDir, { recursive: true });
+      const entry = JSON.stringify({
+        ts: new Date().toISOString(),
+        input: usage.input_tokens || 0,
+        output: usage.output_tokens || 0,
+        cost_usd:
+          ((usage.input_tokens || 0) * 3) / 1e6 +
+          ((usage.output_tokens || 0) * 15) / 1e6,
+      });
+      fs.appendFileSync(path.join(logDir, 'token-usage.jsonl'), entry + '\n');
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error(`Hook error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
 /**
  * Main entry point.
  */
@@ -1026,15 +971,21 @@ async function main() {
     case 'cost-track':
       await costTrack();
       break;
+    case 'stop':
+      await stopHandler();
+      break;
     case 'compact-nudge':
       await compactNudge();
+      break;
+    case 'pre-tool-use':
+      await preToolUse();
       break;
     case 'prompt-router':
       promptRouter(); // synchronous — exits inside; never falls through to async path
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|compact-nudge|prompt-router');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router');
       process.exit(1);
   }
 }

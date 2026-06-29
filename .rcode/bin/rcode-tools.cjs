@@ -2278,12 +2278,16 @@ function cmdState(subArgs) {
     }
 
     writeState(state);
+    // #942 — surface the milestone close nudge for inserted phases too.
+    const insHealth = milestoneCloseNudge();
     return {
       ok: true,
       phase_number: phaseNumber,
       name: phaseName,
       slug: slug,
       directory: path.join(PLANNING_DIR, 'phases', `${phaseNumber}-${slug}`),
+      milestone_health: insHealth.milestone_health,
+      ...(insHealth.nudge ? { nudge: insHealth.nudge } : {}),
     };
   }
 
@@ -3734,22 +3738,30 @@ function cmdPhase(subArgs) {
       // value at the scales we operate. Applies to phases, sprints, epics, stories,
       // tasks, decisions across all artifacts (dirs, ROADMAP, state.json, banners).
 
-      // #583 sanity guard: prevent phantom phase numbers caused by stale high-number
-      // entries in ROADMAP.md or phases/ (e.g. a prior phantom "## Phase 1009" left
-      // in ROADMAP triggers the next add to produce 1010). If computed next is more
-      // than 50 above the count of currently tracked phases, the maxNum source is
-      // suspect. Abort and require an explicit --number N to override.
-      const trackedCount = state.phases.filter(p => {
-        const n = parseInt(String(p.number || ''), 10);
-        return !Number.isNaN(n) && n > 0;
-      }).length;
-      if (next > trackedCount + 50) {
+      // #583 / #944 sanity guard: prevent phantom phase numbers caused by stale
+      // high-number entries in ROADMAP.md or phases/ (e.g. a prior phantom
+      // "## Phase 1009" left in ROADMAP triggers the next add to produce 1010).
+      //
+      // The guard must NOT misfire on an INTENTIONAL high-base numbering scheme
+      // (e.g. a milestone that deliberately numbers phases 1031, 1032, …). The
+      // discriminant: is the high number an actual TRACKED phase in state.json,
+      // or only a ROADMAP/dir entry that state has never seen?
+      //   - next === maxTracked + 1  → contiguous with real tracked phases →
+      //     intentional, allow regardless of absolute magnitude.
+      //   - maxNum (overall) sits far ABOVE maxTracked → a non-tracked phantom
+      //     is driving the number → suspect, abort.
+      const trackedNums = state.phases
+        .map(p => parseInt(String(p.number || ''), 10))
+        .filter(n => !Number.isNaN(n) && n > 0);
+      const trackedCount = trackedNums.length;
+      const maxTracked = trackedNums.length ? Math.max(...trackedNums) : 0;
+      if (maxNum > maxTracked && (maxNum - maxTracked) > 50) {
         throw new Error(
-          `Computed phase number ${next} is unexpectedly large ` +
-          `(only ${trackedCount} phases tracked in state.json). ` +
-          `ROADMAP.md or the phases/ directory may contain a stale high-number entry. ` +
+          `Computed phase number ${next} is driven by a non-tracked entry ` +
+          `(highest in ROADMAP/phases = ${maxNum}, highest in state.json = ${maxTracked}). ` +
+          `ROADMAP.md or the phases/ directory likely contains a stale high-number entry. ` +
           `Inspect with: node rcode-tools.cjs phases list\n` +
-          `Then retry with an explicit number: rcode-tools.cjs phase add "${phaseName}" --number ${trackedCount + 1}`
+          `Then retry with an explicit number: rcode-tools.cjs phase add "${phaseName}" --number ${maxTracked + 1}`
         );
       }
 
@@ -3822,12 +3834,17 @@ function cmdPhase(subArgs) {
     }
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
+    // #942 — surface the milestone close nudge from the CLI itself so it can't
+    // be bypassed by adding phases outside the add-phase workflow.
+    const { milestone_health, nudge } = milestoneCloseNudge();
     return {
       ok: true,
       phase_number: number,
       name: phaseName,
       slug,
       directory: path.relative(PROJECT_ROOT, directory),
+      milestone_health,
+      ...(nudge ? { nudge } : {}),
     };
   }
 
@@ -3866,6 +3883,19 @@ function cmdPhase(subArgs) {
       .sort((a, b) => parseInt(String(a.number), 10) - parseInt(String(b.number), 10))[0] || null;
 
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+
+    // #943 — when no open phases remain, the milestone is effectively finished.
+    // Surface the close/next guidance from this chokepoint so finishing the
+    // last phase via execute/verify/dev-story doesn't strand the user (the
+    // guidance previously only appeared in /rcode-status or progress insights).
+    const doneStatuses = new Set(['complete', 'completed', 'verified', 'shipped']);
+    const openRemaining = state.phases.filter(p => !doneStatuses.has(p.status)).length;
+    let nudge = null;
+    if (openRemaining === 0 && state.phases.length > 0) {
+      nudge = 'All phases are complete — this milestone is finished. ' +
+        'Run /rcode-complete-milestone to archive it, then /rcode-new-milestone to start the next.';
+    }
+
     return {
       ok: true,
       phase: phaseRef,
@@ -3874,6 +3904,8 @@ function cmdPhase(subArgs) {
       next_phase: next ? next.number : null,
       next_phase_name: next ? (next.name || null) : null,
       is_last_phase: !next,
+      open_phases_remaining: openRemaining,
+      ...(nudge ? { nudge } : {}),
       warnings: [],
       has_warnings: false,
     };
@@ -4175,10 +4207,93 @@ function cmdPhase(subArgs) {
     if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
     fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
 
-    return { ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped };
+    // #942 — same milestone close nudge for the bulk-draft path.
+    const bulkHealth = milestoneCloseNudge();
+    return {
+      ok: true, count: created.length, phases: created, roadmap_skipped: roadmapSkipped,
+      milestone_health: bulkHealth.milestone_health,
+      ...(bulkHealth.nudge ? { nudge: bulkHealth.nudge } : {}),
+    };
   }
 
-  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone`);
+  // =====================================================================
+  // phase scaffold-all — materialise folders for every phase in ROADMAP.md
+  // that lacks a directory under .planning/phases/.
+  // Closes #731. No --names arg required — reads the ROADMAP table directly.
+  // Only creates directories; does NOT create .md files inside them.
+  // =====================================================================
+  if (sub === 'scaffold-all') {
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    const phasesDir   = path.join(PLANNING_DIR, 'phases');
+
+    if (!fs.existsSync(roadmapPath)) {
+      throw new Error(`No ROADMAP.md found at ${roadmapPath} — run /rcode-init first`);
+    }
+
+    const roadmap = fs.readFileSync(roadmapPath, 'utf8');
+
+    // Collect (number, name) pairs from pipe-table rows: | N | Phase Name | ...
+    // Also pick up ## Phase N — Name headings as a fallback.
+    const phases = [];
+    const seen = new Set();
+
+    // Table rows: | 8 | Feature X | ...
+    const tableRe = /^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|/gm;
+    let m;
+    while ((m = tableRe.exec(roadmap)) !== null) {
+      const num = m[1];
+      const name = m[2].trim();
+      // Skip header rows (e.g. "Phase" as the number column)
+      if (!seen.has(num) && /^\d+$/.test(num)) {
+        seen.add(num);
+        phases.push({ num: num.padStart(2, '0'), rawNum: num, name });
+      }
+    }
+
+    // Heading rows: ## Phase 8 — Feature X
+    const headRe = /^#{2,4}\s*Phase\s+(\d+)\s*[—–-]\s*(.+?)\s*$/gm;
+    while ((m = headRe.exec(roadmap)) !== null) {
+      const num = m[1];
+      const name = m[2].trim();
+      if (!seen.has(num)) {
+        seen.add(num);
+        phases.push({ num: num.padStart(2, '0'), rawNum: num, name });
+      }
+    }
+
+    if (phases.length === 0) {
+      return { ok: true, message: 'No phases found in ROADMAP.md — nothing to scaffold', created: [], existed: [] };
+    }
+
+    const created = [];
+    const existed = [];
+
+    for (const p of phases) {
+      const slug = p.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (!slug) continue; // skip rows with no usable name (e.g. header rows)
+
+      const dirName = `${p.num}-${slug}`;
+      const dirPath = path.join(phasesDir, dirName);
+
+      if (fs.existsSync(dirPath)) {
+        existed.push(dirPath);
+        console.log(`Exists:  ${dirPath}`);
+      } else {
+        fs.mkdirSync(dirPath, { recursive: true });
+        created.push(dirPath);
+        console.log(`Created: ${dirPath}`);
+      }
+    }
+
+    return { ok: true, created: created.length, existed: existed.length, dirs: { created, existed } };
+  }
+
+  throw new Error(`Unknown phase subcommand: ${sub || '(none)'}. Valid: add, complete, sync-sprints, set-status, next-range, scaffold-milestone, scaffold-all`);
 }
 
 /**
@@ -6233,6 +6348,39 @@ function cmdBrain(args) {
       continue;
     }
 
+    // #925 — supply-chain guard. `brain pull` clones a remote repo and copies
+    // its content into every rcode user's project context, so an attacker who
+    // can edit sources.yaml (or a typo) must not silently pull untrusted code.
+    // Only allow github.com URLs under an approved org allowlist; anything else
+    // is rejected unless the user explicitly opts in with
+    // RCODE_BRAIN_ALLOW_UNVERIFIED=1. Pinning to a commit SHA (source.ref) is
+    // recommended over a moving branch — warn when a source tracks a branch.
+    const BRAIN_ALLOWED_HOSTS = new Set(['github.com']);
+    const BRAIN_ALLOWED_ORGS = new Set(['hanzlahabib', 'rcode-om']);
+    if (process.env.RCODE_BRAIN_ALLOW_UNVERIFIED !== '1') {
+      let host = '', org = '';
+      const mm = repo.match(/(?:https?:\/\/|git@)([^/:]+)[/:]([^/]+)\//);
+      if (mm) { host = mm[1]; org = mm[2]; }
+      if (!BRAIN_ALLOWED_HOSTS.has(host) || !BRAIN_ALLOWED_ORGS.has(org)) {
+        report.skipped.push({
+          name: s.name,
+          reason: `repo not in brain allowlist (${host || 'unknown host'}/${org || '?'}). ` +
+            `Add the org to BRAIN_ALLOWED_ORGS or set RCODE_BRAIN_ALLOW_UNVERIFIED=1 to override.`,
+        });
+        continue;
+      }
+      if (!s.ref) {
+        // Tracking a branch is mutable — a force-push changes what you pull.
+        // Not fatal, but surface it so maintainers can pin a SHA via `ref:`.
+        report.skipped.push({
+          name: s.name,
+          reason: `no pinned 'ref:' SHA — tracking branch '${s.branch || root.defaults.branch || 'main'}' is mutable. ` +
+            `Pin a commit SHA in sources.yaml, or set RCODE_BRAIN_ALLOW_UNVERIFIED=1 to pull the branch tip.`,
+        });
+        continue;
+      }
+    }
+
     // External git source — use sparse checkout into a tmp dir then copy.
     // #170 — global brain cache at ~/.rcode/brain-cache/<sha1(repo+branch+paths)>/.
     // Same source pulled from N projects = N clones today, 1 clone + N copies
@@ -7116,6 +7264,33 @@ function cmdMilestoneHealth() {
   };
 }
 
+// #942 — build a milestone-health summary + human-readable nudge for any
+// phase-adding code path (single add, bulk draft, plan, insert) so the
+// "milestone has too many open phases" guidance can't be bypassed by adding
+// phases outside the add-phase workflow. Returns { milestone_health, nudge }.
+function milestoneCloseNudge() {
+  let h;
+  try { h = cmdMilestoneHealth(); } catch { return { milestone_health: null, nudge: null }; }
+  if (!h || !h.ok) return { milestone_health: null, nudge: null };
+  const summary = {
+    open_phases: h.open_phases,
+    recommendation: h.recommendation,
+    threshold_should: h.threshold_should,
+    threshold_consider: h.threshold_consider,
+  };
+  let nudge = null;
+  if (h.recommendation === 'should-close') {
+    nudge = `Milestone "${h.milestone || 'current'}" has ${h.open_phases} open phases ` +
+      `(≥${h.threshold_should}). Consider /rcode-complete-milestone to archive done ` +
+      `phases, then /rcode-new-milestone for ongoing work — before adding more.`;
+  } else if (h.recommendation === 'consider-closing') {
+    nudge = `Milestone "${h.milestone || 'current'}" has ${h.open_phases} open phases ` +
+      `(≥${h.threshold_consider}). Getting large — /rcode-complete-milestone + ` +
+      `/rcode-new-milestone will keep the roadmap navigable.`;
+  }
+  return { milestone_health: summary, nudge };
+}
+
 function cmdStateSnapshot() {
   const statePath = path.join(RCODE_DIR, 'state.json');
   if (!fs.existsSync(statePath)) return { ok: true, state: null };
@@ -7294,11 +7469,27 @@ function cmdFindFiles(rawArgs) {
   return { ok: true, type, matches };
 }
 
+// Closes #739 — parse human duration strings into milliseconds.
+// Supports: '30m' → 1800000, '2h' → 7200000, '1d' → 86400000.
+function parseDuration(str) {
+  if (!str || typeof str !== 'string') return 3600000; // default 1h
+  const m = str.trim().match(/^(\d+(?:\.\d+)?)([smhd]?)$/i);
+  if (!m) return 3600000;
+  const n = parseFloat(m[1]);
+  switch ((m[2] || 'h').toLowerCase()) {
+    case 'd': return Math.round(n * 86400000);
+    case 'h': return Math.round(n * 3600000);
+    case 'm': return Math.round(n * 60000);
+    case 's': return Math.round(n * 1000);
+    default:  return Math.round(n * 3600000);
+  }
+}
+
 async function main() {
   const [, , subcommand, ...args] = process.argv;
   // #473 guard runs before any subcommand. Skipped for read-only inspection
   // so 'rcode-tools version' / 'help' / 'list-agents' work outside the project.
-  const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills']);
+  const READ_ONLY_SUBCOMMANDS = new Set(['version', 'help', '--help', '-h', undefined, 'list-agents', 'agent-info', 'agent-skills', 'validate']);
   if (!READ_ONLY_SUBCOMMANDS.has(subcommand)) {
     assertCwdMatchesProjectRoot();
   }
@@ -7492,6 +7683,64 @@ async function main() {
         console.log(JSON.stringify(result, null, 2));
         return;
       }
+      case 'validate': {
+        // #747 — schema checks for state.json and config.yaml.
+        // Usage: rcode-tools validate state|config|all
+        const target = args[0] || 'all';
+        if (!['state', 'config', 'all'].includes(target)) {
+          console.error(`Unknown validate target: '${target}'. Valid: state, config, all`);
+          process.exit(1);
+        }
+        const validateErrors = [];
+
+        if (target === 'state' || target === 'all') {
+          // Read state.json directly — readState() is scoped inside cmdState()
+          // and isn't reachable here (#940). Validate against the REAL schema:
+          // phases[] + milestones[], current_phase nullable on fresh installs.
+          const statePathV = path.join(RCODE_DIR, 'state.json');
+          if (!fs.existsSync(statePathV)) {
+            validateErrors.push('state: state.json not found — run rcode install');
+          } else {
+            let state = null;
+            try {
+              state = JSON.parse(fs.readFileSync(statePathV, 'utf8'));
+            } catch (e) {
+              validateErrors.push(`state: invalid JSON — ${e.message}`);
+            }
+            if (state) {
+              // current_phase is legitimately null on a fresh / stub project,
+              // so do NOT require it. milestones is an array (no current_milestone field).
+              // schema_version 1 is valid on disk — migrateState() upgrades it to 2
+              // transparently on read, so accept either and only flag the unknown.
+              if (state.schema_version != null && ![1, 2].includes(state.schema_version)) {
+                validateErrors.push(`state: unknown schema_version ${state.schema_version} (expected 1 or 2)`);
+              }
+              if (state.phases != null && !Array.isArray(state.phases) && typeof state.phases !== 'object') {
+                validateErrors.push('state: phases must be an array or object');
+              }
+              if (state.milestones != null && !Array.isArray(state.milestones)) {
+                validateErrors.push('state: milestones must be an array');
+              }
+            }
+          }
+        }
+
+        if (target === 'config' || target === 'all') {
+          // config.yaml holds project identity + workflow prefs only — it does
+          // NOT track current_phase (that lives in state.json). Only require
+          // the fields config actually owns (#940).
+          const config = readConfig();
+          if (!config.project_name) validateErrors.push('config: missing project_name');
+        }
+
+        if (validateErrors.length) {
+          validateErrors.forEach(e => console.error('❌ ' + e));
+          process.exit(1);
+        } else {
+          console.log('✅ All artifacts valid');
+        }
+        return;
+      }
       case 'roadmap': {
         const roadmap = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
         const r = roadmap.dispatch(PROJECT_ROOT, args);
@@ -7568,6 +7817,79 @@ async function main() {
           }
         }
         result = { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+        break;
+      }
+      case 'yolo': {
+        // Closes #739 — scoped yolo mode with TTL and milestone/phase scope.
+        // Usage:
+        //   yolo scoped --ttl 2h --scope milestone   → enable for current milestone
+        //   yolo scoped --ttl 30m --scope phase       → enable for current phase
+        //   yolo off                                  → disable immediately
+        //   yolo status                               → show current yolo state
+        const sub = args[0];
+        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+        switch (sub) {
+          case 'scoped': {
+            const ttlArg = (args.find(a => a.startsWith('--ttl='))?.slice(6))
+              || (args.indexOf('--ttl') !== -1 ? args[args.indexOf('--ttl') + 1] : null)
+              || '1h';
+            const scope = (args.find(a => a.startsWith('--scope='))?.slice(8))
+              || (args.indexOf('--scope') !== -1 ? args[args.indexOf('--scope') + 1] : null)
+              || 'phase';
+            const ms = parseDuration(ttlArg);
+            const expires = Date.now() + ms;
+            const st = readState() || {};
+            st.yolo = {
+              enabled: true,
+              expires,
+              scope,
+              milestone: st.current_milestone || null,
+              phase: st.current_phase || null,
+            };
+            writeState(st);
+            // Also persist to config.yaml so config-check-yolo can read it.
+            cfg.cmdSet(PROJECT_ROOT, 'mode', 'yolo');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', scope === 'milestone'
+              ? `milestone:${st.current_milestone || 'unknown'}`
+              : `phase:${st.current_phase || 'unknown'}`);
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', new Date(expires).toISOString());
+            result = { ok: true, enabled: true, scope, ttl: ttlArg, expires: new Date(expires).toISOString() };
+            console.log(`Yolo mode: enabled (${scope} scope, expires in ${ttlArg})`);
+            break;
+          }
+          case 'off': {
+            const st = readState() || {};
+            st.yolo = { enabled: false };
+            writeState(st);
+            cfg.cmdSet(PROJECT_ROOT, 'mode', 'guided');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', '');
+            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', '');
+            result = { ok: true, enabled: false };
+            console.log('Yolo mode: off');
+            break;
+          }
+          case 'status': {
+            const st = readState() || {};
+            const y = st.yolo;
+            if (!y?.enabled || Date.now() > (y.expires || 0)) {
+              result = { active: false };
+              console.log('Yolo mode: off');
+            } else {
+              const remainingMs = y.expires - Date.now();
+              const remainingMin = Math.round(remainingMs / 60000);
+              result = { active: true, scope: y.scope, expires: new Date(y.expires).toISOString(), remaining_min: remainingMin };
+              console.log(`Yolo mode: on (${y.scope} scope, ${remainingMin}m remaining)`);
+            }
+            break;
+          }
+          default: {
+            console.error('Usage: yolo <scoped|off|status>');
+            console.error('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>');
+            console.error('  yolo off');
+            console.error('  yolo status');
+            process.exit(1);
+          }
+        }
         break;
       }
       case 'verify': {
@@ -7647,6 +7969,7 @@ async function main() {
         console.log('  phase add <name> [--decimal <parent>]        → add phase (integer to current milestone, or --decimal slots under parent as parent.M)');
         console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
+        console.log('  phase scaffold-all                           → create missing phase folders for all phases in ROADMAP.md (#731)');
         console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
@@ -7671,10 +7994,15 @@ async function main() {
         console.log('  notes <subcommand> [args]                    → manage project notes');
         console.log('  config <subcommand> [args]                   → read/write project config');
         console.log('  notify send --title "<t>" [--body "<b>"] [--event <e>] [--only slack|discord|teams]  → post to configured webhooks');
-        console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear>  → .planning/ROADMAP.md operations');
+        console.log('  roadmap <get-phase|list-phases|update-plan-progress|clear|detect>  → .planning/ROADMAP.md operations');
+        console.log('  roadmap detect                               → report ROADMAP convention in use (single vs per-milestone) (#734)');
+        console.log('  validate <state|config|all>                  → schema checks for state.json and config.yaml (#747)');
         console.log('  config-get <dotted.key>                      → read scalar from .rcode/config.yaml');
         console.log('  config-set <dotted.key> <value>              → atomically set a value in .rcode/config.yaml');
         console.log('  config-check-yolo [--phase N] [--workflow W] → check if yolo mode is active for scope (#739)');
+        console.log('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>  → enable scoped yolo with TTL (#739)');
+        console.log('  yolo off                                     → disable yolo mode immediately');
+        console.log('  yolo status                                  → show current yolo state and remaining TTL');
         console.log('  handoff write --from <skill> --to <skill> --phase N [--context "..."] → write cross-skill handoff token (#741)');
         console.log('  handoff read [--from <skill>]               → read most recent handoff for this skill (#741)');
         console.log('  handoff clear                               → consume (clear) the latest handoff token (#741)');
