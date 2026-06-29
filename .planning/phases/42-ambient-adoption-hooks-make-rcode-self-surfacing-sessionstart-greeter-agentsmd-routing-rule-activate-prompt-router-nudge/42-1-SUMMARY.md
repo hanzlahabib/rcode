@@ -6,8 +6,10 @@ tags: [claude-md, routing, ambient-adoption]
 key-files:
   modified:
     - rcode/bin/rcode-tools.cjs
+    - rcode/workflows/new-project-roadmap.md
 key-decisions:
   - "Routing block references do.md as single source of truth; no inline keyword→command table to avoid drift"
+  - "cmdGenerateClaudeMd mirrors rules to AGENTS.md (cross-tool standard) so routing reaches Codex/Cursor/Windsurf/Antigravity/Gemini, not just Claude Code"
 duration: ~5 min
 completed: 2026-06-29
 ---
@@ -71,6 +73,19 @@ None.
 - `rcode/bin/rcode-tools.cjs` modified: confirmed on disk
 - Commit `d31cdf1` contains the 10-line insertion
 - `.rcode/bin/rcode-tools.cjs` auto-synced by PostToolUse hook (shows as ` M` in `git status`)
+
+## Post-Sprint Follow-up: Cross-Tool Agent Coverage
+
+After the sprint completed, the operator asked to ensure the routing rule reaches other agents (Codex, Cursor, Antigravity, etc.), not just Claude Code. Investigation confirmed a real gap: `cmdGenerateClaudeMd` wrote only `CLAUDE.md`, so Codex/Cursor/Windsurf/Antigravity/Gemini — which read the cross-tool `AGENTS.md` open standard — never received the rules. (`cli/install.js:627` documents that Codex reads `AGENTS.md` from project root; `install.js`/`update.js` only append a roster section, they do not scaffold the rules file.)
+
+**Fix (commit `2fa79f2`):**
+- `cmdGenerateClaudeMd` now writes the same rule set to `AGENTS.md` as well as `CLAUDE.md`.
+- `AGENTS.md` is written only when absent (or with `--force`), so an install-appended `## rcode Agents (installed)` roster section is never clobbered. Return shape gained `paths[]` and `agents_md_skipped`.
+- `rcode/workflows/new-project-roadmap.md` now commits `AGENTS.md` alongside `CLAUDE.md`.
+
+Verified: fresh-project generation produces both files with the routing block (identical content); pre-existing `AGENTS.md` is preserved (`agents_md_skipped: true`).
+
+Deeper per-tool surfaces (`.cursor/rules/*.mdc`, `.windsurf/rules/*.mdc`) are handled separately by `cli/install.js` directory layout — `AGENTS.md` is the single standard that covers the most tools and is the right target for the routing rule.
 
 ## Next Steps
 
