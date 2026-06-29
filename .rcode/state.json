@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-06-29T15:29:27.270Z",
-  "current_phase": "Ambient adoption hooks",
+  "updated": "2026-06-29T17:21:40.173Z",
+  "current_phase": "Ship rcode/data to consumers (#952)",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
@@ -1229,8 +1229,8 @@
       "id": "43",
       "number": "43",
       "name": "Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-29T17:19:33.860Z",
       "completed": null,
       "sprints": [
         {
