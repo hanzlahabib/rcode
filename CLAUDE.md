@@ -58,8 +58,8 @@ If a user says "just keep going" or "don't stop until done", that authorization 
 
 ## Dashboard Server Rules
 
-- Keep `server/dashboard.js` dependency-free (pure Node stdlib)
-- Single-file — do not introduce a framework
+- `server/dashboard.js` is the entry point; server-side logic lives in `server/lib/` (`api.js`, `scanner.js`, `html/`) and `server/orchestrator.js` — split across files, not single-file
+- No external framework dependency on the server or client — the client is a Preact SPA built on a vendored copy (`server/lib/html/client/vendor/preact.js`), not an npm package; keep it that way
 - View-only — NEVER add write endpoints, POST handlers, or database code
 - Test after every change: `node server/dashboard.js` must start cleanly
 
@@ -74,9 +74,16 @@ If a user says "just keep going" or "don't stop until done", that authorization 
     grep -q "^## Examples" "$f" || echo "MISSING: $f"
   done
   ```
-- Run grep checks before committing renames or refactors:
+- Run grep checks before committing renames or refactors. Scope to `TODO:`
+  and code files only — `rcode/`, `docs/`, and skill/workflow markdown
+  legitimately discuss the concept of TODOs (stub-detection guides, the
+  `add-todo`/`check-todos` commands, checklists); an unscoped `-i "TODO"`
+  grep will always be red on this repo:
   ```bash
-  grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
+  grep -rn "TODO:" rcode docs examples README.md server \
+    --include="*.js" --include="*.cjs" --include="*.mjs" --include="*.ts"
+  # should be empty, or only match deliberate string/regex literals
+  # (e.g. rcode/bin/rcode-hooks.cjs's hedging-language detector)
   ```
 - Test the dashboard server boots without errors before committing dashboard changes
 
