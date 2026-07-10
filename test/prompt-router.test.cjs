@@ -260,10 +260,12 @@ function makeHookCopyWithoutDataFile() {
   const binDir = path.join(scratchRoot, 'bin');
   fs.mkdirSync(path.join(binDir, 'lib'), { recursive: true });
   fs.copyFileSync(HOOK, path.join(binDir, 'rcode-hooks.cjs'));
-  fs.copyFileSync(
-    path.resolve(__dirname, '../rcode/bin/lib/state-reader.cjs'),
-    path.join(binDir, 'lib', 'state-reader.cjs')
-  );
+  for (const lib of ['state-reader.cjs', 'memory-select.cjs', 'config.cjs']) {
+    fs.copyFileSync(
+      path.resolve(__dirname, '../rcode/bin/lib/', lib),
+      path.join(binDir, 'lib', lib)
+    );
+  }
   // scratchRoot/data/ intentionally does not exist — simulates a consumer
   // install missing rcode/data/ (#952).
   return { scratchRoot, hookCopy: path.join(binDir, 'rcode-hooks.cjs') };

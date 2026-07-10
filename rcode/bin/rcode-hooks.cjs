@@ -25,6 +25,7 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { resolveActivePhase, readSprintProgress, readRecentCommits, readMilestoneHint } = require('./lib/state-reader.cjs');
+const { selectMemoryChunks, formatMemoryContext, hasMemory } = require('./lib/memory-select.cjs');
 
 /**
  * Read and parse stdin JSON.
@@ -453,7 +454,24 @@ async function preCompact() {
     }
     msgParts.push('Run `/rcode-resume-work` to restore full context, or `/clear` then paste `.rcode/.continue-here.md`.');
 
-    process.stdout.write(JSON.stringify({ systemMessage: msgParts.join(' | ') }) + '\n');
+    // ── 10. Relevance-ranked memory survival context (#958) ──────────────
+    // Smaller budget than session-start — this rides alongside HANDOFF.json
+    // as compaction survival context, not a full primer. Degrades silently
+    // when .rcode/memory/ is missing or empty.
+    const payload = { systemMessage: msgParts.join(' | ') };
+    if (hasMemory(cwd)) {
+      try {
+        const selection = selectMemoryChunks(cwd, { defaultBudget: 600 });
+        const additionalContext = formatMemoryContext(selection);
+        if (additionalContext) {
+          payload.hookSpecificOutput = {
+            hookEventName: 'PreCompact',
+            additionalContext,
+          };
+        }
+      } catch { /* memory injection is advisory — never block compaction */ }
+    }
+    process.stdout.write(JSON.stringify(payload) + '\n');
     process.exit(0);
   } catch (err) {
     console.error(`Hook error: ${err.message}`);
@@ -963,7 +981,25 @@ function sessionStart() {
       : phaseSprints.length === 0 ? `/rcode-plan ${phaseLabel}`
       : '/rcode-execute';
     const primer = `\u{1F4CD} Phase ${phaseLabel} ${phaseStatus} · ${sprintSummary} · next: ${nextCmd}`;
-    process.stdout.write(JSON.stringify({ systemMessage: primer }) + '\n');
+
+    // ── Relevance-ranked memory injection (#958) ─────────────────────────
+    // Only attempted when .rcode/memory/ exists and has content — a missing
+    // or empty memory bank degrades silently to the primer-only behavior
+    // that predates this feature.
+    const payload = { systemMessage: primer };
+    if (hasMemory(cwd)) {
+      try {
+        const selection = selectMemoryChunks(cwd);
+        const additionalContext = formatMemoryContext(selection);
+        if (additionalContext) {
+          payload.hookSpecificOutput = {
+            hookEventName: 'SessionStart',
+            additionalContext,
+          };
+        }
+      } catch { /* memory injection is advisory — never block session start */ }
+    }
+    process.stdout.write(JSON.stringify(payload) + '\n');
   } catch { /* fail open — never block session start */ }
   process.exit(0);
 }
