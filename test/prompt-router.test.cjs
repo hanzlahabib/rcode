@@ -95,6 +95,30 @@ test('karpathy-flavored prompt routes to /rcode-karpathy-audit', () => {
   assert.ok(/\/rcode-karpathy-audit\b/.test(ctx), 'advisory must route to /rcode-karpathy-audit');
 });
 
+// ─── 2b. Roman-Urdu / Arabic prompts match too (#957) ────────────────────────
+
+test('Roman-Urdu debug prompt routes to /rcode-debug', () => {
+  const result = runRouter({ prompt: 'yar yeh kaam nahi kar raha, fix karo' });
+
+  assert.strictEqual(result.status, 0);
+  assert.ok(result.stdout.length > 0, 'stdout must not be empty on Roman-Urdu match');
+
+  const out = JSON.parse(result.stdout);
+  const ctx = out.hookSpecificOutput.additionalContext;
+  assert.ok(/\/rcode-debug\b/.test(ctx), 'advisory must route to /rcode-debug');
+});
+
+test('Arabic debug prompt routes to /rcode-debug', () => {
+  const result = runRouter({ prompt: 'هذا الكود لا يعمل، من فضلك أصلح الخطأ' });
+
+  assert.strictEqual(result.status, 0);
+  assert.ok(result.stdout.length > 0, 'stdout must not be empty on Arabic match');
+
+  const out = JSON.parse(result.stdout);
+  const ctx = out.hookSpecificOutput.additionalContext;
+  assert.ok(/\/rcode-debug\b/.test(ctx), 'advisory must route to /rcode-debug');
+});
+
 // ─── 3. Non-match is silent ───────────────────────────────────────────────────
 
 test('non-matching prompt exits 0 with empty stdout', () => {
