@@ -1,100 +1,29 @@
 /**
- * OrchestrationView — Preact port of renderOrchestration() + _orchCard().
+ * OrchestrationView — 2-column Diwan layout.
+ *
+ * Left rail (300px): view header, Runner picker card (repurposes the
+ * allowlisted rcode command list as "runners" per the design), Pipeline
+ * card (live sessions, or a history-status summary when nothing is live).
+ * Right column: the docked xterm.js terminal (XtermPanel docked=true) with
+ * Run History beneath it.
  *
  * Reads activeSessions from the store (kept fresh by startSessionsPoll in
- * orchestrator.js at 4 s intervals). Terminal button sets store.terminal so
- * XtermPanel opens. Stop calls orchestrator.stopSession.
+ * orchestrator.js at 4 s intervals). Terminal focus sets store.terminal so
+ * the docked XtermPanel opens/reattaches. Stop calls orchestrator.stopSession.
  *
  * No separate poll timer — if a tighter cadence is needed while this view is
  * open, a local useEffect interval can be added. For now the 4 s global poll
  * is sufficient.
  */
 
-import { html, useState, useEffect } from '../preact.js';
+import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
 import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning, mergeSessionsAndHistory } from '../orchestrator.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { RejectDialog } from '../components/RejectDialog.js';
+import { XtermPanel } from '../components/XtermPanel.js';
 import { orchElapsed, humanDate } from '../util.js';
 import { Icon } from '../icons-client.js';
-
-// ── Session card ──────────────────────────────────────────────────────────────
-
-// Tooltip text per session status — shown on the colored status dot.
-const DOT_TITLES = {
-  running: 'Running — output streaming',
-  blocked: 'Blocked — waiting for your input',
-  done:    'Done — exited cleanly',
-  exited:  'Exited',
-  stopped: 'Stopped',
-  error:   'Error',
-};
-
-function OrchCard({ session: s }) {
-  const blocked = s.status === 'blocked';
-  // 'blocked' is a live PTY (server-side classification of running) — keep
-  // the Stop button available for it.
-  const running = s.status === 'running' || blocked;
-  const waiting = blocked || !!s.waiting;
-  const [showReject, setShowReject] = useState(false);
-  const cardCls = 'orch-card orch-' + s.status + (waiting ? ' orch-waiting' : '');
-  const badge   = blocked
-    ? html`<${Icon} name="alert-triangle" size=${12}/> blocked — needs input`
-    : waiting ? html`<${Icon} name="hourglass" size=${12}/> waiting for input` : s.status;
-  const dotCls  = 'term-status-dot ' + (blocked ? 'blocked' : waiting ? 'waiting' : s.status);
-  const dotTitle = DOT_TITLES[s.status] || s.status;
-
-  function handleTerminal(e) {
-    e.stopPropagation();
-    openTermPanel(s.storyId, s.storyId);
-  }
-
-  function handleStop(e) {
-    e.stopPropagation();
-    stopSession(s.storyId);
-  }
-
-  return html`
-    <div class=${cardCls}>
-      <div class="orch-card-head">
-        <span class=${dotCls} title=${dotTitle}></span>
-        <span class="orch-card-id">${s.storyId}</span>
-        ${s.runner ? html`
-          <span class="runner-badge" title=${'Launched with ' + s.runner + (s.model ? ' (' + s.model + ')' : '')}>
-            ${s.runner}${s.model ? ' · ' + s.model : ''}
-          </span>
-        ` : null}
-        <span class="orch-card-badge">${badge}</span>
-      </div>
-      <div class="orch-card-cmd">${s.cmd || ''}</div>
-      <div class="orch-card-meta">
-        <${Icon} name="clock" size=${12}/> ${orchElapsed(s.startTime)}
-        ${' · '}<${Icon} name="edit-3" size=${12}/> ${s.filesChanged || 0} file${s.filesChanged === 1 ? '' : 's'}
-        ${' · '}<${Icon} name="eye" size=${12}/> ${s.clients || 0}
-        ${s.pid ? html` · pid ${s.pid}` : null}
-      </div>
-      ${s.rejection ? html`
-        <div class="orch-card-rejection">
-          Rejected: ${s.rejection.reason}
-        </div>
-      ` : null}
-      <div class="orch-card-actions">
-        <button class="term-run-btn outline" onClick=${handleTerminal}>
-          <${Icon} name="monitor" size=${14}/> Terminal
-        </button>
-        ${running ? html`
-          <button class="term-run-btn danger" onClick=${handleStop}>■ Stop</button>
-        ` : null}
-        ${waiting ? html`
-          <button class="term-run-btn danger" onClick=${e => { e.stopPropagation(); setShowReject(true); }}>
-            <${Icon} name="alert-triangle" size=${14}/> Reject
-          </button>
-        ` : null}
-      </div>
-      ${showReject ? html`<${RejectDialog} session=${s} onClose=${() => setShowReject(false)}/>` : null}
-    </div>
-  `;
-}
 
 // ── Sorted session list ───────────────────────────────────────────────────────
 
@@ -115,72 +44,158 @@ function sortSessions(sessions) {
   });
 }
 
-// ── Command runner ────────────────────────────────────────────────────────────
+// ── Runner picker card (left rail) ───────────────────────────────────────────
 
 /**
- * CommandRunner — dropdown + Run button for launching allowlisted rcode commands.
- * State is local (useState) — no store changes needed; runCommandFromUI handles
- * all session and terminal state via runCommandFromUI → runSession.
+ * Two-letter mono abbreviation for a command's readable name, derived from
+ * the label's leading word(s) before " — " (e.g. "sprint-status — sprint
+ * execution status" → "SS", "init — initialise project workspace" → "IN").
  */
-function CommandRunner() {
-  // Subscribe to store updates so isSessionRunning() + orchOnline re-evaluate on each poll.
+function commandAbbr(label) {
+  const name = (label || '').split('—')[0].trim();
+  const parts = name.split('-').filter(Boolean);
+  if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+/**
+ * RunnerCard — repurposes the "Runner picker" card from the design as rcode's
+ * allowlisted command list (per the restructure spec — this is NOT a CLI/
+ * model picker, that is RunnerPicker.js's job once Run is pressed). Selecting
+ * a row highlights it; Run opens the same RunnerPicker popover the old
+ * CommandRunner used, which gates the real spawn behind RunConfirmDialog.
+ */
+function RunnerCard() {
   const { orchOnline } = useStore();
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
-  const [busy, setBusy] = useState(false);
-
-  const slug      = selected ? selected.replace(/^\//, '').replace(/\//g, '-') : '';
-  const sessionId = slug ? 'cmd-' + slug : '';
-  const isRunning = sessionId ? isSessionRunning(sessionId) : false;
-  const orchDown  = orchOnline === false;
-  const disabled  = busy || isRunning || orchDown;
-
-  // Reset busy 2 s after a Run click — the terminal panel is now open and the
-  // session is streaming. Managed via useEffect so the timer is cancelled if
-  // CommandRunner unmounts before it fires.
-  useEffect(() => {
-    if (!busy) return;
-    const t = setTimeout(() => setBusy(false), 2000);
-    return () => clearTimeout(t);
-  }, [busy]);
+  const orchDown = orchOnline === false;
 
   function handleRun(e) {
-    if (!selected || disabled) return;
-    setBusy(true);
+    if (!selected || orchDown) return;
     openRunnerPicker(e.currentTarget, { kind: 'command', cmd: selected, title: selected });
   }
 
   return html`
-    <div class="cmd-runner">
-      <div class="cmd-runner-title">
-        <${Icon} name="terminal" size=${14}/> Command Runner
+    <div class="orch-runner-card">
+      <div class="orch-card-label">Runner picker</div>
+      <div class="orch-runner-list">
+        ${ALLOWED_COMMANDS.map(({ cmd, label }) => {
+          const slug      = cmd.replace(/^\//, '').replace(/\//g, '-');
+          const sessionId = 'cmd-' + slug;
+          const isRunning = isSessionRunning(sessionId);
+          const name = (label || '').split('—')[0].trim();
+          return html`
+            <div key=${cmd}
+              class=${'orch-runner-row' + (cmd === selected ? ' selected' : '')}
+              onClick=${() => setSelected(cmd)}>
+              <span class="orch-runner-abbr">${commandAbbr(label)}</span>
+              <div class="orch-runner-info">
+                <div class="orch-runner-name">${name}</div>
+                <div class="orch-runner-role">${cmd}</div>
+              </div>
+              <span class=${'orch-runner-status' + (isRunning ? ' running' : '')}>
+                ${isRunning ? 'Running' : 'Idle'}
+              </span>
+            </div>
+          `;
+        })}
       </div>
-      <div class="cmd-runner-row">
-        <select class="cmd-runner-select"
-          value=${selected}
-          onChange=${e => setSelected(e.target.value)}>
-          ${ALLOWED_COMMANDS.map(({ cmd, label }) => html`
-            <option key=${cmd} value=${cmd}>${label}</option>
-          `)}
-        </select>
-        <button class=${'cmd-runner-btn' + (disabled ? ' cmd-runner-btn--busy' : '')}
-          onClick=${handleRun}
-          disabled=${disabled}>
-          ${isRunning
-            ? html`<${Icon} name="hourglass" size=${14}/> Running…`
-            : busy
-              ? html`<${Icon} name="hourglass" size=${14}/> Starting…`
-              : html`<${Icon} name="play" size=${14}/> Run`}
+      <div class="orch-runner-card-footer">
+        <button class="term-run-btn" disabled=${orchDown} onClick=${handleRun}>
+          <${Icon} name="play" size=${14}/> Run
         </button>
+        ${orchDown ? html`
+          <div class="orch-runner-hint">Orchestrator unreachable — Run is disabled.</div>
+        ` : null}
       </div>
-      <div class="cmd-runner-hint">
-        ${orchDown
-          ? html`Orchestrator is unreachable — commands cannot run until it is back.`
-          : isRunning
-            ? html`Command is running — output is streaming to the terminal panel.`
-            : busy
-              ? html`Starting — the terminal panel will open shortly.`
-              : html`Select a command and press Run. Output streams live to the terminal panel.`}
-      </div>
+    </div>
+  `;
+}
+
+// ── Pipeline card (left rail) ─────────────────────────────────────────────────
+
+const PIPELINE_GLYPH = {
+  running: '◐', blocked: '!', waiting: '…',
+  done: '✓', exited: '✕', stopped: '■', error: '✕',
+};
+
+function PipelineRow({ glyphCls, glyph, label, count, onClick, actions }) {
+  return html`
+    <div class="orch-pipeline-row" onClick=${onClick}>
+      <span class=${'orch-pipeline-glyph ' + glyphCls}>${glyph}</span>
+      <span class="orch-pipeline-label-text">${label}</span>
+      <span class="orch-pipeline-count">${count}</span>
+      ${actions ? html`<span class="orch-pipeline-actions">${actions}</span>` : null}
+    </div>
+  `;
+}
+
+/**
+ * PipelineCard — live sessions (clickable to focus in the docked terminal,
+ * with inline Stop / Reject affordances) when any exist; otherwise falls
+ * back to a STATUS_ORDER history-count summary so the card stays useful.
+ */
+function PipelineCard() {
+  const { activeSessions, history } = useStore();
+  const [rejectFor, setRejectFor] = useState(null);
+  const live = sortSessions((activeSessions || []).filter(
+    s => s.status === 'running' || s.status === 'blocked'
+  ));
+
+  let body;
+  if (live.length > 0) {
+    body = live.map(s => {
+      const blocked = s.status === 'blocked';
+      const waiting = blocked || !!s.waiting;
+      const glyphCls = waiting ? 'blocked' : 'running';
+      const actions = html`
+        ${waiting ? html`
+          <button class="orch-pipeline-action-btn danger"
+            title="Reject"
+            onClick=${e => { e.stopPropagation(); setRejectFor(s); }}>
+            <${Icon} name="alert-triangle" size=${11}/>
+          </button>
+        ` : null}
+        <button class="orch-pipeline-action-btn danger"
+          title="Stop"
+          onClick=${e => { e.stopPropagation(); stopSession(s.storyId); }}>■</button>
+      `;
+      return html`
+        <${PipelineRow} key=${s.storyId}
+          glyphCls=${glyphCls}
+          glyph=${PIPELINE_GLYPH[blocked ? 'blocked' : 'running']}
+          label=${s.storyId}
+          count=${orchElapsed(s.startTime)}
+          onClick=${() => openTermPanel(s.storyId, s.storyId)}
+          actions=${actions}
+        />
+      `;
+    });
+  } else {
+    const merged = mergeSessionsAndHistory(activeSessions, history);
+    const ended  = merged.filter(r => r.status !== 'running' && r.status !== 'blocked');
+    body = STATUS_ORDER.map(status => {
+      const count = ended.filter(r => r.status === status).length;
+      if (count === 0) return null;
+      return html`
+        <${PipelineRow} key=${status}
+          glyphCls=${status}
+          glyph=${PIPELINE_GLYPH[status] || '·'}
+          label=${status}
+          count=${count}
+        />
+      `;
+    });
+    if (ended.length === 0) {
+      body = html`<div class="empty">No runs yet.</div>`;
+    }
+  }
+
+  return html`
+    <div class="orch-pipeline-card">
+      <div class="orch-pipeline-label">Pipeline</div>
+      ${body}
+      ${rejectFor ? html`<${RejectDialog} session=${rejectFor} onClose=${() => setRejectFor(null)}/>` : null}
     </div>
   `;
 }
@@ -271,42 +286,39 @@ function HistoryPanel() {
 
 export function OrchestrationView() {
   const { activeSessions, orchOnline } = useStore();
-  const sessions = sortSessions(activeSessions || []);
+  const liveCount = (activeSessions || []).filter(
+    s => s.status === 'running' || s.status === 'blocked'
+  ).length;
   const orchDown = orchOnline === false;
 
   return html`
-    <div class="view active" id="view-orchestration">
-      <div class="view-title section-icon"><${Icon} name="activity" size=${18}/> Orchestration</div>
-      <div class="orch-subtitle">
-        Live agent sessions — run, watch, communicate, stop.
-      </div>
-
-      ${orchDown ? html`
-        <div class="orch-down-banner" role="alert">
-          ⚠ Orchestrator unreachable (port 7718) — Run buttons are disabled.
-          Restart the dashboard, or set ORCH_PORT if the port is in use.
-        </div>
-      ` : null}
-
-      <${CommandRunner}/>
-
-      ${sessions.length === 0 ? html`
-        <div class="empty">
-          ${orchDown ? 'Session status unavailable while the orchestrator is down.' : 'No active execution.'}
-          <div class="empty-action">
-            Use the Command Runner above, or run <code>/rcode-execute</code> to
-            start a phase or sprint.
+    <div class="view active orch-layout" id="view-orchestration">
+      <div class="orch-left-rail">
+        <div>
+          <h1 class="orch-h1">Orchestration</h1>
+          <div class="orch-header-sub">
+            ${liveCount} agent${liveCount === 1 ? '' : 's'} live ·
+            ${orchDown ? ' runner unreachable' : ' runner connected'}
           </div>
         </div>
-      ` : html`
-        <div class="orch-grid">
-          ${sessions.map(s => html`
-            <${OrchCard} key=${s.storyId} session=${s} />
-          `)}
-        </div>
-      `}
 
-      <${HistoryPanel}/>
+        ${orchDown ? html`
+          <div class="orch-down-banner" role="alert">
+            ⚠ Orchestrator unreachable (port 7718) — Run buttons are disabled.
+            Restart the dashboard, or set ORCH_PORT if the port is in use.
+          </div>
+        ` : null}
+
+        <${RunnerCard}/>
+        <${PipelineCard}/>
+      </div>
+
+      <div class="orch-right-col">
+        <${XtermPanel} docked=${true} />
+        <div class="orch-hist-dock">
+          <${HistoryPanel}/>
+        </div>
+      </div>
     </div>
   `;
 }

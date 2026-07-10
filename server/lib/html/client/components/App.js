@@ -304,7 +304,7 @@ export function App() {
         />
       </div>
 
-      <${XtermPanel} />
+      <${XtermPanel} suspend=${view === 'orchestration'} />
       <${OrchPanel} />
       <${BlockedToasts} />
       <${RunnerPicker} />

@@ -475,6 +475,11 @@ header {
 /* ── Views ─────────────────────────────────────────────────────── */
 .view { display: none; }
 .view.active { display: block; }
+/* Orchestration's 2-column grid needs display:grid, not the block above.
+   Three classes (0,3,0) beats .view.active's (0,2,0) regardless of source
+   order, so this wins without touching the shared .view/.view.active rules
+   every other view relies on. */
+.view.active.orch-layout { display: grid; }
 
 .view-title {
   font-size: var(--text-xl);
@@ -2331,6 +2336,281 @@ footer {
   gap: var(--space-2);
 }
 
+/* ── Orchestration view — 2-column Diwan layout ──────────────────
+   .orch-layout replaces the old single-column stack (header → banner →
+   command runner → orch-grid → history). Left rail is fixed 300px; right
+   column hosts the docked xterm terminal (XtermPanel docked=true) + run
+   history beneath it. Reuses the existing bg-elev/border/st-*-wash
+   tokens — no new colors introduced. */
+.orch-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-5) var(--space-6);
+  box-sizing: border-box;
+}
+.orch-left-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+.orch-h1 {
+  margin: 0 0 2px;
+  font-size: var(--text-xl);
+  font-weight: 660;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.orch-header-sub {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+.orch-card-label {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+/* Runner picker card — repurposed to hold the allowlisted command list. */
+.orch-runner-card {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.orch-runner-list {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.orch-runner-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background var(--t-fast) var(--ease);
+}
+.orch-runner-row:hover { background: var(--bg-hover); }
+.orch-runner-row.selected { background: var(--accent-bg); border-color: var(--accent-border); }
+.orch-runner-abbr {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-2);
+  background: var(--bg-elev-3);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+.orch-runner-info { flex: 1; min-width: 0; }
+.orch-runner-name {
+  font-size: var(--text-md);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orch-runner-role {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orch-runner-status {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.orch-runner-status.running { color: var(--green); }
+.orch-runner-card-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.orch-runner-hint { font-size: var(--text-2xs); color: var(--text-tertiary); }
+
+/* Pipeline card — live sessions, or a history-status summary fallback. */
+.orch-pipeline-card {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+.orch-pipeline-label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+}
+.orch-pipeline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.orch-pipeline-glyph {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.orch-pipeline-glyph.running,
+.orch-pipeline-glyph.stopped { background: var(--st-executing-wash); border: 1px solid var(--st-executing-border); color: var(--amber); }
+.orch-pipeline-glyph.blocked,
+.orch-pipeline-glyph.waiting,
+.orch-pipeline-glyph.exited,
+.orch-pipeline-glyph.error   { background: var(--st-blocked-wash); border: 1px solid var(--st-blocked-border); color: var(--red); }
+.orch-pipeline-glyph.done    { background: var(--st-complete-wash); border: 1px solid var(--st-complete-border); color: var(--green); }
+.orch-pipeline-label-text {
+  flex: 1;
+  font-size: var(--text-md);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.orch-pipeline-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.orch-pipeline-actions { display: flex; gap: 4px; margin-left: 6px; }
+.orch-pipeline-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-1);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+.orch-pipeline-action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.orch-pipeline-action-btn.danger { color: var(--red); border-color: rgba(236,106,94,0.4); }
+.orch-pipeline-action-btn.danger:hover { background: rgba(236,106,94,0.12); }
+
+/* Right column — docked terminal + run history beneath it. */
+.orch-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+}
+.orch-term-dock {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-3);
+  overflow: hidden;
+  background: var(--bg-sunken);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  flex: 1 1 auto;
+}
+.orch-term-dock-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.orch-term-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.orch-term-dot.red   { background: var(--red); }
+.orch-term-dot.amber { background: var(--amber); }
+.orch-term-dot.green { background: var(--green); }
+.orch-term-dock-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-left: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orch-term-dock-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-size: var(--text-2xs);
+  color: var(--green);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.orch-term-dock-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.orch-term-dock-stop {
+  height: 22px;
+  padding: 0 10px;
+  border-radius: var(--radius-1);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  color: var(--red);
+  background: var(--st-blocked-wash);
+  border: 1px solid var(--st-blocked-border);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  margin-left: var(--space-2);
+}
+.orch-term-dock-stop:hover { opacity: 0.85; }
+.orch-term-dock-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.orch-term-dock-container {
+  flex: 1;
+  overflow: hidden;
+  padding: 14px;
+}
+.orch-term-dock-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+}
+.orch-hist-dock {
+  flex: 0 0 auto;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.orch-hist-dock .hist-panel { margin-top: 0; }
+
 /* ── Run history panel ── */
 .hist-panel { margin-top: var(--space-6); }
 .hist-panel-title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); color: var(--text-primary); margin-bottom: var(--space-4); }
@@ -3853,6 +4133,11 @@ summary:focus-visible,
   /* Slide-in sidebar sits above the backdrop; backdrop above content. */
   .sidebar { z-index: 30; }
   #sidebar-backdrop { z-index: 25; }
+  /* Orchestration's 300px/1fr grid has no room to breathe on narrow
+     viewports — stack left rail above the terminal/history column. */
+  .orch-layout { grid-template-columns: 1fr; height: auto; }
+  .orch-left-rail { min-height: auto; }
+  .orch-term-dock { min-height: 260px; }
 }
 
 /* ══════════════════════════════════════════════════════════════════
