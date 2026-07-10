@@ -15,6 +15,7 @@
  *   pre-tool-use  — stderr warning before large file reads to avoid context bloat (#749)
  *   prompt-router — nudge toward rcode commands for memory consistency (#892)
  *   session-start — emit one-line project status primer at session open (#947)
+ *   drift         — print the full memory-drift report (#958)
  *
  * All subcommands read stdin JSON from the hook execution context.
  * Pure Node stdlib. No external dependencies.
@@ -26,6 +27,16 @@ const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { resolveActivePhase, readSprintProgress, readRecentCommits, readMilestoneHint } = require('./lib/state-reader.cjs');
 const { selectMemoryChunks, formatMemoryContext, hasMemory } = require('./lib/memory-select.cjs');
+
+// lib/memory-drift.cjs is optional at the module-load level: some hook-copy
+// test fixtures deliberately stage a minimal bin/lib/ (only state-reader.cjs)
+// to exercise other subcommands' missing-file handling. A hard top-level
+// require would crash every subcommand, not just `drift`/`post-commit`, so
+// this loads lazily and fails open — same pattern as INTENT_TABLE below.
+let checkDrift = null;
+try {
+  ({ checkDrift } = require('./lib/memory-drift.cjs'));
+} catch { /* optional — see comment above */ }
 
 /**
  * Read and parse stdin JSON.
@@ -120,6 +131,56 @@ async function preWorkflow() {
 }
 
 /**
+ * Emit a one-line systemMessage nudge toward /rcode-memory-update when
+ * memory-drift.cjs finds drifts, at most once per session (#958).
+ *
+ * "Session" here has no reliable id on a post-commit hook payload, so we
+ * fall back to parent-pid + hourly bucket — same fallback prompt-router
+ * already uses (see promptRouter() below) — scoped naturally to the
+ * current shell without requiring a session_id in the payload.
+ */
+function maybeEmitDriftNudge(cwd, input) {
+  try {
+    if (!checkDrift) return;
+    const { drifts } = checkDrift(cwd);
+    if (drifts.length === 0) return;
+
+    const sessionFallback = String(process.ppid) + '-' + String(Math.floor(Date.now() / 3600000));
+    const sessionId = input?.session_id || input?.tool_input?.session_id || sessionFallback;
+    const safeId = String(sessionId).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    const cacheDir = path.join(cwd, '.rcode', '.cache');
+    const markerFile = path.join(cacheDir, `drift-nudge-${safeId}.json`);
+    if (fs.existsSync(markerFile)) return;
+
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(markerFile, JSON.stringify({ ts: Date.now(), count: drifts.length }));
+
+    const kinds = [...new Set(drifts.map((d) => d.kind))].join(', ');
+    const nudge =
+      `⚠ Memory drift detected (${drifts.length} finding${drifts.length === 1 ? '' : 's'}: ${kinds}) — ` +
+      `run /rcode-memory-update, or \`rcode-hooks drift\` for the full report.`;
+    process.stdout.write(JSON.stringify({ systemMessage: nudge }) + '\n');
+  } catch {
+    // Advisory only — never break the commit flow.
+  }
+}
+
+/**
+ * drift: Print the full memory-drift report (#958). Standalone CLI use —
+ * not gated by the once-per-session nudge limiter in maybeEmitDriftNudge().
+ */
+function driftCommand() {
+  if (!checkDrift) {
+    console.error('rcode/bin/lib/memory-drift.cjs failed to load — cannot run drift check.');
+    process.exit(1);
+  }
+  const report = checkDrift(process.cwd());
+  console.log(JSON.stringify(report, null, 2));
+  process.exit(0);
+}
+
+/**
  * post-commit: Verify commit format and banned patterns.
  * Warns (not blocking) if violations found.
  */
@@ -199,6 +260,8 @@ async function postCommit() {
       console.warn('⚠ Commit format warnings:');
       violations.forEach((v) => console.warn(`  • ${v}`));
     }
+
+    maybeEmitDriftNudge(process.cwd(), input);
 
     process.exit(0);
   } catch (err) {
@@ -1047,9 +1110,12 @@ async function main() {
     case 'session-start':
       sessionStart();
       break;
+    case 'drift':
+      driftCommand();
+      break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router|session-start');
+      console.error('Usage: rcode-hooks.cjs pre-edit|pre-workflow|post-commit|bash-guard|pre-compact|stop-verify|cost-track|stop|compact-nudge|pre-tool-use|prompt-router|session-start|drift');
       process.exit(1);
   }
 }
