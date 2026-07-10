@@ -262,3 +262,116 @@ test('state sync parses workflow SPRINT artifacts and preserves velocity history
     'workflow SPRINT artifact was not synced into state.sprints',
   );
 });
+
+// ─── phase status normalization (#955) ────────────────────────────────────────
+
+test('state read normalizes legacy phase status aliases to canonical enum', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        { number: '42', name: 'Ambient adoption hooks', status: 'executed' },
+        { number: '20', name: 'Dashboard UX', status: 'completed' },
+        { number: '37', name: 'Dependency graph', status: 'executing' },
+        { number: '21', name: 'Pipeline', status: 'planned' },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const state = json(cwd, ['state', 'read']);
+  const byNumber = Object.fromEntries(state.phases.map(p => [p.number, p.status]));
+  assert.strictEqual(byNumber['42'], 'complete');
+  assert.strictEqual(byNumber['20'], 'complete');
+  assert.strictEqual(byNumber['37'], 'executing');
+  assert.strictEqual(byNumber['21'], 'planned');
+});
+
+test('state read normalization is idempotent and persists to disk', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [{ number: '42', name: 'Ambient adoption hooks', status: 'executed' }],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  json(cwd, ['state', 'read']);
+  const onDisk = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
+  assert.strictEqual(onDisk.phases[0].status, 'complete', 'legacy status was not persisted as canonical');
+
+  // Second load must be a no-op — no further rewrite needed, same canonical value.
+  const again = json(cwd, ['state', 'read']);
+  assert.strictEqual(again.phases[0].status, 'complete');
+});
+
+test('state read leaves valid canonical statuses untouched', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [{ number: '1', name: 'Setup', status: 'planned' }],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const state = json(cwd, ['state', 'read']);
+  assert.strictEqual(state.phases[0].status, 'planned');
+});
+
+// ─── complete-phase stale-executing gate (#955) ───────────────────────────────
+
+test('complete-phase warns and reports stale executing phases with a lower number', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        { number: '37', name: 'Dependency graph', status: 'executing' },
+        { number: '43', name: 'Ship rcode/data', status: 'planned' },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const result = json(cwd, ['state', 'complete-phase', '--phase', '43']);
+  assert.strictEqual(result.status, 'complete');
+  assert.deepStrictEqual(result.stale_executing_phases, ['37']);
+});
+
+test('complete-phase reports no stale phases when nothing earlier is executing', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        { number: '37', name: 'Dependency graph', status: 'complete' },
+        { number: '43', name: 'Ship rcode/data', status: 'planned' },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const result = json(cwd, ['state', 'complete-phase', '--phase', '43']);
+  assert.deepStrictEqual(result.stale_executing_phases, []);
+});
+
+test('complete-phase ignores later-numbered executing phases (not stale relative to this one)', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        { number: '20', name: 'Earlier done', status: 'complete' },
+        { number: '43', name: 'Ship rcode/data', status: 'planned' },
+        { number: '44', name: 'Future work', status: 'executing' },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const result = json(cwd, ['state', 'complete-phase', '--phase', '43']);
+  assert.deepStrictEqual(result.stale_executing_phases, []);
+});

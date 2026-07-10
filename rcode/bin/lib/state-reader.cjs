@@ -8,20 +8,41 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Legacy status spellings that mean "complete" (#955). resolveActivePhase()
+// may see raw, unmigrated state.json (callers here read the file directly
+// rather than through rcode-tools.cjs's migrateState()), so it normalizes
+// inline instead of assuming its input already went through migration.
+const COMPLETE_PHASE_STATUSES = new Set(['complete', 'completed', 'executed', 'verified']);
+
 /**
  * Resolve the active phase entry and a human-readable label from state.json.
  * Returns { activePhase, phaseLabel } — both may be null if state is absent.
+ *
+ * Preference order (#955): an explicit current_phase match is the authoritative
+ * pointer and wins first. Falling back to "first/last phase with status
+ * 'executing'" is what caused the bug — a stale executing entry earlier in the
+ * roadmap (e.g. phase 37) shadowed real current work (phase 43, already
+ * complete) whenever current_phase didn't match by exact string. Instead, the
+ * fallback is the highest-numbered phase that isn't complete.
  */
 function resolveActivePhase(state) {
   const phases = Array.isArray(state?.phases) ? state.phases : [];
-  // M1 (#952 review): when several phases are concurrently 'executing', tie-break
-  // to the LAST one in roadmap order (highest-numbered / most-recently-added) —
-  // that is the newest active work the greeter should surface, not the oldest.
-  const executing = phases.findLast((p) => p && p.status === 'executing');
+
   const matched = phases.find(
     (p) => p && (p.name === state?.current_phase || p.number === state?.current_phase)
   );
-  const activePhase = executing || matched || null;
+
+  let activePhase = matched || null;
+  if (!activePhase) {
+    const nonComplete = phases.filter((p) => p && !COMPLETE_PHASE_STATUSES.has(p.status));
+    activePhase = nonComplete.reduce((highest, p) => {
+      const n = parseFloat(p.number ?? p.id);
+      if (Number.isNaN(n)) return highest;
+      const highestN = highest ? parseFloat(highest.number ?? highest.id) : -Infinity;
+      return n > highestN ? p : highest;
+    }, null);
+  }
+
   const phaseLabel = activePhase
     ? (activePhase.number || activePhase.name || state?.current_phase)
     : (state?.current_phase || null);

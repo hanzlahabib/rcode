@@ -1031,10 +1031,40 @@ function cmdState(subArgs) {
     }
     try {
       const raw = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      return migrateState(raw);
+      const migrated = migrateState(raw);
+      // One-time idempotent status migration (#955): persist the normalized
+      // phase statuses back to disk the first time legacy aliases are found,
+      // so state.json itself becomes canonical and every other reader (e.g.
+      // resolveActivePhase() in state-reader.cjs, which reads the file
+      // directly rather than through this helper) sees clean values too.
+      // Idempotent: once written, raw already matches migrated and this is a
+      // no-op on every subsequent load.
+      const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
+      const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
+      const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
+      if (hasLegacyStatus) {
+        writeState(migrated);
+      }
+      return migrated;
     } catch (e) {
       throw new Error(`Invalid JSON in state.json: ${e.message}`);
     }
+  }
+
+  // Canonical phase status enum (#955). Legacy state files accumulated four
+  // spellings for the same three states — normalize on every read so callers
+  // never have to special-case 'completed'/'executed' against 'complete'.
+  const PHASE_STATUS_ALIASES = {
+    completed: 'complete',
+    executed: 'complete',
+    verified: 'complete',
+  };
+  const PHASE_STATUS_ENUM = new Set(['planned', 'executing', 'complete']);
+
+  /** Map a legacy status spelling to the canonical enum value (idempotent). */
+  function normalizePhaseStatus(status) {
+    if (typeof status !== 'string') return status;
+    return PHASE_STATUS_ALIASES[status] ?? status;
   }
 
   /**
@@ -1081,7 +1111,7 @@ function cmdState(subArgs) {
           number: number ?? p.id ?? null,
           id: id ?? null,
           name: p.name ?? null,
-          status: p.status ?? 'planned',
+          status: normalizePhaseStatus(p.status ?? 'planned'),
           started: p.started ?? null,
           completed: p.completed ?? null,
           sprints: Array.isArray(p.sprints) ? p.sprints : [],
@@ -3177,10 +3207,36 @@ function cmdState(subArgs) {
     if (previousStatus === 'planned') {
       process.stderr.write(`Warning: completing phase ${phaseKey} from 'planned' without executing.\n`);
     }
+
+    // State-hygiene gate (#955): if an earlier-numbered phase is still stuck
+    // 'executing' while this later phase gets marked complete, that's exactly
+    // the drift that misorients resolveActivePhase() / the SessionStart greeter.
+    // Warn rather than block — completing out of order is sometimes correct
+    // (parallel workstreams), but it must never happen silently.
+    const thisNum = parseFloat(phaseKey);
+    const stalePhases = Number.isNaN(thisNum) ? [] : state.phases.filter((p) => {
+      if (!p || p.status !== 'executing') return false;
+      const n = parseFloat(p.number ?? p.id);
+      return !Number.isNaN(n) && n < thisNum;
+    });
+    if (stalePhases.length > 0 && !flags.force) {
+      const staleList = stalePhases.map((p) => p.number ?? p.id).join(', ');
+      process.stderr.write(
+        `Warning: phase ${phaseKey} marked complete while earlier phase(s) ${staleList} are still 'executing'. ` +
+        `Use --force to suppress this warning, or close out the stale phase(s) first.\n`
+      );
+    }
+
     entry.status = 'complete';
     entry.completed = new Date().toISOString();
     writeState(state);
-    return { updated: true, phase: phaseKey, status: 'complete', previous_status: previousStatus };
+    return {
+      updated: true,
+      phase: phaseKey,
+      status: 'complete',
+      previous_status: previousStatus,
+      stale_executing_phases: stalePhases.map((p) => p.number ?? p.id),
+    };
   }
 
   // Truncates execution state but preserves decisions, council_sessions, and workstreams.
