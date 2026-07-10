@@ -17,6 +17,7 @@ function renderCss() {
   --bg-hover:   #1e2329;
   --bg-input:   #1a1e22;
   --bg-active:  #262d35;
+  --bg-sunken:  #070809; /* wells/terminal chrome — one step below bg-page */
 
   /* Borders */
   --border-subtle:  rgba(255,255,255,0.06);
@@ -66,7 +67,7 @@ function renderCss() {
 
   /* Type */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
 
   /* Size scale */
   --text-xl:  20px;
@@ -120,23 +121,23 @@ function renderCss() {
   --accent-red: var(--red);
   --accent-blue: var(--blue);
 
-  /* ── Dashboard redesign (mockup) tokens ──────────────────────────
-     Exact values from .planning/campaign/MOCKUP-SPEC.md. Namespaced
-     --dash-* so the Overview redesign can adopt the deep-navy mockup
-     palette without disturbing the existing Linear theme above. */
-  --dash-bg:         #0F1729; /* deep navy page base */
-  --dash-card:       #111A2E; /* card surface */
-  --dash-border:     #1E2A44; /* 1px hairline border */
-  --dash-teal:       #2DD4BF;
-  --dash-purple:     #A78BFA;
-  --dash-blue:       #3B82F6;
-  --dash-amber:      #F59E0B;
-  --dash-sev-high:   #F87171; /* red   — High   */
-  --dash-sev-medium: #FBBF24; /* amber — Medium */
-  --dash-sev-low:    #9CA3AF; /* gray  — Low    */
-  --dash-text:       #E6EDF7; /* primary text */
-  --dash-text-muted: #8595AD; /* muted text   */
-  --dash-hover:      rgba(255, 255, 255, 0.04); /* row/button hover wash */
+  /* ── Dashboard chrome tokens ──────────────────────────────────────
+     --dash-* aliases onto the Diwan design tokens above so the Overview
+     card grid, sidebar, and topbar share one palette with the rest of
+     the app — no independent hex values, single source of truth. */
+  --dash-bg:         var(--bg-page);
+  --dash-card:       var(--bg-elev-1);
+  --dash-border:     var(--border-subtle);
+  --dash-teal:       var(--accent-primary);
+  --dash-purple:     var(--accent-primary); /* was lavender; aliases accent teal now */
+  --dash-blue:       var(--status-progress); /* was blue; "in progress" amber now */
+  --dash-amber:      var(--amber);
+  --dash-sev-high:   var(--red);
+  --dash-sev-medium: var(--amber);
+  --dash-sev-low:    var(--text-tertiary);
+  --dash-text:       var(--text-primary);
+  --dash-text-muted: var(--text-tertiary);
+  --dash-hover:      var(--bg-hover);
 }
 
 /* Light mode */
@@ -148,6 +149,7 @@ function renderCss() {
   --bg-hover:   #edf1f5;
   --bg-input:   #ffffff;
   --bg-active:  #e4eaf0;
+  --bg-sunken:  #e7ecf1;
   --border-subtle:  rgba(15,25,35,0.08);
   --border-default: rgba(15,25,35,0.13);
   --border-strong:  #ccd5de;
@@ -186,14 +188,14 @@ function renderCss() {
   --st-info-border:      rgba(38,121,201,0.36);
   --chart-track: rgba(15,25,35,0.09);
 
-  /* Dashboard mockup tokens — light theme. Surfaces/text flip to light;
-     teal/purple/blue/amber accents and severity colors stay the same. */
-  --dash-bg:         #F4F6FB;
-  --dash-card:       #FFFFFF;
-  --dash-border:     #E2E8F0;
-  --dash-text:       #1A2233;
-  --dash-text-muted: #5B6B82;
-  --dash-hover:      rgba(15, 23, 41, 0.05);
+  /* Dashboard chrome tokens — light theme. Same alias approach; flips
+     automatically with the base tokens above. */
+  --dash-bg:         var(--bg-page);
+  --dash-card:       var(--bg-elev-1);
+  --dash-border:     var(--border-subtle);
+  --dash-text:       var(--text-primary);
+  --dash-text-muted: var(--text-tertiary);
+  --dash-hover:      var(--bg-hover);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -1289,7 +1291,7 @@ footer {
 }
 
 .kanban-col {
-  background: var(--bg-elev-1);
+  background: var(--bg-sunken);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-4);
   min-height: 200px;
@@ -1569,7 +1571,7 @@ footer {
 }
 .orch-panel-resize:hover,
 .orch-panel-resize.dragging {
-  background: var(--accent, #5865f2);
+  background: var(--accent-primary, #22b6cf);
   opacity: 0.35;
 }
 .orch-panel.open {
@@ -1691,7 +1693,7 @@ footer {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-4) var(--space-5);
-  background: #070809;
+  background: var(--bg-sunken);
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.6;
@@ -2079,7 +2081,7 @@ footer {
   right: 0;
   height: 55vh;
   min-height: 300px;
-  background: #0c0c0e;
+  background: var(--bg-sunken);
   border-top: 2px solid var(--accent-primary);
   z-index: 201;
   flex-direction: column;
@@ -2181,7 +2183,7 @@ footer {
   flex: 1;
   overflow: hidden;
   padding: 6px 8px;
-  background: #0c0c0e;
+  background: var(--bg-sunken);
 }
 .term-hint {
   padding: var(--space-2) var(--space-3);
@@ -2287,7 +2289,7 @@ footer {
 .orch-card.orch-running { border-left-color: var(--accent-green); }
 .orch-card.orch-waiting {
   border-left-color: var(--accent-amber);
-  background: rgba(245,158,11,0.05);
+  background: rgba(224,166,58,0.05);
 }
 .orch-card.orch-waiting .orch-card-badge { color: var(--accent-amber); }
 .orch-card.orch-error,
@@ -2448,8 +2450,8 @@ footer {
 .sb-logo-badge {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 16px; color: #06121f;
-  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
+  font-weight: 800; font-size: 16px; color: var(--dash-ink);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
 }
 .sb-logo-word { font-size: 16px; font-weight: 700; color: var(--dash-text); letter-spacing: -0.01em; }
 
@@ -2478,7 +2480,7 @@ footer {
   transition: background 0.15s, color 0.15s;
 }
 .sb-nav-link:hover { background: rgba(255, 255, 255, 0.04); color: var(--dash-text); }
-.sb-nav-link.active { background: rgba(45, 212, 191, 0.12); color: var(--dash-text); font-weight: 600; }
+.sb-nav-link.active { background: rgba(34, 182, 207, 0.12); color: var(--dash-text); font-weight: 600; }
 .sb-nav-link.active .sb-nav-ic { color: var(--dash-teal); }
 .sb-nav-ic { display: inline-flex; color: var(--dash-text-muted); }
 .sb-nav-label { flex: 1; }
@@ -2497,16 +2499,16 @@ footer {
 .phealth-pct { font-size: 26px; font-weight: 800; line-height: 1; color: var(--dash-text); }
 .phealth-pct-sign { font-size: 14px; font-weight: 700; margin-left: 1px; color: var(--dash-text-muted); }
 .phealth-label { font-size: 12px; font-weight: 600; }
-.phealth--good .phealth-label { color: var(--dash-teal); }
+.phealth--good .phealth-label { color: var(--status-done); }
 .phealth--warn .phealth-label { color: var(--dash-sev-medium); }
 .phealth--risk .phealth-label { color: var(--dash-sev-high); }
 .phealth-spark { width: 100%; height: 36px; display: block; }
 .phealth-spark-line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.phealth--good .phealth-spark-line { stroke: var(--dash-teal); }
+.phealth--good .phealth-spark-line { stroke: var(--status-done); }
 .phealth--warn .phealth-spark-line { stroke: var(--dash-sev-medium); }
 .phealth--risk .phealth-spark-line { stroke: var(--dash-sev-high); }
 .phealth-spark-area { stroke: none; opacity: 0.14; }
-.phealth--good .phealth-spark-area { fill: var(--dash-teal); }
+.phealth--good .phealth-spark-area { fill: var(--status-done); }
 .phealth--warn .phealth-spark-area { fill: var(--dash-sev-medium); }
 .phealth--risk .phealth-spark-area { fill: var(--dash-sev-high); }
 
@@ -2518,8 +2520,8 @@ footer {
 .sb-avatar {
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #06121f;
-  background: linear-gradient(135deg, var(--dash-purple), var(--dash-blue));
+  font-size: 12px; font-weight: 700; color: var(--dash-ink);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
 }
 .sb-profile-meta { display: flex; flex-direction: column; min-width: 0; }
 .sb-profile-name { font-size: 13px; font-weight: 600; color: var(--dash-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2545,8 +2547,8 @@ footer {
   font-size: 12px; color: var(--dash-text-muted);
 }
 .tb-synced:hover { color: var(--dash-text); }
-.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dash-teal); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18); flex-shrink: 0; }
-.tb-synced--busy .tb-dot { background: var(--dash-blue); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); animation: tb-pulse 0.8s ease-in-out infinite; }
+.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-done); box-shadow: 0 0 0 3px rgba(60, 185, 138, 0.18); flex-shrink: 0; }
+.tb-synced--busy .tb-dot { background: var(--dash-blue); box-shadow: 0 0 0 3px rgba(224, 166, 58, 0.18); animation: tb-pulse 0.8s ease-in-out infinite; }
 @keyframes tb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .tb-btn {
   display: inline-flex; align-items: center; gap: 7px;
@@ -2558,8 +2560,8 @@ footer {
 }
 .tb-btn:hover { border-color: var(--dash-teal); }
 .tb-btn--primary {
-  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
-  border-color: transparent; color: #06121f;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+  border-color: transparent; color: var(--dash-ink);
 }
 .tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
 .tb-btn--icon { padding: 8px 11px; }
@@ -2814,7 +2816,7 @@ footer {
   border-radius: 50%;
   display: inline-block;
 }
-.donut-dot--done { background: var(--dash-teal); }
+.donut-dot--done { background: var(--status-done); }
 .donut-dot--prog { background: var(--dash-blue); }
 .donut-dot--idle { background: var(--dash-sev-low); }
 .donut-legend-label {
@@ -2861,8 +2863,8 @@ footer {
   justify-content: center;
   font-size: 20px;
   border-radius: 10px;
-  background: rgba(167, 139, 250, 0.12);
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
 }
 .cp-headtext { min-width: 0; }
 .cp-titlerow {
@@ -2885,8 +2887,8 @@ footer {
   padding: 2px 9px;
   border-radius: 999px;
   color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
-  border: 1px solid rgba(167, 139, 250, 0.3);
+  background: rgba(34, 182, 207, 0.12);
+  border: 1px solid rgba(34, 182, 207, 0.3);
   white-space: nowrap;
 }
 .cp-sub {
@@ -2942,14 +2944,14 @@ footer {
   z-index: 1;
 }
 .cp-done .cp-node {
-  background: var(--dash-teal);
-  border-color: var(--dash-teal);
+  background: var(--status-done);
+  border-color: var(--status-done);
   color: var(--dash-bg);
 }
 .cp-active .cp-node {
   background: var(--dash-card);
   border-color: var(--dash-purple);
-  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
+  box-shadow: 0 0 0 4px rgba(34, 182, 207, 0.2);
 }
 .cp-label {
   font-size: 10px;
@@ -3064,7 +3066,7 @@ footer {
   padding: 4px 9px;
   border-radius: 999px;
   color: var(--dash-blue);
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(224, 166, 58, 0.15);
 }
 
 /* ── Blockers — icon + title/desc + severity pill (Row 2, Card 3) ── */
@@ -3106,16 +3108,16 @@ footer {
 .bk-sev-medium { color: var(--dash-sev-medium); }
 .bk-sev-low    { color: var(--dash-sev-low);    }
 .bk-pill.bk-sev-high {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(236, 106, 94, 0.12);
+  border-color: rgba(236, 106, 94, 0.35);
 }
 .bk-pill.bk-sev-medium {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(224, 166, 58, 0.12);
+  border-color: rgba(224, 166, 58, 0.35);
 }
 .bk-pill.bk-sev-low {
-  background: rgba(156, 163, 175, 0.12);
-  border-color: rgba(156, 163, 175, 0.35);
+  background: rgba(113, 125, 136, 0.12);
+  border-color: rgba(113, 125, 136, 0.35);
 }
 
 /* ── RecentDecisions — title + status badge + date (Row 3, Card 1) ── */
@@ -3142,16 +3144,16 @@ footer {
   white-space: nowrap;
 }
 .rd-badge--approved {
-  color: var(--dash-teal);
-  background: rgba(45, 212, 191, 0.12);
+  color: var(--status-done);
+  background: var(--st-complete-wash);
 }
 .rd-badge--rejected {
   color: var(--dash-sev-high);
-  background: rgba(248, 113, 113, 0.12);
+  background: rgba(236, 106, 94, 0.12);
 }
 .rd-badge--proposed {
-  color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
+  color: var(--status-todo);
+  background: var(--st-planned-wash);
 }
 .rd-date {
   flex: none;
@@ -3185,7 +3187,7 @@ footer {
   border-top: 3px solid var(--dash-sev-low);
   background: rgba(255, 255, 255, 0.02);
 }
-.pt-seg--done   { border-top-color: var(--dash-teal); }
+.pt-seg--done   { border-top-color: var(--status-done); }
 .pt-seg--active { border-top-color: var(--dash-purple); }
 .pt-seg--todo   { border-top-color: var(--dash-sev-low); }
 .pt-seg-name {
@@ -3204,7 +3206,7 @@ footer {
   padding: 4px 9px;
   border-radius: 999px;
   color: var(--dash-blue);
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(224, 166, 58, 0.15);
 }
 .bk-desc {
   margin: 2px 0 0;
@@ -3227,16 +3229,16 @@ footer {
 .bk-sev-medium { color: var(--dash-sev-medium); }
 .bk-sev-low    { color: var(--dash-sev-low);    }
 .bk-pill.bk-sev-high {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(236, 106, 94, 0.12);
+  border-color: rgba(236, 106, 94, 0.35);
 }
 .bk-pill.bk-sev-medium {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(224, 166, 58, 0.12);
+  border-color: rgba(224, 166, 58, 0.35);
 }
 .bk-pill.bk-sev-low {
-  background: rgba(156, 163, 175, 0.12);
-  border-color: rgba(156, 163, 175, 0.35);
+  background: rgba(113, 125, 136, 0.12);
+  border-color: rgba(113, 125, 136, 0.35);
 }
 .pt-seg-range {
   font-size: 11px;
@@ -3250,15 +3252,15 @@ footer {
   border-radius: 999px;
   align-self: flex-start;
   color: var(--dash-sev-low);
-  background: rgba(156, 163, 175, 0.14);
+  background: rgba(113, 125, 136, 0.14);
 }
 .pt-seg--done .pt-seg-badge {
-  color: var(--dash-teal);
-  background: rgba(45, 212, 191, 0.12);
+  color: var(--status-done);
+  background: var(--st-complete-wash);
 }
 .pt-seg--active .pt-seg-badge {
   color: var(--dash-purple);
-  background: rgba(167, 139, 250, 0.12);
+  background: rgba(34, 182, 207, 0.12);
 }
 @media (max-width: 700px) {
   .pt-track { flex-direction: column; }
@@ -3288,7 +3290,7 @@ footer {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 16px; color: var(--dash-ink);
-  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
 }
 .sb-logo-word { font-size: 16px; font-weight: 700; color: var(--dash-text); letter-spacing: -0.01em; }
 
@@ -3317,7 +3319,7 @@ footer {
   transition: background 0.15s, color 0.15s;
 }
 .sb-nav-link:hover { background: var(--dash-hover); color: var(--dash-text); }
-.sb-nav-link.active { background: rgba(45, 212, 191, 0.12); color: var(--dash-text); font-weight: 600; }
+.sb-nav-link.active { background: rgba(34, 182, 207, 0.12); color: var(--dash-text); font-weight: 600; }
 .sb-nav-link.active .sb-nav-ic { color: var(--dash-teal); }
 .sb-nav-ic { display: inline-flex; color: var(--dash-text-muted); }
 .sb-nav-label { flex: 1; }
@@ -3336,16 +3338,16 @@ footer {
 .phealth-pct { font-size: 26px; font-weight: 800; line-height: 1; color: var(--dash-text); }
 .phealth-pct-sign { font-size: 14px; font-weight: 700; margin-left: 1px; color: var(--dash-text-muted); }
 .phealth-label { font-size: 12px; font-weight: 600; }
-.phealth--good .phealth-label { color: var(--dash-teal); }
+.phealth--good .phealth-label { color: var(--status-done); }
 .phealth--warn .phealth-label { color: var(--dash-sev-medium); }
 .phealth--risk .phealth-label { color: var(--dash-sev-high); }
 .phealth-spark { width: 100%; height: 36px; display: block; }
 .phealth-spark-line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.phealth--good .phealth-spark-line { stroke: var(--dash-teal); }
+.phealth--good .phealth-spark-line { stroke: var(--status-done); }
 .phealth--warn .phealth-spark-line { stroke: var(--dash-sev-medium); }
 .phealth--risk .phealth-spark-line { stroke: var(--dash-sev-high); }
 .phealth-spark-area { stroke: none; opacity: 0.14; }
-.phealth--good .phealth-spark-area { fill: var(--dash-teal); }
+.phealth--good .phealth-spark-area { fill: var(--status-done); }
 .phealth--warn .phealth-spark-area { fill: var(--dash-sev-medium); }
 .phealth--risk .phealth-spark-area { fill: var(--dash-sev-high); }
 
@@ -3358,7 +3360,7 @@ footer {
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: var(--dash-ink);
-  background: linear-gradient(135deg, var(--dash-purple), var(--dash-blue));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
 }
 .sb-profile-meta { display: flex; flex-direction: column; min-width: 0; }
 .sb-profile-name { font-size: 13px; font-weight: 600; color: var(--dash-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3384,8 +3386,8 @@ footer {
   font-size: 12px; color: var(--dash-text-muted);
 }
 .tb-synced:hover { color: var(--dash-text); }
-.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dash-teal); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18); flex-shrink: 0; }
-.tb-synced--busy .tb-dot { background: var(--dash-blue); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); animation: tb-pulse 0.8s ease-in-out infinite; }
+.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-done); box-shadow: 0 0 0 3px rgba(60, 185, 138, 0.18); flex-shrink: 0; }
+.tb-synced--busy .tb-dot { background: var(--dash-blue); box-shadow: 0 0 0 3px rgba(224, 166, 58, 0.18); animation: tb-pulse 0.8s ease-in-out infinite; }
 @keyframes tb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .tb-btn {
   display: inline-flex; align-items: center; gap: 7px;
@@ -3397,7 +3399,7 @@ footer {
 }
 .tb-btn:hover { border-color: var(--dash-teal); }
 .tb-btn--primary {
-  background: linear-gradient(135deg, var(--dash-teal), var(--dash-blue));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
   border-color: transparent; color: var(--dash-ink);
 }
 .tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
@@ -3416,44 +3418,41 @@ footer {
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Sidebar surface — darker sibling of --dash-card per mockup spec
-     ("Card surface: #0E1626 / #111A2E"); kept separate so the sidebar
-     reads one step below the page base. */
-  --dash-sidebar: #0E1626;
+  /* Sidebar surface — same value as --dash-card; the Diwan design uses
+     one surface-1 for sidebar, topbar, and cards alike. */
+  --dash-sidebar: var(--bg-elev-1);
   /* Ink on accent-filled surfaces (logo badge, avatar, primary button,
-     offline banner) — dark navy reads on the teal/blue gradient in both
-     themes, so it has no light override. */
-  --dash-ink: #06121F;
-  /* Subtle hover overlay for nav items — theme-dependent direction
-     (lighten on dark, darken on light). */
-  --dash-hover: rgba(255, 255, 255, 0.04);
-  /* Plain-text log view (OrchPanel) + xterm panel surround. The xterm
-     canvas itself keeps its own dark JS theme — these style the chrome. */
-  --dash-term-bg:   #050507;
+     offline banner) — aliases the design's accent-fg contrast color. */
+  --dash-ink: var(--accent-fg);
+  /* Subtle hover overlay for nav items. */
+  --dash-hover: var(--bg-hover);
+  /* Sunken surface for the plain-text log view (OrchPanel) + xterm panel
+     surround. The xterm canvas itself keeps its own dark JS theme — these
+     style the chrome only. */
+  --dash-term-bg:   var(--bg-sunken);
   --dash-term-text: #C8D8C8;
   --dash-term-line: #A0C4A0;
   --dash-term-tool: #7CB8FF;
 }
 
-/* Light theme — same --dash-* tokens, light values. The chrome (and any
-   card CSS built on these tokens) flips with the existing data-theme
-   toggle; accents (teal/purple/blue/amber/severity) stay identical. */
+/* Light theme — same alias approach; flips automatically with the base
+   tokens above. */
 [data-theme="light"] {
-  --dash-bg:         #F4F6FB;
-  --dash-card:       #FFFFFF;
-  --dash-border:     #E2E8F0;
-  --dash-text:       #1A2233;
-  --dash-text-muted: #5B6B82;
-  --dash-sidebar:    #FFFFFF;
-  --dash-hover:      rgba(15, 23, 41, 0.05);
-  --dash-term-bg:    #F1F5F9;
+  --dash-bg:         var(--bg-page);
+  --dash-card:       var(--bg-elev-1);
+  --dash-border:     var(--border-subtle);
+  --dash-text:       var(--text-primary);
+  --dash-text-muted: var(--text-tertiary);
+  --dash-sidebar:    var(--bg-elev-1);
+  --dash-hover:      var(--bg-hover);
+  --dash-term-bg:    var(--bg-sunken);
   --dash-term-text:  #334155;
   --dash-term-line:  #166534;
-  --dash-term-tool:  #1D4ED8;
+  --dash-term-tool:  var(--blue);
 }
 
-/* Frame: deep-navy base behind chrome AND content so the mockup palette
-   is continuous (legacy body bg is near-black #08090a). */
+/* Frame: Diwan canvas base behind chrome AND content so the palette is
+   continuous across the app shell and scroll area. */
 .app-shell,
 .main-scroll { background: var(--dash-bg); }
 
@@ -3505,7 +3504,7 @@ header.topbar {
 }
 .statusbar-dot {
   width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-  background: var(--dash-teal);
+  background: var(--status-done);
 }
 .statusbar-dot--offline { background: var(--dash-sev-high); }
 .statusbar-dot--busy { animation: pulse-dot 1s ease-in-out infinite; }
@@ -3732,7 +3731,7 @@ header.topbar {
   font-size: 24px;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, var(--dash-teal), var(--dash-purple));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
 }
 .firstrun-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--dash-text); }
 .firstrun-sub { margin: 0; font-size: 13px; color: var(--dash-text-muted); max-width: 440px; line-height: 1.5; }
@@ -3780,7 +3779,7 @@ select:focus-visible,
 input:focus-visible,
 summary:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid var(--dash-teal, #2DD4BF);
+  outline: 2px solid var(--dash-teal, #22b6cf);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -3806,8 +3805,8 @@ summary:focus-visible,
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
   margin-bottom: var(--space-3);
-  background: var(--accent-amber, #F59E0B);
-  color: var(--dash-ink, #06121F);
+  background: var(--accent-amber, #e0a63a);
+  color: var(--dash-ink, #04222a);
   font-size: var(--text-sm);
   font-weight: 600;
   border-radius: 8px;
@@ -5019,18 +5018,14 @@ summary:focus-visible,
    Status colors are --pg-* tokens scoped to the panel so both themes flip
    them without touching the global token block. */
 .pg-panel {
-  --pg-done:    #2dd4bf; /* teal   */
-  --pg-active:  #a78bfa; /* purple */
+  --pg-done:    var(--status-done);
+  --pg-active:  var(--accent-primary);
   --pg-todo:    var(--text-muted);
   --pg-blocked: var(--amber);
   margin-bottom: var(--space-4);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-4);
   background: var(--bg-elev-1);
-}
-[data-theme="light"] .pg-panel {
-  --pg-done:   #0d9488;
-  --pg-active: #7c3aed;
 }
 .pg-panel summary {
   padding: var(--space-3) var(--space-5);
