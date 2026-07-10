@@ -62,13 +62,16 @@ function commandAbbr(label) {
  * RunnerCard — repurposes the "Runner picker" card from the design as rcode's
  * allowlisted command list (per the restructure spec — this is NOT a CLI/
  * model picker, that is RunnerPicker.js's job once Run is pressed). Selecting
- * a row highlights it; Run opens the same RunnerPicker popover the old
- * CommandRunner used, which gates the real spawn behind RunConfirmDialog.
+ * an idle row highlights it for the next Run; clicking a row that is already
+ * Running instead attaches the docked terminal to that live session (same as
+ * a Pipeline-card row) — picking a command to run next and looking at a
+ * session that's already streaming are different actions.
  */
 function RunnerCard() {
-  const { orchOnline } = useStore();
+  const { orchOnline, terminal } = useStore();
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
   const orchDown = orchOnline === false;
+  const attachedStoryId = terminal && terminal.open ? terminal.storyId : '';
 
   function handleRun(e) {
     if (!selected || orchDown) return;
@@ -83,11 +86,14 @@ function RunnerCard() {
           const slug      = cmd.replace(/^\//, '').replace(/\//g, '-');
           const sessionId = 'cmd-' + slug;
           const isRunning = isSessionRunning(sessionId);
+          const isAttached = isRunning && sessionId === attachedStoryId;
           const name = (label || '').split('—')[0].trim();
           return html`
             <div key=${cmd}
-              class=${'orch-runner-row' + (cmd === selected ? ' selected' : '')}
-              onClick=${() => setSelected(cmd)}>
+              class=${'orch-runner-row'
+                + (cmd === selected ? ' selected' : '')
+                + (isAttached ? ' attached' : '')}
+              onClick=${() => isRunning ? openTermPanel(sessionId, sessionId) : setSelected(cmd)}>
               <span class="orch-runner-abbr">${commandAbbr(label)}</span>
               <div class="orch-runner-info">
                 <div class="orch-runner-name">${name}</div>
@@ -119,9 +125,9 @@ const PIPELINE_GLYPH = {
   done: '✓', exited: '✕', stopped: '■', error: '✕',
 };
 
-function PipelineRow({ glyphCls, glyph, label, count, onClick, actions }) {
+function PipelineRow({ glyphCls, glyph, label, count, onClick, actions, active }) {
   return html`
-    <div class="orch-pipeline-row" onClick=${onClick}>
+    <div class=${'orch-pipeline-row' + (active ? ' active' : '')} onClick=${onClick}>
       <span class=${'orch-pipeline-glyph ' + glyphCls}>${glyph}</span>
       <span class="orch-pipeline-label-text">${label}</span>
       <span class="orch-pipeline-count">${count}</span>
@@ -136,8 +142,9 @@ function PipelineRow({ glyphCls, glyph, label, count, onClick, actions }) {
  * back to a STATUS_ORDER history-count summary so the card stays useful.
  */
 function PipelineCard() {
-  const { activeSessions, history } = useStore();
+  const { activeSessions, history, terminal } = useStore();
   const [rejectFor, setRejectFor] = useState(null);
+  const attachedStoryId = terminal && terminal.open ? terminal.storyId : '';
   const live = sortSessions((activeSessions || []).filter(
     s => s.status === 'running' || s.status === 'blocked'
   ));
@@ -166,6 +173,7 @@ function PipelineCard() {
           glyph=${PIPELINE_GLYPH[blocked ? 'blocked' : 'running']}
           label=${s.storyId}
           count=${orchElapsed(s.startTime)}
+          active=${s.storyId === attachedStoryId}
           onClick=${() => openTermPanel(s.storyId, s.storyId)}
           actions=${actions}
         />
@@ -209,9 +217,20 @@ function durationLabel(ms) {
   return Math.floor(ms / 3600000) + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
 }
 
-function HistoryRow({ run }) {
+/**
+ * HistoryRow — ended runs are read-only UNLESS the server still holds the
+ * session in memory (run.source === 'live', from mergeSessionsAndHistory —
+ * true until "Clean sessions" removes it). While that's the case the PTY's
+ * scrollback is still attachable over WS, so the row is clickable and
+ * reattaches the docked terminal to replay it; otherwise there is nothing to
+ * attach to and the row stays static (no persisted log replay exists).
+ */
+function HistoryRow({ run, active }) {
+  const attachable = run.source === 'live';
   return html`
-    <div class="hist-row" key=${run.storyId}>
+    <div class=${'hist-row' + (attachable ? ' clickable' : '') + (active ? ' active' : '')}
+      key=${run.storyId}
+      onClick=${attachable ? () => openTermPanel(run.storyId, run.storyId) : undefined}>
       <span class=${'term-status-dot ' + run.status}></span>
       <span class="hist-row-id">${run.storyId}</span>
       <span class="hist-row-cmd">${run.cmd}</span>
@@ -224,7 +243,8 @@ function HistoryRow({ run }) {
 const STATUS_ORDER = ['done', 'exited', 'stopped', 'error'];
 
 function HistoryPanel() {
-  const { activeSessions, history } = useStore();
+  const { activeSessions, history, terminal } = useStore();
+  const attachedStoryId = terminal && terminal.open ? terminal.storyId : '';
   const merged = mergeSessionsAndHistory(activeSessions, history);
   // 'blocked' is a live session (waiting for input), not an ended run.
   const ended = merged.filter(r => r.status !== 'running' && r.status !== 'blocked');
@@ -272,7 +292,7 @@ function HistoryPanel() {
             ${[...dateMap.entries()].map(([dateKey, runs]) => html`
               <div key=${dateKey}>
                 <div class="hist-date">${dateKey}</div>
-                ${runs.map(run => html`<${HistoryRow} key=${run.storyId} run=${run}/>`)}
+                ${runs.map(run => html`<${HistoryRow} key=${run.storyId} run=${run} active=${run.storyId === attachedStoryId}/>`)}
               </div>
             `)}
           </div>

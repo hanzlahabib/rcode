@@ -2405,6 +2405,7 @@ footer {
 }
 .orch-runner-row:hover { background: var(--bg-hover); }
 .orch-runner-row.selected { background: var(--accent-bg); border-color: var(--accent-border); }
+.orch-runner-row.attached { border-color: var(--accent-primary); }
 .orch-runner-abbr {
   width: 26px;
   height: 26px;
@@ -2468,9 +2469,12 @@ footer {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-2);
   cursor: pointer;
 }
+.orch-pipeline-row.active { background: var(--accent-bg); }
 .orch-pipeline-glyph {
   width: 20px;
   height: 20px;
@@ -2618,6 +2622,9 @@ footer {
 .hist-group-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: var(--space-2); }
 .hist-date { font-size: var(--text-2xs); color: var(--text-muted); margin: var(--space-3) 0 var(--space-2); }
 .hist-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); background: var(--bg-elev-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-2); margin-bottom: var(--space-2); }
+.hist-row.clickable { cursor: pointer; }
+.hist-row.clickable:hover { background: var(--bg-hover); }
+.hist-row.active { border-color: var(--accent-primary); background: var(--accent-bg); }
 .hist-row-id { font-weight: 600; font-size: var(--text-sm); color: var(--text-primary); }
 .hist-row-cmd { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-secondary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hist-row-duration { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--text-muted); white-space: nowrap; }
