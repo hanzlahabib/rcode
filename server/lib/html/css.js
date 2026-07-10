@@ -1,7 +1,7 @@
 /* CLAUDE.md exemption: pure CSS data file, no logic — 1000-line limit does not apply */
 /**
- * Dashboard CSS — Linear design system.
- * Dark-first (Linear-style). rcode accent: #5e6ad2 (Aether Blue).
+ * Dashboard CSS — Diwan design system.
+ * Dark-first. rcode accent: #22b6cf (Diwan Teal).
  */
 function renderCss() {
   return `<style>
@@ -10,44 +10,59 @@ function renderCss() {
 /* ── Design tokens ─────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --bg-page:    #08090a;
-  --bg-elev-1:  #0f1011;
-  --bg-elev-2:  #161718;
-  --bg-elev-3:  #1c1d1f;
-  --bg-hover:   #23252a;
-  --bg-input:   #1a1b1d;
-  --bg-active:  #2c2d31;
+  --bg-page:    #0b0d0f;
+  --bg-elev-1:  #131619;
+  --bg-elev-2:  #1a1e22;
+  --bg-elev-3:  #222831;
+  --bg-hover:   #1e2329;
+  --bg-input:   #1a1e22;
+  --bg-active:  #262d35;
 
   /* Borders */
   --border-subtle:  rgba(255,255,255,0.06);
-  --border-default: #23252a;
-  --border-strong:  #323334;
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong:  #2f373f;
 
   /* Text */
-  --text-primary:   #f7f8f8;
-  --text-secondary: #b4bcd0;
-  --text-tertiary:  #8a8f98;
-  --text-muted:     #62666d;
+  --text-primary:   #e8edf1;
+  --text-secondary: #a6b2bd;
+  --text-tertiary:  #717d88;
+  --text-muted:     #4c565f;
 
-  /* Brand — rcode keeps Aether Blue */
-  --accent-primary: #5e6ad2;
-  --accent-hover:   #7170ff;
-  --accent-active:  #4853bb;
-  --accent-bg:      rgba(94,106,210,0.12);
-  --accent-border:  rgba(94,106,210,0.35);
+  /* Brand — Diwan accent (teal) */
+  --accent-primary: #22b6cf;
+  --accent-hover:   #46cde3;
+  --accent-active:  #178ea3;
+  --accent-bg:      rgba(34,182,207,0.12);
+  --accent-border:  rgba(34,182,207,0.35);
+  --accent-fg:      #04222a;
 
   /* Semantic */
-  --green:   #4cb782;
-  --amber:   #f2c94c;
-  --red:     #eb5757;
-  --blue:    #26b5ce;
+  --green:   #3cb98a;
+  --amber:   #e0a63a;
+  --red:     #ec6a5e;
+  --blue:    #4d9fe8;
   --violet:  #bf7af0;
 
   /* Status */
-  --status-todo:     #e2e2e2;
-  --status-progress: #f2c94c;
-  --status-blocked:  #eb5757;
-  --status-done:     #4cb782;
+  --status-todo:     #7f8ea0;
+  --status-progress: #e0a63a;
+  --status-blocked:  #ec6a5e;
+  --status-done:     #3cb98a;
+
+  /* Per-status wash + border (badge/pill treatment) */
+  --st-planned:          #7f8ea0;
+  --st-planned-wash:     rgba(127,142,160,0.14);
+  --st-planned-border:   rgba(127,142,160,0.36);
+  --st-executing-wash:   rgba(224,166,58,0.15);
+  --st-executing-border: rgba(224,166,58,0.40);
+  --st-complete-wash:    rgba(60,185,138,0.15);
+  --st-complete-border:  rgba(60,185,138,0.40);
+  --st-blocked-wash:     rgba(236,106,94,0.15);
+  --st-blocked-border:   rgba(236,106,94,0.42);
+  --st-info-wash:        rgba(77,159,232,0.14);
+  --st-info-border:      rgba(77,159,232,0.40);
+  --chart-track: rgba(255,255,255,0.07);
 
   /* Type */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -55,11 +70,11 @@ function renderCss() {
 
   /* Size scale */
   --text-xl:  20px;
-  --text-lg:  17px;
-  --text-md:  15px;
-  --text-sm:  14px;
-  --text-xs:  13px;
-  --text-2xs: 11px;
+  --text-lg:  16px;
+  --text-md:  14px;
+  --text-sm:  12px;
+  --text-xs:  11px;
+  --text-2xs: 10px;
   --text-stat: 28px;  /* stat card value — large metric numeral */
 
   /* Component dimensions */
@@ -67,21 +82,21 @@ function renderCss() {
   --size-icon-btn: 32px; /* square icon button (hamburger, etc.) */
 
   /* Spacing (4px base) */
-  --space-1: 2px;
-  --space-2: 4px;
-  --space-3: 8px;
-  --space-4: 12px;
-  --space-5: 16px;
-  --space-6: 20px;
-  --space-7: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
   --space-8: 32px;
   --space-10: 64px;
 
   /* Radius */
-  --radius-1: 2px;
-  --radius-2: 4px;
-  --radius-3: 6px;
-  --radius-4: 8px;
+  --radius-1: 4px;
+  --radius-2: 6px;
+  --radius-3: 9px;
+  --radius-4: 14px;
   --radius-5: 12px;
   --radius-full: 9999px;
 
@@ -89,9 +104,9 @@ function renderCss() {
   --shadow-lg:    0 16px 32px rgba(0,0,0,0.6);
 
   /* Motion */
-  --ease: cubic-bezier(0.4,0,0.2,1);
-  --t-fast: 120ms;
-  --t-base: 200ms;
+  --ease: cubic-bezier(0.32,0.72,0,1);
+  --t-fast: 90ms;
+  --t-base: 160ms;
   --t-menu: 240ms;
 
   /* Legacy compat aliases */
@@ -126,21 +141,50 @@ function renderCss() {
 
 /* Light mode */
 [data-theme="light"] {
-  --bg-page:    #f5f5f7;
+  --bg-page:    #f3f5f8;
   --bg-elev-1:  #ffffff;
-  --bg-elev-2:  #f0f0f2;
-  --bg-elev-3:  #e8e8ec;
-  --bg-hover:   #e2e2e8;
-  --bg-input:   #f8f8fa;
-  --bg-active:  #dcdce4;
-  --border-subtle:  rgba(0,0,0,0.06);
-  --border-default: #d8d8e0;
-  --border-strong:  #c0c0cc;
-  --text-primary:   #0f0f11;
-  --text-secondary: #4a4a58;
-  --text-tertiary:  #72727e;
-  --text-muted:     #9898a4;
-  --accent-bg: rgba(94,106,210,0.08);
+  --bg-elev-2:  #ffffff;
+  --bg-elev-3:  #eef2f6;
+  --bg-hover:   #edf1f5;
+  --bg-input:   #ffffff;
+  --bg-active:  #e4eaf0;
+  --border-subtle:  rgba(15,25,35,0.08);
+  --border-default: rgba(15,25,35,0.13);
+  --border-strong:  #ccd5de;
+  --text-primary:   #0f161c;
+  --text-secondary: #45525d;
+  --text-tertiary:  #6b7883;
+  --text-muted:     #a3adb6;
+
+  --accent-primary: #0f97b0;
+  --accent-hover:   #0c8299;
+  --accent-active:  #0a6d80;
+  --accent-bg:      rgba(15,151,176,0.10);
+  --accent-border:  rgba(15,151,176,0.34);
+  --accent-fg:      #ffffff;
+
+  --green:   #178a5f;
+  --amber:   #b0741a;
+  --red:     #d1443a;
+  --blue:    #2679c9;
+
+  --status-todo:     #62707d;
+  --status-progress: #b0741a;
+  --status-blocked:  #d1443a;
+  --status-done:     #178a5f;
+
+  --st-planned:          #62707d;
+  --st-planned-wash:     rgba(98,112,125,0.11);
+  --st-planned-border:   rgba(98,112,125,0.34);
+  --st-executing-wash:   rgba(176,116,26,0.12);
+  --st-executing-border: rgba(176,116,26,0.36);
+  --st-complete-wash:    rgba(23,138,95,0.12);
+  --st-complete-border:  rgba(23,138,95,0.36);
+  --st-blocked-wash:     rgba(209,68,58,0.11);
+  --st-blocked-border:   rgba(209,68,58,0.36);
+  --st-info-wash:        rgba(38,121,201,0.11);
+  --st-info-border:      rgba(38,121,201,0.36);
+  --chart-track: rgba(15,25,35,0.09);
 
   /* Dashboard mockup tokens — light theme. Surfaces/text flip to light;
      teal/purple/blue/amber accents and severity colors stay the same. */
@@ -233,6 +277,7 @@ html, body {
 .nav-section:first-child { margin-top: 0; }
 
 .nav-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -252,7 +297,17 @@ html, body {
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 .nav-link:hover { background: var(--bg-hover); color: var(--text-secondary); }
-.nav-link.active { background: var(--bg-elev-2); color: var(--text-primary); }
+.nav-link.active { background: var(--accent-bg); color: var(--text-primary); font-weight: 600; }
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent-primary);
+}
 .nav-count {
   margin-left: auto;
   font-size: 10px;
@@ -308,7 +363,7 @@ html, body {
 
 /* ── Topbar / header ───────────────────────────────────────────── */
 header {
-  background: rgba(8,9,10,0.8); /* intentional: frosted glass tied to --bg-page exact value; alpha can't be expressed as a theme token */
+  background: rgba(11,13,15,0.8); /* intentional: frosted glass tied to --bg-page exact value; alpha can't be expressed as a theme token */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
@@ -323,7 +378,7 @@ header {
 }
 
 [data-theme="light"] header {
-  background: rgba(245,245,247,0.85); /* intentional: light frosted glass; alpha channel can't be expressed as a theme token */
+  background: rgba(243,245,248,0.85); /* intentional: light frosted glass; alpha channel can't be expressed as a theme token */
 }
 
 .brand {
@@ -658,7 +713,7 @@ section .body {
 /* ── Progress bar ───────────────────────────────────────────────── */
 .progress-bar {
   height: 4px;
-  background: var(--bg-elev-3);
+  background: var(--chart-track);
   border-radius: 2px;
   overflow: hidden;
   width: 100%;
@@ -688,7 +743,7 @@ section .body {
 .velocity-bar-track {
   flex: 1;
   height: 6px;
-  background: var(--bg-elev-3);
+  background: var(--chart-track);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -946,7 +1001,7 @@ section .body {
 }
 .inline-file-entry:last-child { border-bottom: none; }
 .inline-file-entry:hover { background: var(--bg-hover); color: var(--text-primary); }
-.inline-file-entry.selected { background: rgba(94,106,210,0.1); color: var(--accent-primary); }
+.inline-file-entry.selected { background: rgba(34,182,207,0.1); color: var(--accent-primary); }
 .inline-file-group { margin-bottom: var(--space-3); }
 .inline-subgroup { padding-left: var(--space-4); }
 .file-path-header {
@@ -1073,7 +1128,7 @@ section .body {
   font-weight: 500;
   padding: 1px 5px;
   border-radius: var(--radius-full);
-  background: rgba(94,106,210,0.15);
+  background: rgba(34,182,207,0.15);
   color: var(--accent-hover);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1121,8 +1176,8 @@ section .body {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
-  background: rgba(235,87,87,0.1);
-  border-bottom: 1px solid rgba(235,87,87,0.25);
+  background: rgba(236,106,94,0.1);
+  border-bottom: 1px solid rgba(236,106,94,0.25);
   font-size: var(--text-xs);
   flex-shrink: 0;
 }
@@ -1130,7 +1185,7 @@ section .body {
 .banner-list { color: var(--text-secondary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .banner-dismiss {
   background: none;
-  border: 1px solid rgba(235,87,87,0.4);
+  border: 1px solid rgba(236,106,94,0.4);
   border-radius: var(--radius-2);
   color: var(--red);
   font-size: var(--text-2xs);
@@ -1139,12 +1194,12 @@ section .body {
   cursor: pointer;
   white-space: nowrap;
 }
-.banner-dismiss:hover { background: rgba(235,87,87,0.15); }
+.banner-dismiss:hover { background: rgba(236,106,94,0.15); }
 
 #parse-warning {
   padding: var(--space-3) var(--space-5);
-  background: rgba(242,201,76,0.08);
-  border-bottom: 1px solid rgba(242,201,76,0.2);
+  background: rgba(224,166,58,0.08);
+  border-bottom: 1px solid rgba(224,166,58,0.2);
   font-size: var(--text-xs);
   color: var(--amber);
 }
@@ -1317,10 +1372,10 @@ footer {
   box-shadow: 0 0 0 1px var(--accent-border);
 }
 .kanban-card.done {
-  border-color: rgba(76,183,130,0.3);
+  border-color: rgba(60,185,138,0.3);
 }
 .kanban-card.blocked-state {
-  border-color: rgba(235,87,87,0.3);
+  border-color: rgba(236,106,94,0.3);
 }
 
 /* Drag-over highlight */
@@ -1368,10 +1423,10 @@ footer {
   padding: 1px 5px;
   border-radius: var(--radius-1);
 }
-.s-todo     .kanban-card-status { background: rgba(226,226,226,0.1); color: var(--status-todo); }
-.s-in_progress .kanban-card-status { background: rgba(242,201,76,0.12); color: var(--status-progress); }
-.s-blocked  .kanban-card-status { background: rgba(235,87,87,0.12); color: var(--status-blocked); }
-.s-done     .kanban-card-status { background: rgba(76,183,130,0.12); color: var(--status-done); }
+.s-todo     .kanban-card-status { background: var(--st-planned-wash); color: var(--status-todo); border: 1px solid var(--st-planned-border); }
+.s-in_progress .kanban-card-status { background: var(--st-executing-wash); color: var(--status-progress); border: 1px solid var(--st-executing-border); }
+.s-blocked  .kanban-card-status { background: var(--st-blocked-wash); color: var(--status-blocked); border: 1px solid var(--st-blocked-border); }
+.s-done     .kanban-card-status { background: var(--st-complete-wash); color: var(--status-done); border: 1px solid var(--st-complete-border); }
 
 /* Running indicator on card */
 .card-run-indicator {
@@ -1428,17 +1483,17 @@ footer {
 .kanban-run-btn:hover {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: white;
+  color: var(--accent-fg);
 }
 .kanban-run-btn:active { transform: scale(0.97); }
 
 .kanban-stop-btn {
-  background: rgba(235,87,87,0.1);
-  border-color: rgba(235,87,87,0.3);
+  background: rgba(236,106,94,0.1);
+  border-color: rgba(236,106,94,0.3);
   color: var(--red);
 }
 .kanban-stop-btn:hover {
-  background: rgba(235,87,87,0.2);
+  background: rgba(236,106,94,0.2);
 }
 .kanban-stop-btn:active { transform: scale(0.97); }
 
@@ -1636,7 +1691,7 @@ footer {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-4) var(--space-5);
-  background: #050507;
+  background: #070809;
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.6;
@@ -1756,11 +1811,11 @@ footer {
 }
 .orch-footer-btn:hover { background: var(--bg-active); color: var(--text-primary); }
 .orch-footer-btn.stop {
-  background: rgba(235,87,87,0.1);
-  border-color: rgba(235,87,87,0.3);
+  background: rgba(236,106,94,0.1);
+  border-color: rgba(236,106,94,0.3);
   color: var(--red);
 }
-.orch-footer-btn.stop:hover { background: rgba(235,87,87,0.2); }
+.orch-footer-btn.stop:hover { background: rgba(236,106,94,0.2); }
 
 /* ── Old kanban inline terminals (hidden) ────────────────────── */
 .kanban-log-panel { display: none !important; }
@@ -1800,9 +1855,9 @@ footer {
   padding: 1px 5px;
   border-radius: var(--radius-1);
 }
-.phase-status.done    { background: rgba(76,183,130,0.12); color: var(--green); }
-.phase-status.planned { background: rgba(94,106,210,0.12); color: var(--accent-hover); }
-.phase-status.active  { background: rgba(242,201,76,0.12); color: var(--amber); }
+.phase-status.done    { background: var(--st-complete-wash); color: var(--green); border: 1px solid var(--st-complete-border); }
+.phase-status.planned { background: var(--accent-bg); color: var(--accent-hover); border: 1px solid var(--accent-border); }
+.phase-status.active  { background: var(--st-executing-wash); color: var(--amber); border: 1px solid var(--st-executing-border); }
 
 /* Sprint / tasks */
 .sprint-card {
@@ -1854,7 +1909,7 @@ footer {
   font-size: 9px;
   color: var(--green);
 }
-.task-check.done { border-color: var(--green); background: rgba(76,183,130,0.12); }
+.task-check.done { border-color: var(--green); background: var(--st-complete-wash); }
 .task-id {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
@@ -1899,10 +1954,10 @@ footer {
   display: inline-flex;
   align-self: flex-start;
 }
-.memory-type.user    { background: rgba(94,106,210,0.12); color: var(--accent-hover); }
-.memory-type.feedback { background: rgba(242,201,76,0.12); color: var(--amber); }
-.memory-type.project { background: rgba(76,183,130,0.12); color: var(--green); }
-.memory-type.reference { background: rgba(38,181,206,0.12); color: var(--blue); }
+.memory-type.user    { background: var(--accent-bg); color: var(--accent-hover); border: 1px solid var(--accent-border); }
+.memory-type.feedback { background: var(--st-executing-wash); color: var(--amber); border: 1px solid var(--st-executing-border); }
+.memory-type.project { background: var(--st-complete-wash); color: var(--green); border: 1px solid var(--st-complete-border); }
+.memory-type.reference { background: var(--st-info-wash); color: var(--blue); border: 1px solid var(--st-info-border); }
 .memory-name {
   font-size: var(--text-xs);
   font-weight: 600;
@@ -2146,7 +2201,7 @@ footer {
   background: var(--accent-primary);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: var(--radius-3);
-  color: white;
+  color: var(--accent-fg);
   font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-sans);
@@ -4379,11 +4434,11 @@ summary:focus-visible,
 .runner-picker-btn--run {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: #fff;
+  color: var(--accent-fg);
 }
 .runner-picker-btn--run:hover {
   background: var(--accent-hover);
-  color: #fff;
+  color: var(--accent-fg);
 }
 .runner-picker-btn--run:disabled {
   opacity: 0.5;
@@ -4477,9 +4532,9 @@ summary:focus-visible,
 }
 .filter-chip:hover { border-color: var(--accent-primary); }
 .filter-chip.active {
-  background: var(--accent-primary);
-  color: #fff;
-  border-color: var(--accent-primary);
+  background: var(--accent-bg);
+  color: var(--text-primary);
+  border-color: var(--accent-border);
 }
 .filter-chip-clear {
   font-size: var(--text-2xs);
