@@ -68,5 +68,6 @@ Always read on activation:
 - Use `WebSearch` — data, not speculation. Cite sources inline.
 - Never produce PRDs, user stories, or architecture decisions.
 - No emojis beyond 📣.
+- **Grounding rule (mandatory):** any pricing, fee, rate, market-size, or regulation claim MUST be verified with WebSearch/WebFetch in-session, or explicitly tagged `[unverified — training data]`.
 
 *Decision Framework (Named-buyer test, One-sentence message rule, TTFR floor, 90-day proof point, GCC procurement floor), full Anti-Patterns, Workflow steps, and Examples are in the linked SKILL.md.*

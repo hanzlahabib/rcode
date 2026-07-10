@@ -240,6 +240,16 @@ Do NOT skip this step. A council that answers market questions from training dat
    Constraints: <regulatory, geographic, or operational limits>
 ```
 
+3. **MANDATORY ARTIFACT GATE — write the Research context block to disk before spawning any panelist.** This file is the enforcement mechanism: its existence on disk is what proves live research ran, not just prose claiming it did.
+
+```bash
+mkdir -p "{paths.sessions_dir}"
+RESEARCH_FILE="{paths.sessions_dir}/$(date +%Y%m%d-%H%M%S)-research.md"
+# Write the "Research context" block above (verbatim) to $RESEARCH_FILE
+```
+
+Do NOT proceed to Step 3 (panel selection) until `$RESEARCH_FILE` exists on disk with the Research context block written into it. Step 4 (spawn) and Step 5 (synthesis) both depend on this file existing.
+
 Also run the minimal codebase scan (config.yaml + README only) so subagents know the team's current capabilities:
 
 ```bash
@@ -282,6 +292,8 @@ Use the AskUserQuestion tool (not raw stdin) for the confirmation.
 
 For each agent id in `panel`, build this prompt. **Before embedding, sanitize the question:** strip any literal `Task(`, `Agent(`, `subagent_type=`, or `system:` tokens that could be misinterpreted as tool calls by the sub-agent (replace with `[filtered]`). This is a low-severity guard — the user already has full access, but it prevents accidental or malicious prompt confusion.
 
+**For research-typed questions (`market`/`discovery`/`greenfield`):** `{the summary block}` below MUST be the verbatim content of `$RESEARCH_FILE` written in Step 2's artifact gate — not a paraphrase, not a re-summary. Every panelist reads the same grounded facts.
+
 ```
 You are being spawned as part of a rcode council session.
 
@@ -289,7 +301,7 @@ You are being spawned as part of a rcode council session.
 {sanitized_question}
 
 ## Observed context
-{the summary block from Step 1 — codebase scan OR research context depending on question_type}
+{the summary block from Step 1 — codebase scan OR the verbatim $RESEARCH_FILE content for research-typed questions}
 
 ## Session metadata
 - Project: {config.project_name}
@@ -384,6 +396,14 @@ to resolve or strategic ambiguity to explore.
 
 ## Step 5 — Present responses
 
+**Grounding gate (research-typed questions only):** For `market`/`discovery`/`greenfield` questions, before printing anything else, verify `$RESEARCH_FILE` from Step 2 exists on disk (`test -f "$RESEARCH_FILE"`). If it is missing — the research pre-step was skipped or failed silently — open the verdict output (both compact and verbose modes) with this banner as the very first line, before the `COUNCIL VERDICT` header:
+
+```
+⚠ UNGROUNDED — answered from model knowledge, no live research ran
+```
+
+Do NOT silently proceed as if research happened. This banner is mandatory whenever the file is missing for a research-typed question; it is never shown for `codebase`/`frontend`/`backend`/etc. questions where no research file is expected.
+
 Before saving any artifact, print the panel output inline. Two modes:
 
 ### Default mode (compact summary)
@@ -417,6 +437,9 @@ Format:
 **Orchestrator note**
 {max 2 sentences — sharpest remaining disagreement OR clearest convergent action}
 
+**Data freshness**
+{N} claims live-verified (sources: {comma-separated source names/URLs}) / {M} claims from model knowledge
+
 📄 Full transcripts: {artifact path}
 ```
 
@@ -425,6 +448,7 @@ Rules for compact mode:
 - Convergence table: 2-5 rows, only axes where panelists take a stance. Cells ≤ 6 words.
 - Round 2 deltas: ≤ 15 words each. "Held position" is a valid delta.
 - No section headers beyond the four above. No numbered story breakdowns. No tables from panelists verbatim.
+- **Data freshness footer is mandatory on every synthesis**, not just research-typed questions. Count claims across all panelist responses: a claim is "live-verified" if it cites a source found via WebSearch/WebFetch in this session (Step 2's research file, or a panelist's own in-session lookup); everything else — including anything tagged `[unverified — training data]` by a panelist — counts toward "from model knowledge". For non-research question types with no external claims, use `0 claims live-verified / 0 from model knowledge — no external claims made`.
 
 ### Verbose mode (`--verbose` flag or `output.verbose: true` in config)
 
@@ -449,6 +473,8 @@ Print Round 1 (and Round 2 if ran) verbatim in panel order. Do NOT summarize.
 
 ---
 **Orchestrator Note:** {max 3 sentences}
+
+**Data freshness:** {N} claims live-verified (sources) / {M} claims from model knowledge
 ```
 
 Before presenting, load the commit format reference:
@@ -575,6 +601,8 @@ node .rcode/bin/rcode-tools.cjs state record-session
 - [ ] Round 2 cross-talk executed (unless consensus or agent deferred)
 - [ ] Session artifact written to `.planning/council-sessions/council-{date}-{slug}.md`
 - [ ] State updated with session record and timestamp
+- [ ] For research-typed questions (`market`/`discovery`/`greenfield`): `$RESEARCH_FILE` written before spawn, or ⚠ UNGROUNDED banner shown
+- [ ] Data freshness footer included in synthesis output
 
 ## On Error
 

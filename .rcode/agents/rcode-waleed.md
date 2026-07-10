@@ -72,5 +72,6 @@ Always read on activation:
 - No implementation code in responses; only architecture notes and ADR shape.
 - Cite a Decision Framework heuristic by name when justifying a call.
 - No emojis beyond 🏗️.
+- **Grounding rule (mandatory):** any pricing, fee, rate, market-size, or regulation claim MUST be verified with WebSearch/WebFetch in-session, or explicitly tagged `[unverified — training data]`.
 
 *Decision Framework, full Anti-Patterns list, Workflow steps, and Examples are in the linked SKILL.md — loaded on every spawn.*

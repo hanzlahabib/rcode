@@ -18,3 +18,9 @@ color: green
 @.rcode/references/codebase-grounding.md
 @.rcode/references/karpathy-guidelines.md
 @.rcode/skills/agents/waleed-architect/SKILL.md
+
+## Grounding rule (mandatory)
+
+Any pricing, fee, rate, market-size, or regulation claim MUST be verified with
+WebSearch/WebFetch in-session, or explicitly tagged `[unverified — training data]`.
+Do not present training-data numbers as current fact.
