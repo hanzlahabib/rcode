@@ -3,6 +3,36 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.5.0 (2026-07-10) — Ambient memory: relevance-ranked injection + drift detection
+
+The Memory Bank stops being pull-only. Session start and pre-compact now inject
+relevance-ranked memory automatically, a post-commit drift check catches
+"memory says X, code does Y", and the audit that motivated all of it fixed the
+silent failures that kept consumer installs broken.
+
+### Memory (#958)
+- **Relevance-ranked injection** — `rcode/bin/lib/memory-select.cjs` scores Memory Bank files against the current phase, git branch, and recently touched files; `session-start` injects the top excerpts within a ~1500-token budget (override: `memory_inject_budget` in `.rcode/config.yaml`), `pre-compact` within ~600.
+- **Drift detection** — `rcode/bin/lib/memory-drift.cjs` compares `stack.md`/`decisions.md` claims against the last 10 commits and the working tree (dep contradictions, missing paths, stale INDEX). Post-commit nudges once per session; `rcode-hooks drift` prints the full report.
+
+### Fixes from the 2026-07-10 product gap audit
+- **Silent no-op when `rcode/data/` is missing** (#952 follow-up) — prompt-router now emits an actionable "run `npx @hanzlaa/rcode update`" warning instead of silently disabling skill auto-detection.
+- **Audit routing** (#956) — bare "audit" routes to `/rcode-audit`; the karpathy intent points at the real entry point; removed a false "records to state.json" claim from the nudge.
+- **Roman-Urdu + Arabic intent keywords** (#957) — prompt-router now matches bilingual prompts, not just English.
+- **State hygiene** (#955) — canonical `planned|executing|complete` status enum with load-time migration; `resolveActivePhase()` no longer announces a stale phase in the session greeter; gate warns when completing a phase while an earlier one is stuck executing.
+- **Namespace cleanup** (#954) — migrate path backs up and removes legacy `rihal-*` twins and duplicate command registrations; doctor reports duplication, missing data files, stale executing phases, and Memory Bank staleness.
+- **Truthful docs** (#958, #959) — memory INDEX no longer claims automatic reads it didn't do (now it does, and says how); AGENTS.md dashboard rule matches the real architecture; TODO compliance grep no longer self-triggers.
+
+### Refactor
+- **rcode-tools split begins** (#204) — brain, progress, summary, and gitignore families extracted to `rcode/bin/lib/` (`cmdState` deferred to a focused pass).
+
+### Known issues filed, not yet fixed
+- #960 `rcode/bin` → `.rcode/bin` mirror desyncs on git merge/pull (SessionStart crash until synced)
+- #961 `slice_end` ReferenceError in gitignore block rewrite (pre-existing, surfaced by the split)
+- #962 bench.cjs counts timed-out runs as 1-line outputs
+
+Tests: 509 → 574 passing.
+
+---
 ## v4.4.4 (2026-06-28) — Milestone guidance can't be bypassed
 
 A cluster of "the signal is computed but only surfaced if you run the right
