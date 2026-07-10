@@ -17,6 +17,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { verifyInstall, formatReport } = require('./lib/manifest.cjs');
 const { checkStaleness } = require('./lib/memory-bank.cjs');
+const { homedir } = require('./lib/homedir.cjs');
+const { scanNamespaceDuplication } = require('./lib/namespace-migrate.cjs');
 const {
   parseFrontmatter,
   validateSkillFrontmatter,
@@ -100,6 +102,29 @@ function commandAvailable(cmd) {
   const checker = process.platform === 'win32' ? 'where' : 'which';
   const result = spawnSync(checker, [cmd], { stdio: 'ignore' });
   return result.status === 0;
+}
+
+/**
+ * Detect phases stuck at status 'executing' while a numerically later phase
+ * has already reached 'complete'. That combination only happens when an
+ * executor crashed/was killed without updating state.json — a real phase
+ * would never be marked complete while an earlier one is still mid-run.
+ * Read-only; used by `rcode doctor` to flag stale state for manual repair.
+ */
+function findStuckExecutingPhases(state) {
+  const phases = Array.isArray(state?.phases) ? state.phases : [];
+  const executing = phases.filter((p) => p && p.status === 'executing');
+  if (executing.length === 0) return [];
+  const maxCompleteNumber = phases
+    .filter((p) => p && p.status === 'complete')
+    .map((p) => parseFloat(p.number))
+    .filter((n) => !Number.isNaN(n))
+    .reduce((max, n) => Math.max(max, n), -Infinity);
+  if (maxCompleteNumber === -Infinity) return [];
+  return executing.filter((p) => {
+    const n = parseFloat(p.number);
+    return !Number.isNaN(n) && n < maxCompleteNumber;
+  });
 }
 
 // ---------- Preflight checks ----------
@@ -192,6 +217,36 @@ function runPreflight(cwd, packageRoot) {
       : 'not found (github-sync unavailable)',
   });
 
+  // 5b. Namespace duplication (#954) — legacy rihal-* entries whose rcode-*
+  // twin already exists, plus unprefixed/cross-scope command dupes. Doesn't
+  // require .rcode/ init since it inspects .claude/ directly. Read-only —
+  // fix path is `rcode update` or `rcode migrate-namespace --yes`.
+  try {
+    const nsDup = scanNamespaceDuplication(cwd, homedir());
+    if (nsDup.totalCount > 0) {
+      checks.push({
+        label: 'Namespace duplication',
+        status: 'warn',
+        message:
+          `${nsDup.totalCount} duplicate registration(s) — legacy skills: ${nsDup.legacySkillCount}, ` +
+          `legacy commands: ${nsDup.legacyCommandCount}, unprefixed: ${nsDup.unprefixedCount}, ` +
+          `cross-scope: ${nsDup.crossScopeCount} (run \`rcode migrate-namespace --yes\` or \`rcode update\`)`,
+      });
+    } else {
+      checks.push({
+        label: 'Namespace duplication',
+        status: 'ok',
+        message: 'no duplicate rihal-*/rcode-* registrations found',
+      });
+    }
+  } catch (e) {
+    checks.push({
+      label: 'Namespace duplication',
+      status: 'warn',
+      message: `could not scan: ${e.message}`,
+    });
+  }
+
   // 6. Agent manifest drift (only if .rcode/ is initialized — indicates installed editors)
   if (fs.existsSync(rcodeDir)) {
     const editors = [];
@@ -252,6 +307,69 @@ function runPreflight(cwd, packageRoot) {
         label: 'Memory bank',
         status: 'warn',
         message: `STALE — ${staleness.reasons[0]}${staleness.reasons.length > 1 ? ` (+${staleness.reasons.length - 1} more)` : ''}`,
+      });
+    }
+
+    // 8. .rcode/data/intent-table.json presence (#952/#954). Installer ships
+    // rcode/data/ into consumer projects as of #952; if it's missing, the
+    // prompt-router degrades to a no-op with no visible error. Warn-only —
+    // the fail-open behavior in rcode-hooks.cjs keeps hooks working either way.
+    const intentTablePath = path.join(rcodeDir, 'data', 'intent-table.json');
+    checks.push({
+      label: 'intent-table.json',
+      status: fs.existsSync(intentTablePath) ? 'ok' : 'warn',
+      message: fs.existsSync(intentTablePath)
+        ? path.relative(cwd, intentTablePath)
+        : 'missing — run `npx @hanzlaa/rcode update` to sync .rcode/data/',
+    });
+
+    // 9. Stale phase state — a phase stuck 'executing' while a numerically
+    // later phase has already reached 'complete' means an executor died
+    // without updating state.json. Warn-only; fix is manual state repair.
+    const statePath = path.join(rcodeDir, 'state.json');
+    if (fs.existsSync(statePath)) {
+      try {
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        const stuck = findStuckExecutingPhases(state);
+        checks.push({
+          label: 'Phase state',
+          status: stuck.length > 0 ? 'warn' : 'ok',
+          message:
+            stuck.length > 0
+              ? `${stuck.length} phase(s) stuck 'executing' while a later phase is complete: ${stuck.map((p) => p.number).join(', ')}`
+              : 'no stuck phases',
+        });
+      } catch (e) {
+        checks.push({
+          label: 'Phase state',
+          status: 'warn',
+          message: `state.json unreadable: ${e.message}`,
+        });
+      }
+    }
+
+    // 10. Memory INDEX.md staleness — separate from the fingerprint-based
+    // "Memory bank" check above (#7), which tracks .rcode/context/. This is
+    // a simple wall-clock check on .rcode/memory/INDEX.md, the distilled
+    // memory index every workflow reads.
+    const memoryIndexPath = path.join(rcodeDir, 'memory', 'INDEX.md');
+    if (fs.existsSync(memoryIndexPath)) {
+      const ageDays = Math.floor(
+        (Date.now() - fs.statSync(memoryIndexPath).mtimeMs) / (24 * 60 * 60 * 1000),
+      );
+      checks.push({
+        label: 'Memory INDEX.md',
+        status: ageDays > 30 ? 'warn' : 'ok',
+        message:
+          ageDays > 30
+            ? `STALE — last updated ${ageDays}d ago (run /rcode-memory-update)`
+            : `fresh — updated ${ageDays}d ago`,
+      });
+    } else {
+      checks.push({
+        label: 'Memory INDEX.md',
+        status: 'warn',
+        message: 'missing (run /rcode-memory-init)',
       });
     }
   }
@@ -479,3 +597,7 @@ module.exports = function doctor(args, { packageRoot }) {
   console.log();
   process.exit(totalFailures > 0 ? 1 : 0);
 };
+
+// Re-exports for unit tests.
+module.exports.findStuckExecutingPhases = findStuckExecutingPhases;
+module.exports.runPreflight = runPreflight;
