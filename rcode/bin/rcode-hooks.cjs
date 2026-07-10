@@ -581,8 +581,15 @@ async function costTrack() {
 // Fail-open (#952 review H1): the load is wrapped so a MISSING data file degrades
 // the prompt-router to a no-op instead of throwing at module-require time, which
 // would crash EVERY hook subcommand (bash-guard, pre-edit, session-start, …) —
-// not just the router. The installer-side fix (ship rcode/data/) is tracked in #952.
+// not just the router.
+//
+// #952 follow-up: a missing data file used to degrade silently (empty table,
+// zero output, no way for the user to know auto-detection is broken). It now
+// still fails open — prompt-router still exits 0 and never blocks — but
+// promptRouter() emits a one-time additionalContext warning pointing at the
+// fix (`npx @hanzlaa/rcode update`) instead of no-op-ing forever.
 let INTENT_TABLE = [];
+let INTENT_TABLE_LOAD_ERROR = null;
 try {
   INTENT_TABLE = JSON.parse(
     require('fs').readFileSync(
@@ -590,8 +597,9 @@ try {
       'utf8'
     )
   );
-} catch {
+} catch (err) {
   INTENT_TABLE = [];
+  INTENT_TABLE_LOAD_ERROR = err;
 }
 
 /**
@@ -716,6 +724,30 @@ function promptRouter() {
 
     // ── when-stale: check if state is stale ──────────────────────────────
     if (nudgeMode === 'when-stale' && !isStateStaleFallbackTrue(cwd)) {
+      process.exit(0);
+    }
+
+    // ── Missing data file: warn once instead of silently no-op-ing (#952) ──
+    // A consumer install missing rcode/data/intent-table.json used to degrade
+    // to a permanent, invisible no-op — no output, no hint anything was wrong.
+    // Warn once per machine (tmpdir marker keyed by project path) and point
+    // at the fix, then continue with the (empty) table like before.
+    if (INTENT_TABLE_LOAD_ERROR) {
+      const warnKey = cwd.replace(/[^a-zA-Z0-9]/g, '_');
+      const warnFile = path.join(os.tmpdir(), 'rcode-intent-table-missing-warned-' + warnKey);
+      if (!fs.existsSync(warnFile)) {
+        try { fs.writeFileSync(warnFile, String(process.pid)); } catch { /* fail open */ }
+        const payload = {
+          hookSpecificOutput: {
+            hookEventName,
+            additionalContext:
+              'rcode/data/intent-table.json is missing — skill auto-detection from prompts is disabled. ' +
+              'Run `npx @hanzlaa/rcode update` to reinstall the missing data files.',
+          },
+        };
+        process.stdout.write(JSON.stringify(payload));
+        process.exit(0);
+      }
       process.exit(0);
     }
 

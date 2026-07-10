@@ -247,3 +247,64 @@ test('hookEventName from input is forwarded in output', () => {
     assert.strictEqual(out.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
   }
 });
+
+// ─── 10. Missing data file warns once instead of a silent permanent no-op (#952) ──
+//
+// Runs the hook against a standalone copy of rcode-hooks.cjs (+ its lib/
+// dependency) in a scratch directory with NO rcode/data/intent-table.json,
+// instead of renaming the real repo file — mutating the shared data file
+// in-place would race with every other test file that also spawns this hook.
+
+function makeHookCopyWithoutDataFile() {
+  const scratchRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-hook-nodata-'));
+  const binDir = path.join(scratchRoot, 'bin');
+  fs.mkdirSync(path.join(binDir, 'lib'), { recursive: true });
+  fs.copyFileSync(HOOK, path.join(binDir, 'rcode-hooks.cjs'));
+  fs.copyFileSync(
+    path.resolve(__dirname, '../rcode/bin/lib/state-reader.cjs'),
+    path.join(binDir, 'lib', 'state-reader.cjs')
+  );
+  // scratchRoot/data/ intentionally does not exist — simulates a consumer
+  // install missing rcode/data/ (#952).
+  return { scratchRoot, hookCopy: path.join(binDir, 'rcode-hooks.cjs') };
+}
+
+test('missing intent-table.json warns once, then goes silent', () => {
+  const { scratchRoot, hookCopy } = makeHookCopyWithoutDataFile();
+  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-pr-missing-data-'));
+  const warnKey = projectDir.replace(/[^a-zA-Z0-9]/g, '_');
+  const warnFile = path.join(os.tmpdir(), 'rcode-intent-table-missing-warned-' + warnKey);
+
+  function runCopy(payload) {
+    return spawnSync(process.execPath, [hookCopy, 'prompt-router'], {
+      encoding: 'utf8',
+      input: JSON.stringify(payload),
+      cwd: projectDir,
+      env: process.env,
+    });
+  }
+
+  try {
+    fs.rmSync(warnFile, { force: true });
+
+    // First call — data file missing → warn once
+    const first = runCopy({ prompt: 'hello there' });
+    assert.strictEqual(first.status, 0);
+    assert.ok(first.stdout.length > 0, 'first call must emit the missing-data-file warning');
+    const out = JSON.parse(first.stdout);
+    assert.match(
+      out.hookSpecificOutput.additionalContext,
+      /npx @hanzlaa\/rcode update/,
+      'warning must tell the user how to fix the missing install'
+    );
+
+    // Second call, same project — already warned → silent
+    const second = runCopy({ prompt: 'hello again' });
+    assert.strictEqual(second.status, 0);
+    assert.strictEqual(second.stdout, '', 'second call must not repeat the warning');
+  } finally {
+    fs.rmSync(warnFile, { force: true });
+    fs.rmSync(projectDir, { recursive: true, force: true });
+    fs.rmSync(scratchRoot, { recursive: true, force: true });
+  }
+});
