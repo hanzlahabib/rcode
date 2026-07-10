@@ -791,10 +791,9 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
-server.on('error', (err) => {
-  console.error('[orchestrator] server error:', err.message);
-  process.exit(1);
-});
+// NOTE: the single server 'error' handler lives below the WebSocket block —
+// a second handler here would fire first and exit(1) before the EADDRINUSE
+// exit(2) path runs, re-triggering the dashboard's 3s respawn loop (#964).
 
 // WebSocket upgrade — authenticate, validate the storyId, then hand off.
 if (WebSocketServer) {
