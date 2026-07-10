@@ -290,7 +290,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | A bug, error, crash, failure, or something broken | `/rcode-debug` | Needs systematic investigation |
 | Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rcode-prfaq` | Stress-test concept before committing sprint capacity |
 | Brainstorm, generate ideas, "explore options", "what could we do" | `/rcode-brainstorm` | Structured ideation before planning |
-| Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rcode-review --karpathy` | 4-principle code audit against recent diff |
+| "karpathy", "review changes", "check my diff", "too complex" — 4-principle code audit against a diff | `/rcode-karpathy-audit` | Runs the karpathy-audit workflow directly (review.md has no `--karpathy` flag) |
 | Make it simpler, "be lazy", "lazy mode", "simplest solution", "yagni", "over-engineered", "kam code likho" | `/rcode-lazy` | Generative simplicity lens — YAGNI before code is written (rcode-trim removes bloat after the fact) |
 | Walk through a change, "checkpoint", "explain this diff", "human review" | `/rcode-checkpoint-preview` | Human-in-the-loop diff walkthrough |
 | Exploring, researching, comparing, or "how does X work" | `/rcode-research-phase` | Domain research before planning |
@@ -317,7 +317,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Adding tests, "write tests", "test coverage" | `/rcode-add-tests` | Test generation |
 | Completing a milestone, shipping, releasing | `/rcode-complete-milestone` | Milestone lifecycle |
 | Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rcode-feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
-| General audit / re-audit / extend / fill out / expand an existing artifact | `/rcode-audit` | Unified audit entry — picks artifact type and re-runs |
+| Bare "audit" / "code review" / re-audit / extend / fill out / expand an existing artifact | `/rcode-audit` | Unified audit entry — disambiguates plans/phase/milestone/UAT/code before dispatching |
 > **SEO route guard:** Skills in this block assume a project context exists (`.planning/PROJECT.md`). If absent, the `HAS_PRD` check in `<step name="check_project">` redirects to `/rcode-new-project`.
 
 | **— SEO / Content intent —** | | |

@@ -769,8 +769,11 @@ function promptRouter() {
     // gentle memory-framed tip loses the skill-selection race to imperative
     // SessionStart primers (e.g. superpowers' "you MUST invoke"). The memory
     // rationale stays, but as the fallback note rather than the headline.
+    // #956: dropped the "records the outcome in .rcode/state.json" claim —
+    // most routed workflows (e.g. karpathy-audit) only write a report file,
+    // they don't touch state.json, so the blanket claim was false.
     const advisory =
-      `Use ${matched.command} for this ${matched.intent} task — it's the rcode workflow built for it, and it records the outcome in .rcode/state.json. ` +
+      `Use ${matched.command} for this ${matched.intent} task — it's the rcode workflow built for it. ` +
       `Prefer it over handling this ad-hoc; if you do proceed manually, run /rcode-memory-update afterward so long-term memory stays consistent.`;
 
     const payload = {

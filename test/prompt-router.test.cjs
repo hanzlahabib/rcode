@@ -62,23 +62,37 @@ test('matching prompt emits memory-framed advisory with correct fields', () => {
   const out = JSON.parse(result.stdout);
   const ctx = out.hookSpecificOutput.additionalContext;
 
-  assert.ok(/state\.json/.test(ctx), 'advisory must mention state.json');
   assert.ok(/\/rcode-memory-update/.test(ctx), 'advisory must mention /rcode-memory-update');
   assert.ok(/\/rcode-/.test(ctx), 'advisory must name a /rcode- command');
   assert.strictEqual(out.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
 });
 
-// ─── 2. Audit prompt routes to review/audit ──────────────────────────────────
+// ─── 2. Audit prompts route to the right entry point ────────────────────────
+// #956: "audit"/"code review" (generic) must land on the disambiguating
+// /rcode-audit router, not the karpathy lens. Karpathy-specific phrasing
+// ("too complex", "complexity", "karpathy") routes to the real karpathy
+// entry point, /rcode-karpathy-audit — review.md has no --karpathy flag.
 
-test('audit prompt routes to /rcode-review or /rcode-audit', () => {
-  const result = runRouter({ prompt: 'audit the code for too much complexity' });
+test('bare "audit" prompt routes to /rcode-audit', () => {
+  const result = runRouter({ prompt: 'can you audit this for me' });
 
   assert.strictEqual(result.status, 0);
   assert.ok(result.stdout.length > 0, 'stdout must not be empty on audit match');
 
   const out = JSON.parse(result.stdout);
   const ctx = out.hookSpecificOutput.additionalContext;
-  assert.ok(/\/rcode-review|\/rcode-audit/.test(ctx), 'advisory must route to rcode-review or rcode-audit');
+  assert.ok(/\/rcode-audit\b/.test(ctx), 'advisory must route to /rcode-audit');
+});
+
+test('karpathy-flavored prompt routes to /rcode-karpathy-audit', () => {
+  const result = runRouter({ prompt: 'this diff is too complex, check for karpathy violations' });
+
+  assert.strictEqual(result.status, 0);
+  assert.ok(result.stdout.length > 0, 'stdout must not be empty on karpathy match');
+
+  const out = JSON.parse(result.stdout);
+  const ctx = out.hookSpecificOutput.additionalContext;
+  assert.ok(/\/rcode-karpathy-audit\b/.test(ctx), 'advisory must route to /rcode-karpathy-audit');
 });
 
 // ─── 3. Non-match is silent ───────────────────────────────────────────────────

@@ -15,9 +15,9 @@
     "command": "/rcode-debug"
   },
   {
-    "intent": "audit-karpathy",
-    "keywords": ["audit", "review changes", "check my diff", "karpathy", "too complex", "complexity", "code review"],
-    "command": "/rcode-review --karpathy"
+    "intent": "karpathy-audit",
+    "keywords": ["review changes", "check my diff", "karpathy", "too complex", "complexity"],
+    "command": "/rcode-karpathy-audit"
   },
   {
     "intent": "lazy",
@@ -81,7 +81,7 @@
   },
   {
     "intent": "audit",
-    "keywords": ["re-audit", "extend the audit", "fill out the", "expand the", "re audit"],
+    "keywords": ["re-audit", "extend the audit", "fill out the", "expand the", "re audit", "audit", "code review"],
     "command": "/rcode-audit"
   }
 ]

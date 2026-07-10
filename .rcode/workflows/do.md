@@ -289,7 +289,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | A bug, error, crash, failure, or something broken | `/rcode-debug` | Needs systematic investigation |
 | Validate an idea, "working backwards", "press release", "PRFAQ", "is this worth building" | `/rcode-prfaq` | Stress-test concept before committing sprint capacity |
 | Brainstorm, generate ideas, "explore options", "what could we do" | `/rcode-brainstorm` | Structured ideation before planning |
-| Audit code quality, "review changes", "karpathy", "check my diff", "too complex" | `/rcode-review --karpathy` | 4-principle code audit against recent diff |
+| "karpathy", "review changes", "check my diff", "too complex" — 4-principle code audit against a diff | `/rcode-karpathy-audit` | Runs the karpathy-audit workflow directly (review.md has no `--karpathy` flag) |
 | Walk through a change, "checkpoint", "explain this diff", "human review" | `/rcode-checkpoint-preview` | Human-in-the-loop diff walkthrough |
 | Exploring, researching, comparing, or "how does X work" | `/rcode-research-phase` | Domain research before planning |
 | Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rcode-discuss-phase` | Decisions not yet locked — gather before planning |
@@ -315,7 +315,7 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Adding tests, "write tests", "test coverage" | `/rcode-add-tests` | Test generation |
 | Completing a milestone, shipping, releasing | `/rcode-complete-milestone` | Milestone lifecycle |
 | Drift / out-of-date / "verify docs vs code" / "audit feature docs" / "fill out existing PRD/epics/stories" | `/rcode-feature-drift` | Detects PRD↔epics↔stories↔code drift; --fix patches trivial items |
-| General audit / re-audit / extend / fill out / expand an existing artifact | `/rcode-audit` | Unified audit entry — picks artifact type and re-runs |
+| Bare "audit" / "code review" / re-audit / extend / fill out / expand an existing artifact | `/rcode-audit` | Unified audit entry — disambiguates plans/phase/milestone/UAT/code before dispatching |
 | A specific, actionable, small task (add feature, fix typo, update config) | `/rcode-quick` | Self-contained, single executor |
 | Market/discovery/greenfield question (from classify) | `/rcode-council` | Needs multi-perspective discovery |
 
