@@ -64,7 +64,7 @@ done
 
 ## Dependencies & Imports
 
-- **Dashboard server (`server/dashboard.js`) stays dependency-free.** Pure Node stdlib. No frameworks.
+- **Dashboard server has no external framework dependency.** `server/dashboard.js` is the entry point over `server/lib/` and `server/orchestrator.js`; the client is a Preact SPA built from a vendored copy (`server/lib/html/client/vendor/preact.js`), not an npm package.
 - Never remove a dependency without explicit approval.
 - Verify imports exist before referencing them.
 - Never leave half-migrated code (old + new coexisting).
@@ -73,7 +73,7 @@ done
 
 ## Dashboard Server Rules
 
-- Single file, no framework
+- Split across `server/dashboard.js`, `server/lib/`, and `server/orchestrator.js` — no external framework dependency (client Preact is vendored, not an npm package)
 - View-only — NEVER add write endpoints, POST handlers, or DB code
 - Must start cleanly: `node server/dashboard.js`
 
@@ -99,8 +99,10 @@ for f in rcode/skills/agents/*/SKILL.md rcode/skills/actions/*/SKILL.md; do
   grep -q "^## Examples" "$f" || echo "MISSING: $f"
 done
 
-# 2. No stray TODOs
-grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
+# 2. No stray TODOs (scoped to TODO: in code files — rcode/ and docs/
+#    markdown legitimately discuss the TODO concept in guides/commands)
+grep -rn "TODO:" rcode docs examples README.md server \
+  --include="*.js" --include="*.cjs" --include="*.mjs" --include="*.ts"
 
 # 3. Dashboard boots
 node server/dashboard.js

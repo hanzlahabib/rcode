@@ -399,7 +399,12 @@ chore(github): import Siraaj commit and PR rules
    ```
 4. **Grep for regressions:**
    ```bash
-   grep -rn -i "TODO" rcode docs examples README.md server   # should be empty
+   # Scope to "TODO:" and code files — rcode/, docs/, and skill/workflow
+   # markdown legitimately discuss TODOs (stub-detection guides, the
+   # add-todo/check-todos commands); an unscoped -i "TODO" grep is always red.
+   grep -rn "TODO:" rcode docs examples README.md server \
+     --include="*.js" --include="*.cjs" --include="*.mjs" --include="*.ts"
+   # should be empty, or only match deliberate string/regex literals
    grep -rn "ahmed" rcode docs README.md server | grep -v "ahmed-hassani\|Ahmed Al Hassani"   # should be empty
    ```
 

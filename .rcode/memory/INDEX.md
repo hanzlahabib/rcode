@@ -1,6 +1,6 @@
 # Memory Bank — `rcode`
 
-> The Memory Bank is your project's persistent brain. AI agents read from here on every session. You write to it as work happens. Survives session resets, team changes, and AI memory limits.
+> The Memory Bank is your project's persistent brain. It is loaded on demand, not automatically: run `/rcode-memory-init` to scaffold it, `/rcode-memory-update` after work happens, `/rcode-memory-distill` to regenerate the compressed distillates, and `/rcode-memory-audit` to check it for staleness. The `session-start` hook only emits a one-line phase-status primer from `.rcode/state.json` — it does not read this directory. Survives session resets, team changes, and AI memory limits, but only for agents that are told to open it.
 
 **Last updated:** 2026-04-26
 
