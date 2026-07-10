@@ -1,8 +1,8 @@
 # Memory Bank — `rcode`
 
-> The Memory Bank is your project's persistent brain. It is loaded on demand, not automatically: run `/rcode-memory-init` to scaffold it, `/rcode-memory-update` after work happens, `/rcode-memory-distill` to regenerate the compressed distillates, and `/rcode-memory-audit` to check it for staleness. The `session-start` hook only emits a one-line phase-status primer from `.rcode/state.json` — it does not read this directory. Survives session resets, team changes, and AI memory limits, but only for agents that are told to open it.
+> The Memory Bank is your project's persistent brain. Full read/write access is on-demand: run `/rcode-memory-init` to scaffold it, `/rcode-memory-update` after work happens, `/rcode-memory-distill` to regenerate the compressed distillates, and `/rcode-memory-audit` to check it for staleness. Ambient injection also runs automatically (#958): the `session-start` hook emits its usual one-line phase-status primer from `.rcode/state.json`, then — when this directory exists and has content — a relevance-ranked selector (`rcode/bin/lib/memory-select.cjs`) scores every file here against the current phase, git branch, and recently touched files, and injects the top-scoring excerpts as `additionalContext` within a ~1500-token budget (override via `.rcode/config.yaml`'s `memory_inject_budget`). The `pre-compact` hook does the same with a smaller ~600-token budget as part of its survival context. This keeps agents grounded in relevant memory without a human having to run a `/rcode-memory-*` command first — full manual review is still the way to go deep.
 
-**Last updated:** 2026-04-26
+**Last updated:** 2026-07-10
 
 ---
 
@@ -26,6 +26,8 @@
 
 ## Token budget guide
 
+- **Ambient session-start injection** (~1.5K tokens, `memory_inject_budget`) — automatic, relevance-ranked, no command needed
+- **Ambient pre-compact injection** (~600 tokens) — automatic survival context alongside `HANDOFF.json`
 - **`INDEX.md` only** (~500 tokens) — quick orientation
 - **`INDEX.md` + `distillates/project.distillate.md`** (~5K tokens) — standard session start
 - **Full `project/` directory** (~10–15K tokens) — deep planning
