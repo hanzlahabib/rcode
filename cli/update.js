@@ -446,6 +446,25 @@ async function runUpdate(args, { packageRoot, packageJson }) {
   }
   console.log(`   ✓ ${path.relative(cwd, configPath)} → installed_version: ${packageVersion}`);
 
+  // ------ Legacy namespace cleanup (#954) ------
+  // Backs up + removes legacy rihal-* skills/commands whose rcode-* twin
+  // already exists, plus unprefixed/cross-scope command dupes. Idempotent —
+  // safe to run on every update even when there's nothing to migrate.
+  try {
+    const { migrateNamespace } = require('./lib/namespace-migrate.cjs');
+    const { homedir: getHomedir } = require('./lib/homedir.cjs');
+    const nsResult = migrateNamespace(cwd, getHomedir());
+    const nsTotal = Object.values(nsResult.removed).reduce((a, b) => a + b, 0);
+    if (nsTotal > 0) {
+      console.log(`   🧹 migrated ${nsTotal} legacy rihal-*/duplicate command registration(s)`);
+      if (nsResult.backupDir) {
+        console.log(`      backup: ${nsResult.backupDir}`);
+      }
+    }
+  } catch (err) {
+    console.log(`   ⚠ namespace migration skipped: ${err.message}`);
+  }
+
   // ------ Verify manifest ------
   console.log();
   const { reports, hasDrift } = verifyInstall(cwd, packageRoot, editors);

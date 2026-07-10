@@ -27,6 +27,7 @@ const COMMANDS = {
   uninstall: require('./uninstall'),
   remove: require('./uninstall'),  // alias
   nuke: require('./nuke'),         // full cleanup across all package managers + global state
+  'migrate-namespace': require('./migrate-namespace'), // clean up legacy rihal-* dupes (#954)
   dashboard: require('./dashboard'),
   serve: require('./dashboard'),
   digest: require('./digest'),
@@ -73,6 +74,9 @@ Usage:
                  binaries, ~/.claude/* rcode artifacts, ~/.rcode/, project artifacts)
                  Default = dry-run. Pass --yes to remove. Pass --include-planning
                  to also remove .planning/ in CWD.
+  migrate-namespace  Back up + remove legacy rihal-* skills/commands whose
+                 rcode-* twin exists, plus unprefixed/cross-scope command dupes.
+                 Default = dry-run. Pass --yes to remove. Idempotent.
   config         Get/set project configuration (project_name, user_name, etc.)
   context        Memory bank freshness (--check | --refresh | --install-hook)
   github-sync    Sync .rcode/ phases/epics/stories to GitHub (dry-run default)
