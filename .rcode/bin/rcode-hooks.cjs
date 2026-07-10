@@ -25,8 +25,43 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
-const { resolveActivePhase, readSprintProgress, readRecentCommits, readMilestoneHint } = require('./lib/state-reader.cjs');
-const { selectMemoryChunks, formatMemoryContext, hasMemory } = require('./lib/memory-select.cjs');
+
+/**
+ * Self-healing lib require (#960). When this file runs from an installed
+ * `.rcode/bin/` whose `lib/` is stale or partial (fresh git worktree, merge/
+ * pull that changed `rcode/bin/lib/` without a mirror sync), a hard require
+ * crashes EVERY hook — the user sees a SessionStart loader error and loses
+ * the status line entirely. Instead: on MODULE_NOT_FOUND, try healing from
+ * the in-repo source of truth (`rcode/bin/lib/<name>` relative to the project
+ * root that contains this `.rcode/`), retry once, and otherwise fail open so
+ * hooks degrade (no memory injection / drift check) rather than die.
+ */
+function requireLib(name) {
+  const local = path.join(__dirname, 'lib', name);
+  try { return require(local); } catch (err) {
+    if (err && err.code !== 'MODULE_NOT_FOUND') throw err;
+    try {
+      const src = path.join(__dirname, '..', '..', 'rcode', 'bin', 'lib', name);
+      if (fs.existsSync(src)) {
+        fs.mkdirSync(path.dirname(local), { recursive: true });
+        fs.copyFileSync(src, local);
+        return require(local);
+      }
+    } catch { /* healing is best-effort */ }
+    return null;
+  }
+}
+
+const _stateReader = requireLib('state-reader.cjs') || {};
+const resolveActivePhase = _stateReader.resolveActivePhase || (() => ({ activePhase: null, phaseLabel: null }));
+const readSprintProgress = _stateReader.readSprintProgress || (() => ({ completedCount: 0, incompleteTasks: [] }));
+const readRecentCommits  = _stateReader.readRecentCommits  || (() => []);
+const readMilestoneHint  = _stateReader.readMilestoneHint  || (() => null);
+
+const _memSelect = requireLib('memory-select.cjs') || {};
+const selectMemoryChunks  = _memSelect.selectMemoryChunks  || (() => []);
+const formatMemoryContext = _memSelect.formatMemoryContext || (() => '');
+const hasMemory           = _memSelect.hasMemory           || (() => false);
 
 // lib/memory-drift.cjs is optional at the module-load level: some hook-copy
 // test fixtures deliberately stage a minimal bin/lib/ (only state-reader.cjs)
@@ -34,9 +69,10 @@ const { selectMemoryChunks, formatMemoryContext, hasMemory } = require('./lib/me
 // require would crash every subcommand, not just `drift`/`post-commit`, so
 // this loads lazily and fails open — same pattern as INTENT_TABLE below.
 let checkDrift = null;
-try {
-  ({ checkDrift } = require('./lib/memory-drift.cjs'));
-} catch { /* optional — see comment above */ }
+{
+  const _drift = requireLib('memory-drift.cjs');
+  if (_drift) ({ checkDrift } = _drift);
+}
 
 /**
  * Read and parse stdin JSON.
