@@ -3,6 +3,32 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.6.0 (2026-07-11) — Diwan dashboard redesign + live agent orchestration rail
+
+The dashboard gets its Diwan design system — a full visual rebrand plus a
+restructured Orchestration view where you watch every running agent at a
+glance — and the hook/runtime bugs that made sessions hang or crash are gone.
+
+### Dashboard — Diwan design system
+- **Full-fidelity rebrand** — new token system (teal accent, sunken surfaces, per-status wash/border families) applied across every view including the previously-exempt Overview card namespace and phase-graph tokens; zero orphan legacy colors (verified by computed-style checks in both themes).
+- **Orchestration view restructured** to the design's 2-column layout: left rail (header, live Agents card, Pipeline card), right full-height docked terminal with traffic-dot chrome, live indicator, and Stop.
+- **Live agents at a glance** — the left rail now lists the orchestrator's running sessions (status pill, elapsed / idle / files-changed line); clicking any agent, pipeline row, or history row attaches the docked terminal to that session; Stop targets the attached session only. Command launching moved to a compact footer control, flow unchanged.
+- Found and fixed along the way: a CSS comment bug silently dropping ~34 rules, a `.view.active` specificity conflict, and an undefined accent fallback rendering Discord-indigo.
+
+### Reliability
+- **Dashboard no longer hangs WSL** (#964) — a duplicate `server.on('error')` handler defeated the EADDRINUSE exit(2) guard, so any occupied orchestrator port triggered an infinite 3-second respawn loop. Single error path now; port conflicts log once and stay functional.
+- **Hooks self-heal missing lib modules** (#960) — fresh worktrees/merges no longer crash every hook with a loader error; `requireLib()` restores the module from the in-repo source or degrades gracefully.
+- **Orchestrator port no longer hard-coded** (#969) — the server injects `ORCH_PORT` into the client and CSP, so a second dashboard instance can never silently drive the wrong orchestrator.
+
+### Council grounding (#963)
+- Market/discovery/greenfield councils must now write a research artifact before spawning; synthesis opens with an "⚠ UNGROUNDED" banner if it's missing, panelists must verify or tag `[unverified — training data]` on pricing/fee/market claims, and every verdict carries a "Data freshness" footer. 17 lint tests lock the contract.
+
+### Known issues filed this cycle
+- #965 sidebar badges not wired to sessions · #966 stale/junk state entries · #967 dashboard view-only toggle · #968 Memory view health signals · #970 terminal header overflow at 1920px · #961 gitignore slice_end · #962 bench error rows
+
+Tests: 574 → 591 passing.
+
+---
 ## v4.5.0 (2026-07-10) — Ambient memory: relevance-ranked injection + drift detection
 
 The Memory Bank stops being pull-only. Session start and pre-compact now inject
