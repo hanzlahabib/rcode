@@ -15,7 +15,7 @@
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
-import { orchToken, stopSession, cleanSessions, ORCH_WS } from '../orchestrator.js';
+import { orchToken, stopSession, cleanSessions, orchWs } from '../orchestrator.js';
 import { showToast } from './shared.js';
 import { Icon } from '../icons-client.js';
 
@@ -106,7 +106,7 @@ export function OrchPanel() {
       return;
     }
     const ws = new WebSocket(
-      ORCH_WS + '/ws/' + encodeURIComponent(storyId) +
+      orchWs() + '/ws/' + encodeURIComponent(storyId) +
       '?token=' + encodeURIComponent(tok)
     );
     _streams[storyId] = ws;

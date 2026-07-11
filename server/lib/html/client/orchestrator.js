@@ -5,17 +5,27 @@
  * Preact store (activeSessions field). Components import these functions
  * directly; no window.* globals needed after Sprint 31.4.
  *
- * Constants
- *   ORCH_HTTP — base URL for orchestrator REST API
- *   ORCH_WS   — base URL for orchestrator WebSocket
+ * Functions
+ *   orchHttp() — base URL for orchestrator REST API
+ *   orchWs()   — base URL for orchestrator WebSocket
  */
 
 import { getState, setState } from './store.js';
 import { showToast } from './components/shared.js';
 import { trackBlocked } from './notify.js';
 
-export const ORCH_HTTP = 'http://localhost:7718';
-export const ORCH_WS   = 'ws://localhost:7718';
+// #969 — the orchestrator port is injected by the server (see shell.js) as
+// window.__ORCH_PORT__, since a dashboard started with ORCH_PORT set (e.g. a
+// second instance under test) spawns its orchestrator on a non-default port.
+// A hardcoded 7718 here would silently drive the wrong orchestrator process.
+// Resolved per-call (not cached at module load) so it works even if a caller
+// loads this module before the inline bootstrap script has run.
+function orchPort() {
+  return (typeof window !== 'undefined' && window.__ORCH_PORT__) || 7718;
+}
+
+export function orchHttp() { return 'http://localhost:' + orchPort(); }
+export function orchWs()   { return 'ws://localhost:' + orchPort(); }
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
@@ -31,7 +41,10 @@ export function orchToken() {
 export function refreshOrchToken() {
   return fetch('/api/orch-token')
     .then(r => r.json())
-    .then(d => { if (d && d.token) window.__ORCH_TOKEN__ = d.token; })
+    .then(d => {
+      if (d && d.token) window.__ORCH_TOKEN__ = d.token;
+      if (d && d.orchPort) window.__ORCH_PORT__ = d.orchPort;
+    })
     .catch(() => {});
 }
 
@@ -50,7 +63,7 @@ export function runSession(storyId, cmd, opts) {
     body.runner = opts.runner;
     if (opts.model) body.model = opts.model;
   }
-  return fetch(ORCH_HTTP + '/api/run', {
+  return fetch(orchHttp() + '/api/run', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -67,7 +80,7 @@ let _runnersPromise = null;
 export function fetchRunners() {
   if (_runnersPromise) return _runnersPromise;
   const tok = orchToken();
-  _runnersPromise = fetch(ORCH_HTTP + '/api/runners', {
+  _runnersPromise = fetch(orchHttp() + '/api/runners', {
     headers: { 'Authorization': 'Bearer ' + tok },
   })
     .then(r => r.json())
@@ -81,7 +94,7 @@ export function fetchRunners() {
  */
 export function stopSession(storyId) {
   const tok = orchToken();
-  return fetch(ORCH_HTTP + '/api/stop', {
+  return fetch(orchHttp() + '/api/stop', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId }),
@@ -96,7 +109,7 @@ export function stopSession(storyId) {
 function fetchSessionsWithStatus() {
   const tok = orchToken();
   if (!tok) return Promise.resolve({ ok: false, sessions: [] });
-  return fetch(ORCH_HTTP + '/api/sessions', {
+  return fetch(orchHttp() + '/api/sessions', {
     headers: { 'Authorization': 'Bearer ' + tok },
   })
     .then(r => {
@@ -119,7 +132,7 @@ export function fetchSessions() {
 export function fetchHistory() {
   const tok = orchToken();
   if (!tok) return Promise.resolve([]);
-  return fetch(ORCH_HTTP + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok } })
+  return fetch(orchHttp() + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok } })
     .then(r => {
       if (r.status === 401) { refreshOrchToken(); return []; }
       return r.json().then(d => (d && d.history) || []);
@@ -160,7 +173,7 @@ export function isOrchOnline() {
  */
 export function submitRejection(storyId, reason, phase) {
   const tok = orchToken();
-  return fetch(ORCH_HTTP + '/api/reject', {
+  return fetch(orchHttp() + '/api/reject', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId, reason, phase: phase || null }),
@@ -173,7 +186,7 @@ export function submitRejection(storyId, reason, phase) {
 export function fetchRejections() {
   const tok = orchToken();
   if (!tok) return Promise.resolve([]);
-  return fetch(ORCH_HTTP + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok } })
+  return fetch(orchHttp() + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok } })
     .then(r => r.ok ? r.json().then(d => (d && d.rejections) || []) : [])
     .catch(() => []);
 }
@@ -184,7 +197,7 @@ export function fetchRejections() {
  */
 export function setTaskStatus(storyId, status) {
   const tok = orchToken();
-  return fetch(ORCH_HTTP + '/api/task-status', {
+  return fetch(orchHttp() + '/api/task-status', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId, status }),
@@ -197,7 +210,7 @@ export function setTaskStatus(storyId, status) {
  */
 export function cleanSessions(olderThanDays = 0) {
   const tok = orchToken();
-  return fetch(ORCH_HTTP + '/api/clean-sessions', {
+  return fetch(orchHttp() + '/api/clean-sessions', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
     body: JSON.stringify({ olderThanDays }),

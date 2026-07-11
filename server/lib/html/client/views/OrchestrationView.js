@@ -1,9 +1,10 @@
 /**
  * OrchestrationView — 2-column Diwan layout.
  *
- * Left rail (300px): view header, Runner picker card (repurposes the
- * allowlisted rcode command list as "runners" per the design), Pipeline
- * card (live sessions, or a history-status summary when nothing is live).
+ * Left rail (300px): view header, Agents card (live rows for whatever the
+ * orchestrator is currently running, fed by /api/sessions — replaces the
+ * old static command-list "Runner picker"), Pipeline card (live sessions,
+ * or a history-status summary when nothing is live).
  * Right column: the docked xterm.js terminal (XtermPanel docked=true) with
  * Run History beneath it.
  *
@@ -18,7 +19,7 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { stopSession, openTermPanel, ALLOWED_COMMANDS, isSessionRunning, mergeSessionsAndHistory } from '../orchestrator.js';
+import { stopSession, openTermPanel, ALLOWED_COMMANDS, mergeSessionsAndHistory } from '../orchestrator.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { RejectDialog } from '../components/RejectDialog.js';
 import { XtermPanel } from '../components/XtermPanel.js';
@@ -44,34 +45,71 @@ function sortSessions(sessions) {
   });
 }
 
-// ── Runner picker card (left rail) ───────────────────────────────────────────
+// ── Agents card (left rail) ───────────────────────────────────────────────────
 
 /**
- * Two-letter mono abbreviation for a command's readable name, derived from
- * the label's leading word(s) before " — " (e.g. "sprint-status — sprint
- * execution status" → "SS", "init — initialise project workspace" → "IN").
+ * Two-letter mono abbreviation derived from a storyId (e.g. "cmd-rcode-status"
+ * → "RS", "sprint-33.1" → "S3", "phase-33" → "PH"). Strips the synthetic
+ * "cmd-" prefix used by the command runner so command sessions abbreviate on
+ * their actual command name, not the literal word "cmd".
  */
-function commandAbbr(label) {
-  const name = (label || '').split('—')[0].trim();
-  const parts = name.split('-').filter(Boolean);
+function agentAbbr(storyId) {
+  const id = String(storyId || '').replace(/^cmd-/, '');
+  const parts = id.split(/[-.]/).filter(Boolean);
   if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+  return id.slice(0, 2).toUpperCase();
+}
+
+// How long an ended session keeps showing in the Agents card after it exits,
+// so the transition from "running" to "gone" isn't instant. After this the
+// row falls out of the list; Pipeline's history summary + Run History still
+// have the record.
+const RECENTLY_EXITED_MS = 60000;
+
+/**
+ * Live status for an Agents-card row. classifyStatus() on the server already
+ * folds a stalled 'running' PTY into 'blocked'; the 'waiting' flag is a
+ * separate, shorter-idle-threshold signal that can be true while status is
+ * still 'running'. Both read as the same "needs a look" state here, matching
+ * PipelineCard's grouping.
+ */
+function agentStatusMeta(s) {
+  if (s.status === 'blocked' || s.waiting) return { label: 'Blocked', cls: 'blocked' };
+  if (s.status === 'running') return { label: 'Running', cls: 'running' };
+  return { label: s.status.charAt(0).toUpperCase() + s.status.slice(1), cls: 'exited' };
+}
+
+/** Elapsed / idle / files-changed glance line from the fields /api/sessions already reports. */
+function agentGlance(s) {
+  const bits = [orchElapsed(s.startTime) + ' elapsed'];
+  if (typeof s.idleSeconds === 'number') bits.push('idle ' + s.idleSeconds + 's');
+  if (typeof s.filesChanged === 'number') bits.push(s.filesChanged + ' file' + (s.filesChanged === 1 ? '' : 's') + ' changed');
+  return bits.join(' · ');
 }
 
 /**
- * RunnerCard — repurposes the "Runner picker" card from the design as rcode's
- * allowlisted command list (per the restructure spec — this is NOT a CLI/
- * model picker, that is RunnerPicker.js's job once Run is pressed). Selecting
- * an idle row highlights it for the next Run; clicking a row that is already
- * Running instead attaches the docked terminal to that live session (same as
- * a Pipeline-card row) — picking a command to run next and looking at a
- * session that's already streaming are different actions.
+ * AgentsCard — replaces the old static "Runner picker" command list. Shows
+ * the agents the orchestrator is CURRENTLY RUNNING (live sessions from
+ * /api/sessions), each row driven entirely by fields the API already
+ * returns: storyId, cmd, status/waiting, startTime, idleSeconds,
+ * filesChanged. Clicking a row attaches the docked terminal to that session
+ * (same wiring as PipelineCard / #969's fix-orch-live-agents predecessor
+ * commit). Command launching (previously this card's only job) moves to the
+ * compact footer control — RunnerPicker.js and the confirm-dialog flow are
+ * unchanged.
  */
-function RunnerCard() {
-  const { orchOnline, terminal } = useStore();
+function AgentsCard() {
+  const { activeSessions, orchOnline, terminal } = useStore();
   const [selected, setSelected] = useState(ALLOWED_COMMANDS[0]?.cmd || '');
   const orchDown = orchOnline === false;
   const attachedStoryId = terminal && terminal.open ? terminal.storyId : '';
+
+  const now = Date.now();
+  const agentRows = sortSessions((activeSessions || []).filter(s => {
+    if (s.status === 'running' || s.status === 'blocked') return true;
+    const last = Date.parse(s.lastOutputAt || s.startTime || '') || 0;
+    return (now - last) < RECENTLY_EXITED_MS;
+  }));
 
   function handleRun(e) {
     if (!selected || orchDown) return;
@@ -80,33 +118,41 @@ function RunnerCard() {
 
   return html`
     <div class="orch-runner-card">
-      <div class="orch-card-label">Runner picker</div>
+      <div class="orch-card-label">Agents</div>
       <div class="orch-runner-list">
-        ${ALLOWED_COMMANDS.map(({ cmd, label }) => {
-          const slug      = cmd.replace(/^\//, '').replace(/\//g, '-');
-          const sessionId = 'cmd-' + slug;
-          const isRunning = isSessionRunning(sessionId);
-          const isAttached = isRunning && sessionId === attachedStoryId;
-          const name = (label || '').split('—')[0].trim();
+        ${agentRows.length === 0 ? html`
+          <div class="orch-runner-empty">
+            <div class="empty">No agents running</div>
+            <div class="orch-runner-hint">Use "Run a command" below or launch a story from the Kanban board.</div>
+          </div>
+        ` : agentRows.map(s => {
+          const meta = agentStatusMeta(s);
+          const isAttached = s.storyId === attachedStoryId;
           return html`
-            <div key=${cmd}
-              class=${'orch-runner-row'
-                + (cmd === selected ? ' selected' : '')
-                + (isAttached ? ' attached' : '')}
-              onClick=${() => isRunning ? openTermPanel(sessionId, sessionId) : setSelected(cmd)}>
-              <span class="orch-runner-abbr">${commandAbbr(label)}</span>
+            <div key=${s.storyId}
+              class=${'orch-runner-row' + (isAttached ? ' attached' : '')}
+              onClick=${() => openTermPanel(s.storyId, s.storyId)}>
+              <span class="orch-runner-abbr">${agentAbbr(s.storyId)}</span>
               <div class="orch-runner-info">
-                <div class="orch-runner-name">${name}</div>
-                <div class="orch-runner-role">${cmd}</div>
+                <div class="orch-runner-name">${s.storyId}</div>
+                <div class="orch-runner-role">${s.cmd}</div>
+                <div class="orch-runner-glance">${agentGlance(s)}</div>
               </div>
-              <span class=${'orch-runner-status' + (isRunning ? ' running' : '')}>
-                ${isRunning ? 'Running' : 'Idle'}
-              </span>
+              <span class=${'orch-agent-status ' + meta.cls}>${meta.label}</span>
             </div>
           `;
         })}
       </div>
       <div class="orch-runner-card-footer">
+        <label class="orch-run-cmd-field">
+          <span class="orch-runner-hint">Run a command</span>
+          <select class="runner-picker-select" value=${selected}
+            onChange=${e => setSelected(e.target.value)}>
+            ${ALLOWED_COMMANDS.map(({ cmd, label }) => html`
+              <option key=${cmd} value=${cmd}>${(label || '').split('—')[0].trim()}</option>
+            `)}
+          </select>
+        </label>
         <button class="term-run-btn" disabled=${orchDown} onClick=${handleRun}>
           <${Icon} name="play" size=${14}/> Run
         </button>
@@ -324,12 +370,12 @@ export function OrchestrationView() {
 
         ${orchDown ? html`
           <div class="orch-down-banner" role="alert">
-            ⚠ Orchestrator unreachable (port 7718) — Run buttons are disabled.
+            ⚠ Orchestrator unreachable — Run buttons are disabled.
             Restart the dashboard, or set ORCH_PORT if the port is in use.
           </div>
         ` : null}
 
-        <${RunnerCard}/>
+        <${AgentsCard}/>
         <${PipelineCard}/>
       </div>
 

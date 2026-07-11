@@ -36,6 +36,9 @@ const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
 const PORT = parseInt(process.env.PORT || '7717', 10);
+// #969 — the orchestrator's actual port, injected into the client so it never
+// has to hardcode 7718. Defaults match orchestrator.js's own default.
+const ORCH_PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
 const RCODE_DIR = process.env.RCODE_DIR || path.join(process.cwd(), '.rcode');
 const PROJECT_ROOT = path.dirname(RCODE_DIR);
 // Fallback root for agent prompts when rcode is installed as a package (not run
@@ -147,7 +150,7 @@ function handleRequest(req, res) {
       return;
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ token: ORCH_TOKEN }));
+    res.end(JSON.stringify({ token: ORCH_TOKEN, orchPort: ORCH_PORT }));
     return;
   }
 
@@ -178,7 +181,7 @@ function handleRequest(req, res) {
 
   if (url === '/' || url === '/index.html') {
     const state = scanState(RCODE_DIR);
-    const html = renderHtml(state, ORCH_TOKEN);
+    const html = renderHtml(state, ORCH_TOKEN, ORCH_PORT);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.end(html);
     return;
@@ -257,7 +260,7 @@ function spawnOrchestrator() {
       console.error('[orch] spawn error:', err.message);
       _orchProc = null;
     });
-    console.log('[orch] orchestrator started (port 7718)');
+    console.log(`[orch] orchestrator started (port ${ORCH_PORT})`);
   } catch (err) {
     console.error('[orch] failed to start:', err.message);
   }

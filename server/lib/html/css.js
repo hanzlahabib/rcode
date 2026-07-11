@@ -2376,7 +2376,7 @@ footer {
   color: var(--text-tertiary);
 }
 
-/* Runner picker card — repurposed to hold the allowlisted command list. */
+/* Agents card — live rows for sessions the orchestrator is currently running. */
 .orch-runner-card {
   background: var(--bg-elev-1);
   border: 1px solid var(--border-subtle);
@@ -2434,6 +2434,14 @@ footer {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.orch-runner-glance {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+}
 .orch-runner-status {
   font-size: var(--text-xs);
   font-weight: 600;
@@ -2441,6 +2449,20 @@ footer {
   white-space: nowrap;
 }
 .orch-runner-status.running { color: var(--green); }
+.orch-agent-status {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: var(--radius-1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.orch-agent-status.running { background: var(--st-executing-wash); color: var(--status-progress); border: 1px solid var(--st-executing-border); }
+.orch-agent-status.blocked { background: var(--st-blocked-wash); color: var(--status-blocked); border: 1px solid var(--st-blocked-border); }
+.orch-agent-status.exited  { background: transparent; color: var(--text-tertiary); border: 1px solid var(--border-subtle); }
+.orch-runner-empty { padding: var(--space-2) var(--space-1); }
 .orch-runner-card-footer {
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-subtle);
@@ -2449,6 +2471,11 @@ footer {
   gap: var(--space-2);
 }
 .orch-runner-hint { font-size: var(--text-2xs); color: var(--text-tertiary); }
+.orch-run-cmd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
 /* Pipeline card — live sessions, or a history-status summary fallback. */
 .orch-pipeline-card {
