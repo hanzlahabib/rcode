@@ -10,20 +10,27 @@
  * clears the field so subsequent renders don't re-trigger.
  */
 
-import { html, useState, useEffect } from '../preact.js';
+import { html, useState, useEffect, useMemo } from '../preact.js';
 import { useStore, setState } from '../store.js';
 import { FileReader } from '../components/FileReader.js';
+import { Icon } from '../icons-client.js';
+
+// File-type icon — markdown gets its own glyph, everything else a plain file.
+function fileIcon(label) {
+  return /\.md$/i.test(label || '') ? 'file-text' : 'file';
+}
 
 // ---- File tree components ----
-function FileEntry({ file, extraText, onSelect, isSelected }) {
+function FileEntry({ file, onSelect, isSelected }) {
   return html`
     <div
-      class=${'item item-clickable inline-file-entry' + (isSelected ? ' selected' : '')}
+      class=${'inline-file-entry' + (isSelected ? ' selected' : '')}
       data-path=${file.path}
+      title=${file.path}
       onClick=${() => onSelect(file)}
-      style="padding:var(--space-2) var(--space-3);font-family:'SF Mono',Monaco,Consolas,monospace;font-size:var(--text-xs);"
     >
-      ${file.label}
+      <${Icon} name=${fileIcon(file.label)} size=${13}/>
+      <span class="inline-file-label">${file.label}</span>
     </div>
   `;
 }
@@ -36,31 +43,31 @@ function FileGroup({ group, onSelect, selectedPath, filter }) {
   }
 
   if (group.subGroups) {
+    const subGroupsVisible = group.subGroups
+      .map(sg => ({ sg, visible: sg.files.filter(f => matchesFilter(f, sg.subGroup)) }))
+      .filter(x => x.visible.length);
+    if (!subGroupsVisible.length) return null;
+    const total = subGroupsVisible.reduce((n, x) => n + x.visible.length, 0);
     return html`
-      <div class="inline-file-group" style="margin-bottom:var(--space-3);">
-        <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) var(--space-3);">
-          ${group.group}
+      <div class="inline-file-group">
+        <div class="inline-file-group-title">
+          ${group.group} <span class="inline-file-group-count">${total}</span>
         </div>
-        ${group.subGroups.map(sg => {
-          const visible = sg.files.filter(f => matchesFilter(f, sg.subGroup));
-          if (!visible.length) return null;
-          return html`
-            <details class="inline-subgroup" open style="margin-left:var(--space-2);margin-bottom:var(--space-1);">
-              <summary style="font-size:var(--text-xs);font-weight:500;color:var(--text-secondary);cursor:pointer;padding:var(--space-1) var(--space-3);user-select:none;">
-                ${sg.subGroup} <span style="color:var(--text-muted);font-weight:400;">(${visible.length})</span>
-              </summary>
-              ${visible.map(f => html`
-                <${FileEntry}
-                  key=${f.path}
-                  file=${f}
-                  extraText=${sg.subGroup}
-                  onSelect=${onSelect}
-                  isSelected=${selectedPath === f.path}
-                />
-              `)}
-            </details>
-          `;
-        })}
+        ${subGroupsVisible.map(({ sg, visible }) => html`
+          <details class="inline-subgroup" open>
+            <summary class="inline-subgroup-summary">
+              ${sg.subGroup} <span class="inline-file-group-count">${visible.length}</span>
+            </summary>
+            ${visible.map(f => html`
+              <${FileEntry}
+                key=${f.path}
+                file=${f}
+                onSelect=${onSelect}
+                isSelected=${selectedPath === f.path}
+              />
+            `)}
+          </details>
+        `)}
       </div>
     `;
   }
@@ -69,9 +76,9 @@ function FileGroup({ group, onSelect, selectedPath, filter }) {
     const visible = group.files.filter(f => matchesFilter(f, ''));
     if (!visible.length) return null;
     return html`
-      <div class="inline-file-group" style="margin-bottom:var(--space-3);">
-        <div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;padding:var(--space-1) var(--space-3);">
-          ${group.group}
+      <div class="inline-file-group">
+        <div class="inline-file-group-title">
+          ${group.group} <span class="inline-file-group-count">${visible.length}</span>
         </div>
         ${visible.map(f => html`
           <${FileEntry}
@@ -116,9 +123,15 @@ export function FilesView() {
     setState({ requestedFile: null });
   }, [requestedFile]);
 
+  const total = useMemo(() => groups.reduce((n, g) =>
+    n + (g.files ? g.files.length : (g.subGroups || []).reduce((m, sg) => m + sg.files.length, 0)), 0),
+    [groups]);
+
   return html`
     <div class="view active" id="view-files">
-      <div class="view-title">Files</div>
+      <div class="view-title">
+        Files ${total > 0 ? html`<span class="inline-file-total">${total}</span>` : null}
+      </div>
       <div id="file-list-inline">
         <div class="filter-bar">
           <input
@@ -131,9 +144,9 @@ export function FilesView() {
         </div>
         <div id="inline-file-items" class="phase-list">
           ${loading
-            ? html`<div class="empty" style="margin:16px;">Loading…</div>`
+            ? html`<div class="empty">Loading…</div>`
             : groups.length === 0
-              ? html`<div class="empty" style="margin:16px;">No files found.</div>`
+              ? html`<div class="empty">No files found.</div>`
               : groups.map(g => html`
                   <${FileGroup}
                     key=${g.group}
