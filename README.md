@@ -49,7 +49,19 @@ If you're a solo dev or small team using Claude Code (or Cursor, Codex, VS Code)
 
 <p align="center"><img src="brand/hero-org-in-folder.png" alt="rcode is an engineering org in a folder: agents, commands, workflows, and skills as plain markdown" width="760"></p>
 
-Three layers, specialised for software delivery:
+In plain words: **rcode is a folder of instructions your AI already knows how to read.** No new app to install, no server to run, no separate "agent brain" — just files. Your IDE (Claude Code, Cursor, whichever) is already an agent; rcode just hands it a really good playbook and a notebook that never forgets.
+
+```mermaid
+flowchart LR
+    A["You type a command<br/>/rcode-plan"] --> B["rcode's files answer:<br/>what to do, in what order"]
+    B --> C["Your IDE's own agent<br/>does the actual work"]
+    C --> D["Result gets saved to<br/>.rcode/memory/"]
+    D -.->|"next session starts here"| A
+```
+
+That loop — command in, memory out, memory feeds the next command — is the whole idea. Everything else in this repo is detail on top of that loop.
+
+Three layers make it up:
 
 | Layer | What lives here | Example |
 |-------|-----------------|---------|
@@ -63,15 +75,26 @@ Single agent navigates the structure. No LangChain, no AutoGen, no orchestrator 
 
 ## Why I built it
 
-I've shipped products solo for years and watched the same failure repeat in every project:
+I've shipped products solo for years and watched the same failure repeat in every project. In one sentence: **the AI forgets everything the moment the chat window closes, so I kept re-explaining the same decisions forever.**
 
-- **Session 1:** Productive — agent helps me design auth, picks Postgres, plans the schema.
-- **Session 5:** Agent has no idea I picked Postgres. Suggests Mongo. We argue. I copy-paste the decision back in.
-- **Session 20:** I'm pasting in 4K tokens of "here's what we decided" every session. The agent never learns. The project file structure isn't enough — decisions live in chat.
+```mermaid
+flowchart LR
+    subgraph without["😩 Without rcode"]
+        direction TB
+        w1["Session 1 — pick Postgres"] --> w2["Session 5 — agent forgot,<br/>suggests Mongo, you argue"]
+        w2 --> w3["Session 20 — you're pasting<br/>4K tokens of 'here's what<br/>we decided' every time"]
+    end
+    subgraph with["✅ With rcode"]
+        direction TB
+        r1["Session 1 — pick Postgres"] --> r2["Decision saved once to<br/>.rcode/memory/decisions.md"]
+        r2 --> r3["Session 20 — agent reads it<br/>automatically, no re-explaining"]
+    end
+    without ~~~ with
+```
 
-rcode is the answer I built for myself. **The decision lives in `.rcode/memory/decisions.md`. The agent reads it. Done.**
+That's it. That's the whole pitch. **Write the decision down once, in a file. The agent reads the file. Done.**
 
-Same problem at team scale: onboarding takes 30 minutes of archaeology. Late requirements shift goalposts with no audit trail. MVPs work but can't be revamped because the original "why" is gone. rcode checks the context in, so the next person (or session) starts oriented.
+The same problem shows up at team scale, just wearing a different costume: onboarding a new hire takes 30 minutes of Slack archaeology, a late requirement quietly shifts the goalposts with no record of why, and six months later nobody remembers why the MVP was built the way it was. rcode's fix is the same either way — write the context down where the agent (and the next human) will actually see it.
 
 ---
 
@@ -81,6 +104,7 @@ What you'll feel in week one:
 
 - **No more re-explaining.** Decisions, blockers, conventions live in `.rcode/memory/` — agent reads them at session start automatically (~5K tokens, fully oriented).
 - **Phased delivery without ceremony.** `/rcode-new-project` produces a roadmap with phases → sprints → tasks. `/rcode-plan` produces SPRINT.md files. `/rcode-execute` runs them with atomic commits. No Jira required.
+- **No blank-page starts.** Already know you're building an API, a SaaS product, or a mobile app? `/rcode-from-template api-backend` seeds a real roadmap + requirements doc for that project type — edit it down instead of writing it up from nothing.
 - **Specialist review on tap.** Want a Karpathy-style review of your last commit? `/rcode-review --karpathy`. Want a council debate on a decision? `/rcode-council should I rewrite auth?` — 5 agents answer in parallel, round 2 they challenge each other.
 - **Intent guards.** Run the wrong command and get a one-line redirect, not a useless output.
 - **Health check.** `rcode-tools health` returns JSON — milestone health, state snapshot, project status. Wire it into your dashboard.
@@ -159,12 +183,21 @@ pnpm dlx @hanzlaa/rcode install
 
 ### The full loop
 
+Four commands cover most of a real week of work — decide, plan, build, check in:
+
+```mermaid
+flowchart LR
+    A["🗣️ /rcode-council<br/>should I rewrite auth?"] --> B["📋 /rcode-plan --research<br/>build a rental app"]
+    B --> C["⚙️ /rcode-execute<br/>PLAN.md"]
+    C --> D["📊 /rcode-status<br/>phases · decisions · blockers"]
 ```
-/rcode-council should I rewrite auth?        → 5 agents debate, 2 rounds
-/rcode-plan --research build a rental app    → researcher grounds, sprint-checker verifies
-/rcode-execute .planning/plans/01/PLAN.md    → atomic commits + post-gates
-/rcode-status                                → phases, decisions, blockers, sessions
-```
+
+| Command | What it does |
+|---|---|
+| `/rcode-council should I rewrite auth?` | 5 specialist agents debate it, 2 rounds — you get a decision, not a monologue |
+| `/rcode-plan --research build a rental app` | A researcher grounds the plan in your real codebase, a checker verifies it before you build anything |
+| `/rcode-execute .planning/plans/01/PLAN.md` | Runs the plan as atomic git commits, with pass/fail gates between steps |
+| `/rcode-status` | One glance at phases, decisions, and blockers — no digging through chat history |
 
 Full install flavors and IDE options: [`docs/install.md`](docs/install.md). Step-by-step first project: [`docs/getting-started.md`](docs/getting-started.md).
 
