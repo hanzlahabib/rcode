@@ -3,6 +3,43 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.7.0 (2026-07-26) — Same-page drawers, Backlog view, README diagrams
+
+Clicking a task, decision, blocker, or sprint used to either do nothing or
+navigate you away from what you were looking at. It now opens in a drawer on
+top of the current view — no lost place, no dead-end "View plan file" button.
+
+### Dashboard
+- **Same-page detail drawers** (#971) — Overview cards (Completed Tasks, In
+  Progress, Recent Decisions, Blockers, Progress Timeline) and the
+  Phases/Sprints/Tasks/Kanban/Decisions pages all open a drawer in place
+  instead of navigating away. `scanner.js` now attaches real file paths to
+  tasks and sprints, so there's something concrete to open — previously the
+  data simply didn't exist. Decisions and blockers (no backing file) get a
+  lightweight fields-only drawer instead.
+- **Backlog view** (#972) — a new nav entry lists not-yet-started phases
+  (real `state.json` data, `state === 'todo'`), deep-linking into the
+  existing phase detail page.
+- **Dependency graph honest empty state** (#973) — when a milestone has no
+  cross-phase dependencies, the graph no longer falls back to a grid of
+  disconnected chips under a misleading "Dependency Graph" heading. It's
+  relabeled "Phases" and rendered as a compact connected sequence instead.
+- **Files view presentation** (#974) — inline `style=` attributes replaced
+  with CSS classes, file-type icons per row, and total/per-group file counts.
+- **Theme toggle icon** (#975) — the topbar's theme button showed a generic
+  "⋯" regardless of theme; it now shows sun/moon matching the theme you'll
+  switch to.
+
+### Docs
+- **README diagrams** (#976) — Mermaid diagrams added to "What it actually
+  is", "Why I built it", and "The full loop" so the core mental model doesn't
+  rely on prose alone. `/rcode-from-template` also gets its first README
+  mention.
+
+Tests: 591 passing (no new automated coverage this cycle — dashboard UI and
+README changes, verified by manual browser QA against the running server).
+
+---
 ## v4.6.0 (2026-07-11) — Diwan dashboard redesign + live agent orchestration rail
 
 The dashboard gets its Diwan design system — a full visual rebrand plus a
