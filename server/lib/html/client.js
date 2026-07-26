@@ -34,6 +34,7 @@ function clientState(state) {
     timeline:         d.timeline     || null,
     tasks:            d.tasks        || null,
     health:           d.health       || null,
+    backlog:          d.backlog      || [],
     // Colliding keys — the contract shapes are supersets, so legacy views and
     // the redesign read the same field. currentPhase becomes the contract object.
     phases:           d.phases       || state.phaseTree || state.raw?.phases || [],
