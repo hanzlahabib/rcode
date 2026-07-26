@@ -4589,6 +4589,7 @@ This file is loaded by Claude Code, Codex, and compatible AI coding tools at the
 - No "while I'm here" improvements
 - No speculative abstractions
 - No new files unless necessary
+- **No freehand status/handoff docs** (\`HANDOFF.md\`, \`AGENT_X_DONE.md\`, anything at the project root summarizing "what I did"). That record is \`<N>-SUMMARY.md\` under \`.planning/phases/\` — even mid-task or in a parallel multi-agent run, write there, not a new root-level file.
 
 ---
 

@@ -161,42 +161,32 @@ Use AskUserQuestion:
 
 **Generate or refresh project instruction file before final commit:**
 
-The rcode-tools CLI does not expose a `generate-claude-md` subcommand. Instead, if `$INSTRUCTION_FILE` does not already exist, write a minimal instruction file pointing at the rcode workflow docs:
-
-```markdown
-# {INSTRUCTION_FILE} — project instructions
-
-This project uses rcode for planning and execution. See `.planning/PROJECT.md` for context and `.planning/ROADMAP.md` for phases.
-
-Common commands:
-- /rcode-progress — check status and next action
-- /rcode-discuss-phase N — gather context before planning phase N
-- /rcode-plan N — create a SPRINT.md for phase N
-- /rcode-execute N — execute a SPRINT.md
-- /rcode-verify-work — conversational UAT
-- /rcode-complete-milestone — archive milestone and reset
-
-Rules:
-- Never run `git push` without explicit user authorization.
-- No Claude/AI attribution in commits.
-- Prefer editing existing files over creating new ones.
+```bash
+node .rcode/bin/rcode-tools.cjs generate-claude-md
 ```
 
-If it already exists, leave it alone (respect user-customized content).
+Writes `CLAUDE.md` and `AGENTS.md` from rcode's own template (commit rules,
+push rules, phase workflow rules, scope discipline, and the command-routing
+rule pointing at `do.md`). Refuses to touch an existing `CLAUDE.md` — if it
+already exists, this is a silent no-op (respects user-customized content).
+`AGENTS.md` is written only when absent, so an install-appended `## rcode
+Agents (installed)` roster section is never clobbered.
 
 **Commit roadmap (guarded):**
 
 ```bash
-git add \
-  .planning/ROADMAP.md \
-  .planning/STATE.md \
-  .planning/REQUIREMENTS.md \
-  "$INSTRUCTION_FILE" 2>/dev/null \
-&& git commit -m "docs: create roadmap ([N] phases)" 2>/dev/null \
-|| echo "ℹ .planning/ gitignored — roadmap written, not committed (instruction file committed separately)"
+# git add fails its whole invocation on any missing pathspec, so only pass
+# paths that actually exist (CLAUDE.md/AGENTS.md are conditional — see above).
+ADD_PATHS=(.planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md)
+for f in CLAUDE.md AGENTS.md; do [ -f "$f" ] && ADD_PATHS+=("$f"); done
 
-# Fallback: also try committing just the instruction file if .planning was ignored
-git add "$INSTRUCTION_FILE" 2>/dev/null && git commit -m "docs: add project instruction file" 2>/dev/null || true
+git add "${ADD_PATHS[@]}" 2>/dev/null \
+&& git commit -m "docs: create roadmap ([N] phases)" 2>/dev/null \
+|| echo "ℹ .planning/ gitignored — roadmap written, not committed (instruction files committed separately)"
+
+# Fallback: also try committing just the instruction files if .planning was ignored
+IFILES=(); for f in CLAUDE.md AGENTS.md; do [ -f "$f" ] && IFILES+=("$f"); done
+[ ${#IFILES[@]} -gt 0 ] && git add "${IFILES[@]}" 2>/dev/null && git commit -m "docs: add project instruction files" 2>/dev/null || true
 
 # Sync all roadmapper-created phases into state.json.
 # rcode-roadmapper writes ROADMAP.md as text — it never calls `phase add` — so
