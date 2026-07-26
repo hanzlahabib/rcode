@@ -429,6 +429,11 @@ function buildDashboard(state) {
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
     .slice(0, 8);
 
+  // ---- backlog (phases not yet started — real state.json data, no invented rows) ----
+  const backlog = phases
+    .filter(p => p.state === 'todo')
+    .map(p => ({ id: p.id, name: p.name, range: p.range }));
+
   // ---- project (identity + current user) ----
   // User comes from config, else the real OS account running the server;
   // null when neither exists (UI greets generically, hides the profile row).
@@ -440,7 +445,7 @@ function buildDashboard(state) {
     user: { name: userName, email: cfg.user_email || '' },
   };
 
-  return { project, progress, currentPhase, timeline: { launchDate, onTrack: blockers.length === 0, points }, tasks, blockers, health, decisions, phases };
+  return { project, progress, currentPhase, timeline: { launchDate, onTrack: blockers.length === 0, points }, tasks, blockers, health, decisions, phases, backlog };
 }
 
 function scanStateUncached(rcodeDir) {

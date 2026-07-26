@@ -33,6 +33,7 @@ const NAV_LINKS = [
   { view: 'sprints',       icon: 'zap',         label: 'Sprints'       },
   { view: 'tasks',         icon: 'checkSquare', label: 'Tasks'         },
   { view: 'kanban',        icon: 'kanban',      label: 'Kanban'        },
+  { view: 'backlog',       icon: 'hourglass',   label: 'Backlog'       },
   { view: 'decisions',     icon: 'scale',       label: 'Decisions'     },
   { view: 'files',         icon: 'file-text',   label: 'Files'         },
   { view: 'agents',        icon: 'users',       label: 'Agents'        },

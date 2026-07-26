@@ -34,6 +34,7 @@ import { PhasesView } from '../views/PhasesView.js';
 import { SprintsView } from '../views/SprintsView.js';
 import { TasksView } from '../views/TasksView.js';
 import { KanbanView } from '../views/KanbanView.js';
+import { BacklogView } from '../views/BacklogView.js';
 import { FilesView } from '../views/FilesView.js';
 import { AgentsView } from '../views/AgentsView.js';
 import { MemoryView } from '../views/MemoryView.js';
@@ -50,6 +51,7 @@ const PREACT_VIEWS = {
   sprints:       SprintsView,
   tasks:         TasksView,
   kanban:        KanbanView,
+  backlog:       BacklogView,
   files:         FilesView,
   agents:        AgentsView,
   memory:        MemoryView,
@@ -215,6 +217,7 @@ export function App() {
         timeline:  d.timeline  || null,
         tasks:     d.tasks     || null,
         health:    d.health    || null,
+        backlog:   d.backlog   || [],
       });
       if (newState.raw) {
         Object.assign(patch, {
