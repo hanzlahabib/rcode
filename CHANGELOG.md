@@ -3,6 +3,35 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.7.1 (2026-07-26) — Close the ambient-instruction gap for existing-project installs
+
+Diagnosed against a real consumer project: a project set up via `/rcode-init`
+alone (the common "add rcode to an existing codebase" path, as opposed to
+`/rcode-new-project`) never got a `CLAUDE.md`/`AGENTS.md` command-routing
+file — so an agent told to "use rcode" with no specific slash command had
+nothing rcode-specific loaded and improvised instead of routing correctly.
+
+### Fixes
+- **`/rcode-init` now generates `CLAUDE.md`/`AGENTS.md`** (#978) when
+  missing — previously only `/rcode-new-project`'s roadmap flow did this.
+- **The `/rcode-new-project` flow itself was silently broken** (#978) — the
+  file it actually includes (`new-project-create-roadmap.md`) referenced an
+  undefined `$INSTRUCTION_FILE` variable and falsely claimed
+  `generate-claude-md` didn't exist. A prior fix had landed in a
+  similarly-named but unused file instead. Fixed at the file that's
+  actually wired in.
+- **Planners no longer re-paste full decision rationale into tasks** (#977)
+  — a real SPRINT.md hit 1000+ lines because a task's action steps
+  re-explained CONTEXT.md's decisions in full instead of just referencing
+  the ID. The playbook now says reference, don't restate.
+- **Executors are told explicitly not to freehand status docs** (#977) —
+  root-level `AGENT_X_DONE.md`-style handoff files are out; the completion
+  record is always `SUMMARY.md` under `.planning/phases/`, including in
+  parallel multi-agent runs.
+
+Tests: 591 passing.
+
+---
 ## v4.7.0 (2026-07-26) — Same-page drawers, Backlog view, README diagrams
 
 Clicking a task, decision, blocker, or sprint used to either do nothing or
