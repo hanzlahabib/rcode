@@ -5457,21 +5457,32 @@ summary:focus-visible,
 .pg-tip text { font-size: var(--text-2xs); fill: var(--text-secondary); pointer-events: none; }
 .pg-tip .pg-tip-title { fill: var(--text-primary); font-weight: 600; }
 
-/* Flow-row mode — no cross-phase dependencies: wrapped chip sequence. */
-.pg-flow {
+/* Sequence mode — no cross-phase dependencies: a connected chain of small
+   pills in roadmap order (arrows imply order, not a graph edge). */
+.pg-hint-top {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-3);
+}
+.pg-seq {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  padding: 0 var(--space-5) var(--space-2);
+  align-items: center;
+  row-gap: var(--space-2);
+  padding: 0 var(--space-5) var(--space-4);
 }
-.pg-chip {
+.pg-seq-item {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  max-width: 220px;
-  padding: var(--space-2) var(--space-3);
-  border: 1.5px solid var(--pg-todo);
-  border-radius: var(--radius-3);
+}
+.pg-seq-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 190px;
+  padding: 3px var(--space-3);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--pg-todo);
+  border-radius: var(--radius-full, 999px);
   background: var(--bg-elev-2);
   color: var(--text-secondary);
   font-size: var(--text-2xs);
@@ -5479,19 +5490,24 @@ summary:focus-visible,
   cursor: pointer;
   transition: background var(--t-fast) var(--ease);
 }
-.pg-chip:hover { background: var(--bg-hover); }
-.pg-chip.pg-done    { border-color: var(--pg-done); }
-.pg-chip.pg-active  { border-color: var(--pg-active); animation: pg-chip-pulse 2s var(--ease) infinite; }
-.pg-chip.pg-blocked { border-color: var(--pg-blocked); }
+.pg-seq-chip:hover { background: var(--bg-hover); }
+.pg-seq-chip.pg-done    { border-left-color: var(--pg-done); }
+.pg-seq-chip.pg-active  { border-left-color: var(--pg-active); animation: pg-chip-pulse 2s var(--ease) infinite; }
+.pg-seq-chip.pg-blocked { border-left-color: var(--pg-blocked); }
 @keyframes pg-chip-pulse {
   0%, 100% { box-shadow: 0 0 0 0 transparent; }
   50%      { box-shadow: 0 0 6px 0 var(--pg-active); }
 }
-.pg-chip-id { font-weight: 600; color: var(--text-primary); }
-.pg-chip-name {
+.pg-seq-id { font-weight: 600; color: var(--text-primary); }
+.pg-seq-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.pg-seq-arrow {
+  padding: 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 .pg-hint, .pg-empty {
   padding: 0 var(--space-5) var(--space-3);

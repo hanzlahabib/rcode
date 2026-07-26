@@ -171,25 +171,33 @@ function Tooltip({ phase, nodePos, canvasW, canvasH }) {
   `;
 }
 
-/** Wrapped flow row of chips — the honest no-dependencies presentation. */
+/**
+ * Sequence row — the honest no-dependencies presentation. There is nothing
+ * to lay out as a DAG (no edges), so this doesn't pretend to be a graph: a
+ * connected left-to-right chain of small status pills in roadmap order,
+ * joined by arrows. Reads as "the order things ship in", not "broken nodes".
+ */
 function FlowRow({ phases }) {
   return html`
-    <div class="pg-flow">
-      ${phases.map(p => {
+    <div class="pg-hint pg-hint-top">No cross-phase dependencies declared — phases shown in roadmap order.</div>
+    <div class="pg-seq">
+      ${phases.map((p, i) => {
         const kind = statusKind(p.status);
         const sprints = (p.sprints || []).length;
         return html`
-          <button key=${p.id} type="button"
-            class=${'pg-chip pg-' + kind}
-            title=${(p.name || '') + ' — ' + sprints + (sprints === 1 ? ' sprint' : ' sprints')}
-            onClick=${() => goToPhase(p.id)}>
-            <span class="pg-chip-id">P${p.id}</span>
-            <span class="pg-chip-name">${truncate(p.name, 24)}</span>
-          </button>
+          <span key=${p.id} class="pg-seq-item">
+            <button type="button"
+              class=${'pg-seq-chip pg-' + kind}
+              title=${(p.name || '') + ' — ' + sprints + (sprints === 1 ? ' sprint' : ' sprints')}
+              onClick=${() => goToPhase(p.id)}>
+              <span class="pg-seq-id">P${p.id}</span>
+              <span class="pg-seq-name">${truncate(p.name, 22)}</span>
+            </button>
+            ${i < phases.length - 1 ? html`<span class="pg-seq-arrow" aria-hidden="true">›</span>` : null}
+          </span>
         `;
       })}
     </div>
-    <div class="pg-hint">No cross-phase dependencies declared — phases shown in roadmap order.</div>
   `;
 }
 
@@ -280,7 +288,7 @@ export function PhaseGraph({ phases }) {
   return html`
     <details class="pg-panel" open>
       <summary>
-        <${Icon} name="layers" size=${14}/> Dependency Graph
+        <${Icon} name="layers" size=${14}/> ${hasDeps ? 'Dependency Graph' : 'Phases'}
         <span class="pg-count">${list.length} ${list.length === 1 ? 'phase' : 'phases'}</span>
       </summary>
       <div class="pg-legend">
