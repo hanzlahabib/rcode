@@ -92,10 +92,10 @@ export function Topbar({ projectName, updatedAgo, refreshing, onRefresh, onToggl
           class="tb-btn tb-btn--icon"
           type="button"
           onClick=${onToggleTheme}
-          title=${'More — switch to ' + (themeLabel === 'light' ? 'dark' : 'light') + ' theme'}
-          aria-label="More options"
+          title=${'Switch to ' + (themeLabel === 'light' ? 'dark' : 'light') + ' theme'}
+          aria-label="Toggle theme"
         >
-          <span class="tb-kebab">⋯</span>
+          <${Icon} name=${themeLabel === 'light' ? 'moon' : 'sun'} size=${15} />
         </button>
       </div>
     </header>

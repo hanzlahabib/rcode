@@ -2942,7 +2942,6 @@ footer {
 }
 .tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
 .tb-btn--icon { padding: 8px 11px; }
-.tb-kebab { font-size: 16px; line-height: 1; letter-spacing: 1px; }
 
 @media (max-width: 760px) {
   .tb-sub { display: none; }
@@ -3781,7 +3780,6 @@ footer {
 }
 .tb-btn--primary:hover { filter: brightness(1.05); border-color: transparent; }
 .tb-btn--icon { padding: 8px 11px; }
-.tb-kebab { font-size: 16px; line-height: 1; letter-spacing: 1px; }
 
 @media (max-width: 760px) {
   .tb-sub { display: none; }
