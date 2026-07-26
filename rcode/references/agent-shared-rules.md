@@ -48,6 +48,12 @@
 
 ---
 
+## File placement discipline
+
+**Completion notes go in the sprint file, never a freehand root-level doc.** When work finishes, the record is `.planning/phases/{phase}/{sprint}-SUMMARY.md` (written by `/rcode-execute`) or a note in the existing `SPRINT.md`/`REVIEW.md` — never a new `SOMETHING_DONE.md`, `HANDOFF.md`, or `AGENT_X_DONE.md` at the project root or anywhere outside `.planning/`/`.rcode/`. If you're in a parallel multi-agent run and were asked for a "handoff doc," that handoff still belongs inside the sprint's own files — a sibling agent reads the next `SPRINT.md`/`CONTEXT.md`, not a scavenger hunt through the repo root for status files with inconsistent names.
+
+**Never invent a new top-level artifact type.** `PROJECT.md`, `ROADMAP.md`, `REQUIREMENTS.md`, `CONTEXT.md`, `RESEARCH.md`, `SPRINT.md`, `SUMMARY.md`, `REVIEW.md` — this is the closed set. If a task genuinely needs a new kind of record, that's a call for the user, not something to freehand mid-task.
+
 ## Framework discipline
 
 **Cite the heuristic by name.** When refusing or recommending, name the rule that drove the call. *"Per the Reversibility test, this is a one-way door — ADR required."* Traceable reasoning beats opinion.

@@ -12,6 +12,7 @@ hierarchical ID format, and output routing.
 
 ### Context Fidelity
 - **Locked Decisions** (CONTEXT.md): MUST implement exactly. Reference decision ID (D-01, D-02) in task actions.
+- **Reference, don't restate.** A decision ID is a pointer, not a license to re-paste the rationale. `<action>` explains WHAT to do and cites the ID for WHY (`"per D-02's flattening rule"`) — it does not re-explain the decision's reasoning, alternatives, or findings inline. The full "why" already lives in CONTEXT.md/RESEARCH.md; the executor opens those if they need it. A task whose `<action>` reads like a design doc (multi-paragraph rationale, full alternatives-considered writeups) is a sign the planner copied instead of pointed — cut it down to the instruction + the ID.
 - **Deferred Ideas**: MUST NOT appear in plans.
 - **Agent's Discretion**: Use judgment, document choices.
 

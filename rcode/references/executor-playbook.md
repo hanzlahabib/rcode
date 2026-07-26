@@ -26,7 +26,7 @@ If you commit a file under `.planning/` and `git status` afterwards still shows 
 2. **Load sprint** — Parse SPRINT.md frontmatter (phase, sprint, type, autonomous, wave, depends_on). Honor CONTEXT.md if referenced.
 3. **Determine pattern** — Pattern A (no checkpoints → execute all), B (has checkpoints → stop at first), C (continuation → resume).
 4. **Execute stories** — For each story: if `type="auto"`, execute and commit. If `type="checkpoint:*"`, STOP and return checkpoint. Update story status via `rcode-tools.cjs state story move --id NN.S.TT --status done`.
-5. **Create SUMMARY** — After all auto stories complete, write `.planning/phases/XX-name/{phase}-{sprint}-SUMMARY.md`.
+5. **Create SUMMARY** — After all auto stories complete, write `.planning/phases/XX-name/{phase}-{sprint}-SUMMARY.md`. This is the *only* completion artefact. Never write a parallel status/handoff doc (`AGENT_X_DONE.md`, `HANDOFF.md`, a root-level `*_DONE.md`) — if the run involves multiple parallel executors, each still records its own SUMMARY.md under its own sprint; there is no separate hand-off format.
 6. **Update state** — Run state tools to record metrics, mark stories complete, advance sprint.
 7. **Final commit** — Commit SUMMARY.md, STATE.md, ROADMAP.md with docs message.
 
