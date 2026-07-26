@@ -15,6 +15,7 @@ import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
 import { openTermPanel, runningInSprint } from '../orchestrator.js';
+import { openFileViewer } from '../store.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { Icon } from '../icons-client.js';
 import { StatusSummaryBar } from '../components/StatusSummaryBar.js';
@@ -37,6 +38,7 @@ function SprintDetail({ sprint: s, S }) {
       sprintGoal: s.goal || '',
       phaseId: s.phaseId,
       phaseName: s.phaseName,
+      file: s.file || null,
     }),
   );
   const done = stories.filter(t => t.status === 'done' || t.status === 'completed').length;
@@ -59,6 +61,10 @@ function SprintDetail({ sprint: s, S }) {
   function handleTerm(e) {
     e.stopPropagation();
     openTermPanel('sprint-' + s.id, 'Sprint ' + s.id);
+  }
+  function handleViewPlan(e) {
+    e.stopPropagation();
+    openFileViewer(s.file, 'Sprint ' + s.id);
   }
 
   return html`
@@ -88,6 +94,9 @@ function SprintDetail({ sprint: s, S }) {
       <div class="term-action-bar">
         <button class="term-run-btn" onClick=${handleRun}>▶ Run Sprint</button>
         <button class="term-run-btn outline" onClick=${handleTerm}><${Icon} name="monitor" size=${14}/> Terminal</button>
+        ${s.file ? html`
+          <button class="back-btn" onClick=${handleViewPlan}><${Icon} name="file-text" size=${14}/> View plan file →</button>
+        ` : null}
       </div>
       <div class="view-title" style="margin-top:var(--space-4)">Tasks</div>
       <div class="phase-list">

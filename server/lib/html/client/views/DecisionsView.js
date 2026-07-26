@@ -7,9 +7,9 @@
  */
 
 import { html, useState } from '../preact.js';
-import { useStore } from '../store.js';
+import { useStore, openDecisionViewer } from '../store.js';
 import { humanDate } from '../util.js';
-import { CmdHint, CmdHints, showToast } from '../components/shared.js';
+import { CmdHint, CmdHints, showToast, pressable } from '../components/shared.js';
 
 const CMD_HINTS = [
   ['/rcode-council',                   'Convene the council for a new decision'],
@@ -83,8 +83,9 @@ export function DecisionsView() {
                   const rationale = (typeof d === 'object' && d.rationale)
                     ? html`<div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">${d.rationale}</div>`
                     : null;
+                  const decisionObj = typeof d === 'object' ? d : { title: d };
                   return html`
-                    <div key=${i} class="item">
+                    <div key=${i} class="item item-clickable" ...${pressable(() => openDecisionViewer(decisionObj))}>
                       <div class="item-title">${title}${dateInfo}</div>
                       <div class="item-meta">${phaseInfo}</div>
                       ${rationale}

@@ -12,8 +12,8 @@
  */
 
 import { html } from '../../preact.js';
-import { useStore } from '../../store.js';
-import { rowLink } from '../../util.js';
+import { useStore, openFileViewer } from '../../store.js';
+import { pressable } from '../shared.js';
 
 // Map phase state → label + badge/segment modifier.
 function stateMeta(state) {
@@ -84,11 +84,16 @@ export function ProgressTimeline() {
       <div class="pt-track">
         ${phases.map((p, i) => {
           const m = stateMeta(p.state);
-          // Segment deep-links to its phase detail; fall back to the list
-          // when the phase has no id.
-          const target = p.id != null ? 'phases/' + p.id : 'phases';
+          // Same "first sprint with a resolved file" lookup PhasesView uses
+          // for its "View plan file" button. Falls back to the phase detail
+          // page when nothing resolved (e.g. phase has no SPRINT.md yet).
+          const sps = Array.isArray(p.sprints) ? p.sprints : [];
+          const planFile = (sps.find(s => s.file) || {}).file || null;
+          const onActivate = planFile
+            ? () => openFileViewer(planFile, 'Phase ' + (p.id != null ? p.id : '') + ' plan')
+            : () => { location.hash = p.id != null ? 'phases/' + p.id : 'phases'; };
           return html`
-            <div class=${'pt-seg ovr-link ' + m.mod} key=${p.name + i} ...${rowLink(target)}>
+            <div class=${'pt-seg ovr-link ' + m.mod} key=${p.name + i} ...${pressable(onActivate)}>
               <span class="pt-seg-name">${p.name}</span>
               <span class="pt-seg-range">${p.range || ''}</span>
               <span class="pt-seg-badge">${m.label}</span>

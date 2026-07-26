@@ -195,7 +195,13 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
         : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
         : 'planned';
 
-      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories, dependsOn };
+      // Project-relative path to this sprint's SPRINT.md — same shape as the
+      // sprintFile computed below for roadmap cards, so /api/file?path=...
+      // resolves it identically. Lets task rows (which point at a specific
+      // sprint, not just "latest file in the phase") open the right file.
+      const file = path.join('.planning', 'phases', dir.name, f).split(path.sep).join('/');
+
+      return { id: sid, number: num, goal: goal || `Sprint ${num}`, status, stories, dependsOn, file };
     });
 
     // Derive phase-level depends_on by aggregating sprint-level depends_on entries.
@@ -366,11 +372,15 @@ function buildDashboard(state) {
       const stories = Array.isArray(s.stories) ? s.stories : [];
       for (const st of stories) {
         if (/done|complete/i.test(st.status || '')) {
-          completedTasks.push({ title: st.title || st.id, date: fmtISODate(p.completed || s.completed_at || p.created) });
+          completedTasks.push({
+            title: st.title || st.id,
+            date: fmtISODate(p.completed || s.completed_at || p.created),
+            file: s.file || null,
+          });
         } else if (p.state === 'active') {
           // No per-task progress tracking exists — pct stays null and the UI
           // omits the percent pill rather than inventing a number.
-          inProgressTasks.push({ title: st.title || st.id, pct: null });
+          inProgressTasks.push({ title: st.title || st.id, pct: null, file: s.file || null });
         }
       }
     }
@@ -378,10 +388,10 @@ function buildDashboard(state) {
   // Fallbacks so the cards are never empty when stories are unregistered in state.json.
   if (!completedTasks.length) {
     phases.filter(p => p.state === 'done').slice(-6).forEach(p =>
-      completedTasks.push({ title: p.name, date: fmtISODate(p.completed || p.created) }));
+      completedTasks.push({ title: p.name, date: fmtISODate(p.completed || p.created), file: null }));
   }
   if (!inProgressTasks.length && activePhase && activePhase.state === 'active') {
-    inProgressTasks.push({ title: activePhase.name, pct: null });
+    inProgressTasks.push({ title: activePhase.name, pct: null, file: null });
   }
   const tasks = {
     completed:  completedTasks.slice(-8).reverse(),

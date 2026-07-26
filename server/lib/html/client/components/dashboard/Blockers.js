@@ -11,8 +11,8 @@
  */
 
 import { html } from '../../preact.js';
-import { useStore } from '../../store.js';
-import { rowLink } from '../../util.js';
+import { useStore, openBlockerViewer } from '../../store.js';
+import { pressable } from '../shared.js';
 
 // Severity → pill label (lowercase enum to human-facing label).
 const SEV_LABEL = { high: 'High', medium: 'Medium', low: 'Low' };
@@ -40,7 +40,7 @@ export function Blockers() {
             ${blockers.map((b) => {
               const sev = SEV_LABEL[b.severity] ? b.severity : 'low';
               return html`
-                <li class="bk-row ovr-link" key=${b.title} ...${rowLink('tasks')}>
+                <li class="bk-row ovr-link" key=${b.title} ...${pressable(() => openBlockerViewer(b))}>
                   <span class=${'bk-icon bk-sev-' + sev} aria-hidden="true">⚠</span>
                   <div class="bk-body">
                     <p class="bk-title">${b.title}</p>

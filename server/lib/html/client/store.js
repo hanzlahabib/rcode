@@ -23,6 +23,7 @@ let _state = {
   timeline:         _seed.timeline         || null,
   tasks:            _seed.tasks            || null,
   health:           _seed.health           || null,
+  backlog:          _seed.backlog          || [],
   // Fields injected by client.js / window.__S__
   phases:           _seed.phases           || [],
   milestone:        _seed.milestone        || '',
@@ -81,10 +82,56 @@ let _state = {
   // renders and the spawn waits for explicit user approval.
   // { kind: 'story'|'command', storyId?, cmd, title, opts }
   runConfirm:       null,
+  // Global file-viewer drawer state — opens FileReader over whatever view is
+  // currently active (Overview, Phases, Sprints, Tasks, Roadmap, ...) without
+  // navigating away, unlike the older requestedFile→Files-view bridge above.
+  // { path, title } | null. Driven by openFileViewer()/closeFileViewer() below.
+  fileViewer:       null,
+  // Global decision-detail drawer state. Decisions have no backing file (they
+  // live as plain records in state.json), so this shows the record's own
+  // fields rather than fetching anything. The raw decision object | null.
+  decisionViewer:   null,
+  // Global blocker-detail drawer state — same reasoning as decisionViewer:
+  // blockers are plain { title, desc, severity } records with no backing
+  // file. The raw blocker object | null.
+  blockerViewer:    null,
 };
 
 /** Registered subscriber functions. */
 const _subscribers = new Set();
+
+/** Open the global file-viewer drawer over the current view. No-op when path is falsy. */
+export function openFileViewer(path, title) {
+  if (!path) return;
+  setState({ fileViewer: { path, title: title || path.split('/').pop() } });
+}
+
+/** Close the global file-viewer drawer. */
+export function closeFileViewer() {
+  setState({ fileViewer: null });
+}
+
+/** Open the global decision-detail drawer. No-op when decision is falsy. */
+export function openDecisionViewer(decision) {
+  if (!decision) return;
+  setState({ decisionViewer: decision });
+}
+
+/** Close the global decision-detail drawer. */
+export function closeDecisionViewer() {
+  setState({ decisionViewer: null });
+}
+
+/** Open the global blocker-detail drawer. No-op when blocker is falsy. */
+export function openBlockerViewer(blocker) {
+  if (!blocker) return;
+  setState({ blockerViewer: blocker });
+}
+
+/** Close the global blocker-detail drawer. */
+export function closeBlockerViewer() {
+  setState({ blockerViewer: null });
+}
 
 /** Return a shallow copy of the current state. */
 export function getState() {

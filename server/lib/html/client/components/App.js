@@ -14,7 +14,9 @@
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { parseFilters } from '../filter-state.js';
-import { getState, setState, subscribe, registerRefresh } from '../store.js';
+import { getState, setState, subscribe, registerRefresh, closeFileViewer, closeDecisionViewer, closeBlockerViewer } from '../store.js';
+import { FileReader } from './FileReader.js';
+import { DecisionDrawer, BlockerDrawer } from './shared.js';
 import { startSessionsPoll, refreshOrchToken } from '../orchestrator.js';
 import { Sidebar } from './Sidebar.js';
 import { Topbar } from './Topbar.js';
@@ -310,6 +312,15 @@ export function App() {
       <${RunnerPicker} />
       <${RunConfirmDialog} pending=${storeState.runConfirm} />
       <${CommandPalette} open=${paletteOpen} onClose=${() => setPaletteOpen(false)} />
+      ${storeState.fileViewer && html`
+        <${FileReader}
+          path=${storeState.fileViewer.path}
+          title=${storeState.fileViewer.title}
+          onClose=${closeFileViewer}
+        />
+      `}
+      <${DecisionDrawer} decision=${storeState.decisionViewer} onClose=${closeDecisionViewer} />
+      <${BlockerDrawer} blocker=${storeState.blockerViewer} onClose=${closeBlockerViewer} />
     </div>
   `;
 }

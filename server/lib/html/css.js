@@ -2254,6 +2254,27 @@ footer {
               color var(--t-fast) var(--ease),
               border-color var(--t-fast) var(--ease);
 }
+.card-file-btn {
+  float: right;
+  margin-left: var(--space-3);
+  height: 20px;
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease),
+              color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+.card-file-btn:hover {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
 .card-run-btn:hover {
   background: var(--accent-green);
   border-color: var(--accent-green);

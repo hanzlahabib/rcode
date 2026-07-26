@@ -18,8 +18,8 @@
  */
 
 import { html } from '../../preact.js';
-import { useStore } from '../../store.js';
-import { orchElapsed, rowLink } from '../../util.js';
+import { useStore, openFileViewer } from '../../store.js';
+import { orchElapsed } from '../../util.js';
 import { openTermPanel } from '../../orchestrator.js';
 import { pressable } from '../shared.js';
 import { TaskPipeline } from '../TaskPipeline.js';
@@ -60,7 +60,8 @@ export function InProgress() {
           <ul class="ip-list">
             ${live.map(s => html`<${LiveRow} key=${'live-' + s.storyId} session=${s}/>`)}
             ${items.map((t, i) => html`
-              <li class="ip-row ovr-link" key=${t.title + i} ...${rowLink('tasks')}>
+              <li class=${'ip-row' + (t.file ? ' ovr-link' : '')} key=${t.title + i}
+                ...${t.file ? pressable(() => openFileViewer(t.file, t.title)) : {}}>
                 <span class="ip-title">${t.title}</span>
                 <${TaskPipeline} task=${t} mini=${true}/>
                 ${Number.isFinite(t.pct) ? html`<span class="ip-badge">${t.pct}%</span>` : null}

@@ -14,6 +14,7 @@ import {
   Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
 import { openTermPanel, runningInPhase } from '../orchestrator.js';
+import { openFileViewer } from '../store.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { Icon } from '../icons-client.js';
 import { StatusSummaryBar } from '../components/StatusSummaryBar.js';
@@ -71,10 +72,12 @@ function PhaseDetail({ phase: p, S }) {
     e.stopPropagation();
     openTermPanel('phase-' + p.id, 'Phase ' + p.id);
   }
+  // First sprint that has a resolved SPRINT.md path — the phase-level "view
+  // plan" entry point; each SprintCard below also gets its own precise button.
+  const planFile = (sps.find(s => s.file) || {}).file || null;
   function handleViewPlan(e) {
     e.stopPropagation();
-    // Navigate to files view — viewPlanFile was a legacy DOM function
-    window.location.hash = 'files';
+    openFileViewer(planFile, 'Phase ' + p.id + ' plan');
   }
 
   return html`
@@ -99,7 +102,9 @@ function PhaseDetail({ phase: p, S }) {
       <div class="term-action-bar">
         <button class="term-run-btn" onClick=${handleRun}>▶ Run Phase</button>
         <button class="term-run-btn outline" onClick=${handleTerm}><${Icon} name="monitor" size=${14}/> Terminal</button>
-        <button class="back-btn" onClick=${handleViewPlan}><${Icon} name="file-text" size=${14}/> View plan file →</button>
+        ${planFile ? html`
+          <button class="back-btn" onClick=${handleViewPlan}><${Icon} name="file-text" size=${14}/> View plan file →</button>
+        ` : null}
       </div>
       <${VelocityBars} sprints=${sps}/>
       <div class="view-title" style="margin-top:var(--space-6)">Sprints</div>

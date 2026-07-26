@@ -7,12 +7,12 @@
  * Import from here; do NOT inline these in view modules.
  */
 
-import { html, useState } from '../preact.js';
+import { html, useState, useEffect } from '../preact.js';
 import { pctNum, chip as chipDesc, humanDate, pct, currentPhaseId } from '../util.js';
 import {
   isSessionRunning, runningInSprint, runningInPhase,
 } from '../orchestrator.js';
-import { getState } from '../store.js';
+import { getState, openFileViewer } from '../store.js';
 import { Icon } from '../icons-client.js';
 import { TaskPipeline } from './TaskPipeline.js';
 import { openRunnerPicker } from './RunnerPicker.js';
@@ -264,11 +264,20 @@ export function SprintCard({ sprint: s, S }) {
   const borderStyle = isCur
     ? 'border-left-color:var(--accent-amber);background:rgba(245,158,11,0.04)'
     : '';
+  function handleViewFile(e) {
+    e.stopPropagation();
+    openFileViewer(s.file, 'Sprint ' + s.id);
+  }
   return html`
     <div class=${'item item-clickable' + (isCur ? ' sprint-current' : '')} style=${borderStyle}
       ...${pressable(() => { location.hash = 'sprints/' + s.id; })}>
       <div class="item-title">
         <${RunBtn} storyId=${'sprint-' + s.id} cmd=${'/rcode-execute-sprint ' + s.id} label=${'Sprint ' + s.id}/>
+        ${s.file ? html`
+          <button class="card-file-btn" title=${'View ' + s.file} onClick=${handleViewFile}>
+            <${Icon} name="file-text" size=${11}/> File
+          </button>
+        ` : null}
         Sprint ${s.id} — ${s.goal || 'No goal'}
         ${isCur ? html`<${Tag}>current</${Tag}>` : null}
         <${Chip} status=${s.status}/>
@@ -321,6 +330,10 @@ export function TaskCard({ task: t }) {
     }
   }
 
+  function handleViewFile(e) {
+    e.stopPropagation();
+    openFileViewer(t.file, t.title);
+  }
   return html`
     <div class="item item-clickable" data-status=${t.status || ''}
       style=${done ? 'opacity:.65' : ''}
@@ -328,6 +341,11 @@ export function TaskCard({ task: t }) {
       ...${pressable(() => setExpanded(e => !e))}>
       <div class="item-title" style=${done ? 'text-decoration:line-through' : ''}>
         ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${'/rcode-dev-story ' + t.id} label=${'Story ' + t.id}/>` : null}
+        ${t.file ? html`
+          <button class="card-file-btn" title=${'View ' + t.file} onClick=${handleViewFile}>
+            <${Icon} name="file-text" size=${11}/> File
+          </button>
+        ` : null}
         ${done ? '✓ ' : ''}${t.title}
         <${Chip} status=${t.status}/>
         <span class="task-expand-icon">${expanded ? '▼' : '▶'}</span>
@@ -375,6 +393,97 @@ export function TaskCard({ task: t }) {
           ` : null}
         </div>
       ` : null}
+    </div>
+  `;
+}
+
+// ---- DecisionDrawer ----
+/**
+ * Same slide-over shell as FileReader (.reader-*) but shows a decision
+ * record's own fields instead of fetching a file — decisions have no
+ * backing markdown file, only whatever state.json recorded for them.
+ * @param {{ decision: object|null, onClose: function }} props
+ */
+export function DecisionDrawer({ decision: d, onClose }) {
+  // Hooks run unconditionally (Rules of Hooks) even though the component
+  // renders null below when there's nothing open.
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape' && onClose) onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  if (!d) return null;
+  const title = d.title || d.summary || d.decision || 'Decision';
+
+  // state.json only records a short summary + a few fields for each entry —
+  // the full write-up (rationale, alternatives considered) lives in the
+  // separate, manually-curated decision log. There's no reliable way to
+  // match this specific record to one entry in that file, so this opens the
+  // whole log rather than pretending to jump to the right spot.
+  function handleOpenLog(e) {
+    e.stopPropagation();
+    onClose();
+    openFileViewer('.rcode/memory/project/decisions.md', 'Decision Log');
+  }
+
+  return html`
+    <div class="reader-backdrop" onClick=${onClose}></div>
+    <div class="reader-panel" role="dialog" aria-label=${title}>
+      <div class="reader-header">
+        <div class="reader-heading">
+          <div class="reader-title">${title}</div>
+          ${d.phase ? html`<div class="reader-path">Phase ${d.phase}</div>` : null}
+        </div>
+        <div class="reader-actions">
+          <button class="reader-copy" onClick=${handleOpenLog}>View decision log →</button>
+          <button class="reader-close" aria-label="Close" onClick=${onClose}>×</button>
+        </div>
+      </div>
+      <div class="reader-body">
+        ${d.status ? html`<div class="task-detail-row"><strong>Status:</strong> <${Chip} status=${d.status}/></div>` : null}
+        ${d.date ? html`<div class="task-detail-row"><strong>Date:</strong> ${humanDate(d.date)}</div>` : null}
+        ${d.plan != null ? html`<div class="task-detail-row"><strong>Plan:</strong> ${d.plan}</div>` : null}
+        ${d.rationale ? html`<div class="task-detail-row"><strong>Rationale:</strong> ${d.rationale}</div>` : null}
+        <div class="dash-empty">
+          <span>This is everything state.json recorded for this entry. Full rationale and alternatives (when written up) live in the decision log.</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---- BlockerDrawer ----
+/**
+ * Same slide-over shell as DecisionDrawer — blockers are plain
+ * { title, desc, severity } records in state.json, no backing file.
+ * @param {{ blocker: object|null, onClose: function }} props
+ */
+export function BlockerDrawer({ blocker: b, onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape' && onClose) onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  if (!b) return null;
+  const sev = ['high', 'medium', 'low'].includes(b.severity) ? b.severity : 'low';
+
+  return html`
+    <div class="reader-backdrop" onClick=${onClose}></div>
+    <div class="reader-panel" role="dialog" aria-label=${b.title}>
+      <div class="reader-header">
+        <div class="reader-heading">
+          <div class="reader-title">${b.title}</div>
+        </div>
+        <div class="reader-actions">
+          <button class="reader-close" aria-label="Close" onClick=${onClose}>×</button>
+        </div>
+      </div>
+      <div class="reader-body">
+        <div class="task-detail-row"><strong>Severity:</strong> <span class=${'bk-pill bk-sev-' + sev}>${sev}</span></div>
+        ${b.desc ? html`<div class="task-detail-row"><strong>Details:</strong> ${b.desc}</div>` : null}
+      </div>
     </div>
   `;
 }

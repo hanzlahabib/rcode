@@ -11,6 +11,7 @@ import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
 import { allTasks, currentPhaseName } from '../util.js';
 import { stopStory, openOrchPanel, openTermPanel, setTaskStatus } from '../orchestrator.js';
+import { openFileViewer } from '../store.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
 import { showToast } from '../components/shared.js';
 
@@ -66,6 +67,10 @@ function KanbanCard({ task, col, live, orchDown, onDragStart, onDragEnd }) {
     e.stopPropagation();
     openOrchPanel(sid);
   }
+  function handleViewFile(e) {
+    e.stopPropagation();
+    openFileViewer(task.file, task.title || sid);
+  }
 
   return html`
     <div
@@ -92,6 +97,9 @@ function KanbanCard({ task, col, live, orchDown, onDragStart, onDragEnd }) {
       ` : null}
       ${sid ? html`
         <div class="kanban-card-actions">
+          ${task.file ? html`
+            <button class="kanban-view-btn" title=${'View ' + task.file} onClick=${handleViewFile}>📄 File</button>
+          ` : null}
           ${canRun ? html`
             <button class="kanban-run-btn" disabled=${orchDown}
               title=${orchDown ? 'Orchestrator unreachable' : 'Run ' + sid}

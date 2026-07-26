@@ -75,7 +75,7 @@ export function allSprints(phases) {
 export function allTasks(phases) {
   return (phases || []).flatMap(p =>
     (p.sprints || []).flatMap(s =>
-      (s.stories || []).map(t => Object.assign({}, t, { sprintId: s.id, phaseId: p.id, phaseName: p.name }))
+      (s.stories || []).map(t => Object.assign({}, t, { sprintId: s.id, phaseId: p.id, phaseName: p.name, file: s.file || null }))
     )
   );
 }
@@ -137,27 +137,6 @@ export function sessionChip(status) {
     s === 'error'    ? 'sess-error'    :
     s === 'stopped'  ? 'sess-stopped'  : 'sess-stopped';
   return { cls, label: status };
-}
-
-/**
- * Props for a clickable card row that navigates to a hash route.
- * Spread onto a list row (`<li ...${rowLink('tasks')}>`) to make it act like
- * a link: pointer + keyboard activation and an accessible role. Pair with the
- * `ovr-link` class for the hover/focus affordance.
- *
- * @param {string} hash — target hash route without the leading '#'.
- * @returns {object} Preact props (role, tabindex, onClick, onKeyDown).
- */
-export function rowLink(hash) {
-  const go = () => { location.hash = hash; };
-  return {
-    role: 'link',
-    tabindex: 0,
-    onClick: go,
-    onKeyDown: (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
-    },
-  };
 }
 
 /**

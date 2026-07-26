@@ -10,8 +10,9 @@
  */
 
 import { html } from '../../preact.js';
-import { useStore } from '../../store.js';
+import { useStore, openFileViewer } from '../../store.js';
 import { humanDate } from '../../util.js';
+import { pressable } from '../shared.js';
 
 export function CompletedTasks() {
   const S = useStore();
@@ -30,7 +31,8 @@ export function CompletedTasks() {
         : html`
           <ul class="ct-list">
             ${items.map((t, i) => html`
-              <li class="ct-row" key=${t.title + i}>
+              <li class=${'ct-row' + (t.file ? ' ovr-link' : '')} key=${t.title + i}
+                ...${t.file ? pressable(() => openFileViewer(t.file, t.title)) : {}}>
                 <svg class="ct-check" width="16" height="16" viewBox="0 0 24 24"
                   fill="none" stroke="currentColor" stroke-width="2.5"
                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
