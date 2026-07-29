@@ -286,6 +286,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `state` — `.rcode/state.json` and state-manipulation code paths
 - `refs` — files inside `rcode/references/`
 - `hooks` — `.claude/hooks/*` and install-time hook wiring
+- `init` — `/rcode-init` command and init-time project bootstrap
 - `install` — installer flow, manifest, side-effects
 - `memory` — Memory Bank distillates and templates
 - `brand` — branding/voice across surfaces
