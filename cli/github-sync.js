@@ -45,6 +45,7 @@ const gh = require('./lib/github.cjs');
 const { askText, PromptAbortError } = require('./lib/prompts.cjs');
 const { writeJsonAtomic } = require('./lib/fsutil.cjs');
 const { loadConfig } = require('./lib/config.cjs');
+const { discoverPhases, applyGranularFilters } = require('./lib/github-sync-discover.cjs');
 
 /**
  * Hash a string — used to detect content changes between syncs.
@@ -140,51 +141,6 @@ function parseArgs(args) {
   return opts;
 }
 
-/**
- * Parse YAML-ish frontmatter from the top of a markdown file.
- * Used to extract explicit epic/sprint linking from story files.
- * Returns an object of key/value strings, or {} if no frontmatter block.
- */
-function extractFrontmatter(content) {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!match) return {};
-  const fm = {};
-  for (const line of match[1].split(/\r?\n/)) {
-    const m = line.match(/^([\w_-]+)\s*:\s*(.*)$/);
-    if (m) fm[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '');
-  }
-  return fm;
-}
-
-/**
- * Parse .rcode/phases/{phase}/sprints.md if present and return a map of
- * sprint-id → story-ids (based on "- [ ] story-X-Y" list entries under
- * each sprint section). Used by --sprint=ID filtering.
- *
- * Sprint section convention:
- *   ## Sprint 1 — {goal}
- *   - [ ] story-1-1-login
- *   - [ ] story-1-2-signup
- */
-function parseSprintsFile(sprintsContent) {
-  if (!sprintsContent) return {};
-  const sprintMap = {};
-  let currentSprint = null;
-  for (const line of sprintsContent.split(/\r?\n/)) {
-    const header = line.match(/^##\s+Sprint\s+(\S+)/i);
-    if (header) {
-      currentSprint = `sprint-${header[1].replace(/[^\w-]/g, '')}`;
-      sprintMap[currentSprint] = [];
-      continue;
-    }
-    if (currentSprint) {
-      const item = line.match(/^\s*-\s*\[[ xX]\]\s+(\S+)/);
-      if (item) sprintMap[currentSprint].push(item[1]);
-    }
-  }
-  return sprintMap;
-}
-
 // ---------- Discover .rcode/ content ----------
 
 function loadState(cwd) {
@@ -194,148 +150,6 @@ function loadState(cwd) {
   }
   // on-disk state file written by users/CI — guard against corruption or partial writes
   try { return JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { return null; }
-}
-
-function discoverPhases(cwd) {
-  const phasesDir = path.join(cwd, '.rcode/phases');
-  if (!fs.existsSync(phasesDir)) return [];
-
-  const phases = [];
-  for (const entry of fs.readdirSync(phasesDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const phaseDir = path.join(phasesDir, entry.name);
-    const briefPath = path.join(phaseDir, 'brief.md');
-    const sprintsPath = path.join(phaseDir, 'sprints.md');
-    const storiesDir = path.join(phaseDir, 'stories');
-    const tasksDir = path.join(phaseDir, 'tasks');
-
-    const sprintsContent = fs.existsSync(sprintsPath)
-      ? fs.readFileSync(sprintsPath, 'utf8')
-      : null;
-
-    const phase = {
-      id: entry.name,
-      brief: fs.existsSync(briefPath) ? fs.readFileSync(briefPath, 'utf8') : null,
-      sprints: sprintsContent,
-      sprintMap: parseSprintsFile(sprintsContent),
-      stories: [],
-      epics: [],
-    };
-
-    if (fs.existsSync(storiesDir)) {
-      for (const file of fs.readdirSync(storiesDir)) {
-        if (!file.endsWith('.md')) continue;
-        const content = fs.readFileSync(path.join(storiesDir, file), 'utf8');
-        const fm = extractFrontmatter(content);
-        const id = file.replace('.md', '');
-        // Figure out which epic this story belongs to: prefer explicit
-        // frontmatter, fall back to "story-X-..." → "epic-X-..." naming
-        // convention so existing projects without frontmatter still link.
-        let parentEpic = fm.epic || null;
-        if (!parentEpic) {
-          const m = id.match(/^story-(\d+)/);
-          if (m) parentEpic = `epic-${m[1]}`;
-        }
-        // Figure out which sprint this story belongs to: explicit
-        // frontmatter wins, else look it up in the sprint map.
-        let sprintId = fm.sprint || null;
-        if (!sprintId) {
-          for (const [sid, storyList] of Object.entries(phase.sprintMap)) {
-            if (storyList.some((s) => s === id || id.startsWith(s))) {
-              sprintId = sid;
-              break;
-            }
-          }
-        }
-        phase.stories.push({
-          id,
-          file,
-          content,
-          title: extractTitle(content) || id,
-          parentEpic,
-          sprintId,
-          frontmatter: fm,
-        });
-      }
-    }
-
-    if (fs.existsSync(tasksDir)) {
-      for (const file of fs.readdirSync(tasksDir)) {
-        if (!file.endsWith('.md')) continue;
-        const content = fs.readFileSync(path.join(tasksDir, file), 'utf8');
-        const fm = extractFrontmatter(content);
-        phase.epics.push({
-          id: file.replace('.md', ''),
-          file,
-          content,
-          title: extractTitle(content) || file.replace('.md', ''),
-          frontmatter: fm,
-        });
-      }
-    }
-
-    phases.push(phase);
-  }
-
-  return phases;
-}
-
-/**
- * Apply granular --sprint/--epic/--story filters to the discovered phases.
- * Mutates a shallow copy — original discovery result is not touched.
- * Returns a new phases array where only the requested items remain.
- */
-function applyGranularFilters(phases, opts) {
-  // No filters → return as-is
-  if (!opts.sprint && !opts.epic && !opts.story) return phases;
-
-  const filtered = phases.map((p) => ({
-    ...p,
-    epics: [...p.epics],
-    stories: [...p.stories],
-  }));
-
-  if (opts.sprint) {
-    for (const p of filtered) {
-      // Keep only stories whose sprintId matches
-      p.stories = p.stories.filter((s) => s.sprintId === opts.sprint);
-      // Keep only epics that have at least one remaining story or whose id
-      // the user might also be interested in (conservative: keep all epics
-      // in this phase so child stories have a visible parent reference)
-      // Actually: if filtering by sprint, user wants the sprint's work —
-      // stories only. Drop epics unless they're referenced by a remaining
-      // story.
-      const liveEpicIds = new Set(p.stories.map((s) => s.parentEpic).filter(Boolean));
-      p.epics = p.epics.filter((e) => liveEpicIds.has(e.id));
-    }
-  }
-
-  if (opts.epic) {
-    for (const p of filtered) {
-      p.epics = p.epics.filter((e) => e.id === opts.epic);
-      // Keep stories whose parentEpic matches
-      p.stories = p.stories.filter((s) => s.parentEpic === opts.epic);
-    }
-  }
-
-  if (opts.story) {
-    for (const p of filtered) {
-      p.stories = p.stories.filter((s) => s.id === opts.story);
-      // Keep any epic a surviving story points at (so link target exists)
-      const parents = new Set(p.stories.map((s) => s.parentEpic).filter(Boolean));
-      p.epics = p.epics.filter((e) => parents.has(e.id));
-    }
-  }
-
-  // Drop phases that ended up completely empty after filtering
-  return filtered.filter(
-    (p) => p.epics.length > 0 || p.stories.length > 0,
-  );
-}
-
-function extractTitle(markdown) {
-  const match = markdown.match(/^#\s+(.+)$/m);
-  return match ? match[1].trim() : null;
 }
 
 // ---------- Load/save sync map (for idempotency) ----------
@@ -460,7 +274,9 @@ async function main(args) {
   // ------ Discover phases ------
   let phases = discoverPhases(cwd);
   if (opts.phase) {
-    phases = phases.filter((p) => p.id === opts.phase);
+    // Match either the full directory id or the bare numeric prefix so
+    // --phase=44 and --phase=44-github-sync-... both work.
+    phases = phases.filter((p) => p.id === opts.phase || p.numericId === opts.phase);
     if (phases.length === 0) {
       console.error(`❌ Phase '${opts.phase}' not found.`);
       process.exit(1);
@@ -481,8 +297,8 @@ async function main(args) {
       console.error(`   Check the filter value or run without filters to see available ids.`);
       process.exit(1);
     }
-    console.log(`ℹ  No phases found in .rcode/phases/ — nothing to sync.`);
-    console.log(`   Run 'rcode init' or create a phase to get started.`);
+    console.log(`ℹ  No phases found in .planning/phases/ or epics in .planning/epics/ — nothing to sync.`);
+    console.log(`   Run /rcode-plan or /rcode-create-epics-and-stories to get started.`);
     process.exit(0);
   }
 
@@ -551,7 +367,7 @@ async function main(args) {
       { name: 'QA', color: 'd73a4a', description: 'Quality assurance' },
       { name: 'Docs', color: 'c5def5', description: 'Documentation' },
     ] : [],
-    milestones: phases.filter((p) => !syncMap.phases[p.id]),
+    milestones: phases.filter((p) => !p.noMilestone && !syncMap.phases[p.id]),
     epics: phases.flatMap((p) =>
       p.epics.filter((e) => !syncMap.epics[e.id]).map((e) => ({ ...e, phase: p.id })),
     ),
@@ -702,7 +518,7 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${epic.phase}\``,
-        `- **Source:** \`.rcode/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Source:** \`${epic.sourcePath}\``,
         `- **Synced by:** rcode github-sync`,
         ``,
         `## 📝 Child Stories`,
@@ -785,7 +601,7 @@ async function main(args) {
         parentRefLine,
         sprintRefLine,
         `- **Phase:** \`${story.phase}\``,
-        `- **Source:** \`.rcode/phases/${story.phase}/stories/${story.file}\``,
+        `- **Source:** \`${story.sourcePath}\``,
         `- **Synced by:** rcode github-sync`,
         ``,
         `> **Linking:** Reference this story in commits with \`refs #${'{issue}'}\``,
@@ -892,7 +708,7 @@ async function main(args) {
       const body = [
         `## 🎯 Epic Vision`,
         ``,
-        `_Strategic goal this Epic contributes to. Fill in from \`.rcode/phases/${epic.phase}/tasks/${epic.file}\`._`,
+        `_Strategic goal this Epic contributes to. Fill in from \`${epic.sourcePath}\`._`,
         ``,
         `## 📋 Source Content`,
         ``,
@@ -903,7 +719,7 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${epic.phase}\``,
-        `- **Source:** \`.rcode/phases/${epic.phase}/tasks/${epic.file}\``,
+        `- **Source:** \`${epic.sourcePath}\``,
         `- **Last synced:** ${new Date().toISOString()}`,
       ].join('\n');
 
@@ -937,7 +753,7 @@ async function main(args) {
       const body = [
         `## 🎯 Problem Statement`,
         ``,
-        `_From \`.rcode/phases/${story.phase}/stories/${story.file}\`._`,
+        `_From \`${story.sourcePath}\`._`,
         ``,
         `## 📋 Source Content`,
         ``,
@@ -948,7 +764,7 @@ async function main(args) {
         `## 📊 Meta`,
         ``,
         `- **Phase:** \`${story.phase}\``,
-        `- **Source:** \`.rcode/phases/${story.phase}/stories/${story.file}\``,
+        `- **Source:** \`${story.sourcePath}\``,
         `- **Last synced:** ${new Date().toISOString()}`,
       ].join('\n');
 
