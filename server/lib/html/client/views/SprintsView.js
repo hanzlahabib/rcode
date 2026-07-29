@@ -10,9 +10,9 @@
 
 import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
-import { pct, humanDate, allSprints, sprintHints, chip, phaseMilestone } from '../util.js';
+import { pct, humanDate, allSprints, sprintHints, chip, phaseMilestone, currentPhaseId } from '../util.js';
 import {
-  Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, TaskCard,
+  Chip, ProgressBar, Breadcrumb, CmdHint, CmdHints, RunningBadge, SprintCard, TaskCard,
 } from '../components/shared.js';
 import { openTermPanel, runningInSprint } from '../orchestrator.js';
 import { openFileViewer } from '../store.js';
@@ -105,7 +105,7 @@ function SprintDetail({ sprint: s, S }) {
           : html`
               <div class="empty">
                 No tasks in this sprint yet.
-                <div class="empty-action">Run /rcode-create-story to add tasks</div>
+                <${CmdHint} cmd=${'/rcode-create-story ' + s.id} desc="Add a task to this sprint"/>
               </div>
             `}
       </div>
@@ -210,7 +210,7 @@ export function SprintsView({ subId, filters }) {
           : html`
               <div class="empty">
                 No sprints yet.
-                <div class="empty-action">Run /rcode-plan to create sprints</div>
+                <${CmdHint} cmd=${'/rcode-plan' + (currentPhaseId(S.currentPhase) ? ' ' + currentPhaseId(S.currentPhase) : '')} desc="Plan sprints for the current phase"/>
               </div>
             `}
       </div>

@@ -131,7 +131,11 @@ export function Breadcrumb({ items }) {
  * @param {{ cmd: string, desc: string }} props
  */
 export function CmdHint({ cmd, desc }) {
-  function handleClick() {
+  function handleClick(e) {
+    // CmdHint often sits inside a clickable card row (SprintCard's empty
+    // state, etc.) — without this, copying the command also fires the
+    // row's own click (e.g. navigating away mid-copy).
+    if (e && e.stopPropagation) e.stopPropagation();
     navigator.clipboard.writeText(cmd)
       .then(() => showToast('Copied: ' + cmd))
       .catch(() => {
@@ -291,9 +295,7 @@ export function SprintCard({ sprint: s, S }) {
       </div>
       <div style="margin-top:6px;"><${ProgressBar} done=${done} total=${stories.length}/></div>
       ${stories.length === 0 ? html`
-        <div class="empty-action" style="margin-top:var(--space-2);font-size:var(--text-xs);">
-          No tasks — run <code>/rcode-plan ${phaseId}</code> to populate
-        </div>
+        <${CmdHint} cmd=${'/rcode-plan ' + phaseId} desc="Populate this sprint with tasks"/>
       ` : null}
       ${s.started_at ? html`
         <div style="color:var(--text-muted);font-size:var(--text-xs);margin-top:4px;">

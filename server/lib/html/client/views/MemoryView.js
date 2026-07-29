@@ -14,6 +14,7 @@
 
 import { html, useState, useEffect } from '../preact.js';
 import { FileReader } from '../components/FileReader.js';
+import { CmdHint } from '../components/shared.js';
 
 // ---- Command hints accordion ----
 const MEMORY_HINTS = [
@@ -127,7 +128,7 @@ export function MemoryView() {
         <div class="empty">
           <h3 style="color:var(--rcode-gold);">Not initialised</h3>
           <p>The Memory Bank is rcode's structured project context.</p>
-          <div class="empty-action">Run <code>/rcode-memory-init</code> to bootstrap</div>
+          <${CmdHint} cmd="/rcode-memory-init" desc="Bootstrap the Memory Bank"/>
         </div>
       </div>
     `;

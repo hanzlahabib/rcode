@@ -9,7 +9,7 @@
 
 import { html } from '../preact.js';
 import { useStore } from '../store.js';
-import { pressable } from '../components/shared.js';
+import { pressable, CmdHint } from '../components/shared.js';
 import { Icon } from '../icons-client.js';
 
 export function BacklogView() {
@@ -23,7 +23,7 @@ export function BacklogView() {
         ? html`
           <div class="empty">
             No phases waiting in the backlog.
-            <div class="empty-action">Run /rcode-add-phase to queue up new work</div>
+            <${CmdHint} cmd="/rcode-add-phase" desc="Queue up new work"/>
           </div>
         `
         : html`

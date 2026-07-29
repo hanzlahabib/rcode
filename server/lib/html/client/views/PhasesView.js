@@ -11,7 +11,7 @@ import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
 import { pct, humanDate, phaseHints, chip, phaseMilestone } from '../util.js';
 import {
-  Chip, ProgressBar, Breadcrumb, CmdHints, RunningBadge, SprintCard, PhaseCard,
+  Chip, ProgressBar, Breadcrumb, CmdHint, CmdHints, RunningBadge, SprintCard, PhaseCard,
 } from '../components/shared.js';
 import { openTermPanel, runningInPhase } from '../orchestrator.js';
 import { openFileViewer } from '../store.js';
@@ -118,7 +118,7 @@ function PhaseDetail({ phase: p, S }) {
           : html`
               <div class="empty">
                 No sprints in this phase yet.
-                <div class="empty-action">Run /rcode-plan to create sprints</div>
+                <${CmdHint} cmd=${'/rcode-plan ' + p.id} desc="Create sprints for this phase"/>
               </div>
             `}
       </div>
@@ -212,7 +212,7 @@ export function PhasesView({ subId, filters }) {
           : html`
               <div class="empty">
                 No phases yet.
-                <div class="empty-action">Run /rcode-new-project to start</div>
+                <${CmdHint} cmd="/rcode-new-project" desc="Design your first project"/>
               </div>
             `}
       </div>

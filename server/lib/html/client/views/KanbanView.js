@@ -9,11 +9,11 @@
 
 import { html, useState, useCallback } from '../preact.js';
 import { useStore, refresh } from '../store.js';
-import { allTasks, currentPhaseName } from '../util.js';
+import { allTasks, currentPhaseName, currentPhaseId } from '../util.js';
 import { stopStory, openOrchPanel, openTermPanel, setTaskStatus } from '../orchestrator.js';
 import { openFileViewer } from '../store.js';
 import { openRunnerPicker } from '../components/RunnerPicker.js';
-import { showToast } from '../components/shared.js';
+import { showToast, CmdHint } from '../components/shared.js';
 
 // ---- Column descriptors ----
 const COLS = [
@@ -262,9 +262,11 @@ export function KanbanView() {
               ${' is active.'}
             </div>
           ` : null}
+          <${CmdHint}
+            cmd=${'/rcode-plan' + (currentPhaseId(currentPhase) ? ' ' + currentPhaseId(currentPhase) : '')}
+            desc="Generate sprint stories"/>
           <div class="empty-action">
-            Run <code>/rcode-plan</code> to generate sprint stories, or browse
-            planning docs in the <a href="#files">Files</a> view.
+            Or browse planning docs in the <a href="#files">Files</a> view.
           </div>
         </div>
       </div>

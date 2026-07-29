@@ -9,7 +9,7 @@
 import { html, useState, useMemo } from '../preact.js';
 import { useStore } from '../store.js';
 import { allTasks, currentPhaseId } from '../util.js';
-import { CmdHints, TaskCard } from '../components/shared.js';
+import { CmdHint, CmdHints, TaskCard } from '../components/shared.js';
 
 function TaskGrouped({ tasks }) {
   if (!tasks.length) return null;
@@ -137,9 +137,7 @@ export function TasksView() {
           : html`
               <div class="empty">
                 No tasks yet.
-                <div class="empty-action">
-                  Run <code>/rcode-plan${phaseHint}</code> to generate tasks for this project.
-                </div>
+                <${CmdHint} cmd=${'/rcode-plan' + phaseHint} desc="Generate tasks for this project"/>
               </div>
             `}
       </div>
