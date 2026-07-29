@@ -3,6 +3,29 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.7.3 (2026-07-29) — Dashboard task titles and acceptance criteria were unreadable
+
+### Fixes
+- **Tasks showed as "Task 1", "Task 2", "Task 3" instead of their real
+  title.** `rcode-planner` emits `<task id="..." title="...">` as an
+  attribute, but `scanner.js` only ever looked for a nested
+  `<title>...</title>` child element no current planner output
+  produces — the match always failed and every task silently fell
+  back to a generic placeholder. Now reads the `title="..."` attribute
+  first (same place `id` comes from), falling back to the legacy
+  nested tag for old SPRINT.md files.
+- **Acceptance criteria rendered as one unreadable run-on line.**
+  SPRINT.md stores them as `- line\n- line`, but the dashboard
+  interpolated that raw text into a flex row, so the browser collapsed
+  the newlines. Added `AcceptanceList` to split and render them as an
+  actual bullet list.
+- **`fix(init)` (v4.7.1) used a commit scope never added to either
+  allowed-scope list** — added `init` to both `AGENTS.md` and
+  `CONTRIBUTING.md`, fixing both scope-parity tests.
+
+Tests: 591 passing.
+
+---
 ## v4.7.2 (2026-07-29) — Planners now self-split before the checker has to reject them
 
 Diagnosed against a real run: a 58-file phase produced one 31-task
