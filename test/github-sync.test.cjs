@@ -1,9 +1,11 @@
 /**
- * Tests for pure helper functions in cli/github-sync.js.
+ * Tests for pure helper functions in cli/github-sync.js and the discovery
+ * module it delegates to (cli/lib/github-sync-discover.cjs).
  *
- * Covers: parseArgs, extractFrontmatter, parseSprintsFile, extractTitle,
- * loadState, loadSyncMap, discoverPhases — all exercisable without network
- * or gh CLI. Temp directories are cleaned up in each test.
+ * Covers: parseArgs, extractFrontmatter, extractTitle, loadState, loadSyncMap,
+ * discoverSprintTrackPhases, discoverEpicTrackPhase, discoverPhases,
+ * applyGranularFilters — all exercisable without network or gh CLI. Temp
+ * directories are cleaned up in each test.
  *
  * Run: node --test test/github-sync.test.cjs
  */
@@ -14,11 +16,15 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-// ---- inline the pure helpers under test ----
-// github-sync.js only exports the CLI entry point, so we re-implement the
-// small pure helpers here.  Each is a direct copy of the source — if the
-// source changes and these diverge, the tests will catch the regression by
-// comparing behaviour rather than calling the live functions.
+const discover = require('../cli/lib/github-sync-discover.cjs');
+
+// ---- inline the remaining pure helpers under test ----
+// parseArgs, contentHash, loadState, loadSyncMap still live in
+// cli/github-sync.js, unchanged by this phase — they stay re-implemented
+// here as a direct copy of the source so the tests catch behavioural
+// regressions by comparison rather than calling the live functions.
+// extractFrontmatter/extractTitle now live in cli/lib/github-sync-discover.cjs
+// and are imported directly above instead of re-implemented.
 
 const crypto = require('crypto');
 
@@ -53,41 +59,6 @@ function parseArgs(args) {
   }
   opts.updateEnabled = opts.updateBody || opts.updateLabels || opts.updateMilestone || opts.updateState;
   return opts;
-}
-
-function extractFrontmatter(content) {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!match) return {};
-  const fm = {};
-  for (const line of match[1].split(/\r?\n/)) {
-    const m = line.match(/^([\w_-]+)\s*:\s*(.*)$/);
-    if (m) fm[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '');
-  }
-  return fm;
-}
-
-function parseSprintsFile(sprintsContent) {
-  if (!sprintsContent) return {};
-  const sprintMap = {};
-  let currentSprint = null;
-  for (const line of sprintsContent.split(/\r?\n/)) {
-    const header = line.match(/^##\s+Sprint\s+(\S+)/i);
-    if (header) {
-      currentSprint = `sprint-${header[1].replace(/[^\w-]/g, '')}`;
-      sprintMap[currentSprint] = [];
-      continue;
-    }
-    if (currentSprint) {
-      const item = line.match(/^\s*-\s*\[[ xX]\]\s+(\S+)/);
-      if (item) sprintMap[currentSprint].push(item[1]);
-    }
-  }
-  return sprintMap;
-}
-
-function extractTitle(markdown) {
-  const match = markdown.match(/^#\s+(.+)$/m);
-  return match ? match[1].trim() : null;
 }
 
 // loadState and loadSyncMap call fs — we replicate them so the JSON.parse
@@ -164,69 +135,40 @@ test('parseArgs — --no-update-body only disables body, not other updates', () 
 });
 
 // ============================================================
-// extractFrontmatter
+// extractFrontmatter (cli/lib/github-sync-discover.cjs)
 // ============================================================
 
 test('extractFrontmatter — parses key/value pairs from YAML block', () => {
   const content = '---\nepic: epic-1-auth\nsprint: sprint-01\n---\n# Title\nbody';
-  const fm = extractFrontmatter(content);
+  const fm = discover.extractFrontmatter(content);
   assert.strictEqual(fm.epic, 'epic-1-auth');
   assert.strictEqual(fm.sprint, 'sprint-01');
 });
 
 test('extractFrontmatter — strips surrounding quotes from values', () => {
   const content = '---\ntitle: "My Story"\ntype: \'task\'\n---\n';
-  const fm = extractFrontmatter(content);
+  const fm = discover.extractFrontmatter(content);
   assert.strictEqual(fm.title, 'My Story');
   assert.strictEqual(fm.type, 'task');
 });
 
 test('extractFrontmatter — returns empty object when no frontmatter block', () => {
-  const fm = extractFrontmatter('# Just a heading\n\nNo frontmatter here.');
+  const fm = discover.extractFrontmatter('# Just a heading\n\nNo frontmatter here.');
   assert.deepStrictEqual(fm, {});
 });
 
 // ============================================================
-// parseSprintsFile
-// ============================================================
-
-test('parseSprintsFile — returns empty object for null/empty input', () => {
-  assert.deepStrictEqual(parseSprintsFile(null), {});
-  assert.deepStrictEqual(parseSprintsFile(''), {});
-});
-
-test('parseSprintsFile — groups story IDs under sprint keys', () => {
-  const content = [
-    '## Sprint 1 — Goal A',
-    '- [ ] story-1-1-login',
-    '- [x] story-1-2-signup',
-    '',
-    '## Sprint 2 — Goal B',
-    '- [ ] story-2-1-profile',
-  ].join('\n');
-  const map = parseSprintsFile(content);
-  assert.deepStrictEqual(map['sprint-1'], ['story-1-1-login', 'story-1-2-signup']);
-  assert.deepStrictEqual(map['sprint-2'], ['story-2-1-profile']);
-});
-
-test('parseSprintsFile — handles uppercase [X] checked items', () => {
-  const content = '## Sprint 3 — Done\n- [X] story-3-1-done';
-  const map = parseSprintsFile(content);
-  assert.deepStrictEqual(map['sprint-3'], ['story-3-1-done']);
-});
-
-// ============================================================
-// extractTitle
+// extractTitle (cli/lib/github-sync-discover.cjs)
 // ============================================================
 
 test('extractTitle — extracts first H1 heading', () => {
   const md = '# My Story Title\n\nSome body text.';
-  assert.strictEqual(extractTitle(md), 'My Story Title');
+  assert.strictEqual(discover.extractTitle(md), 'My Story Title');
 });
 
 test('extractTitle — returns null when no H1 present', () => {
-  assert.strictEqual(extractTitle('## Section\n\nNo H1 here.'), null);
-  assert.strictEqual(extractTitle(''), null);
+  assert.strictEqual(discover.extractTitle('## Section\n\nNo H1 here.'), null);
+  assert.strictEqual(discover.extractTitle(''), null);
 });
 
 // ============================================================
@@ -336,60 +278,153 @@ test('loadSyncMap — returns stored data for valid github-map.json', () => {
 });
 
 // ============================================================
-// discoverPhases (filesystem-based, requires real temp dirs)
+// discoverSprintTrackPhases (.planning/phases/*-SPRINT.md, current schema)
 // ============================================================
 
-// requires gh CLI mock; discoverPhases itself is pure-fs but integration tests
-// that drive the full sync flow out of scope for stdlib-only test.
-
-test('discoverPhases — returns empty array when .rcode/phases dir absent', () => {
+test('discoverSprintTrackPhases — parses a `<task id title>` block into a story with the right id/title/sprintId', () => {
   const tmp = mkTmp();
   try {
-    // replicate discoverPhases inline for pure-fs test
-    const phasesDir = path.join(tmp, '.rcode', 'phases');
-    const phases = fs.existsSync(phasesDir) ? fs.readdirSync(phasesDir) : [];
-    assert.deepStrictEqual(phases, []);
+    const dir = path.join(tmp, '.planning', 'phases', '9-test');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, '9-1-SPRINT.md'),
+      '<tasks><task id="9.1.1" title="Do the thing"></task></tasks>',
+    );
+    const phases = discover.discoverSprintTrackPhases(tmp);
+    assert.strictEqual(phases.length, 1);
+    assert.strictEqual(phases[0].numericId, '9');
+    assert.strictEqual(phases[0].stories.length, 1);
+    assert.strictEqual(phases[0].stories[0].id, '9.1.1');
+    assert.strictEqual(phases[0].stories[0].title, 'Do the thing');
+    assert.strictEqual(phases[0].stories[0].sprintId, '9.1');
+    assert.strictEqual(phases[0].stories[0].sourcePath, '.planning/phases/9-test/9-1-SPRINT.md');
   } finally {
     rmTmp(tmp);
   }
 });
 
-test('discoverPhases — reads brief.md and story files from phase directory', () => {
+test('discoverSprintTrackPhases — falls back to nested `<title>` tag when no title attribute is present', () => {
   const tmp = mkTmp();
   try {
-    const phaseDir = path.join(tmp, '.rcode', 'phases', 'phase-01', 'stories');
+    const dir = path.join(tmp, '.planning', 'phases', '9-test');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, '9-1-SPRINT.md'),
+      '<tasks><task id="9.1.2"><title>Nested title</title></task></tasks>',
+    );
+    const phases = discover.discoverSprintTrackPhases(tmp);
+    assert.strictEqual(phases[0].stories[0].id, '9.1.2');
+    assert.strictEqual(phases[0].stories[0].title, 'Nested title');
+  } finally {
+    rmTmp(tmp);
+  }
+});
+
+test('discoverSprintTrackPhases — falls back to `### Story N — title` heading format when no `<task>` blocks exist', () => {
+  const tmp = mkTmp();
+  try {
+    const dir = path.join(tmp, '.planning', 'phases', '9-test');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, '9-1-SPRINT.md'),
+      '### Story 9.1.3 — Legacy heading\n\nSome body text.\n',
+    );
+    const phases = discover.discoverSprintTrackPhases(tmp);
+    assert.strictEqual(phases[0].stories.length, 1);
+    assert.strictEqual(phases[0].stories[0].id, '9.1.3');
+    assert.strictEqual(phases[0].stories[0].title, 'Legacy heading');
+  } finally {
+    rmTmp(tmp);
+  }
+});
+
+test('discoverSprintTrackPhases — returns `[]` when `.planning/phases/` doesn\'t exist', () => {
+  const tmp = mkTmp();
+  try {
+    assert.deepStrictEqual(discover.discoverSprintTrackPhases(tmp), []);
+  } finally {
+    rmTmp(tmp);
+  }
+});
+
+// ============================================================
+// discoverEpicTrackPhase (.planning/epics/, current schema)
+// ============================================================
+
+test('discoverEpicTrackPhase — parses EPIC-NN.md + stories/N.M.md and links by numeric epic value', () => {
+  const tmp = mkTmp();
+  try {
+    const epicsDir = path.join(tmp, '.planning', 'epics');
+    const storiesDir = path.join(epicsDir, 'stories');
+    fs.mkdirSync(storiesDir, { recursive: true });
+    fs.writeFileSync(path.join(epicsDir, 'EPIC-01.md'), '# Epic 1: Auth\n\n**Phase:** implementation\n');
+    fs.writeFileSync(path.join(storiesDir, '1.1.md'), '# Story 1.1: Login flow\n\n**Epic:** EPIC-1 — Auth\n**Status:** todo\n');
+    const phase = discover.discoverEpicTrackPhase(tmp);
+    assert.ok(phase, 'expected a synthetic epics phase');
+    assert.strictEqual(phase.noMilestone, true);
+    assert.strictEqual(phase.epics.length, 1);
+    assert.strictEqual(phase.stories.length, 1);
+    assert.strictEqual(phase.stories[0].parentEpic, 'EPIC-01');
+    assert.strictEqual(phase.stories[0].sourcePath, '.planning/epics/stories/1.1.md');
+  } finally {
+    rmTmp(tmp);
+  }
+});
+
+test('discoverEpicTrackPhase — returns `null` when `.planning/epics/` doesn\'t exist', () => {
+  const tmp = mkTmp();
+  try {
+    assert.strictEqual(discover.discoverEpicTrackPhase(tmp), null);
+  } finally {
+    rmTmp(tmp);
+  }
+});
+
+// ============================================================
+// discoverPhases (combines both tracks)
+// ============================================================
+
+test('discoverPhases — combines sprint-track phases and the synthetic epics phase when both exist', () => {
+  const tmp = mkTmp();
+  try {
+    const phaseDir = path.join(tmp, '.planning', 'phases', '9-test');
     fs.mkdirSync(phaseDir, { recursive: true });
-    fs.writeFileSync(path.join(phaseDir, '..', 'brief.md'), '# Phase 01\nGoal: ship it');
-    fs.writeFileSync(path.join(phaseDir, 'story-1-1-login.md'), '# Login Story\n\nbody');
+    fs.writeFileSync(
+      path.join(phaseDir, '9-1-SPRINT.md'),
+      '<tasks><task id="9.1.1" title="Do the thing"></task></tasks>',
+    );
+    const epicsDir = path.join(tmp, '.planning', 'epics');
+    fs.mkdirSync(epicsDir, { recursive: true });
+    fs.writeFileSync(path.join(epicsDir, 'EPIC-01.md'), '# Epic 1: Auth\n');
 
-    const briefPath = path.join(phaseDir, '..', 'brief.md');
-    const brief = fs.readFileSync(briefPath, 'utf8');
-    assert.ok(brief.includes('Phase 01'));
-
-    const storyFiles = fs.readdirSync(phaseDir).filter((f) => f.endsWith('.md'));
-    assert.deepStrictEqual(storyFiles, ['story-1-1-login.md']);
-
-    const storyContent = fs.readFileSync(path.join(phaseDir, storyFiles[0]), 'utf8');
-    assert.strictEqual(extractTitle(storyContent), 'Login Story');
+    const phases = discover.discoverPhases(tmp);
+    assert.ok(phases.some((p) => p.id === '9-test'));
+    assert.ok(phases.some((p) => p.id === 'epics'));
   } finally {
     rmTmp(tmp);
   }
 });
 
-test('discoverPhases — story inherits parentEpic from naming convention (story-N-* → epic-N)', () => {
-  // Test the convention logic inline — the id extraction matches what discoverPhases does.
-  const id = 'story-3-2-dashboard';
-  const m = id.match(/^story-(\d+)/);
-  assert.ok(m, 'should match story-N pattern');
-  const parentEpic = `epic-${m[1]}`;
-  assert.strictEqual(parentEpic, 'epic-3');
-});
+// ============================================================
+// applyGranularFilters
+// ============================================================
 
-test('discoverPhases — frontmatter epic overrides naming convention', () => {
-  const content = '---\nepic: epic-custom-auth\n---\n# Story Title\nbody';
-  const fm = extractFrontmatter(content);
-  // frontmatter epic takes precedence
-  const id = 'story-1-1-login';
-  const parentEpic = fm.epic || (() => { const m = id.match(/^story-(\d+)/); return m ? `epic-${m[1]}` : null; })();
-  assert.strictEqual(parentEpic, 'epic-custom-auth');
+test('applyGranularFilters — --sprint filter matches both dash and dot sprint-id forms', () => {
+  const phases = [
+    {
+      id: '44-test', numericId: '44', epics: [],
+      stories: [
+        { id: '44.1.1', sprintId: '44.1', parentEpic: null },
+        { id: '45.1.1', sprintId: '45.1', parentEpic: null },
+      ],
+    },
+  ];
+
+  const dashFiltered = discover.applyGranularFilters(phases, { sprint: '44-1' });
+  assert.strictEqual(dashFiltered[0].stories.length, 1);
+  assert.strictEqual(dashFiltered[0].stories[0].id, '44.1.1');
+
+  const dotFiltered = discover.applyGranularFilters(phases, { sprint: '44.1' });
+  assert.strictEqual(dotFiltered[0].stories.length, 1);
+  assert.strictEqual(dotFiltered[0].stories[0].id, '44.1.1');
 });
