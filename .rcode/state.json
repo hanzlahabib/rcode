@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-29T12:03:37.901Z",
+  "updated": "2026-07-29T12:31:29.306Z",
   "current_phase": "Ship rcode/data to consumers (#952)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1279,6 +1279,19 @@
       "plan_count": 0,
       "plans": 1,
       "planned_at": "2026-07-29T08:50:37.488Z"
+    },
+    {
+      "id": "45",
+      "number": "45",
+      "name": "Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "sprints": [],
+      "slug": "audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001",
+      "goal": "_TBD — fill in via /rcode-discuss-phase 45 or edit directly._",
+      "created": "2026-07-29T12:31:15.563Z",
+      "plan_count": 0
     }
   ],
   "executions": [

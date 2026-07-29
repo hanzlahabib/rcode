@@ -318,6 +318,19 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 45 — Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)
+
+**Goal:** _TBD — fill in via /rcode-discuss-phase 45 or edit directly._
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:** _TBD_
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
