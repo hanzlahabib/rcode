@@ -378,6 +378,8 @@ If new untracked files appeared after running scripts or tools, decide for each:
 <hook_revert_detection_gate>
 ## Post-Step Hook Revert Detection Gate
 
+<!-- See also <post_step_revert_gate> below — catches a different revert shape (shrunk, not identical) -->
+
 After each task that writes or edits files, run:
 ```bash
 git diff --name-only HEAD
@@ -393,6 +395,8 @@ Do not proceed to the next task until all expected file changes survive the git 
 
 <post_step_revert_gate>
 ## Post-Step Revert Detection Gate
+
+<!-- See also <hook_revert_detection_gate> above — catches a different revert shape (identical, not shrunk) -->
 
 After committing each task, run a diff check to detect accidental reverts. This catches the class of bug where a task's implementation unknowingly undoes work from a previous task or wave.
 

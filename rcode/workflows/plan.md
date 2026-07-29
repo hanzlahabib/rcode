@@ -47,8 +47,6 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <!-- ui-brand.md (254 lines): only load when phase goal/CONTEXT.md contains UI signals (frontend|ui|component|design|style|brand) -->
 ${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
-@.rcode/references/revision-loop.md
-@.rcode/references/gate-prompts.md
 @.rcode/references/karpathy-guidelines.md
 <!-- Read .rcode/references/agent-contracts.md only if defining or debugging agent contracts -->
 <!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic -->
@@ -228,91 +226,9 @@ PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 
 ## 3.6. Handle `--gaps` Mode
 
-**Skip unless:** `GAPS_MODE=true`.
+**Skip unless:** `GAPS_MODE=true`. When active, read the full gap-closure procedure below (extracted to keep this file within AGENTS.md's 1000-line cap for the common, non-gaps-mode path).
 
-**Purpose:** Read `NNN-VERIFICATION.md`, extract failing/partial gaps, count existing plan files, and prepare a `gap_list` payload to feed the planner. On completion, control flow continues at step 8 (skipping CONTEXT.md gating, research, and validation-strategy creation).
-
-**Step 1: Locate VERIFICATION.md**
-
-```bash
-PHASE_DIR=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}" --pick dir 2>/dev/null || echo "")
-# Fallback if --pick dir not supported. TODO(#118): expose roadmap --pick dir cleanly.
-if [[ -z "$PHASE_DIR" ]]; then
-  PHASE_DIR=$(ls -d .planning/phases/${padded_phase}-* 2>/dev/null | head -1)
-fi
-
-VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
-```
-
-**If `VERIFICATION_FILE` is empty:**
-```
-Error: No VERIFICATION.md found for Phase {X}. Gap-closure planning requires the phase to have run through the verifier first.
-
-Try:
-  /rcode-execute {X} ${RCODE_WS}      # run or re-run execution + verification
-```
-Exit workflow.
-
-**Step 2: Extract gaps from VERIFICATION.md**
-
-Parse the file for gap entries with `status: gap_found` or `status: partial`. Inspect these sections:
-- `## Automated Gap` (or `## Automated Gaps`)
-- `## Human Verification Required`
-- Any findings block that includes a `status:` field set to `gap_found` or `partial`
-
-Collect into `GAP_LIST` (an ordered list where each entry has: id, title, expected, actual, status, source_section, severity if present).
-
-If `GAP_LIST` is empty, display:
-```
-Phase {X} VERIFICATION.md contains no gap_found or partial items — nothing to close.
-Report: {VERIFICATION_FILE}
-```
-Exit workflow.
-
-**Step 3: Determine next plan number**
-
-```bash
-EXISTING_PLAN_COUNT=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | wc -l | tr -d ' ')
-# Issue #652 — no leading zeros in planning artifacts. Phase 8 not 08, plan 2 not 02.
-NEXT_PLAN_NUMBER=$((EXISTING_PLAN_COUNT + 1))
-PADDED_PHASE="${PHASE}"
-GAP_PLAN_FILENAME="${PADDED_PHASE}-${NEXT_PLAN_NUMBER}-SPRINT.md"
-GAP_PLAN_PATH="${PHASE_DIR}/${GAP_PLAN_FILENAME}"
-```
-
-If `EXISTING_PLAN_COUNT == 0`, there is no prior execution to reference. Display a warning but proceed — the planner can still close verification gaps.
-
-**Step 4: Gather prior plans for planner context**
-
-```bash
-EXISTING_PLAN_FILES=$(ls "${PHASE_DIR}"/*-SPRINT.md 2>/dev/null | tr '\n' ' ')
-EXISTING_SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null | tr '\n' ' ')
-```
-
-**Step 5: Display banner**
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- rcode ► GAP-CLOSURE PLANNING — Phase {X}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Verification report: {VERIFICATION_FILE}
-Gaps to close:       {count(GAP_LIST)}
-Existing plans:      {EXISTING_PLAN_COUNT}
-New plan file:       {GAP_PLAN_FILENAME}
-```
-
-**Step 6: Skip ahead**
-
-Control flow jumps directly to step 8 (Spawn rcode-planner). Steps 4 (CONTEXT.md), 5 (Research), and 5.5 (Validation) are ALL skipped when `GAPS_MODE=true`.
-
-Step 8 will consume these variables when filling the planner prompt:
-- `GAP_LIST` — serialized list of gaps (id, title, expected, actual, status)
-- `GAP_PLAN_PATH` — exact output path the planner must write
-- `EXISTING_PLAN_FILES` / `EXISTING_SUMMARY_FILES` — prior phase context
-- `VERIFICATION_FILE` — authoritative source-of-truth
-
-After the planner returns, the existing plan-checker / revision loop (step 10 onward) runs unchanged — gap plans are verified just like normal plans.
+${GAPS_MODE ? '@.rcode/references/plan-gaps-mode.md' : ''}
 
 ## 4. Load CONTEXT.md
 
@@ -679,23 +595,11 @@ Task(
 - **`## ISSUES FOUND`:** Display issues, check iteration count, proceed to step 12.
 
 **Thinking partner for architectural tradeoffs (conditional):**
-If `features.thinking_partner` is enabled, scan the checker's issues for architectural tradeoff keywords
-("architecture", "approach", "strategy", "pattern", "vs", "alternative"). If found:
-
+```bash
+THINKING_PARTNER_ENABLED=$(node ".rcode/bin/rcode-tools.cjs" config-get features.thinking_partner 2>/dev/null || echo "false")
 ```
-The sprint-checker flagged an architectural decision point:
-{issue description}
-
-Brief analysis:
-- Option A: {approach_from_plan} — {pros/cons}
-- Option B: {alternative_approach} — {pros/cons}
-- Recommendation: {choice} aligned with {phase_goal}
-
-Apply this to the revision? [Yes] / [No, I'll decide]
-```
-
-If yes: include the recommendation in the revision prompt. If no: proceed to revision loop as normal.
-If thinking_partner disabled: skip this block entirely.
+${THINKING_PARTNER_ENABLED ? '@.rcode/references/plan-thinking-partner.md' : ''}
+If `features.thinking_partner` is disabled: skip this block entirely.
 
 ## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
 
@@ -805,16 +709,18 @@ Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 Before declaring plans ready, validate the wave-parallelism rule the planner declares: **same wave + overlapping `files_modified` = sequential, not parallel**. If two plans share `depends_on` (same wave) and both list the same file in `files_modified`, the planner should have marked the later one `sequential: true`. Catch the cases where it didn't.
 
 ```bash
-# For every pair of plans (A, B) with the same depends_on:
-#   if files_modified(A) ∩ files_modified(B) is non-empty:
-#     - the later plan (by sprint id) MUST declare sequential: true
-#     - and must list the conflicting files in its frontmatter
-
-node ".rcode/bin/rcode-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+# Skip if plan_count == 1 (from INIT JSON): with exactly one plan in the phase,
+# there is no second plan to overlap with — a conflict is structurally impossible.
+if [[ "${plan_count}" -eq 1 ]]; then
+  echo "Wave parallelism: skipped (single plan, overlap structurally impossible)."
+else
+  # For every pair of plans (A, B) with the same depends_on, if files_modified(A)
+  # ∩ files_modified(B) is non-empty, the later plan (by sprint id) MUST declare
+  # sequential: true and list the conflicting files in its frontmatter.
+  node ".rcode/bin/rcode-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+fi
 ```
-
-The CLI helper returns a JSON report:
-
+Returns (else branch only):
 ```json
 {
   "conflicts": [
@@ -841,15 +747,13 @@ The CLI helper returns a JSON report:
 3. Re-run the checker to confirm the updated frontmatter.
 4. Display: `Wave parallelism: {N} conflict(s) auto-corrected to sequential.`
 
-**If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
-
-This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
+**If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed. (This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced until now.)
 
 ## 13. Requirements Coverage Gate
 
 After plans pass the checker (or checker is skipped), verify that all phase requirements are covered by at least one plan.
 
-**Skip if:** `phase_req_ids` is null or TBD (no requirements mapped to this phase).
+**Skip if:** `phase_req_ids` is null, `TBD`, or an empty array/list (no requirements mapped to this phase) — `[[ -z "$phase_req_ids" || "$phase_req_ids" == "TBD" || "$phase_req_ids" == "[]" || "$phase_req_ids" == "null" ]]` — proceed to step 14.
 
 **Step 1: Extract requirement IDs claimed by plans**
 ```bash
@@ -962,8 +866,9 @@ Display banner:
 Plans ready. Launching execute-phase...
 ```
 
-Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
+Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting). Skill() keeps execute.md running in this same context — set `AUTO_CHAINED_FROM_PLAN=true` so execute.md's required_reading doesn't re-read files this context already loaded (see AUDIT-workflow-complexity.md finding 3):
 ```
+AUTO_CHAINED_FROM_PLAN=true
 Skill(skill="rcode-execute", args="${PHASE} --auto --no-transition ${RCODE_WS}")
 ```
 
@@ -1065,27 +970,11 @@ Verification: {Passed | Passed with override | Skipped}
 </offer_next>
 
 <windows_troubleshooting>
-**Windows users:** If sprint-plan freezes during agent spawning (common on Windows due to
-stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-code#28126):
-
-1. **Force-kill:** Close the terminal (Ctrl+C may not work)
-2. **Clean up orphaned processes:**
-   ```powershell
-   # Kill orphaned node processes from stale MCP servers
-   Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.StartTime -lt (Get-Date).AddHours(-1)} | Stop-Process -Force
-   ```
-3. **Clean up stale task directories:**
-   ```powershell
-   # Remove stale subagent task dirs (Claude Code never cleans these on crash)
-   Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
-   ```
-4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
-5. **Retry:** Restart Claude Code and run `/rcode-plan` again
-
-If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
+```bash
+# Windows-only content (stdio deadlock recovery) — skip the read on other platforms.
+WINDOWS=$([[ "$(uname -s 2>/dev/null)" == MINGW* || "$(uname -s 2>/dev/null)" == CYGWIN* || -n "$WINDIR" ]] && echo true || echo false)
 ```
-/rcode-plan N --skip-research
-```
+${WINDOWS ? '@.rcode/references/plan-windows-troubleshooting.md' : ''}
 </windows_troubleshooting>
 
 <success_criteria>
