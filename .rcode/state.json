@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-29T06:33:02.720Z",
+  "updated": "2026-07-29T08:52:03.178Z",
   "current_phase": "Ship rcode/data to consumers (#952)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1252,6 +1252,33 @@
       "plans": 1,
       "planned_at": "2026-06-29T15:29:27.195Z",
       "status_updated": "2026-06-29T17:22:42.115Z"
+    },
+    {
+      "id": "44",
+      "number": "44",
+      "name": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "sprints": [
+        {
+          "id": "44.1",
+          "number": 1,
+          "goal": "Fix github-sync path drift: dead .rcode/phases/ layout in CLI, stale docs, SPRINT.md filename convention (#980)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "github-sync-path-drift-dead-rcodephases-layout-in-cli-stale-docs-sprintmd-filename-convention-issue-980",
+      "goal": "Fix `cli/github-sync.js` to read the current sprint-track (`.planning/phases/*/*-SPRINT.md` with `<task>` XML) and epic-track (`.planning/epics/stories/*.md`) formats instead of the dead `.rcode/phases/{N}/tasks|stories/` layout; correct `docs/METHODOLOGY.md` and `docs/USP.md` to stop documenting that dead path as current; fix `rcode/workflows/sprint-planning.md`'s bare `SPRINT.md` output filename to follow the sequence-numbered `{phase}-{plan}-SPRINT.md` convention used everywhere else.",
+      "created": "2026-07-29T08:23:52.128Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-07-29T08:50:37.488Z"
     }
   ],
   "executions": [
@@ -1321,7 +1348,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "43.1",
+  "current_sprint": "44.1",
   "velocity_history": [
     {
       "sprint": "04.1",
@@ -1753,6 +1780,14 @@
       "goal": "\"Ship rcode/data/ to consumers via installer and sync hook so .rcode/data/intent-table.json is present on install and rcode-hooks.cjs stops ENOENT-crashing (#952)\"",
       "status": "planned",
       "file": ".planning/phases/43-ship-rcodedata-to-consumers-fix-installer-sync-hook-so-hooks-stop-enoent-crashing-952/43-1-SPRINT.md"
+    },
+    {
+      "key": "44/1",
+      "phase": "44",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/44-github-sync-path-drift-dead-rcodephases-layout-in-cli-stale-docs-sprintmd-filename-convention-issue-980/44-1-SPRINT.md"
     }
   ],
   "plans": [],

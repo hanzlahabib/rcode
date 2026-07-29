@@ -4,6 +4,7 @@ communication_language: Mixed
 mode: yolo
 model_profile: balanced
 commit_planning: true
+prompt_nudge: every
 model_override:
 rcode_source_path:
 workflow:
@@ -15,8 +16,3 @@ workflow:
   _auto_chain_active: false
 git:
   branching_strategy: feature-branch
-
-# prompt_nudge controls how aggressively the UserPromptSubmit hook nudges toward rcode commands.
-# Valid values: every (default) | once-per-intent | when-stale | off
-# Shipped active at the documented default so the toggle is discoverable (#952 review L2).
-prompt_nudge: every

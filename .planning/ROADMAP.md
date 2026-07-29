@@ -301,6 +301,23 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 44 — GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)
+
+**Goal:** Fix `cli/github-sync.js` to read the current sprint-track (`.planning/phases/*/*-SPRINT.md` with `<task>` XML) and epic-track (`.planning/epics/stories/*.md`) formats instead of the dead `.rcode/phases/{N}/tasks|stories/` layout; correct `docs/METHODOLOGY.md` and `docs/USP.md` to stop documenting that dead path as current; fix `rcode/workflows/sprint-planning.md`'s bare `SPRINT.md` output filename to follow the sequence-numbered `{phase}-{plan}-SPRINT.md` convention used everywhere else.
+
+**Status:** Planned
+
+**Plans:**
+- _TBD_
+
+**Acceptance:**
+- `rcode github-sync --phase <N> --dry-run` produces correct epic/story previews against a real current-schema project (sprint-track and epic-track)
+- `docs/METHODOLOGY.md` and `docs/USP.md` no longer reference `.rcode/phases/` as a current path
+- `rcode/workflows/sprint-planning.md` writes `{phase}-{plan}-SPRINT.md`, not bare `SPRINT.md`
+- `test/github-sync.test.cjs` covers the current-schema paths (not just the old fixtures, if any)
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)
