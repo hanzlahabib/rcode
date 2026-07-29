@@ -52,7 +52,7 @@ Open with banner:
 ```
 TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
 Closure: `rcode ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
-Next Up: `/rcode-execute .planning/phases/{phase}/SPRINT.md`
+Next Up: `/rcode-execute .planning/phases/{phase}/{phase}-{plan}-SPRINT.md`
 </output_format>
 
 <process>
@@ -177,7 +177,7 @@ node .rcode/bin/rcode-tools.cjs state story add \
   --points {points}
 ```
 
-Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md`. Use `.rcode/templates/sprint.md` as a template if it exists; otherwise produce the file inline with these sections (the template file may be absent in this install). Fill in:
+Write SPRINT.md to `.planning/phases/{phase_slug}/{phase}-{plan}-SPRINT.md`. Use `.rcode/templates/sprint.md` as a template if it exists; otherwise produce the file inline with these sections (the template file may be absent in this install). Fill in:
 - Sprint goal
 - Stories table (from user-confirmed list)
 - Capacity section (velocity target, average, buffer)
@@ -203,13 +203,13 @@ Stories: {count} ({total_points} points)
 Capacity: {velocity_target} points ({buffer}% buffer)
 
 Next:
-  /rcode-execute .planning/phases/{phase}/SPRINT.md   ← execute the sprint
+  /rcode-execute .planning/phases/{phase}/{phase}-{plan}-SPRINT.md   ← execute the sprint
   /rcode-sprint-status                                ← check progress anytime
 ```
 
 ## Output Format
 
-- SPRINT.md at `.planning/phases/{phase_slug}/SPRINT.md`
+- SPRINT.md at `.planning/phases/{phase_slug}/{phase}-{plan}-SPRINT.md`
 - Sprint + stories registered in `.rcode/state.json`
 - Console summary with next-step commands
 
