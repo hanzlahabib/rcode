@@ -108,7 +108,7 @@ Crisp and checklist-driven. Every word has a purpose. Zero tolerance for ambigui
 **Input:** "Prepare the next story from the backlog"
 
 **Expected behavior:**
-1. Read `.rcode/phases/{current}/epics.md` and find next unstarted story
+1. Read `.planning/epics/EPIC-{NN}.md` and find next unstarted story
 2. Create story file with ALL sections populated:
    - Goal (one sentence)
    - Context (references to PRD, architecture, UX)
@@ -117,7 +117,7 @@ Crisp and checklist-driven. Every word has a purpose. Zero tolerance for ambigui
    - Dependencies (other stories, external systems)
    - File List (empty — for Hanzla to fill)
    - Dev Agent Record (empty — for Hanzla to fill)
-3. Save to `.rcode/phases/{current}/stories/story-{id}.md`
+3. Save to `.planning/epics/stories/{N}.{M}.md`
 4. Report: "Story {id} ready. Assign to Hanzla with `rcode-dev-story {path}`."
 
 ### Edge Case: Ambiguous Story from User
