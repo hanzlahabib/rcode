@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-29T12:31:29.306Z",
+  "updated": "2026-07-29T13:44:47.225Z",
   "current_phase": "Ship rcode/data to consumers (#952)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1291,7 +1291,9 @@
       "slug": "audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001",
       "goal": "_TBD — fill in via /rcode-discuss-phase 45 or edit directly._",
       "created": "2026-07-29T12:31:15.563Z",
-      "plan_count": 0
+      "plan_count": 0,
+      "plans": 5,
+      "planned_at": "2026-07-29T13:44:34.368Z"
     }
   ],
   "executions": [
@@ -1801,6 +1803,46 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/44-github-sync-path-drift-dead-rcodephases-layout-in-cli-stale-docs-sprintmd-filename-convention-issue-980/44-1-SPRINT.md"
+    },
+    {
+      "key": "45/1",
+      "phase": "45",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-1-SPRINT.md"
+    },
+    {
+      "key": "45/2",
+      "phase": "45",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-2-SPRINT.md"
+    },
+    {
+      "key": "45/3",
+      "phase": "45",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-3-SPRINT.md"
+    },
+    {
+      "key": "45/4",
+      "phase": "45",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-4-SPRINT.md"
+    },
+    {
+      "key": "45/5",
+      "phase": "45",
+      "number": "5",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-5-SPRINT.md"
     }
   ],
   "plans": [],
