@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-29T08:52:03.178Z",
-  "current_phase": "Ship rcode/data to consumers (#952)",
+  "updated": "2026-07-29T09:13:20.698Z",
+  "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
@@ -1257,8 +1257,8 @@
       "id": "44",
       "number": "44",
       "name": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-07-29T09:02:17.277Z",
       "completed": null,
       "sprints": [
         {
