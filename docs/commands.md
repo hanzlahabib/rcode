@@ -264,7 +264,7 @@ Add `--security` for security-only scan.
 ## Planning (7 commands)
 
 ### `/rcode-plan`
-**Purpose:** Write a detailed PLAN.md with verification.
+**Purpose:** Write a detailed SPRINT.md with verification.
 
 ```
 /rcode-plan build user authentication module
@@ -272,11 +272,11 @@ Add `--security` for security-only scan.
 ```
 
 Flow:
-1. Planner writes PLAN.md (tasks, subtasks, success criteria)
-2. Plan-checker validates file/symbol references exist
-3. On failure, loops back to planner with feedback (max 2 retries)
+1. `rcode-planner` writes SPRINT.md (tasks, subtasks, success criteria)
+2. `rcode-sprint-checker` validates plan quality before execution
+3. On failure, loops back to the planner with feedback — capped at 1 iteration in yolo/autonomous mode, 3 in guided mode
 
-Outputs: `.planning/phases/{NN}/PLAN.md`.
+Outputs: `.planning/phases/{phase-slug}/{phase}-{plan}-SPRINT.md`.
 
 **Related:** `/rcode-chain`, `/rcode-execute`
 
@@ -323,8 +323,10 @@ Outputs: structured epics with acceptance criteria and story points.
 **Purpose:** Write a single user story.
 
 ```
-/rcode-create-story "As a user, I want to reset my password"
+/rcode-create-story .planning/epics/EPIC-01.md [--story <id>]
 ```
+
+Requires an `<EPIC-file.md>` path argument — errors with "File not found" if the file doesn't exist. If `--story` is omitted, lists the epic's stories and asks which one to extract.
 
 Outputs:
 - User story format
@@ -357,7 +359,7 @@ Outputs:
 **Purpose:** Plan a sprint from a backlog.
 
 ```
-/rcode-sprint-planning --backlog=.planning/backlog.md
+/rcode-sprint-planning [--phase <NN>] [--velocity <points>] [--goal "Sprint goal"]
 ```
 
 Produces:

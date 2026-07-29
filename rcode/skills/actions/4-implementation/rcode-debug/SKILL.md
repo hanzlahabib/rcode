@@ -29,8 +29,8 @@ triggers:
   - "تتبّع السبب"
 user-invocable: false
 ---
+<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
-
 ## The Iron Law
 
 ```
