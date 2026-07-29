@@ -3,6 +3,31 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.7.2 (2026-07-29) — Planners now self-split before the checker has to reject them
+
+Diagnosed against a real run: a 58-file phase produced one 31-task
+mega-sprint, got rejected by `rcode-sprint-checker`'s own "scope exceeds
+context budget" rule, and cost a full extra planner run to reshard —
+1h27m and 600k+ tokens for a plan that should have split on the first pass.
+
+### Fixes
+- **`rcode-planner.md` documented a `## Scope` sizing contract
+  (`plan-spawn-planner.md`) never emitted** (#979). The planner now gets
+  an explicit instruction to self-upgrade to `initiative` scope and emit
+  multiple SPRINT.md files mid-decomposition, instead of waiting for the
+  checker to force a resharding pass.
+- **`rcode-do` router never named its own trigger phrases** — saying "use
+  rcode" / "rcode kar do" with a bundled multi-part task had nothing to
+  match against, so it got hand-rolled instead of routed. The router's
+  description now names these phrases explicitly.
+
+### Dashboard
+- **Empty-state command hints are now click-to-copy** (`CmdHint`) across
+  Backlog, Kanban, Memory, Phases, Sprints, and Tasks — previously plain
+  text you had to retype. Guarded with `stopPropagation` where it sits
+  inside a clickable card row (SprintCard's empty state).
+
+---
 ## v4.7.1 (2026-07-26) — Close the ambient-instruction gap for existing-project installs
 
 Diagnosed against a real consumer project: a project set up via `/rcode-init`
