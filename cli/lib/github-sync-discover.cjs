@@ -142,10 +142,86 @@ function discoverSprintTrackPhases(cwd) {
   return phases;
 }
 
-// Replaced by the real epic-track parser in a later change to this file —
-// see discoverPhases() below, which already wires it in.
+/**
+ * Discover the epic-track from .planning/epics/EPIC-{NN}.md +
+ * .planning/epics/stories/{N}.{M}.md, per the layout in
+ * rcode/workflows/create-epics-and-stories.md. Story files use bold
+ * Markdown fields (`**Epic:** EPIC-{N} — {title}`), NOT YAML frontmatter —
+ * extractFrontmatter correctly returns {} for these and is not used here.
+ *
+ * Epic file names are zero-padded (EPIC-01.md) but a story's `**Epic:**`
+ * field is unpadded (EPIC-1) — match by NUMERIC value so padding
+ * differences never break the parent link.
+ *
+ * Returns null when .planning/epics/ doesn't exist, or when it exists but
+ * has no epics and no stories (nothing to sync — avoid a spurious empty
+ * synthetic phase).
+ */
 function discoverEpicTrackPhase(cwd) {
-  return null;
+  const epicsDir = path.join(cwd, '.planning', 'epics');
+  if (!fs.existsSync(epicsDir)) return null;
+
+  const epics = [];
+  const epicFiles = fs.readdirSync(epicsDir).filter((f) => /^EPIC-\d+\.md$/i.test(f));
+  for (const file of epicFiles) {
+    const content = fs.readFileSync(path.join(epicsDir, file), 'utf8');
+    const numM = file.match(/(\d+)/);
+    const epicNumber = numM ? parseInt(numM[1], 10) : null;
+    const id = file.replace(/\.md$/i, '');
+    epics.push({
+      id,
+      file,
+      epicNumber,
+      content,
+      title: extractTitle(content) || id,
+      frontmatter: {},
+      sourcePath: `.planning/epics/${file}`,
+    });
+  }
+
+  const stories = [];
+  const storiesDir = path.join(epicsDir, 'stories');
+  if (fs.existsSync(storiesDir)) {
+    const storyFiles = fs.readdirSync(storiesDir).filter((f) => /^[\d.]+\.md$/.test(f));
+    for (const file of storyFiles) {
+      const content = fs.readFileSync(path.join(storiesDir, file), 'utf8');
+      const id = file.replace(/\.md$/i, '');
+      const epicRefM = content.match(/\*\*Epic:\*\*\s*EPIC-(\d+)/i);
+      let parentEpic = null;
+      if (epicRefM) {
+        const refNum = parseInt(epicRefM[1], 10);
+        const matchedEpic = epics.find((e) => e.epicNumber === refNum);
+        if (matchedEpic) parentEpic = matchedEpic.id;
+      }
+      stories.push({
+        id,
+        file,
+        content,
+        title: extractTitle(content) || id,
+        parentEpic,
+        sprintId: null,
+        frontmatter: {},
+        sourcePath: `.planning/epics/stories/${file}`,
+      });
+    }
+  }
+
+  if (epics.length === 0 && stories.length === 0) return null;
+
+  return {
+    id: 'epics',
+    numericId: null,
+    brief: null,
+    sprints: null,
+    sprintMap: {},
+    stories,
+    epics,
+    // Signals this synthetic phase has no numbered-phase milestone to
+    // attach to on GitHub — epic-track is a deliberately phase-agnostic
+    // PRD→epics→stories chain per docs/adr/0001, distinct from the numbered
+    // .planning/phases/ milestones.
+    noMilestone: true,
+  };
 }
 
 /**
