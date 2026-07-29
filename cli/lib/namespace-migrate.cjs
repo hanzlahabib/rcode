@@ -62,7 +62,22 @@ function findLegacyRihalArtifacts(claudeDir) {
     }
   }
 
-  return { skills, commands };
+  const agents = [];
+  const agentsDir = path.join(claudeDir, 'agents');
+  for (const entry of listDirSafe(agentsDir)) {
+    if (!entry.isFile() || !entry.name.startsWith('rihal-') || !entry.name.endsWith('.md')) continue;
+    const twinName = 'rcode-' + entry.name.slice('rihal-'.length);
+    if (fs.existsSync(path.join(agentsDir, twinName))) {
+      agents.push({
+        name: entry.name,
+        twin: twinName,
+        srcPath: path.join(agentsDir, entry.name),
+        kind: 'agent',
+      });
+    }
+  }
+
+  return { skills, commands, agents };
 }
 
 /**
