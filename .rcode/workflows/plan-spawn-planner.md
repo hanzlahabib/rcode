@@ -3,8 +3,8 @@ Sub-step of plan.md — Step 8 Spawn rcode-planner Agent. Spawns rcode-planner w
 </purpose>
 
 <filename_convention>
-Issue #657 — every SPRINT.md, including the first plan in a phase, uses the
-sequence-numbered form `{phase}-{plan}-SPRINT.md` (no leading zeros per #652).
+Every SPRINT.md, including the first plan in a phase, uses the
+sequence-numbered form `{phase}-{plan}-SPRINT.md` (no leading zeros).
 Examples: `8-1-SPRINT.md`, `8-2-SPRINT.md`. Do NOT emit a bare `{phase}-SPRINT.md`
 or `{phase}-PLAN.md` for the first plan — that creates an inconsistent series
 when a second plan is added later. The plan-number computation in plan.md uses
@@ -117,6 +117,31 @@ Output consumed by /rcode-execute. Plans need:
 - Tasks in XML format with read_first, files, acceptance_criteria, verify (with `<automated>` child), and done fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
+- **`## Files Touched`** section (see below) — required on every SPRINT.md
+
+### Required: ## Files Touched Section
+
+Every SPRINT.md must end with a `## Files Touched` section that the planner populates:
+
+```markdown
+## Files Touched
+
+**Creates:**
+- `exact/path/to/new/file.ts` — [one-line responsibility]
+
+**Modifies:**
+- `exact/path/to/existing.ts` — [what changes]
+
+**Tests:**
+- `tests/exact/path/test.ts` — [tests for]
+
+**Aggregator files (append-only):**
+- `packages/shared/src/index.ts` — adds export for Foo, Bar
+```
+
+This section is read by the wave-overlap checker and by human reviewers to quickly audit
+cross-sprint file ownership before merging. If a file appears in `## Files Touched` for two
+plans in the same wave, the later plan must declare `sequential: true`.
 </downstream_consumer>
 
 <deep_work_rules>
@@ -138,6 +163,72 @@ Rules:
 - Files that change together should live together (split by responsibility, not layer)
 - This map is what informs task decomposition — each task should produce self-contained changes
 - In existing codebases: follow established patterns; only restructure files if a file is genuinely unwieldy and the split is included as its own task
+
+## File-Ownership & Conflict-Avoidance (MANDATORY)
+
+**Evidence from overnight parallel builds (calorie-calculator-ai, 2026-05-26):**
+- Sprints 1-2 and 3-1 both created `diary.py` with divergent content — 3-1's mock-history
+  endpoints were silently lost at merge.
+- Sprints 3-3 and 3-4 both created `HistoryScreen.tsx` — collision required manual triage.
+- Sprints 1-4 and 1-5 both created `CalorieRing`, `MealSlotCard`, and related components.
+- `packages/shared/src/index.ts` was modified by 4 independent sprints — every merge required
+  conflict resolution.
+- Wave-4 executors stubbed missing deps locally while master had an unmerged upstream; the
+  stubs collided with canonical implementations at merge.
+
+### Cross-Sprint File Manifest (produce before task decomposition)
+
+After the File Structure Map, build a cross-sprint ownership table:
+
+```
+CROSS-SPRINT FILE MANIFEST:
+  Sprint 1: creates [path/a.ts, path/b.ts]  modifies [path/c.ts]
+  Sprint 2: creates [path/d.ts]             modifies [path/c.ts]   ← OVERLAP on path/c.ts
+  Sprint 3: creates [path/b.ts]             modifies []             ← COLLISION — b.ts in sprint 1 too
+  ...
+  OWNERSHIP ASSIGNMENTS:
+    path/c.ts — sprint 1 writes canonical, sprint 2 must be sequential_after: 1
+    path/b.ts — DEFECT: only one sprint may create a file; merge or sequence
+```
+
+**Rules:**
+- Only ONE sprint may _create_ a given file. Two sprints creating the same file is a plan defect — either merge the tasks into one sprint or sequence them and have the later sprint extend (not recreate).
+- If two sprints in the same wave both _modify_ the same file, the later sprint MUST have `sequential: true` and `sequential_after: <earlier_sprint_id>` in its frontmatter.
+- Frontmatter `files_modified:` must list ALL files from `<files>` blocks — this is the source-of-truth for the executor's intra-wave overlap checker.
+
+### Aggregator-File Rule
+
+These files are known aggregators — multiple sprints always want to add to them:
+
+| Pattern | Examples |
+|---------|---------|
+| Barrel exports | `**/index.ts`, `**/index.tsx` |
+| State store | `**/store/index.ts`, `**/store/index.js` |
+| Types barrel | `**/types/index.ts`, `**/types.ts` |
+| Python entrypoints | `main.py`, `app.py`, `router/__init__.py`, `**/__init__.py` |
+| Package manifest | `package.json` (scripts / deps blocks) |
+
+**Hard rule:** For aggregator files, the `<action>` block MUST say:
+
+> "Append to existing exports — do NOT overwrite or replace the full file. Use `Edit`
+> (old_string / new_string) with a targeted insertion. Preserve all existing content."
+
+Never use `Write` on an aggregator file in a plan that other sprints also touch.
+
+### Verify-Command Accuracy
+
+In every `<verify><automated>` block, prefer `pnpm run <script>` over raw tool invocations
+to avoid the mismatch where the planner writes `tsc --noEmit` but the project calls it `type-check`:
+
+| Raw invocation (avoid) | pnpm script form (prefer) |
+|------------------------|--------------------------|
+| `tsc --noEmit` | `pnpm run type-check` or `pnpm run typecheck` |
+| `eslint .` | `pnpm run lint` |
+| `jest` / `vitest` | `pnpm run test` |
+| `python -m pytest` | check `pyproject.toml` for script alias |
+
+Check `package.json` scripts before writing a verify command. If `package.json` is not yet
+read, add it to `<read_first>` for any task that writes a verify command.
 
 ## No-Placeholders Rule (HARD BLOCKER)
 
@@ -223,9 +314,14 @@ Every task MUST include these fields — they are NOT optional:
 
 <quality_gate>
 - [ ] File structure map written before first task (files_to_create / files_to_modify / files_for_tests)
+- [ ] Cross-sprint file manifest built — no file in 2+ same-wave sprints without `sequential: true`
+- [ ] No file created by more than one sprint (creation collision = plan defect)
+- [ ] Aggregator files (index.ts, __init__.py, main.py, package.json, etc.) use append-only `Edit`, not `Write`
+- [ ] Verify commands use `pnpm run <script>` not raw tool invocations (tsc, eslint, jest)
 - [ ] No placeholder patterns: no TBD/TODO/implement-later, no "similar to Task N", no code steps without code
 - [ ] SPRINT.md files created in phase directory
 - [ ] Each plan has valid frontmatter including `files_modified:` array aggregating all `<files>` paths across tasks (consumed by execute.md intra-wave overlap checker)
+- [ ] Each plan's `## Files Touched` section populated with create/modify/test lists
 - [ ] Tasks are specific and actionable
 - [ ] Every task has `<read_first>` with at least the file being modified
 - [ ] Every task has `<files>` listing exact files this task will modify or create
@@ -255,7 +351,6 @@ Fix issues inline. No sub-agent needed — this is a quick self-check before the
 Task(
   prompt=filled_prompt,
   subagent_type="rcode-planner",
-  model="{model}",
   model="{planner_model}",
   description="Plan Phase {phase}"
 )

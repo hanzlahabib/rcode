@@ -19,8 +19,8 @@ BRANCH=$(git branch --show-current 2>/dev/null)
 PROTECTED="main master develop v2-prototype"
 
 # Check 3: branch follows naming convention
-# Allowed: feat/foo-bar, fix/123-baz, issue-123-name, task-123-slug
-BRANCH_OK=$(echo "$BRANCH" | grep -qE '^((feat|fix|docs|chore|refactor|test|perf|style|build|ci)/[a-z0-9][a-z0-9-]*|(issue|task)-[0-9]+-[a-z0-9-]+)$' && echo yes || echo no)
+# Allowed: feat/foo-bar, fix/123-baz, issue-123-name, task-123-slug, 8-1-aria (phase-plan-slug)
+BRANCH_OK=$(echo "$BRANCH" | grep -qE '^((feat|fix|docs|chore|refactor|test|perf|style|build|ci)/[a-z0-9][a-z0-9-]*|(issue|task)-[0-9]+-[a-z0-9-]+|[0-9]+-[0-9]+-[a-z0-9-]+)$' && echo yes || echo no)
 
 # Check 4: scope drift — files touched that don't belong to the active task
 # The workflow MUST pass $TASK_SCOPE_GLOB (e.g. ".planning/phases/8-*/" or "src/auth/")

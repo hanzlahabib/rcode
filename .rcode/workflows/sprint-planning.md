@@ -1,39 +1,17 @@
 # Workflow: rcode-sprint-planning
 
 <purpose>
-Plan the next sprint. Authoritative implementation lives in the
-`rcode-sprint-planning` skill — this workflow delegates to it so every
-safety rail (capacity gate per #127, halt-at-menu per #124, state-sync
-per #198) fires identically whether the user invokes the slash command
-or the phrase-activated skill.
+Plan the next sprint and write a SPRINT.md. The in-line steps below ARE the
+authoritative path for this — this project's own history confirms it: 54/54
+real *-SPRINT.md files under .planning/phases/ were produced by this in-line
+flow, none by the rcode-sprint-planning skill.
 
-The skill MUST be loaded before the in-line steps below run. If the skill
-file is missing (broken install), report and stop — do not silently fall
-back to the in-line implementation.
+The `rcode-sprint-planning` skill (`.rcode/skills/rcode-sprint-planning/SKILL.md`,
+workflow at `.rcode/skills/rcode-sprint-planning/workflow.md`) is a SEPARATE tool:
+it generates `sprint-status.yaml` from `.planning/epics/` files (epic/story status
+tracking: backlog -> ready-for-dev -> in-progress -> review -> done), not a
+SPRINT.md. Do not delegate to it expecting a SPRINT.md output.
 </purpose>
-
-<delegate_to_skill>
-Required skill: `rcode-sprint-planning`
-Path:           `.claude/skills/rcode-sprint-planning/SKILL.md`
-Workflow ref:   `.claude/skills/rcode-sprint-planning/workflow.md`
-
-Behaviour:
-1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
-   Rule from the workflow's `## CRITICAL RULES (NO EXCEPTIONS)` block,
-   including the capacity gate (step n="0") which MUST halt for
-   numeric capacity inputs before any story is committed.
-2. Run the skill's step files in order. The in-line steps below this
-   block are a fallback summary for legacy installs that lack the skill;
-   they are NOT the authoritative behaviour.
-3. After SPRINT.md is written, ALWAYS run:
-   `node .rcode/bin/rcode-tools.cjs state sync --from-disk`
-   so state.sprints[] reflects the new sprint.
-
-If skill files are missing: print
-"Sprint-planning skill not installed. Run: npx @hanzlaa/rcode install"
-and exit non-zero. Do not proceed with the legacy in-line steps because
-they bypass the capacity gate.
-</delegate_to_skill>
 
 <required_reading>
 @.rcode/references/output-format.md
@@ -51,7 +29,7 @@ Open with banner:
 ```
 TaskCreate: "Load phase scope + velocity", "Capacity gate (halt for numbers)", "Curate stories with user", "Register sprint + stories in state", "Write SPRINT.md", "Sync state", "Start sprint".
 Closure: `rcode ► SPRINT {NN.S} READY ✓ ({N} stories, {M} points)`
-Next Up: `/rcode-execute .planning/phases/{phase}/SPRINT.md`
+Next Up: `/rcode-execute .planning/phases/{phase}/{phase}-{plan}-SPRINT.md`
 </output_format>
 
 <process>
@@ -71,6 +49,33 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 ```
 
 STOP — do not proceed.
+
+## Preflight — Project-status check
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+
+```
+Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+```
+
+Stop. Do not proceed until `project-status` returns `real`.
+
+## Preflight — Dependency check
+
+If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING before planning begins:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Sprint planning can continue, but the resulting sprint tasks will fail at execution time
+  unless dependencies are installed first.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
 
 ## Step 1 — Load context
 
@@ -99,8 +104,9 @@ Exit.
 - Commit max 80% of average (buffer for interrupts + unknowns)
 
 **If no velocity history (first sprint):**
-- Ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
-- Or use `--velocity` flag
+- If `--velocity <N>` flag was supplied, use that value directly and skip the prompt.
+- If `mode == "yolo"` (config) and no `--velocity` flag, default to 10 points and proceed.
+- Otherwise ask user: "This is your first sprint. How many story points can you commit to? (Typical: 8-13 for solo dev + AI)"
 
 Store as `velocity_target`.
 
@@ -127,7 +133,9 @@ Present story table to user:
 **Capacity check:** Total committed points <= velocity_target.
 If over: "We're at {N} points vs {target} capacity. Move story #{X} to next sprint?"
 
-Wait for user confirmation before proceeding.
+**Automation escape:** if `mode == "yolo"` or `--auto` flag was passed, skip the
+confirmation; automatically move lowest-priority over-capacity stories to backlog
+and proceed. Otherwise wait for user confirmation before proceeding.
 
 ## Step 4 — Create sprint
 
@@ -146,7 +154,7 @@ node .rcode/bin/rcode-tools.cjs state story add \
   --points {points}
 ```
 
-Write SPRINT.md to `.planning/phases/{phase_slug}/SPRINT.md`. Use `.rcode/templates/sprint.md` as a template if it exists; otherwise produce the file inline with these sections (the template file may be absent in this install). Fill in:
+Write SPRINT.md to `.planning/phases/{phase_slug}/{phase}-{plan}-SPRINT.md`. Use `.rcode/templates/sprint.md` as a template if it exists; otherwise produce the file inline with these sections (the template file may be absent in this install). Fill in:
 - Sprint goal
 - Stories table (from user-confirmed list)
 - Capacity section (velocity target, average, buffer)
@@ -172,13 +180,13 @@ Stories: {count} ({total_points} points)
 Capacity: {velocity_target} points ({buffer}% buffer)
 
 Next:
-  /rcode-execute .planning/phases/{phase}/SPRINT.md   ← execute the sprint
+  /rcode-execute .planning/phases/{phase}/{phase}-{plan}-SPRINT.md   ← execute the sprint
   /rcode-sprint-status                                ← check progress anytime
 ```
 
 ## Output Format
 
-- SPRINT.md at `.planning/phases/{phase_slug}/SPRINT.md`
+- SPRINT.md at `.planning/phases/{phase_slug}/{phase}-{plan}-SPRINT.md`
 - Sprint + stories registered in `.rcode/state.json`
 - Console summary with next-step commands
 

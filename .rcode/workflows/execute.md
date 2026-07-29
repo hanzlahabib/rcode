@@ -2,17 +2,37 @@
 Execute all plans in a phase using wave-based parallel execution. Orchestrator stays lean — delegates plan execution to subagents.
 </purpose>
 
+## Orchestrator Constraint — No Inline Implementation
+
+**The execute orchestrator MUST NOT implement code directly.** Its only role is to dispatch, monitor, and checkpoint. All implementation is delegated to `rcode-executor` subagents.
+
+If you are reading this as the main conversation loop and are tempted to write code, create files, or make commits directly instead of spawning a subagent:
+
+> **STOP.** Spawn `rcode-executor` as a subagent with the sprint plan as context. The main loop's job is to call the agent, present checkpoints, and update state — not to implement.
+
+Bypassing this constraint produces a built project with no execution trace, no SUMMARY.md, and a dashboard frozen at `planned`. See issue #915.
+
 <pre_flight>
 **Mandatory before execution begins.** Run these checks first and surface
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.
+
+0. **Project-status preflight:**
+   ```bash
+   PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+   ```
+   If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
+   ```
+   Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+   ```
+   Stop. Do not proceed until `project-status` returns `real`.
 
 1. **Init state**: `node .rcode/bin/rcode-tools.cjs init execute {N}`
 2. **Phase index**: list all plans via `phase-plan-index {N}` — extract
    plan count, wave count, autonomy flag per plan, files_modified overlaps
 3. **Anti-patterns**: check for `.continue-here.md` (paused state), STATE.md
    error flag, existing VERIFICATION.md with FAIL items without overrides
-4. **Branch check** (issue #659): confirm current git branch is appropriate
+4. **Branch check**: confirm current git branch is appropriate
    for the work. Two checks, both blocking:
 
    a. **Not on main/master without consent**: if `git branch --show-current`
@@ -158,16 +178,17 @@ via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
-@.rcode/references/auto-init-guard.md
-@.rcode/references/output-format.md
+<!-- If chained from plan.md's --auto (Skill(), same context), these 3 are already loaded — see AUDIT-workflow-complexity.md finding 3. -->
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/auto-init-guard.md'}
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/output-format.md'}
 @.rcode/references/git-preflight.md
 Read STATE.md before any operation to load project context.
 
-@.rcode/references/agent-contracts.md
-@.rcode/references/context-budget.md
-@.rcode/references/gates.md
-@.rcode/references/karpathy-guidelines.md
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/karpathy-guidelines.md'}
 @.rcode/references/execution-protocol.md
+<!-- Read .rcode/references/agent-contracts.md only if debugging agent contract violations -->
+<!-- Read .rcode/references/context-budget.md only if context degradation guidance is needed -->
+<!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic -->
 </required_reading>
 
 <available_agent_types>
@@ -184,7 +205,6 @@ Always use the exact name from this list — do not fall back to 'general-purpos
 - rcode-integration-checker — Checks cross-phase integration
 - rcode-nyquist-auditor — Validates verification coverage
 - rcode-ux-designer — Researches UI/UX approaches
-- rcode-ui-auditor — Reviews UI implementation quality
 - rcode-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
@@ -315,45 +335,10 @@ Write these answers inline before continuing. If a blocking anti-pattern cannot 
 
 **If `--interactive` flag present:** Switch to interactive execution mode.
 
-Interactive mode executes plans sequentially **inline** (no subagent spawning) with user
-checkpoints between tasks. The user can review, modify, or redirect work at any point.
-
-**Interactive execution flow:**
-
-1. Load plan inventory as normal (discover_and_group_plans)
-2. For each plan (sequentially, ignoring wave grouping):
-
-   a. **Present the plan to the user:**
-      ```
-      ## Plan {plan_id}: {plan_name}
-
-      Objective: {from plan file}
-      Tasks: {task_count}
-
-      Options:
-      - Execute (proceed with all tasks)
-      - Review first (show task breakdown before starting)
-      - Skip (move to next plan)
-      - Stop (end execution, save progress)
-      ```
-
-   b. **If "Review first":** Read and display the full plan file. Ask again: Execute, Modify, Skip.
-
-   c. **If "Execute":** Read and follow `.rcode/workflows/execute-sprint.md` **inline**
-      (do NOT spawn a subagent). Execute tasks one at a time.
-
-   d. **After each task:** Pause briefly. If the user intervenes (types anything), stop and address
-      their feedback before continuing. Otherwise proceed to next task.
-
-   e. **After plan complete:** Show results, commit, create SUMMARY.md, then present next plan.
-
-3. After all plans: proceed to verification (same as normal mode).
-
-**Benefits of interactive mode:**
-- No subagent overhead — dramatically lower token usage
-- User catches mistakes early — saves costly verification cycles
-- Maintains rcode's planning/tracking structure
-- Best for: small phases, bug fixes, verification gaps, learning rcode
+```bash
+INTERACTIVE_MODE=$([[ "$ARGUMENTS" =~ (^|[[:space:]])--interactive($|[[:space:]]) ]] && echo true || echo false)
+```
+${INTERACTIVE_MODE ? '@.rcode/references/execute-interactive-mode.md' : ''}
 
 **Skip to handle_branching step** (interactive plans execute inline after grouping).
 </step>
@@ -719,49 +704,10 @@ Only when the gate is clean or the user overrides do we proceed to close_parent_
 
 **Skip if** phase number has no decimal (e.g., `3`, `04`) — only applies to gap-closure phases like `4.1`, `03.1`.
 
-**1. Detect decimal phase and derive parent:**
 ```bash
-# Check if phase_number contains a decimal
-if [[ "$PHASE_NUMBER" == *.* ]]; then
-  PARENT_PHASE="${PHASE_NUMBER%%.*}"
-fi
+IS_GAP_CLOSURE_PHASE=$([[ "$PHASE_NUMBER" == *.* ]] && echo true || echo false)
 ```
-
-**2. Find parent UAT file:**
-```bash
-PARENT_INFO=$(node ".rcode/bin/rcode-tools.cjs" find-phase "${PARENT_PHASE}" --raw)
-# Extract directory from PARENT_INFO JSON, then find UAT file in that directory
-```
-
-**If no parent UAT found:** Skip this step (gap-closure may have been triggered by VERIFICATION.md instead).
-
-**3. Update UAT gap statuses:**
-
-Read the parent UAT file's `## Gaps` section. For each gap entry with `status: failed`:
-- Update to `status: resolved`
-
-**4. Update UAT frontmatter:**
-
-If all gaps now have `status: resolved`:
-- Update frontmatter `status: diagnosed` → `status: resolved`
-- Update frontmatter `updated:` timestamp
-
-**5. Resolve referenced debug sessions:**
-
-For each gap that has a `debug_session:` field:
-- Read the debug session file
-- Update frontmatter `status:` → `resolved`
-- Update frontmatter `updated:` timestamp
-- Move to resolved directory:
-```bash
-mkdir -p .planning/debug/resolved
-mv .planning/debug/{slug}.md .planning/debug/resolved/
-```
-
-**6. Commit updated artifacts:**
-```bash
-node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
-```
+${IS_GAP_CLOSURE_PHASE ? '@.rcode/references/execute-close-parent-artifacts.md' : ''}
 </step>
 
 
@@ -773,7 +719,7 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-${PARENT_PHASE}): resolve U
 
 
 <step name="uat_gate" priority="blocker">
-**UAT gate (added in v3.1.0 after #443 / #448):**
+**UAT gate:**
 
 Before marking the phase complete, verify a passing VERIFICATION.md exists for this phase. Without it, the phase advances to `status: executed` (work done, awaiting verification) — not `status: complete`.
 
@@ -822,7 +768,7 @@ fi
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
 
-The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT — see #443 for the failure mode.
+The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT.
 </step>
 
 <step name="update_roadmap">
@@ -850,7 +796,16 @@ The CLI handles:
 - Updating REQUIREMENTS.md traceability
 - Scanning for verification debt (returns `warnings` array)
 
-Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings`, `has_warnings`.
+Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings`, `has_warnings`, `open_phases_remaining`, `nudge`.
+
+**If `nudge` is present (#943 — no open phases remain, milestone finished):**
+Surface it verbatim so the user is guided forward instead of stranded:
+```
+✓ Milestone complete — all phases done.
+{nudge}
+```
+Do not auto-advance past a finished milestone; let the user choose
+`/rcode-complete-milestone` or `/rcode-new-milestone`.
 
 **If has_warnings is true:**
 ```
@@ -869,24 +824,13 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-{X}): complete phase execut
 <step name="auto_copy_learnings">
 **Auto-copy phase learnings to global store (when enabled).**
 
-This step runs AFTER phase completion and SUMMARY.md is written. It copies any LEARNINGS.md
-entries from the completed phase to the global learnings store at `.rcode/knowledge/`.
-
 **Check config gate:**
 ```bash
 GL_ENABLED=$(node ".rcode/bin/rcode-tools.cjs" config-get features.global_learnings --raw 2>/dev/null || echo "false")
 ```
 
 **If `GL_ENABLED` is not `true`:** Skip this step entirely (feature disabled by default).
-
-**If enabled:**
-
-1. Check if LEARNINGS.md exists in the phase directory (use the `phase_dir` value from init context)
-2. If found, copy to global store:
-```bash
-node ".rcode/bin/rcode-tools.cjs" learnings copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
-```
-Copy failure must NOT block phase completion.
+${GL_ENABLED ? '@.rcode/references/execute-auto-copy-learnings.md' : ''}
 </step>
 
 <step name="update_project_md">
@@ -917,21 +861,10 @@ node ".rcode/bin/rcode-tools.cjs" commit "docs(phase-{X}): evolve PROJECT.md aft
 Silent no-op if no webhook URLs are in `.rcode/config.yaml`. Failures are reported but never block the workflow.
 
 ```bash
-node ".rcode/bin/rcode-tools.cjs" notify send \
-  --title "Phase ${phase_number} complete — ${phase_name}" \
-  --body "$(basename "$PWD") · $(git rev-parse --short HEAD) · ${incomplete_count:-0} plan(s) remaining" \
-  --event "execute-done" 2>/dev/null || true
+WEBHOOK_CONFIGURED=$(node ".rcode/bin/rcode-tools.cjs" config-get slack_webhook_url 2>/dev/null; node ".rcode/bin/rcode-tools.cjs" config-get discord_webhook_url 2>/dev/null; node ".rcode/bin/rcode-tools.cjs" config-get teams_webhook_url 2>/dev/null)
+WEBHOOK_CONFIGURED=$([ -n "$WEBHOOK_CONFIGURED" ] && echo true || echo false)
 ```
-
-Users configure webhooks by editing `.rcode/config.yaml`:
-
-```yaml
-slack_webhook_url: "https://hooks.slack.com/services/..."
-discord_webhook_url: "https://discord.com/api/webhooks/..."
-teams_webhook_url: "https://outlook.office.com/webhook/..."
-```
-
-Then verify with `/rcode-notify-test`.
+${WEBHOOK_CONFIGURED ? '@.rcode/references/execute-notify-webhooks.md' : ''}
 </step>
 
 <step name="generate_tests">
@@ -1026,6 +959,9 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 /rcode-execute {next} — execute next phase
 ```
 
+**Next step — paste this to verify:**
+> /rcode-verify {X}
+
 Only suggest the commands listed above. Do not invent or hallucinate command names.
 </step>
 
@@ -1042,7 +978,7 @@ For 1M+ context models, consider:
 </context_efficiency>
 
 <failure_handling>
-- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not rcode. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
+- See the classifyHandoffIfNeeded workaround in execute-waves.md (already @-included above).
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → user chooses attempt or skip
 - **All agents in wave fail:** Systemic issue → stop, report for investigation

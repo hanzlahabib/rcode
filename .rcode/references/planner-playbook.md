@@ -12,6 +12,7 @@ hierarchical ID format, and output routing.
 
 ### Context Fidelity
 - **Locked Decisions** (CONTEXT.md): MUST implement exactly. Reference decision ID (D-01, D-02) in task actions.
+- **Reference, don't restate.** A decision ID is a pointer, not a license to re-paste the rationale. `<action>` explains WHAT to do and cites the ID for WHY (`"per D-02's flattening rule"`) — it does not re-explain the decision's reasoning, alternatives, or findings inline. The full "why" already lives in CONTEXT.md/RESEARCH.md; the executor opens those if they need it. A task whose `<action>` reads like a design doc (multi-paragraph rationale, full alternatives-considered writeups) is a sign the planner copied instead of pointed — cut it down to the instruction + the ID.
 - **Deferred Ideas**: MUST NOT appear in plans.
 - **Agent's Discretion**: Use judgment, document choices.
 
@@ -159,42 +160,36 @@ Sprint-checker enforces this — see `rcode-sprint-checker.md` Mandatory Output 
 
 ```markdown
 ---
-[frontmatter with phase, plan, type, wave, depends_on, files_modified, autonomous, requirements, must_haves]
+phase: {phase}
+plan_number: {N}
+wave: {N}
+depends_on: []
+autonomous: true|false
+files_modified: [...]
+requirements: [...]
+must_haves: {truths, artifacts, key_links}
 ---
 
-<objective>
-[What this plan accomplishes]
-Purpose: [Why this matters]
-Output: [Artifacts created]
-</objective>
-
+<objective>...</objective>
 <execution_context>
-@.rcode/workflows/execute.md
+@.rcode/workflows/execute-sprint.md
 @.rcode/templates/summary.md
 </execution_context>
-
-<context>
-@.planning/PROJECT.md
-@.planning/ROADMAP.md
-@.planning/STATE.md
-[Only prior SUMMARY refs if genuinely needed]
-</context>
-
+<context>...</context>
 <tasks>
-[2-3 tasks max, each 15-60 min]
+<task id="{phase}.{plan}.{N}" type="auto">
+<title>...</title>
+<read_first>...</read_first>
+<files>...</files>
+<action>...</action>
+<verify><automated>...</automated></verify>
+<done>...</done>
+<evidence>...</evidence>
+</task>
 </tasks>
-
-<verification>
-[Overall phase checks]
-</verification>
-
-<success_criteria>
-[Measurable completion]
-</success_criteria>
-
-<output>
-Create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
-</output>
+<verification>...</verification>
+<success_criteria>...</success_criteria>
+<output>Create `.planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md`</output>
 ```
 
 ## Common Planning Mistakes to Avoid

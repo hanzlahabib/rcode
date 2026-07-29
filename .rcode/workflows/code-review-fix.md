@@ -1,5 +1,5 @@
 <purpose>
-Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rcode-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
+Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns rcode-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
 </purpose>
 
 <required_reading>
@@ -9,8 +9,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- rcode-fixer: Applies fixes to code review findings
-- rcode-reviewer: Reviews source files for bugs and issues
+- rcode-code-fixer: Applies fixes to code review findings
+- rcode-code-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -202,7 +202,7 @@ If REVIEW.md contains a `files_reviewed_list` frontmatter field, use that as the
 </step>
 
 <step name="spawn_fixer">
-Spawn the rcode-fixer agent with config:
+Spawn the rcode-code-fixer agent with config:
 
 ```bash
 # Build config for agent
@@ -293,7 +293,7 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn rcode-reviewer agent to re-review
+    # Spawn rcode-code-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
     Task(subagent_type="rcode-code-reviewer",
   model="{model}", prompt="
@@ -527,7 +527,7 @@ echo "════════════════════════�
 
 - [ ] Config gate (`workflow.code_review`) verified before any agent is spawned
 - [ ] `REVIEW.md` confirmed present at `.planning/phases/<N>/REVIEW.md`; workflow exits with explicit error if missing
-- [ ] `rcode-fixer` agent spawned with correct `review_path`, `fix_scope`, and `fix_report_path`
+- [ ] `rcode-code-fixer` agent spawned with correct `review_path`, `fix_scope`, and `fix_report_path`
 - [ ] `--auto` iteration loop capped at 3 rounds; each round re-reviews only the original file scope
 - [ ] `REVIEW-FIX.md` committed exactly once at the end of all iterations (not per iteration)
 - [ ] Results presented inline with a concrete next-step suggestion (e.g., `git log --oneline`)

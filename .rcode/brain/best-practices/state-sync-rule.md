@@ -8,7 +8,7 @@ Immediately after appending content to any of:
 
 - `.planning/ROADMAP.md` — milestones and phases
 - `.planning/epics.md` — epics and stories
-- `.rcode/phases/{phase}/sprint-{N}.md` — sprint commitments
+- `.planning/phases/{phase-dir}/{phase}-{plan}-SPRINT.md` — sprint commitments
 
 Call the state-sync helper:
 
