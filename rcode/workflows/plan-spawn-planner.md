@@ -79,6 +79,12 @@ Planner prompt:
 **Phase:** {phase_number}
 **Mode:** {standard | gap_closure | reviews}
 
+## Scope
+
+Default: `phase` (one SPRINT.md, up to 8 stories — see Scope-Driven Sizing in your role instructions).
+
+**Self-upgrade to `initiative` mid-decomposition** if, once you've read CONTEXT.md/ROADMAP.md and started breaking down the work, it splits into independent waves or work-streams (e.g. shared-primitive foundation → feature-local migrations → cleanup/tests) and total stories would exceed 8. When that happens, emit multiple SPRINT.md files (`{phase}-1-SPRINT.md`, `{phase}-2-SPRINT.md`, ...) in this same run instead of one oversized plan. Do not wait for rcode-sprint-checker's "scope exceeds context budget" rejection to force a resharding pass — that costs a full extra planner run. Decide the split now, while you're already looking at the file/story list.
+
 <files_to_read>
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
