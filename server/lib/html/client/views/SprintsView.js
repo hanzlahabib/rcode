@@ -12,7 +12,7 @@ import { html, useState } from '../preact.js';
 import { useStore } from '../store.js';
 import { pct, humanDate, allSprints, sprintHints, chip, phaseMilestone, currentPhaseId } from '../util.js';
 import {
-  Chip, ProgressBar, Breadcrumb, CmdHint, CmdHints, RunningBadge, SprintCard, TaskCard,
+  Chip, ProgressBar, Breadcrumb, CmdHint, CmdHints, RunningBadge, SprintCard, TaskCard, AcceptanceList,
 } from '../components/shared.js';
 import { openTermPanel, runningInSprint } from '../orchestrator.js';
 import { openFileViewer } from '../store.js';
@@ -115,8 +115,8 @@ function SprintDetail({ sprint: s, S }) {
           ${storiesWithAc.map(t => html`
             <div key=${t.id || t.title} class="item">
               <div class="item-title">${t.title}</div>
-              <div style="color:var(--text-secondary);font-size:var(--text-sm);margin-top:4px;">
-                ✓ ${t.acceptance}
+              <div style="margin-top:4px;">
+                <${AcceptanceList} text=${t.acceptance}/>
               </div>
             </div>
           `)}

@@ -149,17 +149,20 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
         goal = (obj.trim().split('\n').map(s => s.trim()).filter(Boolean)[0] || '').slice(0, 160);
       }
 
-      // Stories: one per <task> block; title from <title>.
+      // Stories: one per <task> block; title from the task's own title="..."
+      // attribute (current planner output), falling back to a legacy nested
+      // <title> child element for older SPRINT.md files.
       const stories = [];
       const taskRe = /<task\b([^>]*)>([\s\S]*?)<\/task>/g;
       let tm;
       while ((tm = taskRe.exec(text))) {
-        const idM    = tm[1].match(/id="([^"]+)"/);
-        const titleM = tm[2].match(/<title>([\s\S]*?)<\/title>/);
+        const idM      = tm[1].match(/id="([^"]+)"/);
+        const titleAttrM = tm[1].match(/title="([^"]*)"/);
+        const titleTagM  = tm[2].match(/<title>([\s\S]*?)<\/title>/);
         const acM    = tm[2].match(/<acceptance_criteria>\s*([\s\S]*?)\s*<\/acceptance_criteria>/);
         const story = {
           id:     idM ? idM[1] : `${sid}-task-${stories.length + 1}`,
-          title:  titleM ? titleM[1].trim() : `Task ${stories.length + 1}`,
+          title:  (titleAttrM && titleAttrM[1].trim()) || (titleTagM && titleTagM[1].trim()) || `Task ${stories.length + 1}`,
           status: phaseComplete ? 'done' : 'todo',
         };
         if (ov[story.id]) story.status = ov[story.id].status;

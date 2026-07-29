@@ -17,6 +17,21 @@ import { Icon } from '../icons-client.js';
 import { TaskPipeline } from './TaskPipeline.js';
 import { openRunnerPicker } from './RunnerPicker.js';
 
+// ---- Acceptance criteria: SPRINT.md stores this as "- line\n- line";
+// rendering it as raw text collapses the newlines into one run-on line. ----
+export function AcceptanceList({ text }) {
+  const lines = String(text || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s*/, '').trim())
+    .filter(Boolean);
+  if (!lines.length) return null;
+  return html`
+    <ul class="task-actions-list">
+      ${lines.map((line, i) => html`<li key=${i} class="task-action-step">${line}</li>`)}
+    </ul>
+  `;
+}
+
 // ---- Toast helper (shared by CmdHint copy action and any view) ----
 export function showToast(msg) {
   const el = document.getElementById('toast');
@@ -372,7 +387,12 @@ export function TaskCard({ task: t }) {
               <strong>Phase:</strong> P${t.phaseId}${t.phaseName ? ' — ' + t.phaseName : ''}
             </div>
           ` : null}
-          ${t.acceptance ? html`<div class="task-detail-row"><strong>Acceptance:</strong> ${t.acceptance}</div>` : null}
+          ${t.acceptance ? html`
+            <div class="task-actions">
+              <div class="task-actions-title">Acceptance</div>
+              <${AcceptanceList} text=${t.acceptance}/>
+            </div>
+          ` : null}
           ${t.assignee ? html`<div class="task-detail-row"><strong>Assignee:</strong> ${t.assignee}</div>` : null}
           ${(t.actions && t.actions.length) ? html`
             <div class="task-actions">
