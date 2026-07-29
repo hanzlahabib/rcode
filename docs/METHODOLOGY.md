@@ -128,7 +128,7 @@ The biggest failure mode of AI planning is the generalist confidently emitting e
 
 ```mermaid
 graph TD
-    Start([User: create epics]) --> Check{PRD exists<br/>in .rcode/phases/?}
+    Start([User: create epics]) --> Check{PRD exists<br/>in .planning/?}
     Check -->|no| Refuse([❌ Refuse<br/>'Run rcode-create-prd first.<br/>I cannot invent requirements.'])
     Check -->|yes| Extract[Read PRD<br/>extract FRs, NFRs]
     Extract --> ArchCheck{Architecture<br/>exists?}
@@ -140,7 +140,7 @@ graph TD
     UXCheck -->|no| Confirm
     ReadUX --> Confirm[Present extracted<br/>requirements to user]
     Confirm --> Decompose[Decompose into<br/>3-6 epics × 3-8 stories]
-    Decompose --> Write[Write .rcode/phases/{n}/epics.md<br/>with frontmatter citing<br/>inputDocuments]
+    Decompose --> Write[Write .planning/epics/EPIC-{n}.md<br/>with stories citing<br/>inputDocuments]
     Write --> Done([✅ Done — every story<br/>cites its upstream FR])
 
     style Refuse fill:#ffcdd2
@@ -209,7 +209,7 @@ graph TD
     A5 --> R5[Fatima response:<br/>reads all prior,<br/>gates with tests]
     R5 --> A6["→ Handing to Khalid..."]
     A6 --> R6[Khalid response:<br/>ship plan + monitoring]
-    R6 --> Done([✅ Feature shipped<br/>.rcode/phases/.../stories/])
+    R6 --> Done([✅ Feature shipped<br/>.planning/epics/stories/])
 
     style Done fill:#c8e6c9
 ```
@@ -395,14 +395,14 @@ If your project is under 10 files or will be thrown away in a week, rcode is ove
 1. Kickoff
    /rcode-project "name"
    → Sadiq → Waleed → Ahmed → PM → Zahra → Layla → Nasser
-   → .rcode/phases/phase-01/brief.md
+   → .planning/PROJECT.md
    → .rcode/decisions/001-stack.md
    → .rcode/artifacts/brand/
    → .rcode/artifacts/design-system/
 
 2. Plan a sprint
    /rcode-kickoff (for a new phase inside an existing project)
-   → .rcode/phases/phase-{n}/sprints.md
+   → .planning/phases/{n}-{slug}/{n}-{plan}-SPRINT.md
 
 3. Build features
    /rcode-feature "description"
@@ -431,7 +431,7 @@ If your project is under 10 files or will be thrown away in a week, rcode is ove
 
 9. GitHub sync
    rcode github-sync --execute
-   → Creates/updates milestones, epics, stories from .rcode/phases/
+   → Creates/updates milestones, epics, stories from .planning/phases/ and .planning/epics/
 
 10. Dashboard (anytime)
     rcode dashboard
