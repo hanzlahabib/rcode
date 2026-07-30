@@ -338,7 +338,7 @@ Write these answers inline before continuing. If a blocking anti-pattern cannot 
 ```bash
 INTERACTIVE_MODE=$([[ "$ARGUMENTS" =~ (^|[[:space:]])--interactive($|[[:space:]]) ]] && echo true || echo false)
 ```
-${INTERACTIVE_MODE ? '@.rcode/references/execute-interactive-mode.md' : ''}
+${INTERACTIVE_MODE === 'true' ? '@.rcode/references/execute-interactive-mode.md' : ''}
 
 **Skip to handle_branching step** (interactive plans execute inline after grouping).
 </step>
@@ -707,7 +707,7 @@ Only when the gate is clean or the user overrides do we proceed to close_parent_
 ```bash
 IS_GAP_CLOSURE_PHASE=$([[ "$PHASE_NUMBER" == *.* ]] && echo true || echo false)
 ```
-${IS_GAP_CLOSURE_PHASE ? '@.rcode/references/execute-close-parent-artifacts.md' : ''}
+${IS_GAP_CLOSURE_PHASE === 'true' ? '@.rcode/references/execute-close-parent-artifacts.md' : ''}
 </step>
 
 
@@ -830,7 +830,7 @@ GL_ENABLED=$(node ".rcode/bin/rcode-tools.cjs" config-get features.global_learni
 ```
 
 **If `GL_ENABLED` is not `true`:** Skip this step entirely (feature disabled by default).
-${GL_ENABLED ? '@.rcode/references/execute-auto-copy-learnings.md' : ''}
+${GL_ENABLED === 'true' ? '@.rcode/references/execute-auto-copy-learnings.md' : ''}
 </step>
 
 <step name="update_project_md">
@@ -864,7 +864,7 @@ Silent no-op if no webhook URLs are in `.rcode/config.yaml`. Failures are report
 WEBHOOK_CONFIGURED=$(node ".rcode/bin/rcode-tools.cjs" config-get slack_webhook_url 2>/dev/null; node ".rcode/bin/rcode-tools.cjs" config-get discord_webhook_url 2>/dev/null; node ".rcode/bin/rcode-tools.cjs" config-get teams_webhook_url 2>/dev/null)
 WEBHOOK_CONFIGURED=$([ -n "$WEBHOOK_CONFIGURED" ] && echo true || echo false)
 ```
-${WEBHOOK_CONFIGURED ? '@.rcode/references/execute-notify-webhooks.md' : ''}
+${WEBHOOK_CONFIGURED === 'true' ? '@.rcode/references/execute-notify-webhooks.md' : ''}
 </step>
 
 <step name="generate_tests">

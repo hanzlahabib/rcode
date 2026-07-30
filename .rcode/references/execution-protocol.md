@@ -41,10 +41,10 @@ type: checkpoint:human-verify
 
 **Hierarchical ID format:**
 - Milestone: `M{N}` (e.g., M1, M2)
-- Phase: `{NN}` 2-digit, zero-padded (e.g., 01, 02, 72)
-- Decimal phase (inserted): `{NN.M}` (e.g., 02.1, 72.3)
-- Plan within phase: `{NN.MM}` (e.g., 01.02)
-- Task within plan: `{NN.MM.TT}` (e.g., 01.02.03)
+- Phase: `{N}` — no leading zeros (issue #652), e.g. 1, 2, 72
+- Decimal phase (inserted): `{N.M}` (e.g., 2.1, 72.3)
+- Plan within phase: `{N.M}` (e.g., 1.2)
+- Task within plan: `{N.M.T}` (e.g., 1.2.3)
 
 **Task types:**
 - `auto` — executor runs without pausing

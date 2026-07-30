@@ -228,7 +228,7 @@ PHASE_INFO=$(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}")
 
 **Skip unless:** `GAPS_MODE=true`. When active, read the full gap-closure procedure below (extracted to keep this file within AGENTS.md's 1000-line cap for the common, non-gaps-mode path).
 
-${GAPS_MODE ? '@.rcode/references/plan-gaps-mode.md' : ''}
+${GAPS_MODE === 'true' ? '@.rcode/references/plan-gaps-mode.md' : ''}
 
 ## 4. Load CONTEXT.md
 
@@ -598,7 +598,7 @@ Task(
 ```bash
 THINKING_PARTNER_ENABLED=$(node ".rcode/bin/rcode-tools.cjs" config-get features.thinking_partner 2>/dev/null || echo "false")
 ```
-${THINKING_PARTNER_ENABLED ? '@.rcode/references/plan-thinking-partner.md' : ''}
+${THINKING_PARTNER_ENABLED === 'true' ? '@.rcode/references/plan-thinking-partner.md' : ''}
 If `features.thinking_partner` is disabled: skip this block entirely.
 
 ## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
@@ -974,7 +974,7 @@ Verification: {Passed | Passed with override | Skipped}
 # Windows-only content (stdio deadlock recovery) — skip the read on other platforms.
 WINDOWS=$([[ "$(uname -s 2>/dev/null)" == MINGW* || "$(uname -s 2>/dev/null)" == CYGWIN* || -n "$WINDIR" ]] && echo true || echo false)
 ```
-${WINDOWS ? '@.rcode/references/plan-windows-troubleshooting.md' : ''}
+${WINDOWS === 'true' ? '@.rcode/references/plan-windows-troubleshooting.md' : ''}
 </windows_troubleshooting>
 
 <success_criteria>
