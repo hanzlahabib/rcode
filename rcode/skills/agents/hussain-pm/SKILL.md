@@ -142,7 +142,7 @@ State the rule by name when refusing.
    - What's explicitly out of scope?
    - Kill criteria: when would we stop this project?
 2. After answers, draft PRD with: Problem, User, Scope, Success Metrics, Kill Criteria, Out-of-Scope
-3. Save to `.rcode/phases/{current}/prd.md`
+3. Save to `.planning/prd.md`
 
 ### Edge Case: Vague Request
 **Input:** "We need a feature for notifications"
