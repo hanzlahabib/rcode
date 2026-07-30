@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-30T07:23:46.882Z",
+  "updated": "2026-07-30T07:29:34.419Z",
   "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1257,7 +1257,7 @@
       "id": "44",
       "number": "44",
       "name": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
-      "status": "executing",
+      "status": "complete",
       "started": "2026-07-29T09:02:17.277Z",
       "completed": null,
       "sprints": [
@@ -1278,7 +1278,9 @@
       "created": "2026-07-29T08:23:52.128Z",
       "plan_count": 0,
       "plans": 1,
-      "planned_at": "2026-07-29T08:50:37.488Z"
+      "planned_at": "2026-07-29T08:50:37.488Z",
+      "status_updated": "2026-07-30T07:27:14.847Z",
+      "completed_at": "2026-07-30"
     },
     {
       "id": "45",

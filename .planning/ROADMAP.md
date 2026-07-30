@@ -305,10 +305,12 @@ bash-guard / auth hardening — no raw exec surface.
 
 **Goal:** Fix `cli/github-sync.js` to read the current sprint-track (`.planning/phases/*/*-SPRINT.md` with `<task>` XML) and epic-track (`.planning/epics/stories/*.md`) formats instead of the dead `.rcode/phases/{N}/tasks|stories/` layout; correct `docs/METHODOLOGY.md` and `docs/USP.md` to stop documenting that dead path as current; fix `rcode/workflows/sprint-planning.md`'s bare `SPRINT.md` output filename to follow the sequence-numbered `{phase}-{plan}-SPRINT.md` convention used everywhere else.
 
-**Status:** Planned
+**Status:** Complete (2026-07-30)
 
 **Plans:**
-- _TBD_
+- 44-1 — github-sync discovery module rewire, docs fixes, filename convention (#980)
+
+**Acceptance:** 28/28 github-sync tests + 593/593 full suite pass; `rcode-verifier`: `passed`; code review resolved (1 high + 2 medium fixed, 1 medium deferred to tracked issue #1002).
 
 **Acceptance:**
 - `rcode github-sync --phase <N> --dry-run` produces correct epic/story previews against a real current-schema project (sprint-track and epic-track)
