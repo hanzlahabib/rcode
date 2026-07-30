@@ -111,7 +111,11 @@ function discoverSprintTrackPhases(cwd) {
     const sprintFiles = fs
       .readdirSync(phaseDir)
       .filter((f) => /-SPRINT\.md$/i.test(f))
-      .sort();
+      .sort((a, b) => {
+        const na = parseInt((a.match(/-(\d+)-SPRINT\.md$/i) || [])[1] || '0', 10);
+        const nb = parseInt((b.match(/-(\d+)-SPRINT\.md$/i) || [])[1] || '0', 10);
+        return na - nb;
+      });
 
     const stories = [];
     for (const file of sprintFiles) {

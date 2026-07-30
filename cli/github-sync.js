@@ -11,10 +11,10 @@
  *   rcode github-sync --execute       # actually create issues
  *
  * Granular targeting (push specific items):
- *   --phase=phase-02          push one phase (all its epics + stories)
- *   --sprint=sprint-01        push stories belonging to one sprint
- *   --epic=epic-1-auth        push one epic and its child stories
- *   --story=story-1-1-login   push one story
+ *   --phase=44                push one phase (all its epics + stories)
+ *   --sprint=44.1             push stories belonging to one sprint
+ *   --epic=EPIC-01            push one epic and its child stories
+ *   --story=44.1.1            push one story (sprint-track task id or epic-track story id, e.g. 1.1)
  *
  * Options:
  *   --repo=owner/name     target a specific repo (otherwise auto-detect)

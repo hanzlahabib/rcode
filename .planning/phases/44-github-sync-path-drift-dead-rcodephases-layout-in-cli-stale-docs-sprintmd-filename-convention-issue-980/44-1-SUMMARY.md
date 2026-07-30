@@ -71,6 +71,14 @@ Phase 44's SPRINT.md scope (`docs/METHODOLOGY.md`, `docs/USP.md`, `rcode/workflo
 `cli/github-sync.js`, `cli/lib/github-sync-discover.cjs`, `test/github-sync.test.cjs` — no
 AGENTS.md line-item in `files_modified`).
 
+**Resolution (post-review):** Option 1 was taken with explicit human sign-off in the same
+session, three commits later (`42c216d chore(scopes): add github-sync and rcode scopes to
+allowed scope lists`) — the user directed the commit that added both scopes to AGENTS.md and
+CONTRIBUTING.md after reviewing this exact blocker. This section originally went stale (still
+describing the blocker as unresolved after it was fixed); flagged by phase 44's own code review
+(44-REVIEW.md, High #1) and corrected here rather than left contradicting the branch's real
+history.
+
 ## Next Steps
 
 - Human decision needed on the scope-history-parity finding above (add `github-sync`/`rcode`
