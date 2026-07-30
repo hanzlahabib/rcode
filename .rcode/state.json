@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-30T07:05:05.539Z",
+  "updated": "2026-07-30T07:12:41.587Z",
   "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1284,12 +1284,14 @@
       "id": "45",
       "number": "45",
       "name": "Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)",
-      "status": "planned",
+      "status": "complete",
       "started": null,
       "completed": null,
       "sprints": [],
-      "goal": "_TBD — fill in via /rcode-discuss-phase 45 or edit directly._",
-      "plan_count": 0
+      "goal": "Fix 21 findings from a 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) — unify the planner's output schema, clean up dead `.rcode/phases/` references, fix scope/skills/agent-cleanup drift, document the epics/stories pipeline's status, and bring `plan.md`/`execute.md` back under the 1000-line cap.",
+      "plan_count": 0,
+      "status_updated": "2026-07-30T07:10:50.062Z",
+      "completed_at": "2026-07-30"
     }
   ],
   "executions": [
@@ -1313,6 +1315,13 @@
       "duration_ms": null,
       "commit_hash": "d7253c8",
       "committed_at": "2026-06-29T17:22:42.150Z"
+    },
+    {
+      "plan": "45",
+      "tasks": 5,
+      "duration_ms": null,
+      "commit_hash": "e42fd57",
+      "committed_at": "2026-07-30T07:10:57.033Z"
     }
   ],
   "decisions": [

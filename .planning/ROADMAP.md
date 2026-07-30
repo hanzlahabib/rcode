@@ -320,14 +320,18 @@ bash-guard / auth hardening — no raw exec surface.
 
 ## Phase 45 — Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)
 
-**Goal:** _TBD — fill in via /rcode-discuss-phase 45 or edit directly._
+**Goal:** Fix 21 findings from a 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) — unify the planner's output schema, clean up dead `.rcode/phases/` references, fix scope/skills/agent-cleanup drift, document the epics/stories pipeline's status, and bring `plan.md`/`execute.md` back under the 1000-line cap.
 
-**Status:** Planned
+**Status:** Complete (2026-07-30)
 
 **Plans:**
-- _TBD_
+- 45-1 — Planner schema unification (#981-#984, #993)
+- 45-2 — Dead `.rcode/phases/` path cleanup (#985, #986, #988)
+- 45-3 — Scope/skills/agent hygiene (#987, #989, #990, #991)
+- 45-4 — Epics/stories + workflow/skill pair notices (#994, #995, #996)
+- 45-5 — `plan.md`/`execute.md` refactor (#989, #997-#1001)
 
-**Acceptance:** _TBD_
+**Acceptance:** All 19 tasks' `<verify>` gates pass (87/87 checks); code review gate resolved (1 high + 3 medium fixed); `rcode-verifier` goal-backward check: `passed`; 593/593 tests pass; all 21 GitHub issues closed.
 
 ---
 
