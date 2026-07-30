@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-30T04:40:12.639Z",
+  "updated": "2026-07-30T05:06:31.878Z",
   "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -1284,10 +1284,11 @@
       "id": "45",
       "number": "45",
       "name": "Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)",
-      "goal": "_TBD — fill in via /rcode-discuss-phase 45 or edit directly._",
       "status": "planned",
       "started": null,
       "completed": null,
+      "sprints": [],
+      "goal": "_TBD — fill in via /rcode-discuss-phase 45 or edit directly._",
       "plan_count": 0
     }
   ],
