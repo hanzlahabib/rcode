@@ -1,40 +1,17 @@
 # Workflow: rcode-sprint-planning
 
 <purpose>
-Plan the next sprint. Authoritative implementation lives in the
-`rcode-sprint-planning` skill — this workflow delegates to it so every
-safety rail (capacity gate per #127, halt-at-menu per #124, state-sync
-per #198) fires identically whether the user invokes the slash command
-or the phrase-activated skill.
+Plan the next sprint and write a SPRINT.md. The in-line steps below ARE the
+authoritative path for this — this project's own history confirms it: 54/54
+real *-SPRINT.md files under .planning/phases/ were produced by this in-line
+flow, none by the rcode-sprint-planning skill.
 
-The skill MUST be loaded before the in-line steps below run. If the skill
-file is missing (broken install), report and stop — do not silently fall
-back to the in-line implementation.
+The `rcode-sprint-planning` skill (`.rcode/skills/rcode-sprint-planning/`)
+is a SEPARATE tool: it generates `sprint-status.yaml` from `.planning/epics/`
+files (epic/story status tracking: backlog -> ready-for-dev -> in-progress ->
+review -> done), not a SPRINT.md. Do not delegate to it expecting a SPRINT.md
+output.
 </purpose>
-
-<delegate_to_skill>
-Required skill: `rcode-sprint-planning`
-Path:           `.rcode/skills/rcode-sprint-planning/SKILL.md`
-Workflow ref:   `.rcode/skills/rcode-sprint-planning/workflow.md`
-Fallback path:  `.claude/skills/rcode-sprint-planning/SKILL.md`
-
-Behaviour:
-1. Load the skill's `SKILL.md` and `workflow.md`. Apply every Critical
-   Rule from the workflow's `## CRITICAL RULES (NO EXCEPTIONS)` block,
-   including the capacity gate (step n="0") which MUST halt for
-   numeric capacity inputs before any story is committed.
-2. Run the skill's step files in order. The in-line steps below this
-   block are a fallback summary for legacy installs that lack the skill;
-   they are NOT the authoritative behaviour.
-3. After SPRINT.md is written, ALWAYS run:
-   `node .rcode/bin/rcode-tools.cjs state sync --from-disk`
-   so state.sprints[] reflects the new sprint.
-
-If skill files are missing: print
-"Sprint-planning skill not installed. Run: npx @hanzlaa/rcode install"
-and exit non-zero. Do not proceed with the legacy in-line steps because
-they bypass the capacity gate.
-</delegate_to_skill>
 
 <required_reading>
 @.rcode/references/output-format.md

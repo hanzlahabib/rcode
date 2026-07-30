@@ -40,8 +40,9 @@ Follow the instructions in ./workflow.md.
 
 ## Output Format
 
-- Output: .rcode/phases/{phase}/sprint-{N}.md
-- Fixed structure: Sprint Goal (one sentence) | Assumptions | Duration | Stories (with owners) | Capacity Used/Available | Risks | Definition of Done
+- Output: sprint-status.yaml (path from {status_file}, per workflow.md step 4) — an epic/story status tracker, NOT a SPRINT.md
+- Fixed structure: generated/last_updated/project metadata + development_status (epic -> stories -> retrospective, ordered)
+- Distinct from `/rcode-sprint-planning` the slash command (`rcode/workflows/sprint-planning.md`), which writes a SPRINT.md via a separate in-line flow
 - Stories ranked by priority from epics.md
 - Leave 20% capacity buffer
 - Do NOT commit to stories without explicit owners

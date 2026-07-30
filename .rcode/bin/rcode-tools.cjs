@@ -1519,6 +1519,10 @@ function cmdState(subArgs) {
   // =====================================================================
 
   // --- sprint add --phase NN --goal "Sprint goal" ---
+  // NOTE: this populates entry.sprints[] (an array). A separate code path,
+  // 'planned-phase' below (~line 3152), populates entry.plans (a plain count).
+  // These two fields are never reconciled with each other — see AUDIT-redundant-work.md
+  // finding 1 cross-check. Do not assume one implies the other is populated.
   if (sub === 'sprint' && subArgs[1] === 'add') {
     const flags = parseFlags(2);
     const state = readState() || defaultState();
@@ -3149,6 +3153,9 @@ function cmdState(subArgs) {
   // Execution-lifecycle phase state
   // =====================================================================
 
+  // NOTE: entry.plans (a count) is disjoint from entry.sprints[] (an array,
+  // set by 'sprint add' above) — see the comment there. Known schema divergence,
+  // not yet unified; do not read one as evidence the other is in sync.
   if (sub === 'planned-phase') {
     const flags = parseFlags(1);
     if (!flags.phase) throw new Error('planned-phase requires --phase <N>');
