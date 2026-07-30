@@ -312,6 +312,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `plan` — plan workflow
 - `planner` — planner agent
 - `readme` — README.md
+- `review` — code review reports and review-gate fixes (e.g. `NN-REVIEW.md` resolutions)
 - `rcode` — cross-cutting rcode planning/methodology commits not tied to one narrower scope
 - `sync` — install/state sync flows
 - `sprint` — sprint-level workflow additions and fixes
