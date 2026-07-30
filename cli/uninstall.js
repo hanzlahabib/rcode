@@ -261,9 +261,14 @@ function buildPlan(cwd, editors) {
     // v2 installs agents to .claude/agents/rcode-*.md — scan for them
     const agentsDir = path.join(cwd, '.claude/agents');
     if (fs.existsSync(agentsDir)) {
-      plan.claude.agents = fs
-        .readdirSync(agentsDir)
+      const agentFiles = fs.readdirSync(agentsDir);
+      plan.claude.agents = agentFiles
         .filter((name) => name.startsWith('rcode-') && name.endsWith('.md'));
+      // Stale pre-rebrand rihal-*.md twins never get removed otherwise (#992)
+      plan.claude.agents = [
+        ...plan.claude.agents,
+        ...agentFiles.filter((name) => name.startsWith('rihal-') && name.endsWith('.md')),
+      ];
     }
     // Installer copies rcode/agents/rules/ tree → .claude/agents/rules/ (#876)
     if (fs.existsSync(path.join(cwd, '.claude/agents/rules'))) {
