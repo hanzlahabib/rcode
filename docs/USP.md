@@ -125,7 +125,7 @@ Can't execute a story → without a sprint plan
 Can't ship → without verification
 ```
 
-The chain is enforced. If you try to run `/rcode-create-epics-and-stories` and no PRD exists in `.rcode/phases/`, the skill stops and tells you: *"Run rcode-create-prd first. I cannot invent requirements."* It doesn't hedge. It doesn't offer to "help you get started." It refuses, names the missing upstream, and gives you the exact command to run.
+The chain is enforced. If you try to run `/rcode-create-epics-and-stories` and no PRD exists in `.planning/`, the skill stops and tells you: *"Run rcode-create-prd first. I cannot invent requirements."* It doesn't hedge. It doesn't offer to "help you get started." It refuses, names the missing upstream, and gives you the exact command to run.
 
 **Why this matters:** Every other tool will happily generate a 20-epic backlog from a one-sentence prompt. rcode won't. The constraint is the feature. Your epics are grounded in a PRD. Your stories are grounded in epics. Your sprint is grounded in stories. There is no hallucinated layer in the chain.
 

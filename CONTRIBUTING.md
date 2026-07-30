@@ -282,6 +282,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `getting-started` — the `docs/getting-started.md` onboarding guide
 - `config` — team.yaml, config.yaml
 - `github` — CI/CD, issue templates, PR templates
+- `github-sync` — `cli/github-sync.js` and its discovery/parsing logic
 - `cli` — `cli/*.js` and `rcode/bin/rcode-tools.cjs`
 - `state` — `.rcode/state.json` and state-manipulation code paths
 - `refs` — files inside `rcode/references/`
@@ -311,6 +312,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `plan` — plan workflow
 - `planner` — planner agent
 - `readme` — README.md
+- `rcode` — cross-cutting rcode planning/methodology commits not tied to one narrower scope
 - `sync` — install/state sync flows
 - `sprint` — sprint-level workflow additions and fixes
 - `agent-exp` — agent experience improvements
