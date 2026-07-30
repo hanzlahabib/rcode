@@ -709,16 +709,18 @@ Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 Before declaring plans ready, validate the wave-parallelism rule the planner declares: **same wave + overlapping `files_modified` = sequential, not parallel**. If two plans share `depends_on` (same wave) and both list the same file in `files_modified`, the planner should have marked the later one `sequential: true`. Catch the cases where it didn't.
 
 ```bash
-# For every pair of plans (A, B) with the same depends_on:
-#   if files_modified(A) ∩ files_modified(B) is non-empty:
-#     - the later plan (by sprint id) MUST declare sequential: true
-#     - and must list the conflicting files in its frontmatter
-
-node ".rcode/bin/rcode-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+# Skip if plan_count == 1 (from INIT JSON): with exactly one plan in the phase,
+# there is no second plan to overlap with — a conflict is structurally impossible.
+if [[ "${plan_count}" -eq 1 ]]; then
+  echo "Wave parallelism: skipped (single plan, overlap structurally impossible)."
+else
+  # For every pair of plans (A, B) with the same depends_on, if files_modified(A)
+  # ∩ files_modified(B) is non-empty, the later plan (by sprint id) MUST declare
+  # sequential: true and list the conflicting files in its frontmatter.
+  node ".rcode/bin/rcode-tools.cjs" plan check-wave-overlaps "${PHASE_NUMBER}"
+fi
 ```
-
-The CLI helper returns a JSON report:
-
+Returns (else branch only):
 ```json
 {
   "conflicts": [
@@ -745,15 +747,13 @@ The CLI helper returns a JSON report:
 3. Re-run the checker to confirm the updated frontmatter.
 4. Display: `Wave parallelism: {N} conflict(s) auto-corrected to sequential.`
 
-**If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed.
-
-This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced. Now it's enforced automatically.
+**If `conflicts` is empty:** Display `Wave parallelism: ✓ no file-overlap conflicts.` and proceed. (This closes the wave-overlap gap — the rule was stated in `rcode-planner.md` but not enforced until now.)
 
 ## 13. Requirements Coverage Gate
 
 After plans pass the checker (or checker is skipped), verify that all phase requirements are covered by at least one plan.
 
-**Skip if:** `phase_req_ids` is null or TBD (no requirements mapped to this phase).
+**Skip if:** `phase_req_ids` is null, `TBD`, or an empty array/list (no requirements mapped to this phase) — `[[ -z "$phase_req_ids" || "$phase_req_ids" == "TBD" || "$phase_req_ids" == "[]" || "$phase_req_ids" == "null" ]]` — proceed to step 14.
 
 **Step 1: Extract requirement IDs claimed by plans**
 ```bash
