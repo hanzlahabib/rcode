@@ -204,7 +204,6 @@ Always use the exact name from this list — do not fall back to 'general-purpos
 - rcode-integration-checker — Checks cross-phase integration
 - rcode-nyquist-auditor — Validates verification coverage
 - rcode-ux-designer — Researches UI/UX approaches
-- rcode-ui-auditor — Reviews UI implementation quality
 - rcode-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 

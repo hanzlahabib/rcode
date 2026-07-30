@@ -1,5 +1,5 @@
 <purpose>
-Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rcode-reviewer agent, commits REVIEW.md, and presents results to user.
+Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns rcode-code-reviewer agent, commits REVIEW.md, and presents results to user.
 </purpose>
 
 <required_reading>
@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- rcode-reviewer: Reviews source files for bugs and quality issues
+- rcode-code-reviewer: Reviews source files for bugs and quality issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -385,7 +385,7 @@ for file in "${REVIEW_FILES[@]}"; do
 done
 ```
 
-Spawn the rcode-reviewer agent:
+Spawn the rcode-code-reviewer agent:
 
 ```
 Task(subagent_type="rcode-code-reviewer",
@@ -609,7 +609,7 @@ If `--files` validation fails unexpectedly on macOS, install coreutils or use ab
 
 - [ ] Config gate (`workflow.code_review`) verified before spawning the reviewer agent
 - [ ] File scope resolved via priority order: `--files` override → SUMMARY.md list → `git diff` fallback; deleted files excluded
-- [ ] `rcode-reviewer` agent spawned with explicit file list, depth setting, and `review_path`
+- [ ] `rcode-code-reviewer` agent spawned with explicit file list, depth setting, and `review_path`
 - [ ] Empty scope (no changed files) results in a clean skip — no agent spawned
 - [ ] `REVIEW.md` written to `.planning/phases/<N>/REVIEW.md` and committed
 - [ ] Results presented inline with a next-step suggestion (e.g., `/rcode-code-review-fix`)
