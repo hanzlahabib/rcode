@@ -10,13 +10,13 @@ Every plan file must have this frontmatter and structure:
 
 ```markdown
 ---
-id: "01.02"                 # full hierarchical ID
-phase: "01"                 # phase ID (2-digit, zero-padded)
-plan: "02"                  # plan ID within phase (2-digit, zero-padded)
-milestone: "M1"             # optional, if assigned to milestone
-type: auto | tdd
-depends_on: []              # list of other plan IDs like ["01.01"]
-wave: 1                     # auto-derived from depends_on
+phase: "8"                  # phase ID (no leading zeros — issue #652)
+plan_number: 1               # plan ID within phase (no leading zeros — issue #652)
+wave: 1                      # auto-derived from depends_on
+depends_on: []                # list of other plan IDs like ["8-1"]
+files_modified: []            # files this plan touches
+autonomous: true               # whether the plan runs without checkpoints
+requirements: []               # requirement IDs mapped to this plan, if any
 ---
 
 ## Objective
