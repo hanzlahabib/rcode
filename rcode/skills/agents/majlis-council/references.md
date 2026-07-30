@@ -30,13 +30,23 @@ In Omani and Arab tradition, a Majlis is a gathering where voices are heard befo
 
 ## Dispatch modes
 
-Majlis has two execution modes:
+Within this skill, the CV/CVF/QC/DM/CM convene-mode sub-skills listed in SKILL.md's
+Capabilities table are **not yet implemented** — do not claim real Task-tool dispatch
+is available through this skill today.
 
-**Real mode (default).** Dispatches actual subagents via the `Task` tool. Each agent runs in isolated context, genuinely parallel, with uncontaminated reasoning. Use for high-stakes decisions and demos.
+**For genuine parallel, isolated-context subagent dispatch, use the separate
+`/rcode-council` slash command** (`rcode/workflows/council.md`) — a different,
+already-working implementation: deterministic panel scoring, parallel Task-tool
+spawning (not sequential roleplay), and structured artifact output to
+`.planning/council-sessions/`.
 
-**Fast mode.** Single-Claude structured roleplay following each agent's SKILL.md principles. Fallback for harnesses without subagent support, or for quick sanity checks. Faster but reasoning runs in shared context.
+**Fast mode (the only mode this skill currently supports).** Single-Claude
+structured roleplay following each agent's SKILL.md principles, in shared context.
+Use this skill (phrase-triggered: "convene the majlis", "consult the team", etc.)
+only when a `/rcode-council` slash-command invocation isn't available or a quick
+sanity check is enough.
 
-When in doubt, use real mode.
+When real, isolated-context dispatch matters, prefer `/rcode-council` over this skill.
 
 ---
 
