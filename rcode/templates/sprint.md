@@ -13,9 +13,20 @@
 
 ## Stories
 
-| ID | Title | Points | Status | Done when |
-|----|-------|--------|--------|-----------|
-| {story_id} | {title} | {points} | {status} | {verifiable_ac} |
+<!-- One <task> block per story. id= and <title> are REQUIRED (scanner.js's primary parse path) -->
+<tasks>
+<task id="{sprint_id}.{NN}" type="auto">
+<title>{story title}</title>
+<read_first>{files + line ranges the executor must read before writing}</read_first>
+<files>{exact paths this task creates/modifies}</files>
+<action>{specific implementation instructions}</action>
+<verify>
+  <automated>{command < 60 sec}</automated>
+</verify>
+<done>{measurable acceptance criteria}</done>
+<evidence>{grep/lines/creates evidence per issue #649}</evidence>
+</task>
+</tasks>
 
 ## Capacity
 

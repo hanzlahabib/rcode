@@ -160,42 +160,36 @@ Sprint-checker enforces this — see `rcode-sprint-checker.md` Mandatory Output 
 
 ```markdown
 ---
-[frontmatter with phase, plan, type, wave, depends_on, files_modified, autonomous, requirements, must_haves]
+phase: {phase}
+plan_number: {N}
+wave: {N}
+depends_on: []
+autonomous: true|false
+files_modified: [...]
+requirements: [...]
+must_haves: {truths, artifacts, key_links}
 ---
 
-<objective>
-[What this plan accomplishes]
-Purpose: [Why this matters]
-Output: [Artifacts created]
-</objective>
-
+<objective>...</objective>
 <execution_context>
-@.rcode/workflows/execute.md
+@.rcode/workflows/execute-sprint.md
 @.rcode/templates/summary.md
 </execution_context>
-
-<context>
-@.planning/PROJECT.md
-@.planning/ROADMAP.md
-@.planning/STATE.md
-[Only prior SUMMARY refs if genuinely needed]
-</context>
-
+<context>...</context>
 <tasks>
-[2-3 tasks max, each 15-60 min]
+<task id="{phase}.{plan}.{N}" type="auto">
+<title>...</title>
+<read_first>...</read_first>
+<files>...</files>
+<action>...</action>
+<verify><automated>...</automated></verify>
+<done>...</done>
+<evidence>...</evidence>
+</task>
 </tasks>
-
-<verification>
-[Overall phase checks]
-</verification>
-
-<success_criteria>
-[Measurable completion]
-</success_criteria>
-
-<output>
-Create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
-</output>
+<verification>...</verification>
+<success_criteria>...</success_criteria>
+<output>Create `.planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md`</output>
 ```
 
 ## Common Planning Mistakes to Avoid

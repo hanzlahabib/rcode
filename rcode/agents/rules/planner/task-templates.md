@@ -1,10 +1,12 @@
 # rcode Planner: Task Templates by Type
 
+<!-- id= and <title> are REQUIRED across every template below — this is what server/lib/scanner.js's buildPhaseTree actually parses. Do not use a `name` child tag or a bare title attribute; both are legacy/unsupported paths. -->
+
 ## Standard Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: [Action-oriented name]</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: [Action-oriented name]</title>
   <files>path/to/file.ext, path/to/another.ts</files>
   <action>[Specific implementation with what to avoid and WHY]</action>
   <verify>
@@ -21,8 +23,8 @@
 Use when you can write `expect(fn(input)).toBe(output)` before implementing.
 
 ```xml
-<task type="auto" tdd="true">
-  <name>Task: [name]</name>
+<task id="{sprint-id}.{NN}" type="auto" tdd="true">
+  <title>Task: [name]</title>
   <files>src/feature.ts, src/feature.test.ts</files>
   <behavior>
     - Test 1: [expected behavior]
@@ -44,8 +46,8 @@ Use when you can write `expect(fn(input)).toBe(output)` before implementing.
 Use for visual/functional verification (90% of checkpoints).
 
 ```xml
-<task type="checkpoint:human-verify" gate="blocking">
-  <name>Verify: [Feature name works]</name>
+<task id="{sprint-id}.{NN}" type="checkpoint:human-verify" gate="blocking">
+  <title>Verify: [Feature name works]</title>
   <what-built>[What the agent automated]</what-built>
   <how-to-verify>
     1. Navigate to http://localhost:3000/login
@@ -65,8 +67,8 @@ Use for visual/functional verification (90% of checkpoints).
 Use for implementation choices (9% of checkpoints).
 
 ```xml
-<task type="checkpoint:decision" gate="blocking">
-  <name>Decide: Database schema for messages</name>
+<task id="{sprint-id}.{NN}" type="checkpoint:decision" gate="blocking">
+  <title>Decide: Database schema for messages</title>
   <what-youre-deciding>
     Where to store user-to-message relationships:
     
@@ -94,8 +96,8 @@ Use for implementation choices (9% of checkpoints).
 Use for unavoidable manual steps (1% of checkpoints).
 
 ```xml
-<task type="checkpoint:human-action" gate="blocking">
-  <name>Set up Stripe API key</name>
+<task id="{sprint-id}.{NN}" type="checkpoint:human-action" gate="blocking">
+  <title>Set up Stripe API key</title>
   <what-needed>
     The next task implements Stripe payment processing, which requires your API key.
   </what-needed>
@@ -115,8 +117,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## Database Migration Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Add role field to users table</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Add role field to users table</title>
   <files>prisma/schema.prisma, prisma/migrations/[timestamp]_add_role.sql</files>
   <action>
     1. Update User model in schema: add `role String @default("user")`
@@ -136,8 +138,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## API Endpoint Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Implement POST /api/users endpoint</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Implement POST /api/users endpoint</title>
   <files>src/app/api/users/route.ts, src/types/user.ts</files>
   <action>
     Create POST endpoint accepting { email, password, name }:
@@ -167,8 +169,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## UI Component Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Create LoginForm component</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Create LoginForm component</title>
   <files>src/components/LoginForm.tsx, src/components/LoginForm.test.tsx</files>
   <action>
     Create form component with:
@@ -195,8 +197,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## Configuration Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Configure environment variables</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Configure environment variables</title>
   <files>.env.example, .env.local (local only)</files>
   <action>
     1. Create .env.example with template (no real values):
@@ -219,8 +221,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## Documentation Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Document authentication flow</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Document authentication flow</title>
   <files>docs/AUTHENTICATION.md</files>
   <action>
     Document in docs/AUTHENTICATION.md:
@@ -242,8 +244,8 @@ Use for unavoidable manual steps (1% of checkpoints).
 ## Refactoring Task Template
 
 ```xml
-<task type="auto">
-  <name>Task: Extract auth validation to utility</name>
+<task id="{sprint-id}.{NN}" type="auto">
+  <title>Task: Extract auth validation to utility</title>
   <files>src/lib/auth-validation.ts, src/api/auth/login/route.ts</files>
   <action>
     1. Create src/lib/auth-validation.ts with functions:
