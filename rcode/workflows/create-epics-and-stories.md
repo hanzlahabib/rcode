@@ -4,6 +4,16 @@
 Parse a PRD, PROJECT.md, or project document to generate numbered epic files in `.planning/epics/`. Each epic file contains user stories with acceptance criteria, development notes, and effort estimates. Output is ready for `/rcode-sprint-planning`.
 </purpose>
 
+> **Note (experimental, no execution consumer):** the epics/stories/dev-story pipeline this
+> workflow is part of is not wired to `/rcode-execute` today — `rcode-executor` only reads
+> `*-SPRINT.md` files (see `rcode/agents/rcode-executor.md`). The only way to "run" a story
+> produced here is the manual `/rcode {dev-prompt-file}` invocation documented in
+> `rcode/workflows/dev-story.md`, which has none of `/rcode-execute`'s atomic-commit,
+> checkpoint, wave, or verification machinery. Treat this pipeline as experimental /
+> unsupported for production execution until a decision is made to either wire it to
+> `/rcode-execute` or deprecate it in favor of the SPRINT.md pipeline (see
+> `AUDIT-redundant-work.md` finding 2).
+
 
 <available_agent_types>
 - `rcode-roadmapper` — reads PRD/context and generates epic structure
