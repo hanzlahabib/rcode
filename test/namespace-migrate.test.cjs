@@ -32,6 +32,12 @@ function writeCommand(claudeDir, name, content = '# command\n') {
   fs.writeFileSync(path.join(dir, name), content);
 }
 
+function writeAgent(claudeDir, name, content = '# agent\n') {
+  const dir = path.join(claudeDir, 'agents');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, name), content);
+}
+
 // ---- findLegacyRihalArtifacts ----
 
 test('findLegacyRihalArtifacts: flags rihal-* skill only when rcode-* twin exists', (t) => {
@@ -59,11 +65,24 @@ test('findLegacyRihalArtifacts: flags rihal-* command only when rcode-* twin exi
   assert.strictEqual(commands[0].name, 'rihal-status.md');
 });
 
+test('findLegacyRihalArtifacts: flags rihal-* agent only when rcode-* twin exists (#991)', (t) => {
+  const dir = makeTempDir();
+  t.after(() => cleanup(dir));
+  writeAgent(dir, 'rihal-hanzla.md');
+  writeAgent(dir, 'rihal-orphan.md'); // no twin — must NOT be flagged
+  writeAgent(dir, 'rcode-hanzla.md');
+
+  const { agents } = findLegacyRihalArtifacts(dir);
+  assert.strictEqual(agents.length, 1);
+  assert.strictEqual(agents[0].name, 'rihal-hanzla.md');
+  assert.strictEqual(agents[0].twin, 'rcode-hanzla.md');
+});
+
 test('findLegacyRihalArtifacts: empty on a dir with no skills/commands', (t) => {
   const dir = makeTempDir();
   t.after(() => cleanup(dir));
   const result = findLegacyRihalArtifacts(dir);
-  assert.deepStrictEqual(result, { skills: [], commands: [] });
+  assert.deepStrictEqual(result, { skills: [], commands: [], agents: [] });
 });
 
 // ---- findUnprefixedTwinDupes ----
