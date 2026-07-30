@@ -264,7 +264,7 @@ function buildPlan(cwd, editors) {
       const agentFiles = fs.readdirSync(agentsDir);
       plan.claude.agents = agentFiles
         .filter((name) => name.startsWith('rcode-') && name.endsWith('.md'));
-      // Stale pre-rebrand rihal-*.md twins never get removed otherwise (#992)
+      // Stale pre-rebrand rihal-*.md twins never get removed otherwise (#991)
       plan.claude.agents = [
         ...plan.claude.agents,
         ...agentFiles.filter((name) => name.startsWith('rihal-') && name.endsWith('.md')),
