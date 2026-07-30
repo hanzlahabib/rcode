@@ -3,558 +3,532 @@
 
 Auto-generated from every `rcode/skills/**/SKILL.md`. Re-run `node scripts/build-skills-catalog.cjs` after adding or renaming a skill.
 
-**80 skills** across 3 buckets.
+**96 skills** across 5 buckets.
 
 ---
 
-## Actions (37)
+## Actions (38)
 
 ### `rcode-browser-verify`
 
-Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests, performance traces, screenshot diffs. Use when implementing or debugging any browser-runtime feature, especially Three.js scenes, scroll-driven UI, or frontend perf concerns. Closes the gap between "the build passes" and "the user actually sees what we intended".
+Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests,.
 
 **Triggers:** `verify in browser`, `check the dom`, `browser test`, `dev tools mcp`, `screenshot diff`, `console errors`, `network trace`, `browser smoke test`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-browser-verify/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-browser-verify/SKILL.md) — 71 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-browser-verify/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-browser-verify/SKILL.md) — 74 lines
 
 ### `rcode-check-implementation-readiness`
 
 **Triggers:** `check implementation readiness`, `is this ready for dev`, `verify`
 
-**Source:** [`rcode/skills/actions/3-solutioning/rcode-check-implementation-readiness/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-check-implementation-readiness/SKILL.md) — 43 lines
+**Source:** [`rcode/skills/actions/3-solutioning/rcode-check-implementation-readiness/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-check-implementation-readiness/SKILL.md) — 53 lines
 
 ### `rcode-checkpoint-preview`
 
-LLM-assisted human-in-the-loop review. Make sense of a change, focus attention where it matters, test. Use when the user says "checkpoint", "human review", or "walk me through this change".
+LLM-assisted human-in-the-loop review.
 
-**Triggers:** `checkpoint preview`
+**Triggers:** `checkpoint preview`, `preview the checkpoint`, `human-in-the-loop review`, `review before checkpoint`, `checkpoint review session`, `preview changes before approval`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md) — 65 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md) — 76 lines
 
 ### `rcode-ci`
 
-CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix, Helm charts for K8s deployment, Docker Compose for dev environments. Use when standing up CI for a new repo, adding a quality gate, debugging a flaky workflow, or migrating dev-compose to production Helm. Opinionated about zero-runtime-dep invariants and pre-merge gates.
+CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix,.
 
 **Triggers:** `set up ci`, `github actions`, `ci pipeline`, `quality gate`, `helm chart`, `docker compose`, `k8s deploy`, `release workflow`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-ci/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-ci/SKILL.md) — 109 lines
-
-### `rcode-code-review`
-
-**Triggers:** `review this code`, `run`
-
-**Source:** [`rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md) — 44 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-ci/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-ci/SKILL.md) — 116 lines
 
 ### `rcode-correct-course`
 
 **Triggers:** `course correct`, `change`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-correct-course/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-correct-course/SKILL.md) — 43 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-correct-course/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-correct-course/SKILL.md) — 47 lines
 
 ### `rcode-create-architecture`
 
 **Triggers:** `write an ADR`, `create`
 
-**Source:** [`rcode/skills/actions/3-solutioning/rcode-create-architecture/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-create-architecture/SKILL.md) — 47 lines
+**Source:** [`rcode/skills/actions/3-solutioning/rcode-create-architecture/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-create-architecture/SKILL.md) — 51 lines
 
 ### `rcode-create-epics-and-stories`
 
-**Triggers:** `create epics`, `break this into stories`, `generate`
+**Source:** [`rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md) — 59 lines
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-epics-and-stories/SKILL.md) — 45 lines
-
-### `rcode-new-milestone`
+### `rcode-create-milestone`
 
 **Triggers:** `create milestones`, `plan milestones`, `create roadmap`, `what milestones do I need`, `break this project into`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-new-milestone/SKILL.md`](../rcode/skills/actions/2-plan/rcode-new-milestone/SKILL.md)
+**Source:** [`rcode/skills/actions/2-plan/rcode-create-milestone/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-milestone/SKILL.md) — 64 lines
 
 ### `rcode-create-prd`
 
-**Triggers:** `create a PRD`, `write product`
-
-**Source:** [`rcode/skills/actions/2-plan/rcode-create-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-prd/SKILL.md) — 67 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-create-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-prd/SKILL.md) — 81 lines
 
 ### `rcode-create-story`
 
-**Triggers:** `create the next story`, `prepare a story`, `create`
-
-**Source:** [`rcode/skills/actions/2-plan/rcode-create-story/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-story/SKILL.md) — 46 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-create-story/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-story/SKILL.md) — 60 lines
 
 ### `rcode-create-ux-design`
 
 **Triggers:** `create UX design`, `design the user flow`, `wireframe`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-create-ux-design/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-ux-design/SKILL.md) — 44 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-create-ux-design/SKILL.md`](../rcode/skills/actions/2-plan/rcode-create-ux-design/SKILL.md) — 48 lines
 
 ### `rcode-debug`
 
-Root-cause debugging via the scientific method. Use when a test fails, a build breaks, behaviour doesn't match expectations, or any "it's broken and I don't know why" moment. Forces hypothesis → experiment → observation → narrow → repeat — never guessing or shotgunning fixes. Default observability layer is Sentry; the skill knows how to read Sentry traces if available.
+Scientific-method debugging: investigate first, test hypotheses, escalate at 3 failures.
 
-**Triggers:** `debug this`, `why is this broken`, `find the root cause`, `investigate the bug`, `what's wrong`, `track this down`, `narrow down the bug`, `scientific method`
-
-**Source:** [`rcode/skills/actions/4-implementation/rcode-debug/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-debug/SKILL.md) — 79 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-debug/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-debug/SKILL.md) — 200 lines
 
 ### `rcode-dev-story`
 
 **Triggers:** `dev this story`, `implement story {id}`, `execute the story`, `code the next story`, `run`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-dev-story/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-dev-story/SKILL.md) — 49 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-dev-story/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-dev-story/SKILL.md) — 81 lines
 
 ### `rcode-document-project`
 
 **Triggers:** `document this project`, `analyze this codebase`, `generate docs for`
 
-**Source:** [`rcode/skills/actions/1-analysis/rcode-document-project/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-document-project/SKILL.md) — 42 lines
+**Source:** [`rcode/skills/actions/1-analysis/rcode-document-project/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-document-project/SKILL.md) — 52 lines
 
 ### `rcode-domain-research`
 
 **Triggers:** `research this domain`, `domain deep dive`, `explain this industry`, `help`
 
-**Source:** [`rcode/skills/actions/1-analysis/research/rcode-domain-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-domain-research/SKILL.md) — 43 lines
+**Source:** [`rcode/skills/actions/1-analysis/research/rcode-domain-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-domain-research/SKILL.md) — 47 lines
 
 ### `rcode-edit-prd`
 
 **Triggers:** `update the`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-edit-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-edit-prd/SKILL.md) — 42 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-edit-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-edit-prd/SKILL.md) — 46 lines
 
 ### `rcode-frontend-design`
 
 **Triggers:** `AI slop`, `design this UI`, `build a beautiful frontend`, `distinctive design`, `creative UI`, `unforgettable interface`, `award-winning design`, `not generic`, `bold aesthetic`, `brutalist`, `editorial`, `maximalist`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-frontend-design/SKILL.md`](../rcode/skills/actions/2-plan/rcode-frontend-design/SKILL.md) — 93 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-frontend-design/SKILL.md`](../rcode/skills/actions/2-plan/rcode-frontend-design/SKILL.md) — 97 lines
 
 ### `rcode-generate-project-context`
 
 **Triggers:** `generate project context`, `create context`
 
-**Source:** [`rcode/skills/actions/3-solutioning/rcode-generate-project-context/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-generate-project-context/SKILL.md) — 44 lines
+**Source:** [`rcode/skills/actions/3-solutioning/rcode-generate-project-context/SKILL.md`](../rcode/skills/actions/3-solutioning/rcode-generate-project-context/SKILL.md) — 48 lines
 
 ### `rcode-git-flow`
 
-Branching, commits, conflicts, parallel work — aligned with the rcode Epic→Feature→Task hierarchy from GITHUB_WORKFLOW.md. Use when starting a new feature, opening a PR, resolving a merge conflict, or coordinating multi-developer work. Enforces Conventional Commits, no AI attribution lines, no force-push to main.
+Branching, commits, conflicts, parallel work — aligned with the rcode Epic→Feature→Task hierarchy.
 
 **Triggers:** `git flow`, `branching strategy`, `open a pr`, `merge conflict`, `rebase or merge`, `feature branch`, `commit policy`, `branch from main`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-git-flow/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-git-flow/SKILL.md) — 91 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-git-flow/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-git-flow/SKILL.md) — 94 lines
 
 ### `rcode-harden`
 
-Security hardening checklist for SaaS applications. Use before launching any feature that touches authentication, authorization, tenant data, file upload, or external integrations. Specifically opinionated about Keycloak/Active Directory sync (rcode learned this the hard way), JWT validation pitfalls, and tenant isolation in multi-org Postgres.
+Security hardening checklist for SaaS applications.
 
 **Triggers:** `harden this`, `security check`, `auth audit`, `tenant isolation`, `keycloak ad sync`, `secure this endpoint`, `owasp`, `before we ship`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-harden/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-harden/SKILL.md) — 92 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-harden/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-harden/SKILL.md) — 99 lines
+
+### `rcode-herdr-orchestration`
+
+Orchestrate parallel cld agents in herdr — fan-out or autonomous wave campaign.
+
+**Triggers:** `orchestrate agents`, `run agents in herdr`, `parallel audit`, `spin up agents`, `fan out work in herdr`, `multi-agent in herdr`, `autonomous fix campaign`, `run waves of agents`, `keep working until done`, `herdr mein chalao`, `شغّل وكلاء بالتوازي`, `حملة إصلاح تلقائية`
+
+**Source:** [`rcode/skills/actions/4-implementation/rcode-herdr-orchestration/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-herdr-orchestration/SKILL.md) — 162 lines
 
 ### `rcode-incremental`
 
-Ship code in small, atomic, verifiable steps. Use when implementing any feature, fixing any bug, or refactoring any module. Forces one logical change per commit, build-and-test gate after each step, and a rollback-ready trail. Pairs with rcode-prove-it (TDD) and rcode-review.
+Ship code in small, atomic, verifiable steps.
 
 **Triggers:** `ship incrementally`, `atomic commits`, `small steps`, `step by step build`, `incremental implementation`, `one commit at a time`, `build verifiably`, `rollback ready`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-incremental/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-incremental/SKILL.md) — 51 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-incremental/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-incremental/SKILL.md) — 54 lines
 
 ### `rcode-market-research`
 
 **Triggers:** `market research`, `competitive analysis`, `market analysis for`, `size the market`, `competitor scan`, `analyze the market for X`
 
-**Source:** [`rcode/skills/actions/1-analysis/research/rcode-market-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-market-research/SKILL.md) — 42 lines
+**Source:** [`rcode/skills/actions/1-analysis/research/rcode-market-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-market-research/SKILL.md) — 46 lines
 
 ### `rcode-migrate`
 
-Plan and execute the move from MVP to production-grade infrastructure without rewriting from scratch. Use when an MVP works but the next round of features hits a wall — flaky deploys, manual ops, no observability, no tests, hand-rolled auth. Specifically addresses the documented rcode pain ("MVP delivered, hard to revamp"). Pairs with rcode-harden for security pass and rcode-ci for the new pipeline.
+Plan and execute the move from MVP to production-grade infrastructure without rewriting from.
 
 **Triggers:** `graduate the mvp`, `production grade infra`, `mvp to prod`, `scale this beyond demo`, `harden the stack`, `revamp the architecture`, `from prototype to product`, `ready for real users`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-migrate/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-migrate/SKILL.md) — 87 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-migrate/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-migrate/SKILL.md) — 94 lines
 
 ### `rcode-perf`
 
-Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration), Three.js (frame budget, draw calls, geometry uploads), Postgres (query plans, indexes), and Vercel/K8s (cold starts, memory). Use when Lighthouse scores regress, fps drops, queries get slow, or a deploy gets OOM-killed. Pairs with rcode-browser-verify for runtime measurement.
+Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration),.
 
 **Triggers:** `optimize performance`, `page is slow`, `fps drop`, `core web vitals`, `query is slow`, `lcp regression`, `perf budget`, `tune this`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-perf/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-perf/SKILL.md) — 97 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-perf/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-perf/SKILL.md) — 100 lines
 
 ### `rcode-prfaq`
 
-Working Backwards PRFAQ challenge to forge product concepts. Use when the user requests to 'create a PRFAQ', 'work backwards', or 'run the PRFAQ challenge'.
+Working Backwards PRFAQ challenge to forge product concepts.
 
-**Triggers:** `prfaq`
+**Triggers:** `prfaq`, `working backwards`, `press release first`, `create a prfaq`, `product concept challenge`, `forge a product idea`
 
-**Source:** [`rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md) — 133 lines
+**Source:** [`rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-prfaq/SKILL.md) — 146 lines
 
 ### `rcode-product-brief`
 
 **Triggers:** `create a product brief`, `write a product`
 
-**Source:** [`rcode/skills/actions/1-analysis/rcode-product-brief/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-product-brief/SKILL.md) — 120 lines
+**Source:** [`rcode/skills/actions/1-analysis/rcode-product-brief/SKILL.md`](../rcode/skills/actions/1-analysis/rcode-product-brief/SKILL.md) — 124 lines
 
 ### `rcode-prove-it`
 
-Test-first development. Use when implementing any new behaviour, fixing any bug, or changing existing logic. Writes a failing test first, then the minimum code to pass it, then refactors. For UI flows uses Playwright; for unit logic uses Jest or node:test. The phrase "prove it" is the activation — every claim of "this works" must have a test backing it.
+Test-first development.
 
 **Triggers:** `prove it`, `tdd`, `test first`, `write a failing test`, `red green refactor`, `test driven`, `regression test`, `reproduce the bug first`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-prove-it/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-prove-it/SKILL.md) — 65 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-prove-it/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-prove-it/SKILL.md) — 68 lines
 
 ### `rcode-qa-generate-e2e-tests`
 
 **Triggers:** `generate e2e`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-qa-generate-e2e-tests/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-qa-generate-e2e-tests/SKILL.md) — 44 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-qa-generate-e2e-tests/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-qa-generate-e2e-tests/SKILL.md) — 48 lines
 
 ### `rcode-retrospective`
 
 **Triggers:** `run`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-retrospective/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-retrospective/SKILL.md) — 42 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-retrospective/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-retrospective/SKILL.md) — 46 lines
+
+### `rcode-review`
+
+**Source:** [`rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-code-review/SKILL.md) — 60 lines
 
 ### `rcode-scaffold-project`
 
-**Triggers:** `scaffold project`, `create project`, `new project`, `initialize project`, `setup new project`, `scaffold from template`, `create from template`, `rcode new project`, `start a new rcode project`
+**Triggers:** `scaffold project`, `create project`, `new project`, `initialize project`, `setup new project`, `scaffold from template`, `create from template`, `rcode new project`, `start a new rcode project`, `scaffold here`, `scaffold --here`, `use current directory`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-scaffold-project/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-scaffold-project/SKILL.md) — 88 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-scaffold-project/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-scaffold-project/SKILL.md) — 178 lines
 
 ### `rcode-source-truth`
 
-Cite official documentation before writing or recommending any framework, library, or API code. Use when working with Next.js, React, Strapi, Postgres, or any third-party tool. Forces the agent to fetch the upstream doc page (or local docs in `node_modules`) and quote the version-specific API rather than relying on training-data memory. Catches "the API changed in v15" foot-guns.
+Cite official documentation before writing or recommending any framework, library, or API code.
 
 **Triggers:** `cite the docs`, `official source`, `verify the api`, `what does the doc say`, `rtfm`, `version specific`, `from the source`, `source-driven`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-source-truth/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-source-truth/SKILL.md) — 77 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-source-truth/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-source-truth/SKILL.md) — 80 lines
 
 ### `rcode-sprint-planning`
 
-**Triggers:** `plan the sprint`, `create sprint plan`, `run`
-
-**Source:** [`rcode/skills/actions/4-implementation/rcode-sprint-planning/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-sprint-planning/SKILL.md) — 49 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-sprint-planning/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-sprint-planning/SKILL.md) — 64 lines
 
 ### `rcode-sprint-status`
 
 **Triggers:** `sprint status`, `how is the sprint going`, `generate status report`, `sprint progress`, `where are we in the sprint`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-sprint-status/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-sprint-status/SKILL.md) — 41 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-sprint-status/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-sprint-status/SKILL.md) — 49 lines
 
 ### `rcode-technical-research`
 
 **Triggers:** `technical research`, `feasibility study`, `research implementation`
 
-**Source:** [`rcode/skills/actions/1-analysis/research/rcode-technical-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-technical-research/SKILL.md) — 45 lines
+**Source:** [`rcode/skills/actions/1-analysis/research/rcode-technical-research/SKILL.md`](../rcode/skills/actions/1-analysis/research/rcode-technical-research/SKILL.md) — 49 lines
 
 ### `rcode-trim`
 
-Code simplification. Reduce lines, remove dead branches, collapse abstractions, delete commented-out code. Use when a file has grown past comprehension, a function takes more than 80 lines, or a class has accumulated "while I'm here" features. Applies the rcode Distillator philosophy — lossless compression — to source code rather than documents.
+Code simplification.
 
 **Triggers:** `trim this`, `simplify this code`, `code is too long`, `reduce complexity`, `deduplicate`, `remove dead code`, `tighten this function`, `extract dead branches`
 
-**Source:** [`rcode/skills/actions/4-implementation/rcode-trim/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-trim/SKILL.md) — 74 lines
+**Source:** [`rcode/skills/actions/4-implementation/rcode-trim/SKILL.md`](../rcode/skills/actions/4-implementation/rcode-trim/SKILL.md) — 77 lines
 
 ### `rcode-validate-prd`
 
 **Triggers:** `validate the PRD`, `review the PRD`, `check the PRD`, `is the PRD ready`, `PRD quality`
 
-**Source:** [`rcode/skills/actions/2-plan/rcode-validate-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-validate-prd/SKILL.md) — 42 lines
+**Source:** [`rcode/skills/actions/2-plan/rcode-validate-prd/SKILL.md`](../rcode/skills/actions/2-plan/rcode-validate-prd/SKILL.md) — 46 lines
 
 ---
 
-## Agents (18)
+## Agents (23)
 
-### `rcode-agent-ahmed-hassani`
+### `rcode-ahmed-hassani-director`
 
-**Triggers:** `director review`, `executive decision`, `board level`, `strategic direction`, `company strategy`, `talk to Ahmed`, `C-suite`, `leadership decision`, `org design`, `executive alignment`, `company roadmap`
+**Source:** [`rcode/skills/agents/ahmed-hassani-director/SKILL.md`](../rcode/skills/agents/ahmed-hassani-director/SKILL.md) — 157 lines
 
-**Source:** [`rcode/skills/agents/ahmed-hassani-director/SKILL.md`](../rcode/skills/agents/ahmed-hassani-director/SKILL.md) — 134 lines
+### `rcode-cross-platform-auditor`
 
-### `rcode-agent-dalil-scout`
+**Source:** [`rcode/skills/agents/rcode-cross-platform-auditor/SKILL.md`](../rcode/skills/agents/rcode-cross-platform-auditor/SKILL.md) — 164 lines
 
-**Triggers:** `scan codebase`, `map codebase`, `scout the repo`, `talk to Dalil`, `what's in this project`, `find every X in the codebase`, `discover instrumentation`, `explore the structure`, `code map`, `codebase audit`, `where is X used`, `what languages / what stack`
+### `rcode-dalil-scout`
 
-**Source:** [`rcode/skills/agents/dalil-scout/SKILL.md`](../rcode/skills/agents/dalil-scout/SKILL.md) — 121 lines
+**Source:** [`rcode/skills/agents/dalil-scout/SKILL.md`](../rcode/skills/agents/dalil-scout/SKILL.md) — 136 lines
 
-### `rcode-agent-fatima`
+### `rcode-dep-auditor`
 
-**Triggers:** `write tests`, `test coverage`, `QA review`, `testing strategy`, `regression testing`, `test plan`, `quality assurance`, `talk to Fatima`, `write unit tests`, `write integration tests`, `test this`, `review test coverage`
+**Source:** [`rcode/skills/agents/rcode-dep-auditor/SKILL.md`](../rcode/skills/agents/rcode-dep-auditor/SKILL.md) — 153 lines
 
-**Source:** [`rcode/skills/agents/fatima-qa/SKILL.md`](../rcode/skills/agents/fatima-qa/SKILL.md) — 141 lines
+### `rcode-deviation-analyzer`
 
-### `rcode-agent-haitham`
+**Triggers:** `analyze deviation`, `what deviated`, `scope creep`, `timeline slip`, `why did this phase take longer`, `root cause of the delay`, `compare planned vs actual`, `deviation report`, `what changed in this phase`, `deviation analyzer`, `انحراف الخطة`, `تحليل الانحراف`
 
-**Triggers:** `frontend`, `React`, `Next.js`, `component`, `UI implementation`, `build the UI`, `frontend architecture`, `talk to Haitham`, `client-side`, `CSS`, `Tailwind`, `design system implementation`
+**Source:** [`rcode/skills/agents/rcode-deviation-analyzer/SKILL.md`](../rcode/skills/agents/rcode-deviation-analyzer/SKILL.md) — 80 lines
 
-**Source:** [`rcode/skills/agents/haitham-frontend/SKILL.md`](../rcode/skills/agents/haitham-frontend/SKILL.md) — 135 lines
+### `rcode-fatima-qa`
 
-### `rcode-agent-hanzla`
+**Source:** [`rcode/skills/agents/fatima-qa/SKILL.md`](../rcode/skills/agents/fatima-qa/SKILL.md) — 159 lines
 
-**Triggers:** `implement this`, `write the code`, `build this feature`, `code review`, `fix this bug`, `refactor`, `talk to Hanzla`, `engineer this`, `full-stack`, `pair program`, `code this`, `debug this`
+### `rcode-haitham-frontend`
 
-**Source:** [`rcode/skills/agents/hanzla-engineer/SKILL.md`](../rcode/skills/agents/hanzla-engineer/SKILL.md) — 145 lines
+**Source:** [`rcode/skills/agents/haitham-frontend/SKILL.md`](../rcode/skills/agents/haitham-frontend/SKILL.md) — 152 lines
 
-### `rcode-agent-hussain-pm`
+### `rcode-hanzla-engineer`
 
-**Triggers:** `product manager`, `user stories`, `sprint planning`, `backlog`, `roadmap`, `PRD`, `product requirements`, `talk to Hussain`, `PM review`, `acceptance criteria`, `story points`, `prioritize the backlog`
+**Source:** [`rcode/skills/agents/hanzla-engineer/SKILL.md`](../rcode/skills/agents/hanzla-engineer/SKILL.md) — 160 lines
 
-**Source:** [`rcode/skills/agents/hussain-pm/SKILL.md`](../rcode/skills/agents/hussain-pm/SKILL.md) — 150 lines
+### `rcode-hussain-pm`
 
-### `rcode-agent-hussain-sm`
+**Source:** [`rcode/skills/agents/hussain-pm/SKILL.md`](../rcode/skills/agents/hussain-pm/SKILL.md) — 168 lines
 
-**Triggers:** `scrum master`, `retrospective`, `standup`, `sprint review`, `remove blockers`, `velocity`, `burndown`, `team health`, `talk to the SM`, `facilitate`, `agile`, `scrum ceremony`
+### `rcode-hussain-sm`
 
-**Source:** [`rcode/skills/agents/hussain-sm/SKILL.md`](../rcode/skills/agents/hussain-sm/SKILL.md) — 126 lines
+**Source:** [`rcode/skills/agents/hussain-sm/SKILL.md`](../rcode/skills/agents/hussain-sm/SKILL.md) — 142 lines
 
-### `rcode-agent-layla`
+### `rcode-i18n-auditor`
 
-**Triggers:** `design review`, `UX review`, `UI design`, `wireframe`, `mockup`, `user experience`, `accessibility review`, `design feedback`, `talk to Layla`, `design system`, `component design`, `user flow`
+**Source:** [`rcode/skills/agents/rcode-i18n-auditor/SKILL.md`](../rcode/skills/agents/rcode-i18n-auditor/SKILL.md) — 154 lines
 
-**Source:** [`rcode/skills/agents/layla-designer/SKILL.md`](../rcode/skills/agents/layla-designer/SKILL.md) — 111 lines
+### `rcode-layla-designer`
 
-### `rcode-agent-majlis`
+**Source:** [`rcode/skills/agents/layla-designer/SKILL.md`](../rcode/skills/agents/layla-designer/SKILL.md) — 126 lines
 
-**Triggers:** `council`, `get team input`, `team decision`, `multi-stakeholder`, `cross-functional review`, `all hands`, `talk to the team`, `council session`, `team alignment`, `strategic alignment`, `get consensus`, `bring in the team`
+### `rcode-majlis-council`
 
-**Source:** [`rcode/skills/agents/majlis-council/SKILL.md`](../rcode/skills/agents/majlis-council/SKILL.md) — 99 lines
+**Source:** [`rcode/skills/agents/majlis-council/SKILL.md`](../rcode/skills/agents/majlis-council/SKILL.md) — 117 lines
 
-### `rcode-agent-mariam`
+### `rcode-mariam-marketing`
 
-**Triggers:** `marketing`, `go-to-market`, `GTM`, `content strategy`, `launch plan`, `positioning`, `brand messaging`, `talk to Mariam`, `marketing strategy`, `target audience`, `copywriting`, `social media strategy`
+**Source:** [`rcode/skills/agents/mariam-marketing/SKILL.md`](../rcode/skills/agents/mariam-marketing/SKILL.md) — 190 lines
 
-**Source:** [`rcode/skills/agents/mariam-marketing/SKILL.md`](../rcode/skills/agents/mariam-marketing/SKILL.md) — 167 lines
+### `rcode-nasser-eng-manager`
 
-### `rcode-agent-nasser`
+**Source:** [`rcode/skills/agents/nasser-eng-manager/SKILL.md`](../rcode/skills/agents/nasser-eng-manager/SKILL.md) — 163 lines
 
-**Triggers:** `engineering manager`, `team structure`, `hiring`, `onboarding`, `engineering process`, `team velocity`, `talk to Nasser`, `EM review`, `people management`, `technical leadership`, `team scaling`, `performance review`
+### `rcode-noor-writer`
 
-**Source:** [`rcode/skills/agents/nasser-eng-manager/SKILL.md`](../rcode/skills/agents/nasser-eng-manager/SKILL.md) — 139 lines
+**Source:** [`rcode/skills/agents/noor-writer/SKILL.md`](../rcode/skills/agents/noor-writer/SKILL.md) — 135 lines
 
-### `rcode-agent-noor`
+### `rcode-observability-auditor`
 
-**Triggers:** `write documentation`, `docs`, `README`, `technical writing`, `content`, `write a blog post`, `API documentation`, `changelog`, `talk to Noor`, `document this`, `write a guide`, `write release notes`
+**Source:** [`rcode/skills/agents/rcode-observability-auditor/SKILL.md`](../rcode/skills/agents/rcode-observability-auditor/SKILL.md) — 158 lines
 
-**Source:** [`rcode/skills/agents/noor-writer/SKILL.md`](../rcode/skills/agents/noor-writer/SKILL.md) — 118 lines
+### `rcode-raees-orchestrator`
 
-### `rcode-agent-raees`
+**Source:** [`rcode/skills/agents/raees-orchestrator/SKILL.md`](../rcode/skills/agents/raees-orchestrator/SKILL.md) — 123 lines
 
-**Triggers:** `orchestrate`, `coordinate agents`, `run workflow`, `multi-agent`, `agent pipeline`, `parallel tasks`, `talk to Raees`, `run this workflow`, `coordinate this`, `spawn agents`, `orchestrate this task`
+### `rcode-sadiq-analyst`
 
-**Source:** [`rcode/skills/agents/raees-orchestrator/SKILL.md`](../rcode/skills/agents/raees-orchestrator/SKILL.md) — 106 lines
+**Source:** [`rcode/skills/agents/sadiq-analyst/SKILL.md`](../rcode/skills/agents/sadiq-analyst/SKILL.md) — 165 lines
 
-### `rcode-agent-sadiq`
+### `rcode-waleed-architect`
 
-**Triggers:** `market research`, `competitive analysis`, `SWOT`, `analyze the market`, `brainstorm`, `product brief`, `business strategy`, `what should we build next`, `prioritize these ideas`, `RICE framework`, `opportunity analysis`, `document this project`
+**Source:** [`rcode/skills/agents/waleed-architect/SKILL.md`](../rcode/skills/agents/waleed-architect/SKILL.md) — 156 lines
 
-**Source:** [`rcode/skills/agents/sadiq-analyst/SKILL.md`](../rcode/skills/agents/sadiq-analyst/SKILL.md) — 151 lines
+### `rcode-yousef-backend`
 
-### `rcode-agent-waleed`
+**Source:** [`rcode/skills/agents/yousef-backend/SKILL.md`](../rcode/skills/agents/yousef-backend/SKILL.md) — 165 lines
 
-**Triggers:** `design the architecture`, `what stack should I use`, `pick the tech stack`, `architectural review`, `system design`, `scalability plan`, `write an ADR`, `architecture decision record`, `review this architecture`, `technical decision`, `database choice`, `should I use X or Y`
+### `rcode-zahra-branding`
 
-**Source:** [`rcode/skills/agents/waleed-architect/SKILL.md`](../rcode/skills/agents/waleed-architect/SKILL.md) — 142 lines
+**Source:** [`rcode/skills/agents/zahra-branding/SKILL.md`](../rcode/skills/agents/zahra-branding/SKILL.md) — 180 lines
 
-### `rcode-agent-yousef`
+### `rcode-zayd-ml`
 
-**Triggers:** `backend`, `API design`, `database`, `server-side`, `Node.js backend`, `Python backend`, `REST API`, `GraphQL`, `talk to Yousef`, `build the backend`, `write the API`, `backend architecture`
-
-**Source:** [`rcode/skills/agents/yousef-backend/SKILL.md`](../rcode/skills/agents/yousef-backend/SKILL.md) — 152 lines
-
-### `rcode-agent-zahra`
-
-**Triggers:** `branding`, `brand identity`, `logo`, `visual identity`, `brand guidelines`, `brand strategy`, `brand voice`, `talk to Zahra`, `brand review`, `color palette`, `typography`, `brand assets`
-
-**Source:** [`rcode/skills/agents/zahra-branding/SKILL.md`](../rcode/skills/agents/zahra-branding/SKILL.md) — 156 lines
-
-### `rcode-agent-zayd`
-
-**Triggers:** `machine learning`, `ML model`, `AI`, `LLM`, `prompt engineering`, `fine-tuning`, `RAG`, `embeddings`, `talk to Zayd`, `train a model`, `ML pipeline`, `AI feature`
-
-**Source:** [`rcode/skills/agents/zayd-ml/SKILL.md`](../rcode/skills/agents/zayd-ml/SKILL.md) — 141 lines
+**Source:** [`rcode/skills/agents/zayd-ml/SKILL.md`](../rcode/skills/agents/zayd-ml/SKILL.md) — 156 lines
 
 ---
 
-## Core (25)
+## Core (26)
 
 ### `rcode-advanced-elicitation`
 
-Push the LLM to reconsider, refine, and improve its recent output through structured methods like socratic questioning, first principles, pre-mortem, and red-teaming. Use when the user asks for deeper critique, says "push harder on this", "go deeper", "challenge this", "stress-test this section", or names a specific elicitation method. For prose editing use rcode-editorial-review-prose; for structural review use rcode-editorial-review-structure.
+Push the LLM to reconsider, refine, and improve its recent output through structured methods like.
 
 **Triggers:** `advanced elicitation`, `push deeper`, `go deeper`, `challenge this`, `stress-test this`, `pre-mortem`, `red team this`, `first principles`
 
-**Source:** [`rcode/skills/core/rcode-advanced-elicitation/SKILL.md`](../rcode/skills/core/rcode-advanced-elicitation/SKILL.md) — 68 lines
+**Source:** [`rcode/skills/core/rcode-advanced-elicitation/SKILL.md`](../rcode/skills/core/rcode-advanced-elicitation/SKILL.md) — 70 lines
 
 ### `rcode-auth-audit`
 
-Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres. Use when seeing authentication weirdness — users disappearing, tokens accepted post-deactivation, "phantom" sessions, or tenant data leaking across orgs. Specifically encodes the lessons from the rcode Keycloak data-loss incident — sync drift between Keycloak and AD silently broke logins.
+Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres.
 
 **Triggers:** `auth audit`, `keycloak ad sync`, `users disappearing`, `ghost session`, `tenant leak`, `jwt validation check`, `stale token`, `session not invalidating`
 
-**Source:** [`rcode/skills/core/rcode-auth-audit/SKILL.md`](../rcode/skills/core/rcode-auth-audit/SKILL.md) — 94 lines
+**Source:** [`rcode/skills/core/rcode-auth-audit/SKILL.md`](../rcode/skills/core/rcode-auth-audit/SKILL.md) — 96 lines
 
 ### `rcode-brainstorming`
 
-**Triggers:** `brainstorm`, `help me brainstorm`, `help me ideate`, `ideation session`, `creative`
-
-**Source:** [`rcode/skills/core/rcode-brainstorming/SKILL.md`](../rcode/skills/core/rcode-brainstorming/SKILL.md) — 99 lines
+**Source:** [`rcode/skills/core/rcode-brainstorming/SKILL.md`](../rcode/skills/core/rcode-brainstorming/SKILL.md) — 117 lines
 
 ### `rcode-client-gate`
 
-Client requirement freeze gates and async-comm patterns to stop late requirements from derailing delivery. Use when a project keeps slipping because the client adds requirements mid-sprint, or when the client takes a week to respond to a blocking question. Specifically encodes rcode's "client late requirements caused project delays" pain — the fix isn't to "communicate better", it's structural gates that the project actually enforces.
+Client requirement freeze gates and async-comm patterns to stop late requirements from derailing.
 
 **Triggers:** `client gate`, `freeze requirements`, `scope creep`, `client slow response`, `requirements freeze`, `client comm pattern`, `stop late requirements`, `delivery slipping`
 
-**Source:** [`rcode/skills/core/rcode-client-gate/SKILL.md`](../rcode/skills/core/rcode-client-gate/SKILL.md) — 92 lines
+**Source:** [`rcode/skills/core/rcode-client-gate/SKILL.md`](../rcode/skills/core/rcode-client-gate/SKILL.md) — 94 lines
 
 ### `rcode-clone-website`
 
-**Triggers:** `clone this website`, `clone this site`, `rebuild this page`, `replicate this UI`, `pixel-perfect clone`, `make exact UI like this`, `copy this site`, `reverse engineer this site`, `build me a clone of`, `aisi website banao`, `yeh site clone karo`, `exact same UI chahiye like [URL]`
-
-**Source:** [`rcode/skills/core/rcode-clone-website/SKILL.md`](../rcode/skills/core/rcode-clone-website/SKILL.md) — 76 lines
+**Source:** [`rcode/skills/core/rcode-clone-website/SKILL.md`](../rcode/skills/core/rcode-clone-website/SKILL.md) — 88 lines
 
 ### `rcode-deploy-unify`
 
-Detect and unify multiple deployment paths in a single project. Use when a repo has accumulated overlapping deploy mechanisms (Docker Compose + Helm + manual scripts + Vercel + Jenkins) and "which one runs in production" is unclear. Specifically encodes the Siraaj deployment chaos lesson — multiple deploy paths cost a week of debugging and broke Keycloak more than once.
+Detect and unify multiple deployment paths in a single project.
 
 **Triggers:** `deploy unify`, `multiple deploy paths`, `which deploy is production`, `deploy chaos`, `consolidate deployments`, `kubernetes vs compose`, `single deploy path`, `deployment audit`
 
-**Source:** [`rcode/skills/core/rcode-deploy-unify/SKILL.md`](../rcode/skills/core/rcode-deploy-unify/SKILL.md) — 88 lines
+**Source:** [`rcode/skills/core/rcode-deploy-unify/SKILL.md`](../rcode/skills/core/rcode-deploy-unify/SKILL.md) — 90 lines
 
 ### `rcode-distillator`
 
-Lossless LLM-optimized compression of source documents. Use when the user requests to "distill documents" or "create a distillate". Distillates preserve every fact, decision, constraint, and relationship while stripping prose overhead — designed as drop-in LLM context. Not summarisation (summaries are lossy). For Memory Bank distillates specifically, use rcode-memory-distill.
+Lossless LLM-optimized compression of source documents.
 
 **Triggers:** `distillator`, `distill documents`, `create a distillate`, `compress these docs`
 
-**Source:** [`rcode/skills/core/rcode-distillator/SKILL.md`](../rcode/skills/core/rcode-distillator/SKILL.md) — 64 lines
+**Source:** [`rcode/skills/core/rcode-distillator/SKILL.md`](../rcode/skills/core/rcode-distillator/SKILL.md) — 66 lines
 
 ### `rcode-editorial-review-prose`
 
-Clinical copy-editor that reviews text for communication issues. Use when user says review for prose or improve the prose
+Clinical copy-editor that reviews text for communication issues.
 
 **Triggers:** `editorial review prose`
 
-**Source:** [`rcode/skills/core/rcode-editorial-review-prose/SKILL.md`](../rcode/skills/core/rcode-editorial-review-prose/SKILL.md) — 121 lines
+**Source:** [`rcode/skills/core/rcode-editorial-review-prose/SKILL.md`](../rcode/skills/core/rcode-editorial-review-prose/SKILL.md) — 128 lines
 
 ### `rcode-editorial-review-structure`
 
-Structural editor that proposes cuts, reorganization, and consolidation while preserving comprehension. Use when the user requests structural review, "review the structure of this doc", or "tighten this document". Run before copy editing. For prose-level fixes (typos, grammar, word choice) use rcode-editorial-review-prose instead.
+Structural editor that proposes cuts, reorganization, and consolidation while preserving.
 
 **Triggers:** `editorial review structure`, `structural review`, `tighten this doc`, `review document structure`, `cut this doc down`
 
-**Source:** [`rcode/skills/core/rcode-editorial-review-structure/SKILL.md`](../rcode/skills/core/rcode-editorial-review-structure/SKILL.md) — 74 lines
+**Source:** [`rcode/skills/core/rcode-editorial-review-structure/SKILL.md`](../rcode/skills/core/rcode-editorial-review-structure/SKILL.md) — 76 lines
 
 ### `rcode-help`
 
-Analyzes current state and user query to answer rcode questions or recommend the next skill(s) to use. Use when user asks for help, rcode help, what to do next, or what to start with in rcode.
+Answers rcode questions and recommends the next skill to run, based on current project state.
 
-**Triggers:** `help`
-
-**Source:** [`rcode/skills/core/rcode-help/SKILL.md`](../rcode/skills/core/rcode-help/SKILL.md) — 104 lines
+**Source:** [`rcode/skills/core/rcode-help/SKILL.md`](../rcode/skills/core/rcode-help/SKILL.md) — 128 lines
 
 ### `rcode-incident-record`
 
-Generate a change record + post-mortem in one flow. Use after resolving any production incident, deploying any non-trivial change, or making any decision that future-you will need to retrace. Implements the verified rcode change-record format from `template/docs/change_records/`. Pairs with rcode-debug — once the bug is rooted-out, this skill writes the record.
+Generate a change record + post-mortem in one flow.
 
 **Triggers:** `incident record`, `post mortem`, `change record`, `document this incident`, `write a postmortem`, `record this change`, `rca write up`, `incident summary`
 
-**Source:** [`rcode/skills/core/rcode-incident-record/SKILL.md`](../rcode/skills/core/rcode-incident-record/SKILL.md) — 162 lines
+**Source:** [`rcode/skills/core/rcode-incident-record/SKILL.md`](../rcode/skills/core/rcode-incident-record/SKILL.md) — 164 lines
 
 ### `rcode-index-docs`
 
-Generates or updates an index.md to reference all docs in the folder. Use if user requests to create or update an index of all files in a specific folder
+Generates or updates an index.md to reference all docs in the folder.
 
 **Triggers:** `index docs`
 
-**Source:** [`rcode/skills/core/rcode-index-docs/SKILL.md`](../rcode/skills/core/rcode-index-docs/SKILL.md) — 99 lines
+**Source:** [`rcode/skills/core/rcode-index-docs/SKILL.md`](../rcode/skills/core/rcode-index-docs/SKILL.md) — 106 lines
 
 ### `rcode-init`
 
-INTERNAL config loader — called by other skills, not by users directly. Loads module config vars from .rcode/. Install puts this in .rcode/skills/, not .claude/skills/.
+INTERNAL config loader for skills. Loads .rcode/ vars; lives in .rcode/skills/ not .claude/skills/.
 
 **Triggers:** `init`
 
-**Source:** [`rcode/skills/core/rcode-init/SKILL.md`](../rcode/skills/core/rcode-init/SKILL.md) — 128 lines
+**Source:** [`rcode/skills/core/rcode-init/SKILL.md`](../rcode/skills/core/rcode-init/SKILL.md) — 135 lines
+
+### `rcode-lazy`
+
+**Triggers:** `lazy mode`, `be lazy`, `simplest solution`, `yagni`, `do less`, `kam code likho`
+
+**Source:** [`rcode/skills/core/rcode-lazy/SKILL.md`](../rcode/skills/core/rcode-lazy/SKILL.md) — 150 lines
 
 ### `rcode-memory-audit`
 
-**Triggers:** `audit memory bank`, `check memory bank`, `find stale entries`, `is my memory bank healthy`, `memory bank ka audit`, `/rcode-memory-audit`
-
-**Source:** [`rcode/skills/core/rcode-memory-audit/SKILL.md`](../rcode/skills/core/rcode-memory-audit/SKILL.md) — 89 lines
+**Source:** [`rcode/skills/core/rcode-memory-audit/SKILL.md`](../rcode/skills/core/rcode-memory-audit/SKILL.md) — 108 lines
 
 ### `rcode-memory-distill`
 
 **Triggers:** `distill memory bank`, `regenerate distillates`, `refresh distillates`, `compress memory bank`, `memory bank ko compress karo`, `/rcode-memory-distill`
 
-**Source:** [`rcode/skills/core/rcode-memory-distill/SKILL.md`](../rcode/skills/core/rcode-memory-distill/SKILL.md) — 88 lines
+**Source:** [`rcode/skills/core/rcode-memory-distill/SKILL.md`](../rcode/skills/core/rcode-memory-distill/SKILL.md) — 90 lines
 
 ### `rcode-memory-init`
 
-**Triggers:** `init memory bank`, `bootstrap memory`, `set up memory bank`, `create memory bank`, `memory bank initialise`, `memory bank kaise banayen`, `/rcode-memory-init`
-
-**Source:** [`rcode/skills/core/rcode-memory-init/SKILL.md`](../rcode/skills/core/rcode-memory-init/SKILL.md) — 78 lines
+**Source:** [`rcode/skills/core/rcode-memory-init/SKILL.md`](../rcode/skills/core/rcode-memory-init/SKILL.md) — 92 lines
 
 ### `rcode-memory-update`
 
-**Triggers:** `remember this decision`, `log this decision`, `add this to memory bank`, `update memory bank`, `save this to memory`, `yeh memory mein add karo`, `/rcode-memory-update`
-
-**Source:** [`rcode/skills/core/rcode-memory-update/SKILL.md`](../rcode/skills/core/rcode-memory-update/SKILL.md) — 74 lines
+**Source:** [`rcode/skills/core/rcode-memory-update/SKILL.md`](../rcode/skills/core/rcode-memory-update/SKILL.md) — 88 lines
 
 ### `rcode-mvp-graduate`
 
-Move an MVP to production-grade infrastructure incrementally. Use when an MVP has shipped, has real users, and "the next round of features" is hitting walls — flaky deploys, no observability, manual ops, hand-rolled auth. Specifically addresses rcode's "MVPs delivered, hard to revamp" pain. Companion to rcode-migrate (the engineering skill); this one is the strategic / sequenced version specifically scoped to MVP→prod.
+Move an MVP to production-grade infrastructure incrementally.
 
 **Triggers:** `graduate this mvp`, `mvp to prod plan`, `real users now`, `scale beyond demo`, `post-mvp infrastructure`, `revamp mvp`, `hardening pass`, `ready for production`
 
-**Source:** [`rcode/skills/core/rcode-mvp-graduate/SKILL.md`](../rcode/skills/core/rcode-mvp-graduate/SKILL.md) — 117 lines
+**Source:** [`rcode/skills/core/rcode-mvp-graduate/SKILL.md`](../rcode/skills/core/rcode-mvp-graduate/SKILL.md) — 119 lines
 
 ### `rcode-ocr-consistency`
 
-OCR pipeline determinism + ground-truth validation. Use when running an OCR pipeline (text extraction from PDFs, scanned documents, government forms) and seeing inconsistent output across runs, language-routing mistakes, or accuracy regressions. Specifically encodes rcode's OCR pain — Arabic/English routing failures, Triton inconsistencies, missing ground-truth checks.
+OCR pipeline determinism + ground-truth validation.
 
 **Triggers:** `ocr inconsistency`, `ocr pipeline`, `text extraction`, `pdf ocr`, `siglip routing`, `triton ocr`, `ground truth`, `ocr accuracy regression`
 
-**Source:** [`rcode/skills/core/rcode-ocr-consistency/SKILL.md`](../rcode/skills/core/rcode-ocr-consistency/SKILL.md) — 107 lines
+**Source:** [`rcode/skills/core/rcode-ocr-consistency/SKILL.md`](../rcode/skills/core/rcode-ocr-consistency/SKILL.md) — 109 lines
 
 ### `rcode-party-mode`
 
 **Triggers:** `party mode`, `activate party mode`, `start party mode`, `group discussion`, `team discussion`, `talk to everyone`, `bring all agents`, `multi-agent chat`, `let's have a party`
 
-**Source:** [`rcode/skills/core/rcode-party-mode/SKILL.md`](../rcode/skills/core/rcode-party-mode/SKILL.md) — 92 lines
+**Source:** [`rcode/skills/core/rcode-party-mode/SKILL.md`](../rcode/skills/core/rcode-party-mode/SKILL.md) — 99 lines
 
 ### `rcode-rebrand`
 
-Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names. Use when a project's brand changes mid-flight and the rename has to ripple through dozens of files without breaking anything. Specifically encodes the rcode "had to do complete rebranding" pain — the rename touched 100+ files and broke 3 deploys before we got it right.
+Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names.
 
 **Triggers:** `rebrand`, `stack-wide rename`, `product rename`, `rename project`, `brand migration`, `logo refresh`, `domain change`, `company name change`
 
-**Source:** [`rcode/skills/core/rcode-rebrand/SKILL.md`](../rcode/skills/core/rcode-rebrand/SKILL.md) — 134 lines
+**Source:** [`rcode/skills/core/rcode-rebrand/SKILL.md`](../rcode/skills/core/rcode-rebrand/SKILL.md) — 136 lines
 
 ### `rcode-review-adversarial-general`
 
-Perform a Cynical Review and produce a findings report. Use when the user requests a critical review of something
+Perform a Cynical Review and produce a findings report.
 
 **Triggers:** `review adversarial general`
 
-**Source:** [`rcode/skills/core/rcode-review-adversarial-general/SKILL.md`](../rcode/skills/core/rcode-review-adversarial-general/SKILL.md) — 68 lines
+**Source:** [`rcode/skills/core/rcode-review-adversarial-general/SKILL.md`](../rcode/skills/core/rcode-review-adversarial-general/SKILL.md) — 75 lines
 
 ### `rcode-review-edge-case-hunter`
 
-Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.
+Walk every branching path and boundary condition in content, report only unhandled edge cases.
 
-**Triggers:** `review edge case hunter`
-
-**Source:** [`rcode/skills/core/rcode-review-edge-case-hunter/SKILL.md`](../rcode/skills/core/rcode-review-edge-case-hunter/SKILL.md) — 100 lines
+**Source:** [`rcode/skills/core/rcode-review-edge-case-hunter/SKILL.md`](../rcode/skills/core/rcode-review-edge-case-hunter/SKILL.md) — 123 lines
 
 ### `rcode-shard-doc`
 
-Splits large markdown documents into smaller, organized files based on level 2 (default) sections. Use if the user says perform shard document
+Splits large markdown documents into smaller, organized files based on level 2 (default) sections.
 
 **Triggers:** `shard doc`
 
-**Source:** [`rcode/skills/core/rcode-shard-doc/SKILL.md`](../rcode/skills/core/rcode-shard-doc/SKILL.md) — 138 lines
+**Source:** [`rcode/skills/core/rcode-shard-doc/SKILL.md`](../rcode/skills/core/rcode-shard-doc/SKILL.md) — 158 lines
 
 ### `rcode-theme-system`
 
-Audit a frontend's design tokens BEFORE launch. Catches inconsistent colours, scattered hex values, hardcoded spacing, font drift, and missing dark/RTL mode support. Specifically encodes rcode's "had to do complete rebranding mid-project" pain — themes accumulated drift until a full pass was the only fix. Pairs with rcode-rebrand if a rebrand becomes unavoidable.
+Audit a frontend's design tokens BEFORE launch.
 
 **Triggers:** `theme audit`, `design tokens`, `scattered colours`, `hardcoded hex`, `design system audit`, `before launch design check`, `consistent theme`, `css variable audit`
 
-**Source:** [`rcode/skills/core/rcode-theme-system/SKILL.md`](../rcode/skills/core/rcode-theme-system/SKILL.md) — 114 lines
+**Source:** [`rcode/skills/core/rcode-theme-system/SKILL.md`](../rcode/skills/core/rcode-theme-system/SKILL.md) — 116 lines
