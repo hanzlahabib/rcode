@@ -49,7 +49,7 @@ const HARDCODED_DEFAULTS = {
 
   // Paths
   output_folder: '.rcode',
-  planning_artifacts: '.rcode/phases',
+  planning_artifacts: '.planning/phases',
   project_knowledge: '.rcode/context',
 
   // Model profile — matches model-profiles.json names
