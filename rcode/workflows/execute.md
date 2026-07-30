@@ -978,7 +978,7 @@ For 1M+ context models, consider:
 </context_efficiency>
 
 <failure_handling>
-- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not rcode. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
+- See the classifyHandoffIfNeeded workaround in execute-waves.md (already @-included above).
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → user chooses attempt or skip
 - **All agents in wave fail:** Systemic issue → stop, report for investigation

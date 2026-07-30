@@ -351,7 +351,6 @@ Fix issues inline. No sub-agent needed — this is a quick self-check before the
 Task(
   prompt=filled_prompt,
   subagent_type="rcode-planner",
-  model="{model}",
   model="{planner_model}",
   description="Plan Phase {phase}"
 )
