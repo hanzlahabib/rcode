@@ -6,11 +6,11 @@ authoritative path for this — this project's own history confirms it: 54/54
 real *-SPRINT.md files under .planning/phases/ were produced by this in-line
 flow, none by the rcode-sprint-planning skill.
 
-The `rcode-sprint-planning` skill (`.rcode/skills/rcode-sprint-planning/`)
-is a SEPARATE tool: it generates `sprint-status.yaml` from `.planning/epics/`
-files (epic/story status tracking: backlog -> ready-for-dev -> in-progress ->
-review -> done), not a SPRINT.md. Do not delegate to it expecting a SPRINT.md
-output.
+The `rcode-sprint-planning` skill (`.rcode/skills/rcode-sprint-planning/SKILL.md`,
+workflow at `.rcode/skills/rcode-sprint-planning/workflow.md`) is a SEPARATE tool:
+it generates `sprint-status.yaml` from `.planning/epics/` files (epic/story status
+tracking: backlog -> ready-for-dev -> in-progress -> review -> done), not a
+SPRINT.md. Do not delegate to it expecting a SPRINT.md output.
 </purpose>
 
 <required_reading>
