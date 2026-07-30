@@ -866,8 +866,9 @@ Display banner:
 Plans ready. Launching execute-phase...
 ```
 
-Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
+Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting). Skill() keeps execute.md running in this same context — set `AUTO_CHAINED_FROM_PLAN=true` so execute.md's required_reading doesn't re-read files this context already loaded (see AUDIT-workflow-complexity.md finding 3):
 ```
+AUTO_CHAINED_FROM_PLAN=true
 Skill(skill="rcode-execute", args="${PHASE} --auto --no-transition ${RCODE_WS}")
 ```
 

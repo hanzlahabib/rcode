@@ -178,12 +178,13 @@ via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
-@.rcode/references/auto-init-guard.md
-@.rcode/references/output-format.md
+<!-- If chained from plan.md's --auto (Skill(), same context), these 3 are already loaded — see AUDIT-workflow-complexity.md finding 3. -->
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/auto-init-guard.md'}
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/output-format.md'}
 @.rcode/references/git-preflight.md
 Read STATE.md before any operation to load project context.
 
-@.rcode/references/karpathy-guidelines.md
+${AUTO_CHAINED_FROM_PLAN ? '' : '@.rcode/references/karpathy-guidelines.md'}
 @.rcode/references/execution-protocol.md
 <!-- Read .rcode/references/agent-contracts.md only if debugging agent contract violations -->
 <!-- Read .rcode/references/context-budget.md only if context degradation guidance is needed -->
