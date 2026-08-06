@@ -1044,3 +1044,4 @@
 | Date | Type | Task | Status |
 |------|------|------|--------|
 | 2026-08-06 | quick | Correct 3 persona-skill docs oversell dispatch capability (#1004, #1009) | ✓ |
+| 2026-08-06 | fix | #1013 roadmap update-plan-progress silent no-op — fixed cmdUpdatePlanProgress 1-arg form to persist Status/Plans prose | ✓ |
