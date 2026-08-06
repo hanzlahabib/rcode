@@ -288,7 +288,7 @@ FINDINGS[extensibility] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-dep-auditor",
   model="{lens_model}",
   prompt="Audit-only — do NOT install or update packages. {CONTEXT}
   
@@ -419,7 +419,7 @@ FINDINGS[documentation] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-cross-platform-auditor",
   model="{lens_model}",
   prompt="Cross-platform audit — do NOT fix scripts. {CONTEXT}
   
@@ -516,7 +516,7 @@ FINDINGS[sxo] = RESULT
 
 ```
 RESULT = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-observability-auditor",
   model="{lens_model}",
   prompt="Observability audit — do NOT add instrumentation. {CONTEXT}
   

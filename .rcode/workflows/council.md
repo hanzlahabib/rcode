@@ -150,6 +150,7 @@ Parse the JSON for:
 - `flags.explain` — boolean, show panel scoring
 - `panel` — string[], the pre-computed panel (respects `--full` and `--agents`)
 - `scores` — object, per-agent scoring for explain mode
+- `domain` — string, the detected question domain (`fe`/`be`/`ml`/`deploy`/`strategic`/`market`/`general`) — always populated, used for the `Domain:` banner field
 - `question_type` — `"codebase" | "discovery" | "market" | "greenfield"` — drives Step 1 branching
 - `question_signals` — string[], matched phrases that drove the classification
 - `config` — `{ user_name, project_name, language, mode }` from `.rcode/config.yaml`
