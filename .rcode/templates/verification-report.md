@@ -1,9 +1,16 @@
 # Verification Report
 
-**Phase:** {{phase}}
-**Verified:** {{date}}
-**Verifier:** rcode-verifier
-**Outcome:** PASS | FAIL | PARTIAL
+```yaml
+---
+phase: {{phase}}
+verified: {{date}}
+verifier: rcode-verifier
+status: passed | gaps_found | human_needed
+---
+```
+
+`status` is the ONLY key `execute.md`'s `uat_gate` step reads (`grep -qE "^status:[[:space:]]*passed"`). Do not
+substitute `result`, `verdict`, or `outcome` — a wrong key silently strands the phase at `status: executed` forever.
 
 ## Goal Achievement
 
@@ -35,10 +42,14 @@ Anything promised that wasn't delivered. Each gap should become a GitHub issue.
 |-----|----------|---------|
 | | | |
 
-## Verdict
+## Status
 
-**PASS** — Phase goal achieved, all acceptance criteria met.
+**passed** — Phase goal achieved, all acceptance criteria met.
 
 OR
 
-**FAIL** — The following critical items are not met: ...
+**gaps_found** — The following critical items are not met: ...
+
+OR
+
+**human_needed** — All automated checks pass but items need human testing.
