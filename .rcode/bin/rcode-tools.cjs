@@ -381,6 +381,7 @@ function cmdInit(workflowName, rawArgs) {
 
   let panel = [];
   let scores = {};
+  let domain = null;
 
   let agent_id = null;
 
@@ -395,8 +396,12 @@ function cmdInit(workflowName, rawArgs) {
     // Don't pad when user explicitly specified the agent list — their
     // choice is the final word.
     panel = filterPanelToInstalled(ideal, councilAgents, { pad: flags.agents.length === 0 });
+    // #1010 — domain must populate on every council session, not just
+    // --explain, because council.md's <output_format> banner prints
+    // Domain: unconditionally.
+    const explained = scorer.explainSelection(question, opts);
+    domain = explained.domain || null;
     if (flags.explain) {
-      const explained = scorer.explainSelection(question, opts);
       scores = explained.scores || {};
     }
   }
@@ -426,9 +431,14 @@ function cmdInit(workflowName, rawArgs) {
     flags,
     panel,
     scores,
+    domain,
     question_type: questionClassification.type,
     question_signals: questionClassification.signals,
     mode: config.mode || null,
+    // #1010 — response_language was only ever populated for phase-op/
+    // sprint-plan below; council.md documents it as a top-level init field
+    // and gates language pass-through to subagents on it being set.
+    response_language: config.response_language || config.language || null,
     config,
     installed_agents: installedAgents,
     paths: {

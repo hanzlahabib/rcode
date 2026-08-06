@@ -32,7 +32,7 @@ Agreements without new information are silence. If an agent genuinely has nothin
 
 ## Panel selection (deterministic scoring)
 
-rcode's council uses a pure-function keyword scorer (`cli/lib/council-panel.cjs`) instead of LLM judgment. This is intentional:
+rcode's council uses a pure-function keyword scorer (`rcode/bin/lib/council-panel.cjs` source, installed at `.rcode/bin/lib/council-panel.cjs`) instead of LLM judgment. This is intentional:
 
 - **Deterministic:** same question produces same panel every time
 - **Testable:** the scoring function has unit tests
@@ -47,13 +47,18 @@ The scoring table is versioned with the package. Users who want different weight
 - Scope/feature questions (containing "scope", "feature", "roadmap", "prd") always include Hussain-PM.
 - If fewer than the minimum panel size (default 3) score non-zero, the panel is padded with the STRATEGIC_PADDING_ORDER list: sadiq, hussain-pm, waleed, fatima, nasser.
 
-**v2 prototype note:** only Sadiq, Waleed, and Fatima are installed as first-class subagents. The scorer may select agent ids that don't yet have subagent files — the orchestrator must filter to installed agents and fall back to the 3-agent panel.
+**Installed roster:** the full agent roster (currently 45 agents under `rcode/agents/`) is installed as first-class subagents. The scorer may still select an agent id that isn't present in a given project's installed set — the orchestrator filters the scored panel down to `installed_agents` from `init council` and pads from the fallback order if needed.
 
 ## Response presentation
 
-Subagent responses are presented **verbatim and in panel order**. The orchestrator never summarizes, paraphrases, or condenses agent output. The user came to the council to hear the agents speak in their own voices — summary defeats the point.
+Two presentation modes control how panel responses appear inline. The session artifact (see below) always stores the full verbatim text regardless of mode — only the inline presentation differs:
 
-After all verbatim responses, the orchestrator may add a single **Orchestrator Note** (max 3 sentences) that flags a disagreement worth following up on or recommends a second round. The Orchestrator Note is clearly labeled so it's not confused with agent speech.
+- **Default (compact summary)** — scannable in ~20 seconds: a one-sentence paraphrased position per agent, a convergence/divergence table, and Round 2 deltas. No verbatim transcripts inline.
+- **Verbose** (`--verbose` flag or `output.verbose: true` in config) — full verbatim responses printed in panel order, no summarization.
+
+The user came to the council to hear the agents' actual positions, not filler agreement — so even in compact mode, paraphrase the substance, not "I agree with X."
+
+After the panel output, the orchestrator may add a single **Orchestrator Note** (max 2-3 sentences) that flags a disagreement worth following up on or recommends a second round. The Orchestrator Note is clearly labeled so it's not confused with agent speech.
 
 ## Session artifact format
 

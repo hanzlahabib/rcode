@@ -60,7 +60,7 @@ Procedure:
    Reason: bulk-detection threshold ({matched signal}) — auto-route avoids
            refusing and forcing you to re-paste the list.
    ```
-4. Dispatch `/rcode-add-phase {phase-slug}` and pass `$TASK` verbatim. The add-phase workflow uses the pre-extracted task list as the phase task list — no user re-entry needed.
+4. **Dispatch by calling the `Skill` tool — do NOT just print the banner as text.** The banner above is a *display*, not the dispatch itself. You must call `Skill(skill: "rcode-add-phase", args: "{phase-slug} " + $TASK)` (passing `$TASK` verbatim as the pre-extracted task list) immediately after printing the banner. Printing `/rcode-add-phase {phase-slug}` in a code block or banner without invoking the Skill tool is NOT dispatch — the routed command will never run and the workflow will stall (same failure mode documented in `do.md`'s dispatch step).
 5. STOP this workflow — add-phase takes over from here.
 
 If the bulk detection does NOT match, continue to scope_check.
