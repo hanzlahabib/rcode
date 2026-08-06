@@ -3,6 +3,76 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.8.0 (2026-08-06) — Named engineer personas now actually execute, instead of being decorative
+
+Found by an 8-agent herdr audit checking why `/rcode-execute` never seemed to
+engage the named team (Hanzla/Yousef/Haitham/Omar) — turned out real phase
+execution always dispatched to one generic executor, the persona skills were
+inline roleplay dressed up to look like real subagent spawns, and their
+Task-dispatchable twins couldn't write files even if invoked. 13 issues
+filed (#1003-#1013), all fixed this release.
+
+### Features
+- **`/rcode-execute` now routes each plan to the matching named engineer**
+  instead of always using the generic `rcode-executor`. `execute-waves.md`
+  classifies a plan by its `files_modified` globs (falling back to objective
+  keywords) into frontend/backend/full-stack/other and dispatches to
+  `rcode-haitham`/`rcode-yousef`/`rcode-hanzla` accordingly, falling back to
+  `rcode-executor` only when the classification is ambiguous or the plan is
+  docs/config-only (#1003).
+
+### Fixes
+- **`rcode-hanzla`/`yousef`/`haitham`/`omar` couldn't write files.** Their
+  descriptions claimed "code implementation" and "hands-on development" but
+  `tools:` granted neither `Write` nor `Edit`. Also fixed the same gap on
+  `rcode-nyquist-auditor`, `rcode-hussain-pm`, and `rcode-waleed`, and
+  trimmed an unused `Edit` grant from `rcode-remediation-planner` (#1004,
+  #1006).
+- **Persona skills read as if they spawn a real isolated subagent** when
+  invoking them (e.g. "talk to Hanzla") actually loads persona instructions
+  inline into the current session — no isolation, no `Task()` call.
+  `hanzla-engineer`/`yousef-backend`/`haitham-frontend` now say so plainly,
+  matching the precedent already set for `majlis-council` (#1004, #1009).
+- **`raees-orchestrator` narrated dispatching other agents** ("Layla invoked
+  first", "Dispatching Haitham directly") while its own capability table
+  marked every dispatch mechanism unimplemented, and no real dispatchable
+  agent exists for it at all. Rewritten to describe its output as a dispatch
+  *plan*, not an action (#1009).
+- **`hussain-sm`'s retrospective capability was labeled "Multi-agent review"**
+  but is single-session roleplay with no real `Task`-dispatchable twin —
+  relabeled (#1009).
+- **`/rcode-dev-story`'s only next-step pointed at `/rcode` (no hyphen), a
+  command that doesn't exist** anywhere in this project's hyphenated
+  `/rcode-*` namespace (#1005).
+- **`/rcode-do`'s persona shortcut (`@hanzla DS`) printed a banner reserved
+  for real `Task(subagent_type=...)` spawns** while the router's own
+  guardrails forbid ever calling `Task()` — and those same guardrails
+  ("Nothing else. Period.") contradicted the router's own preceding steps,
+  which use `Bash`/`Read` throughout (#1007).
+- **3 of `lens-audit.md`'s 16 lenses were never actually dispatched** despite
+  the workflow's own header claiming every lens delegates via `Task()` —
+  `rcode-dep-auditor`, `rcode-cross-platform-auditor`, and
+  `rcode-observability-auditor` now are (#1008).
+- **`/rcode-council` never populated `response_language` or the mandatory
+  "Domain:" banner** outside `--explain`, and its required-reading file had
+  a path to a nonexistent script plus a stale "3 agents installed" claim
+  (actual: 45) (#1010).
+- **`execute.md`'s code-review gate spawned a non-existent
+  `rcode-code-reviewer` agent type** (the real one is `rcode-reviewer`) —
+  same rename applied everywhere else the wrong name appeared
+  (`code-review.md`, `code-review-fix.md`, `lens-audit.md`) (#1011).
+- **`rcode-verifier` could emit `result: PASS` instead of the required
+  `status: passed`**, which `execute.md`'s UAT gate greps for explicitly —
+  pinned the `VERIFICATION.md` template's schema so this can't drift again
+  (#1012).
+- **`roadmap update-plan-progress` reported success but left ROADMAP.md's
+  prose text stale** ("Planned" / `_TBD_`) after a phase actually completed,
+  even returning `updated: false` while claiming the right computed status.
+  Fixed the root cause in `roadmap.cjs`; added 5 regression tests (#1013).
+
+Tests: 596/598 passing (2 pre-existing unrelated eval-drift failures, unchanged from before this release).
+
+---
 ## v4.7.3 (2026-07-29) — Dashboard task titles and acceptance criteria were unreadable
 
 ### Fixes
