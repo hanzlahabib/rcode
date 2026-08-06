@@ -193,7 +193,7 @@ FINDINGS[security] = merge(PRIMARY, SECONDARY)
 
 ```
 RESULT = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-reviewer",
   model="{lens_model}",
   prompt="Audit-only — do NOT optimize anything. {CONTEXT}
   
@@ -443,7 +443,7 @@ FINDINGS[cross-platform] = RESULT
 
 ```
 PRIMARY = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-reviewer",
   model="{lens_model}",
   prompt="Karpathy 4-principle audit — do NOT fix code. {CONTEXT}
   
@@ -556,7 +556,7 @@ PRIMARY = Task(
 )
 
 SECONDARY = Task(
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-reviewer",
   model="{lens_model}",
   prompt="Variable naming audit in recent code changes. {CONTEXT}
   

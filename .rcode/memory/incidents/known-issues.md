@@ -96,14 +96,13 @@ Active bugs and workarounds. Searchable so an agent doesn't waste cycles re-debu
 - **First seen:** 2026-04-26
 - **Tracking:** TASKS.md "Phase 5 — Workflow file splits ⏭ skipped"
 
-### `execute.md`'s code_review_gate spawns a non-existent agent type
+### `execute.md`'s code_review_gate spawns a non-existent agent type — FIXED
 
-- **Symptom:** `execute.md`'s `code_review_gate` step spawns `subagent_type="rcode-code-reviewer"`, but the actual registry only has `rcode-reviewer` — the Task/Agent call fails with "Agent type not found" rather than falling back gracefully.
-- **Surface:** `rcode/workflows/execute.md` (code_review_gate step), agent registry (`.claude/agents/`)
-- **Workaround:** spawn `rcode-reviewer` instead when running this gate manually.
-- **Real fix planned for:** out of scope — rename the spawn call to `rcode-reviewer` or register a `rcode-code-reviewer` alias
+- **Symptom:** `execute.md`'s `code_review_gate` step spawned `subagent_type="rcode-code-reviewer"`, but the actual registry only has `rcode-reviewer` — the Task/Agent call failed with "Agent type not found" rather than falling back gracefully.
+- **Surface:** `rcode/workflows/execute.md` (code_review_gate step), plus the same stray `rcode-code-reviewer` string in `code-review.md`, `code-review-fix.md`, and `lens-audit.md` (both `rcode/workflows/` and the mirrored `.rcode/workflows/` install).
+- **Fix:** all `subagent_type="rcode-code-reviewer"` references (and matching prose) renamed to `rcode-reviewer` across both trees.
 - **First seen:** 2026-08-06
-- **Tracking:** discovered during Phase 46 (#1003) execution, not yet filed
+- **Tracking:** #1011
 
 ### `rcode-verifier` output schema drifts from `status: passed`, and `phase complete` doesn't always persist ROADMAP.md text
 

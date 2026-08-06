@@ -10,7 +10,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 - rcode-code-fixer: Applies fixes to code review findings
-- rcode-code-reviewer: Reviews source files for bugs and issues
+- rcode-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 ## Step 0 — Usage check
@@ -293,9 +293,9 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn rcode-code-reviewer agent to re-review
+    # Spawn rcode-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
-    Task(subagent_type="rcode-code-reviewer",
+    Task(subagent_type="rcode-reviewer",
   model="{model}", prompt="
 <config>
 depth: ${REVIEW_DEPTH}

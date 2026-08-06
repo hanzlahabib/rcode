@@ -612,7 +612,7 @@ generated: <ISO timestamp>
 Group findings by severity. For each finding include: file path, line reference, description, recommended fix.
 
 ${REVIEWER_SKILLS}",
-  subagent_type="rcode-code-reviewer",
+  subagent_type="rcode-reviewer",
   model="${REVIEWER_MODEL}"
 )
 ```
