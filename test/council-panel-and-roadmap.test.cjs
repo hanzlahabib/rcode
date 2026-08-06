@@ -30,6 +30,7 @@ const {
   cmdListPhases,
   cmdSummary,
   cmdClear,
+  cmdUpdatePlanProgress,
 } = require(path.join(PROJECT_ROOT, 'rcode/bin/lib/roadmap.cjs'));
 
 // ---------------------------------------------------------------------------
@@ -324,6 +325,142 @@ test('roadmap: cmdSummary counts phases and identifies active phase', () => {
     assert.ok(summary.active_phase !== null, 'should have an active phase');
     assert.strictEqual(summary.active_phase.number, '2');
     assert.strictEqual(summary.upcoming_phases.length, 1);
+  } finally {
+    cleanTmp(tmp);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// roadmap: cmdUpdatePlanProgress() — 1-arg auto-detect form (#1013)
+// ---------------------------------------------------------------------------
+
+function writePhaseFiles(dir, phaseSlug, filenames) {
+  const phaseDir = path.join(dir, '.planning', 'phases', phaseSlug);
+  fs.mkdirSync(phaseDir, { recursive: true });
+  for (const f of filenames) fs.writeFileSync(path.join(phaseDir, f), '', 'utf8');
+}
+
+test('roadmap: cmdUpdatePlanProgress (1-arg) persists Status/Plans and returns updated:true (#1013)', () => {
+  const tmp = makeTmpDir();
+  try {
+    writeRoadmap(tmp, [
+      '## Phase 46 — Wire named engineer subagents into execute dispatch routing',
+      '',
+      '**Goal:** Do the thing.',
+      '',
+      '**Status:** Planned',
+      '',
+      '**Plans:**',
+      '- _TBD_',
+      '',
+      '**Acceptance:** All done.',
+      '',
+      '---',
+    ].join('\n'));
+    writePhaseFiles(tmp, '46-wire-named-engineer-subagents', ['46-1-SPRINT.md', '46-1-SUMMARY.md']);
+
+    const result = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(result.updated, true, 'must report updated:true when it actually writes');
+    assert.strictEqual(result.status, 'complete');
+
+    const written = fs.readFileSync(path.join(tmp, '.planning', 'ROADMAP.md'), 'utf8');
+    assert.match(written, /\*\*Status:\*\* Complete \(\d{4}-\d{2}-\d{2}\)/, 'Status line must be persisted to disk');
+    assert.match(written, /\*\*Plans:\*\*\n- 46-1 — SUMMARY shipped/, 'Plans line must be persisted to disk');
+    assert.doesNotMatch(written, /_TBD_/, 'placeholder must be replaced, not left stale');
+  } finally {
+    cleanTmp(tmp);
+  }
+});
+
+test('roadmap: cmdUpdatePlanProgress (1-arg) is idempotent — re-run returns updated:false once synced', () => {
+  const tmp = makeTmpDir();
+  try {
+    writeRoadmap(tmp, [
+      '## Phase 46 — Wire named engineer subagents into execute dispatch routing',
+      '',
+      '**Status:** Planned',
+      '',
+      '**Plans:**',
+      '- _TBD_',
+      '',
+      '---',
+    ].join('\n'));
+    writePhaseFiles(tmp, '46-wire-named-engineer-subagents', ['46-1-SPRINT.md', '46-1-SUMMARY.md']);
+
+    const first = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(first.updated, true);
+
+    const second = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(second.updated, false, 'second run should be a no-op once ROADMAP.md already reflects computed status');
+    assert.strictEqual(second.status, 'complete');
+  } finally {
+    cleanTmp(tmp);
+  }
+});
+
+test('roadmap: cmdUpdatePlanProgress (1-arg) reports in_progress and partial Plans list when not all plans have summaries', () => {
+  const tmp = makeTmpDir();
+  try {
+    writeRoadmap(tmp, [
+      '## Phase 46 — Wire named engineer subagents into execute dispatch routing',
+      '',
+      '**Status:** Planned',
+      '',
+      '**Plans:**',
+      '- _TBD_',
+      '',
+      '---',
+    ].join('\n'));
+    writePhaseFiles(tmp, '46-wire-named-engineer-subagents', [
+      '46-1-SPRINT.md', '46-1-SUMMARY.md',
+      '46-2-SPRINT.md',
+    ]);
+
+    const result = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(result.updated, true);
+    assert.strictEqual(result.status, 'in_progress');
+
+    const written = fs.readFileSync(path.join(tmp, '.planning', 'ROADMAP.md'), 'utf8');
+    assert.match(written, /\*\*Status:\*\* In Progress/);
+    assert.match(written, /- 46-1 — SUMMARY shipped/);
+    assert.match(written, /- 46-2 — in progress/);
+  } finally {
+    cleanTmp(tmp);
+  }
+});
+
+test('roadmap: cmdUpdatePlanProgress (1-arg) returns updated:false with note when phase dir is missing', () => {
+  const tmp = makeTmpDir();
+  try {
+    writeRoadmap(tmp, ['## Phase 46 — Something', '**Status:** Planned', '', '---'].join('\n'));
+    const result = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(result.updated, false);
+    assert.match(result.note, /phase dir for 46 not found/);
+  } finally {
+    cleanTmp(tmp);
+  }
+});
+
+test('roadmap: cmdUpdatePlanProgress (1-arg) does not clobber an already-populated Plans list', () => {
+  const tmp = makeTmpDir();
+  try {
+    writeRoadmap(tmp, [
+      '## Phase 46 — Wire named engineer subagents into execute dispatch routing',
+      '',
+      '**Status:** Planned',
+      '',
+      '**Plans:**',
+      '- 46-1 — Hand-authored description (#1003)',
+      '',
+      '---',
+    ].join('\n'));
+    writePhaseFiles(tmp, '46-wire-named-engineer-subagents', ['46-1-SPRINT.md', '46-1-SUMMARY.md']);
+
+    const result = cmdUpdatePlanProgress(tmp, '46');
+    assert.strictEqual(result.updated, true, 'Status still needs updating');
+
+    const written = fs.readFileSync(path.join(tmp, '.planning', 'ROADMAP.md'), 'utf8');
+    assert.match(written, /- 46-1 — Hand-authored description \(#1003\)/, 'existing hand-authored Plans text must be preserved');
   } finally {
     cleanTmp(tmp);
   }
