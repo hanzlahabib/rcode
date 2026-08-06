@@ -336,11 +336,9 @@ This story is "Done" when all items in checklist-story-dod.md are checked:
 
 ## Running This Story
 
-To execute with an AI coder:
-
-```bash
-/rcode .planning/dev-sessions/{story-id}-dev-prompt.md
-```
+This file is the execution context for an AI coder — there is no standalone command that consumes it directly. Either:
+- Continue in the session that has this context loaded and say "let's build this," or
+- Fold the story into a phase (`/rcode-add-phase`) and run `/rcode-execute {phase-number}` for a full plan/build cycle with checkpoints.
 
 ---
 
@@ -388,7 +386,9 @@ Acceptance Criteria: {count}
 
 Context file: {path to dev-prompt.md}
 
-Next: /rcode {path to dev-prompt.md}
+Ready to code this story? Two real options:
+  1. Continue this session — I already have full story context loaded, just say "let's build this"
+  2. Fold it into a phase (/rcode-add-phase) and run /rcode-execute {phase-number} for a full plan/build cycle with checkpoints
 
 Or, continue the current session to:
   - Ask clarifying questions
@@ -396,24 +396,22 @@ Or, continue the current session to:
   - Review dependencies
 ```
 
-## Step 6 — Optional: Spawn AI Coder
+## Step 6 — Next Step: Continue or Fold Into a Phase
 
-If user says "start coding" or "let's build", spawn the code execution workflow:
+There is no standalone command that consumes a dev-prompt.md file directly (`/rcode`, no hyphen, does not exist — every rcode command is hyphenated). This step never spawns anything; it only tells the user how to proceed.
 
-```bash
-# User says "let's go" or "start", then:
-/rcode "$DEV_PROMPT_FILE"
-```
+If the user says "start coding" or "let's build", continue implementing directly in the current session — it already has the full story context loaded from Step 3-4.
 
 Otherwise, offer:
 
 ```
 Ready to code this story?
 
-/rcode {dev-prompt-file}
+1. Continue in this session — say "let's build this" and I'll implement it directly.
+2. Fold it into a phase (/rcode-add-phase) and run /rcode-execute {phase-number} for a full plan/build cycle with checkpoints.
 ```
 
-Stop and wait for user to proceed. Do NOT auto-spawn.
+Stop and wait for user to proceed. Do NOT auto-spawn — this workflow only wraps the story, it never executes it.
 
 ## Errors
 
