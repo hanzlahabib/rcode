@@ -23,6 +23,14 @@ Append-only. Newest at top. Each entry: date, decision, rationale, alternatives 
 
 <!-- Append new decisions above this line -->
 
+### 2026-08-06 — Wire named-engineer persona dispatch into /rcode-execute
+
+**Decision:** `rcode-hanzla`/`yousef`/`haitham`/`omar` added to `execute.md`'s subagent allowlist; `execute-waves.md` now classifies each plan by `files_modified` globs (fallback: objective keywords) into frontend/backend/full-stack/other and routes to the matching persona (Haitham/Yousef/Hanzla), falling back to generic `rcode-executor` only when ambiguous or docs/config-only.
+**Rationale:** Named engineers existed only as advisory personas or dead-end skill roleplay (#1003/#1004) — real phase execution always used one generic executor regardless of what was built. User explicitly chose "wire real dispatch" over "keep advisory-only + fix docs" when asked.
+**Alternatives considered:** Keep engineers advisory-only, just correct misleading descriptions (rejected — user's explicit call, matches product's own team-of-specialists framing).
+**Who decided:** Hanzla (user), via herdr-orchestration audit+fix run (10 agents, 2 waves) surfacing #1003-#1013.
+**Reversibility:** Easy — routing logic is isolated to `execute-waves.md` step 3, generic `rcode-executor` remains the fallback.
+
 ### 2026-05-20 — Hard-break v4.0.0 rebrand (rihal → rcode)
 
 **Decision:** Ship the `rihal` → `rcode` rename as a single breaking v4.0.0 release with no rename shim, no compatibility aliases. Conventional-commits `!` marker on the release commit (`304eebc`).
