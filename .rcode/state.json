@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-08-06T11:19:38.634Z",
-  "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
+  "updated": "2026-08-06T11:51:18.201Z",
+  "current_phase": "Wire named engineer subagents into execute dispatch routing",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
@@ -1294,6 +1294,33 @@
       "plan_count": 0,
       "status_updated": "2026-07-30T07:10:50.062Z",
       "completed_at": "2026-07-30"
+    },
+    {
+      "id": "46",
+      "number": "46",
+      "name": "Wire named engineer subagents into execute dispatch routing",
+      "status": "executing",
+      "started": "2026-08-06T11:46:06.097Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "46.1",
+          "number": 1,
+          "goal": "Wire named engineer subagents (rcode-hanzla/yousef/haitham/omar) into execute dispatch routing: add to available_agent_types allowlist, add files_modified/objective classification and routing in execute-waves.md step 3, propagate to .rcode/ mirrors",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "wire-named-engineer-subagents-into-execute-dispatch-routing",
+      "goal": "Add rcode-hanzla/rcode-yousef/rcode-haitham/rcode-omar to the `<available_agent_types>` allowlist in `rcode/workflows/execute.md`, and replace `execute-waves.md` step 3's hardcoded `subagent_type=rcode-executor` with classification-based routing (frontend/backend/full-stack/other, by `files_modified` globs or objective text) so plans dispatch to the persona matching what they build. Propagate to the `.rcode/` dogfooded mirrors where they haven't already diverged. Fixes #1003.",
+      "created": "2026-08-06T11:25:44.670Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-08-06T11:44:43.704Z"
     }
   ],
   "executions": [
@@ -1370,7 +1397,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "44.1",
+  "current_sprint": "46.1",
   "velocity_history": [
     {
       "sprint": "04.1",
@@ -1850,6 +1877,14 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-5-SPRINT.md"
+    },
+    {
+      "key": "46/1",
+      "phase": "46",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/46-wire-named-engineer-subagents-into-execute-dispatch-routing/46-1-SPRINT.md"
     }
   ],
   "plans": [],
