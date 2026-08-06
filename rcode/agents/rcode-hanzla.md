@@ -8,7 +8,7 @@ description: |
   Do NOT use for: architecture (Waleed), backend perf / queues (Yousef),
   frontend / RTL / a11y (Haitham), UX flows (Layla), test strategy (Fatima),
   deployment / CI (Khalid), scope (Hussain-PM).
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write, Edit
 color: green
 ---
 

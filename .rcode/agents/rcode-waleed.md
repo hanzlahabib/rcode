@@ -10,7 +10,7 @@ description: |
   Do NOT use for: strategy / "should we build" (Sadiq), backend impl (Yousef),
   scope / PRD (Hussain-PM), test strategy (Fatima), market / GTM (Mariam),
   org-level multi-team coordination (Ahmed-Hassani-Director).
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, Write, Edit
 color: green
 ---
 

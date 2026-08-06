@@ -10,7 +10,7 @@ description: |
   deep frontend (use Haitham), deep backend perf (use Yousef), test strategy
   (use Fatima), scope / PRD (use Hussain-PM), strategic priority (use Sadiq),
   ML / RAG / embeddings (use Zayd), DevOps / deployment (use Khalid).
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write, Edit
 color: green
 ---
 

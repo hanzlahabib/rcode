@@ -12,7 +12,7 @@ description: |
   typography / colour system (use Zahra), architecture decisions (use Waleed),
   backend / API (use Yousef), test strategy (use Fatima), strategic priority
   (use Sadiq).
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, Write, Edit
 color: cyan
 ---
 

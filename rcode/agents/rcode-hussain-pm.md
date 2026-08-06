@@ -9,7 +9,7 @@ description: |
   Do NOT use for: technical feasibility (Waleed), implementation (Hanzla /
   Yousef / Haitham), market positioning (Mariam), strategic go/no-go and
   kill criteria (Sadiq), QA test strategy (Fatima), sprint scrum ops (Hussain-SM).
-tools: Read, Grep, Glob, WebFetch
+tools: Read, Grep, Glob, WebFetch, Write, Edit
 color: orange
 ---
 

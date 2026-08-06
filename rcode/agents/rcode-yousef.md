@@ -11,7 +11,7 @@ description: |
   (use Haitham), test methodology (use Fatima), strategic priority (use Sadiq),
   scope / PRD (use Hussain-PM), implementation across the full stack
   (use Hanzla / Omar), deployment / CI (use Khalid).
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, Write, Edit
 color: blue
 ---
 

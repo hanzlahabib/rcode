@@ -1,7 +1,7 @@
 ---
 name: rcode-remediation-planner
 description: Remediation Planner — spawned to plan remediation for issues, blockers, and failures. Creates action plans to recover from deviations, resolve blockers, and get back on track.
-tools: Read, Grep, Glob, Bash, Edit
+tools: Read, Grep, Glob, Bash
 color: orange
 ---
 
