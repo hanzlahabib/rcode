@@ -326,7 +326,12 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
   if (!phaseNum) {
     throw new Error('Usage: roadmap update-plan-progress <phase> [<plan-id> <status>]');
   }
-  // 1-arg form: auto-detect progress from disk
+  // 1-arg form: auto-detect progress from disk and persist it into the
+  // phase's **Status:**/**Plans:** prose block in ROADMAP.md.
+  // Fix #1013: this branch used to only *compute* status from disk and
+  // return it — it never read/wrote ROADMAP.md at all, so it always
+  // reported `updated: false` even when the computed status genuinely
+  // differed from the stale prose already in the file.
   if (!planId && !status) {
     const planningDir = path.join(projectRoot, '.planning', 'phases');
     let phaseDir = null;
@@ -344,12 +349,83 @@ function cmdUpdatePlanProgress(projectRoot, phaseNum, planId, status) {
     const planFiles = files.filter(f => /(?:^|-)(SPRINT|PLAN)\.md$/i.test(f));
     const summaryFiles = files.filter(f => /(?:^|-)SUMMARY\.md$/i.test(f));
     const allDone = planFiles.length > 0 && summaryFiles.length >= planFiles.length;
+    const computedStatus = allDone ? 'complete' : 'in_progress';
+    const note = `phase ${phaseNum}: ${planFiles.length} plan(s), ${summaryFiles.length} summary(s) — ${allDone ? 'complete' : 'in progress'}`;
+
+    const { path: rp } = resolveRoadmapPath(projectRoot);
+    if (!fs.existsSync(rp)) {
+      return { updated: false, note, plan_count: planFiles.length, summary_count: summaryFiles.length, status: computedStatus, error: 'ROADMAP.md not found' };
+    }
+    const content = fs.readFileSync(rp, 'utf8');
+    const phases = extractPhases(content);
+    const phase = phases.find((p) => normalizePhaseNum(p.number) === normalizePhaseNum(phaseNum));
+    if (!phase) {
+      return { updated: false, note, plan_count: planFiles.length, summary_count: summaryFiles.length, status: computedStatus, error: `phase ${phaseNum} not found in ROADMAP.md` };
+    }
+
+    const planIdRe = /^(\d+[A-Z]?(?:\.\d+)?-\d+)-(?:SPRINT|PLAN)\.md$/i;
+    const summaryIdRe = /^(\d+[A-Z]?(?:\.\d+)?-\d+)-SUMMARY\.md$/i;
+    const summarizedIds = new Set(
+      summaryFiles.map((f) => { const m = f.match(summaryIdRe); return m ? m[1] : null; }).filter(Boolean)
+    );
+    const planIds = [...new Set(
+      planFiles.map((f) => { const m = f.match(planIdRe); return m ? m[1] : null; }).filter(Boolean)
+    )].sort();
+
+    const section = content.slice(phase.headerIndex, phase.sectionEnd);
+    let newSection = section;
+    let changed = false;
+
+    // Update **Status:** — only when the computed status actually differs
+    // from what the prose says, so re-running this after completion is a
+    // no-op instead of rewriting the completion date every time.
+    const statusLineRe = /(\*\*Status(?::\*\*|\*\*:)\s*)([^\n]+)/i;
+    const statusMatch = section.match(statusLineRe);
+    if (statusMatch) {
+      const currentStatusNorm = statusMatch[2].trim().toLowerCase();
+      if (computedStatus === 'complete' && !currentStatusNorm.startsWith('complete')) {
+        const today = new Date().toISOString().slice(0, 10);
+        newSection = newSection.replace(statusLineRe, `$1Complete (${today})`);
+        changed = true;
+      } else if (computedStatus === 'in_progress' && currentStatusNorm.startsWith('planned')) {
+        newSection = newSection.replace(statusLineRe, `$1In Progress`);
+        changed = true;
+      }
+    }
+
+    // Replace a placeholder **Plans:** list (`- _TBD_` or empty) with the
+    // plan IDs actually found on disk. Leave already-populated lists alone.
+    if (planIds.length > 0) {
+      const plansBlockRe = /(\*\*Plans(?::\*\*|\*\*:)\s*\n)((?:\s*-\s*[^\n]+\n?)+)/i;
+      const plansMatch = newSection.match(plansBlockRe);
+      if (plansMatch) {
+        const isPlaceholder = /^\s*-\s*_TBD_\s*$/im.test(plansMatch[2]) || plansMatch[2].trim() === '';
+        if (isPlaceholder) {
+          const plansList = planIds
+            .map((id) => `- ${id} — ${summarizedIds.has(id) ? 'SUMMARY shipped' : 'in progress'}`)
+            .join('\n') + '\n';
+          newSection = newSection.replace(plansBlockRe, `$1${plansList}`);
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) {
+      return { updated: false, note: `${note} (ROADMAP.md already reflects this)`, plan_count: planFiles.length, summary_count: summaryFiles.length, status: computedStatus };
+    }
+
+    const newContent = content.slice(0, phase.headerIndex) + newSection + content.slice(phase.sectionEnd);
+    const tmp = rp + '.tmp';
+    fs.writeFileSync(tmp, newContent, 'utf8');
+    fs.renameSync(tmp, rp);
+
     return {
-      updated: false,
-      note: `phase ${phaseNum}: ${planFiles.length} plan(s), ${summaryFiles.length} summary(s) — ${allDone ? 'complete' : 'in progress'}`,
+      updated: true,
+      phase: phaseNum,
+      status: computedStatus,
       plan_count: planFiles.length,
       summary_count: summaryFiles.length,
-      status: allDone ? 'complete' : 'in_progress',
+      note: `ROADMAP.md phase ${phaseNum} block updated to ${computedStatus}`,
     };
   }
 
