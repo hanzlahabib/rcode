@@ -341,10 +341,10 @@ bash-guard / auth hardening — no raw exec surface.
 
 **Goal:** Add rcode-hanzla/rcode-yousef/rcode-haitham/rcode-omar to the `<available_agent_types>` allowlist in `rcode/workflows/execute.md`, and replace `execute-waves.md` step 3's hardcoded `subagent_type=rcode-executor` with classification-based routing (frontend/backend/full-stack/other, by `files_modified` globs or objective text) so plans dispatch to the persona matching what they build. Propagate to the `.rcode/` dogfooded mirrors where they haven't already diverged. Fixes #1003.
 
-**Status:** Planned
+**Status:** Complete (2026-08-06)
 
 **Plans:**
-- _TBD_
+- 46-1 — Allowlist entries + classification/routing logic + `.rcode/` mirror propagation (#1003)
 
 **Acceptance:** `<available_agent_types>` in execute.md lists all four personas with role descriptions; execute-waves.md step 3 classifies each plan before spawning and routes accordingly, falling back to rcode-executor only for ambiguous/docs/config/infra plans; Task() prompt template (worktree check, locking, execution_context, files_to_read, done_field_protocol, success_criteria) unchanged apart from subagent_type + a one-line persona note; .rcode/ mirrors updated or divergence flagged.
 
