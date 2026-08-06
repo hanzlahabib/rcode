@@ -95,3 +95,21 @@ Active bugs and workarounds. Searchable so an agent doesn't waste cycles re-debu
 - **Real fix planned for:** out of scope until a workflow runtime test scaffold exists
 - **First seen:** 2026-04-26
 - **Tracking:** TASKS.md "Phase 5 — Workflow file splits ⏭ skipped"
+
+### `execute.md`'s code_review_gate spawns a non-existent agent type
+
+- **Symptom:** `execute.md`'s `code_review_gate` step spawns `subagent_type="rcode-code-reviewer"`, but the actual registry only has `rcode-reviewer` — the Task/Agent call fails with "Agent type not found" rather than falling back gracefully.
+- **Surface:** `rcode/workflows/execute.md` (code_review_gate step), agent registry (`.claude/agents/`)
+- **Workaround:** spawn `rcode-reviewer` instead when running this gate manually.
+- **Real fix planned for:** out of scope — rename the spawn call to `rcode-reviewer` or register a `rcode-code-reviewer` alias
+- **First seen:** 2026-08-06
+- **Tracking:** discovered during Phase 46 (#1003) execution, not yet filed
+
+### `rcode-verifier` output schema drifts from `status: passed`, and `phase complete` doesn't always persist ROADMAP.md text
+
+- **Symptom:** (a) A `rcode-verifier` run wrote `46-VERIFICATION.md` with `result: PASS` instead of this repo's established `status: passed` frontmatter key (compare `44-VERIFICATION.md`/`45-VERIFICATION.md`), which silently fails `execute.md`'s `uat_gate` grep (`^status:[[:space:]]*passed`) and would strand the phase at `status: executed` forever without a human noticing the schema mismatch. (b) Separately, `node rcode-tools.cjs phase complete` and `roadmap update-plan-progress` correctly updated `.rcode/state.json`/STATE.md to `status: complete`, but left the ROADMAP.md phase block's prose text as `**Status:** Planned` / `**Plans:** - _TBD_` — `update-plan-progress` even returned `"updated": false` while reporting the correct computed status.
+- **Surface:** `rcode-verifier` agent output (VERIFICATION.md template drift), `.rcode/bin/lib/roadmap.cjs` (`phase complete` / `update-plan-progress`)
+- **Workaround:** hand-correct the VERIFICATION.md frontmatter key before the uat_gate check; hand-correct ROADMAP.md's Status/Plans text after `phase complete` reports success.
+- **Real fix planned for:** out of scope — pin rcode-verifier's output template, and fix `update-plan-progress`'s "updated": false no-op path
+- **First seen:** 2026-08-06
+- **Tracking:** discovered during Phase 46 (#1003) execution, not yet filed
