@@ -10,10 +10,13 @@ phase: NN
 phase_name: <slug>
 verifier: <agent / human>
 verified_at: <ISO date>
-verdict: pass | fail | partial
+status: passed | gaps_found | human_needed
 goal_source: ROADMAP.md (commit-sha-at-phase-start)
 ---
 ```
+
+`status` is the ONLY key `execute.md`'s `uat_gate` step reads (`grep -qE "^status:[[:space:]]*passed"`). Do not
+substitute `result`, `verdict`, or `outcome` — a wrong key silently strands the phase at `status: executed` forever.
 
 ## Sections
 
@@ -63,9 +66,9 @@ What the phase changed BEYOND the goal. Often these are silent:
 
 Each side effect should be intentional and documented.
 
-### Verdict reasoning
+### Status reasoning
 
-One paragraph explaining why the verdict (pass / fail / partial) was chosen. Include any judgment calls.
+One paragraph explaining why the status (passed / gaps_found / human_needed) was chosen. Include any judgment calls.
 
 ### Follow-ups
 
@@ -79,5 +82,5 @@ Issues filed (or to file) for gaps surfaced during verification:
 ```
 Verifier: <name or agent id>
 Date: <ISO>
-Verdict: <verdict from frontmatter>
+Status: <status from frontmatter>
 ```
