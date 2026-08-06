@@ -206,6 +206,10 @@ Always use the exact name from this list — do not fall back to 'general-purpos
 - rcode-nyquist-auditor — Validates verification coverage
 - rcode-ux-designer — Researches UI/UX approaches
 - rcode-ui-auditor — Audits UI against design requirements
+- rcode-hanzla — Senior Full-Stack Engineer — full-stack plans spanning both frontend and backend
+- rcode-yousef — Senior Backend Engineer — backend-only plans (API, DB, services, queues)
+- rcode-haitham — Senior Frontend Engineer — frontend-only plans (React/Next.js/Tailwind/CSS/RTL/a11y)
+- rcode-omar — Software Engineer (generalist) — fallback for cross-stack or small ambiguous plans when Hanzla isn't the clear fit
 </available_agent_types>
 
 <process>
@@ -398,9 +402,7 @@ Report:
 ```
 </step>
 
-
 @rcode/workflows/execute-waves.md
-
 
 <step name="checkpoint_handling">
 Plans with `autonomous: false` require user interaction.
@@ -710,13 +712,9 @@ IS_GAP_CLOSURE_PHASE=$([[ "$PHASE_NUMBER" == *.* ]] && echo true || echo false)
 ${IS_GAP_CLOSURE_PHASE === 'true' ? '@.rcode/references/execute-close-parent-artifacts.md' : ''}
 </step>
 
-
 @rcode/workflows/execute-regression-gates.md
 
-
-
 @rcode/workflows/execute-verify-phase-goal.md
-
 
 <step name="uat_gate" priority="blocker">
 **UAT gate:**

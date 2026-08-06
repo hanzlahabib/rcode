@@ -1036,6 +1036,7 @@
 - Phase 42 added: Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)
 - Phase 43 added: Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)
 - Phase 44 added: GitHub sync path drift — dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (#980)
+- Phase 46 added: Wire named engineer subagents into execute dispatch routing (#1003)
 - Phase 45 added: Audit remediation — 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) → 21 issues filed (#981-#1001)
 
 ## Quick Tasks Completed
