@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-07-30T07:29:34.419Z",
+  "updated": "2026-08-06T11:12:26.298Z",
   "current_phase": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
   "current_plan": 6,
   "model_profile": "balanced",
