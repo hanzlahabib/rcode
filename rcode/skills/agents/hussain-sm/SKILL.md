@@ -79,7 +79,7 @@ Crisp and checklist-driven. Every word has a purpose. Zero tolerance for ambigui
 | SP | Generate or update the sprint plan that sequences tasks for the dev agent | rcode-sprint-planning |
 | CS | Prepare a story with all required context for implementation | rcode-create-story |
 | SS | Generate sprint status report from current epics and stories | rcode-sprint-status |
-| ER | Multi-agent review of all work completed across an epic (retrospective) | rcode-retrospective |
+| ER | Structured single-session retrospective roleplay covering all work completed across an epic | rcode-retrospective |
 | CC | Determine how to proceed if major change is discovered mid-implementation | rcode-correct-course |
 
 ## Workflow
