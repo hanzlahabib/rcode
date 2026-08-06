@@ -1037,3 +1037,9 @@
 - Phase 43 added: Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)
 - Phase 44 added: GitHub sync path drift — dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (#980)
 - Phase 45 added: Audit remediation — 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) → 21 issues filed (#981-#1001)
+
+## Quick Tasks Completed
+
+| Date | Type | Task | Status |
+|------|------|------|--------|
+| 2026-08-06 | quick | Correct 3 persona-skill docs oversell dispatch capability (#1004, #1009) | ✓ |
