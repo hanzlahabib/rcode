@@ -71,6 +71,47 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    For 200k models, this keeps orchestrator context lean (~10-15%).
    For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
 
+   **Classify plan and select subagent_type (BEFORE spawning, once per plan):**
+
+   Reuse the `files_modified` list already parsed in step 1's intra-wave overlap check for this
+   plan — do not re-read the plan file to get it again.
+
+   ```
+   FRONTEND_GLOBS = ["*.tsx", "*.jsx", "*.css"] + paths containing "client" or "ui"
+   BACKEND_GLOBS  = paths containing "api", "server", "db", or "service"
+
+   touches_frontend = any(file matches FRONTEND_GLOBS for file in files_modified)
+   touches_backend  = any(file matches BACKEND_GLOBS for file in files_modified)
+
+   if touches_frontend and touches_backend:
+     classification = "full-stack"
+   elif touches_frontend:
+     classification = "frontend"
+   elif touches_backend:
+     classification = "backend"
+   else:
+     classification = "other"   # files_modified empty/absent, or no glob matched
+   ```
+
+   **If `classification` is `"other"`** (ambiguous, or `files_modified` empty/absent), fall back
+   to keyword-matching the plan's `<objective>` text before giving up:
+   - Frontend keywords (React, component, UI, CSS, Tailwind, frontend, client-side, accessibility, a11y) → `classification = "frontend"`
+   - Backend keywords (API, endpoint, database, schema, service, queue, backend, server-side) → `classification = "backend"`
+   - Neither matches (pure docs/config/infra plan) → `classification` stays `"other"`
+
+   **Route to `subagent_type`:**
+
+   | classification | subagent_type |
+   |---|---|
+   | frontend | rcode-haitham |
+   | backend | rcode-yousef |
+   | full-stack | rcode-hanzla |
+   | other | rcode-executor |
+
+   This decision is computed once per plan, before that plan's Task() spawn(s) below, and the
+   resulting `subagent_type` value is used in the Task() call template (worktree and sequential
+   modes both reuse this same value — see "Sequential mode" further below).
+
    **Worktree mode** (`USE_WORKTREES` is not `false`):
 
    Before spawning, capture the current HEAD:
@@ -96,7 +137,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
    ```
    Task(
-     subagent_type="rcode-executor",
+     subagent_type="{subagent_type}",
      description="Execute plan {plan_number} of phase {phase_number}",
      model="{executor_model}",
      isolation="worktree",
@@ -105,6 +146,8 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        Execute plan {plan_number} of phase {phase_number}-{phase_name}.
        Commit each task atomically. Create SUMMARY.md.
        Do NOT update STATE.md or ROADMAP.md — the orchestrator owns those writes after all worktree agents in the wave complete.
+
+       Routing note: this plan touches {classification} paths → dispatched to {subagent_type} (see step 3's classification logic in execute-waves.md).
        </objective>
 
        <!--
