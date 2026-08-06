@@ -6,9 +6,10 @@ Analyze freeform text from the user and route to the most appropriate rcode comm
 @.rcode/references/auto-init-guard.md
 @.rcode/references/output-format.md
 @.rcode/references/verb-dictionary.md
-@.rcode/references/dispatch-banner.md
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
+
+`.rcode/references/dispatch-banner.md` is NOT required reading here — its banner format is scoped to real `Task(subagent_type=...)` spawns. `/rcode-do` never spawns a Task/subagent (see guardrails); it only dispatches via the `Skill` tool, so it uses the plain `ROUTING` banner defined in the `display` step below.
 
 <process>
 
@@ -71,7 +72,7 @@ Match if `$QUESTION` starts with `@<persona> <CODE>` or `@<persona>:<CODE>` — 
    {list from the persona's Capabilities table}
    ```
    And stop. Do not fall back to fuzzy intent matching — the user used the deterministic API, honour it.
-5. Dispatch directly via the routing banner. Skip greenfield_guard / external_data_guard / explicit_intent_check / route — the user already chose the persona AND the action. The persona itself can still refuse internally if its preconditions aren't met.
+5. Dispatch directly: show the plain `ROUTING` banner (the `display` step's format — "Routing to: {chosen command}") and call the `Skill` tool. Skip greenfield_guard / external_data_guard / explicit_intent_check / route — the user already chose the persona AND the action. This is a `Skill()` dispatch, not a `Task(subagent_type=...)` spawn, so it does NOT use the persona-voiced `dispatch-banner.md` format. The persona itself can still refuse internally if its preconditions aren't met.
 
 **This is the deterministic API surface.** Power users (and other agents in council follow-ups) can invoke specific capabilities without re-reading triggers or risking fuzzy match. It's the cheapest way to get repeatable behaviour out of the persona system.
 
@@ -406,15 +407,17 @@ If the chosen command expects a phase number and one wasn't provided in the text
 </process>
 
 <guardrails>
-**Hard prohibitions during /rcode-do execution (issue #458):**
+**Hard prohibitions during /rcode-do execution (issue #458, refined by #1007):**
 
-- MUST NOT call Bash, Read, Grep, Glob, Write, or Edit tools. The dispatcher does not investigate, read code, or write files. Period.
-- MUST NOT spawn Task / Agent / subagents. Dispatch is a Skill tool call to a routed command — nothing else.
-- MUST NOT "do a quick check" before routing. If you feel the urge to grep or read a file to "figure out the right route," the dispatcher contract has already failed — STOP and use the no-route exit.
-- The ONLY tools allowed inside /rcode-do are: AskUserQuestion (for disambiguation), Skill (for dispatch), and the one Bash call to the classifier (`classify-question`). Nothing else.
+The steps above (`parse_args`, `check_project`, `auto_init_check`, `greenfield_guard`, `explicit_intent_check`, `persona_shortcut`) legitimately call Bash for structured state/config lookups (`rcode-tools.cjs state load`, `progress init`, `config-get mode`, `classify-question`, milestone/PRD/epic detection via `ls`/`grep`) and Read for the specific persona/capability-table lookup in `persona_shortcut` step 2. That is routing plumbing, not investigation, and is allowed. What's prohibited is using those same tools to figure out the route by inspecting application code, or to do the routed work itself:
+
+- MUST NOT use Bash/Read/Grep/Glob to explore or read application source code to guess what a vague request means. The state/config lookups named above are the only sanctioned uses — anything beyond them (grepping `src/`, reading a feature file to understand behavior, etc.) means the dispatcher contract has failed — STOP and use the no-route exit instead.
+- MUST NOT call Write or Edit. The dispatcher never modifies files.
+- MUST NOT spawn Task / Agent / subagents. Dispatch is a `Skill` tool call to a routed command — nothing else.
+- MUST NOT "do a quick check" of source code before routing. If you feel the urge to grep or read application code to "figure out the right route," the dispatcher contract has already failed — STOP and use the no-route exit.
 - If the user's input doesn't match any route and the classifier is ambiguous: invoke the no-route exit menu. Do not "be helpful" by executing the work yourself.
 
-Why this is hard: do.md is a router. The moment it does work, two failure modes appear: (a) the work is duplicated when the user re-invokes the proper command, or (b) the work happens in the wrong context with the wrong subagent and produces inferior output. Both are worse than a 1-second routing prompt.
+Why this is hard: do.md is a router. The moment it does the work itself (as opposed to looking up state to decide *where to route*), two failure modes appear: (a) the work is duplicated when the user re-invokes the proper command, or (b) the work happens in the wrong context with the wrong subagent and produces inferior output. Both are worse than a 1-second routing prompt.
 </guardrails>
 
 <success_criteria>
@@ -427,7 +430,7 @@ Why this is hard: do.md is a router. The moment it does work, two failure modes 
 - [ ] Command invoked via the Skill tool — NOT printed as text
 - [ ] Dispatch banner not repeated (single emission only)
 - [ ] No work done directly — dispatcher only
-- [ ] No Bash/Read/Grep/Write/Edit/Task tool calls during execution (only AskUserQuestion + Skill + classifier Bash)
+- [ ] No Write/Edit/Task tool calls, and no Bash/Read/Grep/Glob use beyond the sanctioned state/config lookups and persona/capability-table reads
 - [ ] On no-route, exit cleanly with the disambiguation menu — never silently fall through to inline work
 </success_criteria>
 </content>
