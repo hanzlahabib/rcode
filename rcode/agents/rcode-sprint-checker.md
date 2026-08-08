@@ -6,7 +6,7 @@ color: green
 ---
 
 @.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/karpathy-guidelines.md
 @.rcode/references/sprint-checker-playbook.md
 
 <role>

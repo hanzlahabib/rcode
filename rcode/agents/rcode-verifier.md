@@ -6,7 +6,7 @@ color: green
 ---
 
 @.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/karpathy-guidelines.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/verifier-playbook.md
 
