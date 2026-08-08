@@ -49,8 +49,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 ${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
 @.rcode/references/karpathy-guidelines.md
 <!-- Read .rcode/references/agent-contracts.md only if defining or debugging agent contracts -->
-<!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic -->
-@.rcode/references/thinking-models-planning.md
+<!-- Read .rcode/references/gates.md only if implementing or troubleshooting gate logic; thinking-models-planning.md (127 lines) only if features.thinking_partner is enabled -->
+${THINKING_PARTNER_ENABLED === 'true' ? '@.rcode/references/thinking-models-planning.md' : ''}
 </required_reading>
 
 <available_agent_types>
