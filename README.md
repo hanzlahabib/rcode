@@ -23,7 +23,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.7.0 on npm. 45 agents · 117 commands · 129 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.8.0 on npm. 45 agents · 117 commands · 130 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
 
 ---
 
@@ -154,10 +154,10 @@ The point isn't "I beat LangChain." The point is **you don't need LangChain for 
 | Metric | Value | Why it's not a vanity number |
 |---|---|---|
 | **Portable methodology corpus** | **~105,000 lines** of markdown | A 10-person eng org's playbooks (agents + commands + workflows + skills + references) — as files you own and grep, not a SaaS you rent. |
-| **Automated tests** | **495** across 62 files | The methodology is *guarded*, not vibes. Live pass/fail status is on the CI badge above; `node --test` (or `node benchmarks/facts.cjs`) reproduces locally in seconds. |
+| **Automated tests** | **598** across 74 files | The methodology is *guarded*, not vibes. Live pass/fail status is on the CI badge above; `node --test` (or `node benchmarks/facts.cjs`) reproduces locally in seconds. |
 | **Tested CLI engine** | **~9,700 lines** (`rcode-tools.cjs` + `lib/`) | The deterministic brain — routing, state, planning math — is real code under test, not prompt soup. |
 | **Runtime dependencies** | **1** (`ws`, for the dashboard socket) | The dashboard is otherwise pure Node stdlib. Almost nothing to audit, nothing to CVE-scan, nothing to break on `npm install`. |
-| **Specialist agents / commands / workflows / skills** | **45 / 117 / 129 / 96** | An entire engineering org, phrase-activated, that travels with you across Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. |
+| **Specialist agents / commands / workflows / skills** | **45 / 117 / 130 / 96** | An entire engineering org, phrase-activated, that travels with you across Claude Code, Cursor, Codex, VS Code, Antigravity, Windsurf. |
 | **Core-op latency** | **~60 ms**, **0 LLM tokens** (best-of-7) | Intent routing, state reads, and milestone-health are deterministic *local* compute — a few ms over Node's own cold-start floor. The orchestration layer doesn't burn API tokens on bookkeeping the way pure-LLM agent frameworks do. |
 
 > Counts above are produced by `node benchmarks/facts.cjs` and may drift slightly between releases — run it for the exact current figures.
@@ -227,9 +227,9 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ## Honest state of things
 
-- **v4.3.2** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
+- **v4.8.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
-- **Test suite**: 497 automated tests across 61 files, 100% pass on every release (run `node --test`). Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
+- **Test suite**: 598 automated tests across 74 files (run `node --test`). Live pass/fail status is on the CI badge above. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
 - **Funding**: none. This is solo work. If your company wants commercial support, [email me](mailto:hanzla.dev@gmail.com).
 
