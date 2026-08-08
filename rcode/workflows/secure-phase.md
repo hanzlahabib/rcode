@@ -3,7 +3,8 @@ Verify threat mitigations for a completed phase. Confirm SPRINT.md threat regist
 </purpose>
 
 <required_reading>
-@.rcode/references/ui-brand.md
+<!-- ui-brand.md (254 lines): only load when the phase goal/CONTEXT.md contains UI signals — mirrors plan.md:49's PHASE_GOAL_HAS_UI pattern -->
+${PHASE_GOAL_HAS_UI ? '@.rcode/references/ui-brand.md' : ''}
 </required_reading>
 
 <available_agent_types>
@@ -50,6 +51,11 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 ```bash
 AUDITOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model rcode-security-auditor --raw)
 SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+
+# Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
+PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
+  .planning/phases/*${phase_number}*/*-CONTEXT.md \
+  .planning/ROADMAP.md 2>/dev/null | head -1)
 ```
 
 If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rcode-settings."
