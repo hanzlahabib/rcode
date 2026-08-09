@@ -529,7 +529,7 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 <step name="run_verify_commands">
 **Run per-task `<verify>` shell commands from all completed SPRINT.md plans.**
 
-After all executor agents finish, extract and run any `<verify>` blocks defined in plan tasks. These are the machine-executable counterpart to `<acceptance_criteria>` prose.
+After all executor agents finish, extract and run any `<verify>` blocks defined in plan tasks. These are the machine-executable proof that a task's `<done>` criteria are met — the plan schema has no such tag; `<verify><automated>` plus `<evidence>` grounding are what the planner and executor actually emit and enforce.
 
 ```bash
 # Extract all <verify> blocks from all SPRINT.md files for this phase
@@ -747,10 +747,10 @@ fi
    ```
    ⚠ Phase {X} EXECUTED but not yet verified.
 
-   The following acceptance criteria require human verification before
+   The following task completion criteria require human verification before
    the phase can advance to `status: complete`:
 
-   {list AC items from SPRINT.md}
+   {list each task's <done> sentence from SPRINT.md}
 
    Recommended next steps:
    /rcode-add-tests {X} — generate unit + E2E tests before UAT
@@ -763,7 +763,7 @@ fi
 **If `VERIFICATION_STATUS` is `fail`:**
 
 1. Mark the phase as `status: executed` (so /rcode-plan --gaps can run a closure cycle).
-2. Surface the failed AC items.
+2. Surface the tasks whose `<done>` criteria failed human verification.
 3. STOP. Don't mark complete on a failing verification.
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
