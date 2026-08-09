@@ -263,7 +263,7 @@ Every task MUST include these fields — they are NOT optional:
    - `creates:` the file paths being created from scratch (with one-line justification why no existing file fits)
    A task without `<evidence>` is theoretical and MUST NOT be written. (Matches `rcode/references/planner-playbook.md`'s "Task Anatomy" section — single source of truth for this rule.)
 
-4. **`<verify>`** — Shell commands that PROVE the acceptance criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
+4. **`<verify>`** — Shell commands that PROVE the `<done>` criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
    - `<automated>` commands must exit 0 on success, non-zero on failure
    - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
    - Keep commands short and composable — one check per line
