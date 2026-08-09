@@ -29,11 +29,21 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "0" 2>/dev/null)
+INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "1" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-If `INIT` is empty or `INIT.ok` is false, print error and exit:
+`init phase-op` only populates the phase-aware fields (`roadmap_exists`,
+`planning_exists`, `phase_found`, ...) when its `question` argument's first
+token parses as an integer `> 0` (rcode-tools.cjs's `phase-op` handler gates
+on `phaseNum > 0`). add-phase has no target phase to pass — it's creating a
+new one — so a placeholder is required. `"0"` fails that guard, silently
+dropping `roadmap_exists` from every response (#1017); `"1"` satisfies it.
+The dummy value only affects unused fields like `phase_found`/`phase_name`
+(harmless here) — `roadmap_exists` itself is purely a file-existence check
+and doesn't depend on phase 1 actually existing.
+
+If `INIT` is empty, print error and exit:
 ```
 Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
