@@ -276,7 +276,8 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 **Runtime detection for Copilot:**
 Check if the current runtime is Copilot by testing for the `@rcode-executor` agent pattern
 or absence of the `Task()` subagent API. If running under Copilot, force sequential inline
-execution regardless of the `parallelization` setting — Copilot's subagent completion
+execution unconditionally (there is no real `parallelization` toggle to override — see the
+"initialize" step's field notes above) — Copilot's subagent completion
 signals are unreliable (see `<runtime_compatibility>`). Set `COPILOT_SEQUENTIAL=true`
 internally and skip the `execute_waves` step in favor of `check_interactive_mode`'s
 inline path for each plan.
