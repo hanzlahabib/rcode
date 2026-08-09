@@ -111,12 +111,23 @@ test('every workflow subagent_type= reference resolves to an agent file', () => 
       while ((m = re.exec(t)) !== null) refs.add(m[1]);
     }
   }
-  const installed = fs.existsSync(INSTALLED_AGENTS)
-    ? new Set(fs.readdirSync(INSTALLED_AGENTS).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')))
-    : new Set();
-  const src = fs.existsSync(SRC_AGENTS)
-    ? new Set(fs.readdirSync(SRC_AGENTS).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')))
-    : new Set();
+  // subagent_type is resolved at runtime by an agent's declared `name:`
+  // frontmatter field, not its filename (e.g. rcode-code-reviewer.md
+  // declares `name: rcode-reviewer`) — so a valid reference can match
+  // either the filename stem or the file's own declared name.
+  function namesInDir(dir) {
+    const names = new Set();
+    if (!fs.existsSync(dir)) return names;
+    for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.md'))) {
+      names.add(f.replace(/\.md$/, ''));
+      const text = fs.readFileSync(path.join(dir, f), 'utf8');
+      const nameMatch = text.match(/^name:\s*(\S+)/m);
+      if (nameMatch) names.add(nameMatch[1]);
+    }
+    return names;
+  }
+  const installed = namesInDir(INSTALLED_AGENTS);
+  const src = namesInDir(SRC_AGENTS);
   const missing = [...refs].filter((r) => !installed.has(r) && !src.has(r)).sort();
   assert.deepEqual(
     missing,
