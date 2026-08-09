@@ -370,6 +370,38 @@ Scope: {one-line scope summary}
 Routing to: {chosen command}
 Reason: {one-line why}
 ```
+
+**herdr hint (cached read only — no live check from here).** When the chosen command is
+`/rcode-execute` or `/rcode-add-phase` (routes that fan out substantial multi-file
+execution work), read the cached availability flag left by `/rcode-execute`'s own
+availability check:
+
+```bash
+HERDR_AVAILABLE=$(node .rcode/bin/rcode-tools.cjs config-get workflow._herdr_available 2>/dev/null || echo "false")
+HERDR_AVAILABLE=${HERDR_AVAILABLE:-false}
+```
+
+This is a plain `config-get` read — the same sanctioned category as `config-get mode`
+used elsewhere in this workflow (see `<guardrails>`). It reuses the exact cache
+`/rcode-execute` writes to (`workflow._herdr_checked` / `workflow._herdr_available`) —
+do NOT duplicate the `command -v herdr` probe or call `config-set` here. `/rcode-do`
+has no sanctioned way to run that shell probe or persist a value itself, so if the
+cache hasn't been populated yet (`_herdr_checked` still false), say nothing — the
+first `/rcode-execute` run downstream will perform and cache the check itself.
+
+If `HERDR_AVAILABLE == "true"`, append one extra line to the banner above:
+
+```
+Note: herdr is available on this machine — {chosen command} will offer a
+      multi-agent orchestration option if the work fans out into independent
+      plans; you'll be asked to confirm before anything runs via herdr.
+```
+
+Do NOT turn this into an `AskUserQuestion` prompt and do NOT ask the user to
+decide here — `/rcode-do` only routes, it never presents execution-mode choices.
+The actual offer (with the full tradeoff explanation and required confirmation)
+is `/rcode-execute`'s `three_options` step, which fires after dispatch regardless
+of whether this hint line was shown.
 </step>
 
 <step name="dispatch">
@@ -409,7 +441,7 @@ If the chosen command expects a phase number and one wasn't provided in the text
 <guardrails>
 **Hard prohibitions during /rcode-do execution (issue #458, refined by #1007):**
 
-The steps above (`parse_args`, `check_project`, `auto_init_check`, `greenfield_guard`, `explicit_intent_check`, `persona_shortcut`) legitimately call Bash for structured state/config lookups (`rcode-tools.cjs state load`, `progress init`, `config-get mode`, `classify-question`, milestone/PRD/epic detection via `ls`/`grep`) and Read for the specific persona/capability-table lookup in `persona_shortcut` step 2. That is routing plumbing, not investigation, and is allowed. What's prohibited is using those same tools to figure out the route by inspecting application code, or to do the routed work itself:
+The steps above (`parse_args`, `check_project`, `auto_init_check`, `greenfield_guard`, `explicit_intent_check`, `persona_shortcut`, `display`) legitimately call Bash for structured state/config lookups (`rcode-tools.cjs state load`, `progress init`, `config-get mode`, `config-get workflow._herdr_available`, `classify-question`, milestone/PRD/epic detection via `ls`/`grep`) and Read for the specific persona/capability-table lookup in `persona_shortcut` step 2. That is routing plumbing, not investigation, and is allowed. `config-get workflow._herdr_available` is a read of a cache another workflow (`/rcode-execute`) already populated — `/rcode-do` MUST NOT run `command -v herdr` itself or call `config-set` to populate that cache; it only reads whatever is already there. What's prohibited is using those same tools to figure out the route by inspecting application code, or to do the routed work itself:
 
 - MUST NOT use Bash/Read/Grep/Glob to explore or read application source code to guess what a vague request means. The state/config lookups named above are the only sanctioned uses — anything beyond them (grepping `src/`, reading a feature file to understand behavior, etc.) means the dispatcher contract has failed — STOP and use the no-route exit instead.
 - MUST NOT call Write or Edit. The dispatcher never modifies files.
