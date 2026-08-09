@@ -327,6 +327,14 @@ Or strategic question about the codebase:
 /rcode-council {your question}
 ```
 
+**In all three cases, append this tip:**
+```
+Tip: run /rcode-enable-hooks to turn on a one-line project status primer at
+the start of every session, plus 9 other opt-in guardrails (read-before-edit
+checks, dangerous-command blocking, auto-formatting). Off by default so a
+fresh install never surprises you.
+```
+
 **If `returning` with `--reset`:**
 ```
 ✓ rcode reconfigured. Prior state preserved in state.json.

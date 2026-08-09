@@ -181,6 +181,8 @@ pnpm dlx @hanzlaa/rcode install
 
 `/rcode-init` detects your project state (fresh / existing / returning) and routes to the right first action. For a greenfield project it auto-routes to `/rcode-new-project`.
 
+> **Want a status primer at the start of every session?** Run `/rcode-enable-hooks` to turn on a one-line project status readout (phase, plan progress, blockers) each time Claude Code starts in this project, plus 9 other opt-in guardrails (read-before-edit checks, dangerous-command blocking, auto-formatting). All off by default — a fresh install never surprises you.
+
 ### The full loop
 
 Four commands cover most of a real week of work — decide, plan, build, check in:
