@@ -3,6 +3,83 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.9.0 (2026-08-09) — Engineer dispatch was still a coin flip, and a real install could silently lose its own agents
+
+v4.8.0 wired named-engineer routing into `/rcode-execute`. Running it against a
+real production project immediately surfaced two more layers of the same
+problem: the routing logic was prose an orchestrator had to compute by hand
+(and skipped), and some real installs had already lost their agent files to
+an unrelated dedup bug — silently falling back to a global install with no
+warning. Both are fixed here, along with 7 execute/init/add-phase bugs found
+by an actual live trace and a first pass at making rcode's own token cost
+honest and measurable.
+
+### Fixes
+- **Plan-to-engineer classification was pseudocode, not a check.** `/rcode-execute`
+  routes plans to `rcode-haitham`/`yousef`/`hanzla` by file-scope, but the
+  matching logic lived only as prose the orchestrating session had to
+  hand-compute per plan — confirmed live to be silently skipped even when a
+  plan's `files_modified` obviously matched the documented backend rule. Now
+  a real `classify-plan` command in `rcode-tools.cjs` computes it
+  deterministically; `execute-waves.md` calls it and uses the literal
+  answer. 6 new tests lock in frontend/backend/full-stack/ambiguous cases.
+- **A real install could end up with zero top-level agent files.** `install.js`'s
+  command-dedup logic (defer to a global install when no project-local
+  commands exist) was incorrectly also applied to `.claude/agents/` — agents
+  are project-local by design (see the existing #381 fix), unlike
+  commands/skills. A project could lose every `rcode-*.md` agent file this
+  way while `rules/` subdirectories survived, silently falling back to
+  whatever happened to be in `~/.claude/` with no warning. Agents are no
+  longer deduped against global; verified against a simulated broken layout
+  that custom `rules/` content survives untouched.
+- **`/rcode-execute` refused to run on a fresh project's default branch**
+  even with `branching_strategy: none` configured, and its documented
+  override flag (`--allow-main`) didn't match what the code actually checked
+  (`--on-main`) — a brand-new user's very first execute hit a dead end with
+  a workaround that didn't work either.
+- **`config-get`'s "exits 0 with empty output" footgun** (already patched in
+  `plan.md`) recurred unpatched in 4 other gates across
+  `plan-research-validation.md` and `execute.md`.
+- **The main executor was spawned with an unresolved model profile name**
+  (`model="balanced"`) instead of a real model id, while the correct
+  resolver was already used one spawn away for the reviewer.
+- **`<acceptance_criteria>` was documented as mandatory** in
+  `execute-sprint.md` and `plan-spawn-planner.md` long after the planner's
+  real template moved to `<done>`/`<evidence>` — confirmed missing from 26/26
+  tasks in a real phase. Consumer-side language now matches what's actually
+  enforced.
+- **`add-phase.md`'s `roadmap_exists` check could never fire** (wrong arg
+  value silently failed the guard on every call), and its milestone-health
+  step made 4 redundant subprocess calls for data already returned inline
+  elsewhere in the same workflow. `/rcode-init`'s context-refresh step was a
+  guaranteed no-op on every fresh project.
+- **Stale `RIHAL ►` banner examples** in `output-format.md` survived the
+  v4.0.0 rebrand.
+- **`test/agent-team-parity.test.cjs` resolved agents by filename only** —
+  couldn't tell that `rcode-code-reviewer.md` declares `name: rcode-reviewer`
+  internally, so a correct fix looked like a broken reference. Now resolves
+  by declared name too.
+
+### Token cost (first honest numbers)
+- A live, real (not simulated) trace of `init → add-phase → plan → execute`
+  shipping one file with one paragraph cost **≈262,500 tokens and 7.6
+  minutes** across 5 subagent spawns — the actual floor, not an estimate.
+  Full trace in `.planning/audits/AUDIT-golden-path.md`.
+- 3 safe fixes landed against this: an unused 127-line reference no longer
+  loads on every `/rcode-plan`, 7 audit-only agents now load an 11-line
+  guideline summary instead of the full version, and a 254-line UI/brand
+  reference is now gated behind actual UI relevance in 2 workflows.
+- `/rcode-init` and README now surface `/rcode-enable-hooks` — the
+  session-status primer hook existed but was undiscoverable.
+
+### Skill authoring
+- New skills aren't done until a control/treatment subagent pair confirms
+  they actually change behavior on the trigger scenario, not just that the
+  markdown has the right sections (`scaffold-skill.md`).
+
+Tests: 602/604 passing (2 pre-existing, unrelated eval-drift failures).
+
+---
 ## v4.8.0 (2026-08-06) — Named engineer personas now actually execute, instead of being decorative
 
 Found by an 8-agent herdr audit checking why `/rcode-execute` never seemed to
