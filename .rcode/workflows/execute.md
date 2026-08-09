@@ -98,7 +98,41 @@ CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || ech
 
 **If `CONFIG_MODE == "yolo"` or `$ARGUMENTS` contains `--auto`:** Skip the menu. Auto-select **A) Autonomous run** and print one line: `▶ Auto-selecting Autonomous run (yolo mode). /rcode-settings set mode guided to change.`
 
-Otherwise, offer three modes via AskUserQuestion. Each option names the tradeoff explicitly:
+**herdr availability check (cached).** Before offering options, determine whether a 4th
+option (**D) herdr multi-agent orchestration**) should be shown. This uses the same
+cached-boolean idiom as `workflow._auto_chain_active` above — read with a safe default,
+write back once resolved, and skip the live check on subsequent runs:
+
+```bash
+HERDR_NAMED_EXPLICITLY=$([[ "$ARGUMENTS" =~ herdr ]] && echo true || echo false)
+
+HERDR_CHECKED=$(node .rcode/bin/rcode-tools.cjs config-get workflow._herdr_checked 2>/dev/null || echo "false")
+HERDR_CHECKED=${HERDR_CHECKED:-false}  # config-get exits 0 with empty output when key absent
+
+if [[ "$HERDR_CHECKED" != "true" || "$HERDR_NAMED_EXPLICITLY" == "true" ]]; then
+  # Live re-check: first time ever, OR user named herdr explicitly this run
+  # (herdr may have been installed since the last negative cache hit).
+  if command -v herdr >/dev/null 2>&1; then
+    HERDR_AVAILABLE=true
+  else
+    HERDR_AVAILABLE=false
+  fi
+  node .rcode/bin/rcode-tools.cjs config-set workflow._herdr_available "$HERDR_AVAILABLE" 2>/dev/null
+  node .rcode/bin/rcode-tools.cjs config-set workflow._herdr_checked true 2>/dev/null
+else
+  # Cached negative (or positive) result from a prior run — skip the check entirely.
+  HERDR_AVAILABLE=$(node .rcode/bin/rcode-tools.cjs config-get workflow._herdr_available 2>/dev/null || echo "false")
+  HERDR_AVAILABLE=${HERDR_AVAILABLE:-false}
+fi
+```
+
+Do **not** re-run `command -v herdr` on every invocation once `_herdr_checked` is `true` —
+that defeats the point of caching. The only exception is `HERDR_NAMED_EXPLICITLY`: if the
+user's request names herdr by name (e.g. "use herdr for this", "orchestrate via herdr"),
+always re-check live regardless of the cached value, since herdr may have been installed
+since the negative result was cached.
+
+Otherwise, offer modes via AskUserQuestion. Each option names the tradeoff explicitly:
 
 **A) Autonomous run** — Spawn subagent per plan in sequence/parallel per
     wave rules. Checkpoints still pause for user. Fastest wall-clock.
@@ -112,9 +146,31 @@ Otherwise, offer three modes via AskUserQuestion. Each option names the tradeoff
     later waves in a separate session. Good for staged rollout / review
     gates.
 
+**D) herdr multi-agent orchestration** (only shown if `HERDR_AVAILABLE == "true"`) —
+    Fan this phase's plans out to parallel `herdr` panes/tabs, each running its own
+    Claude agent in an isolated git worktree, then merge their work back. Be specific
+    about the tradeoff, not a one-liner: separate terminal panes you can watch
+    independently, genuinely parallel wall-clock (not wave-sequenced), noticeably
+    higher token cost than A/B/C since each pane runs a full agent session, and a
+    merge step at the end. Best fit is plans that are truly independent (no shared
+    `files_modified`, no cross-plan sequencing) — for plans with overlaps or a single
+    linear wave, herdr adds coordination overhead for no benefit; prefer A or C instead.
+    Selecting this option invokes the `rcode-herdr-orchestration` skill — it does not
+    replace this workflow's execution, it's a different way to run the same plans.
+
+    **Never auto-select D, even in yolo/`--auto` mode.** Orchestrating via herdr requires
+    explicit user confirmation on this turn — if `CONFIG_MODE == "yolo"` skipped the menu
+    above, herdr is simply not offered this run; the autonomous-run auto-selection must
+    never silently switch into herdr mode.
+
 Include a recommendation line: "My recommendation: {letter} because {reason
 in one clause}." Then ask which option to proceed with — do NOT silently
-pick one.
+pick one. If the user selects D, confirm once more in plain language what
+will happen (parallel panes, worktrees, higher cost) before invoking
+`Skill(skill="rcode-herdr-orchestration", ...)` — do not invoke it on the same
+turn as the AskUserQuestion answer without that confirmation being part of
+the answer itself (i.e. selecting the option IS the confirmation only if its
+label made the tradeoff explicit, which it does above).
 </three_options>
 
 <output_format>

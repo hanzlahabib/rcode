@@ -14,5 +14,7 @@ workflow:
   ui_safety_gate: true
   discuss_mode: adaptive
   _auto_chain_active: false
+  _herdr_checked: false
+  _herdr_available: false
 git:
   branching_strategy: feature-branch
