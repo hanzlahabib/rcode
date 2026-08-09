@@ -198,11 +198,10 @@ Deviations are normal — handle via rules below.
    - `type="auto"`: if `tdd="true"` → TDD execution. Implement with deviation rules + auth gates. Verify done criteria. Commit (see task_commit). Track hash for Summary.
    - `type="checkpoint:*"`: STOP → checkpoint_protocol → wait for user → continue only after confirmation.
    - **Task completion precedence (when signals conflict):**
-     1. `<verify><automated>` — machine-executable shell commands. **Highest authority.** If these pass, the task is done. If these fail, the task is NOT done — regardless of what `<acceptance_criteria>` says.
+     1. `<verify><automated>` — machine-executable shell commands. **Highest authority.** If these pass, the task is done. If these fail, the task is NOT done — regardless of what `<done>` says.
      2. `<done>` — single observable sentence. Use as the human-readable confirmation once automated checks pass.
-     3. `<acceptance_criteria>` — prose checklist. **Lowest authority.** Use as a guide during implementation, but automated results override prose judgments.
-     - If `<verify><automated>` is absent: fall back to `<done>`, then `<acceptance_criteria>`.
-   - **MANDATORY acceptance_criteria check:** After completing each task, if it has `<acceptance_criteria>`, verify EVERY criterion before moving to the next task. Use grep, file reads, or CLI commands to confirm each criterion. If any criterion fails, fix the implementation before proceeding. Do not skip criteria or mark them as "will verify later".
+     - If `<verify><automated>` is absent: fall back to `<done>` alone. `<evidence>` (grep hits, line ranges, or a creates-justification recorded by the planner per issue #649) is supporting grounding, not a completion signal to re-check here — the real plan schema (planner-playbook.md, sprint.md) has no such tag.
+   - **MANDATORY completion check:** After completing each task, confirm `<verify><automated>` passes (or, if absent, that the task's `<done>` sentence is observably true). Use grep, file reads, or CLI commands to confirm. If any check fails, fix the implementation before proceeding. Do not skip this or mark it as "will verify later".
 3. Run `<verification>` checks
 4. Confirm `<success_criteria>` met
 5. Document deviations in Summary

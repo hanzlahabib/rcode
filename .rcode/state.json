@@ -2,8 +2,8 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-08-09T06:47:02.404Z",
-  "current_phase": "Wire named engineer subagents into execute dispatch routing",
+  "updated": "2026-08-09T07:51:01.960Z",
+  "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
   "milestone": "M3 — Archon Dashboard Port (v5)",
@@ -1323,6 +1323,35 @@
       "planned_at": "2026-08-06T11:44:43.704Z",
       "status_updated": "2026-08-06T12:01:57.832Z",
       "completed_at": "2026-08-06"
+    },
+    {
+      "id": "47",
+      "number": "47",
+      "name": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
+      "status": "complete",
+      "started": "2026-08-09T07:21:06.308Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "47.1",
+          "number": 1,
+          "goal": "Fix 4 execute.md core bugs: branch-protection preflight skip-when-none + flag rename (#1014), USE_WORKTREES fallback (#1015), init-execute JSON field-parsing doc corrections (#1017), acceptance_criteria consumer-side cleanup (#1020)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-08-09T07:28:18.100Z",
+          "stories": []
+        }
+      ],
+      "slug": "fix-executemd-core-bugs-branch-protection-preflight-worktree-fallback-init-json-parsing-acceptancecriteria-cleanup",
+      "goal": "Close 4 filed bugs in execute.md and its close siblings (git-preflight.md, execute-sprint.md, plan-spawn-planner.md): branch-protection preflight wrongly blocks when `branching_strategy: none`, `--allow-main`/`--on-main` flag-name mismatch, `||` fallback that never fires for `USE_WORKTREES`, stale/wrong JSON field paths documented for `init execute` output, and lingering `acceptance_criteria` completion-tier language that the planner contract no longer emits (issues #1014, #1015, #1017, #1020).",
+      "created": "2026-08-09T06:44:00.871Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-08-09T07:19:49.663Z",
+      "status_updated": "2026-08-09T07:45:37.475Z",
+      "completed_at": "2026-08-09"
     }
   ],
   "executions": [
@@ -1360,6 +1389,13 @@
       "duration_ms": null,
       "commit_hash": "1f082db",
       "committed_at": "2026-08-06T12:02:03.052Z"
+    },
+    {
+      "plan": "47",
+      "tasks": 1,
+      "duration_ms": null,
+      "commit_hash": "9b48147",
+      "committed_at": "2026-08-09T07:45:41.041Z"
     }
   ],
   "decisions": [
@@ -1398,6 +1434,12 @@
       "phase": "Dashboard command runner",
       "plan": 3,
       "date": "2026-05-16T12:06:19.204Z"
+    },
+    {
+      "summary": "Phase 47 plan 47.1 complete: fixed 4 execute.md bugs (branch-protection skip-when-none + --on-main rename #1014, USE_WORKTREES fallback #1015, init-execute JSON field docs #1017, acceptance_criteria cleanup #1020) and synced .rcode/ mirrors",
+      "phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
+      "plan": 6,
+      "date": "2026-08-09T07:28:21.942Z"
     }
   ],
   "blockers": [],
@@ -1406,7 +1448,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "46.1",
+  "current_sprint": "47.1",
   "velocity_history": [
     {
       "sprint": "04.1",
@@ -1894,6 +1936,14 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/46-wire-named-engineer-subagents-into-execute-dispatch-routing/46-1-SPRINT.md"
+    },
+    {
+      "key": "47/1",
+      "phase": "47",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/47-fix-executemd-core-bugs-branch-protection-preflight-worktree-fallback-init-json-parsing-acceptancecriteria-cleanup/47-1-SPRINT.md"
     }
   ],
   "plans": [],

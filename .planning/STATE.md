@@ -1,11 +1,11 @@
 # State Snapshot
 
-**Generated:** 2026-05-22T08:14:17.431Z
+**Generated:** 2026-08-09T07:28:24.748Z
 **Project:** rcode
-**Milestone:** M2 — Hardening & Polish
-**Current phase:** Dashboard command runner
-**Current plan:** 3
-**Current sprint:** 33.1
+**Milestone:** M3 — Archon Dashboard Port (v5)
+**Current phase:** Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup
+**Current plan:** 6
+**Current sprint:** 47.1
 
 ## Raw state.json
 
@@ -14,23 +14,19 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-05-19T09:41:23.390Z",
-  "current_phase": "Dashboard command runner",
-  "current_plan": 3,
+  "updated": "2026-08-09T07:28:21.942Z",
+  "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
+  "current_plan": 6,
   "model_profile": "balanced",
-  "milestone": "M2 — Hardening & Polish",
+  "milestone": "M3 — Archon Dashboard Port (v5)",
   "phases": [
     {
-      "id": "20",
       "number": "20",
+      "id": "20",
       "name": "Dashboard UX Quick Wins",
-      "slug": "dashboard-ux-quick-wins",
-      "goal": "Fix five dashboard UX bugs (sidebar auto-expand, duplicate `/api/files` fetch, sprint card empty-state, sidebar/Files view duplication, Tasks CTA) — net -61 lines shipped.",
       "status": "complete",
-      "created": "2026-05-02T05:50:23.149Z",
       "started": "2026-05-02T00:00:00.000Z",
       "completed": "2026-05-02T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "20.1",
@@ -41,21 +37,22 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-02T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/20-dashboard-ux-quick-wins/20-1-SPRINT.md"
         }
-      ]
+      ],
+      "slug": "dashboard-ux-quick-wins",
+      "goal": "Fix five dashboard UX bugs (sidebar auto-expand, duplicate `/api/files` fetch, sprint card empty-state, sidebar/Files view duplication, Tasks CTA) — net -61 lines shipped.",
+      "created": "2026-05-02T05:50:23.149Z",
+      "plan_count": 0
     },
     {
-      "id": "21",
       "number": "21",
+      "id": "21",
       "name": "Dashboard Data Pipeline",
-      "slug": "dashboard-data-pipeline",
-      "goal": "Fix two root-cause bugs preventing tasks from appearing in the dashboard and decimal phase IDs from resolving correctly (issues #590 and #591).",
       "status": "planned",
-      "created": "2026-05-02T05:50:26.941Z",
       "started": null,
       "completed": null,
-      "plan_count": 0,
       "sprints": [
         {
           "id": "21.1",
@@ -66,27 +63,27 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": null,
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/21-dashboard-data-pipeline/21-1-SPRINT.md"
         }
-      ]
+      ],
+      "slug": "dashboard-data-pipeline",
+      "goal": "Fix two root-cause bugs preventing tasks from appearing in the dashboard and decimal phase IDs from resolving correctly (issues #590 and #591).",
+      "created": "2026-05-02T05:50:26.941Z",
+      "plan_count": 0
     },
     {
-      "id": "22",
       "number": "22",
+      "id": "22",
       "name": "Agent Slim: Top-3 via References",
-      "slug": "agent-slim-top-3-via-references",
-      "goal": "Slim the three largest agent files by extracting shared content into `references/`.",
       "status": "complete",
-      "created": "2026-05-10T07:56:36.261Z",
       "started": "2026-05-10T08:14:58.085Z",
       "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 4,
-      "plans": 4,
       "sprints": [
         {
           "id": "22.1",
           "number": 1,
-          "goal": "Create three reference files in rcode/references/ by extracting the static playbook content from the three heaviest agents. This is a pure extraction — no behav",
+          "goal": "Create three reference files in rihal/references/ by extracting the static playbook content from the three heaviest agents. This is a pure extraction — no behav",
           "status": "complete",
           "stories": [
             {
@@ -109,12 +106,13 @@
               "title": "Commit the three reference files",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-1-SPRINT.md"
         },
         {
           "id": "22.2",
           "number": 2,
-          "goal": "Slim rcode/agents/rcode-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_",
+          "goal": "Slim rihal/agents/rcode-integration-checker.md from 456 lines to ≤80 lines by replacing the `<verification_process>`, `<output>`, `<critical_rules>`, `<success_",
           "status": "complete",
           "stories": [
             {
@@ -124,7 +122,7 @@
             },
             {
               "id": "2",
-              "title": "Rewrite rcode-integration-checker.md as slim stub",
+              "title": "Rewrite rihal-integration-checker.md as slim stub",
               "status": "planned"
             },
             {
@@ -132,12 +130,13 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-2-SPRINT.md"
         },
         {
           "id": "22.3",
           "number": 3,
-          "goal": "Slim rcode/agents/rcode-research-synthesizer.md from 254 lines to ≤80 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<su",
+          "goal": "Slim rihal/agents/rcode-research-synthesizer.md from 254 lines to ≤80 lines by replacing the `<execution_flow>`, `<output_format>`, `<structured_returns>`, `<su",
           "status": "complete",
           "stories": [
             {
@@ -147,7 +146,7 @@
             },
             {
               "id": "2",
-              "title": "Rewrite rcode-research-synthesizer.md as slim stub",
+              "title": "Rewrite rihal-research-synthesizer.md as slim stub",
               "status": "planned"
             },
             {
@@ -155,12 +154,13 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-3-SPRINT.md"
         },
         {
           "id": "22.4",
           "number": 4,
-          "goal": "Slim rcode/agents/rcode-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference",
+          "goal": "Slim rihal/agents/rcode-codebase-mapper.md from 244 lines to ≤80 lines by replacing the `<process>` block with a single @-include line pointing to the reference",
           "status": "complete",
           "stories": [
             {
@@ -170,7 +170,7 @@
             },
             {
               "id": "2",
-              "title": "Rewrite rcode-codebase-mapper.md as slim stub",
+              "title": "Rewrite rihal-codebase-mapper.md as slim stub",
               "status": "planned"
             },
             {
@@ -178,33 +178,85 @@
               "title": "Commit the slimmed agent",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/22-agent-slim-top-3-via-references/22-4-SPRINT.md"
         }
-      ]
+      ],
+      "slug": "agent-slim-top-3-via-references",
+      "goal": "Slim the three largest agent files by extracting shared content into `references/`.",
+      "created": "2026-05-10T07:56:36.261Z",
+      "plan_count": 4,
+      "plans": 4
     },
     {
-      "id": "23",
       "number": "23",
+      "id": "23",
       "name": "Agent Slim: Remaining 24 via Reference Clusters",
-      "slug": "agent-slim-remaining-24-via-reference-clusters",
-      "goal": "Slim the remaining 24 agents using shared reference clusters.",
       "status": "complete",
-      "created": "2026-05-10T07:56:42.058Z",
       "started": "2026-05-10T00:00:00.000Z",
       "completed": "2026-05-10T00:00:00.000Z",
+      "sprints": [
+        {
+          "id": "23.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-1-SPRINT.md"
+        },
+        {
+          "id": "23.2",
+          "number": 2,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-2-SPRINT.md"
+        },
+        {
+          "id": "23.3",
+          "number": 3,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-3-SPRINT.md"
+        },
+        {
+          "id": "23.4",
+          "number": 4,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-4-SPRINT.md"
+        }
+      ],
+      "slug": "agent-slim-remaining-24-via-reference-clusters",
+      "goal": "Slim the remaining 24 agents using shared reference clusters.",
+      "created": "2026-05-10T07:56:42.058Z",
       "plan_count": 0
     },
     {
-      "id": "24",
       "number": "24",
+      "id": "24",
       "name": "Resolve Agent vs Skill Persona Duplication",
-      "slug": "resolve-agent-vs-skill-persona-duplication",
-      "goal": "Eliminate duplication between agent personas and skill personas.",
       "status": "complete",
-      "created": "2026-05-10T07:56:42.115Z",
       "started": "2026-05-10T00:00:00.000Z",
       "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "24.1",
@@ -215,70 +267,100 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-10T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/24-resolve-agent-vs-skill-persona-duplication/24-1-SPRINT.md"
         }
-      ]
+      ],
+      "slug": "resolve-agent-vs-skill-persona-duplication",
+      "goal": "Eliminate duplication between agent personas and skill personas.",
+      "created": "2026-05-10T07:56:42.115Z",
+      "plan_count": 0
     },
     {
-      "id": "25",
       "number": "25",
+      "id": "25",
       "name": "rcode Agent CLI Command",
-      "slug": "rcode-agent-cli-command",
-      "goal": "Add an `rcode agent` CLI command.",
       "status": "complete",
-      "created": "2026-05-10T07:56:42.171Z",
       "started": "2026-05-10T00:00:00.000Z",
       "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "25.1",
           "number": 1,
-          "goal": "Add rcode agent <name> CLI command wrapping claude --agent rcode-<name>",
+          "goal": "Add rcode agent <name> CLI command wrapping claude --agent rihal-<name>",
           "status": "completed",
           "velocity_target": null,
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-10T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/25-rcode-agent-cli-command/25-1-SPRINT.md"
         }
-      ]
-    },
-    {
-      "id": "26",
-      "number": "26",
-      "name": "Reference Index and Contributing Rule",
-      "slug": "reference-index-and-contributing-rule",
-      "goal": "Add a reference index and a contributing rule for the `references/` system.",
-      "status": "complete",
-      "created": "2026-05-10T07:56:42.231Z",
-      "started": "2026-05-10T00:00:00.000Z",
-      "completed": "2026-05-10T00:00:00.000Z",
-      "plan_count": 1
-    },
-    {
-      "id": "27",
-      "number": "27",
-      "name": "Realtime Kanban Orchestration Dashboard",
-      "slug": "realtime-kanban-orchestration-dashboard",
-      "goal": "Turn the Majlis dashboard into a realtime orchestration surface — run phases,",
-      "status": "complete",
-      "created": "2026-05-15T06:13:02.904Z",
-      "started": "2026-05-16T00:00:00.000Z",
-      "completed": "2026-05-16T00:00:00.000Z",
+      ],
+      "slug": "rcode-agent-cli-command",
+      "goal": "Add an `rcode agent` CLI command.",
+      "created": "2026-05-10T07:56:42.171Z",
       "plan_count": 0
     },
     {
-      "id": "28",
-      "number": "28",
-      "name": "Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval",
-      "slug": "audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval",
-      "goal": "Close the infrastructure gaps found auditing rcode against `everything-claude-code`:",
+      "number": "26",
+      "id": "26",
+      "name": "Reference Index and Contributing Rule",
       "status": "complete",
-      "created": "2026-05-15T13:42:38.605Z",
+      "started": "2026-05-10T00:00:00.000Z",
+      "completed": "2026-05-10T00:00:00.000Z",
+      "sprints": [
+        {
+          "id": "26.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/26-reference-index-and-contributing-rule/26-1-SPRINT.md"
+        }
+      ],
+      "slug": "reference-index-and-contributing-rule",
+      "goal": "Add a reference index and a contributing rule for the `references/` system.",
+      "created": "2026-05-10T07:56:42.231Z",
+      "plan_count": 1
+    },
+    {
+      "number": "27",
+      "id": "27",
+      "name": "Realtime Kanban Orchestration Dashboard",
+      "status": "complete",
+      "started": "2026-05-16T00:00:00.000Z",
+      "completed": "2026-05-16T00:00:00.000Z",
+      "sprints": [
+        {
+          "id": "27.1",
+          "number": 1,
+          "goal": "",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/27-realtime-kanban-orchestration-dashboard/27-1-SPRINT.md"
+        }
+      ],
+      "slug": "realtime-kanban-orchestration-dashboard",
+      "goal": "Turn the Majlis dashboard into a realtime orchestration surface — run phases,",
+      "created": "2026-05-15T06:13:02.904Z",
+      "plan_count": 0
+    },
+    {
+      "number": "28",
+      "id": "28",
+      "name": "Audit gap closure — ECC-parity hooks, eval harness, schema validation, iterative retrieval",
+      "status": "complete",
       "started": "2026-05-15T00:00:00.000Z",
       "completed": "2026-05-15T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "28.1",
@@ -289,7 +371,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-1-SPRINT.md"
         },
         {
           "id": "28.2",
@@ -300,7 +383,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-2-SPRINT.md"
         },
         {
           "id": "28.3",
@@ -311,7 +395,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-3-SPRINT.md"
         },
         {
           "id": "28.4",
@@ -322,23 +407,24 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-4-SPRINT.md"
         }
       ],
+      "slug": "audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval",
+      "goal": "Close the infrastructure gaps found auditing rcode against `everything-claude-code`:",
+      "created": "2026-05-15T13:42:38.605Z",
+      "plan_count": 0,
       "plans": 4,
       "planned_at": "2026-05-15T13:59:48.106Z"
     },
     {
-      "id": "29",
       "number": "29",
+      "id": "29",
       "name": "Security hardening — orchestrator RCE, bash-guard bypasses, file-read scoping",
-      "slug": "security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping",
-      "goal": "Close the vulnerabilities found in the rcode self security audit: an",
       "status": "complete",
-      "created": "2026-05-15T14:19:29.608Z",
       "started": "2026-05-15T00:00:00.000Z",
       "completed": "2026-05-15T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "29.1",
@@ -349,18 +435,20 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-1-SPRINT.md"
         },
         {
           "id": "29.2",
           "number": 2,
-          "goal": "bash-guard hardening — anchor RCODE_PUSH_OK, +-refspec force-push detection (#753)",
+          "goal": "bash-guard hardening — anchor RIHAL_PUSH_OK, +-refspec force-push detection (#753)",
           "status": "completed",
           "velocity_target": null,
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-2-SPRINT.md"
         },
         {
           "id": "29.3",
@@ -371,23 +459,24 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-3-SPRINT.md"
         }
       ],
+      "slug": "security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping",
+      "goal": "Close the vulnerabilities found in the rcode self security audit: an",
+      "created": "2026-05-15T14:19:29.608Z",
+      "plan_count": 0,
       "plans": 3,
       "planned_at": "2026-05-15T14:26:37.115Z"
     },
     {
-      "id": "30",
       "number": "30",
+      "id": "30",
       "name": "Marketability — license, README diet, visual proof, metadata consistency, onboarding, polish",
-      "slug": "marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish",
-      "goal": "Turn rcode into an adoptable product: resolve the license contradiction,",
       "status": "complete",
-      "created": "2026-05-15T14:19:29.650Z",
       "started": "2026-05-15T00:00:00.000Z",
       "completed": "2026-05-15T00:00:00.000Z",
-      "plan_count": 0,
       "sprints": [
         {
           "id": "30.1",
@@ -398,7 +487,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-1-SPRINT.md"
         },
         {
           "id": "30.2",
@@ -409,7 +499,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-2-SPRINT.md"
         },
         {
           "id": "30.3",
@@ -420,7 +511,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-3-SPRINT.md"
         },
         {
           "id": "30.4",
@@ -431,26 +523,24 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-15T00:00:00.000Z",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-4-SPRINT.md"
         }
       ],
+      "slug": "marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish",
+      "goal": "Turn rcode into an adoptable product: resolve the license contradiction,",
+      "created": "2026-05-15T14:19:29.650Z",
+      "plan_count": 0,
       "plans": 4,
       "planned_at": "2026-05-15T14:26:37.157Z"
     },
     {
-      "id": "31",
       "number": "31",
+      "id": "31",
       "name": "Preact migration — Majlis dashboard client",
-      "slug": "preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step",
-      "goal": "Rebuild the Majlis dashboard client as Preact components via `htm` + ESM CDN",
       "status": "complete",
-      "created": "2026-05-15T20:32:13.402Z",
       "started": "2026-05-15T23:10:19.852Z",
       "completed": null,
-      "plan_count": 4,
-      "plans": 4,
-      "planned_at": "2026-05-15T20:46:54.646Z",
-      "status_updated": "2026-05-16T11:09:40.907Z",
       "sprints": [
         {
           "id": "31.1",
@@ -488,7 +578,8 @@
               "title": "Manual regression sweep — foundation",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-1-SPRINT.md"
         },
         {
           "id": "31.2",
@@ -526,7 +617,8 @@
               "title": "Manual regression sweep — planning views",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-2-SPRINT.md"
         },
         {
           "id": "31.3",
@@ -564,7 +656,8 @@
               "title": "Manual regression sweep — complex views",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-3-SPRINT.md"
         },
         {
           "id": "31.4",
@@ -602,23 +695,26 @@
               "title": "Final full-dashboard regression sweep",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-4-SPRINT.md"
         }
       ],
+      "slug": "preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step",
+      "goal": "Rebuild the Majlis dashboard client as Preact components via `htm` + ESM CDN",
+      "created": "2026-05-15T20:32:13.402Z",
+      "plan_count": 4,
+      "plans": 4,
+      "planned_at": "2026-05-15T20:46:54.646Z",
+      "status_updated": "2026-05-16T11:09:40.907Z",
       "completed_at": "2026-05-16"
     },
     {
-      "id": "32",
       "number": "32",
+      "id": "32",
       "name": "Dashboard theming — design tokens and emoji-to-SVG icon sweep",
-      "slug": "dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep",
-      "goal": "Give the Preact dashboard a coherent visual system — a single design-token",
       "status": "complete",
-      "created": "2026-05-16T00:30:35.120Z",
       "started": null,
       "completed": null,
-      "plan_count": 3,
-      "status_updated": "2026-05-16T01:26:44.807Z",
       "sprints": [
         {
           "id": "32.1",
@@ -629,7 +725,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-1-SPRINT.md"
         },
         {
           "id": "32.2",
@@ -640,7 +737,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-2-SPRINT.md"
         },
         {
           "id": "32.3",
@@ -651,21 +749,23 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-3-SPRINT.md"
         }
-      ]
+      ],
+      "slug": "dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep",
+      "goal": "Give the Preact dashboard a coherent visual system — a single design-token",
+      "created": "2026-05-16T00:30:35.120Z",
+      "plan_count": 3,
+      "status_updated": "2026-05-16T01:26:44.807Z"
     },
     {
-      "id": "33",
       "number": "33",
+      "id": "33",
       "name": "Dashboard command runner — run init and rcode commands through the UI",
-      "slug": "dashboard-command-runner-run-init-and-rcode-commands-through-the-ui",
-      "goal": "Let the user launch `init` and other rcode commands end-to-end from the",
       "status": "complete",
-      "created": "2026-05-16T00:31:40.154Z",
       "started": "2026-05-16T01:49:09.891Z",
       "completed": null,
-      "plan_count": 3,
       "sprints": [
         {
           "id": "33.1",
@@ -676,7 +776,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-1-SPRINT.md"
         },
         {
           "id": "33.2",
@@ -687,7 +788,8 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-2-SPRINT.md"
         },
         {
           "id": "33.3",
@@ -698,21 +800,24 @@
           "velocity_actual": null,
           "started_at": null,
           "completed_at": "2026-05-16",
-          "stories": []
+          "stories": [],
+          "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-3-SPRINT.md"
         }
       ],
+      "slug": "dashboard-command-runner-run-init-and-rihal-commands-through-the-ui",
+      "goal": "Let the user launch `init` and other rcode commands end-to-end from the",
+      "created": "2026-05-16T00:31:40.154Z",
+      "plan_count": 3,
       "plans": 3,
       "status_updated": "2026-05-16T02:15:23.421Z"
     },
     {
-      "id": "34",
       "number": "34",
+      "id": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
-      "goal": "Give the dashboard an Archon-style status summary bar — aggregate count",
       "status": "planned",
       "started": null,
       "completed": null,
-      "plan_count": 2,
       "sprints": [
         {
           "id": "34.1",
@@ -735,7 +840,8 @@
               "title": "Build StatusSummaryBar component with phase/sprint/session count chips",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md"
         },
         {
           "id": "34.2",
@@ -758,20 +864,21 @@
               "title": "Mount summary bar + filter chips into SprintsView and apply the filters prop",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md"
         }
       ],
+      "goal": "Give the dashboard an Archon-style status summary bar — aggregate count",
+      "plan_count": 2,
       "status_updated": "2026-05-16T12:26:35.141Z"
     },
     {
-      "id": "35",
       "number": "35",
+      "id": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "goal": "Persist past orchestration runs on the orchestrator service and surface them",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:51:42.903Z",
       "completed": null,
-      "plan_count": 2,
       "sprints": [
         {
           "id": "35.1",
@@ -789,7 +896,8 @@
               "title": "Expose GET /api/history read endpoint",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md"
         },
         {
           "id": "35.2",
@@ -817,20 +925,22 @@
               "title": "Add history panel CSS using design tokens",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md"
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.176Z"
+      "goal": "Persist past orchestration runs on the orchestrator service and surface them",
+      "plan_count": 2,
+      "status_updated": "2026-05-16T12:26:35.176Z",
+      "plans": 2
     },
     {
-      "id": "36",
       "number": "36",
+      "id": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:51:53.546Z",
       "completed": null,
-      "plan_count": 2,
       "sprints": [
         {
           "id": "36.1",
@@ -858,7 +968,8 @@
               "title": "Add command palette CSS to css.js",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md"
         },
         {
           "id": "36.2",
@@ -876,20 +987,22 @@
               "title": "Pass blockers through App refresh and add health-badge CSS",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md"
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.211Z"
+      "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
+      "plan_count": 2,
+      "status_updated": "2026-05-16T12:26:35.211Z",
+      "plans": 2
     },
     {
-      "id": "37",
       "number": "37",
+      "id": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "goal": "Render the milestone's phases as a lightweight hand-rolled SVG dependency",
-      "status": "planned",
-      "started": null,
+      "status": "executing",
+      "started": "2026-06-12T19:52:10.476Z",
       "completed": null,
-      "plan_count": 2,
       "sprints": [
         {
           "id": "37.1",
@@ -912,7 +1025,8 @@
               "title": "Add design-token CSS for the phase dependency graph",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-1-SPRINT.md"
         },
         {
           "id": "37.2",
@@ -945,16 +1059,351 @@
               "title": "Add design-token CSS for the reject overlay, dialog, and recorded-rejection row",
               "status": "planned"
             }
-          ]
+          ],
+          "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
         }
       ],
-      "status_updated": "2026-05-16T12:26:35.245Z"
+      "goal": "Render the milestone's phases as a lightweight hand-rolled SVG dependency",
+      "plan_count": 5,
+      "status_updated": "2026-05-16T12:26:35.245Z",
+      "plans": 2
+    },
+    {
+      "number": "38",
+      "id": "38",
+      "name": "Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)",
+      "status": "complete",
+      "started": "2026-06-17T20:50:13.617Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "38.1",
+          "number": 1,
+          "goal": "\"Add the prompt-router subcommand to rcode-hooks.cjs — keyword-match the user's prompt against the do.md-derived routing table, respect the prompt_nudge toggle + per-session dedupe, emit a memory-framed additionalContext advisory, and swallow every error (exit 0 silent).\"",
+          "status": "planned",
+          "velocity_target": 13,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-1-SPRINT.md"
+        },
+        {
+          "id": "38.2",
+          "number": 2,
+          "goal": "\"Wire the prompt-router as a UserPromptSubmit hook into settings-hooks.json and the opt-in enable-hooks flow, plus declare the prompt_nudge config key, so the proactive nudge installs for Claude Code only when the user opts in. Idempotent merge, never on by default.\"",
+          "status": "planned",
+          "velocity_target": 8,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-2-SPRINT.md"
+        },
+        {
+          "id": "38.3",
+          "number": 3,
+          "goal": "\"Prevent silent drift: add a sync test that asserts every command the INTENT_TABLE routes to actually appears in the do.md routing table (the single source of truth), so a future edit to do.md that removes/renames a command fails CI rather than leaving the nudge pointing at a dead command.\"",
+          "status": "planned",
+          "velocity_target": 3,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-3-SPRINT.md"
+        }
+      ],
+      "slug": "proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892",
+      "goal": "Make rcode proactive. Add an opt-in `UserPromptSubmit` hook — a deterministic,",
+      "created": "2026-06-17T19:23:58.193Z",
+      "plan_count": 0,
+      "plans": 3,
+      "planned_at": "2026-06-17T19:40:30.458Z",
+      "status_updated": "2026-06-17T22:34:04.252Z",
+      "completed_at": "2026-06-17"
+    },
+    {
+      "number": "39",
+      "id": "39",
+      "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "sprints": [
+        {
+          "id": "39.1",
+          "number": 1,
+          "goal": "Add full-spectrum content-site project type to project-types.yaml and branch rcode-project-researcher on it",
+          "status": "planned",
+          "velocity_target": 10,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-1-SPRINT.md"
+        },
+        {
+          "id": "39.2",
+          "number": 2,
+          "goal": "Add comprehensive SEO intent routing to do.md covering all SEO disciplines",
+          "status": "planned",
+          "velocity_target": 8,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-2-SPRINT.md"
+        },
+        {
+          "id": "39.3",
+          "number": 3,
+          "goal": "Bundle 8 SEO skills from ~/.agents/skills/ into rcode/skills/seo/ as installable seo module",
+          "status": "planned",
+          "velocity_target": 10,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": [],
+          "file": ".planning/phases/39-seo-module/39-3-SPRINT.md"
+        }
+      ],
+      "slug": "seo-module",
+      "goal": "Close the rcode gap that causes content/SEO sites to be planned generically (as `web-app`) with no keyword clustering, E-E-A-T gates, or internal-link architecture. Implement four changes: (1) add `content-site` project type to `project-types.yaml` with full-spectrum SEO signals (local, affiliate, programmatic, technical, editorial, e-commerce, AI search, link-building — not just rank-and-rent), (2) route `content-site` projects in `rcode-project-researcher` to dedicated SEO skill agents, (3) add comprehensive SEO intent routing to `do.md` covering all SEO disciplines, (4) bundle 8 production-grade SEO skills from `~/.agents/skills/` into `rcode/skills/seo/` as an installable `--modules seo` module and wire the full `claude-seo:*` plugin fleet (17 agents). Closes #911, #912, #913, #914.",
+      "created": "2026-06-24T13:51:28.383Z",
+      "plan_count": 3,
+      "plans": 3,
+      "planned_at": "2026-06-24T14:00:00.000Z"
+    },
+    {
+      "number": "13",
+      "id": "13",
+      "name": "thirteenth phase",
+      "status": "planned",
+      "started": null,
+      "completed": null,
+      "sprints": [],
+      "slug": "thirteenth-phase",
+      "goal": "_TBD — fill in via /rcode-discuss-phase 13 or edit directly._",
+      "created": "2026-06-27T21:14:32.090Z",
+      "plan_count": 0
+    },
+    {
+      "number": "42",
+      "id": "42",
+      "name": "Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)",
+      "status": "complete",
+      "started": "2026-06-29T14:09:26.123Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "42.1",
+          "number": 1,
+          "goal": "Add intent-routing rule block to CLAUDE.md template in cmdGenerateClaudeMd so every generated consumer CLAUDE.md tells the agent to check do.md before acting ad-hoc. (#946)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        },
+        {
+          "id": "42.2",
+          "number": 2,
+          "goal": "Add session-start subcommand to rcode-hooks.cjs (one-line phase primer via systemMessage), extract shared state-reading helpers into state-reader.cjs to stay under 1000-line limit, register SessionStart in settings-hooks.json + enable-hooks.md. (#947)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        },
+        {
+          "id": "42.3",
+          "number": 3,
+          "goal": "Dogfood both hooks in this repo: merge UserPromptSubmit (prompt-router) + SessionStart (session-start) into .claude/settings.json; add prompt_nudge config stub. (#892)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "ambient-adoption-hooks-make-rcode-self-surfacing-sessionstart-greeter-agentsmd-routing-rule-activate-prompt-router-nudge",
+      "goal": "_TBD — fill in via /rcode-discuss-phase 42 or edit directly._",
+      "created": "2026-06-29T12:37:34.251Z",
+      "plan_count": 0,
+      "plans": 3,
+      "planned_at": "2026-06-29T13:06:03.743Z",
+      "status_updated": "2026-06-29T14:35:14.381Z"
+    },
+    {
+      "number": "43",
+      "id": "43",
+      "name": "Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)",
+      "status": "complete",
+      "started": "2026-06-29T17:19:33.860Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "43.1",
+          "number": 1,
+          "goal": "Ship rcode/data/ to consumers; fix installer and sync hook so rcode-hooks.cjs stops ENOENT-crashing (#952)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "ship-rcodedata-to-consumers-fix-installer-sync-hook-so-hooks-stop-enoent-crashing-952",
+      "goal": "_TBD — fill in via /rcode-discuss-phase 43 or edit directly._",
+      "created": "2026-06-29T15:25:31.348Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-06-29T15:29:27.195Z",
+      "status_updated": "2026-06-29T17:22:42.115Z"
+    },
+    {
+      "number": "44",
+      "id": "44",
+      "name": "GitHub sync path drift: dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (issue #980)",
+      "status": "complete",
+      "started": "2026-07-29T09:02:17.277Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "44.1",
+          "number": 1,
+          "goal": "Fix github-sync path drift: dead .rcode/phases/ layout in CLI, stale docs, SPRINT.md filename convention (#980)",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "github-sync-path-drift-dead-rcodephases-layout-in-cli-stale-docs-sprintmd-filename-convention-issue-980",
+      "goal": "Fix `cli/github-sync.js` to read the current sprint-track (`.planning/phases/*/*-SPRINT.md` with `<task>` XML) and epic-track (`.planning/epics/stories/*.md`) formats instead of the dead `.rcode/phases/{N}/tasks|stories/` layout; correct `docs/METHODOLOGY.md` and `docs/USP.md` to stop documenting that dead path as current; fix `rcode/workflows/sprint-planning.md`'s bare `SPRINT.md` output filename to follow the sequence-numbered `{phase}-{plan}-SPRINT.md` convention used everywhere else.",
+      "created": "2026-07-29T08:23:52.128Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-07-29T08:50:37.488Z",
+      "status_updated": "2026-07-30T07:27:14.847Z",
+      "completed_at": "2026-07-30"
+    },
+    {
+      "number": "45",
+      "id": "45",
+      "name": "Audit remediation: fix findings from 6-lens critical audit (issues #981-#1001)",
+      "status": "complete",
+      "started": null,
+      "completed": null,
+      "sprints": [],
+      "goal": "Fix 21 findings from a 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) — unify the planner's output schema, clean up dead `.rcode/phases/` references, fix scope/skills/agent-cleanup drift, document the epics/stories pipeline's status, and bring `plan.md`/`execute.md` back under the 1000-line cap.",
+      "plan_count": 0,
+      "status_updated": "2026-07-30T07:10:50.062Z",
+      "completed_at": "2026-07-30"
+    },
+    {
+      "number": "46",
+      "id": "46",
+      "name": "Wire named engineer subagents into execute dispatch routing",
+      "status": "complete",
+      "started": "2026-08-06T11:46:06.097Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "46.1",
+          "number": 1,
+          "goal": "Wire named engineer subagents (rcode-hanzla/yousef/haitham/omar) into execute dispatch routing: add to available_agent_types allowlist, add files_modified/objective classification and routing in execute-waves.md step 3, propagate to .rcode/ mirrors",
+          "status": "planned",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": null,
+          "stories": []
+        }
+      ],
+      "slug": "wire-named-engineer-subagents-into-execute-dispatch-routing",
+      "goal": "Add rcode-hanzla/rcode-yousef/rcode-haitham/rcode-omar to the `<available_agent_types>` allowlist in `rcode/workflows/execute.md`, and replace `execute-waves.md` step 3's hardcoded `subagent_type=rcode-executor` with classification-based routing (frontend/backend/full-stack/other, by `files_modified` globs or objective text) so plans dispatch to the persona matching what they build. Propagate to the `.rcode/` dogfooded mirrors where they haven't already diverged. Fixes #1003.",
+      "created": "2026-08-06T11:25:44.670Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-08-06T11:44:43.704Z",
+      "status_updated": "2026-08-06T12:01:57.832Z",
+      "completed_at": "2026-08-06"
+    },
+    {
+      "number": "47",
+      "id": "47",
+      "name": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
+      "status": "executing",
+      "started": "2026-08-09T07:21:06.308Z",
+      "completed": null,
+      "sprints": [
+        {
+          "id": "47.1",
+          "number": 1,
+          "goal": "Fix 4 execute.md core bugs: branch-protection preflight skip-when-none + flag rename (#1014), USE_WORKTREES fallback (#1015), init-execute JSON field-parsing doc corrections (#1017), acceptance_criteria consumer-side cleanup (#1020)",
+          "status": "completed",
+          "velocity_target": null,
+          "velocity_actual": null,
+          "started_at": null,
+          "completed_at": "2026-08-09T07:28:18.100Z",
+          "stories": []
+        }
+      ],
+      "slug": "fix-executemd-core-bugs-branch-protection-preflight-worktree-fallback-init-json-parsing-acceptancecriteria-cleanup",
+      "goal": "",
+      "created": "2026-08-09T06:44:00.871Z",
+      "plan_count": 0,
+      "plans": 1,
+      "planned_at": "2026-08-09T07:19:49.663Z"
     }
   ],
-  "executions": [],
+  "executions": [
+    {
+      "plan": "38",
+      "tasks": 3,
+      "duration_ms": null,
+      "commit_hash": "321ff91",
+      "committed_at": "2026-06-17T22:34:04.313Z"
+    },
+    {
+      "plan": "42",
+      "tasks": 3,
+      "duration_ms": null,
+      "commit_hash": "e7a2b4f",
+      "committed_at": "2026-06-29T14:35:14.424Z"
+    },
+    {
+      "plan": "43",
+      "tasks": 1,
+      "duration_ms": null,
+      "commit_hash": "d7253c8",
+      "committed_at": "2026-06-29T17:22:42.150Z"
+    },
+    {
+      "plan": "45",
+      "tasks": 5,
+      "duration_ms": null,
+      "commit_hash": "e42fd57",
+      "committed_at": "2026-07-30T07:10:57.033Z"
+    },
+    {
+      "plan": "46",
+      "tasks": 1,
+      "duration_ms": null,
+      "commit_hash": "1f082db",
+      "committed_at": "2026-08-06T12:02:03.052Z"
+    }
+  ],
   "decisions": [
     {
-      "summary": "test A — cross-project memory from rcode",
+      "summary": "test A — cross-project memory from rihal-code",
       "phase": "04",
       "plan": 0,
       "date": "2026-04-17T23:01:22.914Z"
@@ -988,6 +1437,12 @@
       "phase": "Dashboard command runner",
       "plan": 3,
       "date": "2026-05-16T12:06:19.204Z"
+    },
+    {
+      "summary": "Phase 47 plan 47.1 complete: fixed 4 execute.md bugs (branch-protection skip-when-none + --on-main rename #1014, USE_WORKTREES fallback #1015, init-execute JSON field docs #1017, acceptance_criteria cleanup #1020) and synced .rcode/ mirrors",
+      "phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
+      "plan": 6,
+      "date": "2026-08-09T07:28:21.942Z"
     }
   ],
   "blockers": [],
@@ -996,7 +1451,7 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "33.1",
+  "current_sprint": "47.1",
   "velocity_history": [
     {
       "sprint": "04.1",
@@ -1004,13 +1459,494 @@
       "completed_at": "2026-04-17T05:35:16.056Z"
     }
   ],
-  "sprints": [],
+  "sprints": [
+    {
+      "key": "20/1",
+      "phase": "20",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/20-dashboard-ux-quick-wins/20-1-SPRINT.md"
+    },
+    {
+      "key": "21/1",
+      "phase": "21",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/21-dashboard-data-pipeline/21-1-SPRINT.md"
+    },
+    {
+      "key": "22/1",
+      "phase": "22",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-1-SPRINT.md"
+    },
+    {
+      "key": "22/2",
+      "phase": "22",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-2-SPRINT.md"
+    },
+    {
+      "key": "22/3",
+      "phase": "22",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-3-SPRINT.md"
+    },
+    {
+      "key": "22/4",
+      "phase": "22",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/22-agent-slim-top-3-via-references/22-4-SPRINT.md"
+    },
+    {
+      "key": "23/1",
+      "phase": "23",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-1-SPRINT.md"
+    },
+    {
+      "key": "23/2",
+      "phase": "23",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-2-SPRINT.md"
+    },
+    {
+      "key": "23/3",
+      "phase": "23",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-3-SPRINT.md"
+    },
+    {
+      "key": "23/4",
+      "phase": "23",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/23-agent-slim-remaining-24-via-reference-clusters/23-4-SPRINT.md"
+    },
+    {
+      "key": "24/1",
+      "phase": "24",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/24-resolve-agent-vs-skill-persona-duplication/24-1-SPRINT.md"
+    },
+    {
+      "key": "25/1",
+      "phase": "25",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/25-rcode-agent-cli-command/25-1-SPRINT.md"
+    },
+    {
+      "key": "26/1",
+      "phase": "26",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/26-reference-index-and-contributing-rule/26-1-SPRINT.md"
+    },
+    {
+      "key": "27/1",
+      "phase": "27",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/27-realtime-kanban-orchestration-dashboard/27-1-SPRINT.md"
+    },
+    {
+      "key": "28/1",
+      "phase": "28",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-1-SPRINT.md"
+    },
+    {
+      "key": "28/2",
+      "phase": "28",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-2-SPRINT.md"
+    },
+    {
+      "key": "28/3",
+      "phase": "28",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-3-SPRINT.md"
+    },
+    {
+      "key": "28/4",
+      "phase": "28",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/28-audit-gap-closure-ecc-parity-hooks-eval-harness-schema-validation-iterative-retrieval/28-4-SPRINT.md"
+    },
+    {
+      "key": "29/1",
+      "phase": "29",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-1-SPRINT.md"
+    },
+    {
+      "key": "29/2",
+      "phase": "29",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-2-SPRINT.md"
+    },
+    {
+      "key": "29/3",
+      "phase": "29",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/29-security-hardening-orchestrator-rce-bash-guard-bypasses-file-read-scoping/29-3-SPRINT.md"
+    },
+    {
+      "key": "30/1",
+      "phase": "30",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-1-SPRINT.md"
+    },
+    {
+      "key": "30/2",
+      "phase": "30",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-2-SPRINT.md"
+    },
+    {
+      "key": "30/3",
+      "phase": "30",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-3-SPRINT.md"
+    },
+    {
+      "key": "30/4",
+      "phase": "30",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/30-marketability-license-readme-diet-visual-proof-metadata-consistency-onboarding-polish/30-4-SPRINT.md"
+    },
+    {
+      "key": "31/1",
+      "phase": "31",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-1-SPRINT.md"
+    },
+    {
+      "key": "31/2",
+      "phase": "31",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-2-SPRINT.md"
+    },
+    {
+      "key": "31/3",
+      "phase": "31",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-3-SPRINT.md"
+    },
+    {
+      "key": "31/4",
+      "phase": "31",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/31-preact-migration-rebuild-majlis-dashboard-client-as-preact-components-via-htm-esm-cdn-no-build-step/31-4-SPRINT.md"
+    },
+    {
+      "key": "32/1",
+      "phase": "32",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-1-SPRINT.md"
+    },
+    {
+      "key": "32/2",
+      "phase": "32",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-2-SPRINT.md"
+    },
+    {
+      "key": "32/3",
+      "phase": "32",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/32-dashboard-theming-design-tokens-and-emoji-to-svg-icon-sweep/32-3-SPRINT.md"
+    },
+    {
+      "key": "33/1",
+      "phase": "33",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-1-SPRINT.md"
+    },
+    {
+      "key": "33/2",
+      "phase": "33",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-2-SPRINT.md"
+    },
+    {
+      "key": "33/3",
+      "phase": "33",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/33-dashboard-command-runner-run-init-and-rcode-commands-through-the-ui/33-3-SPRINT.md"
+    },
+    {
+      "key": "34/1",
+      "phase": "34",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md"
+    },
+    {
+      "key": "34/2",
+      "phase": "34",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md"
+    },
+    {
+      "key": "35/1",
+      "phase": "35",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md"
+    },
+    {
+      "key": "35/2",
+      "phase": "35",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md"
+    },
+    {
+      "key": "36/1",
+      "phase": "36",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md"
+    },
+    {
+      "key": "36/2",
+      "phase": "36",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md"
+    },
+    {
+      "key": "37/1",
+      "phase": "37",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-1-SPRINT.md"
+    },
+    {
+      "key": "37/2",
+      "phase": "37",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/37-phase-dependency-graph-and-structured-rejection-dialogs/37-2-SPRINT.md"
+    },
+    {
+      "key": "38/1",
+      "phase": "38",
+      "number": "1",
+      "goal": "\"Add the prompt-router subcommand to rcode-hooks.cjs — keyword-match the user's prompt against the do.md-derived routing table, respect the prompt_nudge toggle + per-session dedupe, emit a memory-framed additionalContext advisory, and swallow every error (exit 0 silent).\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-1-SPRINT.md"
+    },
+    {
+      "key": "38/2",
+      "phase": "38",
+      "number": "2",
+      "goal": "\"Wire the prompt-router as a UserPromptSubmit hook into settings-hooks.json and the opt-in enable-hooks flow, plus declare the prompt_nudge config key, so the proactive nudge installs for Claude Code only when the user opts in. Idempotent merge, never on by default.\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-2-SPRINT.md"
+    },
+    {
+      "key": "38/3",
+      "phase": "38",
+      "number": "3",
+      "goal": "\"Prevent silent drift: add a sync test that asserts every command the INTENT_TABLE routes to actually appears in the do.md routing table (the single source of truth), so a future edit to do.md that removes/renames a command fails CI rather than leaving the nudge pointing at a dead command.\"",
+      "status": "planned",
+      "file": ".planning/phases/38-proactive-intent-router-userpromptsubmit-nudge-toward-rcode-commands-for-memory-consistency-892/38-3-SPRINT.md"
+    },
+    {
+      "key": "39/1",
+      "phase": "39",
+      "number": "1",
+      "goal": "\"Add the content-site project type to project-types.yaml and update rcode-project-researcher to branch on it — enabling keyword-first discovery for any SEO project (#911, #912).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-1-SPRINT.md"
+    },
+    {
+      "key": "39/2",
+      "phase": "39",
+      "number": "2",
+      "goal": "\"Add full-spectrum SEO routing rules to rcode/workflows/do.md so every SEO intent (keyword research, content factory, audits, local SEO, schema, AI search, backlinks, technical) routes to the correct skill instead of falling through to the generic classifier (#913).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-2-SPRINT.md"
+    },
+    {
+      "key": "39/3",
+      "phase": "39",
+      "number": "3",
+      "goal": "\"Copy the 8 SEO skills from ~/.agents/skills/ into rcode/skills/seo/, create module.yaml and module registration in rcode/modules/seo.yaml, so `npx @hanzlaa/rcode install --modules seo` installs them as a first-class rcode module (#914).\"",
+      "status": "planned",
+      "file": ".planning/phases/39-seo-module/39-3-SPRINT.md"
+    },
+    {
+      "key": "42/1",
+      "phase": "42",
+      "number": "1",
+      "goal": "\"Add a concise intent-routing rule block to the CLAUDE.md template in cmdGenerateClaudeMd so every consumer project's generated agent instructions tell the agent to check do.md before acting ad-hoc. (#946)\"",
+      "status": "planned",
+      "file": ".planning/phases/42-ambient-adoption-hooks-make-rcode-self-surfacing-sessionstart-greeter-agentsmd-routing-rule-activate-prompt-router-nudge/42-1-SPRINT.md"
+    },
+    {
+      "key": "42/2",
+      "phase": "42",
+      "number": "2",
+      "goal": "\"Add the session-start subcommand to rcode-hooks.cjs (one-line phase primer via systemMessage), extract shared state-reading helpers into rcode/bin/lib/state-reader.cjs to stay under the 1000-line limit, and register SessionStart in settings-hooks.json + enable-hooks.md. (#947)\"",
+      "status": "planned",
+      "file": ".planning/phases/42-ambient-adoption-hooks-make-rcode-self-surfacing-sessionstart-greeter-agentsmd-routing-rule-activate-prompt-router-nudge/42-2-SPRINT.md"
+    },
+    {
+      "key": "42/3",
+      "phase": "42",
+      "number": "3",
+      "goal": "\"Dogfood both hooks in this repo: merge UserPromptSubmit (prompt-router) + SessionStart (session-start) into .claude/settings.json without clobbering the two existing dev hooks; verify prompt_nudge config default. (#892)\"",
+      "status": "planned",
+      "file": ".planning/phases/42-ambient-adoption-hooks-make-rcode-self-surfacing-sessionstart-greeter-agentsmd-routing-rule-activate-prompt-router-nudge/42-3-SPRINT.md"
+    },
+    {
+      "key": "43/1",
+      "phase": "43",
+      "number": "1",
+      "goal": "\"Ship rcode/data/ to consumers via installer and sync hook so .rcode/data/intent-table.json is present on install and rcode-hooks.cjs stops ENOENT-crashing (#952)\"",
+      "status": "planned",
+      "file": ".planning/phases/43-ship-rcodedata-to-consumers-fix-installer-sync-hook-so-hooks-stop-enoent-crashing-952/43-1-SPRINT.md"
+    },
+    {
+      "key": "44/1",
+      "phase": "44",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/44-github-sync-path-drift-dead-rcodephases-layout-in-cli-stale-docs-sprintmd-filename-convention-issue-980/44-1-SPRINT.md"
+    },
+    {
+      "key": "45/1",
+      "phase": "45",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-1-SPRINT.md"
+    },
+    {
+      "key": "45/2",
+      "phase": "45",
+      "number": "2",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-2-SPRINT.md"
+    },
+    {
+      "key": "45/3",
+      "phase": "45",
+      "number": "3",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-3-SPRINT.md"
+    },
+    {
+      "key": "45/4",
+      "phase": "45",
+      "number": "4",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-4-SPRINT.md"
+    },
+    {
+      "key": "45/5",
+      "phase": "45",
+      "number": "5",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/45-audit-remediation-fix-findings-from-6-lens-critical-audit-issues-981-1001/45-5-SPRINT.md"
+    },
+    {
+      "key": "46/1",
+      "phase": "46",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/46-wire-named-engineer-subagents-into-execute-dispatch-routing/46-1-SPRINT.md"
+    }
+  ],
   "plans": [],
   "milestones": [
     {
       "id": "M1",
       "slug": "ship-v2",
-      "path": "/home/hanzla/development/rcode/.planning/milestones/M1-ship-v2/ROADMAP.md",
+      "path": "/home/hanzla/development/rihal-code/.planning/milestones/M1-ship-v2/ROADMAP.md",
       "created": "2026-04-29T13:04:44.184Z",
       "status": "completed",
       "completed": "2026-05-16"
@@ -1019,30 +1955,11 @@
       "id": "M2",
       "slug": "hardening-polish",
       "title": "Hardening & Polish",
-      "path": "/home/hanzla/development/rcode/.planning/ROADMAP.md",
+      "path": "/home/hanzla/development/rihal-code/.planning/ROADMAP.md",
       "status": "active",
       "created": "2026-05-15T20:30:52.481Z"
     }
   ],
-  "schema_version": 1
+  "schema_version": 2
 }
 ```
-
-## Accumulated Context
-
-### Roadmap Evolution
-
-- Phase 38 added: Proactive intent router — UserPromptSubmit nudge toward rcode commands for memory consistency (#892)
-- Phase 42 added: Ambient adoption hooks — make rcode self-surfacing (SessionStart greeter, AGENTS.md routing rule, activate prompt-router nudge)
-- Phase 43 added: Ship rcode/data to consumers — fix installer + sync hook so hooks stop ENOENT-crashing (#952)
-- Phase 44 added: GitHub sync path drift — dead .rcode/phases/ layout in CLI + stale docs + SPRINT.md filename convention (#980)
-- Phase 46 added: Wire named engineer subagents into execute dispatch routing (#1003)
-- Phase 45 added: Audit remediation — 6-lens critical audit (token-cost, redundant-work, schema-drift, scope-consistency, agent-sprawl, workflow-complexity) → 21 issues filed (#981-#1001)
-
-## Quick Tasks Completed
-
-| Date | Type | Task | Status |
-|------|------|------|--------|
-| 2026-08-06 | quick | Correct 3 persona-skill docs oversell dispatch capability (#1004, #1009) | ✓ |
-| 2026-08-06 | quick | fix(#1012): pin rcode-verifier VERIFICATION.md schema to status: not verdict/outcome | ✓ |
-| 2026-08-09 | quick | Fix #1016: resolve executor model via resolve-model before Task spawn in execute-waves.md | ✓ |

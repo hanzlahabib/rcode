@@ -14,8 +14,11 @@ Run these read-only commands in order. Any failure halts the workflow with the f
 # Check 1: working tree clean
 DIRTY=$(git status --porcelain 2>/dev/null)
 
-# Check 2: not on a protected branch
+# Check 2: not on a protected branch (skipped entirely when `git.branching_strategy`
+# config is `none` — committing directly to main/master is the deliberately configured
+# workflow in that case)
 BRANCH=$(git branch --show-current 2>/dev/null)
+BRANCHING_STRATEGY=$(node .rcode/bin/rcode-tools.cjs config-get git.branching_strategy 2>/dev/null)
 PROTECTED="main master develop v2-prototype"
 
 # Check 3: branch follows naming convention
@@ -35,7 +38,7 @@ fi
 The workflow MUST stop and print the banner below if ANY of:
 
 - `DIRTY` is non-empty AND user did not pass `--allow-dirty`
-- `BRANCH` is in `$PROTECTED` AND user did not pass `--on-main`
+- `BRANCH` is in `$PROTECTED` AND `BRANCHING_STRATEGY` is not `none` AND user did not pass `--on-main`
 - `BRANCH_OK` is `no` AND user did not pass `--allow-dirty` (branch-name lint is advisory if working tree is dirty AND user accepted the dirty override)
 - `OUT_OF_SCOPE` is non-empty AND user did not pass `--allow-scope-drift`
 

@@ -350,6 +350,19 @@ bash-guard / auth hardening — no raw exec surface.
 
 ---
 
+## Phase 47 — Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup
+
+**Goal:** Close 4 filed bugs in execute.md and its close siblings (git-preflight.md, execute-sprint.md, plan-spawn-planner.md): branch-protection preflight wrongly blocks when `branching_strategy: none`, `--allow-main`/`--on-main` flag-name mismatch, `||` fallback that never fires for `USE_WORKTREES`, stale/wrong JSON field paths documented for `init execute` output, and lingering `acceptance_criteria` completion-tier language that the planner contract no longer emits (issues #1014, #1015, #1017, #1020).
+
+**Status:** Complete (2026-08-09)
+
+**Plans:**
+- 47-1 — SUMMARY shipped
+
+**Acceptance:** Each of the 4 issues has a corresponding commit; execute.md's documented JSON parsing matches real `init execute` output; `--on-main`/`--allow-main` naming is consistent between execute.md and git-preflight.md's actual bash parsing; `acceptance_criteria` is no longer described as mandatory/enforced anywhere in execute.md, execute-sprint.md, or plan-spawn-planner.md.
+
+---
+
 ## Backlog
 
 - Replace duplicate agents (Fatima, Hussain in v1+v2)

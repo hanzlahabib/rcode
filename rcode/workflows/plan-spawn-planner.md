@@ -114,7 +114,7 @@ ${AGENT_SKILLS_PLANNER}
 <downstream_consumer>
 Output consumed by /rcode-execute. Plans need:
 - Frontmatter (wave, depends_on, autonomous, **files_modified** — aggregated list of all file paths from `<files>` blocks across every task; used by executor for intra-wave parallel-safety overlap detection)
-- Tasks in XML format with read_first, files, acceptance_criteria, verify (with `<automated>` child), and done fields (MANDATORY on every task)
+- Tasks in XML format with read_first, files, evidence, verify (with `<automated>` child), and done fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
 - **`## Files Touched`** section (see below) — required on every SPRINT.md
@@ -257,17 +257,13 @@ Every task MUST include these fields — they are NOT optional:
    - Executor checkpoint (knows what to stage after each task)
    - Example: `src/auth/auth.service.ts`, `tests/auth/auth.service.test.ts`
 
-3. **`<acceptance_criteria>`** — Verifiable conditions that prove the task was done correctly. Rules:
-   - Every criterion must be checkable with grep, file read, test command, or CLI output
-   - NEVER use subjective language ("looks correct", "properly configured", "consistent with")
-   - ALWAYS include exact strings, patterns, values, or command outputs that must be present
-   - Examples:
-     - Code: `auth.py contains def verify_token(` / `test_auth.py exits 0`
-     - Config: `.env.example contains DATABASE_URL=` / `Dockerfile contains HEALTHCHECK`
-     - Docs: `README.md contains '## Installation'` / `API.md lists all endpoints`
-     - Infra: `deploy.yml has rollback step` / `docker-compose.yml has healthcheck for db`
+3. **`<evidence>`** — REQUIRED (issue #649). Must show codebase grounding proving the task is real, not theoretical. At minimum one of:
+   - `grep:` a literal grep/Glob pattern + count of matches that justified this task (e.g. `` `rg '\.alert' apps/web/src` → 13 hits across 9 files ``)
+   - `lines:` exact `path:line-line` ranges of code being modified
+   - `creates:` the file paths being created from scratch (with one-line justification why no existing file fits)
+   A task without `<evidence>` is theoretical and MUST NOT be written. (Matches `rcode/references/planner-playbook.md`'s "Task Anatomy" section — single source of truth for this rule.)
 
-4. **`<verify>`** — Shell commands that PROVE the acceptance criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
+4. **`<verify>`** — Shell commands that PROVE the `<done>` criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
    - `<automated>` commands must exit 0 on success, non-zero on failure
    - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
    - Keep commands short and composable — one check per line
@@ -325,7 +321,7 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Tasks are specific and actionable
 - [ ] Every task has `<read_first>` with at least the file being modified
 - [ ] Every task has `<files>` listing exact files this task will modify or create
-- [ ] Every task has `<acceptance_criteria>` with grep-verifiable conditions
+- [ ] Every task has `<evidence>` with grep/lines/creates codebase grounding per issue #649 — not a prose checklist tag (none exists in the real plan schema)
 - [ ] Every task has `<verify>` with an `<automated>` child containing at least one shell command (Dimension 8 blocker)
 - [ ] Every task has `<done>` with a single observable acceptance sentence (Dimension 2 requirement)
 - [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
