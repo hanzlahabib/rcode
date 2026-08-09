@@ -157,9 +157,12 @@ test -f "${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md" && echo "VALIDATION_CREATED
 > Skip if `workflow.security_enforcement` is explicitly `false`. Absent = enabled.
 
 ```bash
-SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
-SECURITY_ASVS=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_asvs_level --raw 2>/dev/null || echo "1")
-SECURITY_BLOCK=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_block_on --raw 2>/dev/null || echo "high")
+SECURITY_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_enforcement --raw 2>/dev/null)
+SECURITY_CFG=${SECURITY_CFG:-true}  # config-get exits 0 with empty output when key absent; || fallback won't fire
+SECURITY_ASVS=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_asvs_level --raw 2>/dev/null)
+SECURITY_ASVS=${SECURITY_ASVS:-1}  # config-get exits 0 with empty output when key absent; || fallback won't fire
+SECURITY_BLOCK=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.security_block_on --raw 2>/dev/null)
+SECURITY_BLOCK=${SECURITY_BLOCK:-high}  # config-get exits 0 with empty output when key absent; || fallback won't fire
 ```
 
 **If `SECURITY_CFG` is `false`:** Skip to step 5.6.
@@ -183,8 +186,10 @@ Continue to step 5.6. Security config is passed to the planner in step 8.
 > Skip if `workflow.ui_phase` is explicitly `false` AND `workflow.ui_safety_gate` is explicitly `false` in `.rcode/config.yaml`. If keys are absent, treat as enabled.
 
 ```bash
-UI_PHASE_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
-UI_GATE_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_safety_gate 2>/dev/null || echo "true")
+UI_PHASE_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_phase 2>/dev/null)
+UI_PHASE_CFG=${UI_PHASE_CFG:-true}  # config-get exits 0 with empty output when key absent; || fallback won't fire
+UI_GATE_CFG=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.ui_safety_gate 2>/dev/null)
+UI_GATE_CFG=${UI_GATE_CFG:-true}  # config-get exits 0 with empty output when key absent; || fallback won't fire
 ```
 
 **If both are `false`:** Skip to step 6.
