@@ -102,7 +102,13 @@ The CLI handles:
 - Creating the phase directory (`.planning/phases/{NN}-{slug}/`)
 - Inserting the phase entry into ROADMAP.md with Goal, Depends on, and Plans sections
 
-Extract from result: `phase_number`, `padded`, `name`, `slug`, `directory`.
+Extract from result: `phase_number`, `padded`, `name`, `slug`, `directory`,
+`milestone_health` (object: `open_phases`, `recommendation`, `threshold_should`,
+`threshold_consider`), `nudge` (present only when `recommendation` isn't
+`healthy` — a ready-to-print one-liner naming the milestone). `phase add`
+computes these via `milestoneCloseNudge()` (issue #942) as part of the same
+call, so `milestone_health_check` below reads them straight off `$RESULT`
+instead of re-deriving them.
 
 **If `BULK_MODE=true`:** after the CLI returns, write the bulk body to `${directory}/TASKS.md` per the structure defined in `detect_task_list`. This step is non-destructive — it only ADDs a TASKS.md file inside the new phase directory.
 </step>
@@ -120,26 +126,30 @@ If "Roadmap Evolution" section doesn't exist, create it.
 </step>
 
 <step name="milestone_health_check">
-After the phase is added, run the milestone-health gauge (issue #718):
+After the phase is added, read the milestone-health gauge (issue #718)
+straight off the `phase add` result captured in `add_phase` — no extra
+subprocess calls. Previously this step spawned a separate `milestone-health`
+call plus 3 `node -e` JSON field extractions to re-derive data that `phase
+add` already returns inline via `milestoneCloseNudge()` (#942); that was
+4 wasted calls per phase-add for data already sitting in `$RESULT` (#1018).
 
-```bash
-HEALTH=$(node ".rcode/bin/rcode-tools.cjs" milestone-health 2>/dev/null)
-RECOMMENDATION=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).recommendation||'unknown')}catch{console.log('unknown')}})")
-OPEN_COUNT=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).open_phases||0)}catch{console.log(0)}})")
-MILESTONE_NAME=$(echo "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).milestone||'')}catch{console.log('')}})")
+```
+RECOMMENDATION="$RESULT.milestone_health.recommendation"   # e.g. healthy | consider-closing | should-close
+OPEN_COUNT="$RESULT.milestone_health.open_phases"
+NUDGE="$RESULT.nudge"                                       # ready-to-print, names the milestone; absent when healthy
 ```
 
 If `RECOMMENDATION` is `should-close` (≥12 open phases), surface a hard nudge:
 
 ```
-⚠ Milestone health: {MILESTONE_NAME} has {OPEN_COUNT} open phases.
+⚠ {NUDGE}
 
 Phase {N} is now in this milestone, but the milestone is well past the
 12-phase threshold for considering closure. Phases are accumulating without
 a milestone boundary — historically this is where roadmaps lose structure.
 
 Recommended next step:
-  /rcode-complete-milestone    close {MILESTONE_NAME} cleanly + archive done phases
+  /rcode-complete-milestone    close the milestone cleanly + archive done phases
   /rcode-new-milestone         start a fresh milestone for ongoing work
 
 If you genuinely want a giant single-milestone roadmap, ignore this and
@@ -149,11 +159,10 @@ continue. The threshold is conservative on purpose.
 If `RECOMMENDATION` is `consider-closing` (8-11 open phases), softer nudge:
 
 ```
-ℹ Milestone health: {MILESTONE_NAME} has {OPEN_COUNT} open phases — getting full.
-   Consider /rcode-complete-milestone before adding more.
+ℹ {NUDGE}
 ```
 
-If `RECOMMENDATION` is `healthy`, say nothing.
+If `RECOMMENDATION` is `healthy` or `milestone_health` is absent (no state.json / no milestone), say nothing.
 </step>
 
 <step name="completion">

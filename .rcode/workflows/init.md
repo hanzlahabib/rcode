@@ -279,10 +279,10 @@ if [ -s .rcode/context/active.md ] && ! grep -q "Run \`/rcode" .rcode/context/ac
 fi
 ```
 
-After writing both files, refresh the memory bank fingerprint so staleness checks see the project as fresh:
+After writing both files, refresh the memory bank fingerprint so staleness checks see the project as fresh. `context refresh` reads `.rcode/sources.yaml`, but nothing in rcode ever creates that file (the installer only scaffolds the unrelated `.rcode/brain/sources.yaml`, used by `brain pull`) — so on every fresh project this call is a guaranteed no-op. Skip it when the file is known not to exist rather than spending a call to learn that (#1018):
 
 ```bash
-node .rcode/bin/rcode-tools.cjs context refresh >/dev/null 2>&1 || true
+test -f .rcode/sources.yaml && node .rcode/bin/rcode-tools.cjs context refresh >/dev/null 2>&1 || true
 ```
 
 ## Step 5 — Suggest the next step
