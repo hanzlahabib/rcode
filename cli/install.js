@@ -2502,21 +2502,32 @@ async function installInner(opts) {
         fs.existsSync(path.join(projectClaudeCommands, 'rcode'))
       );
       if (globalHasrcode && !projectHasrcode) {
-        // Global commands exist, project has none yet — filter them out of the plan
-        // so we don't create duplicates. Project gets .rcode/ state only.
+        // Global commands exist, project has none yet — filter commands out of the
+        // plan so we don't create duplicates. Project gets .rcode/ state only.
+        //
+        // Issue #1022: agents are NOT deferrable to global the way commands/skills
+        // are — they are first-class, project-local files by design (see the
+        // createInstallBackup comment above: "closes #381 — without this,
+        // customized .claude/agents/rcode-*.md ... were silently lost"). Lumping
+        // `.claude/agents/` into this commands-dedup filter meant a project with
+        // global rcode commands installed but no project-level commands yet would
+        // never get its .claude/agents/*.md files written at all, leaving only
+        // whatever pre-existing subdirectories (e.g. rules/) survived untouched.
         const before = plan.length;
         const filtered = plan.filter(e => {
           const rel = e.rel.split(path.sep).join('/');
-          return !rel.startsWith('.claude/commands/') && !rel.startsWith('.claude/agents/');
+          return !rel.startsWith('.claude/commands/');
         });
         if (filtered.length < before) {
           plan.length = 0;
           filtered.forEach(e => plan.push(e));
-          console.log('  ' + dim('Global rcode commands detected in ~/.claude/ — skipping project-level agent/command install to avoid duplicates.'));
+          console.log('  ' + dim('Global rcode commands detected in ~/.claude/ — skipping project-level command install to avoid duplicates.'));
           console.log('  ' + dim('Use --force-overwrite to install locally anyway.'));
         }
       } else if (globalHasrcode && projectHasrcode) {
         // Both exist — project commands are duplicates. Remove project-level ones.
+        // Agents are left untouched (#1022) — they are project-local by design,
+        // never deduped against the global commands install.
         try {
           // Remove root-level rcode-*.md files
           const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
@@ -2530,19 +2541,11 @@ async function installInner(opts) {
           if (fs.existsSync(rcodeSubdir)) {
             safeRmSync(rcodeSubdir, opts.target);
           }
-          const projectAgentsDir = path.join(opts.target, '.claude', 'agents');
-          if (fs.existsSync(projectAgentsDir)) {
-            const agentFiles = fs.readdirSync(projectAgentsDir)
-              .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
-            for (const f of agentFiles) {
-              fs.unlinkSync(path.join(projectAgentsDir, f));
-            }
-          }
           console.log('  ' + dim('Removed duplicate project-level rcode commands (global ones in ~/.claude/ take precedence).'));
         } catch { /* non-fatal */ }
         const filtered = plan.filter(e => {
           const rel = e.rel.split(path.sep).join('/');
-          return !rel.startsWith('.claude/commands/') && !rel.startsWith('.claude/agents/');
+          return !rel.startsWith('.claude/commands/');
         });
         plan.length = 0;
         filtered.forEach(e => plan.push(e));
