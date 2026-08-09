@@ -35,11 +35,12 @@ route back to the user.
 4. **Branch check**: confirm current git branch is appropriate
    for the work. Two checks, both blocking:
 
-   a. **Not on main/master without consent**: if `git branch --show-current`
-      returns `main` or `master`, refuse to execute. Suggest:
-      `git switch -c <phase>-<plan>-<slug>` (e.g. `git switch -c 8-1-aria`).
-      User can override only by passing `--allow-main` to /rcode-execute and
-      explicitly typing the override on this turn.
+   a. **Not on main/master without consent** (skip entirely when `git.branching_strategy`
+      config is `none` — check via `node .rcode/bin/rcode-tools.cjs config-get
+      git.branching_strategy`): if `git branch --show-current` returns `main` or
+      `master`, refuse to execute. Suggest: `git switch -c <phase>-<plan>-<slug>`
+      (e.g. `git switch -c 8-1-aria`). User can override only by passing `--on-main`
+      to /rcode-execute and explicitly typing the override on this turn.
 
    b. **Working tree clean enough**: if `git status --porcelain` shows
       modified files unrelated to this phase's `files_modified` frontmatter,
