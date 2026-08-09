@@ -1045,3 +1045,4 @@
 |------|------|------|--------|
 | 2026-08-06 | quick | Correct 3 persona-skill docs oversell dispatch capability (#1004, #1009) | ✓ |
 | 2026-08-06 | quick | fix(#1012): pin rcode-verifier VERIFICATION.md schema to status: not verdict/outcome | ✓ |
+| 2026-08-09 | quick | Fix #1016: resolve executor model via resolve-model before Task spawn in execute-waves.md | ✓ |

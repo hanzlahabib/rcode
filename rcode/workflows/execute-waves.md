@@ -112,6 +112,16 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    resulting `subagent_type` value is used in the Task() call template (worktree and sequential
    modes both reuse this same value — see "Sequential mode" further below).
 
+   **Resolve executor model (once per wave, before spawning):**
+
+   `executor_model` from `init` is the raw `model_profile` string (e.g. `balanced`), not a
+   resolved model id — it must be passed through `resolve-model` first, the same way
+   `code_review_gate` in execute.md resolves `REVIEWER_MODEL` before its Task() spawn.
+   ```bash
+   EXECUTOR_MODEL=$(node ".rcode/bin/rcode-tools.cjs" resolve-model executor 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).model)}catch{console.log('')}})" || echo "sonnet")
+   EXECUTOR_MODEL=${EXECUTOR_MODEL:-sonnet}
+   ```
+
    **Worktree mode** (`USE_WORKTREES` is not `false`):
 
    Before spawning, capture the current HEAD:
@@ -139,7 +149,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    Task(
      subagent_type="{subagent_type}",
      description="Execute plan {plan_number} of phase {phase_number}",
-     model="{executor_model}",
+     model="${EXECUTOR_MODEL}",
      isolation="worktree",
      prompt="
        <objective>
