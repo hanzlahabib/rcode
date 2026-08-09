@@ -73,40 +73,23 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
    **Classify plan and select subagent_type (BEFORE spawning, once per plan):**
 
-   Reuse the `files_modified` list already parsed in step 1's intra-wave overlap check for this
-   plan — do not re-read the plan file to get it again.
+   This used to be prose pseudocode the orchestrating LLM was expected to hand-apply
+   (FRONTEND_GLOBS/BACKEND_GLOBS matching + keyword fallback). A live execution run showed
+   that computation was never actually carried out — a plan whose `files_modified` clearly
+   matched the backend glob rule (a path containing `db`) still fell back to `rcode-executor`.
+   Classification is now a deterministic CLI call — do not hand-compute it.
 
-   ```
-   FRONTEND_GLOBS = ["*.tsx", "*.jsx", "*.css"] + paths containing "client" or "ui"
-   BACKEND_GLOBS  = paths containing "api", "server", "db", or "service"
+   Call `classify-plan` with the phase and this plan's id (it reads `files_modified` and the
+   `<objective>` directly from the plan's SPRINT.md, so no need to re-parse step 1's overlap
+   data yourself):
 
-   touches_frontend = any(file matches FRONTEND_GLOBS for file in files_modified)
-   touches_backend  = any(file matches BACKEND_GLOBS for file in files_modified)
-
-   if touches_frontend and touches_backend:
-     classification = "full-stack"
-   elif touches_frontend:
-     classification = "frontend"
-   elif touches_backend:
-     classification = "backend"
-   else:
-     classification = "other"   # files_modified empty/absent, or no glob matched
+   ```bash
+   CLASSIFY_JSON=$(node ".rcode/bin/rcode-tools.cjs" classify-plan "$PHASE" "$PLAN_ID" 2>/dev/null)
+   SUBAGENT_TYPE=$(echo "$CLASSIFY_JSON" | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).subagent_type)}catch{console.log('rcode-executor')}})")
+   SUBAGENT_TYPE=${SUBAGENT_TYPE:-rcode-executor}
    ```
 
-   **If `classification` is `"other"`** (ambiguous, or `files_modified` empty/absent), fall back
-   to keyword-matching the plan's `<objective>` text before giving up:
-   - Frontend keywords (React, component, UI, CSS, Tailwind, frontend, client-side, accessibility, a11y) → `classification = "frontend"`
-   - Backend keywords (API, endpoint, database, schema, service, queue, backend, server-side) → `classification = "backend"`
-   - Neither matches (pure docs/config/infra plan) → `classification` stays `"other"`
-
-   **Route to `subagent_type`:**
-
-   | classification | subagent_type |
-   |---|---|
-   | frontend | rcode-haitham |
-   | backend | rcode-yousef |
-   | full-stack | rcode-hanzla |
-   | other | rcode-executor |
+   Use the literal `subagent_type` value returned — do not second-guess or override it.
 
    This decision is computed once per plan, before that plan's Task() spawn(s) below, and the
    resulting `subagent_type` value is used in the Task() call template (worktree and sequential

@@ -5402,6 +5402,109 @@ function cmdPlanCheckWaveOverlaps(rawArgs) {
   return { phase: phaseArg, phase_dir: path.relative(PROJECT_ROOT, phaseDir), plans_checked: plans.length, conflicts };
 }
 
+/**
+ * Deterministic frontend/backend glob check for classify-plan (issue #1021).
+ * Mirrors the FRONTEND_GLOBS / BACKEND_GLOBS rules formerly hand-applied by
+ * the orchestrating LLM in execute-waves.md — kept here as the single source
+ * of truth so both the CLI and the workflow doc describe the same behavior.
+ */
+function matchesFrontendGlob(file) {
+  const f = String(file || '').toLowerCase();
+  if (/\.(tsx|jsx|css)$/.test(f)) return true;
+  return f.includes('client') || f.includes('ui');
+}
+function matchesBackendGlob(file) {
+  const f = String(file || '').toLowerCase();
+  return f.includes('api') || f.includes('server') || f.includes('db') || f.includes('service');
+}
+
+const CLASSIFY_PLAN_ROUTE = { frontend: 'rcode-haitham', backend: 'rcode-yousef', 'full-stack': 'rcode-hanzla', other: 'rcode-executor' };
+
+function classifyPlanFiles(files, objective) {
+  const touchesFrontend = files.some(matchesFrontendGlob);
+  const touchesBackend = files.some(matchesBackendGlob);
+  let classification;
+  if (touchesFrontend && touchesBackend) classification = 'full-stack';
+  else if (touchesFrontend) classification = 'frontend';
+  else if (touchesBackend) classification = 'backend';
+  else classification = 'other';
+
+  if (classification === 'other') {
+    const obj = String(objective || '').toLowerCase();
+    const frontendKeywords = ['react', 'component', 'ui', 'css', 'tailwind', 'frontend', 'client-side', 'accessibility', 'a11y'];
+    const backendKeywords = ['api', 'endpoint', 'database', 'schema', 'service', 'queue', 'backend', 'server-side'];
+    if (frontendKeywords.some((k) => obj.includes(k))) classification = 'frontend';
+    else if (backendKeywords.some((k) => obj.includes(k))) classification = 'backend';
+  }
+  return classification;
+}
+
+/**
+ * classify-plan — deterministic replacement for execute-waves.md's
+ * hand-computed FRONTEND_GLOBS/BACKEND_GLOBS classification (issue #1021).
+ * A live execution run showed the orchestrating LLM never actually carried
+ * out the prose pseudocode, so a plan with a "db"-containing path still fell
+ * back to rcode-executor instead of rcode-yousef.
+ *
+ * Two call shapes:
+ *   classify-plan <phase> <plan-id>              — reads files_modified/objective from the plan's SPRINT.md
+ *   classify-plan --files=a,b,c --objective="..."  — classify an already-parsed list directly
+ */
+function cmdClassifyPlan(args) {
+  const flags = {};
+  const positional = [];
+  for (const t of args) {
+    if (t.startsWith('--files=')) flags.files = t.slice('--files='.length);
+    else if (t.startsWith('--objective=')) flags.objective = t.slice('--objective='.length);
+    else positional.push(t);
+  }
+
+  let files = [];
+  let objective = '';
+
+  if (flags.files !== undefined || flags.objective !== undefined) {
+    files = flags.files ? flags.files.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    objective = flags.objective || '';
+  } else {
+    const [phaseArg, planArg] = positional;
+    if (!phaseArg || !planArg) {
+      throw new Error('Usage: classify-plan <phase> <plan-id>  OR  classify-plan --files=a,b,c --objective="text"');
+    }
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const norm = phaseArg.replace(/^0+/, '') || '0';
+    let phaseDir = null;
+    if (fs.existsSync(phasesDir)) {
+      for (const d of fs.readdirSync(phasesDir)) {
+        const m = d.match(/^(\d+)(?:[-.])/);
+        if (m && (m[1].replace(/^0+/, '') || '0') === norm) { phaseDir = path.join(phasesDir, d); break; }
+      }
+    }
+    if (!phaseDir) throw new Error(`Phase not found: ${phaseArg}`);
+    let planFile = null;
+    for (const file of fs.readdirSync(phaseDir).filter((f) => /-SPRINT\.md$/i.test(f)).sort()) {
+      const stem = file.replace(/-SPRINT\.md$/i, '');
+      if (stem === planArg || stem.endsWith(`-${planArg}`)) { planFile = file; break; }
+      const text = fs.readFileSync(path.join(phaseDir, file), 'utf8');
+      const { frontmatter } = parseFrontmatter(text);
+      if ((frontmatter.sprint || frontmatter.plan) === planArg) { planFile = file; break; }
+    }
+    if (!planFile) throw new Error(`Plan not found: ${planArg} in phase ${phaseArg}`);
+    const text = fs.readFileSync(path.join(phaseDir, planFile), 'utf8');
+    const { frontmatter, body } = parseFrontmatter(text);
+    let block = '';
+    if (text.startsWith('---\n')) {
+      const end = text.indexOf('\n---\n', 4);
+      if (end !== -1) block = text.slice(4, end);
+    }
+    files = fmListField(block, 'files_modified');
+    const objMatch = body.match(/^##\s+(?:Objective|Goal)\s*\n+([^\n]+)/mi);
+    objective = objMatch ? objMatch[1].trim() : (frontmatter.goal || '').replace(/^["']|["']$/g, '');
+  }
+
+  const classification = classifyPlanFiles(files, objective);
+  return { classification, subagent_type: CLASSIFY_PLAN_ROUTE[classification], files_checked: files.length };
+}
+
 /** phases list — directory inventory under .planning/phases with optional --type filter and --pick path. */
 function cmdPhasesList(args) {
   const argv = Array.isArray(args) ? args : String(args || '').trim().split(/\s+/).filter(Boolean);
@@ -6657,6 +6760,9 @@ async function main() {
         break;
       case 'phase-plan-index':
         result = cmdPhasePlanIndex(args.join(' '));
+        break;
+      case 'classify-plan':
+        result = cmdClassifyPlan(args);
         break;
       case 'phases':
         if (args[0] === 'list') { result = cmdPhasesList(args.slice(1)); if (result === undefined) return; }

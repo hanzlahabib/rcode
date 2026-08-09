@@ -375,3 +375,70 @@ test('complete-phase ignores later-numbered executing phases (not stale relative
   const result = json(cwd, ['state', 'complete-phase', '--phase', '43']);
   assert.deepStrictEqual(result.stale_executing_phases, []);
 });
+
+// ─── classify-plan (#1021) ─────────────────────────────────────────────────────
+
+test('classify-plan routes a frontend-only files_modified list to rcode-haitham', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, ['classify-plan', '--files=app/client/ui/Button.tsx', '--objective=']);
+  assert.strictEqual(result.classification, 'frontend');
+  assert.strictEqual(result.subagent_type, 'rcode-haitham');
+});
+
+test('classify-plan routes a backend-only files_modified list (path containing "db") to rcode-yousef', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, ['classify-plan', '--files=src/db/schema.ts', '--objective=']);
+  assert.strictEqual(result.classification, 'backend');
+  assert.strictEqual(result.subagent_type, 'rcode-yousef');
+});
+
+test('classify-plan routes a mixed frontend+backend files_modified list to rcode-hanzla (full-stack)', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, [
+    'classify-plan',
+    '--files=app/client/ui/Button.tsx,src/api/server.ts',
+    '--objective=',
+  ]);
+  assert.strictEqual(result.classification, 'full-stack');
+  assert.strictEqual(result.subagent_type, 'rcode-hanzla');
+});
+
+test('classify-plan falls back to rcode-executor when files_modified is empty and objective has no keywords', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, ['classify-plan', '--files=', '--objective=update the changelog']);
+  assert.strictEqual(result.classification, 'other');
+  assert.strictEqual(result.subagent_type, 'rcode-executor');
+});
+
+test('classify-plan falls back to objective keyword matching when files_modified is empty', (t) => {
+  const cwd = setup(t);
+  const result = json(cwd, ['classify-plan', '--files=', '--objective=wire up the new API endpoint']);
+  assert.strictEqual(result.classification, 'backend');
+  assert.strictEqual(result.subagent_type, 'rcode-yousef');
+});
+
+test('classify-plan reads files_modified and objective from a plan SPRINT.md by phase + plan id', (t) => {
+  const cwd = setup(t);
+  const phaseDir = path.join(cwd, '.planning', 'phases', '43-ship-data');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(phaseDir, '43-01-SPRINT.md'),
+    [
+      '---',
+      'sprint: 43.1',
+      'wave: 1',
+      'files_modified:',
+      '  - src/db/migrations/0001_init.ts',
+      '  - src/db/schema.ts',
+      '---',
+      '',
+      '## Objective',
+      'Add a migrations table to the db',
+      '',
+    ].join('\n'),
+  );
+  const result = json(cwd, ['classify-plan', '43', '43.1']);
+  assert.strictEqual(result.classification, 'backend');
+  assert.strictEqual(result.subagent_type, 'rcode-yousef');
+  assert.strictEqual(result.files_checked, 2);
+});
