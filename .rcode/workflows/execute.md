@@ -35,11 +35,12 @@ route back to the user.
 4. **Branch check**: confirm current git branch is appropriate
    for the work. Two checks, both blocking:
 
-   a. **Not on main/master without consent**: if `git branch --show-current`
-      returns `main` or `master`, refuse to execute. Suggest:
-      `git switch -c <phase>-<plan>-<slug>` (e.g. `git switch -c 8-1-aria`).
-      User can override only by passing `--allow-main` to /rcode-execute and
-      explicitly typing the override on this turn.
+   a. **Not on main/master without consent** (skip entirely when `git.branching_strategy`
+      config is `none` — check via `node .rcode/bin/rcode-tools.cjs config-get
+      git.branching_strategy`): if `git branch --show-current` returns `main` or
+      `master`, refuse to execute. Suggest: `git switch -c <phase>-<plan>-<slug>`
+      (e.g. `git switch -c 8-1-aria`). User can override only by passing `--on-main`
+      to /rcode-execute and explicitly typing the override on this turn.
 
    b. **Working tree clean enough**: if `git status --porcelain` shows
       modified files unrelated to this phase's `files_modified` frontmatter,
@@ -49,8 +50,7 @@ route back to the user.
 
    The branch name should align with the phase/plan IDs from state — check
    `workflow.branch_pattern` config (default `<phase>-<plan>-<slug>`).
-5. **Worktree config**: read `workflow.use_worktrees` — if true + parallelization
-   is true + no file overlaps, plans in a wave run parallel via worktrees
+5. **Worktree config**: read `workflow.use_worktrees` — if true + no file overlaps, plans in a wave run parallel via worktrees. (`parallelization` is not a real field in `init execute`'s output — see the "initialize" step below; don't gate on it.)
 </pre_flight>
 
 <insight_block>
@@ -238,14 +238,16 @@ If `INIT` is empty or `INIT.ok` is false, print error and exit:
 Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
-Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for these real, top-level fields: `executor_model`, `verifier_model`, `phase_dir`, `plans`, `state_exists`, `response_language`. Fields commonly assumed to exist but that are NOT top-level (verified live this session against `init execute`'s real output, `cmdInitExecute` in rcode-tools.cjs): `branching_strategy` is nested under `config.branching_strategy`; `commit_docs` doesn't exist (closest real value is `config.commit_planning`, a `"true"`/`"false"` string); `parallelization` has no source anywhere (not top-level, not under `config`, not in `phase-plan-index`'s output either); `branch_name` isn't returned (the `handle_branching` step below now computes it from config instead); `phase_name` isn't derivable either (`phase_dir`'s basename is a slug, not the human-readable name — read ROADMAP.md if a step needs it); `incomplete_plans`/`incomplete_count` don't exist (`plans[]` items only carry `{path, depends_on, wave, plan}`, no completion field); `roadmap_exists`/`phase_req_ids` are returned only by the separate `init sprint-plan` command, not `init execute`.
+Derivable, not literal: `phase_found` as `phase_dir !== null`; `phase_number` as the `target` field (the raw phase argument as passed, e.g. `"45"`); `phase_slug` from `phase_dir`'s basename (the part after the first `-`); `plan_count` as `plans.length`. Downstream `${PHASE_NUMBER}`/`${PLAN_COUNT}` references later in this workflow (snapshot tag, review prompts, `phase complete`, etc.) resolve from `target`/`plans.length` per these derivations; `${PHASE_NAME}` and `${INCOMPLETE_COUNT}` have no source here — read `PHASE_NAME` from ROADMAP.md if a later step needs it, and treat `INCOMPLETE_COUNT` as unknown until `phase-plan-index` runs in `discover_and_group_plans` (which does return a real per-plan `has_summary` completion signal).
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
 Read worktree config:
 
 ```bash
-USE_WORKTREES=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.use_worktrees 2>/dev/null || echo "true")
+USE_WORKTREES=$(node ".rcode/bin/rcode-tools.cjs" config-get workflow.use_worktrees 2>/dev/null)
+USE_WORKTREES=${USE_WORKTREES:-true}  # config-get exits 0 with empty output when key absent; || fallback won't fire
 ```
 
 When `USE_WORKTREES` is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees.
@@ -265,11 +267,11 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 - Verifier agents receive all SPRINT.md, SUMMARY.md, CONTEXT.md files plus REQUIREMENTS.md
 - This enables cross-phase awareness and history-aware verification
 
-**If `phase_found` is false:** Error — phase directory not found. Run `/rcode-status` to inspect state or `/rcode-plan {N}` to create the phase.
-**If `plan_count` is 0:** Error — no plans found in phase. Run `/rcode-plan {N}` to generate plans or `/rcode-help` for the command surface.
+**If `phase_dir` is `null` (derived `phase_found` false):** Error — phase directory not found. Run `/rcode-status` to inspect state or `/rcode-plan {N}` to create the phase.
+**If `plans.length` is 0 (derived `plan_count` 0):** Error — no plans found in phase. Run `/rcode-plan {N}` to generate plans or `/rcode-help` for the command surface.
 **If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
 
-When `parallelization` is false, plans within a wave execute sequentially.
+`parallelization` is not a real field in `init execute`'s output (see the "initialize" step's field notes above) — this line currently documents behavior with no data source; don't treat it as a working toggle until a real source is wired in.
 
 **Runtime detection for Copilot:**
 Check if the current runtime is Copilot by testing for the `@rcode-executor` agent pattern
@@ -352,7 +354,7 @@ Check `branching_strategy` from init:
 
 **"none":** Skip, continue on current branch.
 
-**"phase" or "milestone":** Use pre-computed `branch_name` from init:
+**"phase" or "milestone":** `init execute` does not return `branch_name` (see the "initialize" step's field notes above) — compute `BRANCH_NAME` from `workflow.branch_pattern` config (default `<phase>-<plan>-<slug>`) before running:
 ```bash
 git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
 ```
@@ -361,7 +363,7 @@ All subsequent commits go to this branch. User handles merging.
 </step>
 
 <step name="validate_phase">
-From init JSON: `phase_dir`, `plan_count`, `incomplete_count`.
+From init JSON: `phase_dir` (real); `plan_count` derives as `plans.length`; `incomplete_count` has no source at this point (see the "initialize" step's field notes) — treat as unknown until `phase-plan-index` runs.
 
 Report: "Found {plan_count} plans in {phase_dir} ({incomplete_count} incomplete)"
 
@@ -527,7 +529,7 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 <step name="run_verify_commands">
 **Run per-task `<verify>` shell commands from all completed SPRINT.md plans.**
 
-After all executor agents finish, extract and run any `<verify>` blocks defined in plan tasks. These are the machine-executable counterpart to `<acceptance_criteria>` prose.
+After all executor agents finish, extract and run any `<verify>` blocks defined in plan tasks. These are the machine-executable proof that a task's `<done>` criteria are met — the plan schema has no such tag; `<verify><automated>` plus `<evidence>` grounding are what the planner and executor actually emit and enforce.
 
 ```bash
 # Extract all <verify> blocks from all SPRINT.md files for this phase
@@ -745,10 +747,10 @@ fi
    ```
    ⚠ Phase {X} EXECUTED but not yet verified.
 
-   The following acceptance criteria require human verification before
+   The following task completion criteria require human verification before
    the phase can advance to `status: complete`:
 
-   {list AC items from SPRINT.md}
+   {list each task's <done> sentence from SPRINT.md}
 
    Recommended next steps:
    /rcode-add-tests {X} — generate unit + E2E tests before UAT
@@ -761,7 +763,7 @@ fi
 **If `VERIFICATION_STATUS` is `fail`:**
 
 1. Mark the phase as `status: executed` (so /rcode-plan --gaps can run a closure cycle).
-2. Surface the failed AC items.
+2. Surface the tasks whose `<done>` criteria failed human verification.
 3. STOP. Don't mark complete on a failing verification.
 
 **Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
