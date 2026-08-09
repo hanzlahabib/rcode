@@ -117,6 +117,21 @@ if [ -n "$fails" ]; then
 fi
 ```
 
+## Step 3.5 — Prove It Moved the Needle
+
+Passing the 5-component check in Step 3 only proves the file has the right shape — a triggers block, an Overview, a Workflow, an Output Format, and Examples. It says nothing about whether loading the skill actually changes what an agent does. A skill can be structurally perfect and still be a no-op in practice: the model reads it, nods along, and then falls back to its untrained default the moment a real scenario hits.
+
+Do not mark a new or edited skill as ready to ship until you've run this gate:
+
+1. **Write the pressure scenario.** Take the exact situation the skill's triggers describe — the moment the skill is supposed to change the agent's behavior — and phrase it as a concrete task an agent could be handed cold, with no mention of the skill.
+2. **Run the control.** Spawn a fresh subagent with no memory of this conversation and the skill NOT loaded (do not mention it, do not point at its path). Give it the pressure scenario. Record what it does by default — this is almost always the suboptimal or wrong behavior the skill exists to correct.
+3. **Run the treatment.** Spawn a second fresh subagent, same scenario, this time with the skill loaded (either by having it available for the model to invoke, or by including its content directly in the prompt). Record what it does.
+4. **Compare.** The treatment run must diverge from the control run in the specific direction the skill claims to produce. "Both agents produced fine-looking output" is not a pass — the question is whether the skill was the reason for the difference. If the two runs land on the same behavior, the skill has no measurable effect yet, no matter how clean its markdown is.
+
+If the comparison shows no behavioral difference, the skill is not done. Go back and sharpen the Workflow section, the triggers, or the examples — whichever part failed to actually steer the model — and rerun this gate. Do not ship on structural compliance alone.
+
+Skip this gate only when scaffolding a brand-new, still-empty skill (Step 2's placeholders haven't been filled in yet — there's no behavior to test). Once real content replaces the placeholders, this gate becomes mandatory before the skill is considered ready.
+
 ## Step 4 — Confirm and Next Up
 
 Print:
@@ -127,13 +142,16 @@ Print:
 
   All 5 required components are present (triggers, Overview, Workflow,
   Output Format, Examples). The placeholders need real content before
-  the skill becomes useful.
+  the skill becomes useful — and once they're filled in, run Step 3.5
+  (Prove It Moved the Needle) before calling the skill done.
 
 ▶ Next Up
   $EDITOR rcode/skills/actions/<group>/rcode-<NAME>/SKILL.md
                                                   # fill in placeholders
   npx @hanzlaa/rcode install --force              # install to .claude/skills/
   node --test test/compliance.test.cjs            # verify compliance
+                                                  # then: control vs. treatment
+                                                  # subagent run (Step 3.5)
 ```
 
 ## Next Up
