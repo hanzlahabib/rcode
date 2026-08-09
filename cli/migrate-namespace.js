@@ -26,6 +26,7 @@ function printScanSummary(scan) {
   console.log(`   Found ${scan.totalCount} artifact(s) to migrate:`);
   console.log(`     legacy rihal-* skills:   ${scan.legacySkillCount}`);
   console.log(`     legacy rihal-* commands: ${scan.legacyCommandCount}`);
+  console.log(`     legacy rihal-* agents:   ${scan.legacyAgentCount}`);
   console.log(`     unprefixed dupes:        ${scan.unprefixedCount}`);
   console.log(`     cross-scope dupes:       ${scan.crossScopeCount}  (global copy shadowed by project)`);
   console.log();
@@ -50,6 +51,7 @@ module.exports = function migrateNamespaceCommand(args = []) {
   console.log(`   ✓ Removed ${total} artifact(s):`);
   console.log(`     legacy skills:   ${summary.removed.legacySkills}`);
   console.log(`     legacy commands: ${summary.removed.legacyCommands}`);
+  console.log(`     legacy agents:   ${summary.removed.legacyAgents}`);
   console.log(`     unprefixed:      ${summary.removed.unprefixedDupes}`);
   console.log(`     cross-scope:     ${summary.removed.crossScopeDupes}`);
   if (summary.backupDir) {

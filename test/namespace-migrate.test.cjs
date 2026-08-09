@@ -147,12 +147,15 @@ test('scanNamespaceDuplication: aggregates counts across project + global scope'
   writeCommand(path.join(homeDir, '.claude'), 'rcode-plan.md');
   writeCommand(path.join(projectDir, '.claude'), 'ship.md');
   writeCommand(path.join(homeDir, '.claude'), 'ship.md');
+  writeAgent(path.join(homeDir, '.claude'), 'rihal-hanzla.md');
+  writeAgent(path.join(homeDir, '.claude'), 'rcode-hanzla.md');
 
   const scan = scanNamespaceDuplication(projectDir, homeDir);
   assert.strictEqual(scan.legacySkillCount, 1);
+  assert.strictEqual(scan.legacyAgentCount, 1);
   assert.strictEqual(scan.unprefixedCount, 1);
   assert.strictEqual(scan.crossScopeCount, 1);
-  assert.strictEqual(scan.totalCount, 3);
+  assert.strictEqual(scan.totalCount, 4);
 });
 
 test('scanNamespaceDuplication: zero on a clean install', (t) => {
@@ -190,6 +193,28 @@ test('migrateNamespace: removes legacy rihal-* skill and backs it up under ~/.cl
   const backedUp = path.join(summary.backupDir, 'global', 'skills', 'rihal-do', 'SKILL.md');
   assert.strictEqual(fs.existsSync(backedUp), true);
   assert.strictEqual(fs.readFileSync(backedUp, 'utf8'), '# legacy content\n');
+});
+
+test('migrateNamespace: removes legacy rihal-* agent and backs it up under ~/.claude/.rcode-backup/ (#1023)', (t) => {
+  const projectDir = makeTempDir();
+  const homeDir = makeTempDir();
+  t.after(() => { cleanup(projectDir); cleanup(homeDir); });
+
+  writeAgent(path.join(homeDir, '.claude'), 'rihal-hanzla.md', '# legacy agent\n');
+  writeAgent(path.join(homeDir, '.claude'), 'rcode-hanzla.md');
+
+  const summary = migrateNamespace(projectDir, homeDir);
+  assert.strictEqual(summary.removed.legacyAgents, 1);
+  assert.ok(summary.backupDir);
+
+  // Original removed
+  assert.strictEqual(fs.existsSync(path.join(homeDir, '.claude', 'agents', 'rihal-hanzla.md')), false);
+  // Twin untouched
+  assert.strictEqual(fs.existsSync(path.join(homeDir, '.claude', 'agents', 'rcode-hanzla.md')), true);
+  // Backup preserved with original content, in its own agents/ bucket (not commands/)
+  const backedUp = path.join(summary.backupDir, 'global', 'agents', 'rihal-hanzla.md');
+  assert.strictEqual(fs.existsSync(backedUp), true);
+  assert.strictEqual(fs.readFileSync(backedUp, 'utf8'), '# legacy agent\n');
 });
 
 test('migrateNamespace: cross-scope dupe keeps the project copy, removes the global one', (t) => {

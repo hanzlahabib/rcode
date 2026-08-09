@@ -148,15 +148,17 @@ function scanNamespaceDuplication(projectDir, homeDir) {
 
   const legacySkillCount = projectLegacy.skills.length + globalLegacy.skills.length;
   const legacyCommandCount = projectLegacy.commands.length + globalLegacy.commands.length;
+  const legacyAgentCount = projectLegacy.agents.length + globalLegacy.agents.length;
   const unprefixedCount = projectUnprefixed.length + globalUnprefixed.length;
   const crossScopeCount = crossScope.length;
 
   return {
     legacySkillCount,
     legacyCommandCount,
+    legacyAgentCount,
     unprefixedCount,
     crossScopeCount,
-    totalCount: legacySkillCount + legacyCommandCount + unprefixedCount + crossScopeCount,
+    totalCount: legacySkillCount + legacyCommandCount + legacyAgentCount + unprefixedCount + crossScopeCount,
     detail: { projectLegacy, globalLegacy, projectUnprefixed, globalUnprefixed, crossScope },
   };
 }
@@ -169,7 +171,8 @@ function scanNamespaceDuplication(projectDir, homeDir) {
  */
 function backupAndRemove(srcPath, backupRoot, scope, kind) {
   if (!fs.existsSync(srcPath)) return false;
-  const destDir = path.join(backupRoot, scope, kind === 'skill' ? 'skills' : 'commands');
+  const destDirName = kind === 'skill' ? 'skills' : kind === 'agent' ? 'agents' : 'commands';
+  const destDir = path.join(backupRoot, scope, destDirName);
   fs.mkdirSync(destDir, { recursive: true });
   const dest = path.join(destDir, path.basename(srcPath));
   fs.cpSync(srcPath, dest, { recursive: true });
@@ -194,7 +197,7 @@ function migrateNamespace(projectDir, homeDir) {
 
   const summary = {
     backupDir: null,
-    removed: { legacySkills: 0, legacyCommands: 0, unprefixedDupes: 0, crossScopeDupes: 0 },
+    removed: { legacySkills: 0, legacyCommands: 0, legacyAgents: 0, unprefixedDupes: 0, crossScopeDupes: 0 },
   };
 
   const removeAll = (items, scope, kind) => {
@@ -211,6 +214,9 @@ function migrateNamespace(projectDir, homeDir) {
   summary.removed.legacyCommands =
     removeAll(scan.detail.projectLegacy.commands, 'project', 'command') +
     removeAll(scan.detail.globalLegacy.commands, 'global', 'command');
+  summary.removed.legacyAgents =
+    removeAll(scan.detail.projectLegacy.agents, 'project', 'agent') +
+    removeAll(scan.detail.globalLegacy.agents, 'global', 'agent');
   summary.removed.unprefixedDupes =
     removeAll(scan.detail.projectUnprefixed, 'project', 'command') +
     removeAll(scan.detail.globalUnprefixed, 'global', 'command');
