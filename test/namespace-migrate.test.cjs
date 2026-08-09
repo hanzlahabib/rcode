@@ -15,6 +15,7 @@ const {
   findLegacyRihalArtifacts,
   findUnprefixedTwinDupes,
   findCrossScopeDupes,
+  findLegacyCodexSlashCommands,
   scanNamespaceDuplication,
   migrateNamespace,
 } = require('../cli/lib/namespace-migrate.cjs');
@@ -34,6 +35,12 @@ function writeCommand(claudeDir, name, content = '# command\n') {
 
 function writeAgent(claudeDir, name, content = '# agent\n') {
   const dir = path.join(claudeDir, 'agents');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, name), content);
+}
+
+function writeCodexSlashCommand(homeDir, name, content = '# codex command\n') {
+  const dir = path.join(homeDir, '.rcode', 'slash-commands');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, name), content);
 }
@@ -109,6 +116,28 @@ test('findUnprefixedTwinDupes: ignores rcode-* and rihal-* prefixed files themse
   assert.strictEqual(dupes.length, 0);
 });
 
+// ---- findLegacyCodexSlashCommands (#1024) ----
+
+test('findLegacyCodexSlashCommands: flags rihal-* flat command file only when rcode-* twin exists', (t) => {
+  const homeDir = makeTempDir();
+  t.after(() => cleanup(homeDir));
+  writeCodexSlashCommand(homeDir, 'rihal-status.md');
+  writeCodexSlashCommand(homeDir, 'rihal-lonely.md'); // no twin — must NOT be flagged
+  writeCodexSlashCommand(homeDir, 'rcode-status.md');
+
+  const dupes = findLegacyCodexSlashCommands(homeDir);
+  assert.strictEqual(dupes.length, 1);
+  assert.strictEqual(dupes[0].name, 'rihal-status.md');
+  assert.strictEqual(dupes[0].twin, 'rcode-status.md');
+  assert.strictEqual(dupes[0].srcPath, path.join(homeDir, '.rcode', 'slash-commands', 'rihal-status.md'));
+});
+
+test('findLegacyCodexSlashCommands: empty when ~/.rcode/slash-commands does not exist', (t) => {
+  const homeDir = makeTempDir();
+  t.after(() => cleanup(homeDir));
+  assert.deepStrictEqual(findLegacyCodexSlashCommands(homeDir), []);
+});
+
 // ---- findCrossScopeDupes ----
 
 test('findCrossScopeDupes: flags global copy when the same command exists in project', (t) => {
@@ -149,13 +178,16 @@ test('scanNamespaceDuplication: aggregates counts across project + global scope'
   writeCommand(path.join(homeDir, '.claude'), 'ship.md');
   writeAgent(path.join(homeDir, '.claude'), 'rihal-hanzla.md');
   writeAgent(path.join(homeDir, '.claude'), 'rcode-hanzla.md');
+  writeCodexSlashCommand(homeDir, 'rihal-status.md');
+  writeCodexSlashCommand(homeDir, 'rcode-status.md');
 
   const scan = scanNamespaceDuplication(projectDir, homeDir);
   assert.strictEqual(scan.legacySkillCount, 1);
   assert.strictEqual(scan.legacyAgentCount, 1);
   assert.strictEqual(scan.unprefixedCount, 1);
   assert.strictEqual(scan.crossScopeCount, 1);
-  assert.strictEqual(scan.totalCount, 4);
+  assert.strictEqual(scan.legacyCodexCommandCount, 1);
+  assert.strictEqual(scan.totalCount, 5);
 });
 
 test('scanNamespaceDuplication: zero on a clean install', (t) => {
@@ -215,6 +247,29 @@ test('migrateNamespace: removes legacy rihal-* agent and backs it up under ~/.cl
   const backedUp = path.join(summary.backupDir, 'global', 'agents', 'rihal-hanzla.md');
   assert.strictEqual(fs.existsSync(backedUp), true);
   assert.strictEqual(fs.readFileSync(backedUp, 'utf8'), '# legacy agent\n');
+});
+
+test('migrateNamespace: removes legacy rihal-* Codex slash command and backs it up (#1024)', (t) => {
+  const projectDir = makeTempDir();
+  const homeDir = makeTempDir();
+  t.after(() => { cleanup(projectDir); cleanup(homeDir); });
+
+  writeCodexSlashCommand(homeDir, 'rihal-status.md', '# legacy codex command\n');
+  writeCodexSlashCommand(homeDir, 'rcode-status.md');
+  writeCodexSlashCommand(homeDir, 'rihal-orphan.md'); // no twin — must survive
+
+  const summary = migrateNamespace(projectDir, homeDir);
+  assert.strictEqual(summary.removed.legacyCodexCommands, 1);
+  assert.ok(summary.backupDir);
+
+  const slashDir = path.join(homeDir, '.rcode', 'slash-commands');
+  assert.strictEqual(fs.existsSync(path.join(slashDir, 'rihal-status.md')), false);
+  assert.strictEqual(fs.existsSync(path.join(slashDir, 'rcode-status.md')), true);
+  assert.strictEqual(fs.existsSync(path.join(slashDir, 'rihal-orphan.md')), true);
+
+  const backedUp = path.join(summary.backupDir, 'global', 'commands', 'rihal-status.md');
+  assert.strictEqual(fs.existsSync(backedUp), true);
+  assert.strictEqual(fs.readFileSync(backedUp, 'utf8'), '# legacy codex command\n');
 });
 
 test('migrateNamespace: cross-scope dupe keeps the project copy, removes the global one', (t) => {

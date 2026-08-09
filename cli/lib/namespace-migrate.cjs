@@ -133,6 +133,40 @@ function findCrossScopeDupes(projectClaudeDir, globalClaudeDir) {
 }
 
 /**
+ * Legacy rihal-* flat command files under ~/.rcode/slash-commands/, whose
+ * rcode-* twin already exists in the SAME dir. Read-only.
+ *
+ * This is the ONLY per-file location that's actually Codex-specific (#1024):
+ * `cli/install.js`'s `--global` install writes every command body here (a
+ * single flat dir shared by the Codex + Antigravity prompt-submit hook
+ * router — see `installSlashRouterCommands()`), and this is where a stale
+ * rihal-* copy from before the rename would still live. The comment in
+ * install.js claiming Codex reads `~/.codex/prompts/*.md` is inaccurate —
+ * that path is never written by this codebase; verified by reading
+ * install.js's actual writer functions rather than trusting the comment.
+ * Project-level Codex installs (agentsDir/commandsDir under `.claude/`) are
+ * already covered by findLegacyRihalArtifacts() since Codex shares that
+ * layout with claude/grok.
+ */
+function findLegacyCodexSlashCommands(homeDir) {
+  const dupes = [];
+  const dir = path.join(homeDir, '.rcode', 'slash-commands');
+  for (const entry of listDirSafe(dir)) {
+    if (!entry.isFile() || !entry.name.startsWith('rihal-') || !entry.name.endsWith('.md')) continue;
+    const twinName = 'rcode-' + entry.name.slice('rihal-'.length);
+    if (fs.existsSync(path.join(dir, twinName))) {
+      dupes.push({
+        name: entry.name,
+        twin: twinName,
+        srcPath: path.join(dir, entry.name),
+        kind: 'command',
+      });
+    }
+  }
+  return dupes;
+}
+
+/**
  * Full duplication report across project + global scopes. Pure read — safe
  * to call from `rcode doctor` on every run.
  */
@@ -145,12 +179,14 @@ function scanNamespaceDuplication(projectDir, homeDir) {
   const projectUnprefixed = findUnprefixedTwinDupes(projectClaudeDir);
   const globalUnprefixed = findUnprefixedTwinDupes(globalClaudeDir);
   const crossScope = findCrossScopeDupes(projectClaudeDir, globalClaudeDir);
+  const codexSlashCommands = findLegacyCodexSlashCommands(homeDir);
 
   const legacySkillCount = projectLegacy.skills.length + globalLegacy.skills.length;
   const legacyCommandCount = projectLegacy.commands.length + globalLegacy.commands.length;
   const legacyAgentCount = projectLegacy.agents.length + globalLegacy.agents.length;
   const unprefixedCount = projectUnprefixed.length + globalUnprefixed.length;
   const crossScopeCount = crossScope.length;
+  const legacyCodexCommandCount = codexSlashCommands.length;
 
   return {
     legacySkillCount,
@@ -158,8 +194,15 @@ function scanNamespaceDuplication(projectDir, homeDir) {
     legacyAgentCount,
     unprefixedCount,
     crossScopeCount,
-    totalCount: legacySkillCount + legacyCommandCount + legacyAgentCount + unprefixedCount + crossScopeCount,
-    detail: { projectLegacy, globalLegacy, projectUnprefixed, globalUnprefixed, crossScope },
+    legacyCodexCommandCount,
+    totalCount:
+      legacySkillCount +
+      legacyCommandCount +
+      legacyAgentCount +
+      unprefixedCount +
+      crossScopeCount +
+      legacyCodexCommandCount,
+    detail: { projectLegacy, globalLegacy, projectUnprefixed, globalUnprefixed, crossScope, codexSlashCommands },
   };
 }
 
@@ -197,7 +240,14 @@ function migrateNamespace(projectDir, homeDir) {
 
   const summary = {
     backupDir: null,
-    removed: { legacySkills: 0, legacyCommands: 0, legacyAgents: 0, unprefixedDupes: 0, crossScopeDupes: 0 },
+    removed: {
+      legacySkills: 0,
+      legacyCommands: 0,
+      legacyAgents: 0,
+      unprefixedDupes: 0,
+      crossScopeDupes: 0,
+      legacyCodexCommands: 0,
+    },
   };
 
   const removeAll = (items, scope, kind) => {
@@ -221,6 +271,7 @@ function migrateNamespace(projectDir, homeDir) {
     removeAll(scan.detail.projectUnprefixed, 'project', 'command') +
     removeAll(scan.detail.globalUnprefixed, 'global', 'command');
   summary.removed.crossScopeDupes = removeAll(scan.detail.crossScope, 'global', 'command');
+  summary.removed.legacyCodexCommands = removeAll(scan.detail.codexSlashCommands, 'global', 'command');
 
   const totalRemoved = Object.values(summary.removed).reduce((a, b) => a + b, 0);
   if (totalRemoved > 0) summary.backupDir = backupRoot;
@@ -232,6 +283,7 @@ module.exports = {
   findLegacyRihalArtifacts,
   findUnprefixedTwinDupes,
   findCrossScopeDupes,
+  findLegacyCodexSlashCommands,
   scanNamespaceDuplication,
   migrateNamespace,
 };

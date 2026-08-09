@@ -29,6 +29,7 @@ function printScanSummary(scan) {
   console.log(`     legacy rihal-* agents:   ${scan.legacyAgentCount}`);
   console.log(`     unprefixed dupes:        ${scan.unprefixedCount}`);
   console.log(`     cross-scope dupes:       ${scan.crossScopeCount}  (global copy shadowed by project)`);
+  console.log(`     legacy Codex commands:   ${scan.legacyCodexCommandCount}  (~/.rcode/slash-commands/)`);
   console.log();
 }
 
@@ -54,6 +55,7 @@ module.exports = function migrateNamespaceCommand(args = []) {
   console.log(`     legacy agents:   ${summary.removed.legacyAgents}`);
   console.log(`     unprefixed:      ${summary.removed.unprefixedDupes}`);
   console.log(`     cross-scope:     ${summary.removed.crossScopeDupes}`);
+  console.log(`     codex commands:  ${summary.removed.legacyCodexCommands}`);
   if (summary.backupDir) {
     console.log(`   💾 backup: ${path.relative(home, summary.backupDir)} (under ~/.claude/.rcode-backup/)`);
   }

@@ -229,8 +229,10 @@ function runPreflight(cwd, packageRoot) {
         status: 'warn',
         message:
           `${nsDup.totalCount} duplicate registration(s) — legacy skills: ${nsDup.legacySkillCount}, ` +
-          `legacy commands: ${nsDup.legacyCommandCount}, unprefixed: ${nsDup.unprefixedCount}, ` +
-          `cross-scope: ${nsDup.crossScopeCount} (run \`rcode migrate-namespace --yes\` or \`rcode update\`)`,
+          `legacy commands: ${nsDup.legacyCommandCount}, legacy agents: ${nsDup.legacyAgentCount}, ` +
+          `unprefixed: ${nsDup.unprefixedCount}, cross-scope: ${nsDup.crossScopeCount}, ` +
+          `legacy Codex commands: ${nsDup.legacyCodexCommandCount} ` +
+          `(run \`rcode migrate-namespace --yes\` or \`rcode update\`)`,
       });
     } else {
       checks.push({
