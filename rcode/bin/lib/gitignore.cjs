@@ -1,7 +1,5 @@
 /**
- * Gitignore — extracted from rcode-tools.cjs (issue #204). Pure mechanical
- * move, no behavior change (including the pre-existing `slice_end` typo in
- * spliceBlock, left untouched — out of scope for this extraction).
+ * Gitignore — extracted from rcode-tools.cjs (issue #204).
  */
 
 const fs = require('fs');
@@ -102,8 +100,8 @@ function cmdGitignore(args, { PROJECT_ROOT, RCODE_DIR }) {
     let sliceStart = start;
     if (sliceStart > 0 && existing[sliceStart - 1] === '\n') sliceStart -= 1;
     let sliceEnd = endIdx + END.length;
-    if (existing[slice_end] === '\n') slice_end += 1;
-    return existing.slice(0, sliceStart) + newBlock + existing.slice(slice_end);
+    if (existing[sliceEnd] === '\n') sliceEnd += 1;
+    return existing.slice(0, sliceStart) + newBlock + existing.slice(sliceEnd);
   }
 
   if (!fs.existsSync(gitignorePath)) {

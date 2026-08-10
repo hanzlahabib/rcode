@@ -442,3 +442,27 @@ test('classify-plan reads files_modified and objective from a plan SPRINT.md by 
   assert.strictEqual(result.subagent_type, 'rcode-yousef');
   assert.strictEqual(result.files_checked, 2);
 });
+
+// ─── gitignore refresh (#961) ──────────────────────────────────────────────
+
+test('gitignore refresh rewrites an existing rcode-managed block without throwing (spliceBlock sliceEnd typo)', (t) => {
+  const cwd = setup(t);
+  fs.writeFileSync(
+    path.join(cwd, '.gitignore'),
+    [
+      'node_modules/',
+      '',
+      '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====',
+      'stale-content',
+      '# ===== end rcode-managed gitignore block =====',
+      '',
+    ].join('\n'),
+  );
+  const result = json(cwd, ['gitignore', 'refresh']);
+  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.action, 'updated');
+  const gi = fs.readFileSync(path.join(cwd, '.gitignore'), 'utf8');
+  assert.match(gi, /^node_modules\/$/m);
+  assert.doesNotMatch(gi, /stale-content/);
+  assert.match(gi, /===== rcode-managed gitignore block/);
+});
