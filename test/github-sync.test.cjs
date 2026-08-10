@@ -428,3 +428,54 @@ test('applyGranularFilters — --sprint filter matches both dash and dot sprint-
   assert.strictEqual(dotFiltered[0].stories.length, 1);
   assert.strictEqual(dotFiltered[0].stories[0].id, '44.1.1');
 });
+
+// ============================================================
+// syncMap key namespacing (fix/#1002 — cross-track id collision)
+// ============================================================
+
+function syncKey(phaseId, id) {
+  return `${phaseId}:${id}`;
+}
+
+test('syncKey — sprint-track and epic-track items with a colliding bare id do not clobber each other in syncMap.stories', () => {
+  const tmp = mkTmp();
+  try {
+    // Sprint-track: a `<task id="1.1">` collapses to the exact same 2-segment
+    // shape epic-track story ids use.
+    const sprintDir = path.join(tmp, '.planning', 'phases', '9-test');
+    fs.mkdirSync(sprintDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(sprintDir, '9-1-SPRINT.md'),
+      '<tasks><task id="1.1" title="Sprint-track task"></task></tasks>',
+    );
+
+    // Epic-track: a real story sharing the same bare id "1.1".
+    const epicsDir = path.join(tmp, '.planning', 'epics');
+    const storiesDir = path.join(epicsDir, 'stories');
+    fs.mkdirSync(storiesDir, { recursive: true });
+    fs.writeFileSync(path.join(epicsDir, 'EPIC-01.md'), '# Epic 1: Auth\n');
+    fs.writeFileSync(path.join(storiesDir, '1.1.md'), '# Story 1.1: Login flow\n\n**Epic:** EPIC-1 — Auth\n');
+
+    const phases = discover.discoverPhases(tmp);
+    const sprintPhase = phases.find((p) => p.id === '9-test');
+    const epicPhase = phases.find((p) => p.id === 'epics');
+    assert.strictEqual(sprintPhase.stories[0].id, '1.1');
+    assert.strictEqual(epicPhase.stories[0].id, '1.1');
+
+    // Bare-id keying (the pre-fix behavior) collides.
+    const bareMap = {};
+    bareMap[sprintPhase.stories[0].id] = { source: 'sprint' };
+    bareMap[epicPhase.stories[0].id] = { source: 'epic' };
+    assert.strictEqual(Object.keys(bareMap).length, 1, 'bare ids collide across tracks');
+
+    // Namespaced keying (the fix) does not collide.
+    const namespacedMap = {};
+    namespacedMap[syncKey(sprintPhase.id, sprintPhase.stories[0].id)] = { source: 'sprint' };
+    namespacedMap[syncKey(epicPhase.id, epicPhase.stories[0].id)] = { source: 'epic' };
+    assert.strictEqual(Object.keys(namespacedMap).length, 2, 'namespaced keys do not collide');
+    assert.strictEqual(namespacedMap[syncKey('9-test', '1.1')].source, 'sprint');
+    assert.strictEqual(namespacedMap[syncKey('epics', '1.1')].source, 'epic');
+  } finally {
+    rmTmp(tmp);
+  }
+});
