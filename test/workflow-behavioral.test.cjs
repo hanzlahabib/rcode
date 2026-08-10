@@ -66,11 +66,18 @@ test('execute-sprint.md defines task completion precedence table', () => {
   );
 });
 
-test('execute-sprint.md has acceptance_criteria as lowest authority', () => {
+test('execute-sprint.md falls back to <done> when <verify><automated> is absent', () => {
+  // Issue #1020: <acceptance_criteria> was removed as a completion tier — the
+  // real planner schema never emits it. Precedence is now two-tier:
+  // <verify><automated> (highest) falling back to <done> alone.
   const text = wf('execute-sprint.md');
   assert.ok(
-    /acceptance_criteria.*[Ll]owest|[Ll]owest.*acceptance_criteria/i.test(text),
-    'execute-sprint.md must declare <acceptance_criteria> as lowest authority (issue #535)',
+    /verify.*automated.*is absent.*fall back to.*done|fall back to.*done.*alone/i.test(text),
+    'execute-sprint.md must declare <done> as the fallback when <verify><automated> is absent (issue #1020)',
+  );
+  assert.ok(
+    !/acceptance_criteria/i.test(text),
+    'execute-sprint.md must not reference <acceptance_criteria> as a completion tier — it was removed in #1020',
   );
 });
 
