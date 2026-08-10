@@ -245,16 +245,24 @@ test('#705 — re-install with stub ROADMAP + missing state.json DOES re-seed _s
 // option is wired by reading the source — guard against deletion.
 // ────────────────────────────────────────────────────────────────────────
 
-test('#706 — install.js brain-pull execFileSync includes a timeout option', () => {
+test('#1030 — install.js brain-pull runs detached instead of blocking install', () => {
+  // #706's execFileSync + timeout was replaced in #1030: a live-measured 58s
+  // cold pull sat dangerously close to that 60s timeout. Brain pull is
+  // best-effort and never fails install, so it now spawns detached and
+  // install returns immediately instead of blocking on a timeout at all.
   const src = fs.readFileSync(INSTALL_JS, 'utf8');
-  // Find the brain pull call site.
   const brainPullSection = src.match(
-    /execFileSync\([^,]+,\s*\[\s*toolsPath,\s*['"]brain['"],\s*['"]pull['"][\s\S]*?\}\)/,
+    /spawn\(\s*['"]node['"],\s*\[\s*toolsPath,\s*['"]brain['"],\s*['"]pull['"][\s\S]*?\}\)/,
   );
-  assert.ok(brainPullSection, 'brain-pull execFileSync call not found in install.js');
+  assert.ok(brainPullSection, 'detached brain-pull spawn() call not found in install.js');
   assert.match(
     brainPullSection[0],
-    /timeout:\s*\d+/,
-    'brain-pull execFileSync MUST pass a timeout option — regression of #706a',
+    /detached:\s*true/,
+    'brain-pull spawn MUST pass detached: true — regression of #1030',
+  );
+  assert.match(
+    src,
+    /child\.unref\(\)/,
+    'brain-pull child process MUST be unref\'d so it does not keep install alive — regression of #1030',
   );
 });
