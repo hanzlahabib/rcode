@@ -269,6 +269,9 @@ function buildDashboard(state) {
              : (Array.isArray(raw.phases) ? raw.phases : []);
 
   // ---- phases (superset: rich phaseTree + contract range/state) ----
+  // Sorted numerically by phase number — state.json array order reflects
+  // insertion order (when a phase entry was appended), not phase sequence,
+  // so an inserted-late phase like 13 would otherwise render after 38/39/42/43.
   const phases = tree.map(p => {
     const started   = p.started || p.created || null;
     const completed = p.completed || p.completed_at || null;
@@ -276,7 +279,7 @@ function buildDashboard(state) {
       ? [fmtShort(started), fmtShort(completed)].filter(Boolean).join(' – ')
       : '';
     return { ...p, name: p.name || p.slug || String(p.id || ''), range, state: toState(p.status) };
-  });
+  }).sort((a, b) => (parseFloat(a.id ?? a.number) || 0) - (parseFloat(b.id ?? b.number) || 0));
 
   // ---- progress (prefer story counts; fall back to phase-level counts) ----
   let completed = 0, total = 0, inProg = 0;
