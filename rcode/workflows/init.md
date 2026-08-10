@@ -42,6 +42,12 @@ Run detection in parallel:
 test -f .rcode/config.yaml && echo "rcode-configured: yes" || echo "rcode-configured: no"
 test -f .rcode/state.json && echo "state-present: yes" || echo "state-present: no"
 test -f .rcode/JOURNEY.md && echo "rihla-present: yes" || echo "rihla-present: no"
+# #1028: config.yaml is written by the installer itself, so it exists on the
+# very first /rcode-init run after a fresh install — not just on a genuine
+# "returning" session. state.json's installer-seeded _seeded_stub marker
+# (cleared once a real init/new-project run completes) is what actually
+# distinguishes "normal first brownfield run" from "prior init was interrupted".
+grep -q '"_seeded_stub"[[:space:]]*:[[:space:]]*true' .rcode/state.json 2>/dev/null && echo "seeded-stub: yes" || echo "seeded-stub: no"
 
 # Project presence
 # Use git rev-parse instead of test -d .git — in git worktrees .git is a FILE not a dir
@@ -83,12 +89,20 @@ If `state === "returning"` and `--reset` not passed:
   Or run with --reset to reconfigure.
   ```
 
-- If `rihla-present: no` — JOURNEY.md is missing from a partial prior init. Do NOT stop. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
+- If `rihla-present: no` and `seeded-stub: yes` — this is the normal, expected first `/rcode-init` run on a brownfield project: `config.yaml` was seeded by the installer, but no real init has happened yet. Nothing was broken; do NOT use "recovery" language. Print a plain first-run notice and continue to Steps 4 and 4b to write the baseline:
+
+  ```
+  ✓ rcode is configured. Writing the JOURNEY.md baseline now...
+  ```
+
+  Skip Steps 2 and 3 (config already exists). Jump directly to Step 4.
+
+- If `rihla-present: no` and `seeded-stub: no` — a genuine prior init/new-project run completed (the stub marker was cleared) but JOURNEY.md is missing, meaning that prior run was interrupted before writing it. This is an actual recovery case. Print a recovery notice and continue to Steps 4 and 4b to write the missing baseline:
 
   ```
   ✓ rcode is already configured here.
 
-  JOURNEY.md baseline is missing — completing the scan step now...
+  JOURNEY.md baseline is missing from a prior interrupted init — completing it now...
   ```
 
   Skip Steps 2 and 3 (config already exists). Jump directly to Step 4.

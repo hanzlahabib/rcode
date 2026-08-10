@@ -2151,11 +2151,15 @@ async function installInner(opts) {
 
   // Antigravity install is experimental — best-effort path, user may need to adjust
   if (opts.ides.includes('antigravity')) {
-    console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rcode/{agents,commands}/.'));
-    console.log('  ' + dim('If Antigravity expects a different path, adjust .rcode/config.yaml and re-run.'));
-    // #908: same as Codex — the UserPrompt hook is only wired on a global install.
+    // #908/#1028: the UserPrompt hook that makes .antigravity/ files functional
+    // is only wired on a global install. A project-local install would write
+    // guaranteed-inert files, so skip them entirely instead of installing dead
+    // weight — see planIdes filtering below.
     if (!opts.global) {
-      console.log('  ' + warn('Antigravity /rcode-* slash commands need a GLOBAL install — re-run with `--global`. This project-local install does NOT wire the hook.'));
+      console.log('  ' + warn('Antigravity /rcode-* slash commands need a GLOBAL install — re-run with `--global`. Skipping .antigravity/ files on this project-local install (they would be inert).'));
+    } else {
+      console.log('  ' + warn('Antigravity install is experimental. Files land at .antigravity/rcode/{agents,commands}/.'));
+      console.log('  ' + dim('If Antigravity expects a different path, adjust .rcode/config.yaml and re-run.'));
     }
   }
 
@@ -2179,9 +2183,23 @@ async function installInner(opts) {
     }
   }
 
-  const fullPlan = buildInstallPlan(opts.ides, opts.target);
+  // #1028: .antigravity/ is only wired up on a GLOBAL install (the hook that
+  // makes /rcode-* slash commands work lives in ~/.gemini/antigravity/, written
+  // by installAntigravitySlashRouterHook() only when opts.global is set — see
+  // the warning above). A project-local install writes guaranteed-inert files;
+  // skip them entirely unless --global was actually passed.
+  const planIdes = (!opts.global && Array.isArray(opts.ides))
+    ? opts.ides.filter(i => i !== 'antigravity')
+    : opts.ides;
+
+  const fullPlan = buildInstallPlan(planIdes, opts.target);
   const plan = filterPlanByModules(fullPlan, opts.modules);
   if (plan.length === 0) {
+    if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
+      console.error('✖ Nothing to install — Antigravity was the only target IDE, and its files need a GLOBAL install.');
+      console.error('  Re-run with --global, or pick another --ide.');
+      return 1;
+    }
     console.error('✖ Nothing to install — install plan is empty.');
     if (opts.modules.length > 0) console.error(`  Modules requested: ${opts.modules.join(', ')}`);
     return 1;
