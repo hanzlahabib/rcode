@@ -743,7 +743,10 @@ function parseSimpleYamlInline(text) {
 /**
  * Read prompt_nudge from .rcode/config.yaml.
  * Returns 'every' | 'once-per-intent' | 'when-stale' | 'off'.
- * Defaults to 'every' when key is absent, file is missing, or value is unknown.
+ * Defaults to 'once-per-intent' when key is absent, file is missing, or value
+ * is unknown — #953: 'every' re-nudged on every matching prompt during an
+ * active session, which read as noise once the keyword matcher's false
+ * positives compounded it. 'every' is still available as an opt-in.
  */
 function readPromptNudgeToggle(cwd) {
   const VALID = new Set(['every', 'once-per-intent', 'when-stale', 'off']);
@@ -752,9 +755,9 @@ function readPromptNudgeToggle(cwd) {
     const text = fs.readFileSync(cfgPath, 'utf8');
     const parsed = parseSimpleYamlInline(text);
     const val = (parsed.prompt_nudge || '').trim().toLowerCase();
-    return VALID.has(val) ? val : 'every';
+    return VALID.has(val) ? val : 'once-per-intent';
   } catch {
-    return 'every';
+    return 'once-per-intent';
   }
 }
 
@@ -789,6 +792,20 @@ function isStateStaleFallbackTrue(cwd) {
   } catch {
     return true; // fail open: treat as stale
   }
+}
+
+/**
+ * Word-boundary keyword match — #953: plain `lower.includes(kw)` matched
+ * generic keywords like "bug" and "crash" inside unrelated words ("debugger",
+ * "crashing"), over-firing the debug nudge. Boundaries are checked against
+ * Unicode letters/numbers (not just ASCII \w) so Arabic/Urdu keyword phrases
+ * still match correctly.
+ */
+function keywordMatches(lower, kw) {
+  const kwLower = kw.toLowerCase();
+  const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, 'u');
+  return re.test(lower);
 }
 
 /**
@@ -868,12 +885,12 @@ function promptRouter() {
       process.exit(0);
     }
 
-    // ── Keyword match (first-match-wins, case-insensitive) ───────────────
+    // ── Keyword match (first-match-wins, case-insensitive, word-boundary) ─
     const lower = prompt.toLowerCase();
     let matched = null;
     for (const entry of INTENT_TABLE) {
       for (const kw of entry.keywords) {
-        if (lower.includes(kw.toLowerCase())) {
+        if (keywordMatches(lower, kw)) {
           matched = entry;
           break;
         }
