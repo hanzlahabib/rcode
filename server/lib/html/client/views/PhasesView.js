@@ -91,7 +91,7 @@ function PhaseDetail({ phase: p, S }) {
         <div class="attr-grid">
           <${AttrItem} label="Status" value=${html`<${Chip} status=${p.status}/>`}/>
           <${AttrItem} label="Sprints" value=${sps.length}/>
-          <${AttrItem} label="Tasks Done" value=${done + '/' + stories.length}/>
+          <${AttrItem} label="Tasks Done" value=${stories.length ? (done + '/' + stories.length) : 'no tasks tracked'}/>
           <${AttrItem} label="Progress" value=${pct(done, stories.length)}/>
           ${p.completed_at ? html`<${AttrItem} label="Completed" value=${humanDate(p.completed_at)}/>` : null}
         </div>

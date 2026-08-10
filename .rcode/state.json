@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-08-09T08:07:51.076Z",
+  "updated": "2026-08-10T12:33:15.846Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -864,8 +864,8 @@
       "id": "35",
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "executing",
-      "started": "2026-06-12T19:51:42.903Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -926,8 +926,8 @@
       "id": "36",
       "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "status": "executing",
-      "started": "2026-06-12T19:51:53.546Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -988,8 +988,8 @@
       "id": "37",
       "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "status": "executing",
-      "started": "2026-06-12T19:52:10.476Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -1161,19 +1161,6 @@
       "plan_count": 3,
       "plans": 3,
       "planned_at": "2026-06-24T14:00:00.000Z"
-    },
-    {
-      "id": "13",
-      "number": "13",
-      "name": "thirteenth phase",
-      "status": "planned",
-      "started": null,
-      "completed": null,
-      "sprints": [],
-      "slug": "thirteenth-phase",
-      "goal": "_TBD — fill in via /rcode-discuss-phase 13 or edit directly._",
-      "created": "2026-06-27T21:14:32.090Z",
-      "plan_count": 0
     },
     {
       "id": "42",
