@@ -14,7 +14,7 @@ All dates are targets, not commitments. Scope and dates shift when reality shift
 - Intent guards, plan verification, post-execute gates.
 - Global agents at `~/.rcode/agents/` for customization.
 
-### v4.0.0 — `rihal-*` → `rcode-*` rename + populated Memory Bank (current)
+### v4.0.0 — `rihal-*` → `rcode-*` rename + populated Memory Bank
 - Hard rename across the entire stack: `.rihal/` → `.rcode/`, `/rihal-*` → `/rcode-*`, agent and skill prefixes.
 - 45 agents, 116 slash commands, 86 skills, file-based state in `.rcode/`.
 - Memory Bank ships populated (rcode dogfoods its own bank under `.rcode/memory/`).

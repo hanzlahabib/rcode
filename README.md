@@ -23,7 +23,7 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.8.0 on npm. 45 agents · 117 commands · 130 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.9.0 on npm. 45 agents · 117 commands · 130 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
 
 ---
 
@@ -229,7 +229,7 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ## Honest state of things
 
-- **v4.8.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
+- **v4.9.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
 - **Test suite**: 598 automated tests across 74 files (run `node --test`). Live pass/fail status is on the CI badge above. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.

@@ -314,7 +314,7 @@ Skills are domain expertise modules. They are loaded automatically when their tr
 
 ## Known Limitations
 
-These are real gaps in the current version (`v4.0.0`):
+These were known gaps as of `v4.0.0` (unverified against the current `v4.9.0` release — re-check before relying on this list):
 
 1. **`/rcode-plan` requires `.planning/` directory** — the workflow cannot be used inside the rcode repo itself. There is no self-referential project management.
 

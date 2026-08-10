@@ -6,36 +6,19 @@ Active milestone. Goal, phases, current sprint, blockers. The agent reads this b
 
 ## Milestone
 
-**Name:** v4.0.0 rebrand + open-source release prep
-**Started:** 2026-05-20
-**Target close:** 2026-06-15 (rolling)
-**Goal:** Complete the `rihal` → `rcode` rename across the entire codebase (CLI, skills, workflows, docs, brand surfaces), shake out post-rename regressions, and harden for first public open-source announce on npm. Memory Bank remains the product moat.
+**Name:** M3 — Archon Dashboard Port (v5)
+**Started:** (pre-2026-08, see `.rcode/state.json` for phase-level dates)
+**Target close:** rolling
+**Goal:** Port the Archon-style dashboard experience and harden `/rcode-execute` core (branch-protection preflight, worktree fallback, init-JSON parsing, `acceptance_criteria` cleanup). v4.0.0 rebrand + OSS release prep (below) shipped and is archived history — package is at v4.9.0.
 
 ## Active phase
 
-**Phase:** Post-rename hardening
-**Started:** 2026-05-23
-**Acceptance criteria:**
-- [x] Bump to v4.0.0 (commit `304eebc`)
-- [x] Rename `rihal*` → `rcode*` across CLI, skills, workflows (commits `4da7c1e`, `be560f8`, `22ea25b`, `fd1849d`, `2b0bbee`)
-- [x] Fix brain clone (sparse-checkout split — `adf6f7e`)
-- [ ] Close issue #861 — leftover `rihal` references in installed surface
-- [ ] Close issue #860 — 25+ skill workflows reference non-existent paths
-- [ ] Memory Bank distillates regenerated and verified <5K tokens (this commit)
-- [ ] Announce-ready README + CHANGELOG audited end-to-end
+**Phase:** Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup
+**Source of truth:** `.rcode/state.json` (`current_phase`, `current_plan`) — update this file's phase/sprint detail alongside state.json rather than letting it drift.
 
 ## Active sprint / cycle
 
-**Window:** 2026-05-23 → 2026-05-30
-**Focus:** Fix post-rename leftovers + dogfood Memory Bank on rcode itself.
-**Stories:**
-- [ ] #861 — clean leftover `rihal` refs in installed surface
-- [ ] #860 — repair skill workflows referencing non-existent paths
-- [ ] #859 — investigate `rihal-codebase-mapper` 600s stall
-- [ ] #856 — `roadmap list-phases` reports wrong in-progress phase
-- [ ] #855 / #854 — `state set-phase` write/completion bugs
-- [ ] #852 — ts-node symlink fails during pnpm install
-- [ ] Memory Bank dogfood (this work)
+**Focus:** See `.rcode/state.json` phases 34-37 (Status Summary Bar, Session History Panel, Command Palette/Sidebar Health Badges, Phase Dependency Graph) — several `executing`, phase 21 (Dashboard Data Pipeline) `planned`.
 
 ## Blockers
 
