@@ -14,9 +14,11 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 ## Step 0 — Usage check
 
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+If `$ARGUMENTS` contains `--help` or `-h`:
 - Print the usage block below
 - STOP — do not proceed
+
+If `$ARGUMENTS` is empty, do NOT stop — proceed to Step 1, which defaults focus to `tech+arch`.
 
 **Usage:**
 ```
@@ -338,6 +340,25 @@ This file tracks structural changes between scans. Each entry is auto-written by
 ```
 
 This file is **read by future `/rcode-scan --refresh` runs** as additional anchor context — the memory bank is self-improving across scans.
+
+## Step 6.6: Propagate scan findings into PROJECT.md / STATE.md stubs
+
+After the RETURNED banner, check whether `.planning/PROJECT.md` and `.planning/STATE.md` are still install stubs (contain the `<!-- INSTALL STUB` banner). If real, non-stub content already exists, skip this step entirely — never overwrite user-authored planning docs.
+
+```bash
+grep -q '<!-- INSTALL STUB' .planning/PROJECT.md 2>/dev/null && echo "PROJECT_IS_STUB"
+grep -q '<!-- INSTALL STUB' .planning/STATE.md 2>/dev/null && echo "STATE_IS_STUB"
+```
+
+If `PROJECT.md` is a stub: replace its `**One-line:**` sentence with a brief, grounded one-line summary derived from the scan output just written (e.g. from STACK.md/ARCHITECTURE.md's opening lines — language, framework, primary purpose). Keep the rest of the stub structure (Vision/Stack sections) intact; do not attempt a full rewrite. Use Read then Edit — never blind-overwrite.
+
+If `STATE.md` is a stub: update `**Current phase:**` line to read:
+```
+**Current phase:** none — existing project scanned, see .planning/codebase/ — no phases planned yet
+```
+and add one line under `## Next Action` noting the scan already ran: `Codebase scanned via /rcode-scan — run /rcode-new-project or /rcode-add-phase to plan phases.`
+
+This is a minimal, targeted edit — not a full PROJECT.md content-generation system. The goal is closing the "user opens STATE.md and sees zero acknowledgment a scan already ran" gap.
 
 ## Step 7: Final cue (orchestrator-level, after RETURNED banner)
 
