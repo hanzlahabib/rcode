@@ -365,6 +365,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `token` — token-budget and cost-tracking logic
 - `benchmarks` — `benchmarks/` scripts and benchmark reports
 - `eval` — `test/eval/` behavioral drift baselines and eval harness
+- `scan` — `/rcode-scan` workflow and existing-codebase analysis
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
