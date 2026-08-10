@@ -2651,6 +2651,8 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
 }
 .orch-term-dock-live {
   display: inline-flex;
@@ -2661,6 +2663,7 @@ footer {
   color: var(--green);
   font-family: var(--font-mono);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .orch-term-dock-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 .orch-term-dock-stop {
@@ -2675,6 +2678,7 @@ footer {
   cursor: pointer;
   font-family: var(--font-sans);
   margin-left: var(--space-2);
+  flex-shrink: 0;
 }
 .orch-term-dock-stop:hover { opacity: 0.85; }
 .orch-term-dock-body {
