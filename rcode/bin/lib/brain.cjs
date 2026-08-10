@@ -243,7 +243,22 @@ function cmdBrain(args, { PROJECT_ROOT, RCODE_DIR }) {
     const os = require('os');
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-brain-'));
     const branch = s.branch || cfg.defaults?.branch || 'main';
-    const sparsePaths = Array.isArray(s.paths) ? s.paths : [];
+    // #1029 — `sparse-checkout set --no-cone` treats each path as a
+    // .gitignore-style pattern, not a literal path pin. A bare filename
+    // (no '/', no wildcard) matches that filename at any depth in the repo
+    // tree, over-fetching every same-named file repo-wide. Anchor bare
+    // filenames to the repo root with a leading '/' so they pin the
+    // root-level file only. Patterns that already start with '/', contain a
+    // '/', or use wildcards (already scoped or intentionally recursive) are
+    // left untouched.
+    function anchorBareFilename(p) {
+      const str = String(p || '');
+      if (str.startsWith('/')) return str;
+      if (/[*?[]/.test(str)) return str;
+      if (str.includes('/')) return str;
+      return `/${str}`;
+    }
+    const sparsePaths = (Array.isArray(s.paths) ? s.paths : []).map(anchorBareFilename);
 
     // Cache key = sha1(repo + branch + sparsePaths joined). Changing any of
     // those gets a fresh cache slot. Different projects pulling the same
