@@ -5283,18 +5283,55 @@ function cmdPhasePlanIndex(rawArgs) {
     const stem = file.replace(/-SPRINT\.md$/i, '');
     const text = fs.readFileSync(path.join(phaseDir, file), 'utf8');
     const { frontmatter, body } = parseFrontmatter(text);
+    let block = '';
+    if (text.startsWith('---\n')) {
+      const end = text.indexOf('\n---\n', 4);
+      if (end !== -1) block = text.slice(4, end);
+    }
     const id = frontmatter.sprint || frontmatter.plan || stem;
-    const wave = parseInt(frontmatter.wave || '1', 10) || 1;
-    const autonomous = String(frontmatter.autonomous || '').toLowerCase() === 'true';
+    // `wave:` may be an explicit scalar key, or absent — in which case it's
+    // derived from `depends_on` below (block-list or inline form, issue #951).
+    const hasExplicitWave = /^wave\s*:\s*\d+/m.test(block);
+    const wave = hasExplicitWave ? (parseInt(frontmatter.wave, 10) || 1) : null;
+    const dependsOn = fmListField(block, 'depends_on');
+    const hasAutonomousKey = /^autonomous\s*:/m.test(block);
+    const autonomous = hasAutonomousKey
+      ? String(frontmatter.autonomous || '').toLowerCase() === 'true'
+      : /<automated>/i.test(body);
     const gapClosure = String(frontmatter.gap_closure || frontmatter.type || '').toLowerCase() === 'gap_closure';
     const objMatch = body.match(/^##\s+(?:Objective|Goal)\s*\n+([^\n]+)/mi);
     const objective = objMatch ? objMatch[1].trim() : (frontmatter.goal || '').replace(/^["']|["']$/g, '');
-    const taskCount = (body.match(/^[-*]\s+\[[ xX]\]/gm) || []).length;
-    const filesModified = (body.match(/^\s*-\s*path:\s*["']?([^"'\n]+)/gm) || []).length;
+    const checkboxCount = (body.match(/^[-*]\s+\[[ xX]\]/gm) || []).length;
+    const storyHeaderCount = (body.match(/^###\s+Story\s+\S+/gm) || []).length;
+    const taskCount = checkboxCount > 0 ? checkboxCount : storyHeaderCount;
+    const filesModifiedList = fmListField(block, 'files_modified');
+    const filesModified = filesModifiedList.length > 0
+      ? filesModifiedList.length
+      : (body.match(/^\s*-\s*path:\s*["']?([^"'\n]+)/gm) || []).length;
     const hasSummary = summarySet.has(stem);
     if (/checkpoint/i.test(body)) hasCheckpoints = true;
-    return { id, wave, autonomous, gap_closure: gapClosure, objective, task_count: taskCount, files_modified: filesModified, has_summary: hasSummary, file: path.relative(PROJECT_ROOT, path.join(phaseDir, file)) };
+    return { id, wave, dependsOn, autonomous, gap_closure: gapClosure, objective, task_count: taskCount, files_modified: filesModified, has_summary: hasSummary, file: path.relative(PROJECT_ROOT, path.join(phaseDir, file)) };
   });
+
+  // Resolve waves left undetermined (no explicit `wave:` key) from depends_on:
+  // wave(p) = 1 + max(wave of each same-phase dependency), or 1 if none.
+  const idToPlan = new Map(plans.map((p) => [p.id, p]));
+  function resolveWave(p, seen) {
+    if (p.wave !== null) return p.wave;
+    if (seen.has(p.id)) { p.wave = 1; return 1; }
+    seen.add(p.id);
+    let maxDepWave = 0;
+    for (const depId of p.dependsOn) {
+      const dep = idToPlan.get(depId);
+      if (!dep) continue;
+      maxDepWave = Math.max(maxDepWave, resolveWave(dep, seen));
+    }
+    p.wave = maxDepWave > 0 ? maxDepWave + 1 : 1;
+    return p.wave;
+  }
+  for (const p of plans) resolveWave(p, new Set());
+  for (const p of plans) delete p.dependsOn;
+
   const waves = {};
   for (const p of plans) {
     const k = String(p.wave);

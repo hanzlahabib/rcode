@@ -443,6 +443,73 @@ test('classify-plan reads files_modified and objective from a plan SPRINT.md by 
   assert.strictEqual(result.files_checked, 2);
 });
 
+// ─── phase-plan-index (#951) ───────────────────────────────────────────────
+
+test('phase-plan-index derives waves from depends_on block-lists, counts Story headers and files_modified block-lists when wave/autonomous/task keys are absent', (t) => {
+  const cwd = setup(t);
+  const phaseDir = path.join(cwd, '.planning', 'phases', '42-ambient-hooks');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(phaseDir, '42-1-SPRINT.md'),
+    [
+      '---',
+      'sprint: 42.1',
+      'files_modified:',
+      '  - CLAUDE.md',
+      '---',
+      '',
+      '## Stories',
+      '',
+      '### Story 42.1.01 — do a thing',
+      '<automated>ok</automated>',
+      '',
+      '### Story 42.1.02 — do another thing',
+      '<automated>ok</automated>',
+      '',
+    ].join('\n'),
+  );
+  fs.writeFileSync(
+    path.join(phaseDir, '42-2-SPRINT.md'),
+    [
+      '---',
+      'sprint: 42.2',
+      'depends_on:',
+      '  - 42.1',
+      'files_modified:',
+      '  - .claude/settings.json',
+      '  - .rcode/config.yaml',
+      '---',
+      '',
+      '### Story 42.2.01 — dogfood',
+      '<automated>ok</automated>',
+      '',
+    ].join('\n'),
+  );
+  const result = json(cwd, ['phase-plan-index', '42']);
+  const p1 = result.plans.find((p) => p.id === '42.1');
+  const p2 = result.plans.find((p) => p.id === '42.2');
+  assert.strictEqual(p1.wave, 1, '42.1 has no depends_on so it stays wave 1');
+  assert.strictEqual(p2.wave, 2, '42.2 depends_on 42.1 so it must be wave 2, not flattened into wave 1');
+  assert.strictEqual(p1.autonomous, true, 'autonomous should be inferred from <automated> blocks when the autonomous: key is absent');
+  assert.strictEqual(p2.autonomous, true);
+  assert.strictEqual(p1.task_count, 2, 'task_count should fall back to counting ### Story headers when no checkbox tasks exist');
+  assert.strictEqual(p1.files_modified, 1, 'files_modified should read the block-list form, not just inline [a, b]');
+  assert.strictEqual(p2.files_modified, 2);
+  assert.deepStrictEqual(result.waves, { '1': ['42.1'], '2': ['42.2'] }, 'dependency-order must not be flattened into a single wave');
+});
+
+test('phase-plan-index still honors an explicit wave: key over depends_on-derived waves', (t) => {
+  const cwd = setup(t);
+  const phaseDir = path.join(cwd, '.planning', 'phases', '44-explicit-wave');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(phaseDir, '44-1-SPRINT.md'),
+    ['---', 'sprint: 44.1', 'wave: 3', 'depends_on:', '  - 44.0', '---', ''].join('\n'),
+  );
+  const result = json(cwd, ['phase-plan-index', '44']);
+  assert.strictEqual(result.plans[0].wave, 3);
+});
+
 // ─── gitignore refresh (#961) ──────────────────────────────────────────────
 
 test('gitignore refresh rewrites an existing rcode-managed block without throwing (spliceBlock sliceEnd typo)', (t) => {
