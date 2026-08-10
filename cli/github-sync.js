@@ -174,6 +174,15 @@ function saveSyncMap(cwd, map) {
   writeJsonAtomic(mapPath, map);
 }
 
+// Namespace syncMap.epics/stories keys by phase/track. Sprint-track task ids
+// (from `<task id="">`, no format enforcement) and epic-track story ids
+// (`{epicNum}.{storyNum}`) can collapse to the same bare id across tracks —
+// without a phase prefix they'd silently clobber each other's issue mapping.
+// See #1002.
+function syncKey(phaseId, id) {
+  return `${phaseId}:${id}`;
+}
+
 // ---------- Main sync flow ----------
 
 /**
@@ -369,33 +378,33 @@ async function main(args) {
     ] : [],
     milestones: phases.filter((p) => !p.noMilestone && !syncMap.phases[p.id]),
     epics: phases.flatMap((p) =>
-      p.epics.filter((e) => !syncMap.epics[e.id]).map((e) => ({ ...e, phase: p.id })),
+      p.epics.filter((e) => !syncMap.epics[syncKey(p.id, e.id)]).map((e) => ({ ...e, phase: p.id })),
     ),
     stories: phases.flatMap((p) =>
-      p.stories.filter((s) => !syncMap.stories[s.id]).map((s) => ({ ...s, phase: p.id })),
+      p.stories.filter((s) => !syncMap.stories[syncKey(p.id, s.id)]).map((s) => ({ ...s, phase: p.id })),
     ),
 
     // Items that already exist on GitHub — candidates for update.
     // Only populated when updateEnabled is true.
     updateEpics: opts.updateEnabled
       ? phases.flatMap((p) =>
-          p.epics.filter((e) => syncMap.epics[e.id]).map((e) => ({
+          p.epics.filter((e) => syncMap.epics[syncKey(p.id, e.id)]).map((e) => ({
             ...e,
             phase: p.id,
-            issueNumber: syncMap.epics[e.id].issue_number,
-            lastSyncedAt: syncMap.epics[e.id].synced_at,
-            lastSyncedContentHash: syncMap.epics[e.id].content_hash,
+            issueNumber: syncMap.epics[syncKey(p.id, e.id)].issue_number,
+            lastSyncedAt: syncMap.epics[syncKey(p.id, e.id)].synced_at,
+            lastSyncedContentHash: syncMap.epics[syncKey(p.id, e.id)].content_hash,
           })),
         )
       : [],
     updateStories: opts.updateEnabled
       ? phases.flatMap((p) =>
-          p.stories.filter((s) => syncMap.stories[s.id]).map((s) => ({
+          p.stories.filter((s) => syncMap.stories[syncKey(p.id, s.id)]).map((s) => ({
             ...s,
             phase: p.id,
-            issueNumber: syncMap.stories[s.id].issue_number,
-            lastSyncedAt: syncMap.stories[s.id].synced_at,
-            lastSyncedContentHash: syncMap.stories[s.id].content_hash,
+            issueNumber: syncMap.stories[syncKey(p.id, s.id)].issue_number,
+            lastSyncedAt: syncMap.stories[syncKey(p.id, s.id)].synced_at,
+            lastSyncedContentHash: syncMap.stories[syncKey(p.id, s.id)].content_hash,
           })),
         )
       : [],
@@ -544,7 +553,7 @@ async function main(args) {
       if (result.error) {
         results.errors.push(`epic ${epic.id}: ${result.error}`);
       } else if (!result.dryRun) {
-        syncMap.epics[epic.id] = {
+        syncMap.epics[syncKey(epic.phase, epic.id)] = {
           issue_number: result.number,
           url: result.url,
           phase: epic.phase,
@@ -568,7 +577,7 @@ async function main(args) {
       // convention), not "any epic in this phase" — that bug led to all
       // stories pointing at the same epic previously.
       const parentEpicEntry = story.parentEpic
-        ? syncMap.epics[story.parentEpic]
+        ? syncMap.epics[syncKey(story.phase, story.parentEpic)]
         : null;
       const parentRefLine = parentEpicEntry
         ? `- **Parent Epic:** #${parentEpicEntry.issue_number} (Part of this epic)`
@@ -624,7 +633,7 @@ async function main(args) {
       if (result.error) {
         results.errors.push(`story ${story.id}: ${result.error}`);
       } else if (!result.dryRun) {
-        syncMap.stories[story.id] = {
+        syncMap.stories[syncKey(story.phase, story.id)] = {
           issue_number: result.number,
           url: result.url,
           phase: story.phase,
@@ -734,8 +743,8 @@ async function main(args) {
       if (result.error) {
         results.errors.push(`update epic #${epic.issueNumber}: ${result.error}`);
       } else if (!result.dryRun) {
-        syncMap.epics[epic.id].content_hash = newHash;
-        syncMap.epics[epic.id].updated_at = new Date().toISOString();
+        syncMap.epics[syncKey(epic.phase, epic.id)].content_hash = newHash;
+        syncMap.epics[syncKey(epic.phase, epic.id)].updated_at = new Date().toISOString();
         console.log(`   ✓ updated: #${epic.issueNumber} (${epic.id})`);
       }
     }
@@ -779,8 +788,8 @@ async function main(args) {
       if (result.error) {
         results.errors.push(`update story #${story.issueNumber}: ${result.error}`);
       } else if (!result.dryRun) {
-        syncMap.stories[story.id].content_hash = newHash;
-        syncMap.stories[story.id].updated_at = new Date().toISOString();
+        syncMap.stories[syncKey(story.phase, story.id)].content_hash = newHash;
+        syncMap.stories[syncKey(story.phase, story.id)].updated_at = new Date().toISOString();
         console.log(`   ✓ updated: #${story.issueNumber} (${story.id})`);
       }
     }

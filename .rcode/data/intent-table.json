@@ -11,7 +11,7 @@
   },
   {
     "intent": "debug",
-    "keywords": ["bug", "getting an error", "throwing an error", "error in the", "fix the error", "debug this", "crash", "failure", "broken", "not working", "fails", "exception", "traceback", "kharab", "masla", "ye kaam nahi kar raha", "yeh kaam nahi kar raha", "error a raha hai", "theek karo", "khud se crash", "خطأ", "مشكلة", "لا يعمل", "أصلح الخطأ", "تعطل البرنامج"],
+    "keywords": ["getting an error", "throwing an error", "error in the", "fix the error", "debug this", "crash", "not working", "exception", "traceback", "kharab", "masla", "ye kaam nahi kar raha", "yeh kaam nahi kar raha", "error a raha hai", "theek karo", "khud se crash", "خطأ", "مشكلة", "لا يعمل", "أصلح الخطأ", "تعطل البرنامج"],
     "command": "/rcode-debug"
   },
   {

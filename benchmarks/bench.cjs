@@ -56,7 +56,7 @@ function runOne(prompt) {
   });
 }
 
-const rows = []; // { variant, task, rep, codeLoc, rawLines }
+const rows = []; // { variant, task, rep, codeLoc, rawLines, error }
 const total = variants.length * tasks.length * REPS;
 let n = 0;
 
@@ -66,39 +66,64 @@ for (const v of variants) {
       n++;
       process.stderr.write(`[${n}/${total}] ${v.id} / ${t.id} #${rep} ... `);
       let out = '';
+      let error = null;
       try {
         out = runOne(v.prefix + t.prompt);
       } catch (e) {
-        out = `ERROR: ${e.message}`;
+        // One retry on ETIMEDOUT — a single slow run shouldn't cost the whole rep.
+        if (/ETIMEDOUT/.test(e.message)) {
+          try {
+            out = runOne(v.prefix + t.prompt);
+          } catch (e2) {
+            error = e2.message;
+            out = `ERROR: ${e2.message}`;
+          }
+        } else {
+          error = e.message;
+          out = `ERROR: ${e.message}`;
+        }
       }
       fs.writeFileSync(path.join(RAW_DIR, `${v.id}__${t.id}__${rep}.txt`), out);
-      const cl = codeLoc(out);
-      const rl = rawLines(out);
-      rows.push({ variant: v.id, task: t.id, rep, codeLoc: cl, rawLines: rl });
-      process.stderr.write(`code=${cl} raw=${rl}\n`);
+      // Errored runs (timeouts, spawn failures) have no real code output —
+      // counting them as codeLoc=1/rawLines=1 silently skewed LOC means
+      // toward "impossibly good" scores. Exclude them from aggregation and
+      // surface an error count instead (#962).
+      const cl = error ? null : codeLoc(out);
+      const rl = error ? null : rawLines(out);
+      rows.push({ variant: v.id, task: t.id, rep, codeLoc: cl, rawLines: rl, error });
+      process.stderr.write(error ? `ERROR (${error})\n` : `code=${cl} raw=${rl}\n`);
     }
   }
 }
 
-// Aggregate mean code-LOC per variant
+// Aggregate mean code-LOC per variant — errored rows are excluded (#962).
 const mean = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
 const r1 = (x) => Math.round(x * 10) / 10;
+const ok = (arr) => arr.filter((r) => !r.error);
 
 let md = `# rcode-lazy LOC benchmark\n\n`;
 md += `Model: \`${MODEL}\` · reps: ${REPS} · tasks: ${tasks.length} · runner: \`claude -p\`\n\n`;
 md += `Metric: **code-only LOC** (lines inside code fences, non-empty), lower is better. `;
-md += `Correctness NOT auto-graded — spot-check \`results/raw/\` (a wrong one-liner is not a win).\n\n`;
+md += `Correctness NOT auto-graded — spot-check \`results/raw/\` (a wrong one-liner is not a win). `;
+md += `Errored runs (timeouts, spawn failures) are excluded from every mean below.\n\n`;
 
-md += `## Mean code-LOC by variant\n\n| Variant | Mean code-LOC | Mean raw-output lines |\n|---|---|---|\n`;
+const totalErrors = rows.filter((r) => r.error).length;
+if (totalErrors > 0) {
+  md += `> ⚠ ${totalErrors}/${rows.length} runs errored (timeout or spawn failure) and were excluded from aggregation. See \`results/raw/\` for \`ERROR:\`-prefixed files.\n\n`;
+}
+
+md += `## Mean code-LOC by variant\n\n| Variant | Mean code-LOC | Mean raw-output lines | Errored |\n|---|---|---|---|\n`;
 for (const v of variants) {
   const vr = rows.filter((r) => r.variant === v.id);
-  md += `| ${v.label} | **${r1(mean(vr.map((r) => r.codeLoc)))}** | ${r1(mean(vr.map((r) => r.rawLines)))} |\n`;
+  const vrOk = ok(vr);
+  const errCount = vr.length - vrOk.length;
+  md += `| ${v.label} | **${r1(mean(vrOk.map((r) => r.codeLoc)))}** | ${r1(mean(vrOk.map((r) => r.rawLines)))} | ${errCount}/${vr.length} |\n`;
 }
 
 md += `\n## Per-task code-LOC (mean of ${REPS} reps)\n\n| Task | ${variants.map((v) => v.id).join(' | ')} |\n`;
 md += `|---|${variants.map(() => '---').join('|')}|\n`;
 for (const t of tasks) {
-  const cells = variants.map((v) => r1(mean(rows.filter((r) => r.variant === v.id && r.task === t.id).map((r) => r.codeLoc))));
+  const cells = variants.map((v) => r1(mean(ok(rows.filter((r) => r.variant === v.id && r.task === t.id)).map((r) => r.codeLoc))));
   md += `| ${t.id} | ${cells.join(' | ')} |\n`;
 }
 
