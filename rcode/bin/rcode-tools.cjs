@@ -4547,9 +4547,11 @@ function cmdGenerateClaudeMd(rawArgs) {
   const force = args.includes('--force');
   const claudeMdPath = path.join(PROJECT_ROOT, 'CLAUDE.md');
   const agentsMdPath = path.join(PROJECT_ROOT, 'AGENTS.md');
+  const claudeExisted = fs.existsSync(claudeMdPath);
+  const agentsExisted = fs.existsSync(agentsMdPath);
 
-  if (fs.existsSync(claudeMdPath) && !force) {
-    throw new Error(`CLAUDE.md already exists at ${claudeMdPath}. Use --force to overwrite.`);
+  if (claudeExisted && agentsExisted && !force) {
+    throw new Error(`CLAUDE.md and AGENTS.md already exist at ${PROJECT_ROOT}. Use --force to overwrite.`);
   }
 
   // Resolve project name from package.json or directory.
@@ -4647,26 +4649,33 @@ Before handling planning, exploration, auditing, refactoring, or multi-step buil
 **This file is part of the project. Treat it as load-bearing.**
 `;
 
-  const claudeExisted = fs.existsSync(claudeMdPath);
-  fs.writeFileSync(claudeMdPath, content);
+  // Each file's own existence gates only its own write — a project with an
+  // existing CLAUDE.md must still get a missing AGENTS.md backfilled, and
+  // vice versa (#1025).
+  const wroteClaude = !claudeExisted || force;
+  if (wroteClaude) {
+    fs.writeFileSync(claudeMdPath, content);
+  }
 
   // Mirror the same rules to AGENTS.md (the cross-tool standard Codex, Cursor,
   // Windsurf, Antigravity, and Gemini read). Skip when it already exists without
   // --force so an install-appended "## rcode Agents (installed)" roster survives.
-  const agentsExisted = fs.existsSync(agentsMdPath);
   const wroteAgents = !agentsExisted || force;
   if (wroteAgents) {
     fs.writeFileSync(agentsMdPath, content);
   }
 
+  const writtenPaths = [];
+  if (wroteClaude) writtenPaths.push(path.relative(PROJECT_ROOT, claudeMdPath));
+  if (wroteAgents) writtenPaths.push(path.relative(PROJECT_ROOT, agentsMdPath));
+
   return {
     ok: true,
     path: path.relative(PROJECT_ROOT, claudeMdPath),
-    paths: wroteAgents
-      ? [path.relative(PROJECT_ROOT, claudeMdPath), path.relative(PROJECT_ROOT, agentsMdPath)]
-      : [path.relative(PROJECT_ROOT, claudeMdPath)],
+    paths: writtenPaths,
     project_name: projectName,
-    overwritten: force && claudeExisted,
+    overwritten: force && (claudeExisted || agentsExisted),
+    claude_md_skipped: !wroteClaude,
     agents_md_skipped: !wroteAgents,
   };
 }
