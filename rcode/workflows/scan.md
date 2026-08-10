@@ -14,9 +14,11 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 ## Step 0 — Usage check
 
-If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
+If `$ARGUMENTS` contains `--help` or `-h`:
 - Print the usage block below
 - STOP — do not proceed
+
+If `$ARGUMENTS` is empty, do NOT stop — proceed to Step 1, which defaults focus to `tech+arch`.
 
 **Usage:**
 ```
