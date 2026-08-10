@@ -63,11 +63,14 @@ export function Sidebar({ activeView, projectName }) {
   const name = project.name || projectName || 'No project';
   const user = (project.user && project.user.name) ? project.user : null;
 
-  // Full store subscription for live health badge counts.
+  // Full store subscription for live health badge counts. Derived from
+  // activeSessions (the /api/sessions poll) — same source of truth as the
+  // OrchPanel footer and NotifyCenter — not the static store.blockers list
+  // (PROJECT.md-backed, unrelated to live orchestrator state; see #965).
   // Re-renders on every setState (sessions poll every 4 s, state refresh every 30 s).
-  const { activeSessions, blockers } = useStore();
-  const sessionCount = (activeSessions || []).filter(s => s.status === 'running').length;
-  const blockerCount = (blockers || []).length;
+  const { activeSessions } = useStore();
+  const sessionCount = (activeSessions || []).filter(s => s.status === 'running' && !s.waiting).length;
+  const blockerCount = (activeSessions || []).filter(s => s.status === 'blocked' || s.waiting).length;
 
   return html`
     <aside class="sidebar" id="sidebar">
@@ -93,7 +96,7 @@ export function Sidebar({ activeView, projectName }) {
         </span>
         <span
           class=${'health-badge' + (blockerCount > 0 ? ' health-badge--alert' : ' health-badge--zero')}
-          title=${blockerCount + ' blocker' + (blockerCount === 1 ? '' : 's')}
+          title=${blockerCount + ' blocked orchestration session' + (blockerCount === 1 ? '' : 's')}
         >
           <${Icon} name="alert-triangle" size=${12} />
           ${blockerCount} blocked
