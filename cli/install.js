@@ -2772,23 +2772,30 @@ async function installInner(opts) {
   const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
 
   // Pull rcode brain content (v2.0 — issue #158).
-  // Runs rcode-tools brain pull as a child process. Placeholder URLs
-  // are skipped gracefully so this does not fail a fresh install.
+  // Runs rcode-tools brain pull as a detached background process. Placeholder
+  // URLs are skipped gracefully so this does not fail a fresh install.
+  //
+  // Issue #1030: a cold pull (cache miss) clones + sparse-checks-out a real
+  // upstream repo and live-measured ~58s for just 2 small files — dangerously
+  // close to the previous 60s execFileSync timeout (#706) and ~6x over the
+  // 10s kill criterion issue #162 itself specified. Since brain pull is
+  // already best-effort and never fails install (see catch below, historically
+  // a timeout was just treated as a pull failure), there is no reason to block
+  // install on it at all. Spawn it detached and let install finish immediately;
+  // the child keeps running and warms the cache/writes content on its own.
   let brainReport = null;
+  let brainBackgrounded = false;
   try {
-    const { execFileSync } = require('child_process');
+    const { spawn } = require('child_process');
     const toolsPath = path.join(opts.target, '.rcode', 'bin', 'rcode-tools.cjs');
     if (fs.existsSync(toolsPath)) {
-      // Issue #706: 60s timeout — without it, a slow upstream URL hangs the
-      // entire install indefinitely. Brain pull is best-effort, so a timeout
-      // failure is treated identically to any other pull failure (caught below).
-      const out = execFileSync('node', [toolsPath, 'brain', 'pull'], {
+      const child = spawn('node', [toolsPath, 'brain', 'pull'], {
         cwd: opts.target,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: 60_000,
+        stdio: 'ignore',
+        detached: true,
       });
-      try { brainReport = JSON.parse(out); } catch {}
+      child.unref();
+      brainBackgrounded = true;
     }
   } catch (e) {
     // brain pull is best-effort on install — do not fail the whole install
@@ -2801,11 +2808,8 @@ async function installInner(opts) {
   if (opts.force && existedBefore) {
     console.log('  ' + warn('config.yaml and state.json preserved (pass --reset to wipe)'));
   }
-  if (brainReport && brainReport.ok) {
-    const pulledCount = (brainReport.pulled || []).length;
-    const skippedCount = (brainReport.skipped || []).length;
-    console.log('  ' + ok(`Brain: ${pulledCount} source${pulledCount === 1 ? '' : 's'} pulled` +
-      (skippedCount ? `, ${skippedCount} skipped (placeholder URLs)` : '')));
+  if (brainBackgrounded) {
+    console.log('  ' + dim('Brain: pulling in background (may take up to a minute on a cold cache; run `rcode brain status` to check)'));
   } else if (brainReport && brainReport.error) {
     console.log('  ' + dim(`Brain: skipped (${brainReport.error})`));
   }
