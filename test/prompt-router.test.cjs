@@ -98,7 +98,7 @@ test('karpathy-flavored prompt routes to /rcode-karpathy-audit', () => {
 // ─── 2b. Roman-Urdu / Arabic prompts match too (#957) ────────────────────────
 
 test('Roman-Urdu debug prompt routes to /rcode-debug', () => {
-  const result = runRouter({ prompt: 'yar yeh kaam nahi kar raha, fix karo' });
+  const result = runRouter({ prompt: 'yar yeh kaam nahi kar raha, fix karo', session_id: uniqueSession() });
 
   assert.strictEqual(result.status, 0);
   assert.ok(result.stdout.length > 0, 'stdout must not be empty on Roman-Urdu match');
@@ -109,7 +109,7 @@ test('Roman-Urdu debug prompt routes to /rcode-debug', () => {
 });
 
 test('Arabic debug prompt routes to /rcode-debug', () => {
-  const result = runRouter({ prompt: 'هذا الكود لا يعمل، من فضلك أصلح الخطأ' });
+  const result = runRouter({ prompt: 'هذا الكود لا يعمل، من فضلك أصلح الخطأ', session_id: uniqueSession() });
 
   assert.strictEqual(result.status, 0);
   assert.ok(result.stdout.length > 0, 'stdout must not be empty on Arabic match');
@@ -156,7 +156,7 @@ test('"how do I format a string in JS?" must not nudge (M3: how-do removed)', ()
 
 test('"getting an error when I deploy" must nudge to /rcode-debug (M3: multi-word match)', () => {
   // Multi-word debug phrase should still route correctly.
-  const result = runRouter({ prompt: 'I am getting an error when I deploy the service' });
+  const result = runRouter({ prompt: 'I am getting an error when I deploy the service', session_id: uniqueSession() });
 
   assert.strictEqual(result.status, 0);
   assert.ok(result.stdout.length > 0, '"getting an error" must still emit debug nudge');
