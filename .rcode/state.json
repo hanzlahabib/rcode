@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-08-10T16:22:21.782Z",
+  "updated": "2026-08-10T16:30:06.518Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
