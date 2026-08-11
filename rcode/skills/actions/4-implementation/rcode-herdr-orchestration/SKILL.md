@@ -54,6 +54,14 @@ independent agents.
    fires when `/loop` is active — clarify the heartbeat path with the user first.
 6. **Ignore stray buffer text in panes.** Leftover user text at an idle prompt is NOT
    an agent question — do not Enter it.
+7. **First message to every newly spawned agent starts with `/rcode-do`.** After `cld`
+   launches in a pane and the agent is ready, the very first line sent via
+   `herdr pane send-text` must be the literal `/rcode-do <task description>`, followed by
+   the rest of the task context (worktree path, branch, scope). This routes the agent's
+   first action through rcode's command picker instead of a hand-rolled instruction, so
+   ad-hoc orchestration prompts stay consistent with the rest of the toolset. Applies to
+   both Mode 1 (single-shot) and Mode 2 (wave) dispatch — not to follow-up messages sent
+   later in the same pane.
 
 ---
 
@@ -95,7 +103,8 @@ Use when work is bounded and can finish in one batch.
 2. Create worktrees: `git worktree add ../sm-worktrees/$A -b audit-$A master` for each area.
 3. Create tab + split panes, one per worktree.
 4. Launch `cld` in every pane (`send-text "cld"` + `send-keys Enter`). Sleep 7s after.
-5. Send each agent a self-contained prompt with worktree path, branch, and task.
+5. Send each agent a self-contained prompt with worktree path, branch, and task —
+   the first line must be the literal `/rcode-do <task description>` (Golden rule 7).
    - Audits: diagnose-only first. Fixes: incremental edits, no rewrites, commit each fix.
 6. Monitor: `herdr pane list` every ~2 min. Unblock stuck panes via `send-keys`/`send-text`.
 7. Merge back: `git add -f .planning/audits/*.md && git commit` inside each worktree, then

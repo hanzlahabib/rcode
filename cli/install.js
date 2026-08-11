@@ -159,7 +159,9 @@ const ConfigSchema = z.object({
     branching_strategy: z.string().optional(),
   }).optional(),
   // Declared for validation only — default ('every') lives in the hook (rcode-hooks.cjs prompt-router).
-  // Install does NOT write this key; the feature stays dormant until hooks are opted into via /rcode-enable-hooks.
+  // Install does NOT write this key; the nudge behavior itself is controlled by
+  // whether hooks were enabled at install time (resolveEnableHooks / --no-hooks)
+  // or later via /rcode-enable-hooks.
   prompt_nudge: z.enum(['every', 'once-per-intent', 'when-stale', 'off']).optional(),
 }).passthrough();
 
@@ -199,6 +201,10 @@ function parseArgs(argv) {
     // #199 — git pre-commit hook. null = install if .git/ present (default).
     // Set false by --no-git-hooks, true by --git-hooks.
     gitHooks: null,
+    // Claude Code guardrail hooks (.claude/settings.json). null = resolve via
+    // resolveEnableHooks() (interactive prompt, or default-on for --yes/non-TTY).
+    // Set false by --no-hooks, true by --enable-hooks.
+    enableHooks: null,
     // global install mode — targets ~/.claude/, skips per-project artifacts
     global: false,
     // silent — suppress non-error output (used by postinstall auto-run)
@@ -242,6 +248,8 @@ function parseArgs(argv) {
     else if (arg === '--no-backup') opts.noBackup = true;             // #381
     else if (arg === '--no-git-hooks') opts.gitHooks = false;         // #199
     else if (arg === '--git-hooks') opts.gitHooks = true;             // #199
+    else if (arg === '--no-hooks') opts.enableHooks = false;
+    else if (arg === '--enable-hooks') opts.enableHooks = true;
     else if (arg === '--global') opts.global = true;
     else if (arg === '--local-only') opts.localOnly = true; // #938 — force self-contained install (don't defer to global skills)
     else if (arg === '--silent') opts.silent = true;
@@ -526,6 +534,91 @@ async function resolveCommitPlanning(opts) {
   return choice === 'commit';
 }
 
+/**
+ * Resolve whether to merge rcode's guardrail hooks (pre-edit, bash-guard,
+ * prompt-router, etc.) into .claude/settings.json at install time. Default
+ * is ON — flag wins, else interactive confirm (Y default) on TTY installs,
+ * else default-on for --yes/--no-prompt/non-TTY runs so hooks work out of
+ * the box without requiring a separate /rcode-enable-hooks step.
+ */
+async function resolveEnableHooks(opts) {
+  if (opts.enableHooks !== null) return opts.enableHooks;
+  if (opts.global) return false; // global install has no project-local .claude/settings.json target
+  if (!opts.ides.includes('claude')) return false; // hooks are Claude Code specific
+  if (opts.noPrompt || opts.yes || !process.stdin.isTTY) return true;
+
+  const enable = await clack.confirm({
+    message: '🛡️  Enable rcode guardrail hooks in .claude/settings.json? (pre-edit checks, bash-guard, prompt-router, etc.)',
+    initialValue: true,
+  });
+
+  if (clack.isCancel(enable)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
+  }
+
+  return enable;
+}
+
+/**
+ * Merge rcode's opt-in guardrail hooks (rcode/templates/settings-hooks.json)
+ * into .claude/settings.json. Idempotent — skips matcher+command pairs that
+ * already exist. Mirrors the /rcode-enable-hooks workflow so a fresh install
+ * doesn't require running that command separately.
+ *
+ * Returns: { action: 'merged' | 'skipped-flag' | 'skipped-template-missing' | 'skipped-error' }
+ */
+function ensureRcodeSettingsHooks(target, options = {}) {
+  if (options.enableHooks !== true) return { action: 'skipped-flag' };
+
+  const templatePath = path.join(PACKAGE_ROOT, 'rcode', 'templates', 'settings-hooks.json');
+  if (!fs.existsSync(templatePath)) return { action: 'skipped-template-missing' };
+
+  let template;
+  try {
+    template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+  } catch {
+    return { action: 'skipped-error' };
+  }
+
+  const settingsDir = path.join(target, '.claude');
+  const settingsPath = path.join(settingsDir, 'settings.json');
+
+  let settings = {};
+  if (fs.existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    } catch {
+      return { action: 'skipped-error' };
+    }
+  }
+
+  settings.hooks = settings.hooks || {};
+
+  for (const [hookType, matchers] of Object.entries(template.hooks || {})) {
+    settings.hooks[hookType] = settings.hooks[hookType] || [];
+    for (const incoming of matchers) {
+      let existingMatcher = settings.hooks[hookType].find((m) => m.matcher === incoming.matcher);
+      if (!existingMatcher) {
+        existingMatcher = { matcher: incoming.matcher, hooks: [] };
+        settings.hooks[hookType].push(existingMatcher);
+      }
+      for (const hook of incoming.hooks) {
+        const dup = existingMatcher.hooks.some((h) => h.command === hook.command && h.type === hook.type);
+        if (!dup) existingMatcher.hooks.push(hook);
+      }
+    }
+  }
+
+  try {
+    fs.mkdirSync(settingsDir, { recursive: true });
+    writeFileAtomic(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+    return { action: 'merged' };
+  } catch {
+    return { action: 'skipped-error' };
+  }
+}
+
 function printHelp() {
   console.log(`
 rcode installer
@@ -542,6 +635,8 @@ Options:
   --language <lang>  set communication_language (default: English)
   --mode <guided|yolo> default mode (default: guided)
   --ide <name>       target IDE (claude, cursor, gemini; default: claude)
+  --enable-hooks     merge rcode guardrail hooks into .claude/settings.json (default: on)
+  --no-hooks         skip guardrail hooks; enable later via /rcode-enable-hooks
   --dry-run          preview what would be written; exit without writing any files
   --list-files       alias for --dry-run
   --help             this text
@@ -2071,6 +2166,9 @@ async function installInner(opts) {
   // Resolve commit-planning preference (interactive prompt or flag) — #189.
   opts.commitPlanning = await resolveCommitPlanning(opts);
 
+  // Resolve guardrail-hooks preference (interactive prompt or flag). Default on.
+  opts.enableHooks = await resolveEnableHooks(opts);
+
   console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
 
   // Detect an existing install and surface it (#195).
@@ -2771,6 +2869,10 @@ async function installInner(opts) {
   // Respects --no-git-hooks flag; skips silently when .git/ is absent.
   const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
 
+  // Merge rcode guardrail hooks into .claude/settings.json (pre-edit, bash-guard,
+  // prompt-router, etc). Default-on; resolved above via resolveEnableHooks().
+  const settingsHooksReport = ensureRcodeSettingsHooks(opts.target, { enableHooks: opts.enableHooks });
+
   // Pull rcode brain content (v2.0 — issue #158).
   // Runs rcode-tools brain pull as a detached background process. Placeholder
   // URLs are skipped gracefully so this does not fail a fresh install.
@@ -2834,6 +2936,15 @@ async function installInner(opts) {
       'skipped-error': `pre-commit hook skipped (${hookReport.error})`,
     }[hookReport.action] || 'pre-commit hook unchanged';
     console.log('  ' + dim(hookMsg));
+  }
+  if (settingsHooksReport) {
+    const settingsHooksMsg = {
+      'merged': 'guardrail hooks enabled (.claude/settings.json)',
+      'skipped-flag': 'guardrail hooks skipped (--no-hooks or declined)',
+      'skipped-template-missing': 'guardrail hooks skipped (settings-hooks.json template missing)',
+      'skipped-error': 'guardrail hooks skipped (error merging .claude/settings.json)',
+    }[settingsHooksReport.action] || 'guardrail hooks unchanged';
+    console.log('  ' + dim(settingsHooksMsg));
   }
   if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
 

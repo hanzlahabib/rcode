@@ -5,6 +5,8 @@ Use this as the body of `herdr pane send-text` when dispatching each agent in a 
 ---
 
 ```
+/rcode-do fix top pending items from <AUDIT_DOC_PATH> on branch <BRANCH_NAME>
+
 You are in an isolated worktree at <WORKTREE_PATH> on branch <BRANCH_NAME>. <REPO_NAME> repo.
 
 YOUR PARENT BRANCH IS <INTEGRATION_BRANCH> (NOT master). Your branch was forked from <INTEGRATION_BRANCH>. When you finish, the orchestrator will merge your branch INTO <INTEGRATION_BRANCH> (not master). Master stays untouched throughout the campaign.
