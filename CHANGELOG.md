@@ -3,6 +3,27 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.3 (2026-08-11) — Council decisions now reach the dashboard
+
+### Fixes
+- **Council decisions never appeared in the dashboard's "Decisions (ADRs)"
+  view, even after multiple real council sessions** — `council.md` recorded
+  the session (`state record-council`, populating `council_sessions[]`) but
+  never called `state add-decision`, which is the only command that writes
+  to `state.json`'s `decisions[]` array — the exact field the dashboard
+  reads. Council now records one concise decision line per distinct
+  consensus reached, right after writing the session artifact.
+- Also confirmed live: the new persona-owned execution feature
+  (`owner:` field, shipped in 4.10.1) can get refused by the persona agent
+  when spawned outside a real `/rcode-execute` dispatch — a hand-authored
+  "you are the sprint executor" trigger reads like a prompt-injection
+  attempt to the persona's own scope-discipline instincts, and it declines,
+  correctly. `execute-sprint.md`'s fallback-to-`rcode-executor` path now
+  also triggers on persona refusal (zero commits + refusal-shaped
+  response), not just "agent not installed." Full fix for real-dispatch
+  provenance tracked separately (#1036).
+
+---
 ## v4.10.2 (2026-08-11) — Dashboard state sync for partial/manual execution
 
 ### Fixes

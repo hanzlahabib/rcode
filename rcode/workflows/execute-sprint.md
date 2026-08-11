@@ -31,7 +31,11 @@ else
 fi
 ```
 
-Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, Pattern B subagent route). No other change to the spawn prompt is needed — the persona file's own conditional clause tells it to load the full executor playbook when it sees `subagent_type` = itself and a SPRINT.md path in the prompt. If `$EXEC_AGENT` is a persona and that persona is not installed (agent file missing), fall back to `rcode-executor` and note the fallback in SUMMARY.md's Deviations section — do not fail the sprint over this.
+Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, Pattern B subagent route). No other change to the spawn prompt is needed — the persona file's own conditional clause tells it to load the full executor playbook when it sees `subagent_type` = itself and a SPRINT.md path in the prompt.
+
+**Fall back to `rcode-executor` and note the fallback in SUMMARY.md's Deviations section (do not fail the sprint) when:**
+- `$EXEC_AGENT` is a persona and that persona's agent file is not installed in this project, OR
+- The persona agent **declines/refuses the role** — a persona's own scope-discipline and anti-injection instincts may correctly distrust a spawn prompt that merely *asserts* "you are the sprint executor" without provenance from a real `/rcode-execute` dispatch (confirmed live: this happens; a hand-authored trigger reads exactly like a prompt-injection attempt to the persona, and refusing that is the correct default). Detect this by the spawn returning zero commits / zero file changes with a refusal-shaped response (no tool calls, explanation citing lack of authorization or wrong capability lane) rather than a normal execution report. Retry once with `rcode-executor`; do not retry the same persona a second time.
 </step>
 
 <process>
