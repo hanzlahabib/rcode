@@ -3,6 +3,20 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.2 (2026-08-11) — Dashboard state sync for partial/manual execution
+
+### Fixes
+- **A committed, tested, verified task still showed "todo" on the
+  dashboard after a manual `--wave N` run** — `execute-sprint.md`'s task
+  commit protocol never called `state story add`/`state story move`, so
+  the dashboard's per-story status override (read from `.rcode/state.json`)
+  had nothing to pick up; a task only ever flipped to "done" once the
+  ENTIRE phase completed. Added a step that syncs sprint/story state after
+  every task commit, not just at phase completion.
+- Dashboard "Decisions (ADRs)" label now spells out Architecture Decision
+  Record on first mention.
+
+---
 ## v4.10.1 (2026-08-11) — Council routing, yolo detection, and persona execution
 
 Found live during a real end-to-end rehearsal (`/rcode-do` → council →
