@@ -35,7 +35,7 @@ const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handl
 const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
-const PORT = parseInt(process.env.PORT || '7717', 10);
+let PORT = parseInt(process.env.PORT || '7717', 10);
 // #969 — the orchestrator's actual port, injected into the client so it never
 // has to hardcode 7718. Defaults match orchestrator.js's own default.
 const ORCH_PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
@@ -190,6 +190,23 @@ function handleRequest(req, res) {
   res.writeHead(404);
   res.end('Not found');
 }
+
+// If PORT is already taken (e.g. another dashboard instance is running),
+// retry on the next port up rather than crashing on an unhandled 'error' event.
+const MAX_PORT_ATTEMPTS = 20;
+let portAttempts = 0;
+
+server.on('error', err => {
+  if (err.code === 'EADDRINUSE' && portAttempts < MAX_PORT_ATTEMPTS) {
+    portAttempts++;
+    console.log(`[dashboard] port ${PORT} in use, trying ${PORT + 1}...`);
+    PORT++;
+    server.listen(PORT, '127.0.0.1');
+    return;
+  }
+  console.error('[dashboard] server error:', err.message);
+  process.exit(1);
+});
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
