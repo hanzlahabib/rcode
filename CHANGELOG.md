@@ -3,6 +3,64 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.9.1 (2026-08-11) — Codex on existing projects, brownfield scan honesty, brain-pull fixes
+
+Closes out the full open-bug backlog. Every fix below was live-verified end
+to end against real headless runs, a real public GitHub repo, or a real
+scratch project — not just read and assumed correct.
+
+### Fixes
+- **`/rcode-init` never generated `AGENTS.md` for a project that already had
+  `CLAUDE.md`** — the common case, since most projects start on Claude Code.
+  Codex reads `AGENTS.md`, not `CLAUDE.md`, so this left Codex with zero
+  ambient routing instruction on existing projects. Both the workflow gate
+  and the underlying generator now handle the two files independently.
+- **`/rcode-scan`, run exactly as `/rcode-init` recommends it (no args),
+  didn't scan** — printed a usage message instead of applying its own
+  documented `tech+arch` default. Now it actually applies the default.
+- **`PROJECT.md`/`STATE.md` stayed install-stub placeholders** even after a
+  fully successful, accurate `/rcode-scan` run — the scan's own findings
+  never propagated into the files a user opens first. Now they do (no-op
+  once real content exists, never overwrites user-authored docs).
+- **A normal first `/rcode-init` run on a brownfield project reported
+  "Setup recovery complete,"** implying something broke. Root cause: install
+  always seeds `state.json`, so its mere presence was misread as "returning"
+  state. Now distinguishes a genuine first run from an actual interrupted
+  init.
+- **`.antigravity/` was installed by default** despite the installer's own
+  warning that it's inert without `--global` — no longer written on
+  project-local installs.
+- **Brain-pull sparse-checkout over-fetched on bare-filename path patterns**
+  — a `paths:` entry like `README.md` matched that filename at any depth in
+  the source repo, not just the root. Confirmed live: 6 files landed for 2
+  declared paths; now correctly anchored to the repo root.
+- **Cold brain-pull (~58s live) sat dangerously close to install's 60s
+  timeout**, ~6x over the feature's own 10s target. It's already
+  best-effort and never fails install, so it now runs detached — install
+  returns immediately instead of risking a mid-clone kill.
+- **Deterministic engineer-dispatch classification** (`classify-plan`) —
+  replaces the prose-pseudocode routing logic from v4.9.0 that a real
+  production run showed being silently skipped; now a real CLI command
+  computes and returns the routing decision.
+- **Install could silently lose every top-level agent file** — a dedup bug
+  incorrectly deferred `.claude/agents/` to a global install the same way
+  commands/skills legitimately do; agents are project-local by design and
+  are no longer deduped away.
+- **Legacy `rihal-*` cleanup never actually removed agent files** (scanned
+  but silently dropped from both the count and the deletion pass) and had
+  zero awareness of Codex-targeted installs — both fixed and live-verified
+  against a real machine with 45 leftover legacy agent files.
+- Plus: dashboard sidebar badges wired to real session state, docked
+  terminal header no longer clips at 1920px, github-sync cross-track ID
+  collision fix, benchmark script no longer counts timeouts as valid runs,
+  prompt-router word-boundary fix (was over-firing on English substrings
+  like "debugger"), sprint frontmatter parsing fix (dependency-order
+  hazard), and a Memory Bank reconciliation pass (9 stale entries for
+  long-closed issues removed).
+
+Tests: 612/612 passing.
+
+---
 ## v4.9.0 (2026-08-09) — Engineer dispatch was still a coin flip, and a real install could silently lose its own agents
 
 v4.8.0 wired named-engineer routing into `/rcode-execute`. Running it against a
