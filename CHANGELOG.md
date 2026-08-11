@@ -3,6 +3,32 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.0 (2026-08-11) — Dashboard now tells the truth about what's running
+
+Found live during a real end-to-end rehearsal (council → plan → execute →
+review → verify), watching the dashboard update in real time alongside it.
+
+### Fixes
+- **Dashboard never showed a task as "in progress" during a real
+  `/rcode-execute` run** — `scanner.js` checked the wrong field name
+  (`p.state` instead of `p.status`) and, separately, didn't recognize
+  `"executing"` as an active status. A `toState()` helper already existed
+  for exactly this normalization; the task-progress logic just never used
+  it. Live-verified: the dashboard now correctly shows all in-flight tasks
+  during real execution instead of none.
+- **Task cards suggested commands from the wrong pipeline** — every task
+  card's hints (and its actual clickable run button) were hardcoded to
+  `dev-story`/`create-story`/`verify-work`/`review`, which only parse
+  2-part `epic.story` ids. Real phase-pipeline tasks use 3-part
+  `phase.sprint.task` ids (e.g. `1.1.2`), which silently fail to parse —
+  meaning the run button did nothing on the pipeline real execution
+  actually uses. Now branches on the task's `phaseId` to suggest
+  `/rcode-execute`, `/rcode-verify-phase`, and `/rcode-review --phase`
+  instead.
+
+Tests: 612/612 passing.
+
+---
 ## v4.9.1 (2026-08-11) — Codex on existing projects, brownfield scan honesty, brain-pull fixes
 
 Closes out the full open-bug backlog. Every fix below was live-verified end
