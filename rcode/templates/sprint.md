@@ -1,19 +1,43 @@
-# Sprint {sprint_id} — {sprint_goal}
+---
+phase: {phase_dir}
+sprint: {sprint_id}
+type: execute | tdd
+wave: {N}
+depends_on: [{sprint_id}, ...]
+files_modified: [{paths...}]
+autonomous: true | false
+requirements: [{REQ-01, REQ-02}]
+owner: {haitham|hanzla|omar|waleed|yousef}    # OPTIONAL — omit if no council session grounds this plan or the domain split is ambiguous; see planner-playbook.md's "owner: field" section
 
-<!-- P2: Omit Dependencies and Risks sections if empty. Omit Retrospective until sprint is complete. -->
+must_haves:
+  truths: [{observable outcomes from the user's perspective}]
+  artifacts: [{files/models that must exist}]
+  key_links: [{critical connections, breakage points}]
+---
 
-**Phase:** {phase_number} — {phase_name}
-**Status:** {status}
-**Velocity target:** {velocity_target} points
-**Started:** {started_at}
+## Sprint {sprint_id}: {one-line sprint goal, plain English, no jargon}
 
-## Sprint Goal
+{2-4 sentence plain-English recap: what this sprint builds and why, written for someone who will never open the XML tags below}
 
-{sprint_goal}
+**Tasks:**
+1. {task 1 title — copy the <title> attribute text verbatim}
+2. {task 2 title}
+3. {task N title}
 
-## Stories
+_Below this line is the execution prompt the agent reads — task bodies, read-first file lists, verification commands. Not meant for skimming._
 
-<!-- One <task> block per story. id= and <title> are REQUIRED (scanner.js's primary parse path) -->
+---
+
+<objective>{what this sprint delivers and why, grounded in the council session or codebase scan}</objective>
+
+<execution_context>
+@.rcode/workflows/execute-sprint.md
+@.rcode/templates/summary.md
+</execution_context>
+
+<context>{council session reference if one grounds this plan, else key codebase facts verified by Read}</context>
+
+<!-- One <task> block per story. id= and title= are REQUIRED (scanner.js's primary parse path — do not use nested <title> tags or "### Story N — name" headings, those are legacy formats scanner.js only supports as a fallback). -->
 <tasks>
 <task id="{sprint_id}.{NN}" type="auto">
 <title>{story title}</title>
@@ -28,53 +52,6 @@
 </task>
 </tasks>
 
-## Capacity
-
-- **Velocity target:** {velocity_target} points
-- **Total committed:** {total_points} points
-- **Buffer:** {buffer_points} points ({buffer_pct}%)
-
-<!-- Omit if no cross-story dependencies exist -->
-## Dependencies
-
-| Story | Depends on | Status |
-|-------|-----------|--------|
-
-<!-- Omit if no risks identified -->
-## Risks
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-
-## Files Touched
-
-<!-- Planner must populate before handoff to executor. Used by wave-overlap checker and merge reviewers. -->
-
-**Creates:**
-<!-- - `exact/path/new-file.ts` — one-line responsibility -->
-
-**Modifies:**
-<!-- - `exact/path/existing.ts` — what changes -->
-
-**Tests:**
-<!-- - `tests/exact/path/test.ts` — tests for -->
-
-**Aggregator files (append-only — never replace):**
-<!-- - `packages/shared/src/index.ts` — adds export for X -->
-
-## Sprint Review
-
-<!-- Fill at sprint completion only — omit this section until then -->
-- Stories completed: {done_count}/{total_count}
-- Velocity actual: {velocity_actual} points
-- Carryover: {carryover}
-
-## Retrospective
-
-<!-- Fill at sprint completion only — omit this section until then -->
-### What went well
--
-### What didn't
--
-### Action items
--
+<verification>{how to confirm the whole sprint, not just individual tasks, actually works}</verification>
+<success_criteria>{bullet list — what must be true for this sprint to count as done}</success_criteria>
+<output>Create `.planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md`</output>

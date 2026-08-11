@@ -64,24 +64,7 @@ Read ONLY when current task needs them. Don't preemptively load.
 
 ## SPRINT.md Frontmatter Template
 
-```yaml
----
-phase: XX-name
-sprint: NN.S
-type: execute | tdd
-wave: N                              # Auto-derived from depends_on
-depends_on: [sprint-id, ...]
-files_modified: [paths...]
-autonomous: true | false             # false if has checkpoints
-requirements: [REQ-01, REQ-02]        # MUST NOT be empty
-owner: yousef                        # OPTIONAL — see below
-
-must_haves:
-  truths: [...]                       # Observable outcomes from user perspective
-  artifacts: [...]                    # Files/models that must exist
-  key_links: [...]                    # Critical connections, breakage points
----
-```
+**`rcode/templates/sprint.md` is the single canonical template — read it now, don't improvise a different structure.** It is not optional/decorative; it is what `execute-sprint.md`'s `owner_agent_resolution` step and its per-task dashboard-state-sync step parse via `grep '^owner:'`/`^phase:'`/`^sprint:'`. A SPRINT.md that free-styles a different structure (bold-label metadata, `### Story N — Title` headings, or any shape without the exact `phase:`/`sprint:`/`owner:` YAML frontmatter block) silently breaks that parsing — the sprint still executes and commits real code, but the dashboard never learns it happened (confirmed live, issue class closed by #1034-#1036's fixes — do not reintroduce it by drifting from the template).
 
 **`owner:` field.** If this plan is grounded in a council session (a `.planning/council-sessions/council-*.md` file is referenced in `<context>` as the authoritative decision), set `owner:` to the id of that session's lead/highest-consensus technical persona for THIS sprint's dominant work — one of `haitham`, `hanzla`, `omar`, `waleed`, `yousef` (the engineer personas with execute permission; `sadiq`/`fatima`/others are advisory-only and never valid here). Pick by domain match: a sprint whose `files_modified` is mostly `src/routes|services|models` → `yousef` (backend); mostly `src/components|pages` → `haitham` (frontend); architecture-level, cross-cutting → `waleed`; general/full-stack with no clear split → `hanzla`. If there was no council session, or the domain split is genuinely ambiguous, omit `owner:` entirely — `execute-sprint.md` defaults to the generic `rcode-executor` when the field is absent. Do not guess an owner just to fill the field; an absent `owner:` is the correct, safe default.
 

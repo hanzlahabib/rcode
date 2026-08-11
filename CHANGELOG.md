@@ -3,6 +3,38 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.4 (2026-08-11) — One canonical SPRINT.md template, not three
+
+### Fixes
+- **A yolo/autonomous planning run silently broke dashboard state sync** —
+  found live: an autonomous `/rcode-plan` run produced a SPRINT.md using
+  `### Story N — Title` markdown headings with bold-label metadata instead
+  of `<task id=...>` XML blocks and YAML frontmatter. The sprint executed
+  and committed real, working code (6/6 commits, tests passing), but every
+  downstream dashboard-state-sync command (`state story move`,
+  `owner_agent_resolution`) parses the file with `grep`/regex against the
+  canonical shape — against headings, those greps silently returned
+  nothing, so the dashboard never learned any of it happened.
+- **Root cause, traced to source:** `rcode-planner.md`'s own role
+  definition literally instructed `### Story {sprint-id}.{NN} — {name}`
+  markdown headings as the required format — directly contradicting both
+  `rcode/templates/sprint.md` and `planner-playbook.md`, which each used
+  `<task>` XML blocks. Worse, those two files *also* disagreed with each
+  other (one had YAML frontmatter, one didn't) — three files, three
+  different implicit "this is the template" claims in the same agent's
+  context. Under autonomous conditions with no interactive correction to
+  anchor it, the planner had no unambiguous source of truth and produced
+  a fourth, even older format matching neither.
+- Consolidated to one canonical template (`rcode/templates/sprint.md`,
+  now with the full YAML frontmatter + `<task>` schema, matching what
+  `execute-sprint.md` actually parses) and repointed `rcode-planner.md`
+  and `planner-playbook.md` at it instead of each independently
+  describing the format. `rcode-planner.md`'s heading-ID instruction is
+  now explicit that headings are a legacy fallback, not the target format.
+
+Tests: 611/612 (1 pre-existing unrelated scope-parity failure).
+
+---
 ## v4.10.3 (2026-08-11) — Council decisions now reach the dashboard
 
 ### Fixes
