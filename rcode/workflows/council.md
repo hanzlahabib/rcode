@@ -274,7 +274,18 @@ Selected: {panel agents}
 Excluded (0 score): {agents with score=0, comma-separated}
 ```
 
-**If `config.mode === 'guided'`:** confirm with the user:
+**Inline yolo override (checked before `config.mode`):** council can be invoked directly by a user OR dispatched by `/rcode-do` after it already detected yolo intent (literal `--auto` flag, persisted `config.mode: yolo`, or natural-language phrasing like "yolo mode" / "autonomous mode" / "without pausing" — see `do.md`'s `parse_args` step). Check `$ARGUMENTS` for the same signal here, since council can run standalone and never pass through `do.md`:
+
+```bash
+INLINE_YOLO=false
+if echo "$ARGUMENTS" | grep -qiE '(--auto\b|\byolo\b|\bautonomous(ly)? mode\b|\bno pauses?\b|\bwithout (asking|stopping|pausing)\b)'; then
+  INLINE_YOLO=true
+fi
+```
+
+**If `INLINE_YOLO=true` OR `config.mode === 'yolo'`:** print the panel one-liner and proceed without confirmation.
+
+**Else (`config.mode === 'guided'` and no inline signal):** confirm with the user:
 
 ```
 Panel for this question: <comma-separated display names>
@@ -282,8 +293,6 @@ Proceed? [Y/n]
 ```
 
 Use the AskUserQuestion tool (not raw stdin) for the confirmation.
-
-**If `config.mode === 'yolo'`:** print the panel one-liner and proceed without confirmation.
 
 ## Step 4 — Spawn the panel in parallel (two rounds)
 
@@ -619,5 +628,12 @@ node .rcode/bin/rcode-tools.cjs state record-session
 
 ## Next Up
 
-- `/rcode-plan` — plan implementation based on the council's recommendation
+Check `project-status` before suggesting `/rcode-plan`:
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+- If `PROJECT_STATUS` is `real` (a phase already exists): `/rcode-plan {phase-number}` — plan implementation based on the council's recommendation
+- Otherwise (`uninstalled`/`uninitialized`/`stub`, no phase exists yet): `/rcode-add-phase` — create a phase for this work first, then `/rcode-plan` will work
 - `/rcode-decisions` — review decisions the council produced

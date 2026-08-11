@@ -74,6 +74,7 @@ depends_on: [sprint-id, ...]
 files_modified: [paths...]
 autonomous: true | false             # false if has checkpoints
 requirements: [REQ-01, REQ-02]        # MUST NOT be empty
+owner: yousef                        # OPTIONAL — see below
 
 must_haves:
   truths: [...]                       # Observable outcomes from user perspective
@@ -81,6 +82,8 @@ must_haves:
   key_links: [...]                    # Critical connections, breakage points
 ---
 ```
+
+**`owner:` field.** If this plan is grounded in a council session (a `.planning/council-sessions/council-*.md` file is referenced in `<context>` as the authoritative decision), set `owner:` to the id of that session's lead/highest-consensus technical persona for THIS sprint's dominant work — one of `haitham`, `hanzla`, `omar`, `waleed`, `yousef` (the engineer personas with execute permission; `sadiq`/`fatima`/others are advisory-only and never valid here). Pick by domain match: a sprint whose `files_modified` is mostly `src/routes|services|models` → `yousef` (backend); mostly `src/components|pages` → `haitham` (frontend); architecture-level, cross-cutting → `waleed`; general/full-stack with no clear split → `hanzla`. If there was no council session, or the domain split is genuinely ambiguous, omit `owner:` entirely — `execute-sprint.md` defaults to the generic `rcode-executor` when the field is absent. Do not guess an owner just to fill the field; an absent `owner:` is the correct, safe default.
 
 ## Dependency Graph Rules
 
@@ -170,6 +173,19 @@ requirements: [...]
 must_haves: {truths, artifacts, key_links}
 ---
 
+## Sprint {phase}.{plan}: {one-line sprint goal, plain English, no jargon}
+
+{2-4 sentence plain-English recap: what this sprint builds and why, written for someone who will never open the XML tags below}
+
+**Tasks:**
+1. {task 1 title, plain English — copy the <title> text verbatim, no XML}
+2. {task 2 title}
+3. {task N title}
+
+_Below this line is the execution prompt the agent reads — task bodies, read-first file lists, verification commands. Not meant for skimming._
+
+---
+
 <objective>...</objective>
 <execution_context>
 @.rcode/workflows/execute-sprint.md
@@ -191,6 +207,8 @@ must_haves: {truths, artifacts, key_links}
 <success_criteria>...</success_criteria>
 <output>Create `.planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md`</output>
 ```
+
+**Summary block cost/rule:** the plain-English recap above the `---` divider is 1 title line + 2-4 sentences + a numbered list of task titles you're already writing for each `<title>` tag — copy, don't re-derive. Do not summarize `<action>` bodies, do not restate `<verify>` commands, do not add anything not already stated elsewhere in the file. If a sprint has more than ~10 tasks, list only the first 8 titles plus `...and N more (see tasks below)` rather than growing the summary unboundedly.
 
 ## Common Planning Mistakes to Avoid
 

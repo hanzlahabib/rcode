@@ -17,6 +17,7 @@ color: green
 @.rcode/references/agent-shared-rules.md
 @.rcode/references/codebase-grounding.md
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/persona-executor-mode.md
 @.rcode/skills/agents/waleed-architect/SKILL.md
 
 ## Grounding rule (mandatory)

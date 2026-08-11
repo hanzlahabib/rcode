@@ -12,8 +12,27 @@ Read config.json for planning behavior settings.
 
 <available_agent_types>
 Valid rcode subagent types (use exact names — do not fall back to 'general-purpose'):
-- rcode-executor — Executes plan tasks, commits, creates SUMMARY.md
+- rcode-executor — Executes plan tasks, commits, creates SUMMARY.md (default)
+- rcode-haitham / rcode-hanzla / rcode-omar / rcode-waleed / rcode-yousef — same execution contract as rcode-executor (via `@.rcode/references/persona-executor-mode.md`), used ONLY when `owner:` in SPRINT.md frontmatter names one of them (see `owner_agent_resolution` below)
 </available_agent_types>
+
+<step name="owner_agent_resolution">
+**Resolve which agent actually executes this plan.**
+
+Read the `owner:` field from the SPRINT.md frontmatter (set by `/rcode-plan` from the council decision's lead persona, when one exists — see `planner-playbook.md`'s `owner:` field docs). Plain frontmatter read, not a new tool call.
+
+```bash
+SPRINT_OWNER=$(grep -m1 '^owner:' .planning/phases/XX-name/{phase}-{plan}-SPRINT.md 2>/dev/null | sed 's/^owner:[[:space:]]*//' | tr -d '"' | xargs)
+VALID_OWNERS="haitham hanzla omar waleed yousef"
+if [[ -n "$SPRINT_OWNER" ]] && echo "$VALID_OWNERS" | grep -qw "$SPRINT_OWNER"; then
+  EXEC_AGENT="rcode-${SPRINT_OWNER}"
+else
+  EXEC_AGENT="rcode-executor"
+fi
+```
+
+Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, Pattern B subagent route). If `$EXEC_AGENT` is a persona and that persona's agent file is not installed in this project, fall back to `rcode-executor` and note the fallback in SUMMARY.md's Deviations section — do not fail the sprint over this.
+</step>
 
 <process>
 
@@ -102,7 +121,7 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="rcode-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → run owner_agent_resolution to get $EXEC_AGENT → spawn Task(subagent_type="$EXEC_AGENT", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 

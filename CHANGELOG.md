@@ -3,6 +3,53 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.1 (2026-08-11) — Council routing, yolo detection, and persona execution
+
+Found live during a real end-to-end rehearsal (`/rcode-do` → council →
+add-phase → plan → execute) on a demo app.
+
+### Fixes
+- **Council's keyword scorer used substring matching, causing collisions**
+  — `"storage"` matched the ML agent's `"rag"` keyword (retrieval-augmented-
+  generation) as a substring, silently misrouting a password-reset
+  architecture question to the ML panel. `council-panel.cjs` now matches
+  keywords on word boundaries. (#1035)
+- **Council's "Next Up" suggested `/rcode-plan` before a phase existed** —
+  `/rcode-plan` legitimately requires a phase (via `/rcode-add-phase` or
+  `/rcode-new-project`), but council's own closing suggestion and
+  `/rcode-plan`'s own preflight error didn't mention the lightweight fix.
+  Both now check `project-status` and point at `/rcode-add-phase` first
+  when no phase exists. (#1034)
+- **`/rcode-do` never preflighted compound requests** — a single sentence
+  chaining scan → init → council → plan → execute let each stage discover
+  its own missing prerequisites mid-run instead of surfacing them once,
+  up front. Added a `compound_chain_preflight` step that validates the
+  whole chain (project-status, council `--agents` ids) before dispatching
+  anything.
+- **"on yolo mode" in free text was silently ignored** — `/rcode-do` only
+  recognized the literal `--auto` flag or a persisted `config.mode: yolo`;
+  natural-language yolo phrasing in the request itself did nothing, so
+  users who typed "...and execute on yolo mode" still hit interactive
+  confirmation prompts. Both `do.md` and `council.md` now detect inline
+  yolo phrasing directly in the request text.
+
+### Added
+- **Council personas can now execute the sprint they informed** — SPRINT.md
+  frontmatter carries an optional `owner:` field (set by the planner from
+  the council decision's lead persona). `/rcode-execute` resolves it to
+  spawn that persona (e.g. `rcode-yousef`) instead of the generic
+  `rcode-executor`, via a shared conditional clause
+  (`persona-executor-mode.md`) rather than duplicating execution machinery
+  into every persona file. Falls back to `rcode-executor` when absent.
+- **SPRINT.md now opens with a plain-English summary** — sprint goal,
+  2-4 sentence recap, and a numbered list of task titles, before the XML
+  execution prompt the agent actually reads. Costs nothing extra — it's
+  assembled from the same task titles the planner already writes.
+
+Tests: 611/612 passing (1 pre-existing unrelated failure: a historical
+commit scope not yet added to AGENTS.md's allowed list).
+
+---
 ## v4.10.0 (2026-08-11) — Dashboard now tells the truth about what's running
 
 Found live during a real end-to-end rehearsal (council → plan → execute →

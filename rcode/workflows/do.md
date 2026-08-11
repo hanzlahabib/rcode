@@ -28,6 +28,12 @@ if [[ "$ARGUMENTS" == *"--auto"* ]]; then
   AUTO_MODE=true
   QUESTION=$(echo "$ARGUMENTS" | sed 's/--auto[[:space:]]*//' | xargs)
 fi
+# Natural-language yolo intent — users say "on yolo mode" / "yolo mode" /
+# "in autonomous mode" in free text far more often than they type --auto.
+# Detect it the same way as the literal flag (#1034/#1035 follow-up).
+if echo "$ARGUMENTS" | grep -qiE '(\byolo\b|\bautonomous(ly)? mode\b|\bno pauses?\b|\bwithout (asking|stopping|pausing)\b)'; then
+  AUTO_MODE=true
+fi
 # Also auto-dispatch in yolo mode
 CONFIG_MODE=$(node .rcode/bin/rcode-tools.cjs config-get mode 2>/dev/null || echo "guided")
 if [[ "$CONFIG_MODE" == "yolo" ]]; then
@@ -141,6 +147,45 @@ LAST_SHIPPED_VERSION=$(grep -m1 -oE 'v[0-9]+\.[0-9]+' .planning/MILESTONES.md 2>
 ```
 
 These flags drive the greenfield guard AND the explicit_intent_check below. `.planning/` existing alone is not enough — we need to know whether the methodology chain has actually run (PRD → milestone → epics → phases) AND which milestone is currently open.
+</step>
+
+<step name="compound_chain_preflight" priority="first-match">
+**Detect compound/chained requests and preflight the whole chain before dispatching step one.**
+
+`/rcode-do` is a single-dispatch router by design — it normally picks ONE command and hands off. But real input often chains several actions in one sentence (e.g. "scan and init my project & get council decision on X and plan and execute on yolo mode"). If the router just dispatches to the first-matched command and lets each downstream skill discover its own missing prerequisites, the user sees red errors scattered mid-flight instead of one clear picture up front (issue #1034/#1035).
+
+**Detection:** `$QUESTION` matches this step if it contains 2+ pipeline-stage signals joined by `and`/`&`/`then`/`,`. Pipeline-stage signals: `scan`/`map`, `init`, `council`/`decide`/`architect`, `plan`, `execute`/`build`/`implement`/`yolo`.
+
+**If detected, run one consolidated readiness check before dispatching anything:**
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+Using `$PROJECT_STATUS`, `$HAS_PRD`, `$HAS_PHASES` (already computed in `check_project`), and any `--agents=` list the user named, build the ordered stage list implied by the request and check each stage's precondition against state already on hand — do not re-derive it per stage, and do not spawn anything yet:
+
+| Stage (if requested) | Precondition | If unmet |
+|---|---|---|
+| scan/map | none | always runnable |
+| init | none — auto-init guard already ran | always runnable |
+| council | none, BUT if the user passed an explicit `--agents=` list, validate every id against the roster now: `sadiq, hussain-pm, waleed, ahmed-hassani, nasser, layla, zahra, haitham, yousef, zayd, fatima, khalid, mariam, noor` | flag unknown ids and show the valid list in the preflight report — do not let council fail on this mid-run |
+| plan | a phase must exist (`$PROJECT_STATUS == real` OR `$HAS_PHASES == true`) after council — since council alone does not create a phase | note that `/rcode-add-phase` will run between council and plan to create one |
+| execute | a plan (SPRINT.md) must exist for the phase — this is always true after a successful plan stage in the same chain | n/a within a single chain |
+
+Print one consolidated block before touching any subagent:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ rcode ► CHAIN PREFLIGHT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Detected stages: {ordered list, e.g. scan → init → council → add-phase → plan → execute}
+{✓ or ⚠ per stage, with the one-line reason for any ⚠}
+{if --agents had unknown ids: "⚠ Unknown agent id(s): {ids}. Valid: {roster list}. Continuing with the corrected/auto-selected panel."}
+```
+
+Then dispatch the stages in order via the `Skill` tool, one at a time, re-using this preflight's state instead of letting each stage rediscover it. If a stage's precondition is genuinely unmet and nothing in the chain fixes it (e.g. user asked to `plan` but not `council`/`add-phase` and no phase exists), stop before dispatching that stage and tell the user which single command to run first — do not let it fail loudly mid-chain.
+
+This step does not replace `greenfield_guard` or `explicit_intent_check` below — it only applies when a *chain* is detected. Single-verb requests fall through to those steps as before.
 </step>
 
 <step name="greenfield_guard" priority="first-match">

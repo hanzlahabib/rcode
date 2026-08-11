@@ -17,6 +17,7 @@ color: green
 @.rcode/references/response-style.md
 @.rcode/references/codebase-grounding.md
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/persona-executor-mode.md
 @.rcode/references/persona-engineer-shared.md
 
 # Omar (عمر) — Software Engineer (generalist)

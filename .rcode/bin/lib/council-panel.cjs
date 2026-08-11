@@ -404,11 +404,21 @@ function normalize(question) {
     .trim();
 }
 
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function matchesKeyword(text, word) {
+  // Word-boundary match, not substring — avoids collisions like
+  // "storage" containing "rag" (#1034 follow-up).
+  return new RegExp('\\b' + escapeRegExp(word) + '\\b').test(text);
+}
+
 function scoreAgent(agentId, normalizedQuestion) {
   const keywords = KEYWORDS[agentId] || [];
   let score = 0;
   for (const { word, weight } of keywords) {
-    if (normalizedQuestion.includes(word)) score += weight;
+    if (matchesKeyword(normalizedQuestion, word)) score += weight;
   }
   const names = AGENT_NAMES[agentId] || [];
   for (const name of names) {

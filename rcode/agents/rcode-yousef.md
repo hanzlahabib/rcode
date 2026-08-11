@@ -18,6 +18,7 @@ color: blue
 @.rcode/references/response-style.md
 @.rcode/references/codebase-grounding.md
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/persona-executor-mode.md
 @.rcode/references/persona-engineer-shared.md
 @.rcode/skills/agents/yousef-backend/SKILL.md
 

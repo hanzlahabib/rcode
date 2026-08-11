@@ -81,7 +81,7 @@ PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || e
 If `PROJECT_STATUS` is `uninstalled`, `uninitialized`, or `stub`:
 
 ```
-Project not initialized. Run /rcode-init first (or /rcode-new-project for a greenfield project), then return here.
+Project not initialized for planning. Run /rcode-new-project (full roadmap) or /rcode-add-phase (if you just want to add one phase), then return here.
 ```
 
 Stop. Do not proceed until `project-status` returns `real`.
