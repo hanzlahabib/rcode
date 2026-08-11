@@ -195,7 +195,7 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
       // Status: a *-SUMMARY.md sibling means the sprint shipped.
       const hasSummary = files.includes(f.replace(/-SPRINT\.md$/i, '-SUMMARY.md'));
       const status = hasSummary ? 'complete'
-        : (p.status === 'active' || p.status === 'in_progress') ? 'in_progress'
+        : toState(p.status) === 'active' ? 'in_progress'
         : 'planned';
 
       // Project-relative path to this sprint's SPRINT.md — same shape as the
@@ -383,7 +383,7 @@ function buildDashboard(state) {
             date: fmtISODate(p.completed || s.completed_at || p.created),
             file: s.file || null,
           });
-        } else if (p.state === 'active') {
+        } else if (toState(p.status) === 'active') {
           // No per-task progress tracking exists — pct stays null and the UI
           // omits the percent pill rather than inventing a number.
           inProgressTasks.push({ title: st.title || st.id, pct: null, file: s.file || null });
@@ -393,10 +393,10 @@ function buildDashboard(state) {
   }
   // Fallbacks so the cards are never empty when stories are unregistered in state.json.
   if (!completedTasks.length) {
-    phases.filter(p => p.state === 'done').slice(-6).forEach(p =>
+    phases.filter(p => toState(p.status) === 'done').slice(-6).forEach(p =>
       completedTasks.push({ title: p.name, date: fmtISODate(p.completed || p.created), file: null }));
   }
-  if (!inProgressTasks.length && activePhase && activePhase.state === 'active') {
+  if (!inProgressTasks.length && activePhase && toState(activePhase.status) === 'active') {
     inProgressTasks.push({ title: activePhase.name, pct: null, file: null });
   }
   const tasks = {
