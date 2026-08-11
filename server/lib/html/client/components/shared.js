@@ -332,18 +332,37 @@ export function TaskCard({ task: t }) {
   const done = t.status === 'done' || t.status === 'completed';
   const running = isSessionRunning(t.id);
 
-  // Build cmd hints for this task
+  // Build cmd hints for this task. rcode has two separate tracking pipelines
+  // that both use "sprint" terminology: phase -> SPRINT.md plan -> task
+  // (t.phaseId set; this is the real, execution-backed pipeline) vs.
+  // epic -> story (no t.phaseId; dev-story/create-story/verify-work). Using
+  // dev-story/create-story commands against a phase-pipeline task id (e.g.
+  // "1.1.2") doesn't parse — those commands only accept 2-part epic.story
+  // ids. Branch on t.phaseId so the hints (and the RunBtn below) actually
+  // resolve to a real command for whichever pipeline this task is from.
+  const isPhaseTask = !!t.phaseId;
+  const runCmd = isPhaseTask ? '/rcode-execute ' + t.phaseId : '/rcode-dev-story ' + t.id;
   const taskCmds = [];
   if (t.id) {
-    if (!done) {
-      taskCmds.push(['/rcode-dev-story ' + t.id, 'Implement this story']);
-      taskCmds.push(['/rcode-create-story ' + (t.sprintId || ''), 'Add related story']);
+    if (isPhaseTask) {
+      if (!done) {
+        taskCmds.push(['/rcode-execute ' + t.phaseId, 'Execute phase ' + t.phaseId]);
+      } else {
+        taskCmds.push(['/rcode-verify-phase ' + t.phaseId, 'Verify phase ' + t.phaseId]);
+        taskCmds.push(['/rcode-review --phase ' + t.phaseId + ' --all', 'Review code for this phase']);
+      }
+      taskCmds.push(['/rcode-progress', 'Overall project status']);
     } else {
-      taskCmds.push(['/rcode-verify-work ' + t.id, 'Verify this story']);
-      taskCmds.push(['/rcode-review ' + t.id, 'Review code for this story']);
-    }
-    if (t.sprintId) {
-      taskCmds.push(['/rcode-sprint-status ' + t.sprintId, 'Sprint ' + t.sprintId + ' status']);
+      if (!done) {
+        taskCmds.push(['/rcode-dev-story ' + t.id, 'Implement this story']);
+        taskCmds.push(['/rcode-create-story ' + (t.sprintId || ''), 'Add related story']);
+      } else {
+        taskCmds.push(['/rcode-verify-work ' + t.id, 'Verify this story']);
+        taskCmds.push(['/rcode-review ' + t.id, 'Review code for this story']);
+      }
+      if (t.sprintId) {
+        taskCmds.push(['/rcode-sprint-status ' + t.sprintId, 'Sprint ' + t.sprintId + ' status']);
+      }
     }
   }
 
@@ -357,7 +376,7 @@ export function TaskCard({ task: t }) {
       aria-expanded=${expanded}
       ...${pressable(() => setExpanded(e => !e))}>
       <div class="item-title" style=${done ? 'text-decoration:line-through' : ''}>
-        ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${'/rcode-dev-story ' + t.id} label=${'Story ' + t.id}/>` : null}
+        ${t.id && !done ? html`<${RunBtn} storyId=${t.id} cmd=${runCmd} label=${isPhaseTask ? 'Phase ' + t.phaseId : 'Story ' + t.id}/>` : null}
         ${t.file ? html`
           <button class="card-file-btn" title=${'View ' + t.file} onClick=${handleViewFile}>
             <${Icon} name="file-text" size=${11}/> File
