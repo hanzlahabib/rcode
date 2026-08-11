@@ -52,13 +52,20 @@ End with closure banner + top findings summary:
 If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 ```
-/rcode-map-codebase <argument-here>
+/rcode-map-codebase <a short description of the codebase or why you're mapping it>
 ```
 
-**Examples:**
+The description isn't used to scope or filter what gets mapped — all 4 mapper
+agents (tech, architecture, conventions, concerns) always cover the whole
+codebase regardless of what you write here. It exists as an intentional
+non-empty confirmation, not a topic filter — `/rcode-scan --focus <topic>` is
+the command for a narrower, single-topic pass.
+
+**Examples (any of these work identically — the text just needs to be non-empty):**
 ```
-/rcode-map-codebase example 1
-/rcode-map-codebase example 2
+/rcode-map-codebase full codebase
+/rcode-map-codebase onboarding a new engineer, need the full picture
+/rcode-map-codebase before a major refactor
 ```
 
 STOP — do not proceed.
