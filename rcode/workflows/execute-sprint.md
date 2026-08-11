@@ -382,6 +382,35 @@ TASK_COMMIT=$(git rev-parse --short HEAD)
 TASK_COMMITS+=("Task ${TASK_NUM}: ${TASK_COMMIT}")
 ```
 
+**5.5. Sync dashboard state (closes the manual/`--wave N` state-sync gap):**
+
+The dashboard reads task status from `.rcode/state.json`'s `phases[].sprints[].stories[]`, not from SUMMARY.md or git. `state story move` only works on a story that's already registered — and the planner does not register stories into state.json when it writes SPRINT.md (see `#590` fallback in `scanner.js`). Without this step, a task that is fully committed and tested still shows "todo" on the dashboard until the ENTIRE phase's status flips to complete, which is silently wrong for any partial/single-wave run (`--wave N`, a manually re-run single plan, a checkpoint-interrupted resume).
+
+Run this after every task's commit, not just at the end of the plan:
+
+```bash
+# Ensure the parent sprint is marked active (idempotent — no-op if already started)
+node ".rcode/bin/rcode-tools.cjs" state sprint start --sprint "${SPRINT_ID}" >/dev/null 2>&1
+
+# Try to move the story directly by its SPRINT.md task id first
+MOVE_RESULT=$(node ".rcode/bin/rcode-tools.cjs" state story move --id "${TASK_ID}" --status done 2>&1)
+if echo "$MOVE_RESULT" | grep -qi "not found"; then
+  # Story was never registered (planner doesn't pre-register) — register it now.
+  # state story add assigns ids in {sprint}.{N} sequence matching the order
+  # tasks are added, which matches SPRINT.md's own <task id> numbering as
+  # long as tasks are committed in the order they appear in the file.
+  node ".rcode/bin/rcode-tools.cjs" state story add --sprint "${SPRINT_ID}" --title "${TASK_TITLE}" >/dev/null 2>&1
+  node ".rcode/bin/rcode-tools.cjs" state story move --id "${TASK_ID}" --status done >/dev/null 2>&1
+fi
+```
+
+Non-fatal: if either `rcode-tools.cjs` call fails for a reason other than "not found" (e.g. state.json corrupted), log a one-line warning and continue — dashboard staleness is not a reason to fail a task that verified and committed successfully.
+
+When the whole plan finishes (all tasks done), mark the sprint complete too:
+```bash
+node ".rcode/bin/rcode-tools.cjs" state sprint complete --sprint "${SPRINT_ID}" >/dev/null 2>&1
+```
+
 **6. Check for untracked generated files:**
 ```bash
 git status --short | grep '^??'

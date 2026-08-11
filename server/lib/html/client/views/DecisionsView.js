@@ -28,7 +28,7 @@ export function DecisionsView() {
   if (!decisions.length) {
     return html`
       <div id="view-decisions" class="view active">
-        <div class="view-title">Decisions (ADRs)</div>
+        <div class="view-title">Decisions (Architecture Decision Records — ADRs)</div>
         <div class="empty">
           No decisions recorded yet.
           <div class="empty-action">Decisions made during /rcode-council appear here</div>
@@ -47,7 +47,7 @@ export function DecisionsView() {
 
   return html`
     <div id="view-decisions" class="view active">
-      <div class="view-title">Decisions (ADRs)</div>
+      <div class="view-title">Decisions (Architecture Decision Records — ADRs)</div>
       <div class="filter-bar">
         <input
           class="filter-input"
