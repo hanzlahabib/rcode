@@ -3,6 +3,35 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.10.6 (2026-08-12) — Guardrail hooks on by default, dashboard state sync fixes
+
+### Features
+- **`rcode install` now merges guardrail hooks into `.claude/settings.json` by
+  default** — pre-edit checks, bash-guard, prompt-router, cost-track, and the
+  rest are on out of the box instead of requiring a separate
+  `/rcode-enable-hooks` step. Interactive installs get a Y-default confirm;
+  non-interactive (`--yes` / postinstall) installs enable by default. Opt out
+  with `--no-hooks`, force on with `--enable-hooks`.
+- **herdr-orchestrated agents now get `/rcode-do` as the literal first line**
+  of their spawn prompt (single-shot and wave dispatch), routing dispatch
+  through rcode's command picker instead of a hand-rolled instruction.
+
+### Fixes
+- Renamed a leftover `GLOBAL_RIHAL` shell variable to `GLOBAL_RCODE` in
+  `auto-init-guard.md` (closes the same ref-cleanup class as #861).
+- `planner-playbook.md` now points to `rcode/templates/sprint.md` as the
+  single canonical SPRINT.md template instead of an inline copy that could
+  drift out of sync.
+- `council.md` now records consensus decisions via `state add-decision` so
+  the dashboard's Decisions view reflects council outcomes, not just
+  `record-council` session logs.
+- `execute-sprint.md` now syncs per-task story status to `state.json` after
+  every commit (not just at phase end), and retries a persona spawn once via
+  `rcode-executor` when the persona refuses a hand-authored dispatch prompt.
+
+Tests: 611/612 (1 pre-existing unrelated scope-parity failure — `map-codebase` scope missing from AGENTS.md's allowed list).
+
+---
 ## v4.10.5 (2026-08-11) — Config questions now asked consistently, not by accident
 
 ### Fixes
