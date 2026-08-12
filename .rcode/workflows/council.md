@@ -595,6 +595,14 @@ node .rcode/bin/rcode-tools.cjs state record-council \
 node .rcode/bin/rcode-tools.cjs state record-session
 ```
 
+**Also record the decision itself (closes #1036-adjacent gap — dashboard "Decisions (ADRs)" reads `state.json`'s `decisions[]`, which `record-council` above does NOT populate; only `state add-decision` does).** Write one concise line per DISTINCT consensus decision the council reached — not the full synthesis prose, not one line per panelist. A council session that reached one architectural consensus gets one `add-decision` call; a session with 2-3 genuinely separate decisions gets that many calls. `add-decision` takes the summary as a plain positional argument (no `--summary-file` flag exists on this subcommand — verified against `rcode-tools.cjs`'s actual implementation, don't invent flags), so keep each summary to one shell-safe line:
+
+```bash
+node .rcode/bin/rcode-tools.cjs state add-decision "{one-line consensus decision, e.g. 'Password reset: opaque crypto token, sha256-hashed on existing user record, 15-30min single-use expiry, console-stub email'}"
+```
+
+If the council reached no real consensus (pure disagreement, or panelists only asked clarifying questions), skip this call — don't manufacture a decision that wasn't made.
+
 > **Note:** If `rcode-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
 
 ## Success Criteria
