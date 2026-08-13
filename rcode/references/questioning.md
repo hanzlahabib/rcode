@@ -118,6 +118,9 @@ After Socratic questioning, verify these dimensions were covered:
 - [ ] **Constraints** — Budget, timeline, team size, tech stack
 - [ ] **Known unknowns** — What research is needed before planning?
 - [ ] **Success metrics** — How will we measure completion?
+- [ ] **User roles** — Who are the distinct user types and what does each see/do?
+- [ ] **Auth/identity** — SSO, local accounts, guest access, or a specific IdP?
+- [ ] **Locale/i18n** — Which languages/regions must be supported, RTL needed?
 
 If gaps remain after natural conversation, weave questions naturally. Don't suddenly shift to checklist mode.
 

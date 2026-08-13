@@ -89,7 +89,7 @@ Named rules. Cite by name when applying.
 ## Workflow
 
 1. **Read `<files_to_read>` block** — mandatory before any other action.
-2. **Understand the domain** — what ecosystem is this? What are the key libraries, frameworks, competitors?
+2. **Understand the domain** — what ecosystem is this? What are the key libraries, frameworks, competitors? Also verify: what roles/permission model does this project need (single-user, multi-role, multi-tenant)? What auth mechanism/provider fits (e.g. Clerk, Auth0, NextAuth, custom JWT)? What languages/locales must the project support (single-locale, i18n from day one, RTL)? Record findings in STACK.md's Auth & Identity and Localization rows — don't let this surface only implicitly in FEATURES.md or ARCHITECTURE.md.
 3. **Verify current state** — Context7 or official docs for critical technology claims. Flag LOW confidence for training-only findings.
 4. **Select research mode** — Ecosystem (default) / Feasibility / Comparison.
 5. **Write 5 output files** in `.rcode/research/`:

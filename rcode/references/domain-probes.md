@@ -73,6 +73,14 @@ Ask these when exploring user needs, value, or competitive positioning.
 - "What happens if we don't build this — what's the status quo?"
 - "Who funded this decision, and what's their main concern?"
 
+### Roles & Permissions (if project/phase has >1 user role)
+
+- "What does each role see differently in navigation/menus?"
+- "Which screens/pages exist for one role but not another?"
+- "Which fields/actions are hidden vs. merely disabled per role?"
+- "Is there a role-switcher, or is role fixed per account?"
+- "What does the 'no-permission' state look like — 404, redirect, or disabled UI?"
+
 ---
 
 ## Execution Probes

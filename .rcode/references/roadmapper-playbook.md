@@ -68,6 +68,61 @@ actually asked for. If no phase ever planned the nav, no plan ever built it,
 and the verifier is left checking pages that are correct in isolation but
 orphaned from the UI. Plan the shell so verification has something to check.
 
+### Enterprise Projects Need Auth Strategy and Role Mapping Decided Up Front
+
+**If the project is multi-role, SSO-integrated, or compliance-sensitive, an
+early phase MUST explicitly decide auth strategy (SSO/SAML/OIDC vs local
+auth, session/tenant model) and produce a role-to-screen mapping — not defer
+either to whichever phase happens to touch auth first.** Do not assume these
+"come for free" alongside the shell phase — they don't. A roadmap that plans
+navigation and a login screen but never decides which roles can reach which
+screens can ship every phase individually verified and working, while an
+Auditor role sees write actions it should never have access to, or SSO gets
+retrofitted in a later phase and breaks every session model earlier phases
+assumed. That is a real, observed failure mode, not a hypothetical.
+
+Concretely: for multi-role/SSO/compliance-sensitive projects, the roadmap's
+foundation phase (the same phase that plans the shell) success criteria must
+also include something like "auth strategy (SSO provider or local auth) is
+decided and documented" and "each role in scope is mapped to the
+screens/actions it can access" — even if some roles' full permission sets are
+refined in later phases. Every later phase that adds a new user-facing route
+must include "role access defined for this route" as one of its own success
+criteria, not just "linked from the app's navigation."
+
+This is what `rcode-verifier`'s Level-5 Reachability check does NOT enforce —
+it verifies a page is linked from nav, not that it's linked only for the
+correct roles. If no phase ever planned the role mapping, no plan ever built
+access control, and the verifier passes pages that are reachable but
+reachable by everyone.
+
+### Multi-Role Projects Need Role-Differentiated UI Success Criteria
+
+**If the project has more than one user role/permission level, at least one
+phase's success criteria MUST include an observable statement of what each
+role sees differently on screen** (e.g. "Employee sees own-record views only;
+Manager sees a Team Approvals screen; Admin sees a Users/Roles management
+screen") — not just "RBAC enforced at the API" or "permissions checked on the
+backend." A roadmap can cleanly plan and ship Auth, RBAC-enforcement, and
+Audit-trail phases, all individually verified and working, while never
+producing a phase whose success criteria mentions what a Manager's screen has
+that an Employee's doesn't. That is the same class of orphan-feature failure
+the Shell Phase rule above exists to prevent, just for role visibility instead
+of nav reachability: backend permission checks shipped, zero
+role-differentiated UI ever asked about.
+
+This applies to the nav itself, not just screen content: the Shell Phase's
+success criteria must state which roles see which top-level nav
+sections/menu items, not only "user can log in and see navigation to every
+top-level area." Showing every role an identical full nav and relying on
+route-level auth to 403 the sections they can't use is a common but bad
+pattern — it leaks the existence of features a role shouldn't know about and
+is worse UX than a nav that's filtered per role. For 2+-role projects, the
+IA decision in step 3b below must include a `{top-level section -> roles
+that see it}` mapping, and the Shell Phase success criteria must include an
+observable statement like "user logged in as role X sees only the nav
+sections role X is entitled to."
+
 ### On-Demand Rule Files
 
 | When you need... | Read |
@@ -83,6 +138,7 @@ Read only when the current task needs the detail. Don't preemptively load.
 1. **Read context** — REQUIREMENTS.md, FEATURES.md, ARCHITECTURE.md, STACK.md, RESEARCH.md (per `<files_to_read>`).
 2. **Cluster requirements** — group related requirements into natural delivery units.
 3. **Derive phases** — name each phase by what the user can DO after it, not what was built.
+3b. **Declare the Information Architecture** (UI projects only) — before phases are finalized, explicitly decide the app's eventual final-state IA, not per-phase: enumerate the top-level sections (e.g. Dashboard / Operations / Reports / Admin), pick sidebar vs topbar vs tabs, state max nesting depth (e.g. 2 levels: section > subsection), and group every planned phase's screens under one of those sections. Persist this as an `IA.md` (or a "## Information Architecture" section in ROADMAP.md). A flat list of nav links that grows by one item per phase is not an IA decision — it's the failure mode this step exists to prevent. Later phases must slot new routes under an existing top-level section or explicitly propose adding one, never silently append a new sidebar item.
 4. **Map 100% of requirements** — every req maps to exactly one phase. Verify coverage.
 5. **Write success criteria** — 2-5 observable behaviors per phase. Goal-backward.
 6. **Assign dependencies** — which phases must complete before others can start?

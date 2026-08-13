@@ -207,6 +207,16 @@ Based on research, suggested phase structure:
 |------------|---------|---------|-----|
 | [tech] | [ver] | [what] | [rationale] |
 
+### Auth & Identity
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| [tech] | [ver] | [roles/auth mechanism] | [rationale] |
+
+### Localization
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| [tech] | [ver] | [locales/i18n mechanism] | [rationale] |
+
 ### Supporting Libraries
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|

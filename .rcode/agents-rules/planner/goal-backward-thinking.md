@@ -43,6 +43,17 @@ Must be TRUE:
 
 This must carry through to Step 3 (a nav component — header, sidebar, menu — is a required artifact alongside the new page) and Step 5 (a key link from that nav component to the new route). A feature that functions perfectly at an orphan route with no menu entry or link pointing to it does not satisfy the goal.
 
+**Nav artifact precondition.** "Nav/menu component updated with a link" is not itself a valid artifact — it is single-role and structure-agnostic, and satisfying it by bolting one more top-level `<a>` onto whatever markup exists guarantees IA drift across phases. Before writing that artifact line:
+- Reference the existing IA decision (the ROADMAP-level nav/IA plan) that this route slots into. If no IA doc exists yet — this is genuinely the first UI phase — this phase must produce one (containers, nesting levels, role visibility) before the nav artifact can be written; do not defer it to a later phase.
+- State which nav container the link belongs in (e.g. sidebar primary, topbar, settings submenu), not just "the nav."
+- State the nesting depth (top-level vs. nested under an existing section).
+- State which roles see it, if the app has more than one role.
+
+**Multi-role goals — add a role-visibility truth.** If the project has more than one user role/permission level (per REQUIREMENTS.md/PROJECT.md), one of the truths must state what that role sees or cannot see on screen — nav items, dashboard content, visible/hidden fields, enabled/disabled actions — not only what API calls it can or cannot make:
+- "Employee sees only their own timesheet in nav; Manager additionally sees a Team Approvals nav item; Admin additionally sees a Users/Roles admin screen."
+
+A truth like "User can't access protected pages without logging in" covers the route gate but not RBAC — it says nothing about what an authenticated Employee vs Manager vs Admin actually sees. RBAC = each role has a different UI, not just a blocked route.
+
 **Example: Settings Page Goal**
 
 Must be TRUE:
@@ -53,7 +64,7 @@ Must be TRUE:
 Artifacts:
 - Settings page component
 - Settings API route
-- Nav/menu component updated with a link to the settings route
+- Nav/menu component updated with a link to the settings route, per existing IA plan: sidebar primary nav, top-level, visible to all authenticated roles
 
 Key link:
 - Nav component → `/settings` route link → if broken: page works but is undiscoverable
@@ -181,6 +192,7 @@ must_haves:
 5. User stays logged in after page refresh
 6. User can log out
 7. User can't access protected pages without logging in
+8. Each role sees a different UI: Employee's nav shows only their own timesheet; Manager's nav additionally shows Team Approvals; Admin's nav additionally shows a Users/Roles admin screen
 
 ### Artifacts Needed
 - Login form component
@@ -189,6 +201,7 @@ must_haves:
 - User database model
 - Session/JWT infrastructure
 - Protected route wrapper
+- Role-aware nav component (renders nav items conditionally per role)
 
 ### Wiring
 - Form → API endpoint
