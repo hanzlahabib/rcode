@@ -3,6 +3,65 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.11.0 (2026-08-13) — Verification catches "built but unreachable" UI, frontend planning methodology
+
+### Features
+- **`rcode-verifier` gains a Level-5 Reachability check** — a page/route can
+  pass exists/substantive/wired/data-flows checks while having no link from
+  the app's actual navigation. The verifier now greps the app shell for a
+  nav link and, for UI-facing phases, runs a live smoke check against the
+  dev server (or a browser tool) confirming the entry point actually links
+  there. `roadmapper-playbook.md` now mandates an app-shell phase (nav,
+  layout, auth entry) for any UI project instead of assuming it comes free
+  alongside domain phases.
+- **Enterprise-readiness planning gate** — roadmapper now requires an
+  auth-strategy decision and role-to-screen mapping in the foundation phase
+  for multi-role/SSO/compliance projects, plus an explicit Information
+  Architecture decision before phases are finalized. `discuss-phase` gained
+  discretionary (not forced) standing checks for entry-point, auth-strategy,
+  and roles/permissions. `project-types.yaml` gained enterprise signal
+  keywords and bundled discovery questions (RBAC, SSO/IdP, audit/residency,
+  i18n/RTL).
+- **`/rcode-ui-phase` now produces WIREFRAMES.md alongside UI-SPEC.md** —
+  every screen from the roadmap's IA, with role visibility and all four
+  required states (loading/empty/error/populated) per screen, grounded in a
+  new vendored design-library (`rcode/references/design-library/`, MIT
+  licensed style/palette/typography/UX-rules reference data) instead of an
+  agent inventing tokens from nothing. The UI safety gate this workflow
+  always documented is now actually wired into `plan.md`.
+- **Sprint-checker semantic verification** — a `<verify>` that only
+  compiles/lints no longer satisfies a task claiming user-facing behavior;
+  a UI artifact with no nav-wiring task, a dynamic-data component with no
+  loading/empty/error states, or a new route with no role-access statement
+  (multi-role projects) are now blockers, not silent passes.
+- **`rcode install` writes a small rcode-owned "/rcode-do" preferred-command
+  block** into whichever rule file each installed IDE actually reads
+  (`CLAUDE.md`, `AGENTS.md`, or a dedicated `.mdc` rule for Cursor/Windsurf)
+  — existing rule content is never touched.
+
+### Fixes
+- `execute-sprint.md` now actually advances `state.json`'s phase status
+  (`phase_status_gate`) — it previously stayed stuck at planning-time status
+  regardless of real progress. Dashboard `scanner.js` no longer renders a
+  phase as done from a self-reported status alone; requires a passing
+  `*-VERIFICATION.md`.
+- `phase complete` (the completion path every workflow actually calls) was
+  missing a stale-earlier-phase hygiene warning that only its unused twin
+  `state complete-phase` had — ported over, twin marked deprecated.
+- `state set --ui-spec-path`/`--wireframes-path` were completely unhandled
+  by `rcode-tools.cjs` — added and verified live.
+- `ship.md` now requires an explicit `## Known Gaps` PR section whenever
+  VERIFICATION.md status isn't a clean `passed`, instead of letting
+  `human_needed`/`gaps_found` ship silently.
+- `council.md` — hedged/conditional panelist positions can no longer
+  collapse into an unqualified "consensus" decision record; a panel that
+  never directly addresses the literal question triggers a mandatory
+  completeness check.
+
+Tests: 611/612 (1 pre-existing unrelated scope-parity failure — `map-codebase`
+scope missing from AGENTS.md's allowed list).
+
+---
 ## v4.10.6 (2026-08-12) — Guardrail hooks on by default, dashboard state sync fixes
 
 ### Features
