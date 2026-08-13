@@ -1065,6 +1065,147 @@ function ensureRcodeGitignore(target, options = {}) {
 }
 
 /**
+ * Splice a BEGIN/END-delimited block into a text file, creating the file if
+ * missing, replacing the block in place if a prior version exists, or
+ * appending if the file exists without the block yet. Shared by any
+ * "own one marked section of a user-owned file" writer (gitignore, rule
+ * files, etc.) so the splice logic (and its edge cases — missing END,
+ * trailing newlines) lives in one place.
+ *
+ * Returns: { action: 'created' | 'appended' | 'updated' | 'already-present' | 'skipped-error', error? }
+ */
+function spliceMarkedBlockIntoFile(filePath, begin, end, block) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      writeFileAtomic(filePath, block);
+      return { action: 'created' };
+    }
+    const existing = fs.readFileSync(filePath, 'utf8');
+
+    function splice(text, newBlock) {
+      const start = text.indexOf(begin);
+      if (start < 0) return null;
+      const endIdx = text.indexOf(end, start);
+      if (endIdx < 0) {
+        let sliceStart = start;
+        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+        return text.slice(0, sliceStart) + newBlock;
+      }
+      let sliceStart = start;
+      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
+      let sliceEnd = endIdx + end.length;
+      if (text[sliceEnd] === '\n') sliceEnd += 1;
+      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
+    }
+
+    if (existing.includes(begin)) {
+      const rewritten = splice(existing, block);
+      if (rewritten !== null && rewritten !== existing) {
+        writeFileAtomic(filePath, rewritten);
+        return { action: 'updated' };
+      }
+      return { action: 'already-present' };
+    }
+    const sep = existing.endsWith('\n') ? '\n' : '\n\n';
+    writeFileAtomic(filePath, existing + sep + block);
+    return { action: 'appended' };
+  } catch (err) {
+    return { action: 'skipped-error', error: err.message };
+  }
+}
+
+/**
+ * Ensure every installed IDE's rule file carries a short, rcode-owned block
+ * pointing agents at `/rcode-do` as the preferred entry point for non-trivial
+ * work. This is NOT a full CLAUDE.md/AGENTS.md rewrite — it only owns its own
+ * marked section (or, for cursor/windsurf, a dedicated rcode-* rule file) so
+ * a project's existing rule content is never touched or reordered.
+ *
+ * - claude / vscode → root CLAUDE.md (splice, file created if missing)
+ * - codex           → root AGENTS.md (splice, file created if missing)
+ * - cursor          → .cursor/rules/rcode-prefer-do.mdc (dedicated, always rewritten)
+ * - windsurf        → .windsurf/rules/rcode-prefer-do.mdc (dedicated, always rewritten)
+ * - gemini / antigravity / grok → skipped (no single canonical project rule file yet)
+ *
+ * Returns: { [ide]: { action, error? } } per IDE actually written.
+ */
+function ensureRcodePreferredCommandRule(target, ides) {
+  const results = {};
+  const idSet = new Set(ides || []);
+
+  const md = (heading) => [
+    `## ${heading}`,
+    '',
+    'This project has [rcode](https://www.npmjs.com/package/@hanzlaa/rcode) installed —',
+    'persistent project memory, specialist agents, and structured workflows under `.rcode/`.',
+    '',
+    'For any non-trivial task (new feature, bug fix that needs investigation, multi-file',
+    'change, planning) prefer routing through **`/rcode-do <task description>`** — rcode\'s',
+    'command picker — instead of working ad hoc. It picks the right rcode command (plan,',
+    'execute, review, debug, etc.) for the task and keeps `.rcode/state.json` and the',
+    'Memory Bank in sync. Skip it only for trivial single-line/single-file edits that',
+    'don\'t need planning or memory.',
+  ].join('\n');
+
+  if (idSet.has('claude') || idSet.has('vscode')) {
+    const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
+    const END = '<!-- ===== end rcode-managed rule block ===== -->';
+    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
+    results.claude = spliceMarkedBlockIntoFile(path.join(target, 'CLAUDE.md'), BEGIN, END, block);
+  }
+
+  if (idSet.has('codex')) {
+    const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
+    const END = '<!-- ===== end rcode-managed rule block ===== -->';
+    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
+    results.codex = spliceMarkedBlockIntoFile(path.join(target, 'AGENTS.md'), BEGIN, END, block);
+  }
+
+  if (idSet.has('cursor')) {
+    const content = [
+      '---',
+      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
+      'alwaysApply: true',
+      '---',
+      '',
+      md('Working with rcode'),
+      '',
+    ].join('\n');
+    try {
+      const p = path.join(target, '.cursor', 'rules', 'rcode-prefer-do.mdc');
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      writeFileAtomic(p, content);
+      results.cursor = { action: 'written' };
+    } catch (err) {
+      results.cursor = { action: 'skipped-error', error: err.message };
+    }
+  }
+
+  if (idSet.has('windsurf')) {
+    const content = [
+      '---',
+      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
+      'trigger: always_on',
+      '---',
+      '',
+      md('Working with rcode'),
+      '',
+    ].join('\n');
+    try {
+      const p = path.join(target, '.windsurf', 'rules', 'rcode-prefer-do.mdc');
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      writeFileAtomic(p, content);
+      results.windsurf = { action: 'written' };
+    } catch (err) {
+      results.windsurf = { action: 'skipped-error', error: err.message };
+    }
+  }
+
+  return results;
+}
+
+/**
  * Ensure .git/hooks/pre-commit includes the rcode-managed block that auto-syncs
  * state.json when .planning/ or .rcode/brain/sources.yaml files change.
  *
@@ -2873,6 +3014,10 @@ async function installInner(opts) {
   // prompt-router, etc). Default-on; resolved above via resolveEnableHooks().
   const settingsHooksReport = ensureRcodeSettingsHooks(opts.target, { enableHooks: opts.enableHooks });
 
+  // Point each installed IDE's rule file at /rcode-do as the preferred entry point
+  // for non-trivial work — an rcode-owned marked block/file, not a full rewrite.
+  const preferredCommandReports = ensureRcodePreferredCommandRule(opts.target, opts.ides);
+
   // Pull rcode brain content (v2.0 — issue #158).
   // Runs rcode-tools brain pull as a detached background process. Placeholder
   // URLs are skipped gracefully so this does not fail a fresh install.
@@ -2945,6 +3090,21 @@ async function installInner(opts) {
       'skipped-error': 'guardrail hooks skipped (error merging .claude/settings.json)',
     }[settingsHooksReport.action] || 'guardrail hooks unchanged';
     console.log('  ' + dim(settingsHooksMsg));
+  }
+  if (preferredCommandReports && Object.keys(preferredCommandReports).length > 0) {
+    const RULE_FILE = { claude: 'CLAUDE.md', codex: 'AGENTS.md', cursor: '.cursor/rules/rcode-prefer-do.mdc', windsurf: '.windsurf/rules/rcode-prefer-do.mdc' };
+    for (const [ide, report] of Object.entries(preferredCommandReports)) {
+      const file = RULE_FILE[ide] || ide;
+      const msg = {
+        'created': `${file}: /rcode-do rule added`,
+        'appended': `${file}: /rcode-do rule appended`,
+        'updated': `${file}: /rcode-do rule refreshed`,
+        'already-present': `${file}: /rcode-do rule already present`,
+        'written': `${file}: /rcode-do rule written`,
+        'skipped-error': `${file}: /rcode-do rule skipped (${report.error})`,
+      }[report.action] || `${file}: /rcode-do rule unchanged`;
+      console.log('  ' + dim(msg));
+    }
   }
   if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
 
