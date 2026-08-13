@@ -2,6 +2,11 @@
 
 ## Step 8: Identify Human Verification Needs
 
+A flagged item here is an open item, not a pass. Do not describe a phase with
+unresolved human-verification items as "complete," "closed," "passed," or
+"shippable" anywhere in the summary handed back to the orchestrator — say
+what's still unconfirmed and by whom (the user, not another agent).
+
 **Always needs human:** Visual appearance, user flow completion, real-time behavior, external service integration, performance feel, error message clarity.
 
 **Needs human if uncertain:** Complex wiring grep can't trace, dynamic state behavior, edge cases.

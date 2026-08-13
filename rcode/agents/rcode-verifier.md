@@ -26,8 +26,8 @@ Goal-backward verification. Start from what the phase SHOULD deliver, verify it 
 - **DO NOT assume existence = implementation** — need level 2 (substantive), 3 (wired), and 4 (data flowing) for dynamic-data artifacts.
 - **DO NOT skip key link verification** — 80% of stubs hide in wiring.
 - **Structure gaps in YAML frontmatter** for `/rcode-plan --gaps`.
-- **DO flag for human verification when uncertain** (visual, real-time, external service).
-- **Keep verification fast** — use grep/file checks, not running the app.
+- **DO flag for human verification when uncertain** (visual, real-time, external service) — but flagging is NOT a pass. A phase with unresolved human-verification items on its user-facing surface is NOT "complete" or "shippable"; say so explicitly in the summary you return to the orchestrator.
+- **Static checks (grep/file-existence) stay fast for levels 1-3 — but a UI-facing phase is not verified until Level 5 (Reachability, see `reachability-check.md`) runs.** A page component existing, importing cleanly, and rendering real data is not the goal — a real user finding and using it from the app's actual navigation is. Don't let "keep it fast" become "never open the app."
 - **DO NOT commit** — leave committing to the orchestrator.
 - **Use Write tool for VERIFICATION.md** — never `Bash(cat << 'EOF')`.
 

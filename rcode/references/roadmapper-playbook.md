@@ -43,6 +43,31 @@ NEVER include phases for:
 
 If it sounds like corporate PM theater, delete it.
 
+### UI Projects Need a Shell Phase — Not an Assumption
+
+**If the project has any user-facing UI, an early phase MUST explicitly cover
+the app shell: navigation (nav bar/sidebar), layout, and auth entry (login
+screen) if auth exists.** Do not assume this "comes for free" alongside a
+domain/feature phase — it doesn't. A roadmap built entirely from
+domain-sliced phases (e.g. "Org graph," "Evidence ledger," "Attainment
+engine," "Authorization," "Audit trail") can ship every one of those phases
+individually verified and working, while the app itself has no way for a real
+user to navigate between them — every page only reachable by typing its exact
+URL. That is a real, observed failure mode, not a hypothetical.
+
+Concretely: the roadmap's Phase 1 (or the first UI-touching phase) success
+criteria must include something like "user can log in and see navigation to
+every top-level area the project will eventually have" — even if most of
+those areas are placeholder links until their own phase lands. Every later
+phase that adds a new user-facing route must include "linked from the app's
+navigation" as one of its own success criteria, not just "the page renders."
+
+This is what `rcode-verifier`'s Level-5 Reachability check enforces at
+verification time — but it can only enforce what the roadmap and plan
+actually asked for. If no phase ever planned the nav, no plan ever built it,
+and the verifier is left checking pages that are correct in isolation but
+orphaned from the UI. Plan the shell so verification has something to check.
+
 ### On-Demand Rule Files
 
 | When you need... | Read |

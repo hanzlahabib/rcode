@@ -34,14 +34,16 @@ Before verifying, discover project context:
 2. **Load context** — SPRINT.md, SUMMARY.md, ROADMAP.md goal, REQUIREMENTS.md.
 3. **Establish must-haves** — from PLAN frontmatter (Option A), ROADMAP success criteria (Option B), or derive from goal (Option C).
 4. **Verify observable truths** — for each truth, status ✓ VERIFIED / ✗ FAILED / ? UNCERTAIN.
-5. **Verify artifacts (3 levels)** — exists, substantive, wired. Use `rcode-tools.cjs verify artifacts`.
+5. **Verify artifacts (4 levels)** — exists, substantive, wired, data-flows. Use `rcode-tools.cjs verify artifacts`.
 6. **Data-flow trace (Level 4)** — for wired artifacts rendering dynamic data, trace upstream to confirm real data source.
+6b. **Reachability (Level 5)** — for any artifact that is a user-facing route/page/screen: is it linked from the app's actual navigation (nav bar, sidebar, a button/link a real user would click), not just directly URL-addressable? See `reachability-check.md`. A page that only a developer typing its exact URL can reach is NOT reachable.
 7. **Verify key links** — component→API, API→DB, form→handler, state→render. Use `rcode-tools.cjs verify key-links`.
 8. **Requirements coverage** — cross-reference PLAN `requirements:` against REQUIREMENTS.md. Flag ORPHANED.
 9. **Anti-pattern scan** — TODO/FIXME/placeholder/empty-return/hardcoded-empty. Classify Blocker/Warning/Info.
 10. **Behavioral spot-checks** — run 2-4 quick commands (<10s each) against runnable code. Skip if no runnable entry points.
-11. **Human verification needs** — visual, real-time, external service, uncertain wiring.
-12. **Determine status** — passed | gaps_found | human_needed. Score = verified_truths / total_truths.
+10b. **Live UI smoke check (UI-facing phases only)** — start the dev server if not already running, hit the phase's actual entry point (the URL a real user would land on, e.g. `/`, not just the new route directly), and confirm the delivered feature is reachable from there. See `reachability-check.md`. Skip only for phases with no user-facing route.
+11. **Human verification needs** — visual, real-time, external service, uncertain wiring. Flagging an item here does NOT mean it passed — it means a human still needs to look before this phase can be called done.
+12. **Determine status** — passed | gaps_found | human_needed. Score = verified_truths / total_truths. **`human_needed` and `gaps_found` are NOT "complete" or "shippable"** — say that plainly in the summary handed back to the orchestrator so it isn't rounded up to a checkmark.
 13. **Structure gap output** — YAML frontmatter for `/rcode-plan --gaps`.
 14. **Create VERIFICATION.md** — use Write tool (never heredoc). Return to orchestrator. DO NOT COMMIT.
 
@@ -59,11 +61,20 @@ Before verifying, discover project context:
 | ✓ | ✗ | - | - | ✗ STUB |
 | ✗ | - | - | - | ✗ MISSING |
 
+**For user-facing routes/pages, add a 5th column — Reachable (linked from the app's real navigation, confirmed by a live smoke check):**
+
+| ...Levels 1-4 | Reachable | Status |
+| --- | --- | --- |
+| all ✓ | ✓ | ✓ VERIFIED |
+| all ✓ | ✗ | ⚠️ ORPHANED-FROM-UI — code works, no real user can find it |
+
 **Overall status decision:**
 
-- **passed** — All truths VERIFIED, all artifacts pass 1-3, all key links WIRED, no blocker anti-patterns.
-- **gaps_found** — Any truth FAILED, artifact MISSING/STUB, key link NOT_WIRED, or blocker anti-patterns found.
+- **passed** — All truths VERIFIED, all artifacts pass levels 1-4 (and level 5 Reachable for UI-facing artifacts), all key links WIRED, no blocker anti-patterns.
+- **gaps_found** — Any truth FAILED, artifact MISSING/STUB/ORPHANED-FROM-UI, key link NOT_WIRED, or blocker anti-patterns found.
 - **human_needed** — All automated checks pass but items flagged for human verification.
+
+**None of these three statuses means "done" or "shippable" on their own except `passed` with zero open human-verification items.** Never let a phase get summarized to the user as complete/closed/shippable while `gaps_found` or unresolved `human_needed` items exist — say what's actually still open.
 
 ---
 
@@ -74,6 +85,7 @@ Before verifying, discover project context:
 | Previous-verification check + load context + establish must-haves (Steps 0-2) | `.rcode/agents-rules/verifier/context-loading.md` |
 | Observable truths + 3-level artifact verification (Steps 3-4) | `.rcode/agents-rules/verifier/artifact-verification.md` |
 | Level-4 data-flow trace patterns (Step 4b) | `.rcode/agents-rules/verifier/data-flow-trace.md` |
+| Level-5 reachability + live UI smoke check (Steps 6b, 10b) | `.rcode/agents-rules/verifier/reachability-check.md` |
 | Key link wiring fallback patterns (Step 5) | `.rcode/agents-rules/verifier/key-links.md` |
 | Requirements coverage + orphaned detection (Step 6) | `.rcode/agents-rules/verifier/requirements-coverage.md` |
 | Anti-pattern grep commands + stub reference patterns (Step 7) | `.rcode/agents-rules/verifier/anti-patterns.md` |
@@ -92,6 +104,7 @@ Read these ONLY when the current step needs them. Don't preemptively load.
 - [ ] All truths verified with status and evidence
 - [ ] All artifacts checked at levels 1-3 (exists, substantive, wired)
 - [ ] Data-flow trace (Level 4) run on wired artifacts that render dynamic data
+- [ ] Reachability (Level 5) checked for every user-facing route/page — linked from real nav, confirmed by a live smoke check, not just directly URL-addressable
 - [ ] All key links verified
 - [ ] Requirements coverage assessed (if applicable)
 - [ ] Anti-patterns scanned and categorized

@@ -44,6 +44,10 @@ Record pass/fail:
 ## Constraints
 
 - Each check must complete in under 10 seconds
-- Do not start servers or services — only test what's already runnable
+- Do not start servers or services for these checks specifically — only test
+  what's already runnable. (This does NOT apply to the Level-5 reachability
+  live smoke check in `reachability-check.md`, which exists precisely because
+  UI-facing phases need a running server to verify — see that file for when
+  and how to start one.)
 - Do not modify state (no writes, no mutations, no side effects)
 - If the project has no runnable entry points yet, skip with: "Step 7b: SKIPPED (no runnable entry points)"
