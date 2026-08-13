@@ -767,7 +767,7 @@ Read the gaps summary from the audit file. Display:
 - **options:** "Continue anyway — accept gaps" / "Stop — fix gaps manually"
 - On "Stop": Go to handle_blocker.
 
-**Otherwise (autonomous):** Display `Audit ⏭ Gaps accepted — continuing` and proceed to 5b.
+**Otherwise (autonomous):** Display the gaps summary inline (not just a reference to the audit file), then display `Audit ⏭ Gaps accepted — continuing`, set `AUDIT_HAD_GAPS="true"`, and proceed to 5b.
 
 **If `tech_debt`:**
 
@@ -777,9 +777,15 @@ Show the summary, then:
 - **options:** "Continue with tech debt" / "Stop — address debt first"
 - On "Stop": Go to handle_blocker.
 
-**Otherwise (autonomous):** Display `Tech debt noted — continuing` and proceed to 5b.
+**Otherwise (autonomous):** Display the tech debt summary inline (not just a reference to the audit file), then display `Tech debt noted — continuing`, set `AUDIT_HAD_GAPS="true"`, and proceed to 5b.
 
 ### 5b. Complete Milestone
+
+**If `AUDIT_HAD_GAPS` is set:** Display before invoking the skill:
+
+```
+⚠ Marking milestone complete with known gaps/tech debt (see summary above).
+```
 
 ```
 Skill(skill="rcode-complete-milestone", args="${milestone_version}")
@@ -803,6 +809,8 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
 
 ### 5d. Final Completion
 
+**If `AUDIT_HAD_GAPS` is NOT set:**
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  rcode ► AUTONOMOUS ▸ COMPLETE 🎉
@@ -813,6 +821,20 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
  Lifecycle: audit ✓ → complete ✓ → cleanup ✓
 
  Ship it! 🚀
+```
+
+**If `AUDIT_HAD_GAPS` is set:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ rcode ► AUTONOMOUS ▸ COMPLETE — WITH KNOWN GAPS ⚠
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ Milestone: {milestone_version} — {milestone_name}
+ Status: Complete, gaps/tech debt accepted — not audit-clean
+ Lifecycle: audit ⚠ → complete ✓ → cleanup ✓
+
+ Review the gaps summary above before shipping.
 ```
 
 **If autonomous created a branch** (i.e., `BRANCH_NAME` was set in the prepare_branch step):

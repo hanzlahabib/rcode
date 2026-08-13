@@ -23,11 +23,12 @@ Plan X.2 (Wave 1): API Endpoint
 Plan X.3 (Wave 2): UI Form/Component
   - Build React component
   - Wire to API endpoint
+  - Wire route into nav/menu (sidebar, header, or route table) so the feature is reachable without a direct URL
   - Integration test: form → API → database
 
 Plan X.4 (Wave 3): End-to-End Verification
   - Test full user flow (UI → API → DB → UI)
-  - Checkpoint: Visual/functional review
+  - Checkpoint: Visual/functional review — can you reach this feature from the main nav without a direct URL?
 ```
 
 **Dependencies:** 1.3 → {1.1, 1.2}, 1.4 → 1.3

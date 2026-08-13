@@ -181,13 +181,18 @@ Use for unavoidable manual steps (1% of checkpoints).
     5. Success behavior: call onSubmit({ email, password })
     6. Use Sonner toast on error (not alert())
     7. Disabled state during submission (no double-click)
+    8. Navigation wiring: add entry to nav/menu component so page is reachable
+       without direct URL (skip only if this task does not introduce a new
+       route/page)
   </action>
   <verify>
     <automated>npm test -- --filter=LoginForm</automated>
+    <automated>grep -r "login" src/components/nav/ src/config/routes*</automated>
   </verify>
   <done>
     Component renders, accepts input, calls onSubmit, disables during submission,
-    shows errors with toast notification
+    shows errors with toast notification, page is reachable from nav/menu
+    (not just direct URL)
   </done>
 </task>
 ```

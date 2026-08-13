@@ -47,6 +47,13 @@ issue:
 - Missing `<done>` — no acceptance criteria
 - Vague `<action>` — "implement auth" instead of specific steps
 - Empty `<files>` — what gets created?
+- `<verify>` present but not semantically capable of proving the task's claim — see check below
+
+**Check — Verify Semantically Matches Claim (links to Dimension 6):**
+Presence of `<verify>` is not enough. Cross-check it against the must_haves truth the task claims to satisfy (Dimension 6):
+- If the task's `<action>` implements user-observable behavior (login, checkout, search, any flow a user drives), a `<verify>` consisting only of build/lint/typecheck commands (`npm run build`, `tsc --noEmit`, `eslint`, `echo done`) does **not** satisfy this dimension — it proves the code compiles, not that the behavior works.
+- Require instead an assertion against actual output/behavior: a curl/HTTP call checking status/body, a test that exercises the route or flow, or an explicit manual-verification checkpoint (`checkpoint:*` task type).
+- Flag as blocker: "Task N's <verify> only compiles/lints but action implements user-facing behavior X — no assertion on actual behavior."
 
 **Example issue:**
 ```yaml
@@ -57,6 +64,17 @@ issue:
   plan: "16-01"
   task: 2
   fix_hint: "Add verification command for build output"
+```
+
+**Example issue — verify doesn't prove the claim:**
+```yaml
+issue:
+  dimension: task_completeness
+  severity: blocker
+  description: "Task 3 implements login flow but <verify> only runs `npm run build`"
+  plan: "16-01"
+  task: 3
+  fix_hint: "Replace with a curl against /api/login checking 200 + session cookie, or a test exercising the login route"
 ```
 
 ## Dimension 3: Dependency Correctness
@@ -103,6 +121,7 @@ issue:
 - API route created but component doesn't call it
 - Database model created but API doesn't query it
 - Form created but submit handler is missing or stub
+- New page/component has no task adding it to the router, nav, or an existing page's imports — unreachable by any user
 
 **What to check:**
 ```
@@ -110,7 +129,10 @@ Component -> API: Does action mention fetch/axios call?
 API -> Database: Does action mention Prisma/query?
 Form -> Handler: Does action mention onSubmit implementation?
 State -> Render: Does action mention displaying state?
+Nav -> Route: For any new page/route/component in must_haves.artifacts, does a task action mention adding it to the router config, nav/sidebar, or an existing page's import?
 ```
+
+A top-level UI artifact (page/route/component) with no Nav -> Route reference anywhere in the sprint's tasks is a blocker — internal wiring can be perfect while the feature stays unreachable by any user.
 
 **Example issue:**
 ```yaml
@@ -167,12 +189,26 @@ issue:
 2. Verify truths are user-observable (not implementation details)
 3. Verify artifacts support the truths
 4. Verify key_links connect artifacts to functionality
+5. Cross-reference each truth to a falsifiable `<verify>` command: for each `must_haves.truths` entry, search every task's `<verify>` block (across all plans in the sprint) for a command that could actually falsify that truth — a curl/HTTP assertion, a UI interaction test (playwright/cypress selector + assertion), or an explicit manual checkpoint script tied to the same feature. Wording alone (the truth "sounds" user-facing) does not count as a check.
+6. If no task's `<verify>` traces to a truth, flag it as unverifiable — do not accept the phrasing as proof the behavior is tested.
+
+**Check — Truth-to-Verify Traceability (do not rely on wording alone):**
+Judging "user-observable" from phrasing is not a check — a planner can trivially write `"The auth system is secure"` without any task exercising login. Treat this the same way Dimension 12 cross-references evidence claims to grep hit counts:
+1. For each `must_haves.truths` entry, extract the subject/action it claims (e.g., "user can log in", "search returns results").
+2. Scan every task's `<verify>` block across the sprint's plans for a command whose target matches that subject — a route/endpoint the truth implies (`/api/login`, `/search`), a selector the truth implies (login form, search box), or a checkpoint script named for the same feature.
+3. A match requires the `<verify>` command to actually exercise real input against the feature and assert on real output (status code, response body, rendered DOM state) — not just that the words in the truth and the `<verify>` block resemble each other.
+4. No match found → the truth is **unverifiable**, regardless of how user-facing its wording sounds. Flag it; do not accept the phrasing as proof.
 
 **Red flags:**
 - Missing `must_haves` entirely
 - Truths are implementation-focused ("bcrypt installed") not user-observable ("passwords are secure")
 - Artifacts don't map to truths
 - Key links missing for critical wiring
+- Truth uses user-facing wording but no task's `<verify>` exercises the corresponding user path (e.g., "The auth system is secure" with no login/reject-bad-credentials check anywhere in the sprint) — unfalsifiable marketing language, not a verified outcome
+
+**Severity rules:**
+- **blocker:** a `must_haves.truths` entry has zero traceable `<verify>` command in any task across the sprint's plans
+- **warning:** the traced `<verify>` command exists but only checks an implementation detail (e.g., process exits 0) rather than the user-observable behavior the truth claims
 
 **Example issue:**
 ```yaml
@@ -185,6 +221,17 @@ issue:
     - "JWT library installed"
     - "Prisma schema updated"
   fix_hint: "Reframe as user-observable: 'User can log in', 'Session persists'"
+```
+
+**Example issue — untraceable truth:**
+```yaml
+issue:
+  dimension: verification_derivation
+  severity: blocker
+  description: "Truth 'The auth system is secure' has no task <verify> that exercises login or rejects bad credentials"
+  plan: "02"
+  truth: "The auth system is secure"
+  fix_hint: "Add a <verify> with a curl/HTTP assertion (e.g. POST /login with wrong password returns 401) or a UI test that logs in and confirms session state, then reference it from this truth"
 ```
 
 ## Dimension 7: Context Compliance (if CONTEXT.md exists)

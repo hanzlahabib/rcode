@@ -366,6 +366,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `benchmarks` — `benchmarks/` scripts and benchmark reports
 - `eval` — `test/eval/` behavioral drift baselines and eval harness
 - `scan` — `/rcode-scan` workflow and existing-codebase analysis
+- `verifier` — `rcode-verifier` agent, verification playbook/rules, VERIFICATION.md flow
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

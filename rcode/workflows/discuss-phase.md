@@ -428,6 +428,8 @@ Analyze the phase to identify gray areas worth discussing. **Use both `prior_dec
 
 3. **Gray areas by category** — For each relevant category (UI, UX, Behavior, Empty States, Content), identify 1-2 specific ambiguities that would change implementation. **Annotate with code context where relevant** (e.g., "You already have a Card component" or "No existing pattern for this").
 
+3b. **Entry-point check (standing — re-evaluate here, don't trust the upstream grep alone)** — `conditional_reading`'s `HAS_PRODUCT_SIGNALS` grep runs once over the ROADMAP heading and is keyword-fragile (misses "panel", "modal", "view", "settings screen", etc.). Do not let it silently gate this check. At this point in the analysis, ask instead: **did step 3 surface any UI/UX-category gray area, or does the phase add/change anything a user would navigate to?** If yes — regardless of what `HAS_PRODUCT_SIGNALS` came back as — always ask how the feature is reached: new nav entry, existing menu, route-only (no nav), deep link, or permission-gated visibility. This must not be silently skipped for a phase that adds a screen or feature — either surface it as a selectable gray area in `present_gray_areas` (e.g., "Entry point — new sidebar link, existing menu, or route only?") or, if the user defers it, record it explicitly under `## Claude's Discretion` in CONTEXT.md. Never omit it entirely; it is how built-but-unreachable UI gets caught before research/planning.
+
 4. **Skip assessment** — If no meaningful gray areas exist (pure infrastructure, clear-cut implementation, or all already decided in prior phases), the phase may not need discussion.
 
 **Advisor Mode Detection:**
@@ -470,6 +472,7 @@ Gray areas:
 - Behavior: Loading pattern — ALREADY DECIDED: infinite scroll (Phase 4)
 - Empty State: What shows when no posts exist — EmptyState component exists in ui/
 - Content: What metadata displays (time, author, reactions count)
+- Entry point: How users reach the feed — new sidebar link, existing nav tab, or route only?
 ```
 </step>
 

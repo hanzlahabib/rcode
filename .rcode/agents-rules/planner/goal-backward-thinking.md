@@ -38,6 +38,26 @@ Must be TRUE:
 
 **Test:** Each truth verifiable by a human using the application without reading code.
 
+**UI goals — add a reachability truth.** If any artifact for this goal is a page, route, or screen a user navigates to, one of the truths must be that the user can reach it through existing navigation, not just that it works once they're on it:
+- "User can reach {feature} from existing navigation without typing the URL directly"
+
+This must carry through to Step 3 (a nav component — header, sidebar, menu — is a required artifact alongside the new page) and Step 5 (a key link from that nav component to the new route). A feature that functions perfectly at an orphan route with no menu entry or link pointing to it does not satisfy the goal.
+
+**Example: Settings Page Goal**
+
+Must be TRUE:
+- User can view and edit their profile settings
+- Changes save and persist
+- User can reach the settings page from existing navigation without typing the URL directly
+
+Artifacts:
+- Settings page component
+- Settings API route
+- Nav/menu component updated with a link to the settings route
+
+Key link:
+- Nav component → `/settings` route link → if broken: page works but is undiscoverable
+
 ---
 
 ## Step 3: Derive Required Artifacts

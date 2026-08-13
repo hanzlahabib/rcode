@@ -133,6 +133,16 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
     if (!sprintFiles.length) return p;
 
     const phaseComplete = /complete|done/i.test(p.status || '');
+    // Story status must not cascade blindly from the phase's self-reported
+    // status (#gap: dashboard-truthfulness). A phase marked 'complete' in
+    // state.json is unverified until its own VERIFICATION.md says so — only
+    // then do we let stories inherit 'done'. Otherwise stories stay 'todo'
+    // even if the phase claims completion, so the board never shows a green
+    // checkmark with zero independent evidence behind it.
+    const verificationFile = files.find(f => /-VERIFICATION\.md$/i.test(f));
+    const verificationText = verificationFile ? (safeReadText(path.join(phasesDir, dir.name, verificationFile)) || '') : '';
+    const phaseVerified = phaseComplete && /status:\s*passed/i.test(verificationText);
+    const storyStatus = phaseVerified ? 'done' : 'todo';
     const sprints = sprintFiles.map(f => {
       const m   = f.match(/^(\d+)-(\d+)-SPRINT\.md$/i);
       const num = m ? parseInt(m[2], 10) : 0;
@@ -163,7 +173,7 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
         const story = {
           id:     idM ? idM[1] : `${sid}-task-${stories.length + 1}`,
           title:  (titleAttrM && titleAttrM[1].trim()) || (titleTagM && titleTagM[1].trim()) || `Task ${stories.length + 1}`,
-          status: phaseComplete ? 'done' : 'todo',
+          status: storyStatus,
         };
         if (ov[story.id]) story.status = ov[story.id].status;
         if (acM && acM[1].trim()) story.acceptance = acM[1].trim();
@@ -187,7 +197,7 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
           stories.push({
             id:     hId,
             title:  hm[2].trim(),
-            status: ov[hId] ? ov[hId].status : (phaseComplete ? 'done' : 'todo'),
+            status: ov[hId] ? ov[hId].status : storyStatus,
           });
         }
       }
@@ -217,7 +227,11 @@ function buildPhaseTree(projectDir, rawPhases, listCached, overrides) {
       }).filter(depId => depId !== null && depId !== intId)
     )];
 
-    return { ...p, sprints, dependsOn: phaseDependsOn };
+    // Surface the same verification check at the phase level so consumers of
+    // the tree (phases list, progress %, currentPhase, milestones) can also
+    // avoid trusting a self-reported 'complete' status blindly — not just the
+    // per-story cascade above. null when the phase doesn't claim completion.
+    return { ...p, sprints, dependsOn: phaseDependsOn, verified: phaseComplete ? phaseVerified : null };
   });
 }
 
@@ -278,7 +292,14 @@ function buildDashboard(state) {
     const range = started || completed
       ? [fmtShort(started), fmtShort(completed)].filter(Boolean).join(' – ')
       : '';
-    return { ...p, name: p.name || p.slug || String(p.id || ''), range, state: toState(p.status) };
+    // A phase self-reporting 'complete' without a passing *-VERIFICATION.md
+    // (p.verified === false, set by buildPhaseTree) is downgraded to 'active'
+    // rather than shown as 'done' — the dashboard must not render a green
+    // checkmark, fill the progress bar, or skip a phase as currentPhase on
+    // an unconfirmed status alone (same drift class as the sprint-level check).
+    let phaseState = toState(p.status);
+    if (phaseState === 'done' && p.verified === false) phaseState = 'active';
+    return { ...p, name: p.name || p.slug || String(p.id || ''), range, state: phaseState };
   }).sort((a, b) => (parseFloat(a.id ?? a.number) || 0) - (parseFloat(b.id ?? b.number) || 0));
 
   // ---- progress (prefer story counts; fall back to phase-level counts) ----

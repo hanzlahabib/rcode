@@ -450,10 +450,10 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
    If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
 
-   If pass:
+   If pass — these spot-checks confirm artifacts exist and were committed, not that the wave's goal was achieved. The self-check marker is the executor's own report, not an independent verification. Label the banner accordingly:
    ```
    ---
-   ## Wave {N} Complete
+   ## Wave {N} Artifacts Produced (pending verify/review gates)
 
    **{Plan ID}: {Plan Name}**
    {What was built — from SUMMARY.md}

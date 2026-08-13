@@ -32,6 +32,7 @@ api-backend:
     - error-responses
     - data-models
     - versioning
+    - api-discoverability
   skip_sections:
     - ux-flows
     - accessibility
@@ -44,6 +45,7 @@ api-backend:
     - "What is your data retention policy?"
     - "Do you need idempotency or exactly-once semantics?"
     - "What deployment environment? (AWS, GCP, self-hosted)"
+    - "Is each endpoint mounted on the app router and reachable via a live request, with the route registry / OpenAPI spec updated as it lands?"
 
 mobile-app:
   display_name: "Mobile Application"
@@ -62,10 +64,17 @@ mobile-app:
     - offline-support
     - push-notifications
     - store-compliance
+    - navigation
     - deep-links
     - permissions
     - local-storage
     - sync-strategy
+  # navigation = tab bar/drawer/stack navigator wiring (TabNavigator, StackNavigator,
+  # Flutter BottomNavigationBar, etc.) — the in-app path a user taps through, not the
+  # URL-scheme entry deep-links covers. First UI-touching phase must include "user can
+  # navigate to every top-level screen via the tab bar/drawer" as a success criterion;
+  # every later phase adding a screen must include "linked from the navigator" as its
+  # own success criterion.
   skip_sections:
     - server-scaling
     - horizontal-scaling
@@ -123,6 +132,7 @@ cli-tool:
     - commander.js
   required_sections:
     - commands
+    - command-registry
     - help-text
     - exit-codes
     - error-messages
@@ -138,6 +148,7 @@ cli-tool:
     - "What are the main commands and subcommands?"
     - "Do you need shell completion (bash, zsh, fish)?"
     - "How will users install it? (npm, pip, binary download)"
+    - "For every phase that adds a new subcommand: is it registered in the root parser and does it appear in --help output — not just working when invoked directly?"
 
 web-app:
   display_name: "Web Application / SPA"
@@ -268,3 +279,78 @@ dev-tool:
     - "What are the minimum dependency versions?"
     - "How will developers discover and install this?"
     - "Do you need a community or plugin ecosystem?"
+
+content-site:
+  display_name: "Content / SEO / Programmatic Site"
+  signals:
+    - rank-and-rent
+    - lead-gen
+    - lead gen
+    - landing pages
+    - programmatic seo
+    - programmatic pages
+    - service pages
+    - location pages
+    - content site
+    - seo site
+    - affiliate site
+    - affiliate
+    - local seo
+    - content farm
+    - niche site
+    - rank and rent
+    - local lead gen
+    - city pages
+    - service area pages
+    - editorial site
+    - blog site
+    - publisher
+    - content marketing
+    - link building
+    - backlink
+    - keyword research
+    - keyword cluster
+    - topic cluster
+    - E-E-A-T
+    - google business profile
+    - gbp
+    - citations
+    - nap audit
+    - schema markup
+    - structured data
+    - rich results
+    - AI overview
+    - AI search
+    - GEO SEO
+    - llms.txt
+    - programmatic seo site
+    - doorway page
+    - thin content
+    - content refresh
+    - crawl budget
+    - indexation
+    - core web vitals
+    - technical seo
+    - on-page seo
+    - digital pr
+    - guest posts
+    - seo content
+    - content strategy
+    - topical authority
+  required_sections:
+    - keyword-strategy
+    - programmatic-page-matrix
+    - internal-link-plan
+    - schema-plan
+    - content-quality-gates
+  skip_sections:
+    - authentication
+    - state-management
+    - authorization
+  discovery_questions:
+    - "What are your 3–5 primary target keywords (and their search intent)?"
+    - "What is the programmatic page matrix? (e.g. 50 services × 20 cities = 1,000 pages, or editorial only)"
+    - "Who are your top 3 organic competitors? (needed for cluster gap analysis)"
+    - "Do you have Google Search Console / analytics access for this domain?"
+    - "What is your content quality gate — minimum word count, E-E-A-T signals, author attribution?"
+    - "What schema types are needed? (LocalBusiness, FAQPage, BreadcrumbList, Product)"

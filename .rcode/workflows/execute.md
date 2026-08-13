@@ -202,7 +202,12 @@ Per-agent completion:
 ✓ rcode-executor complete: {plan-id} → SUMMARY.md ({N} commits)
 ```
 
-Closure:
+Closure: this banner is NOT printed here, right after the wave loop. It is
+gated behind `uat_gate` — see that step's "Only when `VERIFICATION_STATUS`
+is `pass`" branch, which is the only point in `<process>` where phase
+completion is actually confirmed (after code_review_gate, run_verify_commands,
+close_parent_artifacts, the regression gate, and verify_phase_goal have all
+passed):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  rcode ► PHASE {NN} COMPLETE ✓
@@ -514,13 +519,15 @@ After all waves:
 ```markdown
 ## Phase {X}: {Name} Execution Complete
 
-**Waves:** {N} | **Plans:** {M}/{total} complete
+**Waves:** {N} | **Plans:** {M}/{total} executed
+
+Verification gates (run_verify_commands, code_review_gate, regression gate, uat_gate) have not run yet — this table reflects agent execution only, not verification.
 
 | Wave | Plans | Status |
 |------|-------|--------|
-| 1 | plan-01, plan-02 | ✓ Complete |
-| CP | plan-03 | ✓ Verified |
-| 2 | plan-04 | ✓ Complete |
+| 1 | plan-01, plan-02 | ✓ Executed |
+| CP | plan-03 | ✓ Checkpoint passed |
+| 2 | plan-04 | ✓ Executed |
 
 ### Plan Details
 1. **03-01**: [one-liner from SUMMARY.md]
@@ -823,7 +830,15 @@ fi
 2. Surface the tasks whose `<done>` criteria failed human verification.
 3. STOP. Don't mark complete on a failing verification.
 
-**Only when `VERIFICATION_STATUS` is `pass`** — proceed to `update_roadmap` below.
+**Only when `VERIFICATION_STATUS` is `pass`** — print the closure banner, then proceed to `update_roadmap` below:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ rcode ► PHASE {NN} COMPLETE ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+This is the only point in `<process>` where the banner may be emitted — never
+print it right after the wave loop finishes, and never before this gate
+resolves to `pass`.
 
 The previous behaviour (printing "Next Up: /rcode-verify-work" without state-gating) caused phases to reach `status: complete` without any human-verified UAT.
 </step>

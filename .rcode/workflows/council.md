@@ -29,9 +29,10 @@ Closure: `rcode ► COUNCIL COMPLETE ✓` + Next Up with decision options.
 
 <required_reading>
 @.rcode/references/auto-init-guard.md
-@.rcode/references/output-format.md
 @.rcode/references/council-protocol.md
 </required_reading>
+<!-- output-format.md removed: council is self-contained via <output_format> above.
+     General banner/todo/spawn patterns are defined inline — no 398-line load needed. -->
 
 <process>
 ## Step 0 — Usage check
@@ -101,6 +102,12 @@ list from INIT_JSON so new agents added to team.yaml are automatically available
 Do not invoke `general-purpose` or any agent type not present in
 `installed_agents`. If the scorer surfaces an unknown agent, drop it
 from the panel silently.
+
+**Post-install agent namespace fallback:** If a `Task(subagent_type="rcode-{id}")` call
+fails with "Agent type not found", the runtime has not yet registered the new agent files
+(requires IDE/window reload). In that case retry with `subagent_type="rihal-{id}"` — the
+`rihal-*` agents are content-identical to `rcode-*` (pre-rebrand names). If neither works,
+skip that panelist and log `[council] agent rcode-{id} not available — reload IDE to register`.
 </available_agent_types>
 
 ## Step 1 — Observe
@@ -388,9 +395,21 @@ Spawn all at once (same pattern as Round 1).
    `performance`, `release`, `ml`, `frontend` (concrete technical categories).
 4. **User requested deliberation** — `$ARGUMENTS` contains `--debate`, `--round-2`,
    or `--deep` flag.
+5. **Hedge/uncertainty** — A panelist's Round 1 response never states a firm
+   position: "could work but I'd want to validate X first", "not enough
+   context to say", "depends on {unresolved factor}", or an explicit
+   low-confidence marker. This is not a contradiction with another panelist,
+   so it won't trip trigger 1 — check for it separately. A hedge is not
+   silent convergence; it means the panel hasn't actually landed on an answer.
 
 If NONE of these fire, skip Round 2 and proceed to Step 5 (presentation).
 Print one line: `✓ Round 2 skipped — {reason: "agents aligned" / "concrete technical question" / etc.}`.
+
+**If trigger 5 fired but Round 2 still resolves nothing** (the hedging panelist
+still can't commit after cross-talk), do not fold the hedge into "consensus."
+Carry it forward as a caveat: Step 5's synthesis and Step 6's decision record
+must flag which panelist(s) hedged and on what, so the session artifact
+doesn't read as unanimous agreement when it wasn't.
 
 **Rationale:** Round 2 doubles token cost and wall-clock. For concrete technical
 questions (fix latency, add feature, debug bug), Round 1 responses grounded in
@@ -448,7 +467,8 @@ Format:
 
 Rules for compact mode:
 - Each one-liner ≤ 25 words. Paraphrase, don't quote.
-- Convergence table: 2-5 rows, only axes where panelists take a stance. Cells ≤ 6 words.
+- **If a panelist's position is conditional or hedged, the one-liner must keep a caveat marker** (e.g. "token-based auth *if* redis is available, else cookies") — never collapse a conditional answer to the unconditional recommendation.
+- Convergence table: 2-5 rows, only axes where panelists take a stance. Cells ≤ 6 words. When a cell reflects a conditional/hedged stance, keep the condition in the cell (e.g. "token-based *if* redis") rather than the bare recommendation.
 - Round 2 deltas: ≤ 15 words each. "Held position" is a valid delta.
 - No section headers beyond the four above. No numbered story breakdowns. No tables from panelists verbatim.
 - **Data freshness footer is mandatory on every synthesis**, not just research-typed questions. Count claims across all panelist responses: a claim is "live-verified" if it cites a source found via WebSearch/WebFetch in this session (Step 2's research file, or a panelist's own in-session lookup); everything else — including anything tagged `[unverified — training data]` by a panelist — counts toward "from model knowledge". For non-research question types with no external claims, use `0 claims live-verified / 0 from model knowledge — no external claims made`.
@@ -485,12 +505,32 @@ Before presenting, load the commit format reference:
 
 **Either mode:** the artifact file saved in Step 6 always contains full verbatim text — the compact/verbose flag only controls inline presentation.
 
+## Step 5a — Completeness check (MANDATORY before presenting)
+
+Before presenting Round 1/2 as a synthesis, check: does at least one
+panelist response directly address the literal question asked — not just
+a sub-part or an adjacent concern? (e.g. user asks "should we ship v2 now"
+and every panelist answers "the code quality is fine" — that's convergence
+on a narrower question, not an answer to the one asked.)
+
+If no panelist response directly addresses the question, do NOT present
+it as a clean verdict. Print this banner in place of the usual verdict line:
+
+```
+⚠ Panel did not directly address: {original question}
+```
+
+Then treat this the same as a disagreement for Step 5b purposes — route to
+AskUserQuestion (either to re-ask the panel with the gap named, or to ask
+the user how to proceed) rather than synthesizing false consensus.
+
 ## Step 5b — Drill-down question (MANDATORY when disagreement exists)
 
 If Round 1 (or Round 2) surfaced a concrete disagreement between panelists,
-you MUST use AskUserQuestion to force resolution before proceeding. Do NOT
-just list "Next Up" options and leave — a disagreement with no decision
-means nothing shipped.
+or Step 5a found no panelist directly addressed the question, you MUST use
+AskUserQuestion to force resolution before proceeding. Do NOT just list
+"Next Up" options and leave — a disagreement (or an unanswered question)
+with no decision means nothing shipped.
 
 Format the question as the specific tension the user needs to resolve,
 with 2-4 concrete options reflecting the panelists' positions:
@@ -514,8 +554,16 @@ After the user picks, emit a one-line decision record and proceed to
 Save step. The chosen path is what goes into the "Next Up" block —
 the options list is no longer needed once a decision is made.
 
-**Skip Step 5b only if:** there was genuine consensus (all agents aligned)
-or user passed `--no-followup` flag.
+If instead a panelist hedged (Step 4's trigger 5 — "not sure", "depends on X",
+"would need to validate") without ever landing on a firm, contradicting
+position, there's nothing to put in front of the user as an A-vs-B choice —
+skip the AskUserQuestion format. But the hedge still cannot pass through as
+silent consensus: the decision record in Step 6 must carry a one-line caveat
+naming the panelist and the unresolved point.
+
+**Skip Step 5b only if:** there was genuine consensus (all agents aligned,
+none hedged, AND at least one directly addressed the literal question per
+Step 5a) or user passed `--no-followup` flag.
 
 ## Step 6 — Save the session
 
@@ -603,6 +651,10 @@ node .rcode/bin/rcode-tools.cjs state add-decision "{one-line consensus decision
 
 If the council reached no real consensus (pure disagreement, or panelists only asked clarifying questions), skip this call — don't manufacture a decision that wasn't made.
 
+**Hedged/conditional consensus is not clean consensus.** If panelists agree on a direction but each attaches an unmet prerequisite or caveat (e.g. Waleed: "assuming budget approval"; Fatima: "assuming the test-coverage gap is closed first"), do NOT write it as an unqualified one-liner — the dashboard's ADR view has no field for caveats, so an unqualified line reads as a resolved decision. Instead, either:
+- fold the caveat into the summary itself (`"{decision}, conditional on {caveat}"`), or
+- skip `add-decision` entirely and record the caveat as a Follow-up item in the session artifact (Step 5) so it surfaces as unresolved work, not a done decision.
+
 > **Note:** If `rcode-tools.cjs` state commands fail (e.g. state.json missing or not yet initialized), continue without error — state tracking is optional, the session artifact saved in Step 5 is mandatory.
 
 ## Success Criteria
@@ -629,5 +681,12 @@ If the council reached no real consensus (pure disagreement, or panelists only a
 
 ## Next Up
 
-- `/rcode-plan` — plan implementation based on the council's recommendation
+Check `project-status` before suggesting `/rcode-plan`:
+
+```bash
+PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
+```
+
+- If `PROJECT_STATUS` is `real` (a phase already exists): `/rcode-plan {phase-number}` — plan implementation based on the council's recommendation
+- Otherwise (`uninstalled`/`uninitialized`/`stub`, no phase exists yet): `/rcode-add-phase` — create a phase for this work first, then `/rcode-plan` will work
 - `/rcode-decisions` — review decisions the council produced

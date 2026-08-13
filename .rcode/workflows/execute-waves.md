@@ -26,6 +26,12 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
          seen_files[file] = plan
    ```
 
+   **Pseudocode quality checklist — apply before implementing any algorithm derived above:**
+   - No bare `except Exception` — catch specific exceptions
+   - No mutation of a collection while iterating over it
+   - Guard against file overwrites (check if path exists before writing)
+   - Validate inputs before processing
+
    **If overlap is detected:**
    - Warn the user:
      ```
@@ -444,10 +450,10 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
    If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
 
-   If pass:
+   If pass — these spot-checks confirm artifacts exist and were committed, not that the wave's goal was achieved. The self-check marker is the executor's own report, not an independent verification. Label the banner accordingly:
    ```
    ---
-   ## Wave {N} Complete
+   ## Wave {N} Artifacts Produced (pending verify/review gates)
 
    **{Plan ID}: {Plan Name}**
    {What was built — from SUMMARY.md}

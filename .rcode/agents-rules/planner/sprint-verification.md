@@ -41,6 +41,7 @@ Before outputting a SPRINT.md file, run this self-check to catch common planning
 - [ ] No references to files that don't exist
 - [ ] Every task references concrete, existing file paths
 - [ ] Context bloat < 50% (if context section > 300 lines, trim it)
+- [ ] If any artifact is a new page/route/screen, at least one truth/key_link covers reachability from existing navigation (or explicitly notes it is intentionally direct-link-only)
 
 ### Objective & Output
 

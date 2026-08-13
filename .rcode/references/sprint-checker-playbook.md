@@ -108,7 +108,21 @@ issues:           # always emit, even if empty (issues: [])
 verified_files:   # list every file actually read during verification
   - path: <relative path>
     bytes: <int>
+
+dimension_status:  # REQUIRED — one entry for all 12 dimensions (7 only if CONTEXT.md present), no omissions
+  - dimension: <1-12 name from verification_dimensions>
+    status: pass | partial | fail | skipped
+    reason: <required if status is skipped — e.g. "no CONTEXT.md present">
 ```
+
+`issues: []` alone is NOT sufficient to pass the malfunction guard. The guard also
+requires `dimension_status` to list all 12 dimensions (dimension 7 may be
+`skipped` with reason "no CONTEXT.md present" — no other dimension may be
+`skipped`), and requires `verified_files` to include, at minimum, every
+`*-SPRINT.md` in the phase, `ROADMAP.md`, and `CONTEXT.md` (if it exists). A
+return with fewer `verified_files` entries than the known set of phase files,
+or a `dimension_status` list shorter than 12 (11 when CONTEXT.md is absent),
+is rejected as malfunction — regardless of whether `issues:` is present.
 
 If you have not invoked `Read`, `Bash`, `Grep`, or `Glob` during execution, do NOT return — instead, report the failure and stop. Empty narrative output is treated as malfunction, not pass.
 

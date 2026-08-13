@@ -4,7 +4,7 @@ Execute a phase prompt (SPRINT.md) and create the outcome summary (SUMMARY.md).
 
 <required_reading>
 Read STATE.md before any operation to load project context.
-Read config.json for planning behavior settings.
+Read config.yaml for planning behavior settings.
 
 @.rcode/references/git-integration.md
 @.rcode/references/karpathy-guidelines.md
@@ -19,7 +19,7 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 <step name="owner_agent_resolution">
 **Resolve which agent actually executes this plan.**
 
-Read the `owner:` field from the SPRINT.md frontmatter (set by `/rcode-plan` from the council decision's lead persona, when one exists — see `planner-playbook.md`'s `owner:` field docs). Plain frontmatter read, not a new tool call.
+Read the `owner:` field from the SPRINT.md frontmatter (set by `/rcode-plan` from the council decision's lead persona, when one exists — see `plan.md`'s `owner_field` step). This is a plain frontmatter read, not a new tool call.
 
 ```bash
 SPRINT_OWNER=$(grep -m1 '^owner:' .planning/phases/XX-name/{phase}-{plan}-SPRINT.md 2>/dev/null | sed 's/^owner:[[:space:]]*//' | tr -d '"' | xargs)
@@ -31,7 +31,7 @@ else
 fi
 ```
 
-Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, Pattern B subagent route).
+Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, Pattern B subagent route). No other change to the spawn prompt is needed — the persona file's own conditional clause tells it to load the full executor playbook when it sees `subagent_type` = itself and a SPRINT.md path in the prompt.
 
 **Fall back to `rcode-executor` and note the fallback in SUMMARY.md's Deviations section (do not fail the sprint) when:**
 - `$EXEC_AGENT` is a persona and that persona's agent file is not installed in this project, OR
@@ -39,6 +39,26 @@ Use `$EXEC_AGENT` as the `subagent_type` in every Task spawn below (Pattern A, P
 </step>
 
 <process>
+
+<preflight name="dependency_check">
+**Check for uninstalled dependencies:** If a `package.json` exists in the project root but `node_modules/` is absent or empty, emit a WARNING and stop:
+
+```
+⚠ WARNING: package.json found but node_modules/ is missing or empty.
+  Run: pnpm install   (or npm install if pnpm is not available)
+  Then re-run the sprint. Proceeding without installed dependencies will cause task failures.
+```
+
+Do NOT auto-run the install. Emit the message and let the user decide.
+
+```bash
+if [ -f package.json ] && [ ! -d node_modules ] || [ -f package.json ] && [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+  echo "⚠ WARNING: package.json found but node_modules/ is missing or empty."
+  echo "  Run: pnpm install (or npm install if pnpm is not available)"
+  echo "  Then re-run the sprint."
+fi
+```
+</preflight>
 
 <step name="init_context" priority="first">
 Load execution context (paths only to minimize orchestrator context):
@@ -125,7 +145,9 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-SPRINT.md
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → run owner_agent_resolution to get $EXEC_AGENT → spawn Task(subagent_type="$EXEC_AGENT", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → run `owner_agent_resolution` to get `$EXEC_AGENT` → spawn Task(subagent_type="$EXEC_AGENT", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, reset the branch base with `git reset --soft {EXPECTED_BASE}` before starting work. This corrects a known issue on Windows where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD.
+
+**Post-install namespace fallback:** If `Task(subagent_type="$EXEC_AGENT")` fails with "Agent type not found": if `$EXEC_AGENT` was a persona (not `rcode-executor`), retry once with `subagent_type="rcode-executor"` (the persona may not be installed in this project) and note the fallback in SUMMARY.md. If `rcode-executor` itself fails "Agent type not found", the runtime has not yet registered the agent (requires IDE reload after install) — retry with `subagent_type="rihal-executor"`. If that also fails, fall back to Pattern C (execute in main context) and log `[execute-sprint] ${EXEC_AGENT} not available — reload IDE or executing in main context`.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -161,11 +183,12 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
    - Subagent route: spawn rcode-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
    - Main route: execute tasks using standard flow (step name="execute")
 3. After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → commit → self-check:
-   - Verify key-files.created exist on disk with `[ -f ]`
+   - Re-run each task's `<verify><automated>` block (from SPRINT.md, across all segments) now that all segments have landed. Only proceed to PASSED if every one exits 0.
    - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
-   - Append `## Self-Check: PASSED` or `## Self-Check: FAILED` to SUMMARY
+   - Append `## Self-Check: PASSED` only if both the verify commands and the commit check succeed; otherwise `## Self-Check: FAILED`
+   - **State-sync (dashboard):** Segment subagents run with NO SUMMARY/commit per task, so `task_commit`'s state-sync block (5.5, above) never fires for individual tasks inside a segment — unlike Pattern A, Pattern B only registers/moves state.json stories here, once, after all segments land. Run the same `state sprint start` / `state story add` / `state story move --status done` loop from `task_commit` step 5.5 for every task across every segment before marking the sprint complete. If execution is interrupted mid-segment (checkpoint pause, crash, manual stop), the tasks already completed in landed segments will have NO state.json story yet — resuming this plan MUST run this same reconciliation loop for those already-done tasks before continuing to the next segment, not just at final aggregation.
 
-   **Known Claude Code bug (classifyHandoffIfNeeded):** If any segment agent reports "failed" with `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a real failure. Run spot-checks; if they pass, treat as successful.
+   **Known Claude Code bug (classifyHandoffIfNeeded):** If any segment agent reports "failed" with `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a real failure. Re-run the failed segment's task-level `<verify><automated>` commands directly. Only reclassify as successful if those commands exit 0 — the runtime-bug explanation alone is not sufficient to mark the task done.
 
 
 
@@ -199,11 +222,10 @@ Deviations are normal — handle via rules below.
    - `type="auto"`: if `tdd="true"` → TDD execution. Implement with deviation rules + auth gates. Verify done criteria. Commit (see task_commit). Track hash for Summary.
    - `type="checkpoint:*"`: STOP → checkpoint_protocol → wait for user → continue only after confirmation.
    - **Task completion precedence (when signals conflict):**
-     1. `<verify><automated>` — machine-executable shell commands. **Highest authority.** If these pass, the task is done. If these fail, the task is NOT done — regardless of what `<acceptance_criteria>` says.
+     1. `<verify><automated>` — machine-executable shell commands. **Highest authority.** If these pass, the task is done. If these fail, the task is NOT done — regardless of what `<done>` says.
      2. `<done>` — single observable sentence. Use as the human-readable confirmation once automated checks pass.
-     3. `<acceptance_criteria>` — prose checklist. **Lowest authority.** Use as a guide during implementation, but automated results override prose judgments.
-     - If `<verify><automated>` is absent: fall back to `<done>`, then `<acceptance_criteria>`.
-   - **MANDATORY acceptance_criteria check:** After completing each task, if it has `<acceptance_criteria>`, verify EVERY criterion before moving to the next task. Use grep, file reads, or CLI commands to confirm each criterion. If any criterion fails, fix the implementation before proceeding. Do not skip criteria or mark them as "will verify later".
+     - If `<verify><automated>` is absent: fall back to `<done>` alone. `<evidence>` (grep hits, line ranges, or a creates-justification recorded by the planner per issue #649) is supporting grounding, not a completion signal to re-check here — the real plan schema (planner-playbook.md, sprint.md) has no such tag.
+   - **MANDATORY completion check:** After completing each task, confirm `<verify><automated>` passes (or, if absent, that the task's `<done>` sentence is observably true). Use grep, file reads, or CLI commands to confirm. If any check fails, fix the implementation before proceeding. Do not skip this or mark it as "will verify later".
 3. Run `<verification>` checks
 4. Confirm `<success_criteria>` met
 5. Document deviations in Summary
@@ -316,6 +338,12 @@ If a commit is BLOCKED by a hook:
 
 After each task (verification passed, done criteria met), commit immediately.
 
+**Preflight — verify git repo exists:**
+```bash
+git rev-parse --git-dir
+```
+If this fails, stop and emit: `No git repository found. Run git init first, then re-run this workflow.`
+
 **1. Check:** `git status --short`
 
 **2. Stage individually** (NEVER `git add .` or `git add -A`):
@@ -399,8 +427,28 @@ If new untracked files appeared after running scripts or tools, decide for each:
 
 </task_commit>
 
+<hook_revert_detection_gate>
+## Post-Step Hook Revert Detection Gate
+
+<!-- See also <post_step_revert_gate> below — catches a different revert shape (shrunk, not identical) -->
+
+After each task that writes or edits files, run:
+```bash
+git diff --name-only HEAD
+```
+If a file that was supposed to be written by this step shows NO diff (i.e. git thinks it's clean), that file was reverted by a hook. STOP — do NOT mark the step done. Report:
+```
+⚠ Revert detected: <filename> was written by this step but shows no diff vs HEAD.
+  Likely cause: a linter or pre-commit hook reverted the file.
+  Action required: inspect the hook output in the last git commit attempt, fix the root cause, then re-run this task.
+```
+Do not proceed to the next task until all expected file changes survive the git diff check.
+</hook_revert_detection_gate>
+
 <post_step_revert_gate>
-## Post-Step Revert Detection Gate (closes #737)
+## Post-Step Revert Detection Gate
+
+<!-- See also <hook_revert_detection_gate> above — catches a different revert shape (identical, not shrunk) -->
 
 After committing each task, run a diff check to detect accidental reverts. This catches the class of bug where a task's implementation unknowingly undoes work from a previous task or wave.
 
@@ -487,7 +535,7 @@ within a budget of `workflow.node_repair_budget` (default: 2). Track:
 Repair strategies:
 - **RETRY** — re-run the same task with the failure context as added input.
 - **DECOMPOSE** — split into smaller subtasks (only if the original was L/XL).
-- **PRUNE** — drop the task from the sprint scope and record under "Issues Encountered" in SUMMARY.
+- **PRUNE** — drop the task from the sprint scope and record under "Issues Encountered" in SUMMARY, prefixed with the literal marker `PRUNED:` (e.g. `PRUNED: Task 4 "X" dropped after repair budget exhausted — not implemented.`). This marker is required so `offer_next` can detect incomplete plans and block false "Phase complete"/"Milestone done" routing.
 
 If the budget is exhausted without success: ESCALATE.
 
@@ -521,6 +569,12 @@ If user_setup exists: create `{phase}-USER-SETUP.md` using template `.rcode/temp
 </step>
 
 <step name="create_summary">
+**Overwrite guard:** If `{phase}-{plan}-SUMMARY.md` already exists at `.planning/phases/XX-name/`, delete it first before writing:
+```bash
+rm -f ".planning/phases/XX-name/{phase}-{plan}-SUMMARY.md"
+```
+Never append to or skip an existing SUMMARY.md — always overwrite with the current sprint's completion data. Silently continuing with a stale SUMMARY.md is a critical bug.
+
 Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `.rcode/templates/summary.md`.
 
 **Frontmatter:** phase, plan, subsystem, tags | requires/provides/affects | tech-stack.added/patterns | key-files.created/modified | key-decisions | requirements-completed (**MUST** copy `requirements` array from SPRINT.md frontmatter verbatim) | duration ($DURATION), completed ($PLAN_END_TIME date).
@@ -585,7 +639,31 @@ Keep STATE.md under 150 lines.
 </step>
 
 <step name="issues_review_gate">
-If SUMMARY "Issues Encountered" ≠ "None": yolo → log and continue. Interactive → present issues, wait for acknowledgment.
+If SUMMARY "Issues Encountered" ≠ "None": yolo → log and continue. Interactive → present issues, wait for acknowledgment. If any issue is prefixed `PRUNED:` (a repair-budget-exhausted task dropped from scope), this is a blocking gate regardless of yolo/interactive mode: the plan is not fully complete. `offer_next` must not route to Phase/Milestone done for this phase until the pruned task is resolved.
+</step>
+
+<step name="phase_status_gate">
+`state advance-plan` / `state update-progress` only ever touch `state.current_plan` — never `state.phases[i].status`. Without this step, `state.json` would show every phase stuck at its planning-time status forever, no matter how many plans finish.
+
+Recompute the same summaries-vs-plans/PRUNED check used in `offer_next` here, since phase status must be set before `update_roadmap` runs:
+
+```bash
+PLAN_COUNT=$(ls -1 .planning/phases/[current-phase-dir]/*-SPRINT.md 2>/dev/null | wc -l)
+SUMMARY_COUNT=$(ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l)
+PRUNED=$(grep -l "PRUNED:" .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null)
+```
+
+- If `SUMMARY_COUNT < PLAN_COUNT`, or any current-phase SUMMARY has `PRUNED:`: skip this step — the phase is not done, leave its status untouched.
+- Otherwise (all plans summarized, no `PRUNED:` markers): check for a passing VERIFICATION.md the same way `execute.md`'s `uat_gate` does:
+  ```bash
+  VERIFICATION_FILE=$(ls .planning/phases/[current-phase-dir]/*-VERIFICATION.md 2>/dev/null | head -1)
+  if [ -n "$VERIFICATION_FILE" ] && grep -qE "^status:[[:space:]]*passed" "$VERIFICATION_FILE" 2>/dev/null; then
+    node ".rcode/bin/rcode-tools.cjs" phase complete "${PHASE}"
+  else
+    node ".rcode/bin/rcode-tools.cjs" phase set-status "${PHASE}" executed
+  fi
+  ```
+  `phase complete` only when a passing VERIFICATION.md already exists; otherwise `phase set-status executed` (work done, awaiting `/rcode-verify-work`) — never leave the phase's status un-advanced when its plans are actually finished.
 </step>
 
 <step name="update_roadmap">
@@ -636,11 +714,14 @@ If `USER_SETUP_CREATED=true`: display `⚠️ USER SETUP REQUIRED` with path + e
 (ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null || true) | wc -l
 ```
 
+**Pruned-task check (required before routing B or C):** `grep -l "PRUNED:" .planning/phases/[current-phase-dir]/*-SUMMARY.md`. A file-count match (summaries = plans) is not the same as a complete phase — a plan can have a SUMMARY.md and still contain a task that was silently dropped by the PRUNE repair strategy. If any current-phase SUMMARY matches, do not use Route B/C wording; use Route A wording instead: "Plan {X} has an incomplete task — resolve before continuing" (name the pruned task from the SUMMARY's "Issues Encountered"), and suggest `/rcode-plan` to re-scope the dropped task before proceeding.
+
 | Condition | Route | Action |
 |-----------|-------|--------|
 | summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/rcode-execute {phase}` + `/rcode-verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rcode-plan {Z+1}` + `/rcode-verify-work {Z}` + `/rcode-discuss-phase {Z+1}` |
-| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/rcode-complete-milestone` + `/rcode-verify-work` + `/rcode-add-phase` |
+| summaries = plans, any current-phase SUMMARY has `PRUNED:` | **A: Incomplete task** | Do not declare phase/milestone done. Show "Plan {X} has an incomplete task — resolve before continuing", suggest `/rcode-plan {phase}` to re-scope the pruned task. STOP here. |
+| summaries = plans, no `PRUNED:` markers, current < highest phase | **B: Phase done** | Show completion, suggest `/rcode-plan {Z+1}` + `/rcode-verify-work {Z}` + `/rcode-discuss-phase {Z+1}` |
+| summaries = plans, no `PRUNED:` markers, current = highest phase | **C: Milestone done** | Show banner, suggest `/rcode-complete-milestone` + `/rcode-verify-work` + `/rcode-add-phase` |
 
 All routes: `/clear` first for fresh context.
 </step>
