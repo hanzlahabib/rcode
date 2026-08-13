@@ -117,7 +117,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 **If Playwright-MCP tools are available in this session (`mcp__playwright__*` tools
 respond to tool calls) AND (`UI_PHASE_FLAG` is `true` OR `UI_SPEC_FILE` is non-empty):**
 
-For each UI checkpoint listed in the phase's UI-SPEC.md (or inferred from SUMMARY.md):
+For each UI checkpoint listed in the phase's UI-SPEC.md and WIREFRAMES.md (screen states — loading/empty/error/success), or inferred from SUMMARY.md if neither exists:
 
 1. Use `mcp__playwright__navigate` (or equivalent) to open the component's URL.
 2. Use `mcp__playwright__screenshot` to capture a screenshot.

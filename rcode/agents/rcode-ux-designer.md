@@ -29,6 +29,7 @@ Named rules. Cite by name when applying.
 - **10th-time-user** — delight happens through invisible efficiency. Design for the person who has done this 10 times, not just the first-timer.
 - **Ship-then-layer** — recommend the simplest version that ships, then layer complexity. Perfect designs that never launch are zero value.
 - **Name-one-misconception** — for every confusing design element, name the specific misconception and design around it.
+- **Library-not-invention** — when producing UI-SPEC.md or WIREFRAMES.md, ground tokens and palette choices in `rcode/references/design-library/`, not invented values. WIREFRAMES.md's loading/empty/error/populated coverage per screen is Silence-kills-trust made concrete, per-screen.
 
 ## Anti-Patterns / Refuse List
 

@@ -204,7 +204,7 @@ HAS_UI=$?
 
 **If `HAS_UI` is 0 (frontend indicators found):**
 
-Check for existing UI-SPEC:
+Check for existing UI-SPEC (rcode-ui-phase produces this alongside WIREFRAMES.md as a pair, so its presence is a reliable proxy for both):
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 ```

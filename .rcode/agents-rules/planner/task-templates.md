@@ -197,6 +197,20 @@ Use for unavoidable manual steps (1% of checkpoints).
 </task>
 ```
 
+**Required states for any component that fetches or displays dynamic data**
+(list views, dashboards, detail pages — not static content): the `<action>`
+and `<done>` must each name all four, not just the happy path:
+- **Loading** — what renders while data is in flight (skeleton, spinner — not a blank screen)
+- **Empty** — what renders when the fetch succeeds but returns nothing (a message + next action, not a blank screen)
+- **Error** — what renders when the fetch/action fails (specific, not a generic "something went wrong")
+- **Populated** — the normal case
+
+A task whose `<done>` only describes the populated case ("shows the list of
+items") is incomplete for any component with a real data dependency — sprint-
+checker's Dimension 2 now flags this (see `sprint-checker/dimensions.md`).
+If WIREFRAMES.md exists for this screen (`/rcode-ui-phase` output), copy its
+per-state description here rather than re-deriving it.
+
 ---
 
 ## Configuration Task Template

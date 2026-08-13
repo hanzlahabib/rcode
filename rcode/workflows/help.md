@@ -198,7 +198,7 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-check-implementation-readiness` | Verify a feature is fully ready to implement before writing code. |
 | `/rcode-review-edge-case-hunter` | Hunt for edge cases and boundary conditions before execution. |
 | `/rcode-diagnose-issues` | Triage and diagnose systemic issues before a debug session. |
-| `/rcode-ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
+| `/rcode-ui-phase <n>` | Generate UI design contract (UI-SPEC.md) and screen inventory (WIREFRAMES.md) for frontend phases. |
 | `/rcode-ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
 | `/rcode-review --attack` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |
 | `/rcode-review --edge-cases` | Enumerate edge cases by category and severity. |

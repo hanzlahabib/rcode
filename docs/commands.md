@@ -1129,7 +1129,7 @@ Produces:
 - Design system usage
 - Accessibility checklist
 
-Outputs: `UI-SPEC.md` in phase directory.
+Outputs: `UI-SPEC.md` and `WIREFRAMES.md` in phase directory.
 
 **Related:** `/rcode-ui-review`, `/rcode-plan`
 

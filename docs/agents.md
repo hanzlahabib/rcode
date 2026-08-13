@@ -307,11 +307,7 @@ Spawned by specific commands and workflows. Not typically called directly; the s
 
 **Spawned by:** `/rcode-ui-phase`, `/rcode-plan` (for UI-heavy phases)
 
-**Output:** UI-SPEC.md with:
-- Component list
-- Wire frames
-- Design system usage
-- Accessibility checklist
+**Output:** UI-SPEC.md (component list, design system usage, accessibility checklist) plus WIREFRAMES.md (per-role screen inventory with loading/empty/error states)
 
 ---
 

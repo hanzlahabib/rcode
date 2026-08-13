@@ -132,7 +132,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-insert-phase <after> <name>` | Alias for `/rcode-phase --insert <after> <name>`. |
 | `/rcode-remove-phase <n>` | Alias for `/rcode-phase --remove <n>`. |
 | `/rcode-quick [flags]` | Small ad-hoc tasks with rcode guarantees but skip optional agents. Flags: `--discuss`, `--research`, `--full`. |
-| `/rcode-fast "<task>"` | Trivial inline task — typo, gitignore tweak, etc. No subagents, ≤3 file edits. *Not yet implemented (#482-B).* |
 
 ## Capture & session continuity
 
@@ -195,10 +194,11 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-audit-fix` | Autonomous audit-to-fix pipeline — find, classify, fix, test, commit. |
 | `/rcode-review --karpathy` | Audit recent code against Karpathy's 4 LLM coding principles. |
 | `/rcode-karpathy-audit` | Full Karpathy engineering principles audit across the codebase. |
+| `/rcode-lazy "<task>"` | Lazy senior-dev lens — force the simplest solution that works (YAGNI, stdlib first) before writing code. |
 | `/rcode-check-implementation-readiness` | Verify a feature is fully ready to implement before writing code. |
 | `/rcode-review-edge-case-hunter` | Hunt for edge cases and boundary conditions before execution. |
 | `/rcode-diagnose-issues` | Triage and diagnose systemic issues before a debug session. |
-| `/rcode-ui-phase <n>` | Generate UI design contract (UI-SPEC.md) for frontend phases. |
+| `/rcode-ui-phase <n>` | Generate UI design contract (UI-SPEC.md) and screen inventory (WIREFRAMES.md) for frontend phases. |
 | `/rcode-ui-review` | Retroactive 6-pillar visual audit of completed UI work. |
 | `/rcode-review --attack` | Hostile-perspective report — vulnerabilities, race conditions, abuse. |
 | `/rcode-review --edge-cases` | Enumerate edge cases by category and severity. |
@@ -226,7 +226,6 @@ init → new-project → plan → execute → next → status → ship
 | `/rcode-enable-hooks` | Install optional rcode hooks into `.claude/settings.json`. |
 | `/rcode-scaffold-project` | Scaffold a new project from the official rcode template. |
 | `/rcode-scaffold-skill --role <role>` | Scaffold a new compliant SKILL.md for a rcode role — eliminates friction of finding folder, copying, and chasing 5-component compliance. |
-| `/rcode-bootstrap` | Bootstrap repo with Vercel-linked resources and integrations. *Not yet implemented (#481).* |
 
 ## Story-level epics workflow
 

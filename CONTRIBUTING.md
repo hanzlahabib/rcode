@@ -367,6 +367,8 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `eval` — `test/eval/` behavioral drift baselines and eval harness
 - `scan` — `/rcode-scan` workflow and existing-codebase analysis
 - `verifier` — `rcode-verifier` agent, verification playbook/rules, VERIFICATION.md flow
+- `discuss-phase` — `/rcode-discuss-phase` workflow and its gray-area/standing checks
+- `ui-phase` — `/rcode-ui-phase` workflow, UI-SPEC.md/WIREFRAMES.md generation, design-library
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 

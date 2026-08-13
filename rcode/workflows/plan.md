@@ -86,6 +86,37 @@ Project not initialized for planning. Run /rcode-new-project (full roadmap) or /
 
 Stop. Do not proceed until `project-status` returns `real`.
 
+## 0.6. Detect Frontend Keywords and Suggest UI Safety Gate
+
+```bash
+FRONTEND_KEYWORDS=$(node .rcode/bin/rcode-tools.cjs classify-tech --keywords "react,next.js,vue,tailwind,css,ui,component,design,frontend" "$ARGUMENTS")
+```
+
+**If `FRONTEND_KEYWORDS.has_frontend == true` AND `.rcode/UI-SPEC.md` is missing:**
+
+Check `config.yaml` for `workflow.ui_safety_gate` (default `true`). If enabled, print:
+
+```
+⚠ Frontend project detected. Before planning, create a design contract:
+
+/rcode-ui-phase
+
+This ensures consistent UI patterns, accessibility, and design tokens across all components.
+```
+
+Offer via AskUserQuestion:
+```
+header: "UI Safety Gate"
+question: "Should we define UI-SPEC.md before planning component development?"
+options:
+  - "Yes, run /rcode-ui-phase first"
+  - "Skip for now, continue planning"
+```
+
+If "Yes, run /rcode-ui-phase first": run `/rcode-ui-phase`, then return here and continue at Step 1. If skipped, or `ui_safety_gate` is disabled, or no frontend keywords detected: proceed directly to Step 1.
+
+See `rcode/workflows/ui-phase.md` Step 4 for the source of this step — this is the applied instance of that one-time setup instruction.
+
 ## 1. Initialize
 
 Load all context in one call (paths only to minimize orchestrator context):

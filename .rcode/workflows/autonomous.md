@@ -423,7 +423,7 @@ Phase ${PHASE_NUMBER}: Frontend phase detected — generating UI design contract
 Skill(skill="rcode-ui-phase", args="${PHASE_NUMBER}")
 ```
 
-Verify UI-SPEC was created. If still empty after ui-phase, display a non-blocking warning and proceed to 3b.
+Verify UI-SPEC was created (rcode-ui-phase produces WIREFRAMES.md alongside it in the same run). If still empty after ui-phase, display a non-blocking warning and proceed to 3b.
 
 **Otherwise:** Skip silently to 3b.
 

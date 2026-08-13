@@ -55,6 +55,17 @@ Presence of `<verify>` is not enough. Cross-check it against the must_haves trut
 - Require instead an assertion against actual output/behavior: a curl/HTTP call checking status/body, a test that exercises the route or flow, or an explicit manual-verification checkpoint (`checkpoint:*` task type).
 - Flag as blocker: "Task N's <verify> only compiles/lints but action implements user-facing behavior X — no assertion on actual behavior."
 
+**Check — Required States for Dynamic-Data Components:**
+If a task's `<action>` creates or modifies a component that fetches or
+displays dynamic data (a list, dashboard, detail page — check for
+fetch/query/API-call language in the action), its `<action>` and `<done>`
+must each name all four states: loading, empty, error, populated. A task
+whose `<done>` only describes the populated case ("shows the list of items")
+is incomplete — flag as blocker, not warning, since a missing empty/error
+state is a real UX gap a user will hit, not a style nitpick.
+- Flag as blocker: "Task N's component fetches/displays dynamic data but `<action>`/`<done>` only cover the populated case — no loading/empty/error state defined."
+- Exception: if WIREFRAMES.md exists (`/rcode-ui-phase` output) and already defines the four states for this screen, a task that references WIREFRAMES.md instead of re-listing them inline is fine — check WIREFRAMES.md's entry for this screen before flagging.
+
 **Example issue:**
 ```yaml
 issue:
@@ -133,6 +144,22 @@ Nav -> Route: For any new page/route/component in must_haves.artifacts, does a t
 ```
 
 A top-level UI artifact (page/route/component) with no Nav -> Route reference anywhere in the sprint's tasks is a blocker — internal wiring can be perfect while the feature stays unreachable by any user.
+
+**Check — Role Access Defined (multi-role/SSO/compliance projects only):**
+`roadmapper-playbook.md`'s "Enterprise Projects Need Auth Strategy and Role
+Mapping Decided Up Front" rule requires every later phase adding a
+user-facing route to include "role access defined for this route" as a
+success criterion — explicitly NOT covered by `rcode-verifier`'s Level-5
+Reachability check (which only confirms a page is linked from nav, not that
+it's linked/gated correctly per role). If PROJECT.md/REQUIREMENTS.md show
+more than one user role, cross-reference each new route in
+`must_haves.artifacts` against the roadmap's role-to-screen mapping (IA.md or
+ROADMAP.md's IA section — see roadmapper-playbook.md step 3b): does a task
+state which roles can/cannot reach this route, or is role access left
+undefined? A new route with no role-access statement anywhere in the sprint's
+tasks is a blocker for multi-role projects — the same orphan-feature failure
+as unreachable nav, just for authorization instead of discoverability.
+- Flag as blocker: "Route {path} added with no role-access statement — roadmap's role mapping shows N roles but no task defines who can/cannot reach this route."
 
 **Example issue:**
 ```yaml

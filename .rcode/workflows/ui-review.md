@@ -1,7 +1,7 @@
 # Workflow: rcode-ui-review
 
 <purpose>
-Retroactively audit completed UI work against the UI-SPEC.md contract. Validates across 6 pillars: color consistency, typography compliance, component inventory coverage, accessibility requirements, responsive behavior, and design coherence. Produces audit report with pass/fail per pillar.
+Retroactively audit completed UI work against the UI-SPEC.md contract (and WIREFRAMES.md, when present, for per-screen state coverage). Validates across 6 pillars: color consistency, typography compliance, component inventory coverage, accessibility requirements, responsive behavior, and design coherence. Produces audit report with pass/fail per pillar.
 </purpose>
 
 
@@ -41,6 +41,7 @@ Parse:
 - `flags.phase` — audit specific phase (optional, default: all completed phases)
 - `flags.detailed` — include detailed findings per component
 - `spec_path` — load UI-SPEC.md if exists
+- `wireframes_path` — load WIREFRAMES.md if exists (optional; used for per-screen state coverage)
 - `phase_name` — phase to audit
 
 ## Step 1 — Validate UI-SPEC.md Exists
@@ -65,6 +66,10 @@ Read UI-SPEC.md for:
 - Accessibility requirements
 - Responsive breakpoints
 
+If `.rcode/WIREFRAMES.md` exists, also read it for the per-role screen inventory and
+required states (loading/empty/error/success) — missing states become findings under
+Component Inventory or Design Coherence.
+
 Scan phase/codebase for:
 - Component files (*.tsx, *.jsx, *.vue)
 - CSS/styling files (*.css, *.module.css, tailwind.config.js, etc.)
@@ -84,6 +89,9 @@ Task tool call:
     
     **UI-SPEC.md Reference:**
     {contents_of_ui_spec_md}
+    
+    **WIREFRAMES.md Reference (if present):**
+    {contents_of_wireframes_md}
     
     **Codebase to Audit:**
     {component_files_list}

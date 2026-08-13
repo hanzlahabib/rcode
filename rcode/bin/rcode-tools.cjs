@@ -1366,8 +1366,16 @@ function cmdState(subArgs) {
       const state = readState() || defaultState();
       state.milestone = val;
       return writeState(state);
+    } else if (key === '--ui-spec-path' && val) {
+      const state = readState() || defaultState();
+      state.ui_spec_path = val;
+      return writeState(state);
+    } else if (key === '--wireframes-path' && val) {
+      const state = readState() || defaultState();
+      state.wireframes_path = val;
+      return writeState(state);
     } else {
-      throw new Error(`Unknown state set key: ${key}. Use: set-phase <N>, or state set project|milestone <value>`);
+      throw new Error(`Unknown state set key: ${key}. Use: set-phase <N>, or state set project|milestone|--ui-spec-path|--wireframes-path <value>`);
     }
   }
 

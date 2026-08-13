@@ -178,7 +178,7 @@ No invented capabilities. Everything here is sourced directly from `rcode/comman
 | `/rcode-list-workspaces` | `[--detail]` | List all active workspaces with status, start date, and current phase. |
 | `/rcode-remove-workspace` | `<workspace-name> [--archive] [--force]` | Remove a workspace and clean up its artifacts. No recovery. |
 | `/rcode-workstream` | `<subcommand> [--name <name>]` | Manage parallel workstreams. Create, switch, list, or complete workstreams in state.json. |
-| `/rcode-ui-phase` | `[--existing-ui <path>] [--design-system <path>]` | Produce UI-SPEC.md with color tokens, typography, component inventory, interaction states, and accessibility guidelines. |
+| `/rcode-ui-phase` | `[--existing-ui <path>] [--design-system <path>]` | Produce UI-SPEC.md (color tokens, typography, component inventory, interaction states, accessibility guidelines) and WIREFRAMES.md (per-role screen inventory with loading/empty/error states). |
 | `/rcode-dev-story` | `<STORY.md>` | Wrap a STORY.md for AI-coder execution. Produces explicit file paths, context, and checklist. |
 | `/rcode-create-epics-and-stories` | `<prd-path> [--prefix <name>]` | Parse a PRD to generate numbered epic files in `.planning/epics/`. Each epic contains user stories with acceptance criteria. |
 | `/rcode-create-story` | `<EPIC-file.md> [--story <id>]` | Transform a story from an epic file into a self-contained STORY.md with full AC and dev notes. |
@@ -286,7 +286,7 @@ Skills are domain expertise modules. They are loaded automatically when their tr
 | `rcode-create-story` | Create story, dev story | Self-contained STORY.md from epic — full AC, dev notes, implementation guidance |
 | `rcode-new-milestone` | Create milestone, plan milestone | Milestone definition with phases, goals, and success criteria |
 | `rcode-create-ux-design` | Create UX design, design flows | UX design document with user flows, wireframe descriptions, interaction states |
-| `rcode-frontend-design` | Frontend design, UI spec | UI-SPEC.md with color tokens, typography, component inventory, accessibility |
+| `rcode-frontend-design` | Frontend design, UI spec | UI-SPEC.md with color tokens, typography, component inventory, accessibility; WIREFRAMES.md with per-role screen inventory |
 
 ### Solutioning Skills
 

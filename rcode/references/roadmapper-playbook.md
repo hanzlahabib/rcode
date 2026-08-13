@@ -68,6 +68,15 @@ actually asked for. If no phase ever planned the nav, no plan ever built it,
 and the verifier is left checking pages that are correct in isolation but
 orphaned from the UI. Plan the shell so verification has something to check.
 
+**Run `/rcode-ui-phase` before planning the shell phase's sprints, not after.**
+It produces UI-SPEC.md (design tokens grounded in `rcode/references/design-library/`,
+not invented) and WIREFRAMES.md (every screen from the IA decision in step 3b
+of the Workflow section below, with role visibility and required
+loading/empty/error/success states). Planning the
+shell phase's tasks without these means the planner is guessing at what to
+build — the shell phase's success criteria should reference both artifacts as
+existing, not just "nav exists."
+
 ### Enterprise Projects Need Auth Strategy and Role Mapping Decided Up Front
 
 **If the project is multi-role, SSO-integrated, or compliance-sensitive, an
