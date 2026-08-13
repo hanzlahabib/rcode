@@ -831,10 +831,11 @@ Cleanup shows its own dry-run and asks user for approval internally — this is 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  Milestone: {milestone_version} — {milestone_name}
- Status: Complete, gaps/tech debt accepted — not audit-clean
+ Status: NOT audit-clean — gaps/tech debt accepted, not verified passed
  Lifecycle: audit ⚠ → complete ✓ → cleanup ✓
 
- Review the gaps summary above before shipping.
+ This is not the same as "shippable." Review the gaps summary above and
+ resolve or explicitly accept each item before treating this as done.
 ```
 
 **If autonomous created a branch** (i.e., `BRANCH_NAME` was set in the prepare_branch step):

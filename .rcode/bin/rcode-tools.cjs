@@ -3211,6 +3211,11 @@ function cmdState(subArgs) {
     return { updated: true, phase: phaseKey, status: 'executing', previous_status: previousStatus };
   }
 
+  // DEPRECATED (#gap: state-sync audit): no workflow calls this — every
+  // completion path uses the top-level `phase complete <N>` subcommand
+  // instead. Its stale-executing-phase hygiene warning was ported there.
+  // Kept only for backward compatibility with anyone scripting against it
+  // directly; do not wire new callers to this — use `phase complete`.
   if (sub === 'complete-phase') {
     const flags = parseFlags(1);
     if (!flags.phase) throw new Error('complete-phase requires --phase <N>');
@@ -3946,6 +3951,29 @@ function cmdPhase(subArgs) {
       throw new Error(`Phase "${phaseRef}" not found in state.phases (looked up by number, id, and name)`);
     }
     const previous = state.phases[idx].status || null;
+
+    // State-hygiene gate (#955): if an earlier-numbered phase is still stuck
+    // 'executing' while this later phase gets marked complete, that's exactly
+    // the drift that misorients resolveActivePhase() / the SessionStart greeter.
+    // Warn rather than block — completing out of order is sometimes correct
+    // (parallel workstreams), but it must never happen silently. (Ported from
+    // the unused `state complete-phase` twin — this is the code path every
+    // workflow actually calls.)
+    const thisNum = parseInt(String(state.phases[idx].number || phaseRef), 10);
+    const stalePhases = Number.isNaN(thisNum) ? [] : state.phases.filter((p) => {
+      if (!p || p.status !== 'executing') return false;
+      const n = parseInt(String(p.number ?? p.id), 10);
+      return !Number.isNaN(n) && n < thisNum;
+    });
+    const warnings = [];
+    if (stalePhases.length > 0) {
+      const staleList = stalePhases.map((p) => p.number ?? p.id).join(', ');
+      warnings.push(
+        `Phase ${phaseRef} marked complete while earlier phase(s) ${staleList} are still 'executing'. ` +
+        `Close out the stale phase(s) or confirm this is an intentional parallel workstream.`
+      );
+    }
+
     state.phases[idx].status = 'complete';
     state.phases[idx].status_updated = new Date().toISOString();
     state.phases[idx].completed_at = state.phases[idx].completed_at || new Date().toISOString().slice(0, 10);
@@ -3979,8 +4007,8 @@ function cmdPhase(subArgs) {
       is_last_phase: !next,
       open_phases_remaining: openRemaining,
       ...(nudge ? { nudge } : {}),
-      warnings: [],
-      has_warnings: false,
+      warnings,
+      has_warnings: warnings.length > 0,
     };
   }
 

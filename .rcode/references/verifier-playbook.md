@@ -31,8 +31,8 @@ Before verifying, discover project context:
 ## Verification Flow (Slim)
 
 1. **Check for previous VERIFICATION.md** — if exists with gaps, enter RE-VERIFICATION MODE (skip to Step 3).
-2. **Load context** — SPRINT.md, SUMMARY.md, ROADMAP.md goal, REQUIREMENTS.md.
-3. **Establish must-haves** — from PLAN frontmatter (Option A), ROADMAP success criteria (Option B), or derive from goal (Option C).
+2. **Load context** — SPRINT.md, SUMMARY.md, ROADMAP.md goal, REQUIREMENTS.md. If CONTEXT.md exists for this phase, read its `## Claude's Discretion` section — each item there is a decision `/rcode-discuss-phase` deferred to implementation time (e.g. "entry point left to Claude's judgment"). Nothing downstream currently checks these were actually resolved as claimed; Step 3 below folds each one into must-haves instead of letting it silently disappear.
+3. **Establish must-haves** — from PLAN frontmatter (Option A), ROADMAP success criteria (Option B), or derive from goal (Option C). **Also fold in CONTEXT.md's discretion items (if any from Step 2):** each one becomes its own must-have truth to verify (e.g. "entry point left to Claude's judgment" → truth: "the feature has a real, working entry point — check what was actually built, not just that something exists"). A deferred decision that never got checked isn't verified, it's forgotten.
 4. **Verify observable truths** — for each truth, status ✓ VERIFIED / ✗ FAILED / ? UNCERTAIN.
 5. **Verify artifacts (4 levels)** — exists, substantive, wired, data-flows. Use `rcode-tools.cjs verify artifacts`.
 6. **Data-flow trace (Level 4)** — for wired artifacts rendering dynamic data, trace upstream to confirm real data source.

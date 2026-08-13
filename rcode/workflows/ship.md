@@ -121,6 +121,17 @@ Verify the work is ready to ship:
    Check for `status: passed` or `status: human_needed` (with human approval).
    If no VERIFICATION.md or status is `gaps_found`: warn and ask user to confirm.
 
+   **If proceeding with anything other than a clean `status: passed`** (i.e.
+   `human_needed` or a user-confirmed `gaps_found`): the generated PR body
+   (step below) MUST include a `## Known Gaps` section listing every
+   unresolved human-verification item or gap from VERIFICATION.md — mirroring
+   `complete-milestone.md`'s `### Known Gaps` pattern. This is not optional
+   cosmetic detail: a PR shipped on `human_needed`/`gaps_found` without this
+   section reads to a reviewer as fully verified when it isn't. Do not rely on
+   the `## Verification` section's item list alone (below) to carry this —
+   that section is easy to skim past; `## Known Gaps` must be its own
+   clearly-labeled heading.
+
 2. **Clean working tree?**
    ```bash
    git status --short
@@ -214,6 +225,17 @@ For each SUMMARY.md in the phase directory:
 - [x] Automated verification: {pass/fail from VERIFICATION.md}
 - {human verification items from VERIFICATION.md, if any}
 ```
+
+**5b. Known Gaps section (only when VERIFICATION.md status is not a clean `passed`):**
+```markdown
+## Known Gaps
+
+This PR ships with `status: {human_needed|gaps_found}` per VERIFICATION.md, confirmed by the user in preflight.
+
+- {gap/human-verification item 1 — file/truth + what's unconfirmed}
+- {gap/human-verification item 2}
+```
+Omit this section entirely when VERIFICATION.md status is a clean `passed` with zero open items.
 
 **6. Decisions section:**
 ```markdown

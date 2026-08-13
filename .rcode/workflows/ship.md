@@ -34,6 +34,45 @@ the plan → execute → verify → **ship** loop.
 ```
 </purpose>
 
+<prerequisites>
+
+**Required before running `/rcode-ship`:**
+
+1. **Git remote configured** — `git remote -v` must list at least one remote (typically `origin`). Without a remote, the push and PR steps will fail.
+2. **`gh` CLI authenticated** — `gh auth status` must succeed. Without this, PR creation will fail.
+3. **Clean working tree** — no uncommitted changes (`git status --short` returns nothing).
+4. **On a feature branch** — not on `main` or `develop` directly.
+5. **Verification passed** — `/rcode-verify-phase <phase>` must have run and produced a VERIFICATION.md with `status: passed`.
+
+</prerequisites>
+
+<warning>
+
+**If your workspace has no git remote or `gh` is not authenticated, the push and PR steps will fail.**
+
+Check before running:
+```bash
+git remote -v          # must list at least one remote
+gh auth status         # must exit 0
+```
+
+**Manual fallbacks if these are missing:**
+
+- **No remote:** Add one with `git remote add origin <repo-url>`, then re-run `/rcode-ship`. Or push manually:
+  ```bash
+  git push origin <branch>
+  ```
+  Then open a PR via the GitHub web UI at `https://github.com/<owner>/<repo>/compare/<branch>`.
+
+- **`gh` not authenticated:** Run `gh auth login` to authenticate, then re-run `/rcode-ship`. Or create the PR directly at:
+  ```
+  https://github.com/<owner>/<repo>/compare/<branch>
+  ```
+
+- **Git worktree context:** If `.git` is a file (not a directory), you are in a worktree. Remotes are shared with the main repo — run `git remote -v` from the main repo root to verify. If the main repo has `origin`, the worktree inherits it automatically.
+
+</warning>
+
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
@@ -81,6 +120,17 @@ Verify the work is ready to ship:
    ```
    Check for `status: passed` or `status: human_needed` (with human approval).
    If no VERIFICATION.md or status is `gaps_found`: warn and ask user to confirm.
+
+   **If proceeding with anything other than a clean `status: passed`** (i.e.
+   `human_needed` or a user-confirmed `gaps_found`): the generated PR body
+   (step below) MUST include a `## Known Gaps` section listing every
+   unresolved human-verification item or gap from VERIFICATION.md — mirroring
+   `complete-milestone.md`'s `### Known Gaps` pattern. This is not optional
+   cosmetic detail: a PR shipped on `human_needed`/`gaps_found` without this
+   section reads to a reviewer as fully verified when it isn't. Do not rely on
+   the `## Verification` section's item list alone (below) to carry this —
+   that section is easy to skim past; `## Known Gaps` must be its own
+   clearly-labeled heading.
 
 2. **Clean working tree?**
    ```bash
@@ -175,6 +225,17 @@ For each SUMMARY.md in the phase directory:
 - [x] Automated verification: {pass/fail from VERIFICATION.md}
 - {human verification items from VERIFICATION.md, if any}
 ```
+
+**5b. Known Gaps section (only when VERIFICATION.md status is not a clean `passed`):**
+```markdown
+## Known Gaps
+
+This PR ships with `status: {human_needed|gaps_found}` per VERIFICATION.md, confirmed by the user in preflight.
+
+- {gap/human-verification item 1 — file/truth + what's unconfirmed}
+- {gap/human-verification item 2}
+```
+Omit this section entirely when VERIFICATION.md status is a clean `passed` with zero open items.
 
 **6. Decisions section:**
 ```markdown
