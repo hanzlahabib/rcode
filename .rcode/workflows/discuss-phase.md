@@ -6,6 +6,7 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 
 <required_reading>
 @.rcode/references/universal-anti-patterns.md
+@.rcode/references/source-of-truth-grounding.md
 </required_reading>
 
 <conditional_reading>

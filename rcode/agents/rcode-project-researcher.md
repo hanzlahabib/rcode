@@ -8,6 +8,7 @@ color: cyan
 
 @.rcode/references/response-style.md
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/source-of-truth-grounding.md
 @.rcode/references/researcher-shared.md
 
 <role>

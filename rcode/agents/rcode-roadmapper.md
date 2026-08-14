@@ -9,6 +9,7 @@ color: purple
 @.rcode/references/response-style.md
 @.rcode/references/output-realism.md
 @.rcode/references/karpathy-guidelines.md
+@.rcode/references/source-of-truth-grounding.md
 @.rcode/references/roadmapper-playbook.md
 
 <role>

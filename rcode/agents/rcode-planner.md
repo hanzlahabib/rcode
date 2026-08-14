@@ -9,6 +9,7 @@ color: green
 @.rcode/references/karpathy-guidelines-full.md
 @.rcode/references/output-realism.md
 @.rcode/brain/best-practices/no-theoretical-suggestions.md
+@.rcode/references/source-of-truth-grounding.md
 @.rcode/references/planner-playbook.md
 
 <role>

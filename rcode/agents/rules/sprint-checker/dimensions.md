@@ -483,6 +483,61 @@ issue:
   fix_hint: "Plan was built on hallucinated findings. Re-run /rcode-debug to verify actual code state before replanning."
 ```
 
+## Dimension 12: Evidence Grounding
+
+**Question:** Is every claim in the plan traceable to something real — a codebase grep, or an external source-of-truth document — rather than plausible-sounding invention?
+
+This dimension has two halves. Both exist because agents produce fluent,
+confident, wrong output when nothing forces them to cite a real source —
+codebase claims and domain-terminology claims fail the same way, just
+against different ground truths.
+
+### 12a — Codebase Evidence (issue #649)
+
+Every task body that names a file count, component, pattern, or existing
+behavior MUST include an `<evidence>` block citing real grep hit counts,
+real `path:line` ranges, or an explicit `creates:` justification (for
+genuinely new files/symbols that can't have prior evidence). A task claiming
+"13 usages of `useAuth`" with no evidence, or citing a grep that doesn't
+actually return 13, is theoretical — reject it.
+
+**Process:**
+1. For each task with a factual claim about existing code, check for an `<evidence>` block.
+2. If present, re-run a sample of the cited greps/searches yourself. If the claimed count doesn't match reality, downgrade to blocker regardless of what the task otherwise looks like.
+3. If absent for a claim that isn't a `creates:` (brand new file/symbol), flag as blocker — the claim is unfalsifiable as written.
+
+### 12b — Source-Document Evidence
+
+If PROJECT.md/REQUIREMENTS.md/CONTEXT.md reference an external source-of-truth
+document (a spreadsheet, transcript, spec, glossary — see
+`source-of-truth-grounding.md`) that defines domain terminology, enum values,
+or a data model, any task creating schema fields, enum values, or seed data
+for that domain MUST cite the source document and use its verbatim values —
+not an invented approximation that merely sounds plausible for "this kind of
+system." This is exactly how a competency-tracking app once shipped invented
+category names (`TECH`, `DELIV`, `COLLAB`) instead of the real Excel's actual
+categories (`Technical Skills`, `Delivery & Quality`, `Communication &
+Collaboration`) — plausible, well-formatted, and wrong.
+
+**Process:**
+1. Check whether PROJECT.md/REQUIREMENTS.md mention a source document for this domain.
+2. If yes, for each schema/seed-data task touching that domain, verify the task cites the source document path and that its field/enum values are traceable to it (spot-check by reading the source yourself if it's available).
+3. A schema/seed task for a domain with a known source document, with no citation and no traceable match, is a blocker — not a style nitpick. This is exactly the class of mistake that's expensive to unwind once it's in a live database.
+
+**Severity rules:**
+- **blocker:** 12a claim with no evidence and no `creates:` justification, evidence that doesn't check out on re-run, OR 12b schema/seed task for a known-source domain with no citation/traceable match
+- **warning:** evidence present but thin (e.g. cites a grep pattern too broad to actually confirm the specific claim)
+
+**Example issue:**
+```yaml
+issue:
+  dimension: evidence_grounding
+  severity: blocker
+  description: "Task 3 seeds 'competency' enum with TECH/DELIV/COLLAB/GROWTH/IMPACT — PROJECT.md references docs/Competency-Matrix.xlsx as the source of truth for these categories, but no task reads it or cites its actual values"
+  plan: "01"
+  fix_hint: "Read docs/Competency-Matrix.xlsx (or its extracted contents) and replace the enum values with what it actually defines, verbatim"
+```
+
 </verification_dimensions>
 
 <verification_process>
