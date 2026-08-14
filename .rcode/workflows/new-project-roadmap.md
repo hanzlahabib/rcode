@@ -199,6 +199,8 @@ Create roadmap:
 6. Return ROADMAP CREATED with summary
 
 Write files first, then return. This ensures artifacts persist even if context is lost.
+
+**Scope constraint:** rcode-roadmapper creates ONLY: ROADMAP.md, STATE.md, and one PHASE.md per phase directory (if requested). It MUST NOT create SPRINT.md, PLAN.md, or any sprint-level planning files. Sprint planning is handled exclusively by `/rcode-plan`. If you find yourself about to write a SPRINT.md file, STOP — that file is out of scope for this agent.
 </instructions>
 ", subagent_type="rcode-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
@@ -212,6 +214,25 @@ Write files first, then return. This ensures artifacts persist even if context i
 - Re-spawn when resolved
 
 **If `## ROADMAP CREATED`:**
+
+**Team review pass (once per roadmap draft, not per phase — keep this cheap; skip entirely in auto/yolo mode — an unattended loop shouldn't pay this round-trip on every roadmap, and there's no user present to read the notes anyway):**
+Before presenting the roadmap for approval, spawn two focused reviewers in
+parallel against the freshly-written ROADMAP.md — a single async round, not a
+council debate, so this adds one round-trip, not multiple:
+
+```
+Task(prompt="Read .planning/ROADMAP.md and .planning/PROJECT.md. As Waleed (CTO/architect), flag ONLY real feasibility/scalability concerns you'd actually block a real project over — a phase sequencing a schema-breaking change after the API that depends on it, a scale ceiling the phase structure doesn't account for, a missing foundational/shell phase for a UI project. If there are none, say so in one line. Keep it to 3 bullets max — this is a sanity check, not a full architecture review.", subagent_type="rcode-waleed", model="{roadmapper_model}", description="Architecture sanity check")
+
+Task(prompt="Read .planning/ROADMAP.md and .planning/PROJECT.md. As Fatima (QA Lead), flag ONLY real release-risk concerns — a phase with no way to verify its success criteria, a security/compliance-sensitive area with no phase covering it, a dependency ordering that makes a phase unverifiable until a later one lands. If there are none, say so in one line. Keep it to 3 bullets max — this is a sanity check, not a full QA strategy doc.", subagent_type="rcode-fatima", model="{roadmapper_model}", description="Release-risk sanity check")
+```
+
+Run both, collect their one-line-or-3-bullets responses. If either flags a
+concern that would make the roadmap actually wrong (not a nitpick), add a
+**Team Review Notes** section to the presentation below, before the phase
+table, so the user sees it as part of deciding whether to approve — don't
+silently drop it, and don't block on it either; the approval gate right
+after this is where the user decides what to do with it. If both reviewers
+say "no concerns," skip the section entirely — don't manufacture filler.
 
 Read the created ROADMAP.md and present it nicely inline:
 
@@ -300,12 +321,12 @@ Use AskUserQuestion:
 node .rcode/bin/rcode-tools.cjs generate-claude-md
 ```
 
-This ensures new projects get the default rcode workflow-enforcement guidance and current project context in `CLAUDE.md`.
+This ensures new projects get the default rcode workflow-enforcement guidance and current project context in `CLAUDE.md` and `AGENTS.md` (the cross-tool standard read by Codex, Cursor, Windsurf, Antigravity, and Gemini). `AGENTS.md` is only written when absent — an install-managed roster section is preserved.
 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-node .rcode/bin/rcode-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
+node .rcode/bin/rcode-tools.cjs commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md AGENTS.md
 ```
 
 ## 9. Done

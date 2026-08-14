@@ -17,30 +17,42 @@ Valid rcode subagent types (use exact names — do not fall back to 'general-pur
 
 <process>
 
+## --from-draft mode
+
+When `--from-draft <path>` is passed:
+1. Check for the file at `<path>`. Accept any markdown file — MILESTONE-CONTEXT.md, a scratch doc, or a ROADMAP partial.
+2. If found: read it as the milestone definition — do NOT re-run the interactive goal-gathering interview (steps 2–4). Jump directly to step 5 (Requirements scoping) using the draft as the source of truth.
+3. If not found: abort with:
+   ```
+   Error: --from-draft file not found: {path}
+   ```
+   Do not fall back to standard mode — an explicit path that does not exist is a user error, not a signal to start fresh.
+
+Surface a one-line banner when the draft is loaded:
+```
+◆ From-draft mode: using {path} as milestone definition (skipping goal interview)
+```
+
+This mode exists to skip expensive re-derivation when a human or prior agent has already drafted the milestone scope.
+
 ## 1. Parse arguments and load context
 
 Parse `$ARGUMENTS` before anything else:
 - `--reset-phase-numbers` flag → restart roadmap phase numbering at `1`
 - `--dry-run` flag → show what would be written, do not commit
-- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition (closes #740). When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
+- `--from-draft <path>` flag → use an existing MILESTONE-CONTEXT.md or ROADMAP draft as the milestone definition. When present, set `DRAFT_FILE=<path>` and `FROM_DRAFT_MODE=true`.
 - Remaining text → milestone name (optional)
 
 If `--from-draft` is absent, continue phase numbering from the previous milestone.
 
-**From-draft mode (closes #740):**
+**From-draft mode (see dedicated section above):**
 
 When `FROM_DRAFT_MODE=true`:
 1. Read the draft file at `DRAFT_FILE`. Accept any markdown file — MILESTONE-CONTEXT.md, a scratch doc, or a ROADMAP partial.
 2. Extract milestone name (first `# Heading` or the filename stem), goals list, and any explicit phase list.
 3. Skip the interactive goal-gathering interview (steps 2–4). Jump directly to step 5 (Requirements scoping) using the draft as the source of truth.
-4. Surface a one-line banner:
-   ```
-   ◆ From-draft mode: using {DRAFT_FILE} as milestone definition (skipping goal interview)
-   ```
-5. If `DRAFT_FILE` does not exist, abort:
-   ```
-   Error: --from-draft file not found: {DRAFT_FILE}
-   ```
+4. Surface the one-line banner (see `## --from-draft mode` above).
+5. If `DRAFT_FILE` does not exist, abort (see `## --from-draft mode` above).
 
 Read these files in parallel:
 - `.planning/PROJECT.md` — existing project, validated requirements, decisions
@@ -529,7 +541,11 @@ Write files first, then return.
 
 **If `## ROADMAP BLOCKED`:** present the blocker, collect resolution from user, re-spawn the roadmapper with revision context.
 
-**If `## ROADMAP CREATED`:** read ROADMAP.md, present inline:
+**If `## ROADMAP CREATED`:**
+
+**Team review pass (once per roadmap draft; skip in auto/yolo mode — see `new-project-roadmap.md`'s identical step for the full rationale):** spawn `rcode-waleed` and `rcode-fatima` in parallel, same prompts as `new-project-roadmap.md`'s team review pass (feasibility sanity check / release-risk sanity check, 3 bullets max or "no concerns" in one line). Fold genuine concerns into a **Team Review Notes** section in the presentation below, before the phase table — skip the section if both say no concerns.
+
+Read ROADMAP.md, present inline:
 
 ```
 ## Proposed Roadmap

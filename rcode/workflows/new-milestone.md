@@ -541,7 +541,11 @@ Write files first, then return.
 
 **If `## ROADMAP BLOCKED`:** present the blocker, collect resolution from user, re-spawn the roadmapper with revision context.
 
-**If `## ROADMAP CREATED`:** read ROADMAP.md, present inline:
+**If `## ROADMAP CREATED`:**
+
+**Team review pass (once per roadmap draft; skip in auto/yolo mode — see `new-project-roadmap.md`'s identical step for the full rationale):** spawn `rcode-waleed` and `rcode-fatima` in parallel, same prompts as `new-project-roadmap.md`'s team review pass (feasibility sanity check / release-risk sanity check, 3 bullets max or "no concerns" in one line). Fold genuine concerns into a **Team Review Notes** section in the presentation below, before the phase table — skip the section if both say no concerns.
+
+Read ROADMAP.md, present inline:
 
 ```
 ## Proposed Roadmap

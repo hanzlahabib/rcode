@@ -625,12 +625,27 @@ Task(
 - **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 13.
 - **`## ISSUES FOUND`:** Display issues, check iteration count, proceed to step 12.
 
-**Thinking partner for architectural tradeoffs (conditional):**
+**Thinking partner for architectural tradeoffs (default ON in guided mode, OFF in yolo/autonomous):**
 ```bash
-THINKING_PARTNER_ENABLED=$(node ".rcode/bin/rcode-tools.cjs" config-get features.thinking_partner 2>/dev/null || echo "false")
+THINKING_PARTNER_CONFIG=$(node ".rcode/bin/rcode-tools.cjs" config-get features.thinking_partner 2>/dev/null || echo "")
+if [ -n "$THINKING_PARTNER_CONFIG" ]; then
+  THINKING_PARTNER_ENABLED="$THINKING_PARTNER_CONFIG"
+elif [ "$MODE" = "yolo" ] || [ -n "$AUTONOMOUS" ]; then
+  THINKING_PARTNER_ENABLED="false"
+else
+  THINKING_PARTNER_ENABLED="true"
+fi
 ```
 ${THINKING_PARTNER_ENABLED === 'true' ? '@.rcode/references/plan-thinking-partner.md' : ''}
-If `features.thinking_partner` is disabled: skip this block entirely.
+If `THINKING_PARTNER_ENABLED` is `false`: skip this block entirely. An explicit
+`features.thinking_partner` in config.yaml always wins over the mode-based
+default (set it `false` to silence even in guided mode, or `true` to keep it
+on during autonomous runs if you want that). The check itself is cheap — a
+keyword scan over the checker's existing issues, not a new agent spawn —
+which is why it defaults on for guided/interactive planning: a second-opinion
+sanity check on architectural tradeoffs is exactly the kind of thing "does
+this actually get built right" needs, and it only activates when the checker
+already flagged a tradeoff-shaped issue.
 
 ## 12. Revision Loop (Max 3 Iterations, 1 in autonomous/yolo mode)
 
