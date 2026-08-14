@@ -3454,7 +3454,43 @@ function cmdState(subArgs) {
         // Status precedence for advancement: complete > in_progress > planned.
         // A phase should never be downgraded by ROADMAP re-sync.
         const statusRank = { complete: 2, in_progress: 1, planned: 0 };
-        const incomingStatus = normalizeStatus(phaseStatus);
+        let incomingStatus = normalizeStatus(phaseStatus);
+
+        // Cross-check against VERIFICATION.md before trusting a 'complete' claim
+        // from ROADMAP prose. A phase can be hand-edited to say "Complete" (or
+        // "gaps_found → closed") without ever re-running the verifier — confirmed
+        // live: an agent wrote that exact phrase into ROADMAP.md while the phase's
+        // own VERIFICATION.md frontmatter still said `status: gaps_found`,
+        // bypassing execute.md's uat_gate entirely via a direct file edit. Don't
+        // let a prose claim override what the actual verification artifact says.
+        if (incomingStatus === 'complete') {
+          try {
+            const phasesRootDir = path.join(PLANNING_DIR, 'phases');
+            const phaseDirName = fs.existsSync(phasesRootDir)
+              ? fs.readdirSync(phasesRootDir).find(d => d === phaseNum || d.startsWith(`${phaseNum}-`))
+              : null;
+            if (phaseDirName) {
+              const verFile = fs.readdirSync(path.join(phasesRootDir, phaseDirName))
+                .find(f => /-VERIFICATION\.md$/i.test(f));
+              if (verFile) {
+                const verText = fs.readFileSync(path.join(phasesRootDir, phaseDirName, verFile), 'utf8');
+                const verStatusMatch = verText.match(/^status:\s*(\S+)/m);
+                const verStatus = verStatusMatch ? verStatusMatch[1].trim() : null;
+                if (verStatus && verStatus !== 'passed') {
+                  incomingStatus = 'in_progress';
+                  parsed.unverified_complete_claims = parsed.unverified_complete_claims || [];
+                  parsed.unverified_complete_claims.push({
+                    phase: phaseNum,
+                    roadmap_claim: phaseStatus,
+                    verification_file: verFile,
+                    verification_status: verStatus,
+                  });
+                }
+              }
+            }
+          } catch { /* best-effort cross-check — never fail sync over it */ }
+        }
+
         if (existingIdx >= 0) {
           // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;

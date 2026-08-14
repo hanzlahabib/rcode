@@ -369,6 +369,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `verifier` — `rcode-verifier` agent, verification playbook/rules, VERIFICATION.md flow
 - `discuss-phase` — `/rcode-discuss-phase` workflow and its gray-area/standing checks
 - `ui-phase` — `/rcode-ui-phase` workflow, UI-SPEC.md/WIREFRAMES.md generation, design-library
+- `state-sync` — `state sync --from-disk`, phase-status reconciliation, ROADMAP↔state.json drift
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
