@@ -4707,7 +4707,7 @@ When creating, planning, or modifying a phase, you MUST go through the rcode too
 
 **Why this is enforced**: every direct \`Write\` to \`.planning/phases/**/SPRINT.md\` without registration is a silent state divergence. Future \`/rcode-status\` reports under-count work. \`/rcode-execute\` can't find the plan. \`/rcode-progress\` shows wrong percentages.
 
-If you have a real reason to bypass (e.g. retroactively documenting a phase that already shipped), put \`<!-- rcode-bypass: <one-line reason> -->\` at the top of the file so it's auditable later. The PreToolUse hook will allow the write through.
+If you have a real reason to bypass (e.g. retroactively documenting a phase that already shipped), put \`<!-- rcode-bypass: <one-line reason> -->\` at the top of the file so it's auditable later. **This rule is currently convention, not mechanically enforced** — no hook blocks an unregistered direct write today, so following it is on you (and any agent reading this), not a safety net catching you if you don't.
 
 ---
 
