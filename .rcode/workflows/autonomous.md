@@ -52,30 +52,51 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 ## 0. Prerequisite check (greenfield guard)
 
-Before any phase work, verify the methodology chain has run:
+rcode supports two valid project-initialization paths, and this gate must
+accept either:
+- **Full chain:** `/rcode-create-prd` → `/rcode-new-milestone` → `/rcode-create-epics-and-stories`
+- **Direct roadmap path:** `/rcode-new-project` → `rcode-roadmapper` writes
+  ROADMAP.md directly with phases, no prd.md/epics.md produced — this is a
+  first-class supported path, not an edge case, and autonomous execution
+  only actually needs a ROADMAP.md with real phases in it to do phase work.
+
+Before any phase work, verify at least one path's minimum requirement is met:
 
 ```bash
 HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
-HAS_ROADMAP_MILESTONES=$(grep -qE "^## Milestone\s+M[0-9]+" .planning/ROADMAP.md 2>/dev/null && echo true || echo false)
 HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
+# Milestone marker: accepts heading style ("## Milestone M1"), bold-prose style
+# ("**Milestone:** M1 — ..."), or PROJECT.md's own style ("## Current Milestone: M3 — ...")
+# — roadmapper's actual output uses the bold-prose form, which the old heading-only
+# regex never matched, permanently failing this gate for every project that used
+# the direct roadmap path. Fixed live: confirmed against a real project's ROADMAP.md.
+HAS_ROADMAP_MILESTONES=$(grep -qEi "milestone[:*]*\s*M[0-9]" .planning/ROADMAP.md 2>/dev/null && echo true || echo false)
+# Direct roadmap path's actual minimum: a ROADMAP.md with at least one real phase.
+HAS_ROADMAP_PHASES=$(grep -qE "^##\s*Phase\s+[0-9]|^\|\s*[0-9]+\s*\|" .planning/ROADMAP.md 2>/dev/null && echo true || echo false)
 SKIP_FLAG=$(echo "$ARGUMENTS" | grep -qE "\-\-skip-prerequisites" && echo true || echo false)
+
+FULL_CHAIN_OK=$([ "$HAS_PRD" = "true" ] && [ "$HAS_ROADMAP_MILESTONES" = "true" ] && [ "$HAS_EPICS" = "true" ] && echo true || echo false)
+DIRECT_PATH_OK=$([ "$HAS_ROADMAP_PHASES" = "true" ] && echo true || echo false)
 ```
 
-If `SKIP_FLAG=false` AND any prerequisite is missing, HALT with a clear message:
+If `SKIP_FLAG=false` AND both `FULL_CHAIN_OK` and `DIRECT_PATH_OK` are false, HALT with a clear message:
 
 ```
-⚠ Cannot run autonomous: missing prerequisite — {what}.
+⚠ Cannot run autonomous: no valid project initialization found.
 
-The autonomous flow assumes a project that has already gone through:
-  1. /rcode-create-prd               → produces .planning/prd.md
-  2. /rcode-new-milestone         → produces ROADMAP.md with M1..Mn
-  3. /rcode-create-epics-and-stories → produces .planning/epics.md
-  4. THEN /rcode-autonomous           ← you are here
+The autonomous flow needs either:
+  A) Full chain: /rcode-create-prd → /rcode-new-milestone → /rcode-create-epics-and-stories
+  B) Direct roadmap: /rcode-new-project (produces ROADMAP.md with phases directly)
 
-Suggested first step: /rcode-{first-missing-command}
+Neither was found — no ROADMAP.md with real phases exists, and the full
+chain's artifacts (prd.md, milestone-marked ROADMAP.md, epics.md) are also
+missing.
 
-If you genuinely want to skip these (rare — usually inverted methodology),
-re-invoke with: /rcode-autonomous --skip-prerequisites
+Suggested first step: /rcode-new-project (recommended — simpler, fully
+supported) or /rcode-create-prd if you specifically want the full chain.
+
+If you genuinely want to skip this check, re-invoke with:
+/rcode-autonomous --skip-prerequisites
 ```
 
 If `SKIP_FLAG=true`: print a warning that downstream workflows may produce low-quality output without upstream artifacts, then proceed.
