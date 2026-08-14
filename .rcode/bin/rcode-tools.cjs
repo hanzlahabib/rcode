@@ -3418,9 +3418,20 @@ function cmdState(subArgs) {
       // landed as 'planned' regardless of what the doc said.
       function normalizeStatus(raw) {
         if (!raw) return 'planned';
-        const s = String(raw).toLowerCase().replace(/[✅\s]/g, '');
-        if (['complete','completed','shipped','verified','done'].includes(s)) return 'complete';
-        if (['executing','in_progress','inprogress','active','started'].includes(s)) return 'in_progress';
+        // Match on the LEADING word, not exact string equality — ROADMAP.md
+        // status lines legitimately carry trailing detail beyond the bare
+        // status word (e.g. "Complete (verification: human_needed — live
+        // deploy deferred)"), which an exact-match check silently drops to
+        // 'planned' since the full string never equals 'complete'. A real
+        // "Complete (...)" phase would then look un-synced forever.
+        // Strip trailing detail (anything from the first paren/colon/em-dash
+        // onward — "(verification: ...)", ": some note") before matching, then
+        // collapse whitespace/underscores so "Complete (...)", "In Progress",
+        // and "in_progress" all normalize the same way.
+        const leading = String(raw).toLowerCase().replace(/[✅]/g, '')
+          .split(/[(:—]/)[0].trim().replace(/[\s_]+/g, '');
+        if (['complete','completed','shipped','verified','done'].includes(leading)) return 'complete';
+        if (['executing','inprogress','active','started'].includes(leading)) return 'in_progress';
         return 'planned';
       }
 

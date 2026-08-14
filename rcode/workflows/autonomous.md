@@ -463,13 +463,31 @@ Task(
 )
 ```
 
-Store the agent task_id. The workflow can now start discussing the next phase while this phase executes in the background. Before starting post-execution routing for this phase, wait for the execute agent to complete.
+Store the agent task_id. The workflow can now start discussing the next phase while this phase executes in the background. Before starting post-execution routing for this phase, wait for the execute agent to complete, then run the mandatory reconciliation command below (same as the non-interactive path) before continuing.
 
 **If `INTERACTIVE` is NOT set (default):** Run execute inline as before.
 
 ```
 Skill(skill="rcode-execute", args="${PHASE_NUMBER} --no-transition")
 ```
+
+**Mandatory reconciliation (run this bash command directly, every phase, no exceptions):**
+`execute.md`'s own state-write steps (`phase set-status`/`phase complete`) are
+documented but not mechanically guaranteed — a real unattended multi-phase
+run was observed skipping them, leaving `state.json` stuck at every phase's
+planning-time status while ROADMAP.md correctly showed them complete. Don't
+rely on remembering to do this; run it as its own step, immediately after
+execute returns, before moving to post-execution routing:
+
+```bash
+node ".rcode/bin/rcode-tools.cjs" state sync --from-disk >/dev/null 2>&1 || true
+```
+
+This is idempotent and cheap — it re-derives phase status from ROADMAP.md's
+actual `**Status:**` text (never downgrades an already-advanced status), so
+running it here closes the gap even if execute.md's own inline state-write
+steps were skipped during a long run. Do this for every phase in the loop,
+not just once at the end.
 
 ### 3c.5. Code Review and Fix
 
