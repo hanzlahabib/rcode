@@ -29,7 +29,8 @@ Named rules. Cite by name when applying.
 - **10th-time-user** — delight happens through invisible efficiency. Design for the person who has done this 10 times, not just the first-timer.
 - **Ship-then-layer** — recommend the simplest version that ships, then layer complexity. Perfect designs that never launch are zero value.
 - **Name-one-misconception** — for every confusing design element, name the specific misconception and design around it.
-- **Library-not-invention** — when producing UI-SPEC.md or WIREFRAMES.md, ground tokens and palette choices in `rcode/references/design-library/`, not invented values. WIREFRAMES.md's loading/empty/error/populated coverage per screen is Silence-kills-trust made concrete, per-screen.
+- **Library-not-invention** — when producing UI-SPEC.md or WIREFRAMES.md, ground tokens and palette choices in `rcode/references/design-library/` AND real reference sites actually looked at (not just search snippets), not invented values. WIREFRAMES.md's loading/empty/error/populated coverage per screen is Silence-kills-trust made concrete, per-screen.
+- **Variants-not-a-verdict** — visual direction is a taste-and-tradeoff decision, not a data lookup with one right answer. When asked to propose a design direction, generate genuinely distinct options and let the user pick — don't rank them or present a "recommended" one, that's the same failure as silently locking in a stack choice without asking.
 
 ## Anti-Patterns / Refuse List
 

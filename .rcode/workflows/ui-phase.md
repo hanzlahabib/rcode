@@ -50,7 +50,7 @@ If `flags.existing_ui` or `flags.design_system` provided:
 EXISTING=$(node .rcode/bin/rcode-tools.cjs find-files --type=design-tokens)
 ```
 
-Load existing design system, extract into `EXISTING_DESIGN_SYSTEM_DATA` (a text block passed verbatim into Step 2's prompt):
+Load existing design system, extract into `EXISTING_DESIGN_SYSTEM_DATA` (a text block passed verbatim into Step 2b's prompt):
 - Color palette (hex, variable names)
 - Typography scales (font family, sizes, weights, line heights)
 - Component list (buttons, forms, layouts, modals, etc.)
@@ -60,7 +60,10 @@ If `$EXISTING` is empty or extraction finds nothing usable, treat this the
 same as "no existing system found" and fall through to Step 1b — don't leave
 `EXISTING_DESIGN_SYSTEM_DATA` half-populated.
 
-If an existing design system was found and `EXISTING_DESIGN_SYSTEM_DATA` is populated, skip Step 1b (don't override what's already decided) and go straight to Step 2.
+If an existing design system was found and `EXISTING_DESIGN_SYSTEM_DATA` is
+populated, there's nothing to choose between — skip Step 1b, Step 1c, AND
+Step 2 (variant generation + user confirmation) entirely, and go straight to
+Step 2b using `EXISTING_DESIGN_SYSTEM_DATA` as the chosen direction.
 
 ## Step 1b — Ground the design in the reference library (no existing system found)
 
@@ -73,11 +76,85 @@ first so there's a project category to ground the design in." Otherwise look up:
 2. **Style detail** — take the recommended style name from step 1 and look it up in `styles.csv` for concrete hex values, effects, accessibility rating, and an implementation checklist. Capture as `STYLE_DETAIL`.
 3. **UX rules** — grep `ux-guidelines.csv` for the categories relevant to this project's screens (Navigation, Forms, etc.) for concrete do/don't rules with code examples. Capture as `UX_RULES`.
 
-`CATEGORY_MATCH` + `STYLE_DETAIL` + `UX_RULES` together are what Step 2's
-prompt calls `DESIGN_LOOKUP_RESULT` below — assemble them into one text block
-before spawning the agent.
+`CATEGORY_MATCH` + `STYLE_DETAIL` + `UX_RULES` together are what Step 1c and
+Step 2 below call `DESIGN_LOOKUP_RESULT` — assemble them into one text block.
 
-## Step 2 — Spawn UI Designer
+## Step 1c — Look at real reference sites (skip only if Step 1 found an existing system)
+
+A CSV row is a starting hypothesis, not a substitute for actually looking at
+what real sites in this space look like. A style-data table can't tell you
+that every competitor uses a specific hero-image treatment, or that the
+category's "expected" look has drifted since the data was written. Do this
+before committing to a direction:
+
+1. **Find real reference sites.** WebSearch for the project's actual
+   industry/niche (from PROJECT.md — e.g. "best interior design websites
+   Pakistan", "top mobile repair shop websites", not a generic "SaaS
+   landing page examples" search unrelated to the real domain). Aim for
+   3-5 real, currently-live sites — direct competitors if findable, strong
+   examples in the same category otherwise.
+2. **Actually look at them**, don't just read search-result snippets. If a
+   browser tool is available in this session, navigate to each and take a
+   screenshot. If not, WebFetch each URL and read the rendered content/
+   structure description it returns. Note concretely, per site: layout
+   pattern (hero style, nav placement, content density), color mood, type
+   feel (serif/sans, weight, size), imagery style (photography vs.
+   illustration vs. none), and anything that reads as dated or as a
+   red flag to avoid repeating.
+3. Capture this as `REFERENCE_SITE_FINDINGS` — a short per-site note, not a
+   full audit. This feeds variant generation next, not a standalone report.
+
+If WebSearch/WebFetch/browser tools are genuinely unavailable in this
+session, skip with an explicit note ("Step 1c skipped — no web/browser
+tools available; design-library data only") rather than silently omitting
+real-site grounding — this is a real reduction in design quality and should
+be visible, not silent.
+
+## Step 2 — Generate design variants, get user confirmation (mandatory — do not skip to a single locked-in direction)
+
+Visual design direction is the same class of decision as tech-stack choice:
+foundational, expensive to redo once screens are built against it, and a
+matter of taste as much as data — it must not get silently locked in by an
+agent picking "the" recommended style. Generate 2-3 concrete, genuinely
+distinct variants (not the same direction with a different accent color),
+each grounded in `DESIGN_LOOKUP_RESULT` (Step 1b) and `REFERENCE_SITE_FINDINGS`
+(Step 1c), before writing anything to UI-SPEC.md:
+
+Spawn `rcode-ux-designer` subagent:
+
+```
+Task tool call:
+  subagent_type: "rcode-ux-designer"
+  description: "Generate design variants"
+  prompt: |
+    Ground every variant in {EXISTING_DESIGN_SYSTEM_DATA if Step 1 found one, else DESIGN_LOOKUP_RESULT + REFERENCE_SITE_FINDINGS} —
+    do not invent a palette/style from nothing when reference data or real
+    reference sites were found.
+
+    Propose 2-3 genuinely distinct design variants for this project. For each:
+    - **Name** (short, e.g. "Warm Editorial", "Minimal Trust", "Bold Craft")
+    - **One-paragraph description** — mood, layout approach, what it borrows from
+      the reference sites found (name which one(s)) vs. the design-library data
+    - **Color direction** — 2-3 representative hex values, not a full token system yet
+    - **Typography direction** — font pairing feel (serif/sans, weight)
+    - **Best for / worst for** — one line each, honest tradeoffs
+
+    Do NOT pick a winner or rank them — present as genuine options. Do NOT
+    write UI-SPEC.md yet.
+
+    Return the variants as your response text (not a file write).
+```
+
+Present the variants to the user via AskUserQuestion:
+- **question:** "Which design direction fits this project?"
+- **options:** one per variant (label = variant name, description = the one-paragraph summary), plus the tool's built-in "Other" for a custom direction
+- If the user picks "Other" and describes something different, treat their description as the chosen direction instead of any generated variant.
+
+Only after the user picks does Step 2b below proceed — using the chosen
+variant's color/typography direction as the seed for the full spec, not
+re-deriving from scratch.
+
+## Step 2b — Spawn UI Designer (full spec, chosen direction)
 
 Spawn `rcode-ux-designer` subagent:
 
@@ -86,7 +163,10 @@ Task tool call:
   subagent_type: "rcode-ux-designer"
   description: "Generate UI-SPEC.md and WIREFRAMES.md"
   prompt: |
-    Ground every choice below in {EXISTING_DESIGN_SYSTEM_DATA if Step 1 found one, else DESIGN_LOOKUP_RESULT from Step 1b} —
+    Build out the full spec from {EXISTING_DESIGN_SYSTEM_DATA if Step 1 found
+    one, else the user-chosen variant's full description, color direction,
+    and typography direction from Step 2}.
+    Ground every choice in {EXISTING_DESIGN_SYSTEM_DATA if Step 1 found one, else DESIGN_LOOKUP_RESULT from Step 1b} —
     do not invent a palette/style from nothing when reference data or an existing system exists.
 
     Write UI-SPEC.md with:
@@ -101,7 +181,7 @@ Task tool call:
     Write to: {ui_spec_path}
 ```
 
-## Step 2b — Spawn Wireframes (per-role screen inventory)
+## Step 2c — Spawn Wireframes (per-role screen inventory)
 
 Read REQUIREMENTS.md/PROJECT.md for the project's user roles (if any) and the
 IA decision — `roadmapper-playbook.md`'s Information Architecture step (Workflow
@@ -221,7 +301,9 @@ Run /rcode-ui-phase, then return to /rcode-plan
 
 ## Success Criteria
 
-- UI-SPEC.md created with all 7 sections, design direction grounded in `design-library/` lookup (or an existing design system), not invented
+- Real reference sites looked at (Step 1c), not just design-library data alone — or explicitly noted as skipped with a reason
+- 2-3 genuinely distinct design variants presented and the user explicitly picked one via AskUserQuestion — no direction silently locked in (skipped only when Step 1 found an existing design system, where there's nothing to choose between)
+- UI-SPEC.md created with all 7 sections, design direction grounded in the chosen variant / `design-library/` lookup / real reference sites (or an existing design system), not invented
 - Color tokens documented with contrast ratios
 - Component inventory complete with variants
 - Accessibility checklist included
@@ -233,7 +315,7 @@ Run /rcode-ui-phase, then return to /rcode-plan
 - If subagent fails: provide template UI-SPEC.md
 - If frontend detection fails: skip suggestion
 - If config.yaml missing ui_safety_gate: default to true (suggest)
-- If no IA decision exists in ROADMAP.md or IA.md yet: WIREFRAMES.md cannot be produced meaningfully — stop Step 2b and say so rather than writing a screen list with no basis
+- If no IA decision exists in ROADMAP.md or IA.md yet: WIREFRAMES.md cannot be produced meaningfully — stop Step 2c and say so rather than writing a screen list with no basis
 
 ## Next Up
 
