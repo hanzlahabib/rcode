@@ -310,6 +310,28 @@ Display research complete banner and key findings:
 Files: `.planning/research/`
 ```
 
+**Mandatory stack-choice confirmation (before proceeding to roadmap):**
+Tech stack is the single most foundational, hardest-to-reverse decision in
+the project — every phase gets built on top of it, and un-picking it later
+means rework, not a config change. Do not let it get silently locked in.
+
+Check `.planning/research/STACK.md` for language indicating this was a
+judgment call, not a forced single-option pick — phrases like "judgment
+call," "flagging explicitly," a comparison table between 2+ named
+platforms/frameworks, or an explicit confidence caveat on the top-level
+choice. (A stack choice with genuinely no alternative — e.g. "must integrate
+with the client's existing Salesforce" — doesn't need this; skip only in
+that case, and say why.)
+
+If it's a judgment call, use AskUserQuestion before continuing:
+- **question:** "Research recommends {stack} over {alternative(s)} for {one-line reason}. Confirm, or pick differently?"
+- **options:** "Confirm {stack}" / "Use {alternative}" / "Something else — I'll specify"
+
+If the user picks differently, note the override as a decision and don't
+silently keep researching the original recommendation — the chosen stack
+from here on is whatever the user picked, not STACK.md's original
+recommendation, and downstream phases/roadmap should reflect that.
+
 **If "Skip research":** Continue to Step 7.
 
 
