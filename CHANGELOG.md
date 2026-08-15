@@ -3,6 +3,72 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.12.0 (2026-08-15) — Foundational decisions require confirmation, real-world validated
+
+Validated by running the fixed pipeline unattended against three real
+projects (small/medium/big) from an existing codebase — found and fixed
+several more gaps live, including two "silently locked in a foundational
+decision" bugs matching this release's theme.
+
+### Features
+- **PM/architect/QA team wired into PRD → roadmap → plan by default.**
+  `create-prd`/`create-epics-and-stories` ground their role-play in
+  `rcode-hussain-pm`'s actual calibrated judgment instead of a generic "PM"
+  framing (spawning a subagent would break their live, halt-and-wait
+  interactivity). `new-project-roadmap`/`new-milestone` add a one-shot team
+  review pass (`rcode-waleed` feasibility check + `rcode-fatima` risk check)
+  before presenting a roadmap for approval, skipped in auto/yolo mode.
+  `plan.md`'s architect-consult check now defaults on in guided mode.
+- **Tech-stack and visual-design choices now require explicit confirmation**
+  before being built on. Found live: a project's stack (WordPress) and
+  design direction both got picked by research/design agents with real,
+  well-reasoned justification — and both were self-flagged internally as
+  "judgment calls" — then silently locked in and built on top of for
+  multiple phases without the user ever seeing the choice. `new-project-
+  research.md` now requires an AskUserQuestion confirmation whenever
+  STACK.md signals a judgment call. `/rcode-ui-phase` now looks at real
+  reference sites (WebSearch + screenshot/WebFetch) instead of a data-table
+  lookup alone, generates 2-3 genuinely distinct design variants, and
+  presents them for the user to pick — never ranks or recommends one.
+- **Source-of-truth grounding.** New standing rule: when a source document
+  (spreadsheet, transcript, spec) defines domain terminology/data model,
+  it must be read in full and used verbatim — not approximated from "what
+  this kind of system usually looks like." Closes a real incident where a
+  competency-tracker's schema shipped invented category/level names instead
+  of the ones in the actual source Excel. Wired into discuss-phase,
+  roadmapper, planner, sprint-checker, project-researcher. Sprint-checker's
+  Dimension 12 (Evidence Grounding) — referenced by name in two places but
+  never fully written out — now covers both codebase-evidence and
+  source-document-evidence checks.
+
+### Fixes
+- `state sync --from-disk`'s `normalizeStatus()` required an exact string
+  match, so a status line with legitimate trailing detail ("Complete
+  (verification: human_needed — ...)") silently normalized to "planned" —
+  found live when a real 5-phase autonomous run left `state.json` stuck at
+  every phase's planning-time status despite ROADMAP.md correctly showing
+  them complete. Fixed to match on the leading status word.
+- `state sync` now cross-checks a ROADMAP "complete" claim against the
+  phase's actual `VERIFICATION.md` frontmatter — found live: an agent had
+  hand-written "gaps_found → closed" directly into ROADMAP.md, bypassing
+  `execute.md`'s own verification gate. A prose claim can no longer
+  override what the verification artifact actually says.
+- `/rcode-autonomous`'s greenfield prerequisite gate required a `##
+  Milestone M1` heading, but the roadmapper's real output uses bold-prose
+  style (`**Milestone:** M1 — ...`) — the gate could never pass for any
+  project initialized via the standard `/rcode-new-project` path. Now
+  accepts either style, plus a "ROADMAP.md has real phases" fallback.
+- `phase complete` (the completion path every workflow actually calls) was
+  missing a stale-earlier-phase hygiene warning that only its unused twin
+  `state complete-phase` had — ported over.
+- Corrected a false claim in `rcode-tools.cjs`'s CLAUDE.md/AGENTS.md
+  template text that a PreToolUse hook enforces the "#475 phase workflow"
+  rule and honors `<!-- rcode-bypass -->` — no such hook exists; it's
+  convention, not mechanical enforcement.
+
+Tests: 611/612 (1 pre-existing unrelated scope-parity failure).
+
+---
 ## v4.11.0 (2026-08-13) — Verification catches "built but unreachable" UI, frontend planning methodology
 
 ### Features
