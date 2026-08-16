@@ -90,6 +90,12 @@ Enabled guardrails:
   • session-start: Greets the session with one-line phase status and suggested next command
 
 To disable, remove the hooks section from .claude/settings.json or edit .rcode/templates/settings-hooks.json and re-run.
+
+Note: .rcode/bin/ is gitignored by design, so a `git worktree add` checkout
+won't have it — each hook command resolves this automatically via
+`git rev-parse --git-common-dir` (finds the main checkout's .rcode/bin/ and
+runs from there), falling back to a silent no-op if genuinely not found
+anywhere. No action needed in worktrees; this is handled for you.
 ```
 
 ## Success Criteria
