@@ -3,6 +3,31 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.12.1 (2026-08-16) — Hooks no longer crash in git worktrees
+
+### Fixes
+- **Hooks crashed on every tool call inside a git worktree** — a real,
+  live-reported regression from v4.12.0's "hooks on by default" change.
+  `.rcode/bin/` is gitignored by rcode's own generated `.gitignore`, so
+  `git worktree add` never brings it along, but every hook command in
+  `settings-hooks.json` was a bare relative path
+  (`node .rcode/bin/rcode-hooks.cjs <sub>`) with no fallback — `Cannot find
+  module` on every single tool call. This hit a real, encouraged workflow:
+  rcode's own `herdr-orchestration` skill recommends one worktree per agent.
+  Every hook command now resolves the real `.rcode/bin/rcode-hooks.cjs` via
+  `git rev-parse --git-common-dir` (finds the main checkout's copy, shared
+  across all its worktrees) when the relative path doesn't exist, so hooks
+  — including the safety-relevant `bash-guard` — keep actually working in a
+  worktree instead of crashing or silently going dark. Falls back to a
+  silent `exit 0` only if truly not found anywhere.
+  **Already-installed projects**: this fixes the template for new/re-installs
+  — an existing `.claude/settings.json` has the old broken command text
+  baked in and needs `/rcode-enable-hooks` re-run (or a fresh install) to
+  pick up the fix.
+
+Tests: 611/612 (1 pre-existing unrelated scope-parity failure).
+
+---
 ## v4.12.0 (2026-08-15) — Foundational decisions require confirmation, real-world validated
 
 Validated by running the fixed pipeline unattended against three real
