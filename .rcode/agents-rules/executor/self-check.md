@@ -35,6 +35,12 @@ Before finalizing SUMMARY.md, verify plan execution was complete and correct.
 - [ ] All imports resolve (no broken paths)
 - [ ] All tests passing (if tests were modified)
 
+### Correctness Hazards (if diff touched async/state/mutation code)
+- [ ] Read `.rcode/agents-rules/executor/correctness-hazard-scan.md` and ran the scan, or confirmed N/A (no async/shared-state/library-async surface touched)
+- [ ] No read-modify-write against shared state without a transaction/atomic op/lock
+- [ ] No side effects inside React state updater/reducer functions
+- [ ] No reliance on an async library's per-call callback firing without checking its actual concurrent-call contract
+
 ### Success Criteria
 - [ ] Original plan `<success_criteria>` met
 - [ ] All `<verify>` checks pass
@@ -191,6 +197,7 @@ git stash
 - [ ] Task names in SUMMARY don't match plan
 - [ ] Deviations list is incomplete
 - [ ] You're unsure whether code works
+- [ ] Diff touched async/shared-state/library-async code and the correctness hazard scan wasn't run
 
 **If any flag raised:**
 1. Don't create SUMMARY yet
@@ -217,6 +224,7 @@ Verification performed:
 - [ ] Success criteria verified
 - [ ] Stubs documented or resolved
 - [ ] Deviations documented
+- [ ] Correctness hazard scan run (or N/A — no async/shared-state/library-async surface touched)
 
 **Issues encountered and resolved:**
 [List any red flags caught and how you fixed them]

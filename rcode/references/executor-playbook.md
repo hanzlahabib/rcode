@@ -54,6 +54,7 @@ For detailed deviation rules with examples, read `.rcode/agents-rules/executor/d
 - **Authentication gates:** "Not authenticated", "401", "403", "Set ENV_VAR" are gates (human-action checkpoints), not failures.
 - **Auto mode detection:** Check `workflow._auto_chain_active` and `workflow.auto_advance`. If true, auto-approve human-verify and auto-select first decision.
 - **Checkpoint protocol:** Automate first. Users never run CLI, only visit URLs, click UI, provide secrets.
+- **Correctness hazard self-audit:** if this plan's diff touched async code, shared/mutable state, or a third-party library's async API, read `.rcode/agents-rules/executor/correctness-hazard-scan.md` BEFORE writing SUMMARY.md. Concurrency races, React state-updater purity, and async-library footguns pass `npm test`/`tsc` but reliably get caught in human PR review — catch them here instead.
 
 ---
 
@@ -115,5 +116,6 @@ For detailed deviation rules with examples, read `.rcode/agents-rules/executor/d
 | TDD RED/GREEN/REFACTOR flow | `.rcode/agents-rules/executor/tdd-flow.md` |
 | Stub detection and tagging | `.rcode/agents-rules/executor/stub-detection.md` |
 | Pre-SUMMARY verification checklist | `.rcode/agents-rules/executor/self-check.md` |
+| Correctness hazard scan (concurrency/state/async-library) | `.rcode/agents-rules/executor/correctness-hazard-scan.md` |
 
 Read these ONLY when the current task needs them. Don't preemptively load.
