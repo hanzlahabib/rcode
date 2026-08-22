@@ -104,7 +104,20 @@ If `PRUNE=false`, stop here.
 
 Delete SAFE entries only. Never touch STALE or UNMERGED.
 
-For each SAFE branch:
+**Confirm with the user before deleting anything.** Print the SAFE list with its
+merge evidence and ask for an explicit go-ahead. `--prune` is a request to prune,
+not standing authorization — a merged branch is still the only record that a piece
+of work happened, and deleting it silently is unrecoverable.
+
+If the user declines (or does not answer), do NOT delete. Instead flag each SAFE
+branch so a future audit can tell "already merged, safe to ignore" from "needs
+review", and remove only the worktree:
+
+```bash
+git tag merged/<branch> '<branch>' 2>/dev/null && echo "  ✓ flagged: merged/<branch>"
+```
+
+Only after an explicit yes, for each SAFE branch:
 
 ```bash
 # Remove the worktree if it still exists
@@ -154,6 +167,7 @@ If any UNMERGED branches remain, print:
 - [ ] All `worktree-agent-*` branches and worktrees found and reported
 - [ ] Each classified as SAFE / STALE / UNMERGED based on actual merge status
 - [ ] `--prune` deletes only SAFE entries, never UNMERGED
+- [ ] No branch deleted without explicit user confirmation; declined branches get a `merged/*` tag instead
 - [ ] Post-prune confirmation scan verifies cleanup succeeded
 - [ ] Non-executor worktrees (feature branches, manual worktrees) are never touched
 

@@ -61,12 +61,24 @@ Once that question is answered yes, the orchestrator may push the integration br
 **At Phase 3 only**: ask the user how to land the campaign. Options: PR, local merge to master, squash, or leave. Push master ONLY if they say "yes, merge and push to master" — explicit, never inferred. Never rely on `git push 2>/dev/null || true` patterns (they swallow auth failures and diverge silently).
 
 ### Worktree cleanup
-After a branch is merged AND pushed:
+After a branch is merged, confirm the merge actually landed
+(`git merge-base --is-ancestor campaign-<area> HEAD`), then remove the worktree and
+FLAG the branch as merged — do NOT delete it:
 ```bash
+git merge-base --is-ancestor campaign-<area> HEAD || echo "NOT merged — stop"
 git worktree remove --force ../sm-worktrees/camp-<area>
-git branch -d campaign-<area>
+git tag merged/campaign-<area> campaign-<area>
 ```
-Frees space and keeps `git worktree list` readable.
+Frees worktree disk space and leaves a permanent, visible marker that this branch's
+content already landed — so a future cleanup pass can tell "already merged, safe to
+ignore" from "still needs review" without re-diffing every branch by hand. Removing
+the worktree while leaving a bare unmarked branch ref is how 126 campaign branches
+accumulated unaccounted-for over one summer (Aug 2026 cleanup audit).
+
+**Never delete a branch** (`git branch -D`, `git push origin --delete`) without asking
+the user first — even one confirmed merged. Tagging is additive and reversible, so it
+needs no permission; deletion is a separate explicit ask: present the list with your
+evidence (merge-base result or identical-content diff) and wait for a yes.
 
 ## Examples
 
