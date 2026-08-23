@@ -30,7 +30,9 @@ PROTOCOL
    - new /api routes need server/middleware/routeSecurity.js MANIFEST entries
 5. Keep TSC at baseline. Run `pnpm tsc --noEmit` before final commit. If you introduce a NEW error, fix it before committing.
 6. STAY on branch <BRANCH_NAME>. Do NOT push. Do NOT merge to master. Do NOT merge to <INTEGRATION_BRANCH>. Do NOT touch other audit areas.
-7. End with a short numbered summary listing each commit (hash + one-line message) and what audit item it addressed.
+7. Do NOT run any `gh` write command: no `gh pr create` / `pr comment` / `pr edit` / `pr merge` / `issue create` / `issue comment`, and no `gh api` with a non-GET method. Reading (`gh pr view`, `gh issue view`) is fine. Posting reaches other humans instantly and does not require a push, so "do not push" does not cover it.
+8. Keep scratch notes (REPLY.md, STATUS.md, NOTES.md) in your scratchpad dir. Never commit them to the branch, they end up in the PR diff.
+9. End with a short numbered summary listing each commit (hash + one-line message) and what audit item it addressed.
 
 DO NOT
 - Touch master at all

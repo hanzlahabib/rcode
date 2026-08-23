@@ -60,6 +60,13 @@ existing pending P1/P2 items ──┘                    ▲
    - Worktree path + branch + parent = `campaign-integration`
    - Specific backlog item + audit doc reference
    - "Do not push. Do not merge. Do not touch master or the integration branch directly."
+   - "Do not run ANY `gh` write command: no `gh pr create`, `gh pr comment`, `gh pr edit`,
+     `gh pr merge`, `gh issue create`, `gh issue comment`, or `gh api` with a non-GET method."
+     Forbidding pushes alone is not enough — an agent can post a comment or open a PR without
+     ever pushing, and that reaches other humans instantly. The orchestrator posts to GitHub,
+     after the user approves the text (see `@rcode/references/github-comment-style.md`).
+   - "Keep scratch notes (REPLY.md, STATUS.md, NOTES.md) in the scratchpad dir, never committed
+     to the branch — they end up in the PR diff."
 5. **End the turn with ScheduleWakeup. Always.**
 
 ### Phase 2 — Heartbeat loop (every 10-15 min)

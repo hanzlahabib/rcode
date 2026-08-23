@@ -47,6 +47,8 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 | `karpathy-guidelines-full.md` | rcode-codebase-mapper, rcode-reviewer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-nyquist-auditor, rcode-planner, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-verifier |
 | `response-style.md` | rcode-advisor-researcher, rcode-ahmed, rcode-assumptions-analyzer, rcode-codebase-mapper, rcode-fixer, rcode-reviewer, rcode-debugger, rcode-deviation-analyzer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-haitham, rcode-integration-checker, rcode-khalid, rcode-layla, rcode-nasser, rcode-noor, rcode-nyquist-auditor, rcode-omar, rcode-phase-researcher, rcode-planner, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-ui-auditor, rcode-ux-designer, rcode-verifier, rcode-yousef, rcode-zahra, rcode-zayd |
 
+| `github-comment-style.md` | ship, pr-branch, export-to-github, review-adversarial, rcode-herdr-orchestration, and any agent dispatched into a repo with a GitHub remote |
+
 ---
 
 ## Workflow References
