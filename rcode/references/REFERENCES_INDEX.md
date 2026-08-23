@@ -41,7 +41,7 @@ These files were extracted from heavy agents (>100L) to reduce context budget pe
 
 | File | Loaded by |
 |------|-----------|
-| `agent-shared-rules.md` | rcode-fatima, rcode-hanzla, rcode-hussain-pm, rcode-mariam, rcode-sadiq, rcode-waleed |
+| `agent-shared-rules.md` | rcode-fatima, rcode-hanzla, rcode-hussain-pm, rcode-mariam, rcode-sadiq, rcode-waleed; Calibration discipline section also referenced by rcode-verifier and rcode-reviewer |
 | `codebase-grounding.md` | rcode-ahmed, rcode-fatima, rcode-haitham, rcode-hanzla, rcode-hussain-pm, rcode-khalid, rcode-layla, rcode-mariam, rcode-nasser, rcode-noor, rcode-omar, rcode-sadiq, rcode-waleed, rcode-yousef, rcode-zahra, rcode-zayd |
 | `karpathy-guidelines.md` | rcode-assumptions-analyzer, rcode-fixer, rcode-debugger, rcode-deviation-analyzer, rcode-fatima, rcode-haitham, rcode-hanzla, rcode-hussain-pm, rcode-integration-checker, rcode-khalid, rcode-noor, rcode-omar, rcode-phase-researcher, rcode-profiler, rcode-project-researcher, rcode-remediation-planner, rcode-research-synthesizer, rcode-roadmapper, rcode-ui-auditor, rcode-ux-designer, rcode-waleed, rcode-yousef, rcode-zayd |
 | `karpathy-guidelines-full.md` | rcode-codebase-mapper, rcode-reviewer, rcode-docs-auditor, rcode-edge-case-hunter, rcode-executor, rcode-nyquist-auditor, rcode-planner, rcode-security-adversary, rcode-security-auditor, rcode-sprint-checker, rcode-verifier |

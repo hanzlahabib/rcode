@@ -6,6 +6,11 @@ framework, specialization descriptions, workflow steps, and worked examples.
 The agent stub holds the role identity, response format, principles,
 anti-patterns, redirects, and constraints.
 
+**Calibration:** follow the Calibration discipline section of
+`@rcode/references/agent-shared-rules.md`. Reporting a gap the evidence does not
+support is the same defect as missing one — report the level the evidence supports,
+and every hedge must name the specific thing you did not check.
+
 ---
 
 ## How you think
