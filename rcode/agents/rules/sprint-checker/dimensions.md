@@ -330,6 +330,20 @@ For each `<task>` in each plan:
 - If `<automated>` is absent with no Wave 0 dependency → **BLOCKING FAIL**
 - If `<automated>` says "MISSING", a Wave 0 task must reference the same test file path → **BLOCKING FAIL** if link broken
 
+### Check 8a2 — Always-Green Assertions
+
+Scan every `<automated>` block for commands that can never fail:
+
+```bash
+grep -nE 'grep +-[a-zA-Z]*v[a-zA-Z]* ' "${PHASE_DIR}"/*-SPRINT.md
+```
+
+- Any `grep -qv` / `grep -vq` used as an "X must not appear" check → **BLOCKING FAIL**.
+  `-v` inverts per-line matching, so it exits 0 whenever ANY line fails to match — it
+  passes on almost every file, including one that DOES contain the forbidden pattern.
+  Required form: `! grep -q PATTERN FILE`.
+- `test ! -f` is fine; `! test -f` is fine; a bare `test -f` used to assert absence → **BLOCKING FAIL**.
+
 ### Check 8b — Feedback Latency Assessment
 
 For each `<automated>` command:

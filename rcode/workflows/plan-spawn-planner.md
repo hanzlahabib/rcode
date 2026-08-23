@@ -266,6 +266,11 @@ Every task MUST include these fields — they are NOT optional:
 4. **`<verify>`** — Shell commands that PROVE the `<done>` criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
    - `<automated>` commands must exit 0 on success, non-zero on failure
    - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
+   - **Absence checks use `! grep -q PATTERN FILE`, never `grep -qv`.** `-v` inverts per-line
+     matching, so `grep -qv PATTERN FILE` exits 0 as soon as ANY line fails to match — i.e. it
+     passes on virtually every file, including one that contains the forbidden pattern. This is a
+     silently-always-green assertion, the worst possible verify command. Same for "file must not
+     exist": `! test -f path`.
    - Keep commands short and composable — one check per line
    - If test file doesn't exist yet (TDD tasks), write `<automated>MISSING</automated>` and add a Wave 0 task to create the test
    - Example structure:
