@@ -104,6 +104,13 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     return String(p?.number ?? p?.id ?? p?.name ?? '').trim();
   }
 
+  // Phase-number normalizer. Disk dirs are historically zero-padded
+  // ("03-evidence-ledger") while ROADMAP tables and state.json use bare
+  // integers ("3"), so every diskByNum lookup MUST go through this or the
+  // phase silently reports "disk state unavailable" forever — no amount of
+  // `state sync --from-disk` fixes it, because sync is not what's broken.
+  const normNum = (k) => String(k ?? '').trim().replace(/^0+(\d)/, '$1');
+
   function walkPhaseDirs() {
     if (!fs.existsSync(phasesDir)) return {};
     const byNum = {};
@@ -113,7 +120,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
       // Phase 14 / #476 — \d+ supports high-N phase dirs (1000+).
       const numMatch = entry.match(/^(\d+(?:\.\d+)?)/);
       if (!numMatch) continue;
-      const num = numMatch[1];
+      const num = normNum(numMatch[1]);
       const files = fs.readdirSync(full);
       byNum[num] = {
         path: full,
@@ -159,7 +166,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     // Undercount: phases that exist on disk but not in state.
     // Accept any of `number`, `id`, or `name` as the phase identifier — the codebase historically writes different fields.
     // Also normalize "07" / "7" / 7 to a comparable form.
-    const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
+    const norm = normNum;
     const statePhaseNums = new Set(statePhases.map(p => norm(phaseKey(p))));
     const diskPhaseNums = Object.keys(diskByNum);
     const missingFromState = diskPhaseNums.filter(n => !statePhaseNums.has(norm(n)));
@@ -188,7 +195,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     for (const p of roadmapPhases) if (claimedComplete(p)) completeKeys.add(norm(phaseKey(p)));
     for (const p of statePhases) if (claimedComplete(p)) completeKeys.add(norm(phaseKey(p)));
     for (const k of completeKeys) {
-      const disk = diskByNum[k] || diskByNum[k.padStart(2, '0')];
+      const disk = diskByNum[normNum(k)];
       // Only flag when the phase dir EXISTS — purely-state-only entries are a
       // separate problem (drift/undercount above). Here we want claim-vs-files.
       if (!disk) continue;
@@ -224,7 +231,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
       });
       for (const p of inProgressPhases) {
         const key = norm(phaseKey(p));
-        const disk = diskByNum[key] || diskByNum[key.padStart(2, '0')];
+        const disk = diskByNum[normNum(key)];
         if (!disk) continue;
         const dirName = disk.dirName;
         const gitArgs = ['log', '--oneline', '--since=7 days ago', '--', `.planning/phases/${dirName}/`];
@@ -265,7 +272,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     };
     const pendingExec = statePhases.filter(p => {
       if (isPhaseDone(p)) return false;
-      const disk = diskByNum[phaseKey(p)];
+      const disk = diskByNum[normNum(phaseKey(p))];
       return disk && disk.plan_count > disk.summary_count;
     }).slice(0, 3);
     for (const p of pendingExec) {
@@ -285,7 +292,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     const inProgressNoPlan = statePhases
       .filter(p => (p.status === 'in_progress' || p.status === 'in-progress'))
       .filter(p => {
-        const disk = diskByNum[phaseKey(p)];
+        const disk = diskByNum[normNum(phaseKey(p))];
         return !disk || disk.plan_count === 0;
       })
       .slice(0, 2);
@@ -299,7 +306,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     if (allDone) {
       // Count unverified phases (complete but no VERIFICATION.md on disk)
       const unverifiedCount = statePhases.filter(p => {
-        const disk = diskByNum[phaseKey(p)];
+        const disk = diskByNum[normNum(phaseKey(p))];
         return (p.status === 'complete' || p.completed) && disk && !disk.has_verification;
       }).length;
       const hasDrift = (insights || []).some(i => i.kind === 'roadmap-drift' || (i.message && i.message.includes('ROADMAP')));
@@ -339,12 +346,11 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
    */
   function computeWeightedProgress(stPhases, diskMap) {
     if (!stPhases.length) return { weighted: 0, pct: 0 };
-    const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
     let sum = 0;
     for (const p of stPhases) {
-      const k = norm(phaseKey(p));
+      const k = normNum(phaseKey(p));
       if (p.status === 'complete' || p.completed) { sum += 1; continue; }
-      const disk = diskMap[k] || diskMap[phaseKey(p)];
+      const disk = diskMap[k];
       if (!disk) continue;
       if (disk.summary_count > 0)       { sum += 1;    continue; }
       if (disk.has_verification)         { sum += 0.85; continue; }
@@ -410,7 +416,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
     phases: (() => {
       // Prefer ROADMAP-parsed phases when available; fall back to state.phases
       // when the roadmap doesn't use a parseable format. Normalize "07" / "7" / 7.
-      const norm = (k) => String(k ?? '').replace(/^0+(\d)/, '$1');
+      const norm = normNum;
       const source = roadmapPhases.length > 0 ? roadmapPhases : statePhases.map(p => ({
         number: phaseKey(p),
         name: p.name || '',
@@ -424,7 +430,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
           ...p,
           number: k,
           status: p.status || (sp && sp.status) || null,
-          disk: diskByNum[k] || null,
+          disk: diskByNum[normNum(k)] || null,
           in_state: !!sp,
         };
       });

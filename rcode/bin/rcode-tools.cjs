@@ -3435,6 +3435,23 @@ function cmdState(subArgs) {
         return 'planned';
       }
 
+      // Phase dirs are historically zero-padded ("03-evidence-ledger") while
+      // ROADMAP tables and state.json use bare integers ("3"). Match on the
+      // normalized number or every disk cross-check silently no-ops.
+      const normPhaseNum = (k) => String(k ?? '').trim().replace(/^0+(\d)/, '$1');
+      const findPhaseDirFiles = (phaseNum) => {
+        const phasesRootDir = path.join(PLANNING_DIR, 'phases');
+        if (!fs.existsSync(phasesRootDir)) return null;
+        const want = normPhaseNum(phaseNum);
+        const dirName = fs.readdirSync(phasesRootDir).find(d => {
+          const m = d.match(/^(\d+(?:\.\d+)?)(?:-|$)/);
+          return m && normPhaseNum(m[1]) === want;
+        });
+        if (!dirName) return null;
+        const full = path.join(phasesRootDir, dirName);
+        return { dirName, path: full, files: fs.readdirSync(full) };
+      };
+
       const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
@@ -3456,6 +3473,33 @@ function cmdState(subArgs) {
         const statusRank = { complete: 2, in_progress: 1, planned: 0 };
         let incomingStatus = normalizeStatus(phaseStatus);
 
+        // --from-disk means FROM DISK. The ROADMAP status column is only one
+        // signal, and in several roadmap shapes column 4 isn't a status column
+        // at all (e.g. a "Blocking?" column), so ROADMAP-only sync leaves every
+        // shipped phase sitting at `planned` forever and no amount of re-running
+        // sync fixes it. Advance from the artifacts that actually exist on disk.
+        // Status never downgrades (statusRank guard below), so this can only
+        // correct an under-reported phase, never overwrite a truer one.
+        try {
+          const dirInfo = findPhaseDirFiles(phaseNum);
+          if (dirInfo) {
+            const verFile = dirInfo.files.find(f => /-?VERIFICATION\.md$/i.test(f));
+            const verPassed = verFile && /^status:\s*passed/mi.test(
+              fs.readFileSync(path.join(dirInfo.path, verFile), 'utf8')
+            );
+            const hasSummary = dirInfo.files.some(f => /SUMMARY\.md$/i.test(f));
+            const hasSprint = dirInfo.files.some(f => /-SPRINT\.md$/i.test(f));
+            let diskStatus = null;
+            if (verPassed && hasSummary) diskStatus = 'complete';
+            else if (hasSummary || hasSprint) diskStatus = 'in_progress';
+            if (diskStatus && (statusRank[diskStatus] ?? 0) > (statusRank[incomingStatus] ?? 0)) {
+              incomingStatus = diskStatus;
+              parsed.disk_derived_status = parsed.disk_derived_status || [];
+              parsed.disk_derived_status.push({ phase: phaseNum, status: diskStatus });
+            }
+          }
+        } catch { /* best-effort — never fail sync over disk inspection */ }
+
         // Cross-check against VERIFICATION.md before trusting a 'complete' claim
         // from ROADMAP prose. A phase can be hand-edited to say "Complete" (or
         // "gaps_found → closed") without ever re-running the verifier — confirmed
@@ -3466,9 +3510,7 @@ function cmdState(subArgs) {
         if (incomingStatus === 'complete') {
           try {
             const phasesRootDir = path.join(PLANNING_DIR, 'phases');
-            const phaseDirName = fs.existsSync(phasesRootDir)
-              ? fs.readdirSync(phasesRootDir).find(d => d === phaseNum || d.startsWith(`${phaseNum}-`))
-              : null;
+            const phaseDirName = (findPhaseDirFiles(phaseNum) || {}).dirName || null;
             if (phaseDirName) {
               const verFile = fs.readdirSync(path.join(phasesRootDir, phaseDirName))
                 .find(f => /-VERIFICATION\.md$/i.test(f));
