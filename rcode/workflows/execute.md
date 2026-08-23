@@ -853,12 +853,17 @@ COMPLETION=$(node ".rcode/bin/rcode-tools.cjs" phase complete "${PHASE_NUMBER}")
 Record execution telemetry (plan count + latest commit hash):
 ```bash
 EXEC_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "")
-node ".rcode/bin/rcode-tools.cjs" state record-execution \
+REC=$(node ".rcode/bin/rcode-tools.cjs" state record-execution \
   --plan "${PHASE_NUMBER}" \
   --tasks "${PLAN_COUNT}" \
-  --hash "${EXEC_HASH}" \
-  2>/dev/null || true
+  --hash "${EXEC_HASH}" 2>&1) || echo "WARN: record-execution failed: $REC"
 ```
+
+**Do not swallow this call's output.** It previously ended in
+`2>/dev/null || true`, which is how a project reached 35 executed sprints with
+`executions: 0` in state.json — the ledger write was failing (or never firing)
+and nothing said so. If `REC` is empty or contains an error, report it in the
+execution summary rather than continuing silently.
 
 The CLI handles:
 - Marking phase checkbox `[x]` with completion date

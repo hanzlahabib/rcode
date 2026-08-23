@@ -3490,7 +3490,11 @@ function cmdState(subArgs) {
             const hasSummary = dirInfo.files.some(f => /SUMMARY\.md$/i.test(f));
             const hasSprint = dirInfo.files.some(f => /-SPRINT\.md$/i.test(f));
             let diskStatus = null;
-            if (verPassed && hasSummary) diskStatus = 'complete';
+            // A passed VERIFICATION.md is the strongest completion artifact
+            // there is — do NOT also require a SUMMARY.md. Summaries stop
+            // being written partway through many real projects, and gating on
+            // them leaves verified phases stuck at in_progress forever.
+            if (verPassed) diskStatus = 'complete';
             else if (hasSummary || hasSprint) diskStatus = 'in_progress';
             if (diskStatus && (statusRank[diskStatus] ?? 0) > (statusRank[incomingStatus] ?? 0)) {
               incomingStatus = diskStatus;

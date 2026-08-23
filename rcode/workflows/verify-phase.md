@@ -380,6 +380,28 @@ Fill template sections: frontmatter (phase/timestamp/status/score), goal achieve
 See .rcode/templates/verification-report.md for complete template.
 </step>
 
+<step name="write_back_state">
+**MANDATORY when status is `passed`. Verification is the terminal step of the
+plan → execute → verify loop, and a terminal step with no write-back leaves
+state.json permanently stale.** A phase can be verified green on disk while
+state.json still says `planned` — and because `state sync --from-disk` only
+advances status, nothing downstream ever corrects it. `/rcode-status` then
+reports 1/13 when the real number is 9/13.
+
+```bash
+if [ "$STATUS" = "passed" ]; then
+  node ".rcode/bin/rcode-tools.cjs" phase complete "${PHASE_NUMBER}" 2>&1
+fi
+```
+
+Check the result. If it returns `ok: false` or a non-zero exit, say so in the
+report to the orchestrator — do NOT report the phase as verified-and-recorded
+when only the file was written. If the phase is not yet in `state.phases`, run
+`node ".rcode/bin/rcode-tools.cjs" state sync --from-disk` first, then retry.
+
+Do not run this for `gaps_found` or `human_needed` — those are not complete.
+</step>
+
 <step name="return_to_orchestrator">
 Return status (`passed` | `gaps_found` | `human_needed`), score (N/M must-haves), report path.
 
@@ -405,6 +427,7 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] Deferred items filtered against later milestone phases (if gaps found)
 - [ ] Fix plans generated (if gaps_found after filtering)
 - [ ] VERIFICATION.md created with complete report
+- [ ] Phase marked complete in state.json via `phase complete` when status is `passed` (write-back confirmed, not assumed)
 - [ ] Results returned to orchestrator
 </success_criteria>
 
