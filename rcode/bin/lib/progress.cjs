@@ -140,7 +140,7 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
   function enforceStrictGate(insightsList) {
     if (!strictMode) return;
     const blocking = (insightsList || []).filter(i =>
-      i && (i.kind === 'drift' || i.kind === 'undercount') && i.severity !== 'info'
+      i && (i.kind === 'drift' || i.kind === 'undercount' || i.kind === 'stale-state') && i.severity !== 'info'
     );
     if (blocking.length === 0) return;
     process.stderr.write('✖ State drift detected — state.json is out of sync with disk.\n');
@@ -175,6 +175,28 @@ function cmdProgress(args, { PROJECT_ROOT, RCODE_DIR, PLANNING_DIR }) {
         kind: 'undercount',
         severity: 'warn',
         message: `${missingFromState.length} phase dir(s) on disk not registered in state.json: ${missingFromState.slice(0, 5).join(', ')}`,
+      });
+    }
+
+    // Stale-state: the INVERSE of phantom-complete — the phase has a passing
+    // VERIFICATION.md on disk but state.json still says planned/in_progress.
+    // Every other detector here is tuned to catch OVER-claiming; nothing
+    // caught under-reporting, which is why a real project ran nine phases with
+    // `executions: 0` and a dashboard reading 1/13 while the disk said 10/13.
+    // Silence in the one direction is not safety, it is a blind spot.
+    const staleState = [];
+    for (const p of statePhases) {
+      const st = String(p.status ?? '').toLowerCase();
+      if (st === 'complete' || st === 'completed' || st === 'done' || st === 'verified' || p.completed) continue;
+      const disk = diskByNum[normNum(phaseKey(p))];
+      if (!disk || !disk.has_verification) continue;
+      staleState.push(normNum(phaseKey(p)));
+    }
+    if (staleState.length > 0) {
+      insights.push({
+        kind: 'stale-state',
+        severity: 'warn',
+        message: `${staleState.length} phase(s) have a VERIFICATION.md on disk but are not marked complete in state.json: ${staleState.slice(0, 5).join(', ')}. Completion was never written back — your real progress is higher than this dashboard shows. Run: node .rcode/bin/rcode-tools.cjs state sync --from-disk`,
       });
     }
 
