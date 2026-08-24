@@ -83,7 +83,10 @@ agents:
       - user-stories
       - acceptance-criteria
       - backlog
-    description: Scope, requirements, PRD writing, user stories, and backlog curation.
+      - decompose
+      - split-the-work
+      - fan-out
+    description: Scope, requirements, PRD writing, user stories, and backlog curation. Also fans work out — decomposes a request into owned, parallelisable items and names each owner, then hands the decomposition to Raees to sequence.
 
   - id: rcode-yousef
     name: Yousef (يوسف)
