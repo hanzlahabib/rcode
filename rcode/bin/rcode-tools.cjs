@@ -3488,9 +3488,21 @@ function cmdState(subArgs) {
           const dirInfo = findPhaseDirFiles(phaseNum);
           if (dirInfo) {
             const verFile = dirInfo.files.find(f => /-?VERIFICATION\.md$/i.test(f));
-            const verPassed = verFile && /^status:\s*passed/mi.test(
-              fs.readFileSync(path.join(dirInfo.path, verFile), 'utf8')
-            );
+            const verText = verFile ? fs.readFileSync(path.join(dirInfo.path, verFile), 'utf8') : '';
+            // `passed` alone is not enough: a report with no `falsification:`
+            // key was self-certified — the pass that tries to refute it never
+            // ran. Treat that as in_progress, not complete.
+            const verPassed = /^status:\s*passed/mi.test(verText);
+            // A `passed` report with no `falsification:` key was self-certified
+            // — the pass that tries to refute it never ran. Do NOT downgrade it
+            // here: every VERIFICATION.md written before the falsification pass
+            // existed lacks the key, and silently reverting those phases to
+            // in_progress would undo real completion history. Surface it
+            // instead, so the gap is visible without rewriting the past.
+            if (verPassed && !/^falsification:\s*upheld/mi.test(verText)) {
+              parsed.self_certified_phases = parsed.self_certified_phases || [];
+              parsed.self_certified_phases.push(phaseNum);
+            }
             const hasSummary = dirInfo.files.some(f => /SUMMARY\.md$/i.test(f));
             const hasSprint = dirInfo.files.some(f => /-SPRINT\.md$/i.test(f));
             let diskStatus = null;

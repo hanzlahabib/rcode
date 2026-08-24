@@ -380,6 +380,21 @@ Fill template sections: frontmatter (phase/timestamp/status/score), goal achieve
 See .rcode/templates/verification-report.md for complete template.
 </step>
 
+<step name="falsification_pass">
+**MANDATORY when `$STATUS` is `passed`.** Run the falsification pass defined in
+`@.rcode/workflows/execute-verify-phase-goal.md` — a second agent, given the goal
+and the codebase but NOT the summaries or this report, whose only job is to
+refute the pass. Attack order: production reachability, guard shape, runtime
+truth, claim-without-evidence.
+
+- REFUTED → set `$STATUS=gaps_found`, append the finding to VERIFICATION.md's
+  gaps section, and skip the write-back below.
+- UPHELD → record `falsification: upheld` in VERIFICATION.md frontmatter.
+
+A `passed` VERIFICATION.md with no `falsification:` key is self-certified and
+must not be treated as verified by any downstream command.
+</step>
+
 <step name="write_back_state">
 **MANDATORY when status is `passed`. Verification is the terminal step of the
 plan → execute → verify loop, and a terminal step with no write-back leaves
@@ -389,7 +404,7 @@ advances status, nothing downstream ever corrects it. `/rcode-status` then
 reports 1/13 when the real number is 9/13.
 
 ```bash
-if [ "$STATUS" = "passed" ]; then
+if [ "$STATUS" = "passed" ]; then   # only reachable when falsification upheld
   node ".rcode/bin/rcode-tools.cjs" phase complete "${PHASE_NUMBER}" 2>&1
 fi
 ```
@@ -426,6 +441,7 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] Overall status determined
 - [ ] Deferred items filtered against later milestone phases (if gaps found)
 - [ ] Fix plans generated (if gaps_found after filtering)
+- [ ] Falsification pass run and `falsification:` recorded whenever status is `passed`
 - [ ] Production reachability checked for every delivered non-UI module (importers classified production vs test; inline re-implementations named)
 - [ ] VERIFICATION.md created with complete report
 - [ ] Phase marked complete in state.json via `phase complete` when status is `passed` (write-back confirmed, not assumed)
