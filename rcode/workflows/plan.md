@@ -590,10 +590,26 @@ mid-loop check, so plan-time review is the only review left.
 
 ### 9.5a — Pick the panel
 
-Read the `routing:` section of `.rcode/team.yaml`. Match the phase goal +
-CONTEXT.md decisions against the routing domains (`codebase`, `frontend`,
-`performance`, `ml`, `design`, `release`, …) by keyword, exactly as
-`/rcode-council` does — do not invent a second routing mechanism.
+**Do NOT keyword-match this yourself, and do not read `team.yaml routing:`
+directly.** Call the deterministic scorer that already exists — the same one
+`/rcode-council` uses (`rcode/bin/lib/council-panel.cjs`, weighted keyword table
+sourced from `team.yaml` `domain_keywords`):
+
+```bash
+PANEL=$(node ".rcode/bin/rcode-tools.cjs" select-panel \
+  "${PHASE_GOAL}. ${CONTEXT_DECISIONS_SUMMARY}" --explain 2>&1)
+```
+
+Parse `panel` (agent ids, no `rcode-` prefix) and `scores`. Model-side keyword
+matching here would be a THIRD routing mechanism alongside the scorer and
+`team.yaml`, free to disagree with both on the same phase.
+
+**Known limitation, state it in the report:** the scorer is a weighted keyword
+table, so it routes on the words the phase text happens to use, not on what the
+phase actually touches. A phase about Postgres RLS that never writes the word
+"security" scores low for the security lens. This is the same
+enumerate-a-location shape the panel is being asked to hunt for — which is why
+the two standing seats below are unconditional and not scored.
 
 Panel composition:
 
@@ -601,10 +617,12 @@ Panel composition:
   wrong" seat. Every phase gets it.
 - **Always include `rcode-fatima`** (quality lens) — the "what will this guard
   miss" seat. Every phase gets it.
-- **Plus 1-2 domain agents** from the matched `routing:` entry (e.g. a backend
-  phase adds `rcode-yousef`, a frontend phase adds `rcode-haitham`).
+- **Plus 1-2 domain agents** — the top-scoring ids from `select-panel` that are
+  not already seated, and only those with `score > 0`. A padded zero-score agent
+  adds tokens and no lens; drop it rather than filling a slot.
 
-Cap the panel at 4. If no domain matches, the two standing seats are the panel.
+Cap the panel at 4. If every scored agent is 0, the two standing seats ARE the
+panel — that is a correct outcome, not a failure to route.
 
 ### 9.5b — Run the panel in parallel
 
