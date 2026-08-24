@@ -426,6 +426,7 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] Overall status determined
 - [ ] Deferred items filtered against later milestone phases (if gaps found)
 - [ ] Fix plans generated (if gaps_found after filtering)
+- [ ] Production reachability checked for every delivered non-UI module (importers classified production vs test; inline re-implementations named)
 - [ ] VERIFICATION.md created with complete report
 - [ ] Phase marked complete in state.json via `phase complete` when status is `passed` (write-back confirmed, not assumed)
 - [ ] Results returned to orchestrator

@@ -41,6 +41,15 @@ Before verifying, discover project context:
 4. **Verify observable truths** — for each truth, status ✓ VERIFIED / ✗ FAILED / ? UNCERTAIN.
 5. **Verify artifacts (4 levels)** — exists, substantive, wired, data-flows. Use `rcode-tools.cjs verify artifacts`.
 6. **Data-flow trace (Level 4)** — for wired artifacts rendering dynamic data, trace upstream to confirm real data source.
+6c. **Production reachability (Level 5b) — EVERY phase, including backend-only.**
+For each non-UI module this phase delivered, list its importers and classify them
+production vs test. If every importer is a test file, the phase shipped dead code
+and this is a BLOCKING FAIL. Then read what production actually calls for this
+behaviour: if it re-implements the behaviour inline instead of calling the
+delivered module, that is two implementations side by side — the tested one
+unreachable, the shipped one unverified — and is also a BLOCKING FAIL regardless
+of a green suite. See `reachability-check.md` Step 6c.
+
 6b. **Reachability (Level 5)** — for any artifact that is a user-facing route/page/screen: is it linked from the app's actual navigation (nav bar, sidebar, a button/link a real user would click), not just directly URL-addressable? See `reachability-check.md`. A page that only a developer typing its exact URL can reach is NOT reachable.
 7. **Verify key links** — component→API, API→DB, form→handler, state→render. Use `rcode-tools.cjs verify key-links`.
 8. **Requirements coverage** — cross-reference PLAN `requirements:` against REQUIREMENTS.md. Flag ORPHANED.

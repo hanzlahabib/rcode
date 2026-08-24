@@ -6,8 +6,11 @@ entry point, can ever land on it. That gap is how a phase gets marked "passed"
 while the delivered page has no nav link, no sidebar entry, and no way in
 except typing its exact URL — code-complete, unusable.
 
-**When to run:** Any phase whose must-haves include a user-facing route, page,
-or screen (not API-only, not CLI-only, not backend/schema-only phases).
+**When to run:** Steps 6b/10b apply to any phase whose must-haves include a
+user-facing route, page, or screen. **Step 6c below applies to EVERY phase,
+including API-only, CLI-only, and backend/schema-only ones** — the same failure
+has a backend shape, and it is the more dangerous one because no missing nav
+link makes it visible.
 
 ## Step 6b — Reachability (static)
 
@@ -28,6 +31,46 @@ For each user-facing route delivered by this phase:
 gap, not a reason to skip this check. A phase that ships pages with nowhere to
 click from IS the gap. Report it as: "No app shell/navigation exists — every
 delivered page is orphaned from UI by definition."
+
+## Step 6c — Production reachability (every phase, no exceptions)
+
+The UI version of this check asks "can a user reach this page". The backend
+version asks the same question about code: **is the delivered module reachable
+from a production entrypoint, or only from tests?**
+
+For each non-UI artifact this phase delivered (a service, repository, engine,
+job, or the function that is the phase's actual deliverable):
+
+1. List every importer of the module:
+   ```bash
+   grep -rn "from ['\"].*<module-basename>" src/ tests/ app/ lib/ 2>/dev/null
+   ```
+2. Classify each importer as production or test (`tests/`, `*.test.*`,
+   `*.spec.*`, `__tests__/` are tests).
+3. **If every importer is a test file → BLOCKING FAIL, classify as
+   ORPHANED-FROM-PRODUCTION.** The phase's own tests pass because they import
+   the implementation directly; the application calls something else, or
+   nothing.
+
+Then verify the opposite direction, which is how the dangerous version hides:
+
+4. Find what production actually calls for this phase's behaviour (the action,
+   route handler, or command the user triggers) and read it. Does it call the
+   delivered module, or does it re-implement the behaviour inline?
+5. **Two implementations of the same behaviour side by side — one tested and
+   unreachable, one shipped and untested — is a BLOCKING FAIL**, even when the
+   suite is fully green. Name both paths in VERIFICATION.md.
+
+**Why this is blocking:** confirmed live on a real project — a phase whose whole
+purpose was "closing a cycle produces an immutable snapshot" shipped with the
+production close-action setting a status field and returning, while the
+snapshot-producing service had exactly one importer in the repo: its own test.
+Green suite, verified phase, feature that never ran. The audit-attribution seam
+failed the same way, in the same commit range, for the same reason.
+
+**This check subsumes "the tests pass".** A passing test that imports the
+implementation directly proves the implementation works. It proves nothing about
+whether anything calls it.
 
 ## Step 10b — Live smoke check (dynamic)
 
