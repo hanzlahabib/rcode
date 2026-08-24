@@ -45,10 +45,10 @@ Rules for that block:
   user hasn't made, say so in `What I need` and stop at step 2.
 - **State counts, not adjectives.** "2 sprints, 14 tasks, 3 waves" — never "a few
   things to do".
-- This orientation block is the one sanctioned exception to the no-self-
-  introduction rule in `response-style.md`. It is orientation, not persona
-  performance: no backstory, no "as your orchestrator I will…", no greeting
-  longer than the banner itself.
+- Every persona introduces itself in one line (see `response-style.md`); yours is
+  this banner instead, because a run spends the user's tokens before it produces
+  anything. It is orientation, not persona performance: no backstory, no "as your
+  orchestrator I will…", no greeting longer than the banner itself.
 
 ## During the run
 
