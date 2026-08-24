@@ -585,6 +585,10 @@ function cmdInit(workflowName, rawArgs) {
       out.research_enabled = String(wf.research_by_default ?? 'false') === 'true';
       out.plan_checker_enabled = String(wf.plan_checker ?? 'true') !== 'false';
       out.nyquist_validation_enabled = String(wf.nyquist_validation ?? 'true') !== 'false';
+      // Plan-time specialist review panel (#plan step 9.5). Default ON: the
+      // generalist planner+checker pair cannot see design or guard-shape
+      // defects, only goal coverage.
+      out.specialist_review_enabled = String(wf.specialist_review ?? 'true') !== 'false';
       out.text_mode = String(wf.text_mode ?? 'false') === 'true';
 
       // Model resolution per active profile. The researcher agent ships as

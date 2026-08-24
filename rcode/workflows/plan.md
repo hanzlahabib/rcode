@@ -143,7 +143,7 @@ Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is va
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes prior phase CONTEXT.md files so cross-phase decisions are consistent (e.g., "use library X for all data fetching" from Phase 2 is visible to Phase 5's planner).
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `specialist_review_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -153,7 +153,7 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`, `--no-panel`).
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the Claude App.
 
@@ -570,6 +570,78 @@ Use AskUserQuestion with these 3 options.
 **If "Split":** Use `/rcode-insert-phase` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
+
+## 9.5. Specialist Review Panel (domain-routed)
+
+**Why this step exists.** Until now one generalist (`rcode-planner`) produced the
+entire plan and one generalist (`rcode-sprint-checker`) graded it against the
+phase goal. Nobody asked *"is this design wrong"* or *"what will this guard
+miss"*. Confirmed live on a real project: nine phases planned and shipped this
+way, and the first hour of specialist review found an inert RLS backstop, an
+authorization mutation with no relationship check, a core feature whose only
+importer was its own test, and real personal data committed to the repo. The
+sprint-checker missed all four because none of them is a goal-coverage question.
+
+**Skip only if:** `specialist_review_enabled` from the INIT JSON is `false`
+(set `workflow.specialist_review: false` in `.rcode/config.yaml`; absent key =
+enabled), or `--no-panel` was passed. In
+autonomous/yolo mode this step is **NOT skippable** — yolo removes the human
+mid-loop check, so plan-time review is the only review left.
+
+### 9.5a — Pick the panel
+
+Read the `routing:` section of `.rcode/team.yaml`. Match the phase goal +
+CONTEXT.md decisions against the routing domains (`codebase`, `frontend`,
+`performance`, `ml`, `design`, `release`, …) by keyword, exactly as
+`/rcode-council` does — do not invent a second routing mechanism.
+
+Panel composition:
+
+- **Always include `rcode-waleed`** (architecture lens) — the "is this design
+  wrong" seat. Every phase gets it.
+- **Always include `rcode-fatima`** (quality lens) — the "what will this guard
+  miss" seat. Every phase gets it.
+- **Plus 1-2 domain agents** from the matched `routing:` entry (e.g. a backend
+  phase adds `rcode-yousef`, a frontend phase adds `rcode-haitham`).
+
+Cap the panel at 4. If no domain matches, the two standing seats are the panel.
+
+### 9.5b — Run the panel in parallel
+
+Spawn all panel members in a single message so they run concurrently. Each gets
+the same narrow contract:
+
+```
+You are reviewing SPRINT plans BEFORE execution, through your lens only.
+
+Read: {PHASE_DIR}/*-SPRINT.md, {PHASE_DIR}/CONTEXT.md, ROADMAP.md phase {N}.
+
+Return ONLY blocking issues — things that would make the executed phase wrong,
+unsafe, or unverifiable. Not style, not preferences, not "consider also".
+For each issue: what is wrong, the file:line or task id it lives in, and the
+specific change that fixes it.
+
+Two questions you MUST answer explicitly, even if the answer is "none":
+  1. Which task in this plan enumerates a LOCATION where it should derive from a
+     PROPERTY? (a glob, a single filename, one role, one directory) — that shape
+     is how a guard ends up green while pointing where the problem is not.
+  2. Which delivered module would have no production importer after this phase
+     executes — reachable only from its own test?
+
+If you have no blocking issues, return exactly: NO BLOCKING ISSUES.
+Do not restate the plan. Do not summarize. {response_language pass-through}
+```
+
+### 9.5c — Handle panel return
+
+- All members return `NO BLOCKING ISSUES` → proceed to step 10.
+- Any blocking issue → feed it into the **existing revision loop (step 12)**
+  alongside the checker's issues. Do not build a second revision mechanism.
+- Panel issues and checker issues are deduped by task id before re-spawning the
+  planner.
+
+Report to the user which agents sat on the panel and what each blocked on — a
+silent panel is indistinguishable from a skipped one.
 
 ## 10. Spawn rcode-sprint-checker Agent
 
@@ -1029,6 +1101,7 @@ ${WINDOWS === 'true' ? '@.rcode/references/plan-windows-troubleshooting.md' : ''
 - [ ] Phase directory created if needed
 - [ ] CONTEXT.md loaded early (step 4) and passed to ALL agents
 - [ ] Research completed (unless --skip-research or --gaps or exists)
+- [ ] Specialist review panel spawned (Waleed + Fatima + domain agents) and its blocking issues fed into the revision loop, or `workflow.specialist_review: false` recorded
 - [ ] rcode-phase-researcher spawned with CONTEXT.md
 - [ ] Existing plans checked
 - [ ] rcode-planner spawned with CONTEXT.md + RESEARCH.md
