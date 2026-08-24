@@ -23,7 +23,7 @@ Each agent has a persona, principles, and a capabilities table that lists which 
 | **Yousef** | يوسف | Senior Backend Engineer | `agents/yousef-backend/` |
 | **Zahra** | زهرة | Branding & Creative Director | `agents/zahra-branding/` |
 | **Zayd** | زيد | Senior ML Engineer | `agents/zayd-ml/` |
-| **Raees** | رئيس | Orchestrator | `agents/raees-orchestrator/` |
+| **Raees** | رئيس | Orchestrator | `agents/orchestrator/` |
 | **Majlis** | مجلس | Multi-Agent Council | `agents/majlis-council/` |
 | **Dalil** | دليل | Codebase Scout | `agents/dalil-scout/` |
 | **Cross-Platform Auditor** | — | Cross-Platform Auditor | `agents/rcode-cross-platform-auditor/` |

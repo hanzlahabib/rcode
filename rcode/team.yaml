@@ -315,6 +315,22 @@ routing:
 
 # Tactical / Workflow Agents (spawned by workflows)
 tactical_agents:
+  - id: rcode-orchestrator
+    name: Raees (رئيس)
+    file_path: rcode/agents/rcode-orchestrator.md
+    skill_path: rcode/skills/agents/orchestrator
+    role: Orchestration Director
+    authority_level: orchestration
+    domain_keywords:
+      - orchestrate
+      - dispatch
+      - sequence
+      - coordinate
+      - who-owns-this
+      - run-end-to-end
+      - wave
+    description: Owns the run — reads project state, decides what happens next, dispatches specialists, sequences waves, and reports back. Opens every session with an orientation banner. Never implements.
+
   - id: rcode-advisor-researcher
     name: Advisor Researcher
     file_path: rcode/agents/rcode-advisor-researcher.md

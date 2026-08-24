@@ -1,5 +1,5 @@
 ---
-name: rcode-raees-orchestrator
+name: rcode-orchestrator
 description: >
   Project orchestration director — Raees (رئيس) — that dispatches work to
   the right rcode specialist(s), sequences phases, identifies parallel vs

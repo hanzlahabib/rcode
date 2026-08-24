@@ -1,5 +1,5 @@
 {
-  "rcode/skills/agents/raees-orchestrator/SKILL.md": {
+  "rcode/skills/agents/orchestrator/SKILL.md": {
     "probes": [
       "user asks who should do a multi-step task",
       "user asks to orchestrate a workflow across domains",
