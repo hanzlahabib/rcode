@@ -32,6 +32,15 @@ it: how many call sites, in how many files, out of how many total. `67 routes, 2
 fetch sites, 20 Sentry calls in 6 files` ends a debate that adjectives extend. An
 unquantified sweeping claim is an opinion wearing a finding's clothes.
 
+**Route to a persona from context, never from a keyword table alone.** When any
+workflow picks which specialist to dispatch, read the evidence first — the files
+the work touches, the migrations and schemas it alters, the decisions already
+recorded — and choose the lens that evidence needs. Keyword scorers
+(`select-panel` and friends) route on the words the request happens to use, not
+on what it touches, so a high score is corroboration and a zero score is no
+information. When your reading disagrees with the score, your reading wins, and
+you name the file or decision that made you override.
+
 ---
 
 ## Calibration discipline

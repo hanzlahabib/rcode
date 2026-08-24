@@ -590,26 +590,38 @@ mid-loop check, so plan-time review is the only review left.
 
 ### 9.5a — Pick the panel
 
-**Do NOT keyword-match this yourself, and do not read `team.yaml routing:`
-directly.** Call the deterministic scorer that already exists — the same one
-`/rcode-council` uses (`rcode/bin/lib/council-panel.cjs`, weighted keyword table
-sourced from `team.yaml` `domain_keywords`):
+**You route this, from context — not from a keyword table.** Read the evidence
+first, then decide:
+
+1. The plans' `<files>` fields — every path this phase will actually touch.
+2. Migrations, schema files, and config the plans create or alter.
+3. CONTEXT.md decisions (D-XX) and the phase goal.
+4. The installed roster and what each persona actually owns:
+   ```bash
+   node ".rcode/bin/rcode-tools.cjs" list-agents
+   ```
+
+Then pick the domain seats by asking, per candidate: *given these files and
+these decisions, does this persona's lens see something the others cannot?* If
+the answer is no, do not seat them.
+
+Run the keyword scorer as **one input, never the verdict**:
 
 ```bash
-PANEL=$(node ".rcode/bin/rcode-tools.cjs" select-panel \
-  "${PHASE_GOAL}. ${CONTEXT_DECISIONS_SUMMARY}" --explain 2>&1)
+node ".rcode/bin/rcode-tools.cjs" select-panel \
+  "${PHASE_GOAL}. ${CONTEXT_DECISIONS_SUMMARY}" --explain
 ```
 
-Parse `panel` (agent ids, no `rcode-` prefix) and `scores`. Model-side keyword
-matching here would be a THIRD routing mechanism alongside the scorer and
-`team.yaml`, free to disagree with both on the same phase.
+It is a weighted keyword table, so it routes on the words the phase text happens
+to use, not on what the phase touches — a phase full of `drizzle/*.sql` RLS
+policies that never writes the word "security" scores near zero for the security
+lens. That is the same enumerate-a-location shape this panel exists to hunt for,
+so treat a high score as corroboration and a zero score as no information.
 
-**Known limitation, state it in the report:** the scorer is a weighted keyword
-table, so it routes on the words the phase text happens to use, not on what the
-phase actually touches. A phase about Postgres RLS that never writes the word
-"security" scores low for the security lens. This is the same
-enumerate-a-location shape the panel is being asked to hunt for — which is why
-the two standing seats below are unconditional and not scored.
+**When your reading and the scorer disagree, your reading wins — and you must
+say so in the panel report**: which persona you seated or dropped against the
+score, and the file or decision that made you do it. A routing override with no
+stated reason is indistinguishable from a coin flip.
 
 Panel composition:
 
@@ -617,12 +629,12 @@ Panel composition:
   wrong" seat. Every phase gets it.
 - **Always include `rcode-fatima`** (quality lens) — the "what will this guard
   miss" seat. Every phase gets it.
-- **Plus 1-2 domain agents** — the top-scoring ids from `select-panel` that are
-  not already seated, and only those with `score > 0`. A padded zero-score agent
-  adds tokens and no lens; drop it rather than filling a slot.
+- **Plus 1-2 domain personas** chosen by the reading above. Seat a persona only
+  when you can name the file, migration, or decision that needs their lens. A
+  seat filled to reach a quota costs tokens and adds nothing.
 
-Cap the panel at 4. If every scored agent is 0, the two standing seats ARE the
-panel — that is a correct outcome, not a failure to route.
+Cap the panel at 4. If nothing in the plans needs a third lens, the two standing
+seats ARE the panel — a correct outcome, not a failure to route.
 
 ### 9.5b — Run the panel in parallel
 
