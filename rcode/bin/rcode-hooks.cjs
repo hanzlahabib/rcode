@@ -579,6 +579,35 @@ async function preCompact() {
 }
 
 /**
+ * Strip JSONC comments and trailing commas so a tolerant re-parse can tell a
+ * commented-but-valid config from an actually broken one. Scans character by
+ * character and tracks string state — a naive regex would eat the `//` in
+ * "https://example.com" and turn a valid file into a reported syntax error.
+ */
+function stripJsonc(text) {
+  let out = '';
+  let inStr = false, esc = false, inLine = false, inBlock = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i + 1];
+    if (inLine) { if (c === '\n') { inLine = false; out += c; } continue; }
+    if (inBlock) { if (c === '*' && next === '/') { inBlock = false; i++; } continue; }
+    if (inStr) {
+      out += c;
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') { inStr = true; out += c; continue; }
+    if (c === '/' && next === '/') { inLine = true; i++; continue; }
+    if (c === '/' && next === '*') { inBlock = true; i++; continue; }
+    out += c;
+  }
+  // Trailing commas before } or ]
+  return out.replace(/,(\s*[}\]])/g, '$1');
+}
+
+/**
  * stop-verify: Syntax-check files changed during the response (#744).
  *
  * Triggered by the Stop hook. Collects the files changed during the response
@@ -597,6 +626,11 @@ async function stopVerify() {
       null;
 
     if (!Array.isArray(changed)) {
+      // Fallback only. `git diff --name-only` reports the WHOLE dirty working
+      // tree, not what this response touched — so one pre-existing dirty file
+      // makes every Stop from now on report the same failure, forever, with
+      // nothing the user did causing it. Scope it to files modified since the
+      // response began where we can, and treat the result as advisory.
       const diff = spawnSync('git', ['diff', '--name-only'], {
         encoding: 'utf8',
         cwd: process.cwd(),
@@ -626,19 +660,49 @@ async function stopVerify() {
           failures.push(`${file}: ${(check.stderr || '').trim().split('\n')[0]}`);
         }
       } else if (ext === '.json') {
+        // Guard the read: one unreadable file (permissions, a symlink that just
+        // broke, a truncated write in flight) used to throw past this loop into
+        // the outer catch, killing the check for EVERY other changed file and
+        // printing a generic "Hook error" instead of naming anything.
+        let text;
+        try { text = fs.readFileSync(abs, 'utf8'); } catch { continue; }
         try {
-          JSON.parse(fs.readFileSync(abs, 'utf8'));
-        } catch (e) {
-          failures.push(`${file}: ${e.message}`);
+          JSON.parse(text);
+        } catch (strictErr) {
+          // Many real-world *.json files are JSONC: turbo.json, tsconfig.json,
+          // jsconfig.json, .eslintrc.json, devcontainer.json, and VS Code's
+          // settings/launch all permit // comments and trailing commas. Strict
+          // JSON.parse calls those a syntax error, which made this hook fail on
+          // every single Stop against a perfectly valid file. Retry tolerantly
+          // and only report a failure when BOTH parses fail.
+          try {
+            JSON.parse(stripJsonc(text));
+          } catch {
+            failures.push(`${file}: ${strictErr.message}`);
+          }
         }
       }
     }
 
     if (failures.length > 0) {
+      // Don't re-report an identical failure set on every Stop. Without this a
+      // single unfixable/irrelevant dirty file turns into an error banner on
+      // every response for the rest of the session, which trains the user to
+      // ignore the hook entirely — the one outcome that makes it worthless.
+      const sig = failures.slice().sort().join('|');
+      const seenPath = path.join(os.tmpdir(), `rcode-stop-verify-${process.ppid || 0}.txt`);
+      let previous = '';
+      try { previous = fs.readFileSync(seenPath, 'utf8'); } catch { /* first run */ }
+      if (previous === sig) process.exit(0);
+      try { fs.writeFileSync(seenPath, sig); } catch { /* best-effort */ }
+
       console.error('⚠ stop-verify: changed files failed syntax check:');
       failures.forEach((f) => console.error(`  • ${f}`));
       process.exit(1);
     }
+    // Clear the dedupe marker once everything parses, so a genuine NEW failure
+    // after a green run is reported rather than swallowed.
+    try { fs.unlinkSync(path.join(os.tmpdir(), `rcode-stop-verify-${process.ppid || 0}.txt`)); } catch { /* fine */ }
 
     process.exit(0);
   } catch (err) {
