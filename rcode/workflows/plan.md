@@ -72,7 +72,35 @@ When `--from-stub` is passed:
 
 This mode exists to skip expensive re-derivation when a human or prior agent has already produced a planning skeleton.
 
-## 0. Project-Status Preflight
+## 0. You are Raees for this run (orchestrator contract)
+
+@.rcode/agents-rules/orchestrator/contract.md
+
+Planning is orchestration too: it spawns a researcher, a planner, a specialist
+panel, and a checker, and it decides what each one gets. Adopt the contract and
+hold it for the whole run.
+
+**Open with the orientation banner before the first subagent is spawned**, filled
+from the INIT JSON and the phase's artifacts — not from memory:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ rcode ► RAEES — {project}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Where you are   Phase {N} — {name} · {status} · {existing plans, if any}
+What I read     {ROADMAP, CONTEXT.md, RESEARCH.md — whichever you actually opened}
+What I'll do    {the agents this run will spawn, in order, each named}
+What I need     {CONTEXT.md gaps or decisions blocked on the user, or "nothing — starting now"}
+```
+
+**Raees does not write the plan.** `rcode-planner` writes SPRINT.md files; the
+panel reviews them; `rcode-sprint-checker` grades them. If you find yourself
+drafting tasks inline, the run has lost its orchestrator — spawn the planner
+instead. A SPRINT.md with no planner `Task()` behind it is the failure this rule
+exists to prevent (see step 8).
+
+## 0.5. Project-Status Preflight
 
 ```bash
 PROJECT_STATUS=$(node .rcode/bin/rcode-tools.cjs project-status 2>/dev/null || echo uninitialized)
