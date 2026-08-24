@@ -344,6 +344,30 @@ grep -nE 'grep +-[a-zA-Z]*v[a-zA-Z]* ' "${PHASE_DIR}"/*-SPRINT.md
   Required form: `! grep -q PATTERN FILE`.
 - `test ! -f` is fine; `! test -f` is fine; a bare `test -f` used to assert absence → **BLOCKING FAIL**.
 
+### Check 8a3 — Red-First Evidence for Guard Tests
+
+A **guard test** is any test whose purpose is to make a class of mistake
+impossible: meta-tests, schema invariant tests, forbidden-pattern scans,
+coverage/manifest tests, lint-rule tests. Identify guard-test tasks by their
+`<files>` (a `meta-*`, `*-guard*`, `*-invariant*`, or `tests/unit/*-scan*` path)
+or by an `<action>` that describes asserting a rule across a file set.
+
+For each guard-test task:
+
+- The `<action>` must state the red step — run the new test against the current
+  unfixed tree and record that it FAILS, before applying the fix. If it does not
+  → **BLOCKING FAIL**.
+- If the task both adds the guard and fixes the violation, the red step must come
+  first in the action text, not after.
+
+**Why this is blocking, not a warning:** a guard test that was never observed red
+proves nothing. It may glob the wrong path, match nothing, or assert a condition
+that is already true. It then reports green forever and the invariant it was
+written to protect rots silently underneath it. Confirmed live: a scope-coverage
+meta-test globbed only `src/app/api/**/route.ts`, so every Server Action was
+invisible to it and an authorization chokepoint went unenforced across nine
+phases with a fully green CI.
+
 ### Check 8b — Feedback Latency Assessment
 
 For each `<automated>` command:

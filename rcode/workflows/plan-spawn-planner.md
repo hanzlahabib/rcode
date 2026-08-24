@@ -266,6 +266,16 @@ Every task MUST include these fields — they are NOT optional:
 4. **`<verify>`** — Shell commands that PROVE the `<done>` criteria are met. Run by executor after task completes and by verifier during post-execution check. The block MUST contain an `<automated>` child with the exact commands to run (Dimension 8 hard-blocks without it). Rules:
    - `<automated>` commands must exit 0 on success, non-zero on failure
    - Prefer `grep -q` for presence checks, `test -f` for file existence, project test runner for behavior
+   - **A task that adds or changes a guard test MUST prove the test fails on the
+     unfixed code first ("red first").** A guard test is any test whose job is to
+     make a class of mistake impossible: meta-tests, schema invariant tests,
+     forbidden-pattern scans, coverage/manifest tests, lint-rule tests. Write the
+     task so the `<action>` states the red step explicitly ("run the new test on
+     the current tree and record that it fails, then apply the fix") and the
+     `<verify><automated>` block asserts the green state. A guard test that has
+     never been observed red is indistinguishable from one that greps the wrong
+     path — that is exactly how a `route.ts`-only glob left every Server Action
+     unguarded for nine phases while CI stayed green the whole time.
    - **Absence checks use `! grep -q PATTERN FILE`, never `grep -qv`.** `-v` inverts per-line
      matching, so `grep -qv PATTERN FILE` exits 0 as soon as ANY line fails to match — i.e. it
      passes on virtually every file, including one that contains the forbidden pattern. This is a
@@ -328,6 +338,7 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Every task has `<files>` listing exact files this task will modify or create
 - [ ] Every task has `<evidence>` with grep/lines/creates codebase grounding per issue #649 — not a prose checklist tag (none exists in the real plan schema)
 - [ ] Every task has `<verify>` with an `<automated>` child containing at least one shell command (Dimension 8 blocker)
+- [ ] Every guard-test task states its red-first step in `<action>` (Dimension 8 blocker)
 - [ ] Every task has `<done>` with a single observable acceptance sentence (Dimension 2 requirement)
 - [ ] Every `<action>` contains concrete values (no "align X with Y" without specifying what)
 - [ ] Tasks extending existing code have `<interfaces>` with relevant signatures

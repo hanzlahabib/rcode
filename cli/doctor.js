@@ -127,6 +127,36 @@ function findStuckExecutingPhases(state) {
   });
 }
 
+/**
+ * The inverse of findStuckExecutingPhases: phases whose directory holds a
+ * VERIFICATION.md but whose state entry is not complete. Completion write-back
+ * failed (or never ran), so the project's real progress is higher than
+ * state.json reports. Under-reporting is as much a state defect as
+ * over-reporting — it is just the one nobody instruments.
+ */
+function findUnrecordedVerifiedPhases(state, planningDir) {
+  const phasesDir = path.join(planningDir, 'phases');
+  if (!fs.existsSync(phasesDir)) return [];
+  const norm = (k) => String(k ?? '').trim().replace(/^0+(\d)/, '$1');
+  const verifiedOnDisk = new Set();
+  for (const entry of fs.readdirSync(phasesDir)) {
+    const full = path.join(phasesDir, entry);
+    let files;
+    try {
+      if (!fs.statSync(full).isDirectory()) continue;
+      files = fs.readdirSync(full);
+    } catch { continue; }
+    const m = entry.match(/^(\d+(?:\.\d+)?)/);
+    if (!m) continue;
+    if (files.some((f) => /VERIFICATION\.md$/i.test(f))) verifiedOnDisk.add(norm(m[1]));
+  }
+  const done = new Set(['complete', 'completed', 'done', 'verified']);
+  return (Array.isArray(state?.phases) ? state.phases : [])
+    .filter((p) => p && !done.has(String(p.status ?? '').toLowerCase()) && !p.completed)
+    .filter((p) => verifiedOnDisk.has(norm(p.number ?? p.id)))
+    .map((p) => String(p.number ?? p.id));
+}
+
 // ---------- Preflight checks ----------
 
 /**
@@ -333,13 +363,18 @@ function runPreflight(cwd, packageRoot) {
       try {
         const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
         const stuck = findStuckExecutingPhases(state);
+        const unrecorded = findUnrecordedVerifiedPhases(state, path.join(cwd, '.planning'));
+        const problems = [];
+        if (stuck.length > 0) {
+          problems.push(`${stuck.length} phase(s) stuck 'executing' while a later phase is complete: ${stuck.map((p) => p.number).join(', ')}`);
+        }
+        if (unrecorded.length > 0) {
+          problems.push(`${unrecorded.length} phase(s) verified on disk but not complete in state.json: ${unrecorded.join(', ')} — completion write-back never ran. Fix: node .rcode/bin/rcode-tools.cjs state sync --from-disk`);
+        }
         checks.push({
           label: 'Phase state',
-          status: stuck.length > 0 ? 'warn' : 'ok',
-          message:
-            stuck.length > 0
-              ? `${stuck.length} phase(s) stuck 'executing' while a later phase is complete: ${stuck.map((p) => p.number).join(', ')}`
-              : 'no stuck phases',
+          status: problems.length > 0 ? 'warn' : 'ok',
+          message: problems.length > 0 ? problems.join('; ') : 'no stuck or unrecorded phases',
         });
       } catch (e) {
         checks.push({
