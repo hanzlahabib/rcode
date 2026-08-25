@@ -18,13 +18,22 @@ const path = require('node:path');
 const ORCH = path.resolve(__dirname, '../server/orchestrator.js');
 const TOKEN = 'testtoken123';
 const PORT = 7799;
+// #1037 — the orchestrator now rejects any request whose declared
+// PROJECT_ROOT doesn't match its own (see orchestrator-project-root.test.cjs
+// for the dedicated regression test). Pin it explicitly here so every call
+// through request() below carries a matching header by default.
+const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 let child;
 
-// Promise-based HTTP request helper against the orchestrator.
+// Promise-based HTTP request helper against the orchestrator. Every call
+// carries a matching X-Project-Root header by default (#1037) so these
+// pre-existing security tests aren't incidentally exercising that gate —
+// callers can still override it via opts.headers.
 function request(opts, body) {
   return new Promise((resolve, reject) => {
-    const req = http.request({ host: '127.0.0.1', port: PORT, ...opts }, res => {
+    const headers = { 'X-Project-Root': PROJECT_ROOT, ...(opts.headers || {}) };
+    const req = http.request({ host: '127.0.0.1', port: PORT, ...opts, headers }, res => {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => resolve({ status: res.statusCode, body: data }));
@@ -38,7 +47,7 @@ function request(opts, body) {
 
 before(async () => {
   child = spawn(process.execPath, [ORCH], {
-    env: { ...process.env, ORCH_TOKEN: TOKEN, CLAUDE_BIN: 'true', ORCH_PORT: String(PORT) },
+    env: { ...process.env, ORCH_TOKEN: TOKEN, CLAUDE_BIN: 'true', ORCH_PORT: String(PORT), PROJECT_ROOT },
   });
   await new Promise((resolve, reject) => {
     let buf = '';
