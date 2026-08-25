@@ -152,11 +152,6 @@ Load all context in one call (paths only to minimize orchestrator context):
 ```bash
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init sprint-plan "$PHASE" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null || echo "")
-AGENT_SKILLS_PLANNER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-planner 2>/dev/null || echo "")
-AGENT_SKILLS_CHECKER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-sprint-checker 2>/dev/null || echo "")
-CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/dev/null)
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}  # config-get exits 0 with empty output when key absent; || fallback won't fire
 
 # Detect UI signals in phase goal + CONTEXT.md to decide whether to load ui-brand.md (254 lines)
 PHASE_GOAL_HAS_UI=$(grep -iEl "frontend|ui|component|design|style|brand" \
@@ -169,9 +164,11 @@ If `INIT` is empty, or `INIT.ok` is false or absent (null/undefined — `init sp
 Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is valid.
 ```
 
+**#949 — no separate `agent-skills` / `config-get context_window` calls.** `init sprint-plan` already returns `agent_skills.researcher`, `agent_skills.planner`, `agent_skills.checker` (the same manifest rows the standalone `agent-skills <id>` command returns) and `context_window`, folded in to avoid 4 extra cold Node starts per plan run. Read `agent_skills.researcher` / `.planner` / `.checker` directly from `$INIT` wherever this doc previously referenced `$AGENT_SKILLS_RESEARCHER` / `$AGENT_SKILLS_PLANNER` / `$AGENT_SKILLS_CHECKER`. `CONTEXT_WINDOW` defaults to `200000` when `context_window` is null (config key absent).
+
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes prior phase CONTEXT.md files so cross-phase decisions are consistent (e.g., "use library X for all data fetching" from Phase 2 is visible to Phase 5's planner).
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `specialist_review_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `specialist_review_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`, `context_window`, `agent_skills`, `state_digest`.
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -727,7 +724,7 @@ Checker prompt:
 - {research_path} (Technical Research — includes Validation Architecture)
 </files_to_read>
 
-${AGENT_SKILLS_CHECKER}
+{agent_skills.checker}
 
 **Phase requirement IDs (MUST ALL be covered):** {phase_req_ids}
 
@@ -851,7 +848,7 @@ Revision prompt:
 - {context_path} (USER DECISIONS from /rcode-discuss-phase)
 </files_to_read>
 
-${AGENT_SKILLS_PLANNER}
+{agent_skills.planner}
 
 **Checker issues:** {structured_issues_from_checker}
 </revision_context>

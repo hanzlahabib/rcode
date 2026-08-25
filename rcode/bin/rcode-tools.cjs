@@ -510,6 +510,12 @@ function cmdInit(workflowName, rawArgs) {
 
       // Phase status from state.json (complete/executed/in_progress/planned/null).
       // Used by plan.md to show context-aware messaging when plans already exist.
+      //
+      // #948 — state_digest is derived from this SAME parse (single read, not a
+      // second pass over state.json). It replaces the raw `{state_path}` full-file
+      // read that plan-spawn-planner.md / research-phase.md / plan-research-
+      // validation.md instruct the researcher/planner subagents to do — those
+      // prompts embed state_digest directly instead.
       try {
         const stateFilePath = path.join(RCODE_DIR, 'state.json');
         const rawState = fs.existsSync(stateFilePath)
@@ -520,7 +526,9 @@ function cmdInit(workflowName, rawArgs) {
           return k === String(phaseNum);
         });
         out.phase_status = stPhase ? (stPhase.status || null) : null;
-      } catch { out.phase_status = null; }
+        const stateDigest = require(path.join(__dirname, 'lib', 'state-digest.cjs'));
+        out.state_digest = stateDigest.buildStateDigest(rawState, phaseNum);
+      } catch { out.phase_status = null; out.state_digest = null; }
 
       // Disk artifacts — same shape as walkPhaseDirs() but inlined.
       if (phaseDirEntry) {
@@ -580,6 +588,11 @@ function cmdInit(workflowName, rawArgs) {
       const wf = nestedCfg.workflow || {};
       const features = nestedCfg.features || {};
 
+      // #949 — context_window folded into init so plan.md doesn't need a
+      // separate `config-get context_window` cold start (top-level scalar,
+      // not namespaced under workflow.*/features.*).
+      out.context_window = nestedCfg.context_window ?? null;
+
       // Workflow feature flags (top-level for direct workflow consumption).
       // Defaults match the inline `config-get … || echo "X"` calls in the workflows.
       out.research_enabled = String(wf.research_by_default ?? 'false') === 'true';
@@ -598,6 +611,21 @@ function cmdInit(workflowName, rawArgs) {
         || resolveModelString('rcode-phase-researcher');
       out.planner_model = resolveModelString('rcode-planner');
       out.checker_model = resolveModelString('rcode-sprint-checker');
+
+      // #949 — agent-skills rows folded into init output. plan.md previously
+      // shelled out to `agent-skills rcode-phase-researcher` / `rcode-planner` /
+      // `rcode-sprint-checker` as 3 separate cold Node starts; research-phase.md
+      // and plan-research-validation.md each did their own `agent-skills
+      // rcode-phase-researcher` call. Same manifest lookup this init call
+      // already has installedAgents/readAgentManifest() loaded for.
+      {
+        const agentManifest = readAgentManifest();
+        out.agent_skills = {
+          researcher: resolveAgentId('rcode-phase-researcher', agentManifest) || null,
+          planner: resolveAgentId('rcode-planner', agentManifest) || null,
+          checker: resolveAgentId('rcode-sprint-checker', agentManifest) || null,
+        };
+      }
 
       // Phase requirement IDs — extracted from ROADMAP requirements block.
       out.phase_req_ids = extractReqIds(roadmapPhase ? roadmapPhase.requirements : []);

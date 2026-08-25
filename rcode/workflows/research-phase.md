@@ -42,10 +42,12 @@ If exists: Offer update/view/skip options.
 INIT=$(node ".rcode/bin/rcode-tools.cjs" init phase-op "${PHASE}" 2>/dev/null)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # If INIT is empty or INIT.ok is false: print "Error: rcode-tools init failed." and exit.
-# Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path, response_language
+# Extract: phase_dir, padded_phase, phase_number, requirements_path, context_path, response_language,
+# state_digest, agent_skills.researcher
 # If response_language is set, include "Respond in {value}." in all spawned subagent prompts.
-AGENT_SKILLS_RESEARCHER=$(node ".rcode/bin/rcode-tools.cjs" agent-skills rcode-phase-researcher 2>/dev/null || echo "")
 ```
+
+**#949 — no separate `agent-skills rcode-phase-researcher` call.** `init phase-op` already returns `agent_skills.researcher` (same manifest row), folded in to avoid a second cold Node start per research run.
 
 ## Step 4: Spawn Researcher
 
@@ -69,10 +71,16 @@ Downstream consumer: /rcode-plan reads {phase}-RESEARCH.md to structure sprints.
 <files_to_read>
 - {context_path} (USER DECISIONS from /rcode-discuss-phase)
 - {requirements_path} (Project requirements)
-- {state_path} (Project decisions and history)
 </files_to_read>
 
-${AGENT_SKILLS_RESEARCHER}
+<project_state_digest>
+{state_digest as JSON — current phase, recent decisions, open blockers. Slim
+extract of state.json (#948); do NOT separately Read .rcode/state.json — its
+full history (all phases, all sprints) is not needed here and costs 10-20K+
+tokens on a mature project.}
+</project_state_digest>
+
+{agent_skills.researcher}
 
 <additional_context>
 Phase description: {description}

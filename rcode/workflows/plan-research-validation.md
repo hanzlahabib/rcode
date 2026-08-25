@@ -70,10 +70,16 @@ Answer: "What do I need to know to PLAN this phase well?"
 <files_to_read>
 - {context_path} (USER DECISIONS from /rcode-discuss-phase)
 - {requirements_path} (Project requirements)
-- {state_path} (Project decisions and history)
 </files_to_read>
 
-${AGENT_SKILLS_RESEARCHER}
+<project_state_digest>
+{state_digest as JSON — current phase, recent decisions, open blockers. Slim
+extract of state.json (#948); do NOT separately Read .rcode/state.json — its
+full history (all phases, all sprints) is not needed here and costs 10-20K+
+tokens on a mature project.}
+</project_state_digest>
+
+{agent_skills.researcher}
 
 <additional_context>
 **Phase description:** {phase_description}
