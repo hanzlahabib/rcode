@@ -116,8 +116,12 @@ async function preEdit() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -161,8 +165,12 @@ async function preWorkflow() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -301,8 +309,12 @@ async function postCommit() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -423,8 +435,12 @@ async function bashGuard() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -573,8 +589,12 @@ async function preCompact() {
     process.stdout.write(JSON.stringify(payload) + '\n');
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -706,8 +726,12 @@ async function stopVerify() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -750,8 +774,12 @@ async function costTrack() {
 
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -1132,8 +1160,12 @@ async function stopHandler() {
     }
     process.exit(0);
   } catch (err) {
-    console.error(`Hook error: ${err.message}`);
-    process.exit(1);
+    // Route through the circuit breaker: these inner catches are where hook
+    // crashes actually surface (each handler catches its own errors and exits),
+    // so main()'s .catch would never see them.
+    const _tripped = recordCrash(process.argv[2], err.message);
+    if (!_tripped) console.error(`Hook error: ${err.message}`);
+    process.exit(_tripped ? 0 : 1);
   }
 }
 
@@ -1184,11 +1216,78 @@ function sessionStart() {
   process.exit(0);
 }
 
+// ── Circuit breaker ────────────────────────────────────────────────────
+// A hook that CRASHES has nothing useful to say and will keep saying it on
+// every single event. After THRESHOLD consecutive crashes, trip the breaker
+// and stay quiet for the rest of the session rather than pollute every turn.
+//
+// This tracks CRASHES ONLY (the hook itself threw), never FINDINGS. A hook
+// that exits non-zero because it correctly found a broken file is working;
+// disabling it for doing its job would be the opposite of the intent.
+const BREAKER_THRESHOLD = 3;
+
+// Safety hooks are NEVER auto-disabled. bash-guard blocks `git push`,
+// `--no-verify`, and `rm -rf`; pre-tool-use and pre-edit gate writes. A crashing
+// guard must fail loudly and keep failing — silently disabling it converts a
+// bug into an open door, which is a far worse outcome than a noisy terminal.
+const NEVER_BREAK = new Set(['bash-guard', 'pre-tool-use', 'pre-edit', 'pre-workflow']);
+
+function breakerPath(name) {
+  return path.join(os.tmpdir(), `rcode-hook-breaker-${process.ppid || 0}-${name}.json`);
+}
+
+function breakerTripped(name) {
+  if (NEVER_BREAK.has(name)) return false;
+  try {
+    const st = JSON.parse(fs.readFileSync(breakerPath(name), 'utf8'));
+    return (st.crashes || 0) >= BREAKER_THRESHOLD;
+  } catch { return false; }
+}
+
+function recordCrash(name, message) {
+  if (NEVER_BREAK.has(name)) return false;
+  let crashes = 0;
+  try { crashes = JSON.parse(fs.readFileSync(breakerPath(name), 'utf8')).crashes || 0; } catch { /* first */ }
+  crashes += 1;
+  CRASH_RECORDED = true;
+  try { fs.writeFileSync(breakerPath(name), JSON.stringify({ crashes, last: message })); } catch { /* best-effort */ }
+  if (crashes >= BREAKER_THRESHOLD) {
+    console.error(
+      `⚠ rcode hook '${name}' crashed ${crashes}x in a row — disabling it for this session ` +
+      `so it stops repeating. Last error: ${message}`
+    );
+    console.error(`  Re-enable: restart the session, or fix and run 'node .rcode/bin/rcode-hooks.cjs ${name}' directly to see the full error.`);
+    return true;
+  }
+  return false;
+}
+
+function clearCrashes(name) {
+  try { fs.unlinkSync(breakerPath(name)); } catch { /* nothing to clear */ }
+}
+
+// Every handler exits from inside itself, so a `.then()` on main() would almost
+// never run. Hook the process exit instead: any clean exit means this hook ran
+// without crashing, so the consecutive-crash count resets. Without this, three
+// crashes spread across an entire session would trip the breaker even though
+// the hook worked fine in between.
+let CRASH_RECORDED = false;
+function installBreakerReset(name) {
+  if (!name || NEVER_BREAK.has(name)) return;
+  process.on('exit', (code) => {
+    if (code === 0 && !CRASH_RECORDED) clearCrashes(name);
+  });
+}
+
 /**
  * Main entry point.
  */
 async function main() {
   const subcommand = process.argv[2];
+
+  // Already tripped this session — exit silently. Advisory hooks only.
+  if (breakerTripped(subcommand)) process.exit(0);
+  installBreakerReset(subcommand);
 
   switch (subcommand) {
     case 'pre-edit':
@@ -1238,10 +1337,16 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((err) => {
-    console.error(`Fatal error: ${err.message}`);
-    process.exit(1);
-  });
+  const name = process.argv[2];
+  main()
+    .then(() => clearCrashes(name))
+    .catch((err) => {
+      const tripped = recordCrash(name, err.message);
+      if (!tripped) console.error(`Fatal error: ${err.message}`);
+      // Advisory hooks exit 0 once tripped so the harness stops surfacing them;
+      // guard hooks (never tripped) keep their non-zero exit.
+      process.exit(tripped ? 0 : 1);
+    });
 }
 
 module.exports = { INTENT_TABLE };
