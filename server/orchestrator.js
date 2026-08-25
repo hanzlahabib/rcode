@@ -56,6 +56,11 @@ const PROJECT_ROOT = process.env.PROJECT_ROOT
   || process.cwd();
 const CLAUDE_BIN   = process.env.CLAUDE_BIN || 'claude';
 
+// #967 — view-only mode gate. See server/lib/view-only.js for rationale:
+// the refusal has to be server-side because hiding the Run button doesn't
+// stop a script or misdirected agent from calling POST /api/run directly.
+const { isViewOnly } = require('./lib/view-only');
+
 // Per-session auth token — see authed(). The dashboard passes ORCH_TOKEN in
 // via env; standalone runs generate one and print it on boot.
 const AUTH_TOKEN = process.env.ORCH_TOKEN || crypto.randomBytes(24).toString('hex');
@@ -498,6 +503,12 @@ function handleHistory(res) {
 }
 
 async function handleRun(req, res) {
+  // #967 — refused before any body parsing / spawn work: view-only mode is
+  // a hard server-side gate, not a UI convenience.
+  if (isViewOnly(PROJECT_ROOT)) {
+    json(res, 403, { error: 'view-only mode is enabled (dashboard.view_only) — runs are disabled' });
+    return;
+  }
   const body    = await parseBody(req);
   const storyId = String(body.storyId || '').trim();
   if (!validStoryId(storyId)) { json(res, 400, { error: 'invalid storyId' }); return; }
