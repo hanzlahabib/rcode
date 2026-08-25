@@ -46,7 +46,10 @@ try { pty = require('@lydell/node-pty'); } catch { /* handled in handleRun */ }
 let WebSocketServer = null;
 try { ({ WebSocketServer } = require('ws')); } catch { /* handled at boot */ }
 
-const PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
+// #1037 — ORCH_PORT is only the STARTING point for this process's own
+// free-port scan (see the listen/retry block near the bottom), not a fixed
+// bind target. `let` because a busy starting port bumps this upward.
+let PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
 // Use the project root passed by the dashboard (RCODE_DIR → parent, or explicit
 // PROJECT_ROOT env var). Fall back to cwd so standalone orchestrator runs work.
 // NEVER use __dirname-relative path — that resolves to the npm package dir when
@@ -328,6 +331,28 @@ function authed(req) {
   const b = Buffer.from(AUTH_TOKEN);
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
+}
+
+// #1037 — a request's declared PROJECT_ROOT must match this orchestrator's
+// own, so a client pointed at the wrong orchestrator instance (stale cached
+// port, a second dashboard's browser tab, a hand-crafted request) is rejected
+// instead of silently driving another project's repository. The dashboard's
+// bundled client always sends this header; a request missing it is treated
+// the same as a mismatch — fail closed, not fail open.
+function projectRootMatches(req) {
+  const declared = req.headers && req.headers['x-project-root'];
+  return typeof declared === 'string' && declared === PROJECT_ROOT;
+}
+
+// Same check as projectRootMatches(), but for the WebSocket upgrade path,
+// where the browser cannot set a custom header — the root travels as a query
+// param instead (same reason the auth token does — see authed()).
+function projectRootMatchesUpgrade(req) {
+  const url  = req.url || '';
+  const qIdx = url.indexOf('?');
+  if (qIdx === -1) return false;
+  const declared = new URLSearchParams(url.slice(qIdx + 1)).get('root');
+  return typeof declared === 'string' && declared === PROJECT_ROOT;
 }
 
 function validStoryId(id) {
@@ -776,6 +801,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (!authed(req)) { json(res, 401, { error: 'unauthorized' }); return; }
+  // #1037 — reject any request whose declared PROJECT_ROOT doesn't match ours.
+  if (!projectRootMatches(req)) { json(res, 403, { error: 'project root mismatch' }); return; }
 
   if (method === 'GET'  && pathOnly === '/api/status')   { json(res, 200, { ok: true, sessions: sessions.size }); return; }
   if (method === 'GET'  && pathOnly === '/api/runners')  { await handleRunners(res); return; }
@@ -802,20 +829,38 @@ if (WebSocketServer) {
     const url      = req.url || '';
     const pathOnly = url.indexOf('?') === -1 ? url : url.slice(0, url.indexOf('?'));
     if (!pathOnly.startsWith('/ws/') || !authed(req)) { socket.destroy(); return; }
+    if (!projectRootMatchesUpgrade(req)) { socket.destroy(); return; }
     const storyId = decodeURIComponent(pathOnly.slice('/ws/'.length));
     if (!validStoryId(storyId)) { socket.destroy(); return; }
     wss.handleUpgrade(req, socket, head, ws => attachWebSocket(ws, storyId));
   });
 }
 
+// #1037 — own free-port scan instead of exiting on the first conflict. The
+// dashboard passes ORCH_PORT as a STARTING point (its own final bound port,
+// not a fixed constant); if that's also taken (another orchestrator, a stray
+// process) we walk upward rather than giving up immediately. Only once the
+// scan is exhausted do we exit(2) so the dashboard's respawn loop stays off.
+const MAX_PORT_ATTEMPTS = 20;
+let portAttempts = 0;
+
 server.on('error', err => {
+  if (err.code === 'EADDRINUSE' && portAttempts < MAX_PORT_ATTEMPTS) {
+    portAttempts++;
+    console.error(`[orch] port ${PORT} in use, trying ${PORT + 1}...`);
+    PORT++;
+    server.listen(PORT, '127.0.0.1');
+    return;
+  }
   if (err.code === 'EADDRINUSE') {
-    // Exit with code 2 so the dashboard knows this is a port-conflict (not a crash)
-    // and can suppress the restart loop + print a one-time user hint.
-    console.error(`[orch] port ${PORT} already in use. Set ORCH_PORT=<N> env var to use a different port. Exiting without retry.`);
+    console.error(`[orch] no free port found after ${MAX_PORT_ATTEMPTS} attempts. Set ORCH_PORT=<N> env var to use a different range. Exiting.`);
+    // Tell the dashboard (if it spawned us over IPC) so it can serve
+    // orchPort: null instead of advertising a port nothing is listening on.
+    if (process.send) process.send({ type: 'orch-error', reason: 'no-free-port' });
     process.exit(2);
   }
   console.error('[orch] server error:', err.message);
+  if (process.send) process.send({ type: 'orch-error', reason: err.message });
   process.exit(1);
 });
 
@@ -829,4 +874,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('   WS:     ' + (WebSocketServer ? 'ready' : 'ws MISSING'));
   console.log('   POST /api/run   GET /api/sessions   GET /api/runners   WS /ws/<id>');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+  // Report the FINAL bound port back to the dashboard over IPC, since a busy
+  // starting port means PORT may have moved during the scan above.
+  if (process.send) process.send({ type: 'orch-ready', port: PORT });
 });

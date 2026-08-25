@@ -15,7 +15,7 @@
 
 import { html, useState, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
-import { orchToken, stopSession, cleanSessions, orchWs } from '../orchestrator.js';
+import { orchToken, stopSession, cleanSessions, orchWs, isOrchAvailable, projectRoot } from '../orchestrator.js';
 import { showToast } from './shared.js';
 import { Icon } from '../icons-client.js';
 
@@ -105,9 +105,13 @@ export function OrchPanel() {
       showToast('No orchestrator token — restart the dashboard');
       return;
     }
+    if (!isOrchAvailable()) {
+      showToast('Orchestration is disabled — no orchestrator is running for this project');
+      return;
+    }
     const ws = new WebSocket(
       orchWs() + '/ws/' + encodeURIComponent(storyId) +
-      '?token=' + encodeURIComponent(tok)
+      '?token=' + encodeURIComponent(tok) + '&root=' + encodeURIComponent(projectRoot())
     );
     _streams[storyId] = ws;
 

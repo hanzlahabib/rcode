@@ -14,18 +14,31 @@ import { getState, setState } from './store.js';
 import { showToast } from './components/shared.js';
 import { trackBlocked } from './notify.js';
 
-// #969 — the orchestrator port is injected by the server (see shell.js) as
-// window.__ORCH_PORT__, since a dashboard started with ORCH_PORT set (e.g. a
-// second instance under test) spawns its orchestrator on a non-default port.
-// A hardcoded 7718 here would silently drive the wrong orchestrator process.
+// #969 / #1037 — the orchestrator port is injected by the server (see
+// shell.js) as window.__ORCH_PORT__, since a dashboard started with
+// ORCH_PORT set (e.g. a second instance under test) spawns its orchestrator
+// on a non-default port. window.__ORCH_PORT__ is null when THIS dashboard's
+// orchestrator never bound — a hardcoded fallback (e.g. 7718) here would
+// silently drive some OTHER project's orchestrator, which is the exact bug
+// #1037 fixes server-side. So there is no fallback: null stays null, and
+// callers must check isOrchAvailable() before using orchHttp()/orchWs().
 // Resolved per-call (not cached at module load) so it works even if a caller
 // loads this module before the inline bootstrap script has run.
 function orchPort() {
-  return (typeof window !== 'undefined' && window.__ORCH_PORT__) || 7718;
+  return (typeof window !== 'undefined' && window.__ORCH_PORT__) || null;
 }
 
-export function orchHttp() { return 'http://localhost:' + orchPort(); }
-export function orchWs()   { return 'ws://localhost:' + orchPort(); }
+/** True when this dashboard has a live orchestrator to talk to. */
+export function isOrchAvailable() { return orchPort() != null; }
+
+/** The project root this dashboard is scanning — sent on every orchestrator
+ * request so the orchestrator can reject a mismatched-project caller (#1037). */
+export function projectRoot() {
+  return (typeof window !== 'undefined' && window.__PROJECT_ROOT__) || '';
+}
+
+export function orchHttp() { return isOrchAvailable() ? 'http://localhost:' + orchPort() : null; }
+export function orchWs()   { return isOrchAvailable() ? 'ws://localhost:' + orchPort()   : null; }
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
@@ -42,8 +55,13 @@ export function refreshOrchToken() {
   return fetch('/api/orch-token')
     .then(r => r.json())
     .then(d => {
-      if (d && d.token) window.__ORCH_TOKEN__ = d.token;
-      if (d && d.orchPort) window.__ORCH_PORT__ = d.orchPort;
+      if (!d) return;
+      if (d.token) window.__ORCH_TOKEN__ = d.token;
+      // #1037 — orchPort may legitimately have GONE null (orchestrator died
+      // or never started) since the page loaded, so this must not only ever
+      // set a truthy value — a stale truthy value must be cleared too.
+      window.__ORCH_PORT__ = d.orchPort || null;
+      if (d.projectRoot) window.__PROJECT_ROOT__ = d.projectRoot;
     })
     .catch(() => {});
 }
@@ -57,6 +75,7 @@ export function refreshOrchToken() {
  * Returns the parsed JSON response (or throws on network error).
  */
 export function runSession(storyId, cmd, opts) {
+  if (!isOrchAvailable()) return Promise.resolve({ error: 'orchestrator unavailable' });
   const tok  = orchToken();
   const body = { storyId, cmd };
   if (opts && opts.runner) {
@@ -65,7 +84,7 @@ export function runSession(storyId, cmd, opts) {
   }
   return fetch(orchHttp() + '/api/run', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'X-Project-Root': projectRoot() },
     body: JSON.stringify(body),
   }).then(r => r.json());
 }
@@ -79,9 +98,10 @@ export function runSession(storyId, cmd, opts) {
 let _runnersPromise = null;
 export function fetchRunners() {
   if (_runnersPromise) return _runnersPromise;
+  if (!isOrchAvailable()) return Promise.resolve([]);
   const tok = orchToken();
   _runnersPromise = fetch(orchHttp() + '/api/runners', {
-    headers: { 'Authorization': 'Bearer ' + tok },
+    headers: { 'Authorization': 'Bearer ' + tok, 'X-Project-Root': projectRoot() },
   })
     .then(r => r.json())
     .then(d => (d && d.runners) || [])
@@ -93,10 +113,11 @@ export function fetchRunners() {
  * POST /api/stop — stop a running session.
  */
 export function stopSession(storyId) {
+  if (!isOrchAvailable()) return Promise.resolve();
   const tok = orchToken();
   return fetch(orchHttp() + '/api/stop', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'X-Project-Root': projectRoot() },
     body: JSON.stringify({ storyId }),
   }).catch(() => {});
 }
@@ -108,9 +129,9 @@ export function stopSession(storyId) {
  */
 function fetchSessionsWithStatus() {
   const tok = orchToken();
-  if (!tok) return Promise.resolve({ ok: false, sessions: [] });
+  if (!tok || !isOrchAvailable()) return Promise.resolve({ ok: false, sessions: [] });
   return fetch(orchHttp() + '/api/sessions', {
-    headers: { 'Authorization': 'Bearer ' + tok },
+    headers: { 'Authorization': 'Bearer ' + tok, 'X-Project-Root': projectRoot() },
   })
     .then(r => {
       if (r.status === 401) { refreshOrchToken(); return { ok: true, sessions: [] }; }
@@ -131,8 +152,8 @@ export function fetchSessions() {
  */
 export function fetchHistory() {
   const tok = orchToken();
-  if (!tok) return Promise.resolve([]);
-  return fetch(orchHttp() + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok } })
+  if (!tok || !isOrchAvailable()) return Promise.resolve([]);
+  return fetch(orchHttp() + '/api/history', { headers: { 'Authorization': 'Bearer ' + tok, 'X-Project-Root': projectRoot() } })
     .then(r => {
       if (r.status === 401) { refreshOrchToken(); return []; }
       return r.json().then(d => (d && d.history) || []);
@@ -172,10 +193,11 @@ export function isOrchOnline() {
  * phase is optional. Returns the parsed JSON response.
  */
 export function submitRejection(storyId, reason, phase) {
+  if (!isOrchAvailable()) return Promise.resolve({ error: 'orchestrator unavailable' });
   const tok = orchToken();
   return fetch(orchHttp() + '/api/reject', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'X-Project-Root': projectRoot() },
     body: JSON.stringify({ storyId, reason, phase: phase || null }),
   }).then(r => r.json());
 }
@@ -185,8 +207,8 @@ export function submitRejection(storyId, reason, phase) {
  */
 export function fetchRejections() {
   const tok = orchToken();
-  if (!tok) return Promise.resolve([]);
-  return fetch(orchHttp() + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok } })
+  if (!tok || !isOrchAvailable()) return Promise.resolve([]);
+  return fetch(orchHttp() + '/api/rejections', { headers: { 'Authorization': 'Bearer ' + tok, 'X-Project-Root': projectRoot() } })
     .then(r => r.ok ? r.json().then(d => (d && d.rejections) || []) : [])
     .catch(() => []);
 }
@@ -196,10 +218,11 @@ export function fetchRejections() {
  * status is the target column id (todo | in_progress | blocked | done).
  */
 export function setTaskStatus(storyId, status) {
+  if (!isOrchAvailable()) return Promise.resolve({});
   const tok = orchToken();
   return fetch(orchHttp() + '/api/task-status', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'X-Project-Root': projectRoot() },
     body: JSON.stringify({ storyId, status }),
   }).then(r => r.json()).catch(() => ({}));
 }
@@ -209,10 +232,11 @@ export function setTaskStatus(storyId, status) {
  * olderThanDays = 0 removes all ended sessions; > 0 keeps recent ones.
  */
 export function cleanSessions(olderThanDays = 0) {
+  if (!isOrchAvailable()) return Promise.resolve({ removed: 0 });
   const tok = orchToken();
   return fetch(orchHttp() + '/api/clean-sessions', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'X-Project-Root': projectRoot() },
     body: JSON.stringify({ olderThanDays }),
   })
     .then(r => r.json())

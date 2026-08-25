@@ -25,7 +25,7 @@
 
 import { html, useEffect, useRef, useCallback } from '../preact.js';
 import { useStore, setState } from '../store.js';
-import { orchToken, stopSession, orchWs } from '../orchestrator.js';
+import { orchToken, stopSession, orchWs, isOrchAvailable, projectRoot } from '../orchestrator.js';
 
 // ── Internal state (module-scoped, one panel at a time) ──────────────────────
 // These are NOT component state because the xterm instance (and the story it
@@ -103,8 +103,13 @@ function connectWs(storyId) {
     if (_term) _term.writeln('\r\n\x1b[31m✗ No orchestrator token — restart the dashboard\x1b[0m');
     return;
   }
+  if (!isOrchAvailable()) {
+    if (_term) _term.writeln('\r\n\x1b[31m✗ Orchestration is disabled — no orchestrator is running for this project\x1b[0m');
+    return;
+  }
   setStatus('connecting');
-  const url = orchWs() + '/ws/' + encodeURIComponent(storyId) + '?token=' + encodeURIComponent(tok);
+  const url = orchWs() + '/ws/' + encodeURIComponent(storyId) +
+    '?token=' + encodeURIComponent(tok) + '&root=' + encodeURIComponent(projectRoot());
   const ws = new WebSocket(url);
   _termWs = ws;
 

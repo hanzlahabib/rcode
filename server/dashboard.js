@@ -25,7 +25,7 @@ const path    = require('path');
 const fs      = require('fs');
 const os      = require('os');
 const crypto  = require('crypto');
-const { spawn } = require('child_process');
+const { fork } = require('child_process');
 
 // Client JS modules live here and are served verbatim at /js/<name>.js
 const CLIENT_DIR = path.join(__dirname, 'lib', 'html', 'client');
@@ -36,9 +36,13 @@ const { renderHtml } = require('./lib/html/shell');
 
 // ---------- Configuration ----------
 let PORT = parseInt(process.env.PORT || '7717', 10);
-// #969 — the orchestrator's actual port, injected into the client so it never
-// has to hardcode 7718. Defaults match orchestrator.js's own default.
-const ORCH_PORT = parseInt(process.env.ORCH_PORT || '7718', 10);
+// #1037 — the orchestrator's actual port is NOT known until the child process
+// reports back over IPC that it bound successfully (see spawnOrchestrator()).
+// null means "no orchestrator is currently running for this dashboard" — the
+// client must render orchestration as disabled rather than guess a port.
+// NEVER default this to a constant like 7718: that constant may be another
+// project's dashboard's orchestrator.
+let orchPort = null;
 const RCODE_DIR = process.env.RCODE_DIR || path.join(process.cwd(), '.rcode');
 const PROJECT_ROOT = path.dirname(RCODE_DIR);
 // Fallback root for agent prompts when rcode is installed as a package (not run
@@ -150,7 +154,7 @@ function handleRequest(req, res) {
       return;
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ token: ORCH_TOKEN, orchPort: ORCH_PORT }));
+    res.end(JSON.stringify({ token: ORCH_TOKEN, orchPort, projectRoot: PROJECT_ROOT }));
     return;
   }
 
@@ -181,7 +185,7 @@ function handleRequest(req, res) {
 
   if (url === '/' || url === '/index.html') {
     const state = scanState(RCODE_DIR);
-    const html = renderHtml(state, ORCH_TOKEN, ORCH_PORT);
+    const html = renderHtml(state, ORCH_TOKEN, orchPort, PROJECT_ROOT);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.end(html);
     return;
@@ -215,9 +219,14 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`   Mode:          live (read + orchestration)`);
   console.log(`   Scanning:      ${RCODE_DIR}`);
   console.log(`   Refresh:       30s soft poll`);
-  console.log(`   Note:          port ${PORT + 1} is the internal orchestrator API — not for the browser`);
+  console.log(`   Note:          the orchestrator (internal API, not for the browser) starts scanning near port ${PORT + 1}`);
   console.log(`   Stop:          kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  // #1037 — spawn the orchestrator only now that PORT has SETTLED (any
+  // EADDRINUSE retries above have already run their course by the time this
+  // 'listening' callback fires). Spawning it earlier would derive its port
+  // from a PORT value that might still change underneath it.
+  ensurePty(spawnOrchestrator);
 });
 
 // ── Ensure interactive-terminal native module is present ─────────
@@ -242,16 +251,32 @@ function ensurePty(done) {
   done();
 }
 
-// ── Auto-spawn orchestrator (port 7718) ──────────────────────────
+// ── Auto-spawn orchestrator ───────────────────────────────────────
+// #1037 — the orchestrator's port is derived from THIS dashboard's own final
+// bound PORT (never a hardcoded constant), and the orchestrator runs its own
+// free-port scan rather than exiting on the first conflict (see
+// orchestrator.js's listen/retry block). We fork() (not spawn()) so the child
+// gets an IPC channel: it reports back the port it actually bound once
+// listening succeeds, or an error if its scan is exhausted. Until that
+// message arrives, `orchPort` stays null and the dashboard advertises
+// orchestration as disabled — it must never guess a port it did not spawn.
 const ORCH_BIN = path.join(__dirname, 'orchestrator.js');
 let _orchProc = null;
 
 function spawnOrchestrator() {
+  orchPort = null;
   try {
-    _orchProc = spawn(process.execPath, [ORCH_BIN], {
+    _orchProc = fork(ORCH_BIN, [], {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env, ORCH_TOKEN, RCODE_DIR, PROJECT_ROOT, DASH_PORT: String(PORT) },
-      stdio: 'pipe',
+      env: {
+        ...process.env,
+        ORCH_TOKEN, RCODE_DIR, PROJECT_ROOT,
+        DASH_PORT: String(PORT),
+        // Respect an explicit user override; otherwise start the orchestrator's
+        // own scan right after this dashboard's actual port.
+        ORCH_PORT: process.env.ORCH_PORT || String(PORT + 1),
+      },
+      silent: true,
     });
     _orchProc.stdout.on('data', chunk => {
       const msg = chunk.toString().trim();
@@ -261,12 +286,23 @@ function spawnOrchestrator() {
       const msg = chunk.toString().trim();
       if (msg && !msg.includes('no stdin')) console.error('[orch]', msg);
     });
+    _orchProc.on('message', msg => {
+      if (!msg || typeof msg !== 'object') return;
+      if (msg.type === 'orch-ready' && Number.isInteger(msg.port)) {
+        orchPort = msg.port;
+        console.log(`[orch] orchestrator ready (port ${orchPort})`);
+      } else if (msg.type === 'orch-error') {
+        orchPort = null;
+        console.log(`[orch] orchestrator failed to bind (${msg.reason}) — orchestration disabled for this dashboard.`);
+      }
+    });
     _orchProc.on('exit', (code, signal) => {
       _orchProc = null;
+      orchPort = null; // never keep advertising a port nothing is listening on
       if (signal !== 'SIGTERM' && signal !== 'SIGINT') {
         if (code === 2) {
-          // Port-conflict exit — don't loop. Dashboard stays fully functional.
-          console.log(`[orch] orchestrator port already in use — not restarting. Set ORCH_PORT=<N> env var to use a different port. Dashboard is still functional.`);
+          // Port-conflict exit (scan exhausted) — don't loop. Dashboard stays functional.
+          console.log(`[orch] orchestrator could not find a free port — not restarting. Set ORCH_PORT=<N> env var to use a different range. Dashboard is still functional.`);
           return;
         }
         console.log(`[orch] exited (${code}) — restarting in 3s…`);
@@ -276,15 +312,13 @@ function spawnOrchestrator() {
     _orchProc.on('error', err => {
       console.error('[orch] spawn error:', err.message);
       _orchProc = null;
+      orchPort = null;
     });
-    console.log(`[orch] orchestrator started (port ${ORCH_PORT})`);
   } catch (err) {
     console.error('[orch] failed to start:', err.message);
+    orchPort = null;
   }
 }
-
-// Orchestrator spawns only once node-pty is settled (present or installed).
-ensurePty(spawnOrchestrator);
 
 // Graceful shutdown
 function shutdown() {
