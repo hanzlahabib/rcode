@@ -6,7 +6,7 @@ const { renderClientJs } = require('./client');
 
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-function renderHtml(state, orchToken, orchPort, projectRoot) {
+function renderHtml(state, orchToken, orchPort, projectRoot, viewOnly) {
   const projectName = state.projectName || 'No project initialized';
   // #969 — the client used to hardcode port 7718 for the orchestrator API.
   // A dashboard started with ORCH_PORT set (e.g. to test in isolation from a
@@ -38,7 +38,7 @@ function renderHtml(state, orchToken, orchPort, projectRoot) {
 <script src="https://cdn.jsdelivr.net/npm/marked@18.0.4/lib/marked.umd.js" integrity="sha384-8RA8Ah4c9upJmKfg5nH01OgjZoQ3mRX+ngrKYWXQYj2dHYxFqYz8POSlii33f0wB" crossorigin="anonymous"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js" integrity="sha384-/nfmYPUzWMS6v2atn8hbljz7NE0EI1iGx34lJaNzyVjWGDzMv+ciUZUeJpKA3Glc" crossorigin="anonymous"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js" integrity="sha384-AQLWHRKAgdTxkolJcLOELg4E9rE89CPE2xMy3tIRFn08NcGKPTsELdvKomqji+DL" crossorigin="anonymous"><\/script>
-<script>window.__ORCH_TOKEN__ = ${JSON.stringify(orchToken || '')}; window.__ORCH_PORT__ = ${port === null ? 'null' : port}; window.__PROJECT_ROOT__ = ${JSON.stringify(projectRoot || '')};<\/script>
+<script>window.__ORCH_TOKEN__ = ${JSON.stringify(orchToken || '')}; window.__ORCH_PORT__ = ${port === null ? 'null' : port}; window.__PROJECT_ROOT__ = ${JSON.stringify(projectRoot || '')}; window.__VIEW_ONLY__ = ${JSON.stringify(!!viewOnly)};<\/script>
 ${renderCss()}
 </head>
 <body>

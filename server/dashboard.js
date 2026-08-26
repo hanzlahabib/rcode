@@ -33,6 +33,7 @@ const CLIENT_DIR = path.join(__dirname, 'lib', 'html', 'client');
 const { scanState } = require('./lib/scanner');
 const { handleApiState, handleApiFiles, handleApiFile, handleApiHierarchy, handleApiMemory, handleApiAgents } = require('./lib/api');
 const { renderHtml } = require('./lib/html/shell');
+const { isViewOnly } = require('./lib/view-only');
 
 // ---------- Configuration ----------
 let PORT = parseInt(process.env.PORT || '7717', 10);
@@ -185,7 +186,12 @@ function handleRequest(req, res) {
 
   if (url === '/' || url === '/index.html') {
     const state = scanState(RCODE_DIR);
-    const html = renderHtml(state, ORCH_TOKEN, orchPort, PROJECT_ROOT);
+    // #967 — hide Run/Stop/Clean affordances in view-only mode. This is a UI
+    // convenience only; the actual refusal happens server-side in
+    // orchestrator.js's POST /api/run handler regardless of this flag.
+    // #1037 — orchPort (not ORCH_PORT) so we never advertise an orchestrator
+    // this process did not spawn; null renders orchestration as disabled.
+    const html = renderHtml(state, ORCH_TOKEN, orchPort, PROJECT_ROOT, isViewOnly(PROJECT_ROOT));
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.end(html);
     return;

@@ -40,6 +40,15 @@ export function projectRoot() {
 export function orchHttp() { return isOrchAvailable() ? 'http://localhost:' + orchPort() : null; }
 export function orchWs()   { return isOrchAvailable() ? 'ws://localhost:' + orchPort()   : null; }
 
+// #967 — view-only mode, injected by shell.js from the server-side
+// dashboard.view_only config check (see server/lib/view-only.js). This gate
+// is UI convenience only: the orchestrator refuses POST /api/run itself
+// regardless of what the client sends, so a stale/bypassed client can't
+// actually spawn an agent — it just gets a clearer message here first.
+export function isViewOnly() {
+  return typeof window !== 'undefined' && !!window.__VIEW_ONLY__;
+}
+
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
 /** Return the current orchestrator token from the window global. */
@@ -233,6 +242,7 @@ export function setTaskStatus(storyId, status) {
  */
 export function cleanSessions(olderThanDays = 0) {
   if (!isOrchAvailable()) return Promise.resolve({ removed: 0 });
+  if (isViewOnly()) { showToast('View-only mode — clean is disabled'); return Promise.resolve({ removed: 0 }); }
   const tok = orchToken();
   return fetch(orchHttp() + '/api/clean-sessions', {
     method: 'POST',
@@ -340,6 +350,7 @@ function _poll() {
  * @param {{ runner?: string, model?: string }} [opts] — agent CLI selection
  */
 export function runAndOpenTerm(storyId, cmd, title, opts) {
+  if (isViewOnly()) { showToast('View-only mode — runs are disabled'); return; }
   // #916 — spawning an orchestrator session launches a real agent with
   // permissions skipped. Gate it behind an explicit confirmation dialog
   // instead of running on the first click. The dialog calls execRunAndOpenTerm
@@ -405,6 +416,7 @@ export function openOrchPanel(storyId) {
  * stopStory — Kanban "Stop" action.
  */
 export function stopStory(storyId) {
+  if (isViewOnly()) { showToast('View-only mode — stop is disabled'); return; }
   stopSession(storyId).catch(err => console.error('[orchestrator] session op failed:', err.message));
 }
 
@@ -456,6 +468,7 @@ export const ALLOWED_COMMANDS = [
  */
 export function runCommandFromUI(cmd, opts) {
   if (!cmd) return;
+  if (isViewOnly()) { showToast('View-only mode — runs are disabled'); return; }
   // #916 — gate command-runner spawns behind the same confirmation dialog.
   const title = cmd + ' (command runner)';
   setState({

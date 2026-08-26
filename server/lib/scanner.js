@@ -3,6 +3,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 function safeReadJson(filepath) {
   let raw;
@@ -712,13 +713,127 @@ function scanState(rcodeDir) {
   return state;
 }
 
+// Age-band thresholds (#968) — a memory file untouched this long has likely
+// drifted from the codebase it describes. Matches the incident report's own
+// "hasn't been updated in 2.5 months" framing: amber warns before red alarms.
+const AGE_BAND_AMBER_DAYS = 30;
+const AGE_BAND_RED_DAYS = 90;
+
+function ageDaysFromMtime(mtimeMs) {
+  return Math.floor((Date.now() - mtimeMs) / 86400000);
+}
+
+/** 'fresh' | 'aging' | 'stale', or null when age is unknown (file missing). */
+function ageBand(ageDays) {
+  if (ageDays == null) return null;
+  if (ageDays > AGE_BAND_RED_DAYS) return 'stale';
+  if (ageDays > AGE_BAND_AMBER_DAYS) return 'aging';
+  return 'fresh';
+}
+
+/**
+ * Read one frontmatter scalar by key. Distillate frontmatter uses hyphenated
+ * keys (source-digest, generated-at) that parseSimpleYaml's identifier-only
+ * key pattern does not match, so this is a small standalone reader scoped to
+ * the distillate use case rather than a change to the shared parser.
+ */
+function extractFrontmatterValue(frontmatterText, key) {
+  const m = frontmatterText.match(new RegExp('^' + key + '\\s*:\\s*(.+)$', 'm'));
+  return m ? m[1].trim().replace(/^['"]|['"]$/g, '') : null;
+}
+
+/**
+ * Last-commit timestamp for a repo-relative path, or null when git is
+ * unavailable / the path has no history (untracked, shallow clone). Used in
+ * preference to fs mtime for staleness comparisons: a fresh `git clone` or
+ * `git worktree add` stamps every checked-out file with the checkout time,
+ * which would make every distillate look freshly-edited relative to its
+ * (much older) generated-at — git's own commit history isn't affected by that.
+ */
+function gitLastCommitMs(projectRoot, repoRelPath) {
+  let out;
+  try {
+    out = execSync(`git log -1 --format=%cI -- ${JSON.stringify(repoRelPath)}`, {
+      cwd: projectRoot,
+      encoding: 'utf8',
+      timeout: 3000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+  if (!out) return null;
+  const ms = Date.parse(out);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+/**
+ * Distillates carry `source-digest` / `generated-at` / `source-files` in
+ * their frontmatter (see rcode/workflows/memory-distill.md), but the digest
+ * is produced by an LLM-run workflow step with no deterministic script in
+ * this repo to reproduce it byte-for-byte — recomputing and diffing it here
+ * would just be a guess dressed up as a check. What IS verifiable: whether
+ * any source file has changed (by git commit history, not fs mtime — see
+ * gitLastCommitMs) more recently than the distillate claims to have been
+ * generated. That's the real signal "is this distillate stale" is asking
+ * for, so that's what drives `stale` — `sourceDigest` is still surfaced
+ * as-is for reference.
+ */
+function scanDistillateFreshness(memoryDir, projectRoot, subdir, entry) {
+  const full = path.join(memoryDir, subdir, entry.name);
+  let distillateMtimeMs = null;
+  try { distillateMtimeMs = fs.statSync(full).mtimeMs; } catch { /* unreadable — leave null */ }
+
+  const text = safeReadText(full) || '';
+  const fmEnd = text.startsWith('---') ? text.indexOf('\n---', 3) : -1;
+  const frontmatter = fmEnd !== -1 ? text.slice(0, fmEnd) : '';
+
+  const sourceDigest = extractFrontmatterValue(frontmatter, 'source-digest');
+  const generatedAt = extractFrontmatterValue(frontmatter, 'generated-at');
+  const sourceFiles = parseYamlList(frontmatter, 'source-files');
+
+  // Anchor staleness to generated-at when it parses (explicit "as-of" claim);
+  // fall back to the distillate file's own mtime otherwise.
+  const generatedAtMs = generatedAt ? Date.parse(generatedAt) : NaN;
+  const anchorMs = Number.isFinite(generatedAtMs) ? generatedAtMs : distillateMtimeMs;
+
+  const staleSources = [];
+  const missingSources = [];
+  for (const rel of sourceFiles) {
+    const srcFull = path.join(memoryDir, rel);
+    if (!fs.existsSync(srcFull)) { missingSources.push(rel); continue; }
+    const repoRelPath = path.relative(projectRoot, srcFull);
+    let changedMs = gitLastCommitMs(projectRoot, repoRelPath);
+    if (changedMs == null) {
+      try { changedMs = fs.statSync(srcFull).mtimeMs; } catch { changedMs = null; }
+    }
+    if (anchorMs != null && changedMs != null && changedMs > anchorMs) staleSources.push(rel);
+  }
+
+  const ageDays = distillateMtimeMs != null ? ageDaysFromMtime(distillateMtimeMs) : null;
+
+  return {
+    name: entry.name,
+    path: entry.path,
+    sourceDigest,
+    generatedAt,
+    sourceFiles,
+    ageDays,
+    ageBand: ageBand(ageDays),
+    staleSources,
+    missingSources,
+    stale: staleSources.length > 0 || missingSources.length > 0,
+  };
+}
+
 /**
  * Scan the Memory Bank at .rcode/memory/. Returns structure suitable
  * for the /api/memory endpoint and the dashboard /memory view.
  * Returns { exists: false } when the Memory Bank has not been initialised.
  */
-function scanMemoryBank(rcodeDir) {
+function scanMemoryBankUncached(rcodeDir) {
   const memoryDir = path.join(rcodeDir, 'memory');
+  const projectRoot = path.dirname(rcodeDir);
   const result = {
     exists: false,
     initialised: false,
@@ -728,6 +843,7 @@ function scanMemoryBank(rcodeDir) {
     changeRecords: [],
     archive: [],
     postMortems: [],
+    drift: { drifts: [], error: null },
     lastScanned: new Date().toISOString(),
   };
 
@@ -752,11 +868,12 @@ function scanMemoryBank(rcodeDir) {
     result.sections[section] = files.map(name => {
       const full = path.join(sectionDir, name);
       const exists = fs.existsSync(full);
-      let bytes = 0, populated = false;
+      let bytes = 0, populated = false, ageDays = null;
       if (exists) {
         try {
           const stat = fs.statSync(full);
           bytes = stat.size;
+          ageDays = ageDaysFromMtime(stat.mtimeMs);
           const text = fs.readFileSync(full, 'utf8');
           populated = !/\{\{[A-Z_]+\}\}/.test(text) && !/_\(e\.g\.\s/.test(text);
         } catch { /* ignore */ }
@@ -767,6 +884,8 @@ function scanMemoryBank(rcodeDir) {
         exists,
         bytes,
         populated,
+        ageDays,
+        ageBand: exists ? ageBand(ageDays) : null,
       };
     });
   }
@@ -779,11 +898,39 @@ function scanMemoryBank(rcodeDir) {
       .map(e => ({ name: e.name, path: `.rcode/memory/${subdir}/${e.name}` }));
   }
 
-  result.distillates = listMd('distillates');
+  result.distillates = listMd('distillates')
+    .map(entry => scanDistillateFreshness(memoryDir, projectRoot, 'distillates', entry));
   result.changeRecords = listMd('change-records');
   result.archive = listMd('milestones/archive');
   result.postMortems = listMd('incidents/post-mortems');
 
+  // #968 — same heuristics as `rcode-hooks drift` (rcode/bin/lib/memory-drift.cjs):
+  // dependency contradictions, memory referencing paths that no longer exist,
+  // and a stale INDEX.md "Last updated" stamp. Advisory only — never throws.
+  try {
+    const { checkDrift } = require(path.join(__dirname, '..', '..', 'rcode', 'bin', 'lib', 'memory-drift.cjs'));
+    result.drift = checkDrift(projectRoot);
+  } catch (err) {
+    result.drift = { drifts: [], error: err.message };
+  }
+
+  return result;
+}
+
+// TTL cache — checkDrift() shells out to git (up to two `git log`/`git show`
+// calls), so an unthrottled /api/memory would re-run those on every request.
+// Mirrors scanState's cache (see below) at a coarser interval since memory
+// content changes far less often than sprint/task state.
+let _memoryCache = null; // { rcodeDir, result, ts }
+const MEMORY_SCAN_TTL_MS = 5000;
+
+function scanMemoryBank(rcodeDir) {
+  const now = Date.now();
+  if (_memoryCache && _memoryCache.rcodeDir === rcodeDir && now - _memoryCache.ts < MEMORY_SCAN_TTL_MS) {
+    return _memoryCache.result;
+  }
+  const result = scanMemoryBankUncached(rcodeDir);
+  _memoryCache = { rcodeDir, result, ts: now };
   return result;
 }
 

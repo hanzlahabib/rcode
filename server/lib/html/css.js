@@ -958,6 +958,46 @@ section .body {
   letter-spacing: -0.006em;
 }
 
+/* ── Memory freshness / drift (#968) ───────────────────────────────── */
+.memory-age-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: var(--radius-2);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.memory-age-pill.fresh { color: var(--green); background: color-mix(in srgb, var(--green) 14%, transparent); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+.memory-age-pill.aging { color: var(--amber); background: color-mix(in srgb, var(--amber) 14%, transparent); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+.memory-age-pill.stale { color: var(--red); background: color-mix(in srgb, var(--red) 14%, transparent); border-color: color-mix(in srgb, var(--red) 30%, transparent); }
+
+.memory-drift-item {
+  border-left: 2px solid var(--red);
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0;
+  background: var(--bg-elev-2);
+  border-radius: 0 var(--radius-2) var(--radius-2) 0;
+}
+.memory-drift-kind {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.memory-drift-claim {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+.memory-drift-evidence {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* ── Markdown render ────────────────────────────────────────────── */
 .md-render {
   font-size: var(--text-xs);

@@ -43,6 +43,13 @@ function CmdAccordion({ hints }) {
   `;
 }
 
+// ---- Age pill (#968) — fresh / aging / stale by mtime ----
+function AgePill({ ageDays, ageBand }) {
+  if (ageBand == null || ageDays == null) return null;
+  const label = ageDays === 0 ? 'updated today' : `updated ${ageDays}d ago`;
+  return html`<span class=${'memory-age-pill ' + ageBand}>${label}</span>`;
+}
+
 // ---- Section file list ----
 function SectionGroup({ section, files, onOpen }) {
   return html`
@@ -59,7 +66,10 @@ function SectionGroup({ section, files, onOpen }) {
               key=${f.name}
               onClick=${f.exists ? () => onOpen(f) : undefined}
             >
-              <div class="item-title">${status} ${f.name}</div>
+              <div class="item-title">
+                ${status} ${f.name}
+                <${AgePill} ageDays=${f.ageDays} ageBand=${f.ageBand} />
+              </div>
               <div class="item-meta">${meta} · ${f.bytes || 0} bytes</div>
             </div>
           `;
@@ -69,7 +79,7 @@ function SectionGroup({ section, files, onOpen }) {
   `;
 }
 
-// ---- Generic list group (distillates, change records, etc.) ----
+// ---- Generic list group (change records, archive, post-mortems) ----
 function ListGroup({ label, items, onOpen }) {
   if (!items || !items.length) return null;
   return html`
@@ -82,6 +92,51 @@ function ListGroup({ label, items, onOpen }) {
           </div>
         `)}
       </div>
+    </div>
+  `;
+}
+
+// ---- Distillates — freshness vs their source files (#968) ----
+function DistillateGroup({ items, onOpen }) {
+  if (!items || !items.length) return null;
+  return html`
+    <div>
+      <div class="memory-group-header">Distillates (${items.length})</div>
+      <div class="decision-list">
+        ${items.map(d => html`
+          <div class="item item-clickable" key=${d.name} onClick=${() => onOpen(d)}>
+            <div class="item-title">
+              ${d.name}
+              <${AgePill} ageDays=${d.ageDays} ageBand=${d.ageBand} />
+              ${d.stale ? html`<span class="memory-age-pill stale">source changed since generation</span>` : null}
+            </div>
+            <div class="item-meta">
+              ${d.generatedAt ? `generated ${d.generatedAt}` : 'no generated-at recorded'}
+              ${d.sourceDigest ? ` · digest ${d.sourceDigest.slice(0, 10)}…` : ''}
+              ${d.staleSources && d.staleSources.length ? ` · changed: ${d.staleSources.join(', ')}` : ''}
+              ${d.missingSources && d.missingSources.length ? ` · missing: ${d.missingSources.join(', ')}` : ''}
+            </div>
+          </div>
+        `)}
+      </div>
+    </div>
+  `;
+}
+
+// ---- Drift — same heuristics as `rcode-hooks drift` (#968) ----
+function DriftSection({ drift }) {
+  const drifts = (drift && drift.drifts) || [];
+  if (!drifts.length) return null;
+  return html`
+    <div>
+      <div class="memory-group-header">⚠ Drift (${drifts.length})</div>
+      ${drifts.map((d, i) => html`
+        <div class="memory-drift-item" key=${d.kind + '-' + i}>
+          <div class="memory-drift-kind">${d.kind}</div>
+          <div class="memory-drift-claim">${d.claim}</div>
+          <div class="memory-drift-evidence">${d.evidence}</div>
+        </div>
+      `)}
     </div>
   `;
 }
@@ -154,10 +209,11 @@ export function MemoryView() {
         <span style="color:var(--text-muted);font-size:var(--text-sm);">Last scanned: ${memory.lastScanned || '—'}</span>
       </div>
       <div id="memory-sections">
+        <${DriftSection} drift=${memory.drift} />
         ${Object.entries(sections).map(([section, files]) => html`
           <${SectionGroup} key=${section} section=${section} files=${files} onOpen=${setReader} />
         `)}
-        <${ListGroup} label="Distillates" items=${memory.distillates} onOpen=${setReader} />
+        <${DistillateGroup} items=${memory.distillates} onOpen=${setReader} />
         <${ListGroup} label="Change Records" items=${memory.changeRecords} onOpen=${setReader} />
         <${ListGroup} label="Milestone Archive" items=${memory.archive} onOpen=${setReader} />
         <${ListGroup} label="Post-mortems" items=${memory.postMortems} onOpen=${setReader} />
