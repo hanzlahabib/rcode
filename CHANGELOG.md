@@ -3,6 +3,104 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.13.0 (2026-08-25) — Verification stops self-certifying, and the run gets an owner
+
+### The theme
+
+Every serious defect found in a live audit this cycle was invisible to a green
+test suite: an inert RLS backstop, an authorization mutation with no
+relationship check, a core feature whose only importer was its own test. The
+pattern behind all of them was one shape — a check that enumerated a LOCATION
+instead of deriving from the PROPERTY that mattered, and then reported green
+while pointing where the problem was not. This release attacks that shape at
+four points in the loop.
+
+### Verification
+
+- **Falsification pass is now mandatory before any phase reaches `passed`.** A
+  second agent gets the goal and the codebase but explicitly NOT the summaries
+  or the verification report, so it cannot inherit the first agent's
+  conclusion. It attacks in order: production reachability, guard shape,
+  runtime truth, claim without evidence, and defaults to REFUTED when
+  uncertain. `passed` now records `falsification: upheld`; a `passed` without
+  it is self-certified and `state sync` reports it as `self_certified_phases`.
+- **Production reachability (Step 6c) now applies to every phase**, not just
+  UI-facing ones. If every importer of a delivered module is a test file, the
+  phase shipped dead code and that is a blocking fail. So is a production path
+  that re-implements the behaviour inline while the tested implementation sits
+  unreachable — regardless of a green suite.
+- **Phase completion is written back to state.json.** `verify-phase` was the
+  terminal step of the loop and had no write-back at all, and `execute`'s
+  `record-execution` call ended in `2>/dev/null || true`. One real project
+  reached nine verified phases with `executions: 0` and a dashboard reading
+  1/13 when the truth was 10/13.
+
+### Planning
+
+- **Specialist review panel** between planner and sprint-checker. Waleed
+  (architecture) and Fatima (quality) always sit; domain personas are added
+  only when a file, migration, or decision in the plan needs their lens. Every
+  member must answer two questions explicitly: which task enumerates a
+  location where it should derive from a property, and which delivered module
+  would have no production importer. Not skippable in yolo mode — yolo removes
+  the human mid-loop check, so plan-time review is the only review left.
+- **Guard tests must be proven red first.** Any task adding a meta-test,
+  invariant test, or forbidden-pattern scan must state the red step, enforced
+  by a blocking sprint-checker assertion. A guard never observed failing is
+  indistinguishable from one that greps the wrong path.
+- **`grep -qv` absence checks are blocked.** `-v` inverts per-line matching, so
+  it exits 0 on virtually every file — an assertion that can never fail.
+
+### Orchestration
+
+- **`rcode-orchestrator` (Raees) is a registered agent.** It previously existed
+  only as a skill folder, absent from team.yaml and rcode/agents/, so nothing
+  could spawn it. `plan.md` and `execute.md` now run under a shared
+  orchestrator contract with a mandatory orientation banner (where you are,
+  what I read, what I'll do, what I need) before the first subagent is spawned.
+- **`rcode-hussain-pm` owns work fan-out** — decomposing into owned,
+  parallelisable items. He produces the decomposition, Raees sequences it, and
+  they never both dispatch into the same run.
+- **Personas introduce themselves in one line** and can offer a better owner
+  via the Redirect protocol — an offer, never a refusal. If the user continues,
+  the persona does the work.
+
+### Dashboard
+
+- **A second project's dashboard no longer drives the first project's
+  orchestrator** (#1037). The port scan walked over the orchestrator's default
+  7718, `ORCH_PORT` never followed the dashboard's actual port, and the page
+  was served an orchestrator this process had not spawned — running against a
+  different repository.
+- **`view_only` config** refuses orchestrator runs server-side, not by hiding
+  buttons (#967).
+- **Memory view surfaces freshness ages and drift**, not just byte counts (#968).
+
+### Hooks
+
+- **A crashing advisory hook disables itself after three consecutive crashes**
+  instead of repeating the same error on every event. Trips on crashes only,
+  never on findings, and never for safety hooks — `bash-guard` and friends keep
+  failing loudly, because silently disabling a crashing guard turns a bug into
+  an open door.
+- **`stop-verify` accepts JSONC configs.** turbo.json, tsconfig.json, and
+  friends allow comments and trailing commas; strict `JSON.parse` was calling
+  valid files broken, on every single Stop.
+
+### Detection
+
+- **Under-reporting is now detected.** Every drift detector was tuned to catch
+  over-claiming; nothing caught a verified phase that was never recorded
+  complete. Added a `stale-state` insight and a doctor check.
+- **`state sync --from-disk` reads status from disk**, which the flag name
+  always implied and the implementation never did.
+
+### Performance
+
+- Slim state digest instead of re-reading the full state.json every hop (#948),
+  and folded rcode-tools calls per workflow run (#949).
+
+---
 ## v4.12.1 (2026-08-16) — Hooks no longer crash in git worktrees
 
 ### Fixes
