@@ -16,7 +16,9 @@ const path = require('node:path');
 
 const ORCH = path.resolve(__dirname, '../server/orchestrator.js');
 const TOKEN = 'testtoken123';
-const PORT = 7801;
+// 7811, not 7801 — orchestrator-view-only.test.cjs owns 7801-7803 and the
+// two collided whenever the full suite ran both files together.
+const PORT = 7811;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const WRONG_ROOT = path.resolve(__dirname, '..', '..'); // definitely not PROJECT_ROOT
 

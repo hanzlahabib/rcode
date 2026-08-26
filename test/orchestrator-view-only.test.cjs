@@ -72,6 +72,7 @@ function waitForBoot(child) {
   });
 }
 
+let viewOnlyRoot, normalRoot, envViewOnlyRoot;
 let childViewOnly, portViewOnly;
 let childNormal, portNormal;
 let childEnvViewOnly, portEnvViewOnly;
@@ -81,9 +82,9 @@ before(async () => {
   portNormal = 7802;
   portEnvViewOnly = 7803;
 
-  const viewOnlyRoot = makeProjectRoot('dashboard:\n  view_only: true\n');
-  const normalRoot = makeProjectRoot('dashboard:\n  view_only: false\n');
-  const envViewOnlyRoot = makeProjectRoot(null); // no config.yaml at all — env-only gate
+  viewOnlyRoot = makeProjectRoot('dashboard:\n  view_only: true\n');
+  normalRoot = makeProjectRoot('dashboard:\n  view_only: false\n');
+  envViewOnlyRoot = makeProjectRoot(null); // no config.yaml at all — env-only gate
 
   childViewOnly = spawnOrch(portViewOnly, viewOnlyRoot);
   childNormal = spawnOrch(portNormal, normalRoot);
@@ -105,7 +106,9 @@ after(() => {
 test('POST /api/run with dashboard.view_only: true in config.yaml → 403', async () => {
   const r = await request(portViewOnly, {
     method: 'POST', path: '/api/run',
-    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    // #1037 — the orchestrator now rejects any request that does not declare a
+    // matching PROJECT_ROOT, so every request here must carry the header.
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json', 'X-Project-Root': viewOnlyRoot },
   }, JSON.stringify({ storyId: 'good-1', cmd: '/rcode-init' }));
   assert.strictEqual(r.status, 403);
   const parsed = JSON.parse(r.body);
@@ -115,7 +118,7 @@ test('POST /api/run with dashboard.view_only: true in config.yaml → 403', asyn
 test('POST /api/run with VIEW_ONLY=1 env var → 403', async () => {
   const r = await request(portEnvViewOnly, {
     method: 'POST', path: '/api/run',
-    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json', 'X-Project-Root': envViewOnlyRoot },
   }, JSON.stringify({ storyId: 'good-1', cmd: '/rcode-init' }));
   assert.strictEqual(r.status, 403);
 });
@@ -123,7 +126,7 @@ test('POST /api/run with VIEW_ONLY=1 env var → 403', async () => {
 test('POST /api/run with dashboard.view_only: false → not 403 (normal operation preserved)', async () => {
   const r = await request(portNormal, {
     method: 'POST', path: '/api/run',
-    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json', 'X-Project-Root': normalRoot },
   }, JSON.stringify({ storyId: 'good-1', cmd: '/rcode-init' }));
   assert.notStrictEqual(r.status, 403);
 });
