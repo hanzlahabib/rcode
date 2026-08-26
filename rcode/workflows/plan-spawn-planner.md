@@ -34,14 +34,20 @@ When `GAPS_MODE=true`, use the prompt below in place of the standard planner pro
 
 <files_to_read>
 - {VERIFICATION_FILE} (Authoritative verification report — source of truth for gaps)
-- {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
 - Existing plan files in this phase: {EXISTING_PLAN_FILES}
 - Existing summary files in this phase: {EXISTING_SUMMARY_FILES}
 </files_to_read>
 
-${AGENT_SKILLS_PLANNER}
+<project_state_digest>
+{state_digest as JSON — current phase, recent decisions, open blockers. Slim
+extract of state.json (#948); do NOT separately Read .rcode/state.json — its
+full history (all phases, all sprints) is not needed here and costs 10-20K+
+tokens on a mature project.}
+</project_state_digest>
+
+{agent_skills.planner}
 
 <gap_list>
 {Serialized GAP_LIST — for each gap include id, title, expected behavior, actual behavior, status (gap_found|partial), and source section.}
@@ -86,7 +92,6 @@ Default: `phase` (one SPRINT.md, up to 8 stories — see Scope-Driven Sizing in 
 **Self-upgrade to `initiative` mid-decomposition** if, once you've read CONTEXT.md/ROADMAP.md and started breaking down the work, it splits into independent waves or work-streams (e.g. shared-primitive foundation → feature-local migrations → cleanup/tests) and total stories would exceed 8. When that happens, emit multiple SPRINT.md files (`{phase}-1-SPRINT.md`, `{phase}-2-SPRINT.md`, ...) in this same run instead of one oversized plan. Do not wait for rcode-sprint-checker's "scope exceeds context budget" rejection to force a resharding pass — that costs a full extra planner run. Decide the split now, while you're already looking at the file/story list.
 
 <files_to_read>
-- {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
 - {context_path} (USER DECISIONS from /rcode-discuss-phase — read `<decisions>` for locked choices AND `<code_context>` for existing code patterns, reusable assets, and architectural notes gathered during discuss-phase)
@@ -102,7 +107,14 @@ ${CONTEXT_WINDOW >= 500000 ? `
 ` : ''}
 </files_to_read>
 
-${AGENT_SKILLS_PLANNER}
+<project_state_digest>
+{state_digest as JSON — current phase, recent decisions, open blockers. Slim
+extract of state.json (#948); do NOT separately Read .rcode/state.json — its
+full history (all phases, all sprints) is not needed here and costs 10-20K+
+tokens on a mature project.}
+</project_state_digest>
+
+{agent_skills.planner}
 
 **Phase requirement IDs (every ID MUST appear in a plan's `requirements` field):** {phase_req_ids}
 
