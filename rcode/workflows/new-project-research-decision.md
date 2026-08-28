@@ -243,7 +243,67 @@ Display research complete banner and key findings:
 Files: `.planning/research/`
 ```
 
-**If "Skip research":** Continue to Step 7.
+## 6b. Stack confirmation gate — HARD STOP
+
+**The stack is never decided for the user. Not by research, not by a
+recommendation, not by "the obvious choice for this domain."** Research produces
+a *suggestion*; only the user turns it into a decision.
+
+This gate runs whether research ran or was skipped. If research was skipped, ask
+with no recommendation attached — you have no grounds for one.
+
+```
+AskUserQuestion:
+  header: "Stack"
+  question: "Research suggests {STACK} because {the one reason that actually drove it}. Confirm?"
+  options:
+    - label: "Confirm {STACK}"
+      description: "{the trade-off the user is accepting, stated plainly}"
+    - label: "I'll choose the stack"
+      description: "Tell me what to build on and I'll record that instead."
+    - label: "Research more first"
+      description: "Compare against {the closest alternative} before deciding."
+```
+
+**Nothing proceeds until the user answers.** Not requirements, not the roadmap,
+not a single file. An unanswered question is not a confirmation, and neither is
+silence, `--auto`, or `auto_advance`. **Auto mode does NOT bypass this gate** —
+every other question in this workflow has an auto default; this one does not,
+because a wrong stack is the most expensive thing in the project to reverse.
+
+State the reason the suggestion exists, in one sentence, in the user's terms.
+"Research recommends WordPress" is not a reason. "WordPress because a
+non-technical client will update content themselves, with no dev retainer" is —
+and stated that way the user can see immediately whether the premise is true.
+
+Record the answer with `state add-decision`, including the premise it rests on:
+
+```bash
+node ".rcode/bin/rcode-tools.cjs" state add-decision \
+  "Stack: {chosen}. Premise: {the one reason}. Confirmed by user {date}."
+```
+
+### The premise is part of the decision
+
+**A stack decision is only valid while its premise holds.** Write the premise
+into the decision, then re-open the decision the moment the premise changes.
+
+Confirmed live: a site was scoped for a non-technical client, so research picked
+WordPress and the roadmap locked it. The project later pivoted to a model with no
+client at all — the maintainer was the technical owner. Every planning doc was
+rewritten for the pivot and the stack stayed "Locked", because nothing in the
+loop treats a locked decision as re-openable. A PHP theme got built and then
+migrated wholesale to a static generator to undo it.
+
+**On any pivot, re-run this gate** for every decision whose stated premise the
+pivot invalidated. A decision whose reason has expired is not locked, it is
+stale.
+
+**If "Research more first":** run the comparison against the named alternative,
+then return to this gate. Do not proceed past it.
+
+**If "Skip research":** Continue to Step 6b — you still need the stack gate,
+you just have no suggestion to offer.
 
 
 ## Next Up

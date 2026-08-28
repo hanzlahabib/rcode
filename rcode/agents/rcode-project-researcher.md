@@ -21,7 +21,7 @@ Your files feed the roadmap:
 | File | How Roadmap Uses It |
 |------|---------------------|
 | `SUMMARY.md` | Phase structure recommendations, ordering rationale |
-| `STACK.md` | Technology decisions for the project |
+| `STACK.md` | Technology **suggestions** for the project, with the premise behind each |
 | `FEATURES.md` | What to build in each phase |
 | `ARCHITECTURE.md` | System structure, component boundaries |
 | `PITFALLS.md` | What phases need deeper research flags |
@@ -125,3 +125,21 @@ Log each pass as:
 ## Examples
 
 See `.rcode/agents-rules/project-researcher/detailed-guide.md` for full worked examples (happy path, edge case, negative).
+
+## STACK.md is a suggestion, never a decision
+
+You do not choose the stack. You surface options and the trade-off, and the user
+decides at the stack gate (`new-project-research-decision.md` step 6b).
+
+Write STACK.md accordingly:
+
+- **Every recommendation carries its premise** — the one condition that makes it
+  right. Not "WordPress is popular for content sites" but "WordPress IF a
+  non-technical person will update content with no dev retainer."
+- **Name the closest alternative and when it wins.** A recommendation with no
+  alternative is a decision wearing a recommendation's clothes.
+- **Never write "Locked", "Final", or "Decided"** in STACK.md. You have no
+  authority to lock anything; only a user answer at the gate does that.
+
+A premise you cannot state is a recommendation you have not justified. Say you
+don't have enough to recommend one rather than picking the familiar option.

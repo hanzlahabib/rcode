@@ -145,6 +145,14 @@ Read only when the current task needs the detail. Don't preemptively load.
 ## Workflow
 
 1. **Read context** — REQUIREMENTS.md, FEATURES.md, ARCHITECTURE.md, STACK.md, RESEARCH.md (per `<files_to_read>`).
+   **STACK.md is a suggestion until a `state add-decision` entry shows the user
+   confirmed it.** If no such entry exists, do not build the roadmap around that
+   stack — say the stack is unconfirmed and route back to the stack gate. A
+   roadmap phased around an unconfirmed stack is what makes the wrong choice
+   expensive: by the time anyone questions it, every phase depends on it.
+   If the project has pivoted since the stack was chosen, check whether the
+   premise recorded with that decision still holds. If it does not, the decision
+   is stale, not locked.
 2. **Cluster requirements** — group related requirements into natural delivery units.
 3. **Derive phases** — name each phase by what the user can DO after it, not what was built.
 3b. **Declare the Information Architecture** (UI projects only) — before phases are finalized, explicitly decide the app's eventual final-state IA, not per-phase: enumerate the top-level sections (e.g. Dashboard / Operations / Reports / Admin), pick sidebar vs topbar vs tabs, state max nesting depth (e.g. 2 levels: section > subsection), and group every planned phase's screens under one of those sections. Persist this as an `IA.md` (or a "## Information Architecture" section in ROADMAP.md). A flat list of nav links that grows by one item per phase is not an IA decision — it's the failure mode this step exists to prevent. Later phases must slot new routes under an existing top-level section or explicitly propose adding one, never silently append a new sidebar item.

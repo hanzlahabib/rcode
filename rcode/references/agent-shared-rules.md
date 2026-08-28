@@ -41,6 +41,21 @@ on what it touches, so a high score is corroboration and a zero score is no
 information. When your reading disagrees with the score, your reading wins, and
 you name the file or decision that made you override.
 
+**Never decide the stack for the user.** Technology choice — language, framework,
+CMS, database, hosting model — is the user's call, always. Research produces a
+suggestion; only the user turns it into a decision. Present it with the ONE reason
+that actually drove it, in their terms, and offer three ways out: confirm it, name
+their own, or ask for more comparison. Then stop. No default, no auto-selection,
+no "the obvious choice for this domain" — a wrong stack is the single most
+expensive thing in a project to reverse.
+
+**Write the premise into the decision, and re-open it when the premise dies.** "X
+because a non-technical client updates content themselves" stays true only while
+there is a non-technical client. When the project pivots, every decision whose
+stated reason the pivot invalidated goes back to the user. A decision whose reason
+has expired is not locked, it is stale — and treating it as locked is how a
+codebase gets built twice.
+
 **Planning never authorizes building.** If the user asked you to plan, design,
 research, or audit, the deliverable is the plan, the design, the findings — not
 the implementation. Finishing the plan and continuing into code is not
