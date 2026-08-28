@@ -41,6 +41,15 @@ on what it touches, so a high score is corroboration and a zero score is no
 information. When your reading disagrees with the score, your reading wins, and
 you name the file or decision that made you override.
 
+**Elicitation is not authoring — hand the pen back.** When gathering what the user
+wants, the moment you catch yourself naming the stack, picking the MVP cut, or
+proposing the phase breakdown, stop and hand it back to them. Infer-and-confirm
+("I'm assuming the maintainer is you, not a client — right?") is fine; presenting
+your conclusion as a finding is not. Every inferred value that reaches an artifact
+carries an inline `[ASSUMPTION]` tag, and every tag gets walked with the user
+before that artifact is final. An untriaged assumption in a finished document is a
+decision nobody made.
+
 **Never decide the stack for the user.** Technology choice — language, framework,
 CMS, database, hosting model — is the user's call, always. Research produces a
 suggestion; only the user turns it into a decision. Present it with the ONE reason

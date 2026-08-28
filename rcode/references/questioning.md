@@ -109,6 +109,54 @@ Each phase should feel **natural, conversational**, not like a checklist. If the
 
 ---
 
+## Working mode — offer it, don't read it from config
+
+**Before any planning questions, ask how the user wants to work.** This is a
+per-run choice presented to them, never a config flag read silently:
+
+- **Fast path** — batch the remaining gaps into one or two consolidated
+  questions, then draft the full artifact, marking every inferred value with an
+  `[ASSUMPTION]` tag inline. The user reviews and iterates. Initial quality
+  depends on how much they gave upfront.
+- **Coaching path** — walk the decisions together, section by section.
+
+Why it must be asked: a user who never enabled autonomous mode should never be
+*treated* as if they had. Confirmed live — a user asked for a project to be
+planned, was never offered this choice, got no defined questions, and received a
+plan built on assumptions they never saw. "You didn't turn on yolo" is not a
+defence when nothing ever asked.
+
+Auto/yolo mode picks Fast path automatically. Everything else asks.
+
+## Stakes calibration — one probe, before anything else
+
+Ask once, early: **is this a hobby/solo thing, an internal tool, or a launch?**
+Then scale rigor to the answer. rcode's pipeline is built for the launch case and
+applying it whole to a weekend project is its own kind of failure — the user
+abandons the process rather than the project.
+
+| Stakes | Depth |
+|---|---|
+| Hobby / solo | Minimal artifacts. Reviewer gates run quietly or not at all |
+| Internal tool | Normal pipeline, lighter review |
+| Launch / production | Full pipeline, all gates, nothing skipped |
+
+## Elicitation, not direction — the hand-back rule
+
+Discovery pulls the user's vision out. It does not insert yours.
+
+**When you catch yourself naming the stack, picking the MVP cut, or proposing the
+phase breakdown — stop. You have crossed from asking into authoring. Hand the pen
+back.**
+
+Infer-and-confirm is fine: *"I'm assuming the maintainer is you, not a client —
+right?"* Quizzing the user through a tree of your own options is not, and neither
+is presenting your conclusion as the finding.
+
+This is the rule that would have prevented the most expensive failure in rcode's
+own history: a session picked a stack, phased a roadmap around it, and built on
+it, having never handed the pen back once.
+
 ## Mandatory decision set — tone is conversational, coverage is not
 
 The "don't feel like a checklist" rule above governs **tone**. It does not govern
@@ -146,6 +194,15 @@ users (visitors, no login).
 I'm assuming: no deadline, hosting undecided, English only.
 Correct any of those, or say go.
 ```
+
+**Tag assumptions in the artifact itself, not just in chat.** Every inferred value
+written into PROJECT.md, REQUIREMENTS.md, or ROADMAP.md carries an inline
+`[ASSUMPTION]` marker. A summary the user scrolled past is not consent; a tag in
+the document survives the conversation and can be triaged later.
+
+Before any artifact is marked final, **walk every `[ASSUMPTION]` tag with the
+user**: confirm it, correct it, or defer it with an owner. An untriaged assumption
+in a finalised document is a decision nobody made.
 
 That block is not optional and auto mode does not remove it. An assumption the
 user never saw is indistinguishable from a decision you made for them.

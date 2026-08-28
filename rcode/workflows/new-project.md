@@ -496,6 +496,20 @@ Ask inline (freeform, NOT AskUserQuestion):
 
 "What do you want to build?"
 
+**Then, before any deeper questioning, run two short probes from
+`@.rcode/references/questioning.md` — in this order:**
+
+1. **Stakes calibration** — hobby/solo, internal tool, or launch? Scale every
+   artifact and gate below to the answer. Do not run the launch-grade pipeline on
+   a weekend project.
+2. **Working mode** — Fast path (batched questions, draft with `[ASSUMPTION]`
+   tags) or Coaching path (walk the decisions together)? **Ask it. Never infer it
+   from `auto_advance`, from how detailed their opening message was, or from your
+   own read of their hurry.** Only `--auto`/yolo picks Fast path without asking.
+
+These two answers govern the rest of this workflow. Record them with
+`state add-decision` so a later resume does not re-guess them.
+
 Wait for their response. This gives you the context needed to ask intelligent follow-up questions.
 
 **Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.rcode/config.yaml` (via `node .rcode/bin/rcode-tools.cjs config-get workflow.research_before_questions`). When enabled, before asking follow-up questions about a topic:
