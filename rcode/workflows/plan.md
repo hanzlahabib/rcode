@@ -937,7 +937,30 @@ Returns (else branch only):
 
 After plans pass the checker (or checker is skipped), verify that all phase requirements are covered by at least one plan.
 
-**Skip if:** `phase_req_ids` is null, `TBD`, or an empty array/list (no requirements mapped to this phase) — `[[ -z "$phase_req_ids" || "$phase_req_ids" == "TBD" || "$phase_req_ids" == "[]" || "$phase_req_ids" == "null" ]]` — proceed to step 14.
+**If `phase_req_ids` is empty, the gate does NOT silently skip — it reports why.**
+An empty array has two very different causes and they must not look the same:
+
+1. This phase genuinely maps to no requirements. Fine, say so and continue.
+2. REQUIREMENTS.md HAS a traceability table and nothing parsed out of it. That is
+   a broken gate reporting as a passing one.
+
+Distinguish them before proceeding:
+
+```bash
+if [ -f .planning/REQUIREMENTS.md ] && grep -qE '\b[A-Z][A-Z0-9]{1,15}-[0-9]+\b' .planning/REQUIREMENTS.md; then
+  echo "⚠ Requirements coverage gate SKIPPED but REQUIREMENTS.md contains requirement IDs."
+  echo "  phase_req_ids came back empty — the phase→requirement mapping in ROADMAP.md"
+  echo "  is missing or unparseable, so nothing is verifying coverage for this phase."
+  echo "  Fix the phase's **Requirements:** line in ROADMAP.md, then re-run."
+fi
+```
+
+Surface that warning to the user; do not bury it. Confirmed live: a project's
+requirement IDs were all domain-prefixed (`FOUND-01`, `RENT-04`), the extractor
+only matched `REQ-*`, and this gate skipped itself on every phase while
+appearing to pass.
+
+Then proceed to step 14 when the array really is empty.
 
 **Step 1: Extract requirement IDs claimed by plans**
 ```bash

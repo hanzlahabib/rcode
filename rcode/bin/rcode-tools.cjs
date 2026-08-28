@@ -193,7 +193,13 @@ function extractReqIds(requirements) {
   if (!Array.isArray(requirements) || requirements.length === 0) return [];
   const seen = new Set();
   const out = [];
-  const re = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
+  // Two shapes, because real projects rarely use the REQ- prefix:
+  //   REQ-AUTH, REQ-FOO-BAR   — the documented convention
+  //   FOUND-01, RENT-04, AUTHZ-04, OBJ-06, CITY-02 — what projects actually write
+  // Matching only the first shape returned an empty phase_req_ids on every
+  // domain-prefixed project, and plan.md's Requirements Coverage Gate skips
+  // itself when that array is empty. The gate was silently off, not passing.
+  const re = /\bREQ-[A-Z0-9][A-Z0-9-]*\b|\b[A-Z][A-Z0-9]{1,15}-\d+[a-z]?\b/g;
   for (const line of requirements) {
     const matches = String(line).match(re) || [];
     for (const m of matches) {
@@ -1414,6 +1420,26 @@ function cmdState(subArgs) {
   // --- set-phase ---
   if (sub === 'set-phase') {
     const name = subArgs[1];
+    // A flag-looking argument is never a phase name. Without this,
+    // `state set-phase --phase 99 --status complete` created a phase literally
+    // NAMED "--phase", set current_phase to "--phase", and returned ok:true.
+    // Silent state corruption reported from a live project.
+    if (typeof name === 'string' && name.startsWith('--')) {
+      throw new Error(
+        `set-phase takes a phase NAME as a positional argument, not flags. ` +
+        `Got "${name}". Did you mean:\n` +
+        `  state set-phase "Phase name"        (set the current phase pointer)\n` +
+        `  phase complete <N>                  (mark a phase complete)\n` +
+        `  state planned-phase --phase <N>     (record a phase as planned)`
+      );
+    }
+    const strayFlags = subArgs.slice(2).filter(a => typeof a === 'string' && a.startsWith('--'));
+    if (strayFlags.length > 0) {
+      throw new Error(
+        `set-phase does not accept flags (${strayFlags.join(', ')}). It sets the ` +
+        `current-phase pointer only. Use 'phase complete <N>' to change a phase's status.`
+      );
+    }
     if (!name) throw new Error('set-phase requires a phase name argument');
     const state = readState() || defaultState();
     // Fix #854 — mark the previously active phase as completed before switching.
@@ -3605,6 +3631,32 @@ function cmdState(subArgs) {
         }
 
         if (existingIdx >= 0) {
+          // Identity check BEFORE anything is carried over. Sync matched this
+          // entry by NUMBER, but a number is a slot, not an identity. When a
+          // roadmap is replaced, slot 3 can go from "Location Template" to
+          // "Competitor Gap Analysis" — two unrelated pieces of work. Carrying
+          // the old status across told a live project that competitor analysis
+          // was "complete" when it had never been started, and only a manual
+          // disk audit caught it.
+          const priorName = String(state.phases[existingIdx].name || '').trim();
+          const incomingName = String(phaseName || '').trim();
+          const normName = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+          const identityChanged = priorName && incomingName
+            && normName(priorName) !== normName(incomingName);
+          if (identityChanged) {
+            // Different work in the same slot. Drop the inherited status and
+            // completion, and let the disk-derived pass below decide afresh.
+            state.phases[existingIdx].status = 'planned';
+            delete state.phases[existingIdx].completed;
+            delete state.phases[existingIdx].started;
+            parsed.identity_changed = parsed.identity_changed || [];
+            parsed.identity_changed.push({
+              phase: phaseNum,
+              was: priorName,
+              now: incomingName,
+              carried_status_dropped: true,
+            });
+          }
           // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
