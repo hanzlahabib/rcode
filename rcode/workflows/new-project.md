@@ -475,7 +475,12 @@ Proceed to Step 4 (skip Steps 3 and 5).
 
 ## 3. Deep Questioning
 
-**If auto mode:** Skip (already handled in Step 2a). Extract project context from provided document instead and proceed to Step 4.
+**If auto mode:** extract project context from the provided document instead of
+asking. **You still owe the user the Mandatory decision set** — resolve each item
+from the document where it answers one, and where it does not, list what you are
+assuming before Step 4 writes PROJECT.md. Auto mode removes the conversation, not
+the accountability. If the document leaves the maintainer or the stack unanswered,
+stop and ask those two regardless of mode.
 
 **Display stage banner:**
 
@@ -526,6 +531,11 @@ Techniques:
 Mentally check the context checklist. If gaps remain, weave questions naturally. Don't suddenly switch to checklist mode.
 
 **Decision gate:**
+
+**Before the decision gate, show your coverage.** State plainly which items of the
+Mandatory decision set (`@.rcode/references/questioning.md`) the user actually
+answered and which you are assuming, with each assumption spelled out in one line.
+An assumption the user never saw is a decision you made for them.
 
 When you could write a clear PROJECT.md, use AskUserQuestion:
 

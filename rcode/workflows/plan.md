@@ -315,11 +315,11 @@ If `TEXT_MODE` is true, present as a plain-text numbered list:
 ```
 No CONTEXT.md found for Phase {X}. Plans will use research and requirements only — your design preferences won't be included.
 
-1. Continue without context — Plan using research + requirements only
 [If DISCUSS_MODE is "assumptions":]
-2. Gather context (assumptions mode) — Analyze codebase and surface assumptions before planning
+1. Gather context (assumptions mode) [recommended] — Analyze codebase and surface assumptions before planning
 [If DISCUSS_MODE is "discuss" or unset:]
-2. Run discuss-phase first — Capture design decisions before planning
+1. Run discuss-phase first [recommended] — Capture design decisions before planning
+2. Continue without context — Plan using research + requirements only; your design preferences will not be in the plan
 
 Enter number:
 ```
@@ -328,11 +328,13 @@ Otherwise use AskUserQuestion:
 - header: "No context"
 - question: "No CONTEXT.md found for Phase {X}. Plans will use research and requirements only — your design preferences won't be included. Continue or capture context first?"
 - options:
-  - "Continue without context" — Plan using research + requirements only
+  (Recommended option FIRST — rcode was recommending the skip, which is how phases
+  got planned with the user's design decisions never captured.)
   If `DISCUSS_MODE` is `"assumptions"`:
-  - "Gather context (assumptions mode)" — Analyze codebase and surface assumptions before planning
+  - "Gather context (assumptions mode) (Recommended)" — Analyze codebase and surface assumptions before planning
   If `DISCUSS_MODE` is `"discuss"` (or unset):
-  - "Run discuss-phase first" — Capture design decisions before planning
+  - "Run discuss-phase first (Recommended)" — Capture design decisions before planning
+  - "Continue without context" — Plan using research + requirements only; your design preferences will not be in the plan
 
 If "Continue without context": Proceed to step 5.
 If "Run discuss-phase first":

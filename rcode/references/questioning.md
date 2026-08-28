@@ -105,9 +105,50 @@ A well-paced Socratic conversation follows a natural arc:
    ↓ Proceed to planning or revisit if gaps remain
 ```
 
-Each phase should feel **natural, conversational**, not like a checklist. If the user volunteers information, use it; don't force a predetermined sequence.
+Each phase should feel **natural, conversational**, not like a checklist. If the user volunteers information, use it; don't force a predetermined sequence. **This is a rule about TONE, not about coverage** — the decisions in the Mandatory decision set below still all get resolved, in whatever order the conversation makes natural.
 
 ---
+
+## Mandatory decision set — tone is conversational, coverage is not
+
+The "don't feel like a checklist" rule above governs **tone**. It does not govern
+**coverage**. There is a set of decisions that shape everything downstream, and
+each one must be either answered by the user or recorded as an assumption with
+its reason. Silently deciding one on the user's behalf is not conversational
+skill, it is skipping the question.
+
+Confirmed live: a user asked for a project to be planned, was never asked a
+single defined question, and got a stack, a roadmap, and an implementation built
+on a premise they had never confirmed. When the premise turned out to be wrong
+the whole build was thrown away. Nothing in this file forced the question,
+because this file told the asker to avoid predetermined sequences.
+
+Every one of these must be resolved before PROJECT.md is written:
+
+| Decision | Why it cannot be assumed |
+|---|---|
+| **Who maintains this after launch** | Drives the stack more than any technical factor. "Non-technical client" and "you, the technical owner" give opposite answers |
+| **Stack** | Most expensive thing in the project to reverse. Never decided for the user — see the stack gate |
+| **Who the users are, and whether there are roles** | Auth, permissions, and data model all hang off it |
+| **What is explicitly OUT of scope for v1** | An unstated exclusion reappears later as a gap |
+| **What already exists** | Greenfield vs brownfield changes every phase |
+| **What "done" means for the first milestone** | Without it there is no way to verify anything |
+| **Any hard constraint** — budget, deadline, hosting, compliance, locale | These invalidate otherwise-correct plans |
+
+**How to run it without sounding like a form:** weave them into the conversation
+in whatever order the user's own answers suggest — that part stays conversational.
+But **track them, and before you write PROJECT.md, state which ones the user
+actually answered and which you are assuming, with the assumption spelled out.**
+
+```
+Before I write this up — you answered: maintainer (you), scope (city pages only),
+users (visitors, no login).
+I'm assuming: no deadline, hosting undecided, English only.
+Correct any of those, or say go.
+```
+
+That block is not optional and auto mode does not remove it. An assumption the
+user never saw is indistinguishable from a decision you made for them.
 
 ## Context Checklist
 
@@ -122,7 +163,7 @@ After Socratic questioning, verify these dimensions were covered:
 - [ ] **Auth/identity** — SSO, local accounts, guest access, or a specific IdP?
 - [ ] **Locale/i18n** — Which languages/regions must be supported, RTL needed?
 
-If gaps remain after natural conversation, weave questions naturally. Don't suddenly shift to checklist mode.
+If gaps remain after natural conversation, weave questions naturally. Don't suddenly shift to checklist mode — but do NOT let "not a checklist" become "never asked". Anything from the Mandatory decision set still unresolved gets asked outright before you move on, plainly, rather than silently assumed.
 
 ---
 
