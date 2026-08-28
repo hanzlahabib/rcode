@@ -37,6 +37,12 @@ Bypassing it produces a built project with no execution trace, no SUMMARY.md, an
 a dashboard frozen at `planned`. See issue #915.
 
 <pre_flight>
+0a. **Record the authorized scope** — the user ran an execute command, so building
+    is authorized from here:
+    ```bash
+    node ".rcode/bin/rcode-tools.cjs" state set-intent build --source execute.md
+    ```
+
 **Mandatory before execution begins.** Run these checks first and surface
 findings BEFORE any subagents are spawned. If any check fails, stop and
 route back to the user.

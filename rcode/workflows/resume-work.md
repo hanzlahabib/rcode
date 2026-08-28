@@ -197,6 +197,24 @@ Based on project state, determine the most logical next action:
 </step>
 
 <step name="offer_options">
+**"Resume" restores position, never scope.** It tells you WHERE the work stopped;
+it does not tell you what the user authorized. Present options and wait — do not
+pick one and start.
+
+The failure this prevents: a user asks for a project to be planned, the session
+plans it, the user later types "resume", and the session reads that as "keep
+going" and starts building. The standing instruction was still "plan". Confirmed
+live, and the cleanup cost more than the work.
+
+Two rules:
+
+- **Never begin implementation from a resume.** If the state says the phase is
+  ready to execute, that is an option to OFFER, not an action to take. Execution
+  starts when the user runs `/rcode-execute`, not when a menu suggests it.
+- **Say what the last authorized scope was**, if the state records one (see
+  `state read` → `last_intent`, written by plan.md and execute.md). If it does not, say that plainly rather than
+  inferring one: `Last recorded scope: unknown — tell me plan or build.`
+
 Present contextual options based on project state:
 
 ```

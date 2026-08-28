@@ -100,6 +100,15 @@ drafting tasks inline, the run has lost its orchestrator — spawn the planner
 instead. A SPRINT.md with no planner `Task()` behind it is the failure this rule
 exists to prevent (see step 8).
 
+## 0.4. Record the authorized scope
+
+```bash
+node ".rcode/bin/rcode-tools.cjs" state set-intent plan --source plan.md
+```
+
+This is what the user asked for on THIS invocation, and it is what `resume-work`
+will restore later. Planning does not authorize building — see step 15.
+
 ## 0.5. Project-Status Preflight
 
 ```bash
@@ -1028,7 +1037,34 @@ if ([[ "$ARGUMENTS" =~ --auto ]] || [[ "$ARGUMENTS" =~ --chain ]]) && [[ "$AUTO_
 fi
 ```
 
-**If `--auto` or `--chain` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true:**
+**`AUTO_CFG` alone is NOT sufficient.** A persistent `workflow.auto_advance: true`
+in settings must never silently turn "plan this" into "plan and build this". The
+user's invocation is their declared scope: they typed a planning command, so
+planning is what was authorized. A config flag set weeks ago is not consent for
+this build.
+
+Confirmed live: a user asked for a project to be planned, `auto_advance` was on,
+and the session planned and then built a WordPress theme, then migrated the whole
+thing to Astro to undo its own stack choice. The user's words were "plan karo".
+Nothing in the loop stopped at the boundary they actually drew.
+
+**If `AUTO_CFG` is true but neither `--auto`/`--chain` nor `AUTO_CHAIN` is set:**
+ask before advancing, and default to stopping:
+
+```
+AskUserQuestion:
+  question: "Plans are ready. auto_advance is on in your config — execute phase {N} now?"
+  options:
+    - label: "Stop here (Recommended)"
+      description: "Plans written and verified. Review them, then run /rcode-execute {N} when ready."
+    - label: "Execute now"
+      description: "Chain straight into execution, as auto_advance requests."
+```
+
+In `--text` mode present this as a numbered list. If the user does not answer,
+STOP — an unanswered question is not approval.
+
+**If `--auto` or `--chain` flag present OR `AUTO_CHAIN` is true:**
 
 Display banner:
 ```
@@ -1156,6 +1192,7 @@ ${WINDOWS === 'true' ? '@.rcode/references/plan-windows-troubleshooting.md' : ''
 - [ ] Phase directory created if needed
 - [ ] CONTEXT.md loaded early (step 4) and passed to ALL agents
 - [ ] Research completed (unless --skip-research or --gaps or exists)
+- [ ] Auto-advance fired only on an explicit `--auto`/`--chain` or an answered confirmation, never on `auto_advance` config alone
 - [ ] Specialist review panel spawned (Waleed + Fatima + domain agents) and its blocking issues fed into the revision loop, or `workflow.specialist_review: false` recorded
 - [ ] rcode-phase-researcher spawned with CONTEXT.md
 - [ ] Existing plans checked

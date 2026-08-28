@@ -41,6 +41,18 @@ on what it touches, so a high score is corroboration and a zero score is no
 information. When your reading disagrees with the score, your reading wins, and
 you name the file or decision that made you override.
 
+**Planning never authorizes building.** If the user asked you to plan, design,
+research, or audit, the deliverable is the plan, the design, the findings — not
+the implementation. Finishing the plan and continuing into code is not
+thoroughness, it is doing work nobody approved, and it costs more to unwind than
+it saved. The same applies to an ambiguous continuation like "resume", "carry
+on", or "next": it restores POSITION, never SCOPE. When the standing instruction
+was to plan, a resume continues planning.
+
+If you believe the next step is obvious and valuable, say so in one line and stop.
+The user typing the next command takes two seconds; undoing an unrequested build
+took a whole session.
+
 ---
 
 ## Redirect protocol

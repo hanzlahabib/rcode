@@ -3256,6 +3256,29 @@ function cmdState(subArgs) {
   // instead. Its stale-executing-phase hygiene warning was ported there.
   // Kept only for backward compatibility with anyone scripting against it
   // directly; do not wire new callers to this — use `phase complete`.
+  // Records what the user actually authorized this session — 'plan', 'build',
+  // 'research', 'audit'. `resume-work` reads it so "resume" restores POSITION
+  // AND SCOPE, not position alone. Without it, a resume after a planning
+  // session reads as "keep going" and starts building work nobody asked for.
+  if (sub === 'set-intent') {
+    const flags = parseFlags(1);
+    const intent = flags.intent || subArgs[1];
+    const ALLOWED = ['plan', 'build', 'research', 'audit', 'review'];
+    if (!intent) throw new Error(`set-intent requires an intent (${ALLOWED.join('|')})`);
+    if (!ALLOWED.includes(intent)) {
+      throw new Error(`unknown intent "${intent}" — expected one of: ${ALLOWED.join(', ')}`);
+    }
+    const state = readState() || defaultState();
+    const previous = state.last_intent ? state.last_intent.intent : null;
+    state.last_intent = {
+      intent,
+      recorded_at: new Date().toISOString(),
+      source: flags.source || 'workflow',
+    };
+    writeState(state);
+    return { ok: true, intent, previous };
+  }
+
   if (sub === 'complete-phase') {
     const flags = parseFlags(1);
     if (!flags.phase) throw new Error('complete-phase requires --phase <N>');
@@ -7524,7 +7547,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','set-intent','reset'];
         // Issue #656 — top-level aliases for intuitive guesses.
         const intuitionAliases = {
           blocker: 'state resolve-blocker',
