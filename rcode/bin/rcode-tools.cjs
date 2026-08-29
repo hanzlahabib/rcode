@@ -4543,6 +4543,70 @@ function cmdPhase(subArgs) {
   // Closes #731. No --names arg required — reads the ROADMAP table directly.
   // Only creates directories; does NOT create .md files inside them.
   // =====================================================================
+  // phase rename-dir <N> — align a phase directory's slug with its ROADMAP name.
+  // Dry-run by default: renaming a directory moves artifacts and, without git mv,
+  // detaches their history. There was no mechanism for this at all, so a roadmap
+  // rewrite left every directory carrying the name of whatever it used to be.
+  if (sub === 'rename-dir') {
+    // cmdPhase has no shared flag parser (parseFlags is local to cmdState), so
+    // read the two flags this needs directly.
+    const argvIdx = subArgs.findIndex((a, i) => i > 0 && !String(a).startsWith('--'));
+    const phaseFlagIdx = subArgs.indexOf('--phase');
+    const target = argvIdx > 0 ? subArgs[argvIdx]
+      : (phaseFlagIdx !== -1 ? subArgs[phaseFlagIdx + 1] : null);
+    if (!target) throw new Error('phase rename-dir requires a phase number');
+    const apply = subArgs.includes('--apply');
+
+    const found = cmdFindPhase([String(target)]);
+    if (!found.exists) throw new Error(`No phase directory on disk for phase ${target}`);
+
+    const roadmapLib = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+    const rp = roadmapLib.dispatch(PROJECT_ROOT, ['get-phase', String(target)]);
+    if (!rp || !rp.found || !rp.name) {
+      throw new Error(`Phase ${target} not found in ROADMAP.md — nothing to rename toward`);
+    }
+
+    const slugify = (t) => String(t).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').replace(/-+/g, '-');
+    const newSlug = slugify(rp.name);
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const oldDirName = path.basename(found.dir);
+    const newDirName = `${target}-${newSlug}`;
+
+    if (oldDirName === newDirName) {
+      return { ok: true, renamed: false, reason: 'directory already matches the roadmap name', dir: found.dir };
+    }
+    const newPath = path.join(phasesDir, newDirName);
+    if (fs.existsSync(newPath)) {
+      throw new Error(`Target directory already exists: ${newDirName}. Resolve by hand — two phase dirs for one number is worse than a stale name.`);
+    }
+
+    if (!apply) {
+      return {
+        ok: true,
+        renamed: false,
+        dry_run: true,
+        from: oldDirName,
+        to: newDirName,
+        note: 'Dry run. Re-run with --apply to rename. Check first that the artifacts in this directory belong to the phase the roadmap now describes — if the phase was REPLACED rather than renamed, renaming hides that instead of fixing it.',
+      };
+    }
+
+    // Prefer `git mv` so the artifacts keep their history.
+    const oldPath = path.join(phasesDir, oldDirName);
+    let method = 'fs';
+    const { spawnSync } = require('child_process');
+    const gitMv = spawnSync('git', ['mv', oldPath, newPath], { cwd: PROJECT_ROOT, encoding: 'utf8' });
+    if (gitMv.status === 0) { method = 'git mv'; }
+    else { fs.renameSync(oldPath, newPath); }
+
+    return {
+      ok: true, renamed: true, method,
+      from: oldDirName, to: newDirName,
+      warning: 'Any file referencing the old path (SPRINT frontmatter, SUMMARY links, notes) still points at it. Grep for the old slug.',
+    };
+  }
+
   if (sub === 'scaffold-all') {
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
     const phasesDir   = path.join(PLANNING_DIR, 'phases');
@@ -5876,11 +5940,52 @@ function cmdFindPhase(args) {
     .map((d) => path.relative(PROJECT_ROOT, path.join(phasesDir, d)));
   if (!exact) return { number: target, exists: false, dir: null, slug: null, decimal_children };
   const slugMatch = exact.match(/^\d+(?:\.\d+)?[-](.+)$/);
+  const slug = slugMatch ? slugMatch[1] : '';
+
+  // Name drift: the directory keeps the slug it was created with, but ROADMAP.md
+  // can be rewritten under it. Resolving to the existing directory is correct —
+  // that is where the artifacts and the git history live, and auto-renaming would
+  // orphan both. Staying SILENT about the divergence is not: an agent reading
+  // `slug: foundation-contact-loop` while the roadmap says "Rentable Contact
+  // Layer" has no way to tell whether it is looking at the same work.
+  // Same class as the phase-identity drift in `state sync --from-disk`.
+  let name_drift = null;
+  try {
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    if (slug && fs.existsSync(roadmapPath)) {
+      const roadmapLib = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+      const rp = roadmapLib.dispatch(PROJECT_ROOT, ['get-phase', String(target)]);
+      const roadmapName = rp && rp.found ? String(rp.name || '') : '';
+      if (roadmapName) {
+        const slugify = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const fromRoadmap = slugify(roadmapName);
+        // Compare on word sets, not exact slugs — a truncated or reordered slug
+        // is normal, a different subject is the signal.
+        const words = (t) => new Set(String(t).split('-').filter(w => w.length > 3));
+        const dirWords = words(slug);
+        const roadWords = words(fromRoadmap);
+        const shared = [...dirWords].filter(w => roadWords.has(w)).length;
+        if (dirWords.size > 0 && roadWords.size > 0 && shared === 0) {
+          name_drift = {
+            dir_slug: slug,
+            roadmap_name: roadmapName,
+            note: 'Directory name and ROADMAP name share no significant words. '
+                + 'The phase may have been replaced under the same number. '
+                + 'The directory is NOT auto-renamed: its artifacts and git history '
+                + 'belong to whatever was built there. Confirm they are the same work '
+                + 'before planning or executing against it.',
+          };
+        }
+      }
+    }
+  } catch { /* drift detection is advisory — never fail a lookup over it */ }
+
   return {
     number: target,
     exists: true,
     dir: path.relative(PROJECT_ROOT, path.join(phasesDir, exact)),
-    slug: slugMatch ? slugMatch[1] : '',
+    slug,
+    name_drift,
     decimal_children,
   };
 }
@@ -7509,6 +7614,7 @@ async function main() {
         console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
         console.log('  phase scaffold-all                           → create missing phase folders for all phases in ROADMAP.md (#731)');
+        console.log('  phase rename-dir <N> [--apply]               → align a phase dir slug with its ROADMAP name (dry-run by default)');
         console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
