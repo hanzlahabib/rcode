@@ -41,6 +41,13 @@ Before verifying, discover project context:
 4. **Verify observable truths** — for each truth, status ✓ VERIFIED / ✗ FAILED / ? UNCERTAIN.
 5. **Verify artifacts (4 levels)** — exists, substantive, wired, data-flows. Use `rcode-tools.cjs verify artifacts`.
 6. **Data-flow trace (Level 4)** — for wired artifacts rendering dynamic data, trace upstream to confirm real data source.
+6e. **Check the requirement's own consequences, not your reconstruction of them.**
+For every requirement this phase claims, read its `**Consequences (testable):**`
+list in REQUIREMENTS.md and verify those. Where a plan's truth carries a
+`[DERIVED]` prefix, the requirement had none recorded and you are checking an
+invented criterion — say so in VERIFICATION.md. A phase that passes only against
+derived criteria has not been verified against what anyone actually asked for.
+
 6d. **Unconfirmed assumptions are verification gaps.** Read PROJECT.md's
 Assumptions Index. Any row still `unconfirmed` that this phase's must-haves
 depend on is a gap, not a formality — the phase was built on something nobody

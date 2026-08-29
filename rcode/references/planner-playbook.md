@@ -154,6 +154,17 @@ autonomous: true|false
 files_modified: [...]
 requirements: [...]
 must_haves: {truths, artifacts, key_links}
+
+**`truths` are copied from the requirement's Consequences, not invented.** For
+each requirement this plan claims, read its `**Consequences (testable):**` list in
+REQUIREMENTS.md and carry those lines into `must_haves.truths` verbatim. You are
+transcribing a decision someone already made, not making a new one.
+
+Invent a truth only when the requirement has no consequences recorded — and when
+you do, say so in the plan (`[DERIVED]` prefix on that truth) so the verifier
+knows it is checking your reconstruction rather than the requirement's own
+criteria. A phase full of `[DERIVED]` truths is a signal the requirements were
+never finished, not a signal to proceed quietly.
 ---
 
 ## Sprint {phase}.{plan}: {one-line sprint goal, plain English, no jargon}

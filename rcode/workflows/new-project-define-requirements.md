@@ -111,6 +111,41 @@ Create `.planning/REQUIREMENTS.md` with:
 
 **REQ-ID format:** `[CATEGORY]-[NUMBER]` (AUTH-01, CONTENT-02)
 
+**Every requirement carries its testable consequences.** This is the shape:
+
+```markdown
+- [ ] **AUTH-01**: User can log in with email and password and stay logged in
+      across sessions.
+  - **Consequences (testable):**
+    - A valid credential pair returns a session cookie with a 30-day expiry
+    - An invalid password returns 401 and does not reveal whether the email exists
+    - A logged-in user reloading the page stays logged in
+```
+
+**Why the consequences live here and not in the plan.** rcode's verifier derives
+`must_haves` at verification time, long after the requirement was written — so it
+is guessing at what "done" meant for a requirement someone else authored. That
+guess is where verification quietly goes wrong: a phase passes because the
+verifier's invented criterion was met, not the one the requirement intended.
+
+Writing the consequences with the requirement moves that decision to the moment
+the person actually knows the answer. The planner then copies them into
+`must_haves.truths` instead of inventing them, and the verifier checks the
+requirement's own criteria rather than its own reconstruction.
+
+A requirement whose consequences you cannot state is a requirement you have not
+finished writing. "Handle authentication properly" has no consequences because it
+has no meaning — that is the signal to push for specificity, not to move on.
+
+**Scope dial:** hobby/solo — one consequence per requirement is usually enough,
+and it can be a sentence. Internal tool — the happy path plus the one failure
+mode that matters. Launch — every condition a reviewer would ask about, including
+the negative cases.
+
+**Do not change the traceability table's shape.** `requirements mark-complete`
+rewrites the status cell of a `| ID | ... | status |` row; consequences are nested
+under the requirement in the list above, not added as table columns.
+
 **Requirement quality criteria:**
 
 Good requirements are:
@@ -119,6 +154,7 @@ Good requirements are:
 - **User-centric:** "User can X"
 - **Atomic:** One capability per requirement
 - **Independent:** Minimal dependencies on other requirements
+- **Consequential:** you can name what must be true for it to be done
 
 Reject vague requirements. Push for specificity:
 
