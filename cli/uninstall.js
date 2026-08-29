@@ -791,6 +791,19 @@ async function runUninstall(args) {
   if (editors.includes('codex')) {
     const r = removeSlashRouterHook(path.join(os.homedir(), '.codex', 'hooks.json'), 'UserPromptSubmit');
     if (r === 'removed') console.log(`   ✓ removed rcode slash-router hook from ~/.codex/hooks.json`);
+    // Skills installed to ~/.codex/skills/rcode-*/ by installCodexSkills().
+    // Only rcode-prefixed entries — the user's own skills and their symlinks
+    // into ~/.agents/skills live in the same directory and are not ours.
+    const codexSkills = path.join(os.homedir(), '.codex', 'skills');
+    let removedSkills = 0;
+    try {
+      for (const entry of fs.readdirSync(codexSkills)) {
+        if (!entry.startsWith('rcode-')) continue;
+        fs.rmSync(path.join(codexSkills, entry), { recursive: true, force: true });
+        removedSkills++;
+      }
+    } catch { /* directory absent — nothing installed */ }
+    if (removedSkills > 0) console.log(`   ✓ removed ${removedSkills} rcode skill(s) from ~/.codex/skills/`);
   }
   if (editors.includes('antigravity')) {
     const r = removeSlashRouterHook(path.join(os.homedir(), '.gemini', 'antigravity', 'settings.json'), 'UserPrompt');

@@ -723,9 +723,17 @@ function getPathsForIde(ide, target) {
       // claude/vscode install paths). We install agent + command files to .claude/
       // so multi-IDE installs share files, and the rcode workflow bridge gives
       // Codex access to lifecycle workflows via `rcode workflow show <name>` (#883).
-      // NOTE: Codex surfaces native /slash commands ONLY from ~/.codex/prompts/*.md
-      // (home, startup-loaded) — installed separately by installNativeHomeSlashCommands()
-      // under the opt-in --global flag, since .claude/commands is invisible to Codex.
+      //
+      // What Codex actually reads — verified live against Codex CLI 0.150.1:
+      //   AGENTS.md              → project instructions  ✅ written here
+      //   ~/.codex/prompts/*.md  → /slash commands       (--global only)
+      //   ~/.codex/skills/<n>/   → skills                (--global only)
+      //   (no agents surface)    → Codex has NO subagent concept at all
+      //
+      // The agentsDir below is therefore written for MULTI-IDE SHARING ONLY.
+      // Codex itself never reads it, and rcode's agents cannot appear in Codex
+      // in any form — not a bug to fix, an absent surface. Skills are the only
+      // place rcode's capabilities can surface there.
       return {
         agentsDir: path.join(target, '.claude', 'agents'),
         commandsDir: path.join(target, '.claude', 'commands'),
@@ -2272,6 +2280,50 @@ function mergeSlashRouterHook(jsonPath, eventKey, command, label) {
   return true;
 }
 
+// Codex reads SKILLS from ~/.codex/skills/<name>/SKILL.md — verified live against
+// Codex CLI 0.150.1, which prints the paths it loads on boot and lists them under
+// `/skills`. Entries there are commonly symlinks into a shared ~/.agents/skills.
+//
+// This is a DIFFERENT surface from ~/.codex/prompts (slash commands) and from
+// AGENTS.md (instructions), and rcode targeted neither of the first two for
+// skills — so none of rcode's skills appeared in Codex at all. Codex has no
+// subagent concept, so rcode's agents cannot surface there in any form; skills
+// are the only place its capabilities can show up.
+function installCodexSkills(opts) {
+  const home = homedir();
+  const destRoot = path.join(home, '.codex', 'skills');
+  ensureDir(destRoot);
+
+  // Source: every SKILL.md under rcode/skills/, installed as rcode-<name>/ to
+  // stay inside rcode's namespace and never collide with a user's own skills.
+  const srcRoot = path.join(SOURCE_ROOT, 'skills');
+  if (!fs.existsSync(srcRoot)) return 0;
+
+  let written = 0;
+  for (const skillFile of walkFiles(srcRoot)) {
+    if (path.basename(skillFile) !== 'SKILL.md') continue;
+    const skillDir = path.dirname(skillFile);
+    const bare = path.basename(skillDir);
+    const name = bare.startsWith('rcode-') ? bare : `rcode-${bare}`;
+    const destDir = path.join(destRoot, name);
+    ensureDir(destDir);
+    // Copy the whole skill folder — references/, steps/, templates/ and the
+    // like are part of the contract, not decoration.
+    for (const f of walkFiles(skillDir)) {
+      const rel = path.relative(skillDir, f);
+      const out = path.join(destDir, rel);
+      ensureDir(path.dirname(out));
+      fs.copyFileSync(f, out);
+    }
+    written++;
+  }
+
+  if (opts && opts.global !== 'silent') {
+    console.log('  ' + ok(`Codex skills: ${written} → ~/.codex/skills/rcode-*/`));
+  }
+  return written;
+}
+
 // Codex: ~/.codex/hooks.json, event UserPromptSubmit.
 function installCodexSlashRouterHook(opts) {
   installSlashRouterCommands(opts);
@@ -2291,7 +2343,7 @@ function installNativeHomeSlashCommands(opts) {
   const ides = Array.isArray(opts.ides) ? opts.ides : [opts.ide].filter(Boolean);
   for (const ide of ides) {
     switch (ide) {
-      case 'codex': installCodexSlashRouterHook(opts); break;
+      case 'codex': installCodexSlashRouterHook(opts); installCodexSkills(opts); break;
       case 'antigravity': installAntigravitySlashRouterHook(opts); break;
       default:
         break;
@@ -2378,7 +2430,7 @@ async function installInner(opts) {
     // writes on a GLOBAL install. A project-local install silently leaves Codex
     // with no working slash commands — warn instead of implying success.
     if (!opts.global) {
-      console.log('  ' + warn('Codex /rcode-* slash commands need a GLOBAL install — re-run with `--global` to wire the ~/.codex/hooks.json router. This project-local install does NOT enable them.'));
+      console.log('  ' + warn('Codex needs a GLOBAL install — re-run with `--global` to wire the ~/.codex/hooks.json router AND copy rcode skills to ~/.codex/skills/. This project-local install enables NEITHER: Codex reads slash commands and skills only from its home dir, and has no agents surface at all.'));
     }
   }
 
