@@ -3,6 +3,94 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.14.0 (2026-08-25) — Planning asks before it decides
+
+### The theme
+
+Every failure this release addresses had the same shape: rcode decided something
+on the user's behalf and never showed them the decision. A stack got picked, a
+plan turned into a build, a phase status carried over onto unrelated work, a
+requirement's meaning got reconstructed at verification time. None of it was
+malicious and all of it was silent — which is what made it expensive.
+
+### Planning now asks
+
+- **The stack is a hard user gate.** Research produces a suggestion; only the user
+  turns it into a decision. Three ways out — confirm, name your own, or ask for
+  more comparison — and **auto mode cannot bypass this one**, unlike every other
+  question in the workflow. A wrong stack is the most expensive thing in a project
+  to reverse.
+- **Decisions carry their premise.** "X because a non-technical client maintains
+  the content" is valid only while there is a non-technical client. On a pivot,
+  every decision whose premise died goes back to the user. A decision whose reason
+  has expired is not locked, it is stale.
+- **Working mode is offered, not inferred.** Fast path (batched questions, draft
+  with `[ASSUMPTION]` tags) or Coaching path (walk it together) — asked per run,
+  never read from a config flag, never guessed from how detailed the opening
+  message was.
+- **Stakes calibration.** Hobby, internal tool, or launch, asked once and used to
+  scale every artifact and gate. The pipeline was built for the launch case, and
+  applying it whole to a weekend project is its own failure.
+- **A mandatory decision set.** Seven things that cannot be silently assumed —
+  who maintains this, the stack, users and roles, what is out of scope, what
+  already exists, what "done" means, and any hard constraint. Tone stays
+  conversational; coverage is not optional.
+- **Planning never authorizes building.** `auto_advance` in config no longer turns
+  "plan this" into "plan and build this", and "resume" restores position, never
+  scope. `state set-intent` records what was actually authorized.
+
+### Artifacts got structure
+
+- **Glossary** — every domain noun defined once and used verbatim downstream. Two
+  names for one thing is how a codebase ends up with two implementations of it.
+- **Assumptions Index** — every `[ASSUMPTION]` tag in one table, walked with the
+  user before the document is settled. The verifier now treats an unconfirmed
+  assumption a phase depends on as a verification gap.
+- **Out of Scope (Non-Goals)** with reasoning — the roadmapper checks it before
+  phasing, because a phase reaching into a declared non-goal is scope creep with a
+  plan attached.
+- **Per-section scope dials** on all of it, so one template serves a weekend
+  project and a launch without padding either.
+
+### Requirements carry their own verification criteria
+
+`must_haves.truths` used to be invented by the planner and re-invented by the
+verifier, long after the requirement was written. A phase could pass because the
+verifier's reconstructed criterion was met rather than the one the requirement
+intended, and nothing recorded the difference.
+
+Requirements now carry **testable consequences** written at authoring time. The
+planner copies them verbatim; where none exist the invented truth is tagged
+`[DERIVED]` and the verifier reports that it is checking a reconstruction.
+
+### State stopped lying
+
+- **`set-phase` rejects flag arguments.** `state set-phase --phase 99 --status
+  complete` used to create a phase literally named `--phase`, set `current_phase`
+  to it, and return `ok: true`.
+- **Phase identity is checked before status carries over.** A number is a slot,
+  not an identity. Replacing a roadmap moved a completed phase's status onto
+  unrelated work in the same slot, so a project was told analysis was "complete"
+  that had never been started. Sync now drops the carried status and reports
+  `identity_changed`.
+- **Domain-prefixed requirement IDs are recognised.** `FOUND-01`, `RENT-04`,
+  `AUTHZ-04` never matched a `REQ-*`-only pattern, so `phase_req_ids` came back
+  empty and the Requirements Coverage Gate skipped itself on every phase. The gate
+  was off, not passing — and it now says so when it skips with IDs present.
+- **Phase-directory name drift is detected**, and `phase rename-dir <N>
+  [--apply]` exists for the first time — dry-run by default, `git mv` so history
+  follows, and a refusal to rename over an existing directory.
+
+### Roadmap parsing reads what rcode writes
+
+`roadmap get-phase` could not parse its own roadmapper's output. It demanded
+`**Success Criteria**:` while roadmapper writes `**Success criteria:**`, and only
+matched a following list while roadmapper writes requirements inline. A drifted
+duplicate of the ID regex made it worse. One shared label matcher now derives from
+the property (a labelled block) instead of enumerating spellings, covered by a
+regression test proven red first.
+
+---
 ## v4.13.0 (2026-08-25) — Verification stops self-certifying, and the run gets an owner
 
 ### The theme
