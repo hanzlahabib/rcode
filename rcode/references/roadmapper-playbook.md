@@ -156,6 +156,14 @@ Read only when the current task needs the detail. Don't preemptively load.
    **Read PROJECT.md's Glossary and use its terms verbatim** in phase names and
    goals. A roadmap that renames the domain's nouns forces every downstream
    agent to guess which concept a phase is about.
+   **Cut phases vertically.** Every phase must answer: what can someone do after
+   this that they could not do before? A phase whose goal names a layer ("the
+   data model", "the API", "all the repositories") rather than a capability is
+   horizontal, and everything it builds goes unexercised until some later phase
+   reaches for it — which is how a service ships with no caller. Create the
+   schema, services, and endpoints a phase's own capability needs, and no more.
+   A genuine foundation phase is allowed, but it names what it unblocks in the
+   same sentence and is no bigger than that.
    **Read PROJECT.md's Out of Scope (Non-Goals) before phasing.** A phase whose
    goal reaches into a declared non-goal is scope creep with a plan attached —
    flag it rather than quietly phasing it.

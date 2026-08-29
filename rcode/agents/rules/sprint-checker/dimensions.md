@@ -194,6 +194,31 @@ issue:
 - Single task with 10+ files
 - Complex work (auth, payments) crammed into one plan
 
+### Check 5b — Vertical slice, not a layer
+
+Scope Sanity above measures plan SIZE. This measures plan SHAPE, which size
+cannot see: a perfectly sized plan that builds one horizontal layer is still
+wrong.
+
+For the phase as a whole, answer: **what can someone do after this phase that
+they could not do before?** If the honest answer is "nothing yet, later phases
+need it" → **WARNING**, and name it as layer-first phasing.
+
+Specific red flags:
+
+- Schema or migration work that creates tables no task in this phase reads or
+  writes. Tables belong to the first phase that uses them, not to a phase whose
+  purpose is tables.
+- A plan that builds a service, repository, or endpoint with no caller inside
+  the same phase and no task wiring it to one.
+- A phase goal naming a layer or artifact type ("the API", "the data model")
+  rather than a capability.
+
+Warning, not blocker: a genuine foundation phase (auth, migration framework) is
+sometimes correct. But it must name what it unblocks, and be no bigger than that
+— an unbounded foundation is the failure this check exists for. See
+`universal-anti-patterns.md` → Layer-first phasing.
+
 **Example issue:**
 ```yaml
 issue:

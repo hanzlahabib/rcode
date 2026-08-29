@@ -10,6 +10,32 @@ Phase plan picks up scope adjacent to the actual goal. Symptom: phase descriptio
 ### Implicit prerequisites
 Phase assumes another phase has shipped without declaring the dependency. Symptom: plan refers to a file or table that doesn't exist yet. Fix: surface the dependency in the phase's `Depends on` line in ROADMAP.md.
 
+### Layer-first phasing (horizontal slices)
+
+A phase whose whole job is one technical layer: "Phase 1 — create all the
+database tables", "Phase 2 — build every repository", "Phase 3 — the API".
+Symptom: the phase's goal names a layer or an artifact type rather than
+something a user can do afterwards, and no phase before the last one produces
+anything anybody can use.
+
+Why it costs more than it looks: nothing in a layer-first phase is exercised
+until a much later phase reaches for it, so a table, a service, or an endpoint
+can be built wrong — or built and never wired to anything — and pass every gate
+in between. Confirmed live: a project shipped a cycle-closing service with
+exactly one importer in the whole repo, its own test, because the phase that
+built it was never obliged to connect it to anything a user touches.
+
+Fix: **cut phases vertically.** Each phase delivers one thing end to end, and
+creates only the schema, services, and endpoints that thing needs. Tables get
+created by the first phase that reads or writes them, not by a phase whose
+purpose is tables. If a foundation genuinely must come first (auth, a
+migration framework), name what it unblocks in the same sentence and keep it as
+small as that.
+
+The test: read a phase goal and ask *what can someone do after this that they
+could not do before?* If the honest answer is "nothing yet, but later phases
+need it", the phase is horizontal.
+
 ### Vague acceptance
 Acceptance criterion is "users can do X" with no measurable threshold. Fix: make every acceptance criterion observable from outside the system — a CLI command, an API response, a log line, a UI assertion.
 
