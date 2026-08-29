@@ -153,6 +153,12 @@ Read only when the current task needs the detail. Don't preemptively load.
    If the project has pivoted since the stack was chosen, check whether the
    premise recorded with that decision still holds. If it does not, the decision
    is stale, not locked.
+   **Read PROJECT.md's Glossary and use its terms verbatim** in phase names and
+   goals. A roadmap that renames the domain's nouns forces every downstream
+   agent to guess which concept a phase is about.
+   **Read PROJECT.md's Out of Scope (Non-Goals) before phasing.** A phase whose
+   goal reaches into a declared non-goal is scope creep with a plan attached —
+   flag it rather than quietly phasing it.
 2. **Cluster requirements** — group related requirements into natural delivery units.
 3. **Derive phases** — name each phase by what the user can DO after it, not what was built.
 3b. **Declare the Information Architecture** (UI projects only) — before phases are finalized, explicitly decide the app's eventual final-state IA, not per-phase: enumerate the top-level sections (e.g. Dashboard / Operations / Reports / Admin), pick sidebar vs topbar vs tabs, state max nesting depth (e.g. 2 levels: section > subsection), and group every planned phase's screens under one of those sections. Persist this as an `IA.md` (or a "## Information Architecture" section in ROADMAP.md). A flat list of nav links that grows by one item per phase is not an IA decision — it's the failure mode this step exists to prevent. Later phases must slot new routes under an existing top-level section or explicitly propose adding one, never silently append a new sidebar item.
