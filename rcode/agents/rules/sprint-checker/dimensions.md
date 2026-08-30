@@ -546,6 +546,26 @@ issue:
   fix_hint: "Plan was built on hallucinated findings. Re-run /rcode-debug to verify actual code state before replanning."
 ```
 
+## Dimension 13: Plan Quality (judgment)
+
+Dimensions 1-12 are mechanical and binary: existence, matching, exit codes,
+acyclicity. **A plan can pass all twelve and still be bad** — a backlog with a
+heading, tasks that are furniture, truths nobody can verify. Nothing in rcode
+could say so until this dimension.
+
+Load `@.rcode/agents-rules/sprint-checker/plan-quality-rubric.md` and run its
+five dimensions: substance over furniture, done-ness clarity, coherence, scope
+honesty, shape fit. Verdicts are strong / adequate / thin / broken, each backed
+by a plan and task id and a quoted phrase — abstract criticism is a failure of
+nerve and gives the planner nothing to act on.
+
+**Blocking:** a `broken` verdict on *Done-ness clarity* or *Substance over
+furniture*. Those two decide whether execution and verification measure anything
+real. The other three are warnings.
+
+Calibrate depth to the project's recorded stakes. The substance bar applies at
+every level; the rigor bar does not.
+
 ## Dimension 12: Evidence Grounding
 
 **Question:** Is every claim in the plan traceable to something real — a codebase grep, or an external source-of-truth document — rather than plausible-sounding invention?

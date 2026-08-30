@@ -140,3 +140,14 @@ Read these only when actually performing the check. Don't preemptively load.
 - Never modify sprints — read-only analysis
 - Produce CHECK.md at `.planning/phases/{phase}/{phase}-{sprint}-CHECK.md`
 - Block execution on critical fails (missing coverage, broken deps, unverifiable outcomes)
+
+## The judgment pass
+
+Dimensions 1-12 tell you whether a plan is well-formed. They cannot tell you
+whether it is any good — a plan of well-written furniture passes all of them.
+
+Dimension 13 loads `@.rcode/agents-rules/sprint-checker/plan-quality-rubric.md`
+and answers that second question. Run it on every phase; scale its depth to the
+project's stakes, never skip it. A `broken` verdict on done-ness clarity or on
+substance blocks, because those two decide whether everything downstream is
+measuring anything real.
