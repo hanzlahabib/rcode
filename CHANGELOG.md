@@ -3,6 +3,82 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.15.1 (2026-08-30) — Things rcode shipped but nobody could reach
+
+Five defects with one shape: rcode had the capability and put it somewhere
+nothing would ever look.
+
+### Skills the model could never see
+
+`rcode-code-review` carried `internal: true`, which routes a skill to
+`.rcode/skills/` instead of `.claude/skills/`. Its description never reached the
+model, so "review this PR <url>" went to a different reviewer entirely — rcode's
+was **invisible, not out-competed**.
+
+Not one skill: **36 of the 38 internal skills also declared `user-invocable:
+true`**, and the installer ignored that flag completely. None of them could
+auto-activate. `user-invocable` now wins — a skill that declares itself
+user-invocable, writes its description for activation, and lists trigger phrases
+is user-facing by every signal it gives. Visible skills after install: **38 → 88**.
+
+### Templates that were never installed
+
+The installer copied only `templates/projects/`, so a fresh install had **no
+`.md` template at all** while workflows kept reading them — `VALIDATION.md` from
+two workflows, `summary.md` from five. Projects on older versions had leftovers
+from a release that did copy them, so this only ever reproduced on a fresh
+install.
+
+Auditing the rest found six references to templates that do not exist in source
+either; four had no fallback, so an agent was told to read a file that has never
+existed and would improvise silently. Those now name the adjacent structure as
+the contract instead.
+
+### An orchestrator that would not orchestrate
+
+Raees was registered in 4.14.0 with a contract saying it owns the run and
+dispatches specialists, while its skill body still said "does not invoke the
+agents named in the plan — no `Task()` call is made". Told to "execute end to
+end", it wrote a plan and asked whether to start.
+
+The rule it collided with — planning never authorizes building — bounds a
+*planning workflow's* scope. It was never meant to make an orchestrator timid.
+Both failures are now stated side by side so they cannot be conflated again:
+
+| Failure | Looks like |
+|---|---|
+| Planning overreaching | asked to plan, quietly starts building |
+| Orchestrating under-reaching | told to execute, writes a plan and asks "shall I start?" |
+
+Raees dispatches. It stops at a gate, not in front of the plan.
+
+### Code review: three roles → seven angles
+
+An agent asked to "find problems" returns generic ones; an agent asked one narrow
+question returns specific ones. Three angles gather evidence — a deliberately
+blind cold read, **what the change removed** (deletions are where regressions
+hide; added lines are simply louder), and a call-path trace (the angle that
+catches code with no caller). Four judge: reuse, simplification, efficiency,
+altitude.
+
+Every finding is then **verified adversarially before the user sees it**. Seven
+parallel angles produce false positives — an angle that found nothing is under
+pressure to return something, and a confident wrong finding costs more than a
+missed one because the user goes and checks it. Refuted findings are dismissed;
+uncertain ones are kept but marked `unverified` rather than silently promoted.
+
+### Triggers that matched ordinary conversation
+
+`rcode-help` had a bare `"help"` trigger, and eight other skills claimed common
+English words — `docs`, `content`, `AI`, `database`, `backend`, `frontend`,
+`refactor`, `roadmap`. All are now phrases. Distinctive domain terms (OWASP, RAG,
+Figma, GraphQL) were left alone.
+
+Also removed a duplicate `rcode-init` skill folder left behind by a path
+migration — the stray copy lacked the `resources/` and `scripts/` the real one
+ships with.
+
+---
 ## v4.15.0 (2026-08-30) — Nothing is lost on resume or on update
 
 ### Run reasoning survives a resume
