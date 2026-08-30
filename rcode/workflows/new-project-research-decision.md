@@ -281,6 +281,8 @@ Record the answer with `state add-decision`, including the premise it rests on:
 ```bash
 node ".rcode/bin/rcode-tools.cjs" state add-decision \
   "Stack: {chosen}. Premise: {the one reason}. Confirmed by user {date}."
+node ".rcode/bin/rcode-tools.cjs" memlog append --type decision \
+  --text "Stack: {chosen}. Premise: {the one reason}. User-confirmed at the stack gate."
 ```
 
 ### The premise is part of the decision

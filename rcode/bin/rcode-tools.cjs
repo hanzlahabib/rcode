@@ -7167,6 +7167,16 @@ async function main() {
         if (args[0] === 'list') { result = cmdPhasesList(args.slice(1)); if (result === undefined) return; }
         else { console.error('Unknown phases subcommand. Valid: list'); process.exit(1); }
         break;
+      case 'customize': {
+        const customize = require(path.join(__dirname, 'lib', 'customize.cjs'));
+        result = customize.dispatch(RCODE_DIR, args);
+        break;
+      }
+      case 'memlog': {
+        const memlog = require(path.join(__dirname, 'lib', 'memlog.cjs'));
+        result = memlog.dispatch(PLANNING_DIR, args);
+        break;
+      }
       case 'find-phase':
         result = cmdFindPhase(args);
         break;
@@ -7615,6 +7625,9 @@ async function main() {
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
         console.log('  phase scaffold-all                           → create missing phase folders for all phases in ROADMAP.md (#731)');
         console.log('  phase rename-dir <N> [--apply]               → align a phase dir slug with its ROADMAP name (dry-run by default)');
+        console.log('  customize <resolve <name>|list|init <name>>  → per-workflow overrides in .rcode/custom/ that survive an update');
+        console.log('  memlog <init|append|read|open>               → append-only run memory (.planning/MEMLOG.md)');
+        console.log('    memlog append --type <decision|change|override|assumption|event|blocker> --text "..." [--phase N]');
         console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');

@@ -41,7 +41,12 @@ a dashboard frozen at `planned`. See issue #915.
     is authorized from here:
     ```bash
     node ".rcode/bin/rcode-tools.cjs" state set-intent build --source execute.md
+    node ".rcode/bin/rcode-tools.cjs" memlog append --type event --text "Execution started for phase ${PHASE_NUMBER}" --phase "${PHASE_NUMBER}"
     ```
+
+    Log every deviation, checkpoint decision, and override with
+    `memlog append` as it happens — a deviation nobody recorded is
+    indistinguishable from a plan that was followed.
 
 **Mandatory before execution begins.** Run these checks first and surface
 findings BEFORE any subagents are spawned. If any check fails, stop and

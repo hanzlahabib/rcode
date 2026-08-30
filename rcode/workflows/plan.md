@@ -103,8 +103,17 @@ exists to prevent (see step 8).
 ## 0.4. Record the authorized scope
 
 ```bash
+# Project overrides for this workflow — appended after everything below, and
+# they win on conflict. The installer never writes .rcode/custom/, so these
+# survive `rcode install`.
+node ".rcode/bin/rcode-tools.cjs" customize resolve plan
 node ".rcode/bin/rcode-tools.cjs" state set-intent plan --source plan.md
+node ".rcode/bin/rcode-tools.cjs" memlog append --type event --text "Planning started for phase ${PHASE}" --phase "${PHASE}"
 ```
+
+**Log as you go from here.** Every decision the panel forces, every checker issue
+you accept or reject, every assumption the planner had to make — one
+`memlog append` line each, at the moment it happens.
 
 This is what the user asked for on THIS invocation, and it is what `resume-work`
 will restore later. Planning does not authorize building — see step 15.

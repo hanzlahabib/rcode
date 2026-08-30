@@ -711,6 +711,11 @@ This document evolves at phase transitions and milestone boundaries.
 5. Assumptions Index — any row still `unconfirmed` after a whole milestone is a
    finding, not a formality. Resolve or escalate it
 6. Key Decisions — check every premise still holds
+7. **Memlog audit** — `rcode-tools.cjs memlog open` lists every assumption,
+   override, and blocker logged during the milestone. Walk it: each one is
+   captured in PROJECT.md, resolved, or explicitly deferred with an owner.
+   Entries that survive a whole milestone unexamined are the ones that turn into
+   "nobody knows why this is like this" 
 
 ---
 *Last updated: {date} after initialization*
