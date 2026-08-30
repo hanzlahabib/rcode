@@ -2,8 +2,10 @@
 name: rcode-review
 internal: true
 description: >
-  Review code changes using parallel adversarial review layers and produce
-  actionable findings. Activates when the user says "review this PR", "review
+  Review code changes from seven parallel angles — three that gather evidence
+  (cold scan, what was removed, call-path trace) and four that judge (reuse,
+  simplification, efficiency, altitude) — then verify every finding
+  adversarially before reporting, so false positives never reach the user. Activates when the user says "review this PR", "review
   this code", "run code review", "do a PR review", "review the diff", "review
   this branch", "critique this implementation", or "CR" — including when a
   GitHub PR URL or a PR number is given with no other wording ("review

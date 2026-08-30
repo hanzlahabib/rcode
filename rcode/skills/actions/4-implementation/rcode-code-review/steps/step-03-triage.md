@@ -37,11 +37,36 @@
 
    If `{review_mode}` = `"no-spec"` and a finding would otherwise be `decision_needed`, reclassify it as `patch` (if the fix is unambiguous) or `defer` (if not).
 
-4. **Drop** all `dismiss` findings. Record the dismiss count for the summary.
+4. **Verify every surviving finding adversarially, before it reaches the user.**
 
-5. If `{failed_layers}` is non-empty, report which layers failed before announcing results. If zero findings remain after dropping dismissed AND `{failed_layers}` is non-empty, warn the user that the review may be incomplete rather than announcing a clean review.
+   Seven angles running in parallel produce false positives — an angle that
+   found nothing is under pressure to return something, and a confident wrong
+   finding costs the user more than a missed one, because they go and check it.
 
-6. If zero findings remain after triage (all rejected or none raised): state "✅ Clean review — all layers passed." (Step 3 already warned if any review layers failed via `{failed_layers}`.)
+   Spawn one verifier per `patch` and `decision_needed` finding, in parallel,
+   each with NO knowledge of the other findings and no stake in the original:
+
+   > A reviewer claims: {finding}. Prove it wrong.
+   > Read the actual code at {file:line} and the paths that reach it.
+   > Does the stated failure scenario actually occur? Walk the inputs.
+   > Return CONFIRMED with the evidence, or REFUTED with why it cannot happen.
+
+   - **REFUTED** → reclassify as `dismiss`.
+   - **CONFIRMED** → keep, and carry the verifier's evidence into the report.
+   - **Uncertain** → keep it, but mark the finding `unverified` in the output so
+     the user knows which ones were not proven. Do not silently promote an
+     uncertain finding to confirmed.
+
+   Skip verification only for `defer` findings — they are not being acted on.
+
+5. **Drop** all `dismiss` findings. Record the dismiss count AND the refuted
+   count separately for the summary. A high refuted count is worth surfacing: it
+   means the angles are firing loosely and the review needs tightening, not that
+   the code was fine.
+
+6. If `{failed_layers}` is non-empty, report which layers failed before announcing results. If zero findings remain after dropping dismissed AND `{failed_layers}` is non-empty, warn the user that the review may be incomplete rather than announcing a clean review.
+
+7. If zero findings remain after triage (all rejected or none raised): state "✅ Clean review — all layers passed." (Step 3 already warned if any review layers failed via `{failed_layers}`.)
 
 
 ## NEXT

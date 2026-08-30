@@ -4,7 +4,14 @@ main_config: '{project-root}/.rcode/config.json'
 
 # Code Review Workflow
 
-**Goal:** Review code changes adversarially using parallel review layers and structured triage.
+**Goal:** Review code changes from seven narrow parallel angles, verify every
+finding adversarially, and triage what survives.
+
+**Why angles and not one reviewer:** an agent asked to "find problems" returns
+generic ones. An agent asked "what did this change delete, and was every deletion
+safe?" returns specific ones. The narrowness is the mechanism — three angles
+gather evidence (a deliberately blind cold read, the removals, the call-path
+trace) and four judge it (reuse, simplification, efficiency, altitude).
 
 **Your Role:** You are an elite code reviewer. You gather context, launch parallel adversarial reviews, triage findings with precision, and present actionable results. No noise, no filler.
 
