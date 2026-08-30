@@ -3,6 +3,34 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.15.2 (2026-08-30) — The plan's specialists now do the work
+
+4.15.0 added a specialist review panel to planning: it reads a phase's actual
+files, migrations, and decisions, seats the right domain persona, and that
+persona finds real problems in the plan.
+
+None of that reached execution. `owner:` in SPRINT.md frontmatter — the field
+`execute-sprint.md` reads to spawn a persona instead of the generic
+`rcode-executor` — was only ever set when a plan was grounded in a council
+session. A normal `/rcode-plan` run has no council session, so `owner:` was
+omitted and every sprint went to the generic executor.
+
+The chain broke in the middle: the panel seated Waleed and Yousef, they found
+real problems, and then a generic agent implemented everything. Plan-time
+expertise never reached the implementation.
+
+`owner:` is now set from either signal — the panel's domain seat, or a council
+session. The panel's seat is the stronger of the two, because it is derived from
+what the work actually touches rather than from whether a council happened to
+run.
+
+Unchanged, because they were right: only engineer personas (`haitham`, `hanzla`,
+`omar`, `waleed`, `yousef`) may own a sprint; advisory personas never can; and an
+absent `owner:` remains the correct default. **Do not invent an owner to fill the
+field** — an absent one is safe, a wrong one sends the work to someone whose lens
+does not fit it.
+
+---
 ## v4.15.1 (2026-08-30) — Things rcode shipped but nobody could reach
 
 Five defects with one shape: rcode had the capability and put it somewhere
