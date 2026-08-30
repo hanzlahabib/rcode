@@ -3,6 +3,92 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.15.0 (2026-08-30) — Nothing is lost on resume or on update
+
+### Run reasoning survives a resume
+
+`state add-decision` existed but was called manually, usually when someone
+remembered at the end of a session. Everything decided in between — an override,
+an assumption, a change of direction — lived only in the conversation and was
+gone on the next `/clear`. That is the mechanism behind artifacts nobody could
+explain and a state file that disagreed with what actually happened.
+
+**`memlog`** (`.planning/MEMLOG.md`) is the run's append-only memory:
+
+```bash
+rcode-tools.cjs memlog append --type decision --text "Stack: Astro. Premise: owner is technical." --phase 1
+rcode-tools.cjs memlog open    # assumptions, overrides and blockers still outstanding
+```
+
+- One line per event, written **as the work happens**, typed `decision | change |
+  override | assumption | event | blocker`.
+- **Append-only.** A wrong entry is followed by a correcting entry, never edited
+  away — a log you can quietly correct defeats its own purpose.
+- Wired into plan, execute, and the stack gate, so it is written during the run
+  rather than reconstructed after it.
+- Milestone close now audits `memlog open`. An entry that survives a whole
+  milestone unexamined is the one that becomes "nobody knows why this is like
+  this".
+- It does not replace `state.decisions[]`. That stays the curated record of
+  decisions that stuck; the memlog is the raw trail, reversals included.
+
+### Local customizations survive an update
+
+Customising rcode meant editing `.rcode/workflows/`, `.rcode/references/`, or the
+installed skills. The installer regenerates all of those, so an edit worked until
+the next `rcode install` and then vanished silently — which teaches users either
+not to customise or not to update.
+
+**`customize`** reads `.rcode/custom/`, which the installer never writes:
+
+- `<name>.md` — team override, committed.
+- `<name>.user.md` — personal override, gitignored.
+- Both are **appended** after the shipped content, team layer first.
+
+Append rather than replace is deliberate: a replacing override silently drops
+whatever the next rcode version adds to that workflow — the same trap as editing
+the installed file, only slower to notice. To neutralise a shipped rule, an
+override says so and says why, which is auditable in a way a deletion is not.
+
+### Codex actually gets rcode's skills
+
+Investigated live against Codex CLI 0.150.1. Codex reads skills from
+`~/.codex/skills/<name>/SKILL.md`, a path rcode had no knowledge of — so none of
+its skills appeared there. `installCodexSkills()` now copies each skill folder
+whole (including `references/`, `steps/`, `templates/`) to
+`~/.codex/skills/rcode-*/` under `--global`, and uninstall removes only the
+`rcode-` prefixed entries.
+
+Recorded plainly at the same time: **Codex has no agents surface at all**, so
+rcode's agents cannot appear there in any form. That is an absent surface, not a
+bug — the comment in `getPathsForIde('codex')` now says so instead of leaving the
+next reader to assume otherwise.
+
+### Phases deliver a capability, not a layer
+
+Nothing prevented a roadmap being cut horizontally: "Phase 1 — create all the
+tables", "Phase 2 — every repository", "Phase 3 — the API". Nothing in such a
+phase is exercised until a much later phase reaches for it, so a service can be
+built and never wired to anything while passing every gate in between — which is
+exactly how a cycle-closing service shipped with its own test as its only
+importer.
+
+Added the **layer-first phasing** anti-pattern with a decidable test (*what can
+someone do after this phase that they could not do before?*), sprint-checker
+**Check 5b — Vertical slice, not a layer** (warning, since a genuine foundation
+phase is sometimes right but must name what it unblocks), and vertical-cut
+guidance in the roadmapper so it is caught when the roadmap is written.
+
+### Roadmap parsing
+
+`roadmap get-phase` could not read the shapes rcode's own roadmapper writes —
+it demanded `**Success Criteria**:` while roadmapper writes `**Success
+criteria:**`, and only matched a following list while roadmapper writes
+requirements inline. A drifted duplicate of the requirement-ID regex compounded
+it. One shared label matcher now derives from the property rather than
+enumerating spellings, with a regression test proven red first.
+
+---
 ## v4.14.0 (2026-08-25) — Planning asks before it decides
 
 ### The theme
