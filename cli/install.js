@@ -1373,12 +1373,29 @@ function installSkills(packageRoot, target, options = {}) {
   let skippedGlobal = 0;
 
   const _internalSkillCache = new Map();
+  // `user-invocable: true` WINS over `internal: true`.
+  //
+  // These two flags contradict each other and 36 of the 38 internal skills
+  // declared both. The installer read only `internal`, so every one of those
+  // skills went to .rcode/skills/ instead of .claude/skills/ — which means the
+  // model never saw their descriptions and they could never auto-activate. They
+  // worked only if the user typed the exact slash command.
+  //
+  // That is how "review this PR <url>" reached the built-in code-review skill
+  // instead of rcode's: rcode's reviewer was invisible, not out-competed.
+  //
+  // A skill that declares user-invocable, writes its description for activation
+  // ("Activates when the user says..."), and lists trigger phrases is user-facing
+  // by every signal it gives. `internal` is for genuine utility libraries that
+  // other skills call — and those do not claim to be user-invocable.
   function isInternalSkill(skillDir) {
     if (_internalSkillCache.has(skillDir)) return _internalSkillCache.get(skillDir);
     const skillMd = path.join(skillDir, 'SKILL.md');
     if (!fs.existsSync(skillMd)) { _internalSkillCache.set(skillDir, false); return false; }
     const text = fs.readFileSync(skillMd, 'utf8');
-    const result = /^internal:\s*true\s*$/m.test(text);
+    const internal = /^internal:\s*true\s*$/m.test(text);
+    const userInvocable = /^user-invocable:\s*true\s*$/m.test(text);
+    const result = internal && !userInvocable;
     _internalSkillCache.set(skillDir, result);
     return result;
   }

@@ -3,15 +3,20 @@ name: rcode-review
 internal: true
 description: >
   Review code changes using parallel adversarial review layers and produce
-  actionable findings. Activates when the user says "review this code", "run
-  code review", "do a PR review", "review the diff", "critique this
-  implementation", or "CR". Do NOT use for documentation review (use
-  rcode-validate-prd or editorial skills).
+  actionable findings. Activates when the user says "review this PR", "review
+  this code", "run code review", "do a PR review", "review the diff", "review
+  this branch", "critique this implementation", or "CR" — including when a
+  GitHub PR URL or a PR number is given with no other wording ("review
+  https://github.com/org/repo/pull/792", "review #792"). Do NOT use for
+  documentation review (use rcode-validate-prd or editorial skills).
 triggers:
   # English
   - "review this code"
   - "run code review"
   - "do a PR review"
+  - "review this PR"
+  - "review the PR"
+  - "review this branch"
   - "review the diff"
   - "critique this implementation"
   - "find bad code practices"
