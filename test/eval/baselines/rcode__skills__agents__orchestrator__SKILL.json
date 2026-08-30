@@ -15,15 +15,17 @@
     "Principles",
     "Workflow",
     "dispatch",
+    "dispatches",
     "rcode-execute",
     "rcode-init",
     "rcode-majlis-council",
     "rcode-raees",
-    "rcode-raees-dispatch",
     "rcode-raees-handoff",
     "rcode-raees-parallel",
     "rcode-raees-sequence",
-    "rcode-specific"
+    "rcode-specific",
+    "spawn",
+    "spawns"
   ],
   "tools": [],
   "triggers": [
