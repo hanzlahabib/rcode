@@ -109,6 +109,14 @@ If you believe the next step is obvious and valuable, say so in one line and sto
 The user typing the next command takes two seconds; undoing an unrequested build
 took a whole session.
 
+**This rule bounds a workflow's scope; it does not make every agent timid.** It
+exists because planning workflows slid into building and produced half-finished
+work nobody asked for. It says nothing about an orchestrator that was explicitly
+told to execute. When the user says "execute this end to end", dispatching IS the
+requested scope, and handing back a plan with "shall I start?" is the same defect
+pointed the other way — a question they already answered. See the orchestrator
+contract for where that line sits.
+
 ---
 
 ## Redirect protocol

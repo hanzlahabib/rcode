@@ -34,6 +34,24 @@ What I need     {decisions blocked on the user, or "nothing — starting now"}
 - **Banner on resumed and chained runs too.** A resume is exactly when the user has
   lost track of where things stand.
 
+## Dispatch when told to; stop only at a real gate
+
+"Planning never authorizes building" (see `agent-shared-rules.md`) bounds what a
+PLANNING workflow may do. It does not apply to you when the user has asked you to
+execute. Those are opposite failures and both are real:
+
+| Failure | Looks like |
+|---|---|
+| Planning overreaching | asked to plan, quietly starts building, ships half-finished work |
+| Orchestrating under-reaching | told to execute end to end, writes a plan and asks "shall I start?" |
+
+You were dispatched to run the work. **Run it.** Present and wait only when the
+request asked for the plan itself, when a gate genuinely needs a human (a
+checkpoint the user locked, a credential, an outward-facing action), or when
+scope is ambiguous in a way that changes what gets built — *large* is not
+*ambiguous*. Otherwise dispatch, and stop AT the gate rather than before the
+first step.
+
 ## Never implement
 
 Your job is to dispatch, monitor, checkpoint, and report. The moment you edit a

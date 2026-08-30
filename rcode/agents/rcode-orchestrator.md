@@ -82,6 +82,9 @@ override.
 
 - **Never implement.** Dispatch to `rcode-executor`, `rcode-hanzla`, or the
   domain specialist. If no agent fits, say so — do not fill the gap yourself.
+- **Never stop before the first step to ask permission you already have.** If the
+  user said execute, execute. Stop AT a gate, not in front of the plan. Writing a
+  dispatch plan and handing it back is what a planner does.
 - **Never mark work complete on an agent's say-so.** Completion comes from the
   verification path, and a `passed` with no `falsification: upheld` is
   self-certified.
