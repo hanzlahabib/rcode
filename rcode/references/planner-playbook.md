@@ -66,7 +66,23 @@ Read ONLY when current task needs them. Don't preemptively load.
 
 **`rcode/templates/sprint.md` is the single canonical template — read it now, don't improvise a different structure.** It is not optional/decorative; it is what `execute-sprint.md`'s `owner_agent_resolution` step and its per-task dashboard-state-sync step parse via `grep '^owner:'`/`^phase:'`/`^sprint:'`. A SPRINT.md that free-styles a different structure (bold-label metadata, `### Story N — Title` headings, or any shape without the exact `phase:`/`sprint:`/`owner:` YAML frontmatter block) silently breaks that parsing — the sprint still executes and commits real code, but the dashboard never learns it happened (confirmed live, issue class closed by #1034-#1036's fixes — do not reintroduce it by drifting from the template).
 
-**`owner:` field.** If this plan is grounded in a council session (a `.planning/council-sessions/council-*.md` file is referenced in `<context>` as the authoritative decision), set `owner:` to the id of that session's lead/highest-consensus technical persona for THIS sprint's dominant work — one of `haitham`, `hanzla`, `omar`, `waleed`, `yousef` (the engineer personas with execute permission; `sadiq`/`fatima`/others are advisory-only and never valid here). Pick by domain match: a sprint whose `files_modified` is mostly `src/routes|services|models` → `yousef` (backend); mostly `src/components|pages` → `haitham` (frontend); architecture-level, cross-cutting → `waleed`; general/full-stack with no clear split → `hanzla`. If there was no council session, or the domain split is genuinely ambiguous, omit `owner:` entirely — `execute-sprint.md` defaults to the generic `rcode-executor` when the field is absent. Do not guess an owner just to fill the field; an absent `owner:` is the correct, safe default.
+**`owner:` field.** Set it from EITHER of two signals, whichever is present:
+
+1. **The specialist review panel** (plan.md step 9.5). The panel already seated a
+   domain persona for this phase by reading the plan's own `files_modified`,
+   migrations, and decisions — that is a stronger signal than any keyword match,
+   because it comes from what the work actually touches. If a domain persona sat
+   on the panel and it is one of the engineer personas below, it is the owner.
+2. **A council session** (a `.planning/council-sessions/council-*.md` referenced
+   in `<context>` as the authoritative decision) — use that session's
+   lead/highest-consensus technical persona for THIS sprint's dominant work.
+
+Without this, the chain breaks in the middle: the panel seats Waleed and Yousef,
+they find real problems in the plan, and then execution hands every sprint to the
+generic `rcode-executor` — so the plan-time expertise never reaches the
+implementation. `owner:` is what carries it across.
+
+Pick by domain match when using either signal: one of `haitham`, `hanzla`, `omar`, `waleed`, `yousef` (the engineer personas with execute permission; `sadiq`/`fatima`/others are advisory-only and never valid here). A sprint whose `files_modified` is mostly `src/routes|services|models` → `yousef` (backend); mostly `src/components|pages` → `haitham` (frontend); architecture-level, cross-cutting → `waleed`; general/full-stack with no clear split → `hanzla`. If neither signal is present, or the domain split is genuinely ambiguous, omit `owner:` entirely — `execute-sprint.md` defaults to the generic `rcode-executor` when the field is absent. Do not guess an owner just to fill the field; an absent `owner:` is the correct, safe default.
 
 ## Dependency Graph Rules
 

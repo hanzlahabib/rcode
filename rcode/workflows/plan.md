@@ -718,6 +718,25 @@ Do not restate the plan. Do not summarize. {response_language pass-through}
 Report to the user which agents sat on the panel and what each blocked on — a
 silent panel is indistinguishable from a skipped one.
 
+### 9.5d — Carry the panel's domain seat into `owner:`
+
+The panel just picked a domain persona by reading this phase's actual files,
+migrations, and decisions. **That selection is the execution owner** — pass it to
+the planner so each SPRINT.md carries `owner: {persona-id}` in its frontmatter,
+and `execute-sprint.md`'s `owner_agent_resolution` spawns that persona instead of
+the generic `rcode-executor`.
+
+Without this step the chain breaks in the middle: the panel seats the right
+specialists, they find real problems, and then every sprint is handed to a
+generic executor — plan-time expertise that never reaches the implementation.
+
+Only the engineer personas can own a sprint (`haitham`, `hanzla`, `omar`,
+`waleed`, `yousef`). If the panel's domain seat was advisory-only (Fatima,
+Sadiq), or the panel was the two standing seats alone, leave `owner:` unset —
+`rcode-executor` is the correct default. **Do not invent an owner to fill the
+field**; an absent `owner:` is safe, a wrong one sends the work to someone whose
+lens does not fit it.
+
 ## 10. Spawn rcode-sprint-checker Agent
 
 Display banner:
