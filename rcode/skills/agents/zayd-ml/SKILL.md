@@ -18,7 +18,7 @@ triggers:
   # English
   - "machine learning"
   - "ML model"
-  - "AI"
+  - "AI feature"
   - "LLM"
   - "prompt engineering"
   - "fine-tuning"

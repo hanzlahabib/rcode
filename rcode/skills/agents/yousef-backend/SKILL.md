@@ -16,9 +16,9 @@ description: >
   (use Khalid).
 triggers:
   # English
-  - "backend"
+  - "backend work"
   - "API design"
-  - "database"
+  - "database design"
   - "server-side"
   - "Node.js backend"
   - "Python backend"

@@ -20,7 +20,7 @@ triggers:
   - "build this feature"
   - "code review"
   - "fix this bug"
-  - "refactor"
+  - "refactor this"
   - "talk to Hanzla"
   - "engineer this"
   - "full-stack"

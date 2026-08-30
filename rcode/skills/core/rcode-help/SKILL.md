@@ -3,7 +3,8 @@ name: rcode-help
 description: "Answers rcode questions and recommends the next skill to run, based on current project state."
 triggers:
   # English
-  - "help"
+  # NOTE: no bare "help" trigger. It matched almost every message, and
+  # "rcode help" already covers the intent without the false positives.
   - "rcode help"
   - "what should I do next"
   - "what can rcode do"

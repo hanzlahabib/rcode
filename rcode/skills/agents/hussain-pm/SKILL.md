@@ -18,7 +18,7 @@ triggers:
   - "user stories"
   - "sprint planning"
   - "backlog"
-  - "roadmap"
+  - "the roadmap"
   - "PRD"
   - "product requirements"
   - "talk to Hussain"

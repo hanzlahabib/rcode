@@ -15,7 +15,7 @@ description: >
   ML/data integration (use Zayd), or architecture decisions (use Waleed).
 triggers:
   # English
-  - "frontend"
+  - "frontend work"
   - "React"
   - "Next.js"
   - "component"

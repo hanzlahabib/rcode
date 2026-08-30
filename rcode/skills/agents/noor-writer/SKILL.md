@@ -15,10 +15,10 @@ description: >
 triggers:
   # English
   - "write documentation"
-  - "docs"
+  - "write the docs"
   - "README"
   - "technical writing"
-  - "content"
+  - "write the content"
   - "write a blog post"
   - "API documentation"
   - "changelog"
