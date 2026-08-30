@@ -1587,6 +1587,20 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
     plan.push({ src: f, rel: path.join('.rcode', 'data', rel) });
   }
 
+  // .rcode/templates/ — every template, not just the starter projects.
+  //
+  // Only `templates/projects/` was ever copied, so a fresh install had NO
+  // .md templates at all while workflows went on reading them:
+  // plan-research-validation.md and validate-phase.md both read
+  // `.rcode/templates/VALIDATION.md`, which never existed. Any templates found
+  // in an older project were leftovers from a version that did copy them, which
+  // is why this stayed invisible — it only broke on FRESH installs.
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'templates'))) {
+    const rel = path.relative(path.join(SOURCE_ROOT, 'templates'), f);
+    if (rel.startsWith('projects' + path.sep) || rel === 'projects') continue; // handled below
+    plan.push({ src: f, rel: path.join('.rcode', 'templates', rel) });
+  }
+
   // .rcode/templates/projects/  — starter templates consumed by /rcode-from-template
   const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
   const relProjectTemplates = path.relative(target, path.join(target, '.rcode', 'templates', 'projects'));

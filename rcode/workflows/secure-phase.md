@@ -132,7 +132,9 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `.rcode/templates/SECURITY.md`
+1. Read `.rcode/templates/SECURITY.md` **if it exists** — it is not shipped, so
+   normally it will not. Build the document from step 2's section list instead;
+   that list is the contract, the template was only ever a convenience.
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 
