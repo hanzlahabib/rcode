@@ -595,6 +595,30 @@ function ensureRcodeSettingsHooks(target, options = {}) {
 
   settings.hooks = settings.hooks || {};
 
+  // An rcode-owned hook entry is any command that runs rcode-hooks.cjs. Match on
+  // the subcommand it dispatches (pre-edit, stop, bash-guard, …) so a superseded
+  // form of the SAME hook is replaced rather than accumulated beside the new one.
+  // Two command shapes exist in the wild and both must resolve to the same
+  // subcommand, or a superseded entry is never recognised as superseded:
+  //   pre-v4.12.1:  node .rcode/bin/rcode-hooks.cjs stop
+  //   current:      sh -c 'H=".rcode/bin/rcode-hooks.cjs"; … exec node "$H" stop || exit 0'
+  // In the current form the path and the subcommand are far apart, so a pattern
+  // anchored on the filename finds nothing.
+  const VALID_SUBS = new Set([
+    'pre-edit', 'pre-workflow', 'post-commit', 'bash-guard', 'pre-compact',
+    'stop-verify', 'cost-track', 'stop', 'compact-nudge', 'pre-tool-use',
+    'prompt-router', 'session-start', 'drift',
+  ]);
+  const rcodeHookSub = (cmd) => {
+    if (typeof cmd !== 'string' || !cmd.includes('rcode-hooks.cjs')) return null;
+    const direct = cmd.match(/rcode-hooks\.cjs["']?\s+([a-z-]+)/);
+    if (direct && VALID_SUBS.has(direct[1])) return direct[1];
+    const viaVar = cmd.match(/\$H["']?\s+([a-z-]+)/);
+    if (viaVar && VALID_SUBS.has(viaVar[1])) return viaVar[1];
+    return null;
+  };
+
+  let replaced = 0;
   for (const [hookType, matchers] of Object.entries(template.hooks || {})) {
     settings.hooks[hookType] = settings.hooks[hookType] || [];
     for (const incoming of matchers) {
@@ -604,6 +628,30 @@ function ensureRcodeSettingsHooks(target, options = {}) {
         settings.hooks[hookType].push(existingMatcher);
       }
       for (const hook of incoming.hooks) {
+        const sub = rcodeHookSub(hook.command);
+
+        // Drop any rcode-owned entry for the same subcommand whose command text
+        // differs from what we are installing. Purely additive merging is how a
+        // project ends up running BOTH the pre-v4.12.1 bare
+        // `node .rcode/bin/rcode-hooks.cjs stop` and its worktree-safe
+        // replacement — the old one then throws MODULE_NOT_FOUND on every event
+        // inside a worktree, forever, and no amount of reinstalling removes it.
+        // Only rcode's own entries are touched; a user's or another tool's hooks
+        // never match rcodeHookSub().
+        if (sub) {
+          // Sweep EVERY matcher block for this hook type, not just the one we
+          // matched. A stale entry commonly sits under a different matcher than
+          // the template now uses, and a per-block filter walks straight past it
+          // — which is how the superseded command survived a reinstall.
+          for (const block of settings.hooks[hookType]) {
+            if (!Array.isArray(block.hooks)) continue;
+            const before = block.hooks.length;
+            block.hooks = block.hooks.filter((h) =>
+              !(rcodeHookSub(h.command) === sub && h.command !== hook.command));
+            replaced += before - block.hooks.length;
+          }
+        }
+
         const dup = existingMatcher.hooks.some((h) => h.command === hook.command && h.type === hook.type);
         if (!dup) existingMatcher.hooks.push(hook);
       }
@@ -613,7 +661,7 @@ function ensureRcodeSettingsHooks(target, options = {}) {
   try {
     fs.mkdirSync(settingsDir, { recursive: true });
     writeFileAtomic(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-    return { action: 'merged' };
+    return { action: 'merged', replaced };
   } catch {
     return { action: 'skipped-error' };
   }
