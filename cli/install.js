@@ -3098,6 +3098,7 @@ async function installInner(opts) {
   // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
   const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
 
+
   // Install pre-commit hook that auto-syncs state.json when planning files change.
   // Respects --no-git-hooks flag; skips silently when .git/ is absent.
   const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });

@@ -35,6 +35,7 @@ const COMMANDS = {
   agent: require('./agent'),
   doctor: require('./doctor'),
   workflow: require('./workflow'),  // lifecycle bridge for non-Claude runtimes
+  worktree: require('./worktree'),  // repair a worktree's gitignored rcode runtime
   // Thin lifecycle aliases — delegate to workflow show <name> (#883)
   plan:    (args, ctx) => lifecycleAlias('plan',           args, ctx),
   execute: (args, ctx) => lifecycleAlias('execute-sprint', args, ctx),

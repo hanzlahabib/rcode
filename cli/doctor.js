@@ -232,7 +232,26 @@ function runPreflight(cwd, packageRoot) {
   }
 
   // 4. git availability — warn-only (many features don't need it)
-  checks.push({
+    // A worktree gets .rcode/config.yaml and state.json but none of the gitignored
+  // runtime, so skills load from the global install and then find no workflow to
+  // dispatch to. Diagnose it here — the symptom otherwise reads as "rcode is
+  // broken" rather than "this worktree was never linked".
+  try {
+    const wt = require('./worktree');
+    const info = wt.detect(cwd);
+    if (info.isWorktree && info.mainCheckout) {
+      const missing = wt.missingDirs(cwd, info.mainCheckout);
+      checks.push({
+        label: 'Worktree runtime',
+        status: missing.length > 0 ? 'fail' : 'ok',
+        message: missing.length > 0
+          ? `${missing.length} runtime dir(s) missing (${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '…' : ''}) — workflows cannot resolve. Fix: rcode worktree link`
+          : 'linked to main checkout',
+      });
+    }
+  } catch { /* advisory — never block doctor over it */ }
+
+checks.push({
     label: 'git CLI',
     status: commandAvailable('git') ? 'ok' : 'warn',
     message: commandAvailable('git') ? 'available' : 'not found (some features disabled)',
