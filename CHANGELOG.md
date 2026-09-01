@@ -3,6 +3,67 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.16.0 (2026-09-01) — Worktrees stop breaking rcode
+
+Two failures, one root: rcode's own gitignore block hides `.rcode/bin/`,
+`workflows/`, `references/`, `data/`, `skills/`, `commands/` and `.claude/`.
+That is correct — the installer regenerates them — but it means
+`git worktree add` never brings them along. The worktree gets `config.yaml` and
+`state.json` and no runtime.
+
+### `rcode worktree link`
+
+A skill loads from the global install, then finds no
+`.rcode/workflows/<name>.md` to dispatch to, and the symptom reads as "rcode is
+broken" rather than "this worktree was never linked".
+
+The only previous remedy was a full `rcode install` inside the worktree — which
+rewrites AGENTS.md, the gitignore block, hooks and settings, on top of whatever
+is already staged there. Users reasonably refuse that mid-task and work around
+rcode instead.
+
+```
+rcode worktree check   # what is missing; changes nothing
+rcode worktree link    # restore from the main checkout
+```
+
+Symlinks rather than copies, so the worktree follows the main checkout's rcode
+version instead of pinning whatever was current that day. Only ever creates what
+is missing, never replaces a real directory. Where symlinks are unavailable it
+copies and says so, because a copy pins a version. `rcode doctor` now reports the
+condition with the one command that fixes it.
+
+### Superseded hooks were accumulating, not being replaced
+
+v4.12.1 fixed worktree hook crashes by giving every hook command a
+`git rev-parse --git-common-dir` fallback. **Existing installs never got it.**
+
+`ensureRcodeSettingsHooks()` skipped a hook whose command string matched exactly
+and otherwise appended. A project installed before v4.12.1 kept its bare
+`node .rcode/bin/rcode-hooks.cjs stop`, and every later install added the
+worktree-safe form *beside* it. Both ran. Inside a worktree the old one threw
+`MODULE_NOT_FOUND` on every event, forever, and reinstalling never removed it —
+the merge had no way to recognise it as superseded.
+
+Worth stating plainly: rcode's own hook circuit breaker (4.13.0) cannot help
+here. It lives inside `rcode-hooks.cjs`, which is precisely the file that fails
+to load, so the failure happens before any rcode code runs.
+
+The merge now replaces superseded rcode hook entries. Three things that fix
+required:
+
+- **Both command shapes resolve to the same subcommand.** In the current `sh -c`
+  form the path and the subcommand are far apart, so a pattern anchored on the
+  filename matches nothing.
+- **Every matcher block is swept**, not just the one being merged into — a stale
+  entry usually sits under a different matcher, and a per-block filter walks
+  straight past it.
+- **Only rcode's own entries are touched.** Another tool's hooks in the same slot
+  are left alone, covered by a test.
+
+Proven red-first: the regression test fails against the unfixed installer.
+
+---
 ## v4.15.2 (2026-08-30) — The plan's specialists now do the work
 
 4.15.0 added a specialist review panel to planning: it reads a phase's actual
