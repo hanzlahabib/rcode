@@ -2885,6 +2885,16 @@ async function installInner(opts) {
   const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
   // #938 — --local-only forces a self-contained install: treat it as NOT a
   // global-deferring project install so all skills/commands are written locally.
+  // --local-only is self-containment with a running cost, and the cost only
+  // becomes visible in a pull request. State it here instead.
+  if (opts.localOnly && opts.target !== homedir()) {
+    console.log('  ' + warn('--local-only: writing all commands and skills into this project.'));
+    console.log('    ' + dim('They are gitignored by default. If you force-track them for collaborators/CI,'));
+    console.log('    ' + dim('every rcode update becomes a diff of tens of thousands of lines, and any local'));
+    console.log('    ' + dim('edit to them is silently overwritten by the next install.'));
+    console.log('    ' + dim('The alternative is one setup step: npx @hanzlaa/rcode install (CI + new clones).'));
+  }
+
   const isProjectInstall = opts.target !== homedir() && !opts.localOnly;
   // Run dedup even when force:true — only forceOverwrite skips it.
   if (isProjectInstall && !opts.forceOverwrite) {
@@ -2929,8 +2939,25 @@ async function installInner(opts) {
           // Remove root-level rcode-*.md files
           const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
             .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
+
+          // A file the project chose to COMMIT is not a duplicate — it is a
+          // decision. Deleting tracked files here turned a routine update into a
+          // 218-deletion PR that the user had to stop and question, under a flag
+          // literally named --non-destructive. Dedup removes redundant copies;
+          // it does not overrule what a repo deliberately tracks.
+          const { spawnSync: _spawn } = require('child_process');
+          const isTracked = (abs) => {
+            const r = _spawn('git', ['ls-files', '--error-unmatch', abs],
+              { cwd: opts.target, stdio: 'ignore' });
+            return r.status === 0;
+          };
+
+          let removedCmds = 0, keptTracked = 0;
           for (const f of projectCommandFiles) {
-            fs.unlinkSync(path.join(projectClaudeCommands, f));
+            const abs = path.join(projectClaudeCommands, f);
+            if (isTracked(abs)) { keptTracked++; continue; }
+            fs.unlinkSync(abs);
+            removedCmds++;
           }
           // Remove rcode/ subdirectory (vscode-style commands).
           // #688 — safeRmSync refuses to traverse out-of-target symlinks.
@@ -2938,7 +2965,12 @@ async function installInner(opts) {
           if (fs.existsSync(rcodeSubdir)) {
             safeRmSync(rcodeSubdir, opts.target);
           }
-          console.log('  ' + dim('Removed duplicate project-level rcode commands (global ones in ~/.claude/ take precedence).'));
+          if (removedCmds > 0) {
+            console.log('  ' + dim(`Removed ${removedCmds} untracked duplicate project-level rcode command(s) — the global ones in ~/.claude/ take precedence.`));
+          }
+          if (keptTracked > 0) {
+            console.log('  ' + ok(`Kept ${keptTracked} git-tracked project command(s) — this repo commits them deliberately, so they were left alone.`));
+          }
         } catch { /* non-fatal */ }
         const filtered = plan.filter(e => {
           const rel = e.rel.split(path.sep).join('/');
@@ -3520,9 +3552,23 @@ function runInstallHealthCheck(target, counts) {
   });
 
   check('skills + commands installed', () => {
+    // When a global install exists, dedup deliberately removes the project's
+    // copies — the commands resolve from ~/.claude/ instead. Counting only the
+    // project then reports "install may be broken" on a perfectly correct
+    // install, which is a false alarm that teaches users to ignore this check.
+    // Count what the user can actually reach: project + global.
+    const globalCount = (dir) => {
+      try { return fs.readdirSync(dir).filter((f) => f.startsWith('rcode-')).length; }
+      catch { return 0; }
+    };
+    const reachableCommands = (counts.commandCount || 0)
+      + globalCount(path.join(homedir(), '.claude', 'commands'));
+    const reachableSkills = (counts.skillsInstalled || 0)
+      + globalCount(path.join(homedir(), '.claude', 'skills'));
+
     const issues = [];
-    if ((counts.skillsInstalled || 0) < expected.skills) issues.push(`${counts.skillsInstalled} skills (expected ≥ ${expected.skills})`);
-    if ((counts.commandCount || 0) < expected.commands) issues.push(`${counts.commandCount} commands (expected ≥ ${expected.commands})`);
+    if (reachableSkills < expected.skills) issues.push(`${reachableSkills} skills reachable (expected ≥ ${expected.skills})`);
+    if (reachableCommands < expected.commands) issues.push(`${reachableCommands} commands reachable (expected ≥ ${expected.commands})`);
     if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
     return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
   });
