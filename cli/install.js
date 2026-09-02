@@ -513,46 +513,17 @@ function acquireInstallLock(target) {
 
 
 
-async function installInner(opts) {
-  const pkgVersion = readPackageVersion();
-
-  // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
-  const isInteractive = process.stdin.isTTY && !opts.yes;
-  if (isInteractive) printInstallHeader(pkgVersion);
-
-  // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
-  opts.ides = await resolveIde(opts);
-
-  // Resolve commit-planning preference (interactive prompt or flag) — #189.
-  opts.commitPlanning = await resolveCommitPlanning(opts);
-
-  // Resolve guardrail-hooks preference (interactive prompt or flag). Default on.
-  opts.enableHooks = await resolveEnableHooks(opts);
-
-  console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
-
-  // Detect an existing install and surface it (#195).
-  const existingManifestPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
-  if (fs.existsSync(existingManifestPath)) {
-    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
-    const existingVersion = m ? m[1].trim() : 'unknown';
-    const isUpgrade = semver.valid(existingVersion) && semver.valid(pkgVersion)
-      ? semver.lt(existingVersion, pkgVersion)
-      : existingVersion !== pkgVersion;
-    if (isUpgrade) {
-      console.log('  ' + info(`Upgrading ${pc.dim('v' + existingVersion)} → ${pc.green('v' + pkgVersion)} (config + state + .planning preserved)`));
-    } else {
-      console.log('  ' + info(`Refreshing v${existingVersion} (config + state + .planning preserved)`));
-    }
-    if (!opts.force) {
-      console.log(dim('    Pass --force to also sweep orphaned files from the previous version.'));
-    }
-  }
-  if (!fs.existsSync(SOURCE_ROOT)) {
-    console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
-    return 1;
-  }
-
+/**
+ * Validate the resolved IDE list and print per-IDE informational/warning
+ * messages. Mutates opts.ides in place (claude-code alias normalization,
+ * dropping unimplemented gemini). Returns an installInner exit code (0/1)
+ * when validation fails or the IDE list becomes empty, else null to signal
+ * "continue".
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function validateAndAnnotateIdes(opts) {
   // Validate IDE(s) — structured error for unsupported editors (#197).
   // SUPPORTED_IDES is the module-level constant (#697 / W4.3).
   // Issue #841: also accept 'claude-code' as an alias — normalise any that
@@ -620,6 +591,53 @@ async function installInner(opts) {
       console.log('  ' + dim('If Antigravity expects a different path, adjust .rcode/config.yaml and re-run.'));
     }
   }
+
+  return null;
+}
+
+async function installInner(opts) {
+  const pkgVersion = readPackageVersion();
+
+  // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
+  const isInteractive = process.stdin.isTTY && !opts.yes;
+  if (isInteractive) printInstallHeader(pkgVersion);
+
+  // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
+  opts.ides = await resolveIde(opts);
+
+  // Resolve commit-planning preference (interactive prompt or flag) — #189.
+  opts.commitPlanning = await resolveCommitPlanning(opts);
+
+  // Resolve guardrail-hooks preference (interactive prompt or flag). Default on.
+  opts.enableHooks = await resolveEnableHooks(opts);
+
+  console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
+
+  // Detect an existing install and surface it (#195).
+  const existingManifestPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
+  if (fs.existsSync(existingManifestPath)) {
+    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
+    const existingVersion = m ? m[1].trim() : 'unknown';
+    const isUpgrade = semver.valid(existingVersion) && semver.valid(pkgVersion)
+      ? semver.lt(existingVersion, pkgVersion)
+      : existingVersion !== pkgVersion;
+    if (isUpgrade) {
+      console.log('  ' + info(`Upgrading ${pc.dim('v' + existingVersion)} → ${pc.green('v' + pkgVersion)} (config + state + .planning preserved)`));
+    } else {
+      console.log('  ' + info(`Refreshing v${existingVersion} (config + state + .planning preserved)`));
+    }
+    if (!opts.force) {
+      console.log(dim('    Pass --force to also sweep orphaned files from the previous version.'));
+    }
+  }
+  if (!fs.existsSync(SOURCE_ROOT)) {
+    console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
+    return 1;
+  }
+
+  // IDE validation + per-IDE messaging — #1066 Phase 2 extraction.
+  const idesExitCode = validateAndAnnotateIdes(opts);
+  if (idesExitCode !== null) return idesExitCode;
 
   // Validate requested modules exist
   if (opts.modules.length > 0) {
