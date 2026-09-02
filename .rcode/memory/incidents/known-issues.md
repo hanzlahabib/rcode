@@ -33,3 +33,12 @@ Active bugs and workarounds. Searchable so an agent doesn't waste cycles re-debu
 - **First seen:** 2026-04-26
 - **Tracking:** TASKS.md "Phase 5 — Workflow file splits ⏭ skipped"
 
+### VERIFICATION.md completion gate regressed — phases marked complete with no verification on record
+
+- **Symptom:** 24 of 27 phases in `.planning/phases/` marked `"status": "complete"` in `.rcode/state.json` have no `*-VERIFICATION.md` on disk (only 3 exist repo-wide). Phase 29 (security hardening) is among them.
+- **Surface:** `.rcode/bin/rcode-tools.cjs` — `PHASE_STATUS_ALIASES`/`normalizePhaseStatus` (collapses `executed`→`complete` on every state read, persists the collapse back to disk) and the `phase` CLI subcommand family (`phase complete`/`set-status`/etc.), which bypasses the locked, atomic `writeState()` writer entirely.
+- **Workaround:** retroactively run `/rcode-verify-phase` per affected phase if verification confidence is needed before shipping.
+- **Real fix planned for:** in progress — same session, 2026-09-02 (appears to be a regression past the fixes in #1040/#1043/#1044)
+- **First seen:** 2026-09-02
+- **Tracking:** #1060
+
