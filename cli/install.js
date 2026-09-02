@@ -2640,8 +2640,20 @@ async function installInner(opts) {
           const [rel, hash] = line.split(',');
           if (rel && hash) priorManifest.set(rel, hash);
         }
-      } catch {
-        // best-effort — if manifest is malformed, fall back to behaving like fresh install
+      } catch (err) {
+        // #1062 — an empty priorManifest makes every file look "new" to the
+        // preserve-user-edits check below, which silently falls through to an
+        // unconditional overwrite. That defeats the entire point of
+        // --non-destructive, so a corrupt manifest must abort, not degrade.
+        console.error('');
+        console.error(`✖ --non-destructive: could not read prior install manifest at ${manifestPath}`);
+        console.error(`  (${err.message})`);
+        console.error(`  Refusing to install — a missing manifest means locally-modified files`);
+        console.error(`  can't be told apart from pristine ones, so this would risk silently`);
+        console.error(`  overwriting your edits.`);
+        console.error(`  Fix or remove the corrupted manifest, or re-run without --non-destructive.`);
+        console.error('');
+        return 1;
       }
     }
   }

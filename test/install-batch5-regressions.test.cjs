@@ -245,6 +245,59 @@ test('#705 — re-install with stub ROADMAP + missing state.json DOES re-seed _s
 // option is wired by reading the source — guard against deletion.
 // ────────────────────────────────────────────────────────────────────────
 
+// ────────────────────────────────────────────────────────────────────────
+// #1062 — a corrupt/unreadable files-manifest.csv must abort --non-destructive
+// installs, never silently fall through to an unconditional overwrite.
+// Pre-fix, the manifest read was wrapped in a bare try/catch that swallowed
+// the error and left priorManifest empty, which made every locally-modified
+// file look "new" and skip the preserve-user-edits branch entirely.
+// ────────────────────────────────────────────────────────────────────────
+
+test('#1062 — corrupt manifest aborts --non-destructive install instead of overwriting edits', (t) => {
+  const dir = makeTempDir();
+  t.after(() => cleanup(dir));
+  gitInit(dir);
+
+  // Fresh install to get a real manifest + real files on disk.
+  runInstall(dir);
+
+  const manifestPath = path.join(dir, '.rcode', '_config', 'files-manifest.csv');
+  const manifestRows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
+  const [trackedRel] = manifestRows[0].split(',');
+  assert.ok(trackedRel, 'expected at least one tracked file in the manifest');
+
+  // Simulate a user edit on a tracked file — this is exactly what
+  // --non-destructive is supposed to protect.
+  const trackedPath = path.join(dir, trackedRel);
+  const userEditedContent = '/* USER EDIT — must survive #1062 regression test */\n';
+  fs.writeFileSync(trackedPath, userEditedContent, 'utf8');
+
+  // Corrupt the manifest so fs.readFileSync() throws (EISDIR) instead of
+  // just returning malformed text — this exercises the actual catch path.
+  fs.rmSync(manifestPath, { force: true });
+  fs.mkdirSync(manifestPath);
+
+  const r = spawnSync('node', [INSTALL_JS, '--target', dir, '--no-update-check', '--yes', '--non-destructive'], {
+    encoding: 'utf8',
+    env: { ...process.env, HOME: FAKE_HOME, USERPROFILE: FAKE_HOME },
+  });
+
+  assert.notStrictEqual(
+    r.status, 0,
+    `install must abort (non-zero exit) on a corrupt manifest under --non-destructive, got status ${r.status}`,
+  );
+  assert.match(
+    r.stderr,
+    /--non-destructive.*could not read prior install manifest/i,
+    `expected an explicit abort message, got:\n${r.stderr}`,
+  );
+  assert.strictEqual(
+    fs.readFileSync(trackedPath, 'utf8'),
+    userEditedContent,
+    `user-modified file ${trackedRel} was overwritten despite --non-destructive — regression of #1062`,
+  );
+});
+
 test('#1030 — install.js brain-pull runs detached instead of blocking install', () => {
   // #706's execFileSync + timeout was replaced in #1030: a live-measured 58s
   // cold pull sat dangerously close to that 60s timeout. Brain pull is
