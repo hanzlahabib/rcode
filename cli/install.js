@@ -1204,6 +1204,243 @@ function printInstallSummary(opts, report) {
   return healthPass ? 0 : 1;
 }
 
+/**
+ * Copy every file in the install plan to its destination, honoring:
+ *   - non-destructive mode (#232): preserve files whose current hash
+ *     differs from the prior-install hash recorded in `priorManifest`
+ *     (user-modified) — unless --force-overwrite or --accept-all (#251).
+ *   - identical-content skip (existingHash === sourceHash).
+ *   - conflict buffering (#451/#453): when a file differs from source and
+ *     neither --force/--force-overwrite/--yes/--non-destructive apply,
+ *     buffer it into `conflictedFiles` instead of overwriting or spamming
+ *     a warning — the caller runs resolveInstallConflicts() on the result.
+ *   - --force-overwrite clobbers unconditionally (with a spinner note when
+ *     content actually differs).
+ *   - .mdc conversion for Cursor-targeted entries, executable bit for
+ *     entries flagged `executable`.
+ *
+ * Returns { copied, skipped, preserved, preservedFiles, preservedDiffs,
+ * conflictedFiles } — structured report fragments merged into the object
+ * passed to printInstallSummary.
+ *
+ * Split out of installInner() (#1066 Phase 3 — HIGHEST RISK, extracted
+ * last with extra scrutiny). Mechanical extraction, no behavior change.
+ * Preserves the exact conditional order from the original inline loop:
+ * non-destructive check → force/hash-match check → forceOverwrite spinner
+ * note → write. See issue comments inline (#232, #251, #451, #453, #667,
+ * #1062) for the regressions each guards against.
+ */
+function copyInstallPlanFiles(plan, opts, priorManifest) {
+  // Copy files — spinner gives feedback on long installs (#248).
+  let copied = 0;
+  let skipped = 0;
+  let preserved = 0;
+  const preservedFiles = [];
+  const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
+  const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
+  const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
+
+  for (const entry of plan) {
+    const destPath = path.join(opts.target, entry.rel);
+    const relForward = entry.rel.split(path.sep).join('/');
+    ensureDir(path.dirname(destPath));
+
+    // Per-iteration lazy readers — avoids re-reading destPath / entry.src across
+    // multiple conditional branches within the same loop body (up to 4 reads of
+    // destPath and 5 reads of entry.src in the worst case without this cache).
+    let _destBuf = null;
+    let _srcBuf = null;
+    const readDestBuf = () => { if (!_destBuf) _destBuf = fs.readFileSync(destPath); return _destBuf; };
+    const readSrcBuf = () => { if (!_srcBuf) _srcBuf = fs.readFileSync(entry.src); return _srcBuf; };
+
+    // Non-destructive guard (#232): preserve user-modified files.
+    // --accept-all (#251) overrides: treat all files as pristine.
+    if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
+      const priorHash = priorManifest.get(relForward);
+      if (priorHash) {
+        const installedContent = readDestBuf().toString('utf8');
+        const currentHash = sha256(readDestBuf());
+        if (currentHash !== priorHash) {
+          // Compute diff stat for display (#251)
+          const srcContent = readSrcBuf().toString('utf8');
+          const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
+          preserved += 1;
+          preservedFiles.push(relForward);
+          preservedDiffs.push({ rel: relForward, insertions: ins, deletions: del, patch });
+          skipped += 1;
+          continue;
+        }
+        // Hash matches prior install → pristine → safe to overwrite
+      }
+      // No prior hash → new file in this plan → install normally
+    }
+
+    if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
+      const existingHash = sha256(readDestBuf());
+      const sourceHash = sha256(readSrcBuf());
+      if (existingHash === sourceHash) { skipped++; continue; }
+      if (!opts.yes && !opts.nonDestructive) {
+        // Buffer the conflict instead of spamming a warning per file (#451).
+        // Surfaced as a categorised summary post-install + interactive offer (#453).
+        conflictedFiles.push({
+          rel: relForward,
+          src: entry.src,
+          destPath,
+          existingContent: readDestBuf().toString('utf8'),
+          sourceContent: readSrcBuf().toString('utf8'),
+        });
+        skipped++;
+        continue;
+      }
+    }
+
+    if (fs.existsSync(destPath) && opts.forceOverwrite) {
+      const existing = readDestBuf();
+      const incoming = readSrcBuf();
+      if (!existing.equals(incoming)) {
+        spinner.update({ text: dim(`overwriting ${entry.rel}`) });
+      }
+    }
+
+    let content = readSrcBuf().toString('utf8');
+    if (entry.cursor) content = convertToCursorMdc(content);
+    fs.writeFileSync(destPath, content, 'utf8');
+    if (entry.executable) fs.chmodSync(destPath, 0o755);
+    copied++;
+  }
+
+  spinner.success({ text: ok(`${copied} files installed`) });
+  // #667 — placeholder; the real count is logged AFTER the conflict resolver
+  // runs below. We re-emit a corrected summary line if the user updated files
+  // via the resolver so they don't walk away thinking "0 files installed"
+  // when they just accepted 10 vN updates.
+
+  return { copied, skipped, preserved, preservedFiles, preservedDiffs, conflictedFiles };
+}
+
+/**
+ * Interactive conflict resolution (#451/#453): when copyInstallPlanFiles()
+ * buffered files that differ from both the previous install AND the
+ * source (local edits + upstream update both present), offer to review
+ * each one, take the upstream version for all, or keep local edits.
+ * Non-interactive runs (non-TTY or --yes) get a hint instead of a prompt.
+ *
+ * Returns { updated } — the count of files the resolver actually rewrote
+ * with the upstream version, merged into the report passed to
+ * printInstallSummary (and used by installInner's own corrected
+ * "Total this run" summary line, which needs `copied` from
+ * copyInstallPlanFiles too).
+ *
+ * Split out of installInner() (#1066 Phase 3 — HIGHEST RISK, extracted
+ * last with extra scrutiny). Mechanical extraction, no behavior change.
+ */
+async function resolveInstallConflicts(conflictedFiles, opts) {
+  let updated = 0;
+
+  // Categorised conflict summary (#451) + interactive resolution offer (#453).
+  // Replaces the per-file 'differs from package version' warning spam.
+  if (conflictedFiles.length > 0) {
+    const byCategory = { workflows: [], agents: [], commands: [], skills: [], references: [], other: [] };
+    for (const c of conflictedFiles) {
+      if (c.rel.includes('/workflows/')) byCategory.workflows.push(c);
+      else if (c.rel.includes('/agents/')) byCategory.agents.push(c);
+      else if (c.rel.includes('/commands/')) byCategory.commands.push(c);
+      else if (c.rel.includes('/skills/')) byCategory.skills.push(c);
+      else if (c.rel.includes('/references/')) byCategory.references.push(c);
+      else byCategory.other.push(c);
+    }
+    console.log('');
+    console.log('  ' + warn(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} have local edits AND v${readPackageVersion()} updates:`));
+    for (const [cat, list] of Object.entries(byCategory)) {
+      if (list.length === 0) continue;
+      console.log('    ' + dim(`${list.length} ${cat}`));
+    }
+    console.log('');
+
+    if (!opts.yes && process.stdin.isTTY) {
+      const action = await clack.select({
+        message: 'How should we handle these?',
+        initialValue: 'review',
+        options: [
+          { value: 'review', label: 'Review each one',                hint: 'see the diff, decide per file' },
+          { value: 'upstream', label: 'Take v' + readPackageVersion() + ' for all', hint: 'lose local edits, get all bug fixes' },
+          { value: 'keep',   label: 'Keep my local edits',            hint: 'skip v' + readPackageVersion() + ' updates for these files (current behaviour)' },
+        ],
+      });
+      if (clack.isCancel(action)) {
+        clack.note('Skipped — local edits preserved.');
+      } else if (action === 'upstream') {
+        let applied = 0;
+        for (const c of conflictedFiles) {
+          fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+          applied++;
+        }
+        updated += applied; // #667 — surface in final summary
+        console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
+      } else if (action === 'review') {
+        let applied = 0, kept = 0;
+        for (const c of conflictedFiles) {
+          const patch = createTwoFilesPatch(c.rel, c.rel, c.existingContent, c.sourceContent, 'local', 'v' + readPackageVersion());
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
+          console.log('');
+          console.log('  ' + pc.bold(c.rel) + dim('  ') + pc.green(`+${ins}`) + ' ' + pc.red(`-${del}`));
+          const decision = await clack.select({
+            message: 'Take upstream, keep local, or view diff?',
+            initialValue: 'view',
+            options: [
+              { value: 'upstream', label: 'Take v' + readPackageVersion() },
+              { value: 'keep',     label: 'Keep local' },
+              { value: 'view',     label: 'View diff first' },
+            ],
+          });
+          let finalAction = decision;
+          if (clack.isCancel(decision) || decision === 'view') {
+            for (const line of patch.split('\n').slice(4)) {
+              if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
+              else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
+              else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
+              else process.stdout.write(dim(line) + '\n');
+            }
+            const after = await clack.select({
+              message: 'Now: take upstream or keep local?',
+              initialValue: 'keep',
+              options: [
+                { value: 'upstream', label: 'Take v' + readPackageVersion() },
+                { value: 'keep',     label: 'Keep local' },
+              ],
+            });
+            finalAction = clack.isCancel(after) ? 'keep' : after;
+          }
+          if (finalAction === 'upstream') {
+            fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+            applied++;
+          } else {
+            kept++;
+          }
+        }
+        updated += applied; // #667 — surface in final summary
+        console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
+      } else {
+        console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
+      }
+    } else {
+      console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
+    }
+    console.log('');
+  }
+
+  return { updated };
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1315,194 +1552,13 @@ async function installInner(opts) {
     }
   }
 
-  // Copy files — spinner gives feedback on long installs (#248).
-  let copied = 0;
-  let skipped = 0;
-  let preserved = 0;
-  // #667 — track files the user explicitly chose to update via the conflict
-  // resolver. Without this, accepting "Take vN" for 10 files still printed
-  // "0 files installed" because `copied` only counts pre-conflict writes.
-  let updated = 0;
-  const preservedFiles = [];
-  const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
-  const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
-  const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
+  // File-copy loop + interactive conflict resolution — #1066 Phase 3
+  // extraction (highest risk; extracted last with extra scrutiny).
+  const {
+    copied, skipped, preserved, preservedFiles, preservedDiffs, conflictedFiles,
+  } = copyInstallPlanFiles(plan, opts, priorManifest);
 
-  for (const entry of plan) {
-    const destPath = path.join(opts.target, entry.rel);
-    const relForward = entry.rel.split(path.sep).join('/');
-    ensureDir(path.dirname(destPath));
-
-    // Per-iteration lazy readers — avoids re-reading destPath / entry.src across
-    // multiple conditional branches within the same loop body (up to 4 reads of
-    // destPath and 5 reads of entry.src in the worst case without this cache).
-    let _destBuf = null;
-    let _srcBuf = null;
-    const readDestBuf = () => { if (!_destBuf) _destBuf = fs.readFileSync(destPath); return _destBuf; };
-    const readSrcBuf = () => { if (!_srcBuf) _srcBuf = fs.readFileSync(entry.src); return _srcBuf; };
-
-    // Non-destructive guard (#232): preserve user-modified files.
-    // --accept-all (#251) overrides: treat all files as pristine.
-    if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
-      const priorHash = priorManifest.get(relForward);
-      if (priorHash) {
-        const installedContent = readDestBuf().toString('utf8');
-        const currentHash = sha256(readDestBuf());
-        if (currentHash !== priorHash) {
-          // Compute diff stat for display (#251)
-          const srcContent = readSrcBuf().toString('utf8');
-          const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
-          let ins = 0, del = 0;
-          for (const line of patch.split('\n')) {
-            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
-            if (line.startsWith('-') && !line.startsWith('---')) del++;
-          }
-          preserved += 1;
-          preservedFiles.push(relForward);
-          preservedDiffs.push({ rel: relForward, insertions: ins, deletions: del, patch });
-          skipped += 1;
-          continue;
-        }
-        // Hash matches prior install → pristine → safe to overwrite
-      }
-      // No prior hash → new file in this plan → install normally
-    }
-
-    if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
-      const existingHash = sha256(readDestBuf());
-      const sourceHash = sha256(readSrcBuf());
-      if (existingHash === sourceHash) { skipped++; continue; }
-      if (!opts.yes && !opts.nonDestructive) {
-        // Buffer the conflict instead of spamming a warning per file (#451).
-        // Surfaced as a categorised summary post-install + interactive offer (#453).
-        conflictedFiles.push({
-          rel: relForward,
-          src: entry.src,
-          destPath,
-          existingContent: readDestBuf().toString('utf8'),
-          sourceContent: readSrcBuf().toString('utf8'),
-        });
-        skipped++;
-        continue;
-      }
-    }
-
-    if (fs.existsSync(destPath) && opts.forceOverwrite) {
-      const existing = readDestBuf();
-      const incoming = readSrcBuf();
-      if (!existing.equals(incoming)) {
-        spinner.update({ text: dim(`overwriting ${entry.rel}`) });
-      }
-    }
-
-    let content = readSrcBuf().toString('utf8');
-    if (entry.cursor) content = convertToCursorMdc(content);
-    fs.writeFileSync(destPath, content, 'utf8');
-    if (entry.executable) fs.chmodSync(destPath, 0o755);
-    copied++;
-  }
-
-  spinner.success({ text: ok(`${copied} files installed`) });
-  // #667 — placeholder; the real count is logged AFTER the conflict resolver
-  // runs below. We re-emit a corrected summary line if the user updated files
-  // via the resolver so they don't walk away thinking "0 files installed"
-  // when they just accepted 10 vN updates.
-
-  // Categorised conflict summary (#451) + interactive resolution offer (#453).
-  // Replaces the per-file 'differs from package version' warning spam.
-  if (conflictedFiles.length > 0) {
-    const byCategory = { workflows: [], agents: [], commands: [], skills: [], references: [], other: [] };
-    for (const c of conflictedFiles) {
-      if (c.rel.includes('/workflows/')) byCategory.workflows.push(c);
-      else if (c.rel.includes('/agents/')) byCategory.agents.push(c);
-      else if (c.rel.includes('/commands/')) byCategory.commands.push(c);
-      else if (c.rel.includes('/skills/')) byCategory.skills.push(c);
-      else if (c.rel.includes('/references/')) byCategory.references.push(c);
-      else byCategory.other.push(c);
-    }
-    console.log('');
-    console.log('  ' + warn(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} have local edits AND v${readPackageVersion()} updates:`));
-    for (const [cat, list] of Object.entries(byCategory)) {
-      if (list.length === 0) continue;
-      console.log('    ' + dim(`${list.length} ${cat}`));
-    }
-    console.log('');
-
-    if (!opts.yes && process.stdin.isTTY) {
-      const action = await clack.select({
-        message: 'How should we handle these?',
-        initialValue: 'review',
-        options: [
-          { value: 'review', label: 'Review each one',                hint: 'see the diff, decide per file' },
-          { value: 'upstream', label: 'Take v' + readPackageVersion() + ' for all', hint: 'lose local edits, get all bug fixes' },
-          { value: 'keep',   label: 'Keep my local edits',            hint: 'skip v' + readPackageVersion() + ' updates for these files (current behaviour)' },
-        ],
-      });
-      if (clack.isCancel(action)) {
-        clack.note('Skipped — local edits preserved.');
-      } else if (action === 'upstream') {
-        let applied = 0;
-        for (const c of conflictedFiles) {
-          fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
-          applied++;
-        }
-        updated += applied; // #667 — surface in final summary
-        console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
-      } else if (action === 'review') {
-        let applied = 0, kept = 0;
-        for (const c of conflictedFiles) {
-          const patch = createTwoFilesPatch(c.rel, c.rel, c.existingContent, c.sourceContent, 'local', 'v' + readPackageVersion());
-          let ins = 0, del = 0;
-          for (const line of patch.split('\n')) {
-            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
-            if (line.startsWith('-') && !line.startsWith('---')) del++;
-          }
-          console.log('');
-          console.log('  ' + pc.bold(c.rel) + dim('  ') + pc.green(`+${ins}`) + ' ' + pc.red(`-${del}`));
-          const decision = await clack.select({
-            message: 'Take upstream, keep local, or view diff?',
-            initialValue: 'view',
-            options: [
-              { value: 'upstream', label: 'Take v' + readPackageVersion() },
-              { value: 'keep',     label: 'Keep local' },
-              { value: 'view',     label: 'View diff first' },
-            ],
-          });
-          let finalAction = decision;
-          if (clack.isCancel(decision) || decision === 'view') {
-            for (const line of patch.split('\n').slice(4)) {
-              if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
-              else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
-              else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
-              else process.stdout.write(dim(line) + '\n');
-            }
-            const after = await clack.select({
-              message: 'Now: take upstream or keep local?',
-              initialValue: 'keep',
-              options: [
-                { value: 'upstream', label: 'Take v' + readPackageVersion() },
-                { value: 'keep',     label: 'Keep local' },
-              ],
-            });
-            finalAction = clack.isCancel(after) ? 'keep' : after;
-          }
-          if (finalAction === 'upstream') {
-            fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
-            applied++;
-          } else {
-            kept++;
-          }
-        }
-        updated += applied; // #667 — surface in final summary
-        console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
-      } else {
-        console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
-      }
-    } else {
-      console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
-    }
-    console.log('');
-  }
+  const { updated } = await resolveInstallConflicts(conflictedFiles, opts);
 
   // #667 — corrected post-resolver summary. Only re-emit when the conflict
   // resolver actually updated files; preserves the original line otherwise.
