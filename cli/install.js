@@ -73,28 +73,49 @@ const semver = require('semver');
 const { createTwoFilesPatch } = require('diff');
 const clack = require('@clack/prompts');
 
-// Output helpers: always respect NO_COLOR / non-TTY (picocolors handles this).
-const ok   = (s) => pc.green('✓') + ' ' + s;
-const fail = (s) => pc.red('✗') + ' ' + s;
-const warn = (s) => pc.yellow('⚠') + ' ' + s;
-const info = (s) => pc.cyan('→') + ' ' + s;
-const dim  = (s) => pc.dim(s);
-const bold = (s) => pc.bold(s);
-
-const PACKAGE_ROOT = path.resolve(__dirname, '..');
-const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
-
-/**
- * Single source of truth for supported IDEs (#697 — W4.3).
- *
- * Order matters: this is the order used in detection, prompts, and error
- * messages. Anywhere code used to inline `['claude','cursor','gemini',
- * 'vscode','antigravity']` it now references this constant. Adding a new
- * IDE is now: append here, add a case to getPathsForIde, add a signal to
- * detectIdeSignals, plus a row to runInstallWizard's multiselect — three
- * sites instead of ten.
- */
-const SUPPORTED_IDES = Object.freeze(['claude', 'cursor', 'gemini', 'vscode', 'antigravity', 'windsurf', 'codex', 'grok']);
+// Output helpers, package/source roots — cli/lib/install-shared.cjs (#1066 Phase 1).
+const {
+  ok, fail, warn, info, dim, bold, PACKAGE_ROOT, SOURCE_ROOT,
+} = require('./lib/install-shared.cjs');
+// IDE detection/paths/layout migration — cli/lib/install-ide.cjs.
+const {
+  SUPPORTED_IDES, resolveIde, getPathsForIde, migrateVscodeCommandsLayout, convertToCursorMdc,
+} = require('./lib/install-ide.cjs');
+// Install-plan construction + module manifest filtering — cli/lib/install-plan.cjs.
+const {
+  buildInstallPlan, listAvailableModules, filterPlanByModules,
+} = require('./lib/install-plan.cjs');
+// Manifest generation + orphan sweep — cli/lib/install-manifest.cjs.
+const {
+  sha256, readPackageVersion, generateAgentManifest, generateFilesManifest,
+  sweepStaleInstalledFiles, generateInstallManifest,
+} = require('./lib/install-manifest.cjs');
+// Skills installer + brain scaffold — cli/lib/install-skills.cjs.
+const {
+  installBrainScaffold, installSkills,
+} = require('./lib/install-skills.cjs');
+// Directory scaffolding — cli/lib/install-scaffold.cjs.
+const {
+  ensureDir, seedStarterPlanning,
+} = require('./lib/install-scaffold.cjs');
+// Install-time prompts + marked-block writers — cli/lib/install-hooks.cjs.
+const {
+  resolveCommitPlanning, resolveEnableHooks, ensureRcodeSettingsHooks,
+  ensureRcodeGitignore, ensureRcodePreferredCommandRule, ensureRcodePreCommitHook,
+} = require('./lib/install-hooks.cjs');
+// config.yaml generation/validation/parsing — cli/lib/install-config.cjs.
+const {
+  generateConfigYaml, validateConfig, parseSimpleYaml,
+} = require('./lib/install-config.cjs');
+// Pre-overwrite backups, pnpm dep check, health check — cli/lib/install-backup.cjs.
+const {
+  createInstallBackup, verifyPnpmAddDevDep, runInstallHealthCheck,
+} = require('./lib/install-backup.cjs');
+// Global slash-router install (Codex/Antigravity) — cli/lib/install-router.cjs.
+const {
+  installSlashRouterCommands, installCodexSlashRouterHook,
+  installAntigravitySlashRouterHook, installNativeHomeSlashCommands,
+} = require('./lib/install-router.cjs');
 
 /**
  * Resolve the stable on-disk location of this package so config.yaml
@@ -134,36 +155,6 @@ function findPnpmWorkspaceRoot(startDir) {
   }
 }
 
-// Zod schema for .rcode/config.yaml validation (#250).
-const ConfigSchema = z.object({
-  user_name: z.string().min(1),
-  project_name: z.string().min(1),
-  communication_language: z.string().default('English'),
-  mode: z.enum(['guided', 'yolo'], {
-    errorMap: () => ({ message: 'expected "guided" or "yolo"' }),
-  }).default('guided'),
-  model_profile: z.string().optional(),
-  commit_planning: z.boolean().optional(),
-  rcode_source_path: z.string().optional(),
-  workflow: z.object({
-    research_by_default: z.boolean().optional(),
-    plan_checker: z.boolean().optional(),
-    post_execute_gates: z.boolean().optional(),
-    ui_safety_gate: z.boolean().optional(),
-    nyquist_validation: z.boolean().optional(),
-  }).optional(),
-  output: z.object({
-    verbose: z.boolean().optional(),
-  }).optional(),
-  git: z.object({
-    branching_strategy: z.string().optional(),
-  }).optional(),
-  // Declared for validation only — default ('every') lives in the hook (rcode-hooks.cjs prompt-router).
-  // Install does NOT write this key; the nudge behavior itself is controlled by
-  // whether hooks were enabled at install time (resolveEnableHooks / --no-hooks)
-  // or later via /rcode-enable-hooks.
-  prompt_nudge: z.enum(['every', 'once-per-intent', 'when-stale', 'off']).optional(),
-}).passthrough();
 
 /**
  * Parse command-line args into a normalized options object.
@@ -295,78 +286,6 @@ function parseArgs(argv) {
   return opts;
 }
 
-/**
- * Create a tar.gz backup of every file the install plan would touch BEFORE
- * --force-overwrite clobbers them. Closes #381 — without this, customized
- * .claude/agents/rcode-*.md and similar files were silently lost.
- *
- * Returns { ok, path, warning, fileCount } — ok=false means we couldn't
- * create the backup (tar missing, no paths, etc.); the caller decides
- * whether to abort or continue.
- */
-function createInstallBackup(target, plan) {
-  const { spawnSync } = require('child_process');
-
-  // Build the list of files that EXIST and are about to be overwritten.
-  // Plan items use `rel` (the relative dest path); see plan.push sites in
-  // buildInstallPlan / discover* helpers.
-  const paths = [];
-  for (const item of plan) {
-    const relPath = item.rel || item.dest;
-    if (!relPath) continue;
-    const fullDest = path.join(target, relPath);
-    if (fs.existsSync(fullDest)) {
-      paths.push(relPath);
-    }
-  }
-  // Also include the package-managed state files even though install
-  // explicitly preserves them — defensive: if install regresses and starts
-  // touching them, the backup catches it.
-  for (const stateFile of [
-    '.rcode/config.yaml',
-    '.rcode/state.json',
-    '.rcode/_config/manifest.yaml',
-    '.rcode/_config/files-manifest.csv',
-  ]) {
-    if (fs.existsSync(path.join(target, stateFile))) {
-      paths.push(stateFile);
-    }
-  }
-
-  if (paths.length === 0) {
-    return { ok: false, warning: 'no existing files to back up — fresh install', fileCount: 0 };
-  }
-
-  const backupsDir = path.join(target, '.rcode/backups');
-  try {
-    fs.mkdirSync(backupsDir, { recursive: true });
-  } catch (err) {
-    return { ok: false, warning: `could not create .rcode/backups/: ${err.message}`, fileCount: 0 };
-  }
-
-  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const backupFile = path.join(backupsDir, `install-force-${ts}.tgz`);
-  const backupRel = path.relative(target, backupFile);
-
-  const result = spawnSync(
-    'tar',
-    ['-czf', backupFile, '-C', target, '--files-from=-'],
-    {
-      input: paths.join('\n') + '\n',
-      encoding: 'utf8',
-    }
-  );
-
-  if (result.status !== 0) {
-    return {
-      ok: false,
-      warning: `tar failed: ${(result.stderr || '').trim().split('\n')[0]}`,
-      fileCount: paths.length,
-    };
-  }
-
-  return { ok: true, path: backupRel, fileCount: paths.length };
-}
 
 /**
  * Print the rcode Memory Bank installer header. Box-drawn banner shown once
@@ -391,281 +310,10 @@ function printInstallHeader(targetVersion) {
   console.log(lines.join('\n'));
 }
 
-/**
- * Detect which IDEs the user likely uses. Soft signals only — never rejects,
- * just biases the default selection in the interactive prompt.
- * Returns a set like { claude: true, cursor: false, gemini: false }.
- */
-function detectIdeSignals(target) {
-  const signals = { claude: false, cursor: false, gemini: false, vscode: false, antigravity: false, windsurf: false, codex: false };
-  // 1. Project-local install dirs (strongest signal — they already use one)
-  if (fs.existsSync(path.join(target, '.claude'))) signals.claude = true;
-  if (fs.existsSync(path.join(target, '.cursor'))) signals.cursor = true;
-  if (fs.existsSync(path.join(target, '.gemini'))) signals.gemini = true;
-  if (fs.existsSync(path.join(target, '.vscode'))) signals.vscode = true;
-  if (fs.existsSync(path.join(target, '.antigravity'))) signals.antigravity = true;
-  if (fs.existsSync(path.join(target, '.windsurf'))) signals.windsurf = true;
-  // 2. User-level config dirs
-  const home = homedir();
-  if (fs.existsSync(path.join(home, '.claude'))) signals.claude = true;
-  if (fs.existsSync(path.join(home, '.cursor'))) signals.cursor = true;
-  if (fs.existsSync(path.join(home, '.config', 'Cursor'))) signals.cursor = true;
-  if (fs.existsSync(path.join(home, '.gemini'))) signals.gemini = true;
-  if (fs.existsSync(path.join(home, '.vscode'))) signals.vscode = true;
-  if (fs.existsSync(path.join(home, '.config', 'Code'))) signals.vscode = true;
-  if (fs.existsSync(path.join(home, '.antigravity'))) signals.antigravity = true;
-  if (fs.existsSync(path.join(home, '.windsurf'))) signals.windsurf = true;
-  if (fs.existsSync(path.join(home, '.codeium', 'windsurf'))) signals.windsurf = true;
-  // 3. Env vars commonly set by editor terminals
-  if (process.env.CURSOR_TRACE_ID || /cursor/i.test(process.env.TERM_PROGRAM || '')) signals.cursor = true;
-  if (process.env.CLAUDECODE === '1' || process.env.CLAUDE_CODE_ENTRYPOINT) signals.claude = true;
-  if (process.env.VSCODE_PID || /vscode/i.test(process.env.TERM_PROGRAM || '')) signals.vscode = true;
-  if (/windsurf/i.test(process.env.TERM_PROGRAM || '')) signals.windsurf = true;
-  if (process.env.CODEX_ENV || /codex/i.test(process.env.TERM_PROGRAM || '')) signals.codex = true;
-  return signals;
-}
 
-/**
- * Resolve target IDE — explicit --ide flag wins, then interactive prompt
- * (when TTY + not --yes + not --ideProvided), else default to 'claude'.
- *
- * Closes the gap where users got auto-installed to claude even when they
- * actually wanted cursor or gemini.
- */
-async function resolveIde(opts) {
-  // Issue #692: when the wizard has already collected opts.ides (interactive
-  // run from main()), resolveIde was re-prompting because it only checked
-  // opts.ideProvided (set by --ide flag, not by the wizard). Honor any
-  // pre-existing array result so we don't double-prompt.
-  if (Array.isArray(opts.ides) && opts.ides.length > 0) return opts.ides;
-  if (opts.ideProvided) return [opts.ide];            // user passed --ide, respect it
-  if (opts.noPrompt || opts.global) return ['claude']; // auto-install: always claude
-  if (opts.yes || !process.stdin.isTTY) {
-    // #182 — non-interactive mode: install into every detected IDE, not just
-    // the default claude. The interactive flow already preselects detected
-    // ones; --yes should match that intent. Falls back to ['claude'] when
-    // nothing detected. (Note: opts.ide defaults to 'claude' from parseArgs,
-    // so check opts.ideProvided not opts.ide to honor real --ide overrides.)
-    const signals = detectIdeSignals(opts.target);
-    const detected = SUPPORTED_IDES.filter(k => signals[k]);
-    return detected.length > 0 ? detected : ['claude'];
-  }
 
-  const signals = detectIdeSignals(opts.target);
-  // Antigravity is intentionally excluded from the interactive auto-detect
-  // because it's experimental and we don't want to opt-in users without
-  // explicit consent. Use SUPPORTED_IDES.filter(k => k !== 'antigravity')
-  // to keep the inclusion criteria self-documenting.
-  const detected = SUPPORTED_IDES.filter(k => k !== 'antigravity' && signals[k]);
 
-  // Pre-select detected IDEs, or default to claude
-  const initialValues = detected.length > 0 ? detected : ['claude'];
 
-  // Use @clack/prompts multiselect for multi-editor support. Closes #449 / #450.
-  const choices = await clack.multiselect({
-    message: '🎯 Which editor(s) will you use rcode with?',
-    initialValues,
-    options: [
-      { value: 'claude',     label: 'Claude Code',  hint: signals.claude ? '(detected)' : undefined },
-      { value: 'cursor',     label: 'Cursor',       hint: signals.cursor ? '(detected)' : undefined },
-      { value: 'codex',      label: 'Codex (OpenAI CLI)', hint: signals.codex ? '(detected)' : '(uses AGENTS.md + workflow bridge)' },
-      { value: 'gemini',     label: 'Gemini CLI',   hint: signals.gemini ? '(detected)' : '(beta — limited)' },
-      { value: 'vscode',     label: 'VS Code',      hint: signals.vscode ? '(detected)' : '(via Continue / Copilot extensions)' },
-      { value: 'antigravity', label: 'Antigravity', hint: '(experimental — installs to .antigravity/)' },
-    ],
-    required: true,
-  });
-
-  // Handle Ctrl-C cleanly
-  if (clack.isCancel(choices)) {
-    clack.cancel('Install cancelled.');
-    process.exit(0);
-  }
-
-  return choices;
-}
-
-/**
- * Resolve commit-planning preference — CLI flag wins, then interactive
- * prompt (when TTY + not --yes), else default to true (commit planning
- * artifacts so they version with the code). #189.
- */
-async function resolveCommitPlanning(opts) {
-  if (opts.commitPlanning !== null) return opts.commitPlanning;
-  if (opts.global) return false; // global install: no planning artifacts
-  if (opts.noPrompt) return true; // non-interactive project install: commit planning by default (#936)
-
-  // Issue #685: on re-install, read the existing .rcode/config.yaml and use
-  // its commit_planning value as the default. Otherwise the new prompt
-  // answer overwrites .gitignore but NOT config.yaml, leaving two sources of
-  // truth that silently diverge. Users on re-install almost always want to
-  // KEEP their existing setting unless they explicitly pass --commit-planning.
-  let existingValue = null;
-  try {
-    const cfgPath = path.join(opts.target, '.rcode', 'config.yaml');
-    if (fs.existsSync(cfgPath)) {
-      const cfg = fs.readFileSync(cfgPath, 'utf8');
-      const m = cfg.match(/^commit_planning:\s*(true|false)\s*$/m);
-      if (m) existingValue = m[1] === 'true';
-    }
-  } catch { /* fall through to prompt */ }
-
-  if (opts.yes || !process.stdin.isTTY) {
-    return existingValue !== null ? existingValue : true; // honor existing on re-install
-  }
-
-  const initialValue = existingValue === false ? 'gitignore' : 'commit';
-  const choice = await clack.select({
-    message: existingValue !== null
-      ? '📋 .planning/ tracking — current setting preserved unless you change it.'
-      : '📋 .planning/ holds PRDs, roadmaps, sprints, SUMMARY files. How should they be tracked?',
-    initialValue,
-    options: [
-      { value: 'commit',    label: 'Commit',    hint: 'collaborators see the same plans (recommended)' },
-      { value: 'gitignore', label: 'Gitignore', hint: 'planning stays local (good for sensitive PRDs)' },
-    ],
-  });
-
-  if (clack.isCancel(choice)) {
-    clack.cancel('Install cancelled.');
-    process.exit(0);
-  }
-
-  return choice === 'commit';
-}
-
-/**
- * Resolve whether to merge rcode's guardrail hooks (pre-edit, bash-guard,
- * prompt-router, etc.) into .claude/settings.json at install time. Default
- * is ON — flag wins, else interactive confirm (Y default) on TTY installs,
- * else default-on for --yes/--no-prompt/non-TTY runs so hooks work out of
- * the box without requiring a separate /rcode-enable-hooks step.
- */
-async function resolveEnableHooks(opts) {
-  if (opts.enableHooks !== null) return opts.enableHooks;
-  if (opts.global) return false; // global install has no project-local .claude/settings.json target
-  if (!opts.ides.includes('claude')) return false; // hooks are Claude Code specific
-  if (opts.noPrompt || opts.yes || !process.stdin.isTTY) return true;
-
-  const enable = await clack.confirm({
-    message: '🛡️  Enable rcode guardrail hooks in .claude/settings.json? (pre-edit checks, bash-guard, prompt-router, etc.)',
-    initialValue: true,
-  });
-
-  if (clack.isCancel(enable)) {
-    clack.cancel('Install cancelled.');
-    process.exit(0);
-  }
-
-  return enable;
-}
-
-/**
- * Merge rcode's opt-in guardrail hooks (rcode/templates/settings-hooks.json)
- * into .claude/settings.json. Idempotent — skips matcher+command pairs that
- * already exist. Mirrors the /rcode-enable-hooks workflow so a fresh install
- * doesn't require running that command separately.
- *
- * Returns: { action: 'merged' | 'skipped-flag' | 'skipped-template-missing' | 'skipped-error' }
- */
-function ensureRcodeSettingsHooks(target, options = {}) {
-  if (options.enableHooks !== true) return { action: 'skipped-flag' };
-
-  const templatePath = path.join(PACKAGE_ROOT, 'rcode', 'templates', 'settings-hooks.json');
-  if (!fs.existsSync(templatePath)) return { action: 'skipped-template-missing' };
-
-  let template;
-  try {
-    template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
-  } catch {
-    return { action: 'skipped-error' };
-  }
-
-  const settingsDir = path.join(target, '.claude');
-  const settingsPath = path.join(settingsDir, 'settings.json');
-
-  let settings = {};
-  if (fs.existsSync(settingsPath)) {
-    try {
-      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-    } catch {
-      return { action: 'skipped-error' };
-    }
-  }
-
-  settings.hooks = settings.hooks || {};
-
-  // An rcode-owned hook entry is any command that runs rcode-hooks.cjs. Match on
-  // the subcommand it dispatches (pre-edit, stop, bash-guard, …) so a superseded
-  // form of the SAME hook is replaced rather than accumulated beside the new one.
-  // Two command shapes exist in the wild and both must resolve to the same
-  // subcommand, or a superseded entry is never recognised as superseded:
-  //   pre-v4.12.1:  node .rcode/bin/rcode-hooks.cjs stop
-  //   current:      sh -c 'H=".rcode/bin/rcode-hooks.cjs"; … exec node "$H" stop || exit 0'
-  // In the current form the path and the subcommand are far apart, so a pattern
-  // anchored on the filename finds nothing.
-  const VALID_SUBS = new Set([
-    'pre-edit', 'pre-workflow', 'post-commit', 'bash-guard', 'pre-compact',
-    'stop-verify', 'cost-track', 'stop', 'compact-nudge', 'pre-tool-use',
-    'prompt-router', 'session-start', 'drift',
-  ]);
-  const rcodeHookSub = (cmd) => {
-    if (typeof cmd !== 'string' || !cmd.includes('rcode-hooks.cjs')) return null;
-    const direct = cmd.match(/rcode-hooks\.cjs["']?\s+([a-z-]+)/);
-    if (direct && VALID_SUBS.has(direct[1])) return direct[1];
-    const viaVar = cmd.match(/\$H["']?\s+([a-z-]+)/);
-    if (viaVar && VALID_SUBS.has(viaVar[1])) return viaVar[1];
-    return null;
-  };
-
-  let replaced = 0;
-  for (const [hookType, matchers] of Object.entries(template.hooks || {})) {
-    settings.hooks[hookType] = settings.hooks[hookType] || [];
-    for (const incoming of matchers) {
-      let existingMatcher = settings.hooks[hookType].find((m) => m.matcher === incoming.matcher);
-      if (!existingMatcher) {
-        existingMatcher = { matcher: incoming.matcher, hooks: [] };
-        settings.hooks[hookType].push(existingMatcher);
-      }
-      for (const hook of incoming.hooks) {
-        const sub = rcodeHookSub(hook.command);
-
-        // Drop any rcode-owned entry for the same subcommand whose command text
-        // differs from what we are installing. Purely additive merging is how a
-        // project ends up running BOTH the pre-v4.12.1 bare
-        // `node .rcode/bin/rcode-hooks.cjs stop` and its worktree-safe
-        // replacement — the old one then throws MODULE_NOT_FOUND on every event
-        // inside a worktree, forever, and no amount of reinstalling removes it.
-        // Only rcode's own entries are touched; a user's or another tool's hooks
-        // never match rcodeHookSub().
-        if (sub) {
-          // Sweep EVERY matcher block for this hook type, not just the one we
-          // matched. A stale entry commonly sits under a different matcher than
-          // the template now uses, and a per-block filter walks straight past it
-          // — which is how the superseded command survived a reinstall.
-          for (const block of settings.hooks[hookType]) {
-            if (!Array.isArray(block.hooks)) continue;
-            const before = block.hooks.length;
-            block.hooks = block.hooks.filter((h) =>
-              !(rcodeHookSub(h.command) === sub && h.command !== hook.command));
-            replaced += before - block.hooks.length;
-          }
-        }
-
-        const dup = existingMatcher.hooks.some((h) => h.command === hook.command && h.type === hook.type);
-        if (!dup) existingMatcher.hooks.push(hook);
-      }
-    }
-  }
-
-  try {
-    fs.mkdirSync(settingsDir, { recursive: true });
-    writeFileAtomic(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-    return { action: 'merged', replaced };
-  } catch {
-    return { action: 'skipped-error' };
-  }
-}
 
 function printHelp() {
   console.log(`
@@ -699,831 +347,19 @@ Installs (IDE-specific):
 `);
 }
 
-/**
- * Get install paths for the target IDE.
- * Returns { agentsDir, commandsDir, workflowsDir, referencesDir, binDir }
- */
-function getPathsForIde(ide, target) {
-  switch (ide) {
-    case 'claude':
-      return {
-        agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'cursor':
-      return {
-        agentsDir: path.join(target, '.cursor', 'rules', 'rcode', 'agents'),
-        commandsDir: path.join(target, '.cursor', 'rules', 'rcode', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'gemini':
-      return {
-        agentsDir: path.join(target, '.gemini', 'rcode', 'agents'),
-        commandsDir: path.join(target, '.gemini', 'rcode', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'vscode':
-      // VS Code's Claude Code / Continue / Copilot extensions all read from
-      // .claude/ (Claude Code's canonical paths). We install there directly
-      // using the SAME layout as the claude case (prefixed-root form) so
-      // multi-IDE installs don't double up — see #723 / #635-#643 / #646.
-      // The .vscode/rcode/ marker is preserved for workspace settings.
-      return {
-        agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-        markerDir: path.join(target, '.vscode', 'rcode'),
-      };
-    case 'antigravity':
-      // Antigravity (Google's agentic IDE) — install to .antigravity/ mirroring
-      // the .gemini/ structure. Antigravity's plugin protocol is still firming
-      // up; the user can adjust paths via .rcode/config.yaml's `extra_install_paths`
-      // if Antigravity expects different routing.
-      return {
-        agentsDir: path.join(target, '.antigravity', 'rcode', 'agents'),
-        commandsDir: path.join(target, '.antigravity', 'rcode', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'windsurf':
-      // Windsurf (Codeium's agentic IDE) — uses .windsurf/rules/ for .mdc rule
-      // files, parallel to cursor's .cursor/rules/. cli/lib/manifest.cjs already
-      // handles the rules-install verify path (#723 closes the install-side gap).
-      return {
-        agentsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'agents'),
-        commandsDir: path.join(target, '.windsurf', 'rules', 'rcode', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'codex':
-      // OpenAI Codex CLI reads AGENTS.md from the project root (written by the
-      // claude/vscode install paths). We install agent + command files to .claude/
-      // so multi-IDE installs share files, and the rcode workflow bridge gives
-      // Codex access to lifecycle workflows via `rcode workflow show <name>` (#883).
-      //
-      // What Codex actually reads — verified live against Codex CLI 0.150.1:
-      //   AGENTS.md              → project instructions  ✅ written here
-      //   ~/.codex/prompts/*.md  → /slash commands       (--global only)
-      //   ~/.codex/skills/<n>/   → skills                (--global only)
-      //   (no agents surface)    → Codex has NO subagent concept at all
-      //
-      // The agentsDir below is therefore written for MULTI-IDE SHARING ONLY.
-      // Codex itself never reads it, and rcode's agents cannot appear in Codex
-      // in any form — not a bug to fix, an absent surface. Skills are the only
-      // place rcode's capabilities can surface there.
-      return {
-        agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    case 'grok':
-      // Grok Build (xAI CLI) is Claude-Code-compatible: it reads slash commands
-      // from .claude/commands/*.md (project) and ~/.claude/commands (global), same
-      // as Claude Code. So grok maps to the identical .claude/ layout — verified
-      // live: `/rcode-add-phase` surfaces in grok from these dirs.
-      return {
-        agentsDir: path.join(target, '.claude', 'agents'),
-        commandsDir: path.join(target, '.claude', 'commands'),
-        workflowsDir: path.join(target, '.rcode', 'workflows'),
-        referencesDir: path.join(target, '.rcode', 'references'),
-        binDir: path.join(target, '.rcode', 'bin'),
-      };
-    default:
-      throw new Error(`Unknown IDE: ${ide}. Supported: ${SUPPORTED_IDES.join(', ')}`);
-  }
-}
 
-/**
- * Walk a directory and return absolute file paths. Uses fast-glob so
- * symlink cycles are never followed and patterns can be excluded via
- * .rcodeignore files (#249).
- */
-function walkFiles(dir, extraIgnore = []) {
-  if (!fs.existsSync(dir)) return [];
-  return fg.sync('**/*', {
-    cwd: dir,
-    dot: true,
-    onlyFiles: true,
-    followSymbolicLinks: false,
-    ignore: extraIgnore,
-  }).map((rel) => path.join(dir, rel));
-}
 
-/**
- * Read .rcodeignore patterns from a given root directory.
- * Returns an array of glob-style ignore patterns (same syntax as .gitignore).
- */
-function readRcodeIgnore(root) {
-  const ignoreFile = path.join(root, '.rcodeignore');
-  if (!fs.existsSync(ignoreFile)) return [];
-  return fs.readFileSync(ignoreFile, 'utf8')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('#'));
-}
 
-function sha256(buffer) {
-  return crypto.createHash('sha256').update(buffer).digest('hex');
-}
 
-function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
-}
 
-/**
- * Recursive directory copy (pure Node stdlib, no deps).
- */
-function copyDirRecursive(source, dest) {
-  if (!fs.existsSync(source)) return;
-  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-  for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
-    const srcPath = path.join(source, entry.name);
-    const destPath = path.join(dest, entry.name);
-    if (entry.isDirectory()) copyDirRecursive(srcPath, destPath);
-    else if (entry.isFile()) fs.copyFileSync(srcPath, destPath);
-  }
-}
 
-/**
- * Seed .planning/ with starter ROADMAP.md + STATE.md + PROJECT.md so
- * workflows work immediately after install. User can /rcode-sprint-planning
- * on a fresh install without manual setup.
- *
- * Only seeds if .planning/ROADMAP.md doesn't already exist (preserves user data).
- */
-function seedStarterPlanning(target, projectName) {
-  const planningDir = path.join(target, '.planning');
-  const roadmapPath = path.join(planningDir, 'ROADMAP.md');
-  const statePath = path.join(planningDir, 'STATE.md');
-  const projectPath = path.join(planningDir, 'PROJECT.md');
 
-  if (fs.existsSync(roadmapPath)) return false; // preserve existing
 
-  fs.mkdirSync(planningDir, { recursive: true });
 
-  const today = new Date().toISOString().slice(0, 10);
-  const name = projectName || path.basename(target);
 
-  // Stub planning files: clearly marked as install templates so users (and
-  // /rcode-new-project Step 0.5 detection) can tell them apart from real
-  // planning artifacts. See issues #670 #671 #676.
-  const STUB_BANNER =
-    `<!-- INSTALL STUB — overwritten by /rcode-new-project. Delete this file or run\n` +
-    `     /rcode-new-project before committing. See https://github.com/hanzlahabib/rcode/issues/670 -->\n\n`;
 
-  fs.writeFileSync(projectPath,
-    STUB_BANNER +
-    `# ${name}\n\n` +
-    `**One-line:** Describe what this project is in one sentence.\n\n` +
-    `## Vision\n\n` +
-    `What this project delivers and who it serves.\n\n` +
-    `## Stack\n\n` +
-    `- Language/framework\n- Key dependencies\n- Deployment target\n`
-  );
 
-  fs.writeFileSync(roadmapPath,
-    STUB_BANNER +
-    `# ${name} — Roadmap\n\n` +
-    `**Milestone: M1 — Initial Delivery** (v1.0)\n` +
-    `Started: ${today} · Current\n\n` +
-    `---\n\n` +
-    `> **No phases yet.** Run \`/rcode-new-project\` to design your roadmap,\n` +
-    `> or \`/rcode-add-phase <name>\` to add your first phase manually.\n\n` +
-    `---\n\n` +
-    `## Backlog\n\n` +
-    `Ideas and future phases go here.\n`
-  );
 
-  fs.writeFileSync(statePath,
-    STUB_BANNER +
-    `# ${name} — State\n\n` +
-    `**Last updated:** ${today}\n` +
-    `**Milestone:** M1 — Initial Delivery\n` +
-    `**Current phase:** none — run /rcode-new-project or /rcode-add-phase\n` +
-    `**Branch:** main\n\n` +
-    `---\n\n` +
-    `## Decisions\n\n_None yet._\n\n` +
-    `## Blockers\n\n_None._\n\n` +
-    `## Next Action\n\nRun \`/rcode-new-project <description>\` to bootstrap, or \`/rcode-sprint-planning\` once a real phase exists.\n`
-  );
-
-  // Issue #670: do NOT pre-seed .rcode/state.json with a fake project +
-  // "Setup & Scaffolding" phase. That made every fresh install look like a
-  // real initialized project and broke /rcode-new-project Step 0.5 detection.
-  //
-  // Write a minimal shell with _seeded_stub:true so:
-  //   - rcode-tools doesn't have to re-init on first call (avoids race)
-  //   - /rcode-new-project Step 0.5 (issue #671) can detect "stub" reliably
-  //   - sprint tools that previously relied on phase 01 will surface a clear
-  //     "no phases yet — run /rcode-new-project first" error instead of
-  //     silently operating on a fake phase
-  //
-  // Issue #705: only mark _seeded_stub when the planning ROADMAP is also
-  // a stub. If the user manually deletes state.json but has real
-  // .planning/ROADMAP.md (no INSTALL STUB banner), seeding _seeded_stub
-  // would mis-classify a real project as fresh and let /rcode-new-project
-  // overwrite it. Guard with the banner check.
-  const rcodeStateJson = path.join(target, '.rcode', 'state.json');
-  function planningRoadmapIsStub() {
-    const rmPath = path.join(target, '.planning', 'ROADMAP.md');
-    if (!fs.existsSync(rmPath)) return true; // missing → fresh install case
-    try {
-      const text = fs.readFileSync(rmPath, 'utf8');
-      return text.includes('<!-- INSTALL STUB');
-    } catch { return true; }
-  }
-  if (!fs.existsSync(rcodeStateJson)) {
-    const now = new Date().toISOString();
-    const isStubProject = planningRoadmapIsStub();
-
-    // Resolve project name from config.yaml if available (#816)
-    let resolvedProject = null;
-    const configYamlPath = path.join(target, '.rcode', 'config.yaml');
-    if (fs.existsSync(configYamlPath)) {
-      try {
-        const cfg = fs.readFileSync(configYamlPath, 'utf8');
-        const m = cfg.match(/^project_name:\s*"?([^"\n]+)"?/m);
-        if (m) resolvedProject = m[1].trim();
-      } catch { /* leave null */ }
-    }
-
-    // Sync current_phase from ROADMAP.md if it exists and isn't a stub (#810)
-    let resolvedPhase = null;
-    const roadmapPath = path.join(target, '.planning', 'ROADMAP.md');
-    if (!isStubProject && fs.existsSync(roadmapPath)) {
-      try {
-        const rm = fs.readFileSync(roadmapPath, 'utf8');
-        // Format A — pipe table: | 01 | Phase Name | ...
-        const tableMatch = rm.match(/^\|\s*(\d+(?:\.\d+)?)\s*\|/m);
-        if (tableMatch) {
-          resolvedPhase = String(parseInt(tableMatch[1], 10));
-        } else {
-          // Format B — heading: ## Phase 01 — Name
-          const headMatch = rm.match(/^#{2,4}\s*Phase\s+(\d+(?:\.\d+)?)/im);
-          if (headMatch) resolvedPhase = String(parseInt(headMatch[1], 10));
-        }
-      } catch { /* leave null */ }
-    }
-
-    const state = {
-      version: '1',
-      // #940 — match the canonical schema (cli/lib/schemas.cjs stateSchema):
-      // schema_version is required, milestones is a plural array. Without these
-      // a freshly-installed state.json failed `rcode-tools validate` until the
-      // first migrateState() read. Write conformant state up front.
-      schema_version: 2,
-      project: resolvedProject || path.basename(target),
-      ...(isStubProject ? { _seeded_stub: true } : {}),
-      created: now,
-      updated: now,
-      current_phase: resolvedPhase,
-      current_plan: 0,
-      current_sprint: null,
-      phases: [],
-      milestones: [],
-      executions: [],
-      decisions: [],
-      blockers: [],
-      council_sessions: [],
-      chains: [],
-      workstreams: [],
-      active_workstream: null,
-      last_session: null,
-      velocity_history: [],
-    };
-    fs.mkdirSync(path.dirname(rcodeStateJson), { recursive: true });
-    writeFileAtomic(rcodeStateJson, JSON.stringify(state, null, 2) + '\n');
-  }
-
-  return true;
-}
-
-/**
- * Ensure the target project's .gitignore has the rcode-managed block.
- *
- * Idempotent via a sentinel comment line. On first install, appends a block
- * that separates:
- *   - installed methodology files (ignored; re-install to refresh)
- *   - user's project config, state, and planning artifacts (committable)
- *
- * If the user already has a block (marker present) we leave their customizations
- * alone. This function is best-effort — never throws. A missing .gitignore
- * is created. A read/write error is logged and install continues.
- *
- * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-error' }
- */
-function ensureRcodeGitignore(target, options = {}) {
-  const commitPlanning = options.commitPlanning !== false; // default true
-  const BEGIN = '# ===== rcode-managed gitignore block (npx @hanzlaa/rcode install) =====';
-  const END   = '# ===== end rcode-managed gitignore block =====';
-
-  const lines = [
-    '',
-    BEGIN,
-    '# Added automatically on first rcode install. Idempotent — safe to re-run.',
-    '# Edit `commit_planning` in .rcode/config.yaml to flip planning-artifact tracking.',
-    '',
-    '# Installed methodology files (regenerate with: npx @hanzlaa/rcode install)',
-    '.claude/',
-    '.rcode/bin/',
-    '.rcode/data/',
-    '.rcode/workflows/',
-    '.rcode/references/',
-    '.rcode/commands/',
-    '.rcode/skills/',
-    '',
-    '# Pulled rcode brain content (refresh with: rcode brain pull)',
-    '.rcode/brain/rcode-github/',
-    '.rcode/brain/rcode-docs/',
-    '.rcode/brain/best-practices/',
-    '',
-    '# Personal customization layer — team overrides (.rcode/custom/<name>.md)',
-    '# ARE committed; the .user.md layer is per-developer and is not.',
-    '.rcode/custom/*.user.md',
-    '',
-    '# Runtime noise',
-    'node_modules/',
-    '.rcode/state.json.lock',
-    '.planning/debug/',
-    '.planning/_backup/',
-  ];
-
-  if (!commitPlanning) {
-    lines.push(
-      '',
-      '# Planning artifacts — kept local (commit_planning: false)',
-      '.planning/'
-    );
-  }
-
-  lines.push(
-    '',
-    '# What you DO commit:',
-    '#   .rcode/config.yaml        - project mode/language/profile/commit_planning',
-    '#   .rcode/state.json         - decisions, roadmap pointer, blockers',
-    '#   .rcode/brain/sources.yaml - brain source manifest',
-    commitPlanning
-      ? '#   .planning/                - PRD, roadmap, sprints, SUMMARY.md files'
-      : '#   (planning artifacts are NOT committed — see commit_planning in config)',
-    END,
-    ''
-  );
-  const BLOCK = lines.join('\n');
-
-  const gitignorePath = path.join(target, '.gitignore');
-  try {
-    if (!fs.existsSync(gitignorePath)) {
-      writeFileAtomic(gitignorePath, BLOCK);
-      return { action: 'created' };
-    }
-    const existing = fs.readFileSync(gitignorePath, 'utf8');
-    // Replace existing rcode block using indexOf (regex escaping on the
-    // sentinel is fiddly — indexOf is deterministic and easier to audit).
-    function spliceBlock(text, newBlock) {
-      const start = text.indexOf(BEGIN);
-      if (start < 0) return null;
-      const endIdx = text.indexOf(END, start);
-      // If BEGIN exists but END is missing (manual edit removed it), strip
-      // everything from BEGIN to EOF and rewrite — avoids duplicate blocks.
-      if (endIdx < 0) {
-        let sliceStart = start;
-        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-        return text.slice(0, sliceStart) + newBlock;
-      }
-      let sliceStart = start;
-      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-      let sliceEnd = endIdx + END.length;
-      if (text[sliceEnd] === '\n') sliceEnd += 1;
-      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
-    }
-    if (existing.includes(BEGIN)) {
-      const rewritten = spliceBlock(existing, BLOCK);
-      if (rewritten !== null && rewritten !== existing) {
-        writeFileAtomic(gitignorePath, rewritten);
-        return { action: 'updated' };
-      }
-      return { action: 'already-present' };
-    }
-    writeFileAtomic(gitignorePath, existing + BLOCK);
-    return { action: 'appended' };
-  } catch (err) {
-    return { action: 'skipped-error', error: err.message };
-  }
-}
-
-/**
- * Splice a BEGIN/END-delimited block into a text file, creating the file if
- * missing, replacing the block in place if a prior version exists, or
- * appending if the file exists without the block yet. Shared by any
- * "own one marked section of a user-owned file" writer (gitignore, rule
- * files, etc.) so the splice logic (and its edge cases — missing END,
- * trailing newlines) lives in one place.
- *
- * Returns: { action: 'created' | 'appended' | 'updated' | 'already-present' | 'skipped-error', error? }
- */
-function spliceMarkedBlockIntoFile(filePath, begin, end, block) {
-  try {
-    if (!fs.existsSync(filePath)) {
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
-      writeFileAtomic(filePath, block);
-      return { action: 'created' };
-    }
-    const existing = fs.readFileSync(filePath, 'utf8');
-
-    function splice(text, newBlock) {
-      const start = text.indexOf(begin);
-      if (start < 0) return null;
-      const endIdx = text.indexOf(end, start);
-      if (endIdx < 0) {
-        let sliceStart = start;
-        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-        return text.slice(0, sliceStart) + newBlock;
-      }
-      let sliceStart = start;
-      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-      let sliceEnd = endIdx + end.length;
-      if (text[sliceEnd] === '\n') sliceEnd += 1;
-      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
-    }
-
-    if (existing.includes(begin)) {
-      const rewritten = splice(existing, block);
-      if (rewritten !== null && rewritten !== existing) {
-        writeFileAtomic(filePath, rewritten);
-        return { action: 'updated' };
-      }
-      return { action: 'already-present' };
-    }
-    const sep = existing.endsWith('\n') ? '\n' : '\n\n';
-    writeFileAtomic(filePath, existing + sep + block);
-    return { action: 'appended' };
-  } catch (err) {
-    return { action: 'skipped-error', error: err.message };
-  }
-}
-
-/**
- * Ensure every installed IDE's rule file carries a short, rcode-owned block
- * pointing agents at `/rcode-do` as the preferred entry point for non-trivial
- * work. This is NOT a full CLAUDE.md/AGENTS.md rewrite — it only owns its own
- * marked section (or, for cursor/windsurf, a dedicated rcode-* rule file) so
- * a project's existing rule content is never touched or reordered.
- *
- * - claude / vscode → root CLAUDE.md (splice, file created if missing)
- * - codex           → root AGENTS.md (splice, file created if missing)
- * - cursor          → .cursor/rules/rcode-prefer-do.mdc (dedicated, always rewritten)
- * - windsurf        → .windsurf/rules/rcode-prefer-do.mdc (dedicated, always rewritten)
- * - gemini / antigravity / grok → skipped (no single canonical project rule file yet)
- *
- * Returns: { [ide]: { action, error? } } per IDE actually written.
- */
-function ensureRcodePreferredCommandRule(target, ides) {
-  const results = {};
-  const idSet = new Set(ides || []);
-
-  const md = (heading) => [
-    `## ${heading}`,
-    '',
-    'This project has [rcode](https://www.npmjs.com/package/@hanzlaa/rcode) installed —',
-    'persistent project memory, specialist agents, and structured workflows under `.rcode/`.',
-    '',
-    'For any non-trivial task (new feature, bug fix that needs investigation, multi-file',
-    'change, planning) prefer routing through **`/rcode-do <task description>`** — rcode\'s',
-    'command picker — instead of working ad hoc. It picks the right rcode command (plan,',
-    'execute, review, debug, etc.) for the task and keeps `.rcode/state.json` and the',
-    'Memory Bank in sync. Skip it only for trivial single-line/single-file edits that',
-    'don\'t need planning or memory.',
-  ].join('\n');
-
-  if (idSet.has('claude') || idSet.has('vscode')) {
-    const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
-    const END = '<!-- ===== end rcode-managed rule block ===== -->';
-    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
-    results.claude = spliceMarkedBlockIntoFile(path.join(target, 'CLAUDE.md'), BEGIN, END, block);
-  }
-
-  if (idSet.has('codex')) {
-    const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
-    const END = '<!-- ===== end rcode-managed rule block ===== -->';
-    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
-    results.codex = spliceMarkedBlockIntoFile(path.join(target, 'AGENTS.md'), BEGIN, END, block);
-  }
-
-  if (idSet.has('cursor')) {
-    const content = [
-      '---',
-      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
-      'alwaysApply: true',
-      '---',
-      '',
-      md('Working with rcode'),
-      '',
-    ].join('\n');
-    try {
-      const p = path.join(target, '.cursor', 'rules', 'rcode-prefer-do.mdc');
-      fs.mkdirSync(path.dirname(p), { recursive: true });
-      writeFileAtomic(p, content);
-      results.cursor = { action: 'written' };
-    } catch (err) {
-      results.cursor = { action: 'skipped-error', error: err.message };
-    }
-  }
-
-  if (idSet.has('windsurf')) {
-    const content = [
-      '---',
-      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
-      'trigger: always_on',
-      '---',
-      '',
-      md('Working with rcode'),
-      '',
-    ].join('\n');
-    try {
-      const p = path.join(target, '.windsurf', 'rules', 'rcode-prefer-do.mdc');
-      fs.mkdirSync(path.dirname(p), { recursive: true });
-      writeFileAtomic(p, content);
-      results.windsurf = { action: 'written' };
-    } catch (err) {
-      results.windsurf = { action: 'skipped-error', error: err.message };
-    }
-  }
-
-  return results;
-}
-
-/**
- * Ensure .git/hooks/pre-commit includes the rcode-managed block that auto-syncs
- * state.json when .planning/ or .rcode/brain/sources.yaml files change.
- *
- * Idempotent via sentinels — existing user hook content is preserved.
- * Respects opts.gitHooks: false → skip entirely (--no-git-hooks flag).
- *
- * Returns: { action: 'created' | 'appended' | 'already-present' | 'skipped-no-git' | 'skipped-flag' | 'skipped-error' }
- */
-function ensureRcodePreCommitHook(target, options = {}) {
-  if (options.gitHooks === false) return { action: 'skipped-flag' };
-
-  const gitDir = path.join(target, '.git');
-  if (!fs.existsSync(gitDir) || !fs.statSync(gitDir).isDirectory()) {
-    return { action: 'skipped-no-git' };
-  }
-
-  const BEGIN = '# ===== rcode-managed pre-commit block =====';
-  const END   = '# ===== end rcode pre-commit block =====';
-
-  const BLOCK = [
-    '',
-    BEGIN,
-    '# Auto-syncs .rcode/state.json when planning files change.',
-    '# Added by rcode install — safe to re-run (idempotent).',
-    'if git diff --cached --name-only | grep -qE "^\\.planning/|^\\.rcode/brain/sources\\.yaml$"; then',
-    '  if [ -x .rcode/bin/rcode-tools.cjs ]; then',
-    '    # Never silence this. A swallowed sync is how a project reaches 35',
-    '    # executed sprints with executions:0 and nobody is told.',
-    '    if ! _rcode_sync=$(node .rcode/bin/rcode-tools.cjs state sync --from-disk 2>&1); then',
-    '      echo "rcode: state sync --from-disk failed (commit continues):" >&2',
-    '      echo "$_rcode_sync" | tail -3 >&2',
-    '    fi',
-    '    git add .rcode/state.json 2>/dev/null || true',
-    '  fi',
-    'fi',
-    END,
-    '',
-  ].join('\n');
-
-  const hooksDir = path.join(gitDir, 'hooks');
-  const hookPath = path.join(hooksDir, 'pre-commit');
-
-  try {
-    fs.mkdirSync(hooksDir, { recursive: true });
-
-    if (!fs.existsSync(hookPath)) {
-      writeFileAtomic(hookPath, `#!/bin/sh\n${BLOCK}`, { mode: 0o755 });
-      return { action: 'created' };
-    }
-
-    const existing = fs.readFileSync(hookPath, 'utf8');
-
-    function spliceBlock(text, newBlock) {
-      const start = text.indexOf(BEGIN);
-      if (start < 0) return null;
-      const endIdx = text.indexOf(END, start);
-      // If BEGIN exists but END is missing, strip from BEGIN to EOF and rewrite.
-      if (endIdx < 0) {
-        let sliceStart = start;
-        if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-        return text.slice(0, sliceStart) + newBlock;
-      }
-      let sliceStart = start;
-      if (sliceStart > 0 && text[sliceStart - 1] === '\n') sliceStart -= 1;
-      let sliceEnd = endIdx + END.length;
-      if (text[sliceEnd] === '\n') sliceEnd += 1;
-      return text.slice(0, sliceStart) + newBlock + text.slice(sliceEnd);
-    }
-
-    if (existing.includes(BEGIN)) {
-      const rewritten = spliceBlock(existing, BLOCK);
-      if (rewritten !== null && rewritten !== existing) {
-        writeFileAtomic(hookPath, rewritten, { mode: 0o755 });
-        return { action: 'updated' };
-      }
-      return { action: 'already-present' };
-    }
-
-    writeFileAtomic(hookPath, existing + BLOCK, { mode: 0o755 });
-    return { action: 'appended' };
-  } catch (err) {
-    return { action: 'skipped-error', error: err.message };
-  }
-}
-
-/**
- * Install brain scaffold (sources.yaml + README.md) into .rcode/brain/ on target.
- * Actual brain content lands after `brain pull` runs.
- * Closes #188 — previously the package's rcode/brain/sources.yaml was never
- * copied to the target at all, leaving brain pull permanently broken.
- */
-function installBrainScaffold(packageRoot, target) {
-  const srcDir = path.join(packageRoot, 'rcode', 'brain');
-  const destDir = path.join(target, '.rcode', 'brain');
-  fs.mkdirSync(destDir, { recursive: true });
-  let copied = 0;
-  for (const name of ['sources.yaml', 'README.md']) {
-    const src = path.join(srcDir, name);
-    const dest = path.join(destDir, name);
-    if (fs.existsSync(src) && !fs.existsSync(dest)) {
-      fs.copyFileSync(src, dest);
-      copied++;
-    }
-  }
-  // Also pre-seed the best-practices subfolder from the package's
-  // rcode/skills/_shared/ so a fresh install has working brain content
-  // immediately, even before brain pull runs against real upstream URLs.
-  const sharedSrc = path.join(packageRoot, 'rcode', 'skills', '_shared');
-  if (fs.existsSync(sharedSrc)) {
-    const bpDest = path.join(destDir, 'best-practices');
-    fs.mkdirSync(bpDest, { recursive: true });
-    for (const entry of fs.readdirSync(sharedSrc, { withFileTypes: true })) {
-      if (entry.isFile() && entry.name.endsWith('.md')) {
-        const dest = path.join(bpDest, entry.name);
-        if (!fs.existsSync(dest)) {
-          fs.copyFileSync(path.join(sharedSrc, entry.name), dest);
-          copied++;
-        }
-      }
-    }
-  }
-  return copied;
-}
-
-/**
- * Install v1-style skills into the target project.
- *
- * User-facing skills  → .claude/skills/rcode-{name}   (phrase-activated, visible as slash commands)
- * Internal skills     → .rcode/skills/rcode-{name}    (utility libs called by other skills, NOT in
- *                                                       .claude/skills/ so they don't pollute the menu)
- *
- * A skill is marked internal by adding `internal: true` to its SKILL.md frontmatter.
- */
-function installSkills(packageRoot, target, options = {}) {
-  const skillsSource = path.join(packageRoot, 'rcode/skills');
-  const skillsDest = path.join(target, '.claude/skills');
-  const internalDest = path.join(target, '.rcode/skills');
-
-  if (!fs.existsSync(skillsSource)) return { count: 0, skippedGlobal: 0 };
-  fs.mkdirSync(skillsDest, { recursive: true });
-  fs.mkdirSync(internalDest, { recursive: true });
-
-  // Issue #679: when ~/.claude/skills/<name>/ already exists with the rcode-
-  // prefix, Claude Code reads from BOTH global and project, showing every
-  // /rcode-* twice in the slash picker. Skip the project copy for any rcode-*
-  // skill that already lives in the global skills dir.
-  const globalSkillsDir = path.join(homedir(), '.claude', 'skills');
-  const globalRcodeSkills = (options.skipGlobalDuplicates && fs.existsSync(globalSkillsDir))
-    ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rcode-')))
-    : new Set();
-
-  let count = 0;
-  let skippedGlobal = 0;
-
-  const _internalSkillCache = new Map();
-  // `user-invocable: true` WINS over `internal: true`.
-  //
-  // These two flags contradict each other and 36 of the 38 internal skills
-  // declared both. The installer read only `internal`, so every one of those
-  // skills went to .rcode/skills/ instead of .claude/skills/ — which means the
-  // model never saw their descriptions and they could never auto-activate. They
-  // worked only if the user typed the exact slash command.
-  //
-  // That is how "review this PR <url>" reached the built-in code-review skill
-  // instead of rcode's: rcode's reviewer was invisible, not out-competed.
-  //
-  // A skill that declares user-invocable, writes its description for activation
-  // ("Activates when the user says..."), and lists trigger phrases is user-facing
-  // by every signal it gives. `internal` is for genuine utility libraries that
-  // other skills call — and those do not claim to be user-invocable.
-  function isInternalSkill(skillDir) {
-    if (_internalSkillCache.has(skillDir)) return _internalSkillCache.get(skillDir);
-    const skillMd = path.join(skillDir, 'SKILL.md');
-    if (!fs.existsSync(skillMd)) { _internalSkillCache.set(skillDir, false); return false; }
-    const text = fs.readFileSync(skillMd, 'utf8');
-    const internal = /^internal:\s*true\s*$/m.test(text);
-    const userInvocable = /^user-invocable:\s*true\s*$/m.test(text);
-    const result = internal && !userInvocable;
-    _internalSkillCache.set(skillDir, result);
-    return result;
-  }
-
-  function hasLocalOverride(destDir) {
-    if (!fs.existsSync(destDir)) return false;
-    try {
-      return fs.readdirSync(destDir).some(f => f.endsWith('.local.md'));
-    } catch { return false; }
-  }
-
-  function walkForSkills(dir) {
-    if (!fs.existsSync(dir)) return;
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const src = path.join(dir, entry.name);
-      const hasSkillMd = fs.existsSync(path.join(src, 'SKILL.md'));
-      if (hasSkillMd) {
-        const destName = entry.name.startsWith('rcode-')
-          ? entry.name
-          : `rcode-${entry.name}`;
-        const internal = isInternalSkill(src);
-        const dest = internal
-          ? path.join(internalDest, destName)   // internal → .rcode/skills/
-          : path.join(skillsDest, destName);     // user-facing → .claude/skills/
-
-        // Skip user-facing (non-internal) rcode-* skills when the same name
-        // exists globally — UNLESS the user has a *.local.md override on the
-        // project copy, in which case we always preserve their customization.
-        if (!internal && globalRcodeSkills.has(destName) && !hasLocalOverride(dest)) {
-          // Also remove the existing project copy (left over from previous
-          // installs that didn't dedup) so it stops showing in the picker.
-          if (fs.existsSync(dest)) {
-            // #688 — safeRmSync refuses to traverse symlinks pointing outside target.
-            try { safeRmSync(dest, target); } catch { /* non-fatal */ }
-          }
-          skippedGlobal++;
-          continue;
-        }
-        copyDirRecursive(src, dest);
-        count++;
-      } else {
-        walkForSkills(src);
-      }
-    }
-  }
-
-  for (const bucket of ['agents', 'actions', 'core']) {
-    walkForSkills(path.join(skillsSource, bucket));
-  }
-
-  return { count, skippedGlobal };
-}
-
-/**
- * Parse YAML frontmatter from a markdown file. Returns { frontmatter, body }.
- * Minimal subset — supports `key: value` and quoted strings only. Good
- * enough for our agent and command files.
- */
-function parseFrontmatter(text) {
-  if (!text.startsWith('---\n')) return { frontmatter: {}, body: text };
-  const end = text.indexOf('\n---\n', 4);
-  if (end === -1) return { frontmatter: {}, body: text };
-  const block = text.slice(4, end);
-  const body = text.slice(end + 5);
-  const fm = {};
-  for (const raw of block.split('\n')) {
-    const line = raw.replace(/^#.*$/, '').trimEnd();
-    if (!line) continue;
-    const colonAt = line.indexOf(':');
-    if (colonAt === -1) continue;
-    const key = line.slice(0, colonAt).trim();
-    let val = line.slice(colonAt + 1).trim();
-    if (!key || !val) continue;
-    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-    if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-    fm[key] = val;
-  }
-  return { frontmatter: fm, body };
-}
 
 /**
  * Build the list of (sourcePath, targetRelativePath) install pairs. Each
@@ -1533,646 +369,21 @@ function parseFrontmatter(text) {
  *
  * For cursor IDE, converts command files from .md to .mdc format.
  */
-/**
- * Migrate legacy vscode-layout commands (.claude/commands/rcode/{name}.md)
- * to the unified prefixed-root form (.claude/commands/rcode-{name}.md).
- *
- * Idempotent. Safe to run on every install/update — no-op when no legacy
- * dir exists. After move, removes the now-empty rcode/ subdir.
- *
- * Returns { moved, removed_dir } so callers can log the migration count.
- * Designed by Waleed for #723; closes the dual-layout cause of #635, #637,
- * #638, #639, #640, #641, #642, #643, #646.
- */
-function migrateVscodeCommandsLayout(target) {
-  const legacyDir = path.join(target, '.claude', 'commands', 'rcode');
-  const newRoot = path.join(target, '.claude', 'commands');
-  if (!fs.existsSync(legacyDir) || !fs.statSync(legacyDir).isDirectory()) {
-    return { moved: 0, removed_dir: false };
-  }
-  let moved = 0;
-  for (const entry of fs.readdirSync(legacyDir)) {
-    const src = path.join(legacyDir, entry);
-    if (!fs.statSync(src).isFile() || !entry.endsWith('.md')) continue;
-    const baseName = path.basename(entry, '.md');
-    // Don't double-prefix if someone already had rcode-foo.md inside rcode/.
-    const targetName = baseName.startsWith('rcode-') ? entry : `rcode-${entry}`;
-    const dst = path.join(newRoot, targetName);
-    if (fs.existsSync(dst)) {
-      // Already migrated by an earlier pass — remove the duplicate at source.
-      fs.unlinkSync(src);
-      continue;
-    }
-    fs.renameSync(src, dst);
-    moved++;
-  }
-  // Remove the now-empty legacy dir. fs.rmdir fails if non-empty — that's
-  // a signal worth surfacing (manual user files in the dir we shouldn't touch).
-  let removedDir = false;
-  try {
-    fs.rmdirSync(legacyDir);
-    removedDir = true;
-  } catch (_) {
-    // Non-empty (user files we don't manage) — leave it alone.
-  }
-  return { moved, removed_dir: removedDir };
-}
 
-function buildInstallPlan(ide = 'claude', target = process.cwd()) {
-  // Support array of IDEs — merge plans with deduplication (#449/#450 multi-IDE).
-  if (Array.isArray(ide)) {
-    const seen = new Set();
-    const merged = [];
-    for (const i of ide) {
-      for (const entry of buildInstallPlan(i, target)) {
-        const key = entry.rel;
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(entry);
-        }
-      }
-    }
-    // Note: pre-#723 we had a dual-layout workaround here that filtered
-    // vscode subdir entries when claude+vscode were both selected. After
-    // Waleed's unification (vscode now writes the same rcode-{name}.md root
-    // form as claude), the seen-by-rel dedup above already covers it — both
-    // IDEs emit identical `rel` values and only one wins. Layout drift will
-    // resurface this filter; it's intentionally deleted, not commented out.
-    return merged;
-  }
 
-  const plan = [];
-  const paths = getPathsForIde(ide, target);
 
-  // Compute relative paths from target root
-  const relWorkflows = path.relative(target, paths.workflowsDir);
-  const relReferences = path.relative(target, paths.referencesDir);
-  const relBin = path.relative(target, paths.binDir);
-  const relAgents = path.relative(target, paths.agentsDir);
-  const relCommands = path.relative(target, paths.commandsDir);
 
-  // .rcode/workflows/
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'workflows'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'workflows'), f);
-    plan.push({ src: f, rel: path.join(relWorkflows, rel) });
-  }
 
-  // .rcode/references/
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'references'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'references'), f);
-    plan.push({ src: f, rel: path.join(relReferences, rel) });
-  }
 
-  // .rcode/bin/
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'bin'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'bin'), f);
-    plan.push({ src: f, rel: path.join(relBin, rel), executable: f.endsWith('.cjs') });
-  }
 
-  // .rcode/data/
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'data'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'data'), f);
-    plan.push({ src: f, rel: path.join('.rcode', 'data', rel) });
-  }
 
-  // .rcode/templates/ — every template, not just the starter projects.
-  //
-  // Only `templates/projects/` was ever copied, so a fresh install had NO
-  // .md templates at all while workflows went on reading them:
-  // plan-research-validation.md and validate-phase.md both read
-  // `.rcode/templates/VALIDATION.md`, which never existed. Any templates found
-  // in an older project were leftovers from a version that did copy them, which
-  // is why this stayed invisible — it only broke on FRESH installs.
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'templates'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'templates'), f);
-    if (rel.startsWith('projects' + path.sep) || rel === 'projects') continue; // handled below
-    plan.push({ src: f, rel: path.join('.rcode', 'templates', rel) });
-  }
 
-  // .rcode/templates/projects/  — starter templates consumed by /rcode-from-template
-  const projectTemplatesSrc = path.join(SOURCE_ROOT, 'templates', 'projects');
-  const relProjectTemplates = path.relative(target, path.join(target, '.rcode', 'templates', 'projects'));
-  for (const f of walkFiles(projectTemplatesSrc)) {
-    const rel = path.relative(projectTemplatesSrc, f);
-    plan.push({ src: f, rel: path.join(relProjectTemplates, rel) });
-  }
 
-  // Agents — IDE-specific
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'agents'), f);
-    const ext = ide === 'cursor' ? '.mdc' : '.md';
-    const outName = path.basename(f, '.md') + ext;
-    plan.push({ src: f, rel: path.join(relAgents, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
-  }
 
-  // Commands — IDE-specific
-  // Claude AND VSCode: output as .claude/commands/rcode-{name}.md (prefixed root).
-  // Both target the same commands dir (#723 / Waleed unification) so multi-IDE
-  // installs never duplicate. Cursor/Gemini keep the bare-name-in-rcode/-subdir form.
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'commands'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'commands'), f);
-    const ext = ide === 'cursor' ? '.mdc' : '.md';
-    const baseName = path.basename(f, '.md');
-    const outName = (ide === 'claude' || ide === 'vscode' || ide === 'grok')
-      ? `rcode-${baseName}${ext}`
-      : baseName + ext;
-    plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
-  }
 
-  // Agent rules (on-demand reference files) — copied to .rcode/agents-rules/
-  const agentRulesDir = path.join(target, '.rcode', 'agents-rules');
-  for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents', 'rules'))) {
-    const rel = path.relative(path.join(SOURCE_ROOT, 'agents', 'rules'), f);
-    plan.push({ src: f, rel: path.join('.rcode', 'agents-rules', rel) });
-  }
 
-  return plan;
-}
 
-/**
- * Parse a module YAML manifest (rcode/modules/{name}.yaml).
- * Returns { name, requires[], agents[], workflows[], commands[], references[] }.
- */
-function readModuleManifest(moduleName) {
-  const modPath = path.join(SOURCE_ROOT, 'modules', `${moduleName}.yaml`);
-  if (!fs.existsSync(modPath)) return null;
-  const text = fs.readFileSync(modPath, 'utf8');
-  const mod = { name: moduleName, requires: [], agents: [], workflows: [], commands: [], references: [] };
-  let currentKey = null;
-  for (const raw of text.split('\n')) {
-    const line = raw.replace(/#.*$/, '').trimEnd();
-    if (!line.trim()) continue;
-    // Top-level key detection
-    const keyMatch = line.match(/^(\w+):/);
-    if (keyMatch && !line.startsWith('  ') && !line.startsWith('-')) {
-      const key = keyMatch[1];
-      const val = line.slice(line.indexOf(':') + 1).trim();
-      if (['agents', 'workflows', 'commands', 'references', 'requires'].includes(key)) {
-        currentKey = key;
-        if (val && val !== '[]') {
-          // inline single value
-          mod[key] = val.replace(/^\[|\]$/g, '').split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
-        }
-      } else {
-        currentKey = null;
-        if (key === 'name') mod.name = val.replace(/^["']|["']$/g, '');
-      }
-      continue;
-    }
-    // List item under current key
-    if (currentKey && line.trim().startsWith('-')) {
-      const item = line.trim().slice(1).trim().replace(/^["']|["']$/g, '');
-      if (item) mod[currentKey].push(item);
-    }
-  }
-  return mod;
-}
 
-/**
- * List available module names by scanning rcode/modules/*.yaml
- */
-function listAvailableModules() {
-  const modulesDir = path.join(SOURCE_ROOT, 'modules');
-  if (!fs.existsSync(modulesDir)) return [];
-  return fs.readdirSync(modulesDir)
-    .filter((f) => f.endsWith('.yaml'))
-    .map((f) => f.replace('.yaml', ''));
-}
-
-/**
- * Filter an install plan to only files belonging to specified modules.
- * If moduleNames is empty, returns the full plan (backward compatible).
- */
-function filterPlanByModules(plan, moduleNames) {
-  if (moduleNames.length === 0) return plan; // no filter = install everything
-  const allowed = new Set();
-  for (const modName of moduleNames) {
-    const mod = readModuleManifest(modName);
-    if (!mod) { console.warn(`  ⚠ Unknown module: ${modName}`); continue; }
-    for (const a of mod.agents) allowed.add(path.join('.claude', 'agents', a));
-    for (const w of mod.workflows) allowed.add(path.join('.rcode', 'workflows', w));
-    for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', `rcode-${c}`));
-    for (const r of mod.references) allowed.add(path.join('.rcode', 'references', r));
-  }
-  // Always include bin/ (shared infrastructure, not module-specific)
-  return plan.filter((entry) => {
-    if (entry.rel.startsWith(path.join('.rcode', 'bin'))) return true;
-    if (entry.rel.startsWith(path.join('.rcode', 'data'))) return true;
-    return allowed.has(entry.rel);
-  });
-}
-
-/**
- * Auto-generate agent-manifest.csv from the installed agent files'
- * frontmatter. Columns: id, file, name, description, color.
- *
- * The `id` column strips the `rcode-` prefix so workflow code can match
- * against the council-panel scorer's AGENT_IDS (which use bare names).
- */
-function generateAgentManifest(plan, target) {
-  const rows = [['id', 'file', 'name', 'description', 'color']];
-  const seen = new Set(); // Track IDs already added to avoid duplicates
-  // Memoize per-file text reads — same agent .md may be visited across loops 1-3.
-  const _textCache = new Map();
-  const readAgentText = (p) => {
-    if (!_textCache.has(p)) _textCache.set(p, fs.readFileSync(p, 'utf8'));
-    return _textCache.get(p);
-  };
-
-  for (const entry of plan) {
-    if (!entry.rel.startsWith(path.join('.claude', 'agents'))) continue;
-    if (!entry.rel.match(/^\.claude[\/\\]agents[\/\\][^\/\\]+\.md$/)) continue;
-    const filePath = path.join(target, entry.rel);
-    const text = readAgentText(filePath);
-    const { frontmatter } = parseFrontmatter(text);
-    const name = frontmatter.name || path.basename(entry.rel, '.md');
-    const bareId = name.replace(/^rcode-/, '');
-    if (seen.has(bareId)) continue; // Skip duplicate
-    seen.add(bareId);
-    const desc = (frontmatter.description || '').replace(/"/g, '""');
-    rows.push([
-      bareId,
-      entry.rel,
-      name,
-      `"${desc}"`,
-      frontmatter.color || '',
-    ]);
-  }
-  // Also include agents already on disk but not in current plan
-  const agentDir = path.join(target, '.claude', 'agents');
-  if (fs.existsSync(agentDir)) {
-    const existingFiles = fs.readdirSync(agentDir).filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
-    const alreadyIncluded = new Set(plan.filter(e => e.rel.startsWith(path.join('.claude', 'agents'))).map(e => path.basename(e.rel)));
-    for (const file of existingFiles) {
-      if (alreadyIncluded.has(file)) continue;
-      const filePath = path.join(agentDir, file);
-      const text = readAgentText(filePath);
-      const { frontmatter } = parseFrontmatter(text);
-      const name = frontmatter.name || path.basename(file, '.md');
-      const bareId = name.replace(/^rcode-/, '');
-      if (seen.has(bareId)) continue; // Skip if already added
-      seen.add(bareId);
-      const desc = (frontmatter.description || '').replace(/"/g, '""');
-      rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
-    }
-  }
-  // Issues #805/#808/#825: always scan known global locations (not gated on
-  // rows.length === 1) so the manifest reflects every installed agent. On a
-  // fresh project install agents may live in ~/.claude/agents/ (global slash
-  // commands) or in the source tree if local copy was skipped via dedup.
-  // Also scan rcode/agents/ in SOURCE_ROOT as a last-resort fallback so the
-  // manifest is never empty when the package itself ships agent definitions.
-  const extraScans = [
-    path.join(homedir(), '.claude', 'agents'),
-    path.join(homedir(), '.rcode', 'agents'),
-  ];
-  // Final fallback: scan the package source itself.
-  try {
-    const sourceAgentsDir = path.join(SOURCE_ROOT, 'agents');
-    if (fs.existsSync(sourceAgentsDir)) extraScans.push(sourceAgentsDir);
-  } catch { /* SOURCE_ROOT may not be in scope on some paths */ }
-
-  for (const scanDir of extraScans) {
-    if (!fs.existsSync(scanDir)) continue;
-    let files;
-    try {
-      files = fs.readdirSync(scanDir).filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
-    } catch { continue; }
-    for (const file of files) {
-      const filePath = path.join(scanDir, file);
-      let text;
-      try { text = readAgentText(filePath); } catch { continue; }
-      const { frontmatter } = parseFrontmatter(text);
-      const name = frontmatter.name || path.basename(file, '.md');
-      const bareId = name.replace(/^rcode-/, '');
-      if (seen.has(bareId)) continue;
-      seen.add(bareId);
-      const desc = (frontmatter.description || '').replace(/"/g, '""');
-      rows.push([bareId, path.join('.claude', 'agents', file), name, `"${desc}"`, frontmatter.color || '']);
-    }
-  }
-  return rows.map((r) => r.join(',')).join('\n') + '\n';
-}
-
-/**
- * Generate files-manifest.csv with SHA256 per installed file. Used by
- * update/doctor to detect drift. Columns: rel, sha256, size.
- */
-function generateFilesManifest(plan, target, { mergeExistingManifest = false, extraScanDirs = [] } = {}) {
-  const rows = [['rel', 'sha256', 'size']];
-  const newRels = new Set();
-  // Memoize Buffer reads — plan loop and merge loop can visit the same file path.
-  const _bufCache = new Map();
-  const readFileBuf = (p) => {
-    if (!_bufCache.has(p)) _bufCache.set(p, fs.readFileSync(p));
-    return _bufCache.get(p);
-  };
-
-  for (const entry of plan) {
-    const filePath = path.join(target, entry.rel);
-    if (!fs.existsSync(filePath)) continue;
-    const buf = readFileBuf(filePath);
-    const rel = entry.rel.split(path.sep).join('/');
-    rows.push([rel, sha256(buf), String(buf.length)]);
-    newRels.add(rel);
-  }
-
-  // Issue #702: skills installed via installSkills() and sidebar stubs
-  // generated by cli/generate-command-skills.cjs are NOT in the install plan
-  // (they're walked from rcode/skills/ separately and copied directly).
-  // Without this scan, files-manifest.csv was missing the largest category
-  // of installed files — orphan sweep + doctor drift detection were blind
-  // to renamed/removed skills.
-  function walkScanDir(absDir) {
-    if (!fs.existsSync(absDir)) return;
-    for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
-      const full = path.join(absDir, entry.name);
-      if (entry.isDirectory()) {
-        walkScanDir(full);
-      } else if (entry.isFile()) {
-        const rel = path.relative(target, full).split(path.sep).join('/');
-        if (newRels.has(rel)) continue; // already in plan
-        // Skip files outside the project root (defense-in-depth — extraScanDirs
-        // is a code-controlled set, but cheap to verify).
-        if (rel.startsWith('..') || path.isAbsolute(rel)) continue;
-        try {
-          const buf = readFileBuf(full);
-          rows.push([rel, sha256(buf), String(buf.length)]);
-          newRels.add(rel);
-        } catch { /* unreadable file — skip */ }
-      }
-    }
-  }
-  for (const scan of extraScanDirs) walkScanDir(scan);
-
-  // Merge old manifest entries that are still on disk but not in the current
-  // plan — this keeps orphaned files traceable by doctor/uninstall even when
-  // --force sweep was not run. Without this, a re-install without --force
-  // silently drops stale files from the manifest, making them invisible.
-  if (mergeExistingManifest) {
-    const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
-    if (fs.existsSync(manifestPath)) {
-      try {
-        const oldRows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
-        for (const row of oldRows) {
-          const [rel] = row.split(',');
-          if (!rel || newRels.has(rel)) continue;
-          const full = path.join(target, rel);
-          if (!fs.existsSync(full)) continue; // already gone — don't re-add
-          const buf = readFileBuf(full);
-          rows.push([rel, sha256(buf), String(buf.length)]);
-          newRels.add(rel);
-        }
-      } catch { /* best-effort */ }
-    }
-  }
-
-  return rows.map((r) => r.join(',')).join('\n') + '\n';
-}
-
-/**
- * Orphan sweep — remove files that were part of a previous install but aren't
- * in the current plan. Reads `.rcode/_config/files-manifest.csv` from the
- * previous install and computes the diff against the new plan.
- *
- * Closes #196 — without this, upgrading rcode leaves stale skill/command
- * files around that show up as ghost slash commands in the IDE.
- *
- * Deliberately conservative:
- *   - Only removes files that appeared in the PREVIOUS manifest.
- *   - Never removes files the user created themselves.
- *   - Never touches .rcode/config.yaml, .rcode/state.json, or .planning/.
- *
- * Returns the number of orphan files removed.
- */
-function sweepStaleInstalledFiles(target, newPlan) {
-  const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
-  if (!fs.existsSync(manifestPath)) return 0;
-
-  let oldRels;
-  try {
-    const rows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
-    oldRels = rows.map(r => r.split(',')[0]).filter(Boolean);
-  } catch {
-    return 0;
-  }
-
-  const newRelsSet = new Set(newPlan.map(e => e.rel.split(path.sep).join('/')));
-  // Safety — never sweep these, even if they somehow landed in the manifest.
-  const neverSweep = /^(\.rcode\/config\.yaml|\.rcode\/state\.json|\.rcode\/state\.json\.lock|\.planning\/|\.rcode\/brain\/sources\.yaml)/;
-  // #382 — local overrides: files matching <name>.local.md are user-managed.
-  // The installer never touches them: not in copy, not in sweep, not even on
-  // --force-overwrite. This gives users a stable path to customize agent
-  // voice / examples / project-specific rules without losing them on update.
-  const isLocalOverride = (rel) => /\.local\.(md|mdc|json|yaml|yml|toml|js|ts)$/.test(rel);
-
-  let removed = 0;
-  const emptyCandidateDirs = new Set();
-  // Issue #703: a tampered or malformed CSV could contain a rel like
-  // '../../etc/passwd'. path.join collapses '..' segments and could escape
-  // the project root. Use safeRmSync's project-root containment check —
-  // any rel whose realpath escapes target is refused with reason='outside-root'.
-  const targetRoot = path.resolve(target);
-  for (const rel of oldRels) {
-    if (newRelsSet.has(rel)) continue;
-    if (neverSweep.test(rel)) continue;
-    if (isLocalOverride(rel)) continue; // #382 — never sweep user-owned overrides
-    // Reject relative paths that obviously try to escape before even hitting fs.
-    if (rel.includes('..') || path.isAbsolute(rel)) continue;
-    const full = path.join(target, rel);
-    if (!fs.existsSync(full)) continue;
-    const result = safeRmSync(full, targetRoot);
-    if (result.ok) {
-      emptyCandidateDirs.add(path.dirname(full));
-      removed += 1;
-    }
-    // outside-root / lstat / unlink failures are silently skipped — sweep is
-    // best-effort and we never want to abort the install on a single bad row.
-  }
-
-  // Remove any now-empty parent dirs (bottom-up, so nested emptiness cascades).
-  const dirsSortedDeep = Array.from(emptyCandidateDirs).sort((a, b) => b.length - a.length);
-  for (const dir of dirsSortedDeep) {
-    try {
-      if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
-        fs.rmdirSync(dir);
-      }
-    } catch (err) {
-      console.error('[install] sweepStaleInstalledFiles: failed to remove empty dir', dir + ':', err?.message || err);
-    }
-  }
-
-  return removed;
-}
-
-/**
- * Issue #838 — pnpm lockfile silent failure detection.
- *
- * pnpm add -D can exit 0 and print "Done" even when the lockfile is
- * corrupted, without actually writing package.json. This helper is called
- * after any pnpm add run (including auto-install flows) to confirm the
- * package genuinely landed in devDependencies.
- *
- * Returns { ok: true } when:
- *   - no package.json exists in target (nothing to verify)
- *   - package found in dependencies or devDependencies
- *
- * Returns { ok: false, message } when:
- *   - package.json exists in a pnpm project (pnpm-lock.yaml present) but
- *     @hanzlaa/rcode is absent from both dep sections — strongly suggests
- *     a silent pnpm add failure due to a broken lockfile.
- */
-function verifyPnpmAddDevDep(target) {
-  const pkgPath = path.join(target, 'package.json');
-  const lockPath = path.join(target, 'pnpm-lock.yaml');
-  // Only diagnose when both a package.json and pnpm-lock.yaml exist (pnpm project).
-  if (!fs.existsSync(pkgPath) || !fs.existsSync(lockPath)) return { ok: true };
-  try {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    const inDeps = Object.prototype.hasOwnProperty.call(pkg.dependencies || {}, '@hanzlaa/rcode');
-    const inDevDeps = Object.prototype.hasOwnProperty.call(pkg.devDependencies || {}, '@hanzlaa/rcode');
-    if (!inDeps && !inDevDeps) {
-      return {
-        ok: false,
-        message:
-          '@hanzlaa/rcode not found in package.json — if you ran `pnpm add -D @hanzlaa/rcode` ' +
-          'and it reported success, your lockfile may be corrupted.\n' +
-          '  Fix: pnpm install --fix-lockfile && pnpm add -D @hanzlaa/rcode',
-      };
-    }
-    return { ok: true };
-  } catch {
-    return { ok: true }; // unreadable package.json — not our problem
-  }
-}
-
-function readPackageVersion() {
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
-    return pkg.version || '0.0.0';
-  } catch {
-    return '0.0.0';
-  }
-}
-
-function generateInstallManifest(opts) {
-  const version = readPackageVersion();
-  const newModules = opts.modules.length > 0 ? opts.modules : listAvailableModules();
-  // Merge with existing manifest if present; capture previous_version for rollback (#253).
-  let existingModules = [];
-  let previousVersion = null;
-  const existingPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
-  if (fs.existsSync(existingPath)) {
-    const text = fs.readFileSync(existingPath, 'utf8');
-    let inModules = false;
-    for (const line of text.split('\n')) {
-      if (line.startsWith('version:')) {
-        const v = line.replace('version:', '').trim();
-        if (semver.valid(v) && v !== version) previousVersion = v;
-      }
-      if (line.startsWith('modules:')) { inModules = true; continue; }
-      if (inModules && line.trim().startsWith('-')) { existingModules.push(line.trim().slice(1).trim()); }
-      else if (inModules && !line.startsWith(' ')) { inModules = false; }
-    }
-  }
-  const allModules = [...new Set([...existingModules, ...newModules])];
-  const moduleLines = allModules.map((m) => `  - ${m}`).join('\n');
-  const lines = [
-    '# rcode v2 install manifest',
-    `version: ${version}`,
-    `installDate: ${new Date().toISOString()}`,
-  ];
-  if (previousVersion) lines.push(`previous_version: ${previousVersion}`);
-  lines.push('modules:', moduleLines, 'ides:', '  - claude-code', '');
-  return lines.join('\n');
-}
-
-function sanitizeYamlValue(val) {
-  return (val || '').replace(/[\n\r]/g, ' ').replace(/"/g, '\\"');
-}
-
-function generateConfigYaml(opts) {
-  return [
-    '# rcode v2 project config',
-    '# Generated by install. Safe to edit.',
-    `user_name: "${sanitizeYamlValue(opts.userName)}"`,
-    `project_name: "${sanitizeYamlValue(opts.projectName)}"`,
-    `communication_language: "${sanitizeYamlValue(opts.language)}"`,
-    `mode: "${sanitizeYamlValue(opts.mode)}"`,
-    `model_profile: "balanced"`,
-    `commit_planning: ${opts.commitPlanning !== false}`,
-    'workflow:',
-    '  research_by_default: false',
-    '  plan_checker: true',
-    '  post_execute_gates: true',
-    '  ui_safety_gate: true',
-    'git:',
-    '  branching_strategy: "none"',
-    '',
-  ].join('\n');
-}
-
-/**
- * Validate a parsed config.yaml object against ConfigSchema (#250).
- * Returns { valid: true } or { valid: false, errors: string[] }.
- */
-function validateConfig(data) {
-  const result = ConfigSchema.safeParse(data);
-  if (result.success) return { valid: true };
-  const errors = result.error.issues.map((issue) => {
-    const field = issue.path.join('.');
-    return `  ${field || '(root)'}: ${issue.message}`;
-  });
-  return { valid: false, errors };
-}
-
-/**
- * Parse a minimal YAML key:value file into a plain object.
- * Only handles scalar values — sufficient for config.yaml.
- */
-function parseSimpleYaml(text) {
-  const obj = {};
-  let currentParent = null;
-  for (const raw of text.split('\n')) {
-    const line = raw.replace(/#.*$/, '');
-    if (!line.trim()) continue;
-    const indent = line.match(/^(\s*)/)[1].length;
-    if (indent === 0) {
-      const colonAt = line.indexOf(':');
-      if (colonAt === -1) continue;
-      const key = line.slice(0, colonAt).trim();
-      let val = line.slice(colonAt + 1).trim();
-      if (val === '') { currentParent = key; obj[key] = {}; continue; }
-      currentParent = null;
-      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-      if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-      if (val === 'true') val = true;
-      else if (val === 'false') val = false;
-      obj[key] = val;
-    } else if (currentParent && indent > 0) {
-      const colonAt = line.indexOf(':');
-      if (colonAt === -1) continue;
-      const key = line.slice(0, colonAt).trim();
-      let val = line.slice(colonAt + 1).trim();
-      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-      if (val === 'true') val = true;
-      else if (val === 'false') val = false;
-      obj[currentParent][key] = val;
-    }
-  }
-  return obj;
-}
-
-/**
- * Convert a markdown command/agent file to Cursor's .mdc format.
- * Wraps the file with Cursor-specific rules frontmatter.
- */
-function convertToCursorMdc(sourceText) {
-  // Cursor .mdc format wraps markdown in a rules block
-  // Pattern: <!-- rules: { "rule": "value" } --> ... content ... <!-- /rules -->
-  // For now, we pass through as-is since Cursor treats .mdc as markdown with metadata
-  return sourceText;
-}
 
 /**
  * Main install routine. Copies files, generates manifests, writes config.
@@ -2295,185 +506,24 @@ function acquireInstallLock(target) {
 // into each, plus a home-dir copy of every command body the router reads.
 // See cli/rcode-slash-router.cjs for the runtime contract.
 
-// Shared: copy every command body to ~/.rcode/slash-commands/<name>.md and the
-// router script to ~/.rcode/bin/. A fixed home-dir location lets the hook read
-// commands regardless of the user's cwd. Idempotent (plain overwrite).
-function installSlashRouterCommands(opts) {
-  const home = homedir();
-  const cmdDestDir = path.join(home, '.rcode', 'slash-commands');
-  const binDestDir = path.join(home, '.rcode', 'bin');
-  ensureDir(cmdDestDir);
-  ensureDir(binDestDir);
 
-  const srcCmdDir = path.join(SOURCE_ROOT, 'commands');
-  let copied = 0;
-  for (const file of fs.readdirSync(srcCmdDir)) {
-    if (!file.endsWith('.md')) continue;
-    fs.copyFileSync(path.join(srcCmdDir, file), path.join(cmdDestDir, file));
-    copied++;
-  }
 
-  const routerSrc = path.join(PACKAGE_ROOT, 'cli', 'rcode-slash-router.cjs');
-  const routerDest = path.join(binDestDir, 'rcode-slash-router.cjs');
-  fs.copyFileSync(routerSrc, routerDest);
 
-  if (opts && opts.global !== 'silent') {
-    console.log('  ' + ok(`Slash-router: ${copied} command bodies → ~/.rcode/slash-commands/ + router → ~/.rcode/bin/`));
-  }
-  return routerDest;
-}
 
-// The absolute command a hook entry runs. Matched by substring for idempotency
-// and for removal on uninstall — keep the basename stable.
-function slashRouterHookCommand() {
-  return `node "${path.join(homedir(), '.rcode', 'bin', 'rcode-slash-router.cjs')}"`;
-}
 
-// Merge a prompt-submit hook entry into an existing CLI hooks JSON file without
-// disturbing any pre-existing entries (e.g. herdr's). `eventKey` is the hook
-// event name that CLI uses (codex: UserPromptSubmit, antigravity: UserPrompt).
-// Idempotent: re-running detects the router by command substring and no-ops.
-function mergeSlashRouterHook(jsonPath, eventKey, command, label) {
-  let root = {};
-  if (fs.existsSync(jsonPath)) {
-    try {
-      root = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) || {};
-    } catch {
-      // Unparseable file — don't clobber the user's config; bail loudly.
-      console.log('  ' + warn(`${label}: ${jsonPath} is not valid JSON — skipped slash-router wiring.`));
-      return false;
-    }
-  }
-  if (!root.hooks || typeof root.hooks !== 'object') root.hooks = {};
-  if (!Array.isArray(root.hooks[eventKey])) root.hooks[eventKey] = [];
 
-  const already = root.hooks[eventKey].some(group =>
-    Array.isArray(group?.hooks) &&
-    group.hooks.some(h => typeof h?.command === 'string' && h.command.includes('rcode-slash-router.cjs')),
-  );
-  if (already) {
-    console.log('  ' + ok(`${label}: slash-router hook already present (idempotent).`));
-    return false;
-  }
 
-  root.hooks[eventKey].push({ hooks: [{ type: 'command', command, timeout: 10 }] });
-  ensureDir(path.dirname(jsonPath));
-  fs.writeFileSync(jsonPath, JSON.stringify(root, null, 2) + '\n');
-  console.log('  ' + ok(`${label}: wired slash-router into ${eventKey} hook (existing hooks preserved).`));
-  return true;
-}
-
-// Codex reads SKILLS from ~/.codex/skills/<name>/SKILL.md — verified live against
-// Codex CLI 0.150.1, which prints the paths it loads on boot and lists them under
-// `/skills`. Entries there are commonly symlinks into a shared ~/.agents/skills.
-//
-// This is a DIFFERENT surface from ~/.codex/prompts (slash commands) and from
-// AGENTS.md (instructions), and rcode targeted neither of the first two for
-// skills — so none of rcode's skills appeared in Codex at all. Codex has no
-// subagent concept, so rcode's agents cannot surface there in any form; skills
-// are the only place its capabilities can show up.
-function installCodexSkills(opts) {
-  const home = homedir();
-  const destRoot = path.join(home, '.codex', 'skills');
-  ensureDir(destRoot);
-
-  // Source: every SKILL.md under rcode/skills/, installed as rcode-<name>/ to
-  // stay inside rcode's namespace and never collide with a user's own skills.
-  const srcRoot = path.join(SOURCE_ROOT, 'skills');
-  if (!fs.existsSync(srcRoot)) return 0;
-
-  let written = 0;
-  for (const skillFile of walkFiles(srcRoot)) {
-    if (path.basename(skillFile) !== 'SKILL.md') continue;
-    const skillDir = path.dirname(skillFile);
-    const bare = path.basename(skillDir);
-    const name = bare.startsWith('rcode-') ? bare : `rcode-${bare}`;
-    const destDir = path.join(destRoot, name);
-    ensureDir(destDir);
-    // Copy the whole skill folder — references/, steps/, templates/ and the
-    // like are part of the contract, not decoration.
-    for (const f of walkFiles(skillDir)) {
-      const rel = path.relative(skillDir, f);
-      const out = path.join(destDir, rel);
-      ensureDir(path.dirname(out));
-      fs.copyFileSync(f, out);
-    }
-    written++;
-  }
-
-  if (opts && opts.global !== 'silent') {
-    console.log('  ' + ok(`Codex skills: ${written} → ~/.codex/skills/rcode-*/`));
-  }
-  return written;
-}
-
-// Codex: ~/.codex/hooks.json, event UserPromptSubmit.
-function installCodexSlashRouterHook(opts) {
-  installSlashRouterCommands(opts);
-  const jsonPath = path.join(homedir(), '.codex', 'hooks.json');
-  mergeSlashRouterHook(jsonPath, 'UserPromptSubmit', slashRouterHookCommand(), 'Codex');
-}
-
-// Antigravity: ~/.gemini/antigravity/settings.json, event UserPrompt.
-function installAntigravitySlashRouterHook(opts) {
-  installSlashRouterCommands(opts);
-  const jsonPath = path.join(homedir(), '.gemini', 'antigravity', 'settings.json');
-  mergeSlashRouterHook(jsonPath, 'UserPrompt', slashRouterHookCommand(), 'Antigravity');
-}
-
-function installNativeHomeSlashCommands(opts) {
-  if (!opts || !opts.global) return;
-  const ides = Array.isArray(opts.ides) ? opts.ides : [opts.ide].filter(Boolean);
-  for (const ide of ides) {
-    switch (ide) {
-      case 'codex': installCodexSlashRouterHook(opts); installCodexSkills(opts); break;
-      case 'antigravity': installAntigravitySlashRouterHook(opts); break;
-      default:
-        break;
-    }
-  }
-}
-
-async function installInner(opts) {
-  const pkgVersion = readPackageVersion();
-
-  // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
-  const isInteractive = process.stdin.isTTY && !opts.yes;
-  if (isInteractive) printInstallHeader(pkgVersion);
-
-  // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
-  opts.ides = await resolveIde(opts);
-
-  // Resolve commit-planning preference (interactive prompt or flag) — #189.
-  opts.commitPlanning = await resolveCommitPlanning(opts);
-
-  // Resolve guardrail-hooks preference (interactive prompt or flag). Default on.
-  opts.enableHooks = await resolveEnableHooks(opts);
-
-  console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
-
-  // Detect an existing install and surface it (#195).
-  const existingManifestPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
-  if (fs.existsSync(existingManifestPath)) {
-    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
-    const existingVersion = m ? m[1].trim() : 'unknown';
-    const isUpgrade = semver.valid(existingVersion) && semver.valid(pkgVersion)
-      ? semver.lt(existingVersion, pkgVersion)
-      : existingVersion !== pkgVersion;
-    if (isUpgrade) {
-      console.log('  ' + info(`Upgrading ${pc.dim('v' + existingVersion)} → ${pc.green('v' + pkgVersion)} (config + state + .planning preserved)`));
-    } else {
-      console.log('  ' + info(`Refreshing v${existingVersion} (config + state + .planning preserved)`));
-    }
-    if (!opts.force) {
-      console.log(dim('    Pass --force to also sweep orphaned files from the previous version.'));
-    }
-  }
-  if (!fs.existsSync(SOURCE_ROOT)) {
-    console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
-    return 1;
-  }
-
+/**
+ * Validate the resolved IDE list and print per-IDE informational/warning
+ * messages. Mutates opts.ides in place (claude-code alias normalization,
+ * dropping unimplemented gemini). Returns an installInner exit code (0/1)
+ * when validation fails or the IDE list becomes empty, else null to signal
+ * "continue".
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function validateAndAnnotateIdes(opts) {
   // Validate IDE(s) — structured error for unsupported editors (#197).
   // SUPPORTED_IDES is the module-level constant (#697 / W4.3).
   // Issue #841: also accept 'claude-code' as an alias — normalise any that
@@ -2542,6 +592,20 @@ async function installInner(opts) {
     }
   }
 
+  return null;
+}
+
+/**
+ * Validate --modules, migrate legacy vscode layout, build + filter the
+ * install plan, and handle the dry-run/list-files early exit. Returns
+ * { exitCode, plan } — exitCode is null to continue (plan is then the
+ * resolved install plan array), or an installInner exit code (0/1) to
+ * return immediately.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function resolveInstallPlan(opts) {
   // Validate requested modules exist
   if (opts.modules.length > 0) {
     const available = listAvailableModules();
@@ -2549,7 +613,7 @@ async function installInner(opts) {
     if (unknownModules.length > 0) {
       console.error(`✖ Unknown module(s): ${unknownModules.join(', ')}`);
       console.error(`  Available modules: ${available.join(', ')}`);
-      return 1;
+      return { exitCode: 1, plan: null };
     }
   }
 
@@ -2577,11 +641,11 @@ async function installInner(opts) {
     if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
       console.error('✖ Nothing to install — Antigravity was the only target IDE, and its files need a GLOBAL install.');
       console.error('  Re-run with --global, or pick another --ide.');
-      return 1;
+      return { exitCode: 1, plan: null };
     }
     console.error('✖ Nothing to install — install plan is empty.');
     if (opts.modules.length > 0) console.error(`  Modules requested: ${opts.modules.join(', ')}`);
-    return 1;
+    return { exitCode: 1, plan: null };
   }
   if (opts.modules.length > 0) {
     console.log(`  Modules: ${opts.modules.join(', ')}`);
@@ -2593,302 +657,29 @@ async function installInner(opts) {
     for (const entry of plan) {
       console.log('  + ' + entry.rel);
     }
-    return 0;
+    return { exitCode: 0, plan: null };
   }
 
-  // Force-overwrite backup — closes #381. Without this, customized
-  // .claude/agents/rcode-*.md and similar package-managed files were silently
-  // clobbered with no recovery path. Now every --force-overwrite run creates
-  // a tar.gz of every existing target before any write happens.
-  // Skip when --no-backup is passed (CI escape hatch) or on fresh installs.
-  if (opts.forceOverwrite && !opts.noBackup) {
-    const backup = createInstallBackup(opts.target, plan);
-    if (backup.ok) {
-      console.log('  ' + info(
-        `${pc.dim('--force-overwrite')} backup: ${pc.cyan(backup.path)} ` +
-        `${pc.dim('(' + backup.fileCount + ' files — restore with: tar -xzf ' + backup.path + ')')}`
-      ));
-    } else if (backup.fileCount > 0) {
-      // Files exist but tar failed — fail loud rather than clobbering silently.
-      console.error('');
-      console.error(`✖ Could not create backup: ${backup.warning}`);
-      console.error(`  Refusing to --force-overwrite without a backup. Pass --no-backup to override.`);
-      console.error('');
-      return 1;
-    }
-    // backup.fileCount === 0 → fresh install, nothing to back up — proceed silently.
-  }
+  return { exitCode: null, plan };
+}
 
-  // Orphan sweep — remove files from previous install not in the new plan (#196).
-  // Runs on --force only, to preserve user-edited or hand-dropped files on regular installs.
-  let sweptOrphans = 0;
-  if (opts.force) {
-    sweptOrphans = sweepStaleInstalledFiles(opts.target, plan);
-  }
-
-  // Load previous manifest for non-destructive mode (#232).
-  // Map<rel, expectedHashFromPriorInstall> — if a file's current hash matches
-  // its expected-from-prior-install hash, the user hasn't touched it → safe
-  // to overwrite. If hashes differ, user customized it → preserve.
-  const priorManifest = new Map();
-  if (opts.nonDestructive) {
-    const manifestPath = path.join(opts.target, '.rcode', '_config', 'files-manifest.csv');
-    if (fs.existsSync(manifestPath)) {
-      try {
-        const lines = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
-        for (const line of lines) {
-          const [rel, hash] = line.split(',');
-          if (rel && hash) priorManifest.set(rel, hash);
-        }
-      } catch (err) {
-        // #1062 — an empty priorManifest makes every file look "new" to the
-        // preserve-user-edits check below, which silently falls through to an
-        // unconditional overwrite. That defeats the entire point of
-        // --non-destructive, so a corrupt manifest must abort, not degrade.
-        console.error('');
-        console.error(`✖ --non-destructive: could not read prior install manifest at ${manifestPath}`);
-        console.error(`  (${err.message})`);
-        console.error(`  Refusing to install — a missing manifest means locally-modified files`);
-        console.error(`  can't be told apart from pristine ones, so this would risk silently`);
-        console.error(`  overwriting your edits.`);
-        console.error(`  Fix or remove the corrupted manifest, or re-run without --non-destructive.`);
-        console.error('');
-        return 1;
-      }
-    }
-  }
-
-  // Copy files — spinner gives feedback on long installs (#248).
-  let copied = 0;
-  let skipped = 0;
-  let preserved = 0;
-  // #667 — track files the user explicitly chose to update via the conflict
-  // resolver. Without this, accepting "Take vN" for 10 files still printed
-  // "0 files installed" because `copied` only counts pre-conflict writes.
-  let updated = 0;
-  const preservedFiles = [];
-  const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
-  const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
-  const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
-
-  for (const entry of plan) {
-    const destPath = path.join(opts.target, entry.rel);
-    const relForward = entry.rel.split(path.sep).join('/');
-    ensureDir(path.dirname(destPath));
-
-    // Per-iteration lazy readers — avoids re-reading destPath / entry.src across
-    // multiple conditional branches within the same loop body (up to 4 reads of
-    // destPath and 5 reads of entry.src in the worst case without this cache).
-    let _destBuf = null;
-    let _srcBuf = null;
-    const readDestBuf = () => { if (!_destBuf) _destBuf = fs.readFileSync(destPath); return _destBuf; };
-    const readSrcBuf = () => { if (!_srcBuf) _srcBuf = fs.readFileSync(entry.src); return _srcBuf; };
-
-    // Non-destructive guard (#232): preserve user-modified files.
-    // --accept-all (#251) overrides: treat all files as pristine.
-    if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
-      const priorHash = priorManifest.get(relForward);
-      if (priorHash) {
-        const installedContent = readDestBuf().toString('utf8');
-        const currentHash = sha256(readDestBuf());
-        if (currentHash !== priorHash) {
-          // Compute diff stat for display (#251)
-          const srcContent = readSrcBuf().toString('utf8');
-          const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
-          let ins = 0, del = 0;
-          for (const line of patch.split('\n')) {
-            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
-            if (line.startsWith('-') && !line.startsWith('---')) del++;
-          }
-          preserved += 1;
-          preservedFiles.push(relForward);
-          preservedDiffs.push({ rel: relForward, insertions: ins, deletions: del, patch });
-          skipped += 1;
-          continue;
-        }
-        // Hash matches prior install → pristine → safe to overwrite
-      }
-      // No prior hash → new file in this plan → install normally
-    }
-
-    if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
-      const existingHash = sha256(readDestBuf());
-      const sourceHash = sha256(readSrcBuf());
-      if (existingHash === sourceHash) { skipped++; continue; }
-      if (!opts.yes && !opts.nonDestructive) {
-        // Buffer the conflict instead of spamming a warning per file (#451).
-        // Surfaced as a categorised summary post-install + interactive offer (#453).
-        conflictedFiles.push({
-          rel: relForward,
-          src: entry.src,
-          destPath,
-          existingContent: readDestBuf().toString('utf8'),
-          sourceContent: readSrcBuf().toString('utf8'),
-        });
-        skipped++;
-        continue;
-      }
-    }
-
-    if (fs.existsSync(destPath) && opts.forceOverwrite) {
-      const existing = readDestBuf();
-      const incoming = readSrcBuf();
-      if (!existing.equals(incoming)) {
-        spinner.update({ text: dim(`overwriting ${entry.rel}`) });
-      }
-    }
-
-    let content = readSrcBuf().toString('utf8');
-    if (entry.cursor) content = convertToCursorMdc(content);
-    fs.writeFileSync(destPath, content, 'utf8');
-    if (entry.executable) fs.chmodSync(destPath, 0o755);
-    copied++;
-  }
-
-  spinner.success({ text: ok(`${copied} files installed`) });
-  // #667 — placeholder; the real count is logged AFTER the conflict resolver
-  // runs below. We re-emit a corrected summary line if the user updated files
-  // via the resolver so they don't walk away thinking "0 files installed"
-  // when they just accepted 10 vN updates.
-
-  // Categorised conflict summary (#451) + interactive resolution offer (#453).
-  // Replaces the per-file 'differs from package version' warning spam.
-  if (conflictedFiles.length > 0) {
-    const byCategory = { workflows: [], agents: [], commands: [], skills: [], references: [], other: [] };
-    for (const c of conflictedFiles) {
-      if (c.rel.includes('/workflows/')) byCategory.workflows.push(c);
-      else if (c.rel.includes('/agents/')) byCategory.agents.push(c);
-      else if (c.rel.includes('/commands/')) byCategory.commands.push(c);
-      else if (c.rel.includes('/skills/')) byCategory.skills.push(c);
-      else if (c.rel.includes('/references/')) byCategory.references.push(c);
-      else byCategory.other.push(c);
-    }
-    console.log('');
-    console.log('  ' + warn(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} have local edits AND v${readPackageVersion()} updates:`));
-    for (const [cat, list] of Object.entries(byCategory)) {
-      if (list.length === 0) continue;
-      console.log('    ' + dim(`${list.length} ${cat}`));
-    }
-    console.log('');
-
-    if (!opts.yes && process.stdin.isTTY) {
-      const action = await clack.select({
-        message: 'How should we handle these?',
-        initialValue: 'review',
-        options: [
-          { value: 'review', label: 'Review each one',                hint: 'see the diff, decide per file' },
-          { value: 'upstream', label: 'Take v' + readPackageVersion() + ' for all', hint: 'lose local edits, get all bug fixes' },
-          { value: 'keep',   label: 'Keep my local edits',            hint: 'skip v' + readPackageVersion() + ' updates for these files (current behaviour)' },
-        ],
-      });
-      if (clack.isCancel(action)) {
-        clack.note('Skipped — local edits preserved.');
-      } else if (action === 'upstream') {
-        let applied = 0;
-        for (const c of conflictedFiles) {
-          fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
-          applied++;
-        }
-        updated += applied; // #667 — surface in final summary
-        console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
-      } else if (action === 'review') {
-        let applied = 0, kept = 0;
-        for (const c of conflictedFiles) {
-          const patch = createTwoFilesPatch(c.rel, c.rel, c.existingContent, c.sourceContent, 'local', 'v' + readPackageVersion());
-          let ins = 0, del = 0;
-          for (const line of patch.split('\n')) {
-            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
-            if (line.startsWith('-') && !line.startsWith('---')) del++;
-          }
-          console.log('');
-          console.log('  ' + pc.bold(c.rel) + dim('  ') + pc.green(`+${ins}`) + ' ' + pc.red(`-${del}`));
-          const decision = await clack.select({
-            message: 'Take upstream, keep local, or view diff?',
-            initialValue: 'view',
-            options: [
-              { value: 'upstream', label: 'Take v' + readPackageVersion() },
-              { value: 'keep',     label: 'Keep local' },
-              { value: 'view',     label: 'View diff first' },
-            ],
-          });
-          let finalAction = decision;
-          if (clack.isCancel(decision) || decision === 'view') {
-            for (const line of patch.split('\n').slice(4)) {
-              if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
-              else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
-              else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
-              else process.stdout.write(dim(line) + '\n');
-            }
-            const after = await clack.select({
-              message: 'Now: take upstream or keep local?',
-              initialValue: 'keep',
-              options: [
-                { value: 'upstream', label: 'Take v' + readPackageVersion() },
-                { value: 'keep',     label: 'Keep local' },
-              ],
-            });
-            finalAction = clack.isCancel(after) ? 'keep' : after;
-          }
-          if (finalAction === 'upstream') {
-            fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
-            applied++;
-          } else {
-            kept++;
-          }
-        }
-        updated += applied; // #667 — surface in final summary
-        console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
-      } else {
-        console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
-      }
-    } else {
-      console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
-    }
-    console.log('');
-  }
-
-  // #667 — corrected post-resolver summary. Only re-emit when the conflict
-  // resolver actually updated files; preserves the original line otherwise.
-  if (updated > 0) {
-    console.log('  ' + ok(`Total this run: ${copied} installed · ${updated} updated · ${preserved + skipped} unchanged.`));
-    console.log('');
-  }
-
-  // In global install mode (~/.claude/), skip per-project artifacts — those are
-  // created by `rcode install` inside each project directory at project-init time.
-  // Global install only ships the read-only tooling: commands, skills, workflows, bin.
-  if (opts.global) {
-    // Still write the manifest so the global install is traceable/upgradeable
-    const configDir = path.join(opts.target, '.rcode', '_config');
-    ensureDir(configDir);
-    fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
-    // Install skills + sidebar stubs globally — never dedup against globals,
-    // because in --global mode the target IS the global dir.
-    const skillsResult = installSkills(PACKAGE_ROOT, opts.target);
-    let skillsInstalled = skillsResult.count;
-    try {
-      const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
-      const stubsDir = path.join(opts.target, '.claude', 'skills');
-      const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
-        skipGlobalDuplicates: true,
-      });
-      skillsInstalled += result.generated;
-    } catch { /* non-fatal */ }
-    console.log('');
-    console.log(`  ${dim(`${skillsInstalled} skills installed globally`)}`);
-
-    // Native home-dir slash commands for CLIs that can't surface file-based
-    // /commands (codex, antigravity) but DO support a prompt-submit hook.
-    // This MUST run inside the --global block: the global path returns here,
-    // before the non-global call site below. Gated on opts.global inside.
-    try {
-      installNativeHomeSlashCommands(opts);
-    } catch (err) {
-      process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
-    }
-    return 0;
-  }
-
+/**
+ * Duplicate-prevention: when rcode commands already exist globally in
+ * ~/.claude/commands/, skip writing project-level commands (or remove
+ * untracked project-level duplicates that already exist) so a global +
+ * project install doesn't double every slash command. Agents are never
+ * deduped (#1022 — they're project-local by design). Git-tracked project
+ * command files are preserved even when a global duplicate exists (#1062 —
+ * dedup removes redundant copies, not deliberately-committed ones).
+ *
+ * Mutates `plan` in place (matches the pre-extraction in-place filter
+ * pattern the rest of installInner relies on). Returns { isProjectInstall }
+ * — also needed later in installInner for skills/stub install dedup.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function dedupeAgainstGlobalCommands(plan, opts) {
   // Duplicate-prevention: if rcode commands already exist globally in ~/.claude/commands/,
   // skip writing agents/commands to the project's .claude/ directory. Without this,
   // running `npx rcode install` in the home dir AND then in a project creates two sets
@@ -2995,8 +786,25 @@ async function installInner(opts) {
     } catch { /* non-fatal — skip detection on permission errors */ }
   }
 
+  return { isProjectInstall };
+}
+
+/**
+ * Write .rcode/_config/manifest.yaml + agent-manifest.csv, handle --reset,
+ * write/refresh .rcode/config.yaml (preserving user edits while syncing
+ * commit_planning drift — #685), validate it against ConfigSchema (#250,
+ * warn-only), seed .rcode/state.json (preserving the _seeded_stub marker
+ * logic from #705), and scaffold .planning/council-sessions/,
+ * .rcode/context/ stubs, and ~/.rcode/agents/. Returns { existedBefore } —
+ * needed later in installInner's summary ("config.yaml and state.json
+ * preserved" note).
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change. configDir is passed in (not recomputed) so the caller's
+ * later files-manifest.csv write shares the exact same path.
+ */
+function writeInstallConfigAndState(opts, plan, configDir) {
   // Write .rcode/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
-  const configDir = path.join(opts.target, '.rcode', '_config');
   ensureDir(configDir);
   // Issue #806: ensure .planning/ exists so /rcode-new-project Write calls succeed
   // even when seedStarterPlanning returns early (e.g. ROADMAP.md already present).
@@ -3117,122 +925,34 @@ async function installInner(opts) {
   const globalAgentsDir = path.join(homedir(), '.rcode', 'agents');
   ensureDir(globalAgentsDir);
 
-  // Issue #702: files-manifest.csv used to be written here, BEFORE
-  // installSkills + generateCommandSkills ran. The 100+ skill files those
-  // functions install were therefore invisible to sweepStaleInstalledFiles
-  // and doctor's drift detection. Manifest generation moved below to AFTER
-  // all skill installations complete, with extraScanDirs covering both
-  // .claude/skills/ and .rcode/skills/ on disk.
+  return { existedBefore };
+}
 
-  // Install v1-style phrase-activated skills (scaffold-project, create-prd,
-  // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
-  // Issue #679: skip rcode-* skills that already exist in ~/.claude/skills/
-  // (global precedence) so the slash picker doesn't show every command twice.
-  // Reuse the isProjectInstall flag declared earlier in this scope.
-  const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
-    skipGlobalDuplicates: isProjectInstall,
-  });
-  let skillsInstalled = skillsResult.count;
-  if (skillsResult.skippedGlobal > 0) {
-    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rcode skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
-    // #938 — make the global dependency explicit. When local skills are skipped
-    // the project relies on whatever rcode version is installed globally; a
-    // collaborator without a global install (or on a different version) gets
-    // different behavior. Tell the user how to force a self-contained install.
-    console.log('  ' + dim('  ↳ This project now depends on your GLOBAL rcode install for those skills.'));
-    console.log('  ' + dim('    For a self-contained project (e.g. for collaborators/CI), reinstall with --local-only.'));
-  }
-
-  // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
-  // Source codebase stays clean — these stubs only exist at the install
-  // destination, marked with `generated: true` so they refresh idempotently.
-  // See cli/generate-command-skills.cjs for rationale.
-  try {
-    const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
-    const stubsDir = path.join(opts.target, '.claude', 'skills');
-    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
-      skipGlobalDuplicates: isProjectInstall,
-    });
-    if (result.generated > 0) {
-      console.log('  ' + dim(`${result.generated} sidebar skill stub${result.generated === 1 ? '' : 's'} generated for command discoverability`));
-      skillsInstalled += result.generated;
-    }
-    if (result.skippedGlobal > 0) {
-      console.log('  ' + dim(`Skipped ${result.skippedGlobal} sidebar stub${result.skippedGlobal === 1 ? '' : 's'} that duplicate global ~/.claude/skills/ — closes #679.`));
-    }
-  } catch (err) {
-    // Non-fatal: install succeeds without sidebar stubs
-    console.log('  ' + dim(`(sidebar stub generation skipped: ${err.message})`));
-  }
-
-  // Issue #702: write files-manifest.csv NOW, after all installs complete.
-  // extraScanDirs picks up the skills + sidebar stubs that aren't in the
-  // plan array.
-  fs.writeFileSync(
-    path.join(configDir, 'files-manifest.csv'),
-    generateFilesManifest(plan, opts.target, {
-      mergeExistingManifest: !opts.force,
-      extraScanDirs: [
-        path.join(opts.target, '.claude', 'skills'),
-        path.join(opts.target, '.rcode', 'skills'),
-      ],
-    }),
-  );
-
-  // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
-  const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
-
-  // Install brain scaffolding at .rcode/brain/ (sources.yaml + README).
-  // Actual brain content lands after first brain pull runs.
-  installBrainScaffold(PACKAGE_ROOT, opts.target);
-
-  // Ensure .gitignore separates installed methodology from committable artifacts.
-  // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
-  const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
-
-
-  // Install pre-commit hook that auto-syncs state.json when planning files change.
-  // Respects --no-git-hooks flag; skips silently when .git/ is absent.
-  const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
-
-  // Merge rcode guardrail hooks into .claude/settings.json (pre-edit, bash-guard,
-  // prompt-router, etc). Default-on; resolved above via resolveEnableHooks().
-  const settingsHooksReport = ensureRcodeSettingsHooks(opts.target, { enableHooks: opts.enableHooks });
-
-  // Point each installed IDE's rule file at /rcode-do as the preferred entry point
-  // for non-trivial work — an rcode-owned marked block/file, not a full rewrite.
-  const preferredCommandReports = ensureRcodePreferredCommandRule(opts.target, opts.ides);
-
-  // Pull rcode brain content (v2.0 — issue #158).
-  // Runs rcode-tools brain pull as a detached background process. Placeholder
-  // URLs are skipped gracefully so this does not fail a fresh install.
-  //
-  // Issue #1030: a cold pull (cache miss) clones + sparse-checks-out a real
-  // upstream repo and live-measured ~58s for just 2 small files — dangerously
-  // close to the previous 60s execFileSync timeout (#706) and ~6x over the
-  // 10s kill criterion issue #162 itself specified. Since brain pull is
-  // already best-effort and never fails install (see catch below, historically
-  // a timeout was just treated as a pull failure), there is no reason to block
-  // install on it at all. Spawn it detached and let install finish immediately;
-  // the child keeps running and warms the cache/writes content on its own.
-  let brainReport = null;
-  let brainBackgrounded = false;
-  try {
-    const { spawn } = require('child_process');
-    const toolsPath = path.join(opts.target, '.rcode', 'bin', 'rcode-tools.cjs');
-    if (fs.existsSync(toolsPath)) {
-      const child = spawn('node', [toolsPath, 'brain', 'pull'], {
-        cwd: opts.target,
-        stdio: 'ignore',
-        detached: true,
-      });
-      child.unref();
-      brainBackgrounded = true;
-    }
-  } catch (e) {
-    // brain pull is best-effort on install — do not fail the whole install
-    brainReport = { ok: false, error: String(e.message || e).slice(0, 200) };
-  }
+/**
+ * Print the post-install summary: swept/preserved counters, gitignore/
+ * pre-commit-hook/guardrail-hooks/preferred-command-rule action lines,
+ * preserved-file diffs (#251), agent/command/skill counts (with global-
+ * precedence fallback, #669/#689), the namespace-collision warning
+ * (rcode-* vs rihal-*), the "Next steps" block, the async update check
+ * (#252), the pnpm lockfile check (#838), and the final health check
+ * (#193) — whose pass/fail becomes installInner's own return value.
+ *
+ * Takes a structured `report` object rather than closing over installInner
+ * locals, per #1066 Phase 2's design: { sweptOrphans, existedBefore,
+ * brainBackgrounded, brainReport, gitignoreReport, hookReport,
+ * settingsHooksReport, preferredCommandReports, skipped, preserved,
+ * preservedDiffs, skillsInstalled, starterSeeded }.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function printInstallSummary(opts, report) {
+  const {
+    sweptOrphans, existedBefore, brainBackgrounded, brainReport,
+    gitignoreReport, hookReport, settingsHooksReport, preferredCommandReports,
+    skipped, preserved, preservedDiffs, starterSeeded,
+  } = report;
+  let skillsInstalled = report.skillsInstalled;
 
   // Summary
   console.log('');
@@ -3278,7 +998,7 @@ async function installInner(opts) {
   }
   if (preferredCommandReports && Object.keys(preferredCommandReports).length > 0) {
     const RULE_FILE = { claude: 'CLAUDE.md', codex: 'AGENTS.md', cursor: '.cursor/rules/rcode-prefer-do.mdc', windsurf: '.windsurf/rules/rcode-prefer-do.mdc' };
-    for (const [ide, report] of Object.entries(preferredCommandReports)) {
+    for (const [ide, report2] of Object.entries(preferredCommandReports)) {
       const file = RULE_FILE[ide] || ide;
       const msg = {
         'created': `${file}: /rcode-do rule added`,
@@ -3286,8 +1006,8 @@ async function installInner(opts) {
         'updated': `${file}: /rcode-do rule refreshed`,
         'already-present': `${file}: /rcode-do rule already present`,
         'written': `${file}: /rcode-do rule written`,
-        'skipped-error': `${file}: /rcode-do rule skipped (${report.error})`,
-      }[report.action] || `${file}: /rcode-do rule unchanged`;
+        'skipped-error': `${file}: /rcode-do rule skipped (${report2.error})`,
+      }[report2.action] || `${file}: /rcode-do rule unchanged`;
       console.log('  ' + dim(msg));
     }
   }
@@ -3485,117 +1205,538 @@ async function installInner(opts) {
 }
 
 /**
- * Run a 5-point smoke test against the fresh install. Closes #193.
- * Returns true if all pass, false if any critical check failed.
- * Prints a clean ✓/✖ line per check.
+ * Copy every file in the install plan to its destination, honoring:
+ *   - non-destructive mode (#232): preserve files whose current hash
+ *     differs from the prior-install hash recorded in `priorManifest`
+ *     (user-modified) — unless --force-overwrite or --accept-all (#251).
+ *   - identical-content skip (existingHash === sourceHash).
+ *   - conflict buffering (#451/#453): when a file differs from source and
+ *     neither --force/--force-overwrite/--yes/--non-destructive apply,
+ *     buffer it into `conflictedFiles` instead of overwriting or spamming
+ *     a warning — the caller runs resolveInstallConflicts() on the result.
+ *   - --force-overwrite clobbers unconditionally (with a spinner note when
+ *     content actually differs).
+ *   - .mdc conversion for Cursor-targeted entries, executable bit for
+ *     entries flagged `executable`.
+ *
+ * Returns { copied, skipped, preserved, preservedFiles, preservedDiffs,
+ * conflictedFiles } — structured report fragments merged into the object
+ * passed to printInstallSummary.
+ *
+ * Split out of installInner() (#1066 Phase 3 — HIGHEST RISK, extracted
+ * last with extra scrutiny). Mechanical extraction, no behavior change.
+ * Preserves the exact conditional order from the original inline loop:
+ * non-destructive check → force/hash-match check → forceOverwrite spinner
+ * note → write. See issue comments inline (#232, #251, #451, #453, #667,
+ * #1062) for the regressions each guards against.
  */
-function runInstallHealthCheck(target, counts) {
-  console.log(`  ${bold('Health check:')}`);
-  const { execFileSync } = require('child_process');
-  let fails = 0;
+function copyInstallPlanFiles(plan, opts, priorManifest) {
+  // Copy files — spinner gives feedback on long installs (#248).
+  let copied = 0;
+  let skipped = 0;
+  let preserved = 0;
+  const preservedFiles = [];
+  const preservedDiffs = [];  // { rel, insertions, deletions, patch } for #251
+  const conflictedFiles = []; // { rel, src, destPath, existingContent, sourceContent } for #451 / #453
+  const spinner = createSpinner(dim(`Installing ${plan.length} files…`), { color: 'cyan' }).start();
 
-  // Issue #689: thresholds were hardcoded at 20 ("expected ≥ 20 agents",
-  // "expected ≥ 20 skills", "expected ≥ 20 commands"). If the package ever
-  // ships fewer than 20 of any kind, the health check fails on every install
-  // even when the install actually succeeded. Worse: if the package ships
-  // 22 agents and an install lands 21 (one corrupt copy), the >= 20 threshold
-  // passes — false green.
-  //
-  // Source the expected counts from the package manifest itself. The verifier
-  // in cli/lib/manifest.cjs already does this; we mirror its result here.
-  let expected = { agents: 20, skills: 20, commands: 20 };
-  try {
-    const { readPackageManifest } = require('./lib/manifest.cjs');
-    const pkgManifest = readPackageManifest(PACKAGE_ROOT);
-    if (pkgManifest && pkgManifest.agents instanceof Set && pkgManifest.actions instanceof Set) {
-      // Tolerate ~10% loss vs source — global precedence, .local.md
-      // overrides, and intentionally-skipped sidebar stubs all reduce the
-      // count without indicating a failure.
-      const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
-      expected.agents = tolerate(pkgManifest.agents.size);
-      expected.skills = tolerate(pkgManifest.actions.size);
-      // Commands count comes from rcode/commands/. No bundled enumerator
-      // exists; reuse the agents threshold as a proxy floor.
-      const commandsDir = path.join(PACKAGE_ROOT, 'rcode', 'commands');
-      if (fs.existsSync(commandsDir)) {
-        const cmdCount = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md') && !f.startsWith('_')).length;
-        expected.commands = tolerate(cmdCount);
+  for (const entry of plan) {
+    const destPath = path.join(opts.target, entry.rel);
+    const relForward = entry.rel.split(path.sep).join('/');
+    ensureDir(path.dirname(destPath));
+
+    // Per-iteration lazy readers — avoids re-reading destPath / entry.src across
+    // multiple conditional branches within the same loop body (up to 4 reads of
+    // destPath and 5 reads of entry.src in the worst case without this cache).
+    let _destBuf = null;
+    let _srcBuf = null;
+    const readDestBuf = () => { if (!_destBuf) _destBuf = fs.readFileSync(destPath); return _destBuf; };
+    const readSrcBuf = () => { if (!_srcBuf) _srcBuf = fs.readFileSync(entry.src); return _srcBuf; };
+
+    // Non-destructive guard (#232): preserve user-modified files.
+    // --accept-all (#251) overrides: treat all files as pristine.
+    if (opts.nonDestructive && !opts.forceOverwrite && !opts.acceptAll && fs.existsSync(destPath)) {
+      const priorHash = priorManifest.get(relForward);
+      if (priorHash) {
+        const installedContent = readDestBuf().toString('utf8');
+        const currentHash = sha256(readDestBuf());
+        if (currentHash !== priorHash) {
+          // Compute diff stat for display (#251)
+          const srcContent = readSrcBuf().toString('utf8');
+          const patch = createTwoFilesPatch(relForward, relForward, installedContent, srcContent, 'installed', 'source');
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
+          preserved += 1;
+          preservedFiles.push(relForward);
+          preservedDiffs.push({ rel: relForward, insertions: ins, deletions: del, patch });
+          skipped += 1;
+          continue;
+        }
+        // Hash matches prior install → pristine → safe to overwrite
+      }
+      // No prior hash → new file in this plan → install normally
+    }
+
+    if (fs.existsSync(destPath) && !opts.force && !opts.forceOverwrite) {
+      const existingHash = sha256(readDestBuf());
+      const sourceHash = sha256(readSrcBuf());
+      if (existingHash === sourceHash) { skipped++; continue; }
+      if (!opts.yes && !opts.nonDestructive) {
+        // Buffer the conflict instead of spamming a warning per file (#451).
+        // Surfaced as a categorised summary post-install + interactive offer (#453).
+        conflictedFiles.push({
+          rel: relForward,
+          src: entry.src,
+          destPath,
+          existingContent: readDestBuf().toString('utf8'),
+          sourceContent: readSrcBuf().toString('utf8'),
+        });
+        skipped++;
+        continue;
       }
     }
-  } catch { /* keep hardcoded fallback */ }
 
-  function check(label, fn) {
-    try {
-      const out = fn();
-      console.log(`    ${ok(label)}${out ? dim(' — ' + out) : ''}`);
-    } catch (err) {
-      fails += 1;
-      console.log(`    ${fail(label)} ${pc.red('—')} ${String(err.message || err).slice(0, 120)}`);
+    if (fs.existsSync(destPath) && opts.forceOverwrite) {
+      const existing = readDestBuf();
+      const incoming = readSrcBuf();
+      if (!existing.equals(incoming)) {
+        spinner.update({ text: dim(`overwriting ${entry.rel}`) });
+      }
     }
+
+    let content = readSrcBuf().toString('utf8');
+    if (entry.cursor) content = convertToCursorMdc(content);
+    fs.writeFileSync(destPath, content, 'utf8');
+    if (entry.executable) fs.chmodSync(destPath, 0o755);
+    copied++;
   }
 
-  check('rcode-tools.cjs runs', () => {
-    const toolsPath = path.join(target, '.rcode', 'bin', 'rcode-tools.cjs');
-    if (!fs.existsSync(toolsPath)) throw new Error('bin/rcode-tools.cjs not installed');
-    execFileSync('node', ['-c', toolsPath], { stdio: 'pipe' });
-    return 'syntax ok';
-  });
+  spinner.success({ text: ok(`${copied} files installed`) });
+  // #667 — placeholder; the real count is logged AFTER the conflict resolver
+  // runs below. We re-emit a corrected summary line if the user updated files
+  // via the resolver so they don't walk away thinking "0 files installed"
+  // when they just accepted 10 vN updates.
 
-  check('.rcode/config.yaml present', () => {
-    const p = path.join(target, '.rcode', 'config.yaml');
-    if (!fs.existsSync(p)) throw new Error('missing');
-    const text = fs.readFileSync(p, 'utf8');
-    if (!/user_name:|project_name:/.test(text)) throw new Error('config.yaml incomplete');
-    return `${fs.statSync(p).size} bytes`;
-  });
-
-  check('.rcode/state.json parses', () => {
-    const p = path.join(target, '.rcode', 'state.json');
-    if (!fs.existsSync(p)) throw new Error('missing');
-    JSON.parse(fs.readFileSync(p, 'utf8'));
-    return 'valid JSON';
-  });
-
-  check('agents installed', () => {
-    if ((counts.agentCount || 0) < expected.agents) {
-      throw new Error(`only ${counts.agentCount} agents (expected ≥ ${expected.agents})`);
-    }
-    return `${counts.agentCount}`;
-  });
-
-  check('skills + commands installed', () => {
-    // When a global install exists, dedup deliberately removes the project's
-    // copies — the commands resolve from ~/.claude/ instead. Counting only the
-    // project then reports "install may be broken" on a perfectly correct
-    // install, which is a false alarm that teaches users to ignore this check.
-    // Count what the user can actually reach: project + global.
-    const globalCount = (dir) => {
-      try { return fs.readdirSync(dir).filter((f) => f.startsWith('rcode-')).length; }
-      catch { return 0; }
-    };
-    const reachableCommands = (counts.commandCount || 0)
-      + globalCount(path.join(homedir(), '.claude', 'commands'));
-    const reachableSkills = (counts.skillsInstalled || 0)
-      + globalCount(path.join(homedir(), '.claude', 'skills'));
-
-    const issues = [];
-    if (reachableSkills < expected.skills) issues.push(`${reachableSkills} skills reachable (expected ≥ ${expected.skills})`);
-    if (reachableCommands < expected.commands) issues.push(`${reachableCommands} commands reachable (expected ≥ ${expected.commands})`);
-    if (issues.length) throw new Error(`low count: ${issues.join(', ')}`);
-    return `${counts.skillsInstalled} skills + ${counts.commandCount} commands`;
-  });
-
-  if (fails > 0) {
-    console.log('');
-    console.log('  ' + fail(`${fails} health check${fails === 1 ? '' : 's'} failed — install may be broken.`));
-    console.log(dim('     Debug: node .rcode/bin/rcode-tools.cjs state read && ls -la .rcode/'));
-    console.log(dim('     Reinstall: rcode install . --force'));
-    console.log('');
-    return false;
-  }
-  console.log('');
-  return true;
+  return { copied, skipped, preserved, preservedFiles, preservedDiffs, conflictedFiles };
 }
+
+/**
+ * Interactive conflict resolution (#451/#453): when copyInstallPlanFiles()
+ * buffered files that differ from both the previous install AND the
+ * source (local edits + upstream update both present), offer to review
+ * each one, take the upstream version for all, or keep local edits.
+ * Non-interactive runs (non-TTY or --yes) get a hint instead of a prompt.
+ *
+ * Returns { updated } — the count of files the resolver actually rewrote
+ * with the upstream version, merged into the report passed to
+ * printInstallSummary (and used by installInner's own corrected
+ * "Total this run" summary line, which needs `copied` from
+ * copyInstallPlanFiles too).
+ *
+ * Split out of installInner() (#1066 Phase 3 — HIGHEST RISK, extracted
+ * last with extra scrutiny). Mechanical extraction, no behavior change.
+ */
+async function resolveInstallConflicts(conflictedFiles, opts) {
+  let updated = 0;
+
+  // Categorised conflict summary (#451) + interactive resolution offer (#453).
+  // Replaces the per-file 'differs from package version' warning spam.
+  if (conflictedFiles.length > 0) {
+    const byCategory = { workflows: [], agents: [], commands: [], skills: [], references: [], other: [] };
+    for (const c of conflictedFiles) {
+      if (c.rel.includes('/workflows/')) byCategory.workflows.push(c);
+      else if (c.rel.includes('/agents/')) byCategory.agents.push(c);
+      else if (c.rel.includes('/commands/')) byCategory.commands.push(c);
+      else if (c.rel.includes('/skills/')) byCategory.skills.push(c);
+      else if (c.rel.includes('/references/')) byCategory.references.push(c);
+      else byCategory.other.push(c);
+    }
+    console.log('');
+    console.log('  ' + warn(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} have local edits AND v${readPackageVersion()} updates:`));
+    for (const [cat, list] of Object.entries(byCategory)) {
+      if (list.length === 0) continue;
+      console.log('    ' + dim(`${list.length} ${cat}`));
+    }
+    console.log('');
+
+    if (!opts.yes && process.stdin.isTTY) {
+      const action = await clack.select({
+        message: 'How should we handle these?',
+        initialValue: 'review',
+        options: [
+          { value: 'review', label: 'Review each one',                hint: 'see the diff, decide per file' },
+          { value: 'upstream', label: 'Take v' + readPackageVersion() + ' for all', hint: 'lose local edits, get all bug fixes' },
+          { value: 'keep',   label: 'Keep my local edits',            hint: 'skip v' + readPackageVersion() + ' updates for these files (current behaviour)' },
+        ],
+      });
+      if (clack.isCancel(action)) {
+        clack.note('Skipped — local edits preserved.');
+      } else if (action === 'upstream') {
+        let applied = 0;
+        for (const c of conflictedFiles) {
+          fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+          applied++;
+        }
+        updated += applied; // #667 — surface in final summary
+        console.log('  ' + ok(`Applied v${readPackageVersion()} to ${applied} file${applied === 1 ? '' : 's'}.`));
+      } else if (action === 'review') {
+        let applied = 0, kept = 0;
+        for (const c of conflictedFiles) {
+          const patch = createTwoFilesPatch(c.rel, c.rel, c.existingContent, c.sourceContent, 'local', 'v' + readPackageVersion());
+          let ins = 0, del = 0;
+          for (const line of patch.split('\n')) {
+            if (line.startsWith('+') && !line.startsWith('+++')) ins++;
+            if (line.startsWith('-') && !line.startsWith('---')) del++;
+          }
+          console.log('');
+          console.log('  ' + pc.bold(c.rel) + dim('  ') + pc.green(`+${ins}`) + ' ' + pc.red(`-${del}`));
+          const decision = await clack.select({
+            message: 'Take upstream, keep local, or view diff?',
+            initialValue: 'view',
+            options: [
+              { value: 'upstream', label: 'Take v' + readPackageVersion() },
+              { value: 'keep',     label: 'Keep local' },
+              { value: 'view',     label: 'View diff first' },
+            ],
+          });
+          let finalAction = decision;
+          if (clack.isCancel(decision) || decision === 'view') {
+            for (const line of patch.split('\n').slice(4)) {
+              if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
+              else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
+              else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
+              else process.stdout.write(dim(line) + '\n');
+            }
+            const after = await clack.select({
+              message: 'Now: take upstream or keep local?',
+              initialValue: 'keep',
+              options: [
+                { value: 'upstream', label: 'Take v' + readPackageVersion() },
+                { value: 'keep',     label: 'Keep local' },
+              ],
+            });
+            finalAction = clack.isCancel(after) ? 'keep' : after;
+          }
+          if (finalAction === 'upstream') {
+            fs.writeFileSync(c.destPath, c.sourceContent, 'utf8');
+            applied++;
+          } else {
+            kept++;
+          }
+        }
+        updated += applied; // #667 — surface in final summary
+        console.log('  ' + ok(`Review complete: ${applied} applied, ${kept} kept local.`));
+      } else {
+        console.log('  ' + dim(`${conflictedFiles.length} file${conflictedFiles.length === 1 ? '' : 's'} kept local. Re-run with --force-overwrite or 'rcode update' anytime.`));
+      }
+    } else {
+      console.log('  ' + dim(`Re-run with --force-overwrite to apply v${readPackageVersion()} updates, or pipe through an interactive shell to resolve per-file.`));
+    }
+    console.log('');
+  }
+
+  return { updated };
+}
+
+async function installInner(opts) {
+  const pkgVersion = readPackageVersion();
+
+  // Header banner — only shown for interactive runs to keep CI/non-TTY logs terse.
+  const isInteractive = process.stdin.isTTY && !opts.yes;
+  if (isInteractive) printInstallHeader(pkgVersion);
+
+  // Resolve target IDE (interactive prompt unless --ide flag, --yes, or non-TTY).
+  opts.ides = await resolveIde(opts);
+
+  // Resolve commit-planning preference (interactive prompt or flag) — #189.
+  opts.commitPlanning = await resolveCommitPlanning(opts);
+
+  // Resolve guardrail-hooks preference (interactive prompt or flag). Default on.
+  opts.enableHooks = await resolveEnableHooks(opts);
+
+  console.log(`\n🕌 ${bold('rcode')} ${pc.cyan('v' + pkgVersion)} ${dim('→')} ${opts.target}`);
+
+  // Detect an existing install and surface it (#195).
+  const existingManifestPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
+  if (fs.existsSync(existingManifestPath)) {
+    const m = fs.readFileSync(existingManifestPath, 'utf8').match(/^version:\s*(.+)$/m);
+    const existingVersion = m ? m[1].trim() : 'unknown';
+    const isUpgrade = semver.valid(existingVersion) && semver.valid(pkgVersion)
+      ? semver.lt(existingVersion, pkgVersion)
+      : existingVersion !== pkgVersion;
+    if (isUpgrade) {
+      console.log('  ' + info(`Upgrading ${pc.dim('v' + existingVersion)} → ${pc.green('v' + pkgVersion)} (config + state + .planning preserved)`));
+    } else {
+      console.log('  ' + info(`Refreshing v${existingVersion} (config + state + .planning preserved)`));
+    }
+    if (!opts.force) {
+      console.log(dim('    Pass --force to also sweep orphaned files from the previous version.'));
+    }
+  }
+  if (!fs.existsSync(SOURCE_ROOT)) {
+    console.error(`✖ Source tree not found at ${SOURCE_ROOT}. Running from wrong dir?`);
+    return 1;
+  }
+
+  // IDE validation + per-IDE messaging — #1066 Phase 2 extraction.
+  const idesExitCode = validateAndAnnotateIdes(opts);
+  if (idesExitCode !== null) return idesExitCode;
+
+  // --modules validation, vscode-layout migration, plan build/filter, and
+  // the dry-run/list-files early exit — #1066 Phase 2 extraction.
+  const { exitCode: planExitCode, plan } = resolveInstallPlan(opts);
+  if (planExitCode !== null) return planExitCode;
+
+  // Force-overwrite backup — closes #381. Without this, customized
+  // .claude/agents/rcode-*.md and similar package-managed files were silently
+  // clobbered with no recovery path. Now every --force-overwrite run creates
+  // a tar.gz of every existing target before any write happens.
+  // Skip when --no-backup is passed (CI escape hatch) or on fresh installs.
+  if (opts.forceOverwrite && !opts.noBackup) {
+    const backup = createInstallBackup(opts.target, plan);
+    if (backup.ok) {
+      console.log('  ' + info(
+        `${pc.dim('--force-overwrite')} backup: ${pc.cyan(backup.path)} ` +
+        `${pc.dim('(' + backup.fileCount + ' files — restore with: tar -xzf ' + backup.path + ')')}`
+      ));
+    } else if (backup.fileCount > 0) {
+      // Files exist but tar failed — fail loud rather than clobbering silently.
+      console.error('');
+      console.error(`✖ Could not create backup: ${backup.warning}`);
+      console.error(`  Refusing to --force-overwrite without a backup. Pass --no-backup to override.`);
+      console.error('');
+      return 1;
+    }
+    // backup.fileCount === 0 → fresh install, nothing to back up — proceed silently.
+  }
+
+  // Orphan sweep — remove files from previous install not in the new plan (#196).
+  // Runs on --force only, to preserve user-edited or hand-dropped files on regular installs.
+  let sweptOrphans = 0;
+  if (opts.force) {
+    sweptOrphans = sweepStaleInstalledFiles(opts.target, plan);
+  }
+
+  // Load previous manifest for non-destructive mode (#232).
+  // Map<rel, expectedHashFromPriorInstall> — if a file's current hash matches
+  // its expected-from-prior-install hash, the user hasn't touched it → safe
+  // to overwrite. If hashes differ, user customized it → preserve.
+  const priorManifest = new Map();
+  if (opts.nonDestructive) {
+    const manifestPath = path.join(opts.target, '.rcode', '_config', 'files-manifest.csv');
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const lines = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
+        for (const line of lines) {
+          const [rel, hash] = line.split(',');
+          if (rel && hash) priorManifest.set(rel, hash);
+        }
+      } catch (err) {
+        // #1062 — an empty priorManifest makes every file look "new" to the
+        // preserve-user-edits check below, which silently falls through to an
+        // unconditional overwrite. That defeats the entire point of
+        // --non-destructive, so a corrupt manifest must abort, not degrade.
+        console.error('');
+        console.error(`✖ --non-destructive: could not read prior install manifest at ${manifestPath}`);
+        console.error(`  (${err.message})`);
+        console.error(`  Refusing to install — a missing manifest means locally-modified files`);
+        console.error(`  can't be told apart from pristine ones, so this would risk silently`);
+        console.error(`  overwriting your edits.`);
+        console.error(`  Fix or remove the corrupted manifest, or re-run without --non-destructive.`);
+        console.error('');
+        return 1;
+      }
+    }
+  }
+
+  // File-copy loop + interactive conflict resolution — #1066 Phase 3
+  // extraction (highest risk; extracted last with extra scrutiny).
+  const {
+    copied, skipped, preserved, preservedFiles, preservedDiffs, conflictedFiles,
+  } = copyInstallPlanFiles(plan, opts, priorManifest);
+
+  const { updated } = await resolveInstallConflicts(conflictedFiles, opts);
+
+  // #667 — corrected post-resolver summary. Only re-emit when the conflict
+  // resolver actually updated files; preserves the original line otherwise.
+  if (updated > 0) {
+    console.log('  ' + ok(`Total this run: ${copied} installed · ${updated} updated · ${preserved + skipped} unchanged.`));
+    console.log('');
+  }
+
+  // In global install mode (~/.claude/), skip per-project artifacts — those are
+  // created by `rcode install` inside each project directory at project-init time.
+  // Global install only ships the read-only tooling: commands, skills, workflows, bin.
+  if (opts.global) {
+    // Still write the manifest so the global install is traceable/upgradeable
+    const configDir = path.join(opts.target, '.rcode', '_config');
+    ensureDir(configDir);
+    fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
+    // Install skills + sidebar stubs globally — never dedup against globals,
+    // because in --global mode the target IS the global dir.
+    const skillsResult = installSkills(PACKAGE_ROOT, opts.target);
+    let skillsInstalled = skillsResult.count;
+    try {
+      const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
+      const stubsDir = path.join(opts.target, '.claude', 'skills');
+      const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
+        skipGlobalDuplicates: true,
+      });
+      skillsInstalled += result.generated;
+    } catch { /* non-fatal */ }
+    console.log('');
+    console.log(`  ${dim(`${skillsInstalled} skills installed globally`)}`);
+
+    // Native home-dir slash commands for CLIs that can't surface file-based
+    // /commands (codex, antigravity) but DO support a prompt-submit hook.
+    // This MUST run inside the --global block: the global path returns here,
+    // before the non-global call site below. Gated on opts.global inside.
+    try {
+      installNativeHomeSlashCommands(opts);
+    } catch (err) {
+      process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+    }
+    return 0;
+  }
+
+  // Command-dedup against global ~/.claude/commands/ (incl. git-tracked-file
+  // check) — #1066 Phase 2 extraction. Mutates `plan` in place.
+  const { isProjectInstall } = dedupeAgainstGlobalCommands(plan, opts);
+
+  // config.yaml/manifest/state.json writing incl. stub-marker + commit_planning
+  // drift-preserving logic — #1066 Phase 2 extraction.
+  const configDir = path.join(opts.target, '.rcode', '_config');
+  const { existedBefore } = writeInstallConfigAndState(opts, plan, configDir);
+
+  // Issue #702: files-manifest.csv used to be written here, BEFORE
+  // installSkills + generateCommandSkills ran. The 100+ skill files those
+  // functions install were therefore invisible to sweepStaleInstalledFiles
+  // and doctor's drift detection. Manifest generation moved below to AFTER
+  // all skill installations complete, with extraScanDirs covering both
+  // .claude/skills/ and .rcode/skills/ on disk.
+
+  // Install v1-style phrase-activated skills (scaffold-project, create-prd,
+  // retrospective, etc.) into .claude/skills/ alongside the v2 agents/commands.
+  // Issue #679: skip rcode-* skills that already exist in ~/.claude/skills/
+  // (global precedence) so the slash picker doesn't show every command twice.
+  // Reuse the isProjectInstall flag declared earlier in this scope.
+  const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
+    skipGlobalDuplicates: isProjectInstall,
+  });
+  let skillsInstalled = skillsResult.count;
+  if (skillsResult.skippedGlobal > 0) {
+    console.log('  ' + dim(`Skipped ${skillsResult.skippedGlobal} project-level rcode skills (global ones in ~/.claude/skills/ take precedence) — closes #679.`));
+    // #938 — make the global dependency explicit. When local skills are skipped
+    // the project relies on whatever rcode version is installed globally; a
+    // collaborator without a global install (or on a different version) gets
+    // different behavior. Tell the user how to force a self-contained install.
+    console.log('  ' + dim('  ↳ This project now depends on your GLOBAL rcode install for those skills.'));
+    console.log('  ' + dim('    For a self-contained project (e.g. for collaborators/CI), reinstall with --local-only.'));
+  }
+
+  // Generate install-time skill stubs that mirror sidebar-worthy slash commands.
+  // Source codebase stays clean — these stubs only exist at the install
+  // destination, marked with `generated: true` so they refresh idempotently.
+  // See cli/generate-command-skills.cjs for rationale.
+  try {
+    const { main: generateCommandSkills } = require(path.join(PACKAGE_ROOT, 'cli', 'generate-command-skills.cjs'));
+    const stubsDir = path.join(opts.target, '.claude', 'skills');
+    const result = generateCommandSkills(PACKAGE_ROOT, stubsDir, readPackageVersion(), {
+      skipGlobalDuplicates: isProjectInstall,
+    });
+    if (result.generated > 0) {
+      console.log('  ' + dim(`${result.generated} sidebar skill stub${result.generated === 1 ? '' : 's'} generated for command discoverability`));
+      skillsInstalled += result.generated;
+    }
+    if (result.skippedGlobal > 0) {
+      console.log('  ' + dim(`Skipped ${result.skippedGlobal} sidebar stub${result.skippedGlobal === 1 ? '' : 's'} that duplicate global ~/.claude/skills/ — closes #679.`));
+    }
+  } catch (err) {
+    // Non-fatal: install succeeds without sidebar stubs
+    console.log('  ' + dim(`(sidebar stub generation skipped: ${err.message})`));
+  }
+
+  // Issue #702: write files-manifest.csv NOW, after all installs complete.
+  // extraScanDirs picks up the skills + sidebar stubs that aren't in the
+  // plan array.
+  fs.writeFileSync(
+    path.join(configDir, 'files-manifest.csv'),
+    generateFilesManifest(plan, opts.target, {
+      mergeExistingManifest: !opts.force,
+      extraScanDirs: [
+        path.join(opts.target, '.claude', 'skills'),
+        path.join(opts.target, '.rcode', 'skills'),
+      ],
+    }),
+  );
+
+  // Seed .planning/ with starter ROADMAP + STATE so workflows work immediately
+  const starterSeeded = seedStarterPlanning(opts.target, opts.projectName);
+
+  // Install brain scaffolding at .rcode/brain/ (sources.yaml + README).
+  // Actual brain content lands after first brain pull runs.
+  installBrainScaffold(PACKAGE_ROOT, opts.target);
+
+  // Ensure .gitignore separates installed methodology from committable artifacts.
+  // Reads opts.commitPlanning to decide whether .planning/ is in the ignore block.
+  const gitignoreReport = ensureRcodeGitignore(opts.target, { commitPlanning: opts.commitPlanning });
+
+
+  // Install pre-commit hook that auto-syncs state.json when planning files change.
+  // Respects --no-git-hooks flag; skips silently when .git/ is absent.
+  const hookReport = ensureRcodePreCommitHook(opts.target, { gitHooks: opts.gitHooks });
+
+  // Merge rcode guardrail hooks into .claude/settings.json (pre-edit, bash-guard,
+  // prompt-router, etc). Default-on; resolved above via resolveEnableHooks().
+  const settingsHooksReport = ensureRcodeSettingsHooks(opts.target, { enableHooks: opts.enableHooks });
+
+  // Point each installed IDE's rule file at /rcode-do as the preferred entry point
+  // for non-trivial work — an rcode-owned marked block/file, not a full rewrite.
+  const preferredCommandReports = ensureRcodePreferredCommandRule(opts.target, opts.ides);
+
+  // Pull rcode brain content (v2.0 — issue #158).
+  // Runs rcode-tools brain pull as a detached background process. Placeholder
+  // URLs are skipped gracefully so this does not fail a fresh install.
+  //
+  // Issue #1030: a cold pull (cache miss) clones + sparse-checks-out a real
+  // upstream repo and live-measured ~58s for just 2 small files — dangerously
+  // close to the previous 60s execFileSync timeout (#706) and ~6x over the
+  // 10s kill criterion issue #162 itself specified. Since brain pull is
+  // already best-effort and never fails install (see catch below, historically
+  // a timeout was just treated as a pull failure), there is no reason to block
+  // install on it at all. Spawn it detached and let install finish immediately;
+  // the child keeps running and warms the cache/writes content on its own.
+  let brainReport = null;
+  let brainBackgrounded = false;
+  try {
+    const { spawn } = require('child_process');
+    const toolsPath = path.join(opts.target, '.rcode', 'bin', 'rcode-tools.cjs');
+    if (fs.existsSync(toolsPath)) {
+      const child = spawn('node', [toolsPath, 'brain', 'pull'], {
+        cwd: opts.target,
+        stdio: 'ignore',
+        detached: true,
+      });
+      child.unref();
+      brainBackgrounded = true;
+    }
+  } catch (e) {
+    // brain pull is best-effort on install — do not fail the whole install
+    brainReport = { ok: false, error: String(e.message || e).slice(0, 200) };
+  }
+
+  // Post-install summary + counting + health check — #1066 Phase 2 extraction.
+  // Structured report object, not closures (per plan).
+  return printInstallSummary(opts, {
+    sweptOrphans, existedBefore, brainBackgrounded, brainReport,
+    gitignoreReport, hookReport, settingsHooksReport, preferredCommandReports,
+    skipped, preserved, preservedDiffs, skillsInstalled, starterSeeded,
+  });
+}
+
 
 async function main() {
   const argv = process.argv.slice(2);
