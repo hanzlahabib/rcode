@@ -595,6 +595,74 @@ function validateAndAnnotateIdes(opts) {
   return null;
 }
 
+/**
+ * Validate --modules, migrate legacy vscode layout, build + filter the
+ * install plan, and handle the dry-run/list-files early exit. Returns
+ * { exitCode, plan } — exitCode is null to continue (plan is then the
+ * resolved install plan array), or an installInner exit code (0/1) to
+ * return immediately.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function resolveInstallPlan(opts) {
+  // Validate requested modules exist
+  if (opts.modules.length > 0) {
+    const available = listAvailableModules();
+    const unknownModules = opts.modules.filter(m => !available.includes(m));
+    if (unknownModules.length > 0) {
+      console.error(`✖ Unknown module(s): ${unknownModules.join(', ')}`);
+      console.error(`  Available modules: ${available.join(', ')}`);
+      return { exitCode: 1, plan: null };
+    }
+  }
+
+  // #723 Waleed — migrate legacy vscode subdir layout BEFORE building the plan
+  // so the plan never has to reason about both forms. Idempotent + safe.
+  if (Array.isArray(opts.ides) && opts.ides.includes('vscode') || (opts.ide === 'vscode')) {
+    const migrated = migrateVscodeCommandsLayout(opts.target);
+    if (migrated.moved > 0) {
+      console.log(`  ↻ Migrated ${migrated.moved} legacy vscode-layout command(s) to .claude/commands/rcode-{name}.md`);
+    }
+  }
+
+  // #1028: .antigravity/ is only wired up on a GLOBAL install (the hook that
+  // makes /rcode-* slash commands work lives in ~/.gemini/antigravity/, written
+  // by installAntigravitySlashRouterHook() only when opts.global is set — see
+  // the warning above). A project-local install writes guaranteed-inert files;
+  // skip them entirely unless --global was actually passed.
+  const planIdes = (!opts.global && Array.isArray(opts.ides))
+    ? opts.ides.filter(i => i !== 'antigravity')
+    : opts.ides;
+
+  const fullPlan = buildInstallPlan(planIdes, opts.target);
+  const plan = filterPlanByModules(fullPlan, opts.modules);
+  if (plan.length === 0) {
+    if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
+      console.error('✖ Nothing to install — Antigravity was the only target IDE, and its files need a GLOBAL install.');
+      console.error('  Re-run with --global, or pick another --ide.');
+      return { exitCode: 1, plan: null };
+    }
+    console.error('✖ Nothing to install — install plan is empty.');
+    if (opts.modules.length > 0) console.error(`  Modules requested: ${opts.modules.join(', ')}`);
+    return { exitCode: 1, plan: null };
+  }
+  if (opts.modules.length > 0) {
+    console.log(`  Modules: ${opts.modules.join(', ')}`);
+  }
+
+  // Dry run / list-files — list paths that would be written and exit without writing
+  if (opts.dryRun || opts.listFiles) {
+    console.log('DRY RUN: the following paths would be written:');
+    for (const entry of plan) {
+      console.log('  + ' + entry.rel);
+    }
+    return { exitCode: 0, plan: null };
+  }
+
+  return { exitCode: null, plan };
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -639,59 +707,10 @@ async function installInner(opts) {
   const idesExitCode = validateAndAnnotateIdes(opts);
   if (idesExitCode !== null) return idesExitCode;
 
-  // Validate requested modules exist
-  if (opts.modules.length > 0) {
-    const available = listAvailableModules();
-    const unknownModules = opts.modules.filter(m => !available.includes(m));
-    if (unknownModules.length > 0) {
-      console.error(`✖ Unknown module(s): ${unknownModules.join(', ')}`);
-      console.error(`  Available modules: ${available.join(', ')}`);
-      return 1;
-    }
-  }
-
-  // #723 Waleed — migrate legacy vscode subdir layout BEFORE building the plan
-  // so the plan never has to reason about both forms. Idempotent + safe.
-  if (Array.isArray(opts.ides) && opts.ides.includes('vscode') || (opts.ide === 'vscode')) {
-    const migrated = migrateVscodeCommandsLayout(opts.target);
-    if (migrated.moved > 0) {
-      console.log(`  ↻ Migrated ${migrated.moved} legacy vscode-layout command(s) to .claude/commands/rcode-{name}.md`);
-    }
-  }
-
-  // #1028: .antigravity/ is only wired up on a GLOBAL install (the hook that
-  // makes /rcode-* slash commands work lives in ~/.gemini/antigravity/, written
-  // by installAntigravitySlashRouterHook() only when opts.global is set — see
-  // the warning above). A project-local install writes guaranteed-inert files;
-  // skip them entirely unless --global was actually passed.
-  const planIdes = (!opts.global && Array.isArray(opts.ides))
-    ? opts.ides.filter(i => i !== 'antigravity')
-    : opts.ides;
-
-  const fullPlan = buildInstallPlan(planIdes, opts.target);
-  const plan = filterPlanByModules(fullPlan, opts.modules);
-  if (plan.length === 0) {
-    if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
-      console.error('✖ Nothing to install — Antigravity was the only target IDE, and its files need a GLOBAL install.');
-      console.error('  Re-run with --global, or pick another --ide.');
-      return 1;
-    }
-    console.error('✖ Nothing to install — install plan is empty.');
-    if (opts.modules.length > 0) console.error(`  Modules requested: ${opts.modules.join(', ')}`);
-    return 1;
-  }
-  if (opts.modules.length > 0) {
-    console.log(`  Modules: ${opts.modules.join(', ')}`);
-  }
-
-  // Dry run / list-files — list paths that would be written and exit without writing
-  if (opts.dryRun || opts.listFiles) {
-    console.log('DRY RUN: the following paths would be written:');
-    for (const entry of plan) {
-      console.log('  + ' + entry.rel);
-    }
-    return 0;
-  }
+  // --modules validation, vscode-layout migration, plan build/filter, and
+  // the dry-run/list-files early exit — #1066 Phase 2 extraction.
+  const { exitCode: planExitCode, plan } = resolveInstallPlan(opts);
+  if (planExitCode !== null) return planExitCode;
 
   // Force-overwrite backup — closes #381. Without this, customized
   // .claude/agents/rcode-*.md and similar package-managed files were silently
