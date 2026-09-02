@@ -17,9 +17,10 @@ Baseline: `node --test` = 664/664 passing on `main` before this campaign started
 - [x] #1068 — docs: PLAN.md → SPRINT.md refs. Fixed (99c18b4), merged to campaign-github-tickets. Open on GitHub until landed to main.
 - [x] #1069 — fix(state): entry.plans vs entry.sprints[] unify. Fixed (e61872e), merged to campaign-github-tickets. Open on GitHub until landed to main.
 - [ ] #1036 — persona-owned sprint execution refusal. Mitigation shipped; needs a LIVE /rcode-execute dispatch to verify, not code work. Left open with status comment.
-- [ ] #958 — feat(memory): memory bank relevance-ranked injection + drift detection. Genuinely open, large (3 sub-parts: top-K selection, staleness signal, drift daemon). Needs scoping before execution — dispatching a plan pass.
-- [ ] #968 — feat(dashboard): Memory view health signal. Genuinely open, medium. DEPENDS on #958's drift detection existing first — do not start before #958 lands.
+- [x] #958 — already fully implemented (28th such finding). Closed with evidence.
+- [x] #968 — already resolved as a side effect of #958. Closed with evidence.
 - [ ] #1070 — feat(review): detection-depth gap vs Codex (new, filed 2026-09-03). Not yet scoped/started.
+- [ ] #1071 — chore(memory): this repo's own Memory Bank has real drift (new, filed 2026-09-03, found while verifying #958). Small, self-contained.
 
 ## Done (this session, outside the original 33)
 
