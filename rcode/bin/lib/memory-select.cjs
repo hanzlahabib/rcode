@@ -17,6 +17,7 @@ const { resolveActivePhase } = require('./state-reader.cjs');
 const DEFAULT_BUDGET_TOKENS = 1500;
 const CHARS_PER_TOKEN = 4; // rough chars/4 estimate, consistent with rest of the codebase
 const TRUNCATION_MARKER = '\n…(truncated)';
+const STALE_DISTILLATE_DAYS = 30;
 const STOPWORDS = new Set([
   'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'were',
   'has', 'have', 'will', 'not', 'but', 'you', 'your', 'all', 'can', 'its',
@@ -241,12 +242,32 @@ function selectMemoryChunks(cwd, opts = {}) {
   return { chunks, totalTokens: used, budget, empty: chunks.length === 0 };
 }
 
+/**
+ * Distillates (#1065) are regenerated snapshots, not live source — if
+ * `generated-at` in the frontmatter is stale, the injected content can
+ * describe milestones/versions that are no longer current. Returns a
+ * one-line warning to prepend, or null when the chunk isn't a distillate
+ * or isn't stale enough to flag.
+ */
+function distillateStaleWarning(source, excerpt) {
+  if (!/\.distillate\.md$/.test(source)) return null;
+  const m = excerpt.match(/^generated-at:\s*(.+)$/m);
+  if (!m) return null;
+  const generatedAt = new Date(m[1].trim());
+  if (Number.isNaN(generatedAt.getTime())) return null;
+  const ageDays = Math.floor((Date.now() - generatedAt.getTime()) / (1000 * 60 * 60 * 24));
+  if (ageDays <= STALE_DISTILLATE_DAYS) return null;
+  return `⚠ memory distillate is ${ageDays} days stale — run /rcode-memory-distill`;
+}
+
 /** Render a selection into a single Markdown block, or null when there's nothing to inject. */
 function formatMemoryContext(selection) {
   if (!selection || selection.empty || selection.chunks.length === 0) return null;
   const lines = ['## Relevant memory', ''];
   for (const chunk of selection.chunks) {
     lines.push(`### ${chunk.source}`);
+    const warning = distillateStaleWarning(chunk.source, chunk.excerpt);
+    if (warning) lines.push(warning);
     lines.push(chunk.excerpt.trim());
     lines.push('');
   }
@@ -255,6 +276,8 @@ function formatMemoryContext(selection) {
 
 module.exports = {
   DEFAULT_BUDGET_TOKENS,
+  STALE_DISTILLATE_DAYS,
+  distillateStaleWarning,
   selectMemoryChunks,
   formatMemoryContext,
   estimateTokens,

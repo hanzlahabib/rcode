@@ -76,7 +76,7 @@ For `change-records/`, `incidents/post-mortems/`, `milestones/archive/`:
 
 For each `distillates/*.distillate.md`:
 - Read frontmatter `source-digest`
-- Recompute digest of current source files (per `rcode-memory-distill` rules)
+- Recompute the content-based digest via `node .rcode/bin/rcode-tools.cjs memory-digest <project|stack>` (hashes file content, not mtime — stable across `git clone`/`checkout`/`worktree add`)
 - If mismatch, emit a `warn` finding suggesting `/rcode-memory-distill`
 
 ### Step 8 — Render report

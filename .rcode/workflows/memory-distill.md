@@ -40,11 +40,13 @@ For `target = stack`:
 
 ### Step 2 — Compute digest
 
+Run the deterministic CLI subcommand — do not compute this narratively. It hashes each source file's raw content (not mtime), so the digest is stable across `git clone`/`checkout`/`worktree add`, which all stamp fresh mtimes regardless of whether content changed:
+
 ```
-digest = sha1(concat(file_path + ":" + mtime for each source file in sorted order))
+node .rcode/bin/rcode-tools.cjs memory-digest <project|stack>
 ```
 
-If `--force` not passed and existing distillate's `source-digest:` matches, skip regeneration for that target.
+Use the returned `digest` field as `source-digest:`. If `--force` not passed and the existing distillate's `source-digest:` matches, skip regeneration for that target.
 
 ### Step 3 — Compress per target
 

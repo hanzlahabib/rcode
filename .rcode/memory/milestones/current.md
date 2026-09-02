@@ -9,7 +9,7 @@ Active milestone. Goal, phases, current sprint, blockers. The agent reads this b
 **Name:** M3 — Archon Dashboard Port (v5)
 **Started:** (pre-2026-08, see `.rcode/state.json` for phase-level dates)
 **Target close:** rolling
-**Goal:** Port the Archon-style dashboard experience and harden `/rcode-execute` core (branch-protection preflight, worktree fallback, init-JSON parsing, `acceptance_criteria` cleanup). v4.0.0 rebrand + OSS release prep (below) shipped and is archived history — package is at v4.9.0.
+**Goal:** Port the Archon-style dashboard experience and harden `/rcode-execute` core (branch-protection preflight, worktree fallback, init-JSON parsing, `acceptance_criteria` cleanup). v4.0.0 rebrand + OSS release prep (below) shipped and is archived history — package is at v4.16.1.
 
 ## Active phase
 
