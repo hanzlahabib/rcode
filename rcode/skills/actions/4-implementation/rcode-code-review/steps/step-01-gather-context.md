@@ -3,6 +3,7 @@ diff_output: '' # set at runtime
 spec_file: '' # set at runtime (path or empty)
 review_mode: '' # set at runtime: "full" or "no-spec"
 story_key: '' # set at runtime when discovered from sprint status
+oversized_files: '' # set at runtime: comma-separated list of "path (N lines)" over the file-size cap
 ---
 
 # Step 1: Gather Context
@@ -52,9 +53,11 @@ story_key: '' # set at runtime when discovered from sprint status
    - If the user opts to chunk: agree on the first group, narrow `{diff_output}` accordingly, and list the remaining groups for the user to note for follow-up runs.
    - If the user declines: proceed as-is with the full diff.
 
+7. **File-size pre-check.** Mechanical, not judgment-based — no persona needed. For every file touched by `{diff_output}`, run `wc -l` on its current (post-change) working-tree contents and compare against this repo's 1000-line cap (CLAUDE.md → File Modification Rules). Record every file at or over the cap as `path (N lines)` in `{oversized_files}` (comma-separated). Skip files deleted by the change — there is nothing to count.
+
 ### CHECKPOINT
 
-Present a summary before proceeding: diff stats (files changed, lines added/removed), `{review_mode}`, and loaded spec/context docs (if any). HALT and wait for user confirmation to proceed.
+Present a summary before proceeding: diff stats (files changed, lines added/removed), `{review_mode}`, loaded spec/context docs (if any), and `{oversized_files}` if non-empty (flag it as "over the 1000-line cap — consider a refactor split before or alongside this change"). HALT and wait for user confirmation to proceed.
 
 
 ## NEXT

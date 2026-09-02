@@ -19,7 +19,7 @@ failed_layers: '' # set at runtime: comma-separated list of layers that failed o
 
 2. Launch parallel subagents without conversation context. If subagents are not available, generate prompt files in `{implementation_artifacts}` — one per reviewer role below — and HALT. Ask the user to run each in a separate session (ideally a different LLM) and paste back the findings. When findings are pasted, resume from this point and proceed to step 3.
 
-   **Angles.** Three gather evidence, four exercise judgment. Run all of them in
+   **Angles.** Three gather evidence, five exercise judgment. Run all of them in
    parallel, in one message. They map to agents shipped in `.claude/agents/` —
    `rcode-review-adversarial-general` and `rcode-review-edge-case-hunter` are
    SKILLS, not subagents, and `Task(subagent_type=...)` cannot reach them.
@@ -64,6 +64,17 @@ failed_layers: '' # set at runtime: comma-separated list of layers that failed o
      *"Is this solving the problem at the right level?"* A correct fix at the
      wrong altitude is a symptom patch: it works, it ships, and the cause is
      still there. Say which one this is.
+
+   - **concurrency** — `rcode-yousef`, diff + project read.
+     *"Walk every write/mutation path this change touches under three
+     conditions: (1) multiple service instances running different versions
+     simultaneously during a rolling deploy — could an old writer and a new
+     writer disagree about shared state and lose data? (2) a config/state
+     reload while in-flight work exists — does a worker crash or leave state
+     inconsistent when the swap happens mid-request? (3) any queue, dispatch
+     loop, or fan-out this change adds or touches — is it bounded, and what
+     happens under sustained load if it isn't?"* Name the specific
+     interleaving or sequence that breaks, not a general risk.
 
    - **acceptance** (only when `{review_mode}` = `"full"`) — `rcode-reviewer`,
      diff + `{spec_file}` + context docs.
