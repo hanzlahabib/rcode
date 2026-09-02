@@ -300,11 +300,37 @@ function appendRejection(entry) {
 function setTaskOverride(storyId, status, runner) {
   const overridesPath = path.join(PROJECT_ROOT, '.rcode', 'board-overrides.json');
   let overrides = {};
+  let raw = null;
   try {
-    const raw = fs.readFileSync(overridesPath, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) overrides = parsed;
-  } catch { overrides = {}; }
+    raw = fs.readFileSync(overridesPath, 'utf8');
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err; // missing file is normal (first write); anything else is real
+  }
+  if (raw !== null) {
+    let parsed;
+    let shapeOk = false;
+    try {
+      parsed = JSON.parse(raw);
+      shapeOk = parsed && typeof parsed === 'object' && !Array.isArray(parsed);
+    } catch {
+      shapeOk = false;
+    }
+    if (shapeOk) {
+      overrides = parsed;
+    } else {
+      // Corrupt JSON or unexpected shape (e.g. a torn write from a crash).
+      // Back up the corrupt file instead of silently resetting to {} and
+      // wiping every other task's stored status override on the writeback
+      // below (#1061).
+      const backupPath = `${overridesPath}.corrupt-${Date.now()}`;
+      try {
+        fs.writeFileSync(backupPath, raw);
+        console.error(`[orchestrator] board-overrides.json is corrupt — backed up to ${backupPath} and starting fresh`);
+      } catch (backupErr) {
+        console.error(`[orchestrator] board-overrides.json is corrupt AND could not be backed up (${backupErr.message}) — starting fresh anyway`);
+      }
+    }
+  }
   overrides[storyId] = { status, runner: runner || null, updatedAt: new Date().toISOString() };
   fs.mkdirSync(path.dirname(overridesPath), { recursive: true });
   fs.writeFileSync(overridesPath, JSON.stringify(overrides, null, 2));

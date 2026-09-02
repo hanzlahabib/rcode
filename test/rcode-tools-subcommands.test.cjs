@@ -263,7 +263,13 @@ test('state sync parses workflow SPRINT artifacts and preserves velocity history
   );
 });
 
-// ─── phase status normalization (#955) ────────────────────────────────────────
+// ─── phase status normalization (#955, reconciled #1060) ──────────────────────
+//
+// 'executed' and 'verified' are distinct pipeline states, not legacy
+// spellings of 'complete' — execute.md's two-step gate (executed → only
+// promoted to complete once VERIFICATION.md passes) needs 'executed' to
+// survive a state read untouched. Only 'completed' (a spelling variant of
+// the same state) is aliased to 'complete'.
 
 test('state read normalizes legacy phase status aliases to canonical enum', (t) => {
   const cwd = setup(t, {
@@ -282,7 +288,7 @@ test('state read normalizes legacy phase status aliases to canonical enum', (t) 
   });
   const state = json(cwd, ['state', 'read']);
   const byNumber = Object.fromEntries(state.phases.map(p => [p.number, p.status]));
-  assert.strictEqual(byNumber['42'], 'complete');
+  assert.strictEqual(byNumber['42'], 'executed', "'executed' is a distinct pipeline state — must not collapse to complete");
   assert.strictEqual(byNumber['20'], 'complete');
   assert.strictEqual(byNumber['37'], 'executing');
   assert.strictEqual(byNumber['21'], 'planned');
@@ -291,7 +297,7 @@ test('state read normalizes legacy phase status aliases to canonical enum', (t) 
 test('state read normalization is idempotent and persists to disk', (t) => {
   const cwd = setup(t, {
     state: {
-      phases: [{ number: '42', name: 'Ambient adoption hooks', status: 'executed' }],
+      phases: [{ number: '42', name: 'Ambient adoption hooks', status: 'completed' }],
       decisions: [],
       blockers: [],
       council_sessions: [],
