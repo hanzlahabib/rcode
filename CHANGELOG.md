@@ -3,6 +3,74 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.16.2 (2026-09-02) — the completion gate was lying, and the dashboard could write
+
+A 5-way parallel audit of this repo's own state, planning, dashboard, and
+workflow layers (herdr-orchestrated, 4 Sonnet + 1 Codex agent) turned up
+seven real bugs. All seven are fixed here.
+
+### Phases were marked complete with no verification ever run
+
+24 of 27 "complete" phases in this repo's own `.planning/` had no
+`VERIFICATION.md` — including the security-hardening phase. Root cause: an
+alias table silently collapsed the intentional `executed` (awaiting
+verification) status into `complete` on every state read, persisting the
+collapse back to disk before anything could check it. Separately, the
+`phase` command family (`add`/`complete`/`set-status`/...) bypassed the
+locked, atomic state writer entirely — a real lost-update race under
+wave-parallel execution, not a theoretical one. `executed` is now a real,
+distinct status; every `phase` subcommand goes through the same locked
+writer as everything else. (#1060)
+
+### The dashboard was never actually view-only
+
+Starting the dashboard always launched a write-capable orchestrator
+(`POST /api/run` live on every boot), and the HTTP layer didn't reject
+non-GET methods at all — `POST /api/state` and `DELETE /` both returned
+200. Orchestrator startup is now gated behind `VIEW_ONLY`/`view_only`
+config, and every route now 405s anything but GET/HEAD. (#967)
+
+### Two silent data-loss bugs on corrupt JSON
+
+`state.json` and `board-overrides.json` each had a "reset to `{}` on parse
+failure, then write the reset object back" bug — a single corrupted read
+(crash, disk hiccup) silently wiped every tracked phase or task override.
+Both now fail loudly or back up and warn instead of discarding data. (#1061)
+
+### `--non-destructive` could still silently overwrite edits
+
+A corrupt `files-manifest.csv` emptied the "what did the user change"
+lookup, which defeated the preserve-user-edits check and fell through to
+an unconditional overwrite — under the one flag whose entire job is to
+prevent that. Manifest corruption now aborts the install with an explicit
+error instead. (#1062)
+
+### This repo's own dogfooded `.rcode/` was missing 13 files it needed
+
+`/rcode-plan-milestone`, `/rcode-scaffold-milestone`,
+`/rcode-execute-milestone`, `/rcode-lazy`, and the worktree-audit branch of
+`/rcode-audit` all `@`-include workflow or reference files that were never
+synced into this repo's installed `.rcode/workflows/`/`.rcode/references/`
+mirror — silent dispatch failures if run here. Synced. (#1063)
+
+### Full-file re-reads were costing ~24K tokens per call, repeatedly
+
+`/rcode-autonomous` re-`cat`'d STATE.md + ROADMAP.md after *every phase*,
+not once; `/rcode-next`, `/rcode-resume-work`, and `discuss-phase` did the
+same on every invocation. All four (plus `do.md`'s dead `state load`
+subcommand, silently always falling back) now extract only the fields they
+need, matching the pattern `health.md`/`decisions.md` already used
+correctly. (#1064)
+
+### The memory bank was serving 103-day-old context as current fact
+
+The distillate freshness check hashed file *mtime*, which is meaningless
+across a `git checkout`/worktree — so it could never actually detect
+staleness. Session start now warns when a distillate is >30 days old
+instead of injecting it silently, the digest is now content-based, and the
+distillates themselves are regenerated. (#1065)
+
+---
 ## v4.16.1 (2026-09-02) — rcode was invisible to natural language
 
 All from one report: with rcode installed, "raise PR" reached no rcode command
