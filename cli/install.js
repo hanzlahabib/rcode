@@ -928,6 +928,282 @@ function writeInstallConfigAndState(opts, plan, configDir) {
   return { existedBefore };
 }
 
+/**
+ * Print the post-install summary: swept/preserved counters, gitignore/
+ * pre-commit-hook/guardrail-hooks/preferred-command-rule action lines,
+ * preserved-file diffs (#251), agent/command/skill counts (with global-
+ * precedence fallback, #669/#689), the namespace-collision warning
+ * (rcode-* vs rihal-*), the "Next steps" block, the async update check
+ * (#252), the pnpm lockfile check (#838), and the final health check
+ * (#193) — whose pass/fail becomes installInner's own return value.
+ *
+ * Takes a structured `report` object rather than closing over installInner
+ * locals, per #1066 Phase 2's design: { sweptOrphans, existedBefore,
+ * brainBackgrounded, brainReport, gitignoreReport, hookReport,
+ * settingsHooksReport, preferredCommandReports, skipped, preserved,
+ * preservedDiffs, skillsInstalled, starterSeeded }.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function printInstallSummary(opts, report) {
+  const {
+    sweptOrphans, existedBefore, brainBackgrounded, brainReport,
+    gitignoreReport, hookReport, settingsHooksReport, preferredCommandReports,
+    skipped, preserved, preservedDiffs, starterSeeded,
+  } = report;
+  let skillsInstalled = report.skillsInstalled;
+
+  // Summary
+  console.log('');
+  if (opts.force && sweptOrphans > 0) console.log('  ' + info(`${sweptOrphans} stale files swept`));
+  if (opts.force && existedBefore) {
+    console.log('  ' + warn('config.yaml and state.json preserved (pass --reset to wipe)'));
+  }
+  if (brainBackgrounded) {
+    console.log('  ' + dim('Brain: pulling in background (may take up to a minute on a cold cache; run `rcode brain status` to check)'));
+  } else if (brainReport && brainReport.error) {
+    console.log('  ' + dim(`Brain: skipped (${brainReport.error})`));
+  }
+  if (gitignoreReport) {
+    const gitMsg = {
+      'created': '.gitignore created with rcode block',
+      'appended': '.gitignore updated — rcode block appended',
+      'already-present': '.gitignore rcode block already present',
+      'updated': '.gitignore rcode block refreshed',
+      'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
+    }[gitignoreReport.action] || '.gitignore unchanged';
+    console.log('  ' + dim(gitMsg));
+  }
+  if (hookReport) {
+    const hookMsg = {
+      'created': 'pre-commit hook installed (.git/hooks/pre-commit)',
+      'appended': 'pre-commit hook updated — rcode block appended',
+      'already-present': 'pre-commit hook rcode block already present',
+      'updated': 'pre-commit hook rcode block refreshed',
+      'skipped-flag': 'pre-commit hook skipped (--no-git-hooks)',
+      'skipped-no-git': 'pre-commit hook skipped (no .git/ directory)',
+      'skipped-error': `pre-commit hook skipped (${hookReport.error})`,
+    }[hookReport.action] || 'pre-commit hook unchanged';
+    console.log('  ' + dim(hookMsg));
+  }
+  if (settingsHooksReport) {
+    const settingsHooksMsg = {
+      'merged': 'guardrail hooks enabled (.claude/settings.json)',
+      'skipped-flag': 'guardrail hooks skipped (--no-hooks or declined)',
+      'skipped-template-missing': 'guardrail hooks skipped (settings-hooks.json template missing)',
+      'skipped-error': 'guardrail hooks skipped (error merging .claude/settings.json)',
+    }[settingsHooksReport.action] || 'guardrail hooks unchanged';
+    console.log('  ' + dim(settingsHooksMsg));
+  }
+  if (preferredCommandReports && Object.keys(preferredCommandReports).length > 0) {
+    const RULE_FILE = { claude: 'CLAUDE.md', codex: 'AGENTS.md', cursor: '.cursor/rules/rcode-prefer-do.mdc', windsurf: '.windsurf/rules/rcode-prefer-do.mdc' };
+    for (const [ide, report2] of Object.entries(preferredCommandReports)) {
+      const file = RULE_FILE[ide] || ide;
+      const msg = {
+        'created': `${file}: /rcode-do rule added`,
+        'appended': `${file}: /rcode-do rule appended`,
+        'updated': `${file}: /rcode-do rule refreshed`,
+        'already-present': `${file}: /rcode-do rule already present`,
+        'written': `${file}: /rcode-do rule written`,
+        'skipped-error': `${file}: /rcode-do rule skipped (${report2.error})`,
+      }[report2.action] || `${file}: /rcode-do rule unchanged`;
+      console.log('  ' + dim(msg));
+    }
+  }
+  if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
+
+  // Diff display for preserved files (#251)
+  if (preserved > 0 && opts.nonDestructive) {
+    console.log('');
+    console.log('  ' + warn(`${preserved} file${preserved === 1 ? '' : 's'} preserved (modified since install):`));
+    for (const d of preservedDiffs.slice(0, 10)) {
+      const stat = pc.green(`+${d.insertions}`) + ' ' + pc.red(`-${d.deletions}`);
+      console.log(`     ${dim(d.rel)}  ${stat}`);
+      if (opts.showDiff && d.patch) {
+        for (const line of d.patch.split('\n').slice(4)) {  // skip file headers
+          if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
+          else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
+          else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
+          else process.stdout.write(dim(line) + '\n');
+        }
+      }
+    }
+    if (preservedDiffs.length > 10) console.log(dim(`     … and ${preservedDiffs.length - 10} more`));
+    console.log(dim('  To overwrite: re-run with --force-overwrite  |  To see full diffs: --show-diff'));
+    console.log('');
+  }
+
+  // Count installed agents + commands dynamically (#190).
+  // Prefer the 'claude' IDE paths for counting when claude is in the selected list —
+  // that's what actually matters for Claude Code slash command availability.
+  // Fall back to the first selected IDE only when claude isn't included.
+  const primaryIde = opts.ides.includes('claude') ? 'claude' : opts.ides[0];
+  const idePaths = getPathsForIde(primaryIde, opts.target);
+  const agentsDir = idePaths.agentsDir;
+  const commandsDir = idePaths.commandsDir;
+  let agentCount = 0, commandCount = 0;
+  let agentsFromGlobal = false, commandsFromGlobal = false;
+  try {
+    if (fs.existsSync(agentsDir)) {
+      agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
+    }
+    if (fs.existsSync(commandsDir)) {
+      // claude IDE names commands rcode-*.md; other IDEs use plain {name}.md inside a rcode/ subdir
+      const commandFilter = primaryIde === 'claude'
+        ? f => f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))
+        : f => f.endsWith('.md') || f.endsWith('.mdc');
+      commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
+    }
+    // Issue #669 — when global precedence applied (project copies were
+    // intentionally removed), count from ~/.claude/ instead so the summary
+    // doesn't lie about the install state.
+    // Issue #689: skills count gets the same fallback. After dedup (#679)
+    // the project skills folder may have only sidebar stubs while ~/.claude/
+    // has the real skills — health check should see those.
+    if (agentCount === 0 || commandCount === 0 || skillsInstalled < 20) {
+      const homeAgents = path.join(homedir(), '.claude/agents');
+      const homeCommands = path.join(homedir(), '.claude/commands');
+      const homeSkills = path.join(homedir(), '.claude/skills');
+      if (agentCount === 0 && fs.existsSync(homeAgents)) {
+        // #669 — count both rcode-* and rcode-* prefixes; missing rcode-
+        // branch produced "Agents: 0" alongside "Skills: 120".
+        const n = fs.readdirSync(homeAgents)
+          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .length;
+        if (n > 0) { agentCount = n; agentsFromGlobal = true; }
+      }
+      if (commandCount === 0 && fs.existsSync(homeCommands)) {
+        const n = fs.readdirSync(homeCommands)
+          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
+          .length;
+        if (n > 0) { commandCount = n; commandsFromGlobal = true; }
+      }
+      if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
+        try {
+          const globalSkillCount = fs.readdirSync(homeSkills, { withFileTypes: true })
+            .filter(d => d.isDirectory() && d.name.startsWith('rcode-')).length;
+          if (globalSkillCount > skillsInstalled) skillsInstalled = globalSkillCount;
+        } catch { /* non-fatal */ }
+      }
+    }
+  } catch (err) {
+    console.error('[install] installInner: failed to count installed agents/commands:', err?.message || err);
+  }
+
+  // Duplicate-namespace detection: warn when both rcode-* and rihal-* entries exist.
+  // Having both doubles the roster size with near-identical content.
+  try {
+    const skillsDir = path.join(opts.target, '.rcode', 'skills');
+    const claudeCommandsDir = path.join(opts.target, '.claude', 'commands');
+    const dirsToCheck = [skillsDir, claudeCommandsDir];
+    let hasRcode = false, hasRihal = false;
+    for (const dir of dirsToCheck) {
+      if (!fs.existsSync(dir)) continue;
+      const entries = fs.readdirSync(dir);
+      if (entries.some(e => e.startsWith('rcode-'))) hasRcode = true;
+      if (entries.some(e => e.startsWith('rihal-'))) hasRihal = true;
+    }
+    if (hasRcode && hasRihal) {
+      process.stderr.write(pc.yellow('WARNING: rcode-* and rihal-* namespaces both detected — consider removing one to reduce roster size.') + '\n');
+    }
+  } catch { /* non-fatal */ }
+
+  // Native home-dir slash commands for CLIs that ONLY surface /commands from
+  // their own home dir (not project dirs). Opt-in via --global. See the fn def.
+  try {
+    installNativeHomeSlashCommands(opts);
+  } catch (err) {
+    process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
+  }
+
+  const version = readPackageVersion();
+  console.log('');
+  console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
+  console.log(`  ${bold('IDE:')}       ${opts.ides.join(', ')}`);
+  console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rcode/config.yaml)')}`);
+  console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
+  console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rcode-tools gitignore refresh)')}`);
+  console.log('');
+  // Show the actual install paths so cursor/gemini/antigravity output is accurate
+  const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
+  const relCommands = path.relative(opts.target, idePaths.commandsDir) || idePaths.commandsDir;
+  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${agentsFromGlobal ? '~/.claude/agents/ (global)' : relAgents + '/'}`);
+  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${commandsFromGlobal ? '~/.claude/commands/ (global)' : relCommands + '/'}`);
+  if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated`);
+  console.log('');
+  if (starterSeeded) {
+    console.log('  ' + ok('Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)'));
+    console.log('');
+  }
+  console.log(`  ${bold('Next:')}`);
+  console.log(`    cd ${opts.target}`);
+  console.log('    claude              # start Claude Code (reload window if already open)');
+  console.log('    /rcode-progress     # where you are, what\'s next');
+  console.log('    /rcode-do           # interactive command picker');
+  console.log('    /rcode-council <q>  # multi-agent strategic answer');
+  console.log('');
+  // #665 — when the install came in via npm -g (--global --no-prompt), the
+  // interactive IDE/planning prompts were skipped. Tell the user how to
+  // configure them per-project so they aren't stranded with defaults.
+  if (opts.global || opts.noPrompt) {
+    console.log(`  ${dim('Configure interactively (one-time, per project):')}`);
+    console.log(`    ${dim('rcode install         # pick IDE + planning policy for THIS project')}`);
+    console.log(`    ${dim('rcode config          # adjust defaults later')}`);
+    console.log('');
+  }
+  console.log(dim('  Refresh anytime:'));
+  console.log(dim('    pnpm dlx @hanzlaa/rcode@latest install   # recommended (avoids npm 11.x npx issues)'));
+  console.log(dim('    npx @hanzlaa/rcode@latest install        # npm / yarn'));
+  console.log(dim(`    /rcode-update v${version}              # pin rcode to a specific version`));
+  console.log('');
+  console.log(dim('  Want the rcode CLI on your PATH? (optional — needed for rcode version / rcode update):'));
+  console.log(dim('    npm install -g @hanzlaa/rcode       # installs rcode, rcode, rcode commands'));
+  console.log(dim('    rcode version                       # verify'));
+  console.log('');
+  console.log(dim('  Customize without losing changes on update:'));
+  console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rcode-waleed.local.md)'));
+  console.log(dim('    *.local.md files are NEVER touched by install / --force-overwrite / uninstall.'));
+  console.log('');
+  console.log('  ' + warn('If your IDE is already open, reload the window to refresh skills/commands.'));
+  console.log(dim('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window'));
+  console.log('');
+
+  // Lightweight update check (#252) — async background, never blocks install.
+  // Suppressed in non-TTY / CI or when --no-update-check is passed.
+  if (!opts.noUpdateCheck && process.stdout.isTTY && !process.env.CI && !process.env.RCODE_NO_UPDATE_NOTIFIER) {
+    const { execFile } = require('child_process');
+    execFile('npm', ['view', '@hanzlaa/rcode', 'version', '--json'], { timeout: 4000 }, (err, stdout) => {
+      if (err) return;
+      try {
+        const latest = JSON.parse(stdout.trim());
+        if (semver.valid(latest) && semver.gt(latest, version)) {
+          console.log('');
+          console.log('  ╭──────────────────────────────────────────────────────╮');
+          console.log(`  │  ${pc.yellow('Update available:')} ${pc.dim(version)} → ${pc.green(latest)}${' '.repeat(Math.max(0, 20 - version.length - latest.length))}    │`);
+          console.log('  │  Run: npx @hanzlaa/rcode@latest install .            │');
+          console.log('  ╰──────────────────────────────────────────────────────╯');
+          console.log('');
+        }
+      } catch { /* ignore parse errors */ }
+    });
+  }
+
+  // Issue #838: verify pnpm add didn't silently fail (broken lockfile).
+  // Only fires in pnpm projects (pnpm-lock.yaml present). Non-blocking.
+  if (!opts.global) {
+    const pnpmCheck = verifyPnpmAddDevDep(opts.target);
+    if (!pnpmCheck.ok) {
+      console.log('  ' + warn(pnpmCheck.message));
+      console.log('');
+    }
+  }
+
+  // Health check — smoke test that the install actually works (#193).
+  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled });
+  return healthPass ? 0 : 1;
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1396,254 +1672,13 @@ async function installInner(opts) {
     brainReport = { ok: false, error: String(e.message || e).slice(0, 200) };
   }
 
-  // Summary
-  console.log('');
-  if (opts.force && sweptOrphans > 0) console.log('  ' + info(`${sweptOrphans} stale files swept`));
-  if (opts.force && existedBefore) {
-    console.log('  ' + warn('config.yaml and state.json preserved (pass --reset to wipe)'));
-  }
-  if (brainBackgrounded) {
-    console.log('  ' + dim('Brain: pulling in background (may take up to a minute on a cold cache; run `rcode brain status` to check)'));
-  } else if (brainReport && brainReport.error) {
-    console.log('  ' + dim(`Brain: skipped (${brainReport.error})`));
-  }
-  if (gitignoreReport) {
-    const gitMsg = {
-      'created': '.gitignore created with rcode block',
-      'appended': '.gitignore updated — rcode block appended',
-      'already-present': '.gitignore rcode block already present',
-      'updated': '.gitignore rcode block refreshed',
-      'skipped-error': `.gitignore skipped (${gitignoreReport.error})`,
-    }[gitignoreReport.action] || '.gitignore unchanged';
-    console.log('  ' + dim(gitMsg));
-  }
-  if (hookReport) {
-    const hookMsg = {
-      'created': 'pre-commit hook installed (.git/hooks/pre-commit)',
-      'appended': 'pre-commit hook updated — rcode block appended',
-      'already-present': 'pre-commit hook rcode block already present',
-      'updated': 'pre-commit hook rcode block refreshed',
-      'skipped-flag': 'pre-commit hook skipped (--no-git-hooks)',
-      'skipped-no-git': 'pre-commit hook skipped (no .git/ directory)',
-      'skipped-error': `pre-commit hook skipped (${hookReport.error})`,
-    }[hookReport.action] || 'pre-commit hook unchanged';
-    console.log('  ' + dim(hookMsg));
-  }
-  if (settingsHooksReport) {
-    const settingsHooksMsg = {
-      'merged': 'guardrail hooks enabled (.claude/settings.json)',
-      'skipped-flag': 'guardrail hooks skipped (--no-hooks or declined)',
-      'skipped-template-missing': 'guardrail hooks skipped (settings-hooks.json template missing)',
-      'skipped-error': 'guardrail hooks skipped (error merging .claude/settings.json)',
-    }[settingsHooksReport.action] || 'guardrail hooks unchanged';
-    console.log('  ' + dim(settingsHooksMsg));
-  }
-  if (preferredCommandReports && Object.keys(preferredCommandReports).length > 0) {
-    const RULE_FILE = { claude: 'CLAUDE.md', codex: 'AGENTS.md', cursor: '.cursor/rules/rcode-prefer-do.mdc', windsurf: '.windsurf/rules/rcode-prefer-do.mdc' };
-    for (const [ide, report] of Object.entries(preferredCommandReports)) {
-      const file = RULE_FILE[ide] || ide;
-      const msg = {
-        'created': `${file}: /rcode-do rule added`,
-        'appended': `${file}: /rcode-do rule appended`,
-        'updated': `${file}: /rcode-do rule refreshed`,
-        'already-present': `${file}: /rcode-do rule already present`,
-        'written': `${file}: /rcode-do rule written`,
-        'skipped-error': `${file}: /rcode-do rule skipped (${report.error})`,
-      }[report.action] || `${file}: /rcode-do rule unchanged`;
-      console.log('  ' + dim(msg));
-    }
-  }
-  if (skipped > 0) console.log('  ' + dim(`${skipped} files skipped (unchanged)`));
-
-  // Diff display for preserved files (#251)
-  if (preserved > 0 && opts.nonDestructive) {
-    console.log('');
-    console.log('  ' + warn(`${preserved} file${preserved === 1 ? '' : 's'} preserved (modified since install):`));
-    for (const d of preservedDiffs.slice(0, 10)) {
-      const stat = pc.green(`+${d.insertions}`) + ' ' + pc.red(`-${d.deletions}`);
-      console.log(`     ${dim(d.rel)}  ${stat}`);
-      if (opts.showDiff && d.patch) {
-        for (const line of d.patch.split('\n').slice(4)) {  // skip file headers
-          if (line.startsWith('+')) process.stdout.write(pc.green(line) + '\n');
-          else if (line.startsWith('-')) process.stdout.write(pc.red(line) + '\n');
-          else if (line.startsWith('@')) process.stdout.write(pc.cyan(line) + '\n');
-          else process.stdout.write(dim(line) + '\n');
-        }
-      }
-    }
-    if (preservedDiffs.length > 10) console.log(dim(`     … and ${preservedDiffs.length - 10} more`));
-    console.log(dim('  To overwrite: re-run with --force-overwrite  |  To see full diffs: --show-diff'));
-    console.log('');
-  }
-
-  // Count installed agents + commands dynamically (#190).
-  // Prefer the 'claude' IDE paths for counting when claude is in the selected list —
-  // that's what actually matters for Claude Code slash command availability.
-  // Fall back to the first selected IDE only when claude isn't included.
-  const primaryIde = opts.ides.includes('claude') ? 'claude' : opts.ides[0];
-  const idePaths = getPathsForIde(primaryIde, opts.target);
-  const agentsDir = idePaths.agentsDir;
-  const commandsDir = idePaths.commandsDir;
-  let agentCount = 0, commandCount = 0;
-  let agentsFromGlobal = false, commandsFromGlobal = false;
-  try {
-    if (fs.existsSync(agentsDir)) {
-      agentCount = fs.readdirSync(agentsDir).filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && (f.endsWith('.md') || f.endsWith('.mdc'))).length;
-    }
-    if (fs.existsSync(commandsDir)) {
-      // claude IDE names commands rcode-*.md; other IDEs use plain {name}.md inside a rcode/ subdir
-      const commandFilter = primaryIde === 'claude'
-        ? f => f.startsWith('rcode-') && (f.endsWith('.md') || f.endsWith('.mdc'))
-        : f => f.endsWith('.md') || f.endsWith('.mdc');
-      commandCount = fs.readdirSync(commandsDir).filter(commandFilter).length;
-    }
-    // Issue #669 — when global precedence applied (project copies were
-    // intentionally removed), count from ~/.claude/ instead so the summary
-    // doesn't lie about the install state.
-    // Issue #689: skills count gets the same fallback. After dedup (#679)
-    // the project skills folder may have only sidebar stubs while ~/.claude/
-    // has the real skills — health check should see those.
-    if (agentCount === 0 || commandCount === 0 || skillsInstalled < 20) {
-      const homeAgents = path.join(homedir(), '.claude/agents');
-      const homeCommands = path.join(homedir(), '.claude/commands');
-      const homeSkills = path.join(homedir(), '.claude/skills');
-      if (agentCount === 0 && fs.existsSync(homeAgents)) {
-        // #669 — count both rcode-* and rcode-* prefixes; missing rcode-
-        // branch produced "Agents: 0" alongside "Skills: 120".
-        const n = fs.readdirSync(homeAgents)
-          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
-          .length;
-        if (n > 0) { agentCount = n; agentsFromGlobal = true; }
-      }
-      if (commandCount === 0 && fs.existsSync(homeCommands)) {
-        const n = fs.readdirSync(homeCommands)
-          .filter(f => (f.startsWith('rcode-') || f.startsWith('rcode-')) && f.endsWith('.md'))
-          .length;
-        if (n > 0) { commandCount = n; commandsFromGlobal = true; }
-      }
-      if (skillsInstalled < 20 && fs.existsSync(homeSkills)) {
-        try {
-          const globalSkillCount = fs.readdirSync(homeSkills, { withFileTypes: true })
-            .filter(d => d.isDirectory() && d.name.startsWith('rcode-')).length;
-          if (globalSkillCount > skillsInstalled) skillsInstalled = globalSkillCount;
-        } catch { /* non-fatal */ }
-      }
-    }
-  } catch (err) {
-    console.error('[install] installInner: failed to count installed agents/commands:', err?.message || err);
-  }
-
-  // Duplicate-namespace detection: warn when both rcode-* and rihal-* entries exist.
-  // Having both doubles the roster size with near-identical content.
-  try {
-    const skillsDir = path.join(opts.target, '.rcode', 'skills');
-    const claudeCommandsDir = path.join(opts.target, '.claude', 'commands');
-    const dirsToCheck = [skillsDir, claudeCommandsDir];
-    let hasRcode = false, hasRihal = false;
-    for (const dir of dirsToCheck) {
-      if (!fs.existsSync(dir)) continue;
-      const entries = fs.readdirSync(dir);
-      if (entries.some(e => e.startsWith('rcode-'))) hasRcode = true;
-      if (entries.some(e => e.startsWith('rihal-'))) hasRihal = true;
-    }
-    if (hasRcode && hasRihal) {
-      process.stderr.write(pc.yellow('WARNING: rcode-* and rihal-* namespaces both detected — consider removing one to reduce roster size.') + '\n');
-    }
-  } catch { /* non-fatal */ }
-
-  // Native home-dir slash commands for CLIs that ONLY surface /commands from
-  // their own home dir (not project dirs). Opt-in via --global. See the fn def.
-  try {
-    installNativeHomeSlashCommands(opts);
-  } catch (err) {
-    process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
-  }
-
-  const version = readPackageVersion();
-  console.log('');
-  console.log(`  ${bold('Version:')}   ${pc.cyan('@hanzlaa/rcode@' + version)}`);
-  console.log(`  ${bold('IDE:')}       ${opts.ides.join(', ')}`);
-  console.log(`  ${bold('Language:')}  ${opts.language}  ${dim('(change in .rcode/config.yaml)')}`);
-  console.log(`  ${bold('Mode:')}      ${opts.mode}  ${dim('(guided=confirm at gates, yolo=autonomous)')}`);
-  console.log(`  ${bold('Planning:')}  ${opts.commitPlanning !== false ? 'committed' : 'gitignored'}  ${dim('(flip: rcode-tools gitignore refresh)')}`);
-  console.log('');
-  // Show the actual install paths so cursor/gemini/antigravity output is accurate
-  const relAgents = path.relative(opts.target, idePaths.agentsDir) || idePaths.agentsDir;
-  const relCommands = path.relative(opts.target, idePaths.commandsDir) || idePaths.commandsDir;
-  console.log(`  ${bold('Agents:')}    ${pc.green(String(agentCount))} in ${agentsFromGlobal ? '~/.claude/agents/ (global)' : relAgents + '/'}`);
-  console.log(`  ${bold('Commands:')}  ${pc.green(String(commandCount))} slash commands in ${commandsFromGlobal ? '~/.claude/commands/ (global)' : relCommands + '/'}`);
-  if (skillsInstalled > 0) console.log(`  ${bold('Skills:')}    ${pc.green(String(skillsInstalled))} phrase-activated`);
-  console.log('');
-  if (starterSeeded) {
-    console.log('  ' + ok('Starter planning scaffolded in .planning/ (ROADMAP, STATE, PROJECT)'));
-    console.log('');
-  }
-  console.log(`  ${bold('Next:')}`);
-  console.log(`    cd ${opts.target}`);
-  console.log('    claude              # start Claude Code (reload window if already open)');
-  console.log('    /rcode-progress     # where you are, what\'s next');
-  console.log('    /rcode-do           # interactive command picker');
-  console.log('    /rcode-council <q>  # multi-agent strategic answer');
-  console.log('');
-  // #665 — when the install came in via npm -g (--global --no-prompt), the
-  // interactive IDE/planning prompts were skipped. Tell the user how to
-  // configure them per-project so they aren't stranded with defaults.
-  if (opts.global || opts.noPrompt) {
-    console.log(`  ${dim('Configure interactively (one-time, per project):')}`);
-    console.log(`    ${dim('rcode install         # pick IDE + planning policy for THIS project')}`);
-    console.log(`    ${dim('rcode config          # adjust defaults later')}`);
-    console.log('');
-  }
-  console.log(dim('  Refresh anytime:'));
-  console.log(dim('    pnpm dlx @hanzlaa/rcode@latest install   # recommended (avoids npm 11.x npx issues)'));
-  console.log(dim('    npx @hanzlaa/rcode@latest install        # npm / yarn'));
-  console.log(dim(`    /rcode-update v${version}              # pin rcode to a specific version`));
-  console.log('');
-  console.log(dim('  Want the rcode CLI on your PATH? (optional — needed for rcode version / rcode update):'));
-  console.log(dim('    npm install -g @hanzlaa/rcode       # installs rcode, rcode, rcode commands'));
-  console.log(dim('    rcode version                       # verify'));
-  console.log('');
-  console.log(dim('  Customize without losing changes on update:'));
-  console.log(dim('    Create <name>.local.md siblings (e.g. .claude/agents/rcode-waleed.local.md)'));
-  console.log(dim('    *.local.md files are NEVER touched by install / --force-overwrite / uninstall.'));
-  console.log('');
-  console.log('  ' + warn('If your IDE is already open, reload the window to refresh skills/commands.'));
-  console.log(dim('    Claude Code / VS Code / Cursor:  Cmd+Shift+P → Reload Window'));
-  console.log('');
-
-  // Lightweight update check (#252) — async background, never blocks install.
-  // Suppressed in non-TTY / CI or when --no-update-check is passed.
-  if (!opts.noUpdateCheck && process.stdout.isTTY && !process.env.CI && !process.env.RCODE_NO_UPDATE_NOTIFIER) {
-    const { execFile } = require('child_process');
-    execFile('npm', ['view', '@hanzlaa/rcode', 'version', '--json'], { timeout: 4000 }, (err, stdout) => {
-      if (err) return;
-      try {
-        const latest = JSON.parse(stdout.trim());
-        if (semver.valid(latest) && semver.gt(latest, version)) {
-          console.log('');
-          console.log('  ╭──────────────────────────────────────────────────────╮');
-          console.log(`  │  ${pc.yellow('Update available:')} ${pc.dim(version)} → ${pc.green(latest)}${' '.repeat(Math.max(0, 20 - version.length - latest.length))}    │`);
-          console.log('  │  Run: npx @hanzlaa/rcode@latest install .            │');
-          console.log('  ╰──────────────────────────────────────────────────────╯');
-          console.log('');
-        }
-      } catch { /* ignore parse errors */ }
-    });
-  }
-
-  // Issue #838: verify pnpm add didn't silently fail (broken lockfile).
-  // Only fires in pnpm projects (pnpm-lock.yaml present). Non-blocking.
-  if (!opts.global) {
-    const pnpmCheck = verifyPnpmAddDevDep(opts.target);
-    if (!pnpmCheck.ok) {
-      console.log('  ' + warn(pnpmCheck.message));
-      console.log('');
-    }
-  }
-
-  // Health check — smoke test that the install actually works (#193).
-  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled });
-  return healthPass ? 0 : 1;
+  // Post-install summary + counting + health check — #1066 Phase 2 extraction.
+  // Structured report object, not closures (per plan).
+  return printInstallSummary(opts, {
+    sweptOrphans, existedBefore, brainBackgrounded, brainReport,
+    gitignoreReport, hookReport, settingsHooksReport, preferredCommandReports,
+    skipped, preserved, preservedDiffs, skillsInstalled, starterSeeded,
+  });
 }
 
 
