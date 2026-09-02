@@ -46,15 +46,24 @@ test('uninstall.js imports SUPPORTED_IDES instead of duplicating the array', () 
   );
 });
 
-test('install.js no longer hardcodes the IDE list inline (regex sweep)', () => {
-  const src = fs.readFileSync(path.resolve(__dirname, '..', 'cli', 'install.js'), 'utf8');
+test('install.js + cli/lib/install-ide.cjs together hardcode the IDE list only once (regex sweep)', () => {
+  // #1066 Phase 1 moved the SUPPORTED_IDES definition (and every function
+  // that references it) out of cli/install.js into cli/lib/install-ide.cjs
+  // — a mechanical, no-behavior-change split. The canonical array literal
+  // now lives there instead; sweep both files so this guard still catches
+  // a future duplicate hardcoded list wherever it lands.
+  const installSrc = fs.readFileSync(path.resolve(__dirname, '..', 'cli', 'install.js'), 'utf8');
+  const ideLibSrc = fs.readFileSync(path.resolve(__dirname, '..', 'cli', 'lib', 'install-ide.cjs'), 'utf8');
   // Count exact array literals that hardcode the canonical set. Should
   // appear at most ONCE (the SUPPORTED_IDES definition itself).
   const re = /['"]claude['"]\s*,\s*['"]cursor['"]\s*,\s*['"]gemini['"]\s*,\s*['"]vscode['"]\s*,\s*['"]antigravity['"]/g;
-  const matches = src.match(re) || [];
+  const matches = [
+    ...(installSrc.match(re) || []),
+    ...(ideLibSrc.match(re) || []),
+  ];
   assert.strictEqual(
     matches.length,
     1,
-    `expected the canonical 5-IDE list to appear exactly once in install.js (the SUPPORTED_IDES definition); found ${matches.length}`,
+    `expected the canonical 5-IDE list to appear exactly once across install.js + install-ide.cjs (the SUPPORTED_IDES definition); found ${matches.length}`,
   );
 });
