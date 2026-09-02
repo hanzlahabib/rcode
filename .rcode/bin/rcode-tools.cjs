@@ -3567,6 +3567,240 @@ function parseDuration(str) {
   }
 }
 
+/**
+ * cmdConfigCheckYolo — evaluate whether yolo mode is active for a given
+ * scope. Closes #739. Extracted from main()'s switch (#204 step 4) to trim
+ * the dispatcher; no behavior change.
+ * Usage: config-check-yolo [--phase <N>] [--workflow <name>]
+ * Returns { active: bool, mode, scope, expires_at, reason }
+ */
+function cmdConfigCheckYolo(args) {
+  const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+  const phaseArg    = args[args.indexOf('--phase') + 1]    || null;
+  const workflowArg = args[args.indexOf('--workflow') + 1] || null;
+  const mode        = cfg.cmdGet(PROJECT_ROOT, 'mode') || 'guided';
+  if (mode !== 'yolo') {
+    return { active: false, mode, scope: null, expires_at: null, reason: 'mode is not yolo' };
+  }
+  // Check optional yolo_scope restriction
+  const scopeRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_scope') || null;
+  if (scopeRaw) {
+    const scope = String(scopeRaw).trim();
+    // scope format: "phase:N" | "workflow:name" | "global"
+    if (scope.startsWith('phase:') && phaseArg) {
+      const allowedPhase = scope.slice('phase:'.length).trim();
+      if (String(phaseArg) !== allowedPhase) {
+        return { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to phase ${allowedPhase}, current is ${phaseArg}` };
+      }
+    } else if (scope.startsWith('workflow:') && workflowArg) {
+      const allowedWf = scope.slice('workflow:'.length).trim();
+      if (workflowArg !== allowedWf) {
+        return { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to workflow ${allowedWf}, current is ${workflowArg}` };
+      }
+    }
+  }
+  // Check optional TTL
+  const ttlRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_ttl') || null;
+  let expiresAt = null;
+  if (ttlRaw) {
+    expiresAt = ttlRaw;
+    const expiry = new Date(ttlRaw);
+    if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
+      return { active: false, mode, scope: scopeRaw, expires_at: ttlRaw, reason: `yolo_ttl expired at ${ttlRaw}` };
+    }
+  }
+  return { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+}
+
+/**
+ * cmdYolo — scoped yolo mode with TTL and milestone/phase scope. Closes
+ * #739. Extracted from main()'s switch (#204 step 4); no behavior change.
+ * Usage:
+ *   yolo scoped --ttl 2h --scope milestone   → enable for current milestone
+ *   yolo scoped --ttl 30m --scope phase       → enable for current phase
+ *   yolo off                                  → disable immediately
+ *   yolo status                               → show current yolo state
+ */
+function cmdYolo(args) {
+  const sub = args[0];
+  const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+  switch (sub) {
+    case 'scoped': {
+      const ttlArg = (args.find(a => a.startsWith('--ttl='))?.slice(6))
+        || (args.indexOf('--ttl') !== -1 ? args[args.indexOf('--ttl') + 1] : null)
+        || '1h';
+      const scope = (args.find(a => a.startsWith('--scope='))?.slice(8))
+        || (args.indexOf('--scope') !== -1 ? args[args.indexOf('--scope') + 1] : null)
+        || 'phase';
+      const ms = parseDuration(ttlArg);
+      const expires = Date.now() + ms;
+      const st = readState() || {};
+      st.yolo = {
+        enabled: true,
+        expires,
+        scope,
+        milestone: st.current_milestone || null,
+        phase: st.current_phase || null,
+      };
+      writeState(st);
+      // Also persist to config.yaml so config-check-yolo can read it.
+      cfg.cmdSet(PROJECT_ROOT, 'mode', 'yolo');
+      cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', scope === 'milestone'
+        ? `milestone:${st.current_milestone || 'unknown'}`
+        : `phase:${st.current_phase || 'unknown'}`);
+      cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', new Date(expires).toISOString());
+      console.log(`Yolo mode: enabled (${scope} scope, expires in ${ttlArg})`);
+      return { ok: true, enabled: true, scope, ttl: ttlArg, expires: new Date(expires).toISOString() };
+    }
+    case 'off': {
+      const st = readState() || {};
+      st.yolo = { enabled: false };
+      writeState(st);
+      cfg.cmdSet(PROJECT_ROOT, 'mode', 'guided');
+      cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', '');
+      cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', '');
+      console.log('Yolo mode: off');
+      return { ok: true, enabled: false };
+    }
+    case 'status': {
+      const st = readState() || {};
+      const y = st.yolo;
+      if (!y?.enabled || Date.now() > (y.expires || 0)) {
+        console.log('Yolo mode: off');
+        return { active: false };
+      }
+      const remainingMs = y.expires - Date.now();
+      const remainingMin = Math.round(remainingMs / 60000);
+      console.log(`Yolo mode: on (${y.scope} scope, ${remainingMin}m remaining)`);
+      return { active: true, scope: y.scope, expires: new Date(y.expires).toISOString(), remaining_min: remainingMin };
+    }
+    default: {
+      console.error('Usage: yolo <scoped|off|status>');
+      console.error('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>');
+      console.error('  yolo off');
+      console.error('  yolo status');
+      process.exit(1);
+    }
+  }
+}
+
+/**
+ * cmdSetModel — accepts profile names (balanced/budget/quality/inherit) or
+ * model IDs (claude-sonnet-4-6). Profile names write model_profile and
+ * clear model_override; model IDs write model_override directly (bypasses
+ * profile logic). Extracted from main()'s switch (#204 step 4); no
+ * behavior change.
+ */
+function cmdSetModel(args) {
+  const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
+  const input = (args[0] || '').trim();
+  if (!input) {
+    console.error('Usage: set-model <balanced|budget|quality|inherit|claude-MODEL-ID>');
+    process.exit(1);
+  }
+  const PROFILES = new Set(['balanced', 'budget', 'quality', 'inherit']);
+  const MODEL_ALIASES = {
+    'sonnet': 'balanced', 'haiku': 'budget', 'opus': 'quality',
+    'claude-sonnet-4-6': 'balanced', 'claude-haiku-4-5-20251001': 'budget',
+    'claude-opus-4-7': 'quality',
+  };
+  if (PROFILES.has(input)) {
+    cfg.cmdSet(PROJECT_ROOT, 'model_profile', input);
+    cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
+    return { set: 'model_profile', value: input };
+  } else if (MODEL_ALIASES[input]) {
+    cfg.cmdSet(PROJECT_ROOT, 'model_profile', MODEL_ALIASES[input]);
+    cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
+    return { set: 'model_profile', value: MODEL_ALIASES[input], alias: input };
+  } else if (input.startsWith('claude-')) {
+    cfg.cmdSet(PROJECT_ROOT, 'model_override', input);
+    return { set: 'model_override', value: input };
+  }
+  console.error(`Unknown model or profile: '${input}'. Valid profiles: balanced, budget, quality, inherit. Or pass a full model ID like claude-sonnet-4-6`);
+  process.exit(1);
+}
+
+/**
+ * cmdGetModel — report the effective model from config (override or
+ * profile). Extracted from main()'s switch (#204 step 4); no behavior
+ * change.
+ */
+function cmdGetModel() {
+  const config = readConfig();
+  if (config.model_override) {
+    return { source: 'override', model: config.model_override };
+  }
+  const profile = config.model_profile || 'balanced';
+  const MODEL_FOR_PROFILE = { balanced: 'claude-sonnet-4-6', budget: 'claude-haiku-4-5-20251001', quality: 'claude-opus-4-7 (reasoning agents) / claude-sonnet-4-6 (others)', inherit: null };
+  return { source: 'profile', profile, model: MODEL_FOR_PROFILE[profile] || profile };
+}
+
+/**
+ * cmdValidateArtifacts — #747 schema checks for state.json and config.yaml.
+ * Usage: rcode-tools validate state|config|all
+ * Prints its own success/failure output and calls process.exit(1) on
+ * failure, matching main()'s pre-extraction inline behavior exactly — the
+ * 'validate' case calls this then `return;`s from main() itself rather
+ * than falling through to the normal JSON-result tail. Extracted from
+ * main()'s switch (#204 step 4); no behavior change.
+ */
+function cmdValidateArtifacts(args) {
+  // #747 — schema checks for state.json and config.yaml.
+  const target = args[0] || 'all';
+  if (!['state', 'config', 'all'].includes(target)) {
+    console.error(`Unknown validate target: '${target}'. Valid: state, config, all`);
+    process.exit(1);
+  }
+  const validateErrors = [];
+
+  if (target === 'state' || target === 'all') {
+    // Read state.json directly — readState() is scoped inside cmdState()
+    // and isn't reachable here (#940). Validate against the REAL schema:
+    // phases[] + milestones[], current_phase nullable on fresh installs.
+    const statePathV = path.join(RCODE_DIR, 'state.json');
+    if (!fs.existsSync(statePathV)) {
+      validateErrors.push('state: state.json not found — run rcode install');
+    } else {
+      let state = null;
+      try {
+        state = JSON.parse(fs.readFileSync(statePathV, 'utf8'));
+      } catch (e) {
+        validateErrors.push(`state: invalid JSON — ${e.message}`);
+      }
+      if (state) {
+        // current_phase is legitimately null on a fresh / stub project,
+        // so do NOT require it. milestones is an array (no current_milestone field).
+        // schema_version 1 is valid on disk — migrateState() upgrades it to 2
+        // transparently on read, so accept either and only flag the unknown.
+        if (state.schema_version != null && ![1, 2].includes(state.schema_version)) {
+          validateErrors.push(`state: unknown schema_version ${state.schema_version} (expected 1 or 2)`);
+        }
+        if (state.phases != null && !Array.isArray(state.phases) && typeof state.phases !== 'object') {
+          validateErrors.push('state: phases must be an array or object');
+        }
+        if (state.milestones != null && !Array.isArray(state.milestones)) {
+          validateErrors.push('state: milestones must be an array');
+        }
+      }
+    }
+  }
+
+  if (target === 'config' || target === 'all') {
+    // config.yaml holds project identity + workflow prefs only — it does
+    // NOT track current_phase (that lives in state.json). Only require
+    // the fields config actually owns (#940).
+    const config = readConfig();
+    if (!config.project_name) validateErrors.push('config: missing project_name');
+  }
+
+  if (validateErrors.length) {
+    validateErrors.forEach(e => console.error('❌ ' + e));
+    process.exit(1);
+  } else {
+    console.log('✅ All artifacts valid');
+  }
+}
+
 async function main() {
   const [, , subcommand, ...args] = process.argv;
   // #473 guard runs before any subcommand. Skipped for read-only inspection
@@ -3715,50 +3949,12 @@ async function main() {
       case 'resolve-model':
         result = cmdResolveModel(args[0]);
         break;
-      case 'set-model': {
-        // Accepts profile names (balanced/budget/quality/inherit) or model IDs (claude-sonnet-4-6).
-        // Profile names write model_profile and clear model_override.
-        // Model IDs write model_override directly (bypasses profile logic).
-        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
-        const input = (args[0] || '').trim();
-        if (!input) {
-          console.error('Usage: set-model <balanced|budget|quality|inherit|claude-MODEL-ID>');
-          process.exit(1);
-        }
-        const PROFILES = new Set(['balanced', 'budget', 'quality', 'inherit']);
-        const MODEL_ALIASES = {
-          'sonnet': 'balanced', 'haiku': 'budget', 'opus': 'quality',
-          'claude-sonnet-4-6': 'balanced', 'claude-haiku-4-5-20251001': 'budget',
-          'claude-opus-4-7': 'quality',
-        };
-        if (PROFILES.has(input)) {
-          cfg.cmdSet(PROJECT_ROOT, 'model_profile', input);
-          cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
-          result = { set: 'model_profile', value: input };
-        } else if (MODEL_ALIASES[input]) {
-          cfg.cmdSet(PROJECT_ROOT, 'model_profile', MODEL_ALIASES[input]);
-          cfg.cmdSet(PROJECT_ROOT, 'model_override', '');
-          result = { set: 'model_profile', value: MODEL_ALIASES[input], alias: input };
-        } else if (input.startsWith('claude-')) {
-          cfg.cmdSet(PROJECT_ROOT, 'model_override', input);
-          result = { set: 'model_override', value: input };
-        } else {
-          console.error(`Unknown model or profile: '${input}'. Valid profiles: balanced, budget, quality, inherit. Or pass a full model ID like claude-sonnet-4-6`);
-          process.exit(1);
-        }
+      case 'set-model':
+        result = cmdSetModel(args);
         break;
-      }
-      case 'get-model': {
-        const config = readConfig();
-        if (config.model_override) {
-          result = { source: 'override', model: config.model_override };
-        } else {
-          const profile = config.model_profile || 'balanced';
-          const MODEL_FOR_PROFILE = { balanced: 'claude-sonnet-4-6', budget: 'claude-haiku-4-5-20251001', quality: 'claude-opus-4-7 (reasoning agents) / claude-sonnet-4-6 (others)', inherit: null };
-          result = { source: 'profile', profile, model: MODEL_FOR_PROFILE[profile] || profile };
-        }
+      case 'get-model':
+        result = cmdGetModel();
         break;
-      }
       case 'config':
         if (args[0] === 'set') {
           result = cmdConfigSet(args.slice(1));
@@ -3783,64 +3979,9 @@ async function main() {
         console.log(JSON.stringify(result, null, 2));
         return;
       }
-      case 'validate': {
-        // #747 — schema checks for state.json and config.yaml.
-        // Usage: rcode-tools validate state|config|all
-        const target = args[0] || 'all';
-        if (!['state', 'config', 'all'].includes(target)) {
-          console.error(`Unknown validate target: '${target}'. Valid: state, config, all`);
-          process.exit(1);
-        }
-        const validateErrors = [];
-
-        if (target === 'state' || target === 'all') {
-          // Read state.json directly — readState() is scoped inside cmdState()
-          // and isn't reachable here (#940). Validate against the REAL schema:
-          // phases[] + milestones[], current_phase nullable on fresh installs.
-          const statePathV = path.join(RCODE_DIR, 'state.json');
-          if (!fs.existsSync(statePathV)) {
-            validateErrors.push('state: state.json not found — run rcode install');
-          } else {
-            let state = null;
-            try {
-              state = JSON.parse(fs.readFileSync(statePathV, 'utf8'));
-            } catch (e) {
-              validateErrors.push(`state: invalid JSON — ${e.message}`);
-            }
-            if (state) {
-              // current_phase is legitimately null on a fresh / stub project,
-              // so do NOT require it. milestones is an array (no current_milestone field).
-              // schema_version 1 is valid on disk — migrateState() upgrades it to 2
-              // transparently on read, so accept either and only flag the unknown.
-              if (state.schema_version != null && ![1, 2].includes(state.schema_version)) {
-                validateErrors.push(`state: unknown schema_version ${state.schema_version} (expected 1 or 2)`);
-              }
-              if (state.phases != null && !Array.isArray(state.phases) && typeof state.phases !== 'object') {
-                validateErrors.push('state: phases must be an array or object');
-              }
-              if (state.milestones != null && !Array.isArray(state.milestones)) {
-                validateErrors.push('state: milestones must be an array');
-              }
-            }
-          }
-        }
-
-        if (target === 'config' || target === 'all') {
-          // config.yaml holds project identity + workflow prefs only — it does
-          // NOT track current_phase (that lives in state.json). Only require
-          // the fields config actually owns (#940).
-          const config = readConfig();
-          if (!config.project_name) validateErrors.push('config: missing project_name');
-        }
-
-        if (validateErrors.length) {
-          validateErrors.forEach(e => console.error('❌ ' + e));
-          process.exit(1);
-        } else {
-          console.log('✅ All artifacts valid');
-        }
+      case 'validate':
+        cmdValidateArtifacts(args);
         return;
-      }
       case 'roadmap': {
         const roadmap = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
         const r = roadmap.dispatch(PROJECT_ROOT, args);
@@ -3874,124 +4015,12 @@ async function main() {
         }
         break;
       }
-      case 'config-check-yolo': {
-        // Closes #739. Evaluate whether yolo mode is active for a given scope.
-        // Usage: config-check-yolo [--phase <N>] [--workflow <name>]
-        // Returns JSON: { active: bool, mode, scope, expires_at, reason }
-        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
-        const phaseArg    = args[args.indexOf('--phase') + 1]    || null;
-        const workflowArg = args[args.indexOf('--workflow') + 1] || null;
-        const mode        = cfg.cmdGet(PROJECT_ROOT, 'mode') || 'guided';
-        if (mode !== 'yolo') {
-          result = { active: false, mode, scope: null, expires_at: null, reason: 'mode is not yolo' };
-          break;
-        }
-        // Check optional yolo_scope restriction
-        const scopeRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_scope') || null;
-        if (scopeRaw) {
-          const scope = String(scopeRaw).trim();
-          // scope format: "phase:N" | "workflow:name" | "global"
-          if (scope.startsWith('phase:') && phaseArg) {
-            const allowedPhase = scope.slice('phase:'.length).trim();
-            if (String(phaseArg) !== allowedPhase) {
-              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to phase ${allowedPhase}, current is ${phaseArg}` };
-              break;
-            }
-          } else if (scope.startsWith('workflow:') && workflowArg) {
-            const allowedWf = scope.slice('workflow:'.length).trim();
-            if (workflowArg !== allowedWf) {
-              result = { active: false, mode, scope, expires_at: null, reason: `yolo_scope restricts to workflow ${allowedWf}, current is ${workflowArg}` };
-              break;
-            }
-          }
-        }
-        // Check optional TTL
-        const ttlRaw = cfg.cmdGet(PROJECT_ROOT, 'yolo_ttl') || null;
-        let expiresAt = null;
-        if (ttlRaw) {
-          expiresAt = ttlRaw;
-          const expiry = new Date(ttlRaw);
-          if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
-            result = { active: false, mode, scope: scopeRaw, expires_at: ttlRaw, reason: `yolo_ttl expired at ${ttlRaw}` };
-            break;
-          }
-        }
-        result = { active: true, mode, scope: scopeRaw || 'global', expires_at: expiresAt, reason: 'yolo active' };
+      case 'config-check-yolo':
+        result = cmdConfigCheckYolo(args);
         break;
-      }
-      case 'yolo': {
-        // Closes #739 — scoped yolo mode with TTL and milestone/phase scope.
-        // Usage:
-        //   yolo scoped --ttl 2h --scope milestone   → enable for current milestone
-        //   yolo scoped --ttl 30m --scope phase       → enable for current phase
-        //   yolo off                                  → disable immediately
-        //   yolo status                               → show current yolo state
-        const sub = args[0];
-        const cfg = require(path.join(__dirname, 'lib', 'config.cjs'));
-        switch (sub) {
-          case 'scoped': {
-            const ttlArg = (args.find(a => a.startsWith('--ttl='))?.slice(6))
-              || (args.indexOf('--ttl') !== -1 ? args[args.indexOf('--ttl') + 1] : null)
-              || '1h';
-            const scope = (args.find(a => a.startsWith('--scope='))?.slice(8))
-              || (args.indexOf('--scope') !== -1 ? args[args.indexOf('--scope') + 1] : null)
-              || 'phase';
-            const ms = parseDuration(ttlArg);
-            const expires = Date.now() + ms;
-            const st = readState() || {};
-            st.yolo = {
-              enabled: true,
-              expires,
-              scope,
-              milestone: st.current_milestone || null,
-              phase: st.current_phase || null,
-            };
-            writeState(st);
-            // Also persist to config.yaml so config-check-yolo can read it.
-            cfg.cmdSet(PROJECT_ROOT, 'mode', 'yolo');
-            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', scope === 'milestone'
-              ? `milestone:${st.current_milestone || 'unknown'}`
-              : `phase:${st.current_phase || 'unknown'}`);
-            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', new Date(expires).toISOString());
-            result = { ok: true, enabled: true, scope, ttl: ttlArg, expires: new Date(expires).toISOString() };
-            console.log(`Yolo mode: enabled (${scope} scope, expires in ${ttlArg})`);
-            break;
-          }
-          case 'off': {
-            const st = readState() || {};
-            st.yolo = { enabled: false };
-            writeState(st);
-            cfg.cmdSet(PROJECT_ROOT, 'mode', 'guided');
-            cfg.cmdSet(PROJECT_ROOT, 'yolo_scope', '');
-            cfg.cmdSet(PROJECT_ROOT, 'yolo_ttl', '');
-            result = { ok: true, enabled: false };
-            console.log('Yolo mode: off');
-            break;
-          }
-          case 'status': {
-            const st = readState() || {};
-            const y = st.yolo;
-            if (!y?.enabled || Date.now() > (y.expires || 0)) {
-              result = { active: false };
-              console.log('Yolo mode: off');
-            } else {
-              const remainingMs = y.expires - Date.now();
-              const remainingMin = Math.round(remainingMs / 60000);
-              result = { active: true, scope: y.scope, expires: new Date(y.expires).toISOString(), remaining_min: remainingMin };
-              console.log(`Yolo mode: on (${y.scope} scope, ${remainingMin}m remaining)`);
-            }
-            break;
-          }
-          default: {
-            console.error('Usage: yolo <scoped|off|status>');
-            console.error('  yolo scoped --ttl <2h|30m|1d> --scope <milestone|phase>');
-            console.error('  yolo off');
-            console.error('  yolo status');
-            process.exit(1);
-          }
-        }
+      case 'yolo':
+        result = cmdYolo(args);
         break;
-      }
       case 'verify': {
         const verify = require(path.join(__dirname, 'lib', 'verify.cjs'));
         result = verify.dispatch(PROJECT_ROOT, args);
