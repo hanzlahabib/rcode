@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-09-02T09:17:02.275Z",
+  "updated": "2026-09-02T20:33:31.191Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -38,7 +38,7 @@
       "id": "21",
       "number": "21",
       "name": "Dashboard Data Pipeline",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -803,7 +803,7 @@
       "id": "34",
       "number": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -864,7 +864,7 @@
       "id": "35",
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -926,7 +926,7 @@
       "id": "36",
       "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -988,7 +988,7 @@
       "id": "37",
       "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1114,7 +1114,7 @@
       "id": "39",
       "number": "39",
       "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
