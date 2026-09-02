@@ -901,6 +901,27 @@ function keywordMatches(lower, kw) {
 }
 
 /**
+ * Mask path-like and filename-like tokens before keyword matching (#1067).
+ *
+ * keywordMatches()'s boundary check treats any non-letter/non-number as a
+ * valid word edge, so `/`, `-`, `.` all count. That makes a short, unique
+ * keyword (e.g. "karpathy") match inside a pasted file path or filename
+ * that merely contains it as a compound-token fragment — e.g.
+ * ".rcode/references/karpathy-guidelines.md" — even though the surrounding
+ * text expresses no such intent. Real intent is expressed in prose typed
+ * by the user, never inside a pasted path or a `name.ext` token, so blank
+ * those out (replace with a space, preserving offsets/other text) before
+ * scanning for keywords. This fixes the class of bug, not one keyword.
+ */
+function maskPathLikeTokens(text) {
+  return text
+    // Any whitespace-delimited token containing a "/" (paths, URLs).
+    .replace(/\S*\/\S+/g, ' ')
+    // Bare "name.ext"-shaped tokens (filenames, module/version strings).
+    .replace(/\b[\w-]+\.[A-Za-z]{1,5}\b/g, ' ');
+}
+
+/**
  * prompt-router: Nudge toward rcode commands for memory consistency (#892).
  * Reads stdin synchronously (NOT async — rejects bad JSON). Keyword-matches INTENT_TABLE,
  * emits additionalContext advisory. Gated by prompt_nudge config. Always exits 0.
@@ -978,7 +999,9 @@ function promptRouter() {
     }
 
     // ── Keyword match (first-match-wins, case-insensitive, word-boundary) ─
-    const lower = prompt.toLowerCase();
+    // Path/filename tokens are masked first (#1067) so a keyword that's
+    // merely a substring of a pasted path/filename can't false-positive.
+    const lower = maskPathLikeTokens(prompt.toLowerCase());
     let matched = null;
     for (const entry of INTENT_TABLE) {
       for (const kw of entry.keywords) {

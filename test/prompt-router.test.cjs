@@ -164,6 +164,44 @@ test('"getting an error when I deploy" must nudge to /rcode-debug (M3: multi-wor
   assert.ok(/rcode-debug/.test(out.hookSpecificOutput.additionalContext));
 });
 
+// ─── 3c. Pasted paths/filenames must not false-positive on their keyword
+//         fragments (#1067) ─────────────────────────────────────────────────
+
+test('pasted filename containing "karpathy" as a fragment must not nudge', () => {
+  // Real failure: pasting a transcript that mentions
+  // ".rcode/references/karpathy-guidelines.md" false-matched the bare
+  // "karpathy" keyword even though the prompt has nothing to do with a
+  // karpathy-style audit.
+  const result = runRouter({
+    prompt: 'find rcode issues why we facing this: Read .rcode/references/karpathy-guidelines.md (12 lines)',
+  });
+
+  assert.strictEqual(result.status, 0);
+  assert.strictEqual(result.stdout, '', 'filename fragment must not trigger karpathy-audit nudge');
+});
+
+test('pasted URL/path containing a keyword fragment must not nudge', () => {
+  const result = runRouter({
+    prompt: 'look at https://github.com/rihal-om/siraaj2/pull/922 and summarize it',
+  });
+
+  assert.strictEqual(result.status, 0);
+  assert.strictEqual(result.stdout, '', 'URL path segments must not trigger any nudge');
+});
+
+test('genuine karpathy-flavored prompt still routes correctly alongside a pasted path', () => {
+  // Masking must only blank the path token, not swallow the rest of the prompt.
+  const result = runRouter({
+    prompt: 'check .rcode/references/karpathy-guidelines.md but also this diff is too complex, karpathy violations everywhere',
+    session_id: uniqueSession(),
+  });
+
+  assert.strictEqual(result.status, 0);
+  assert.ok(result.stdout.length > 0, 'real karpathy-audit phrasing elsewhere in the prompt must still nudge');
+  const out = JSON.parse(result.stdout);
+  assert.ok(/\/rcode-karpathy-audit\b/.test(out.hookSpecificOutput.additionalContext));
+});
+
 // ─── 4. Leading /rcode- is silent (slash router handles it) ──────────────────
 
 test('prompt starting with /rcode- is silent', () => {
