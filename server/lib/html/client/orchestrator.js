@@ -123,6 +123,7 @@ export function fetchRunners() {
  */
 export function stopSession(storyId) {
   if (!isOrchAvailable()) return Promise.resolve();
+  if (isViewOnly()) { showToast('View-only mode — stop is disabled'); return Promise.resolve(); }
   const tok = orchToken();
   return fetch(orchHttp() + '/api/stop', {
     method: 'POST',
@@ -203,6 +204,7 @@ export function isOrchOnline() {
  */
 export function submitRejection(storyId, reason, phase) {
   if (!isOrchAvailable()) return Promise.resolve({ error: 'orchestrator unavailable' });
+  if (isViewOnly()) { showToast('View-only mode — rejections are disabled'); return Promise.resolve({ error: 'view-only mode' }); }
   const tok = orchToken();
   return fetch(orchHttp() + '/api/reject', {
     method: 'POST',
@@ -228,6 +230,7 @@ export function fetchRejections() {
  */
 export function setTaskStatus(storyId, status) {
   if (!isOrchAvailable()) return Promise.resolve({});
+  if (isViewOnly()) { showToast('View-only mode — status changes are disabled'); return Promise.resolve({}); }
   const tok = orchToken();
   return fetch(orchHttp() + '/api/task-status', {
     method: 'POST',

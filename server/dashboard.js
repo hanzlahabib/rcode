@@ -103,6 +103,13 @@ function sameOrigin(req) {
 }
 
 function handleRequest(req, res) {
+  const method = req.method || 'GET';
+  if (method !== 'GET' && method !== 'HEAD') {
+    res.writeHead(405, { 'Content-Type': 'text/plain', 'Allow': 'GET, HEAD' });
+    res.end('Method not allowed');
+    return;
+  }
+
   const url = req.url || '/';
 
   if (url === '/health') {
@@ -219,15 +226,28 @@ server.on('error', err => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
+  // #967 — view-only mode must stop the write-capable orchestrator from ever
+  // starting, not just refuse its POST routes once it's up: a live orchestrator
+  // process is itself the thing that can spawn --dangerously-skip-permissions
+  // agents. Hiding the UI buttons or 403'ing /api/run after the fact still
+  // leaves the process reachable to anything that can read the token.
+  const viewOnly = isViewOnly(PROJECT_ROOT);
   console.log(`\n🕌 Majlis (مجلس) — rcode Dashboard`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`   👉 OPEN THIS:  http://localhost:${PORT}`);
-  console.log(`   Mode:          live (read + orchestration)`);
+  if (viewOnly) {
+    console.log(`   Mode:          view-only (read only) — orchestrator NOT started`);
+  } else {
+    console.log(`   Mode:          live (read + orchestration)`);
+  }
   console.log(`   Scanning:      ${RCODE_DIR}`);
   console.log(`   Refresh:       30s soft poll`);
-  console.log(`   Note:          the orchestrator (internal API, not for the browser) starts scanning near port ${PORT + 1}`);
+  if (!viewOnly) {
+    console.log(`   Note:          the orchestrator (internal API, not for the browser) starts scanning near port ${PORT + 1}`);
+  }
   console.log(`   Stop:          kill $(ss -ltnp 'sport = :${PORT}' | awk 'NR>1{match($6,/pid=([0-9]+)/,m); print m[1]}')`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  if (viewOnly) return;
   // #1037 — spawn the orchestrator only now that PORT has SETTLED (any
   // EADDRINUSE retries above have already run their course by the time this
   // 'listening' callback fires). Spawning it earlier would derive its port
