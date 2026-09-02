@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-09-02T09:17:02.275Z",
+  "updated": "2026-09-02T23:55:08.245Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -38,7 +38,7 @@
       "id": "21",
       "number": "21",
       "name": "Dashboard Data Pipeline",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -803,7 +803,7 @@
       "id": "34",
       "number": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
-      "status": "planned",
+      "status": "complete",
       "started": null,
       "completed": null,
       "sprints": [
@@ -811,7 +811,7 @@
           "id": "34.1",
           "number": 1,
           "goal": "Build the foundation for the Phase 34 status summary bar and URL-persisted filters:",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "34.1.1",
@@ -829,13 +829,15 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md"
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-1-SPRINT.md",
+          "completed_at": "2026-09-02T23:53:28.284Z",
+          "velocity_actual": 0
         },
         {
           "id": "34.2",
           "number": 2,
           "goal": "Make the Phase 34 summary bar and filters interactive. Build a `FilterChips`",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "34.2.1",
@@ -853,18 +855,21 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md"
+          "file": ".planning/phases/34-status-summary-bar-with-multi-attribute-filtering/34-2-SPRINT.md",
+          "completed_at": "2026-09-02T23:53:30.533Z",
+          "velocity_actual": 0
         }
       ],
       "goal": "Give the dashboard an Archon-style status summary bar — aggregate count",
       "plan_count": 2,
-      "status_updated": "2026-05-16T12:26:35.141Z"
+      "status_updated": "2026-09-02T23:53:32.806Z",
+      "completed_at": "2026-09-02"
     },
     {
       "id": "35",
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -926,7 +931,7 @@
       "id": "36",
       "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -988,7 +993,7 @@
       "id": "37",
       "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1114,7 +1119,7 @@
       "id": "39",
       "number": "39",
       "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1435,12 +1440,22 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "47.1",
+  "current_sprint": null,
   "velocity_history": [
     {
       "sprint": "04.1",
       "points": 15,
       "completed_at": "2026-04-17T05:35:16.056Z"
+    },
+    {
+      "sprint": "34.1",
+      "points": 0,
+      "completed_at": "2026-09-02T23:53:28.284Z"
+    },
+    {
+      "sprint": "34.2",
+      "points": 0,
+      "completed_at": "2026-09-02T23:53:30.533Z"
     }
   ],
   "sprints": [
