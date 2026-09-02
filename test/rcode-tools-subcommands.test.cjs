@@ -327,6 +327,112 @@ test('state read leaves valid canonical statuses untouched', (t) => {
   assert.strictEqual(state.phases[0].status, 'planned');
 });
 
+// ─── entry.plans vs entry.sprints[] schema unification (#1069) ────────────────
+
+test('state read unifies a legacy entry.plans count into entry.sprints[] and backfills stubs', (t) => {
+  const cwd = setup(t, {
+    state: {
+      // Realistic old-style .rcode/state.json shape: 'planned-phase' ran and
+      // stamped a plain plans count, but 'sprint add' never ran for this
+      // phase — sprints[] is absent entirely.
+      phases: [
+        { number: '5', name: 'Billing', status: 'planned', plans: 3 },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const state = json(cwd, ['state', 'read']);
+  const phase = state.phases.find(p => String(p.number) === '5');
+  assert.ok(phase, 'phase 5 missing after migration');
+  assert.strictEqual(phase.plans, undefined, 'legacy plans count must be dropped once unified');
+  assert.strictEqual(phase.sprints.length, 3, 'sprints[] must be backfilled to match the legacy plans count');
+  assert.ok(phase.sprints.every(s => s.status === 'planned'), 'backfilled sprints should default to planned status');
+  assert.ok(phase.sprints.every(s => s.migrated_from_plans_count === true), 'backfilled sprints must be flagged as synthesized');
+});
+
+test('state read preserves real sprints and only backfills the gap when entry.plans exceeds entry.sprints.length', (t) => {
+  const cwd = setup(t, {
+    state: {
+      // A phase that has one real sprint (with a goal and stories already
+      // recorded via 'sprint add') but whose legacy plans count claims 3.
+      phases: [
+        {
+          number: '5',
+          name: 'Billing',
+          status: 'executing',
+          plans: 3,
+          sprints: [
+            { id: '5.1', number: 1, goal: 'Stripe integration', status: 'completed', stories: [{ id: 'st-1' }] },
+          ],
+        },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const state = json(cwd, ['state', 'read']);
+  const phase = state.phases.find(p => String(p.number) === '5');
+  assert.strictEqual(phase.plans, undefined, 'legacy plans count must be dropped once unified');
+  assert.strictEqual(phase.sprints.length, 3, 'sprints[] must grow to match the higher legacy plans count');
+  assert.strictEqual(phase.sprints[0].goal, 'Stripe integration', 'the real, already-populated sprint must not be overwritten');
+  assert.strictEqual(phase.sprints[0].migrated_from_plans_count, undefined, 'a real sprint must not be flagged as synthesized');
+  assert.strictEqual(phase.sprints[1].migrated_from_plans_count, true);
+  assert.strictEqual(phase.sprints[2].migrated_from_plans_count, true);
+});
+
+test('state read drops entry.plans without touching entry.sprints[] when sprints already cover the count', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [
+        {
+          number: '5',
+          name: 'Billing',
+          status: 'complete',
+          plans: 1,
+          sprints: [
+            { id: '5.1', number: 1, goal: 'Stripe integration', status: 'completed', stories: [] },
+            { id: '5.2', number: 2, goal: 'Invoicing', status: 'completed', stories: [] },
+          ],
+        },
+      ],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  const state = json(cwd, ['state', 'read']);
+  const phase = state.phases.find(p => String(p.number) === '5');
+  assert.strictEqual(phase.plans, undefined);
+  assert.strictEqual(phase.sprints.length, 2, 'sprints[] must not shrink to match a lower legacy plans count');
+});
+
+test('state read unification persists to disk and a second read is a no-op', (t) => {
+  const cwd = setup(t, {
+    state: {
+      phases: [{ number: '5', name: 'Billing', status: 'planned', plans: 2 }],
+      decisions: [],
+      blockers: [],
+      council_sessions: [],
+      executions: [],
+    },
+  });
+  json(cwd, ['state', 'read']);
+  const onDisk = JSON.parse(fs.readFileSync(path.join(cwd, '.rcode', 'state.json'), 'utf8'));
+  assert.strictEqual(onDisk.phases[0].plans, undefined, 'legacy plans field was not persisted away');
+  assert.strictEqual(onDisk.phases[0].sprints.length, 2);
+
+  // Second load must be a no-op — nothing left to unify, no further rewrite.
+  const again = json(cwd, ['state', 'read']);
+  assert.strictEqual(again.phases[0].sprints.length, 2);
+  assert.strictEqual(again.phases[0].plans, undefined);
+});
+
 // ─── complete-phase stale-executing gate (#955) ───────────────────────────────
 
 test('complete-phase warns and reports stale executing phases with a lower number', (t) => {

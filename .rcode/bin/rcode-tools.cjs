@@ -1055,7 +1055,14 @@ function readState() {
     const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
     const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
     const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
-    if (hasLegacyStatus) {
+    // entry.plans (legacy scalar count) is unified into entry.sprints[] by
+    // migrateState() above and dropped from the migrated shape (#1069).
+    // Persist that unification back to disk for the same reason as
+    // hasLegacyStatus: readers that bypass migrateState() and parse
+    // state.json directly (e.g. state-reader.cjs) must see the canonical
+    // shape too, not just in-memory callers of readState().
+    const hasLegacyPlans = rawPhases.some((p) => typeof p?.plans === 'number');
+    if (hasLegacyStatus || hasLegacyPlans) {
       writeState(migrated);
     }
     return migrated;
@@ -1127,6 +1134,39 @@ function migrateState(raw) {
       }
       // Resolve id: prefer p.id, synthesize from number
       const id = p.id ?? (number !== null ? String(number) : undefined);
+
+      // --- unify entry.plans (legacy scalar count) into entry.sprints[] (#1069) ---
+      // entry.plans was a plain count set by 'planned-phase'/'begin-phase';
+      // entry.sprints[] is the array set by 'sprint add'. The two were never
+      // reconciled (see the "Known schema divergence" comments at those
+      // subcommands) — a phase could report `plans: 3` while `sprints` held
+      // 0, 1, or 3 differently-shaped entries. entry.sprints[] is now the
+      // single source of truth: backfill stub sprint entries for any count
+      // entry.plans claims that entry.sprints[] doesn't already have, then
+      // drop entry.plans entirely so nothing reads the stale scalar again.
+      const sprints = Array.isArray(p.sprints) ? p.sprints.slice() : [];
+      if (typeof p.plans === 'number' && p.plans > sprints.length) {
+        const phaseNum = number ?? id ?? p.plans;
+        for (let i = sprints.length; i < p.plans; i++) {
+          const sprintNum = i + 1;
+          sprints.push({
+            id: `${phaseNum}.${sprintNum}`,
+            number: sprintNum,
+            goal: null,
+            status: 'planned',
+            velocity_target: null,
+            velocity_actual: null,
+            started_at: null,
+            completed_at: null,
+            stories: [],
+            // Marks this entry as synthesized from the legacy plans count
+            // rather than a real 'sprint add' call — no goal/stories exist
+            // for it yet.
+            migrated_from_plans_count: true,
+          });
+        }
+      }
+
       return {
         number: number ?? p.id ?? null,
         id: id ?? null,
@@ -1134,11 +1174,13 @@ function migrateState(raw) {
         status: normalizePhaseStatus(p.status ?? 'planned'),
         started: p.started ?? null,
         completed: p.completed ?? null,
-        sprints: Array.isArray(p.sprints) ? p.sprints : [],
-        // Preserve any extra fields that callers may rely on
+        sprints,
+        // Preserve any extra fields that callers may rely on — except
+        // `plans`, which is unified into sprints[] above and intentionally
+        // dropped so entry.sprints.length is the only count going forward.
         ...Object.fromEntries(
           Object.entries(p).filter(([k]) =>
-            !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
+            !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints', 'plans'].includes(k)
           )
         ),
       };
@@ -1610,9 +1652,12 @@ function cmdState(subArgs) {
 
   // --- sprint add --phase NN --goal "Sprint goal" ---
   // NOTE: this populates entry.sprints[] (an array). A separate code path,
-  // 'planned-phase' below (~line 3152), populates entry.plans (a plain count).
-  // These two fields are never reconciled with each other — see AUDIT-redundant-work.md
-  // finding 1 cross-check. Do not assume one implies the other is populated.
+  // 'planned-phase' below, sets entry.plans (a plain count) on write. The
+  // two are no longer read as independent sources of truth: migrateState()
+  // (above, ~line 1100) unifies entry.plans into entry.sprints[] and drops
+  // entry.plans on every read (#1069) — so entry.sprints.length is always
+  // the count that matters downstream, even though this write path and
+  // 'planned-phase' still populate their own field each on its own turn.
   if (sub === 'sprint' && subArgs[1] === 'add') {
     const flags = parseFlags(2);
     const state = readState() || defaultState();
@@ -3243,9 +3288,12 @@ function cmdState(subArgs) {
   // Execution-lifecycle phase state
   // =====================================================================
 
-  // NOTE: entry.plans (a count) is disjoint from entry.sprints[] (an array,
-  // set by 'sprint add' above) — see the comment there. Known schema divergence,
-  // not yet unified; do not read one as evidence the other is in sync.
+  // NOTE: entry.plans (a count) is written here independently of
+  // entry.sprints[] (an array, set by 'sprint add' above) — see the comment
+  // there. migrateState() unifies the two on every read (#1069): it folds
+  // entry.plans into entry.sprints[] and drops the scalar, so entry.plans
+  // as set below is a transient value that never survives a read/write
+  // round-trip through readState().
   if (sub === 'planned-phase') {
     const flags = parseFlags(1);
     if (!flags.phase) throw new Error('planned-phase requires --phase <N>');
