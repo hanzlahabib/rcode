@@ -4954,6 +4954,8 @@ Before handling planning, exploration, auditing, refactoring, or multi-step buil
 
 **How to check:** read \`.rcode/workflows/do.md\` (installed by rcode) for the intent → command routing table — it is the single source of truth. Common cases: planning a phase → \`/rcode-plan\`, adding a phase → \`/rcode-add-phase\`, exploring/brainstorming → \`/rcode-brainstorm\`, auditing → \`/rcode-audit\`, executing a sprint → \`/rcode-execute\`, mapping the codebase → \`/rcode-map-codebase\`. Always consult \`do.md\` — never infer from memory alone, as the table changes with the release.
 
+**Ambiguous match?** Run \`/rcode-do <task description>\` instead of guessing — it's the interactive router: it asks which command to run and never acts on its own, so it's always the safe fallback when the intent doesn't map cleanly to one command above.
+
 **Why:** rcode commands record outcomes in \`.rcode/state.json\` and \`.planning/\`. Work done ad-hoc creates silent state divergence. If you must proceed ad-hoc, run \`/rcode-memory-update\` afterward to keep long-term memory consistent.
 
 ---
