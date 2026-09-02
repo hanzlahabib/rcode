@@ -1,7 +1,7 @@
 # Workflow: rcode-lens-audit
 
 <purpose>
-Run a structured 15-lens code audit against the current project. Each lens
+Run a structured 16-lens code audit against the current project. Each lens
 delegates to its mapped primary skill via Task() subagent dispatch — the skill
 provides domain expertise; this workflow handles orchestration, aggregation,
 and GH issue body generation. Never fixes anything; audit-first, fix-second.
@@ -26,6 +26,7 @@ and GH issue body generation. Never fixes anything; audit-first, fix-second.
 | 13 | Observability | `rcode-observability-auditor` | — |
 | 14 | Naming | `rcode-codebase-mapper` | `rcode-reviewer` |
 | 15 | Coverage | `rcode-nyquist-auditor` | `rcode-fatima` |
+| 16 | YAGNI / Over-engineering | `rcode-reviewer` | `rcode-lazy` |
 
 ## Step 0 — Usage check
 
@@ -33,8 +34,8 @@ If `$ARGUMENTS` is `--help` or `-h`:
 
 ```
 /rcode-lens-audit                # interactive — asks which lens
-/rcode-lens-audit all            # run all 15 lenses sequentially
-/rcode-lens-audit <N>            # run lens N (1-15) only
+/rcode-lens-audit all            # run all 16 lenses sequentially
+/rcode-lens-audit <N>            # run lens N (1-16) only
 /rcode-lens-audit <name>         # run by name, e.g. "security", "performance"
 
 Lenses and their primary skills:
@@ -53,6 +54,7 @@ Lenses and their primary skills:
   13. observability    — rcode-observability-auditor
   14. naming           — rcode-codebase-mapper + rcode-reviewer
   15. coverage         — rcode-nyquist-auditor + rcode-fatima
+  16. yagni            — rcode-reviewer + rcode-lazy (speculative abstractions, unused config, deps stdlib covers)
 ```
 
 STOP after printing help.
@@ -83,15 +85,15 @@ rcode-tools not found. Run: npx @hanzlaa/rcode install .
 ```
 
 Parse `$ARGUMENTS`:
-- `all` → `LENSES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)`
-- digit 1–15 → `LENSES=(<N>)`
+- `all` → `LENSES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)`
+- digit 1–16 → `LENSES=(<N>)`
 - known lens name → map to number → `LENSES=(<N>)`
 - empty → continue to Step 2 (interactive picker)
 
 Name → number mapping:
 `security=1, performance=2, testability=3, extensibility=4, dep-health=5,`
 `error-recovery=6, state-machine=7, i18n=8, documentation=9, cross-platform=10,`
-`karpathy=11, sxo=12, observability=13, naming=14, coverage=15`
+`karpathy=11, sxo=12, observability=13, naming=14, coverage=15, yagni=16`
 
 ## Step 2 — Interactive picker (when no argument given)
 
@@ -117,7 +119,8 @@ Options:
   13. observability    — rcode-observability-auditor (unguarded calls, silent fails)
   14. naming           — rcode-codebase-mapper (naming drift, PLAN.md vs SPRINT.md)
   15. coverage         — rcode-nyquist-auditor (parity gaps, untested commands)
-  16. all              — run all 15 lenses
+  16. yagni            — rcode-reviewer (speculative abstractions, single-impl interfaces, deps stdlib covers)
+  17. all              — run all 16 lenses
   0.  cancel
 ```
 
@@ -612,6 +615,44 @@ FINDINGS[coverage] = merge(PRIMARY, SECONDARY)
 
 ---
 
+### Lens 16 — YAGNI / Over-engineering
+
+```
+PRIMARY = Task(
+  subagent_type="rcode-reviewer",
+  model="{lens_model}",
+  prompt="YAGNI / over-engineering audit — do NOT fix code. {CONTEXT}
+
+  Run Lens 16 (YAGNI) audit against recent changes (HEAD~20..HEAD), using the
+  rcode-lazy ladder as the rubric (invoke the `rcode-lazy` skill for its ladder rubric).
+  This lens is narrower than Lens 11 (Karpathy): hunt ONLY for code that exists
+  but should not, or is bigger than the job needs. Flag:
+
+  - Speculative features / config / params for needs that do not exist yet
+  - Abstractions with a single implementation: an interface, factory, or
+    strategy with exactly one concrete user — inline it
+  - Wrapper layers that add a hop for one caller
+  - 'For later' scaffolding: extension points, plugin registries, generic
+    handlers with one case
+  - A new dependency for what stdlib or a native platform feature already does
+    (e.g. a date-picker lib vs <input type=\"date\">, a deep-clone lib vs
+    structuredClone)
+  - Config for a value that never changes (hardcode it)
+  - Hand-rolled code reproducing an already-installed dependency
+
+  Do NOT flag: validation at trust boundaries, error handling that prevents
+  data loss, security, accessibility, or anything explicitly requested — those
+  are never YAGNI violations even when verbose.
+
+  Return: file:line — YAGNI smell — what to delete/inline + the simpler form [critical|warn|info]
+  If clean: PASS"
+)
+
+FINDINGS[yagni] = PRIMARY
+```
+
+---
+
 ## Step 5 — Compile findings per lens
 
 For each lens that was run, print:
@@ -689,7 +730,7 @@ Next: file the GH issues above, then run /rcode-audit fix to address them.
 ## On Error
 
 - **rcode-tools not found**: print `Run: npx @hanzlaa/rcode install .` and STOP.
-- **Lens N out of range (not 1–15)**: print valid range and STOP.
+- **Lens N out of range (not 1–16)**: print valid range and STOP.
 - **Subagent skill not installed**: note `(skill not available — skipping)`, continue.
 - **Scope dirs empty**: note `(no source files in scope)` per lens, still run dispatch.
 - **Karpathy dispatch fails** (Lens 11): note failure, continue with remaining lenses.

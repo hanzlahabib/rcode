@@ -624,7 +624,7 @@ PRIMARY = Task(
   prompt="YAGNI / over-engineering audit — do NOT fix code. {CONTEXT}
 
   Run Lens 16 (YAGNI) audit against recent changes (HEAD~20..HEAD), using the
-  rcode-lazy ladder as the rubric (@.rcode/skills/core/rcode-lazy/SKILL.md).
+  rcode-lazy ladder as the rubric (invoke the `rcode-lazy` skill for its ladder rubric).
   This lens is narrower than Lens 11 (Karpathy): hunt ONLY for code that exists
   but should not, or is bigger than the job needs. Flag:
 
