@@ -14,8 +14,8 @@ Baseline: `node --test` = 664/664 passing on `main` before this campaign started
 
 - [~] #204 — refactor(cli): rcode-tools.cjs split (cmdState/cmdPhase). Approved, execution agent running (4-step phased plan).
 - [ ] #1066 — refactor(cli): cli/install.js installInner() split (narrowed scope). Not yet planned in detail.
-- [~] #1068 — docs: PLAN.md → SPRINT.md refs. Execution agent running.
-- [~] #1069 — fix(state): entry.plans vs entry.sprints[] unify. Execution agent running.
+- [x] #1068 — docs: PLAN.md → SPRINT.md refs. Fixed (99c18b4), merged to campaign-github-tickets. Open on GitHub until landed to main.
+- [x] #1069 — fix(state): entry.plans vs entry.sprints[] unify. Fixed (e61872e), merged to campaign-github-tickets. Open on GitHub until landed to main.
 - [ ] #1036 — persona-owned sprint execution refusal. Mitigation shipped; needs a LIVE /rcode-execute dispatch to verify, not code work. Left open with status comment.
 - [ ] #958 — feat(memory): memory bank relevance-ranked injection + drift detection. Genuinely open, large (3 sub-parts: top-K selection, staleness signal, drift daemon). Needs scoping before execution — dispatching a plan pass.
 - [ ] #968 — feat(dashboard): Memory view health signal. Genuinely open, medium. DEPENDS on #958's drift detection existing first — do not start before #958 lands.

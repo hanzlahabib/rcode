@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-09-02T20:48:56.710Z",
+  "updated": "2026-09-02T20:51:00.058Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -173,8 +173,7 @@
       "slug": "agent-slim-top-3-via-references",
       "goal": "Slim the three largest agent files by extracting shared content into `references/`.",
       "created": "2026-05-10T07:56:36.261Z",
-      "plan_count": 4,
-      "plans": 4
+      "plan_count": 4
     },
     {
       "id": "23",
@@ -403,7 +402,6 @@
       "goal": "Close the infrastructure gaps found auditing rcode against `everything-claude-code`:",
       "created": "2026-05-15T13:42:38.605Z",
       "plan_count": 0,
-      "plans": 4,
       "planned_at": "2026-05-15T13:59:48.106Z"
     },
     {
@@ -455,7 +453,6 @@
       "goal": "Close the vulnerabilities found in the rcode self security audit: an",
       "created": "2026-05-15T14:19:29.608Z",
       "plan_count": 0,
-      "plans": 3,
       "planned_at": "2026-05-15T14:26:37.115Z"
     },
     {
@@ -519,7 +516,6 @@
       "goal": "Turn rcode into an adoptable product: resolve the license contradiction,",
       "created": "2026-05-15T14:19:29.650Z",
       "plan_count": 0,
-      "plans": 4,
       "planned_at": "2026-05-15T14:26:37.157Z"
     },
     {
@@ -691,7 +687,6 @@
       "goal": "Rebuild the Majlis dashboard client as Preact components via `htm` + ESM CDN",
       "created": "2026-05-15T20:32:13.402Z",
       "plan_count": 4,
-      "plans": 4,
       "planned_at": "2026-05-15T20:46:54.646Z",
       "status_updated": "2026-05-16T11:09:40.907Z",
       "completed_at": "2026-05-16"
@@ -796,7 +791,6 @@
       "goal": "Let the user launch `init` and other rcode commands end-to-end from the",
       "created": "2026-05-16T00:31:40.154Z",
       "plan_count": 3,
-      "plans": 3,
       "status_updated": "2026-05-16T02:15:23.421Z"
     },
     {
@@ -919,8 +913,7 @@
       ],
       "goal": "Persist past orchestration runs on the orchestrator service and surface them",
       "plan_count": 2,
-      "status_updated": "2026-05-16T12:26:35.176Z",
-      "plans": 2
+      "status_updated": "2026-05-16T12:26:35.176Z"
     },
     {
       "id": "36",
@@ -981,8 +974,7 @@
       ],
       "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
       "plan_count": 2,
-      "status_updated": "2026-05-16T12:26:35.211Z",
-      "plans": 2
+      "status_updated": "2026-05-16T12:26:35.211Z"
     },
     {
       "id": "37",
@@ -1053,8 +1045,7 @@
       ],
       "goal": "Render the milestone's phases as a lightweight hand-rolled SVG dependency",
       "plan_count": 5,
-      "status_updated": "2026-05-16T12:26:35.245Z",
-      "plans": 2
+      "status_updated": "2026-05-16T12:26:35.245Z"
     },
     {
       "id": "38",
@@ -1105,7 +1096,6 @@
       "goal": "Make rcode proactive. Add an opt-in `UserPromptSubmit` hook — a deterministic,",
       "created": "2026-06-17T19:23:58.193Z",
       "plan_count": 0,
-      "plans": 3,
       "planned_at": "2026-06-17T19:40:30.458Z",
       "status_updated": "2026-06-17T22:34:04.252Z",
       "completed_at": "2026-06-17"
@@ -1159,7 +1149,6 @@
       "goal": "Close the rcode gap that causes content/SEO sites to be planned generically (as `web-app`) with no keyword clustering, E-E-A-T gates, or internal-link architecture. Implement four changes: (1) add `content-site` project type to `project-types.yaml` with full-spectrum SEO signals (local, affiliate, programmatic, technical, editorial, e-commerce, AI search, link-building — not just rank-and-rent), (2) route `content-site` projects in `rcode-project-researcher` to dedicated SEO skill agents, (3) add comprehensive SEO intent routing to `do.md` covering all SEO disciplines, (4) bundle 8 production-grade SEO skills from `~/.agents/skills/` into `rcode/skills/seo/` as an installable `--modules seo` module and wire the full `claude-seo:*` plugin fleet (17 agents). Closes #911, #912, #913, #914.",
       "created": "2026-06-24T13:51:28.383Z",
       "plan_count": 3,
-      "plans": 3,
       "planned_at": "2026-06-24T14:00:00.000Z"
     },
     {
@@ -1208,7 +1197,6 @@
       "goal": "_TBD — fill in via /rcode-discuss-phase 42 or edit directly._",
       "created": "2026-06-29T12:37:34.251Z",
       "plan_count": 0,
-      "plans": 3,
       "planned_at": "2026-06-29T13:06:03.743Z",
       "status_updated": "2026-06-29T14:35:14.381Z"
     },
@@ -1236,7 +1224,6 @@
       "goal": "_TBD — fill in via /rcode-discuss-phase 43 or edit directly._",
       "created": "2026-06-29T15:25:31.348Z",
       "plan_count": 0,
-      "plans": 1,
       "planned_at": "2026-06-29T15:29:27.195Z",
       "status_updated": "2026-06-29T17:22:42.115Z"
     },
@@ -1264,7 +1251,6 @@
       "goal": "Fix `cli/github-sync.js` to read the current sprint-track (`.planning/phases/*/*-SPRINT.md` with `<task>` XML) and epic-track (`.planning/epics/stories/*.md`) formats instead of the dead `.rcode/phases/{N}/tasks|stories/` layout; correct `docs/METHODOLOGY.md` and `docs/USP.md` to stop documenting that dead path as current; fix `rcode/workflows/sprint-planning.md`'s bare `SPRINT.md` output filename to follow the sequence-numbered `{phase}-{plan}-SPRINT.md` convention used everywhere else.",
       "created": "2026-07-29T08:23:52.128Z",
       "plan_count": 0,
-      "plans": 1,
       "planned_at": "2026-07-29T08:50:37.488Z",
       "status_updated": "2026-07-30T07:27:14.847Z",
       "completed_at": "2026-07-30"
@@ -1306,7 +1292,6 @@
       "goal": "Add rcode-hanzla/rcode-yousef/rcode-haitham/rcode-omar to the `<available_agent_types>` allowlist in `rcode/workflows/execute.md`, and replace `execute-waves.md` step 3's hardcoded `subagent_type=rcode-executor` with classification-based routing (frontend/backend/full-stack/other, by `files_modified` globs or objective text) so plans dispatch to the persona matching what they build. Propagate to the `.rcode/` dogfooded mirrors where they haven't already diverged. Fixes #1003.",
       "created": "2026-08-06T11:25:44.670Z",
       "plan_count": 0,
-      "plans": 1,
       "planned_at": "2026-08-06T11:44:43.704Z",
       "status_updated": "2026-08-06T12:01:57.832Z",
       "completed_at": "2026-08-06"
@@ -1335,7 +1320,6 @@
       "goal": "Close 4 filed bugs in execute.md and its close siblings (git-preflight.md, execute-sprint.md, plan-spawn-planner.md): branch-protection preflight wrongly blocks when `branching_strategy: none`, `--allow-main`/`--on-main` flag-name mismatch, `||` fallback that never fires for `USE_WORKTREES`, stale/wrong JSON field paths documented for `init execute` output, and lingering `acceptance_criteria` completion-tier language that the planner contract no longer emits (issues #1014, #1015, #1017, #1020).",
       "created": "2026-08-09T06:44:00.871Z",
       "plan_count": 0,
-      "plans": 1,
       "planned_at": "2026-08-09T07:19:49.663Z",
       "status_updated": "2026-08-09T07:45:37.475Z",
       "completed_at": "2026-08-09"
