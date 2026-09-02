@@ -789,6 +789,145 @@ function dedupeAgainstGlobalCommands(plan, opts) {
   return { isProjectInstall };
 }
 
+/**
+ * Write .rcode/_config/manifest.yaml + agent-manifest.csv, handle --reset,
+ * write/refresh .rcode/config.yaml (preserving user edits while syncing
+ * commit_planning drift — #685), validate it against ConfigSchema (#250,
+ * warn-only), seed .rcode/state.json (preserving the _seeded_stub marker
+ * logic from #705), and scaffold .planning/council-sessions/,
+ * .rcode/context/ stubs, and ~/.rcode/agents/. Returns { existedBefore } —
+ * needed later in installInner's summary ("config.yaml and state.json
+ * preserved" note).
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change. configDir is passed in (not recomputed) so the caller's
+ * later files-manifest.csv write shares the exact same path.
+ */
+function writeInstallConfigAndState(opts, plan, configDir) {
+  // Write .rcode/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
+  ensureDir(configDir);
+  // Issue #806: ensure .planning/ exists so /rcode-new-project Write calls succeed
+  // even when seedStarterPlanning returns early (e.g. ROADMAP.md already present).
+  ensureDir(path.join(opts.target, '.planning'));
+  fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
+  fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
+
+  // Handle --reset flag: delete config.yaml and state.json if --reset is passed
+  const configPath = path.join(opts.target, '.rcode', 'config.yaml');
+  const stateDest = path.join(opts.target, '.rcode', 'state.json');
+  let existedBefore = false;
+
+  if (opts.reset && opts.force) {
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+    if (fs.existsSync(stateDest)) {
+      fs.unlinkSync(stateDest);
+    }
+  } else if (opts.force && (fs.existsSync(configPath) || fs.existsSync(stateDest))) {
+    existedBefore = true;
+  }
+  // Note: --reset without --force is rejected at the top of install() (#680).
+
+  // Write .rcode/config.yaml (user_name, project_name, language, mode)
+  // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
+  if (!fs.existsSync(configPath)) {
+    writeFileAtomic(configPath, generateConfigYaml(opts));
+  } else {
+    // Issue #685: re-install path. config.yaml is preserved BUT if the user
+    // just changed commit_planning via the prompt/flag, .gitignore will be
+    // rewritten with the new value while config.yaml keeps the old one,
+    // creating a silent drift. Update only commit_planning in-place
+    // (preserve everything else the user may have customized).
+    try {
+      const before = fs.readFileSync(configPath, 'utf8');
+      const desired = opts.commitPlanning !== false;
+      const re = /^commit_planning:\s*(true|false)\s*$/m;
+      const match = before.match(re);
+      const currentInFile = match ? match[1] === 'true' : null;
+      if (match && currentInFile !== desired) {
+        const updated = before.replace(re, `commit_planning: ${desired}`);
+        writeFileAtomic(configPath, updated);
+        console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
+      } else if (!match) {
+        // Older config without the key — append it so the next read finds it.
+        const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
+        writeFileAtomic(configPath, appended);
+      }
+    } catch { /* best-effort — never fail install on this */ }
+  }
+  // Validate config.yaml with zod schema (#250) — warn but never block install.
+  try {
+    const configText = fs.readFileSync(configPath, 'utf8');
+    const configData = parseSimpleYaml(configText);
+    const validation = validateConfig(configData);
+    if (!validation.valid) {
+      console.log('');
+      console.log('  ' + warn('config.yaml has validation errors:'));
+      for (const e of validation.errors) console.log(pc.yellow(e));
+      console.log(dim('  → Edit .rcode/config.yaml to fix, then run /rcode-status'));
+    }
+  } catch { /* best-effort */ }
+
+  // Seed .rcode/state.json (skip if already exists — don't overwrite on re-install unless --reset)
+  if (!fs.existsSync(stateDest)) {
+    const stateSrc = path.join(SOURCE_ROOT, 'state.json');
+    if (fs.existsSync(stateSrc)) {
+      const now = new Date().toISOString();
+      // #809/#830: escape projectName for JSON embedding — quotes/backslashes
+      // would corrupt the resulting state.json. JSON.stringify wraps in quotes;
+      // slice them off because the template already has surrounding quotes.
+      const safeProject = JSON.stringify(String(opts.projectName || path.basename(opts.target))).slice(1, -1);
+      let stateContent = fs.readFileSync(stateSrc, 'utf8')
+        .replace(/__PROJECT_NAME__/g, safeProject)
+        .replace(/__INSTALL_DATE__/g, now);
+
+      // Issue #705: the template ships with _seeded_stub:true. If the user
+      // already has a real planning ROADMAP (no INSTALL STUB banner) but
+      // state.json is missing (manually deleted), restoring with the stub
+      // marker would mis-classify a real project as fresh. Strip the marker
+      // when ROADMAP exists and isn't itself a stub.
+      const rmPath = path.join(opts.target, '.planning', 'ROADMAP.md');
+      if (fs.existsSync(rmPath)) {
+        try {
+          const rm = fs.readFileSync(rmPath, 'utf8');
+          if (!rm.includes('<!-- INSTALL STUB')) {
+            // Remove "_seeded_stub": true, line. JSON is small + flat enough
+            // to do this with a regex; matches whether the field is followed
+            // by a comma or sits as the last key.
+            stateContent = stateContent.replace(/^\s*"_seeded_stub":\s*true,?\s*\n/m, '');
+          }
+        } catch { /* fall through with stub marker — safe default */ }
+      }
+
+      ensureDir(path.dirname(stateDest));
+      writeFileAtomic(stateDest, stateContent);
+    }
+  }
+
+  // .planning/council-sessions/ empty dir
+  ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
+
+  // .rcode/context/ — seed stub files so doctor doesn't report "never initialized"
+  // The /rcode-init slash command populates these with real project content.
+  const contextDir = path.join(opts.target, '.rcode', 'context');
+  ensureDir(contextDir);
+  const activeCtx = path.join(contextDir, 'active.md');
+  const briefCtx = path.join(contextDir, 'project-brief.md');
+  if (!fs.existsSync(activeCtx)) {
+    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
+  }
+  if (!fs.existsSync(briefCtx)) {
+    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
+  }
+
+  // ~/.rcode/agents/ global agents directory
+  const globalAgentsDir = path.join(homedir(), '.rcode', 'agents');
+  ensureDir(globalAgentsDir);
+
+  return { existedBefore };
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1135,127 +1274,10 @@ async function installInner(opts) {
   // check) — #1066 Phase 2 extraction. Mutates `plan` in place.
   const { isProjectInstall } = dedupeAgainstGlobalCommands(plan, opts);
 
-  // Write .rcode/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
+  // config.yaml/manifest/state.json writing incl. stub-marker + commit_planning
+  // drift-preserving logic — #1066 Phase 2 extraction.
   const configDir = path.join(opts.target, '.rcode', '_config');
-  ensureDir(configDir);
-  // Issue #806: ensure .planning/ exists so /rcode-new-project Write calls succeed
-  // even when seedStarterPlanning returns early (e.g. ROADMAP.md already present).
-  ensureDir(path.join(opts.target, '.planning'));
-  fs.writeFileSync(path.join(configDir, 'manifest.yaml'), generateInstallManifest(opts));
-  fs.writeFileSync(path.join(configDir, 'agent-manifest.csv'), generateAgentManifest(plan, opts.target));
-
-  // Handle --reset flag: delete config.yaml and state.json if --reset is passed
-  const configPath = path.join(opts.target, '.rcode', 'config.yaml');
-  const stateDest = path.join(opts.target, '.rcode', 'state.json');
-  let existedBefore = false;
-
-  if (opts.reset && opts.force) {
-    if (fs.existsSync(configPath)) {
-      fs.unlinkSync(configPath);
-    }
-    if (fs.existsSync(stateDest)) {
-      fs.unlinkSync(stateDest);
-    }
-  } else if (opts.force && (fs.existsSync(configPath) || fs.existsSync(stateDest))) {
-    existedBefore = true;
-  }
-  // Note: --reset without --force is rejected at the top of install() (#680).
-
-  // Write .rcode/config.yaml (user_name, project_name, language, mode)
-  // Note: config.yaml is user data and should NOT be overwritten on --force (unless --reset)
-  if (!fs.existsSync(configPath)) {
-    writeFileAtomic(configPath, generateConfigYaml(opts));
-  } else {
-    // Issue #685: re-install path. config.yaml is preserved BUT if the user
-    // just changed commit_planning via the prompt/flag, .gitignore will be
-    // rewritten with the new value while config.yaml keeps the old one,
-    // creating a silent drift. Update only commit_planning in-place
-    // (preserve everything else the user may have customized).
-    try {
-      const before = fs.readFileSync(configPath, 'utf8');
-      const desired = opts.commitPlanning !== false;
-      const re = /^commit_planning:\s*(true|false)\s*$/m;
-      const match = before.match(re);
-      const currentInFile = match ? match[1] === 'true' : null;
-      if (match && currentInFile !== desired) {
-        const updated = before.replace(re, `commit_planning: ${desired}`);
-        writeFileAtomic(configPath, updated);
-        console.log('  ' + dim(`Updated commit_planning in config.yaml (${currentInFile} → ${desired}) — closes #685.`));
-      } else if (!match) {
-        // Older config without the key — append it so the next read finds it.
-        const appended = before.replace(/\n*$/, '') + `\ncommit_planning: ${desired}\n`;
-        writeFileAtomic(configPath, appended);
-      }
-    } catch { /* best-effort — never fail install on this */ }
-  }
-  // Validate config.yaml with zod schema (#250) — warn but never block install.
-  try {
-    const configText = fs.readFileSync(configPath, 'utf8');
-    const configData = parseSimpleYaml(configText);
-    const validation = validateConfig(configData);
-    if (!validation.valid) {
-      console.log('');
-      console.log('  ' + warn('config.yaml has validation errors:'));
-      for (const e of validation.errors) console.log(pc.yellow(e));
-      console.log(dim('  → Edit .rcode/config.yaml to fix, then run /rcode-status'));
-    }
-  } catch { /* best-effort */ }
-
-  // Seed .rcode/state.json (skip if already exists — don't overwrite on re-install unless --reset)
-  if (!fs.existsSync(stateDest)) {
-    const stateSrc = path.join(SOURCE_ROOT, 'state.json');
-    if (fs.existsSync(stateSrc)) {
-      const now = new Date().toISOString();
-      // #809/#830: escape projectName for JSON embedding — quotes/backslashes
-      // would corrupt the resulting state.json. JSON.stringify wraps in quotes;
-      // slice them off because the template already has surrounding quotes.
-      const safeProject = JSON.stringify(String(opts.projectName || path.basename(opts.target))).slice(1, -1);
-      let stateContent = fs.readFileSync(stateSrc, 'utf8')
-        .replace(/__PROJECT_NAME__/g, safeProject)
-        .replace(/__INSTALL_DATE__/g, now);
-
-      // Issue #705: the template ships with _seeded_stub:true. If the user
-      // already has a real planning ROADMAP (no INSTALL STUB banner) but
-      // state.json is missing (manually deleted), restoring with the stub
-      // marker would mis-classify a real project as fresh. Strip the marker
-      // when ROADMAP exists and isn't itself a stub.
-      const rmPath = path.join(opts.target, '.planning', 'ROADMAP.md');
-      if (fs.existsSync(rmPath)) {
-        try {
-          const rm = fs.readFileSync(rmPath, 'utf8');
-          if (!rm.includes('<!-- INSTALL STUB')) {
-            // Remove "_seeded_stub": true, line. JSON is small + flat enough
-            // to do this with a regex; matches whether the field is followed
-            // by a comma or sits as the last key.
-            stateContent = stateContent.replace(/^\s*"_seeded_stub":\s*true,?\s*\n/m, '');
-          }
-        } catch { /* fall through with stub marker — safe default */ }
-      }
-
-      ensureDir(path.dirname(stateDest));
-      writeFileAtomic(stateDest, stateContent);
-    }
-  }
-
-  // .planning/council-sessions/ empty dir
-  ensureDir(path.join(opts.target, '.planning', 'council-sessions'));
-
-  // .rcode/context/ — seed stub files so doctor doesn't report "never initialized"
-  // The /rcode-init slash command populates these with real project content.
-  const contextDir = path.join(opts.target, '.rcode', 'context');
-  ensureDir(contextDir);
-  const activeCtx = path.join(contextDir, 'active.md');
-  const briefCtx = path.join(contextDir, 'project-brief.md');
-  if (!fs.existsSync(activeCtx)) {
-    fs.writeFileSync(activeCtx, '# Active Context\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
-  }
-  if (!fs.existsSync(briefCtx)) {
-    fs.writeFileSync(briefCtx, '# Project Brief\n\n_Run `/rcode-init` inside your AI editor to populate this file._\n');
-  }
-
-  // ~/.rcode/agents/ global agents directory
-  const globalAgentsDir = path.join(homedir(), '.rcode', 'agents');
-  ensureDir(globalAgentsDir);
+  const { existedBefore } = writeInstallConfigAndState(opts, plan, configDir);
 
   // Issue #702: files-manifest.csv used to be written here, BEFORE
   // installSkills + generateCommandSkills ran. The 100+ skill files those
