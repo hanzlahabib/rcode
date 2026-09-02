@@ -80,7 +80,15 @@ Do NOT auto-run the install. Emit the message and let the user decide.
 ## Step 1 — Load context
 
 ```bash
-STATE=$(node .rcode/bin/rcode-tools.cjs state read)
+STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print(json.dumps({
+    'current_phase': d.get('current_phase'),
+    'current_sprint': d.get('current_sprint'),
+    'phases': [{'number': p.get('number'), 'status': p.get('status')} for p in d.get('phases', [])],
+}))
+" 2>/dev/null || echo '{}')
 VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity)
 ```
 

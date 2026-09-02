@@ -273,11 +273,26 @@ If "Cancel": Exit workflow.
 Read project-level and prior phase context to avoid re-asking decided questions and maintain consistency.
 
 **Step 1: Read project-level files**
+
+Only the sections actually used below are worth paying for — PROJECT.md and REQUIREMENTS.md are usually small, but STATE.md is a full `state.json` dump and can run into the tens of thousands of tokens, so never `cat` it whole:
+
 ```bash
-# Core project files
-cat .planning/PROJECT.md 2>/dev/null || true
-cat .planning/REQUIREMENTS.md 2>/dev/null || true
-cat .planning/STATE.md 2>/dev/null || true
+# PROJECT.md — Vision, principles/non-negotiables, user preferences
+awk '/^## /{p=(tolower($0) ~ /vision|principle|non-negotiable|rule|preference/)} p' .planning/PROJECT.md 2>/dev/null
+
+# REQUIREMENTS.md — Acceptance criteria, constraints, must-haves vs nice-to-haves
+awk '/^## /{p=(tolower($0) ~ /accept|constraint|must-have|scope/)} p' .planning/REQUIREMENTS.md 2>/dev/null
+
+# STATE.md — Current progress only (milestone/phase/plan/sprint/blockers), not the raw JSON dump
+node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print('milestone:', d.get('milestone'))
+print('current_phase:', d.get('current_phase'))
+print('current_plan:', d.get('current_plan'))
+print('current_sprint:', d.get('current_sprint'))
+print('blockers:', json.dumps(d.get('blockers', [])))
+"
 ```
 
 Extract from these:

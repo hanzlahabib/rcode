@@ -38,11 +38,26 @@ Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_ex
 
 <step name="load_state">
 
-Read and parse STATE.md, then PROJECT.md:
+Read and parse state and PROJECT.md — STATE.md is a full `state.json` dump and can run into the tens of thousands of tokens, so never `cat` it whole; pull only the fields this step actually surfaces:
 
 ```bash
-cat .planning/STATE.md
-cat .planning/PROJECT.md
+node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print(json.dumps({
+    'milestone': d.get('milestone'),
+    'current_phase': d.get('current_phase'),
+    'current_plan': d.get('current_plan'),
+    'current_sprint': d.get('current_sprint'),
+    'phases': [{'number': p.get('number'), 'name': p.get('name'), 'status': p.get('status')} for p in d.get('phases', [])],
+    'recent_decisions': d.get('decisions', [])[-10:],
+    'blockers': d.get('blockers', []),
+    'last_session': d.get('last_session'),
+}, default=str))
+"
+
+# PROJECT.md — core value/vision + requirements/constraints only, not the whole doc
+awk '/^## /{p=(tolower($0) ~ /what this is|vision|requirement|decision|constraint/)} p' .planning/PROJECT.md 2>/dev/null
 ```
 
 **From STATE.md extract:**

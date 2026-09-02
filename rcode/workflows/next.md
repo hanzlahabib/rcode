@@ -33,20 +33,22 @@ Follow all banner and status-symbol conventions from output-format.md.
 Read project state to determine current position:
 
 ```bash
-STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print(json.dumps({
+    'current_phase': d.get('current_phase'),
+    'current_sprint': d.get('current_sprint'),
+    'phases': [{'number': p.get('number'), 'status': p.get('status')} for p in d.get('phases', [])],
+    'blockers': d.get('blockers', [])[:3],
+}))
+" 2>/dev/null || echo '{}')
 SPRINT_STATUS=$(node .rcode/bin/rcode-tools.cjs state sprint status 2>/dev/null || echo '{}')
 VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
+[ -f .planning/ROADMAP.md ] && ROADMAP_EXISTS=1 || ROADMAP_EXISTS=0
 ```
 
-Also read:
-- `.planning/STATE.md` — current phase, progress
-- `.planning/ROADMAP.md` — milestone structure and phase list
-
-Extract from state JSON:
-- `current_phase` — which phase is active
-- `current_sprint` — active sprint ID (or null)
-- `phases[]` — all phases with status
-- `velocity_history[]` — sprint velocity data
+`STATE` already carries everything this command needs — `current_phase`, `current_sprint`, `phases[].status`, and the top few `blockers`. Do not additionally `cat` `.planning/STATE.md` or `.planning/ROADMAP.md`; both are large documents and `/rcode-next` is meant to be the cheap, frequently-run status check. `ROADMAP_EXISTS` is enough for Route 1 below, which only needs to know the file is present.
 
 If no `.planning/` directory AND no `.rcode/state.json`:
 ```

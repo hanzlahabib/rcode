@@ -135,7 +135,18 @@ If user picks 1-15, invoke that command. If 16, capture text and continue. If 0 
 Detect PRD / epics with glob — projects use either singular files (`.planning/prd.md`) OR per-milestone directories (`.planning/prds/v1.8.md`). Closes #377 — false 'create-prd first' redirects on multi-milestone repos.
 
 ```bash
-INIT=$(node ".rcode/bin/rcode-tools.cjs" state load 2>/dev/null || echo '{"ok":false,"error":"state_load_failed"}')
+# rcode-tools has no `state load` subcommand — the real one is `state read`.
+# `state read` returns the full state.json unfiltered (~18K tokens on this
+# repo), so extract only the fields this step's routing actually needs
+# instead of capturing the raw dump.
+INIT=$(node ".rcode/bin/rcode-tools.cjs" state read 2>/dev/null | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(json.dumps({'ok': True, 'current_phase': d.get('current_phase'), 'milestone': d.get('milestone')}))
+except Exception:
+    print(json.dumps({'ok': False, 'error': 'state_read_failed'}))
+" || echo '{"ok":false,"error":"state_read_failed"}')
 HAS_PRD=$( ( ls .planning/prd.md .planning/PRD.md .planning/prds/*.md .planning/milestones/*/PRD.md 2>/dev/null | head -1 ) && echo true || echo false)
 HAS_EPICS=$( ( ls .planning/epics.md .planning/EPICS.md .planning/epics/*.md .planning/milestones/*/EPICS.md 2>/dev/null | head -1 ) && echo true || echo false)
 PHASE_COUNT=$(node ".rcode/bin/rcode-tools.cjs" progress init 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('phase_count',0))" 2>/dev/null || echo 0)
@@ -503,7 +514,7 @@ If the chosen command expects a phase number and one wasn't provided in the text
 <guardrails>
 **Hard prohibitions during /rcode-do execution (issue #458, refined by #1007):**
 
-The steps above (`parse_args`, `check_project`, `auto_init_check`, `greenfield_guard`, `explicit_intent_check`, `persona_shortcut`, `display`) legitimately call Bash for structured state/config lookups (`rcode-tools.cjs state load`, `progress init`, `config-get mode`, `config-get workflow._herdr_available`, `classify-question`, milestone/PRD/epic detection via `ls`/`grep`) and Read for the specific persona/capability-table lookup in `persona_shortcut` step 2. That is routing plumbing, not investigation, and is allowed. `config-get workflow._herdr_available` is a read of a cache another workflow (`/rcode-execute`) already populated — `/rcode-do` MUST NOT run `command -v herdr` itself or call `config-set` to populate that cache; it only reads whatever is already there. What's prohibited is using those same tools to figure out the route by inspecting application code, or to do the routed work itself:
+The steps above (`parse_args`, `check_project`, `auto_init_check`, `greenfield_guard`, `explicit_intent_check`, `persona_shortcut`, `display`) legitimately call Bash for structured state/config lookups (`rcode-tools.cjs state read`, `progress init`, `config-get mode`, `config-get workflow._herdr_available`, `classify-question`, milestone/PRD/epic detection via `ls`/`grep`) and Read for the specific persona/capability-table lookup in `persona_shortcut` step 2. That is routing plumbing, not investigation, and is allowed. `config-get workflow._herdr_available` is a read of a cache another workflow (`/rcode-execute`) already populated — `/rcode-do` MUST NOT run `command -v herdr` itself or call `config-set` to populate that cache; it only reads whatever is already there. What's prohibited is using those same tools to figure out the route by inspecting application code, or to do the routed work itself:
 
 - MUST NOT use Bash/Read/Grep/Glob to explore or read application source code to guess what a vague request means. The state/config lookups named above are the only sanctioned uses — anything beyond them (grepping `src/`, reading a feature file to understand behavior, etc.) means the dispatcher contract has failed — STOP and use the no-route exit instead.
 - MUST NOT call Write or Edit. The dispatcher never modifies files.

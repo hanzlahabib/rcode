@@ -224,8 +224,11 @@ Parse ROADMAP.md directly (rcode-tools does not expose `roadmap analyze`):
 
 ```bash
 cat .planning/ROADMAP.md
+ROADMAP_LINES=$(wc -l < .planning/ROADMAP.md 2>/dev/null || echo 0)
 # For per-phase detail, inspect .planning/phases/<phase_slug>/ directory for SPRINT.md, SUMMARY.md presence
 ```
+
+Track `ROADMAP_LINES` for the rest of the run — the iterate step uses it to detect whether ROADMAP.md actually changed before paying to re-read it.
 
 Build an internal `phases` array with: `number`, `name`, `goal`, `disk_status` (complete if SUMMARY.md exists, partial if SPRINT.md exists without SUMMARY.md, planned if neither), `has_ui_hint`.
 
@@ -688,22 +691,31 @@ symptom. Log a warning and re-derive from disk:
 
 Proceed directly to lifecycle step (which handles partial completion). Exit cleanly.
 
-**Otherwise:** After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
+**Otherwise:** After each phase completes, check whether ROADMAP.md actually changed before paying to re-read it — phases are usually only inserted mid-execution when a grey-area decision demanded it, not every iteration:
 
 ```bash
-cat .planning/ROADMAP.md
+ROADMAP_LINES_NOW=$(wc -l < .planning/ROADMAP.md 2>/dev/null || echo 0)
+if [ "$ROADMAP_LINES_NOW" != "$ROADMAP_LINES" ]; then
+  cat .planning/ROADMAP.md
+  ROADMAP_LINES=$ROADMAP_LINES_NOW
+fi
 ```
 
-Re-filter incomplete phases using the same logic as discover_phases.
+If the line count changed, re-filter incomplete phases using the same logic as discover_phases (this catches phases inserted mid-execution, e.g. decimal phases like 5.1). If it did not change, keep the existing `phases` array as-is.
 
-Read STATE.md fresh:
+Extract only the fields needed to decide what happens next — never re-read the full state document on every iteration:
 
 ```bash
-cat .planning/STATE.md
-node .rcode/bin/rcode-tools.cjs state read
+node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print('current_phase:', d.get('current_phase'))
+print('current_plan:', d.get('current_plan'))
+print('blockers:', json.dumps(d.get('blockers', [])))
+"
 ```
 
-Check for blockers in the Blockers/Concerns section. If blockers are found, go to handle_blocker.
+If `blockers` is non-empty, go to handle_blocker.
 
 If incomplete phases remain: proceed to next phase, loop back to execute_phase.
 
