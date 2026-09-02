@@ -339,8 +339,6 @@ function dispatch(subArgs, deps) {
     };
   }
 
-  // Truncates execution state but preserves decisions, council_sessions, and workstreams.
-
   return undefined;
 }
 

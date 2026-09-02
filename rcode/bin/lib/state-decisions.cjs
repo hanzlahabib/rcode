@@ -421,8 +421,6 @@ function dispatch(subArgs, deps) {
     return writeState(state);
   }
 
-  // --- insert-phase ---
-
   return undefined;
 }
 
