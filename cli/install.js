@@ -663,6 +663,132 @@ function resolveInstallPlan(opts) {
   return { exitCode: null, plan };
 }
 
+/**
+ * Duplicate-prevention: when rcode commands already exist globally in
+ * ~/.claude/commands/, skip writing project-level commands (or remove
+ * untracked project-level duplicates that already exist) so a global +
+ * project install doesn't double every slash command. Agents are never
+ * deduped (#1022 — they're project-local by design). Git-tracked project
+ * command files are preserved even when a global duplicate exists (#1062 —
+ * dedup removes redundant copies, not deliberately-committed ones).
+ *
+ * Mutates `plan` in place (matches the pre-extraction in-place filter
+ * pattern the rest of installInner relies on). Returns { isProjectInstall }
+ * — also needed later in installInner for skills/stub install dedup.
+ *
+ * Split out of installInner() (#1066 Phase 2) — mechanical extraction, no
+ * behavior change.
+ */
+function dedupeAgainstGlobalCommands(plan, opts) {
+  // Duplicate-prevention: if rcode commands already exist globally in ~/.claude/commands/,
+  // skip writing agents/commands to the project's .claude/ directory. Without this,
+  // running `npx rcode install` in the home dir AND then in a project creates two sets
+  // of identical files — Claude Code shows both as duplicate slash commands.
+  const globalClaudeCommands = path.join(homedir(), '.claude', 'commands');
+  const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
+  // #938 — --local-only forces a self-contained install: treat it as NOT a
+  // global-deferring project install so all skills/commands are written locally.
+  // --local-only is self-containment with a running cost, and the cost only
+  // becomes visible in a pull request. State it here instead.
+  if (opts.localOnly && opts.target !== homedir()) {
+    console.log('  ' + warn('--local-only: writing all commands and skills into this project.'));
+    console.log('    ' + dim('They are gitignored by default. If you force-track them for collaborators/CI,'));
+    console.log('    ' + dim('every rcode update becomes a diff of tens of thousands of lines, and any local'));
+    console.log('    ' + dim('edit to them is silently overwritten by the next install.'));
+    console.log('    ' + dim('The alternative is one setup step: npx @hanzlaa/rcode install (CI + new clones).'));
+  }
+
+  const isProjectInstall = opts.target !== homedir() && !opts.localOnly;
+  // Run dedup even when force:true — only forceOverwrite skips it.
+  if (isProjectInstall && !opts.forceOverwrite) {
+    try {
+      // Check both root-level rcode-*.md AND the rcode/ subdirectory (vscode-style).
+      const globalHasrcode = fs.existsSync(globalClaudeCommands) && (
+        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(globalClaudeCommands, 'rcode'))
+      );
+      const projectHasrcode = fs.existsSync(projectClaudeCommands) && (
+        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
+        fs.existsSync(path.join(projectClaudeCommands, 'rcode'))
+      );
+      if (globalHasrcode && !projectHasrcode) {
+        // Global commands exist, project has none yet — filter commands out of the
+        // plan so we don't create duplicates. Project gets .rcode/ state only.
+        //
+        // Issue #1022: agents are NOT deferrable to global the way commands/skills
+        // are — they are first-class, project-local files by design (see the
+        // createInstallBackup comment above: "closes #381 — without this,
+        // customized .claude/agents/rcode-*.md ... were silently lost"). Lumping
+        // `.claude/agents/` into this commands-dedup filter meant a project with
+        // global rcode commands installed but no project-level commands yet would
+        // never get its .claude/agents/*.md files written at all, leaving only
+        // whatever pre-existing subdirectories (e.g. rules/) survived untouched.
+        const before = plan.length;
+        const filtered = plan.filter(e => {
+          const rel = e.rel.split(path.sep).join('/');
+          return !rel.startsWith('.claude/commands/');
+        });
+        if (filtered.length < before) {
+          plan.length = 0;
+          filtered.forEach(e => plan.push(e));
+          console.log('  ' + dim('Global rcode commands detected in ~/.claude/ — skipping project-level command install to avoid duplicates.'));
+          console.log('  ' + dim('Use --force-overwrite to install locally anyway.'));
+        }
+      } else if (globalHasrcode && projectHasrcode) {
+        // Both exist — project commands are duplicates. Remove project-level ones.
+        // Agents are left untouched (#1022) — they are project-local by design,
+        // never deduped against the global commands install.
+        try {
+          // Remove root-level rcode-*.md files
+          const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
+            .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
+
+          // A file the project chose to COMMIT is not a duplicate — it is a
+          // decision. Deleting tracked files here turned a routine update into a
+          // 218-deletion PR that the user had to stop and question, under a flag
+          // literally named --non-destructive. Dedup removes redundant copies;
+          // it does not overrule what a repo deliberately tracks.
+          const { spawnSync: _spawn } = require('child_process');
+          const isTracked = (abs) => {
+            const r = _spawn('git', ['ls-files', '--error-unmatch', abs],
+              { cwd: opts.target, stdio: 'ignore' });
+            return r.status === 0;
+          };
+
+          let removedCmds = 0, keptTracked = 0;
+          for (const f of projectCommandFiles) {
+            const abs = path.join(projectClaudeCommands, f);
+            if (isTracked(abs)) { keptTracked++; continue; }
+            fs.unlinkSync(abs);
+            removedCmds++;
+          }
+          // Remove rcode/ subdirectory (vscode-style commands).
+          // #688 — safeRmSync refuses to traverse out-of-target symlinks.
+          const rcodeSubdir = path.join(projectClaudeCommands, 'rcode');
+          if (fs.existsSync(rcodeSubdir)) {
+            safeRmSync(rcodeSubdir, opts.target);
+          }
+          if (removedCmds > 0) {
+            console.log('  ' + dim(`Removed ${removedCmds} untracked duplicate project-level rcode command(s) — the global ones in ~/.claude/ take precedence.`));
+          }
+          if (keptTracked > 0) {
+            console.log('  ' + ok(`Kept ${keptTracked} git-tracked project command(s) — this repo commits them deliberately, so they were left alone.`));
+          }
+        } catch { /* non-fatal */ }
+        const filtered = plan.filter(e => {
+          const rel = e.rel.split(path.sep).join('/');
+          return !rel.startsWith('.claude/commands/');
+        });
+        plan.length = 0;
+        filtered.forEach(e => plan.push(e));
+      }
+
+    } catch { /* non-fatal — skip detection on permission errors */ }
+  }
+
+  return { isProjectInstall };
+}
+
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1005,111 +1131,9 @@ async function installInner(opts) {
     return 0;
   }
 
-  // Duplicate-prevention: if rcode commands already exist globally in ~/.claude/commands/,
-  // skip writing agents/commands to the project's .claude/ directory. Without this,
-  // running `npx rcode install` in the home dir AND then in a project creates two sets
-  // of identical files — Claude Code shows both as duplicate slash commands.
-  const globalClaudeCommands = path.join(homedir(), '.claude', 'commands');
-  const projectClaudeCommands = path.join(opts.target, '.claude', 'commands');
-  // #938 — --local-only forces a self-contained install: treat it as NOT a
-  // global-deferring project install so all skills/commands are written locally.
-  // --local-only is self-containment with a running cost, and the cost only
-  // becomes visible in a pull request. State it here instead.
-  if (opts.localOnly && opts.target !== homedir()) {
-    console.log('  ' + warn('--local-only: writing all commands and skills into this project.'));
-    console.log('    ' + dim('They are gitignored by default. If you force-track them for collaborators/CI,'));
-    console.log('    ' + dim('every rcode update becomes a diff of tens of thousands of lines, and any local'));
-    console.log('    ' + dim('edit to them is silently overwritten by the next install.'));
-    console.log('    ' + dim('The alternative is one setup step: npx @hanzlaa/rcode install (CI + new clones).'));
-  }
-
-  const isProjectInstall = opts.target !== homedir() && !opts.localOnly;
-  // Run dedup even when force:true — only forceOverwrite skips it.
-  if (isProjectInstall && !opts.forceOverwrite) {
-    try {
-      // Check both root-level rcode-*.md AND the rcode/ subdirectory (vscode-style).
-      const globalHasrcode = fs.existsSync(globalClaudeCommands) && (
-        fs.readdirSync(globalClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
-        fs.existsSync(path.join(globalClaudeCommands, 'rcode'))
-      );
-      const projectHasrcode = fs.existsSync(projectClaudeCommands) && (
-        fs.readdirSync(projectClaudeCommands).some(f => f.startsWith('rcode-') && f.endsWith('.md')) ||
-        fs.existsSync(path.join(projectClaudeCommands, 'rcode'))
-      );
-      if (globalHasrcode && !projectHasrcode) {
-        // Global commands exist, project has none yet — filter commands out of the
-        // plan so we don't create duplicates. Project gets .rcode/ state only.
-        //
-        // Issue #1022: agents are NOT deferrable to global the way commands/skills
-        // are — they are first-class, project-local files by design (see the
-        // createInstallBackup comment above: "closes #381 — without this,
-        // customized .claude/agents/rcode-*.md ... were silently lost"). Lumping
-        // `.claude/agents/` into this commands-dedup filter meant a project with
-        // global rcode commands installed but no project-level commands yet would
-        // never get its .claude/agents/*.md files written at all, leaving only
-        // whatever pre-existing subdirectories (e.g. rules/) survived untouched.
-        const before = plan.length;
-        const filtered = plan.filter(e => {
-          const rel = e.rel.split(path.sep).join('/');
-          return !rel.startsWith('.claude/commands/');
-        });
-        if (filtered.length < before) {
-          plan.length = 0;
-          filtered.forEach(e => plan.push(e));
-          console.log('  ' + dim('Global rcode commands detected in ~/.claude/ — skipping project-level command install to avoid duplicates.'));
-          console.log('  ' + dim('Use --force-overwrite to install locally anyway.'));
-        }
-      } else if (globalHasrcode && projectHasrcode) {
-        // Both exist — project commands are duplicates. Remove project-level ones.
-        // Agents are left untouched (#1022) — they are project-local by design,
-        // never deduped against the global commands install.
-        try {
-          // Remove root-level rcode-*.md files
-          const projectCommandFiles = fs.readdirSync(projectClaudeCommands)
-            .filter(f => f.startsWith('rcode-') && f.endsWith('.md'));
-
-          // A file the project chose to COMMIT is not a duplicate — it is a
-          // decision. Deleting tracked files here turned a routine update into a
-          // 218-deletion PR that the user had to stop and question, under a flag
-          // literally named --non-destructive. Dedup removes redundant copies;
-          // it does not overrule what a repo deliberately tracks.
-          const { spawnSync: _spawn } = require('child_process');
-          const isTracked = (abs) => {
-            const r = _spawn('git', ['ls-files', '--error-unmatch', abs],
-              { cwd: opts.target, stdio: 'ignore' });
-            return r.status === 0;
-          };
-
-          let removedCmds = 0, keptTracked = 0;
-          for (const f of projectCommandFiles) {
-            const abs = path.join(projectClaudeCommands, f);
-            if (isTracked(abs)) { keptTracked++; continue; }
-            fs.unlinkSync(abs);
-            removedCmds++;
-          }
-          // Remove rcode/ subdirectory (vscode-style commands).
-          // #688 — safeRmSync refuses to traverse out-of-target symlinks.
-          const rcodeSubdir = path.join(projectClaudeCommands, 'rcode');
-          if (fs.existsSync(rcodeSubdir)) {
-            safeRmSync(rcodeSubdir, opts.target);
-          }
-          if (removedCmds > 0) {
-            console.log('  ' + dim(`Removed ${removedCmds} untracked duplicate project-level rcode command(s) — the global ones in ~/.claude/ take precedence.`));
-          }
-          if (keptTracked > 0) {
-            console.log('  ' + ok(`Kept ${keptTracked} git-tracked project command(s) — this repo commits them deliberately, so they were left alone.`));
-          }
-        } catch { /* non-fatal */ }
-        const filtered = plan.filter(e => {
-          const rel = e.rel.split(path.sep).join('/');
-          return !rel.startsWith('.claude/commands/');
-        });
-        plan.length = 0;
-        filtered.forEach(e => plan.push(e));
-      }
-
-    } catch { /* non-fatal — skip detection on permission errors */ }
-  }
+  // Command-dedup against global ~/.claude/commands/ (incl. git-tracked-file
+  // check) — #1066 Phase 2 extraction. Mutates `plan` in place.
+  const { isProjectInstall } = dedupeAgainstGlobalCommands(plan, opts);
 
   // Write .rcode/_config/manifest.yaml + agent-manifest.csv + files-manifest.csv
   const configDir = path.join(opts.target, '.rcode', '_config');
