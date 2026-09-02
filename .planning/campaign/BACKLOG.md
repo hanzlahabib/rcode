@@ -13,7 +13,7 @@ Baseline: `node --test` = 664/664 passing on `main` before this campaign started
 ## Still open / in flight
 
 - [x] #204 — refactor(cli): rcode-tools.cjs split (cmdState/cmdPhase). Done: 7827→4258 lines, 9 new lib/*.cjs modules, 668/668 tests. First attempt's worktree hit git corruption (interrupted process, empty objects) — isolated to that unmerged branch, main/campaign both verified healthy throughout, salvaged files reused for the successful retry. Also caught+fixed a real installed-mirror sync bug post-merge (0ab045d6). Merged to campaign-github-tickets, open on GitHub until landed to main.
-- [~] #1066 — refactor(cli): cli/install.js installInner() split. Plan ready (3 phases, flagged higher-risk than #204 since it touches live user installs), all 3 phases approved, execution dispatched.
+- [x] #1066 — refactor(cli): cli/install.js installInner() split. Done: installInner() ~1050→296 lines, 10 new lib/*.cjs modules, 17 commits, 668/668 tests + manual conflict/force-overwrite/non-destructive smoke tests. install.js itself still 1909 lines (JSDoc growth) — filed #1072 as honest follow-up, not blocking. Merged to campaign-github-tickets, open on GitHub until landed to main.
 - [x] #1068 — docs: PLAN.md → SPRINT.md refs. Fixed (99c18b4), merged to campaign-github-tickets. Open on GitHub until landed to main.
 - [x] #1069 — fix(state): entry.plans vs entry.sprints[] unify. Fixed (e61872e), merged to campaign-github-tickets. Open on GitHub until landed to main.
 - [x] #1036 — persona-owned sprint execution refusal. RESOLVED: live-tested real dispatch, executes cleanly, no refusal. Closed.
@@ -25,3 +25,9 @@ Baseline: `node --test` = 664/664 passing on `main` before this campaign started
 ## Done (this session, outside the original 33)
 
 - #1067 — prompt-router false-positive fix (fixed before campaign started)
+
+## Campaign drained 2026-09-03
+
+All 33 original issues + 4 filed along the way (#1068-1071) processed. Genuinely executed and merged to campaign-github-tickets: #946, #204, #1068, #1069, #1070, #1071, #1066. Closed as already-fixed (28) or obsolete (2). #1072 (new, tiny, filed as honest follow-up from #1066) is the only untouched remainder — not started, not blocking.
+
+668/668 tests passing throughout. Nothing pushed, nothing merged to main. Landing decision (PR / merge to main / leave on branch) pending user input — Phase 3 of this campaign.
