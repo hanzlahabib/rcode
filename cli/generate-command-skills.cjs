@@ -54,7 +54,25 @@ function parseFrontmatter(text) {
   if (end === -1) return {};
   const block = text.slice(4, end);
   const fm = {};
-  for (const raw of block.split('\n')) {
+  const lines = block.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    // Folded / literal block scalars: `description: >-` puts the value on the
+    // FOLLOWING indented lines. The old single-line regex captured the fold
+    // marker's empty remainder, so every command's real description came back
+    // as '' — the generated stub then carried only its placeholder text, and
+    // the model had no idea what the command was for.
+    const blockStart = raw.match(/^([a-zA-Z_-]+):\s*([>|][-+]?)\s*$/);
+    if (blockStart) {
+      const body = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        if (!/^\s+\S/.test(lines[j])) { i = j - 1; break; }
+        body.push(lines[j].trim());
+        i = j;
+      }
+      fm[blockStart[1].trim()] = body.join(' ').trim();
+      continue;
+    }
     const m = raw.match(/^([a-zA-Z_-]+):\s*(.+)$/);
     if (m) fm[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '');
   }
@@ -85,12 +103,43 @@ function discoverRealSkills(packageRoot) {
   return out;
 }
 
+// Router intents: multi-word, lifecycle-specific phrases that rcode has a real
+// command for. Deliberately NOT bare verbs — "ship", "plan", "audit", "review"
+// alone appear constantly in ordinary conversation and would make the router
+// fire on everything.
+//
+// Fragility is bounded by what rcode-do IS: a picker that asks which command to
+// run. It never acts. A false positive costs one question; a miss costs what it
+// cost here — the agent hand-rolled `gh pr create` because 91 of rcode's 117
+// commands have no skill and the router only fired on the literal word "rcode".
+const ROUTER_INTENTS = [
+  // PR / ship
+  'raise a PR', 'raise the PR', 'open a PR', 'create a PR', 'ship this branch',
+  // phase lifecycle
+  'plan this phase', 'execute this phase', 'add a phase', 'verify this phase',
+  // project lifecycle
+  'start a new project', 'new milestone', 'plan the milestone',
+  // review / audit
+  'audit this project', 'audit the plans', 'verify the work',
+  // rcode itself
+  'update rcode', 'rcode status', "what's next in this project",
+];
+
 function generateStub(cmdName, commandFm, version) {
-  const desc = commandFm.description || `Slash command shortcut for /rcode-${cmdName}.`;
+  // commandFm.description is already unwrapped from the command's `>-` block, so
+  // re-wrapping it in another `>-` produced the doubled `>` `>-` seen in shipped
+  // stubs and left the real text unreachable.
+  const desc = (commandFm.description || `Slash command shortcut for /rcode-${cmdName}.`)
+    .replace(/^>-?\s*/, '').trim();
   const triggers = [
     `rcode ${cmdName}`,
     `rcode-${cmdName}`,
     `/rcode-${cmdName}`,
+    // The router is the one stub that also carries natural-language intents.
+    // Every other command keeps name-only triggers: 117 skills each claiming
+    // conversational phrases is how a toolchain starts hijacking ordinary
+    // requests, which is worse than being invisible.
+    ...(cmdName === 'do' ? ROUTER_INTENTS : []),
   ];
 
   return `---

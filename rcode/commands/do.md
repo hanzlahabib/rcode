@@ -2,14 +2,18 @@
 name: rcode-do
 description: >-
   [ROUTER] Interactive picker — describe what you want and rcode picks
-  the command. Activates whenever the user says "use rcode", "using
-  rcode", "rcode kar do", "rcode say kara do", "let rcode handle
-  this/it", "rcode this", or otherwise names rcode as the tool to use
-  for a task without naming a specific /rcode-* command — especially
-  when the request bundles multiple asks (e.g. "init a phase, build a
-  checklist, make a sprint"). Route through this picker instead of
-  hand-rolling files or Bash workarounds for what rcode already has a
-  command for.
+  the command. It ASKS which command to run; it never acts on its own,
+  so activating it costs one question and nothing more.
+  Activates when the user names rcode ("use rcode", "rcode kar do",
+  "let rcode handle this", "rcode this"), AND ALSO on project-lifecycle
+  requests that rcode already has a command for even when rcode is not
+  named: raising a PR or shipping a branch, planning or executing a
+  phase, adding a phase or a sprint, auditing or verifying work,
+  starting a new project or milestone, or updating the rcode install.
+  rcode ships 117 such commands; a request that matches one should reach
+  it rather than being hand-rolled with Bash. Do NOT activate for
+  ordinary coding, debugging, or file edits that have no rcode command —
+  when in doubt, do not route.
 argument-hint: "[optional question or task description]"
 allowed-tools:
   - Read
