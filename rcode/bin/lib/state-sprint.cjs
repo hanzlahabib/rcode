@@ -357,8 +357,6 @@ function dispatch(subArgs, deps) {
     return results;
   }
 
-  // --- record-execution ---
-
   return undefined;
 }
 

@@ -566,12 +566,6 @@ function dispatch(subArgs, deps) {
     };
   }
 
-  // =====================================================================
-  // state schema-status: report current vs expected schema_version (#8).
-  // Read-only. Surfaces stale state files so users know when to run
-  // `state migrate-schema`.
-  // =====================================================================
-
   return undefined;
 }
 

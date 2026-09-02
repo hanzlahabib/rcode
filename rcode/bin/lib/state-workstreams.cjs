@@ -179,8 +179,6 @@ function dispatch(subArgs, deps) {
     return writeState(state);
   }
 
-  // --- set-user-profile / write-profile ---
-
   return undefined;
 }
 
