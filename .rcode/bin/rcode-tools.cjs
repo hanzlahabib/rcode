@@ -193,7 +193,13 @@ function extractReqIds(requirements) {
   if (!Array.isArray(requirements) || requirements.length === 0) return [];
   const seen = new Set();
   const out = [];
-  const re = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
+  // Two shapes, because real projects rarely use the REQ- prefix:
+  //   REQ-AUTH, REQ-FOO-BAR   — the documented convention
+  //   FOUND-01, RENT-04, AUTHZ-04, OBJ-06, CITY-02 — what projects actually write
+  // Matching only the first shape returned an empty phase_req_ids on every
+  // domain-prefixed project, and plan.md's Requirements Coverage Gate skips
+  // itself when that array is empty. The gate was silently off, not passing.
+  const re = /\bREQ-[A-Z0-9][A-Z0-9-]*\b|\b[A-Z][A-Z0-9]{1,15}-\d+[a-z]?\b/g;
   for (const line of requirements) {
     const matches = String(line).match(re) || [];
     for (const m of matches) {
@@ -510,6 +516,12 @@ function cmdInit(workflowName, rawArgs) {
 
       // Phase status from state.json (complete/executed/in_progress/planned/null).
       // Used by plan.md to show context-aware messaging when plans already exist.
+      //
+      // #948 — state_digest is derived from this SAME parse (single read, not a
+      // second pass over state.json). It replaces the raw `{state_path}` full-file
+      // read that plan-spawn-planner.md / research-phase.md / plan-research-
+      // validation.md instruct the researcher/planner subagents to do — those
+      // prompts embed state_digest directly instead.
       try {
         const stateFilePath = path.join(RCODE_DIR, 'state.json');
         const rawState = fs.existsSync(stateFilePath)
@@ -520,7 +532,9 @@ function cmdInit(workflowName, rawArgs) {
           return k === String(phaseNum);
         });
         out.phase_status = stPhase ? (stPhase.status || null) : null;
-      } catch { out.phase_status = null; }
+        const stateDigest = require(path.join(__dirname, 'lib', 'state-digest.cjs'));
+        out.state_digest = stateDigest.buildStateDigest(rawState, phaseNum);
+      } catch { out.phase_status = null; out.state_digest = null; }
 
       // Disk artifacts — same shape as walkPhaseDirs() but inlined.
       if (phaseDirEntry) {
@@ -580,11 +594,20 @@ function cmdInit(workflowName, rawArgs) {
       const wf = nestedCfg.workflow || {};
       const features = nestedCfg.features || {};
 
+      // #949 — context_window folded into init so plan.md doesn't need a
+      // separate `config-get context_window` cold start (top-level scalar,
+      // not namespaced under workflow.*/features.*).
+      out.context_window = nestedCfg.context_window ?? null;
+
       // Workflow feature flags (top-level for direct workflow consumption).
       // Defaults match the inline `config-get … || echo "X"` calls in the workflows.
       out.research_enabled = String(wf.research_by_default ?? 'false') === 'true';
       out.plan_checker_enabled = String(wf.plan_checker ?? 'true') !== 'false';
       out.nyquist_validation_enabled = String(wf.nyquist_validation ?? 'true') !== 'false';
+      // Plan-time specialist review panel (#plan step 9.5). Default ON: the
+      // generalist planner+checker pair cannot see design or guard-shape
+      // defects, only goal coverage.
+      out.specialist_review_enabled = String(wf.specialist_review ?? 'true') !== 'false';
       out.text_mode = String(wf.text_mode ?? 'false') === 'true';
 
       // Model resolution per active profile. The researcher agent ships as
@@ -594,6 +617,21 @@ function cmdInit(workflowName, rawArgs) {
         || resolveModelString('rcode-phase-researcher');
       out.planner_model = resolveModelString('rcode-planner');
       out.checker_model = resolveModelString('rcode-sprint-checker');
+
+      // #949 — agent-skills rows folded into init output. plan.md previously
+      // shelled out to `agent-skills rcode-phase-researcher` / `rcode-planner` /
+      // `rcode-sprint-checker` as 3 separate cold Node starts; research-phase.md
+      // and plan-research-validation.md each did their own `agent-skills
+      // rcode-phase-researcher` call. Same manifest lookup this init call
+      // already has installedAgents/readAgentManifest() loaded for.
+      {
+        const agentManifest = readAgentManifest();
+        out.agent_skills = {
+          researcher: resolveAgentId('rcode-phase-researcher', agentManifest) || null,
+          planner: resolveAgentId('rcode-planner', agentManifest) || null,
+          checker: resolveAgentId('rcode-sprint-checker', agentManifest) || null,
+        };
+      }
 
       // Phase requirement IDs — extracted from ROADMAP requirements block.
       out.phase_req_ids = extractReqIds(roadmapPhase ? roadmapPhase.requirements : []);
@@ -990,8 +1028,241 @@ function cmdInitExecute(rawArgs) {
  *   record-council --slug <s> --panel <csv> --artifact <path>
  *   sync-from-git                  → recover phase/sprint state from git commit history (#915)
  */
+// Canonical state.json path. Hoisted to module scope (#1060) so readState()/
+// writeState() below — the locked, atomic reader/writer — are reusable by
+// every subcommand family (cmdState, cmdPhase, …), not just cmdState's own
+// closure. Previously cmdPhase's add/complete/sync-sprints/set-status
+// re-implemented read/write from scratch with no lock and no migration pass.
+const STATE_PATH = path.join(RCODE_DIR, 'state.json');
+
+/** Read state or return default skeleton. */
+function readState() {
+  if (!fs.existsSync(STATE_PATH)) return null;
+  const stats = fs.statSync(STATE_PATH);
+  if (stats.size > 10 * 1024 * 1024) {
+    throw new Error('state.json exceeds 10 MB limit — possible corruption');
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+    const migrated = migrateState(raw);
+    // One-time idempotent status migration (#955): persist the normalized
+    // phase statuses back to disk the first time legacy aliases are found,
+    // so state.json itself becomes canonical and every other reader (e.g.
+    // resolveActivePhase() in state-reader.cjs, which reads the file
+    // directly rather than through this helper) sees clean values too.
+    // Idempotent: once written, raw already matches migrated and this is a
+    // no-op on every subsequent load.
+    const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
+    const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
+    const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
+    if (hasLegacyStatus) {
+      writeState(migrated);
+    }
+    return migrated;
+  } catch (e) {
+    throw new Error(`Invalid JSON in state.json: ${e.message}`);
+  }
+}
+
+// Canonical phase status enum (#955, reconciled #1060). This is the single
+// source of truth for valid phase statuses — both migrateState()'s alias
+// normalization and `phase set-status`'s validation read from it, so the
+// two can no longer drift the way they did before (validStatuses used to
+// list its own hand-maintained, differently-spelled array).
+//
+// 'executed' and 'verified' are DISTINCT pipeline states, not legacy
+// spellings of 'complete' — execute.md's two-step gate (executed → only
+// promoted to complete once VERIFICATION.md passes) has nothing real to
+// check against if the alias table silently collapses 'executed' into
+// 'complete' on every read. Only 'completed' (a spelling variant of the
+// same state) is aliased.
+const PHASE_STATUS_ALIASES = {
+  completed: 'complete',
+};
+const PHASE_STATUS_ENUM = new Set(['planned', 'executing', 'executed', 'complete', 'blocked']);
+
+/** Map a legacy status spelling to the canonical enum value (idempotent). */
+function normalizePhaseStatus(status) {
+  if (typeof status !== 'string') return status;
+  return PHASE_STATUS_ALIASES[status] ?? status;
+}
+
+/**
+ * migrateState — pure normalizer that upgrades any legacy state shape to v2.
+ *
+ * v0: { milestone: string, no phases[], no schema_version }
+ * v1: { phases[] with mixed shapes, schema_version: 1 }
+ * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
+ *
+ * This function is PURE — it never writes to disk. readState() calls it on
+ * every read so all callers transparently receive v2-shaped data. (#735)
+ */
+function migrateState(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const state = Object.assign({}, raw);
+
+  // --- milestones[] array (v0 → v2) ---
+  // v0 state has milestone as a plain string and no milestones array.
+  if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
+    state.milestones = [{
+      id: state.milestone,
+      name: state.milestone,
+      status: 'active',
+    }];
+  }
+  if (!Array.isArray(state.milestones)) {
+    state.milestones = [];
+  }
+
+  // --- phases[] uniform shape (v1 → v2) ---
+  // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
+  if (Array.isArray(state.phases)) {
+    state.phases = state.phases.map(p => {
+      if (!p || typeof p !== 'object') return p;
+      // Resolve number: prefer p.number, fall back to numeric part of p.id
+      let number = p.number ?? null;
+      if (number === null && typeof p.id === 'string') {
+        const m = p.id.match(/^(\d+(?:\.\d+)?)/);
+        if (m) number = m[1];
+      }
+      // Resolve id: prefer p.id, synthesize from number
+      const id = p.id ?? (number !== null ? String(number) : undefined);
+      return {
+        number: number ?? p.id ?? null,
+        id: id ?? null,
+        name: p.name ?? null,
+        status: normalizePhaseStatus(p.status ?? 'planned'),
+        started: p.started ?? null,
+        completed: p.completed ?? null,
+        sprints: Array.isArray(p.sprints) ? p.sprints : [],
+        // Preserve any extra fields that callers may rely on
+        ...Object.fromEntries(
+          Object.entries(p).filter(([k]) =>
+            !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
+          )
+        ),
+      };
+    });
+  }
+
+  state.schema_version = 2;
+  return state;
+}
+
+/** Atomic write: write to temp file then rename. */
+function writeState(state) {
+  function isProcessAlive(pid) {
+    try { process.kill(pid, 0); return true; } catch { return false; }
+  }
+  // #8 — stamp schema_version on every write so legacy state files
+  // (no field) auto-gain the explicit tag. Never demotes an existing
+  // higher version — only fills the missing case. Bumping the version
+  // is the migrator's job, not this helper.
+  if (typeof state.schema_version !== 'number') state.schema_version = 1;
+
+  // Issue #681: auto-clear the install-time _seeded_stub marker once the
+  // state has graduated to a real project (project field set + at least one
+  // real phase OR REQUIREMENTS.md present). project-status (#675) reads
+  // _seeded_stub; if no writer ever clears it, every project stays "stub"
+  // forever and downstream workflows misroute.
+  if (state._seeded_stub === true) {
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    const firstPhaseName = phases[0]?.name || '';
+    const hasRealPhase = phases.length > 1 ||
+      (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
+    const hasRequirements = (() => {
+      try {
+        return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
+      } catch { return false; }
+    })();
+    if ((state.project && hasRealPhase) || hasRequirements) {
+      delete state._seeded_stub;
+    }
+  }
+
+  // Issue #681: auto-clear the install-time _seeded_stub marker once the
+  // state has graduated to a real project (project field set + at least one
+  // real phase OR REQUIREMENTS.md present). project-status (#675) reads
+  // _seeded_stub; if no writer ever clears it, every project stays "stub"
+  // forever and downstream workflows misroute.
+  if (state._seeded_stub === true) {
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    const firstPhaseName = phases[0]?.name || '';
+    const hasRealPhase = phases.length > 1 ||
+      (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
+    const hasRequirements = (() => {
+      try {
+        return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
+      } catch { return false; }
+    })();
+    if ((state.project && hasRealPhase) || hasRequirements) {
+      delete state._seeded_stub;
+    }
+  }
+
+  state.updated = new Date().toISOString();
+  fs.mkdirSync(RCODE_DIR, { recursive: true });
+  const lockPath = STATE_PATH + '.lock';
+  let attempts = 0;
+  while (fs.existsSync(lockPath) && attempts < 50) {
+    // Check if lock holder is alive
+    const lockPid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10);
+    if (lockPid && !isProcessAlive(lockPid)) {
+      console.error(`Stale lock from PID ${lockPid} — removing`);
+      try { fs.unlinkSync(lockPath); } catch {}
+      break;
+    }
+    require('child_process').execSync('sleep 0.05'); // 50ms backoff
+    attempts++;
+  }
+  if (attempts >= 50) throw new Error('state.json locked too long');
+
+  try {
+    fs.writeFileSync(lockPath, String(process.pid));
+    const tmp = STATE_PATH + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
+    fs.renameSync(tmp, STATE_PATH);
+  } finally {
+    try { fs.unlinkSync(lockPath); } catch {}
+  }
+  return { ok: true, state };
+}
+
+/** Write state and return compact result (hides full state from output) */
+function writeStateCompact(state, meta) {
+  writeState(state);
+  return { ok: true, ...meta };
+}
+
+function defaultState(projectName) {
+  const now = new Date().toISOString();
+  return {
+    version: '1',
+    // #8 / #735 — explicit schema_version field for migration framework.
+    // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
+    // older state files transparently on read. New state starts at v2.
+    schema_version: 2,
+    project: projectName || path.basename(PROJECT_ROOT),
+    created: now,
+    updated: now,
+    current_phase: null,
+    current_plan: 0,
+    current_sprint: null,
+    phases: [],
+    milestones: [],
+    velocity_history: [],
+    executions: [],
+    decisions: [],
+    blockers: [],
+    council_sessions: [],
+    last_session: null,
+    workstreams: [],
+    active_workstream: null,
+  };
+}
+
 function cmdState(subArgs) {
-  const statePath = path.join(RCODE_DIR, 'state.json');
+  const statePath = STATE_PATH;
   const sub = subArgs[0];
 
   /** Parse --key value flags from subArgs starting at index. */
@@ -1030,225 +1301,6 @@ function cmdState(subArgs) {
       try { out.push(JSON.parse(t)); } catch (_) { /* skip malformed */ }
     }
     return out;
-  }
-
-  /** Read state or return default skeleton. */
-  function readState() {
-    if (!fs.existsSync(statePath)) return null;
-    const stats = fs.statSync(statePath);
-    if (stats.size > 10 * 1024 * 1024) {
-      throw new Error('state.json exceeds 10 MB limit — possible corruption');
-    }
-    try {
-      const raw = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      const migrated = migrateState(raw);
-      // One-time idempotent status migration (#955): persist the normalized
-      // phase statuses back to disk the first time legacy aliases are found,
-      // so state.json itself becomes canonical and every other reader (e.g.
-      // resolveActivePhase() in state-reader.cjs, which reads the file
-      // directly rather than through this helper) sees clean values too.
-      // Idempotent: once written, raw already matches migrated and this is a
-      // no-op on every subsequent load.
-      const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
-      const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
-      const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
-      if (hasLegacyStatus) {
-        writeState(migrated);
-      }
-      return migrated;
-    } catch (e) {
-      throw new Error(`Invalid JSON in state.json: ${e.message}`);
-    }
-  }
-
-  // Canonical phase status enum (#955). Legacy state files accumulated four
-  // spellings for the same three states — normalize on every read so callers
-  // never have to special-case 'completed'/'executed' against 'complete'.
-  const PHASE_STATUS_ALIASES = {
-    completed: 'complete',
-    executed: 'complete',
-    verified: 'complete',
-  };
-  const PHASE_STATUS_ENUM = new Set(['planned', 'executing', 'complete']);
-
-  /** Map a legacy status spelling to the canonical enum value (idempotent). */
-  function normalizePhaseStatus(status) {
-    if (typeof status !== 'string') return status;
-    return PHASE_STATUS_ALIASES[status] ?? status;
-  }
-
-  /**
-   * migrateState — pure normalizer that upgrades any legacy state shape to v2.
-   *
-   * v0: { milestone: string, no phases[], no schema_version }
-   * v1: { phases[] with mixed shapes, schema_version: 1 }
-   * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
-   *
-   * This function is PURE — it never writes to disk. readState() calls it on
-   * every read so all callers transparently receive v2-shaped data. (#735)
-   */
-  function migrateState(raw) {
-    if (!raw || typeof raw !== 'object') return raw;
-    const state = Object.assign({}, raw);
-
-    // --- milestones[] array (v0 → v2) ---
-    // v0 state has milestone as a plain string and no milestones array.
-    if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
-      state.milestones = [{
-        id: state.milestone,
-        name: state.milestone,
-        status: 'active',
-      }];
-    }
-    if (!Array.isArray(state.milestones)) {
-      state.milestones = [];
-    }
-
-    // --- phases[] uniform shape (v1 → v2) ---
-    // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
-    if (Array.isArray(state.phases)) {
-      state.phases = state.phases.map(p => {
-        if (!p || typeof p !== 'object') return p;
-        // Resolve number: prefer p.number, fall back to numeric part of p.id
-        let number = p.number ?? null;
-        if (number === null && typeof p.id === 'string') {
-          const m = p.id.match(/^(\d+(?:\.\d+)?)/);
-          if (m) number = m[1];
-        }
-        // Resolve id: prefer p.id, synthesize from number
-        const id = p.id ?? (number !== null ? String(number) : undefined);
-        return {
-          number: number ?? p.id ?? null,
-          id: id ?? null,
-          name: p.name ?? null,
-          status: normalizePhaseStatus(p.status ?? 'planned'),
-          started: p.started ?? null,
-          completed: p.completed ?? null,
-          sprints: Array.isArray(p.sprints) ? p.sprints : [],
-          // Preserve any extra fields that callers may rely on
-          ...Object.fromEntries(
-            Object.entries(p).filter(([k]) =>
-              !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
-            )
-          ),
-        };
-      });
-    }
-
-    state.schema_version = 2;
-    return state;
-  }
-
-  /** Atomic write: write to temp file then rename. */
-  function writeState(state) {
-    function isProcessAlive(pid) {
-      try { process.kill(pid, 0); return true; } catch { return false; }
-    }
-    // #8 — stamp schema_version on every write so legacy state files
-    // (no field) auto-gain the explicit tag. Never demotes an existing
-    // higher version — only fills the missing case. Bumping the version
-    // is the migrator's job, not this helper.
-    if (typeof state.schema_version !== 'number') state.schema_version = 1;
-
-    // Issue #681: auto-clear the install-time _seeded_stub marker once the
-    // state has graduated to a real project (project field set + at least one
-    // real phase OR REQUIREMENTS.md present). project-status (#675) reads
-    // _seeded_stub; if no writer ever clears it, every project stays "stub"
-    // forever and downstream workflows misroute.
-    if (state._seeded_stub === true) {
-      const phases = Array.isArray(state.phases) ? state.phases : [];
-      const firstPhaseName = phases[0]?.name || '';
-      const hasRealPhase = phases.length > 1 ||
-        (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
-      const hasRequirements = (() => {
-        try {
-          return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
-        } catch { return false; }
-      })();
-      if ((state.project && hasRealPhase) || hasRequirements) {
-        delete state._seeded_stub;
-      }
-    }
-
-    // Issue #681: auto-clear the install-time _seeded_stub marker once the
-    // state has graduated to a real project (project field set + at least one
-    // real phase OR REQUIREMENTS.md present). project-status (#675) reads
-    // _seeded_stub; if no writer ever clears it, every project stays "stub"
-    // forever and downstream workflows misroute.
-    if (state._seeded_stub === true) {
-      const phases = Array.isArray(state.phases) ? state.phases : [];
-      const firstPhaseName = phases[0]?.name || '';
-      const hasRealPhase = phases.length > 1 ||
-        (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
-      const hasRequirements = (() => {
-        try {
-          return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
-        } catch { return false; }
-      })();
-      if ((state.project && hasRealPhase) || hasRequirements) {
-        delete state._seeded_stub;
-      }
-    }
-
-    state.updated = new Date().toISOString();
-    fs.mkdirSync(RCODE_DIR, { recursive: true });
-    const lockPath = statePath + '.lock';
-    let attempts = 0;
-    while (fs.existsSync(lockPath) && attempts < 50) {
-      // Check if lock holder is alive
-      const lockPid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10);
-      if (lockPid && !isProcessAlive(lockPid)) {
-        console.error(`Stale lock from PID ${lockPid} — removing`);
-        try { fs.unlinkSync(lockPath); } catch {}
-        break;
-      }
-      require('child_process').execSync('sleep 0.05'); // 50ms backoff
-      attempts++;
-    }
-    if (attempts >= 50) throw new Error('state.json locked too long');
-
-    try {
-      fs.writeFileSync(lockPath, String(process.pid));
-      const tmp = statePath + '.tmp';
-      fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
-      fs.renameSync(tmp, statePath);
-    } finally {
-      try { fs.unlinkSync(lockPath); } catch {}
-    }
-    return { ok: true, state };
-  }
-
-  /** Write state and return compact result (hides full state from output) */
-  function writeStateCompact(state, meta) {
-    writeState(state);
-    return { ok: true, ...meta };
-  }
-
-  function defaultState(projectName) {
-    const now = new Date().toISOString();
-    return {
-      version: '1',
-      // #8 / #735 — explicit schema_version field for migration framework.
-      // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
-      // older state files transparently on read. New state starts at v2.
-      schema_version: 2,
-      project: projectName || path.basename(PROJECT_ROOT),
-      created: now,
-      updated: now,
-      current_phase: null,
-      current_plan: 0,
-      current_sprint: null,
-      phases: [],
-      milestones: [],
-      velocity_history: [],
-      executions: [],
-      decisions: [],
-      blockers: [],
-      council_sessions: [],
-      last_session: null,
-      workstreams: [],
-      active_workstream: null,
-    };
   }
 
   // --- read / get ---
@@ -1382,6 +1434,26 @@ function cmdState(subArgs) {
   // --- set-phase ---
   if (sub === 'set-phase') {
     const name = subArgs[1];
+    // A flag-looking argument is never a phase name. Without this,
+    // `state set-phase --phase 99 --status complete` created a phase literally
+    // NAMED "--phase", set current_phase to "--phase", and returned ok:true.
+    // Silent state corruption reported from a live project.
+    if (typeof name === 'string' && name.startsWith('--')) {
+      throw new Error(
+        `set-phase takes a phase NAME as a positional argument, not flags. ` +
+        `Got "${name}". Did you mean:\n` +
+        `  state set-phase "Phase name"        (set the current phase pointer)\n` +
+        `  phase complete <N>                  (mark a phase complete)\n` +
+        `  state planned-phase --phase <N>     (record a phase as planned)`
+      );
+    }
+    const strayFlags = subArgs.slice(2).filter(a => typeof a === 'string' && a.startsWith('--'));
+    if (strayFlags.length > 0) {
+      throw new Error(
+        `set-phase does not accept flags (${strayFlags.join(', ')}). It sets the ` +
+        `current-phase pointer only. Use 'phase complete <N>' to change a phase's status.`
+      );
+    }
     if (!name) throw new Error('set-phase requires a phase name argument');
     const state = readState() || defaultState();
     // Fix #854 — mark the previously active phase as completed before switching.
@@ -3224,6 +3296,29 @@ function cmdState(subArgs) {
   // instead. Its stale-executing-phase hygiene warning was ported there.
   // Kept only for backward compatibility with anyone scripting against it
   // directly; do not wire new callers to this — use `phase complete`.
+  // Records what the user actually authorized this session — 'plan', 'build',
+  // 'research', 'audit'. `resume-work` reads it so "resume" restores POSITION
+  // AND SCOPE, not position alone. Without it, a resume after a planning
+  // session reads as "keep going" and starts building work nobody asked for.
+  if (sub === 'set-intent') {
+    const flags = parseFlags(1);
+    const intent = flags.intent || subArgs[1];
+    const ALLOWED = ['plan', 'build', 'research', 'audit', 'review'];
+    if (!intent) throw new Error(`set-intent requires an intent (${ALLOWED.join('|')})`);
+    if (!ALLOWED.includes(intent)) {
+      throw new Error(`unknown intent "${intent}" — expected one of: ${ALLOWED.join(', ')}`);
+    }
+    const state = readState() || defaultState();
+    const previous = state.last_intent ? state.last_intent.intent : null;
+    state.last_intent = {
+      intent,
+      recorded_at: new Date().toISOString(),
+      source: flags.source || 'workflow',
+    };
+    writeState(state);
+    return { ok: true, intent, previous };
+  }
+
   if (sub === 'complete-phase') {
     const flags = parseFlags(1);
     if (!flags.phase) throw new Error('complete-phase requires --phase <N>');
@@ -3435,6 +3530,23 @@ function cmdState(subArgs) {
         return 'planned';
       }
 
+      // Phase dirs are historically zero-padded ("03-evidence-ledger") while
+      // ROADMAP tables and state.json use bare integers ("3"). Match on the
+      // normalized number or every disk cross-check silently no-ops.
+      const normPhaseNum = (k) => String(k ?? '').trim().replace(/^0+(\d)/, '$1');
+      const findPhaseDirFiles = (phaseNum) => {
+        const phasesRootDir = path.join(PLANNING_DIR, 'phases');
+        if (!fs.existsSync(phasesRootDir)) return null;
+        const want = normPhaseNum(phaseNum);
+        const dirName = fs.readdirSync(phasesRootDir).find(d => {
+          const m = d.match(/^(\d+(?:\.\d+)?)(?:-|$)/);
+          return m && normPhaseNum(m[1]) === want;
+        });
+        if (!dirName) return null;
+        const full = path.join(phasesRootDir, dirName);
+        return { dirName, path: full, files: fs.readdirSync(full) };
+      };
+
       const upsertPhase = (phaseNum, phaseName, phaseGoal, phaseStatus) => {
         if (!/^\d/.test(phaseNum)) return;
         if (phaseName.toLowerCase() === 'phase') return;
@@ -3456,6 +3568,49 @@ function cmdState(subArgs) {
         const statusRank = { complete: 2, in_progress: 1, planned: 0 };
         let incomingStatus = normalizeStatus(phaseStatus);
 
+        // --from-disk means FROM DISK. The ROADMAP status column is only one
+        // signal, and in several roadmap shapes column 4 isn't a status column
+        // at all (e.g. a "Blocking?" column), so ROADMAP-only sync leaves every
+        // shipped phase sitting at `planned` forever and no amount of re-running
+        // sync fixes it. Advance from the artifacts that actually exist on disk.
+        // Status never downgrades (statusRank guard below), so this can only
+        // correct an under-reported phase, never overwrite a truer one.
+        try {
+          const dirInfo = findPhaseDirFiles(phaseNum);
+          if (dirInfo) {
+            const verFile = dirInfo.files.find(f => /-?VERIFICATION\.md$/i.test(f));
+            const verText = verFile ? fs.readFileSync(path.join(dirInfo.path, verFile), 'utf8') : '';
+            // `passed` alone is not enough: a report with no `falsification:`
+            // key was self-certified — the pass that tries to refute it never
+            // ran. Treat that as in_progress, not complete.
+            const verPassed = /^status:\s*passed/mi.test(verText);
+            // A `passed` report with no `falsification:` key was self-certified
+            // — the pass that tries to refute it never ran. Do NOT downgrade it
+            // here: every VERIFICATION.md written before the falsification pass
+            // existed lacks the key, and silently reverting those phases to
+            // in_progress would undo real completion history. Surface it
+            // instead, so the gap is visible without rewriting the past.
+            if (verPassed && !/^falsification:\s*upheld/mi.test(verText)) {
+              parsed.self_certified_phases = parsed.self_certified_phases || [];
+              parsed.self_certified_phases.push(phaseNum);
+            }
+            const hasSummary = dirInfo.files.some(f => /SUMMARY\.md$/i.test(f));
+            const hasSprint = dirInfo.files.some(f => /-SPRINT\.md$/i.test(f));
+            let diskStatus = null;
+            // A passed VERIFICATION.md is the strongest completion artifact
+            // there is — do NOT also require a SUMMARY.md. Summaries stop
+            // being written partway through many real projects, and gating on
+            // them leaves verified phases stuck at in_progress forever.
+            if (verPassed) diskStatus = 'complete';
+            else if (hasSummary || hasSprint) diskStatus = 'in_progress';
+            if (diskStatus && (statusRank[diskStatus] ?? 0) > (statusRank[incomingStatus] ?? 0)) {
+              incomingStatus = diskStatus;
+              parsed.disk_derived_status = parsed.disk_derived_status || [];
+              parsed.disk_derived_status.push({ phase: phaseNum, status: diskStatus });
+            }
+          }
+        } catch { /* best-effort — never fail sync over disk inspection */ }
+
         // Cross-check against VERIFICATION.md before trusting a 'complete' claim
         // from ROADMAP prose. A phase can be hand-edited to say "Complete" (or
         // "gaps_found → closed") without ever re-running the verifier — confirmed
@@ -3466,9 +3621,7 @@ function cmdState(subArgs) {
         if (incomingStatus === 'complete') {
           try {
             const phasesRootDir = path.join(PLANNING_DIR, 'phases');
-            const phaseDirName = fs.existsSync(phasesRootDir)
-              ? fs.readdirSync(phasesRootDir).find(d => d === phaseNum || d.startsWith(`${phaseNum}-`))
-              : null;
+            const phaseDirName = (findPhaseDirFiles(phaseNum) || {}).dirName || null;
             if (phaseDirName) {
               const verFile = fs.readdirSync(path.join(phasesRootDir, phaseDirName))
                 .find(f => /-VERIFICATION\.md$/i.test(f));
@@ -3492,6 +3645,32 @@ function cmdState(subArgs) {
         }
 
         if (existingIdx >= 0) {
+          // Identity check BEFORE anything is carried over. Sync matched this
+          // entry by NUMBER, but a number is a slot, not an identity. When a
+          // roadmap is replaced, slot 3 can go from "Location Template" to
+          // "Competitor Gap Analysis" — two unrelated pieces of work. Carrying
+          // the old status across told a live project that competitor analysis
+          // was "complete" when it had never been started, and only a manual
+          // disk audit caught it.
+          const priorName = String(state.phases[existingIdx].name || '').trim();
+          const incomingName = String(phaseName || '').trim();
+          const normName = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+          const identityChanged = priorName && incomingName
+            && normName(priorName) !== normName(incomingName);
+          if (identityChanged) {
+            // Different work in the same slot. Drop the inherited status and
+            // completion, and let the disk-derived pass below decide afresh.
+            state.phases[existingIdx].status = 'planned';
+            delete state.phases[existingIdx].completed;
+            delete state.phases[existingIdx].started;
+            parsed.identity_changed = parsed.identity_changed || [];
+            parsed.identity_changed.push({
+              phase: phaseNum,
+              was: priorName,
+              now: incomingName,
+              carried_status_dropped: true,
+            });
+          }
           // Backfill both id and number so future readers using either schema find it.
           state.phases[existingIdx].number = state.phases[existingIdx].number || phaseNum;
           state.phases[existingIdx].id = state.phases[existingIdx].id || phaseNum;
@@ -3773,17 +3952,12 @@ function cmdPhase(subArgs) {
     // and every other state-writing subcommand. Phase 6 dogfood surfaced this:
     // earlier drafts wrote to .planning/state.json, creating an orphan file
     // invisible to `state sync` / `state set-phase` / etc. Closes #462.
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    let state;
-    if (fs.existsSync(statePath)) {
-      try {
-        state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      } catch (e) {
-        throw new Error(`Invalid JSON in state.json: ${e.message}`);
-      }
-    } else {
-      state = { phases: [], decisions: [], blockers: [] };
-    }
+    //
+    // Routed through readState()/writeState() (#1060) instead of ad-hoc
+    // JSON.parse/fs.writeFileSync — gets the locked, atomic writer and the
+    // migration pass every other state reader/writer gets, closing the lost-
+    // update race between concurrent executor agents each calling `phase *`.
+    let state = readState() || { phases: [], decisions: [], blockers: [] };
     if (!state.phases) state.phases = [];
 
     let number;
@@ -3959,13 +4133,7 @@ function cmdPhase(subArgs) {
       completed: null,
       plan_count: 0,
     });
-    state.updated = new Date().toISOString();
-    // Ensure the directory holding statePath (RCODE_DIR) exists.
-    const stateDir = path.dirname(statePath);
-    if (!fs.existsSync(stateDir)) {
-      fs.mkdirSync(stateDir, { recursive: true });
-    }
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
 
     // #942 — surface the milestone close nudge from the CLI itself so it can't
     // be bypassed by adding phases outside the add-phase workflow.
@@ -3989,13 +4157,10 @@ function cmdPhase(subArgs) {
   if (sub === 'complete') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase complete requires <phase_number>');
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
     const idx = state.phases.findIndex(p =>
       String(p.number) === String(phaseRef) ||
@@ -4038,7 +4203,7 @@ function cmdPhase(subArgs) {
       .filter(p => parseInt(String(p.number), 10) > num)
       .sort((a, b) => parseInt(String(a.number), 10) - parseInt(String(b.number), 10))[0] || null;
 
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
 
     // #943 — when no open phases remain, the milestone is effectively finished.
     // Surface the close/next guidance from this chokepoint so finishing the
@@ -4077,13 +4242,10 @@ function cmdPhase(subArgs) {
   if (sub === 'sync-sprints') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase sync-sprints requires <phase_number>');
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
     const idx = state.phases.findIndex(p =>
       String(p.number) === String(phaseRef) ||
@@ -4141,7 +4303,7 @@ function cmdPhase(subArgs) {
 
     state.phases[idx].sprints = sprints;
     state.phases[idx].plan_count = sprints.length;
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
     return {
       ok: true,
       phase: phaseRef,
@@ -4154,19 +4316,21 @@ function cmdPhase(subArgs) {
     const phaseRef = subArgs[1];
     const newStatus = subArgs[2];
     if (!phaseRef) throw new Error('phase set-status requires <phase_number> <status>');
-    if (!newStatus) throw new Error('phase set-status requires <status> (e.g., executed, complete, blocked)');
-    const validStatuses = ['planned', 'in_progress', 'executed', 'complete', 'blocked'];
+    // Reconciled with the canonical PHASE_STATUS_ENUM (#1060) — this used to
+    // be a separately hand-maintained array ('in_progress' instead of
+    // 'executing', no shared source with migrateState()'s normalizer), which
+    // is exactly the kind of drift that let two different notions of "valid
+    // phase status" diverge.
+    const validStatuses = [...PHASE_STATUS_ENUM];
+    if (!newStatus) throw new Error(`phase set-status requires <status> (e.g., ${validStatuses.join(', ')})`);
     if (!validStatuses.includes(newStatus)) {
       throw new Error(`Invalid status "${newStatus}". Valid: ${validStatuses.join(', ')}`);
     }
 
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
 
     const phaseIdx = state.phases.findIndex(p =>
@@ -4181,7 +4345,7 @@ function cmdPhase(subArgs) {
     state.phases[phaseIdx].status = newStatus;
     state.phases[phaseIdx].status_updated = new Date().toISOString();
 
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
     return { ok: true, phase: phaseRef, previous_status: previous, new_status: newStatus };
   }
 
@@ -4283,7 +4447,8 @@ function cmdPhase(subArgs) {
     }
     let state = { phases: [] };
     if (fs.existsSync(statePath)) {
-      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+      catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     }
     if (!Array.isArray(state.phases)) state.phases = [];
 
@@ -4378,6 +4543,70 @@ function cmdPhase(subArgs) {
   // Closes #731. No --names arg required — reads the ROADMAP table directly.
   // Only creates directories; does NOT create .md files inside them.
   // =====================================================================
+  // phase rename-dir <N> — align a phase directory's slug with its ROADMAP name.
+  // Dry-run by default: renaming a directory moves artifacts and, without git mv,
+  // detaches their history. There was no mechanism for this at all, so a roadmap
+  // rewrite left every directory carrying the name of whatever it used to be.
+  if (sub === 'rename-dir') {
+    // cmdPhase has no shared flag parser (parseFlags is local to cmdState), so
+    // read the two flags this needs directly.
+    const argvIdx = subArgs.findIndex((a, i) => i > 0 && !String(a).startsWith('--'));
+    const phaseFlagIdx = subArgs.indexOf('--phase');
+    const target = argvIdx > 0 ? subArgs[argvIdx]
+      : (phaseFlagIdx !== -1 ? subArgs[phaseFlagIdx + 1] : null);
+    if (!target) throw new Error('phase rename-dir requires a phase number');
+    const apply = subArgs.includes('--apply');
+
+    const found = cmdFindPhase([String(target)]);
+    if (!found.exists) throw new Error(`No phase directory on disk for phase ${target}`);
+
+    const roadmapLib = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+    const rp = roadmapLib.dispatch(PROJECT_ROOT, ['get-phase', String(target)]);
+    if (!rp || !rp.found || !rp.name) {
+      throw new Error(`Phase ${target} not found in ROADMAP.md — nothing to rename toward`);
+    }
+
+    const slugify = (t) => String(t).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').replace(/-+/g, '-');
+    const newSlug = slugify(rp.name);
+    const phasesDir = path.join(PLANNING_DIR, 'phases');
+    const oldDirName = path.basename(found.dir);
+    const newDirName = `${target}-${newSlug}`;
+
+    if (oldDirName === newDirName) {
+      return { ok: true, renamed: false, reason: 'directory already matches the roadmap name', dir: found.dir };
+    }
+    const newPath = path.join(phasesDir, newDirName);
+    if (fs.existsSync(newPath)) {
+      throw new Error(`Target directory already exists: ${newDirName}. Resolve by hand — two phase dirs for one number is worse than a stale name.`);
+    }
+
+    if (!apply) {
+      return {
+        ok: true,
+        renamed: false,
+        dry_run: true,
+        from: oldDirName,
+        to: newDirName,
+        note: 'Dry run. Re-run with --apply to rename. Check first that the artifacts in this directory belong to the phase the roadmap now describes — if the phase was REPLACED rather than renamed, renaming hides that instead of fixing it.',
+      };
+    }
+
+    // Prefer `git mv` so the artifacts keep their history.
+    const oldPath = path.join(phasesDir, oldDirName);
+    let method = 'fs';
+    const { spawnSync } = require('child_process');
+    const gitMv = spawnSync('git', ['mv', oldPath, newPath], { cwd: PROJECT_ROOT, encoding: 'utf8' });
+    if (gitMv.status === 0) { method = 'git mv'; }
+    else { fs.renameSync(oldPath, newPath); }
+
+    return {
+      ok: true, renamed: true, method,
+      from: oldDirName, to: newDirName,
+      warning: 'Any file referencing the old path (SPRINT frontmatter, SUMMARY links, notes) still points at it. Grep for the old slug.',
+    };
+  }
+
   if (sub === 'scaffold-all') {
     const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
     const phasesDir   = path.join(PLANNING_DIR, 'phases');
@@ -5711,11 +5940,52 @@ function cmdFindPhase(args) {
     .map((d) => path.relative(PROJECT_ROOT, path.join(phasesDir, d)));
   if (!exact) return { number: target, exists: false, dir: null, slug: null, decimal_children };
   const slugMatch = exact.match(/^\d+(?:\.\d+)?[-](.+)$/);
+  const slug = slugMatch ? slugMatch[1] : '';
+
+  // Name drift: the directory keeps the slug it was created with, but ROADMAP.md
+  // can be rewritten under it. Resolving to the existing directory is correct —
+  // that is where the artifacts and the git history live, and auto-renaming would
+  // orphan both. Staying SILENT about the divergence is not: an agent reading
+  // `slug: foundation-contact-loop` while the roadmap says "Rentable Contact
+  // Layer" has no way to tell whether it is looking at the same work.
+  // Same class as the phase-identity drift in `state sync --from-disk`.
+  let name_drift = null;
+  try {
+    const roadmapPath = path.join(PLANNING_DIR, 'ROADMAP.md');
+    if (slug && fs.existsSync(roadmapPath)) {
+      const roadmapLib = require(path.join(__dirname, 'lib', 'roadmap.cjs'));
+      const rp = roadmapLib.dispatch(PROJECT_ROOT, ['get-phase', String(target)]);
+      const roadmapName = rp && rp.found ? String(rp.name || '') : '';
+      if (roadmapName) {
+        const slugify = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const fromRoadmap = slugify(roadmapName);
+        // Compare on word sets, not exact slugs — a truncated or reordered slug
+        // is normal, a different subject is the signal.
+        const words = (t) => new Set(String(t).split('-').filter(w => w.length > 3));
+        const dirWords = words(slug);
+        const roadWords = words(fromRoadmap);
+        const shared = [...dirWords].filter(w => roadWords.has(w)).length;
+        if (dirWords.size > 0 && roadWords.size > 0 && shared === 0) {
+          name_drift = {
+            dir_slug: slug,
+            roadmap_name: roadmapName,
+            note: 'Directory name and ROADMAP name share no significant words. '
+                + 'The phase may have been replaced under the same number. '
+                + 'The directory is NOT auto-renamed: its artifacts and git history '
+                + 'belong to whatever was built there. Confirm they are the same work '
+                + 'before planning or executing against it.',
+          };
+        }
+      }
+    }
+  } catch { /* drift detection is advisory — never fail a lookup over it */ }
+
   return {
     number: target,
     exists: true,
     dir: path.relative(PROJECT_ROOT, path.join(phasesDir, exact)),
-    slug: slugMatch ? slugMatch[1] : '',
+    slug,
+    name_drift,
     decimal_children,
   };
 }
@@ -6897,6 +7167,16 @@ async function main() {
         if (args[0] === 'list') { result = cmdPhasesList(args.slice(1)); if (result === undefined) return; }
         else { console.error('Unknown phases subcommand. Valid: list'); process.exit(1); }
         break;
+      case 'customize': {
+        const customize = require(path.join(__dirname, 'lib', 'customize.cjs'));
+        result = customize.dispatch(RCODE_DIR, args);
+        break;
+      }
+      case 'memlog': {
+        const memlog = require(path.join(__dirname, 'lib', 'memlog.cjs'));
+        result = memlog.dispatch(PLANNING_DIR, args);
+        break;
+      }
       case 'find-phase':
         result = cmdFindPhase(args);
         break;
@@ -7344,6 +7624,10 @@ async function main() {
         console.log('  phase next-range [count]                     → return next N contiguous free phase numbers (#730)');
         console.log('  phase scaffold-milestone --names "n1|n2|..." → bulk-create phase folders for a milestone (#731)');
         console.log('  phase scaffold-all                           → create missing phase folders for all phases in ROADMAP.md (#731)');
+        console.log('  phase rename-dir <N> [--apply]               → align a phase dir slug with its ROADMAP name (dry-run by default)');
+        console.log('  customize <resolve <name>|list|init <name>>  → per-workflow overrides in .rcode/custom/ that survive an update');
+        console.log('  memlog <init|append|read|open>               → append-only run memory (.planning/MEMLOG.md)');
+        console.log('    memlog append --type <decision|change|override|assumption|event|blocker> --text "..." [--phase N]');
         console.log('  workflow-config-audit                        → find workflows still referencing .planning/config.json (#733)');
         console.log('  commit "<msg>" [--files p1 p2 ...]          → atomic git commit with conventional-commits validation (no AI attribution, no --no-verify, no auto-push)');
         console.log('  commit-to-subrepo --subrepo <p> "<msg>"     → atomic commit inside a git subrepo (same validation as commit)');
@@ -7434,7 +7718,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','reset'];
+        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','set-intent','reset'];
         // Issue #656 — top-level aliases for intuitive guesses.
         const intuitionAliases = {
           blocker: 'state resolve-blocker',

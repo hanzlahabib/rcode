@@ -1028,8 +1028,241 @@ function cmdInitExecute(rawArgs) {
  *   record-council --slug <s> --panel <csv> --artifact <path>
  *   sync-from-git                  → recover phase/sprint state from git commit history (#915)
  */
+// Canonical state.json path. Hoisted to module scope (#1060) so readState()/
+// writeState() below — the locked, atomic reader/writer — are reusable by
+// every subcommand family (cmdState, cmdPhase, …), not just cmdState's own
+// closure. Previously cmdPhase's add/complete/sync-sprints/set-status
+// re-implemented read/write from scratch with no lock and no migration pass.
+const STATE_PATH = path.join(RCODE_DIR, 'state.json');
+
+/** Read state or return default skeleton. */
+function readState() {
+  if (!fs.existsSync(STATE_PATH)) return null;
+  const stats = fs.statSync(STATE_PATH);
+  if (stats.size > 10 * 1024 * 1024) {
+    throw new Error('state.json exceeds 10 MB limit — possible corruption');
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+    const migrated = migrateState(raw);
+    // One-time idempotent status migration (#955): persist the normalized
+    // phase statuses back to disk the first time legacy aliases are found,
+    // so state.json itself becomes canonical and every other reader (e.g.
+    // resolveActivePhase() in state-reader.cjs, which reads the file
+    // directly rather than through this helper) sees clean values too.
+    // Idempotent: once written, raw already matches migrated and this is a
+    // no-op on every subsequent load.
+    const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
+    const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
+    const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
+    if (hasLegacyStatus) {
+      writeState(migrated);
+    }
+    return migrated;
+  } catch (e) {
+    throw new Error(`Invalid JSON in state.json: ${e.message}`);
+  }
+}
+
+// Canonical phase status enum (#955, reconciled #1060). This is the single
+// source of truth for valid phase statuses — both migrateState()'s alias
+// normalization and `phase set-status`'s validation read from it, so the
+// two can no longer drift the way they did before (validStatuses used to
+// list its own hand-maintained, differently-spelled array).
+//
+// 'executed' and 'verified' are DISTINCT pipeline states, not legacy
+// spellings of 'complete' — execute.md's two-step gate (executed → only
+// promoted to complete once VERIFICATION.md passes) has nothing real to
+// check against if the alias table silently collapses 'executed' into
+// 'complete' on every read. Only 'completed' (a spelling variant of the
+// same state) is aliased.
+const PHASE_STATUS_ALIASES = {
+  completed: 'complete',
+};
+const PHASE_STATUS_ENUM = new Set(['planned', 'executing', 'executed', 'complete', 'blocked']);
+
+/** Map a legacy status spelling to the canonical enum value (idempotent). */
+function normalizePhaseStatus(status) {
+  if (typeof status !== 'string') return status;
+  return PHASE_STATUS_ALIASES[status] ?? status;
+}
+
+/**
+ * migrateState — pure normalizer that upgrades any legacy state shape to v2.
+ *
+ * v0: { milestone: string, no phases[], no schema_version }
+ * v1: { phases[] with mixed shapes, schema_version: 1 }
+ * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
+ *
+ * This function is PURE — it never writes to disk. readState() calls it on
+ * every read so all callers transparently receive v2-shaped data. (#735)
+ */
+function migrateState(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const state = Object.assign({}, raw);
+
+  // --- milestones[] array (v0 → v2) ---
+  // v0 state has milestone as a plain string and no milestones array.
+  if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
+    state.milestones = [{
+      id: state.milestone,
+      name: state.milestone,
+      status: 'active',
+    }];
+  }
+  if (!Array.isArray(state.milestones)) {
+    state.milestones = [];
+  }
+
+  // --- phases[] uniform shape (v1 → v2) ---
+  // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
+  if (Array.isArray(state.phases)) {
+    state.phases = state.phases.map(p => {
+      if (!p || typeof p !== 'object') return p;
+      // Resolve number: prefer p.number, fall back to numeric part of p.id
+      let number = p.number ?? null;
+      if (number === null && typeof p.id === 'string') {
+        const m = p.id.match(/^(\d+(?:\.\d+)?)/);
+        if (m) number = m[1];
+      }
+      // Resolve id: prefer p.id, synthesize from number
+      const id = p.id ?? (number !== null ? String(number) : undefined);
+      return {
+        number: number ?? p.id ?? null,
+        id: id ?? null,
+        name: p.name ?? null,
+        status: normalizePhaseStatus(p.status ?? 'planned'),
+        started: p.started ?? null,
+        completed: p.completed ?? null,
+        sprints: Array.isArray(p.sprints) ? p.sprints : [],
+        // Preserve any extra fields that callers may rely on
+        ...Object.fromEntries(
+          Object.entries(p).filter(([k]) =>
+            !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
+          )
+        ),
+      };
+    });
+  }
+
+  state.schema_version = 2;
+  return state;
+}
+
+/** Atomic write: write to temp file then rename. */
+function writeState(state) {
+  function isProcessAlive(pid) {
+    try { process.kill(pid, 0); return true; } catch { return false; }
+  }
+  // #8 — stamp schema_version on every write so legacy state files
+  // (no field) auto-gain the explicit tag. Never demotes an existing
+  // higher version — only fills the missing case. Bumping the version
+  // is the migrator's job, not this helper.
+  if (typeof state.schema_version !== 'number') state.schema_version = 1;
+
+  // Issue #681: auto-clear the install-time _seeded_stub marker once the
+  // state has graduated to a real project (project field set + at least one
+  // real phase OR REQUIREMENTS.md present). project-status (#675) reads
+  // _seeded_stub; if no writer ever clears it, every project stays "stub"
+  // forever and downstream workflows misroute.
+  if (state._seeded_stub === true) {
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    const firstPhaseName = phases[0]?.name || '';
+    const hasRealPhase = phases.length > 1 ||
+      (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
+    const hasRequirements = (() => {
+      try {
+        return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
+      } catch { return false; }
+    })();
+    if ((state.project && hasRealPhase) || hasRequirements) {
+      delete state._seeded_stub;
+    }
+  }
+
+  // Issue #681: auto-clear the install-time _seeded_stub marker once the
+  // state has graduated to a real project (project field set + at least one
+  // real phase OR REQUIREMENTS.md present). project-status (#675) reads
+  // _seeded_stub; if no writer ever clears it, every project stays "stub"
+  // forever and downstream workflows misroute.
+  if (state._seeded_stub === true) {
+    const phases = Array.isArray(state.phases) ? state.phases : [];
+    const firstPhaseName = phases[0]?.name || '';
+    const hasRealPhase = phases.length > 1 ||
+      (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
+    const hasRequirements = (() => {
+      try {
+        return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
+      } catch { return false; }
+    })();
+    if ((state.project && hasRealPhase) || hasRequirements) {
+      delete state._seeded_stub;
+    }
+  }
+
+  state.updated = new Date().toISOString();
+  fs.mkdirSync(RCODE_DIR, { recursive: true });
+  const lockPath = STATE_PATH + '.lock';
+  let attempts = 0;
+  while (fs.existsSync(lockPath) && attempts < 50) {
+    // Check if lock holder is alive
+    const lockPid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10);
+    if (lockPid && !isProcessAlive(lockPid)) {
+      console.error(`Stale lock from PID ${lockPid} — removing`);
+      try { fs.unlinkSync(lockPath); } catch {}
+      break;
+    }
+    require('child_process').execSync('sleep 0.05'); // 50ms backoff
+    attempts++;
+  }
+  if (attempts >= 50) throw new Error('state.json locked too long');
+
+  try {
+    fs.writeFileSync(lockPath, String(process.pid));
+    const tmp = STATE_PATH + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
+    fs.renameSync(tmp, STATE_PATH);
+  } finally {
+    try { fs.unlinkSync(lockPath); } catch {}
+  }
+  return { ok: true, state };
+}
+
+/** Write state and return compact result (hides full state from output) */
+function writeStateCompact(state, meta) {
+  writeState(state);
+  return { ok: true, ...meta };
+}
+
+function defaultState(projectName) {
+  const now = new Date().toISOString();
+  return {
+    version: '1',
+    // #8 / #735 — explicit schema_version field for migration framework.
+    // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
+    // older state files transparently on read. New state starts at v2.
+    schema_version: 2,
+    project: projectName || path.basename(PROJECT_ROOT),
+    created: now,
+    updated: now,
+    current_phase: null,
+    current_plan: 0,
+    current_sprint: null,
+    phases: [],
+    milestones: [],
+    velocity_history: [],
+    executions: [],
+    decisions: [],
+    blockers: [],
+    council_sessions: [],
+    last_session: null,
+    workstreams: [],
+    active_workstream: null,
+  };
+}
+
 function cmdState(subArgs) {
-  const statePath = path.join(RCODE_DIR, 'state.json');
+  const statePath = STATE_PATH;
   const sub = subArgs[0];
 
   /** Parse --key value flags from subArgs starting at index. */
@@ -1068,225 +1301,6 @@ function cmdState(subArgs) {
       try { out.push(JSON.parse(t)); } catch (_) { /* skip malformed */ }
     }
     return out;
-  }
-
-  /** Read state or return default skeleton. */
-  function readState() {
-    if (!fs.existsSync(statePath)) return null;
-    const stats = fs.statSync(statePath);
-    if (stats.size > 10 * 1024 * 1024) {
-      throw new Error('state.json exceeds 10 MB limit — possible corruption');
-    }
-    try {
-      const raw = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      const migrated = migrateState(raw);
-      // One-time idempotent status migration (#955): persist the normalized
-      // phase statuses back to disk the first time legacy aliases are found,
-      // so state.json itself becomes canonical and every other reader (e.g.
-      // resolveActivePhase() in state-reader.cjs, which reads the file
-      // directly rather than through this helper) sees clean values too.
-      // Idempotent: once written, raw already matches migrated and this is a
-      // no-op on every subsequent load.
-      const rawPhases = Array.isArray(raw?.phases) ? raw.phases : [];
-      const migratedPhases = Array.isArray(migrated?.phases) ? migrated.phases : [];
-      const hasLegacyStatus = rawPhases.some((p, i) => p?.status !== migratedPhases[i]?.status);
-      if (hasLegacyStatus) {
-        writeState(migrated);
-      }
-      return migrated;
-    } catch (e) {
-      throw new Error(`Invalid JSON in state.json: ${e.message}`);
-    }
-  }
-
-  // Canonical phase status enum (#955). Legacy state files accumulated four
-  // spellings for the same three states — normalize on every read so callers
-  // never have to special-case 'completed'/'executed' against 'complete'.
-  const PHASE_STATUS_ALIASES = {
-    completed: 'complete',
-    executed: 'complete',
-    verified: 'complete',
-  };
-  const PHASE_STATUS_ENUM = new Set(['planned', 'executing', 'complete']);
-
-  /** Map a legacy status spelling to the canonical enum value (idempotent). */
-  function normalizePhaseStatus(status) {
-    if (typeof status !== 'string') return status;
-    return PHASE_STATUS_ALIASES[status] ?? status;
-  }
-
-  /**
-   * migrateState — pure normalizer that upgrades any legacy state shape to v2.
-   *
-   * v0: { milestone: string, no phases[], no schema_version }
-   * v1: { phases[] with mixed shapes, schema_version: 1 }
-   * v2 (target): { schema_version: 2, phases[] uniform, milestones[] array }
-   *
-   * This function is PURE — it never writes to disk. readState() calls it on
-   * every read so all callers transparently receive v2-shaped data. (#735)
-   */
-  function migrateState(raw) {
-    if (!raw || typeof raw !== 'object') return raw;
-    const state = Object.assign({}, raw);
-
-    // --- milestones[] array (v0 → v2) ---
-    // v0 state has milestone as a plain string and no milestones array.
-    if (typeof state.milestone === 'string' && !Array.isArray(state.milestones)) {
-      state.milestones = [{
-        id: state.milestone,
-        name: state.milestone,
-        status: 'active',
-      }];
-    }
-    if (!Array.isArray(state.milestones)) {
-      state.milestones = [];
-    }
-
-    // --- phases[] uniform shape (v1 → v2) ---
-    // v1 phases have mixed shapes: some {number, name}, others {id, name, status}.
-    if (Array.isArray(state.phases)) {
-      state.phases = state.phases.map(p => {
-        if (!p || typeof p !== 'object') return p;
-        // Resolve number: prefer p.number, fall back to numeric part of p.id
-        let number = p.number ?? null;
-        if (number === null && typeof p.id === 'string') {
-          const m = p.id.match(/^(\d+(?:\.\d+)?)/);
-          if (m) number = m[1];
-        }
-        // Resolve id: prefer p.id, synthesize from number
-        const id = p.id ?? (number !== null ? String(number) : undefined);
-        return {
-          number: number ?? p.id ?? null,
-          id: id ?? null,
-          name: p.name ?? null,
-          status: normalizePhaseStatus(p.status ?? 'planned'),
-          started: p.started ?? null,
-          completed: p.completed ?? null,
-          sprints: Array.isArray(p.sprints) ? p.sprints : [],
-          // Preserve any extra fields that callers may rely on
-          ...Object.fromEntries(
-            Object.entries(p).filter(([k]) =>
-              !['number', 'id', 'name', 'status', 'started', 'completed', 'sprints'].includes(k)
-            )
-          ),
-        };
-      });
-    }
-
-    state.schema_version = 2;
-    return state;
-  }
-
-  /** Atomic write: write to temp file then rename. */
-  function writeState(state) {
-    function isProcessAlive(pid) {
-      try { process.kill(pid, 0); return true; } catch { return false; }
-    }
-    // #8 — stamp schema_version on every write so legacy state files
-    // (no field) auto-gain the explicit tag. Never demotes an existing
-    // higher version — only fills the missing case. Bumping the version
-    // is the migrator's job, not this helper.
-    if (typeof state.schema_version !== 'number') state.schema_version = 1;
-
-    // Issue #681: auto-clear the install-time _seeded_stub marker once the
-    // state has graduated to a real project (project field set + at least one
-    // real phase OR REQUIREMENTS.md present). project-status (#675) reads
-    // _seeded_stub; if no writer ever clears it, every project stays "stub"
-    // forever and downstream workflows misroute.
-    if (state._seeded_stub === true) {
-      const phases = Array.isArray(state.phases) ? state.phases : [];
-      const firstPhaseName = phases[0]?.name || '';
-      const hasRealPhase = phases.length > 1 ||
-        (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
-      const hasRequirements = (() => {
-        try {
-          return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
-        } catch { return false; }
-      })();
-      if ((state.project && hasRealPhase) || hasRequirements) {
-        delete state._seeded_stub;
-      }
-    }
-
-    // Issue #681: auto-clear the install-time _seeded_stub marker once the
-    // state has graduated to a real project (project field set + at least one
-    // real phase OR REQUIREMENTS.md present). project-status (#675) reads
-    // _seeded_stub; if no writer ever clears it, every project stays "stub"
-    // forever and downstream workflows misroute.
-    if (state._seeded_stub === true) {
-      const phases = Array.isArray(state.phases) ? state.phases : [];
-      const firstPhaseName = phases[0]?.name || '';
-      const hasRealPhase = phases.length > 1 ||
-        (firstPhaseName && firstPhaseName !== 'Setup & Scaffolding');
-      const hasRequirements = (() => {
-        try {
-          return fs.existsSync(path.join(PROJECT_ROOT, '.planning', 'REQUIREMENTS.md'));
-        } catch { return false; }
-      })();
-      if ((state.project && hasRealPhase) || hasRequirements) {
-        delete state._seeded_stub;
-      }
-    }
-
-    state.updated = new Date().toISOString();
-    fs.mkdirSync(RCODE_DIR, { recursive: true });
-    const lockPath = statePath + '.lock';
-    let attempts = 0;
-    while (fs.existsSync(lockPath) && attempts < 50) {
-      // Check if lock holder is alive
-      const lockPid = parseInt(fs.readFileSync(lockPath, 'utf8'), 10);
-      if (lockPid && !isProcessAlive(lockPid)) {
-        console.error(`Stale lock from PID ${lockPid} — removing`);
-        try { fs.unlinkSync(lockPath); } catch {}
-        break;
-      }
-      require('child_process').execSync('sleep 0.05'); // 50ms backoff
-      attempts++;
-    }
-    if (attempts >= 50) throw new Error('state.json locked too long');
-
-    try {
-      fs.writeFileSync(lockPath, String(process.pid));
-      const tmp = statePath + '.tmp';
-      fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + '\n');
-      fs.renameSync(tmp, statePath);
-    } finally {
-      try { fs.unlinkSync(lockPath); } catch {}
-    }
-    return { ok: true, state };
-  }
-
-  /** Write state and return compact result (hides full state from output) */
-  function writeStateCompact(state, meta) {
-    writeState(state);
-    return { ok: true, ...meta };
-  }
-
-  function defaultState(projectName) {
-    const now = new Date().toISOString();
-    return {
-      version: '1',
-      // #8 / #735 — explicit schema_version field for migration framework.
-      // v2: phases[] uniform shape + milestones[] array. migrateState() upgrades
-      // older state files transparently on read. New state starts at v2.
-      schema_version: 2,
-      project: projectName || path.basename(PROJECT_ROOT),
-      created: now,
-      updated: now,
-      current_phase: null,
-      current_plan: 0,
-      current_sprint: null,
-      phases: [],
-      milestones: [],
-      velocity_history: [],
-      executions: [],
-      decisions: [],
-      blockers: [],
-      council_sessions: [],
-      last_session: null,
-      workstreams: [],
-      active_workstream: null,
-    };
   }
 
   // --- read / get ---
@@ -3938,17 +3952,12 @@ function cmdPhase(subArgs) {
     // and every other state-writing subcommand. Phase 6 dogfood surfaced this:
     // earlier drafts wrote to .planning/state.json, creating an orphan file
     // invisible to `state sync` / `state set-phase` / etc. Closes #462.
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    let state;
-    if (fs.existsSync(statePath)) {
-      try {
-        state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      } catch (e) {
-        throw new Error(`Invalid JSON in state.json: ${e.message}`);
-      }
-    } else {
-      state = { phases: [], decisions: [], blockers: [] };
-    }
+    //
+    // Routed through readState()/writeState() (#1060) instead of ad-hoc
+    // JSON.parse/fs.writeFileSync — gets the locked, atomic writer and the
+    // migration pass every other state reader/writer gets, closing the lost-
+    // update race between concurrent executor agents each calling `phase *`.
+    let state = readState() || { phases: [], decisions: [], blockers: [] };
     if (!state.phases) state.phases = [];
 
     let number;
@@ -4124,13 +4133,7 @@ function cmdPhase(subArgs) {
       completed: null,
       plan_count: 0,
     });
-    state.updated = new Date().toISOString();
-    // Ensure the directory holding statePath (RCODE_DIR) exists.
-    const stateDir = path.dirname(statePath);
-    if (!fs.existsSync(stateDir)) {
-      fs.mkdirSync(stateDir, { recursive: true });
-    }
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
 
     // #942 — surface the milestone close nudge from the CLI itself so it can't
     // be bypassed by adding phases outside the add-phase workflow.
@@ -4154,13 +4157,10 @@ function cmdPhase(subArgs) {
   if (sub === 'complete') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase complete requires <phase_number>');
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
     const idx = state.phases.findIndex(p =>
       String(p.number) === String(phaseRef) ||
@@ -4203,7 +4203,7 @@ function cmdPhase(subArgs) {
       .filter(p => parseInt(String(p.number), 10) > num)
       .sort((a, b) => parseInt(String(a.number), 10) - parseInt(String(b.number), 10))[0] || null;
 
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
 
     // #943 — when no open phases remain, the milestone is effectively finished.
     // Surface the close/next guidance from this chokepoint so finishing the
@@ -4242,13 +4242,10 @@ function cmdPhase(subArgs) {
   if (sub === 'sync-sprints') {
     const phaseRef = subArgs[1];
     if (!phaseRef) throw new Error('phase sync-sprints requires <phase_number>');
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
     const idx = state.phases.findIndex(p =>
       String(p.number) === String(phaseRef) ||
@@ -4306,7 +4303,7 @@ function cmdPhase(subArgs) {
 
     state.phases[idx].sprints = sprints;
     state.phases[idx].plan_count = sprints.length;
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
     return {
       ok: true,
       phase: phaseRef,
@@ -4319,19 +4316,21 @@ function cmdPhase(subArgs) {
     const phaseRef = subArgs[1];
     const newStatus = subArgs[2];
     if (!phaseRef) throw new Error('phase set-status requires <phase_number> <status>');
-    if (!newStatus) throw new Error('phase set-status requires <status> (e.g., executed, complete, blocked)');
-    const validStatuses = ['planned', 'in_progress', 'executed', 'complete', 'blocked'];
+    // Reconciled with the canonical PHASE_STATUS_ENUM (#1060) — this used to
+    // be a separately hand-maintained array ('in_progress' instead of
+    // 'executing', no shared source with migrateState()'s normalizer), which
+    // is exactly the kind of drift that let two different notions of "valid
+    // phase status" diverge.
+    const validStatuses = [...PHASE_STATUS_ENUM];
+    if (!newStatus) throw new Error(`phase set-status requires <status> (e.g., ${validStatuses.join(', ')})`);
     if (!validStatuses.includes(newStatus)) {
       throw new Error(`Invalid status "${newStatus}". Valid: ${validStatuses.join(', ')}`);
     }
 
-    const statePath = path.join(RCODE_DIR, 'state.json');
-    if (!fs.existsSync(statePath)) {
-      throw new Error(`state.json not found at ${statePath} — run 'rcode-tools state init' first`);
+    const state = readState();
+    if (!state) {
+      throw new Error(`state.json not found at ${STATE_PATH} — run 'rcode-tools state init' first`);
     }
-    let state;
-    try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
-    catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     if (!state.phases) state.phases = [];
 
     const phaseIdx = state.phases.findIndex(p =>
@@ -4346,7 +4345,7 @@ function cmdPhase(subArgs) {
     state.phases[phaseIdx].status = newStatus;
     state.phases[phaseIdx].status_updated = new Date().toISOString();
 
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n');
+    writeState(state);
     return { ok: true, phase: phaseRef, previous_status: previous, new_status: newStatus };
   }
 
@@ -4448,7 +4447,8 @@ function cmdPhase(subArgs) {
     }
     let state = { phases: [] };
     if (fs.existsSync(statePath)) {
-      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); }
+      catch (e) { throw new Error(`Invalid JSON in state.json: ${e.message}`); }
     }
     if (!Array.isArray(state.phases)) state.phases = [];
 

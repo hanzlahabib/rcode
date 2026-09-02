@@ -127,28 +127,69 @@ function extractPhases(content) {
   return phases;
 }
 
+// Requirement IDs come in two shapes and BOTH are real:
+//   REQ-AUTH, REQ-FOO-BAR   — the documented convention
+//   FOUND-01, RENT-04, OBJ-06, AUTHZ-04 — what projects actually write
+// This must stay in step with extractReqIds() in rcode-tools.cjs. Two copies of
+// this pattern already drifted once: one was widened for domain prefixes and
+// this one was not, so `roadmap get-phase` kept returning requirements: [] on
+// every domain-prefixed project.
+const REQ_ID_RE = /\bREQ-[A-Z0-9][A-Z0-9-]*\b|\b[A-Z][A-Z0-9]{1,15}-\d+[a-z]?\b/g;
+
+/**
+ * Build a matcher for a labelled block, tolerant of how the label is actually
+ * written. Roadmapper emits `**Success criteria:**` (colon inside the bold,
+ * lowercase c) while the old parser demanded `**Success Criteria**:` (colon
+ * outside). Two rcode components disagreeing about rcode's own format is what
+ * made get-phase unable to read its own roadmapper's output.
+ *
+ * Accepts: **Label:**  |  **Label**:  |  ## Label  |  Label:
+ * Returns { inline, list } — inline is same-line content, list is the block
+ * of bullet/numbered lines that follows. Callers use whichever is present.
+ */
+function matchLabelledBlock(section, label) {
+  const l = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // [ \t]* everywhere the match must NOT cross a line. Using \s* here let the
+  // label matcher swallow the newline, so the first bullet of the following
+  // list was captured as "inline" and its description text was thrown away —
+  // `- CITY-02 per-city page exists` came back as just `CITY-02`.
+  const re = new RegExp(
+    '(?:\\*\\*[ \\t]*' + l + '[ \\t]*:?[ \\t]*\\*\\*[ \\t]*:?|#{1,4}[ \\t]*' + l + '[ \\t]*:?|^[ \\t]*' + l + '[ \\t]*:)' +
+    '([^\\n]*)\\n((?:[ \\t]*(?:\\d+\\.|[-*])[ \\t]+[^\\n]+\\n?)*)',
+    'im'
+  );
+  const m = section.match(re);
+  if (!m) return null;
+  return { inline: (m[1] || '').trim(), list: m[2] || '' };
+}
+
+function splitListBlock(block) {
+  return String(block).split('\n')
+    .map((l) => l.replace(/^[ \t]*(?:\d+\.|[-*])[ \t]+/, '').trim())
+    .filter(Boolean);
+}
+
 function parseRequirements(section) {
-  // Matches both bold-style (**Requirements:**) and heading-style (### Requirements)
-  // followed by a list block.
-  const listMatch = section.match(/(?:\*\*Requirements(?::\*\*|\*\*:)|#{1,4}\s*Requirements\s*:?)[^\n]*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
-  if (listMatch) {
-    return listMatch[1].split('\n')
-      .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
-      .filter(Boolean);
+  const block = matchLabelledBlock(section, 'Requirements');
+  if (block) {
+    // A following list block wins; otherwise take the same-line value, which is
+    // how roadmapper writes it: `**Requirements:** FOUND-01, FOUND-02, RENT-04`.
+    const fromList = splitListBlock(block.list);
+    if (fromList.length > 0) return fromList;
+    if (block.inline) {
+      const ids = block.inline.match(REQ_ID_RE);
+      if (ids && ids.length > 0) return [...new Set(ids)];
+      return block.inline.split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
+    }
   }
 
-  // Also capture REQ-IDs from inline lines like:
-  //   **REQs:** REQ-004, REQ-010, REQ-020
-  //   Requirements: REQ-001, REQ-002
-  //   **Covers:** REQ-001, REQ-003
-  // Collect every line in the section that contains REQ-\d+ patterns.
+  // Last resort: sweep the whole section for requirement IDs on any line
+  // (covers `**REQs:**`, `**Covers:**`, and prose mentions).
   const seen = new Set();
   const out = [];
-  const reqIdRe = /\bREQ-[A-Z0-9][A-Z0-9-]*\b/g;
   for (const line of section.split('\n')) {
-    if (!/REQ-/i.test(line)) continue;
-    const ids = line.match(reqIdRe) || [];
-    for (const id of ids) {
+    const matches = line.match(REQ_ID_RE) || [];
+    for (const id of matches) {
       if (!seen.has(id)) { seen.add(id); out.push(id); }
     }
   }
@@ -156,12 +197,11 @@ function parseRequirements(section) {
 }
 
 function parseSuccessCriteria(section) {
-  // Matches both bold-style (**Success Criteria:**) and heading-style (### Success Criteria)
-  const match = section.match(/(?:\*\*Success Criteria\*\*[^\n]*:|#{1,4}\s*Success Criteria\s*:?)\s*\n((?:\s*(?:\d+\.|[-*])\s+[^\n]+\n?)+)/i);
-  if (!match) return [];
-  return match[1].split('\n')
-    .map((l) => l.replace(/^\s*(?:\d+\.|[-*])\s+/, '').trim())
-    .filter(Boolean);
+  const block = matchLabelledBlock(section, 'Success criteria');
+  if (!block) return [];
+  const fromList = splitListBlock(block.list);
+  if (fromList.length > 0) return fromList;
+  return block.inline ? [block.inline] : [];
 }
 
 function parsePlans(section) {

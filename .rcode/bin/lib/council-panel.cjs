@@ -429,30 +429,30 @@ function scoreAgent(agentId, normalizedQuestion) {
 }
 
 function applyPriorityBoosts(scores, normalizedQuestion) {
-  if (SADIQ_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (SADIQ_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.sadiq = (scores.sadiq || 0) + 5;
   }
-  if (PM_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (PM_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores['hussain-pm'] = (scores['hussain-pm'] || 0) + 3;
   }
-  if (MARKET_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (MARKET_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.mariam = (scores.mariam || 0) + 6; // Mariam leads market questions
     scores['hussain-pm'] = (scores['hussain-pm'] || 0) + 3; // PM follows for scoping
   }
   // Domain boosts — lift the right technical expert when signal is clear
-  if (FE_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (FE_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.haitham = (scores.haitham || 0) + 4;
   }
-  if (BE_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (BE_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.yousef = (scores.yousef || 0) + 4;
   }
-  if (ML_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (ML_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.zayd = (scores.zayd || 0) + 4;
   }
-  if (DEPLOY_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (DEPLOY_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.khalid = (scores.khalid || 0) + 4;
   }
-  if (QUALITY_TRIGGERS.some((t) => normalizedQuestion.includes(t))) {
+  if (QUALITY_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t))) {
     scores.fatima = (scores.fatima || 0) + 4;
   }
   return scores;
@@ -463,16 +463,16 @@ function applyPriorityBoosts(scores, normalizedQuestion) {
  * Returns: 'fe' | 'be' | 'ml' | 'deploy' | 'quality' | 'market' | 'strategic' | 'general'
  */
 function detectDomain(normalizedQuestion, scores) {
-  const isMarket = MARKET_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const isMarket = MARKET_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
   if (isMarket) return 'market';
 
-  const isStrategic = SADIQ_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const isStrategic = SADIQ_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
 
-  const feTrigger = FE_TRIGGERS.some((t) => normalizedQuestion.includes(t));
-  const beTrigger = BE_TRIGGERS.some((t) => normalizedQuestion.includes(t));
-  const mlTrigger = ML_TRIGGERS.some((t) => normalizedQuestion.includes(t));
-  const deployTrigger = DEPLOY_TRIGGERS.some((t) => normalizedQuestion.includes(t));
-  const qualityTrigger = QUALITY_TRIGGERS.some((t) => normalizedQuestion.includes(t));
+  const feTrigger = FE_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
+  const beTrigger = BE_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
+  const mlTrigger = ML_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
+  const deployTrigger = DEPLOY_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
+  const qualityTrigger = QUALITY_TRIGGERS.some((t) => matchesKeyword(normalizedQuestion, t));
 
   // Multiple technical domains present — fall back to top-scoring agent
   const technicalCount = [feTrigger, beTrigger, mlTrigger, deployTrigger, qualityTrigger].filter(Boolean).length;
@@ -576,12 +576,12 @@ function explainSelection(question, opts = {}) {
   const panel = selectPanel(question, opts);
   return {
     question, normalized, scores, panel, domain,
-    sadiq_triggered: SADIQ_TRIGGERS.some((t) => normalized.includes(t)),
-    pm_triggered: PM_TRIGGERS.some((t) => normalized.includes(t)),
-    fe_triggered: FE_TRIGGERS.some((t) => normalized.includes(t)),
-    be_triggered: BE_TRIGGERS.some((t) => normalized.includes(t)),
-    ml_triggered: ML_TRIGGERS.some((t) => normalized.includes(t)),
-    deploy_triggered: DEPLOY_TRIGGERS.some((t) => normalized.includes(t)),
+    sadiq_triggered: SADIQ_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
+    pm_triggered: PM_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
+    fe_triggered: FE_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
+    be_triggered: BE_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
+    ml_triggered: ML_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
+    deploy_triggered: DEPLOY_TRIGGERS.some((t) => matchesKeyword(normalized, t)),
   };
 }
 
