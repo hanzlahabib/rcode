@@ -1,6 +1,6 @@
 {
   "name": "@hanzlaa/rcode",
-  "version": "4.16.0",
+  "version": "4.16.1",
   "description": "rcode — the AI team that never forgets. Persistent memory, specialist agents, and slash commands for AI IDEs. Works in Claude Code, Cursor, Gemini, VS Code, and Antigravity.",
   "main": "cli/index.js",
   "bin": {

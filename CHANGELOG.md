@@ -3,6 +3,72 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.16.1 (2026-09-02) — rcode was invisible to natural language
+
+All from one report: with rcode installed, "raise PR" reached no rcode command
+at all. The agent hand-rolled `gh pr create`, and rcode's own git-flow
+conventions never loaded because nothing activated.
+
+### 91 of 117 commands could not auto-activate
+
+`pr-branch` and `ship` have workflows and commands but **no SKILL.md** — no
+description, no triggers, nothing for a model to match. They are not alone:
+
+| Commands | 117 |
+|---|---|
+| With a real skill | 26 |
+| With none | **91** |
+
+The stub generator that covers the rest was gated on an allowlist holding one
+entry, `'do'`. A fresh install generated exactly one stub — and that stub
+triggered only on the literal word "rcode". rcode was opt-in by name for 91 of
+its own capabilities.
+
+**The router now carries 18 natural-language lifecycle intents** — raising a PR,
+planning or executing a phase, auditing, starting a milestone, updating rcode.
+
+Why this is not fragile, and why the fix stops at the router:
+
+- **`rcode-do` asks, it never acts.** A false positive costs one question. A miss
+  costs what it cost here.
+- **Every intent is multi-word.** Bare verbs — `ship`, `plan`, `audit`, `review` —
+  appear constantly in ordinary conversation. A test fails the build if a
+  single-word trigger is ever added.
+- **Only the router gets conversational phrases.** 117 skills each claiming them
+  is how a toolchain starts hijacking ordinary requests, which is worse than
+  being invisible.
+
+### Every generated stub had an empty description
+
+`parseFrontmatter` could not read YAML folded scalars, and every command's
+description is written as a `>-` block. So each stub shipped with only its
+placeholder line: the model got a trigger with no idea what the command was for.
+
+### `--non-destructive` deleted 218 tracked files
+
+With a global install present, dedup removed every project-level
+`.claude/commands/rcode-*.md` as a "duplicate" — including files a repo had
+deliberately force-tracked for collaborators and CI. A routine package update
+became a 218-deletion pull request, under a flag named `--non-destructive`.
+
+**A file a repo chose to commit is a decision, not a redundant copy.** Dedup now
+skips git-tracked files and reports what it kept and why.
+
+### The health check cried wolf on a correct install
+
+Counting only project-level commands meant the normal dedup outcome — commands
+resolving from the global install — reported "install may be broken". It now
+counts what the user can actually reach, project plus global.
+
+### `--local-only` states its cost up front
+
+Self-containment has a running price that previously only surfaced in a pull
+request: every rcode update becomes a diff of tens of thousands of lines, and any
+local edit to those files is silently overwritten by the next install. The
+installer now says so, and names the alternative — one setup step in CI and on
+fresh clones.
+
+---
 ## v4.16.0 (2026-09-01) — Worktrees stop breaking rcode
 
 Two failures, one root: rcode's own gitignore block hides `.rcode/bin/`,
