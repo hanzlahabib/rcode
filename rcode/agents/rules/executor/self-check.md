@@ -55,7 +55,7 @@ Run these before finalizing:
 ### 1. Verify All Tasks Completed
 ```bash
 # Count tasks in plan
-PLAN_TASKS=$(grep -c "^<task" .planning/phases/XX-name/PLAN.md)
+PLAN_TASKS=$(grep -c "^<task" .planning/phases/XX-name/SPRINT.md)
 echo "Plan declares: $PLAN_TASKS tasks"
 
 # Count commits in SUMMARY
