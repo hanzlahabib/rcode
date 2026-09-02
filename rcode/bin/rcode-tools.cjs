@@ -7574,6 +7574,11 @@ async function main() {
         result = gitignore.cmdGitignore(args, { PROJECT_ROOT, RCODE_DIR });
         break;
       }
+      case 'memory-digest': {
+        const memoryDigest = require(path.join(__dirname, 'lib', 'memory-digest.cjs'));
+        result = memoryDigest.cmdMemoryDigest(args, { RCODE_DIR });
+        break;
+      }
       case 'agent-skills':
         result = cmdAgentInfo(args[0]);
         break;

@@ -56,7 +56,7 @@ Walks the Memory Bank and reports problems. Stale entries (referencing milestone
 3. **Template placeholders unfilled** — files still contain `{{PLACEHOLDER}}` patterns or `_(e.g. ...)_` italicised hints from templates
 4. **Stack vs decisions contradiction** — a decision in `decisions.md` references a stack item that doesn't appear in `stack.md`
 5. **Empty subdirectories** — `change-records/`, `incidents/post-mortems/`, `milestones/archive/` contain only `.gitkeep`
-6. **Distillate freshness** — `distillates/*.distillate.md` `source-digest` does not match current source files
+6. **Distillate freshness** — `distillates/*.distillate.md` `source-digest` does not match the current content-based digest from `node .rcode/bin/rcode-tools.cjs memory-digest <project|stack>` (content hash, not mtime — stable across `git clone`/`checkout`/`worktree add`)
 
 ## Output Format
 
