@@ -20,7 +20,7 @@ Baseline: `node --test` = 664/664 passing on `main` before this campaign started
 - [x] #958 — already fully implemented (28th such finding). Closed with evidence.
 - [x] #968 — already resolved as a side effect of #958. Closed with evidence.
 - [ ] #1070 — feat(review): detection-depth gap vs Codex (new, filed 2026-09-03). Not yet scoped/started.
-- [ ] #1071 — chore(memory): this repo's own Memory Bank has real drift (new, filed 2026-09-03, found while verifying #958). Small, self-contained.
+- [x] #1071 — chore(memory): this repo's own Memory Bank has real drift. Fixed (bfffefa), merged to campaign-github-tickets. Open on GitHub until landed to main.
 
 ## Done (this session, outside the original 33)
 
