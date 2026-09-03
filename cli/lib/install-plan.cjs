@@ -42,6 +42,14 @@ function readRcodeIgnore(root) {
     .filter((l) => l && !l.startsWith('#'));
 }
 
+/**
+ * Build the list of (sourcePath, targetRelativePath) install pairs. Each
+ * entry describes one file we will copy and where it lands in the target
+ * project. Returning the list up-front lets us do a dry-run or hash-check
+ * pass before touching the disk.
+ *
+ * For cursor IDE, converts command files from .md to .mdc format.
+ */
 function buildInstallPlan(ide = 'claude', target = process.cwd()) {
   // Support array of IDEs — merge plans with deduplication (#449/#450 multi-IDE).
   if (Array.isArray(ide)) {
