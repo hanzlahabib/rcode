@@ -370,7 +370,7 @@ If "Run discuss-phase first":
 
 @.rcode/workflows/plan-effort-tier.md
 
-This sets `RISK_KEYWORDS_FOUND` and (unless `--tier` overrides it) may set `EFFORT_TIER_SKIP_RESEARCH=true`, which step 5 below reads as equivalent to `--skip-research` having been passed. The Post-Plan Gate section of the same file is NOT applied here — it's read now, applied later at step 9, once `SPRINT_COUNT` is known.
+This sets `RISK_KEYWORDS_FOUND` and (unless `--tier` overrides it) may set `EFFORT_TIER_SKIP_RESEARCH=true`, which step 5 below reads as equivalent to `--skip-research` having been passed. It may also end the run early via the Trivial-Tier Pre-Flight Redirect (user chose `/rcode-quick` instead). The Post-Plan Gate section of the same file is NOT applied here — it's read now, applied later at step 9, once `SPRINT_COUNT` is known.
 
 @.rcode/workflows/plan-research-validation.md
 

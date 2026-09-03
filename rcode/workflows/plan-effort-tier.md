@@ -72,7 +72,8 @@ fi
 
 **If `RISK_KEYWORDS_FOUND` is `true`:** Do nothing — this is the "complex"
 case and it matches today's behavior exactly (no flag set, full pipeline
-runs).
+runs). Continue to the Trivial-Tier Pre-Flight Redirect below (it will also
+no-op — see its skip condition).
 
 **If `RISK_KEYWORDS_FOUND` is `false`:** Set `EFFORT_TIER_SKIP_RESEARCH=true`.
 Step 5 (`plan-research-validation.md`) treats this identically to
@@ -83,6 +84,84 @@ Display one line either way, so the skip is never silent:
 ```
 Effort-tier scan: {risk keywords found in {file} — full research pipeline | no risk keywords — research will be skipped}
 ```
+
+## Trivial-Tier Pre-Flight Redirect (Piece 4 of #950)
+
+**Skip if:** `RISK_KEYWORDS_FOUND` is `true`, or `EFFORT_TIER_OVERRIDE` is set
+to anything (the user already told us the tier explicitly — don't ask again),
+or `GAPS_MODE`/`FROM_STUB_MODE` is true (already excluded by the parent
+skip-condition at step 4.5).
+
+This is the same job `do.md`'s triage table already does for a fresh
+request ("A specific, actionable, small task ... → `/rcode-quick`", `do.md`
+line 393) — but a `/rcode-plan N` invocation bypasses `do.md` entirely, so a
+phase that's really a 1-file tweak still goes through the full
+research→plan→verify pipeline. This gate closes that gap for people who
+invoke `/rcode-plan` directly.
+
+Reuse the risk-free result from the Pre-Plan Gate above, plus a file-count
+signal from the same text already scanned (no planner output exists yet, so
+this can only be a text-based estimate — not the same file-ownership manifest
+step 8.5 builds from real `files_modified` frontmatter after planning):
+
+```bash
+FILE_MENTION_COUNT=$(grep -ohE '[A-Za-z0-9_./-]+\.[A-Za-z]{1,5}\b' \
+  "${PHASE_DIR}"/*-CONTEXT.md \
+  "${TASKS_FILE}" \
+  <(node ".rcode/bin/rcode-tools.cjs" roadmap get-phase "${PHASE}" --pick section 2>/dev/null) \
+  2>/dev/null | sort -u | wc -l | tr -d ' ')
+```
+
+**If `FILE_MENTION_COUNT` is 0:** Treat as inconclusive (the phase text
+mentions no filenames at all — not enough signal either way). Skip this gate
+silently, continue to step 5.
+
+**If `FILE_MENTION_COUNT` is between 1 and 3 (inclusive):** Offer the
+redirect. This NEVER auto-routes — #950 requires an explicit ask here, same
+rule as the UI safety gate at step 0.6 (which also never silently skips
+planning, only offers).
+
+If `TEXT_MODE` is true, present as a plain-text numbered list:
+```
+Phase {X} looks small — {FILE_MENTION_COUNT} file(s) mentioned, no risk keywords found. /rcode-quick handles this in one pass without a research/plan/verify pipeline.
+
+1. Run /rcode-quick instead [recommended for phases this small]
+2. Continue planning normally
+
+Enter number:
+```
+
+Otherwise use AskUserQuestion:
+```
+AskUserQuestion([
+  {
+    question: "Phase {X} looks like a small, self-contained change ({FILE_MENTION_COUNT} file(s) mentioned, no risk keywords). Run /rcode-quick instead of the full plan pipeline?",
+    header: "Trivial-tier redirect",
+    multiSelect: false,
+    options: [
+      { label: "Run /rcode-quick instead (Recommended)", description: "Skip research/plan/verify — /rcode-quick does the edit directly with the same state.json guarantees." },
+      { label: "Continue planning normally", description: "Proceed through /rcode-plan as usual — use this if the phase is bigger than it looks from the text alone." }
+    ]
+  }
+])
+```
+
+**If "Run /rcode-quick instead":** Display the command and exit — same
+pattern as the "Run discuss-phase first" branch in step 4 (do NOT invoke it
+as a nested Skill/Task call; AskUserQuestion does not work correctly in
+nested subcontexts):
+```
+Run this instead, then come back to /rcode-plan if it turns out to be bigger than expected:
+
+/rcode-quick {phase goal, one sentence} ${RCODE_WS}
+```
+**Exit the sprint-plan workflow. Do not continue.**
+
+**If "Continue planning normally":** Proceed to step 5. Do not ask again for
+the rest of this run.
+
+**If `FILE_MENTION_COUNT` is 4 or more:** Skip silently — this is no longer a
+small-phase signal. Continue to step 5.
 
 ## Post-Plan Gate (Piece 1 of #950)
 
@@ -130,3 +209,5 @@ conflicts — verification skipped (equivalent to --skip-verify).
 This is a sub-step invoked by `/rcode-plan`. If you reached this directly:
 
 - `/rcode-plan` — re-enter the parent flow which applies these gates in order
+- `/rcode-quick` — for a change small enough that the Trivial-Tier Pre-Flight
+  Redirect above would have offered it anyway
