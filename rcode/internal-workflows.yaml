@@ -20,6 +20,7 @@ internal:
   - new-project-create-roadmap       # sub-step of /rcode-new-project
   - new-project-define-requirements  # sub-step of /rcode-new-project
   - new-project-research-decision    # sub-step of /rcode-new-project
+  - plan-effort-tier                 # sub-step of /rcode-plan (#950)
   - plan-prd-express                 # express path, spawned by /rcode-plan
   - plan-research-validation         # sub-step of /rcode-plan
   - plan-spawn-planner               # planner dispatch, spawned by /rcode-plan
