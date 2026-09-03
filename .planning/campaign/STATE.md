@@ -1,20 +1,14 @@
-# Dashboard Redesign Campaign — State Log
+# GitHub Ticket Campaign — State Log
 
-- Integration branch: `campaign-integration` (forked from `main` @ a5d9786)
-- Status: ALL WAVES COMPLETE — 32 commits, 41 files, +3780/-594
-- Overrides approved by user: Preact allowed; Ask-rcode interactivity allowed.
+- Integration branch: `campaign-github-tickets` (forked from `main`)
+- Baseline: `node --test` = 664/664 passing on `main` before campaign start
+- Landing policy: commit locally only, no push, no PR (user instruction, 2026-09-03)
+- 33 issues total. 3 flagged plan-first (#110, #179, #204) — no autonomous execution until user sign-off.
+
+## Shipped (outside wave dispatch)
+
+- #947 (SessionStart greeter) — found already fully implemented (commit 1048a7b, 2026-06-29), issue was never closed after merge. Closed on GitHub 2026-09-03, no code change needed.
 
 ## Waves
-1. Wave 1: A1 gap-audit + A2 Preact foundation (course-corrected onto existing SPA)
-2. Wave 2: A3-A10 — 9 mockup cards + chrome + data layer + Ask-rcode/Share wiring
-3. Polish: P1 chrome + P2 cards — theme tokens (--dash-*, dark+light), dead links, spacing
-4. Wave 3: G1 readiness audit (202 lines, Top-10) + F1 per-task pipeline display
-5. Fix wave: R1 data honesty + R2 vendored runtime/perf/nav + R3 mobile/failure-visibility/a11y
 
-## Verified in browser (2026-06-12)
-- Dark + light themes both correct; Ask rcode runs /rcode-next; sessions panel live;
-  view links route; #tasks pipelines render; honest empty states ("No launch date set",
-  "No blockers 🎉"); sidebar = full real nav; preact vendored (offline-safe).
-
-## Pending decision
-- Landing: PR / merge to main / leave on branch — awaiting user (Phase 3 rule).
+- Wave 1 (dispatched 2026-09-03): plan-only agents for #110, #179, #204 (architectural, need sign-off before execution) + execution agents for #946, #949 (swapped in for #947 since it's already done)

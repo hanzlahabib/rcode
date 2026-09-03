@@ -2,9 +2,9 @@
 name: rcode-review
 internal: true
 description: >
-  Review code changes from seven parallel angles — three that gather evidence
-  (cold scan, what was removed, call-path trace) and four that judge (reuse,
-  simplification, efficiency, altitude) — then verify every finding
+  Review code changes from eight parallel angles — three that gather evidence
+  (cold scan, what was removed, call-path trace) and five that judge (reuse,
+  simplification, efficiency, altitude, concurrency) — then verify every finding
   adversarially before reporting, so false positives never reach the user. Activates when the user says "review this PR", "review
   this code", "run code review", "do a PR review", "review the diff", "review
   this branch", "critique this implementation", or "CR" — including when a
