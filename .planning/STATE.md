@@ -1,11 +1,11 @@
 # State Snapshot
 
-**Generated:** 2026-08-09T07:28:24.748Z
+**Generated:** 2026-09-03T04:11:55.490Z
 **Project:** rcode
 **Milestone:** M3 — Archon Dashboard Port (v5)
 **Current phase:** Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup
 **Current plan:** 6
-**Current sprint:** 47.1
+**Current sprint:** (none)
 
 ## Raw state.json
 
@@ -14,7 +14,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-08-09T07:28:21.942Z",
+  "updated": "2026-09-03T04:11:33.530Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -876,8 +876,8 @@
       "number": "35",
       "id": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "executing",
-      "started": "2026-06-12T19:51:42.903Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -938,8 +938,8 @@
       "number": "36",
       "id": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "status": "executing",
-      "started": "2026-06-12T19:51:53.546Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -1000,8 +1000,8 @@
       "number": "37",
       "id": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "status": "executing",
-      "started": "2026-06-12T19:52:10.476Z",
+      "status": "planned",
+      "started": null,
       "completed": null,
       "sprints": [
         {
@@ -1126,7 +1126,7 @@
       "number": "39",
       "id": "39",
       "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
-      "status": "planned",
+      "status": "complete",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1134,11 +1134,11 @@
           "id": "39.1",
           "number": 1,
           "goal": "Add full-spectrum content-site project type to project-types.yaml and branch rcode-project-researcher on it",
-          "status": "planned",
+          "status": "completed",
           "velocity_target": 10,
-          "velocity_actual": null,
+          "velocity_actual": 0,
           "started_at": null,
-          "completed_at": null,
+          "completed_at": "2026-09-03T04:11:33.461Z",
           "stories": [],
           "file": ".planning/phases/39-seo-module/39-1-SPRINT.md"
         },
@@ -1146,11 +1146,11 @@
           "id": "39.2",
           "number": 2,
           "goal": "Add comprehensive SEO intent routing to do.md covering all SEO disciplines",
-          "status": "planned",
+          "status": "completed",
           "velocity_target": 8,
-          "velocity_actual": null,
+          "velocity_actual": 0,
           "started_at": null,
-          "completed_at": null,
+          "completed_at": "2026-09-03T04:11:33.495Z",
           "stories": [],
           "file": ".planning/phases/39-seo-module/39-2-SPRINT.md"
         },
@@ -1158,11 +1158,11 @@
           "id": "39.3",
           "number": 3,
           "goal": "Bundle 8 SEO skills from ~/.agents/skills/ into rcode/skills/seo/ as installable seo module",
-          "status": "planned",
+          "status": "completed",
           "velocity_target": 10,
-          "velocity_actual": null,
+          "velocity_actual": 0,
           "started_at": null,
-          "completed_at": null,
+          "completed_at": "2026-09-03T04:11:33.529Z",
           "stories": [],
           "file": ".planning/phases/39-seo-module/39-3-SPRINT.md"
         }
@@ -1172,20 +1172,8 @@
       "created": "2026-06-24T13:51:28.383Z",
       "plan_count": 3,
       "plans": 3,
-      "planned_at": "2026-06-24T14:00:00.000Z"
-    },
-    {
-      "number": "13",
-      "id": "13",
-      "name": "thirteenth phase",
-      "status": "planned",
-      "started": null,
-      "completed": null,
-      "sprints": [],
-      "slug": "thirteenth-phase",
-      "goal": "_TBD — fill in via /rcode-discuss-phase 13 or edit directly._",
-      "created": "2026-06-27T21:14:32.090Z",
-      "plan_count": 0
+      "planned_at": "2026-06-24T14:00:00.000Z",
+      "completed_at": "2026-09-03"
     },
     {
       "number": "42",
@@ -1340,7 +1328,7 @@
       "number": "47",
       "id": "47",
       "name": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
-      "status": "executing",
+      "status": "complete",
       "started": "2026-08-09T07:21:06.308Z",
       "completed": null,
       "sprints": [
@@ -1357,11 +1345,13 @@
         }
       ],
       "slug": "fix-executemd-core-bugs-branch-protection-preflight-worktree-fallback-init-json-parsing-acceptancecriteria-cleanup",
-      "goal": "",
+      "goal": "Close 4 filed bugs in execute.md and its close siblings (git-preflight.md, execute-sprint.md, plan-spawn-planner.md): branch-protection preflight wrongly blocks when `branching_strategy: none`, `--allow-main`/`--on-main` flag-name mismatch, `||` fallback that never fires for `USE_WORKTREES`, stale/wrong JSON field paths documented for `init execute` output, and lingering `acceptance_criteria` completion-tier language that the planner contract no longer emits (issues #1014, #1015, #1017, #1020).",
       "created": "2026-08-09T06:44:00.871Z",
       "plan_count": 0,
       "plans": 1,
-      "planned_at": "2026-08-09T07:19:49.663Z"
+      "planned_at": "2026-08-09T07:19:49.663Z",
+      "status_updated": "2026-08-09T07:45:37.475Z",
+      "completed_at": "2026-08-09"
     }
   ],
   "executions": [
@@ -1399,6 +1389,13 @@
       "duration_ms": null,
       "commit_hash": "1f082db",
       "committed_at": "2026-08-06T12:02:03.052Z"
+    },
+    {
+      "plan": "47",
+      "tasks": 1,
+      "duration_ms": null,
+      "commit_hash": "9b48147",
+      "committed_at": "2026-08-09T07:45:41.041Z"
     }
   ],
   "decisions": [
@@ -1451,12 +1448,27 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "47.1",
+  "current_sprint": null,
   "velocity_history": [
     {
       "sprint": "04.1",
       "points": 15,
       "completed_at": "2026-04-17T05:35:16.056Z"
+    },
+    {
+      "sprint": "39.1",
+      "points": 0,
+      "completed_at": "2026-09-03T04:11:33.461Z"
+    },
+    {
+      "sprint": "39.2",
+      "points": 0,
+      "completed_at": "2026-09-03T04:11:33.495Z"
+    },
+    {
+      "sprint": "39.3",
+      "points": 0,
+      "completed_at": "2026-09-03T04:11:33.529Z"
     }
   ],
   "sprints": [
@@ -1939,6 +1951,14 @@
       "goal": "",
       "status": "planned",
       "file": ".planning/phases/46-wire-named-engineer-subagents-into-execute-dispatch-routing/46-1-SPRINT.md"
+    },
+    {
+      "key": "47/1",
+      "phase": "47",
+      "number": "1",
+      "goal": "",
+      "status": "planned",
+      "file": ".planning/phases/47-fix-executemd-core-bugs-branch-protection-preflight-worktree-fallback-init-json-parsing-acceptancecriteria-cleanup/47-1-SPRINT.md"
     }
   ],
   "plans": [],
