@@ -152,7 +152,7 @@ function installSkills(packageRoot, target, options = {}) {
     }
   }
 
-  for (const bucket of ['agents', 'actions', 'core']) {
+  for (const bucket of ['agents', 'actions', 'core', 'seo']) {
     walkForSkills(path.join(skillsSource, bucket));
   }
 
