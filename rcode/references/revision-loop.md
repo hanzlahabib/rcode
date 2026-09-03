@@ -15,7 +15,7 @@ When a plan is reviewed (by `rcode-plan-checker`, by a council, or by the user) 
    - **Counter** — disagree, document why, keep original plan.
    - **Defer** — out of scope for this phase; file as follow-up.
 
-3. **Apply.** Make the accepted changes to PLAN.md. Mark the diff in a "Revision N" section so reviewers can see what changed.
+3. **Apply.** Make the accepted changes to SPRINT.md. Mark the diff in a "Revision N" section so reviewers can see what changed.
 
 4. **Re-circulate.** Send the revised plan back to the reviewer that surfaced the blocker. If a council reviewed, send to the same panel.
 
@@ -29,10 +29,10 @@ Three revisions is the soft cap. If a plan needs four revisions, the underlying 
 
 ## What never happens
 
-- Silent acceptance. If a concern is rejected ("counter"), it's documented with a reason in the PLAN.md revision history.
+- Silent acceptance. If a concern is rejected ("counter"), it's documented with a reason in the SPRINT.md revision history.
 - Blanket revisions. Each round addresses specific concerns from specific reviewers. Don't bundle "various improvements" into a single revision.
 - Skipping the loop because the planner thinks they know better. The loop exists because reviewers catch what planners miss.
 
 ## Output of the loop
 
-A PLAN.md with a "Revision history" section showing each round, what changed, and who signed off. This becomes the audit trail when the phase ships and someone asks "why did we build it this way?"
+A SPRINT.md with a "Revision history" section showing each round, what changed, and who signed off. This becomes the audit trail when the phase ships and someone asks "why did we build it this way?"

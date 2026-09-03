@@ -39,7 +39,7 @@
 
 4. **Verify every surviving finding adversarially, before it reaches the user.**
 
-   Seven angles running in parallel produce false positives — an angle that
+   Eight angles running in parallel produce false positives — an angle that
    found nothing is under pressure to return something, and a confident wrong
    finding costs the user more than a missed one, because they go and check it.
 

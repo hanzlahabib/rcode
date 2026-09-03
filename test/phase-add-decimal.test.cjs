@@ -13,6 +13,7 @@ const path = require('path');
 const { makeTempDir, registerCleanup } = require('./helpers.cjs');
 
 const CLI_SRC = path.resolve(__dirname, '..', 'rcode', 'bin', 'rcode-tools.cjs');
+const LIB_SRC = path.resolve(__dirname, '..', 'rcode', 'bin', 'lib');
 
 function run(cwd, args) {
   // Per #473 guard, the source CLI refuses to run against a foreign .rcode/.
@@ -28,8 +29,11 @@ function run(cwd, args) {
 function setupProject(t, opts = {}) {
   const cwd = makeTempDir('rcode-phase-decimal-');
   registerCleanup(t, cwd);
-  fs.mkdirSync(path.join(cwd, '.rcode', 'bin'), { recursive: true });
+  fs.mkdirSync(path.join(cwd, '.rcode', 'bin', 'lib'), { recursive: true });
   fs.copyFileSync(CLI_SRC, path.join(cwd, '.rcode', 'bin', 'rcode-tools.cjs'));
+  for (const file of fs.readdirSync(LIB_SRC)) {
+    fs.copyFileSync(path.join(LIB_SRC, file), path.join(cwd, '.rcode', 'bin', 'lib', file));
+  }
   fs.mkdirSync(path.join(cwd, '.planning', 'phases'), { recursive: true });
 
   const seedPhases = opts.phases || [{ number: '13', name: 'Parent Phase', slug: 'parent-phase' }];

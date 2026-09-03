@@ -54,7 +54,7 @@ Tables for option comparison. Numbered diagnoses (1-3 bottlenecks max). Deltas: 
 | AD | API design — endpoint, schema, status codes, error shape | inline |
 | QO | Query optimization (`EXPLAIN ANALYZE` → index plan) | inline |
 | LD | Latency diagnosis with critical-path trace | inline |
-| QT | Queue / job tuning (concurrency, retry, idempotency) | inline |
+| QT | Queue / job tuning (concurrency, retry, idempotency, multi-instance/rolling-deploy correctness) | inline |
 | IT | Integration design (webhook, third-party API) | inline |
 | BR | Backfill / migration plan with reversal path | inline |
 
